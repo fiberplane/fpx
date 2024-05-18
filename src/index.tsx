@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { NeonDbError, neon } from "@neondatabase/serverless";
+import { Messages } from "./components";
 
 type Bindings = {
 	DATABASE_URL: string;
@@ -18,14 +19,10 @@ app.use(async (c, next) => {
 	}
 });
 
-app.get("db-errors", async (c) => {
-	return c.json(DB_ERRORS);
-});
-
 app.post("/v0/logs", async (c) => {
 	const { service, message, args } = await c.req.json();
 	const sql = neon(c.env.DATABASE_URL);
-	const jsonMessage = isValidJson(message) ? message : JSON.stringify(message);
+	const jsonMessage = isJsonParseable(message) ? message : JSON.stringify(message);
 
 	try {
 		await sql("insert into mizu_logs (message) values ($1)", [jsonMessage]);
@@ -39,10 +36,16 @@ app.post("/v0/logs", async (c) => {
 	}
 });
 
+// Home page
 app.get("/", async (c) => {
 	const sql = neon(c.env.DATABASE_URL);
 	const logs = await sql("SELECT * FROM mizu_logs");
-	return c.json(logs);
+	return c.html(<Messages logs={logs} />);
+});
+
+// HACK - Route to inspect any db errors during this session
+app.get("db-errors", async (c) => {
+	return c.json(DB_ERRORS);
 });
 
 // TODO - Otel support, would need to decode protobuf
@@ -54,7 +57,10 @@ app.post("/v1/logs", async (c) => {
 
 export default app;
 
-function isValidJson(str: string) {
+/**
+ * Check if value is json-parseable
+ */
+function isJsonParseable(str: string) {
 	try {
 		JSON.parse(str);
 		return true;
