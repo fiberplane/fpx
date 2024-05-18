@@ -1,7 +1,10 @@
 ## Running mizu
 
 ```sh
+# Auth with neon
+neonctl auth
 # Get database connection string for `dev` branch
+# TODO - add project id...
 DATABASE_URL=$(neonctl connection-string dev)
 # Add to .dev.vars
 echo -e "\nDATABASE_URL=$DATABASE_URL" >> .dev.vars
@@ -11,6 +14,7 @@ npm install
 npm run dev
 ```
 
+### Deploy
 ```sh
 npm run deploy
 ```
