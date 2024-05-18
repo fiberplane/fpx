@@ -4,6 +4,7 @@
     "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.9.3",
     "hono": "^4.3.7"
   },
   "devDependencies": {

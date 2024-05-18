@@ -1,6 +1,9 @@
 name = "mizu"
 compatibility_date = "2023-12-01"
 
+[dev]
+port = 8788
+
 # [vars]
 # MY_VAR = "my-variable"
 
