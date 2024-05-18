@@ -7,9 +7,9 @@ export const Layout: FC = (props) => {
         <style>
           {`
             body { font-family: Arial, sans-serif; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
+            .log-entry { margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; }
+            .properties { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+            .property { background: #f2f2f2; padding: 10px; border: 1px solid #ddd; max-height: 100px; overflow: auto; }
           `}
         </style>
       </head>
@@ -36,24 +36,22 @@ export const Messages = ({ logs }: { logs: unknown[] }) => {
   return (
     <Layout>
       <h1>Messages</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Message</th>
-          </tr>
-        </thead>
-        <tbody>
-          {validatedLogs.map((log) => (
-            <tr key={log.id}>
-              <td>{log.id}</td>
-              <td>
-                <pre>{typeof log.message === "string" ? log.message : JSON.stringify(log.message, null, 2)}</pre>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {validatedLogs.map((log) => (
+        <div key={log.id} className="log-entry">
+          {log.message?.lifecycle === "simple" || typeof log.message === "string" ? (
+            <div>{log.message}</div>
+          ) : (
+            <div className="properties">
+              
+              {Object.entries(log.message).map(([key, value]) => (
+                <div key={key} className="property">
+                  <strong>{key}:</strong> {typeof value === "object" ? JSON.stringify(value, null, 2) : value.toString()}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
     </Layout>
   );
 };
