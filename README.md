@@ -11,11 +11,9 @@ npm install
 npm run dev
 ```
 
-```
+```sh
 npm run deploy
 ```
-
-- `console.log` is 
 
 ## OTLP (not working)
 
