@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from 'hono/cors'
 import { NeonDbError, neon } from "@neondatabase/serverless";
 import { Messages } from "./components";
 
@@ -34,6 +35,15 @@ app.post("/v0/logs", async (c) => {
 		}
 		return c.json({ error: "Error processing log data" }, 500);
 	}
+});
+
+// Data equivalent of home page (for a frontend to consume)
+app.get("/v0/logs", cors(), async (c) => {
+	const sql = neon(c.env.DATABASE_URL);
+	const logs = await sql("SELECT * FROM mizu_logs");
+	return c.json({ 
+		logs
+	});
 });
 
 // Home page

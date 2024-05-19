@@ -70,12 +70,19 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useEffect } from "react"
 
 const Link = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} />
 // biome-ignore lint/a11y/useAltText: shush biome
 const Image = (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />
 
 export function App() {
+  useEffect(() => {
+    fetch("http://localhost:8788/v0/logs", { mode: "cors" }).then(r => r.json())
+    .then(j => {
+      console.log(j)
+    })
+  })
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
