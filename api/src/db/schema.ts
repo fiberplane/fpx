@@ -3,35 +3,26 @@ import {
 	pgEnum,
 	pgTable,
 	serial,
-	uniqueIndex,
-	varchar,
   jsonb,
+	timestamp,
 } from "drizzle-orm/pg-core";
 
 // declaring enum in database
-export const popularityEnum = pgEnum("severity", [
+export const severityEnum = pgEnum("severity", [
 	"error",
 	"warning",
 	"info",
 ]);
 
-// export const countries = pgTable(
-// 	"countries",
-// 	{
-// 		id: serial("id").primaryKey(),
-// 		name: varchar("name", { length: 256 }),
-// 	},
-// 	(countries) => {
-// 		return {
-// 			nameIndex: uniqueIndex("name_idx").on(countries.name),
-// 		};
-// 	},
-// );
-
 export const mizuLogs = pgTable("mizu_logs", {
 	id: serial("id").primaryKey(),
-	// name: varchar("name", { length: 256 }),
-	// countryId: integer("country_id").references(() => countries.id),
-	severity: popularityEnum("severity"),
+	severity: severityEnum("severity"),
   message: jsonb("message"),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+// When you select a record
+export type MizuLog = typeof mizuLogs.$inferSelect; // return type when queried
+// When you create a record
+export type NewMizuLog = typeof mizuLogs.$inferInsert; // insert type

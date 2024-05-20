@@ -1,7 +1,9 @@
 {
   "scripts": {
     "dev": "wrangler dev src/index.tsx",
-    "deploy": "wrangler deploy --minify src/index.tsx"
+    "deploy": "wrangler deploy --minify src/index.tsx",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx migrate.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3",
@@ -10,7 +12,10 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
+    "dotenv": "^16.4.5",
     "drizzle-kit": "^0.21.2",
+    "postgres": "^3.4.4",
+    "tsx": "^4.10.5",
     "wrangler": "^3.47.0"
   }
 }

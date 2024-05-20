@@ -1,14 +1,14 @@
+import { format } from 'date-fns'
 
 import {
   FileIcon as File,
   ListBulletIcon as ListFilter, // FIXME
   StretchHorizontallyIcon as MoreHorizontal,
-  PlusCircledIcon as PlusCircle,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  CaretSortIcon,
 } from "@radix-ui/react-icons"
 
 import { Badge } from "@/components/ui/badge"
-
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -18,6 +18,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -61,6 +67,106 @@ function useMizulogs() {
   }, [])
 
   return logs;
+}
+
+const MessageJson = ({ message }: { message: MizuLog["message"] }) => {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className="space-y-2"
+    >
+      <div className="flex items-center justify-between space-x-4 px-4">
+        <h4 className="text-sm font-semibold">
+          JSON Message
+        </h4>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm">
+            <CaretSortIcon className="h-4 w-4" />
+            <span className="sr-only">Toggle</span>
+          </Button>
+        </CollapsibleTrigger>
+      </div>
+      {/* <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
+        @radix-ui/primitives
+      </div> */}
+      <CollapsibleContent className="space-y-2">
+        {message && typeof message === "object" && Object.entries(message).map(([key, value]) => {
+          return (
+            <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
+              {key}: {typeof value === "object" ? JSON.stringify(value, null, 2) : value}
+            </div>
+          )
+        })}
+        {/* <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
+          {JSON.stringify(message, null, 2)}
+        </div> */}
+        {/* <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
+          @stitches/react
+        </div> */}
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+const LogRow = ({ log } : { log: MizuLog}) => {
+  const l = log;
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      <Collapsible
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        className="space-y-2"
+      >
+        <TableRow>
+          <TableCell className="hidden sm:table-cell">
+            <ExclamationTriangleIcon
+              className="h-3.5 w-3.5"
+            />
+          </TableCell>
+          <TableCell className="font-medium">
+            {l.message === "string" ? l.message : <MessageJson message={l.message} />}
+          </TableCell>
+          <TableCell>
+            <Badge variant="outline">Draft</Badge>
+          </TableCell>
+          <TableCell className="hidden md:table-cell">
+            {format(new Date(l.createdAt), 'MMMM d, HH:mm')}
+          </TableCell>
+          <TableCell>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-haspopup="true"
+                  size="icon"
+                  variant="ghost"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Toggle menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem>Edit</DropdownMenuItem>
+                <DropdownMenuItem>Delete</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableCell>
+        </TableRow>
+        <CollapsibleContent className="space-y-2">
+          <TableRow>
+
+          </TableRow>
+        </CollapsibleContent>
+      </Collapsible>
+
+  
+    </>
+  )
 }
 
 export function App() {
@@ -122,10 +228,10 @@ export function App() {
                     <TableHead className="hidden w-[32px] sm:table-cell">
                       <span className="sr-only">Icon</span>
                     </TableHead>
-                    <TableHead>Name</TableHead>
+                    <TableHead>Log</TableHead>
                     <TableHead>Level</TableHead>
                     <TableHead className="hidden md:table-cell">
-                      Created at
+                      Timestamp
                     </TableHead>
                     <TableHead>
                       <span className="sr-only">Actions</span>
@@ -141,13 +247,13 @@ export function App() {
                         />
                       </TableCell>
                       <TableCell className="font-medium">
-                        {l.message === "string" ? l.message : JSON.stringify(l.message)}
+                        {typeof l.message === "string" ? l.message : <MessageJson message={l.message} />}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">Draft</Badge>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        {l.createdAt}
+                        {format(new Date(l.createdAt), 'MMMM d, HH:mm')}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -170,13 +276,13 @@ export function App() {
                       </TableCell>
                     </TableRow>
                   })}
-                
+                  {/* {logs.map(l => <LogRow log={l} key={l.id} />)} */}
                 </TableBody>
               </Table>
             </CardContent>
             <CardFooter>
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-10</strong> of <strong>{logs.length}</strong>{" "}
+                Showing <strong>1-{logs.length}</strong> of <strong>{logs.length}</strong>{" "}
                 logs
               </div>
             </CardFooter>

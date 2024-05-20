@@ -1,14 +1,11 @@
 import type React from 'react';
 import {
   Package,
-  Package2,
   PanelLeft,
   Search,
-  Settings,
-  ShoppingCart,
-  Users2,
 } from "lucide-react"
 import {
+  ActivityLogIcon,
   HomeIcon as Home,
   BarChartIcon as LineChart, // FIXME
 
@@ -38,12 +35,23 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { SVGProps } from 'react';
 
 
 const Link = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} />
 // biome-ignore lint/a11y/useAltText: shush biome
 const Image = (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />
 
+const WaveIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+  <path
+    stroke="currentColor"
+    strokeWidth="1.5"
+    fill="none"
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    d="M0 7.5 Q 3.75 0, 7.5 7.5 T 15 7.5 M0 22.5 Q 3.75 15, 7.5 22.5 T 15 22.5"
+  />
+</svg>
 
 export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
@@ -54,7 +62,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
             href="#"
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
           >
-            <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
+            <WaveIcon className="h-4 w-4 transition-all group-hover:scale-110" />
             <span className="sr-only">Mizu</span>
           </Link>
           <Tooltip>
@@ -64,10 +72,10 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <Home className="h-5 w-5" />
-                <span className="sr-only">Dashboard</span>
+                <span className="sr-only">Mizu</span>
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">Dashboard</TooltipContent>
+            <TooltipContent side="right">Mizu</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -75,35 +83,11 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                 href="#"
                 className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
-                <ShoppingCart className="h-5 w-5" />
-                <span className="sr-only">Orders</span>
+                <ActivityLogIcon className="h-5 w-5" />
+                <span className="sr-only">Logs</span>
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">Orders</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Package className="h-5 w-5" />
-                <span className="sr-only">Products</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Products</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <Users2 className="h-5 w-5" />
-                <span className="sr-only">Customers</span>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">Customers</TooltipContent>
+            <TooltipContent side="right">Logs</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -112,26 +96,25 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <LineChart className="h-5 w-5" />
-                <span className="sr-only">Analytics</span>
+                <span className="sr-only">Metrics</span>
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">Analytics</TooltipContent>
+            <TooltipContent side="right">Metrics</TooltipContent>
           </Tooltip>
-        </nav>
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
                 href="#"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
-                <Settings className="h-5 w-5" />
-                <span className="sr-only">Settings</span>
+                <Package className="h-5 w-5" />
+                <span className="sr-only">Packages</span>
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">Settings</TooltipContent>
+            <TooltipContent side="right">Packages</TooltipContent>
           </Tooltip>
         </nav>
+
       </aside>
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -148,7 +131,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                   href="#"
                   className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                 >
-                  <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
+                  <WaveIcon className="h-5 w-5 transition-all group-hover:scale-110" />
                   <span className="sr-only">Acme Inc</span>
                 </Link>
                 <Link
@@ -156,36 +139,30 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <Home className="h-5 w-5" />
-                  Dashboard
+                  Mizu
                 </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
-                  <ShoppingCart className="h-5 w-5" />
-                  Orders
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-foreground"
-                >
-                  <Package className="h-5 w-5" />
-                  Products
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <Users2 className="h-5 w-5" />
-                  Customers
+                  <ActivityLogIcon className="h-5 w-5" />
+                  Logs
                 </Link>
                 <Link
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <LineChart className="h-5 w-5" />
-                  Settings
+                  Metrics
                 </Link>
+                <Link
+                  href="#"
+                  className="flex items-center gap-4 px-2.5 text-foreground"
+                >
+                  <Package className="h-5 w-5" />
+                  Packages
+                </Link>
+
               </nav>
             </SheetContent>
           </Sheet>
