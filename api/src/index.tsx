@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from 'hono/cors'
+import { drizzle } from 'drizzle-orm/neon-http';
 import { NeonDbError, neon } from "@neondatabase/serverless";
 import { Messages } from "./components";
 
@@ -23,6 +24,8 @@ app.use(async (c, next) => {
 app.post("/v0/logs", async (c) => {
 	const { service, message, args } = await c.req.json();
 	const sql = neon(c.env.DATABASE_URL);
+	const db = drizzle(sql);
+
 	const jsonMessage = isJsonParseable(message) ? message : JSON.stringify(message);
 
 	try {
