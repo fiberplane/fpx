@@ -12,6 +12,7 @@ export type RequestLog = {
     path: string;
   };
   createdAt: string;
+  timestamp: string;
 }
 
 export type ResponseLog = {
@@ -27,6 +28,7 @@ export type ResponseLog = {
     elapsed: number;
   };
   createdAt: string;
+  timestamp: string;
 }
 
 export type DbErrorLog = {
@@ -35,6 +37,7 @@ export type DbErrorLog = {
   // TODO - Fill with useful stuff
   message: string;
   createdAt: string;
+  timestamp: string;
 }
 
 export type MockLog = RequestLog | ResponseLog;
@@ -47,6 +50,7 @@ const REQUEST_LOG: RequestLog = {
     lifecycle: "request",
     path: "/",
   },
+  timestamp: "2023-05-12T16:12:59.000Z",
   createdAt: "2023-05-12T16:13:00.000Z",
 };
 
@@ -62,6 +66,7 @@ const RESPONSE_LOG_SUCCESS: ResponseLog = {
     status: "200",
     elapsed: 97,
   },
+  timestamp: "2023-05-12T16:16:58.000Z",
   createdAt: "2023-05-12T16:17:00.000Z",
 };
 
@@ -77,7 +82,8 @@ const RESPONSE_LOG_ERROR_404: ResponseLog = {
     status: "404",
     elapsed: 57,
   },
-  createdAt: "2023-05-12T16:14:00.000Z",
+  timestamp: "2023-05-12T16:14:00.000Z",
+  createdAt: "2023-05-12T16:14:02.000Z",
 };
 
 /**
@@ -87,7 +93,7 @@ export const getMockLogs = async (): Promise<{ logs: Array<MockLog> }> => {
   return new Promise<{ logs: Array<MockLog> }>(r => {
     const logs = [REQUEST_LOG, RESPONSE_LOG_SUCCESS, RESPONSE_LOG_ERROR_404];
     logs.sort((a, b) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
     r({ logs });
   })

@@ -89,7 +89,7 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
           </TableCell>
 
           <TableCell className="hidden md:table-cell">
-            {formatDate(new Date(t[0].createdAt))} to {formatDate(new Date(t[t.length - 1].createdAt))}
+            {formatDate(new Date(t[0].timestamp))} to {formatDate(new Date(t[t.length - 1].timestamp))}
           </TableCell>
           <TableCell className="flex items-center space-x-2">
             <DropdownMenu>

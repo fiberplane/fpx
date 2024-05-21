@@ -23,7 +23,7 @@ app.use(async (c, next) => {
 });
 
 app.post("/v0/logs", async (c) => {
-	const { level, service, message, args, traceId } = await c.req.json();
+	const { level, service, message, args, traceId, timestamp } = await c.req.json();
 	const sql = neon(c.env.DATABASE_URL);
 	const db = drizzle(sql);
 
