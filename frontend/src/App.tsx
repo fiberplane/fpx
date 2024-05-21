@@ -8,9 +8,9 @@ export function App() {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<LogsPage />} />
+          <Route path="/" element={<TracesPage />} />
           <Route path="/traces" element={<TracesPage />} />
-          <Route path="/logs/:id" element={<LogsPage />} />
+          <Route path="/logs" element={<LogsPage />} />
         </Routes>
       </Layout>
     </Router>

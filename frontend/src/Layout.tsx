@@ -179,12 +179,12 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="#">Logs</Link>
+                  <Link href="#">Requests</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>All Logs</BreadcrumbPage>
+                <BreadcrumbPage>All Requests</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

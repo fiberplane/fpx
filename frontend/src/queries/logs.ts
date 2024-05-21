@@ -18,6 +18,7 @@ export function useMizulogs() {
           return map
         }, new Map<string, MizuTrace>()).values());
         traces.forEach(t => t.sort((a, b) => a.timestamp.localeCompare(b.timestamp)));
+        traces.sort((a, b) => b[0].timestamp.localeCompare(a[0].timestamp));
         setTraces(traces);
       }).catch((e: unknown) => {
         console.error("Error fetching logs: ", e);

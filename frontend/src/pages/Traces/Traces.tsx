@@ -127,9 +127,9 @@ export function TracesPage() {
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="error">Error</TabsTrigger>
+          <TabsTrigger value="error">Error Responses</TabsTrigger>
           <TabsTrigger value="ignored" className="hidden sm:flex">
-            Ignored
+            With Any Errors
           </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
@@ -164,18 +164,18 @@ export function TracesPage() {
       <TabsContent value="all">
         <Card x-chunk="dashboard-06-chunk-0">
           <CardHeader>
-            <CardTitle>Traces</CardTitle>
+            <CardTitle>Requests</CardTitle>
             <CardDescription>
-              View traces from your development environment
+              Inspect requests to your development environment
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TracesTable logs={logs} traces={traces} filter="all" />
+            <TracesTable traces={traces} filter="all" />
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
               Showing <strong>1-{logs.length}</strong> of <strong>{logs.length}</strong>{" "}
-              traces
+              requests
             </div>
           </CardFooter>
         </Card>
@@ -183,9 +183,9 @@ export function TracesPage() {
       <TabsContent value="error">
         <Card x-chunk="dashboard-06-chunk-0">
           <CardHeader>
-            <CardTitle>Error Traces</CardTitle>
+            <CardTitle>4xx and 5xx Errors</CardTitle>
             <CardDescription>
-              View error logs from your development environment
+              View requests that resulted in 4xx or 5xx errors
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -194,7 +194,7 @@ export function TracesPage() {
           <CardFooter>
             <div className="text-xs text-muted-foreground">
               Showing <strong>1-{traces.length}</strong> of <strong>{traces.length}</strong>{" "}
-              traces
+              requests
             </div>
           </CardFooter>
         </Card>
