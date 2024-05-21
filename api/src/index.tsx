@@ -33,7 +33,7 @@ app.post("/v0/logs", async (c) => {
 	try {
 		// Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
 		const mizuLevel = level === "log" ? "info" : level;
-		await sql("insert into mizu_logs (level, service, message, args, trace_id) values ($1, $2, $3, $4)", [mizuLevel, service, jsonMessage, jsonArgs, traceId]);
+		await sql("insert into mizu_logs (level, service, message, args, trace_id) values ($1, $2, $3, $4, $5)", [mizuLevel, service, jsonMessage, jsonArgs, traceId]);
 		return c.text("OK");
 	} catch (err) {
 		if (err instanceof NeonDbError) {
@@ -49,7 +49,7 @@ app.post("/v0/logs", async (c) => {
 app.get("/v0/logs", cors(), async (c) => {
 	const sql = neon(c.env.DATABASE_URL);
 	const logs = await sql("SELECT * FROM mizu_logs");
-	return c.json({ 
+	return c.json({
 		logs
 	});
 });
