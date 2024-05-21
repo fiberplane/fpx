@@ -5,10 +5,11 @@ import {
 	serial,
   jsonb,
 	timestamp,
+	text,
 } from "drizzle-orm/pg-core";
 
 // declaring enum in database
-export const severityEnum = pgEnum("severity", [
+export const levelEnum = pgEnum("level", [
 	"error",
 	"warning",
 	"info",
@@ -16,8 +17,11 @@ export const severityEnum = pgEnum("severity", [
 
 export const mizuLogs = pgTable("mizu_logs", {
 	id: serial("id").primaryKey(),
-	severity: severityEnum("severity"),
+	level: levelEnum("level"),
+	traceId: text("trace_id"),
+	service: text("service"),
   message: jsonb("message"),
+	args: jsonb("args"), // NOTE - Should only be present iff message is a string
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

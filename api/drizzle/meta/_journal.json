@@ -8,6 +8,20 @@
       "when": 1716216567704,
       "tag": "0000_pale_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1716303392485,
+      "tag": "0001_classy_falcon",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1716310308475,
+      "tag": "0002_marvelous_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }

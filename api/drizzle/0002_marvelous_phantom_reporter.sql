@@ -1,0 +1,1 @@
+ALTER TABLE "mizu_logs" ADD COLUMN "trace_id" text;

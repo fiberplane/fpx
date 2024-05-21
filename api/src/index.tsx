@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { cors } from 'hono/cors'
-import { drizzle } from 'drizzle-orm/neon-http';
 import { NeonDbError, neon } from "@neondatabase/serverless";
+import { drizzle } from 'drizzle-orm/neon-http';
+
 import { Messages } from "./components";
 
 type Bindings = {
@@ -22,18 +23,22 @@ app.use(async (c, next) => {
 });
 
 app.post("/v0/logs", async (c) => {
-	const { service, message, args } = await c.req.json();
+	const { level, service, message, args, traceId } = await c.req.json();
 	const sql = neon(c.env.DATABASE_URL);
 	const db = drizzle(sql);
 
 	const jsonMessage = isJsonParseable(message) ? message : JSON.stringify(message);
+	const jsonArgs = isJsonParseable(args) ? args : JSON.stringify(args);
 
 	try {
-		await sql("insert into mizu_logs (message) values ($1)", [jsonMessage]);
+		// Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
+		const mizuLevel = level === "log" ? "info" : level;
+		await sql("insert into mizu_logs (level, service, message, args, trace_id) values ($1, $2, $3, $4)", [mizuLevel, service, jsonMessage, jsonArgs, traceId]);
 		return c.text("OK");
 	} catch (err) {
 		if (err instanceof NeonDbError) {
 			console.log("DB ERROR FOR:", { message, jsonMessage });
+			console.error(err);
 			DB_ERRORS.push(err);
 		}
 		return c.json({ error: "Error processing log data" }, 500);
