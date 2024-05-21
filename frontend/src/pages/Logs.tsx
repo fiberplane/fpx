@@ -76,7 +76,7 @@ export const MessageJson = ({ message }: { message: MockLog["message"] }) => {
       <CollapsibleContent className="space-y-2">
         {message && typeof message === "object" && Object.entries(message).map(([key, value]) => {
           return (
-            <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
+            <div key={key} className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
               {key}: {typeof value === "object" ? JSON.stringify(value, null, 2) : value}
             </div>
           )
@@ -177,7 +177,7 @@ const LogsTable = ({ logs, filter }: { logs: MockLog[], filter: LevelFilter }) =
     </TableHeader>
     <TableBody>
       {filteredLogs.map(l => {
-        return <TableRow>
+        return <TableRow key={l.id}>
           <TableCell className="hidden sm:table-cell">
             <ExclamationTriangleIcon
               className="h-3.5 w-3.5"

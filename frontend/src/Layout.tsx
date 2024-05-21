@@ -34,10 +34,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { SVGProps } from 'react';
+import { AnchorHTMLAttributes, SVGProps, forwardRef } from 'react';
 
 
-const Link = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} />
+// Using forwardRef to allow the Link component to accept a ref
+const Link = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<HTMLAnchorElement>>(
+  (props, ref) => <a ref={ref} {...props} />
+);
+Link.displayName = "Link";
 // biome-ignore lint/a11y/useAltText: shush biome
 const Image = (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />
 
@@ -46,8 +50,8 @@ const WaveIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => <svg width="15" h
     stroke="currentColor"
     strokeWidth="1.5"
     fill="none"
-    fill-rule="evenodd"
-    clip-rule="evenodd"
+    fillRule="evenodd"
+    clipRule="evenodd"
     d="M0 7.5 Q 3.75 0, 7.5 7.5 T 15 7.5 M0 22.5 Q 3.75 15, 7.5 22.5 T 15 22.5"
   />
 </svg>
@@ -65,7 +69,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
             <span className="sr-only">Mizu</span>
           </Link>
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger>
               <Link
                 href="#"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
