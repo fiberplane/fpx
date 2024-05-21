@@ -18,6 +18,7 @@ export const levelEnum = pgEnum("level", [
 export const mizuLogs = pgTable("mizu_logs", {
 	id: serial("id").primaryKey(),
 	level: levelEnum("level"),
+	timestamp: timestamp("timestamp"),
 	traceId: text("trace_id"),
 	service: text("service"),
   message: jsonb("message"),
