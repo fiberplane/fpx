@@ -1,14 +1,13 @@
 import type React from 'react';
 import {
-  Package,
   PanelLeft,
-  Search,
 } from "lucide-react"
 import {
   ActivityLogIcon,
-  HomeIcon as Home,
+  DashboardIcon,
   BarChartIcon as LineChart, // FIXME
-
+  CubeIcon as Package,
+  MagnifyingGlassIcon as Search,
 } from "@radix-ui/react-icons"
 
 import {
@@ -71,7 +70,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                 href="#"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
-                <Home className="h-5 w-5" />
+                <DashboardIcon className="h-5 w-5" />
                 <span className="sr-only">Mizu</span>
               </Link>
             </TooltipTrigger>
@@ -138,7 +137,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
-                  <Home className="h-5 w-5" />
+                  <DashboardIcon className="h-5 w-5" />
                   Mizu
                 </Link>
                 <Link
