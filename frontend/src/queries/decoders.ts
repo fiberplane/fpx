@@ -1,8 +1,11 @@
 type JsonValue = string | number | boolean | object | null;
 
+export type MizuTrace = Array<MizuLog>;
+
 export type MizuLog =
   | {
     id: number;
+    traceId: string;
     level: string;
     message: JsonValue;
     args?: JsonValue;
@@ -10,6 +13,7 @@ export type MizuLog =
   }
   | {
     id: number;
+    traceId: string;
     level: string;
     message: string;
     createdAt: string;
@@ -23,6 +27,7 @@ export const transformToLog = (l: unknown): MizuLog => {
     typeof l === "object" &&
     "id" in l &&
     typeof l.id === "number" &&
+    "trace_id" in l && typeof l.trace_id === "string" &&
     "level" in l && typeof l.level === "string" &&
     "message" in l &&
     isJsonValue(l.message) &&
@@ -33,6 +38,7 @@ export const transformToLog = (l: unknown): MizuLog => {
   ) {
     return {
       id: l.id,
+      traceId: l.trace_id,
       level: l.level,
       message: l.message,
       args: l.args,
@@ -41,6 +47,7 @@ export const transformToLog = (l: unknown): MizuLog => {
   }
   return {
     id: +new Date(),
+    traceId: l && typeof l === "object" && "trace_id" in l && typeof l.trace_id === "string" ? l.trace_id : "",
     level: l && typeof l === "object" && "level" in l && typeof l.level === "string" ? l.level : "info",
     message: "COULD_NOT_PARSE",
     createdAt: l && typeof l === "object" && "created_at" in l && typeof l.created_at === "string" ? l.created_at : "",
