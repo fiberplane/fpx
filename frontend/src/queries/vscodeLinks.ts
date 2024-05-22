@@ -1,6 +1,7 @@
-
+/**
+ * NOTE - Only works when running api with `npm run node:dev`
+ */
 export async function getVSCodeLink(errorDetails: { stack: string }) {
-  // TODO
   const position = parseStackTrace(errorDetails.stack);
   if (!position) {
     console.error("NO POSITION FOUND IN STACK TRACE", errorDetails.stack);
