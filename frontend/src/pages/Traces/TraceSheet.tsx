@@ -10,7 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { MizuTrace, MizuLog } from "@/queries/decoders";
-import { getVSCodeLink } from "@/utils/vscodeLinks";
+import { getVSCodeLink } from "@/queries/vscodeLinks";
 import { useEffect, useState } from "react";
 
 export const TraceSheet = ({ trace }: { trace: MizuTrace }) => {
