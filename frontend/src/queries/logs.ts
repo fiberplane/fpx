@@ -27,7 +27,19 @@ export function useMizulogs() {
         for (const [, trace] of tracesMap.entries()) {
           trace.duration = "TODO";
           trace.description = "TODO";
-          trace.logs.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+          trace.logs.sort((a, b) => {
+            const comparison = a.timestamp.localeCompare(b.timestamp);
+            // HACK - tie-breaking logic for logs with the same timestamp, defer to the lifecycle field
+            if (comparison === 0) {
+              if (a.message?.lifecycle === "response" || b.message?.lifecycle === "request") {
+                return 1;
+              }
+              if (a.message?.lifecycle === "request" || b.message?.lifecycle === "response") {
+                return -1;
+              }
+            }
+            return comparison;
+          });
           const response = trace.logs.find(l => l.message?.lifecycle === "response");
           trace.status = response.message?.status ?? "unknown";
           traces.push(trace);
