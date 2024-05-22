@@ -42,7 +42,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs"
 
-import { formatDate } from "@/utils"
+import { formatDate } from "@/utils/utils"
 
 import { TraceSheet, } from "./TraceSheet"
 import { MessageJson } from "./MessageJson"
@@ -57,7 +57,7 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
     if (filter === "all") {
       return traces
     }
-    return traces.filter(ts => ts.some(t => t.level === filter));
+    return traces.filter(trace => trace.logs.some(log => log.level === filter));
   }, [traces, filter])
   return (<Table>
     <TableHeader>
@@ -65,8 +65,8 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
         <TableHead className="hidden w-[32px] sm:table-cell">
           <span className="sr-only">Icon</span>
         </TableHead>
-        <TableHead>Level</TableHead>
-        <TableHead>Trace...?</TableHead>
+        <TableHead>Status</TableHead>
+        <TableHead>Summary</TableHead>
         <TableHead className="hidden md:table-cell">
           Timestamp
         </TableHead>
@@ -77,19 +77,19 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
     </TableHeader>
     <TableBody>
       {filteredTraces.map(t => {
-        return <TableRow key={t[0].id}>
+        return <TableRow key={t.logs[0].id}>
           <TableCell className="hidden sm:table-cell">
-            {t.some(t => t.level === "error") ? <ExclamationTriangleIcon className="h-3.5 w-3.5" /> : <InfoCircledIcon className="h-3.5 w-3.5" />}
+            {t.logs.some(t => t.level === "error") ? <ExclamationTriangleIcon className="h-3.5 w-3.5" /> : <InfoCircledIcon className="h-3.5 w-3.5" />}
           </TableCell>
           <TableCell>
-            {t.find(t => !!t?.message?.status)?.message?.status ?? "unknown"}
+            {t.status}
           </TableCell>
           <TableCell className="font-medium">
-            ADD MESSAGE HERE
+            {t.description}
           </TableCell>
 
-          <TableCell className="hidden md:table-cell">
-            {formatDate(new Date(t[0].timestamp))} to {formatDate(new Date(t[t.length - 1].timestamp))}
+          <TableCell className="hidden md:table-cell font-mono text-xs" >
+            {formatDate(new Date(t.logs[0].timestamp))} to {formatDate(new Date(t.logs[t.logs.length - 1].timestamp))}
           </TableCell>
           <TableCell className="flex items-center space-x-2">
             <DropdownMenu>
@@ -119,9 +119,8 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
 }
 
 export function TracesPage() {
-  const { logs, traces } = useMizulogs();
+  const { traces } = useMizulogs();
   console.log("TRACES", traces)
-  // const logs = useMockLogs();
   return (
     <Tabs defaultValue="error">
       <div className="flex items-center">
@@ -174,7 +173,7 @@ export function TracesPage() {
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
-              Showing <strong>1-{logs.length}</strong> of <strong>{logs.length}</strong>{" "}
+              Showing <strong>1-{traces.length}</strong> of <strong>{traces.length}</strong>{" "}
               requests
             </div>
           </CardFooter>

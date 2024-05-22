@@ -1,0 +1,45 @@
+import { serve } from '@hono/node-server'
+import { env } from 'hono/adapter';
+import { config } from 'dotenv';
+import { readFileSync } from 'node:fs'
+
+import { createApp } from './app'
+import { cors } from 'hono/cors';
+import { SourceMapConsumer } from 'source-map';
+
+config({ path: '.dev.vars' });
+
+const app = createApp();
+
+app.get("/", async (c) => {
+  return c.text("Hello Node.js Hono" + JSON.stringify(env(c)))
+});
+
+app.get("/v0/source", cors(), async (c) => {
+  const { source, line, column } = c.req.query();
+
+  try {
+    const file = JSON.parse(readFileSync(source, 'utf8').toString());
+    const consumer = await new SourceMapConsumer(file);
+    const pos = consumer.originalPositionFor({
+      line: parseInt(line, 10),
+      column: parseInt(column, 10),
+    });
+    consumer.destroy();
+
+
+    return c.json(pos);
+  } catch (err) {
+    console.error(err);
+    return c.json({ error: "Error reading file", name: err?.name, message: err?.message }, 500);
+  }
+
+})
+
+const port = 8788
+console.log(`Server is running: http://localhost:${port}`)
+
+serve({
+  fetch: app.fetch,
+  port
+})

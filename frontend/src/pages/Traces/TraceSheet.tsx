@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetClose,
@@ -11,8 +10,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { MizuTrace, MizuLog } from "@/queries/decoders";
+import { getVSCodeLink } from "@/utils/vscodeLinks";
+import { useEffect, useState } from "react";
 
-export const TraceSheet = ({ log, trace }: { log: MizuLog, trace: MizuTrace }) => {
+export const TraceSheet = ({ trace }: { trace: MizuTrace }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -20,17 +21,15 @@ export const TraceSheet = ({ log, trace }: { log: MizuLog, trace: MizuTrace }) =
       </SheetTrigger>
       <SheetContent className="w-[400px] sm:max-w-[540px] sm:w-[540px] md:max-w-[680px] md:w-[680px] lg:w-[800px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Log Details</SheetTitle>
+          <SheetTitle>Request Details</SheetTitle>
           <SheetDescription>
-            Inspect the log here
+            Inspect logs from the request here
           </SheetDescription>
         </SheetHeader>
-        <LogDetails log={log} />
-        <Separator className="my-4" />
         <TraceDetails trace={trace} />
         <SheetFooter>
           <SheetClose asChild className="mt-4">
-            <Button type="submit">Save changes...</Button>
+            <Button type="button">Close</Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>
@@ -41,17 +40,118 @@ export const TraceSheet = ({ log, trace }: { log: MizuLog, trace: MizuTrace }) =
 export const TraceDetails = ({ trace }: { trace: MizuTrace }) => {
   return (
     <>
-      {trace.map(log => (
+      {trace.logs.map(log => (
         <LogDetails log={log} key={log.id} />
       ))}
     </>
   )
 }
 
-export const LogDetails = ({ log }: { log: MizuLog  }) => {
-  const { message } = log;
+const RequestLog = ({ log }: { log: MizuLog }) => {
   return (
-    <>
+    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
+      <div>
+        [{log.timestamp}]
+        <span className="invisible">
+          {log.traceId}
+        </span>
+      </div>
+      <div>
+        Request: {log.message.method} {log.message.path}
+      </div>
+    </div>
+  )
+}
+
+const ResponseLog = ({ log }: { log: MizuLog }) => {
+  return (
+    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
+      <div>
+        [{log.timestamp}]
+        <span className="invisible">
+          {log.traceId}
+        </span>
+      </div>
+      <div>
+        Response: {log.message.status} {log.message.method} {log.message.path}
+      </div>
+    </div>
+  )
+}
+
+const ErrorLog = ({ log }: { log: MizuLog }) => {
+  const stack = log.message.stack;
+  const [vsCodeLink, setVSCodeLink] = useState<string | null>(null);
+  useEffect(() => {
+    if (stack) {
+      getVSCodeLink({ stack }).then((link) => {
+        setVSCodeLink(link)
+      })
+    }
+  }, [stack])
+
+
+  return (
+    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
+      <div>
+        [{log.timestamp}]
+        <span className="invisible">
+          {log.traceId}
+        </span>
+      </div>
+      {vsCodeLink && (
+        <div>
+          <a href={vsCodeLink}>Go to Code</a>
+        </div>
+      )}
+      <div>
+        Error: {log.message.message}
+        <div>
+          {log.message.stack}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const InfoLog = ({ log }: { log: MizuLog }) => {
+  return (
+    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
+      <div>
+        [{log.timestamp}]
+        <span className="invisible">
+          {log.traceId}
+        </span>
+      </div>
+      <div>
+        Info: {log.message}
+      </div>
+    </div>
+  )
+}
+
+
+export const LogDetails = ({ log }: { log: MizuLog }) => {
+  const { message } = log;
+
+  if (message?.lifecycle === "request") {
+    return <RequestLog log={log} />
+  }
+
+  if (message?.lifecycle === "response") {
+    return <ResponseLog log={log} />
+  }
+
+  if (typeof message === "object" && "message" in message) {
+    return <ErrorLog log={log} />
+  }
+
+  if (typeof message === "string") {
+    return <InfoLog log={log} />
+  }
+
+  return (
+    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
       {message && typeof message === "object" && Object.entries(message).map(([key, value]) => {
         return (
           <div key={key} className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
@@ -59,6 +159,6 @@ export const LogDetails = ({ log }: { log: MizuLog  }) => {
           </div>
         )
       })}
-    </>
+    </div>
   )
 };

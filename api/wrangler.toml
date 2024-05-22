@@ -1,5 +1,6 @@
 name = "mizu"
 compatibility_date = "2023-12-01"
+# node_compat = true
 
 [dev]
 port = 8788

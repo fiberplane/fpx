@@ -11,7 +11,9 @@ echo -e "\nDATABASE_URL=$DATABASE_URL" >> .dev.vars
 
 # Install deps and run app
 npm install
-npm run dev
+
+# NOTE - need to run as node.js to have access to file system for fun features...
+npm run node:dev
 ```
 
 ### Deploy

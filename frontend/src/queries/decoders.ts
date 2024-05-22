@@ -1,6 +1,11 @@
 type JsonValue = string | number | boolean | object | null;
 
-export type MizuTrace = Array<MizuLog>;
+export type MizuTrace = {
+  description: string;
+  status: string;
+  duration: string;
+  logs: Array<MizuLog>;
+};
 
 export type MizuLog =
   | {

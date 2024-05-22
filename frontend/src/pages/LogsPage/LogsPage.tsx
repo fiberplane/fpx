@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/tabs"
 
 import { MockLog, useMockLogs } from '@/queries/mock-data'
-import { formatDate } from "@/utils"
+import { formatDate } from "@/utils/utils"
 
 import { LogSheet, } from "./LogSheet"
 import { MessageJson } from "./MessageJson"
