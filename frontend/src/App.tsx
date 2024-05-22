@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./Layout";
-import { LogsPage } from "./pages/Logs/Logs";
+import { LogsPage } from "./pages/LogsPage/LogsPage";
 import { TracesPage } from "./pages/Traces/Traces";
 
 export function App() {
