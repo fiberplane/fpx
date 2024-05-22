@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sheet"
 import { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLink } from "@/queries/vscodeLinks";
+import { CodeIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 
 export const TraceSheet = ({ trace }: { trace: MizuTrace }) => {
@@ -100,7 +101,8 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
         </span>
       </div>
       {vsCodeLink && (
-        <div>
+        <div className="flex items-center">
+          <CodeIcon />
           <a href={vsCodeLink}>Go to Code</a>
         </div>
       )}

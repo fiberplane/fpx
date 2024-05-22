@@ -1,13 +1,11 @@
 import type React from 'react';
 import {
-  PanelLeft,
-} from "lucide-react"
-import {
   ActivityLogIcon,
   DashboardIcon,
   BarChartIcon as LineChart, // FIXME
   CubeIcon as Package,
   MagnifyingGlassIcon as Search,
+  LayoutIcon as PanelLeft,
 } from "@radix-ui/react-icons"
 
 import {
