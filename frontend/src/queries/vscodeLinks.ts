@@ -9,14 +9,11 @@ export async function getVSCodeLink(errorDetails: { stack: string }) {
   }
 
   const sourceMapLocation = `${position.source}.map`;
-  console.log('hi', sourceMapLocation);
   const query = new URLSearchParams({
     source: sourceMapLocation,
     line: position.line.toString(),
     column: position.column.toString()
   });
-  const querystring = query.toString();
-  console.log('querystring', querystring)
   const pos = await fetch(`http://localhost:8788/v0/source?${query.toString()}`).then(r => r.json());
   const vscodeLink = `vscode://file/${pos.source}:${pos.line}:${pos.column}`;
   return vscodeLink;
