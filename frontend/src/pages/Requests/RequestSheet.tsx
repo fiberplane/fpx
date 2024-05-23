@@ -14,16 +14,18 @@ import {
 } from "@/components/ui/sheet"
 import { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
-import { CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
+import { CaretDownIcon, CaretRightIcon, CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
-export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
-  const request = trace.logs.find(log => log.message.lifecycle === "request");
-  const response = trace.logs.find(log => log.message.lifecycle === "response");
-  const handler = response?.message?.handler;
-  const source = request?.message?.file
-  const [f, sf] = useState<string | null>(null);
+function useHandlerSourceCode(source: string, handler: string) {
+  const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);
   useEffect(() => {
+    if (!source) {
+      return;
+    }
+    if (!handler) {
+      return;
+    }
     const query = new URLSearchParams({
       source,
       handler,
@@ -34,7 +36,7 @@ export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
           if (!r.ok) {
             throw new Error(`Failed to fetch source location from source map: ${r.status}`);
           }
-          return r.json().then(r => sf(r.functionText))
+          return r.json().then(r => setHandlerSourceCode(r.functionText))
         });
         return pos;
       } catch (err) {
@@ -42,9 +44,23 @@ export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
         return null;
       }
     }
-    
+
     fetchSourceLocation();
-  }, [handler])
+  }, [handler, source])
+
+  return handlerSourceCode;
+}
+
+function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
+  // TODO
+}
+
+export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
+  const request = trace.logs.find(log => log.message.lifecycle === "request");
+  const response = trace.logs.find(log => log.message.lifecycle === "response");
+  const source = request?.message?.file
+  const handler = response?.message?.handler;
+  const handlerSourceCode = useHandlerSourceCode(source, handler);
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -83,7 +99,7 @@ export const TraceDetails = ({ trace }: { trace: MizuTrace }) => {
   )
 }
 
-const LogCard = ({children}: { children: React.ReactNode }) => {
+const LogCard = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="rounded-md border mt-2 px-4 pt-2 pb-3 font-mono text-sm shadow-sm">
       {children}
@@ -97,6 +113,7 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
   return (
     <LogCard>
       <LogDetailsHeader log={log} eventName="Incoming Request" description={description} />
+     
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
       </div>
@@ -104,12 +121,36 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
   )
 }
 
+/**
+ * As of writing, only handles 404 for favicon
+ */
+function getResponseMagicSuggestion({ log, trace }: { log: MizuLog, trace?: MizuTrace }) {
+  if (log.message.method === "GET" && log.message.path === "/favicon.ico" && log.message.status === "404") {
+    return (
+      <div className="flex flex-col">
+        If you want to silence this error locally, add the following to your app:
+        <code className="text-mono text-gray-700 whitespace-break-spaces mt-2">
+          {`// TODO - Add favicon
+app.get('/favicon.ico', (c) => c.text('No favicon') ) 
+`}
+        </code>
+      </div>
+    )
+  }
+  return null;
+}
+
+
 const ResponseLog = ({ log }: { log: MizuLog }) => {
-  const description = `${log.message.status} ${log.message.method} ${log.message.path}
-`
+  const { status, method, path } = log.message;
+  const description = `${status} ${method} ${path}`
+  const magicSuggestion = getResponseMagicSuggestion({ log });
   return (
     <LogCard>
-      <LogDetailsHeader eventName="Outgoing Response"  log={log} description={description}  />
+      <LogDetailsHeader eventName="Outgoing Response" log={log} description={description} />
+      {magicSuggestion && (
+        <MagicSuggestion suggestion={magicSuggestion} />
+      )}
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
       </div>
@@ -160,7 +201,7 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
     }
   }, [stack])
 
-
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <LogCard>
       <LogDetailsHeader eventName="Error" log={log} description={description} />
@@ -180,12 +221,29 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
         )}
 
 
-        <div className="mt-2 font-bold">
-          Stack Trace
-        </div>
-        <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
-          {log.message.stack}
-        </div>
+        <Collapsible
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          className="space-y-2 mt-4"
+        >
+          <div className="flex items-center space-x-1 ">
+            <CollapsibleTrigger asChild>
+              <Button className="p-0 h-3" variant="link" size="sm">
+                {!isOpen ? <CaretRightIcon className="h-4 w-4" /> : <CaretDownIcon className="h-4 w-4" />}
+                <span className="sr-only">{isOpen ? "Hide" : "Show"}</span>
+              </Button>
+            </CollapsibleTrigger>
+            <div className="font-bold cursor-pointer" onClick={() => setIsOpen(o => !o)}>
+              Stack Trace
+            </div>
+          </div>
+          <CollapsibleContent className="space-y-2">
+            <Separator className="my-1" />
+            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+              {log.message.stack}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </LogCard>
   )
@@ -216,7 +274,7 @@ const InfoLog = ({ log }: { log: MizuLog }) => {
   )
 }
 
-const MagicSuggestion = ({ suggestion, children }: { suggestion: string; children?: ReactNode  }) => {
+const MagicSuggestion = ({ suggestion, children }: { suggestion: ReactNode | string; children?: ReactNode }) => {
   return (
     <div className="font-sans rounded-lg border border-purple-400 bg-purple-50 mt-4 px-2 py-3 text-sm shadow-md">
       <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2">
@@ -228,9 +286,9 @@ const MagicSuggestion = ({ suggestion, children }: { suggestion: string; childre
             <span className="font-semibold mr-2">Suggestion</span>
           </div>
         </div>
-        <div/>
+        <div />
         <div className="text-purple-800">
-          <span>{suggestion}</span>
+          {suggestion}
         </div>
       </div>
       {children}
@@ -242,7 +300,7 @@ const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; 
   return (
     <div>
       <div className="font-mono text-gray-500 w-full flex flex-col sm:flex-row md:space-0 justify-between items-center">
-        <div className="font-bold" style={{ marginLeft: "-.625rem"}}> { /* HACK - Do this properly eventually */}
+        <div className="font-bold" style={{ marginLeft: "-.625rem" }}> { /* HACK - Do this properly eventually */}
           <Badge className="mr-2" variant="secondary">
             {eventName}
           </Badge>
@@ -255,16 +313,16 @@ const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; 
       {description && (<div className="mt-1">
         {description}
       </div>)}
-      
+
     </div>
-  
+
   )
 };
 
 type KVGridProps = { [key: string]: any }
 const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const { lifecycle, method, path } = data; // TODO - extract these
+  // const { lifecycle, method, path, ...message } = data; // TODO - extract these
   return (
     <Collapsible
       open={isOpen}
@@ -295,10 +353,11 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
                 {key === "env" ? <EnvGrid env={value} /> : key === "headers" ? <EnvGrid env={value} /> : typeof value === "string" ? value : JSON.stringify(value, null, 2)}
               </div>
               <Separator className="my-1" />
-
             </div>
-            
           ))}
+          <div>
+
+          </div>
         </div>
       </CollapsibleContent>
 
@@ -319,7 +378,7 @@ const EnvGrid = ({ env }: { env: Record<string, string> }) => {
               {value}
             </div>
           </div>
-          
+
         )
       })}
     </div>
