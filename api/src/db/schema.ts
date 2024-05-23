@@ -23,6 +23,7 @@ export const mizuLogs = pgTable("mizu_logs", {
 	service: text("service"),
   message: jsonb("message"),
 	args: jsonb("args"), // NOTE - Should only be present iff message is a string
+	callerLocation: jsonb("caller_location"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
 	updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

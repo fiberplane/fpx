@@ -23,17 +23,18 @@ export function createApp() {
   });
 
   app.post("/v0/logs", async (c) => {
-    const { level, service, message, args, traceId, timestamp } = await c.req.json();
+    const { level, service, message, args, traceId, callerLocation, timestamp } = await c.req.json();
     const sql = neon(env(c).DATABASE_URL);
     const db = drizzle(sql);
 
     const jsonMessage = isJsonParseable(message) ? message : JSON.stringify(message);
     const jsonArgs = isJsonParseable(args) ? args : JSON.stringify(args);
+    const jsonCallerLocation = isJsonParseable(callerLocation) ? callerLocation : JSON.stringify(callerLocation);
 
     try {
       // Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
       const mizuLevel = level === "log" ? "info" : level;
-      await sql("insert into mizu_logs (level, service, message, args, trace_id, timestamp) values ($1, $2, $3, $4, $5, $6)", [mizuLevel, service, jsonMessage, jsonArgs, traceId, timestamp]);
+      await sql("insert into mizu_logs (level, service, message, args, caller_location, trace_id, timestamp) values ($1, $2, $3, $4, $5, $6, $7)", [mizuLevel, service, jsonMessage, jsonArgs, jsonCallerLocation, traceId, timestamp]);
       return c.text("OK");
     } catch (err) {
       if (err instanceof NeonDbError) {

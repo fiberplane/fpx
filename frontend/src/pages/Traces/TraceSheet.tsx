@@ -12,7 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { MizuTrace, MizuLog } from "@/queries/decoders";
-import { getVSCodeLink } from "@/queries/vscodeLinks";
+import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
 import { CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
@@ -83,6 +83,18 @@ const ResponseLog = ({ log }: { log: MizuLog }) => {
     </LogCard>
   )
 }
+function useCallerLocation(log: MizuLog) {
+  const [vsCodeLink, setVSCodeLink] = useState<string | null>(null);
+  useEffect(() => {
+    if (log.callerLocation) {
+      getVSCodeLinkFromCallerLocaiton(log.callerLocation).then((link) => {
+        setVSCodeLink(link)
+      })
+    }
+  }, [log.callerLocation])
+
+  return vsCodeLink;
+}
 
 const ErrorLog = ({ log }: { log: MizuLog }) => {
   const description = `${log.message.message}`;
@@ -92,7 +104,7 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
   const [vsCodeLink, setVSCodeLink] = useState<string | null>(null);
   useEffect(() => {
     if (stack) {
-      getVSCodeLink({ stack }).then((link) => {
+      getVSCodeLinkFromError({ stack }).then((link) => {
         setVSCodeLink(link)
       })
     }
@@ -131,9 +143,20 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
 
 const InfoLog = ({ log }: { log: MizuLog }) => {
   const description = `${log.message}`
+  const vsCodeLink = useCallerLocation(log);
   return (
     <LogCard>
       <LogDetailsHeader eventName="console.log" log={log} description={""} />
+
+      {vsCodeLink && (
+        <div className="mt-2 flex justify-end">
+          <Button size="sm">
+            <CodeIcon className="mr-2" />
+            <a href={vsCodeLink}>Go to Code</a>
+          </Button>
+        </div>
+      )}
+
       <div className="mt-2 font-sans">
         {log.message}
       </div>

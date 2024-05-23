@@ -1,0 +1,1 @@
+ALTER TABLE "mizu_logs" ADD COLUMN "caller_location" jsonb;

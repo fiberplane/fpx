@@ -25,6 +25,11 @@ export type MizuLog =
     message: string;
     createdAt: string;
     args?: JsonValue;
+    callerLocation?: null | {
+      file: string;
+      line: string;
+      column: string;
+    },
     log: unknown;
   };
 
@@ -51,6 +56,9 @@ export const transformToLog = (l: unknown): MizuLog => {
       level: l.level,
       message: l.message,
       args: l.args,
+      callerLocation: "caller_location" in l &&
+        l.caller_location && typeof l.caller_location === "object" &&
+        "file" in l.caller_location && typeof l.caller_location.file === "string" ? l.caller_location : null,
       createdAt: l.created_at,
     };
   }
@@ -62,6 +70,9 @@ export const transformToLog = (l: unknown): MizuLog => {
     message: "COULD_NOT_PARSE",
     createdAt: l && typeof l === "object" && "created_at" in l && typeof l.created_at === "string" ? l.created_at : "",
     args: l && typeof l === "object" && "args" in l && isJsonValue(l.args) ? l.args : null,
+    callerLocation: l && typeof l === "object" && "caller_location" in l &&
+      l.caller_location && typeof l.caller_location === "object" &&
+      "file" in l.caller_location && typeof l.caller_location.file === "string" ? l.caller_location : null,
     log: l,
   };
 };
