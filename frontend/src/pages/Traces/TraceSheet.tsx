@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetClose,
@@ -13,7 +14,7 @@ import {
 import { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLink } from "@/queries/vscodeLinks";
 import { CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, ReactNode, useEffect, useState } from "react";
 
 export const TraceSheet = ({ trace }: { trace: MizuTrace }) => {
   return (
@@ -31,7 +32,7 @@ export const TraceSheet = ({ trace }: { trace: MizuTrace }) => {
         <TraceDetails trace={trace} />
         <SheetFooter>
           <SheetClose asChild className="mt-4">
-            <Button type="button">Close</Button>
+            <Button type="button" variant="secondary">Close</Button>
           </SheetClose>
         </SheetFooter>
       </SheetContent>
@@ -49,38 +50,42 @@ export const TraceDetails = ({ trace }: { trace: MizuTrace }) => {
   )
 }
 
+const LogCard = ({children}: { children: React.ReactNode }) => {
+  return (
+    <div className="rounded-md border mt-2 px-4 pt-2 pb-3 font-mono text-sm shadow-sm">
+      {children}
+    </div>
+  )
+}
+
 const RequestLog = ({ log }: { log: MizuLog }) => {
-  const message = `Incoming Request: ${log.message.method} ${log.message.path}`
+  const description = `${log.message.method} ${log.message.path}`
 
   return (
-    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
-      <LogDetailsHeader log={log} />
-
-      <LogDetailsMainMessage message={message} />
-
-      <div className="mt-4">
+    <LogCard>
+      <LogDetailsHeader log={log} eventName="Incoming Request" description={description} />
+      <div className="mt-2">
         <KeyValueGrid data={log.message} />
       </div>
-    </div>
+    </LogCard>
   )
 }
 
 const ResponseLog = ({ log }: { log: MizuLog }) => {
-  const message = `Outgoing Response: ${log.message.status} ${log.message.method} ${log.message.path}
+  const description = `${log.message.status} ${log.message.method} ${log.message.path}
 `
   return (
-    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
-      <LogDetailsHeader log={log} />
-      <LogDetailsMainMessage message={message} />
-      <div className="mt-4">
+    <LogCard>
+      <LogDetailsHeader eventName="Outgoing Response"  log={log} description={description}  />
+      <div className="mt-2">
         <KeyValueGrid data={log.message} />
       </div>
-    </div>
+    </LogCard>
   )
 }
 
 const ErrorLog = ({ log }: { log: MizuLog }) => {
-  const message = `Error: ${log.message.message}`;
+  const description = `${log.message.message}`;
   const magicSuggestion = log.message?.message === "process is not defined" ? "Change process.env to c.env" : null;
 
   const stack = log.message.stack;
@@ -95,17 +100,16 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
 
 
   return (
-    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
-      <LogDetailsHeader log={log} />
+    <LogCard>
+      <LogDetailsHeader eventName="Error" log={log} description={description} />
 
       <div>
-        <LogDetailsMainMessage message={message} />
         {magicSuggestion && (
           <MagicSuggestion suggestion={magicSuggestion} />
         )}
 
         {vsCodeLink && (
-          <div className="mt-2">
+          <div className="mt-2 flex justify-end">
             <Button size="sm">
               <CodeIcon className="mr-2" />
               <a href={vsCodeLink}>Go to Code</a>
@@ -121,85 +125,98 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
           {log.message.stack}
         </div>
       </div>
-    </div>
+    </LogCard>
   )
 }
 
 const InfoLog = ({ log }: { log: MizuLog }) => {
+  const description = `${log.message}`
   return (
-    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
-      <LogDetailsHeader log={log} />
-      <div>
-        Info: {log.message}
+    <LogCard>
+      <LogDetailsHeader eventName="console.log" log={log} description={""} />
+      <div className="mt-2 font-sans">
+        {log.message}
       </div>
-    </div>
+      <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+        {JSON.stringify(log.args, null, 2)}
+      </div>
+    </LogCard>
   )
 }
 
-const MagicSuggestion = ({ suggestion }: { suggestion: string }) => {
+const MagicSuggestion = ({ suggestion, children }: { suggestion: string; children?: ReactNode  }) => {
   return (
-    <div className="font-sans rounded-md border mt-2 px-4 py-2 text-sm shadow-sm">
+    <div className="font-sans rounded-lg border border-purple-400 bg-purple-50 mt-4 px-4 py-3 text-sm shadow-md">
       <div className="text-left">
-        <div className="text-gray-600 flex items-center">
-          <MagicWandIcon className="mr-2"/>
-          <span className="font-semibold mr-2">Suggestion:</span> <span>{suggestion}</span>
+        <div className="text-purple-800 flex items-center">
+          <MagicWandIcon className="h-4 w-4 mr-2" /> {/* Adjusted icon size for better visual balance */}
+          <span className="font-semibold mr-2">Suggestion:</span>
+          <span>{suggestion}</span>
         </div>
       </div>
+      {children}
     </div>
-  )
+  );
 }
 
-const LogDetailsHeader = ({ log }: { log: MizuLog }) => {
+const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; description: string; log: MizuLog }) => {
   return (
-    <div className="text-right font-mono text-gray-500 w-full text-xs">
-      <span>[{log.timestamp}]</span>
-      <span className="hidden">
-        {log.traceId}
-      </span>
+    <div>
+      <div className="font-mono text-gray-500 w-full flex flex-col sm:flex-row md:space-0 justify-between items-center">
+        <div className="font-bold">
+          {eventName}
+        </div>
+        <span className="text-xs my-1 sm:my-0">[{log.timestamp}]</span>
+        <span className="hidden">
+          {log.traceId}
+        </span>
+      </div>
+      {description && (<div className="mt-1">
+        {description}
+      </div>)}
+      
     </div>
+  
   )
 };
 
-const LogDetailsMainMessage = ({ message }: { message: string }) => {
-  return (
-    <div className="font-bold">
-      {message}
-    </div>
-  )
-}
-
-type KVGridProps = { [string]: any }
+type KVGridProps = { [key: string]: any }
 const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const { lifecycle, method, path } = data; // TODO - extract these
   return (
     <Collapsible
       open={isOpen}
       onOpenChange={setIsOpen}
       className="space-y-2"
     >
-      <div className="flex items-center justify-between space-x-4">
+      <div className="flex items-center justify-between space-x-4 ">
         {/* <h4 className="text-sm font-semibold">
           Context
         </h4> */}
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm">
-            Show More
+          <Button className="group p-0 h-4 text-cyan-700" variant="link" size="sm">
+            Show {isOpen ? "Less" : "More"}
             <CaretSortIcon className="h-4 w-4" />
-            <span className="sr-only">Show More</span>
+            <span className="sr-only">Show {isOpen ? "Less" : "More"}</span>
           </Button>
         </CollapsibleTrigger>
       </div>
       <CollapsibleContent className="space-y-2">
-        <div className="grid grid-cols-3 gap-4">
+        <Separator className="my-1" />
+        <div className="flex flex-col gap-4">
           {Object.entries(data).map(([key, value]) => (
-            <Fragment key={key}>
-              <div className="col-span-1 font-mono text-gray-600">
-                {key}:
+            <div key={key}>
+              <div className="font-mono font-semibold text-gray-600">
+                {key}
               </div>
-              <div className="col-span-2 font-sans text-gray-800">
-                {JSON.stringify(value, null, 2)}
+              <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
+                {key === "env" ? <EnvGrid env={value} /> : key === "headers" ? <EnvGrid env={value} /> : typeof value === "string" ? value : JSON.stringify(value, null, 2)}
               </div>
-            </Fragment>
+              <Separator className="my-1" />
+
+            </div>
+            
           ))}
         </div>
       </CollapsibleContent>
@@ -207,6 +224,26 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
     </Collapsible>
   );
 };
+
+const EnvGrid = ({ env }: { env: Record<string, string> }) => {
+  return (
+    <div className="flex flex-col">
+      {Object.entries(env).map(([key, value]) => {
+        return (
+          <div className="mt-2 font-mono" key={key}>
+            <div className="col-span-1 font-semibold text-xs">
+              {key}
+            </div>
+            <div className="col-span-1 text-mono">
+              {value}
+            </div>
+          </div>
+          
+        )
+      })}
+    </div>
+  )
+}
 
 export const LogDetails = ({ log }: { log: MizuLog }) => {
   const { message } = log;

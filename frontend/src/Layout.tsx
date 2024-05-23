@@ -6,6 +6,7 @@ import {
   CubeIcon as Package,
   MagnifyingGlassIcon as Search,
   LayoutIcon as PanelLeft,
+  PersonIcon as UserIcon,
 } from "@radix-ui/react-icons"
 
 import {
@@ -201,12 +202,10 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                 size="icon"
                 className="overflow-hidden rounded-full"
               >
-                <Image
-                  src="/placeholder-user.jpg"
+                <UserIcon
                   width={36}
                   height={36}
-                  alt="Avatar"
-                  className="overflow-hidden rounded-full"
+                  className="overflow-hidden rounded-full text-gray-400"
                 />
               </Button>
             </DropdownMenuTrigger>
