@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { NeonDbError, neon } from "@neondatabase/serverless";
 import { drizzle } from 'drizzle-orm/neon-http';
 import { Octokit } from "octokit";
+import { Endpoints } from "@octokit/types";
 
 import { Messages } from "./components";
 
@@ -68,7 +69,12 @@ app.get("/healthcheck", (c) => {
 })
 
 
-let issuesCache;
+type Issues = Endpoints["GET /repos/{owner}/{repo}/issues"]["response"]
+let issuesCache: Issues;
+
+function validateResponse(response: unknown): response is Issues {
+	return response !== null && typeof response == "object" && "data" in response && Array.isArray(response.data)
+}
 
 app.get("/get_github_issues/:owner/:repo", async (ctx) => {
 	const octokit = new Octokit();
@@ -78,14 +84,17 @@ app.get("/get_github_issues/:owner/:repo", async (ctx) => {
 	const owner = ctx.req.param("owner");
 	const repo = ctx.req.param("repo");
 
-	const issues = await octokit.paginate(`GET /repos/${owner}/${repo}/issues`, {
+	const response = await octokit.paginate(`GET /repos/${owner}/${repo}/issues`, {
 		owner,
 		repo,
-	})
+	});
 
-	issuesCache = issues;
-
-	return ctx.json(issues);
+	if (validateResponse(response)) {
+		issuesCache = response
+		return ctx.json(issuesCache)
+	} else {
+		throw new Error("Invalid response")
+	}
 
 })
 
