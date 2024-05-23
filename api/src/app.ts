@@ -1,13 +1,16 @@
 import { Hono } from "hono";
-import { env } from 'hono/adapter'
-import { cors } from "hono/cors"
+import { env } from "hono/adapter";
+import { cors } from "hono/cors";
 import { NeonDbError, neon } from "@neondatabase/serverless";
-import { drizzle } from 'drizzle-orm/neon-http';
+import { drizzle } from "drizzle-orm/neon-http";
 import OpenAI from "openai";
+import { Endpoints } from "@octokit/types";
+import { Octokit } from "octokit";
 
 type Bindings = {
   DATABASE_URL: string;
   OPENAI_API_KEY: string;
+	GITHUB_TOKEN: string;
 };
 
 export function createApp() {
@@ -25,18 +28,41 @@ export function createApp() {
   });
 
   app.post("/v0/logs", async (c) => {
-    const { level, service, message, args, traceId, callerLocation, timestamp } = await c.req.json();
+    const {
+      level,
+      service,
+      message,
+      args,
+      traceId,
+      callerLocation,
+      timestamp,
+    } = await c.req.json();
     const sql = neon(env(c).DATABASE_URL);
     const db = drizzle(sql);
 
-    const jsonMessage = isJsonParseable(message) ? message : JSON.stringify(message);
+    const jsonMessage = isJsonParseable(message)
+      ? message
+      : JSON.stringify(message);
     const jsonArgs = isJsonParseable(args) ? args : JSON.stringify(args);
-    const jsonCallerLocation = isJsonParseable(callerLocation) ? callerLocation : JSON.stringify(callerLocation);
+    const jsonCallerLocation = isJsonParseable(callerLocation)
+      ? callerLocation
+      : JSON.stringify(callerLocation);
 
     try {
       // Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
       const mizuLevel = level === "log" ? "info" : level;
-      await sql("insert into mizu_logs (level, service, message, args, caller_location, trace_id, timestamp) values ($1, $2, $3, $4, $5, $6, $7)", [mizuLevel, service, jsonMessage, jsonArgs, jsonCallerLocation, traceId, timestamp]);
+      await sql(
+        "insert into mizu_logs (level, service, message, args, caller_location, trace_id, timestamp) values ($1, $2, $3, $4, $5, $6, $7)",
+        [
+          mizuLevel,
+          service,
+          jsonMessage,
+          jsonArgs,
+          jsonCallerLocation,
+          traceId,
+          timestamp,
+        ],
+      );
       return c.text("OK");
     } catch (err) {
       if (err instanceof NeonDbError) {
@@ -53,7 +79,7 @@ export function createApp() {
     const sql = neon(env(c).DATABASE_URL);
     const logs = await sql("SELECT * FROM mizu_logs");
     return c.json({
-      logs
+      logs,
     });
   });
 
@@ -80,7 +106,7 @@ export function createApp() {
             Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
             You are given a function and an error message.
             Provide a succinct suggestion to fix the error, or say "I need more context to help fix this".
-          `.trim()
+          `.trim(),
         },
         {
           role: "user",
@@ -89,7 +115,11 @@ export function createApp() {
             ${errorMessage}
             This error originated in the following route handler for my Hono application:
             ${handlerSourceCode}
-          `.trim().split("\n").map(l => l.trim()).join("\n")
+          `
+            .trim()
+            .split("\n")
+            .map((l) => l.trim())
+            .join("\n"),
         },
       ],
       temperature: 0,
@@ -102,10 +132,47 @@ export function createApp() {
     } = response;
 
     return c.json({
-      suggestion: message.content
+      suggestion: message.content,
     });
-  })
+  });
 
+  app.get("/healthcheck", (c) => {
+    return c.text("OK");
+  });
+
+  type OctokitResponse =
+    Endpoints["GET /repos/{owner}/{repo}/issues"]["response"];
+  type Issues = OctokitResponse["data"];
+
+  let issuesCache: Issues;
+
+  app.get("/v0/github-issues/:owner/:repo", cors(), async (ctx) => {
+    const octokit = new Octokit({
+      auth: ctx.env.GITHUB_TOKEN
+    });
+
+    if (issuesCache) {
+      console.log("Returning cached issues");
+      return ctx.json(issuesCache);
+    }
+
+    const owner = ctx.req.param("owner");
+    const repo = ctx.req.param("repo");
+
+    console.log("Fetching issues");
+
+    const response = await octokit.paginate(
+      `GET /repos/${owner}/${repo}/issues`,
+      {
+        owner,
+        repo,
+      },
+    );
+
+    issuesCache = response as Issues;
+
+    return ctx.json(issuesCache);
+  });
 
   // HACK - Route to inspect any db errors during this session
   app.get("db-errors", async (c) => {
@@ -118,7 +185,6 @@ export function createApp() {
     console.log(body);
     return c.json(body);
   });
-
 
   return app;
 }

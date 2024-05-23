@@ -1,4 +1,5 @@
 {
+	"type": "module",
   "scripts": {
     "node:dev": "tsx watch src/index.node.ts",
     "wrangler:dev": "wrangler dev src/index.worker.tsx",

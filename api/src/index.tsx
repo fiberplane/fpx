@@ -64,39 +64,6 @@ app.get("/", async (c) => {
 	return c.html(<Messages logs={logs} />);
 });
 
-app.get("/healthcheck", (c) => {
-	return c.text("OK");
-})
-
-
-type Issues = Endpoints["GET /repos/{owner}/{repo}/issues"]["response"]
-let issuesCache: Issues;
-
-function validateResponse(response: unknown): response is Issues {
-	return response !== null && typeof response == "object" && "data" in response && Array.isArray(response.data)
-}
-
-app.get("/get_github_issues/:owner/:repo", async (ctx) => {
-	const octokit = new Octokit();
-	if (issuesCache) {
-		return ctx.json(issuesCache);
-	}
-	const owner = ctx.req.param("owner");
-	const repo = ctx.req.param("repo");
-
-	const response = await octokit.paginate(`GET /repos/${owner}/${repo}/issues`, {
-		owner,
-		repo,
-	});
-
-	if (validateResponse(response)) {
-		issuesCache = response
-		return ctx.json(issuesCache)
-	} else {
-		throw new Error("Invalid response")
-	}
-
-})
 
 // HACK - Route to inspect any db errors during this session
 app.get("db-errors", async (c) => {
