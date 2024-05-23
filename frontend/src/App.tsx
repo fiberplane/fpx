@@ -11,6 +11,7 @@ export function App() {
           <Route path="/" element={<RequestsPage />} />
           <Route path="/requests" element={<RequestsPage />} />
           <Route path="/logs" element={<LogsPage />} />
+          <Route path="/packages" element={<PackagesPage />} />
         </Routes>
       </Layout>
     </Router>
