@@ -15,88 +15,105 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MizuTrace } from "@/queries/decoders";
-import { useMizulogs } from "@/queries/logs";
-import { formatDate } from "@/utils/utils";
+import { ISSUE_TABLE_ID } from "@/lib/constants";
+import { GitHubIssue } from "@/lib/types";
+import { loadIssues } from "@/queries/issues";
+import { humanReadableDate } from "@/utils/utils";
+// import { formatDate } from "@/utils/utils";
 import {
   MagnifyingGlassIcon as Search,
   ExclamationTriangleIcon,
   InfoCircledIcon,
+  CircleIcon,
 } from "@radix-ui/react-icons";
-import { useMemo } from "react";
-import { Provider } from "tinybase/ui-react";
+import { useEffect, useMemo } from "react";
+import ReactMarkdown from "react-markdown";
+import { type Store, createStore } from "tinybase/store";
+import {
+  Provider,
+  useCreateStore,
+  useSliceRowIds,
+  useTable,
+} from "tinybase/ui-react";
 
-type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
+const IssuesTable = ({ store }: { store: Store }) => {
+  // const filteredTraces = useMemo(() => {
+  //   if (filter === "all") {
+  //     return traces;
+  //   }
+  //   return traces.filter((trace) =>
+  //     trace.logs.some((log) => log.level === filter),
+  //   );
+  // }, [traces, filter]);
 
-const IssuesTable = ({
-  filter,
-  traces,
-}: { filter: LevelFilter; traces: Array<MizuTrace> }) => {
-  const filteredTraces = useMemo(() => {
-    if (filter === "all") {
-      return traces;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useMemo(async () => {
+    if (!store.hasTable("issues")) {
+      await loadIssues(store, "honojs", "hono");
     }
-    return traces.filter((trace) =>
-      trace.logs.some((log) => log.level === filter),
-    );
-  }, [traces, filter]);
+  }, []);
+
+  const issues = useTable(ISSUE_TABLE_ID, store);
+
+  console.log(issues);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // const issues = useMemo(() => {
+  //   const issues = store.getTable(ISSUE_TABLE_ID);
+  //   console.log(issues);
+  //   return issues;
+  // }, []);
+
   return (
-    <Provider>
+    <Provider store={store}>
+      {/* {JSON.stringify(issues)} */}
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="hidden w-[32px] sm:table-cell">
-              <span className="sr-only">Icon</span>
-            </TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Summary</TableHead>
-            <TableHead className="hidden md:table-cell">Timestamp</TableHead>
-            <TableHead>
-              <span className="sr-only">Actions</span>
-            </TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Opened/Closed</TableHead>
+            <TableHead>Last Update</TableHead>
+            <TableHead>Preview</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredTraces.map((t) => {
+          {Object.values(issues).map((issue: GitHubIssue) => {
             return (
-              <TableRow key={t.logs[0].id}>
-                <TableCell className="hidden sm:table-cell">
-                  {t.logs.some((t) => t.level === "error") ? (
-                    <ExclamationTriangleIcon className="h-3.5 w-3.5" />
+              <TableRow key={issue.id}>
+                <TableCell>
+                  {issue.pull_request ? (
+                    "PR"
                   ) : (
-                    <InfoCircledIcon className="h-3.5 w-3.5" />
+                    <CircleIcon
+                      className={`${
+                        issue.state === "open"
+                          ? "text-green-800"
+                          : "text-purple-800"
+                      }`}
+                    />
                   )}
                 </TableCell>
-                <TableCell>{t.status}</TableCell>
-                <TableCell className="font-medium">{t.description}</TableCell>
-
-                <TableCell className="hidden md:table-cell font-mono text-xs">
-                  {formatDate(new Date(t.logs[0].timestamp))} to{" "}
-                  {formatDate(new Date(t.logs[t.logs.length - 1].timestamp))}
+                <TableCell className="truncate">{issue.title}</TableCell>
+                <TableCell>
+                  {issue.closed_at
+                    ? `closed ${humanReadableDate(issue.closed_at)}`
+                    : `opened ${humanReadableDate(issue.created_at)}`}
                 </TableCell>
-                <TableCell className="flex items-center space-x-2">
-                  {/* <DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button
-									aria-haspopup="true"
-									size="icon"
-									variant="ghost"
-								>
-									<MoreHorizontal className="h-4 w-4" />
-									<span className="sr-only">Toggle menu</span>
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuLabel>Actions</DropdownMenuLabel>
-								<DropdownMenuItem>Edit</DropdownMenuItem>
-								<DropdownMenuItem>Delete</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu> */}
+                <TableCell>{`last update ${humanReadableDate(
+                  issue.updated_at,
+                )}`}</TableCell>
+                <TableCell className="max-w-[500px] h-10 truncate">
+                  <ReactMarkdown
+                    unwrapDisallowed
+                    allowedElements={["code", "strong", "emphasis"]}
+                  >
+                    {issue.body}
+                  </ReactMarkdown>
                 </TableCell>
               </TableRow>
             );
           })}
-          {/* {logs.map(l => <LogRow log={l} key={l.id} />)} */}
         </TableBody>
       </Table>
     </Provider>
@@ -118,6 +135,9 @@ export const PackagesPage = () => {
       description: "Our favorite database",
     },
   ];
+
+  const issuesStore = useCreateStore(createStore);
+
   return (
     <>
       <div className="space-y-2">
@@ -133,7 +153,7 @@ export const PackagesPage = () => {
         <div className="col-span-1 p-4 space-y-2">
           {deps.map((dep) => {
             return (
-              <Card>
+              <Card key={dep.title}>
                 <CardHeader>
                   <CardTitle>{dep.title}</CardTitle>
                   <CardDescription>{dep.description}</CardDescription>
@@ -156,7 +176,7 @@ export const PackagesPage = () => {
               <CardTitle>Results in your dependencies</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* <IssuesTable traces={traces} filter="all" /> */}
+              <IssuesTable store={issuesStore} />
             </CardContent>
           </Card>
         </div>

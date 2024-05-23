@@ -1,10 +1,25 @@
-import { useEffect, useState } from "react";
-import { Endpoints } from "@octokit/types";
+// import { useEffect, useState } from "react";
+import { ISSUE_TABLE_ID } from "@/lib/constants";
+import type { GitHubIssues } from "@/lib/types";
+import type { Store } from "tinybase/store";
 
-type Issue = Endpoints["GET /repos/{owner}/{repo}/issues"]["response"];
+export async function loadIssues(store: Store, owner: string, repo: string) {
+  try {
+    const response = await fetch(
+      `http://localhost:8788/v0/github-issues/${owner}/${repo}`,
+      { mode: "cors" },
+    );
 
-export function useIssues() {
-  const [issues, setIssues] = useState([] as Array<Issue>);
-	useEffect(() => {}, []);
-  return { issues };
+    const issues: GitHubIssues = await response.json();
+
+    store.transaction(() => {
+      for (const issue of issues) {
+        if (!issue) continue;
+        //FIXME: need to remove null values in issue before proceeding
+        store.setRow(ISSUE_TABLE_ID, issue.number.toString(), issue);
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
 }
