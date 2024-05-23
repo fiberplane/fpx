@@ -1,3 +1,5 @@
+import ReactMarkdown from 'react-markdown';
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -53,6 +55,7 @@ function useHandlerSourceCode(source: string, handler: string) {
 
 function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
   const [response, setResponse] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const query = useCallback(() => {
     if (!handlerSourceCode) {
       return;
@@ -64,7 +67,8 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
       handlerSourceCode,
       errorMessage,
     });
-    const fetchSourceLocation = async () => {
+    const fetchAiAnalysis = async () => {
+      setLoading(true);
       try {
         const r = await fetch(`http://localhost:8788/v0/analyze-error`, { method: "POST", body }).then(r => {
           if (!r.ok) {
@@ -72,17 +76,19 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
           }
           return r.json()
         });
-        setResponse(r);
+        setResponse(r?.suggestion);
+        setLoading(false);
       } catch (err) {
         console.debug("Could not fetch source location from source map", err);
+        setLoading(false);
         return null;
       }
     }
 
-    fetchSourceLocation();
+    fetchAiAnalysis();
   }, [handlerSourceCode, errorMessage]);
 
-  return { response, query };
+  return { response, loading, query };
 }
 
 export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
@@ -223,7 +229,7 @@ const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?
     callerLocation: shouldFindCallerLocation ? log.callerLocation : null
   });
 
-  const { response: aiResponse, query: execAiQuery } = useAiAnalysis(handlerSourceCode ?? "", log.message.message);
+  const { response: aiResponse, query: execAiQuery, loading: aiLoading } = useAiAnalysis(handlerSourceCode ?? "", log.message.message);
 
   useEffect(() => {
     if (stack) {
@@ -234,6 +240,7 @@ const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?
   }, [stack])
 
   const [isOpen, setIsOpen] = useState(false);
+
   return (
     <LogCard>
       <LogDetailsHeader eventName="Error" log={log} description={description} />
@@ -244,7 +251,7 @@ const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?
         )}
 
         {aiResponse && (
-          <MagicSuggestion suggestion={aiResponse} />
+          <AiMagicSuggestion suggestion={aiResponse} />
         )}
 
         {(vsCodeLink || vsCodeLinkAlt) && (
@@ -339,6 +346,30 @@ const MagicSuggestion = ({ suggestion, children }: { suggestion: ReactNode | str
     </div>
   );
 }
+
+
+const AiMagicSuggestion = ({ suggestion, children }: { suggestion: string; children?: ReactNode }) => {
+  return (
+    <div className="font-sans rounded-lg border border-purple-400 bg-purple-50 mt-4 px-2 py-3 text-sm shadow-md overflow-auto">
+      <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2">
+        <div className="text-purple-800 flex items-center">
+          <MagicWandIcon className="h-3.5 w-3.5" /> {/* Adjusted icon size for better visual balance */}
+        </div>
+        <div className="text-left flex items-center">
+          <div className="text-purple-800">
+            <span className="font-semibold mr-2">AI Suggestion</span>
+          </div>
+        </div>
+        <div />
+        <div className="text-gray-700">
+          <ReactMarkdown>{suggestion}</ReactMarkdown>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 
 const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; description: string; log: MizuLog }) => {
   return (
