@@ -18,6 +18,33 @@ import { CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
 export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
+  const request = trace.logs.find(log => log.message.lifecycle === "request");
+  const response = trace.logs.find(log => log.message.lifecycle === "response");
+  const handler = response?.message?.handler;
+  const source = request?.message?.file
+  const [f, sf] = useState<string | null>(null);
+  useEffect(() => {
+    const query = new URLSearchParams({
+      source,
+      handler,
+    });
+    const fetchSourceLocation = async () => {
+      try {
+        const pos = await fetch(`http://localhost:8788/v0/source-function?${query.toString()}`, { method: "POST" }).then(r => {
+          if (!r.ok) {
+            throw new Error(`Failed to fetch source location from source map: ${r.status}`);
+          }
+          return r.json().then(r => sf(r.functionText))
+        });
+        return pos;
+      } catch (err) {
+        console.debug("Could not fetch source location from source map", err);
+        return null;
+      }
+    }
+    
+    fetchSourceLocation();
+  }, [handler])
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -30,6 +57,11 @@ export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
             Inspect logs from the request here
           </SheetDescription>
         </SheetHeader>
+        {/* <div className="text-mono">
+          <code className="whitespace-break-spaces">
+            {f}
+          </code>
+        </div> */}
         <TraceDetails trace={trace} />
         <SheetFooter>
           <SheetClose asChild className="mt-4">
@@ -113,6 +145,13 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
 
   const stack = log.message.stack;
   const [vsCodeLink, setVSCodeLink] = useState<string | null>(null);
+
+  const shouldFindCallerLocation = !stack;
+  const vsCodeLinkAlt = useCallerLocation({
+    ...log,
+    callerLocation: shouldFindCallerLocation ? log.callerLocation : null
+  });
+
   useEffect(() => {
     if (stack) {
       getVSCodeLinkFromError({ stack }).then((link) => {
@@ -131,11 +170,11 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
           <MagicSuggestion suggestion={magicSuggestion} />
         )}
 
-        {vsCodeLink && (
+        {(vsCodeLink || vsCodeLinkAlt) && (
           <div className="mt-2 flex justify-end">
             <Button size="sm" className="w-full">
               <CodeIcon className="mr-2" />
-              <a href={vsCodeLink}>Go to Code</a>
+              <a href={vsCodeLink || vsCodeLinkAlt}>Go to Code</a>
             </Button>
           </div>
         )}

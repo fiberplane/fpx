@@ -36,8 +36,18 @@ async function fetchPositionFromSourceMap(sourceMapLocation: string, line: strin
     line: line,
     column: column
   });
-  const pos = await fetch(`http://localhost:8788/v0/source?${query.toString()}`).then(r => r.json());
-  return pos;
+  try {
+    const pos = await fetch(`http://localhost:8788/v0/source?${query.toString()}`).then(r => {
+      if (!r.ok) {
+        throw new Error(`Failed to fetch source location from source map: ${r.status}`);
+      }
+      return r.json()
+    });
+    return pos;
+  } catch (err) {
+    console.debug("Could not fetch source location from source map", err);
+    return null;
+  }
 }
 
 function parseStackTrace(stack: string) {

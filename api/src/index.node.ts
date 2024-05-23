@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs'
 import { createApp } from './app'
 import { cors } from 'hono/cors';
 import { SourceMapConsumer } from 'source-map';
+import { findSourceFunction } from './find-source-function';
 
 config({ path: '.dev.vars' });
 
@@ -30,10 +31,21 @@ app.get("/v0/source", cors(), async (c) => {
 
     return c.json(pos);
   } catch (err) {
-    console.error("Could not read source file", err?.name);
+    console.error("Could not read source file", err?.message);
     return c.json({ error: "Error reading file", name: err?.name, message: err?.message }, 500);
   }
+})
 
+app.post("/v0/source-function", cors(), async (c) => {
+  const { handler, source } = c.req.query();
+
+  try {
+    const functionText = await findSourceFunction(source, handler);
+    return c.json({ functionText });
+  } catch (err) {
+    console.error("Could not find function in source", err?.message);
+    return c.json({ error: "Error finding function", name: err?.name, message: err?.message }, 500);
+  }
 })
 
 const port = 8788
