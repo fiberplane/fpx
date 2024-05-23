@@ -15,7 +15,7 @@ import {
 import { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
 import { CaretDownIcon, CaretRightIcon, CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
-import { Fragment, ReactNode, useEffect, useState } from "react";
+import { Fragment, ReactNode, useCallback, useEffect, useState } from "react";
 
 function useHandlerSourceCode(source: string, handler: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);
@@ -52,7 +52,37 @@ function useHandlerSourceCode(source: string, handler: string) {
 }
 
 function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
-  // TODO
+  const [response, setResponse] = useState<string | null>(null);
+  const query = useCallback(() => {
+    if (!handlerSourceCode) {
+      return;
+    }
+    if (!errorMessage) {
+      return;
+    }
+    const body = JSON.stringify({
+      handlerSourceCode,
+      errorMessage,
+    });
+    const fetchSourceLocation = async () => {
+      try {
+        const r = await fetch(`http://localhost:8788/v0/analyze-error`, { method: "POST", body }).then(r => {
+          if (!r.ok) {
+            throw new Error(`Failed to fetch source location from source map: ${r.status}`);
+          }
+          return r.json()
+        });
+        setResponse(r);
+      } catch (err) {
+        console.debug("Could not fetch source location from source map", err);
+        return null;
+      }
+    }
+
+    fetchSourceLocation();
+  }, [handlerSourceCode, errorMessage]);
+
+  return { response, query };
 }
 
 export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
@@ -78,7 +108,7 @@ export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
             {f}
           </code>
         </div> */}
-        <TraceDetails trace={trace} />
+        <TraceDetails trace={trace} handlerSourceCode={handlerSourceCode ?? ""} />
         <SheetFooter>
           <SheetClose asChild className="mt-4">
             <Button type="button" variant="secondary">Close</Button>
@@ -89,11 +119,11 @@ export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
   )
 };
 
-export const TraceDetails = ({ trace }: { trace: MizuTrace }) => {
+export const TraceDetails = ({ trace, handlerSourceCode }: { trace: MizuTrace; handlerSourceCode: string; }) => {
   return (
     <>
       {trace.logs.map(log => (
-        <LogDetails log={log} key={log.id} />
+        <LogDetails log={log} key={log.id} handlerSourceCode={handlerSourceCode} />
       ))}
     </>
   )
@@ -113,7 +143,7 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
   return (
     <LogCard>
       <LogDetailsHeader log={log} eventName="Incoming Request" description={description} />
-     
+
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
       </div>
@@ -180,7 +210,7 @@ function getMagicSuggesttion({ log, trace }: { log: MizuLog, trace?: MizuTrace }
   return null;
 }
 
-const ErrorLog = ({ log }: { log: MizuLog }) => {
+const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?: string | null }) => {
   const description = `${log.message.message}`;
   const magicSuggestion = getMagicSuggesttion({ log });
 
@@ -192,6 +222,8 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
     ...log,
     callerLocation: shouldFindCallerLocation ? log.callerLocation : null
   });
+
+  const { response: aiResponse, query: execAiQuery } = useAiAnalysis(handlerSourceCode ?? "", log.message.message);
 
   useEffect(() => {
     if (stack) {
@@ -211,6 +243,10 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
           <MagicSuggestion suggestion={magicSuggestion} />
         )}
 
+        {aiResponse && (
+          <MagicSuggestion suggestion={aiResponse} />
+        )}
+
         {(vsCodeLink || vsCodeLinkAlt) && (
           <div className="mt-2 flex justify-end">
             <Button size="sm" className="w-full">
@@ -220,6 +256,14 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
           </div>
         )}
 
+        {(handlerSourceCode && log.message.message) && (
+          <div className="mt-2 flex justify-end">
+            <Button size="sm" className="w-full" variant="secondary" onClick={execAiQuery}>
+              <MagicWandIcon className="mr-2" />
+              Do AI stuff
+            </Button>
+          </div>
+        )}
 
         <Collapsible
           open={isOpen}
@@ -385,7 +429,7 @@ const EnvGrid = ({ env }: { env: Record<string, string> }) => {
   )
 }
 
-export const LogDetails = ({ log }: { log: MizuLog }) => {
+export const LogDetails = ({ log, handlerSourceCode }: { log: MizuLog; handlerSourceCode: string; }) => {
   const { message } = log;
 
   if (message?.lifecycle === "request") {
@@ -397,7 +441,7 @@ export const LogDetails = ({ log }: { log: MizuLog }) => {
   }
 
   if (typeof message === "object" && "message" in message) {
-    return <ErrorLog log={log} />
+    return <ErrorLog handlerSourceCode={handlerSourceCode} log={log} />
   }
 
   if (typeof message === "string") {

@@ -6,6 +6,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 
 type Bindings = {
   DATABASE_URL: string;
+  OPENAI_API_KEY: string;
 };
 
 export function createApp() {
@@ -55,6 +56,11 @@ export function createApp() {
     });
   });
 
+  app.post("/v0/analyze-error", cors(), async (c) => {
+    const { handlerSourceCode, errorMessage } = await c.req.json();
+    // TODO
+    return c.json("OK");
+  })
 
 
   // HACK - Route to inspect any db errors during this session
@@ -68,6 +74,7 @@ export function createApp() {
     console.log(body);
     return c.json(body);
   });
+
 
   return app;
 }
