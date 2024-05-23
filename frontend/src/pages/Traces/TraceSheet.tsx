@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
@@ -122,7 +123,7 @@ const ErrorLog = ({ log }: { log: MizuLog }) => {
 
         {vsCodeLink && (
           <div className="mt-2 flex justify-end">
-            <Button size="sm">
+            <Button size="sm" className="w-full">
               <CodeIcon className="mr-2" />
               <a href={vsCodeLink}>Go to Code</a>
             </Button>
@@ -150,7 +151,7 @@ const InfoLog = ({ log }: { log: MizuLog }) => {
 
       {vsCodeLink && (
         <div className="mt-2 flex justify-end">
-          <Button size="sm">
+          <Button size="sm" className="w-full">
             <CodeIcon className="mr-2" />
             <a href={vsCodeLink}>Go to Code</a>
           </Button>
@@ -186,8 +187,10 @@ const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; 
   return (
     <div>
       <div className="font-mono text-gray-500 w-full flex flex-col sm:flex-row md:space-0 justify-between items-center">
-        <div className="font-bold">
-          {eventName}
+        <div className="font-bold" style={{ marginLeft: "-.625rem"}}> { /* HACK - Do this properly eventually */}
+          <Badge className="mr-2" variant="secondary">
+            {eventName}
+          </Badge>
         </div>
         <span className="text-xs my-1 sm:my-0">[{log.timestamp}]</span>
         <span className="hidden">
