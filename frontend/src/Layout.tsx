@@ -1,4 +1,5 @@
 import type React from 'react';
+import { NavLink, Link as RouterLink } from 'react-router-dom';
 import {
   ActivityLogIcon,
   DashboardIcon,
@@ -6,7 +7,8 @@ import {
   CubeIcon as Package,
   MagnifyingGlassIcon as Search,
   LayoutIcon as PanelLeft,
-  PersonIcon as UserIcon,
+  AvatarIcon as UserIcon,
+  MixerHorizontalIcon,
 } from "@radix-ui/react-icons"
 
 import {
@@ -33,16 +35,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { AnchorHTMLAttributes, SVGProps, forwardRef } from 'react';
-
-
-// Using forwardRef to allow the Link component to accept a ref
-const Link = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<HTMLAnchorElement>>(
-  (props, ref) => <a ref={ref} {...props} />
-);
-Link.displayName = "Link";
-// biome-ignore lint/a11y/useAltText: shush biome
-const Image = (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />
+import { SVGProps } from 'react';
 
 const WaveIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
   <path
@@ -60,58 +53,78 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
         <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-          <Link
-            href="#"
+          <NavLink
+            to="#"
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
           >
             <WaveIcon className="h-4 w-4 transition-all group-hover:scale-110" />
             <span className="sr-only">Mizu</span>
-          </Link>
+          </NavLink>
           <Tooltip>
             <TooltipTrigger>
-              <Link
-                href="#"
+              <RouterLink
+                to="/"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <DashboardIcon className="h-5 w-5" />
                 <span className="sr-only">Mizu</span>
-              </Link>
+              </RouterLink>
             </TooltipTrigger>
             <TooltipContent side="right">Mizu</TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="#"
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
-              >
-                <ActivityLogIcon className="h-5 w-5" />
-                <span className="sr-only">Logs</span>
-              </Link>
-            </TooltipTrigger>
+            <NavLink
+              to="/logs"
+              className={({ isActive, }) => {
+                return `${isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"} flex h-9 w-9 items-center justify-center rounded-lg text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8`
+              }}
+            >
+              <TooltipTrigger asChild>
+                <div>
+                  <ActivityLogIcon className="h-5 w-5" />
+                  <span className="sr-only">Logs</span>
+                </div>
+              </TooltipTrigger>
+            </NavLink>
             <TooltipContent side="right">Logs</TooltipContent>
           </Tooltip>
-          <Tooltip>
+          {/* <Tooltip>
             <TooltipTrigger asChild>
-              <Link
-                href="#"
+              <NavLink
+                to="#"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <LineChart className="h-5 w-5" />
                 <span className="sr-only">Metrics</span>
-              </Link>
+              </NavLink>
             </TooltipTrigger>
             <TooltipContent side="right">Metrics</TooltipContent>
+          </Tooltip> */}
+          <Tooltip>
+            <NavLink
+              to="/traces"
+              className={({ isActive, }) => {
+                return `${isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"} flex h-9 w-9 items-center justify-center rounded-lg text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8`
+              }}
+            >
+              <TooltipTrigger asChild>
+                <div>
+                  <MixerHorizontalIcon className="h-5 w-5" />
+                  <span className="sr-only">Requests</span>
+                </div>
+              </TooltipTrigger>
+            </NavLink>
+            <TooltipContent side="right">Requests</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Link
-                href="#"
+              <NavLink
+                to="#"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <Package className="h-5 w-5" />
                 <span className="sr-only">Packages</span>
-              </Link>
+              </NavLink>
             </TooltipTrigger>
             <TooltipContent side="right">Packages</TooltipContent>
           </Tooltip>
@@ -129,42 +142,41 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
-                <Link
-                  href="#"
+                <NavLink
+                  to="/"
                   className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                 >
                   <WaveIcon className="h-5 w-5 transition-all group-hover:scale-110" />
-                  <span className="sr-only">Acme Inc</span>
-                </Link>
-                <Link
-                  href="#"
+                  <span className="sr-only">Mizu</span>
+                </NavLink>
+                <NavLink
+                  to="/"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <DashboardIcon className="h-5 w-5" />
                   Mizu
-                </Link>
-                <Link
-                  href="#"
+                </NavLink>
+                <NavLink
+                  to="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <ActivityLogIcon className="h-5 w-5" />
                   Logs
-                </Link>
-                <Link
-                  href="#"
+                </NavLink>
+                <NavLink
+                  to="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <LineChart className="h-5 w-5" />
                   Metrics
-                </Link>
-                <Link
-                  href="#"
+                </NavLink>
+                <NavLink
+                  to="#"
                   className="flex items-center gap-4 px-2.5 text-foreground"
                 >
                   <Package className="h-5 w-5" />
                   Packages
-                </Link>
-
+                </NavLink>
               </nav>
             </SheetContent>
           </Sheet>
@@ -172,13 +184,13 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="#">Dashboard</Link>
+                  <RouterLink to="/">Dashboard</RouterLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="#">Requests</Link>
+                  <RouterLink to="/traces">Requests</RouterLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

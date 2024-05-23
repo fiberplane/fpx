@@ -30,7 +30,7 @@ app.get("/v0/source", cors(), async (c) => {
 
     return c.json(pos);
   } catch (err) {
-    console.error(err);
+    console.error("Could not read source file", err?.name);
     return c.json({ error: "Error reading file", name: err?.name, message: err?.message }, 500);
   }
 

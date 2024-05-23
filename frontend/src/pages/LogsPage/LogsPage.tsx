@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import {
   FileIcon as File,
   ListBulletIcon as ListFilter, // FIXME
@@ -111,7 +111,7 @@ const LogsTable = ({ logs, filter, traces }: { logs: MockLog[], filter: LevelFil
                 <DropdownMenuItem>Delete</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <LogSheet log={l} trace={traces.find(ts => ts.some(t => t.traceId === l.traceId))} />
+            <LogSheet log={l} trace={traces.find(ts => ts.logs.some(t => t.traceId === l.traceId))} />
           </TableCell>
         </TableRow>
       })}
@@ -122,7 +122,10 @@ const LogsTable = ({ logs, filter, traces }: { logs: MockLog[], filter: LevelFil
 
 export function LogsPage() {
   const { logs, traces } = useMizulogs();
-  console.log("TRACES", traces)
+  useEffect(() => {
+    console.log("TRACES", traces)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [traces.length])
   // const logs = useMockLogs();
   return (
     <Tabs defaultValue="error">

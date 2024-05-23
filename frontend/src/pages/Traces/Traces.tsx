@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import {
   FileIcon as File,
   ListBulletIcon as ListFilter, // FIXME
@@ -120,7 +120,10 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
 
 export function TracesPage() {
   const { traces } = useMizulogs();
-  console.log("TRACES", traces)
+  useEffect(() => {
+    console.log("TRACES", traces)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [traces.length])
   return (
     <Tabs defaultValue="error">
       <div className="flex items-center">
