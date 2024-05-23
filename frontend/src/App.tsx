@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./Layout";
 import { LogsPage } from "./pages/LogsPage/LogsPage";
 import { RequestsPage } from "./pages/Requests/Requests";
+import { PackagesPage } from "./pages/Packages/Packages";
 
 export function App() {
   return (

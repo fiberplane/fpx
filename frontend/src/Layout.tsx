@@ -119,7 +119,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
           <Tooltip>
             <TooltipTrigger asChild>
               <NavLink
-                to="#"
+                to="/packages"
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <Package className="h-5 w-5" />
@@ -171,7 +171,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                   Metrics
                 </NavLink>
                 <NavLink
-                  to="#"
+                  to="/packages"
                   className="flex items-center gap-4 px-2.5 text-foreground"
                 >
                   <Package className="h-5 w-5" />
