@@ -102,7 +102,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
           </Tooltip> */}
           <Tooltip>
             <NavLink
-              to="/traces"
+              to="/requests"
               className={({ isActive, }) => {
                 return `${isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"} flex h-9 w-9 items-center justify-center rounded-lg text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8`
               }}
@@ -190,7 +190,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <RouterLink to="/traces">Requests</RouterLink>
+                  <RouterLink to="/requests">Requests</RouterLink>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

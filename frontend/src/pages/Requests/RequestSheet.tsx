@@ -17,7 +17,7 @@ import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queri
 import { CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 
-export const TraceSheet = ({ trace }: { trace: MizuTrace }) => {
+export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -97,9 +97,19 @@ function useCallerLocation(log: MizuLog) {
   return vsCodeLink;
 }
 
+function getMagicSuggesttion({ log, trace }: { log: MizuLog, trace?: MizuTrace }) {
+  if (log.message?.message === "process is not defined") {
+    return "Change process.env to c.env"
+  }
+  if (log.message?.message === "No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?") {
+    return "Add a database connection string to `.dev.vars`. If you already did this, make sure to restart your dev server!"
+  }
+  return null;
+}
+
 const ErrorLog = ({ log }: { log: MizuLog }) => {
   const description = `${log.message.message}`;
-  const magicSuggestion = log.message?.message === "process is not defined" ? "Change process.env to c.env" : null;
+  const magicSuggestion = getMagicSuggesttion({ log });
 
   const stack = log.message.stack;
   const [vsCodeLink, setVSCodeLink] = useState<string | null>(null);
@@ -148,6 +158,12 @@ const InfoLog = ({ log }: { log: MizuLog }) => {
   return (
     <LogCard>
       <LogDetailsHeader eventName="console.log" log={log} description={""} />
+      <div className="mt-2 font-sans">
+        {log.message}
+      </div>
+      <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+        {JSON.stringify(log.args, null, 2)}
+      </div>
 
       {vsCodeLink && (
         <div className="mt-2 flex justify-end">
@@ -157,24 +173,24 @@ const InfoLog = ({ log }: { log: MizuLog }) => {
           </Button>
         </div>
       )}
-
-      <div className="mt-2 font-sans">
-        {log.message}
-      </div>
-      <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
-        {JSON.stringify(log.args, null, 2)}
-      </div>
     </LogCard>
   )
 }
 
 const MagicSuggestion = ({ suggestion, children }: { suggestion: string; children?: ReactNode  }) => {
   return (
-    <div className="font-sans rounded-lg border border-purple-400 bg-purple-50 mt-4 px-4 py-3 text-sm shadow-md">
-      <div className="text-left">
+    <div className="font-sans rounded-lg border border-purple-400 bg-purple-50 mt-4 px-2 py-3 text-sm shadow-md">
+      <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2">
         <div className="text-purple-800 flex items-center">
-          <MagicWandIcon className="h-4 w-4 mr-2" /> {/* Adjusted icon size for better visual balance */}
-          <span className="font-semibold mr-2">Suggestion:</span>
+          <MagicWandIcon className="h-3.5 w-3.5" /> {/* Adjusted icon size for better visual balance */}
+        </div>
+        <div className="text-left flex items-center">
+          <div className="text-purple-800">
+            <span className="font-semibold mr-2">Suggestion</span>
+          </div>
+        </div>
+        <div/>
+        <div className="text-purple-800">
           <span>{suggestion}</span>
         </div>
       </div>

@@ -44,7 +44,7 @@ import {
 
 import { formatDate } from "@/utils/utils"
 
-import { TraceSheet, } from "./TraceSheet"
+import { RequestSheet, } from "./RequestSheet"
 import { MessageJson } from "./MessageJson"
 import { useMizulogs } from "@/queries/logs"
 import { MizuTrace } from "@/queries/decoders"
@@ -52,7 +52,7 @@ import { MizuTrace } from "@/queries/decoders"
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
-const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<MizuTrace> }) => {
+const RequestsTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<MizuTrace> }) => {
   const filteredTraces = useMemo(() => {
     if (filter === "all") {
       return traces
@@ -92,7 +92,7 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
             {formatDate(new Date(t.logs[0].timestamp))} to {formatDate(new Date(t.logs[t.logs.length - 1].timestamp))}
           </TableCell>
           <TableCell className="flex items-center space-x-2">
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   aria-haspopup="true"
@@ -108,8 +108,8 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
                 <DropdownMenuItem>Edit</DropdownMenuItem>
                 <DropdownMenuItem>Delete</DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
-            <TraceSheet trace={t} />
+            </DropdownMenu> */}
+            <RequestSheet trace={t} />
           </TableCell>
         </TableRow>
       })}
@@ -118,7 +118,7 @@ const TracesTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<Mi
   </Table>)
 }
 
-export function TracesPage() {
+export function RequestsPage() {
   const { traces } = useMizulogs();
   useEffect(() => {
     console.log("TRACES", traces)
@@ -172,7 +172,7 @@ export function TracesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TracesTable traces={traces} filter="all" />
+            <RequestsTable traces={traces} filter="all" />
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
@@ -191,7 +191,7 @@ export function TracesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TracesTable traces={traces} filter="error" />
+            <RequestsTable traces={traces} filter="error" />
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
