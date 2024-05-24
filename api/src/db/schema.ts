@@ -6,6 +6,7 @@ import {
   jsonb,
 	timestamp,
 	text,
+	boolean,
 } from "drizzle-orm/pg-core";
 
 // declaring enum in database
@@ -13,6 +14,7 @@ export const levelEnum = pgEnum("level", [
 	"error",
 	"warning",
 	"info",
+	"debug",
 ]);
 
 export const mizuLogs = pgTable("mizu_logs", {
@@ -22,6 +24,7 @@ export const mizuLogs = pgTable("mizu_logs", {
 	traceId: text("trace_id"),
 	service: text("service"),
   message: jsonb("message"),
+	ignored: boolean("ignored").default(false),
 	args: jsonb("args"), // NOTE - Should only be present iff message is a string
 	callerLocation: jsonb("caller_location"),
 	createdAt: timestamp("created_at").notNull().defaultNow(),

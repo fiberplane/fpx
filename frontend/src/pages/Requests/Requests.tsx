@@ -1,12 +1,12 @@
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   FileIcon as File,
-  ListBulletIcon as ListFilter, // FIXME
+  MoonIcon,
+  // ListBulletIcon as ListFilter, // FIXME
   ExclamationTriangleIcon,
   InfoCircledIcon
 } from "@radix-ui/react-icons"
 
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -15,14 +15,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+// import {
+//   DropdownMenu,
+//   DropdownMenuCheckboxItem,
+//   DropdownMenuContent,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -41,7 +41,7 @@ import { formatDate } from "@/utils/utils"
 import { useMizulogs } from "@/queries/logs"
 import type { MizuTrace } from "@/queries/decoders"
 import { RequestSheet, } from "./RequestSheet"
-
+import { Button } from "@/components/ui/button"
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
@@ -106,17 +106,18 @@ const RequestsTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<
           </TableCell>
         </TableRow>
       })}
-      {/* {logs.map(l => <LogRow log={l} key={l.id} />)} */}
     </TableBody>
   </Table>)
 }
 
 export function RequestsPage() {
-  const { traces } = useMizulogs();
+  const [rerenderHack, setRerenderHack] = useState(0);
+  const { traces } = useMizulogs(rerenderHack);
   useEffect(() => {
     // console.log("TRACES", traces)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [traces.length])
+
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -154,6 +155,35 @@ export function RequestsPage() {
               Export
             </span>
           </Button> */}
+          <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => {
+            fetch("http://localhost:8788/v0/logs/ignore", {
+              method: "POST",
+              body: JSON.stringify({
+                logIds: traces.flatMap(t => t.logs?.map(l => l.id))
+              })
+            }).then(() => {
+              setRerenderHack(v => v + 1);
+              alert("Successfully ignored all");
+            })
+          }}>
+            <MoonIcon className="h-3.5 w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Ignore All
+            </span>
+          </Button> 
+          <Button variant="destructive" size="sm" className="h-8 gap-1" onClick={() => {
+            fetch("http://localhost:8788/v0/logs/delete-all-hack", {
+              method: "POST",
+            }).then(() => {
+              setRerenderHack(v => v + 1);
+              alert("Successfully deleted all");
+            })
+          }}>
+            <MoonIcon className="h-3.5 w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Delete All
+            </span>
+          </Button> 
         </div>
       </div>
       <TabsContent value="all">
