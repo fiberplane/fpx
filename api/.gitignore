@@ -11,3 +11,9 @@ bun.lockb
 
 # mac
 .DS_Store
+
+# db
+# NOTE - usually it is safe to keep .neon in version control
+#        however, since everyone will be using their own database,
+#        it's better to make sure it's not checked in
+.neon
