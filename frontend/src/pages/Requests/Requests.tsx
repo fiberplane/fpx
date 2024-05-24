@@ -113,13 +113,12 @@ const RequestsTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<
 
 export function RequestsPage() {
   const { traces } = useMizulogs();
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    console.log("TRACES", traces)
+    // console.log("TRACES", traces)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [traces.length])
   return (
-    <Tabs defaultValue="error">
+    <Tabs defaultValue="all">
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
@@ -129,7 +128,7 @@ export function RequestsPage() {
           </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 gap-1">
                 <ListFilter className="h-3.5 w-3.5" />
@@ -154,7 +153,7 @@ export function RequestsPage() {
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Export
             </span>
-          </Button>
+          </Button> */}
         </div>
       </div>
       <TabsContent value="all">
