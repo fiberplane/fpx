@@ -13,7 +13,7 @@ config({ path: '.dev.vars' });
 const app = createApp();
 
 app.get("/", async (c) => {
-  return c.text("Hello Node.js Hono" + JSON.stringify(env(c)))
+  return c.text("Hello Node.js Hono");
 });
 
 app.get("/v0/source", cors(), async (c) => {
