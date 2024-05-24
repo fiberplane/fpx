@@ -1,11 +1,9 @@
 
-Dev
-```sh
-npm run dev
-```
+## Development
 
-Deploy
+Easy as pie! Yum.
+
 ```sh
-wrangler login
-npm run deploy
+npm i
+npm run dev
 ```

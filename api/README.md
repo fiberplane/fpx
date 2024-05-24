@@ -5,8 +5,10 @@
 ```sh
 npm install
 
-npm db:generate
-npm db:migrate
+# NOTE - Before running db migrations, you need to follow the instructions in `Configuring Neon (the Database)`
+
+npm run db:generate
+npm run db:migrate
 
 # NOTE - This app runs Hono in a Node.js execution context by default,
 #        Since we need access to the filesystem to do fun stuff
@@ -22,16 +24,11 @@ Neon commands! This can help set up or configure a neon database for project nam
 neonctl auth
 
 # Create project if you haven't already
+#
+# > *skip this* if you already created a project,
+# > and grab the DATABASE_URL from your dashbaord
 PROJECT_NAME=mizu
 neonctl projects create --name $PROJECT_NAME --set-context
-
-# Set project id because the call to `set-context` below needs it
-PROJECT_ID=$(neonctl projects list --output=json | jq --arg name "$PROJECT_NAME" '.projects[] | select(.name == $name) | .id')
-
-# Create a `dev` db branch then set context
-BRANCH_NAME=dev
-neonctl branches create --name=$BRANCH_NAME
-neonctl set-contenxt --project-id=$PROJECT_ID --branch=$BRANCH_NAME
 
 # Finally, add connection string to .dev.vars
 DATABASE_URL=$(neonctl connection-string)
