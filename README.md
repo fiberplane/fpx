@@ -4,11 +4,13 @@
 
 ## Description
 
-This has an api and a frontend that can consume telemetry data from a Hono app. You will need to add specific middleware to you hono app for it to run properly.
+This has an api and a frontend that can consume telemetry data from a Hono app. 
 
-The api connects to a Neon database. See configuration steps in [api/README.md](./api/README.md).
+To connect your Hono app to the api, you'll need to add the code in the [`client-library`](./client-library) folder to your Hono app. This will send telemetry data to the api.
 
-The frontend is a React + Typescript + Tailwind app that uses shadcn components. See more info in [frontend/README.md](./frontend/README.md).
+Worth noting is that the api connects to a Neon (postgres) database. There are setup and configuration steps for this in [api/README.md](./api/README.md).
+
+The frontend is a React + Typescript + Tailwind app that uses [shadcn/ui](https://ui.shadcn.com/) components. For more info on the frontend, see: [frontend/README.md](./frontend/README.md).
 
 ## Setup
 
