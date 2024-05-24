@@ -14,10 +14,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { MizuTrace, MizuLog } from "@/queries/decoders";
+import type { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
 import { CaretDownIcon, CaretRightIcon, CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
-import { Fragment, ReactNode, useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 function useHandlerSourceCode(source: string, handler: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);
@@ -70,7 +70,7 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
     const fetchAiAnalysis = async () => {
       setLoading(true);
       try {
-        const r = await fetch(`http://localhost:8788/v0/analyze-error`, { method: "POST", body }).then(r => {
+        const r = await fetch("http://localhost:8788/v0/analyze-error", { method: "POST", body }).then(r => {
           if (!r.ok) {
             throw new Error(`Failed to fetch source location from source map: ${r.status}`);
           }
@@ -156,6 +156,52 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
     </LogCard>
   )
 }
+
+const FetchRequestLog = ({ log }: { log: MizuLog }) => {
+  const description = `Fetch Request: ${"todo"}`
+  console.log("FETCH REQUEST", log.message?.args)
+
+  return (
+    <LogCard>
+      <LogDetailsHeader log={log} eventName="Fetch Start" description={description} />
+
+      <div className="mt-2">
+        <KeyValueGrid data={log.message} />
+      </div>
+    </LogCard>
+  )
+}
+
+const FetchResponseLog = ({ log }: { log: MizuLog }) => {
+  const description = `Fetch Response: ${"todo"}`
+  console.log("FETCH REQUEST", log.message?.args)
+
+  return (
+    <LogCard>
+      <LogDetailsHeader log={log} eventName="Fetch Response" description={description} />
+
+      <div className="mt-2">
+        <KeyValueGrid data={log.message} />
+      </div>
+    </LogCard>
+  )
+}
+
+const FetchErrorLog = ({ log }: { log: MizuLog }) => {
+  const description = `Fetch Response: ${"todo"}`
+  console.log("FETCH REQUEST", log.message?.args)
+
+  return (
+    <LogCard>
+      <LogDetailsHeader log={log} eventName="Fetch Error" description={description} />
+
+      <div className="mt-2">
+        <KeyValueGrid data={log.message} />
+      </div>
+    </LogCard>
+  )
+}
+
 
 /**
  * As of writing, only handles 404 for favicon
@@ -465,6 +511,18 @@ export const LogDetails = ({ log, handlerSourceCode }: { log: MizuLog; handlerSo
 
   if (message?.lifecycle === "request") {
     return <RequestLog log={log} />
+  }
+
+  if (message?.lifecycle === "fetch_start") {
+    return <FetchRequestLog log={log} />
+  }
+
+  if (message?.lifecycle === "fetch_end") {
+    return <FetchResponseLog log={log} />
+  }
+
+  if (message?.lifecycle === "fetch_error") {
+    return <FetchErrorLog log={log} />
   }
 
   if (message?.lifecycle === "response") {

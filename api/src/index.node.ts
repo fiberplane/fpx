@@ -23,8 +23,8 @@ app.get("/v0/source", cors(), async (c) => {
     const file = JSON.parse(readFileSync(source, 'utf8').toString());
     const consumer = await new SourceMapConsumer(file);
     const pos = consumer.originalPositionFor({
-      line: parseInt(line, 10),
-      column: parseInt(column, 10),
+      line: Number.parseInt(line, 10),
+      column: Number.parseInt(column, 10),
     });
     consumer.destroy();
 

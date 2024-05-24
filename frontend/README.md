@@ -7,3 +7,5 @@ Easy as pie! Yum.
 npm i
 npm run dev
 ```
+
+The original readme that comes with a new vite project is here: [README-VITE.md](./README-VITE.md)
