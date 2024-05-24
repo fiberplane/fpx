@@ -14,8 +14,10 @@ type ExtendedExecutionContext = ExecutionContext & {
 };
 
 // HACK - We inject this symbol in our request/response logger in order to skip logging massive payloads
+const IGNORE_MIZU_LOGGER_LOG = Symbol("IGNORE_MIZU_LOGGER_LOG");
 const PRETTIFY_MIZU_LOGGER_LOG = Symbol("PRETTIFY_MIZU_LOGGER_LOG");
 const shouldPrettifyMizuLog = (printFnArgs: unknown[]) => printFnArgs?.[1] === PRETTIFY_MIZU_LOGGER_LOG;
+const shouldIgnoreMizuLog = (printFnArgs: unknown[]) => printFnArgs?.[1] === IGNORE_MIZU_LOGGER_LOG;
 
 const RECORDED_CONSOLE_METHODS = [
   "debug",
@@ -47,7 +49,11 @@ export const Mizu = {
     //         https://github.com/highlight/highlight/pull/6480
     polyfillWaitUntil(ctx);
 
+
     const teardownFunctions: Array<() => void> = [];
+
+    const { originalFetch, undo: undoReplaceFetch } = replaceFetch();
+    teardownFunctions.push(undoReplaceFetch);
 
     // TODO - (future) Take the traceId from headers but then fall back to uuid here?
     const traceId = generateUUID();
@@ -84,7 +90,7 @@ export const Mizu = {
           timestamp,
         };
         ctx.waitUntil(
-          fetch(mizuEndpoint, {
+          originalFetch(mizuEndpoint, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -93,6 +99,9 @@ export const Mizu = {
           }),
         );
         const applyArgs = args?.length ? [message, ...args] : [message];
+        if (shouldIgnoreMizuLog(applyArgs)) {
+          return;
+        }
         if (!libraryDebugMode && shouldPrettifyMizuLog(applyArgs)) {
           // HACK - Try parsing the message as json and extracting all the fields we care about logging prettily
           tryPrettyPrintLoggerLog(originalConsoleMethod, message);
@@ -432,4 +441,65 @@ function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
       await Promise.allSettled(ctx.__waitUntilPromises);
     }
   };
+}
+
+// === INSTRUMENTING FETCH === //
+
+/**
+ * TODO - Ignore calls to `mizu`
+ * 
+ * https://github.com/evanderkoogh/otel-cf-workers/blob/6f1c79056776024fd3e816b9e3991527e7217510/src/instrumentation/fetch.ts#L198
+ */
+function replaceFetch() {
+  const requestId = generateUUID();
+  const originalFetch = globalThis.fetch;
+  // @ts-ignore
+  globalThis.fetch = async (...args) => {
+    const start = Date.now();
+    console.log(JSON.stringify({
+      lifecycle: "fetch_start",
+      requestId,
+      start,
+      // TODO - Parse url from request args
+      // TODO - Parse method from request
+      // TODO - Parse body from request
+      // TODO - Basically parse the whole request
+      args
+    }), IGNORE_MIZU_LOGGER_LOG)
+
+    try {
+      const response = await originalFetch(...args);
+      const clonedResponse = response.clone();
+
+      if (!clonedResponse.ok) {
+        // TODO - count this as an error
+      }
+
+      const end = Date.now();
+      const elapsed = end - start;
+      console.log(JSON.stringify({
+        lifecycle: "fetch_end",
+        requestId,
+        end,
+        elapsed,
+        // HACK - Response body
+        body: await clonedResponse.text(),
+      }), IGNORE_MIZU_LOGGER_LOG)
+      return response;
+    } catch (err) {
+      console.error(JSON.stringify({
+        lifecycle: "fetch_error",
+        requestId,
+        error: err instanceof Error ? errorToJson(err) : err,
+      }), IGNORE_MIZU_LOGGER_LOG)
+      throw err;
+    }
+  }
+
+  return {
+    undo: () => {
+      globalThis.fetch = originalFetch;
+    },
+    originalFetch,
+  }
 }
