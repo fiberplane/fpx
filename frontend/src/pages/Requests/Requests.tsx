@@ -2,12 +2,10 @@ import { useEffect, useMemo } from "react"
 import {
   FileIcon as File,
   ListBulletIcon as ListFilter, // FIXME
-  StretchHorizontallyIcon as MoreHorizontal,
   ExclamationTriangleIcon,
   InfoCircledIcon
 } from "@radix-ui/react-icons"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -21,12 +19,10 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
 import {
   Table,
   TableBody,
@@ -41,13 +37,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-
 import { formatDate } from "@/utils/utils"
-
-import { RequestSheet, } from "./RequestSheet"
-import { MessageJson } from "./MessageJson"
 import { useMizulogs } from "@/queries/logs"
-import { MizuTrace } from "@/queries/decoders"
+import type { MizuTrace } from "@/queries/decoders"
+import { RequestSheet, } from "./RequestSheet"
 
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
@@ -120,6 +113,7 @@ const RequestsTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<
 
 export function RequestsPage() {
   const { traces } = useMizulogs();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     console.log("TRACES", traces)
     // eslint-disable-next-line react-hooks/exhaustive-deps
