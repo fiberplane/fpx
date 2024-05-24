@@ -81,6 +81,6 @@ Add `MIZU_ENDPOINT=http://localhost:8788/v0/logs` to your `.dev.vars` file!
 echo -e '\nMIZU_ENDPOINT=http://localhost:8788/v0/logs\n' >> .dev.vars
 ```
 
-You should be good to go! Just execute `npm run dev` and you're off.
+You should be good to go! Just execute `npm run dev` to kick off your new Hono project..
 
 Make requests to your Hono app, and the logs should show up in the Mizu UI at `http://localhost:5173`!
