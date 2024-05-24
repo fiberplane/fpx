@@ -446,8 +446,8 @@ function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
 // === INSTRUMENTING FETCH === //
 
 /**
- * TODO - Ignore calls to `mizu`
- * 
+ * In future, take inspo from:
+ *
  * https://github.com/evanderkoogh/otel-cf-workers/blob/6f1c79056776024fd3e816b9e3991527e7217510/src/instrumentation/fetch.ts#L198
  */
 function replaceFetch() {
