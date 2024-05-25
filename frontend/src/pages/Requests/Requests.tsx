@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react"
 import {
   // FileIcon,
   TrashIcon,
@@ -29,18 +28,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { useMizulogs } from "@/queries/logs"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "./DataTable";
 import { columns } from "./columns";
+import { fetchMizuTraces } from "@/queries/react-query-test"
+import { useQuery } from "react-query"
 
 export function RequestsPage() {
-  const [rerenderHack, setRerenderHack] = useState(0);
-  const { traces } = useMizulogs(rerenderHack);
-  useEffect(() => {
-    // console.log("TRACES", traces)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [traces.length])
+  const query = useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
 
   return (
     <Tabs defaultValue="all">
@@ -83,10 +78,10 @@ export function RequestsPage() {
             fetch("http://localhost:8788/v0/logs/ignore", {
               method: "POST",
               body: JSON.stringify({
-                logIds: traces.flatMap(t => t.logs?.map(l => l.id))
+                logIds: query.data?.flatMap(t => t.logs?.map(l => l.id))
               })
             }).then(() => {
-              setRerenderHack(v => v + 1);
+              query.refetch();
               alert("Successfully ignored all");
             })
           }}>
@@ -99,7 +94,7 @@ export function RequestsPage() {
             fetch("http://localhost:8788/v0/logs/delete-all-hack", {
               method: "POST",
             }).then(() => {
-              setRerenderHack(v => v + 1);
+              query.refetch();
               alert("Successfully deleted all");
             })
           }}>
@@ -119,14 +114,17 @@ export function RequestsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <DataTable columns={columns} data={traces} filter="all" />
+            <DataTable columns={columns} data={query.data ?? []} filter="all" />
             {/* <RequestsTable traces={traces} filter="all" /> */}
           </CardContent>
           <CardFooter>
-            <div className="text-xs text-muted-foreground">
-              Showing <strong>1-{traces.length}</strong> of <strong>{traces.length}</strong>{" "}
-              requests
-            </div>
+            {query?.data?.length ? (
+              <div className="text-xs text-muted-foreground">
+                Showing <strong>1-{query?.data?.length}</strong> of <strong>{query?.data?.length}</strong>{" "}
+                requests
+              </div>
+            ) : null}
+
           </CardFooter>
         </Card>
       </TabsContent>
@@ -139,13 +137,15 @@ export function RequestsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <DataTable columns={columns} data={traces} filter="error" />
+            <DataTable columns={columns} data={query.data ?? []} filter="error" />
           </CardContent>
           <CardFooter>
-            <div className="text-xs text-muted-foreground">
-              Showing <strong>1-{traces.length}</strong> of <strong>{traces.length}</strong>{" "}
-              requests
-            </div>
+            {query?.data?.length ? (
+              <div className="text-xs text-muted-foreground">
+                Showing <strong>1-{query?.data?.length}</strong> of <strong>{query?.data?.length}</strong>{" "}
+                requests
+              </div>
+            ) : null}
           </CardFooter>
         </Card>
       </TabsContent>

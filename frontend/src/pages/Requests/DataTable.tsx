@@ -77,8 +77,8 @@ export function DataTable<TData extends MizuTrace, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+              <TableCell colSpan={columns.length} className="h-24 text-center font-mono">
+                No Results
               </TableCell>
             </TableRow>
           )}
