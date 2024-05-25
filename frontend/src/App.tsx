@@ -3,9 +3,11 @@ import Layout from "./Layout";
 import { LogsPage } from "./pages/LogsPage/LogsPage";
 import { RequestsPage } from "./pages/Requests/Requests";
 import { PackagesPage } from "./pages/Packages/Packages";
+import { QueryClientProvider, queryClient } from "@/queries/react-query-test";
 
 export function App() {
   return (
+    <QueryClientProvider client={queryClient}>
     <Router>
       <Layout>
         <Routes>
@@ -16,6 +18,7 @@ export function App() {
         </Routes>
       </Layout>
     </Router>
+    </QueryClientProvider>
   )
 }
 

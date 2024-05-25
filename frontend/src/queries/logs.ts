@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MizuLog, MizuTrace, transformToLog } from "./decoders";
 
-export function useMizulogs() {
+export function useMizulogs(rerenderHack?: number) {
   const [logs, setLogs] = useState([] as Array<MizuLog>)
   const [traces, setTraces] = useState([] as Array<MizuTrace>)
   useEffect(() => {
@@ -43,7 +43,7 @@ export function useMizulogs() {
           trace.description = getTraceDescription(trace);
 
           const response = trace.logs.find(l => l.message?.lifecycle === "response");
-          trace.status = response.message?.status ?? "unknown";
+          trace.status = response?.message?.status ?? "unknown";
           traces.push(trace);
         }
 
@@ -58,7 +58,7 @@ export function useMizulogs() {
           alert(`Error fetching logs: ${e.message}`);
         }
       })
-  }, [])
+  }, [rerenderHack])
 
   return { logs, traces };
 }

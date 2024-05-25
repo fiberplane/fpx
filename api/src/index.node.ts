@@ -13,7 +13,7 @@ config({ path: '.dev.vars' });
 const app = createApp();
 
 app.get("/", async (c) => {
-  return c.text("Hello Node.js Hono" + JSON.stringify(env(c)))
+  return c.text("Hello Node.js Hono");
 });
 
 app.get("/v0/source", cors(), async (c) => {
@@ -23,8 +23,8 @@ app.get("/v0/source", cors(), async (c) => {
     const file = JSON.parse(readFileSync(source, 'utf8').toString());
     const consumer = await new SourceMapConsumer(file);
     const pos = consumer.originalPositionFor({
-      line: parseInt(line, 10),
-      column: parseInt(column, 10),
+      line: Number.parseInt(line, 10),
+      column: Number.parseInt(column, 10),
     });
     consumer.destroy();
 
@@ -43,7 +43,7 @@ app.post("/v0/source-function", cors(), async (c) => {
     const functionText = await findSourceFunction(source, handler);
     return c.json({ functionText });
   } catch (err) {
-    console.error("Could not find function in source", err?.message);
+    console.error("Could not find function in source", source);
     return c.json({ error: "Error finding function", name: err?.name, message: err?.message }, 500);
   }
 })

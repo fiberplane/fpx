@@ -35,18 +35,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { SVGProps } from 'react';
+import type { SVGProps } from 'react';
 
-const WaveIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-  <path
-    stroke="currentColor"
-    strokeWidth="1.5"
-    fill="none"
-    fillRule="evenodd"
-    clipRule="evenodd"
-    d="M0 7.5 Q 3.75 0, 7.5 7.5 T 15 7.5 M0 22.5 Q 3.75 15, 7.5 22.5 T 15 22.5"
-  />
+const WaveIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <title>Wave Icon</title>
+    <path
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill="none"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M0 7.5 Q 3.75 0, 7.5 7.5 T 15 7.5 M0 22.5 Q 3.75 15, 7.5 22.5 T 15 22.5"
+    />
 </svg>
+)
 
 export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
@@ -67,12 +70,12 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <DashboardIcon className="h-5 w-5" />
-                <span className="sr-only">Mizu</span>
+                <span className="sr-only">Dashboard</span>
               </RouterLink>
             </TooltipTrigger>
-            <TooltipContent side="right">Mizu</TooltipContent>
+            <TooltipContent side="right">Dashboard (not implemented)</TooltipContent>
           </Tooltip>
-          <Tooltip>
+          {/* <Tooltip>
             <NavLink
               to="/logs"
               className={({ isActive, }) => {
@@ -87,7 +90,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
               </TooltipTrigger>
             </NavLink>
             <TooltipContent side="right">Logs</TooltipContent>
-          </Tooltip>
+          </Tooltip> */}
           {/* <Tooltip>
             <TooltipTrigger asChild>
               <NavLink
