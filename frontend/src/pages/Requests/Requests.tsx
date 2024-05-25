@@ -1,11 +1,9 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import {
-  FileIcon,
-  TrashIcon
+  // FileIcon,
+  TrashIcon,
   MoonIcon,
   // ListBulletIcon as ListFilter, // FIXME
-  ExclamationTriangleIcon,
-  InfoCircledIcon
 } from "@radix-ui/react-icons"
 
 import {
@@ -24,92 +22,17 @@ import {
 //   DropdownMenuSeparator,
 //   DropdownMenuTrigger,
 // } from "@/components/ui/dropdown-menu"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { formatDate } from "@/utils/utils"
 import { useMizulogs } from "@/queries/logs"
-import type { MizuTrace } from "@/queries/decoders"
-import { RequestSheet, } from "./RequestSheet"
 import { Button } from "@/components/ui/button"
-
-type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
-
-const RequestsTable = ({ filter, traces }: { filter: LevelFilter, traces: Array<MizuTrace> }) => {
-  const filteredTraces = useMemo(() => {
-    if (filter === "all") {
-      return traces
-    }
-    return traces.filter(trace => trace.logs.some(log => log.level === filter));
-  }, [traces, filter])
-  return (<Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead className="hidden w-[32px] sm:table-cell">
-          <span className="sr-only">Icon</span>
-        </TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead>Summary</TableHead>
-        <TableHead className="hidden md:table-cell">
-          Timestamp
-        </TableHead>
-        <TableHead>
-          <span className="sr-only">Actions</span>
-        </TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {filteredTraces.map(t => {
-        return <TableRow key={t.logs[0].id}>
-          <TableCell className="hidden sm:table-cell">
-            {t.logs.some(t => t.level === "error") ? <ExclamationTriangleIcon className="h-3.5 w-3.5" /> : <InfoCircledIcon className="h-3.5 w-3.5" />}
-          </TableCell>
-          <TableCell>
-            {t.status}
-          </TableCell>
-          <TableCell className="font-medium">
-            {t.description}
-          </TableCell>
-
-          <TableCell className="hidden md:table-cell font-mono text-xs" >
-            {formatDate(new Date(t.logs[0].timestamp))} to {formatDate(new Date(t.logs[t.logs.length - 1].timestamp))}
-          </TableCell>
-          <TableCell className="flex items-center space-x-2">
-            {/* <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  aria-haspopup="true"
-                  size="icon"
-                  variant="ghost"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem>Edit</DropdownMenuItem>
-                <DropdownMenuItem>Delete</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu> */}
-            <RequestSheet trace={t} />
-          </TableCell>
-        </TableRow>
-      })}
-    </TableBody>
-  </Table>)
-}
+import { DataTable } from "./DataTable";
+import { columns } from "./columns";
 
 export function RequestsPage() {
   const [rerenderHack, setRerenderHack] = useState(0);
@@ -171,7 +94,7 @@ export function RequestsPage() {
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Ignore All
             </span>
-          </Button> 
+          </Button>
           <Button variant="destructive" size="sm" className="h-8 gap-1" onClick={() => {
             fetch("http://localhost:8788/v0/logs/delete-all-hack", {
               method: "POST",
@@ -184,7 +107,7 @@ export function RequestsPage() {
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Delete All
             </span>
-          </Button> 
+          </Button>
         </div>
       </div>
       <TabsContent value="all">
@@ -196,7 +119,8 @@ export function RequestsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <RequestsTable traces={traces} filter="all" />
+            <DataTable columns={columns} data={traces} filter="all" />
+            {/* <RequestsTable traces={traces} filter="all" /> */}
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
@@ -215,7 +139,7 @@ export function RequestsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <RequestsTable traces={traces} filter="error" />
+            <DataTable columns={columns} data={traces} filter="error" />
           </CardContent>
           <CardFooter>
             <div className="text-xs text-muted-foreground">
