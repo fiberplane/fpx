@@ -64,7 +64,8 @@ export function createApp() {
     const sql = neon(env(c).DATABASE_URL);
     const db = drizzle(sql);
     await db.delete(mizuLogs).where(ne(mizuLogs.id, 0));
-    return c.json({ message: "I should do a 204 with no text should i not" }, 204);
+    c.status(204);
+    return c.res;
   })
 
 
