@@ -23,7 +23,7 @@ declare module '@tanstack/react-table' {
 
 const columnHelper = createColumnHelper<MizuTrace>()
 
-// NOTE - Column is here to support fast refresh with Vite
+// NOTE - Column is defined here, in a separate file from the DataTable to support fast refresh with Vite
 export const columns: ColumnDef<MizuTrace>[] = [
   {
     id: "isError",
