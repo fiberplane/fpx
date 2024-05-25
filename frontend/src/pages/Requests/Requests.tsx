@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import {
-  FileIcon as File,
+  FileIcon,
+  TrashIcon
   MoonIcon,
   // ListBulletIcon as ListFilter, // FIXME
   ExclamationTriangleIcon,
@@ -179,7 +180,7 @@ export function RequestsPage() {
               alert("Successfully deleted all");
             })
           }}>
-            <MoonIcon className="h-3.5 w-3.5" />
+            <TrashIcon className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Delete All
             </span>
