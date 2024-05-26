@@ -85,10 +85,10 @@ const IssuesTable = ({ issues }: GitHubIssue[] | undefined) => {
 };
 
 export const PackagesPage = () => {
-  const { data: deps } = useDependencies();
+  const depsQuery = useDependencies();
 
-  const issues = deps
-    ? deps
+  const issues = depsQuery.data
+    ? depsQuery.data
         .map((dep) => {
           const { data } = useGitHubIssues({
             owner: dep.repository.owner,
@@ -115,8 +115,8 @@ export const PackagesPage = () => {
 
       <section className="grid grid-cols-4">
         <div className="col-span-1 p-4 space-y-2">
-          {deps ? (
-            deps.map((dep) => {
+          {depsQuery.data ? (
+            depsQuery?.data?.map((dep) => {
               return (
                 <Card key={dep.name}>
                   <CardHeader>
