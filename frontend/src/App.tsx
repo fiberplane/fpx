@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./Layout";
-import { LogsPage } from "./pages/LogsPage/LogsPage";
 import { RequestsPage } from "./pages/RequestsPage/Requests";
 import { QueryClientProvider, queryClient } from "@/queries/queries";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
@@ -14,7 +13,6 @@ export function App() {
           <Route path="/" element={<RequestsPage />} />
           <Route path="/requests" element={<RequestsPage />} />
           <Route path="/requests/:traceId" element={<RequestDetailsPage />} />
-          <Route path="/logs" element={<LogsPage />} />
         </Routes>
       </Layout>
     </Router>
