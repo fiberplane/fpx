@@ -14,7 +14,7 @@ import { WebSocket } from "ws";
 type Bindings = {
   DATABASE_URL: string;
   OPENAI_API_KEY: string;
-	GITHUB_TOKEN: string;
+  GITHUB_TOKEN: string;
 };
 
 export function createApp(wsConnections?: Set<WebSocket>) {
@@ -183,6 +183,32 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     return c.text("OK");
   });
 
+  type Dependency = {
+    name: string;
+    version: string;
+    repository: {
+      owner: string;
+      repo: string;
+      url: string;
+    };
+  };
+
+  app.get("/v0/dependencies", cors(), async (ctx) => {
+    // pretend that this fetches and parses the package.json
+    const data: Dependency[] = [
+      {
+        name: "hono",
+        version: "4.3.11",
+        repository: {
+          owner: "honojs",
+          repo: "hono",
+          url: "https://github.com/honojs/hono",
+        },
+      },
+    ];
+    return ctx.json(data);
+  });
+
   type OctokitResponse =
     Endpoints["GET /repos/{owner}/{repo}/issues"]["response"];
   type Issues = OctokitResponse["data"];
@@ -191,7 +217,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
 
   app.get("/v0/github-issues/:owner/:repo", cors(), async (ctx) => {
     const octokit = new Octokit({
-      auth: ctx.env.GITHUB_TOKEN
+      auth: ctx.env.GITHUB_TOKEN,
     });
 
     if (issuesCache) {
