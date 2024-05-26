@@ -4,6 +4,45 @@ export const queryClient = new QueryClient();
 export { QueryClientProvider };
 
 import { MizuLog, MizuTrace, transformToLog } from "./decoders";
+import { Dependency, GitHubIssue, GitHubResponse } from "@/lib/types";
+
+export function useDependencies() {
+  return useQuery({ queryKey: ["dependencies"], queryFn: fetchDependencies });
+}
+
+export function fetchDependencies(): Promise<Dependency[]> {
+  return fetch("http://localhost:8788/v0/dependencies", { mode: "cors" })
+    .then((r) => r.json())
+    .catch((err) => console.log("Error fetching dependencies: ", err));
+}
+
+export function useGitHubIssues({
+  owner,
+  repo,
+}: {
+  owner: string;
+  repo: string;
+}) {
+  return useQuery({
+    queryKey: ["githubIssues", { owner, repo }],
+    queryFn: () => fetchGitHubIssues({ owner, repo }),
+    enabled: !!owner && !!repo,
+  });
+}
+
+export function fetchGitHubIssues({
+  owner,
+  repo,
+}: {
+  owner: string;
+  repo: string;
+}): Promise<void | GitHubIssue[]> {
+  return fetch(`http://localhost:8788/v0/github-issues/${owner}/${repo}`, {
+    mode: "cors",
+  })
+    .then((r) => r.json())
+    .catch((err) => console.log("Error fetching issues: ", err));
+}
 
 export function useMizuTraces() {
   return useQuery({ queryKey: ["mizuTraces"], queryFn: fetchMizuTraces });

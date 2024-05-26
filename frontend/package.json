@@ -32,7 +32,6 @@
     "react-router-dom": "^6.23.1",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "tinybase": "^4.8.9",
     "zod": "^3.23.8"
   },
   "devDependencies": {

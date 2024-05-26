@@ -18,6 +18,7 @@ import {
 import { ISSUE_TABLE_ID } from "@/lib/constants";
 import { GitHubIssue } from "@/lib/types";
 import { loadIssues } from "@/queries/issues";
+import { useDependencies, useGitHubIssues } from "@/queries/queries";
 import { humanReadableDate } from "@/utils/utils";
 // import { formatDate } from "@/utils/utils";
 import {
@@ -28,115 +29,78 @@ import {
 } from "@radix-ui/react-icons";
 import { useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
-import { type Store, createStore } from "tinybase/store";
-import {
-  Provider,
-  useCreateStore,
-  useSliceRowIds,
-  useTable,
-} from "tinybase/ui-react";
 
-const IssuesTable = ({ store }: { store: Store }) => {
-  // const filteredTraces = useMemo(() => {
-  //   if (filter === "all") {
-  //     return traces;
-  //   }
-  //   return traces.filter((trace) =>
-  //     trace.logs.some((log) => log.level === filter),
-  //   );
-  // }, [traces, filter]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useMemo(async () => {
-    if (!store.hasTable("issues")) {
-      await loadIssues(store, "honojs", "hono");
-    }
-  }, []);
-
-  const issues = useTable(ISSUE_TABLE_ID, store);
-
-  console.log(issues);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  // const issues = useMemo(() => {
-  //   const issues = store.getTable(ISSUE_TABLE_ID);
-  //   console.log(issues);
-  //   return issues;
-  // }, []);
-
+const IssuesTable = ({ issues }: GitHubIssue[] | undefined) => {
   return (
-    <Provider store={store}>
-      {/* {JSON.stringify(issues)} */}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Type</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Opened/Closed</TableHead>
-            <TableHead>Last Update</TableHead>
-            <TableHead>Preview</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Object.values(issues).map((issue: GitHubIssue) => {
-            return (
-              <TableRow key={issue.id}>
-                <TableCell>
-                  {issue.pull_request ? (
-                    "PR"
-                  ) : (
-                    <CircleIcon
-                      className={`${
-                        issue.state === "open"
-                          ? "text-green-800"
-                          : "text-purple-800"
-                      }`}
-                    />
-                  )}
-                </TableCell>
-                <TableCell className="truncate">{issue.title}</TableCell>
-                <TableCell>
-                  {issue.closed_at
-                    ? `closed ${humanReadableDate(issue.closed_at)}`
-                    : `opened ${humanReadableDate(issue.created_at)}`}
-                </TableCell>
-                <TableCell>{`last update ${humanReadableDate(
-                  issue.updated_at,
-                )}`}</TableCell>
-                <TableCell className="max-w-[500px] h-10 truncate">
-                  <ReactMarkdown
-                    unwrapDisallowed
-                    allowedElements={["code", "strong", "emphasis"]}
-                  >
-                    {issue.body}
-                  </ReactMarkdown>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </Provider>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Type</TableHead>
+          <TableHead>Title</TableHead>
+          <TableHead>Opened/Closed</TableHead>
+          <TableHead>Last Update</TableHead>
+          <TableHead>Preview</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {issues.map((issue: GitHubIssue) => {
+          return (
+            <TableRow key={issue.id}>
+              <TableCell>
+                {issue.pull_request ? (
+                  "PR"
+                ) : (
+                  <CircleIcon
+                    className={`${
+                      issue.state === "open"
+                        ? "text-green-800"
+                        : "text-purple-800"
+                    }`}
+                  />
+                )}
+              </TableCell>
+              <TableCell className="truncate">{issue.title}</TableCell>
+              <TableCell>
+                {issue.closed_at
+                  ? `closed ${humanReadableDate(issue.closed_at)}`
+                  : `opened ${humanReadableDate(issue.created_at)}`}
+              </TableCell>
+              <TableCell>{`last update ${humanReadableDate(
+                issue.updated_at,
+              )}`}</TableCell>
+              <TableCell className="max-w-[500px] h-10 truncate">
+                <ReactMarkdown
+                  unwrapDisallowed
+                  allowedElements={["code", "strong", "emphasis"]}
+                >
+                  {issue.body}
+                </ReactMarkdown>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 };
-export const PackagesPage = () => {
-  // const { traces } = useMizulogs();
-  const deps = [
-    {
-      title: "hono",
-      description: "Our favorite framework",
-    },
-    {
-      title: "drizzle-orm",
-      description: "Our favorite ORM",
-    },
-    {
-      title: "@neondatabase/serverless",
-      description: "Our favorite database",
-    },
-  ];
 
-  const issuesStore = useCreateStore(createStore);
+export const PackagesPage = () => {
+  const { data: deps } = useDependencies();
+
+  const issues = deps
+    ? deps
+        .map((dep) => {
+          const { data } = useGitHubIssues({
+            owner: dep.repository.owner,
+            repo: dep.repository.repo,
+          });
+
+          if (!data) return [];
+          return data;
+        })
+        .flat()
+        .filter((issue) => issue!)
+    : [];
 
   return (
     <>
@@ -151,17 +115,21 @@ export const PackagesPage = () => {
 
       <section className="grid grid-cols-4">
         <div className="col-span-1 p-4 space-y-2">
-          {deps.map((dep) => {
-            return (
-              <Card key={dep.title}>
-                <CardHeader>
-                  <CardTitle>{dep.title}</CardTitle>
-                  <CardDescription>{dep.description}</CardDescription>
-                </CardHeader>
-                <CardContent></CardContent>
-              </Card>
-            );
-          })}
+          {deps ? (
+            deps.map((dep) => {
+              return (
+                <Card key={dep.name}>
+                  <CardHeader>
+                    <CardTitle>{dep.name}</CardTitle>
+                    <CardDescription>{dep.version}</CardDescription>
+                  </CardHeader>
+                  <CardContent></CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            <div>No dependencies discovered...</div>
+          )}
         </div>
         <div className="col-span-3 p-4 h-full">
           <div className="relative ml-auto flex-1 md:grow-0 mb-2 items-center">
@@ -176,7 +144,7 @@ export const PackagesPage = () => {
               <CardTitle>Results in your dependencies</CardTitle>
             </CardHeader>
             <CardContent>
-              <IssuesTable store={issuesStore} />
+              <IssuesTable issues={issues} />
             </CardContent>
           </Card>
         </div>
