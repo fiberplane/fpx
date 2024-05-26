@@ -6,6 +6,7 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"lib": ["ESNext"],
-		"types": ["@cloudflare/workers-types"]
+		"types": ["@cloudflare/workers-types"],
+		"noEmit": true
 	}
 }

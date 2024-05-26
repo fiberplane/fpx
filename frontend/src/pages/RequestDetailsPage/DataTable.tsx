@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { MizuTrace } from "@/queries/decoders"
+import { useNavigate } from "react-router-dom";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
@@ -24,6 +25,8 @@ export function DataTable<TData extends MizuTrace, TValue>({
   data,
   filter
 }: DataTableProps<TData, TValue> & { filter: LevelFilter }) {
+  const navigate = useNavigate();
+
   // HACK - Filter data here depending on table
   // TODO - Move filtering elsewhere, use react-table like a cool kid
   const filteredTraces = useMemo(() => {
@@ -38,6 +41,10 @@ export function DataTable<TData extends MizuTrace, TValue>({
     data: filteredTraces,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    // HACK - Need to set the row id in a type-safe way
+    ...filteredTraces.every(row => "id" in row && typeof row.id === "string") && ({
+      getRowId: (row: TData) => row.id,
+    })
   })
 
   return (
@@ -67,6 +74,8 @@ export function DataTable<TData extends MizuTrace, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                onClick={() => navigate(`/requests/${row.id}`)} // Adjust the path as needed
+                className="cursor-pointer"
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id} className={cell.column.columnDef.meta?.cellClassName || ""}>

@@ -1,6 +1,7 @@
 type JsonValue = string | number | boolean | object | null;
 
 export type MizuTrace = {
+  id: string;
   description: string;
   status: string;
   duration: string;

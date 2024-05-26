@@ -1,23 +1,13 @@
+import { CaretDownIcon, CaretRightIcon, CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import ReactMarkdown from 'react-markdown';
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import type { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
-import { CaretDownIcon, CaretRightIcon, CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 function useHandlerSourceCode(source: string, handler: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);
@@ -91,41 +81,13 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
   return { response, loading, query };
 }
 
-export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
+export const TraceDetails = ({ trace }: { trace: MizuTrace; }) => {
   const request = trace.logs.find(log => log.message.lifecycle === "request");
   const response = trace.logs.find(log => log.message.lifecycle === "response");
   const source = request?.message?.file
   const handler = response?.message?.handler;
-  const handlerSourceCode = useHandlerSourceCode(source, handler);
-  return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button size="sm" className="px-2 py-0" variant="outline">Open</Button>
-      </SheetTrigger>
-      <SheetContent className="w-[400px] sm:max-w-[540px] sm:w-[540px] md:max-w-[680px] md:w-[680px] lg:w-[800px] overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Request Details</SheetTitle>
-          <SheetDescription>
-            Inspect logs from the request here
-          </SheetDescription>
-        </SheetHeader>
-        {/* <div className="text-mono">
-          <code className="whitespace-break-spaces">
-            {f}
-          </code>
-        </div> */}
-        <TraceDetails trace={trace} handlerSourceCode={handlerSourceCode ?? ""} />
-        <SheetFooter>
-          <SheetClose asChild className="mt-4">
-            <Button type="button" variant="secondary">Close</Button>
-          </SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  )
-};
+  const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
 
-export const TraceDetails = ({ trace, handlerSourceCode }: { trace: MizuTrace; handlerSourceCode: string; }) => {
   return (
     <>
       {trace.logs.map(log => (
@@ -149,7 +111,6 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
   return (
     <LogCard>
       <LogDetailsHeader log={log} eventName="Incoming Request" description={description} />
-
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
       </div>

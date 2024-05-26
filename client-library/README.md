@@ -23,14 +23,18 @@ npm create hono@latest my-hono-project
 ## Install the mizu client
 
 ### Copy the `mizu.ts` file
-To "install" the mizu client, **add the [`mizu.ts`](./mizu.ts) file from this repo** to the `src/` folder of your Hono project.
+To install the mizu client, add this package as a dependency:
 
-For example,
+``` bash
+npm install 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
 
-```sh
-# From my-hono-project
-cp ../mizu/client-library/mizu.ts src/
+# or with yarn:
+yarn add 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
 ```
+
+### Trouble getting the latest version
+
+If you're not getting the latest version, it might be that your package manager is caching an older version of the package.  As a work around you may want to clear your local cache by running something like `yarn cache clean`
 
 ### Add middleware
 
@@ -39,36 +43,28 @@ Add the mizu import, and then add middleware definitions **AT THE TOP OF YOUR AP
 If you only just started your project, you can copy paste the entire contents below into your `src/index.ts`:
 
 ```ts
-import { Hono } from 'hono'
-import { Mizu, logger } from "./mizu";
+import { Context, Hono } from "hono";
+import { createHonoMiddleware } from "mizu";
 
-type Bindings = {
-  MIZU_ENDPOINT: string;
-};
+const app = new Hono();
 
-const app = new Hono<{ Bindings: Bindings }>();
+const createConfig = (c: Context) => {
+ return {
+  endpoint: c.env?.MIZU_ENDPOINT,
+  service: c.env?.SERVICE_NAME || "unknown",
+  libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
+  monitor: {
+   fetch: true,
+   logging: true,
+   requests: true,
+  },
+ };
+}
 
-// Mizu Tracing Middleware - Must be called first!
-app.use(async (c, next) => {
-  const config = { MIZU_ENDPOINT: c.env.MIZU_ENDPOINT };
-  const ctx = c.executionCtx;
-
-  const teardown = Mizu.init(
-    config,
-    ctx,
-  );
-
-  await next();
-
-  teardown();
+app.use(createHonoMiddleware({ createConfig }))
+app.get("/", (c) => {
+	return c.text("Hello Hono!");
 });
-
-// Mizu request logging
-app.use(logger());
-
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
 
 export default app;
 ```

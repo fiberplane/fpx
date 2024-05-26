@@ -3,11 +3,13 @@ import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { NeonDbError, neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { inArray, ne, desc } from 'drizzle-orm';
+import { inArray, ne, desc } from "drizzle-orm";
 import OpenAI from "openai";
 import { Endpoints } from "@octokit/types";
 import { Octokit } from "octokit";
 import { mizuLogs } from "./db/schema";
+import { upgradeWebSocket } from "hono/cloudflare-workers";
+import { WebSocket } from "ws";
 
 type Bindings = {
   DATABASE_URL: string;
@@ -15,7 +17,7 @@ type Bindings = {
 	GITHUB_TOKEN: string;
 };
 
-export function createApp() {
+export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings }>();
 
   const DB_ERRORS: Array<NeonDbError> = [];
@@ -65,6 +67,14 @@ export function createApp() {
           timestamp,
         ],
       );
+
+      if (wsConnections) {
+        for (const ws of wsConnections) {
+          const message = ["mizuTraces"];
+          ws.send(JSON.stringify(message));
+        }
+      }
+
       return c.text("OK");
     } catch (err) {
       if (err instanceof NeonDbError) {
@@ -80,11 +90,12 @@ export function createApp() {
     const { logIds } = await c.req.json();
     const sql = neon(env(c).DATABASE_URL);
     const db = drizzle(sql);
-    const updatedLogIds = await db.update(mizuLogs)
+    const updatedLogIds = await db
+      .update(mizuLogs)
       .set({ ignored: true })
       .where(inArray(mizuLogs.id, logIds));
     return c.json({ updatedLogIds });
-  })
+  });
 
   app.post("/v0/logs/delete-all-hack", cors(), async (c) => {
     const sql = neon(env(c).DATABASE_URL);
@@ -92,25 +103,26 @@ export function createApp() {
     await db.delete(mizuLogs).where(ne(mizuLogs.id, 0));
     c.status(204);
     return c.res;
-  })
-
+  });
 
   // Data equivalent of home page (for a frontend to consume)
   app.get("/v0/logs", cors(), async (c) => {
     const showIgnored = !!c.req.query("showIgnored");
     const sql = neon(env(c).DATABASE_URL);
     const db = drizzle(sql);
-    const logsQuery = showIgnored ? db.select().from(mizuLogs) : db.select().from(mizuLogs).where(ne(mizuLogs.ignored, true));
+    const logsQuery = showIgnored
+      ? db.select().from(mizuLogs)
+      : db.select().from(mizuLogs).where(ne(mizuLogs.ignored, true));
     const logs = await logsQuery.orderBy(desc(mizuLogs.timestamp));
     return c.json({
       // HACK - switching to drizzle meant renaming a bunch of fields oy vey
-      logs: logs.map(l => ({
+      logs: logs.map((l) => ({
         ...l,
         trace_id: l.traceId,
         created_at: l.createdAt,
         updated_at: l.updatedAt,
         caller_location: l.callerLocation,
-      }))
+      })),
     });
   });
 
