@@ -1,0 +1,11 @@
+<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img">
+    <title>Wave Icon</title>
+    <path
+      stroke="currentColor"
+      stroke-width="1.5"
+      fill="none"
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M0 7.5 Q 3.75 0, 7.5 7.5 T 15 7.5 M0 22.5 Q 3.75 15, 7.5 22.5 T 15 22.5"
+    />
+</svg>
