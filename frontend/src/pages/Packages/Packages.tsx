@@ -7,100 +7,102 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ISSUE_TABLE_ID } from "@/lib/constants";
-import { GitHubIssue } from "@/lib/types";
-import { loadIssues } from "@/queries/issues";
+import type { GitHubIssue } from "@/lib/types";
 import { useDependencies, useGitHubIssues } from "@/queries/queries";
+import { useMemo } from "react";
+import { DataTable } from "../RequestDetailsPage/DataTable";
+import { columns } from "./columns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { humanReadableDate } from "@/utils/utils";
-// import { formatDate } from "@/utils/utils";
-import {
-  MagnifyingGlassIcon as Search,
-  ExclamationTriangleIcon,
-  InfoCircledIcon,
-  CircleIcon,
-} from "@radix-ui/react-icons";
-import { useEffect, useMemo } from "react";
+import { CircleIcon } from "@radix-ui/react-icons";
 import ReactMarkdown from "react-markdown";
 
-const IssuesTable = ({ issues }: GitHubIssue[] | undefined) => {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Type</TableHead>
-          <TableHead>Title</TableHead>
-          <TableHead>Opened/Closed</TableHead>
-          <TableHead>Last Update</TableHead>
-          <TableHead>Preview</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {issues.map((issue: GitHubIssue) => {
-          return (
-            <TableRow key={issue.id}>
-              <TableCell>
-                {issue.pull_request ? (
-                  "PR"
-                ) : (
-                  <CircleIcon
-                    className={`${
-                      issue.state === "open"
-                        ? "text-green-800"
-                        : "text-purple-800"
-                    }`}
-                  />
-                )}
-              </TableCell>
-              <TableCell className="truncate">{issue.title}</TableCell>
-              <TableCell>
-                {issue.closed_at
-                  ? `closed ${humanReadableDate(issue.closed_at)}`
-                  : `opened ${humanReadableDate(issue.created_at)}`}
-              </TableCell>
-              <TableCell>{`last update ${humanReadableDate(
-                issue.updated_at,
-              )}`}</TableCell>
-              <TableCell className="max-w-[500px] h-10 truncate">
-                <ReactMarkdown
-                  unwrapDisallowed
-                  allowedElements={["code", "strong", "emphasis"]}
-                >
-                  {issue.body}
-                </ReactMarkdown>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
-  );
+
+const IssuesTable = ({ issues }: { issues: GitHubIssue[] }) => {
+	return (
+		<Table>
+			<TableHeader>
+				<TableRow>
+					<TableHead>Type</TableHead>
+					<TableHead>Title</TableHead>
+					<TableHead>Opened/Closed</TableHead>
+					<TableHead>Last Update</TableHead>
+					<TableHead>Preview</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				{issues.length > 0
+					? issues.map((issue) => {
+							if (!issue) return null;
+							return (
+								<TableRow key={issue?.id}>
+									<TableCell>
+										{issue?.pull_request ? (
+											"PR"
+										) : (
+											<CircleIcon
+												className={`${
+													issue?.state === "open"
+														? "text-green-800"
+														: "text-purple-800"
+												}`}
+											/>
+										)}
+									</TableCell>
+									<TableCell className="truncate">{issue?.title}</TableCell>
+									<TableCell>
+										{issue?.closed_at
+											? `closed ${humanReadableDate(issue.closed_at)}`
+											: `opened ${humanReadableDate(issue.created_at)}`}
+									</TableCell>
+									<TableCell>{`last update ${humanReadableDate(
+										issue?.updated_at,
+									)}`}</TableCell>
+									<TableCell className="max-w-[500px] h-10 truncate">
+										<ReactMarkdown
+											unwrapDisallowed
+											allowedElements={["code", "strong", "emphasis"]}
+										>
+											{issue?.body}
+										</ReactMarkdown>
+									</TableCell>
+								</TableRow>
+							);
+						})
+					: null}
+			</TableBody>
+		</Table>
+	);
 };
 
+
 export const PackagesPage = () => {
-  const depsQuery = useDependencies();
+  const { data: deps } = useDependencies();
 
-  const issues = depsQuery.data
-    ? depsQuery.data
-        .map((dep) => {
-          const { data } = useGitHubIssues({
-            owner: dep.repository.owner,
-            repo: dep.repository.repo,
-          });
+  const issuesQuery = useGitHubIssues({ dependencies: deps });
 
-          if (!data) return [];
-          return data;
-        })
-        .flat()
-        .filter((issue) => issue!)
-    : [];
+  const issues = useMemo(() => {
+    return issuesQuery.flatMap((q) => {
+      if (q.isSuccess) {
+        return q?.data as GitHubIssue[];
+      }
+    });
+  }, [issuesQuery]);
+
+  // const issues = depsQuery.data
+  //   ? depsQuery.data
+  //       .map((dep) => {
+  //         const { data } = useGitHubIssues({
+  //           owner: dep.repository.owner,
+  //           repo: dep.repository.repo,
+  //         });
+  //
+  //         if (!data) return [];
+  //         return data;
+  //       })
+  //       .flat()
+  //       .filter((issue) => issue!)
+  //   : [];
 
   return (
     <>
@@ -115,8 +117,8 @@ export const PackagesPage = () => {
 
       <section className="grid grid-cols-4">
         <div className="col-span-1 p-4 space-y-2">
-          {depsQuery.data ? (
-            depsQuery?.data?.map((dep) => {
+          {deps ? (
+            deps?.map((dep) => {
               return (
                 <Card key={dep.name}>
                   <CardHeader>
@@ -144,7 +146,7 @@ export const PackagesPage = () => {
               <CardTitle>Results in your dependencies</CardTitle>
             </CardHeader>
             <CardContent>
-              <IssuesTable issues={issues} />
+              <IssuesTable issues={issues ?? []} />
             </CardContent>
           </Card>
         </div>

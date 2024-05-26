@@ -1,21 +1,45 @@
-import { QueryClient, QueryClientProvider, useQuery } from "react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueries,
+  useQuery,
+} from "react-query";
 
 export const queryClient = new QueryClient();
 export { QueryClientProvider };
 
 import { MizuLog, MizuTrace, transformToLog } from "./decoders";
-import { Dependency, GitHubIssue, GitHubResponse } from "@/lib/types";
+import { Dependency, GitHubIssue } from "@/lib/types";
 
 export function useDependencies() {
   return useQuery({ queryKey: ["dependencies"], queryFn: fetchDependencies });
 }
 
-export function fetchDependencies(): Promise<Dependency[]> {
+export async function fetchDependencies(): Promise<Dependency[]> {
   return fetch("http://localhost:8788/v0/dependencies", { mode: "cors" })
     .then((r) => r.json())
     .catch((err) => console.log("Error fetching dependencies: ", err));
 }
 
+export function useGitHubIssues({
+  dependencies,
+}: {
+  dependencies: Dependency[] | undefined;
+}) {
+  return useQueries(
+    dependencies?.map((d) => ({
+      queryKey: ["githubIssues", { repository: d.repository }],
+      queryFn: () =>
+        fetchGitHubIssues({
+          owner: d.repository.owner,
+          repo: d.repository.repo,
+        }),
+      enabled: !!dependencies,
+    })) ?? [],
+  );
+}
+
+/*
 export function useGitHubIssues({
   owner,
   repo,
@@ -29,6 +53,7 @@ export function useGitHubIssues({
     enabled: !!owner && !!repo,
   });
 }
+*/
 
 export function fetchGitHubIssues({
   owner,
@@ -136,4 +161,3 @@ function getTraceDescription(trace: MizuTrace) {
   }
   return "Unknown trace";
 }
-
