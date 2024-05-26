@@ -1,6 +1,4 @@
-import { useMemo } from "react"
-
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table"
+import { ColumnDef, Row, RowData, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table"
 
 import {
   Table,
@@ -10,40 +8,52 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { MizuTrace } from "@/queries/decoders"
-import { useNavigate } from "react-router-dom";
 
-type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
-
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+// Extend the ColumnMeta type to include headerClassName and cellClassName
+//
+//   https://github.com/TanStack/table/discussions/4100
+//   https://tanstack.com/table/v8/docs/api/core/column-def#meta
+//
+declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    headerClassName?: string;
+    cellClassName?: string;
+  }
 }
 
-export function DataTable<TData extends MizuTrace, TValue>({
+export interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
+  /** Custom prop for optionally handling row clicks */
+  handleRowClick?: (row: Row<TData>) => void
+}
+
+const rowHasId = <TData,>(row: TData): row is TData & {id: string } => {
+  return row && typeof row === "object" && "id" in row && typeof row.id === "string";
+}
+
+/**
+ * Custom component (not part of shadcn/ui) to handle more complex data interactions than the 
+ * out of the box table component
+ * 
+ * Features:
+ * - Add an optional prop for a click handler when the entire row is clicked
+ * - Allow setting header and cell className prop through column definition metadata
+ * - If all the rows have an `id` property of type `string`, set that id as the row id
+ */
+export function DataTable<TData, TValue>({
   columns,
   data,
-  filter
-}: DataTableProps<TData, TValue> & { filter: LevelFilter }) {
-  const navigate = useNavigate();
-
-  // HACK - Filter data here depending on table
-  // TODO - Move filtering elsewhere, use react-table like a cool kid
-  const filteredTraces = useMemo(() => {
-    if (filter === "all") {
-      return data
-    }
-    return data.filter(trace => trace.logs.some(log => log.level === filter));
-  }, [data, filter])
-
-  // Create a table instance
+  handleRowClick,
+}: DataTableProps<TData, TValue> ) {
   const table = useReactTable({
-    data: filteredTraces,
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    // HACK - Need to set the row id in a type-safe way
-    ...filteredTraces.every(row => "id" in row && typeof row.id === "string") && ({
-      getRowId: (row: TData) => row.id,
+    // If all the data have an `id` property of type `string`, set that to the row id
+    ...data.every(rowHasId) && ({
+      getRowId: (row: TData, index) => rowHasId(row) ? row.id : `${index}`,
     })
   })
 
@@ -74,7 +84,7 @@ export function DataTable<TData extends MizuTrace, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                onClick={() => navigate(`/requests/${row.id}`)} // Adjust the path as needed
+                onClick={() => handleRowClick?.(row)}
                 className="cursor-pointer"
               >
                 {row.getVisibleCells().map((cell) => (

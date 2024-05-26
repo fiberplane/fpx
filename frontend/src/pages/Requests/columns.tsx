@@ -2,28 +2,16 @@ import {
   ExclamationTriangleIcon,
   InfoCircledIcon
 } from "@radix-ui/react-icons"
-import { ColumnDef, RowData, createColumnHelper } from "@tanstack/react-table"
+import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 
 import { formatDate } from "@/utils/utils"
 import type { MizuTrace } from "@/queries/decoders"
 import { RequestSheet } from "./RequestSheet"
 
-// Extend the ColumnMeta type to include headerClassName and cellClassName
-//
-//   https://github.com/TanStack/table/discussions/4100
-//   https://tanstack.com/table/v8/docs/api/core/column-def#meta
-//
-declare module '@tanstack/react-table' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData extends RowData, TValue> {
-    headerClassName?: string;
-    cellClassName?: string;
-  }
-}
-
 const columnHelper = createColumnHelper<MizuTrace>()
 
-// NOTE - Column is defined here, in a separate file from the DataTable to support fast refresh with Vite
+// NOTE - `columns` is defined here, in a separate file from the table,
+//         in order to support fast refresh with Vite
 export const columns: ColumnDef<MizuTrace>[] = [
   {
     id: "isError",
@@ -43,6 +31,10 @@ export const columns: ColumnDef<MizuTrace>[] = [
   {
     accessorKey: "status",
     header: "Status",
+    meta: {
+      headerClassName: "w-[80px]",
+      cellClassName: "font-mono"
+    }
   },
   {
     accessorKey: "description",

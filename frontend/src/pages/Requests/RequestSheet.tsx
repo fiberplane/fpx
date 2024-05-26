@@ -13,7 +13,6 @@ import {
 import type { MizuTrace } from "@/queries/decoders";
 import { TraceDetails } from "../RequestDetailsPage/RequestDetails";
 
-
 export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
   return (
     <div onClick={(e) => e.stopPropagation()}>
