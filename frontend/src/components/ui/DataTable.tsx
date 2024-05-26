@@ -1,4 +1,5 @@
 import { ColumnDef, Row, RowData, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table"
+import { clsx } from "clsx";
 
 import {
   Table,
@@ -29,7 +30,7 @@ export interface DataTableProps<TData, TValue> {
   handleRowClick?: (row: Row<TData>) => void
 }
 
-const rowHasId = <TData,>(row: TData): row is TData & {id: string } => {
+const rowHasId = <TData,>(row: TData): row is TData & { id: string } => {
   return row && typeof row === "object" && "id" in row && typeof row.id === "string";
 }
 
@@ -46,7 +47,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   handleRowClick,
-}: DataTableProps<TData, TValue> ) {
+}: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
@@ -85,10 +86,12 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
                 onClick={() => handleRowClick?.(row)}
-                className="cursor-pointer"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className={cell.column.columnDef.meta?.cellClassName || ""}>
+                  <TableCell key={cell.id} className={clsx(
+                    "py-1",
+                    cell.column.columnDef.meta?.cellClassName
+                  )}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

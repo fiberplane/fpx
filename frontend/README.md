@@ -16,4 +16,5 @@ The original readme that comes with a new vite project is here: [README-VITE.md]
 - React (duh)
 - shadcn/ui
 - tailwind.css
+- clsx (like `classnames`) to manage complexity of adding bunches of classNames
 - tanstack react-table
