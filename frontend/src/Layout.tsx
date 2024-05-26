@@ -60,6 +60,7 @@ const getPathSegments = (pathname: string) => {
 
 const breadcrumbMap: Record<string, string> = {
   '/': 'Dashboard',
+  '/packages': 'Packages',
   '/requests': 'Requests',
   '/requests/:traceId': 'Request Details',
 };
