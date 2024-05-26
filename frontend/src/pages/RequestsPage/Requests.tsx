@@ -31,11 +31,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/DataTable";
 import { columns } from "./columns";
-import { fetchMizuTraces } from "@/queries/react-query-test"
-import { useQuery } from "react-query"
 import { useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { MizuTrace } from "@/queries/decoders";
+import { useMizuTraces } from "@/queries/queries";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
@@ -55,7 +54,7 @@ const RequestsTable = ({ traces, filter }:{ traces: MizuTrace[]; filter: LevelFi
 }
 
 export function RequestsPage() {
-  const query = useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
+  const query = useMizuTraces();
 
   return (
     <Tabs defaultValue="all">

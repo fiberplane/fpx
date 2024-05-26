@@ -1,23 +1,13 @@
+import { CaretDownIcon, CaretRightIcon, CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import ReactMarkdown from 'react-markdown';
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 import type { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
-import { CaretDownIcon, CaretRightIcon, CaretSortIcon, CodeIcon, MagicWandIcon } from "@radix-ui/react-icons";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
 
 function useHandlerSourceCode(source: string, handler: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);
@@ -121,7 +111,6 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
   return (
     <LogCard>
       <LogDetailsHeader log={log} eventName="Incoming Request" description={description} />
-
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
       </div>

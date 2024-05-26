@@ -1,12 +1,17 @@
 import {
   QueryClient,
   QueryClientProvider,
+  useQuery,
 } from 'react-query'
 
 export const queryClient = new QueryClient()
 export { QueryClientProvider };
 
 import { MizuLog, MizuTrace, transformToLog } from "./decoders";
+
+export function useMizuTraces() {
+  return useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
+}
 
 export function fetchMizuTraces() {
   return fetch("http://localhost:8788/v0/logs", { mode: "cors" }).then(r => r.json())

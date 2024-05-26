@@ -28,17 +28,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { fetchMizuTraces } from "@/queries/react-query-test"
-import { isError, useQuery } from "react-query"
+// import { Button } from "@/components/ui/button"
+import { useMizuTraces } from "@/queries/queries"
+import { isError } from "react-query"
 import { useParams } from "react-router-dom";
 
-import { DataTable } from "./DataTable";
-import { columns } from "./columns";
 import { TraceDetails } from "./RequestDetails";
 
 function useRequestDetails(traceId?: string) {
-  const query = useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
+  const query = useMizuTraces();
   const trace = traceId ? query.data?.find(t => t.id === traceId) : undefined;
   return {
     isLoading: query.isLoading,
