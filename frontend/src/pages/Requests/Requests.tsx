@@ -115,7 +115,6 @@ export function RequestsPage() {
           </CardHeader>
           <CardContent>
             <DataTable columns={columns} data={query.data ?? []} filter="all" />
-            {/* <RequestsTable traces={traces} filter="all" /> */}
           </CardContent>
           <CardFooter>
             {query?.data?.length ? (

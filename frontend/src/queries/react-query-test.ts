@@ -1,12 +1,7 @@
 import {
-  useQuery,
-  useMutation,
-  useQueryClient,
   QueryClient,
   QueryClientProvider,
 } from 'react-query'
-
-// import { getTodos, postTodo } from '../my-api'
 
 export const queryClient = new QueryClient()
 export { QueryClientProvider };
@@ -21,6 +16,7 @@ export function fetchMizuTraces() {
       const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce((map: Map<string, MizuTrace>, log: MizuLog) => {
         if (!map.has(log.traceId)) {
           map.set(log.traceId, {
+            id: log.traceId,
             description: "",
             status: "",
             duration: "",
