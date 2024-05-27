@@ -37,6 +37,20 @@ export const PackagesPage = () => {
     });
   }, [issuesQuery]);
 
+  const fuse = useMemo(() => {
+    return new Fuse(issues, {
+      keys: ["title", "body"],
+      useExtendedSearch: true,
+    });
+  }, [issues]);
+
+  const [searchInput, setSearchInput] = useState("");
+
+  const searchedIssues = useMemo(() => {
+    if (searchInput.trim() === "") return issues;
+    const result = fuse.search(searchInput);
+    return result.map(({ item }) => item);
+  }, [searchInput, fuse]);
 
   return (
     <>
@@ -73,6 +87,7 @@ export const PackagesPage = () => {
               type="search"
               placeholder="Search for your error..."
               className="w-full rounded-lg bg-background pl-8 h-12"
+              onChange={(e) => setSearchInput(e?.target?.value)}
             />
           </div>
           <Card>
@@ -80,7 +95,7 @@ export const PackagesPage = () => {
               <CardTitle>Results in your dependencies</CardTitle>
             </CardHeader>
             <CardContent>
-              <IssuesTable issues={issues ?? []} />
+              <IssuesTable issues={searchedIssues ?? []} />
             </CardContent>
           </Card>
         </div>
