@@ -16,7 +16,13 @@ import Fuse from "fuse.js";
 
 const IssuesTable = ({ issues }: { issues: GitHubIssue[] }) => {
   issues = issues.slice(0, 10); // limit to 10 for now
-  return <DataTable columns={columns} data={issues} />;
+  return (
+    <DataTable
+      columns={columns}
+      data={issues}
+      handleRowClick={(row) => (window.location.href = row.original.html_url)}
+    />
+  );
 };
 
 export const PackagesPage = () => {
