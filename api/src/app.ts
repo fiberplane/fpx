@@ -66,7 +66,6 @@ export function createApp(wsConnections?: Set<WebSocket>) {
       );
 
       if (wsConnections) {
-				console.log("Sending to WS connections", wsConnections);
         for (const ws of wsConnections) {
           const message = ["mizuTraces"];
           ws.send(JSON.stringify(message));
