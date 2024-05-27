@@ -8,8 +8,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Separator } from "@/components/ui/separator";
 import type { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
+import { MizuRequestEnd, MizuRequestStart, isMizuRequestEndMessage, isMizuRequestStartMessage } from "@/queries/zod-experiment";
 
-function useHandlerSourceCode(source: string, handler: string) {
+function useHandlerSourceCode(source?: string, handler?: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);
   useEffect(() => {
     if (!source) {
@@ -82,10 +83,10 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
 }
 
 export const TraceDetails = ({ trace }: { trace: MizuTrace; }) => {
-  const request = trace.logs.find(log => log.message.lifecycle === "request");
-  const response = trace.logs.find(log => log.message.lifecycle === "response");
-  const source = request?.message?.file
-  const handler = response?.message?.handler;
+  const request = trace.logs.find(log => isMizuRequestStartMessage(log.message));
+  const response = trace.logs.find(log => isMizuRequestEndMessage(log.message));
+  const source = (request?.message as MizuRequestStart)?.file
+  const handler = (response?.message as MizuRequestEnd)?.handler;
   const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
 
   return (

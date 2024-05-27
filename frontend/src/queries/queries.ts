@@ -7,7 +7,8 @@ import {
 export const queryClient = new QueryClient()
 export { QueryClientProvider };
 
-import { MizuLog, MizuTrace, transformToLog } from "./decoders";
+import { MizuLog, MizuTrace } from "./decoders";
+import { MizuLogSchema } from './zod-experiment';
 
 export function useMizuTraces() {
   return useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
@@ -16,7 +17,15 @@ export function useMizuTraces() {
 export function fetchMizuTraces() {
   return fetch("http://localhost:8788/v0/logs", { mode: "cors" }).then(r => r.json())
     .then(j => {
-      const transformedLogs: Array<MizuLog> = j.logs.map(transformToLog)
+      // const transformedLogs: Array<MizuLog> = j.logs.map(transformToLog)
+      const transformedLogs: Array<MizuLog> = j.logs.map((log: unknown) => {
+        const parsedLog = MizuLogSchema.safeParse(log);
+        if (!parsedLog.success) {
+          throw new Error(`Invalid log format: ${parsedLog.error.message}`);
+        }
+        return parsedLog.data;
+      });
+
       transformedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
       const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce((map: Map<string, MizuTrace>, log: MizuLog) => {
         if (!map.has(log.traceId)) {

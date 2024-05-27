@@ -1,3 +1,5 @@
+import { MizuLog } from "./zod-experiment"; 
+
 type JsonValue = string | number | boolean | object | null;
 
 export type MizuTrace = {
@@ -8,31 +10,33 @@ export type MizuTrace = {
   logs: Array<MizuLog>;
 };
 
-export type MizuLog =
-  | {
-    id: number;
-    traceId: string;
-    timestamp: string;
-    level: string;
-    message: JsonValue;
-    args?: JsonValue;
-    createdAt: string;
-  }
-  | {
-    id: number;
-    traceId: string;
-    timestamp: string;
-    level: string;
-    message: string;
-    createdAt: string;
-    args?: JsonValue;
-    callerLocation?: null | {
-      file: string;
-      line: string;
-      column: string;
-    },
-    log: unknown;
-  };
+export type { MizuLog}
+
+// export type MizuLog =
+//   | {
+//     id: number;
+//     traceId: string;
+//     timestamp: string;
+//     level: string;
+//     message: JsonValue;
+//     args?: JsonValue;
+//     createdAt: string;
+//   }
+//   | {
+//     id: number;
+//     traceId: string;
+//     timestamp: string;
+//     level: string;
+//     message: string;
+//     createdAt: string;
+//     args?: JsonValue;
+//     callerLocation?: null | {
+//       file: string;
+//       line: string;
+//       column: string;
+//     },
+//     log: unknown;
+//   };
 
 export const transformToLog = (l: unknown): MizuLog => {
   if (
