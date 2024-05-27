@@ -9,72 +9,15 @@ import {
 import { Input } from "@/components/ui/input";
 import type { GitHubIssue } from "@/lib/types";
 import { useDependencies, useGitHubIssues } from "@/queries/queries";
-import { useMemo } from "react";
-import { DataTable } from "../RequestDetailsPage/DataTable";
+import { useMemo, useState } from "react";
 import { columns } from "./columns";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { humanReadableDate } from "@/utils/utils";
-import { CircleIcon } from "@radix-ui/react-icons";
-import ReactMarkdown from "react-markdown";
-
+import { DataTable } from "@/components/ui/DataTable";
+import Fuse from "fuse.js";
 
 const IssuesTable = ({ issues }: { issues: GitHubIssue[] }) => {
-	return (
-		<Table>
-			<TableHeader>
-				<TableRow>
-					<TableHead>Type</TableHead>
-					<TableHead>Title</TableHead>
-					<TableHead>Opened/Closed</TableHead>
-					<TableHead>Last Update</TableHead>
-					<TableHead>Preview</TableHead>
-				</TableRow>
-			</TableHeader>
-			<TableBody>
-				{issues.length > 0
-					? issues.map((issue) => {
-							if (!issue) return null;
-							return (
-								<TableRow key={issue?.id}>
-									<TableCell>
-										{issue?.pull_request ? (
-											"PR"
-										) : (
-											<CircleIcon
-												className={`${
-													issue?.state === "open"
-														? "text-green-800"
-														: "text-purple-800"
-												}`}
-											/>
-										)}
-									</TableCell>
-									<TableCell className="truncate">{issue?.title}</TableCell>
-									<TableCell>
-										{issue?.closed_at
-											? `closed ${humanReadableDate(issue.closed_at)}`
-											: `opened ${humanReadableDate(issue.created_at)}`}
-									</TableCell>
-									<TableCell>{`last update ${humanReadableDate(
-										issue?.updated_at,
-									)}`}</TableCell>
-									<TableCell className="max-w-[500px] h-10 truncate">
-										<ReactMarkdown
-											unwrapDisallowed
-											allowedElements={["code", "strong", "emphasis"]}
-										>
-											{issue?.body}
-										</ReactMarkdown>
-									</TableCell>
-								</TableRow>
-							);
-						})
-					: null}
-			</TableBody>
-		</Table>
-	);
+  issues = issues.slice(0, 10); // limit to 10 for now
+  return <DataTable columns={columns} data={issues} />;
 };
-
 
 export const PackagesPage = () => {
   const { data: deps } = useDependencies();
@@ -84,25 +27,16 @@ export const PackagesPage = () => {
   const issues = useMemo(() => {
     return issuesQuery.flatMap((q) => {
       if (q.isSuccess) {
-        return q?.data as GitHubIssue[];
+        return q?.data?.filter((issue: GitHubIssue) => {
+          if (issue?.pull_request) {
+            return false;
+          }
+          return true;
+        }) as GitHubIssue[];
       }
     });
   }, [issuesQuery]);
 
-  // const issues = depsQuery.data
-  //   ? depsQuery.data
-  //       .map((dep) => {
-  //         const { data } = useGitHubIssues({
-  //           owner: dep.repository.owner,
-  //           repo: dep.repository.repo,
-  //         });
-  //
-  //         if (!data) return [];
-  //         return data;
-  //       })
-  //       .flat()
-  //       .filter((issue) => issue!)
-  //   : [];
 
   return (
     <>
