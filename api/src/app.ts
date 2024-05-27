@@ -10,6 +10,7 @@ import { Octokit } from "octokit";
 import { mizuLogs } from "./db/schema";
 import { upgradeWebSocket } from "hono/cloudflare-workers";
 import { WebSocket } from "ws";
+import fs from "node:fs/promises";
 
 type Bindings = {
   DATABASE_URL: string;
@@ -213,17 +214,28 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     Endpoints["GET /repos/{owner}/{repo}/issues"]["response"];
   type Issues = OctokitResponse["data"];
 
-  let issuesCache: Issues;
+  // let issuesCache: Issues;
 
   app.get("/v0/github-issues/:owner/:repo", cors(), async (ctx) => {
-    const octokit = new Octokit({
-      auth: ctx.env.GITHUB_TOKEN,
-    });
+    const CACHE_FILE_NAME = "issues-cache.json";
 
-    if (issuesCache) {
-      console.log("Returning cached issues");
-      return ctx.json(issuesCache);
+    let issuesCache: Issues;
+
+    try {
+      issuesCache = JSON.parse((await fs.readFile(CACHE_FILE_NAME)).toString());
+
+      if (issuesCache) {
+        return ctx.json(issuesCache);
+      }
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        console.error("Issues cache is corrupted, ignoring");
+      }
     }
+
+    const octokit = new Octokit({
+      auth: ctx.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN,
+    });
 
     const owner = ctx.req.param("owner");
     const repo = ctx.req.param("repo");
@@ -231,16 +243,17 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     console.log("Fetching issues");
 
     const response = await octokit.paginate(
-      `GET /repos/${owner}/${repo}/issues`,
+      `GET /repos/${owner}/${repo}/issues?state=all`,
       {
         owner,
         repo,
       },
     );
 
-    issuesCache = response as Issues;
+    console.log("Issues fetched, writing to cache and returning");
+    await fs.writeFile(CACHE_FILE_NAME, JSON.stringify(response));
 
-    return ctx.json(issuesCache);
+    return ctx.json(response);
   });
 
   // HACK - Route to inspect any db errors during this session
