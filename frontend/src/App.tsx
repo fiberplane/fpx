@@ -1,8 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./Layout";
 <<<<<<< HEAD
-import { LogsPage } from "./pages/LogsPage/LogsPage";
-import { RequestsPage } from "./pages/Requests/Requests";
+import { RequestsPage } from "./pages/RequestsPage/Requests";
 import { PackagesPage } from "./pages/Packages/Packages";
 import { QueryClientProvider, queryClient } from "@/queries/react-query-test";
 =======
