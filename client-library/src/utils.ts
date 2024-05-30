@@ -141,3 +141,38 @@ export function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
 		}
 	};
 }
+
+/**
+ * Quick and dirty uuid utility
+ */
+export function generateUUID() {
+	const timeStamp = new Date().getTime().toString(36);
+	const randomPart = () => Math.random().toString(36).substring(2, 15);
+	return `${timeStamp}-${randomPart()}-${randomPart()}`;
+}
+
+/**
+ * Using a line from a stack trace, extract information on the location of the caller
+ */
+export function extractCallerLocation(callerLineFromStackTrace?: string) {
+	if (!callerLineFromStackTrace) {
+		return null;
+	}
+
+	const match = callerLineFromStackTrace.match(
+		/at (.*?) \(?(.*?):(\d+):(\d+)\)?$/,
+	);
+	if (match) {
+		const [_, method, file, line, column] = match;
+		return {
+			method,
+			file,
+			line,
+			column,
+		};
+	}
+	return null;
+}
+
+export const shouldPrettifyMizuLog = (printFnArgs: unknown[]) =>
+	printFnArgs?.[1] === PRETTIFY_MIZU_LOGGER_LOG;

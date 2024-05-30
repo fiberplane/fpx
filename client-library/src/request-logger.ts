@@ -1,5 +1,14 @@
 import type { MiddlewareHandler, RouterRoute } from "hono/types";
 import { getPath } from "hono/utils/url";
+import type { Context } from "hono";
+
+export const RECORDED_CONSOLE_METHODS = [
+	"debug",
+	"error",
+	"info",
+	"log",
+	"warn",
+] as const;
 
 import { PRETTIFY_MIZU_LOGGER_LOG, type PrintFunc } from "./utils";
 
@@ -39,85 +48,99 @@ export const logger = (
 	errFn: PrintFunc = (message: string, ...args: unknown[]) =>
 		console.error(message, ...args),
 ): MiddlewareHandler => {
-	return async function logger(c, next) {
-		// Use a stack trace to get the originating file
-		const stack = new Error().stack;
-		const file = getFileFromStackTrace(stack ?? "");
-
-		// Get basic request data
-		const { method } = c.req;
-		const path = getPath(c.req.raw);
-
-		// Copy request headers into plain object
-		const reqHeaders: Record<string, string> = {};
-		c.req.raw.headers.forEach((value, key) => {
-			reqHeaders[key] = value;
-		});
-
-		const requestQueryStringParameters = c.req.query();
-		logReq(
-			fn,
-			method,
-			reqHeaders,
-			path,
-			c.env,
-			c.req.param(),
-			requestQueryStringParameters,
-			file,
-		);
-
-		const start = Date.now();
-
-		await next();
-
-		const elapsed = time(start);
-
-		const matchedPathPattern = c.req.routePath;
-		// HACK - We know we will get a matched route, so coerce the type of `matchedRoute` to RouterRoute
-		const matchedRoute: RouterRoute = c.req.matchedRoutes.find((route) => {
-			return route.path === c.req.routePath;
-		}) as RouterRoute;
-
-		const matchedPathHandler = matchedRoute?.handler;
-
-		const handlerType =
-			matchedPathHandler.length < 2 ? "handler" : "middleware";
-
-		// Copy headers into a plain object
-		const resHeaders: Record<string, string> = {};
-		c.res.headers.forEach((value, key) => {
-			resHeaders[key] = value;
-		});
-
-		// Clone the response so the original isn't affected when we read the body
-		const clonedResponse = c.res.clone();
-		let body: string;
-		try {
-			// TODO - Read based off of content-type header
-			body = await clonedResponse.text();
-		} catch (error) {
-			// TODO - Check when this fails
-			console.error("Error reading response body:", error);
-			body = "__COULD_NOT_PARSE_BODY__";
-		}
-
-		// NOTE - Use errFn (console.error) if the status is 4xx or 5xx
-		const loggerFn = c.res.status >= 400 ? errFn : fn;
-
-		logRes(
-			loggerFn,
-			method,
-			path,
-			matchedPathPattern,
-			matchedPathHandler?.toString(),
-			handlerType,
-			c.res.status,
-			resHeaders,
-			body,
-			elapsed,
-		);
-	};
+	return (c: Context, next: () => Promise<void>) =>
+		logRequest(c, next, { fn, errFn });
 };
+
+export async function logRequest(
+	c: Context,
+	next: () => Promise<void>,
+	options?: {
+		fn: PrintFunc;
+		errFn: PrintFunc;
+	},
+): Promise<void> {
+	const {
+		fn = (message: string, ...args: unknown[]) => console.log(message, ...args),
+		errFn = (message: string, ...args: unknown[]) =>
+			console.error(message, ...args),
+	} = options || {};
+	// Use a stack trace to get the originating file
+	const stack = new Error().stack;
+	const file = getFileFromStackTrace(stack ?? "");
+
+	// Get basic request data
+	const { method } = c.req;
+	const path = getPath(c.req.raw);
+
+	// Copy request headers into plain object
+	const reqHeaders: Record<string, string> = {};
+	c.req.raw.headers.forEach((value, key) => {
+		reqHeaders[key] = value;
+	});
+
+	const requestQueryStringParameters = c.req.query();
+	logReq(
+		fn,
+		method,
+		reqHeaders,
+		path,
+		c.env,
+		c.req.param(),
+		requestQueryStringParameters,
+		file,
+	);
+
+	const start = Date.now();
+
+	await next();
+
+	const elapsed = time(start);
+
+	const matchedPathPattern = c.req.routePath;
+	// HACK - We know we will get a matched route, so coerce the type of `matchedRoute` to RouterRoute
+	const matchedRoute: RouterRoute = c.req.matchedRoutes.find((route) => {
+		return route.path === c.req.routePath;
+	}) as RouterRoute;
+
+	const matchedPathHandler = matchedRoute?.handler;
+
+	const handlerType = matchedPathHandler.length < 2 ? "handler" : "middleware";
+
+	// Copy headers into a plain object
+	const resHeaders: Record<string, string> = {};
+	c.res.headers.forEach((value, key) => {
+		resHeaders[key] = value;
+	});
+
+	// Clone the response so the original isn't affected when we read the body
+	const clonedResponse = c.res.clone();
+	let body: string;
+	try {
+		// TODO - Read based off of content-type header
+		body = await clonedResponse.text();
+	} catch (error) {
+		// TODO - Check when this fails
+		console.error("Error reading response body:", error);
+		body = "__COULD_NOT_PARSE_BODY__";
+	}
+
+	// NOTE - Use errFn (console.error) if the status is 4xx or 5xx
+	const loggerFn = c.res.status >= 400 ? errFn : fn;
+
+	logRes(
+		loggerFn,
+		method,
+		path,
+		matchedPathPattern,
+		matchedPathHandler?.toString(),
+		handlerType,
+		c.res.status,
+		resHeaders,
+		body,
+		elapsed,
+	);
+}
 
 function getFileFromStackTrace(stack: string) {
 	// Regular expression to match the pattern "file://path:line:column"
