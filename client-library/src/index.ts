@@ -1,6 +1,8 @@
 import type { NeonDbError } from "@neondatabase/serverless";
 import {
 	PRETTIFY_MIZU_LOGGER_LOG,
+	errorToJson,
+	neonDbErrorToJson,
 	polyfillWaitUntil,
 	tryPrettyPrintLoggerLog,
 } from "./utils";

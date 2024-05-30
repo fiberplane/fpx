@@ -1,7 +1,7 @@
 import type { MiddlewareHandler, RouterRoute } from "hono/types";
 import { getPath } from "hono/utils/url";
 
-import type { PRETTIFY_MIZU_LOGGER_LOG, PrintFunc } from "./utils";
+import { PRETTIFY_MIZU_LOGGER_LOG, type PrintFunc } from "./utils";
 
 // === LOGGER FUNCTION === //
 

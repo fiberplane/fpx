@@ -1,3 +1,5 @@
+import type { NeonDbError } from "@neondatabase/serverless";
+
 // HACK - We inject this symbol in our request/response logger in order to skip logging massive payloads
 export const PRETTIFY_MIZU_LOGGER_LOG = Symbol("PRETTIFY_MIZU_LOGGER_LOG");
 
@@ -59,7 +61,7 @@ export function getColorEnabled(): boolean {
 // === Utilities === //
 // ================= //
 
-function errorToJson(error: Error) {
+export function errorToJson(error: Error) {
 	return {
 		name: error.name, // Includes the name of the error, e.g., 'TypeError'
 		message: error.message, // The message string of the error
@@ -68,7 +70,7 @@ function errorToJson(error: Error) {
 	};
 }
 
-function neonDbErrorToJson(error: NeonDbError) {
+export function neonDbErrorToJson(error: NeonDbError) {
 	// console.log('hahaaa', error)
 	// console.log('SOURCE', error.sourceError)
 
