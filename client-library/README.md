@@ -23,13 +23,13 @@ npm create hono@latest my-hono-project
 ## Install the mizu client
 
 ### Copy the `mizu.ts` file
-To "install" the mizu client, **add the [`mizu.ts`](./mizu.ts) file from this repo** to the `src/` folder of your Hono project.
+To install the mizu client, add this package as a dependency:
 
-For example,
+``` bash
+npm install 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
 
-```sh
-# From my-hono-project
-cp ../mizu/client-library/mizu.ts src/
+# or with yarn:
+yarn add 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
 ```
 
 ### Add middleware
@@ -40,7 +40,7 @@ If you only just started your project, you can copy paste the entire contents be
 
 ```ts
 import { Hono } from 'hono'
-import { Mizu, logger } from "./mizu";
+import { Mizu, logger } from "mizu";
 
 type Bindings = {
   MIZU_ENDPOINT: string;
