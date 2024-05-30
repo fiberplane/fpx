@@ -149,9 +149,6 @@ function getFileFromStackTrace(stack: string) {
   const match = stack.match(regex);
 
   if (match) {
-    // if (stack.includes("neon")) {
-    //   debugger
-    // }
     // Extract the file path, line, and column from the regex match
     const [, source] = match;
     return source;

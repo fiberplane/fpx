@@ -18,7 +18,9 @@ type Config = {
   /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
   libraryDebugMode?: boolean;
   monitor: {
+    // TODO - implement this control/feature
     fetch: boolean;
+    // TODO - implement this control/feature
     logging: boolean;
     requests: boolean;
   };
@@ -107,10 +109,6 @@ export function createHonoMiddleware(options: {
       };
     }
 
-    // return () => {
-    // };
-
-    // if ()
     if (monitorFetch) {
       await logRequest(c, next);
     } else {
