@@ -16,21 +16,7 @@
       ".nx",
       ".yarn",
       "dist",
-      "node_modules",
-      "target",
-      "providerTypes.ts",
-      "api",
-      "explorer/build",
-      "os",
-      "release.json",
-      "package.json",
-      "studio/build",
-      "studio/src/services/DataSources/providerRuntime",
-      "studio/src/services/FiberKit/ts-bindings",
-      "studio/src/theme/GlobalStyleVariables.tsx",
-      "studio/themes/templates",
-      "studio/playwright-report",
-      "studio/test-results"
+      "node_modules"
     ]
   }
 }
