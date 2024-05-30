@@ -1,6 +1,6 @@
+import type { Context } from "hono";
 import type { MiddlewareHandler, RouterRoute } from "hono/types";
 import { getPath } from "hono/utils/url";
-import type { Context } from "hono";
 
 export const RECORDED_CONSOLE_METHODS = [
   "debug",
@@ -13,7 +13,6 @@ export const RECORDED_CONSOLE_METHODS = [
 import { PRETTIFY_MIZU_LOGGER_LOG, type PrintFunc } from "./utils";
 
 // === LOGGER FUNCTION === //
-
 function logReq(
   fn: PrintFunc,
   method: string,

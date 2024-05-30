@@ -1,4 +1,5 @@
 import type { NeonDbError } from "@neondatabase/serverless";
+import { RECORDED_CONSOLE_METHODS } from "./request-logger";
 import {
   PRETTIFY_MIZU_LOGGER_LOG,
   errorToJson,
@@ -9,7 +10,6 @@ import {
   shouldPrettifyMizuLog,
   tryPrettyPrintLoggerLog,
 } from "./utils";
-import { RECORDED_CONSOLE_METHODS } from "./request-logger";
 
 export { logger } from "./request-logger";
 

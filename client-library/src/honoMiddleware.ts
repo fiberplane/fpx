@@ -1,4 +1,6 @@
+import type { NeonDbError } from "@neondatabase/serverless";
 import type { Context } from "hono";
+import { RECORDED_CONSOLE_METHODS, logRequest, logger } from "./request-logger";
 import {
   errorToJson,
   extractCallerLocation,
@@ -8,8 +10,6 @@ import {
   shouldPrettifyMizuLog,
   tryPrettyPrintLoggerLog,
 } from "./utils";
-import { RECORDED_CONSOLE_METHODS, logRequest, logger } from "./request-logger";
-import type { NeonDbError } from "@neondatabase/serverless";
 
 type Config = {
   endpoint: string;
