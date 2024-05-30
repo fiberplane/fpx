@@ -39,36 +39,28 @@ Add the mizu import, and then add middleware definitions **AT THE TOP OF YOUR AP
 If you only just started your project, you can copy paste the entire contents below into your `src/index.ts`:
 
 ```ts
-import { Hono } from 'hono'
-import { Mizu, logger } from "mizu";
+import { Context, Hono } from "hono";
+import { createHonoMiddleware } from "mizu";
 
-type Bindings = {
-  MIZU_ENDPOINT: string;
-};
+const app = new Hono();
 
-const app = new Hono<{ Bindings: Bindings }>();
+const createConfig = (c: Context) => {
+ return {
+  endpoint: c.env?.MIZU_ENDPOINT,
+  service: c.env?.SERVICE_NAME || "unknown",
+  libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
+  monitor: {
+   fetch: true,
+   logging: true,
+   requests: true,
+  },
+ };
+}
 
-// Mizu Tracing Middleware - Must be called first!
-app.use(async (c, next) => {
-  const config = { MIZU_ENDPOINT: c.env.MIZU_ENDPOINT };
-  const ctx = c.executionCtx;
-
-  const teardown = Mizu.init(
-    config,
-    ctx,
-  );
-
-  await next();
-
-  teardown();
+app.use(createHonoMiddleware({ createConfig }))
+app.get("/", (c) => {
+	return c.text("Hello Hono!");
 });
-
-// Mizu request logging
-app.use(logger());
-
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
 
 export default app;
 ```
