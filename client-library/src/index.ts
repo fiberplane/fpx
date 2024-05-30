@@ -1,10 +1,11 @@
 import type { NeonDbError } from "@neondatabase/serverless";
 import {
 	PRETTIFY_MIZU_LOGGER_LOG,
-	PrintFunc,
 	polyfillWaitUntil,
 	tryPrettyPrintLoggerLog,
 } from "./utils";
+
+export { logger } from "./logger";
 
 // =========================== //
 // === Types and constants === //
