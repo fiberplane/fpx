@@ -16,6 +16,7 @@ pub struct Args {
     pub endpoint: Url,
 }
 
+#[tracing::instrument]
 pub async fn handle_command(args: Args) -> Result<()> {
     let (ws_stream, resp) = tokio_tungstenite::connect_async(&args.endpoint)
         .await

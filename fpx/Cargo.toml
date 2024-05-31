@@ -29,3 +29,12 @@ tokio-tungstenite = { version = "0.21", features = ["rustls-tls-webpki-roots"] }
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3" }
 url = { version = "2.5" }
+
+opentelemetry = { version = "0.22" }
+opentelemetry_sdk = { version = "0.22" }
+axum-tracing-opentelemetry = { version = "0.18" }
+tower-http = { version = "*", features = ["trace"] }
+init-tracing-opentelemetry = { version = "0.18", features = [
+    "otlp",
+    "tracing_subscriber_ext",
+] }

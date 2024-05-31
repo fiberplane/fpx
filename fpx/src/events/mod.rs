@@ -15,6 +15,7 @@ impl<M: Clone> Events<M> {
         Self { sender }
     }
 
+    #[tracing::instrument(skip(self, msg))]
     pub async fn broadcast(&self, msg: M) {
         debug!("Broadcasting message:");
         let _ = self.sender.send(msg);

@@ -28,6 +28,7 @@ pub enum Command {
 async fn main() -> Result<()> {
     let args = Args::parse();
 
+    init_tracing_opentelemetry::tracing_subscriber_ext::init_subscribers()?;
     tracing_subscriber::fmt::init();
 
     match args.command {

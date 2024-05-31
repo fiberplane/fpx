@@ -8,13 +8,17 @@ use futures_util::{SinkExt, StreamExt};
 use rand::Rng;
 use tokio::sync::broadcast::Receiver;
 use tokio::sync::mpsc;
-use tracing::{debug, error, trace, warn};
+use tracing::{debug, error, trace, warn, Instrument};
 
+#[tracing::instrument(skip(events, ws), fields(ws_id))]
 pub async fn ws_handler(
     ws: WebSocketUpgrade,
     State(events): State<EventsState<ServerMessage>>,
 ) -> Response {
     let ws_id = generate_ws_id();
+    tracing::span::Span::current().record("ws_id", ws_id);
+
+    trace!("Upgrading WebSocket connection");
 
     let mut result = ws
         .on_failed_upgrade(ws_failed_callback)
@@ -37,7 +41,8 @@ fn ws_failed_callback(err: axum::Error) {
     error!(?err, "Failed to upgrade WebSocket connection");
 }
 
-async fn ws_socket(socket: WebSocket, events: EventsState<ServerMessage>, _ws_id: u32) {
+#[tracing::instrument(skip(socket, events))]
+async fn ws_socket(socket: WebSocket, events: EventsState<ServerMessage>, ws_id: u32) {
     trace!("WebSocket connection connected");
 
     // Subscribe to the broadcast channel. This will contain all messages that
@@ -53,7 +58,7 @@ async fn ws_socket(socket: WebSocket, events: EventsState<ServerMessage>, _ws_id
     let (write, read) = socket.split();
 
     // Spawn the write task into its own background task.
-    let write_task = tokio::spawn(ws_socket_write(write, broadcast, reply_read));
+    let write_task = tokio::spawn(ws_socket_write(write, broadcast, reply_read).in_current_span());
 
     // Wait until the read task completes. This will happen when the WebSocket
     // connection is closed.
@@ -69,7 +74,10 @@ async fn ws_socket(socket: WebSocket, events: EventsState<ServerMessage>, _ws_id
 ///
 /// This will loop until the WebSocket connection is closed. It can use
 /// [`reply`] to send messages to the WebSocket connection.
+#[tracing::instrument(skip_all)]
 async fn ws_socket_read(mut read: SplitStream<WebSocket>, reply: mpsc::Sender<ServerMessage>) {
+    trace!("Starting read loop");
+
     loop {
         // If next returns [`None`], the WebSocket connection is closed, so stop
         // the loop.
@@ -80,6 +88,8 @@ async fn ws_socket_read(mut read: SplitStream<WebSocket>, reply: mpsc::Sender<Se
         // Parse the message as JSON and then handle it according to the message
         // type.
         match message {
+            // We received a text message, parse it as a ClientMessage and
+            // handle it
             Ok(Message::Text(msg)) => {
                 let message: Result<ClientMessage, _> = serde_json::from_str(&msg);
 
@@ -94,7 +104,14 @@ async fn ws_socket_read(mut read: SplitStream<WebSocket>, reply: mpsc::Sender<Se
                     }
                 };
             }
-            Ok(_) => warn!("Received non-text message"),
+            // We received a close message from the client, so stop the read
+            // loop, which will eventually results the entire WebSocket
+            // connection being closed.
+            Ok(Message::Close(_)) => {
+                trace!("Received close message, closing read loop");
+                break;
+            }
+            Ok(message) => warn!(?message, "Received non-text message"),
             Err(err) => error!(?err, "Error reading message"),
         };
     }
@@ -106,11 +123,14 @@ async fn ws_socket_read(mut read: SplitStream<WebSocket>, reply: mpsc::Sender<Se
 ///
 /// This will read both the broadcast channel and the reply channel, and send
 /// the messages to the connected WebSocket connection.
+#[tracing::instrument(skip_all)]
 async fn ws_socket_write(
     mut write: SplitSink<WebSocket, Message>,
     mut broadcast: Receiver<ServerMessage>,
     mut reply: mpsc::Receiver<ServerMessage>,
 ) {
+    trace!("Starting write loop");
+
     loop {
         let message = tokio::select! {
             // Make the select biased since we want to prioritize reply messages
@@ -136,6 +156,8 @@ async fn ws_socket_write(
             // always match.
             else => break,
         };
+
+        trace!("Sending a message to a WebSocket connection");
 
         let message = serde_json::to_string(&message).expect("serialization cannot fail");
 

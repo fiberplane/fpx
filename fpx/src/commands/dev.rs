@@ -1,7 +1,7 @@
 use crate::{api, events::Events};
 use anyhow::{Context, Result};
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::info;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -10,7 +10,12 @@ pub struct Args {
     pub listen_address: String,
 }
 
+#[tracing::instrument]
 pub async fn handle_command(args: Args) -> Result<()> {
+    opentelemetry::global::set_text_map_propagator(
+        opentelemetry_sdk::propagation::TraceContextPropagator::new(),
+    );
+
     // Create a shared events struct, which allows events to be send to
     // WebSocket connections.
     let events = Arc::new(Events::new());
