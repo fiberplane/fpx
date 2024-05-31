@@ -57,10 +57,6 @@ export function getColorEnabled(): boolean {
   );
 }
 
-// ================= //
-// === Utilities === //
-// ================= //
-
 export function errorToJson(error: Error) {
   return {
     name: error.name, // Includes the name of the error, e.g., 'TypeError'

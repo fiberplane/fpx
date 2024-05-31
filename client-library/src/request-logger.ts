@@ -56,7 +56,7 @@ export async function log(
   const stack = new Error().stack;
   const file = getFileFromStackTrace(stack ?? "");
 
-  // Get basic request data
+  // Get basic request data (method, path)
   const { method } = c.req;
   const path = getPath(c.req.raw);
 
@@ -137,12 +137,12 @@ function getFileFromStackTrace(stack: string) {
   const match = stack.match(regex);
 
   if (match) {
-    // Extract the file path, line, and column from the regex match
+    // Extract the file path from the regex match
     const [, source] = match;
     return source;
   }
 
-  // Return null or throw an error if no match is found
+  // Return null if no match is found
   return null;
 }
 

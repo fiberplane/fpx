@@ -43,8 +43,8 @@ export function createHonoMiddleware(options: {
       },
     } = options.createConfig(c);
     const ctx = c.executionCtx;
-    // console.log(config.endpoint);
-    // NOTE - Polyfill is probably not necessary for Cloudflare workers, but could be good for vercel envs
+
+    // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs
     //         https://github.com/highlight/highlight/pull/6480
     polyfillWaitUntil(ctx);
 
