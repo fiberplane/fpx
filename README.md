@@ -4,7 +4,7 @@
 
 ## Description
 
-This has an api and a frontend that can consume telemetry data from a Hono app. 
+This has an api and a frontend that can consume telemetry data from a Hono app.
 
 To connect your Hono app to the api, you'll need to add the code in the [`client-library`](./client-library) folder to your Hono app. This will send telemetry data to the api.
 
@@ -14,9 +14,9 @@ The frontend is a React + Typescript + Tailwind app that uses [shadcn/ui](https:
 
 ## Setup
 
-You'll want to 
+You'll want to
 
-1. Run the code in this repo, and then 
+1. Run the code in this repo, and then
 2. Add some client code to a Hono app
 
 The next two sections take you through how to do this.
@@ -36,3 +36,10 @@ Follow the instructions in the [`client-library` README](./client-library/README
 ## Developing
 
 I turned off Biome. But we could always add it? Idk.
+
+## License
+
+All code within the `fpx` repository is distributed under the terms of
+both the MIT license and the Apache License (Version 2.0).
+
+See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT).

@@ -11,11 +11,11 @@ pub type EventsState<M> = Arc<Events<M>>;
 
 impl<M: Clone> Events<M> {
     pub fn new() -> Self {
-        let (sender, _) = broadcast::channel(10);
+        let (sender, _) = broadcast::channel(100);
         Self { sender }
     }
 
-    pub async fn broadcast(&self, msg: M) {
+    pub fn broadcast(&self, msg: M) {
         debug!("Broadcasting message:");
         let _ = self.sender.send(msg);
     }

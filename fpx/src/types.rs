@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-pub const FPX_WEBSOCKET_ID_HEADER: &'static str = "fpx-websocket-id";
+pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
 /// Messages that are send from the server to the client.
 #[derive(Clone, Serialize, Deserialize)]
