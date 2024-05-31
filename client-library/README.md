@@ -32,6 +32,10 @@ npm install 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-
 yarn add 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
 ```
 
+### Trouble getting the latest version
+
+If you're not getting the latest version, it might be that your package manager is caching an older version of the package.  As a work around you may want to clear your local cache by running something like `yarn cache clean`
+
 ### Add middleware
 
 Add the mizu import, and then add middleware definitions **AT THE TOP OF YOUR APP**, ideally in your `src/index.ts`
