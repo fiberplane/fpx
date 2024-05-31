@@ -71,7 +71,6 @@ export function errorToJson(error: Error) {
 }
 
 export function neonDbErrorToJson(error: NeonDbError) {
-
   return {
     name: error.name,
     message: error.message,

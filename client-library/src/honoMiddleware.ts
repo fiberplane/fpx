@@ -1,6 +1,6 @@
 import type { NeonDbError } from "@neondatabase/serverless";
 import type { Context } from "hono";
-import { RECORDED_CONSOLE_METHODS, log} from "./request-logger";
+import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
 import {
   errorToJson,
   extractCallerLocation,
