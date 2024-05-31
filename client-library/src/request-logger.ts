@@ -39,19 +39,7 @@ function logReq(
   fn(JSON.stringify(out), PRETTIFY_MIZU_LOGGER_LOG);
 }
 
-export const logger = (
-  // HACK - Use print functions that just invoke console.log from outer context
-  //        We do this since console.log is monkeypatched in the mizu middleware, so we can't default to just `console.log`
-  fn: PrintFunc = (message: string, ...args: unknown[]) =>
-    console.log(message, ...args),
-  errFn: PrintFunc = (message: string, ...args: unknown[]) =>
-    console.error(message, ...args),
-): MiddlewareHandler => {
-  return (c: Context, next: () => Promise<void>) =>
-    logRequest(c, next, { fn, errFn });
-};
-
-export async function logRequest(
+export async function log(
   c: Context,
   next: () => Promise<void>,
   options?: {
