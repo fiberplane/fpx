@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "linter": {
+    "enabled": true
+  },
+	"organizeImports": {
+		"enabled": true
+	},
+  "files": {
+    "ignore": [
+      "*.d.ts",
+      ".nx",
+      ".yarn",
+      "dist",
+      "node_modules"
+    ]
+  }
+}

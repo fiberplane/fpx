@@ -1,12 +1,28 @@
 {
+  "name": "mizu",
+  "type": "module",
+  "main": "dist/index.js",
+  "version": "0.1.0",
   "dependencies": {
+    "@biomejs/biome": "^1.7.3",
     "@neondatabase/serverless": "^0.9.3",
+    "@swc/cli": "^0.3.12",
+    "@swc/core": "^1.5.22",
+    "@swc/plugin-transform-imports": "^2.0.4",
     "hono": "^4.3.9"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
     "dotenv": "^16.4.5",
     "tsx": "^4.10.5",
+    "typescript": "^5.4.5",
     "wrangler": "^3.47.0"
+  },
+  "scripts": {
+    "build": "cd src && swc . -d ../dist",
+    "lint": "biome lint ./src/**.ts",
+    "format": "biome check ./src/**.ts --apply",
+    "lint:ci": "biome ci ./src/**.ts",
+    "postinstall": "cd src && swc . -d ../dist"
   }
 }
