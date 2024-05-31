@@ -1,8 +1,5 @@
 import {
-  // FileIcon,
-  TrashIcon,
   MoonIcon,
-  // ListBulletIcon as ListFilter, // FIXME
 } from "@radix-ui/react-icons"
 
 import {
@@ -13,14 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-// import {
-//   DropdownMenu,
-//   DropdownMenuCheckboxItem,
-//   DropdownMenuContent,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu"
 
 import {
   Tabs,
@@ -28,7 +17,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-// import { Button } from "@/components/ui/button"
 import { useMizuTraces } from "@/queries/queries"
 import { isError } from "react-query"
 import { useParams } from "react-router-dom";
@@ -96,7 +84,6 @@ export function RequestDetailsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* <DataTable columns={columns} data={query.data ?? []} filter="error" /> */}
           </CardContent>
           <CardFooter>
             {trace?.logs?.length ? (

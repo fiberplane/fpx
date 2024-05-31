@@ -8,76 +8,81 @@ export const queryClient = new QueryClient()
 export { QueryClientProvider };
 
 import { MizuLog, MizuTrace, transformToLog } from "./decoders";
+import { objectWithKey, objectWithKeyAndValue } from '@/utils';
 
 export function useMizuTraces() {
   return useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
 }
 
-export function fetchMizuTraces() {
-  return fetch("http://localhost:8788/v0/logs", { mode: "cors" }).then(r => r.json())
-    .then(j => {
-      const transformedLogs: Array<MizuLog> = j.logs.map(transformToLog)
-      transformedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-      const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce((map: Map<string, MizuTrace>, log: MizuLog) => {
-        if (!map.has(log.traceId)) {
-          map.set(log.traceId, {
-            id: log.traceId,
-            description: "",
-            status: "",
-            duration: "",
-            logs: [] as Array<MizuLog>,
-          })
-        }
-        map.get(log.traceId)!.logs.push(log)
-        return map
-      }, new Map<string, MizuTrace>());
+async function fetchMizuTraces() {
+  try {
 
-      const traces: Array<MizuTrace> = []
-      for (const [, trace] of tracesMap.entries()) {
-        trace.logs.sort((a, b) => {
-          const comparison = a.timestamp.localeCompare(b.timestamp);
-          // HACK - tie-breaking logic for logs with the same timestamp, defer to the lifecycle field
-          if (comparison === 0) {
-            if (a.message?.lifecycle === "response" || b.message?.lifecycle === "request") {
-              return 1;
-            }
-            if (a.message?.lifecycle === "request" || b.message?.lifecycle === "response") {
-              return -1;
-            }
+    const response = await fetch("http://localhost:8788/v0/logs", { mode: "cors" });
+    const jsonResponse = await response.json();
+    const transformedLogs: Array<MizuLog> = jsonResponse.logs.map(transformToLog)
+    transformedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce((map: Map<string, MizuTrace>, log: MizuLog) => {
+      if (!map.has(log.traceId)) {
+        map.set(log.traceId, {
+          id: log.traceId,
+          description: "",
+          status: "",
+          duration: "",
+          logs: [] as Array<MizuLog>,
+        })
+      }
+      map.get(log.traceId)!.logs.push(log)
+      return map
+    }, new Map<string, MizuTrace>());
+
+    const traces: Array<MizuTrace> = []
+    for (const [, trace] of tracesMap.entries()) {
+      trace.logs.sort((a, b) => {
+        const comparison = a.timestamp.localeCompare(b.timestamp);
+        // HACK - tie-breaking logic for logs with the same timestamp, defer to the lifecycle field
+        if (comparison === 0) {
+          if (objectWithKeyAndValue(a.message, "lifecycle", "response") || objectWithKeyAndValue(b.message, "lifecycle", "request")) {
+            return 1;
           }
-          return comparison;
-        });
 
-        trace.duration = "TODO";
-        trace.description = getTraceDescription(trace);
+          if (objectWithKeyAndValue(a.message, "lifecycle", "request") || objectWithKeyAndValue(b.message, "lifecycle", "response")) {
+            return -1;
+          }
+        }
+        return comparison;
+      });
 
-        const response = trace.logs.find(l => l.message?.lifecycle === "response");
-        trace.status = response?.message?.status ?? "unknown";
-        traces.push(trace);
-      }
+      trace.duration = "TODO";
+      trace.description = getTraceDescription(trace);
 
-      // Sort traces by most recent to least recent timestamp
-      // based off of the first log in the trace
-      traces.sort((a, b) => b.logs[0].timestamp.localeCompare(a.logs[0].timestamp));
+      const response = trace.logs.find(l => objectWithKeyAndValue(l.message, "lifecycle", "response"));
+      const status = objectWithKey(response?.message, "status") ? response.message.status : undefined;
+      trace.status = typeof status === "string" ? status : "unknown";
+      traces.push(trace);
+    }
 
-      return traces;
-    }).catch((e: unknown) => {
-      console.error("Error fetching logs: ", e);
-      if (e instanceof Error) {
-        alert(`Error fetching logs: ${e.message}`);
-      }
-    })
+    // Sort traces by most recent to least recent timestamp
+    // based off of the first log in the trace
+    traces.sort((a, b) => b.logs[0].timestamp.localeCompare(a.logs[0].timestamp));
+
+    return traces;
+} catch(e: unknown) {
+    console.error("Error fetching logs: ", e);
+    if (e instanceof Error) {
+      alert(`Error fetching logs: ${e.message}`);
+    }
+  }
 
 }
 
-function getTraceDescription(trace: MizuTrace) {
-  const request = trace.logs.find(l => l.message?.lifecycle === "request");
-  const response = trace.logs.find(l => l.message?.lifecycle === "response");
+export function getTraceDescription(trace: MizuTrace) {
+  const request = trace.logs.find(l => objectWithKeyAndValue(l.message, "lifecycle","request"));
+  const response = trace.logs.find(l => objectWithKeyAndValue(l.message, "lifecycle" , "response"));
 
-  const method = request?.message?.method;
-  const path = response?.message?.path;
-  const status = response?.message?.status;
-
+  const method = objectWithKey(request?.message, "method") ? request.message.method : undefined;
+  const path = objectWithKey(request?.message, "path") ? request.message.path : undefined;
+  const status = objectWithKey(request?.message, "status") ? request.message.status : undefined;
+  
   if (path === "/favicon.ico" && status === "404") {
     return "favicon not found";
   }

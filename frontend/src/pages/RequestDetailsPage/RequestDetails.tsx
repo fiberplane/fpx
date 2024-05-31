@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Separator } from "@/components/ui/separator";
 import type { MizuTrace, MizuLog } from "@/queries/decoders";
 import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
+import { objectWithKey, objectWithKeyAndValue } from "@/utils";
 
 function useHandlerSourceCode(source: string, handler: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);
@@ -82,11 +83,11 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
 }
 
 export const TraceDetails = ({ trace }: { trace: MizuTrace; }) => {
-  const request = trace.logs.find(log => log.message.lifecycle === "request");
-  const response = trace.logs.find(log => log.message.lifecycle === "response");
-  const source = request?.message?.file
-  const handler = response?.message?.handler;
-  const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
+  const request = trace.logs.find(log => objectWithKeyAndValue(log.message, "lifecycle",  "request"));
+  const response = trace.logs.find(log => objectWithKeyAndValue(log.message, "lifecycle",  "response"));
+  const source = objectWithKey(request?.message, "file") && request.message.file;
+  const handler =objectWithKey(response?.message, "handler") && response.message.handler;
+  const handlerSourceCode = useHandlerSourceCode(typeof source === "string" ? source : "" , typeof handler === "string" ? handler : "" ) ?? "";
 
   return (
     <>
@@ -106,7 +107,7 @@ const LogCard = ({ children }: { children: React.ReactNode }) => {
 }
 
 const RequestLog = ({ log }: { log: MizuLog }) => {
-  const description = `${log.message.method} ${log.message.path}`
+  const description = `${objectWithKey(log.message, "method") && log.message.method} ${objectWithKey(log.message, "path") && log.message.path}`
 
   return (
     <LogCard>
@@ -120,7 +121,7 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
 
 const FetchRequestLog = ({ log }: { log: MizuLog }) => {
   const description = `Fetch Request: ${"todo"}`
-  console.log("FETCH REQUEST", log.message?.args)
+  console.log("FETCH REQUEST", objectWithKey(log.message, "args") && log.message.args)
 
   return (
     <LogCard>
@@ -135,7 +136,7 @@ const FetchRequestLog = ({ log }: { log: MizuLog }) => {
 
 const FetchResponseLog = ({ log }: { log: MizuLog }) => {
   const description = `Fetch Response: ${"todo"}`
-  console.log("FETCH REQUEST", log.message?.args)
+  console.log("FETCH REQUEST", objectWithKey(log.message, "args") && log.message.args)
 
   return (
     <LogCard>
@@ -150,7 +151,7 @@ const FetchResponseLog = ({ log }: { log: MizuLog }) => {
 
 const FetchErrorLog = ({ log }: { log: MizuLog }) => {
   const description = `Fetch Response: ${"todo"}`
-  console.log("FETCH REQUEST", log.message?.args)
+  console.log("FETCH REQUEST", objectWithKey(log.message, "args") && log.message.args)
 
   return (
     <LogCard>
@@ -167,7 +168,7 @@ const FetchErrorLog = ({ log }: { log: MizuLog }) => {
 /**
  * As of writing, only handles 404 for favicon
  */
-function getResponseMagicSuggestion({ log, trace }: { log: MizuLog, trace?: MizuTrace }) {
+function getResponseMagicSuggestion({ log }: { log: MizuLog, trace?: MizuTrace }) {
   if (log.message.method === "GET" && log.message.path === "/favicon.ico" && log.message.status === "404") {
     return (
       <div className="flex flex-col">
@@ -213,7 +214,7 @@ function useCallerLocation(log: MizuLog) {
   return vsCodeLink;
 }
 
-function getMagicSuggesttion({ log, trace }: { log: MizuLog, trace?: MizuTrace }) {
+function getMagicSuggesttion({ log }: { log: MizuLog, trace?: MizuTrace }) {
   if (log.message?.message === "process is not defined") {
     return "Change process.env to c.env"
   }
@@ -236,7 +237,7 @@ const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?
     callerLocation: shouldFindCallerLocation ? log.callerLocation : null
   });
 
-  const { response: aiResponse, query: execAiQuery, loading: aiLoading } = useAiAnalysis(handlerSourceCode ?? "", log.message.message);
+  const { response: aiResponse, query: execAiQuery} = useAiAnalysis(handlerSourceCode ?? "", log.message.message);
 
   useEffect(() => {
     if (stack) {
@@ -314,7 +315,7 @@ const InfoLog = ({ log }: { log: MizuLog }) => {
     <LogCard>
       <LogDetailsHeader eventName="console.log" log={log} description={""} />
       <div className="mt-2 font-sans">
-        {log.message}
+        {description}
       </div>
       <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
         {JSON.stringify(log.args, null, 2)}
@@ -401,7 +402,9 @@ const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; 
   )
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KVGridProps = { [key: string]: any }
+
 const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
   const [isOpen, setIsOpen] = useState(false)
   // const { lifecycle, method, path, ...message } = data; // TODO - extract these

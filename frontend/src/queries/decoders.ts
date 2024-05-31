@@ -63,6 +63,7 @@ export const transformToLog = (l: unknown): MizuLog => {
       createdAt: l.created_at,
     };
   }
+  
   return {
     id: +new Date(),
     traceId: l && typeof l === "object" && "trace_id" in l && typeof l.trace_id === "string" ? l.trace_id : "",
