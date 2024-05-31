@@ -1,8 +1,10 @@
 use crate::api;
 use crate::events::Events;
+use crate::github::GitHubCrawler;
 use anyhow::{Context, Result};
 use std::sync::Arc;
-use tracing::info;
+use std::time::Duration;
+use tracing::{error, info};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -15,6 +17,21 @@ pub async fn handle_command(args: Args) -> Result<()> {
     // Create a shared events struct, which allows events to be send to
     // WebSocket connections.
     let events = Arc::new(Events::new());
+
+    if let Some(github_token) = std::option_env!("GITHUB_TOKEN") {
+        let local_events = events.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_secs(5)).await;
+
+            info!("Actually starting the GitHub crawler");
+            let mut github_crawler = GitHubCrawler::new(local_events, ".", github_token);
+            let result = github_crawler.run().await.context("unable to crawl github");
+            match result {
+                Ok(_) => info!("GitHub crawler finished"),
+                Err(e) => error!("GitHub crawler failed: {:?}", e),
+            }
+        });
+    }
 
     let app = api::create_api(events).await;
 

@@ -5,6 +5,7 @@ use commands::{client, dev};
 mod api;
 mod commands;
 mod events;
+mod github;
 mod types;
 
 /// FPX - Super-charge your local development.

@@ -33,3 +33,6 @@ tokio-tungstenite = { version = "0.21", features = ["rustls-tls-webpki-roots"] }
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3" }
 url = { version = "2.5" }
+cargo_toml = { version = "0.20" }
+octocrab = { version = "0.38" }
+notify-rust = { version = "4.11" }
