@@ -1,7 +1,6 @@
 {
   "scripts": {
-    "node:dev": "tsx watch src/index.node.ts",
-    "dev": "npm run node:dev",
+    "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts"
   },
