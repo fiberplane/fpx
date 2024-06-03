@@ -104,3 +104,7 @@ export const isMizuErrorMessage = (message: unknown): message is z.infer<typeof 
 export const isKnownMizuMessage = (message: unknown): message is z.infer<typeof MizuKnownMessageSchema>=> {
   return MizuKnownMessageSchema.safeParse(message).success;
 };
+
+export const MizuApiLogResponseSchema = z.object({
+  logs: z.array(MizuLogSchema),
+});

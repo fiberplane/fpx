@@ -4,6 +4,9 @@ import {
   MoonIcon,
   // ListBulletIcon as ListFilter, // FIXME
 } from "@radix-ui/react-icons"
+import { useEffect, useMemo } from "react";
+import { useQueryClient } from "react-query";
+import { useNavigate } from "react-router-dom";
 
 import {
   Card,
@@ -31,8 +34,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/DataTable";
 import { columns } from "./columns";
-import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
 import { useMizuTraces, MizuTrace } from "@/queries";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
@@ -53,7 +54,28 @@ const RequestsTable = ({ traces, filter }: { traces: MizuTrace[]; filter: LevelF
 }
 
 export function RequestsPage() {
+  const queryClient = useQueryClient();
   const query = useMizuTraces();
+
+  useEffect(() => {
+
+    const socket = new WebSocket("ws://localhost:8789")
+
+    socket.onopen = () => {
+      console.log("Connected to update server")
+    }
+
+    socket.onmessage = (ev) => {
+      console.log("Received message", ev.data)
+      const data: string[] = JSON.parse(ev.data);
+      queryClient.invalidateQueries(...data)
+    };
+
+    socket.onclose = (ev) => { console.log("Disconnected from update server", ev) }
+
+    return () => { socket.close() }
+
+  }, [queryClient]);
 
   return (
     <Tabs defaultValue="all">

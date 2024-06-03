@@ -3,11 +3,10 @@ import {
   QueryClientProvider,
   useQuery,
 } from 'react-query'
-import { z } from 'zod';
 
 import { 
+  MizuApiLogResponseSchema,
   MizuLog, 
-  MizuLogSchema, 
   MizuRequestEnd, 
   MizuRequestStart, 
   MizuTrace, 
@@ -15,7 +14,7 @@ import {
   isMizuRequestStartMessage } from './types';
 import { objectWithKeyAndValue } from '@/utils';
 
-export const queryClient = new QueryClient()
+export const queryClient = new QueryClient();
 export { QueryClientProvider };
 
 export function useMizuTraces() {
@@ -25,30 +24,28 @@ export function useMizuTraces() {
   });
 }
 
-const MizuLogsSchema = z.object({
-  logs: z.array(MizuLogSchema),
-});
-
 async function fetchMizuTraces() {
   try {
-
     const response = await fetch("http://localhost:8788/v0/logs", { mode: "cors" });
-    const jsonResponse = await response.json();
-    const { logs: transformedLogs } = MizuLogsSchema.parse(jsonResponse);
+    const responseData = await response.json();
+    const {logs: transformedLogs} = MizuApiLogResponseSchema.parse(responseData);
     transformedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-    const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce((map: Map<string, MizuTrace>, log: MizuLog) => {
-      if (!map.has(log.traceId)) {
-        map.set(log.traceId, {
-          id: log.traceId,
-          description: "",
-          status: "",
-          duration: "",
-          logs: [] as Array<MizuLog>,
-        })
-      }
-      map.get(log.traceId)!.logs.push(log)
-      return map
-    }, new Map<string, MizuTrace>());
+    const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce(
+      (map: Map<string, MizuTrace>, log: MizuLog) => {
+        if (!map.has(log.traceId)) {
+          map.set(log.traceId, {
+            id: log.traceId,
+            description: "",
+            status: "",
+            duration: "",
+            logs: [] as Array<MizuLog>,
+          });
+        }
+        map.get(log.traceId)!.logs.push(log);
+        return map;
+      },
+      new Map<string, MizuTrace>(),
+    );
 
     const traces: Array<MizuTrace> = []
     for (const [, trace] of tracesMap.entries()) {
@@ -78,16 +75,17 @@ async function fetchMizuTraces() {
 
     // Sort traces by most recent to least recent timestamp
     // based off of the first log in the trace
-    traces.sort((a, b) => b.logs[0].timestamp.localeCompare(a.logs[0].timestamp));
+    traces.sort((a, b) =>
+      b.logs[0].timestamp.localeCompare(a.logs[0].timestamp),
+    );
 
     return traces;
-} catch(e: unknown) {
+  } catch (e: unknown) {
     console.error("Error fetching logs: ", e);
     if (e instanceof Error) {
       alert(`Error fetching logs: ${e.message}`);
     }
   }
-
 }
 
 export function getTraceDescription(trace: MizuTrace) {
