@@ -46,13 +46,10 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     })
     const db = drizzle(sql, { schema });
 
-    const jsonMessage = isJsonParseable(message)
-      ? message
-      : JSON.stringify(message);
-    const jsonArgs = isJsonParseable(args) ? args : JSON.stringify(args);
-    const jsonCallerLocation = isJsonParseable(callerLocation)
-      ? callerLocation
-      : JSON.stringify(callerLocation);
+    const parsedMessage = tryParseJsonObjectMessage(message)
+
+    console.log("HI MESSAGE", typeof message)
+    console.log("HI CALLER", callerLocation)
 
     try {
       // Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
@@ -60,7 +57,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
       await db.insert(mizuLogs).values({
         level: mizuLevel,
         service,
-        message: jsonMessage,
+        message: parsedMessage,
         args,
         callerLocation,
         traceId,
@@ -77,7 +74,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
       return c.text("OK");
     } catch (err) {
       if (err instanceof Error) {
-        console.log("DB ERROR FOR:", { message, jsonMessage });
+        console.log("DB ERROR FOR:", { message, parsedMessage });
         console.error(err);
         DB_ERRORS.push(err);
       }
@@ -127,7 +124,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
         created_at: l.createdAt,
         updated_at: l.updatedAt,
         caller_location: l.callerLocation,
-        message: tryParseJsonObjectMessage(l.message),
+        // message: tryParseJsonObjectMessage(l.message),
       })),
     });
   });
@@ -212,6 +209,9 @@ function isJsonParseable(str: string) {
   }
 }
 
+/**
+ * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value
+ */
 function tryParseJsonObjectMessage(str: unknown) {
   if (typeof str !== "string") {
     return str;

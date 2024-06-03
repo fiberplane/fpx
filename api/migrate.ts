@@ -5,7 +5,12 @@ import { drizzle } from 'drizzle-orm/libsql';
 
 config({ path: '.dev.vars' });
 
-const databaseUrl = process.env.DATABASE_URL ?? "file:mizu.db";
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL not defined');
+  process.exit(1);
+}
+
+const databaseUrl = process.env.DATABASE_URL;
 const sql = createClient({
   url: databaseUrl
 })
