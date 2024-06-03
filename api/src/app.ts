@@ -2,25 +2,42 @@ import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { createClient } from "@libsql/client";
-import { drizzle } from 'drizzle-orm/libsql';
+import { type LibSQLDatabase, drizzle } from 'drizzle-orm/libsql';
 import { inArray, ne, desc } from "drizzle-orm";
 import OpenAI from "openai";
-import * as schema from "./db/schema";
-import { upgradeWebSocket } from "hono/cloudflare-workers";
 import type { WebSocket } from "ws";
+
+import * as schema from "./db/schema";
 
 type Bindings = {
   DATABASE_URL: string;
   OPENAI_API_KEY: string;
 };
 
+type Variables = {
+  db: LibSQLDatabase<typeof schema>
+}
+
+const getDb = (c: Hono<{ Bindings: Bindings, Variables: Variables }>) => c.get('db')
+
 const { mizuLogs } = schema;
 
 export function createApp(wsConnections?: Set<WebSocket>) {
-  const app = new Hono<{ Bindings: Bindings }>();
+  const app = new Hono<{ Bindings: Bindings, Variables: Variables }>();
 
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const DB_ERRORS: Array<any> = [];
+
+  app.use(async (c, next) => {
+    const sql = createClient({
+      url: env(c).DATABASE_URL
+    })
+    const db = drizzle(sql, { schema });
+
+    c.set('db', db)
+
+    await next();
+  })
 
   app.use(async (c, next) => {
     try {
@@ -41,15 +58,9 @@ export function createApp(wsConnections?: Set<WebSocket>) {
       callerLocation,
       timestamp,
     } = await c.req.json();
-    const sql = createClient({
-      url: env(c).DATABASE_URL
-    })
-    const db = drizzle(sql, { schema });
 
+    const db = c.get('db');
     const parsedMessage = tryParseJsonObjectMessage(message)
-
-    console.log("HI MESSAGE", typeof message)
-    console.log("HI CALLER", callerLocation)
 
     try {
       // Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
@@ -84,10 +95,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
 
   app.post("/v0/logs/ignore", cors(), async (c) => {
     const { logIds } = await c.req.json();
-    const sql = createClient({
-      url: env(c).DATABASE_URL
-    })
-    const db = drizzle(sql, { schema });
+    const db = c.get('db');
     const updatedLogIds = await db
       .update(mizuLogs)
       .set({ ignored: true })
@@ -96,10 +104,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   });
 
   app.post("/v0/logs/delete-all-hack", cors(), async (c) => {
-    const sql = createClient({
-      url: env(c).DATABASE_URL
-    })
-    const db = drizzle(sql, { schema });
+    const db = c.get('db');
     await db.delete(mizuLogs).where(ne(mizuLogs.id, 0));
     c.status(204);
     return c.res;
@@ -108,10 +113,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   // Data equivalent of home page (for a frontend to consume)
   app.get("/v0/logs", cors(), async (c) => {
     const showIgnored = !!c.req.query("showIgnored");
-    const sql = createClient({
-      url: env(c).DATABASE_URL
-    })
-    const db = drizzle(sql, { schema });
+    const db = c.get('db');
     const logsQuery = showIgnored
       ? db.select().from(mizuLogs)
       : db.select().from(mizuLogs).where(ne(mizuLogs.ignored, true));
@@ -187,26 +189,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     return c.json(DB_ERRORS);
   });
 
-  // TODO - Otel support, would need to decode protobuf
-  app.post("/v1/logs", async (c) => {
-    const body = await c.req.json();
-    console.log(body);
-    return c.json(body);
-  });
-
   return app;
-}
-
-/**
- * Check if value is json-parseable
- */
-function isJsonParseable(str: string) {
-  try {
-    JSON.parse(str);
-    return true;
-  } catch (e) {
-    return false;
-  }
 }
 
 /**

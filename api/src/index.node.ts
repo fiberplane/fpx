@@ -1,5 +1,4 @@
 import { serve } from "@hono/node-server";
-import { env } from "hono/adapter";
 import { config } from "dotenv";
 import { readFileSync } from "node:fs";
 
@@ -7,7 +6,7 @@ import { createApp } from "./app";
 import { cors } from "hono/cors";
 import { SourceMapConsumer } from "source-map";
 import { findSourceFunction } from "./find-source-function";
-import { WebSocket, WebSocketServer } from "ws";
+import { type WebSocket, WebSocketServer } from "ws";
 
 config({ path: ".dev.vars" });
 
