@@ -7,19 +7,26 @@ import {
 export const queryClient = new QueryClient()
 export { QueryClientProvider };
 
-import { MizuLog, MizuTrace, transformToLog } from "./decoders";
-import { objectWithKey, objectWithKeyAndValue } from '@/utils';
+// import { MizuLog, MizuTrace } from "./decoders";
+import { MizuLog, MizuLogSchema, MizuRequestEnd, MizuRequestStart, MizuTrace, isMizuRequestEndMessage, isMizuRequestStartMessage } from './zod-experiment';
+import { objectWithKeyAndValue } from '@/utils';
+import { z } from 'zod';
+// import { transformToLog } from './decoders';
 
 export function useMizuTraces() {
   return useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
 }
+
+const MizuLogsSchema = z.array(MizuLogSchema);
 
 async function fetchMizuTraces() {
   try {
 
     const response = await fetch("http://localhost:8788/v0/logs", { mode: "cors" });
     const jsonResponse = await response.json();
-    const transformedLogs: Array<MizuLog> = jsonResponse.logs.map(transformToLog)
+
+    // const transformedLogs: Array<MizuLog> = MizuLogs.parse(jsonResponse);
+    const transformedLogs: Array<MizuLog> = MizuLogsSchema.parse(jsonResponse);
     transformedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
     const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce((map: Map<string, MizuTrace>, log: MizuLog) => {
       if (!map.has(log.traceId)) {
@@ -55,8 +62,9 @@ async function fetchMizuTraces() {
       trace.duration = "TODO";
       trace.description = getTraceDescription(trace);
 
-      const response = trace.logs.find(l => objectWithKeyAndValue(l.message, "lifecycle", "response"));
-      const status = objectWithKey(response?.message, "status") ? response.message.status : undefined;
+      const response = trace.logs.find(l => isMizuRequestEndMessage(l.message)) as (MizuLog & { message: MizuRequestEnd }) | undefined;
+      // const response = trace.logs.find(l => objectWithKeyAndValue(l.message, "lifecycle", "response"));
+      const status = response?.message.status;
       trace.status = typeof status === "string" ? status : "unknown";
       traces.push(trace);
     }
@@ -76,12 +84,12 @@ async function fetchMizuTraces() {
 }
 
 export function getTraceDescription(trace: MizuTrace) {
-  const request = trace.logs.find(l => objectWithKeyAndValue(l.message, "lifecycle","request"));
-  const response = trace.logs.find(l => objectWithKeyAndValue(l.message, "lifecycle" , "response"));
+  const request = trace.logs.find(l => isMizuRequestStartMessage(l.message)) as (MizuLog & { message: MizuRequestStart }) | undefined;
+  const response = trace.logs.find(l => isMizuRequestEndMessage(l.message)) as (MizuLog & { message: MizuRequestEnd }) | undefined;
 
-  const method = objectWithKey(request?.message, "method") ? request.message.method : undefined;
-  const path = objectWithKey(request?.message, "path") ? request.message.path : undefined;
-  const status = objectWithKey(request?.message, "status") ? request.message.status : undefined;
+  const method = request?.message.method;
+  const path = request?.message.path;
+  const status = request?.message.status;
   
   if (path === "/favicon.ico" && status === "404") {
     return "favicon not found";
