@@ -4,7 +4,7 @@ import {
 } from "@radix-ui/react-icons"
 import { ColumnDef, RowData, createColumnHelper } from "@tanstack/react-table"
 
-import { formatDate } from "@/utils/utils"
+import { formatDate } from "@/lib/utils"
 import type { MizuTrace } from "@/queries/decoders"
 import { RequestDetails } from "./RequestDetails"
 

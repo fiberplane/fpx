@@ -8,11 +8,15 @@ import { cors } from "hono/cors";
 import { SourceMapConsumer } from "source-map";
 import { findSourceFunction } from "./find-source-function";
 import { WebSocket, WebSocketServer } from "ws";
+import { assert } from "./utils";
+import { initializeEmbeddingsDB } from "./embeddings";
 
 config({ path: ".dev.vars" });
 
 const wsConnections = new Set<WebSocket>();
-const app = createApp(wsConnections);
+const embeddingsDb = await initializeEmbeddingsDB();
+const app = createApp(wsConnections, embeddingsDb)
+
 
 app.get("/", async (c) => {
   return c.text("Hello Node.js Hono");
@@ -32,6 +36,11 @@ app.get("/v0/source", cors(), async (c) => {
 
     return c.json(pos);
   } catch (err) {
+    assert(
+      err,
+      (e): e is Error => err instanceof Error,
+      `${err} is not instance of Error`,
+    );
     console.error("Could not read source file", err?.message);
     return c.json(
       { error: "Error reading file", name: err?.name, message: err?.message },
@@ -47,6 +56,11 @@ app.post("/v0/source-function", cors(), async (c) => {
     const functionText = await findSourceFunction(source, handler);
     return c.json({ functionText });
   } catch (err) {
+    assert(
+      err,
+      (e): e is Error => err instanceof Error,
+      `${err} is not instance of Error`,
+    );
     console.error("Could not find function in source", source);
     return c.json(
       {

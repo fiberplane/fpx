@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,14 +12,18 @@ import { useMemo, useState } from "react";
 import { columns } from "./columns";
 import { DataTable } from "@/components/ui/DataTable";
 import Fuse from "fuse.js";
+import { Row } from "@tanstack/react-table";
 
 const IssuesTable = ({ issues }: { issues: GitHubIssue[] }) => {
   issues = issues.slice(0, 10); // limit to 10 for now
+  const handleRowClick = (row: Row<GitHubIssue>) => {
+    window.location.href = row.original.html_url;
+  };
   return (
     <DataTable
       columns={columns}
       data={issues}
-      handleRowClick={(row) => (window.location.href = row.original.html_url)}
+      handleRowClick={handleRowClick}
     />
   );
 };
@@ -56,7 +59,7 @@ export const PackagesPage = () => {
     if (searchInput.trim() === "") return issues;
     const result = fuse.search(searchInput);
     return result.map(({ item }) => item);
-  }, [searchInput, fuse]);
+  }, [searchInput, fuse, issues]);
 
   return (
     <>

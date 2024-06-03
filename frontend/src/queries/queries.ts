@@ -39,22 +39,6 @@ export function useGitHubIssues({
   );
 }
 
-/*
-export function useGitHubIssues({
-  owner,
-  repo,
-}: {
-  owner: string;
-  repo: string;
-}) {
-  return useQuery({
-    queryKey: ["githubIssues", { owner, repo }],
-    queryFn: () => fetchGitHubIssues({ owner, repo }),
-    enabled: !!owner && !!repo,
-  });
-}
-*/
-
 export function fetchGitHubIssues({
   owner,
   repo,
@@ -63,6 +47,22 @@ export function fetchGitHubIssues({
   repo: string;
 }): Promise<void | GitHubIssue[]> {
   return fetch(`http://localhost:8788/v0/github-issues/${owner}/${repo}`, {
+    mode: "cors",
+  })
+    .then((r) => r.json())
+    .catch((err) => console.log("Error fetching issues: ", err));
+}
+
+export function useMatchingIssues({ id }: { id: string }) {
+  return useQuery({
+    queryKey: ["matchingIssues", { id }],
+    queryFn: () => fetchMatchingIssues({ id }),
+    enabled: !!id,
+  });
+}
+
+export async function fetchMatchingIssues({ id }: { id: string }) {
+  return fetch(`http://localhost:8788/v0/issues/${id}`, {
     mode: "cors",
   })
     .then((r) => r.json())

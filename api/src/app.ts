@@ -5,12 +5,15 @@ import { NeonDbError, neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { inArray, ne, desc } from "drizzle-orm";
 import OpenAI from "openai";
-import { Endpoints } from "@octokit/types";
 import { Octokit } from "octokit";
 import { mizuLogs } from "./db/schema";
-import { upgradeWebSocket } from "hono/cloudflare-workers";
 import { WebSocket } from "ws";
-import fs from "node:fs/promises";
+import { GitHubIssue } from "./types";
+import { getEmbedder } from "./embeddings";
+import { getGithubIssues } from "./github-service";
+import { getProjectDependencies } from "./dependencies";
+import { AnyOrama, search } from "@orama/orama";
+import { assert } from "./utils";
 
 type Bindings = {
   DATABASE_URL: string;
@@ -18,8 +21,19 @@ type Bindings = {
   GITHUB_TOKEN: string;
 };
 
-export function createApp(wsConnections?: Set<WebSocket>) {
+export function createApp(
+  wsConnections?: Set<WebSocket>,
+  embeddingsDb?: AnyOrama,
+) {
   const app = new Hono<{ Bindings: Bindings }>();
+
+  type Match = {
+    title: string;
+    body: string;
+    url: string;
+  };
+
+  const errorIssueMatches = new Map<string, Match>();
 
   const DB_ERRORS: Array<NeonDbError> = [];
 
@@ -53,6 +67,53 @@ export function createApp(wsConnections?: Set<WebSocket>) {
       ? callerLocation
       : JSON.stringify(callerLocation);
 
+    const parsed = isJsonParseable(jsonMessage)
+      ? JSON.parse(jsonMessage)
+      : undefined;
+    if (parsed && "stack" in parsed) {
+      const embedder = await getEmbedder();
+
+			console.log("PARSED", parsed);
+
+      const searchVector = (
+        await embedder(parsed.stack, {
+          pooling: "mean",
+          normalize: true,
+        })
+      )
+        .tolist()
+        .flat();
+
+      assert(embeddingsDb, "embeddingsDb is undefined");
+      assert(
+        searchVector,
+        (v): v is number[] =>
+          Array.isArray(v) && v.length > 0 && typeof v[0] === "number",
+        "searchVector is not a vector",
+      );
+
+      const results = await search(embeddingsDb, {
+        mode: "vector",
+        vector: { value: searchVector, property: "embedding" },
+        similarity: 0.5,
+        limit: 3,
+      });
+
+			console.log("RESULTS", results);
+
+      const matchingIssues = results.hits.map((hit) => {
+        return hit.document;
+      });
+
+      assert(
+        traceId,
+        (t): t is string => typeof t === "string",
+        "traceId is not a string",
+      );
+
+      errorIssueMatches.set(traceId, matchingIssues);
+    }
+
     try {
       // Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
       const mizuLevel = level === "log" ? "info" : level;
@@ -71,8 +132,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
 
       if (wsConnections) {
         for (const ws of wsConnections) {
-          const message = ["mizuTraces"];
-          ws.send(JSON.stringify(message));
+          ws.send(JSON.stringify(["mizuTraces"]));
         }
       }
 
@@ -184,77 +244,32 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     return c.text("OK");
   });
 
-  type Dependency = {
-    name: string;
-    version: string;
-    repository: {
-      owner: string;
-      repo: string;
-      url: string;
-    };
-  };
+  app.get("/v0/issues/:id", cors(), async (c) => {
+    const id = c.req.param("id");
+    const matchingIssues = errorIssueMatches.get(id);
+		console.log("errorIssueMatches", errorIssueMatches);
+		console.log("MATCHING ISSUES", matchingIssues);
+    if (!matchingIssues) {
+      return c.json([]);
+    }
+    return c.json(matchingIssues);
+  });
 
   app.get("/v0/dependencies", cors(), async (ctx) => {
-    // pretend that this fetches and parses the package.json
-    const data: Dependency[] = [
-      {
-        name: "hono",
-        version: "4.3.11",
-        repository: {
-          owner: "honojs",
-          repo: "hono",
-          url: "https://github.com/honojs/hono",
-        },
-      },
-    ];
-    return ctx.json(data);
+    const deps = getProjectDependencies();
+    return ctx.json(deps);
   });
-
-  type OctokitResponse =
-    Endpoints["GET /repos/{owner}/{repo}/issues"]["response"];
-  type Issues = OctokitResponse["data"];
-
-  // let issuesCache: Issues;
 
   app.get("/v0/github-issues/:owner/:repo", cors(), async (ctx) => {
-    const CACHE_FILE_NAME = "issues-cache.json";
-
-    let issuesCache: Issues;
-
-    try {
-      issuesCache = JSON.parse((await fs.readFile(CACHE_FILE_NAME)).toString());
-
-      if (issuesCache) {
-        return ctx.json(issuesCache);
-      }
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        console.error("Issues cache is corrupted, ignoring");
-      }
-    }
-
-    const octokit = new Octokit({
-      auth: ctx.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN,
-    });
-
     const owner = ctx.req.param("owner");
     const repo = ctx.req.param("repo");
+    const gitHubtoken = ctx.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN || "";
 
-    console.log("Fetching issues");
-
-    const response = await octokit.paginate(
-      `GET /repos/${owner}/${repo}/issues?state=all`,
-      {
-        owner,
-        repo,
-      },
-    );
-
-    console.log("Issues fetched, writing to cache and returning");
-    await fs.writeFile(CACHE_FILE_NAME, JSON.stringify(response));
-
-    return ctx.json(response);
+    const issues = await getGithubIssues(gitHubtoken, owner, repo);
+    return ctx.json(issues);
   });
+
+  app.get("/v0/priority-issues", cors(), async (ctx) => {});
 
   // HACK - Route to inspect any db errors during this session
   app.get("db-errors", async (c) => {

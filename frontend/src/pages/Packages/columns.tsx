@@ -1,6 +1,6 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { GitHubIssue } from "@/lib/types";
-import { humanReadableDate } from "@/utils/utils";
+import { humanReadableDate } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { ShadowInnerIcon } from "@radix-ui/react-icons";
 
