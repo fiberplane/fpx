@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
-import type { MizuTrace, MizuLog } from "@/queries/decoders";
-import { getVSCodeLinkFromCallerLocaiton, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
+import { getVSCodeLinkFromCallerLocation, getVSCodeLinkFromError } from "@/queries";
+import { CallerLocation, KeyValueSchema, MizuErrorMessage, MizuLog, MizuMessage, MizuRequestEnd, MizuRequestStart, MizuTrace, isKnownMizuMessage, isMizuErrorMessage, isMizuRequestEndMessage, isMizuRequestStartMessage } from "@/queries";
 
-function useHandlerSourceCode(source: string, handler: string) {
+function useHandlerSourceCode(source?: string, handler?: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);
   useEffect(() => {
     if (!source) {
@@ -82,10 +82,10 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
 }
 
 export const TraceDetails = ({ trace }: { trace: MizuTrace; }) => {
-  const request = trace.logs.find(log => log.message.lifecycle === "request");
-  const response = trace.logs.find(log => log.message.lifecycle === "response");
-  const source = request?.message?.file
-  const handler = response?.message?.handler;
+  const request = trace.logs.find(log => isMizuRequestStartMessage(log.message));
+  const response = trace.logs.find(log => isMizuRequestEndMessage(log.message));
+  const source = (request?.message as MizuRequestStart)?.file
+  const handler = (response?.message as MizuRequestEnd)?.handler;
   const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
 
   return (
@@ -106,11 +106,11 @@ const LogCard = ({ children }: { children: React.ReactNode }) => {
 }
 
 const RequestLog = ({ log }: { log: MizuLog }) => {
-  const description = `${log.message.method} ${log.message.path}`
+  const description = isMizuRequestStartMessage(log.message) ? `${log.message.method} ${log.message.path}` : '';
 
   return (
     <LogCard>
-      <LogDetailsHeader log={log} eventName="Incoming Request" description={description} />
+      <LogDetailsHeader timestamp={log.timestamp} traceId={log.traceId} eventName="Incoming Request" description={description} />
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
       </div>
@@ -120,11 +120,11 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
 
 const FetchRequestLog = ({ log }: { log: MizuLog }) => {
   const description = `Fetch Request: ${"todo"}`
-  console.log("FETCH REQUEST", log.message?.args)
+  console.log("FETCH REQUEST", log.args)
 
   return (
     <LogCard>
-      <LogDetailsHeader log={log} eventName="Fetch Start" description={description} />
+      <LogDetailsHeader timestamp={log.timestamp} traceId={log.traceId} eventName="Fetch Start" description={description} />
 
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
@@ -135,11 +135,11 @@ const FetchRequestLog = ({ log }: { log: MizuLog }) => {
 
 const FetchResponseLog = ({ log }: { log: MizuLog }) => {
   const description = `Fetch Response: ${"todo"}`
-  console.log("FETCH REQUEST", log.message?.args)
+  console.log("FETCH REQUEST", log.args)
 
   return (
     <LogCard>
-      <LogDetailsHeader log={log} eventName="Fetch Response" description={description} />
+      <LogDetailsHeader timestamp={log.timestamp} traceId={log.traceId} eventName="Fetch Response" description={description} />
 
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
@@ -150,11 +150,11 @@ const FetchResponseLog = ({ log }: { log: MizuLog }) => {
 
 const FetchErrorLog = ({ log }: { log: MizuLog }) => {
   const description = `Fetch Response: ${"todo"}`
-  console.log("FETCH REQUEST", log.message?.args)
+  console.log("FETCH REQUEST", log.args)
 
   return (
     <LogCard>
-      <LogDetailsHeader log={log} eventName="Fetch Error" description={description} />
+      <LogDetailsHeader timestamp={log.timestamp} traceId={log.traceId} eventName="Fetch Error" description={description} />
 
       <div className="mt-2">
         <KeyValueGrid data={log.message} />
@@ -167,8 +167,8 @@ const FetchErrorLog = ({ log }: { log: MizuLog }) => {
 /**
  * As of writing, only handles 404 for favicon
  */
-function getResponseMagicSuggestion({ log, trace }: { log: MizuLog, trace?: MizuTrace }) {
-  if (log.message.method === "GET" && log.message.path === "/favicon.ico" && log.message.status === "404") {
+function getResponseMagicSuggestion({ log }: { log: MizuLog, trace?: MizuTrace }) {
+  if (isMizuRequestEndMessage(log.message) && log.message.method === "GET" && log.message.path === "/favicon.ico" && log.message.status === "404") {
     return (
       <div className="flex flex-col">
         If you want to silence this error locally, add the following to your app:
@@ -185,12 +185,12 @@ app.get('/favicon.ico', (c) => c.text('No favicon') )
 
 
 const ResponseLog = ({ log }: { log: MizuLog }) => {
-  const { status, method, path } = log.message;
+  const { status = "", method = "", path = "" } = isMizuRequestEndMessage(log.message) ? log.message : {};
   const description = `${status} ${method} ${path}`
   const magicSuggestion = getResponseMagicSuggestion({ log });
   return (
     <LogCard>
-      <LogDetailsHeader eventName="Outgoing Response" log={log} description={description} />
+      <LogDetailsHeader eventName="Outgoing Response" timestamp={log.timestamp} traceId={log.traceId} description={description} />
       {magicSuggestion && (
         <MagicSuggestion suggestion={magicSuggestion} />
       )}
@@ -200,43 +200,46 @@ const ResponseLog = ({ log }: { log: MizuLog }) => {
     </LogCard>
   )
 }
-function useCallerLocation(log: MizuLog) {
+function useCallerLocation(callerLocation: CallerLocation | null) {
   const [vsCodeLink, setVSCodeLink] = useState<string | null>(null);
   useEffect(() => {
-    if (log.callerLocation) {
-      getVSCodeLinkFromCallerLocaiton(log.callerLocation).then((link) => {
+    if (callerLocation) {
+      getVSCodeLinkFromCallerLocation(callerLocation).then((link) => {
         setVSCodeLink(link)
       })
     }
-  }, [log.callerLocation])
+  }, [callerLocation])
 
   return vsCodeLink;
 }
 
-function getMagicSuggesttion({ log, trace }: { log: MizuLog, trace?: MizuTrace }) {
-  if (log.message?.message === "process is not defined") {
+function getMagicSuggestion({ messagePayload }: { messagePayload: MizuMessage, trace?: MizuTrace }) {
+  if (!isKnownMizuMessage(messagePayload)) {
+    return null;
+  }
+
+  if (messagePayload.message === "process is not defined") {
     return "Change process.env to c.env"
   }
-  if (log.message?.message === "No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?") {
+
+  if (messagePayload.message === "No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?") {
     return "Add a database connection string to `.dev.vars`. If you already did this, make sure to restart your dev server!"
   }
+
   return null;
 }
 
-const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?: string | null }) => {
-  const description = `${log.message.message}`;
-  const magicSuggestion = getMagicSuggesttion({ log });
+const ErrorLog = ({ message: messagePayload, callerLocation, handlerSourceCode, traceId, timestamp }: { message: MizuErrorMessage, handlerSourceCode?: string | null } & Pick<MizuLog, "traceId" | "timestamp" | "callerLocation">) => {
+  const description = `${messagePayload.message}`;
+  const magicSuggestion = getMagicSuggestion({ messagePayload });
 
-  const stack = log.message.stack;
+  const stack = messagePayload.stack;
   const [vsCodeLink, setVSCodeLink] = useState<string | null>(null);
 
   const shouldFindCallerLocation = !stack;
-  const vsCodeLinkAlt = useCallerLocation({
-    ...log,
-    callerLocation: shouldFindCallerLocation ? log.callerLocation : null
-  });
+  const vsCodeLinkAlt = useCallerLocation(shouldFindCallerLocation ? callerLocation ?? null : null);
 
-  const { response: aiResponse, query: execAiQuery, loading: aiLoading } = useAiAnalysis(handlerSourceCode ?? "", log.message.message);
+  const { response: aiResponse, query: execAiQuery } = useAiAnalysis(handlerSourceCode ?? "", messagePayload.message);
 
   useEffect(() => {
     if (stack) {
@@ -248,9 +251,10 @@ const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?
 
   const [isOpen, setIsOpen] = useState(false);
 
+  const vscodeLink = vsCodeLink || vsCodeLinkAlt;
   return (
     <LogCard>
-      <LogDetailsHeader eventName="Error" log={log} description={description} />
+      <LogDetailsHeader eventName="Error" timestamp={timestamp} traceId={traceId} description={description} />
 
       <div>
         {magicSuggestion && (
@@ -261,16 +265,16 @@ const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?
           <AiMagicSuggestion suggestion={aiResponse} />
         )}
 
-        {(vsCodeLink || vsCodeLinkAlt) && (
+        {vscodeLink && (
           <div className="mt-2 flex justify-end">
             <Button size="sm" className="w-full">
               <CodeIcon className="mr-2" />
-              <a href={vsCodeLink || vsCodeLinkAlt}>Go to Code</a>
+              <a href={vscodeLink}>Go to Code</a>
             </Button>
           </div>
         )}
 
-        {(handlerSourceCode && log.message.message) && (
+        {(handlerSourceCode && messagePayload.message) && (
           <div className="mt-2 flex justify-end">
             <Button size="sm" className="w-full" variant="secondary" onClick={execAiQuery}>
               <MagicWandIcon className="mr-2" />
@@ -298,7 +302,7 @@ const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
             <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
-              {log.message.stack}
+              {messagePayload.stack}
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -309,12 +313,12 @@ const ErrorLog = ({ log, handlerSourceCode }: { log: MizuLog, handlerSourceCode?
 
 const InfoLog = ({ log }: { log: MizuLog }) => {
   const description = `${log.message}`
-  const vsCodeLink = useCallerLocation(log);
+  const vsCodeLink = useCallerLocation(log.callerLocation ?? null);
   return (
     <LogCard>
-      <LogDetailsHeader eventName="console.log" log={log} description={""} />
+      <LogDetailsHeader eventName="console.log" traceId={log.traceId} timestamp={log.timestamp} description={""} />
       <div className="mt-2 font-sans">
-        {log.message}
+        {description}
       </div>
       <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
         {JSON.stringify(log.args, null, 2)}
@@ -378,7 +382,7 @@ const AiMagicSuggestion = ({ suggestion, children }: { suggestion: string; child
 }
 
 
-const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; description: string; log: MizuLog }) => {
+const LogDetailsHeader = ({ eventName, description, traceId, timestamp }: { eventName: string; description: string; } & Pick<MizuLog, "traceId" | "timestamp">) => {
   return (
     <div>
       <div className="font-mono text-gray-500 w-full flex flex-col sm:flex-row md:space-0 justify-between items-center">
@@ -387,9 +391,9 @@ const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; 
             {eventName}
           </Badge>
         </div>
-        <span className="text-xs my-1 sm:my-0">[{log.timestamp}]</span>
+        <span className="text-xs my-1 sm:my-0">[{timestamp}]</span>
         <span className="hidden">
-          {log.traceId}
+          {traceId}
         </span>
       </div>
       {description && (<div className="mt-1">
@@ -401,7 +405,9 @@ const LogDetailsHeader = ({ eventName, description, log }: { eventName: string; 
   )
 };
 
-type KVGridProps = { [key: string]: any }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type KVGridProps = { data: string | Record<string, any> };
+
 const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
   const [isOpen, setIsOpen] = useState(false)
   // const { lifecycle, method, path, ...message } = data; // TODO - extract these
@@ -426,20 +432,21 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
       <CollapsibleContent className="space-y-2">
         <Separator className="my-1" />
         <div className="flex flex-col gap-4">
-          {Object.entries(data).map(([key, value]) => (
-            <div key={key}>
-              <div className="font-mono font-semibold text-gray-600">
-                {key}
-              </div>
-              <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
-                {key === "env" ? <EnvGrid env={value} /> : key === "headers" ? <EnvGrid env={value} /> : typeof value === "string" ? value : JSON.stringify(value, null, 2)}
-              </div>
-              <Separator className="my-1" />
-            </div>
-          ))}
-          <div>
-
-          </div>
+          {typeof data === "string" ? data :
+            Object.entries(data).map(([key, value]) => {
+              const keyValue = (key === "env" || key === "headers") && KeyValueSchema.safeParse(value).data;
+              return (
+                <div key={key}>
+                  <div className="font-mono font-semibold text-gray-600">
+                    {key}
+                  </div>
+                  <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
+                    {keyValue ? <EnvGrid env={keyValue} /> : formatValue(value)}
+                  </div>
+                  <Separator className="my-1" />
+                </div>
+              )
+            })}
         </div>
       </CollapsibleContent>
 
@@ -469,29 +476,38 @@ const EnvGrid = ({ env }: { env: Record<string, string> }) => {
 
 export const LogDetails = ({ log, handlerSourceCode }: { log: MizuLog; handlerSourceCode: string; }) => {
   const { message } = log;
+  const lifecycle = typeof message === "object" && "lifecycle" in message ? message.lifecycle : null;
 
-  if (message?.lifecycle === "request") {
+  if (lifecycle === "request") {
     return <RequestLog log={log} />
   }
 
-  if (message?.lifecycle === "fetch_start") {
+  if (lifecycle === "fetch_start") {
     return <FetchRequestLog log={log} />
   }
 
-  if (message?.lifecycle === "fetch_end") {
+  if (lifecycle === "fetch_end") {
     return <FetchResponseLog log={log} />
   }
 
-  if (message?.lifecycle === "fetch_error") {
+  if (lifecycle === "fetch_error") {
     return <FetchErrorLog log={log} />
   }
 
-  if (message?.lifecycle === "response") {
+  if (lifecycle === "response") {
     return <ResponseLog log={log} />
   }
 
-  if (typeof message === "object" && "message" in message) {
-    return <ErrorLog handlerSourceCode={handlerSourceCode} log={log} />
+  if (isMizuErrorMessage(message)) {
+    return (
+      <ErrorLog
+        handlerSourceCode={handlerSourceCode}
+        message={message}
+        timestamp={log.timestamp}
+        traceId={log.traceId}
+        callerLocation={log.callerLocation ?? null}
+      />
+    );
   }
 
   if (typeof message === "string") {
@@ -503,10 +519,28 @@ export const LogDetails = ({ log, handlerSourceCode }: { log: MizuLog; handlerSo
       {message && typeof message === "object" && Object.entries(message).map(([key, value]) => {
         return (
           <div key={key} className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
-            {key}: {typeof value === "object" ? JSON.stringify(value, null, 2) : value}
+            {key}: {formatValue(value)}
           </div>
         )
       })}
     </div>
   )
 };
+
+function formatValue(value: unknown): ReactNode {
+  // handle undefined
+  if (value === undefined) {
+    return <em>Undefined</em>
+  }
+
+  if (value === null) {
+    return <em>null</em>
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value, null, 2);
+  }
+
+
+  return value.toString();
+}

@@ -22,7 +22,7 @@ export async function getVSCodeLinkFromError(errorDetails: { stack: string }) {
 /**
  * NOTE - Only works when running api with `npm run node:dev`
  */
-export async function getVSCodeLinkFromCallerLocaiton(callerLocation: { file: string; line: string; column: string }) {
+export async function getVSCodeLinkFromCallerLocation(callerLocation: { file: string; line: string; column: string }) {
   const source = callerLocation.file.replace(/^file:\/\//, "");
   const sourceMapLocation = `${source}.map`;
   const pos = await fetchPositionFromSourceMap(sourceMapLocation, callerLocation.line, callerLocation.column);
