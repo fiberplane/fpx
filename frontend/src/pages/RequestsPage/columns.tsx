@@ -4,9 +4,9 @@ import {
 } from "@radix-ui/react-icons"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 
-import { formatDate } from "@/utils/utils"
-import type { MizuTrace } from "@/queries/decoders"
+import { formatDate } from "@/utils"
 import { RequestSheet } from "./RequestSheet"
+import { MizuTrace } from "@/queries"
 
 const columnHelper = createColumnHelper<MizuTrace>()
 
