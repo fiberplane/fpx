@@ -18,8 +18,6 @@ type Variables = {
   db: LibSQLDatabase<typeof schema>
 }
 
-const getDb = (c: Hono<{ Bindings: Bindings, Variables: Variables }>) => c.get('db')
-
 const { mizuLogs } = schema;
 
 export function createApp(wsConnections?: Set<WebSocket>) {
@@ -28,6 +26,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const DB_ERRORS: Array<any> = [];
 
+  // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
   app.use(async (c, next) => {
     const sql = createClient({
       url: env(c).DATABASE_URL
