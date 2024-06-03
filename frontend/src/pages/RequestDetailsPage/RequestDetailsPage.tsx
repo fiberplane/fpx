@@ -17,7 +17,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { useMizuTraces } from "@/queries/queries"
+import { useMizuTraces } from "@/queries"
 import { isError } from "react-query"
 import { useParams } from "react-router-dom";
 

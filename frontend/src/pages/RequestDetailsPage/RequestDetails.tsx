@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
-import { getVSCodeLinkFromCallerLocation, getVSCodeLinkFromError } from "@/queries/vscodeLinks";
-import { CallerLocation, KeyValueSchema, MizuErrorMessage, MizuLog, MizuMessage, MizuRequestEnd, MizuRequestStart, MizuTrace, isKnownMizuMessage, isMizuErrorMessage, isMizuRequestEndMessage, isMizuRequestStartMessage } from "@/queries/zod-experiment";
+import { getVSCodeLinkFromCallerLocation, getVSCodeLinkFromError } from "@/queries";
+import { CallerLocation, KeyValueSchema, MizuErrorMessage, MizuLog, MizuMessage, MizuRequestEnd, MizuRequestStart, MizuTrace, isKnownMizuMessage, isMizuErrorMessage, isMizuRequestEndMessage, isMizuRequestStartMessage } from "@/queries";
 
 function useHandlerSourceCode(source?: string, handler?: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(null);

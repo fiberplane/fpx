@@ -33,8 +33,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { columns } from "./columns";
 import { useNavigate } from "react-router-dom";
 import { useMemo } from "react";
-import { useMizuTraces } from "@/queries/queries";
-import { MizuTrace } from "@/queries/zod-experiment";
+import { useMizuTraces, MizuTrace } from "@/queries";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 

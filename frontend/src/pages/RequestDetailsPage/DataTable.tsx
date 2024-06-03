@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useNavigate } from "react-router-dom";
-import { MizuTrace } from "@/queries/zod-experiment";
+import { MizuTrace } from "@/queries";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 

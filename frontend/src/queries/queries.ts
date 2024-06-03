@@ -3,18 +3,26 @@ import {
   QueryClientProvider,
   useQuery,
 } from 'react-query'
+import { z } from 'zod';
+
+import { 
+  MizuLog, 
+  MizuLogSchema, 
+  MizuRequestEnd, 
+  MizuRequestStart, 
+  MizuTrace, 
+  isMizuRequestEndMessage, 
+  isMizuRequestStartMessage } from './types';
+import { objectWithKeyAndValue } from '@/utils';
 
 export const queryClient = new QueryClient()
 export { QueryClientProvider };
 
-// import { MizuLog, MizuTrace } from "./decoders";
-import { MizuLog, MizuLogSchema, MizuRequestEnd, MizuRequestStart, MizuTrace, isMizuRequestEndMessage, isMizuRequestStartMessage } from './zod-experiment';
-import { objectWithKeyAndValue } from '@/utils';
-import { z } from 'zod';
-// import { transformToLog } from './decoders';
-
 export function useMizuTraces() {
-  return useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
+  return useQuery({ 
+    queryKey: ['mizuTraces'], 
+    queryFn: fetchMizuTraces
+  });
 }
 
 const MizuLogsSchema = z.object({
