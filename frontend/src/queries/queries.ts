@@ -34,9 +34,7 @@ async function fetchMizuTraces() {
 
     const response = await fetch("http://localhost:8788/v0/logs", { mode: "cors" });
     const jsonResponse = await response.json();
-
-    // const transformedLogs: Array<MizuLog> = MizuLogs.parse(jsonResponse);
-    const transformedLogs: Array<MizuLog> = MizuLogsSchema.parse(jsonResponse).logs;
+    const { logs: transformedLogs } = MizuLogsSchema.parse(jsonResponse);
     transformedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
     const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce((map: Map<string, MizuTrace>, log: MizuLog) => {
       if (!map.has(log.traceId)) {
@@ -73,7 +71,6 @@ async function fetchMizuTraces() {
       trace.description = getTraceDescription(trace);
 
       const response = trace.logs.find(l => isMizuRequestEndMessage(l.message)) as (MizuLog & { message: MizuRequestEnd }) | undefined;
-      // const response = trace.logs.find(l => objectWithKeyAndValue(l.message, "lifecycle", "response"));
       const status = response?.message.status;
       trace.status = typeof status === "string" ? status : "unknown";
       traces.push(trace);
