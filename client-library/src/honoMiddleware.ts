@@ -1,5 +1,6 @@
 import type { NeonDbError } from "@neondatabase/serverless";
 import type { Context } from "hono";
+import { replaceFetch } from "./replace-fetch";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
 import {
   errorToJson,

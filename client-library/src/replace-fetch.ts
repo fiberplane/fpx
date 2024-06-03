@@ -5,7 +5,7 @@ import { IGNORE_MIZU_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
  *
  * https://github.com/evanderkoogh/otel-cf-workers/blob/6f1c79056776024fd3e816b9e3991527e7217510/src/instrumentation/fetch.ts#L198
  */
-function replaceFetch() {
+export function replaceFetch() {
   const requestId = generateUUID();
   const originalFetch = globalThis.fetch;
   // @ts-ignore
