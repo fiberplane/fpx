@@ -1,5 +1,5 @@
 import type React from 'react';
-import { NavLink, Link as RouterLink } from 'react-router-dom';
+import { NavLink, Link as RouterLink, matchPath, useLocation, useMatch, useMatches, useParams } from 'react-router-dom';
 import {
   ActivityLogIcon,
   DashboardIcon,
@@ -35,18 +35,75 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { SVGProps } from 'react';
+import { Fragment, useMemo, type SVGProps } from 'react';
 
-const WaveIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-  <path
-    stroke="currentColor"
-    strokeWidth="1.5"
-    fill="none"
-    fillRule="evenodd"
-    clipRule="evenodd"
-    d="M0 7.5 Q 3.75 0, 7.5 7.5 T 15 7.5 M0 22.5 Q 3.75 15, 7.5 22.5 T 15 22.5"
-  />
-</svg>
+const WaveIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <title>Wave Icon</title>
+    <path
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill="none"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M0 7.5 Q 3.75 0, 7.5 7.5 T 15 7.5 M0 22.5 Q 3.75 15, 7.5 22.5 T 15 22.5"
+    />
+  </svg>
+)
+
+const getPathSegments = (pathname: string) => {
+  if (pathname === '/') return ['/'];
+  const segments = pathname.split('/').filter(Boolean);
+  const paths = segments.map((_, index) => `/${segments.slice(0, index + 1).join('/')}`);
+  return paths;
+};
+
+const breadcrumbMap: Record<string, string> = {
+  '/': 'Dashboard',
+  '/requests': 'Requests',
+  '/requests/:traceId': 'Request Details',
+};
+
+// TODO - Check out React Router useMatches
+//        https://reactrouter.com/en/main/hooks/use-matches
+//
+const MizuBreadcrumbs: React.FC = () => {
+  const location = useLocation();
+  // NOTE - Do not use useParams here since layout is not a child of the Route and won't pick up on params
+  // const params = useParams();
+
+  const paths = getPathSegments(location.pathname);
+  const breadcrumbs = useMemo(() => {
+    return paths.map((path) => {
+      const matchingPathPattern = Object.keys(breadcrumbMap).find((pathPattern) => matchPath(pathPattern, path))
+      if (matchingPathPattern) {
+        return { path, label: breadcrumbMap[matchingPathPattern] };
+      }
+      return null;
+    }).filter(Boolean);
+  }, [paths]);
+
+  return (
+    <Breadcrumb className="hidden md:flex">
+      <BreadcrumbList>
+        {breadcrumbs.map((crumb, index) => crumb && (
+          <Fragment key={crumb.path}>
+            <BreadcrumbItem>
+              {index === breadcrumbs.length - 1 ? (
+                <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
+                  <RouterLink to={crumb.path}>{crumb.label}</RouterLink>
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+          </Fragment>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
+}
 
 export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   return (
@@ -67,12 +124,12 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
                 className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
               >
                 <DashboardIcon className="h-5 w-5" />
-                <span className="sr-only">Mizu</span>
+                <span className="sr-only">Dashboard</span>
               </RouterLink>
             </TooltipTrigger>
-            <TooltipContent side="right">Mizu</TooltipContent>
+            <TooltipContent side="right">Dashboard (not implemented)</TooltipContent>
           </Tooltip>
-          <Tooltip>
+          {/* <Tooltip>
             <NavLink
               to="/logs"
               className={({ isActive, }) => {
@@ -87,7 +144,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
               </TooltipTrigger>
             </NavLink>
             <TooltipContent side="right">Logs</TooltipContent>
-          </Tooltip>
+          </Tooltip> */}
           {/* <Tooltip>
             <TooltipTrigger asChild>
               <NavLink
@@ -180,25 +237,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) =
               </nav>
             </SheetContent>
           </Sheet>
-          <Breadcrumb className="hidden md:flex">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <RouterLink to="/">Dashboard</RouterLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <RouterLink to="/requests">Requests</RouterLink>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>All Requests</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+          <MizuBreadcrumbs />
           <div className="relative ml-auto flex-1 md:grow-0">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input

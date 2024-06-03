@@ -61,7 +61,7 @@ async function findFunctionByDefinition(jsFilePath: string, functionDefinition: 
 
     return foundLocation;
   } catch (error) {
-    console.error('Error reading or parsing file:', error);
+    console.error('Error reading or parsing file:', jsFilePath);
     return null;
   }
 }

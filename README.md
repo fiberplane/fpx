@@ -35,3 +35,6 @@ The next two sections take you through how to do this.
 
 Follow the instructions in the [`client-library` README](./client-library/README.md) to add Mizu telemetry to your Hono project.
 
+## Developing
+
+I turned off Biome. But we could always add it? Idk.

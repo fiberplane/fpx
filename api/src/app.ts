@@ -3,7 +3,9 @@ import { env } from 'hono/adapter'
 import { cors } from "hono/cors"
 import { NeonDbError, neon } from "@neondatabase/serverless";
 import { drizzle } from 'drizzle-orm/neon-http';
+import { inArray, ne, desc } from 'drizzle-orm';
 import OpenAI from "openai";
+import { mizuLogs } from "./db/schema";
 
 type Bindings = {
   DATABASE_URL: string;
@@ -48,12 +50,41 @@ export function createApp() {
     }
   });
 
+  app.post("/v0/logs/ignore", cors(), async (c) => {
+    const { logIds } = await c.req.json();
+    const sql = neon(env(c).DATABASE_URL);
+    const db = drizzle(sql);
+    const updatedLogIds = await db.update(mizuLogs)
+      .set({ ignored: true })
+      .where(inArray(mizuLogs.id, logIds));
+    return c.json({ updatedLogIds });
+  })
+
+  app.post("/v0/logs/delete-all-hack", cors(), async (c) => {
+    const sql = neon(env(c).DATABASE_URL);
+    const db = drizzle(sql);
+    await db.delete(mizuLogs).where(ne(mizuLogs.id, 0));
+    c.status(204);
+    return c.res;
+  })
+
+
   // Data equivalent of home page (for a frontend to consume)
   app.get("/v0/logs", cors(), async (c) => {
+    const showIgnored = !!c.req.query("showIgnored");
     const sql = neon(env(c).DATABASE_URL);
-    const logs = await sql("SELECT * FROM mizu_logs");
+    const db = drizzle(sql);
+    const logsQuery = showIgnored ? db.select().from(mizuLogs) : db.select().from(mizuLogs).where(ne(mizuLogs.ignored, true));
+    const logs = await logsQuery.orderBy(desc(mizuLogs.timestamp));
     return c.json({
-      logs
+      // HACK - switching to drizzle meant renaming a bunch of fields oy vey
+      logs: logs.map(l => ({
+        ...l,
+        trace_id: l.traceId,
+        created_at: l.createdAt,
+        updated_at: l.updatedAt,
+        caller_location: l.callerLocation,
+      }))
     });
   });
 
