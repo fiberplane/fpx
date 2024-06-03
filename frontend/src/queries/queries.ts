@@ -17,7 +17,9 @@ export function useMizuTraces() {
   return useQuery({ queryKey: ['mizuTraces'], queryFn: fetchMizuTraces })
 }
 
-const MizuLogsSchema = z.array(MizuLogSchema);
+const MizuLogsSchema = z.object({
+  logs: z.array(MizuLogSchema),
+});
 
 async function fetchMizuTraces() {
   try {
@@ -26,7 +28,7 @@ async function fetchMizuTraces() {
     const jsonResponse = await response.json();
 
     // const transformedLogs: Array<MizuLog> = MizuLogs.parse(jsonResponse);
-    const transformedLogs: Array<MizuLog> = MizuLogsSchema.parse(jsonResponse);
+    const transformedLogs: Array<MizuLog> = MizuLogsSchema.parse(jsonResponse).logs;
     transformedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
     const tracesMap: Map<string, MizuTrace> = transformedLogs.reduce((map: Map<string, MizuTrace>, log: MizuLog) => {
       if (!map.has(log.traceId)) {

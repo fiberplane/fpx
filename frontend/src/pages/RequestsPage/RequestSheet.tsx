@@ -10,8 +10,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import type { MizuTrace } from "@/queries/decoders";
+// import type { MizuTrace } from "@/queries/decoders";
 import { TraceDetails } from "../RequestDetailsPage/RequestDetails";
+import { MizuTrace } from "@/queries/zod-experiment";
 
 export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
   return (

@@ -5,8 +5,9 @@ import {
 import { ColumnDef, RowData, createColumnHelper } from "@tanstack/react-table"
 
 import { formatDate } from "@/utils"
-import type { MizuTrace } from "@/queries/decoders"
+// import type { MizuTrace } from "@/queries/decoders"
 import { TraceDetails } from "./RequestDetails"
+import { MizuTrace } from "@/queries/zod-experiment";
 
 // Extend the ColumnMeta type to include headerClassName and cellClassName
 //

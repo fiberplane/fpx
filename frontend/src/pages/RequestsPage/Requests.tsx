@@ -33,12 +33,12 @@ import { DataTable } from "@/components/ui/DataTable";
 import { columns } from "./columns";
 import { useNavigate } from "react-router-dom";
 import { useMemo } from "react";
-import { MizuTrace } from "@/queries/decoders";
 import { useMizuTraces } from "@/queries/queries";
+import { MizuTrace } from "@/queries/zod-experiment";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
-const RequestsTable = ({ traces, filter }:{ traces: MizuTrace[]; filter: LevelFilter }) => {
+const RequestsTable = ({ traces, filter }: { traces: MizuTrace[]; filter: LevelFilter }) => {
   const navigate = useNavigate();
 
   const filteredTraces = useMemo(() => {

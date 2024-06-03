@@ -10,8 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import type { MizuTrace } from "@/queries/decoders"
 import { useNavigate } from "react-router-dom";
+import { MizuTrace } from "@/queries/zod-experiment";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 

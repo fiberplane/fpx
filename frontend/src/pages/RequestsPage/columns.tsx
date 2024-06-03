@@ -5,8 +5,8 @@ import {
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 
 import { formatDate } from "@/utils"
-import type { MizuTrace } from "@/queries/decoders"
 import { RequestSheet } from "./RequestSheet"
+import { MizuTrace } from "@/queries/zod-experiment"
 
 const columnHelper = createColumnHelper<MizuTrace>()
 

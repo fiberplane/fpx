@@ -1,16 +1,16 @@
-import { MizuLog } from "./zod-experiment"; 
+// import { MizuLog } from "./zod-experiment"; 
 
-export type JsonValue = string | number | boolean | object | null;
+// export type JsonValue = string | number | boolean | object | null;
 
-export type MizuTrace = {
-  id: string;
-  description: string;
-  status: string;
-  duration: string;
-  logs: Array<MizuLog>;
-};
+// export type MizuTrace = {
+//   id: string;
+//   description: string;
+//   status: string;
+//   duration: string;
+//   logs: Array<MizuLog>;
+// };
 
-export type { MizuLog}
+// export type { MizuLog}
 
 // export type MizuLog =
 //   | {
