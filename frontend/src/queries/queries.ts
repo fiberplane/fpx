@@ -82,9 +82,6 @@ async function fetchMizuTraces() {
     return traces;
   } catch (e: unknown) {
     console.error("Error fetching logs: ", e);
-    if (e instanceof Error) {
-      alert(`Error fetching logs: ${e.message}`);
-    }
   }
 }
 
