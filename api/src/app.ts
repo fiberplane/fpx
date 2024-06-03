@@ -29,7 +29,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
   app.use(async (c, next) => {
     const sql = createClient({
-      url: env(c).DATABASE_URL
+      url: env(c).DATABASE_URL ?? 'file:mizu.db'
     })
     const db = drizzle(sql, { schema });
 

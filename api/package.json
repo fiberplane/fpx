@@ -1,8 +1,13 @@
 {
+  "name": "mizu-api",
   "scripts": {
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx migrate.ts"
+    "db:migrate": "tsx migrate.ts",
+    "build": "tsc"
+  },
+  "bin": {
+    "mizu": "./bin/cli.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
@@ -13,6 +18,7 @@
     "hono": "^4.3.7",
     "openai": "^4.47.1",
     "source-map": "^0.7.4",
+    "typescript": "^5.4.5",
     "ws": "^8.17.0"
   },
   "devDependencies": {
