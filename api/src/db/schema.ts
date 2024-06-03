@@ -1,34 +1,19 @@
-import {
-	integer,
-	pgEnum,
-	pgTable,
-	serial,
-  jsonb,
-	timestamp,
-	text,
-	boolean,
-} from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 
-// declaring enum in database
-export const levelEnum = pgEnum("level", [
-	"error",
-	"warning",
-	"info",
-	"debug",
-]);
-
-export const mizuLogs = pgTable("mizu_logs", {
-	id: serial("id").primaryKey(),
-	level: levelEnum("level"),
-	timestamp: timestamp("timestamp"),
+// HELPFUL: https://orm.drizzle.team/docs/column-types/sqlite
+export const mizuLogs = sqliteTable("mizu_logs", {
+	id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+	level: text("level", { enum: ["error", "warning", "info", "debug"] }),
+	timestamp: text("timestamp"),
 	traceId: text("trace_id"),
 	service: text("service"),
-  message: jsonb("message"),
-	ignored: boolean("ignored").default(false),
-	args: jsonb("args"), // NOTE - Should only be present iff message is a string
-	callerLocation: jsonb("caller_location"),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
-	updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  message: text("message", { mode: 'json' }),
+	ignored: integer("ignored", { mode: 'boolean' }).default(false),
+	args: text("args", { mode: "json" }), // NOTE - Should only be present iff message is a string
+	callerLocation: text("caller_location", { mode: 'json' }),
+	createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+	updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });
 
 // When you select a record
