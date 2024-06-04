@@ -30,3 +30,7 @@ yarn-error.log
 .parcel-cache*
 .nx/cache
 *.tsbuildinfo
+
+# Personal files
+mizu.boots.code-workspace
+start-dev.sh

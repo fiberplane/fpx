@@ -1,7 +1,5 @@
 ## Running mizu
 
-> You'll want to follow the instructions in `Configuring Neon (the Database)` before running the app
-
 ```sh
 npm install
 
@@ -15,25 +13,6 @@ npm run db:migrate
 npm run dev 
 ```
 
-### Configuring Neon (the Database)
-
-Neon commands! This can help set up or configure a neon database for project named `mizu`, where you can store telemetry data.
-
-```sh
-# Authenticate with neon cli
-neonctl auth
-
-# Create project if you haven't already
-#
-# > *skip this* if you already created a project,
-# > and grab the DATABASE_URL from your dashbaord
-PROJECT_NAME=mizu
-neonctl projects create --name $PROJECT_NAME --set-context
-
-# Finally, add connection string to .dev.vars
-DATABASE_URL=$(neonctl connection-string)
-echo -e '\nDATABASE_URL='$DATABASE_URL'\n' >> .dev.vars
-```
 
 ### Adding some AI
 

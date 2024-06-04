@@ -1,15 +1,12 @@
 {
   "scripts": {
-    "node:dev": "tsx watch src/index.node.ts",
-    "wrangler:dev": "wrangler dev src/index.worker.tsx",
-    "dev": "npm run node:dev",
-    "deploy": "wrangler deploy --minify src/index.worker.tsx",
+    "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
-    "@neondatabase/serverless": "^0.9.3",
+    "@libsql/client": "^0.6.2",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.2",
     "drizzle-orm": "^0.30.10",
@@ -24,7 +21,6 @@
     "@types/ws": "^8.5.10",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.21.2",
-    "postgres": "^3.4.4",
     "tsx": "^4.10.5",
     "wrangler": "^3.47.0"
   }

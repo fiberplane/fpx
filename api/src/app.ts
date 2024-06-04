@@ -1,23 +1,42 @@
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { cors } from "hono/cors";
-import { NeonDbError, neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import { createClient } from "@libsql/client";
+import { type LibSQLDatabase, drizzle } from 'drizzle-orm/libsql';
 import { inArray, ne, desc } from "drizzle-orm";
 import OpenAI from "openai";
-import { mizuLogs } from "./db/schema";
-import { upgradeWebSocket } from "hono/cloudflare-workers";
-import { WebSocket } from "ws";
+import type { WebSocket } from "ws";
+
+import * as schema from "./db/schema";
 
 type Bindings = {
   DATABASE_URL: string;
   OPENAI_API_KEY: string;
 };
 
-export function createApp(wsConnections?: Set<WebSocket>) {
-  const app = new Hono<{ Bindings: Bindings }>();
+type Variables = {
+  db: LibSQLDatabase<typeof schema>
+}
 
-  const DB_ERRORS: Array<NeonDbError> = [];
+const { mizuLogs } = schema;
+
+export function createApp(wsConnections?: Set<WebSocket>) {
+  const app = new Hono<{ Bindings: Bindings, Variables: Variables }>();
+
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  const DB_ERRORS: Array<any> = [];
+
+  // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
+  app.use(async (c, next) => {
+    const sql = createClient({
+      url: env(c).DATABASE_URL
+    })
+    const db = drizzle(sql, { schema });
+
+    c.set('db', db)
+
+    await next();
+  })
 
   app.use(async (c, next) => {
     try {
@@ -38,32 +57,22 @@ export function createApp(wsConnections?: Set<WebSocket>) {
       callerLocation,
       timestamp,
     } = await c.req.json();
-    const sql = neon(env(c).DATABASE_URL);
-    const db = drizzle(sql);
 
-    const jsonMessage = isJsonParseable(message)
-      ? message
-      : JSON.stringify(message);
-    const jsonArgs = isJsonParseable(args) ? args : JSON.stringify(args);
-    const jsonCallerLocation = isJsonParseable(callerLocation)
-      ? callerLocation
-      : JSON.stringify(callerLocation);
+    const db = c.get('db');
+    const parsedMessage = tryParseJsonObjectMessage(message)
 
     try {
       // Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
       const mizuLevel = level === "log" ? "info" : level;
-      await sql(
-        "insert into mizu_logs (level, service, message, args, caller_location, trace_id, timestamp) values ($1, $2, $3, $4, $5, $6, $7)",
-        [
-          mizuLevel,
-          service,
-          jsonMessage,
-          jsonArgs,
-          jsonCallerLocation,
-          traceId,
-          timestamp,
-        ],
-      );
+      await db.insert(mizuLogs).values({
+        level: mizuLevel,
+        service,
+        message: parsedMessage,
+        args,
+        callerLocation,
+        traceId,
+        timestamp,
+      });
 
       if (wsConnections) {
         for (const ws of wsConnections) {
@@ -74,8 +83,8 @@ export function createApp(wsConnections?: Set<WebSocket>) {
 
       return c.text("OK");
     } catch (err) {
-      if (err instanceof NeonDbError) {
-        console.log("DB ERROR FOR:", { message, jsonMessage });
+      if (err instanceof Error) {
+        console.log("DB ERROR FOR:", { message, parsedMessage });
         console.error(err);
         DB_ERRORS.push(err);
       }
@@ -85,8 +94,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
 
   app.post("/v0/logs/ignore", cors(), async (c) => {
     const { logIds } = await c.req.json();
-    const sql = neon(env(c).DATABASE_URL);
-    const db = drizzle(sql);
+    const db = c.get('db');
     const updatedLogIds = await db
       .update(mizuLogs)
       .set({ ignored: true })
@@ -95,8 +103,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   });
 
   app.post("/v0/logs/delete-all-hack", cors(), async (c) => {
-    const sql = neon(env(c).DATABASE_URL);
-    const db = drizzle(sql);
+    const db = c.get('db');
     await db.delete(mizuLogs).where(ne(mizuLogs.id, 0));
     c.status(204);
     return c.res;
@@ -105,8 +112,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   // Data equivalent of home page (for a frontend to consume)
   app.get("/v0/logs", cors(), async (c) => {
     const showIgnored = !!c.req.query("showIgnored");
-    const sql = neon(env(c).DATABASE_URL);
-    const db = drizzle(sql);
+    const db = c.get('db');
     const logsQuery = showIgnored
       ? db.select().from(mizuLogs)
       : db.select().from(mizuLogs).where(ne(mizuLogs.ignored, true));
@@ -119,6 +125,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
         created_at: l.createdAt,
         updated_at: l.updatedAt,
         caller_location: l.callerLocation,
+        // message: tryParseJsonObjectMessage(l.message),
       })),
     });
   });
@@ -181,24 +188,19 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     return c.json(DB_ERRORS);
   });
 
-  // TODO - Otel support, would need to decode protobuf
-  app.post("/v1/logs", async (c) => {
-    const body = await c.req.json();
-    console.log(body);
-    return c.json(body);
-  });
-
   return app;
 }
 
 /**
- * Check if value is json-parseable
+ * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value
  */
-function isJsonParseable(str: string) {
+function tryParseJsonObjectMessage(str: unknown) {
+  if (typeof str !== "string") {
+    return str;
+  }
   try {
-    JSON.parse(str);
-    return true;
+    return JSON.parse(str);
   } catch (e) {
-    return false;
+    return str;
   }
 }
