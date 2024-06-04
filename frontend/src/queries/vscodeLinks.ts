@@ -37,7 +37,7 @@ async function fetchPositionFromSourceMap(sourceMapLocation: string, line: strin
     column: column
   });
   try {
-    const pos = await fetch(`http://localhost:8788/v0/source?${query.toString()}`).then(r => {
+    const pos = await fetch(`/v0/source?${query.toString()}`).then(r => {
       if (!r.ok) {
         throw new Error(`Failed to fetch source location from source map: ${r.status}`);
       }

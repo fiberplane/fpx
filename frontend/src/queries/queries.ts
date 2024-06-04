@@ -26,7 +26,7 @@ export function useMizuTraces() {
 
 async function fetchMizuTraces() {
   try {
-    const response = await fetch("http://localhost:8788/v0/logs", { mode: "cors" });
+    const response = await fetch("/v0/logs", { mode: "cors" });
     const responseData = await response.json();
     const {logs: transformedLogs} = MizuApiLogResponseSchema.parse(responseData);
     transformedLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));

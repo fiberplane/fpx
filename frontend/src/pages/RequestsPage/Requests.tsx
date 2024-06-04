@@ -115,7 +115,7 @@ export function RequestsPage() {
             </span>
           </Button> */}
           <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => {
-            fetch("http://localhost:8788/v0/logs/ignore", {
+            fetch("/v0/logs/ignore", {
               method: "POST",
               body: JSON.stringify({
                 logIds: query.data?.flatMap(t => t.logs?.map(l => l.id))
@@ -131,7 +131,7 @@ export function RequestsPage() {
             </span>
           </Button>
           <Button variant="destructive" size="sm" className="h-8 gap-1" onClick={() => {
-            fetch("http://localhost:8788/v0/logs/delete-all-hack", {
+            fetch("/v0/logs/delete-all-hack", {
               method: "POST",
             }).then(() => {
               query.refetch();

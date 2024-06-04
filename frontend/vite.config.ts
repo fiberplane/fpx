@@ -9,4 +9,10 @@ export default defineConfig({
 			"@": path.resolve(__dirname, "./src"),
 		},
 	},
+	server: {
+		proxy: {
+			// string shorthand: http://localhost:5173/v0 -> http://localhost:8788/v0
+			'/v0': 'http://localhost:8788'
+		}
+	}
 });
