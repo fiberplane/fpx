@@ -19,8 +19,8 @@ type Dependency = z.infer<typeof dependencySchema>;
 
 // NOTE: hardcoded for now for simplicity, will eventually dynamically
 // parse the package.json file
-app.get("/v0/dependencies", async (c) => {
-  return c.json([
+app.get("/v0/dependencies", async (ctx) => {
+  return ctx.json([
     {
       name: "hono",
       version: "4.3.11",
