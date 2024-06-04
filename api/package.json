@@ -2,7 +2,8 @@
   "scripts": {
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx migrate.ts"
+    "db:migrate": "tsx migrate.ts",
+    "format": "biome check . --apply"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
