@@ -75,9 +75,9 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (c) => {
 app.post(
   "/v0/logs/ignore",
   cors(),
-  zValidator("json", z.object({ logIds: z.string().array() })),
+  zValidator("json", z.object({ logIds: z.number().array() })),
   async (c) => {
-    const { logIds } = await c.req.json();
+    const { logIds } = c.req.valid("json");
     const db = c.get("db");
     const updatedLogIds = await db
       .update(mizuLogs)
