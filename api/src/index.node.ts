@@ -22,6 +22,15 @@ app.use('/*', serveStatic({
   },
 }))
 
+app.get("*", c => {
+  const frontendFolder = getPathToFrontendFolder();
+  if (!frontendFolder) {
+    return c.text("Frontend not found", 500);
+  }
+  const indexAbsolutePath = path.resolve(frontendFolder, "index.html")
+  return c.html(fs.readFileSync(indexAbsolutePath, 'utf-8'));
+})
+
 const port = 8788;
 const server = serve({
   fetch: app.fetch,
@@ -68,6 +77,22 @@ function getRelativePathToFrontendFolder() {
       console.log('relativePathToFrontend', relativePathToFrontend);
 
       return relativePathToFrontend;
+    }
+  }
+
+  console.error('Frontend dist folder not found in the expected locations.');
+};
+
+function getPathToFrontendFolder() {
+  const possiblePaths = [
+    path.resolve(__dirname, '..', 'frontend', 'dist'),
+    path.resolve(__dirname, '..', '..', 'frontend', 'dist'),
+    path.resolve(__dirname, '..', '..', '..', 'frontend', 'dist'),
+  ];
+
+  for (const possiblePath of possiblePaths) {
+    if (fs.existsSync(possiblePath)) {
+      return possiblePath;
     }
   }
 
