@@ -1,12 +1,21 @@
 import { Bindings, Variables } from "@/lib/types";
+import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
+import { z } from "zod";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-app.post("/v0/analyze-error", cors(), async (c) => {
-    const { handlerSourceCode, errorMessage } = await c.req.json();
+app.post(
+  "/v0/analyze-error",
+  cors(),
+  zValidator(
+    "json",
+    z.object({ errorMessage: z.string(), handlerSourceCode: z.string() }),
+  ),
+  async (c) => {
+    const { handlerSourceCode, errorMessage } = c.req.valid("json");
 
     const openaiClient = new OpenAI({
       apiKey: c.env.OPENAI_API_KEY,
@@ -56,6 +65,7 @@ app.post("/v0/analyze-error", cors(), async (c) => {
     return c.json({
       suggestion: message.content,
     });
-  })
+  },
+);
 
 export default app;
