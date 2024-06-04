@@ -28,6 +28,9 @@ export const mizuLogs = sqliteTable("mizu_logs", {
   updatedAt: text("updated_at")
     .notNull()
     .default(sql`(CURRENT_TIMESTAMP)`),
+  matchingIssues: text("matching_issues", { mode: "json" }).$type<
+    number[] | null
+  >(),
 });
 
 export const githubIssues = sqliteTable("github_issues", {
@@ -66,6 +69,7 @@ export const newGithubIssueSchema = createInsertSchema(
   githubIssues,
   normalizeLabels,
 );
+
 export const githubIssueSchema = createSelectSchema(
   githubIssues,
   normalizeLabels,
@@ -75,6 +79,9 @@ export const githubIssueSchema = createSelectSchema(
 export type NewGitHubIssue = z.infer<typeof newGithubIssueSchema>;
 // When you select an issue record
 export type GitHubIssue = z.infer<typeof githubIssueSchema>;
+
+export const newMizuLogSchema = createInsertSchema(mizuLogs);
+export const mizuLogSchema = createSelectSchema(mizuLogs);
 
 // When you select a record
 export type MizuLog = typeof mizuLogs.$inferSelect; // return type when queried
