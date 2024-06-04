@@ -34,12 +34,11 @@ const main = async () => {
   try {
     const migrationsFolder = getMigrationsFolder();
     await migrate(db, { migrationsFolder });
-    console.log('Migration complete');
   } catch (error) {
     console.error('Migration failed:', error);
   } finally {
     process.exit(0);
   }
-};
+}
 
 main();
