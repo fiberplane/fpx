@@ -4,7 +4,8 @@
 		"types": "tsc --emitDeclarationOnly --noEmitOnError false",
 		"dev": "tsx watch src/index.node.ts",
 		"db:generate": "drizzle-kit generate",
-		"db:migrate": "tsx migrate.ts"
+		"db:migrate": "tsx migrate.ts",
+		"db:seed": "tsx scripts/seed.ts"
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.11.1",
