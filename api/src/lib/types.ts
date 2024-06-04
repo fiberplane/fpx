@@ -7,10 +7,13 @@ import type { WebSocket } from "ws";
 export type Bindings = {
   DATABASE_URL: string;
   OPENAI_API_KEY: string;
+  GITHUB_TOKEN: string;
 };
 
 export type Variables = {
-  db: LibSQLDatabase<typeof schema>
-	wsConnections: Set<WebSocket>;
-	dbErrors: Array<any>;
-}
+  db: LibSQLDatabase<typeof schema>;
+  wsConnections: Set<WebSocket>;
+  dbErrors: Array<any>;
+};
+
+export type GitHubIssue = typeof schema.githubIssues.$inferSelect;
