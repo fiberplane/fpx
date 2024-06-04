@@ -31,7 +31,7 @@ app.get("*", c => {
   return c.html(fs.readFileSync(indexAbsolutePath, 'utf-8'));
 })
 
-const port = 8788;
+const port = +(process.env.MIZU_PORT ?? 8788);
 const server = serve({
   fetch: app.fetch,
   port,
