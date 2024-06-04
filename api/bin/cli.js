@@ -16,13 +16,10 @@ if (!validScripts[script]) {
   process.exit(1);
 }
 
-// Determine the directory of this script
+// Get the root directory of this script's project
 const scriptDir = path.resolve(__dirname, '../');
 
 // Construct the command to run the appropriate script in the `dist` folder
-
 const command = `node ${path.join(scriptDir, validScripts[script])}`;
-
-console.log("Running command: ", command);
 
 execSync(command, { stdio: 'inherit' });

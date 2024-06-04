@@ -4,35 +4,42 @@ import { createClient } from '@libsql/client';
 import { config } from 'dotenv';
 import { migrate } from 'drizzle-orm/libsql/migrator';
 import { drizzle } from 'drizzle-orm/libsql';
+import { DEFAULT_DATABASE_URL } from './src/constants';
 
+// Set the environment vars
 config({ path: '.dev.vars' });
 
-const databaseUrl = process.env.DATABASE_URL ?? 'file:mizu.db';
-const sql = createClient({
-  url: databaseUrl
-})
+// We need a fallback for the database url if none is specified
+// This fallback should be the same as in the Hono app
+const databaseUrl = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL;
+const sql = createClient({ url: databaseUrl });
 const db = drizzle(sql);
+
+const getMigrationsFolder = (): string => {
+  const possiblePaths = [
+    path.resolve(__dirname, 'drizzle'),
+    path.resolve(__dirname, '../drizzle')
+  ];
+
+  for (const possiblePath of possiblePaths) {
+    if (fs.existsSync(possiblePath)) {
+      return possiblePath;
+    }
+  }
+
+  throw new Error('Migrations folder not found in the expected locations.');
+};
 
 const main = async () => {
   try {
-    await migrate(db, { migrationsFolder: 'drizzle' });
+    const migrationsFolder = getMigrationsFolder();
+    await migrate(db, { migrationsFolder });
     console.log('Migration complete');
-  } catch (e) {
-    // HACK - if we are running from `dist` folder, need to search one level up for migrations...
-    const parentPath = path.resolve(__dirname, '../', 'drizzle');
-    const parentPathExists = fs.existsSync(parentPath)
-    if (parentPathExists) {
-      try {
-        await migrate(db, { migrationsFolder: parentPath });
-        console.log('Migration complete');
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
-      console.log(e);
-    }
+  } catch (error) {
+    console.error('Migration failed:', error);
+  } finally {
+    process.exit(0);
   }
-  process.exit(0);
 };
 
 main();

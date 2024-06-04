@@ -4,7 +4,7 @@
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
-    "build": "tsc"
+    "build": "npm run db:generate && tsc"
   },
   "bin": {
     "mizu": "./bin/cli.js"

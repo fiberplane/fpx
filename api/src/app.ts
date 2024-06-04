@@ -8,6 +8,7 @@ import OpenAI from "openai";
 import type { WebSocket } from "ws";
 
 import * as schema from "./db/schema";
+import { DEFAULT_DATABASE_URL } from "./constants";
 
 type Bindings = {
   DATABASE_URL: string;
@@ -29,7 +30,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
   app.use(async (c, next) => {
     const sql = createClient({
-      url: env(c).DATABASE_URL ?? 'file:mizu.db'
+      url: env(c).DATABASE_URL ?? DEFAULT_DATABASE_URL
     })
     const db = drizzle(sql, { schema });
 
