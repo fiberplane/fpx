@@ -1,4 +1,8 @@
+import path from "node:path";
+import fs from "node:fs";
+
 import { serve } from "@hono/node-server";
+import { serveStatic } from '@hono/node-server/serve-static';
 import { config } from "dotenv";
 import { readFileSync } from "node:fs";
 
@@ -13,9 +17,9 @@ config({ path: ".dev.vars" });
 const wsConnections = new Set<WebSocket>();
 const app = createApp(wsConnections);
 
-app.get("/", async (c) => {
-  return c.text("Hello Node.js Hono");
-});
+// app.get("/", async (c) => {
+//   return c.text("Hello Node.js Hono");
+// });
 
 app.get("/v0/source", cors(), async (c) => {
   const { source, line, column } = c.req.query();
@@ -58,6 +62,12 @@ app.post("/v0/source-function", cors(), async (c) => {
   }
 });
 
+// NOTE - Need to specify a relative path to assets
+const frontendPath = getRelativePathToFrontendFolder();
+app.use('/*', serveStatic({ root: frontendPath, onNotFound(path, c) {
+  console.error("Not found", path);
+}, }))
+
 const port = 8788;
 console.log(`Server is running: http://localhost:${port}`);
 
@@ -82,3 +92,31 @@ serve({
   fetch: app.fetch,
   port,
 });
+
+function getRelativePathToFrontendFolder() {
+  const possiblePaths = [
+    path.resolve(__dirname, '..', 'frontend', 'dist'),
+    path.resolve(__dirname, '..', '..', 'frontend', 'dist'),
+    path.resolve(__dirname, '..', '..', '..', 'frontend', 'dist'),
+  ];
+
+  // Get the current working directory from which the script was executed
+  // This is necessary for the `root` parameter of serveStatic
+  // https://discord.com/channels/1011308539819597844/1012485912409690122/1247001132648239114
+  const currentWorkingDir = process.cwd();
+
+  for (const possiblePath of possiblePaths) {
+    if (fs.existsSync(possiblePath)) {
+      console.log("Found frontend folder!", possiblePath)
+
+      // NOTE - `serveStatic` only accepts a relative path :scream:
+      const relativePathToFrontend = path.relative(currentWorkingDir, possiblePath);
+
+      console.log('relativePathToFrontend', relativePathToFrontend);
+
+      return relativePathToFrontend;
+    }
+  }
+
+  console.error('Frontend dist folder not found in the expected locations.');
+};

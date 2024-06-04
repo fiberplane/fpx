@@ -12,5 +12,6 @@
 		"rootDir": ".",
 		"esModuleInterop": true
 	},
-	"include": ["src/**/*", "migrate.ts"]
+	"include": ["src/**/*", "migrate.ts"],
+	"exclude": ["node_modules"]
 }
