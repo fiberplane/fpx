@@ -1,0 +1,22 @@
+{
+	"$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+	"include": ["biome.json"],
+	"overrides": [
+		{
+			"include": ["client-library/**/*"],
+			"formatter": {
+				"enabled": false,
+				"indentStyle": "space"
+			},
+			"linter": {
+				"enabled": false
+			},
+			"organizeImports": {
+				"enabled": false
+			}
+		}
+	],
+	"files": {
+		"ignore": ["*.d.ts", ".nx", ".yarn", "dist", "node_modules"]
+	}
+}
