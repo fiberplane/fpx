@@ -41,7 +41,9 @@ async function fetchMizuTraces() {
             logs: [] as Array<MizuLog>,
           });
         }
-        map.get(log.traceId)!.logs.push(log);
+        const trace = map.get(log.traceId);
+        // trace should never be undefined here since we just set it
+        trace?.logs.push(log);
         return map;
       },
       new Map<string, MizuTrace>(),

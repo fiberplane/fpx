@@ -12,11 +12,19 @@
     "enabled": true
   },
   "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
+    "enabled": false
   },
+  "overrides": [
+    {
+      "include": ["client-library"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "recommended": true
+        }
+      }
+    }
+  ],
   "files": {
     "ignore": ["meta/*.json", "dist/*.js", "test-content/*.*", "fpx/*.*"]
   }

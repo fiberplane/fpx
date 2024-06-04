@@ -77,7 +77,7 @@ export function RequestDetailsPage() {
               View requests that had any error logs
             </CardDescription>
           </CardHeader>
-          <CardContent></CardContent>
+          <CardContent />
           <CardFooter>
             {trace?.logs?.length ? (
               <div className="text-xs text-muted-foreground">
