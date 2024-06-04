@@ -1,5 +1,10 @@
 {
   "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "root": ".."
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space"
@@ -7,16 +12,24 @@
   "linter": {
     "enabled": true
   },
-	"organizeImports": {
-		"enabled": true
-	},
+  "organizeImports": {
+    "enabled": true
+  },
+  "overrides": [
+    {
+      "include": ["dist/**/*.*"],
+      "formatter": {
+        "enabled": false
+      },
+      "linter": {
+        "enabled": false
+      },
+      "organizeImports": {
+        "enabled": false
+      }
+    }
+  ],
   "files": {
-    "ignore": [
-      "*.d.ts",
-      ".nx",
-      ".yarn",
-      "dist",
-      "node_modules"
-    ]
+    "ignoreUnknown": true
   }
 }
