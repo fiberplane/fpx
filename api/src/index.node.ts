@@ -1,8 +1,8 @@
 import { serve } from "@hono/node-server";
 import { config } from "dotenv";
 
-import { createApp } from "./app";
 import { type WebSocket, WebSocketServer } from "ws";
+import { createApp } from "./app";
 
 config({ path: ".dev.vars" });
 

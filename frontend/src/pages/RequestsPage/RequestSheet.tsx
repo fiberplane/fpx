@@ -9,16 +9,18 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
+import type { MizuTrace } from "@/queries";
 import { TraceDetails } from "../RequestDetailsPage/RequestDetails";
-import { MizuTrace } from "@/queries";
 
 export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
   return (
     <div onClick={(e) => e.stopPropagation()}>
       <Sheet>
-        <SheetTrigger asChild >
-          <Button size="sm" className="px-2 py-0" variant="outline">Peek</Button>
+        <SheetTrigger asChild>
+          <Button size="sm" className="px-2 py-0" variant="outline">
+            Peek
+          </Button>
         </SheetTrigger>
         <SheetContent className="w-[400px] sm:max-w-[540px] sm:w-[540px] md:max-w-[680px] md:w-[680px] lg:w-[800px] overflow-y-auto">
           <SheetHeader>
@@ -35,11 +37,13 @@ export const RequestSheet = ({ trace }: { trace: MizuTrace }) => {
           <TraceDetails trace={trace} />
           <SheetFooter>
             <SheetClose asChild className="mt-4">
-              <Button type="button" variant="secondary">Close</Button>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
             </SheetClose>
           </SheetFooter>
         </SheetContent>
       </Sheet>
     </div>
-  )
+  );
 };

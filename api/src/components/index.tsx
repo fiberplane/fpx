@@ -15,22 +15,28 @@ export const Layout: FC = (props) => {
       </head>
       <body>{props.children}</body>
     </html>
-  )
-}
+  );
+};
 
 export const Messages = ({ logs }: { logs: unknown[] }) => {
-  const validatedLogs = logs.map(l => {
-    if (l && typeof l === "object" && "id" in l && "message" in l && isJsonValue(l.message)) {
+  const validatedLogs = logs.map((l) => {
+    if (
+      l &&
+      typeof l === "object" &&
+      "id" in l &&
+      "message" in l &&
+      isJsonValue(l.message)
+    ) {
       return {
         id: l.id,
-        message: l.message
+        message: l.message,
       };
     }
     return {
-      id: +(new Date()),
+      id: +new Date(),
       message: "COULD_NOT_PARSE",
       log: l,
-    }
+    };
   });
 
   return (
@@ -38,14 +44,17 @@ export const Messages = ({ logs }: { logs: unknown[] }) => {
       <h1>Messages</h1>
       {validatedLogs.map((log) => (
         <div key={log.id} className="log-entry">
-          {log.message?.lifecycle === "simple" || typeof log.message === "string" ? (
+          {log.message?.lifecycle === "simple" ||
+          typeof log.message === "string" ? (
             <div>{log.message}</div>
           ) : (
             <div className="properties">
-              
               {Object.entries(log.message).map(([key, value]) => (
                 <div key={key} className="property">
-                  <strong>{key}:</strong> {typeof value === "object" ? JSON.stringify(value, null, 2) : value.toString()}
+                  <strong>{key}:</strong>{" "}
+                  {typeof value === "object"
+                    ? JSON.stringify(value, null, 2)
+                    : value.toString()}
                 </div>
               ))}
             </div>
@@ -56,11 +65,16 @@ export const Messages = ({ logs }: { logs: unknown[] }) => {
   );
 };
 
-function isJsonValue(value: unknown): value is string | number | boolean | object | null {
+function isJsonValue(
+  value: unknown,
+): value is string | number | boolean | object | null {
   const type = typeof value;
-  return value === null || type === 'string' ||
-    type === 'number' ||
-    type === 'boolean' ||
-    (type === 'object' && !Array.isArray(value) && value !== null) ||
-    Array.isArray(value);
+  return (
+    value === null ||
+    type === "string" ||
+    type === "number" ||
+    type === "boolean" ||
+    (type === "object" && !Array.isArray(value) && value !== null) ||
+    Array.isArray(value)
+  );
 }
