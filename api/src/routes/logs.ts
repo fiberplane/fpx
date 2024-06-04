@@ -16,7 +16,7 @@ const schemaPostLogs = z.object({
     if (val === "warn") return "warning";
     return val;
   }),
-  service: z.string(),
+  service: z.string().optional(),
   message: z.any(),
   args: z.any(),
   traceId: z.string(),
