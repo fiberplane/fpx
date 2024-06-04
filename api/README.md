@@ -1,3 +1,4 @@
+
 ## Running mizu
 
 ```sh
@@ -20,10 +21,28 @@ npm run dev
 - Add it to `.dev.vars`
 - Voilà
 
-## Otlp (NOT IMPLEMENTED)
+## Publishing
 
-This would be how to run an otel collector with the config file in this repo:
+### Testing npx command
 
 ```sh
-docker run -v $(pwd)/config.yaml:/etc/otelcol-contrib/config.yaml otel/opentelemetry-collector-contrib:0.100.0
+# TODO
+
+```
+
+### Officially publishing
+
+```sh
+# from project root
+rm -r api/dist/*
+mkdir api/dist
+
+cd frontend
+npm run build
+cp -r dist/* ../api/dist/
+
+cd ../api
+npm run build
+
+npm publish
 ```

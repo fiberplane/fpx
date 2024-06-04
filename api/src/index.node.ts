@@ -60,6 +60,7 @@ function getRelativePathToFrontendFolder() {
     path.resolve(__dirname, '..', 'frontend', 'dist'),
     path.resolve(__dirname, '..', '..', 'frontend', 'dist'),
     path.resolve(__dirname, '..', '..', '..', 'frontend', 'dist'),
+    path.resolve(__dirname, '..', '..', 'dist'), // HACK - support serving copy-pasted frontend build
   ];
 
   // Get the current working directory from which the script was executed
@@ -88,6 +89,7 @@ function getPathToFrontendFolder() {
     path.resolve(__dirname, '..', 'frontend', 'dist'),
     path.resolve(__dirname, '..', '..', 'frontend', 'dist'),
     path.resolve(__dirname, '..', '..', '..', 'frontend', 'dist'),
+    path.resolve(__dirname, '..', '..', 'dist'), // HACK - support serving copy-pasted frontend build
   ];
 
   for (const possiblePath of possiblePaths) {
@@ -96,5 +98,5 @@ function getPathToFrontendFolder() {
     }
   }
 
-  console.error('Frontend dist folder not found in the expected locations.');
+  console.error('Frontend dist folder not found in the expected locations, falling back to current directory.');
 };

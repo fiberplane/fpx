@@ -1,5 +1,5 @@
-import fs from 'fs';
-import { promisify } from 'util';
+import fs from 'node:fs';
+import { promisify } from 'node:util';
 import { parse } from 'acorn';
 import { simple as walkSimple } from 'acorn-walk';
 import { SourceMapConsumer } from 'source-map';

@@ -1,5 +1,5 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.4",
   "name": "@mizu-dev/studio",
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
@@ -9,7 +9,15 @@
     "db:migrate": "tsx migrate.ts",
     "build": "npm run db:generate && tsc"
   },
-  "keywords": ["hono", "local", "debugging"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "hono",
+    "local",
+    "debugging"
+  ],
   "bin": {
     "mizu": "./bin/cli.js"
   },
@@ -19,6 +27,8 @@
     "@libsql/client": "^0.6.2",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.2",
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.21.2",
     "drizzle-orm": "^0.30.10",
     "hono": "^4.3.7",
     "openai": "^4.47.1",
@@ -31,8 +41,6 @@
     "@cloudflare/workers-types": "^4.20240403.0",
     "@types/node": "^20.11.17",
     "@types/ws": "^8.5.10",
-    "dotenv": "^16.4.5",
-    "drizzle-kit": "^0.21.2",
     "ts-to-zod": "^3.8.5",
     "tsx": "^4.10.5",
     "wrangler": "^3.47.0"
