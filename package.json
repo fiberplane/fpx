@@ -11,8 +11,6 @@
     "type": "git",
     "url": "git+https://github.com/fiberplane/fpx.git"
   },
-  "author": "",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/fiberplane/fpx/issues"
   },
