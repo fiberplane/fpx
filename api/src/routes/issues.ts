@@ -1,28 +1,57 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
 import { Bindings, Variables } from "@/lib/types";
 import { cors } from "hono/cors";
-import {
-  githubIssues,
-  newGithubIssueSchema,
-  githubIssueSchema,
-} from "@/db/schema";
+import { githubIssues, newGithubIssueSchema } from "@/db/schema";
 import { Octokit } from "octokit";
 import { LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "@/db/schema";
-
 import fs from "node:fs";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.get(
-  "/v0/relevant-issues/:id",
+  "/v0/relevant-issues/:trace_id",
   cors(),
-  zValidator("param", z.string()),
+  zValidator("param", z.object({ trace_id: z.string() })),
   async (ctx) => {
-    // TODO - get relevant issues for a given trace id
+    const { trace_id } = ctx.req.valid("param");
+
+    const db = ctx.get("db");
+
+    const relevantLogs = await db
+      .select()
+      .from(schema.mizuLogs)
+      .where(eq(schema.mizuLogs.traceId, trace_id));
+
+    let matchingIssueIds: number[] = [];
+    for (const log of relevantLogs) {
+      if (log.matchingIssues) {
+        matchingIssueIds = [...matchingIssueIds, ...log.matchingIssues];
+      }
+    }
+
+    const relevantIssues = z
+      .array(schema.githubIssueSchema)
+      .default([])
+      .safeParse(
+        await db
+          .select()
+          .from(schema.githubIssues)
+          .where(inArray(schema.githubIssues.id, matchingIssueIds)),
+      );
+
+    if (relevantIssues.error) {
+      console.log(
+        "Error parsing relevant issues from db",
+        relevantIssues.error,
+      );
+      throw new Error(relevantIssues.error.message);
+    }
+
+    return ctx.json(relevantIssues.data);
   },
 );
 
@@ -53,28 +82,19 @@ async function getGitHubIssues(
 ) {
   console.log("Fetching issues for owner", owner, "and repo", repo);
 
-  const issues = z
-    .array(githubIssueSchema)
-    .min(1)
-    .safeParse(
-      await db
-        .select()
-        .from(githubIssues)
-        .where(and(eq(githubIssues.owner, owner), eq(githubIssues.repo, repo))),
-    );
+  const issues = await db
+    .select()
+    .from(githubIssues)
+    .where(and(eq(githubIssues.owner, owner), eq(githubIssues.repo, repo)));
 
-  if (issues.success) {
+  if (issues.length > 0) {
     console.log("Issues found in db, returning");
-    return issues.data;
+    return issues;
   }
 
-  if (
-    issues.error &&
-    !issues.error.isEmpty &&
-    issues.error.errors[0].code !== "too_small"
-  ) {
+  if (!issues) {
     // console.log("Error parsing issues from db", issues.error);
-    throw new Error(issues.error.message);
+    throw new Error("Error parsing issues from db");
   }
 
   console.log("No issues found in db, fetching from github");
@@ -94,18 +114,26 @@ async function getGitHubIssues(
 
   const fetchedIssues = z
     .array(
-      newGithubIssueSchema.extend({
-        // making sure we always record the owner and repo
-        owner: z.string().default(owner),
-        repo: z.string().default(repo),
-      }),
+      newGithubIssueSchema
+        .extend({
+          // making sure we always record the owner and repo
+          owner: z.string().default(owner),
+          repo: z.string().default(repo),
+          // We only care if the object exists not whatever's inside it
+          pullRequest: z.object({}).passthrough().nullish(),
+          html_url: z.string().url(),
+        })
+        .transform((issue) => ({ ...issue, url: issue.html_url })),
     )
     .min(1)
     .safeParse(response);
 
   if (fetchedIssues.success) {
-    await db.insert(githubIssues).values(fetchedIssues.data);
-    return fetchedIssues.data;
+    const filteredIssues = fetchedIssues.data.filter(
+      (issue) => !issue.pullRequest,
+    );
+    await db.insert(githubIssues).values(filteredIssues);
+    return filteredIssues;
   }
 
   console.log("Error fetching issues from github");
