@@ -1,0 +1,60 @@
+node_modules
+.wrangler
+.dev.vars
+.dev.vars.example
+
+# do not publish src
+src/*
+
+# do not publish scripts
+scripts/*
+
+# do not publish migrate typescript file
+migrate.ts
+
+# Change them to your taste:
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# mac
+.DS_Store
+
+# db
+mizu.db
+.neon
+
+# Rust targets
+**/target
+target
+
+.env
+.envrc
+
+# VS Code
+.vscode/*
+*.code-workspace
+
+# CLion
+.idea
+
+# TypeScript / Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+node_modules
+package-lock.json
+yarn-error.log
+
+# Build tools
+.parcel-cache*
+.nx/cache
+*.tsbuildinfo
+
+# Personal files
+mizu.boots.code-workspace
+start-dev.sh

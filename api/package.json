@@ -1,11 +1,15 @@
 {
-  "name": "mizu-api",
+  "version": "0.0.1",
+  "name": "@mizu-dev/studio",
+  "description": "Local development debugging interface for Hono apps",
+  "author": "Fiberplane<info@fiberplane.com>",
   "scripts": {
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
     "build": "npm run db:generate && tsc"
   },
+  "keywords": ["hono", "local", "debugging"],
   "bin": {
     "mizu": "./bin/cli.js"
   },
