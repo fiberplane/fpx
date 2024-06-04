@@ -1,17 +1,24 @@
-
+import { createClient } from '@libsql/client';
 import { config } from 'dotenv';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import postgres from 'postgres';
+import { migrate } from 'drizzle-orm/libsql/migrator';
+import { drizzle } from 'drizzle-orm/libsql';
 
 config({ path: '.dev.vars' });
 
-const databaseUrl = drizzle(postgres(`${process.env.DATABASE_URL}`,
-  { ssl: 'require', max: 1 }));
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL not defined');
+  process.exit(1);
+}
+
+const databaseUrl = process.env.DATABASE_URL;
+const sql = createClient({
+  url: databaseUrl
+})
+const db = drizzle(sql);
 
 const main = async () => {
   try {
-    await migrate(databaseUrl, { migrationsFolder: 'drizzle' });
+    await migrate(db, { migrationsFolder: 'drizzle' });
     console.log('Migration complete');
   } catch (error) {
     console.log(error);
