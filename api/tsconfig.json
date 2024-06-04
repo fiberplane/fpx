@@ -10,7 +10,11 @@
 		"jsxImportSource": "hono/jsx",
 		"outDir": "./dist",
 		"rootDir": ".",
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		}
 	},
 	"include": ["src/**/*", "migrate.ts"],
 	"exclude": ["node_modules"]

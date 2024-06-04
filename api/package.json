@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
+    "@hono/zod-validator": "^0.2.2",
     "@libsql/client": "^0.6.2",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.2",
@@ -19,7 +20,8 @@
     "openai": "^4.47.1",
     "source-map": "^0.7.4",
     "typescript": "^5.4.5",
-    "ws": "^8.17.0"
+    "ws": "^8.17.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
@@ -27,6 +29,7 @@
     "@types/ws": "^8.5.10",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.21.2",
+    "ts-to-zod": "^3.8.5",
     "tsx": "^4.10.5",
     "wrangler": "^3.47.0"
   }
