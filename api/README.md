@@ -23,11 +23,19 @@ npm run dev
 
 ## Publishing
 
-### Testing npx command
+### Testing npx command locally
 
 ```sh
-# TODO
+cd api
+npm run build
+npm link
 
+cd ../some/other/dir
+npx mizu studio
+
+# to unlink afterwards
+npm ls -g --depth=0 --link=true
+npm unlink $NAME_OF_PACKAGE -g
 ```
 
 ### Officially publishing
