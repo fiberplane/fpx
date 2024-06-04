@@ -1,13 +1,13 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.7.3/schema.json",
-	"extends": ["../biome.jsonc"],
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true
-		}
-	},
-	"files": {
-		"ignore": ["meta/*.json", "dist/*.js", "test-content/*.*", "fpx/*.*"]
-	}
+  "$schema": "https://biomejs.dev/schemas/1.7.3/schema.json",
+  "extends": ["../biome.jsonc"],
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "files": {
+    "ignore": ["meta/*.json", "dist/*.js", "test-content/*.*", "fpx/*.*"]
+  }
 }

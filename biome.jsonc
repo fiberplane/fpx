@@ -23,6 +23,12 @@
           "recommended": true
         }
       }
+    },
+    {
+      "include": ["test-content"],
+      "formatter": {
+        "enabled": false
+      }
     }
   ],
   "files": {
