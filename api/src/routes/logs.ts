@@ -4,14 +4,36 @@ import * as schema from "@/db/schema";
 import { inArray, ne, desc } from "drizzle-orm";
 import { tryParseJsonObjectMessage } from "@/lib/utils";
 import { cors } from "hono/cors";
+import { z } from "zod";
+import { zValidator } from "@hono/zod-validator";
 
 const { mizuLogs } = schema;
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-app.post("/v0/logs", async (c) => {
+const schemaPostLogs = z.object({
+  level: z.enum(["debug", "log", "info", "warn", "error"]).transform((val) => {
+    if (val === "warn") return "warning";
+    return val;
+  }),
+  service: z.string(),
+  message: z.any(),
+  args: z.any(),
+  traceId: z.string(),
+  callerLocation: z
+    .object({
+      file: z.string(),
+      line: z.string(),
+      column: z.string(),
+      method: z.string(),
+    })
+    .nullable(),
+  timestamp: z.string(),
+});
+
+app.post("/v0/logs", zValidator("json", schemaPostLogs), async (c) => {
   const { level, service, message, args, traceId, callerLocation, timestamp } =
-    await c.req.json();
+    c.req.valid("json");
 
   const db = c.get("db");
   const dbErrors = c.get("dbErrors");
@@ -50,15 +72,20 @@ app.post("/v0/logs", async (c) => {
   }
 });
 
-app.post("/v0/logs/ignore", cors(), async (c) => {
-  const { logIds } = await c.req.json();
-  const db = c.get("db");
-  const updatedLogIds = await db
-    .update(mizuLogs)
-    .set({ ignored: true })
-    .where(inArray(mizuLogs.id, logIds));
-  return c.json({ updatedLogIds });
-});
+app.post(
+  "/v0/logs/ignore",
+  cors(),
+  zValidator("json", z.object({ logIds: z.string().array() })),
+  async (c) => {
+    const { logIds } = await c.req.json();
+    const db = c.get("db");
+    const updatedLogIds = await db
+      .update(mizuLogs)
+      .set({ ignored: true })
+      .where(inArray(mizuLogs.id, logIds));
+    return c.json({ updatedLogIds });
+  },
+);
 
 app.post("/v0/logs/delete-all-hack", cors(), async (c) => {
   const db = c.get("db");
