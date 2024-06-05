@@ -70,7 +70,6 @@ export function createHonoMiddleware(options?: {
     const { originalFetch, undo: undoReplaceFetch } = replaceFetch();
     teardownFunctions.push(undoReplaceFetch);
 
-
     // TODO - (future) Take the traceId from headers but then fall back to uuid here?
     const traceId = generateUUID();
 

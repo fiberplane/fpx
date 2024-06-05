@@ -148,4 +148,5 @@ export function extractCallerLocation(callerLineFromStackTrace?: string) {
 export const shouldPrettifyMizuLog = (printFnArgs: unknown[]) =>
   printFnArgs?.[1] === PRETTIFY_MIZU_LOGGER_LOG;
 
-export const shouldIgnoreMizuLog = (printFnArgs: unknown[]) => printFnArgs?.[1] === IGNORE_MIZU_LOGGER_LOG;
+export const shouldIgnoreMizuLog = (printFnArgs: unknown[]) =>
+  printFnArgs?.[1] === IGNORE_MIZU_LOGGER_LOG;
