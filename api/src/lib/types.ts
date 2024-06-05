@@ -7,6 +7,7 @@ import type { WebSocket } from "ws";
 export type Bindings = {
   DATABASE_URL: string;
   OPENAI_API_KEY: string;
+  GITHUB_TOKEN: string;
 };
 
 export type Variables = {

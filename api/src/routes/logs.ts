@@ -31,12 +31,12 @@ const schemaPostLogs = z.object({
   timestamp: z.string(),
 });
 
-app.post("/v0/logs", zValidator("json", schemaPostLogs), async (c) => {
+app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
   const { level, service, message, args, traceId, callerLocation, timestamp } =
-    c.req.valid("json");
+    ctx.req.valid("json");
 
-  const db = c.get("db");
-  const dbErrors = c.get("dbErrors");
+  const db = ctx.get("db");
+  const dbErrors = ctx.get("dbErrors");
   const parsedMessage = tryParseJsonObjectMessage(message);
 
   try {
@@ -52,7 +52,7 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (c) => {
       timestamp,
     });
 
-    const wsConnections = c.get("wsConnections");
+    const wsConnections = ctx.get("wsConnections");
 
     if (wsConnections) {
       for (const ws of wsConnections) {
@@ -61,14 +61,14 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (c) => {
       }
     }
 
-    return c.text("OK");
+    return ctx.text("OK");
   } catch (err) {
     if (err instanceof Error) {
       console.log("DB ERROR FOR:", { message, parsedMessage });
       console.error(err);
       dbErrors.push(err);
     }
-    return c.json({ error: "Error processing log data" }, 500);
+    return ctx.json({ error: "Error processing log data" }, 500);
   }
 });
 
@@ -76,33 +76,33 @@ app.post(
   "/v0/logs/ignore",
   cors(),
   zValidator("json", z.object({ logIds: z.number().array() })),
-  async (c) => {
-    const { logIds } = c.req.valid("json");
-    const db = c.get("db");
+  async (ctx) => {
+    const { logIds } = ctx.req.valid("json");
+    const db = ctx.get("db");
     const updatedLogIds = await db
       .update(mizuLogs)
       .set({ ignored: true })
       .where(inArray(mizuLogs.id, logIds));
-    return c.json({ updatedLogIds });
+    return ctx.json({ updatedLogIds });
   },
 );
 
-app.post("/v0/logs/delete-all-hack", cors(), async (c) => {
-  const db = c.get("db");
+app.post("/v0/logs/delete-all-hack", cors(), async (ctx) => {
+  const db = ctx.get("db");
   await db.delete(mizuLogs).where(ne(mizuLogs.id, 0));
-  c.status(204);
-  return c.res;
+  ctx.status(204);
+  return ctx.res;
 });
 
 // Data equivalent of home page (for a frontend to consume)
-app.get("/v0/logs", cors(), async (c) => {
-  const showIgnored = !!c.req.query("showIgnored");
-  const db = c.get("db");
+app.get("/v0/logs", cors(), async (ctx) => {
+  const showIgnored = !!ctx.req.query("showIgnored");
+  const db = ctx.get("db");
   const logsQuery = showIgnored
     ? db.select().from(mizuLogs)
     : db.select().from(mizuLogs).where(ne(mizuLogs.ignored, true));
   const logs = await logsQuery.orderBy(desc(mizuLogs.timestamp));
-  return c.json({
+  return ctx.json({
     // HACK - switching to drizzle meant renaming a bunch of fields oy vey
     logs: logs.map((l) => ({
       ...l,

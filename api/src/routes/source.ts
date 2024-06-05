@@ -10,52 +10,78 @@ import { z } from "zod";
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.get(
-  "/v0/source",
-  cors(),
-  zValidator(
-    "query",
-    z.object({ source: z.string(), line: z.string(), column: z.string() }),
-  ),
-  async (c) => {
-    const { source, line, column } = c.req.query();
+	"/v0/source",
+	cors(),
+	zValidator(
+		"query",
+		z.object({ source: z.string(), line: z.string(), column: z.string() }),
+	),
+	async (ctx) => {
+		const { source, line, column } = ctx.req.query();
 
-    try {
-      const file = JSON.parse(readFileSync(source, "utf8").toString());
-      const consumer = await new SourceMapConsumer(file);
-      const pos = consumer.originalPositionFor({
-        line: Number.parseInt(line, 10),
-        column: Number.parseInt(column, 10),
-      });
-      consumer.destroy();
+		try {
+			const file = JSON.parse(readFileSync(source, "utf8").toString());
+			const consumer = await new SourceMapConsumer(file);
+			const pos = consumer.originalPositionFor({
+				line: Number.parseInt(line, 10),
+				column: Number.parseInt(column, 10),
+			});
+			consumer.destroy();
 
-      return c.json(pos);
-    } catch (err) {
-      console.error("Could not read source file", err?.message);
-      return c.json(
-        { error: "Error reading file", name: err?.name, message: err?.message },
-        500,
-      );
-    }
-  },
+			return ctx.json(pos);
+		} catch (err) {
+			const message = getValueFromObject(err, "message", "Unknown error");
+			const name = getValueFromObject(err, "name", "");
+
+			console.error("Could not read source file", message);
+			return ctx.json(
+				{
+					error: "Error reading file",
+					name,
+					message,
+				},
+				500,
+			);
+		}
+	},
 );
 
-app.post("/v0/source-function", cors(), async (c) => {
-  const { handler, source } = c.req.query();
+app.post("/v0/source-function", cors(), async (ctx) => {
+	const { handler, source } = ctx.req.query();
 
-  try {
-    const functionText = await findSourceFunction(source, handler);
-    return c.json({ functionText });
-  } catch (err) {
-    console.error("Could not find function in source", source);
-    return c.json(
-      {
-        error: "Error finding function",
-        name: err?.name,
-        message: err?.message,
-      },
-      500,
-    );
-  }
+	try {
+		const functionText = await findSourceFunction(source, handler);
+		return ctx.json({ functionText });
+	} catch (err) {
+		console.error("Could not find function in source", source);
+		const message = getValueFromObject(err, "message", "Unknown error");
+		const name = getValueFromObject(err, "name", "");
+
+		return ctx.json(
+			{
+				error: "Error finding function",
+				name,
+				message,
+			},
+			500,
+		);
+	}
 });
+
+function getValueFromObject<T>(
+	element: unknown,
+	key: string,
+	defaultValue: T,
+): T {
+	if (typeof element === "object" && element !== null && key in element) {
+		const value = (element as Record<string, unknown>)[key];
+		// Rough check to see if the type of the value is the same as the default value
+		if (typeof value === typeof defaultValue || value === defaultValue) {
+			return (element as Record<string, unknown>)[key] as T;
+		}
+	}
+
+	return defaultValue;
+}
 
 export default app;

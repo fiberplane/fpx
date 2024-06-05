@@ -2,11 +2,13 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
+import { logger } from "hono/logger";
 import type { WebSocket } from "ws";
 
-import { logger } from "hono/logger";
 import * as schema from "./db/schema";
 import type { Bindings, Variables } from "./lib/types";
+import dependencies from "./routes/dependencies";
+import issues from "./routes/issues";
 import logs from "./routes/logs";
 import openai from "./routes/openai";
 import source from "./routes/source";
@@ -52,6 +54,8 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   app.route("/", logs);
   app.route("/", openai);
   app.route("/", source);
+  app.route("/", dependencies);
+  app.route("/", issues);
 
   // HACK - Route to inspect any db errors during this session
   app.get("db-errors", async (c) => {
