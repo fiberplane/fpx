@@ -1,33 +1,32 @@
 # This workflow will be triggered by a GitHub pull-request.
-# Studio is built in its own job, because other jobs wait for it.
 ---
-	name: Build Studio and Explorer
-	
-	on:
-		pull_request:
-			branches: ["*"]
-		push:
-			branches: ["main", "release-*"]
-	
-	env:
-		CARGO_TERM_COLOR: always
-		FORCE_COLOR: true
-	
-	jobs:
-		build_packages:
-			name: Build packages
-			runs-on: ubuntu-latest
-			steps:
-				- name: Checkout
-					uses: actions/checkout@v2
+  name: Build node packages
+  
+  on:
+    pull_request:
+      branches: ["*"]
+    push:
+      branches: ["main", "release-*"]
+  
+  env:
+    CARGO_TERM_COLOR: always
+    FORCE_COLOR: true
+  
+  jobs:
+    build_packages:
+      name: Build packages
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v2
 
-				- name: Setup Node.js
-					uses: actions/setup-node@v2
-					with:
-						node-version: lts/*
-						cache: npm
-				- name: Install dependencies
-					run: npm ci
+        - name: Setup Node.js
+          uses: actions/setup-node@v2
+          with:
+            node-version: lts/*
+            cache: npm
+        - name: Install dependencies
+          run: npm ci --workspaces
 
-				- name: Lint
-					run: npm lint:ci --workspaces
+        - name: Lint all packages
+          run: npm lint:ci --workspaces
