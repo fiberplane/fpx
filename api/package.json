@@ -17,7 +17,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "UNLICENSED",
+  "license": "MIT or Apache 2",
   "keywords": ["hono", "local", "debugging"],
   "bin": {
     "mizu": "./bin/cli.js"
