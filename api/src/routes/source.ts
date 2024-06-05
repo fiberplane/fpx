@@ -31,14 +31,6 @@ app.get(
 
       return ctx.json(pos);
     } catch (err) {
-<<<<<<< HEAD
-      const errIsError = err instanceof Error;
-      const message = errIsError? err.message : "(unknown error)";
-      const name = errIsError? err.name : "Error";
-      console.error("Could not read source file", message);
-      return ctx.json(
-        { error: "Error reading file", name, message },
-=======
       const message = getValueFromObject(err, "message", "Unknown error");
       const name = getValueFromObject(err, "name", "");
 
@@ -49,7 +41,6 @@ app.get(
           name,
           message,
         },
->>>>>>> main
         500,
       );
     }
@@ -64,15 +55,9 @@ app.post("/v0/source-function", cors(), async (ctx) => {
     return ctx.json({ functionText });
   } catch (err) {
     console.error("Could not find function in source", source);
-<<<<<<< HEAD
-    const errIsError = err instanceof Error;
-    const message = errIsError ? err.message : "(unknown error)";
-    const name = errIsError ? err.name : "Error";
-=======
     const message = getValueFromObject(err, "message", "Unknown error");
     const name = getValueFromObject(err, "name", "");
 
->>>>>>> main
     return ctx.json(
       {
         error: "Error finding function",

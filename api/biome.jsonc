@@ -13,6 +13,6 @@
     }
   },
   "files": {
-    "ignore": ["meta/*.json", "test-content/*.*"]
+    "ignore": ["meta/*.json", "test-content/*.*", "dist/*.*"]
   }
 }

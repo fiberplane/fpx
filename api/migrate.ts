@@ -1,14 +1,14 @@
-import fs from 'node:fs';
-import path, { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { createClient } from '@libsql/client';
-import { config } from 'dotenv';
-import { migrate } from 'drizzle-orm/libsql/migrator';
-import { drizzle } from 'drizzle-orm/libsql';
-import { DEFAULT_DATABASE_URL } from './src/constants.js';
+import fs from "node:fs";
+import path, { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createClient } from "@libsql/client";
+import { config } from "dotenv";
+import { drizzle } from "drizzle-orm/libsql";
+import { migrate } from "drizzle-orm/libsql/migrator";
+import { DEFAULT_DATABASE_URL } from "./src/constants.js";
 
 // Set the environment vars
-config({ path: '.dev.vars' });
+config({ path: ".dev.vars" });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,8 +21,8 @@ const db = drizzle(sql);
 
 const getMigrationsFolder = (): string => {
   const possiblePaths = [
-    path.resolve(__dirname, 'drizzle'),
-    path.resolve(__dirname, '../drizzle')
+    path.resolve(__dirname, "drizzle"),
+    path.resolve(__dirname, "../drizzle"),
   ];
 
   for (const possiblePath of possiblePaths) {
@@ -31,7 +31,7 @@ const getMigrationsFolder = (): string => {
     }
   }
 
-  throw new Error('Migrations folder not found in the expected locations.');
+  throw new Error("Migrations folder not found in the expected locations.");
 };
 
 const main = async () => {
@@ -39,10 +39,10 @@ const main = async () => {
     const migrationsFolder = getMigrationsFolder();
     await migrate(db, { migrationsFolder });
   } catch (error) {
-    console.error('Migration failed:', error);
+    console.error("Migration failed:", error);
   } finally {
     process.exit(0);
   }
-}
+};
 
 main();

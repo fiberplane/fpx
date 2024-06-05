@@ -1,8 +1,8 @@
 // Only using for global types
 
-import type * as schema from "../db/schema.js";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { WebSocket } from "ws";
+import type * as schema from "../db/schema.js";
 
 export type Bindings = {
   DATABASE_URL: string;

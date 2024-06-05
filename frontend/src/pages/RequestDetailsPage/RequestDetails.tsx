@@ -52,10 +52,9 @@ function useHandlerSourceCode(source?: string, handler?: string) {
     });
     const fetchSourceLocation = async () => {
       try {
-        const pos = await fetch(
-          `/v0/source-function?${query.toString()}`,
-          { method: "POST" },
-        ).then((r) => {
+        const pos = await fetch(`/v0/source-function?${query.toString()}`, {
+          method: "POST",
+        }).then((r) => {
           if (!r.ok) {
             throw new Error(
               `Failed to fetch source location from source map: ${r.status}`,

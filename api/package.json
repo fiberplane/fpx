@@ -18,11 +18,7 @@
     "access": "public"
   },
   "license": "UNLICENSED",
-  "keywords": [
-    "hono",
-    "local",
-    "debugging"
-  ],
+  "keywords": ["hono", "local", "debugging"],
   "bin": {
     "mizu": "./bin/cli.cjs"
   },

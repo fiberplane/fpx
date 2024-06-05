@@ -5,14 +5,14 @@ import { env } from "hono/adapter";
 import { logger } from "hono/logger";
 import type { WebSocket } from "ws";
 
+import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
+import dependencies from "./routes/dependencies.js";
+import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
 import openai from "./routes/openai.js";
 import source from "./routes/source.js";
-import dependencies from "./routes/dependencies.js";
-import issues from "./routes/issues.js";
-import { DEFAULT_DATABASE_URL } from "./constants.js";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -26,8 +26,8 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   // Lau: similarly adding wsConnections so they can be used in outher modules
   app.use(async (c, next) => {
     const sql = createClient({
-      url: env(c).DATABASE_URL ?? DEFAULT_DATABASE_URL
-    })
+      url: env(c).DATABASE_URL ?? DEFAULT_DATABASE_URL,
+    });
     const db = drizzle(sql, { schema });
     c.set("db", db);
 

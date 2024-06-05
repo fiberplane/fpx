@@ -1,9 +1,9 @@
-import path, { dirname } from "node:path";
 import fs from "node:fs";
-import { fileURLToPath } from "node:url";
 import { createServer } from "node:http";
+import path, { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
-import { serveStatic } from '@hono/node-server/serve-static';
+import { serveStatic } from "@hono/node-server/serve-static";
 import { config } from "dotenv";
 import { type WebSocket, WebSocketServer } from "ws";
 
@@ -23,23 +23,27 @@ const frontendPath = getRelativePathToFrontendDist();
 /**
  * Serve the frontend static files
  */
-app.use('/*', serveStatic({
-  root: frontendPath, onNotFound(path, c) {
-    console.error("Not found", path);
-  },
-}))
+app.use(
+  "/*",
+  serveStatic({
+    root: frontendPath,
+    onNotFound(path, c) {
+      console.error("Not found", path);
+    },
+  }),
+);
 
 /**
  * Fallback route that just serves the frontend index.html file
  */
-app.get("*", c => {
+app.get("*", (c) => {
   const frontendFolder = getPathToFrontendFolder();
   if (!frontendFolder) {
     return c.text("Frontend not found", 500);
   }
-  const indexAbsolutePath = path.resolve(frontendFolder, "index.html")
-  return c.html(fs.readFileSync(indexAbsolutePath, 'utf-8'));
-})
+  const indexAbsolutePath = path.resolve(frontendFolder, "index.html");
+  return c.html(fs.readFileSync(indexAbsolutePath, "utf-8"));
+});
 
 const port = +(process.env.MIZU_PORT ?? 8788);
 const server = serve({
@@ -67,24 +71,24 @@ wss.on("connection", (ws) => {
 });
 
 /**
- * Helper function that tries to create a relative path to  the `frontend` folder's dist, 
+ * Helper function that tries to create a relative path to  the `frontend` folder's dist,
  * then falls back to just using the api's `dist` folder
- * 
+ *
  * NOTE - The path returned will be relative to the current working directory.
  *        https://discord.com/channels/1011308539819597844/1012485912409690122/1247001132648239114
  *
- * 
+ *
  * This is a temporary hack to make it easier to test running mizu with a frontend in the following contexts:
  * - npm run dev (locally)
- * - npx locally 
+ * - npx locally
  * - npx as a published pkg
  */
 function getRelativePathToFrontendDist() {
   const possiblePaths = [
-    path.resolve(__dirname, '..', 'frontend', 'dist'),
-    path.resolve(__dirname, '..', '..', 'frontend', 'dist'),
-    path.resolve(__dirname, '..', '..', '..', 'frontend', 'dist'),
-    path.resolve(__dirname, '..', '..', 'dist'), // HACK - support serving copy-pasted frontend build
+    path.resolve(__dirname, "..", "frontend", "dist"),
+    path.resolve(__dirname, "..", "..", "frontend", "dist"),
+    path.resolve(__dirname, "..", "..", "..", "frontend", "dist"),
+    path.resolve(__dirname, "..", "..", "dist"), // HACK - support serving copy-pasted frontend build
   ];
 
   // Get the current working directory from which the script was executed
@@ -94,35 +98,38 @@ function getRelativePathToFrontendDist() {
 
   for (const possiblePath of possiblePaths) {
     if (fs.existsSync(possiblePath)) {
-      console.log("Found frontend folder!", possiblePath)
+      console.log("Found frontend folder!", possiblePath);
 
       // NOTE - `serveStatic` only accepts a relative path :scream:
-      const relativePathToFrontend = path.relative(currentWorkingDir, possiblePath);
+      const relativePathToFrontend = path.relative(
+        currentWorkingDir,
+        possiblePath,
+      );
 
-      console.log('relativePathToFrontend', relativePathToFrontend);
+      console.log("relativePathToFrontend", relativePathToFrontend);
 
       return relativePathToFrontend;
     }
   }
 
-  console.error('Frontend dist folder not found in the expected locations.');
-};
+  console.error("Frontend dist folder not found in the expected locations.");
+}
 
 /**
- * Helper function that searches for the `frontend` folder's dist, 
+ * Helper function that searches for the `frontend` folder's dist,
  * then falls back to just using the current folder, if we're in the api's `dist`
- * 
+ *
  * This is a temporary hack to make it easier to test running mizu with a frontend in the following contexts:
  * - npm run dev (locally)
- * - npx locally 
+ * - npx locally
  * - npx as a published pkg
  */
 function getPathToFrontendFolder() {
   const possiblePaths = [
-    path.resolve(__dirname, '..', 'frontend', 'dist'),
-    path.resolve(__dirname, '..', '..', 'frontend', 'dist'),
-    path.resolve(__dirname, '..', '..', '..', 'frontend', 'dist'),
-    path.resolve(__dirname, '..', '..', 'dist'), // HACK - support serving copy-pasted frontend build
+    path.resolve(__dirname, "..", "frontend", "dist"),
+    path.resolve(__dirname, "..", "..", "frontend", "dist"),
+    path.resolve(__dirname, "..", "..", "..", "frontend", "dist"),
+    path.resolve(__dirname, "..", "..", "dist"), // HACK - support serving copy-pasted frontend build
   ];
 
   for (const possiblePath of possiblePaths) {
@@ -131,5 +138,7 @@ function getPathToFrontendFolder() {
     }
   }
 
-  console.error('Frontend dist folder not found in the expected locations, falling back to current directory.');
-};
+  console.error(
+    "Frontend dist folder not found in the expected locations, falling back to current directory.",
+  );
+}

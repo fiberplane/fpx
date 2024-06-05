@@ -132,7 +132,7 @@ export function RequestsPage() {
                 }),
               }).then(() => {
                 query.refetch();
-                alert("Successfully ignored all");
+                // alert("Successfully ignored all");
               });
             }}
           >
@@ -141,22 +141,12 @@ export function RequestsPage() {
               Ignore All
             </span>
           </Button>
-<<<<<<< HEAD
-          <Button variant="destructive" size="sm" className="h-8 gap-1" onClick={() => {
-            fetch("/v0/logs/delete-all-hack", {
-              method: "POST",
-            }).then(() => {
-              query.refetch();
-              alert("Successfully deleted all");
-            })
-          }}>
-=======
           <Button
             variant="destructive"
             size="sm"
             className="h-8 gap-1"
             onClick={() => {
-              fetch("http://localhost:8788/v0/logs/delete-all-hack", {
+              fetch("/v0/logs/delete-all-hack", {
                 method: "POST",
               }).then(() => {
                 query.refetch();
@@ -164,7 +154,6 @@ export function RequestsPage() {
               });
             }}
           >
->>>>>>> main
             <TrashIcon className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Delete All
