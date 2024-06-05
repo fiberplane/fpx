@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 /**
- * This list of possible paths is a temporary hack to make it easier to test running mizu 
+ * This list of possible paths is a temporary hack to make it easier to test running mizu
  * with a frontend in the following contexts:
  *   - npm run dev (locally)
  *   - npx locally or as a published pkg
@@ -28,7 +28,7 @@ const POSSIBLE_FRONTEND_BUILD_PATHS = [
      This path assumes we are running from the `dist` folder in a compiled version of the api, 
      and that the frontend build has been copy pasted into the selfsame `dist` folder.
   */
-  path.resolve(__dirname, "..", "..", "dist"), 
+  path.resolve(__dirname, "..", "..", "dist"),
 ];
 
 const wsConnections = new Set<WebSocket>();
