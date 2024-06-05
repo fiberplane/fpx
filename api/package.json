@@ -1,5 +1,5 @@
 {
-  "version": "0.0.6",
+  "version": "0.0.7",
   "name": "@mizu-dev/studio",
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
@@ -20,7 +20,7 @@
   "license": "UNLICENSED",
   "keywords": ["hono", "local", "debugging"],
   "bin": {
-    "mizu": "./bin/cli.cjs"
+    "mizu": "./bin/cli.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const { execSync } = require("node:child_process");
-const path = require("node:path");
+import { execSync } from "node:child_process";
+import path from "node:path";
 
 const args = process.argv.slice(2);
 const script = args[0];
