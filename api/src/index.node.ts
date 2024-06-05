@@ -17,14 +17,20 @@ const wsConnections = new Set<WebSocket>();
 const app = createApp(wsConnections);
 
 // NOTE - Need to specify a relative path to assets
-const frontendPath = getRelativePathToFrontendFolder();
+const frontendPath = getRelativePathToFrontendDist();
 
+/**
+ * Serve the frontend static files
+ */
 app.use('/*', serveStatic({
   root: frontendPath, onNotFound(path, c) {
     console.error("Not found", path);
   },
 }))
 
+/**
+ * Fallback route that just serves the frontend index.html file
+ */
 app.get("*", c => {
   const frontendFolder = getPathToFrontendFolder();
   if (!frontendFolder) {
@@ -58,7 +64,20 @@ wss.on("connection", (ws) => {
   });
 });
 
-function getRelativePathToFrontendFolder() {
+/**
+ * Helper function that tries to create a relative path to  the `frontend` folder's dist, 
+ * then falls back to just using the api's `dist` folder
+ * 
+ * NOTE - The path returned will be relative to the current working directory.
+ *        https://discord.com/channels/1011308539819597844/1012485912409690122/1247001132648239114
+ *
+ * 
+ * This is a temporary hack to make it easier to test running mizu with a frontend in the following contexts:
+ * - npm run dev (locally)
+ * - npx locally 
+ * - npx as a published pkg
+ */
+function getRelativePathToFrontendDist() {
   const possiblePaths = [
     path.resolve(__dirname, '..', 'frontend', 'dist'),
     path.resolve(__dirname, '..', '..', 'frontend', 'dist'),
@@ -87,6 +106,15 @@ function getRelativePathToFrontendFolder() {
   console.error('Frontend dist folder not found in the expected locations.');
 };
 
+/**
+ * Helper function that searches for the `frontend` folder's dist, 
+ * then falls back to just using the current folder, if we're in the api's `dist`
+ * 
+ * This is a temporary hack to make it easier to test running mizu with a frontend in the following contexts:
+ * - npm run dev (locally)
+ * - npx locally 
+ * - npx as a published pkg
+ */
 function getPathToFrontendFolder() {
   const possiblePaths = [
     path.resolve(__dirname, '..', 'frontend', 'dist'),
