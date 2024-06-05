@@ -1,7 +1,8 @@
-use crate::{api, events::Events};
+use crate::api;
+use crate::events::Events;
 use anyhow::{Context, Result};
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::info;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
