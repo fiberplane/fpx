@@ -15,8 +15,14 @@ if (!dbUrl) {
 const db = drizzle(createClient({ url: dbUrl }));
 
 (async () => {
-  const issuesFile = await fs.readFile("./scripts/seed-assets/github_issues.json", "utf8");
-  const logsFile = await fs.readFile("./scripts/seed-assets/mizu_logs.json", "utf8");
+  const issuesFile = await fs.readFile(
+    "./scripts/seed-assets/github_issues.json",
+    "utf8",
+  );
+  const logsFile = await fs.readFile(
+    "./scripts/seed-assets/mizu_logs.json",
+    "utf8",
+  );
   const issues = JSON.parse(issuesFile);
   const logs = JSON.parse(logsFile);
 
