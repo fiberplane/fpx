@@ -14,6 +14,23 @@ config({ path: ".dev.vars" });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+/**
+ * This list of possible paths is a temporary hack to make it easier to test running mizu 
+ * with a frontend in the following contexts:
+ *   - npm run dev (locally)
+ *   - npx locally or as a published pkg
+ */
+const POSSIBLE_FRONTEND_BUILD_PATHS = [
+  /* For when we `npm run dev` from the api folder */
+  path.resolve(__dirname, "..", "..", "frontend", "dist"),
+  /* For when we run via `npx`
+     **NOTE**
+     This path assumes we are running from the `dist` folder in a compiled version of the api, 
+     and that the frontend build has been copy pasted into the selfsame `dist` folder.
+  */
+  path.resolve(__dirname, "..", "..", "dist"), 
+];
+
 const wsConnections = new Set<WebSocket>();
 const app = createApp(wsConnections);
 
@@ -71,66 +88,44 @@ wss.on("connection", (ws) => {
 });
 
 /**
- * Helper function that tries to create a relative path to  the `frontend` folder's dist,
- * then falls back to just using the api's `dist` folder
+ * Helper function that tries to create a relative path to the ui build.
+ * Falls back to just using the api's `dist` folder (if it can find it)
  *
  * NOTE - The path returned will be relative to the current working directory.
  *        https://discord.com/channels/1011308539819597844/1012485912409690122/1247001132648239114
  *
- *
- * This is a temporary hack to make it easier to test running mizu with a frontend in the following contexts:
- * - npm run dev (locally)
- * - npx locally
- * - npx as a published pkg
  */
 function getRelativePathToFrontendDist() {
-  const possiblePaths = [
-    path.resolve(__dirname, "..", "frontend", "dist"),
-    path.resolve(__dirname, "..", "..", "frontend", "dist"),
-    path.resolve(__dirname, "..", "..", "..", "frontend", "dist"),
-    path.resolve(__dirname, "..", "..", "dist"), // HACK - support serving copy-pasted frontend build
-  ];
+  const possiblePaths = POSSIBLE_FRONTEND_BUILD_PATHS;
 
   // Get the current working directory from which the script was executed
   // This is necessary for the `root` parameter of serveStatic
-  // https://discord.com/channels/1011308539819597844/1012485912409690122/1247001132648239114
   const currentWorkingDir = process.cwd();
 
   for (const possiblePath of possiblePaths) {
     if (fs.existsSync(possiblePath)) {
-      console.log("Found frontend folder!", possiblePath);
+      console.debug("Found frontend folder!", possiblePath);
 
-      // NOTE - `serveStatic` only accepts a relative path :scream:
       const relativePathToFrontend = path.relative(
         currentWorkingDir,
         possiblePath,
       );
 
-      console.log("relativePathToFrontend", relativePathToFrontend);
+      console.debug("relativePathToFrontend", relativePathToFrontend);
 
       return relativePathToFrontend;
     }
   }
 
-  console.error("Frontend dist folder not found in the expected locations.");
+  console.error("Frontend build not found in the expected locations.");
 }
 
 /**
- * Helper function that searches for the `frontend` folder's dist,
- * then falls back to just using the current folder, if we're in the api's `dist`
- *
- * This is a temporary hack to make it easier to test running mizu with a frontend in the following contexts:
- * - npm run dev (locally)
- * - npx locally
- * - npx as a published pkg
+ * Helper function that checks if we can run pick up on any known locations
+ * of the frontend build, in order to serve it.
  */
 function getPathToFrontendFolder() {
-  const possiblePaths = [
-    path.resolve(__dirname, "..", "frontend", "dist"),
-    path.resolve(__dirname, "..", "..", "frontend", "dist"),
-    path.resolve(__dirname, "..", "..", "..", "frontend", "dist"),
-    path.resolve(__dirname, "..", "..", "dist"), // HACK - support serving copy-pasted frontend build
-  ];
+  const possiblePaths = POSSIBLE_FRONTEND_BUILD_PATHS;
 
   for (const possiblePath of possiblePaths) {
     if (fs.existsSync(possiblePath)) {
@@ -138,7 +133,5 @@ function getPathToFrontendFolder() {
     }
   }
 
-  console.error(
-    "Frontend dist folder not found in the expected locations, falling back to current directory.",
-  );
+  console.error("Frontend build not found in the expected locations.");
 }

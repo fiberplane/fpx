@@ -3,9 +3,6 @@
 
 ```sh
 npm install
-
-# NOTE - Before running db migrations, you need to follow the instructions in `Configuring Neon (the Database)`
-
 npm run db:generate
 npm run db:migrate
 
@@ -26,31 +23,31 @@ npm run dev
 ### Testing npx command locally
 
 ```sh
+# From the fpx PROJECT ROOT!
+npm run build:mizu-studio
 cd api
-npm run build
 npm link
 
-cd ../some/other/dir
-npx mizu studio
+# Test it out
+cd /some/random/dir
+npx mizu
 
-# to unlink afterwards
+# If you need to use a different port
+MIZU_PORT=8790 npx mizu
+
+# To unlink afterwards, first find the linked package name (something like @mizu-dev/studio)
+# then use that name in the `npm unlink` command
 npm ls -g --depth=0 --link=true
-npm unlink $NAME_OF_PACKAGE -g
+npm unlink $NAME_OF_THIS_PACKAGE -g
 ```
 
 ### Officially publishing
 
 ```sh
-# from project root
-rm -r api/dist/*
-mkdir api/dist
+# ***Start in the fpx project root!***
+npm run build:mizu-studio
 
-cd frontend
-npm run build
-cp -r dist/* ../api/dist/
-
-cd ../api
-npm run build
+cd api
 
 npm publish
 ```

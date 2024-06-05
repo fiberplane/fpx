@@ -7,7 +7,7 @@ node_modules
 src/*
 
 # do not publish scripts
-scripts/*
+test-content/*
 
 # do not publish migrate typescript file
 migrate.ts
