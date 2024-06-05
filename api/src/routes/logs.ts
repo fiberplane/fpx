@@ -4,9 +4,9 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
-import type { Bindings, Variables } from "../lib/types";
-import { tryParseJsonObjectMessage } from "../lib/utils";
-import * as schema from "../db/schema";
+import type { Bindings, Variables } from "../lib/types.js";
+import { tryParseJsonObjectMessage } from "../lib/utils.js";
+import * as schema from "../db/schema.js";
 
 const { mizuLogs } = schema;
 

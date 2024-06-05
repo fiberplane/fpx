@@ -1,7 +1,8 @@
 // Only using for global types
 
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import * as schema from "../db/schema";
+// biome-ignore lint/style/useImportType: <explanation>
+import * as schema from "../db/schema.js";
 import type { WebSocket } from "ws";
 
 export type Bindings = {

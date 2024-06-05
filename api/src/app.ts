@@ -1,19 +1,18 @@
 import { Hono } from "hono";
 import { env } from "hono/adapter";
+import { logger } from "hono/logger";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import type { WebSocket } from "ws";
 
-import * as schema from "./db/schema";
-import type { Bindings, Variables } from "./lib/types";
-import logs from "./routes/logs";
-import openai from "./routes/openai";
-import source from "./routes/source";
-import { logger } from "hono/logger";
-
-import dependencies from "./routes/dependencies";
-import issues from "./routes/issues";
-import { DEFAULT_DATABASE_URL } from "./constants";
+import * as schema from "./db/schema.js";
+import type { Bindings, Variables } from "./lib/types.js";
+import logs from "./routes/logs.js";
+import openai from "./routes/openai.js";
+import source from "./routes/source.js";
+import dependencies from "./routes/dependencies.js";
+import issues from "./routes/issues.js";
+import { DEFAULT_DATABASE_URL } from "./constants.js";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();

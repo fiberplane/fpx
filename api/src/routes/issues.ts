@@ -2,13 +2,12 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq, inArray } from "drizzle-orm";
 import { zValidator } from "@hono/zod-validator";
-import { Bindings, Variables } from "@/lib/types";
+import type { Bindings, Variables } from "@/lib/types.js";
 import { cors } from "hono/cors";
-import { githubIssues, newGithubIssueSchema } from "@/db/schema";
+import { githubIssues, newGithubIssueSchema } from "@/db/schema.js";
 import { Octokit } from "octokit";
-import { LibSQLDatabase } from "drizzle-orm/libsql";
-import * as schema from "@/db/schema";
-import fs from "node:fs";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import * as schema from "@/db/schema.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 

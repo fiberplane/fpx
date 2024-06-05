@@ -4,7 +4,7 @@ import { createClient } from '@libsql/client';
 import { config } from 'dotenv';
 import { migrate } from 'drizzle-orm/libsql/migrator';
 import { drizzle } from 'drizzle-orm/libsql';
-import { DEFAULT_DATABASE_URL } from './src/constants';
+import { DEFAULT_DATABASE_URL } from './src/constants.js';
 
 // Set the environment vars
 config({ path: '.dev.vars' });

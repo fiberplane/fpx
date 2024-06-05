@@ -1,4 +1,4 @@
-import type { Bindings, Variables } from "../lib/types";
+import type { Bindings, Variables } from "../lib/types.js";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";

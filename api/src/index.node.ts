@@ -1,14 +1,17 @@
-import path from "node:path";
+import path, { dirname } from "node:path";
 import fs from "node:fs";
-
+import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { serveStatic } from '@hono/node-server/serve-static';
 import { config } from "dotenv";
-
-import { createApp } from "./app";
 import { type WebSocket, WebSocketServer } from "ws";
 
+import { createApp } from "./app.js";
+
 config({ path: ".dev.vars" });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const wsConnections = new Set<WebSocket>();
 const app = createApp(wsConnections);

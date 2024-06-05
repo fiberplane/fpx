@@ -1,5 +1,5 @@
-import { findSourceFunction } from "../lib/find-source-function";
-import type { Bindings, Variables } from "../lib/types";
+import { findSourceFunction } from "../lib/find-source-function.js";
+import type { Bindings, Variables } from "../lib/types.js";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
