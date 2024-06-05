@@ -35,4 +35,8 @@ Follow the instructions in the [`client-library` README](./client-library/README
 
 ## Developing
 
-I turned off Biome. But we could always add it? Idk.
+This project uses biome and npm monorepos.
+
+In the project root you can format all codebases with `npm run format`.
+
+You will also want to use the project root to prepare the npx command for the distributable API. See the root's `package.json` scripts, as well as the api's README for more details on testing the npx command.
