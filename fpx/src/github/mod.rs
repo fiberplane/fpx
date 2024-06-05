@@ -41,7 +41,7 @@ impl GitHubCrawler {
         trace!(directory=?root_path, "Crawling directory for interesting files");
         let mut results = vec![];
 
-        for entry in fs::read_dir(&root_path)
+        for entry in fs::read_dir(root_path)
             .with_context(|| format!("unable to crawl directory: {}", root_path))?
         {
             let entry = entry?; // Just bubble up errors for now
@@ -49,11 +49,9 @@ impl GitHubCrawler {
             let basename = path.file_name().unwrap().to_string_lossy();
             let metadata = entry.metadata()?; // This does not deal with symlinks, shrug
 
-            if metadata.is_file() {
-                if GOOD_FILE_NAMES.contains(&basename.as_ref()) {
-                    trace!(file=?basename, "Found an interesting file");
-                    results.push(path.to_string_lossy().to_string());
-                }
+            if metadata.is_file() && GOOD_FILE_NAMES.contains(&basename.as_ref()) {
+                trace!(file=?basename, "Found an interesting file");
+                results.push(path.to_string_lossy().to_string());
             }
 
             if metadata.is_dir() {
@@ -71,7 +69,7 @@ impl GitHubCrawler {
     }
 
     async fn handle_cargo_toml(&self, file: &str) -> Result<()> {
-        let metadata: Manifest<Value> = Manifest::from_path_with_metadata(&file)?;
+        let metadata: Manifest<Value> = Manifest::from_path_with_metadata(file)?;
 
         let crates = metadata
             .dependencies
@@ -94,7 +92,7 @@ impl GitHubCrawler {
 
         for crate_name in crates {
             trace!(?crate_name, "Fetching crate details");
-            let crate_details = fetch_crate_details(&client, &crate_name).await?;
+            let crate_details = fetch_crate_details(&client, crate_name).await?;
             if let Some(repository) = crate_details.crate_.repository {
                 trace!(?crate_name, ?repository, "Create has repository field");
 
@@ -148,7 +146,7 @@ fn extract_github_details(repository: &str) -> Option<(String, String)> {
     let (owner, repo) = repository.split_once('/')?;
 
     let repo = {
-        match repo.split_once(".") {
+        match repo.split_once('.') {
             Some((repo, _)) => repo,
             None => repo,
         }
