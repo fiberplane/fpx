@@ -1,9 +1,5 @@
 import { IGNORE_MIZU_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
 
-Request;
-
-URL;
-
 /**
  * In future, take inspo from:
  *
@@ -44,12 +40,8 @@ export function replaceFetch() {
       const clonedResponse = response.clone();
 
       if (!clonedResponse.ok) {
-        let body: string | null;
-        try {
-          body = await clonedResponse.text();
-        } catch {
-          body = null;
-        }
+        // @ts-ignore: weird type conflict
+        const body: string | null = await tryBody(clonedResponse);
         // Count this as an error
         console.error(
           JSON.stringify({
@@ -64,6 +56,15 @@ export function replaceFetch() {
         );
       }
 
+      // @ts-ignore: weird type conflict
+      const body: string | null = await tryBody(clonedResponse);
+
+      // Extract and format response headers
+      const headers: { [key: string]: string } = {};
+      clonedResponse.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+
       const end = Date.now();
       const elapsed = end - start;
       console.log(
@@ -72,8 +73,11 @@ export function replaceFetch() {
           requestId,
           end,
           elapsed,
-          // Response body
-          body: await clonedResponse.text(),
+          url,
+          status: clonedResponse.status,
+          statusText: clonedResponse.statusText,
+          headers,
+          body,
         }),
         IGNORE_MIZU_LOGGER_LOG,
       );
@@ -82,7 +86,7 @@ export function replaceFetch() {
     } catch (err) {
       console.error(
         JSON.stringify({
-          lifecycle: "fetch_error",
+          lifecycle: "fetch_logging_error",
           requestId,
           error: err instanceof Error ? errorToJson(err) : err,
         }),
@@ -98,4 +102,12 @@ export function replaceFetch() {
     },
     originalFetch,
   };
+}
+
+async function tryBody(response: Response) {
+  try {
+    return await response.text();
+  } catch {
+    return null;
+  }
 }
