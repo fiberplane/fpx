@@ -16,4 +16,3 @@ export type Variables = {
   dbErrors: Array<any>;
 };
 
-export type GitHubIssue = typeof schema.githubIssues.$inferSelect;
