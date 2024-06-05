@@ -5,6 +5,7 @@
 		"moduleResolution": "Bundler",
 		"strict": true,
 		"skipLibCheck": true,
+		"declaration": true,
 		"lib": [
 			"ESNext"
 		],
@@ -14,10 +15,19 @@
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx",
 		"baseUrl": ".",
+		"outDir": "dist",
 		"paths": {
 			"@/*": [
 				"src/*"
 			]
 		}
 	},
+	"include": [
+		"src"
+	],
+	"exclude": [
+		"node_modules",
+		"dist",
+		"scripts"
+	]
 }

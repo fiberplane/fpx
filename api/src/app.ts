@@ -10,6 +10,8 @@ import logs from "./routes/logs";
 import openai from "./routes/openai";
 import source from "./routes/source";
 import { logger } from "hono/logger";
+import dependencies from "./routes/dependencies";
+import issues from "./routes/issues";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -17,7 +19,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   // biome-ignore lint/suspicious/noExplicitAny:
   // this is a bucket of any kind of errors that we just want to log
   // and make available on a route
-   const DB_ERRORS: Array<any> = [];
+  const DB_ERRORS: Array<any> = [];
 
   // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
   // Lau: similarly adding wsConnections so they can be used in outher modules
@@ -52,6 +54,8 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   app.route("/", logs);
   app.route("/", openai);
   app.route("/", source);
+  app.route("/", dependencies);
+  app.route("/", issues);
 
   // HACK - Route to inspect any db errors during this session
   app.get("db-errors", async (c) => {
@@ -61,4 +65,3 @@ export function createApp(wsConnections?: Set<WebSocket>) {
 
   return app;
 }
-
