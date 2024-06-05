@@ -4,8 +4,7 @@
   "description": "> Japanese for \"water\"",
   "scripts": {
     "lint": "biome lint .",
-    "format": "biome check . --write",
-    "lint:ci": "biome ci ."
+    "format": "biome check . --write"
   },
   "repository": {
     "type": "git",
@@ -15,8 +14,8 @@
     "url": "https://github.com/fiberplane/fpx/issues"
   },
   "homepage": "https://github.com/fiberplane/fpx#readme",
-  "workspaces": ["mizu", "frontend", "api"],
+  "workspaces": ["client-library", "frontend", "api"],
   "dependencies": {
-    "@biomejs/biome": "^1.7.3"
+    "@biomejs/biome": "^1.8.0"
   }
 }

@@ -1,12 +1,15 @@
 {
   "type": "module",
+  "name": "api",
+  "version": "0.0.1",
   "scripts": {
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "format": "biome check . --write",
-    "lint": "biome lint . && tsc --noEmit"
+    "lint": "biome lint . && tsc --noEmit",
+    "lint:ci": "biome ci . #api"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
