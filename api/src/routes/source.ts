@@ -1,7 +1,7 @@
+import { readFileSync } from "node:fs";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { readFileSync } from "node:fs";
 import { SourceMapConsumer } from "source-map";
 import { z } from "zod";
 
