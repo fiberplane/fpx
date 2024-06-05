@@ -26,10 +26,14 @@ async function findFunctionByDefinition(jsFilePath: string, functionDefinition: 
         const funcSource = fileContent.substring(node.start, node.end);
         if (funcSource.replace(/\s+/g, ' ').trim() === functionDefinition.replace(/\s+/g, ' ').trim()) {
           foundLocation = {
-            startLine: node.loc.start.line,
-            startColumn: node.loc.start.column + 1,
-            endLine: node.loc.end.line,
-            endColumn: node.loc.end.column + 1
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            startLine: node.loc!.start.line,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            startColumn: node.loc!.start.column + 1,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            endLine: node.loc!.end.line,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            endColumn: node.loc!.end.column + 1
           };
         }
       },
@@ -38,10 +42,14 @@ async function findFunctionByDefinition(jsFilePath: string, functionDefinition: 
         const funcSource = fileContent.substring(node.start, node.end);
         if (funcSource.replace(/\s+/g, ' ').trim() === functionDefinition.replace(/\s+/g, ' ').trim()) {
           foundLocation = {
-            startLine: node.loc.start.line,
-            startColumn: node.loc.start.column + 1,
-            endLine: node.loc.end.line,
-            endColumn: node.loc.end.column + 1
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            startLine: node.loc!.start.line,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            startColumn: node.loc!.start.column + 1,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            endLine: node.loc!.end.line,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            endColumn: node.loc!.end.column + 1
           };
         }
       },
@@ -50,10 +58,14 @@ async function findFunctionByDefinition(jsFilePath: string, functionDefinition: 
         const funcSource = fileContent.substring(node.start, node.end);
         if (funcSource.replace(/\s+/g, ' ').trim() === functionDefinition.replace(/\s+/g, ' ').trim()) {
           foundLocation = {
-            startLine: node.loc.start.line,
-            startColumn: node.loc.start.column + 1,
-            endLine: node.loc.end.line,
-            endColumn: node.loc.end.column + 1
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            startLine: node.loc!.start.line,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            startColumn: node.loc!.start.column + 1,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            endLine: node.loc!.end.line,
+            // biome-ignore lint/style/noNonNullAssertion: the match above should guarantee we found something
+            endColumn: node.loc!.end.column + 1
           };
         }
       }
@@ -67,7 +79,7 @@ async function findFunctionByDefinition(jsFilePath: string, functionDefinition: 
 }
 
 async function findOriginalSource(jsFile: string, line: number, column: number) {
-  const mapFile = jsFile + '.map';  // Adjust if your source map is located elsewhere
+  const mapFile = `${jsFile}.map`;  // Adjust if your source map is located elsewhere
   const sourceMapContent = JSON.parse(fs.readFileSync(mapFile, 'utf8'));
 
   return await SourceMapConsumer.with(sourceMapContent, null, consumer => {
@@ -79,7 +91,7 @@ async function findOriginalSource(jsFile: string, line: number, column: number) 
     consumer.destroy();
     // console.log('Original Source:', pos);
     // Optional: Display the source code snippet if needed
-    const sourceContent = consumer.sourceContentFor(pos.source);
+    const sourceContent = pos.source ? consumer.sourceContentFor(pos.source) : null;
     // console.log('Source Content:\n', sourceContent);
     return { ...pos, sourceContent };
   });
@@ -101,7 +113,7 @@ export async function findSourceFunction(jsFilePath: string, functionText: strin
     // console.log('Function end:', sourceFunctionEnd);
 
     const sourceContent = sourceFunctionStart?.sourceContent ?? '';
-    const sourceFunction = sourceContent.split('\n').filter((_, i) => i >= sourceFunctionStart.line - 1 && i <= sourceFunctionEnd.line - 1).join("\n");
+    const sourceFunction = sourceContent.split('\n').filter((_, i, sourceLines) => i >= (sourceFunctionStart.line ?? sourceLines.length) - 1 && i <= (sourceFunctionEnd.line ?? 0) - 1).join("\n");
 
     // console.log('Function source:', sourceFunction)
     return sourceFunction;

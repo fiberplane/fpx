@@ -30,9 +30,12 @@ app.get(
 
       return ctx.json(pos);
     } catch (err) {
-      console.error("Could not read source file", err?.message);
+      const errIsError = err instanceof Error;
+      const message = errIsError? err.message : "(unknown error)";
+      const name = errIsError? err.name : "Error";
+      console.error("Could not read source file", message);
       return ctx.json(
-        { error: "Error reading file", name: err?.name, message: err?.message },
+        { error: "Error reading file", name, message },
         500,
       );
     }
@@ -47,11 +50,14 @@ app.post("/v0/source-function", cors(), async (ctx) => {
     return ctx.json({ functionText });
   } catch (err) {
     console.error("Could not find function in source", source);
+    const errIsError = err instanceof Error;
+    const message = errIsError ? err.message : "(unknown error)";
+    const name = errIsError ? err.name : "Error";
     return ctx.json(
       {
         error: "Error finding function",
-        name: err?.name,
-        message: err?.message,
+        name,
+        message,
       },
       500,
     );
