@@ -46,10 +46,16 @@
   ],
   "files": {
     "ignore": [
+      // API related
       "meta/*.json",
+      "seed-assets/*.json",
+      "test-content/*.*",
+
+      // Client library related
       "dist/*.js",
       "dist/*.d.ts",
-      "test-content/*.*",
+
+      // Rust code related
       "fpx/*.*"
     ]
   }
