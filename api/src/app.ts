@@ -1,8 +1,8 @@
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { logger } from "hono/logger";
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
 import type { WebSocket } from "ws";
 
 import * as schema from "./db/schema.js";

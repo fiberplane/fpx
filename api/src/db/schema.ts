@@ -1,6 +1,6 @@
-import { sql } from "drizzle-orm";
-import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 import type { Endpoints } from "@octokit/types";
+import { sql } from "drizzle-orm";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -22,12 +22,8 @@ export const mizuLogs = sqliteTable("mizu_logs", {
   ignored: integer("ignored", { mode: "boolean" }).default(false),
   args: text("args", { mode: "json" }), // NOTE - Should only be present iff message is a string
   callerLocation: text("caller_location", { mode: "json" }),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   matchingIssues: text("matching_issues", { mode: "json" }).$type<
     number[] | null
   >(),

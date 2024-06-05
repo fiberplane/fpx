@@ -20,9 +20,9 @@
   },
   "scripts": {
     "build": "cd src && swc . -d ../dist",
-    "lint": "biome lint ./src/**.ts",
-    "format": "biome check ./src/**.ts --apply",
-    "lint:ci": "biome ci ./src/**.ts",
+    "format": "biome check . --write",
+    "lint": "biome lint .",
+    "lint:ci": "biome ci .",
     "postinstall": "cd src && swc . -d ../dist"
   }
 }

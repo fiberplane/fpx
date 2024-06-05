@@ -1,9 +1,9 @@
 import {
+  MoonIcon,
   // FileIcon,
   TrashIcon,
-  MoonIcon,
   // ListBulletIcon as ListFilter, // FIXME
-} from "@radix-ui/react-icons"
+} from "@radix-ui/react-icons";
 import { useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 // import {
 //   DropdownMenu,
 //   DropdownMenuCheckboxItem,
@@ -25,56 +25,62 @@ import {
 //   DropdownMenuTrigger,
 // } from "@/components/ui/dropdown-menu"
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/DataTable";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { type MizuTrace, useMizuTraces } from "@/queries";
 import { columns } from "./columns";
-import { useMizuTraces, MizuTrace } from "@/queries";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
-const RequestsTable = ({ traces, filter }: { traces: MizuTrace[]; filter: LevelFilter }) => {
+const RequestsTable = ({
+  traces,
+  filter,
+}: { traces: MizuTrace[]; filter: LevelFilter }) => {
   const navigate = useNavigate();
 
   const filteredTraces = useMemo(() => {
     if (filter === "all") {
-      return traces
+      return traces;
     }
-    return traces.filter(trace => trace.logs.some(log => log.level === filter));
-  }, [traces, filter])
+    return traces.filter((trace) =>
+      trace.logs.some((log) => log.level === filter),
+    );
+  }, [traces, filter]);
 
   return (
-    <DataTable columns={columns} data={filteredTraces ?? []} handleRowClick={row => navigate(`/requests/${row.id}`)} />
-  )
-}
+    <DataTable
+      columns={columns}
+      data={filteredTraces ?? []}
+      handleRowClick={(row) => navigate(`/requests/${row.id}`)}
+    />
+  );
+};
 
 export function RequestsPage() {
   const queryClient = useQueryClient();
   const query = useMizuTraces();
 
   useEffect(() => {
-
-    const socket = new WebSocket("ws://localhost:8789")
+    const socket = new WebSocket("ws://localhost:8789");
 
     socket.onopen = () => {
-      console.log("Connected to update server")
-    }
-
-    socket.onmessage = (ev) => {
-      console.log("Received message", ev.data)
-      const data: string[] = JSON.parse(ev.data);
-      queryClient.invalidateQueries(...data)
+      console.log("Connected to update server");
     };
 
-    socket.onclose = (ev) => { console.log("Disconnected from update server", ev) }
+    socket.onmessage = (ev) => {
+      console.log("Received message", ev.data);
+      const data: string[] = JSON.parse(ev.data);
+      queryClient.invalidateQueries(...data);
+    };
 
-    return () => { socket.close() }
+    socket.onclose = (ev) => {
+      console.log("Disconnected from update server", ev);
+    };
 
+    return () => {
+      socket.close();
+    };
   }, [queryClient]);
 
   return (
@@ -114,22 +120,28 @@ export function RequestsPage() {
               Export
             </span>
           </Button> */}
-          <Button size="sm" variant="outline" className="h-8 gap-1" onClick={() => {
-            fetch("/v0/logs/ignore", {
-              method: "POST",
-              body: JSON.stringify({
-                logIds: query.data?.flatMap(t => t.logs?.map(l => l.id))
-              })
-            }).then(() => {
-              query.refetch();
-              alert("Successfully ignored all");
-            })
-          }}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 gap-1"
+            onClick={() => {
+              fetch("/v0/logs/ignore", {
+                method: "POST",
+                body: JSON.stringify({
+                  logIds: query.data?.flatMap((t) => t.logs?.map((l) => l.id)),
+                }),
+              }).then(() => {
+                query.refetch();
+                alert("Successfully ignored all");
+              });
+            }}
+          >
             <MoonIcon className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Ignore All
             </span>
           </Button>
+<<<<<<< HEAD
           <Button variant="destructive" size="sm" className="h-8 gap-1" onClick={() => {
             fetch("/v0/logs/delete-all-hack", {
               method: "POST",
@@ -138,6 +150,21 @@ export function RequestsPage() {
               alert("Successfully deleted all");
             })
           }}>
+=======
+          <Button
+            variant="destructive"
+            size="sm"
+            className="h-8 gap-1"
+            onClick={() => {
+              fetch("http://localhost:8788/v0/logs/delete-all-hack", {
+                method: "POST",
+              }).then(() => {
+                query.refetch();
+                alert("Successfully deleted all");
+              });
+            }}
+          >
+>>>>>>> main
             <TrashIcon className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Delete All
@@ -159,11 +186,10 @@ export function RequestsPage() {
           <CardFooter>
             {query?.data?.length ? (
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{query?.data?.length}</strong> of <strong>{query?.data?.length}</strong>{" "}
-                requests
+                Showing <strong>1-{query?.data?.length}</strong> of{" "}
+                <strong>{query?.data?.length}</strong> requests
               </div>
             ) : null}
-
           </CardFooter>
         </Card>
       </TabsContent>
@@ -181,13 +207,13 @@ export function RequestsPage() {
           <CardFooter>
             {query?.data?.length ? (
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{query?.data?.length}</strong> of <strong>{query?.data?.length}</strong>{" "}
-                requests
+                Showing <strong>1-{query?.data?.length}</strong> of{" "}
+                <strong>{query?.data?.length}</strong> requests
               </div>
             ) : null}
           </CardFooter>
         </Card>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

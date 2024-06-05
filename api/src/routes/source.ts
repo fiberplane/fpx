@@ -1,11 +1,12 @@
-import { findSourceFunction } from "../lib/find-source-function.js";
-import type { Bindings, Variables } from "../lib/types.js";
+import { readFileSync } from "node:fs";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { readFileSync } from "node:fs";
 import { SourceMapConsumer } from "source-map";
 import { z } from "zod";
+
+import { findSourceFunction } from "../lib/find-source-function.js";
+import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -30,12 +31,25 @@ app.get(
 
       return ctx.json(pos);
     } catch (err) {
+<<<<<<< HEAD
       const errIsError = err instanceof Error;
       const message = errIsError? err.message : "(unknown error)";
       const name = errIsError? err.name : "Error";
       console.error("Could not read source file", message);
       return ctx.json(
         { error: "Error reading file", name, message },
+=======
+      const message = getValueFromObject(err, "message", "Unknown error");
+      const name = getValueFromObject(err, "name", "");
+
+      console.error("Could not read source file", message);
+      return ctx.json(
+        {
+          error: "Error reading file",
+          name,
+          message,
+        },
+>>>>>>> main
         500,
       );
     }
@@ -50,9 +64,15 @@ app.post("/v0/source-function", cors(), async (ctx) => {
     return ctx.json({ functionText });
   } catch (err) {
     console.error("Could not find function in source", source);
+<<<<<<< HEAD
     const errIsError = err instanceof Error;
     const message = errIsError ? err.message : "(unknown error)";
     const name = errIsError ? err.name : "Error";
+=======
+    const message = getValueFromObject(err, "message", "Unknown error");
+    const name = getValueFromObject(err, "name", "");
+
+>>>>>>> main
     return ctx.json(
       {
         error: "Error finding function",
@@ -63,5 +83,21 @@ app.post("/v0/source-function", cors(), async (ctx) => {
     );
   }
 });
+
+function getValueFromObject<T>(
+  element: unknown,
+  key: string,
+  defaultValue: T,
+): T {
+  if (typeof element === "object" && element !== null && key in element) {
+    const value = (element as Record<string, unknown>)[key];
+    // Rough check to see if the type of the value is the same as the default value
+    if (typeof value === typeof defaultValue || value === defaultValue) {
+      return (element as Record<string, unknown>)[key] as T;
+    }
+  }
+
+  return defaultValue;
+}
 
 export default app;

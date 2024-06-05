@@ -1,6 +1,7 @@
 import path, { dirname } from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
+import { createServer } from "node:http";
 import { serve } from "@hono/node-server";
 import { serveStatic } from '@hono/node-server/serve-static';
 import { config } from "dotenv";
@@ -44,7 +45,8 @@ const port = +(process.env.MIZU_PORT ?? 8788);
 const server = serve({
   fetch: app.fetch,
   port,
-});
+  createServer,
+}) as ReturnType<typeof createServer>;
 console.log(`Server is running: http://localhost:${port}`);
 
 const wss = new WebSocketServer({ server });

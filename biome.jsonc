@@ -1,0 +1,42 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.8.0/schema.json",
+  "css": {
+    "linter": {
+      "enabled": true
+    }
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git"
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": false
+  },
+  "overrides": [
+    {
+      "include": ["client-library", "api"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "recommended": true
+        }
+      }
+    },
+    {
+      "include": ["test-content"],
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ],
+  "files": {
+    "ignore": ["meta/*.json", "dist/*.js", "test-content/*.*", "fpx/*.*"]
+  }
+}
