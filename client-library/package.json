@@ -4,7 +4,7 @@
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
   "main": "dist/index.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3",
     "hono": "^4.3.9"
@@ -30,7 +30,6 @@
     "build": "npm run clean && npm run build:types && npm run build:swc",
     "build:types": "tsc --project tsconfig.json",
     "build:swc": "swc src -d dist --source-maps",
-    "postinstall": "npm run build",
     "prepublishOnly": "npm run build",
     "clean": "rimraf dist"
   }
