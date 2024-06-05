@@ -5,6 +5,48 @@ This is a client library that will send telemetry data to the *local* Mizu serve
 Note that it monkey-patches `console.*` functions to send logs to the Mizu server, 
 so any time you use a `console.log`, `console.error`, etc., in your app, we will send that data to Mizu!
 
+## Quick Start
+
+Create hono project
+```sh
+# Create a hono project, using cloudflare-workers runtime
+npm create hono@latest my-hono-project
+# > cloudflare-workers
+```
+
+Install middleware
+
+```sh
+npm i @mizu-dev/hono-middleware
+```
+
+Add middleware
+
+```ts
+import { Hono } from "hono";
+import { createHonoMiddleware } from "@mizu-dev/hono-middleware";
+
+const app = new Hono();
+
+app.use(createHonoMiddleware())
+
+app.get("/", (c) => {
+	return c.text("Hello Hono!");
+});
+
+export default app;
+```
+
+Launch UI
+
+```sh
+npx @mizu-dev/studio
+```
+
+Visit `http://localhost:8788` to see your logs come in as you test your app!
+
+## Long Start
+
 This readme takes you through:
 
 - Creating a Hono Project

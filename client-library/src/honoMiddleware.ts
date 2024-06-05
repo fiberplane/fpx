@@ -39,7 +39,7 @@ const defaultCreateConfig = (c: Context) => {
       requests: true,
     },
   };
-}
+};
 
 export function createHonoMiddleware(options?: {
   createConfig: CreateConfig;
