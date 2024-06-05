@@ -1,6 +1,11 @@
-import { useMemo } from "react"
+import { useMemo } from "react";
 
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table"
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -9,21 +14,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
+import type { MizuTrace } from "@/queries";
 import { useNavigate } from "react-router-dom";
-import { MizuTrace } from "@/queries";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
 }
 
 export function DataTable<TData extends MizuTrace, TValue>({
   columns,
   data,
-  filter
+  filter,
 }: DataTableProps<TData, TValue> & { filter: LevelFilter }) {
   const navigate = useNavigate();
 
@@ -31,10 +36,12 @@ export function DataTable<TData extends MizuTrace, TValue>({
   // TODO - Move filtering elsewhere, use react-table like a cool kid
   const filteredTraces = useMemo(() => {
     if (filter === "all") {
-      return data
+      return data;
     }
-    return data.filter(trace => trace.logs.some(log => log.level === filter));
-  }, [data, filter])
+    return data.filter((trace) =>
+      trace.logs.some((log) => log.level === filter),
+    );
+  }, [data, filter]);
 
   // Create a table instance
   const table = useReactTable({
@@ -42,10 +49,12 @@ export function DataTable<TData extends MizuTrace, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     // HACK - Need to set the row id in a type-safe way
-    ...filteredTraces.every(row => "id" in row && typeof row.id === "string") && ({
+    ...(filteredTraces.every(
+      (row) => "id" in row && typeof row.id === "string",
+    ) && {
       getRowId: (row: TData) => row.id,
-    })
-  })
+    }),
+  });
 
   return (
     <div className="rounded-md border">
@@ -55,15 +64,20 @@ export function DataTable<TData extends MizuTrace, TValue>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id} className={header.column.columnDef.meta?.headerClassName || ""}>
+                  <TableHead
+                    key={header.id}
+                    className={
+                      header.column.columnDef.meta?.headerClassName || ""
+                    }
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
-                )
+                );
               })}
             </TableRow>
           ))}
@@ -78,7 +92,10 @@ export function DataTable<TData extends MizuTrace, TValue>({
                 className="cursor-pointer"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className={cell.column.columnDef.meta?.cellClassName || ""}>
+                  <TableCell
+                    key={cell.id}
+                    className={cell.column.columnDef.meta?.cellClassName || ""}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -86,7 +103,10 @@ export function DataTable<TData extends MizuTrace, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center font-mono">
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center font-mono"
+              >
                 No Results
               </TableCell>
             </TableRow>
@@ -94,5 +114,5 @@ export function DataTable<TData extends MizuTrace, TValue>({
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

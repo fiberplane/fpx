@@ -1,24 +1,24 @@
-import { Hono } from "hono";
-import { env } from "hono/adapter";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
+import { Hono } from "hono";
+import { env } from "hono/adapter";
+import { logger } from "hono/logger";
 import type { WebSocket } from "ws";
 
 import * as schema from "./db/schema";
-import { Bindings, Variables } from "./lib/types";
+import type { Bindings, Variables } from "./lib/types";
+import dependencies from "./routes/dependencies";
+import issues from "./routes/issues";
 import logs from "./routes/logs";
 import openai from "./routes/openai";
 import source from "./routes/source";
-import { logger } from "hono/logger";
-import dependencies from "./routes/dependencies";
-import issues from "./routes/issues";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-  // biome-ignore lint/suspicious/noExplicitAny:
   // this is a bucket of any kind of errors that we just want to log
   // and make available on a route
+  // biome-ignore lint/suspicious/noExplicitAny:
   const DB_ERRORS: Array<any> = [];
 
   // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time

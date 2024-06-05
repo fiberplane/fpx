@@ -1,8 +1,9 @@
+import { createServer } from "node:http";
 import { serve } from "@hono/node-server";
 import { config } from "dotenv";
 
-import { createApp } from "./app";
 import { type WebSocket, WebSocketServer } from "ws";
+import { createApp } from "./app";
 
 config({ path: ".dev.vars" });
 
@@ -18,7 +19,8 @@ const port = 8788;
 const server = serve({
   fetch: app.fetch,
   port,
-});
+  createServer,
+}) as ReturnType<typeof createServer>;
 console.log(`Server is running: http://localhost:${port}`);
 
 const wss = new WebSocketServer({ server });

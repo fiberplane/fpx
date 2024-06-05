@@ -33,4 +33,6 @@ yarn-error.log
 
 # Personal files
 mizu.boots.code-workspace
+.vscode
+node_modules
 start-dev.sh

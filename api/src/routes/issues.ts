@@ -1,14 +1,14 @@
-import { Hono } from "hono";
-import { z } from "zod";
-import { and, eq, inArray } from "drizzle-orm";
-import { zValidator } from "@hono/zod-validator";
-import { Bindings, Variables } from "@/lib/types";
-import { cors } from "hono/cors";
-import { githubIssues, newGithubIssueSchema } from "@/db/schema";
-import { Octokit } from "octokit";
-import { LibSQLDatabase } from "drizzle-orm/libsql";
-import * as schema from "@/db/schema";
 import fs from "node:fs";
+import { githubIssues, newGithubIssueSchema } from "@/db/schema";
+import * as schema from "@/db/schema";
+import type { Bindings, Variables } from "@/lib/types";
+import { zValidator } from "@hono/zod-validator";
+import { and, eq, inArray } from "drizzle-orm";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { Octokit } from "octokit";
+import { z } from "zod";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
