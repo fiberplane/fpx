@@ -17,14 +17,14 @@ npm create hono@latest my-hono-project
 Install middleware
 
 ```sh
-npm i @mizu-dev/hono-middleware
+npm i @mizu-dev/hono
 ```
 
 Add middleware
 
 ```ts
 import { Hono } from "hono";
-import { createHonoMiddleware } from "@mizu-dev/hono-middleware";
+import { createHonoMiddleware } from "@mizu-dev/hono";
 
 const app = new Hono();
 
@@ -66,7 +66,7 @@ npm create hono@latest my-hono-project
 ## Install the mizu client
 
 ```sh
-npm i @mizu-dev/hono-middleware
+npm i @mizu-dev/hono
 ```
 
 ### Add middleware
@@ -77,7 +77,7 @@ If you only just started your project, you can copy paste the entire contents be
 
 ```ts
 import { type Context, Hono } from "hono";
-import { createHonoMiddleware } from "@mizu-dev/hono-middleware";
+import { createHonoMiddleware } from "@mizu-dev/hono";
 
 const app = new Hono();
 
