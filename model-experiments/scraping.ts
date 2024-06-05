@@ -65,7 +65,7 @@ let fetchingInProgress = false;
 
 async function fetchIssues(owner: string, repo: string) {
   fetchingInProgress = true;
-  octokit.log.info(`Fetching issues for ${owner}/${repo}`);
+  console.log(`Fetching issues for ${owner}/${repo}`);
   const iterator = octokit.paginate.iterator("GET /repos/{owner}/{repo}/issues?state=all", {
     owner,
     repo,
@@ -79,7 +79,7 @@ async function fetchIssues(owner: string, repo: string) {
     issues = issues.concat(page.data as GithubIssue[]);
   }
 
-  octokit.log.info(`Fetched ${issues.length} issues for ${owner}/${repo}`);
+  console.log(`Fetched ${issues.length} issues for ${owner}/${repo}`);
   return { [`${owner}/${repo}`]: issues };
 }
 
