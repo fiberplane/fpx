@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { MiddlewareHandler, RouterRoute } from "hono/types";
+import type { RouterRoute } from "hono/types";
 import { getPath } from "hono/utils/url";
 
 export const RECORDED_CONSOLE_METHODS = [

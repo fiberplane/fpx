@@ -25,7 +25,15 @@
       "linter": {
         "enabled": true,
         "rules": {
-          "recommended": true
+          "recommended": true,
+          "correctness": {
+            "noUnusedImports": {
+              "level": "error"
+            },
+            "noUnusedVariables": {
+              "level": "error"
+            }
+          }
         }
       }
     },
@@ -37,6 +45,18 @@
     }
   ],
   "files": {
-    "ignore": ["meta/*.json", "dist/*.*", "test-content/*.*", "fpx/*.*"]
+    "ignore": [
+      // API related
+      "meta/*.json",
+      "seed-assets/*.json",
+      "test-content/*.*",
+
+      // Client library related
+      "dist/*.js",
+      "dist/*.d.ts",
+
+      // Rust code related
+      "fpx/*.*"
+    ]
   }
 }
