@@ -1,11 +1,20 @@
-use crate::events::EventsState;
-use crate::types::ServerMessage;
+use super::types::ServerMessage;
+use super::ApiState;
 use axum::extract::State;
-use axum::response::Html;
 use axum::response::IntoResponse;
 
-pub async fn logs_handler(State(events): State<EventsState<ServerMessage>>) -> impl IntoResponse {
+mod inspect;
+mod inspectors;
+mod requests;
+
+// Re-export the all the handlers from different modules
+pub use inspect::*;
+pub use inspectors::*;
+pub use requests::*;
+
+#[tracing::instrument(skip_all)]
+pub async fn logs_handler(State(ApiState { events, .. }): State<ApiState>) -> impl IntoResponse {
     events.broadcast(ServerMessage::Otel);
 
-    Html("Hello, world!")
+    "Hello, World"
 }

@@ -1,37 +1,76 @@
-use anyhow::Result;
-use clap::{Parser, Subcommand};
-use commands::{client, dev};
+use anyhow::{Context, Result};
+use clap::Parser;
+use opentelemetry::KeyValue;
+use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_sdk::runtime;
+use opentelemetry_sdk::{trace, Resource};
+use std::path::Path;
+use tracing_opentelemetry::OpenTelemetryLayer;
+use tracing_subscriber::layer::Layer;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{EnvFilter, Registry};
 
 mod api;
 mod commands;
+pub mod data;
 mod events;
-mod types;
+mod inspector;
 
-/// FPX - Super-charge your local development.
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    #[command(subcommand)]
-    command: Command,
-}
-
-#[derive(Subcommand, Debug)]
-pub enum Command {
-    /// Test client to interact with a local development server.
-    Client(client::Args),
-
-    /// Start a local development server.
-    Dev(dev::Args),
-}
+static DEFAULT_FPX_DIRECTORY: &str = "./.fpx";
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = Args::parse();
+    let args = commands::Args::parse();
 
-    tracing_subscriber::fmt::init();
+    setup_tracing(&args)?;
 
-    match args.command {
-        Command::Client(args) => client::handle_command(args).await,
-        Command::Dev(args) => dev::handle_command(args).await,
-    }
+    commands::handle_command(args).await
+}
+
+fn setup_tracing(args: &commands::Args) -> Result<()> {
+    let filter_layer = EnvFilter::from_default_env();
+    let log_layer = tracing_subscriber::fmt::layer().with_filter(EnvFilter::from_default_env());
+
+    let trace_layer = if args.enable_tracing {
+        // This tracer is responsible for sending the actual traces.
+        let tracer = opentelemetry_otlp::new_pipeline()
+            .tracing()
+            .with_exporter(
+                opentelemetry_otlp::new_exporter()
+                    .http()
+                    .with_endpoint(args.otlp_endpoint.to_string()),
+            )
+            .with_trace_config(
+                trace::config()
+                    .with_resource(Resource::new(vec![KeyValue::new("service.name", "fpx")])),
+            )
+            .install_batch(runtime::Tokio)
+            // .install_simple()
+            .context("unable to install tracer")?;
+
+        // This layer will take the traces from the `tracing` crate and send
+        // them to the tracer specified above.
+        Some(OpenTelemetryLayer::new(tracer))
+    } else {
+        None
+    };
+
+    Registry::default()
+        .with(filter_layer)
+        .with(log_layer)
+        .with(trace_layer)
+        .try_init()
+        .context("unable to initialize logger")?;
+
+    Ok(())
+}
+
+async fn initialize_fpx_dir(path: &Path) -> Result<()> {
+    std::fs::DirBuilder::new()
+        .recursive(true)
+        .create(path)
+        .with_context(|| format!("Failed to create fpx working directory: {:?}", path))?;
+
+    Ok(())
 }

@@ -1,22 +1,52 @@
 use crate::api;
+use crate::data::libsql::{DataPath, LibSqlStore};
 use crate::events::Events;
+use crate::{initialize_fpx_dir, DEFAULT_FPX_DIRECTORY};
 use anyhow::{Context, Result};
 use std::sync::Arc;
+use std::{path::PathBuf, process::exit};
 use tracing::info;
+use tracing::warn;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
     /// The address to listen on.
     #[arg(short, long, env, default_value = "127.0.0.1:6767")]
     pub listen_address: String,
+
+    /// The base URL of the server.
+    #[arg(short, long, env, default_value = "http://localhost:6767")]
+    pub base_url: url::Url,
+
+    /// fpx directory
+    #[arg(short, long, env, default_value = DEFAULT_FPX_DIRECTORY)]
+    pub fpx_directory: PathBuf,
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
+    initialize_fpx_dir(args.fpx_directory.as_path()).await?;
+
+    let store = Arc::new(open_store(&args).await?);
+    store.migrations_run().await?;
+
     // Create a shared events struct, which allows events to be send to
     // WebSocket connections.
     let events = Arc::new(Events::new());
 
-    let app = api::create_api(events).await;
+    let inspector_service = crate::inspector::InspectorService::start(
+        args.fpx_directory,
+        store.clone(),
+        events.clone(),
+    )
+    .await?;
+
+    let app = api::create_api(
+        args.base_url.clone(),
+        events,
+        store,
+        Arc::new(inspector_service),
+    )
+    .await;
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)
         .await
@@ -29,6 +59,16 @@ pub async fn handle_command(args: Args) -> Result<()> {
             .expect("Failed to listen for ctrl-c");
 
         info!("Received SIGINT, shutting down server");
+
+        // Monitor for another SIGINT, and force shutdown if received.
+        tokio::spawn(async {
+            tokio::signal::ctrl_c()
+                .await
+                .expect("Failed to listen for ctrl-c");
+
+            warn!("Received another SIGINT, forcing shutdown");
+            exit(1);
+        });
     };
 
     info!(
@@ -44,4 +84,13 @@ pub async fn handle_command(args: Args) -> Result<()> {
     info!("Server shutdown gracefully");
 
     Ok(())
+}
+
+async fn open_store(args: &Args) -> Result<LibSqlStore> {
+    // let db_path = DataPath::Local(PathBuf::from("/tmp/fpx.db"));
+    let db_path = DataPath::Local(args.fpx_directory.join("fpx.db"));
+    // let db_path = DataPath::InMemory;
+    let store = LibSqlStore::open(db_path).await?;
+
+    Ok(store)
 }

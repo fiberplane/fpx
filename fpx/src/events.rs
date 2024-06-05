@@ -1,13 +1,12 @@
-use std::sync::Arc;
+use crate::api::types::ServerMessage;
 use tokio::sync::broadcast;
-use tracing::debug;
+use tracing::trace;
 
-#[derive(Clone)]
+pub type ServerEvents = Events<ServerMessage>;
+
 pub struct Events<M> {
     sender: broadcast::Sender<M>,
 }
-
-pub type EventsState<M> = Arc<Events<M>>;
 
 impl<M: Clone> Events<M> {
     pub fn new() -> Self {
@@ -16,7 +15,7 @@ impl<M: Clone> Events<M> {
     }
 
     pub fn broadcast(&self, msg: M) {
-        debug!("Broadcasting message:");
+        trace!("Broadcasting message");
         let _ = self.sender.send(msg);
     }
 
