@@ -25,7 +25,15 @@
       "linter": {
         "enabled": true,
         "rules": {
-          "recommended": true
+          "recommended": true,
+          "correctness": {
+            "noUnusedImports": {
+              "level": "error"
+            },
+            "noUnusedVariables": {
+              "level": "error"
+            }
+          }
         }
       }
     },
@@ -37,6 +45,12 @@
     }
   ],
   "files": {
-    "ignore": ["meta/*.json", "dist/*.js", "test-content/*.*", "fpx/*.*"]
+    "ignore": [
+      "meta/*.json",
+      "dist/*.js",
+      "dist/*.d.ts",
+      "test-content/*.*",
+      "fpx/*.*"
+    ]
   }
 }

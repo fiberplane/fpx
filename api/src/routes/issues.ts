@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { githubIssues, newGithubIssueSchema } from "@/db/schema";
 import * as schema from "@/db/schema";
 import type { Bindings, Variables } from "@/lib/types";

@@ -7,7 +7,7 @@ export function tryParseJsonObjectMessage(str: unknown) {
   }
   try {
     return JSON.parse(str);
-  } catch (e) {
+  } catch {
     return str;
   }
 }

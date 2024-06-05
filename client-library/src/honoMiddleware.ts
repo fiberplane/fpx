@@ -38,8 +38,9 @@ export function createHonoMiddleware(options: {
       libraryDebugMode,
       monitor: {
         fetch: monitorFetch,
-        logging: monitorLogging,
-        requests: monitorRequests,
+        // TODO - implement these controls/features
+        // logging: monitorLogging,
+        // requests: monitorRequests,
       },
     } = options.createConfig(c);
     const ctx = c.executionCtx;

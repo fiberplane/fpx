@@ -1,15 +1,18 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.8.0/schema.json",
   "extends": ["../biome.jsonc"],
-  "css": {
-    "linter": {
-      "enabled": true
-    }
-  },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": {
+          "level": "error"
+        },
+        "noUnusedVariables": {
+          "level": "error"
+        }
+      }
     }
   },
   "files": {
