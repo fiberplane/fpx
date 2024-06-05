@@ -20,16 +20,15 @@ const databaseUrl = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL;
 const sql = createClient({ url: databaseUrl });
 const db = drizzle(sql);
 
-
 /**
  * HACK
  *
- * When we're running the compiled javascript, the `drizzle` folder will be 
+ * When we're running the compiled javascript, the `drizzle` folder will be
  * one level higher than when we're running the typescript source in a dev env.
- * 
- * This function allows us to use the same `migrate.ts` locally 
+ *
+ * This function allows us to use the same `migrate.ts` locally
  * as well as a compiled version (e.g., via `npx`).
- * 
+ *
  * A smarter version of this function would just rely on finding the app root,
  * maybe by detecting the nearest package.json?
  */
