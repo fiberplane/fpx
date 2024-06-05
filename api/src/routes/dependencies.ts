@@ -39,15 +39,6 @@ app.get("/v0/dependencies", async (ctx) => {
         url: "https://github.com/neondatabase/serverless",
       },
     },
-    // {
-    //   name: "drizzle-orm",
-    //   version: "0.30.10",
-    //   repository: {
-    //     owner: "drizzle-team",
-    //     repo: "drizzle-orm",
-    //     url: "https://github.com/drizzle-team/drizzle-orm",
-    //   },
-    // },
   ]);
 });
 
