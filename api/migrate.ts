@@ -1,5 +1,6 @@
 import fs from 'node:fs';
-import path from 'node:path';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createClient } from '@libsql/client';
 import { config } from 'dotenv';
 import { migrate } from 'drizzle-orm/libsql/migrator';
@@ -8,6 +9,9 @@ import { DEFAULT_DATABASE_URL } from './src/constants.js';
 
 // Set the environment vars
 config({ path: '.dev.vars' });
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // We need a fallback for the database url if none is specified
 // This fallback should be the same as in the Hono app

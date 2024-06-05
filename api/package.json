@@ -21,7 +21,7 @@
     "debugging"
   ],
   "bin": {
-    "mizu": "./bin/cli.js"
+    "mizu": "./bin/cli.cjs"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
