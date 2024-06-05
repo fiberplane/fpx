@@ -6,8 +6,11 @@ node_modules
 # do not publish src
 src/*
 
-# do not publish scripts
+# do not publish playground scripts that are just useful for testing things
 test-content/*
+
+# do not publish biome config
+biome.jsonc
 
 # do not publish migrate typescript file
 migrate.ts
@@ -23,6 +26,8 @@ bun.lockb
 
 # db
 mizu.db
+
+# old neon config - can remove after merging https://github.com/fiberplane/fpx/pull/9
 .neon
 
 # Rust targets
