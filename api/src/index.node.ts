@@ -45,7 +45,7 @@ app.use(
   "/*",
   serveStatic({
     root: frontendPath,
-    onNotFound(path, c) {
+    onNotFound(path, _c) {
       console.error("Not found", path);
     },
   }),

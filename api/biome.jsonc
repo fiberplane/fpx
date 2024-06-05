@@ -16,6 +16,11 @@
     }
   },
   "files": {
-    "ignore": ["meta/*.json", "dist/*.*", "test-content/*.*", "seed-assets/*.json"]
+    "ignore": [
+      "meta/*.json",
+      "dist/*.*",
+      "test-content/*.*",
+      "seed-assets/*.json"
+    ]
   }
 }
