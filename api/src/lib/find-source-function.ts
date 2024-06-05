@@ -79,7 +79,7 @@ async function findFunctionByDefinition(
     });
 
     return foundLocation;
-  } catch (error) {
+  } catch {
     console.error("Error reading or parsing file:", jsFilePath);
     return null;
   }
