@@ -124,8 +124,14 @@ export function createHonoMiddleware(options?: {
           return;
         }
         if (!libraryDebugMode && shouldPrettifyMizuLog(applyArgs)) {
+          // HACK - Optionally log a link to the mizu dashboard for the "response" log
+          let friendlyLink: undefined | string;
+          if (isMessageFinalEvent(message)) {
+            // HACK - host needs to be 5173 locally, but whatever MIZU_ENDPOINT host is when package is distributed...
+            friendlyLink = `Inspect in Mizu: http://localhost:8788/requests/${traceId}`;
+          }
           // HACK - Try parsing the message as json and extracting all the fields we care about logging prettily
-          tryPrettyPrintLoggerLog(originalConsoleMethod, message);
+          tryPrettyPrintLoggerLog(originalConsoleMethod, message, friendlyLink);
         } else {
           originalConsoleMethod.apply(originalConsoleMethod, applyArgs);
         }
@@ -142,4 +148,17 @@ export function createHonoMiddleware(options?: {
       teardownFunction();
     }
   };
+}
+
+/**
+ * Utility can be used to determine if a message is a final event in a request/response lifecycle
+ * This means the `lifecycle` property is "response" as of writing
+ */
+function isMessageFinalEvent(message: string) {
+  try {
+    const parsed = JSON.parse(message);
+    return parsed.lifecycle === "response";
+  } catch {
+    return false;
+  }
 }

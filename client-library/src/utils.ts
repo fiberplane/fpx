@@ -13,7 +13,11 @@ export type ExtendedExecutionContext = ExecutionContext & {
 
 export type PrintFunc = (str: string, ...rest: unknown[]) => void;
 
-export function tryPrettyPrintLoggerLog(fn: PrintFunc, message: string) {
+export function tryPrettyPrintLoggerLog(
+  fn: PrintFunc,
+  message: string,
+  friendlyLink?: string,
+) {
   try {
     const requestOrResponse = JSON.parse(message);
     const lifecycle = requestOrResponse?.lifecycle;
@@ -30,6 +34,10 @@ export function tryPrettyPrintLoggerLog(fn: PrintFunc, message: string) {
 
     if (out) {
       fn.apply(fn, [out]);
+    }
+
+    if (friendlyLink) {
+      fn.apply(fn, [friendlyLink]);
     }
   } catch {
     // Fail silently
