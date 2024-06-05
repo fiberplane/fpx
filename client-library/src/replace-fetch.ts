@@ -1,5 +1,9 @@
 import { IGNORE_MIZU_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
 
+Request
+
+URL
+
 /**
  * In future, take inspo from:
  *
@@ -8,26 +12,45 @@ import { IGNORE_MIZU_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
 export function replaceFetch() {
   const requestId = generateUUID();
   const originalFetch = globalThis.fetch;
+
   // @ts-ignore
   globalThis.fetch = async (...args) => {
     const start = Date.now();
+    const [resource, init] = args;
+    const method = (init && init.method) || 'GET';
+    const url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.toString() : resource.url;
+    const body = (init && init.body) ? await (new Response(init.body)).text() : null;
+
     console.log(JSON.stringify({
       lifecycle: "fetch_start",
       requestId,
       start,
-      // TODO - Parse url from request args
-      // TODO - Parse method from request
-      // TODO - Parse body from request
-      // TODO - Basically parse the whole request
-      args
-    }), IGNORE_MIZU_LOGGER_LOG)
+      url,     // Parsed URL
+      method,  // Parsed method
+      body,    // Parsed body
+      args     // Full request args
+    }), IGNORE_MIZU_LOGGER_LOG);
 
     try {
       const response = await originalFetch(...args);
       const clonedResponse = response.clone();
 
       if (!clonedResponse.ok) {
-        // TODO - count this as an error
+        let body;
+        try {
+          body = await clonedResponse.text();
+        } catch {
+          body = null;
+        }
+        // Count this as an error
+        console.error(JSON.stringify({
+          lifecycle: "fetch_error",
+          requestId,
+          status: clonedResponse.status,
+          statusText: clonedResponse.statusText,
+          body,
+          url,
+        }), IGNORE_MIZU_LOGGER_LOG);
       }
 
       const end = Date.now();
@@ -37,24 +60,25 @@ export function replaceFetch() {
         requestId,
         end,
         elapsed,
-        // HACK - Response body
+        // Response body
         body: await clonedResponse.text(),
-      }), IGNORE_MIZU_LOGGER_LOG)
+      }), IGNORE_MIZU_LOGGER_LOG);
+
       return response;
     } catch (err) {
       console.error(JSON.stringify({
         lifecycle: "fetch_error",
         requestId,
         error: err instanceof Error ? errorToJson(err) : err,
-      }), IGNORE_MIZU_LOGGER_LOG)
+      }), IGNORE_MIZU_LOGGER_LOG);
       throw err;
     }
-  }
+  };
 
   return {
     undo: () => {
       globalThis.fetch = originalFetch;
     },
     originalFetch,
-  }
+  };
 }
