@@ -14,11 +14,11 @@ app.post(
     "json",
     z.object({ errorMessage: z.string(), handlerSourceCode: z.string() }),
   ),
-  async (c) => {
-    const { handlerSourceCode, errorMessage } = c.req.valid("json");
+  async (ctx) => {
+    const { handlerSourceCode, errorMessage } = ctx.req.valid("json");
 
     const openaiClient = new OpenAI({
-      apiKey: c.env.OPENAI_API_KEY,
+      apiKey: ctx.env.OPENAI_API_KEY,
     });
 
     const response = await openaiClient.chat.completions.create({
@@ -62,7 +62,7 @@ app.post(
       choices: [{ message }],
     } = response;
 
-    return c.json({
+    return ctx.json({
       suggestion: message.content,
     });
   },

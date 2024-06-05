@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3b7856bb-97be-44f5-94e5-7db0468e7778",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "8c3a22d5-f6ef-417e-bab9-ad08a626d50a",
+  "prevId": "3b7856bb-97be-44f5-94e5-7db0468e7778",
   "tables": {
     "github_issues": {
       "name": "github_issues",
@@ -173,6 +173,13 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(CURRENT_TIMESTAMP)"
+        },
+        "matching_issues": {
+          "name": "matching_issues",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},

@@ -16,8 +16,8 @@ app.get(
     "query",
     z.object({ source: z.string(), line: z.string(), column: z.string() }),
   ),
-  async (c) => {
-    const { source, line, column } = c.req.query();
+  async (ctx) => {
+    const { source, line, column } = ctx.req.query();
 
     try {
       const file = JSON.parse(readFileSync(source, "utf8").toString());
@@ -28,10 +28,10 @@ app.get(
       });
       consumer.destroy();
 
-      return c.json(pos);
+      return ctx.json(pos);
     } catch (err) {
       console.error("Could not read source file", err?.message);
-      return c.json(
+      return ctx.json(
         { error: "Error reading file", name: err?.name, message: err?.message },
         500,
       );
@@ -39,15 +39,15 @@ app.get(
   },
 );
 
-app.post("/v0/source-function", cors(), async (c) => {
-  const { handler, source } = c.req.query();
+app.post("/v0/source-function", cors(), async (ctx) => {
+  const { handler, source } = ctx.req.query();
 
   try {
     const functionText = await findSourceFunction(source, handler);
-    return c.json({ functionText });
+    return ctx.json({ functionText });
   } catch (err) {
     console.error("Could not find function in source", source);
-    return c.json(
+    return ctx.json(
       {
         error: "Error finding function",
         name: err?.name,

@@ -6,6 +6,7 @@
 		"skipLibCheck": true,
 		"lib": ["ESNext"],
 		"types": ["@cloudflare/workers-types"],
+		"declaration": true,
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx",
 		"outDir": "./dist",
@@ -17,5 +18,5 @@
 		}
 	},
 	"include": ["src/**/*", "migrate.ts"],
-	"exclude": ["node_modules"]
+	"exclude": ["node_modules", "dist", "scripts"]
 }
