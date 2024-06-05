@@ -2,11 +2,33 @@
   "version": "3",
   "packages": {
     "specifiers": {
+      "npm:@orama/orama": "npm:@orama/orama@2.0.19",
+      "npm:@orama/plugin-data-persistence": "npm:@orama/plugin-data-persistence@2.0.19",
       "npm:@types/node": "npm:@types/node@18.16.19"
     },
     "npm": {
+      "@msgpack/msgpack@2.8.0": {
+        "integrity": "sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==",
+        "dependencies": {}
+      },
+      "@orama/orama@2.0.19": {
+        "integrity": "sha512-9nlF5iYUghewRt2TDmAJO5TN4hYFPhql4d2ZAdJYJtGSIi2BZjMNQIqQ874w0q/rur67wp0AWLb020EakEN0aA==",
+        "dependencies": {}
+      },
+      "@orama/plugin-data-persistence@2.0.19": {
+        "integrity": "sha512-u/ligext2UZuvfM3Nm1JckL7Y6MbT85rXODKtJzZuPdpc2+hilGon9Fmkp00ENBx+dAtzcK+3Q00AY1V5T3Mfg==",
+        "dependencies": {
+          "@msgpack/msgpack": "@msgpack/msgpack@2.8.0",
+          "@orama/orama": "@orama/orama@2.0.19",
+          "dpack": "dpack@0.6.22"
+        }
+      },
       "@types/node@18.16.19": {
         "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
+        "dependencies": {}
+      },
+      "dpack@0.6.22": {
+        "integrity": "sha512-WGPNlW2OAE7Bj0eODMpAHUcEqxrlg01e9OFZDxQodminIgC194/cRHT7K04Z1j7AUEWTeeplYGrIv/xRdwU9Hg==",
         "dependencies": {}
       }
     }
@@ -20,6 +42,7 @@
     "https://esm.sh/v135/@octokit/types": "https://esm.sh/v135/@octokit/types@13.5.0"
   },
   "remote": {
+    "https://cdn.jsdelivr.net/npm/@xenova/transformers": "345934c1290a84e9fc6a099cea55aea89cfc515ad6fe5c09ab2adb8b62a383cd",
     "https://esm.sh/@octokit/core@6.1.2?dts": "263311f52fbd38cdf0aca84be5bb31fbb432998a0b5a33cb5c706f96e077b12a",
     "https://esm.sh/@octokit/plugin-paginate-rest@11.3.0": "ba1acad11fa22d7a77e2098071f8723a2bac0a7b77c3388176b3806c79205fbd",
     "https://esm.sh/@octokit/plugin-rest-endpoint-methods@13.2.1": "9f7a2d5f2e1052daedd9ba8e7756398f9cbdbaec3f848f24fcbf73b338670a74",

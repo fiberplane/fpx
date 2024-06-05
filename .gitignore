@@ -36,3 +36,4 @@ mizu.boots.code-workspace
 .vscode
 node_modules
 start-dev.sh
+model-experiments/.ipynb_checkpoints
