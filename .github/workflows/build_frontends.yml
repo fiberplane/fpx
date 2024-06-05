@@ -29,7 +29,7 @@
           run: npm ci --workspaces
 
         - name: Lint all workspaces
-          run: npm lint:ci --workspaces
+          run: npm run lint:ci --workspaces
 
         - name: Build all workspaces
           run: npm run build --workspaces
