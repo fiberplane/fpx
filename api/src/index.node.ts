@@ -11,6 +11,7 @@ import { createApp } from "./app.js";
 
 config({ path: ".dev.vars" });
 
+// Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 

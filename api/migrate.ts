@@ -10,6 +10,7 @@ import { DEFAULT_DATABASE_URL } from "./src/constants.js";
 // Set the environment vars
 config({ path: ".dev.vars" });
 
+// Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
