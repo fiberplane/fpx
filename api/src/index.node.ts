@@ -52,7 +52,8 @@ app.use(
 );
 
 /**
- * Fallback route that just serves the frontend index.html file
+ * Fallback route that just serves the frontend index.html file,
+ * This is necessary to support frontend routing!
  */
 app.get("*", (c) => {
   const frontendFolder = getPathToFrontendFolder();
