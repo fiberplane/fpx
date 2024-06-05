@@ -14,6 +14,9 @@ biome.jsonc
 # do not publish migrate typescript file
 migrate.ts
 
+# do not publish drizzle config
+drizzle.config.ts
+
 # Change them to your taste:
 package-lock.json
 yarn.lock
