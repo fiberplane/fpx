@@ -46,8 +46,10 @@ npm unlink $NAME_OF_THIS_PACKAGE -g
 ```sh
 # ***Start in the fpx project root!***
 npm run build:mizu-studio
-
 cd api
-
 npm publish
+
+# Then test like this
+cd /some/random/dir
+npx @mizu-dev/studio
 ```
