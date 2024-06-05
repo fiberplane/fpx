@@ -22,19 +22,7 @@ npm create hono@latest my-hono-project
 
 ## Install the mizu client
 
-### Copy the `mizu.ts` file
-To install the mizu client, add this package as a dependency:
 
-``` bash
-npm install 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
-
-# or with yarn:
-yarn add 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
-```
-
-### Trouble getting the latest version
-
-If you're not getting the latest version, it might be that your package manager is caching an older version of the package.  As a work around you may want to clear your local cache by running something like `yarn cache clean`
 
 ### Add middleware
 
@@ -44,7 +32,7 @@ If you only just started your project, you can copy paste the entire contents be
 
 ```ts
 import { Context, Hono } from "hono";
-import { createHonoMiddleware } from "mizu";
+import { createHonoMiddleware } from "@mizu-dev/hono-middleware";
 
 const app = new Hono();
 

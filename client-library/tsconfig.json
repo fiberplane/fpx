@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
+    "target": "ES2020",
+    "module": "ES6",
     "moduleResolution": "Bundler",
     "strict": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
     "types": ["@cloudflare/workers-types"],
-    "noEmit": true
-  }
+    "esModuleInterop": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true
+  },
+  "include": ["src"]
 }
