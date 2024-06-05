@@ -1,2 +1,38 @@
+# Rust targets
+**/target
+target
+
+.env
+.envrc
+
+# Mac
+.DS_Store
+
+# VS Code
+.vscode/*
+*.code-workspace
+
+# CLion
+.idea
+
+# TypeScript / Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+node_modules
+package-lock.json
+yarn-error.log
+
+# Build tools
+.parcel-cache*
+.nx/cache
+*.tsbuildinfo
+
+# Personal files
 mizu.boots.code-workspace
+.vscode
+node_modules
 start-dev.sh

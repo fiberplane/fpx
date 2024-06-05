@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = ["fpx"]
+
+[workspace.package]
+authors = ["Fiberplane <info@fiberplane.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/fiberplane/fpx"
+
+[workspace.dependencies]

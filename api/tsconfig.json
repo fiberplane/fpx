@@ -1,17 +1,22 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "NodeNext",
     "strict": true,
     "skipLibCheck": true,
-    "lib": [
-      "ESNext"
-    ],
-    "types": [
-      "@cloudflare/workers-types"
-    ],
+    "lib": ["ESNext"],
+    "types": ["node"],
+    "declaration": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "jsxImportSource": "hono/jsx",
+    "outDir": "./dist",
+    "rootDir": ".",
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
+  "include": ["src/**/*", "migrate.ts"],
+  "exclude": ["node_modules", "dist", "test-content"]
 }

@@ -1,6 +1,5 @@
 node_modules
 dist
-.wrangler
 .dev.vars
 
 # Change them to your taste:
@@ -13,6 +12,8 @@ bun.lockb
 .DS_Store
 
 # db
+mizu.db
+
 # NOTE - usually it is safe to keep .neon in version control
 #        however, since everyone will be using their own database,
 #        it's better to make sure it's not checked in

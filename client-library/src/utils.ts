@@ -31,7 +31,7 @@ export function tryPrettyPrintLoggerLog(fn: PrintFunc, message: string) {
     if (out) {
       fn.apply(fn, [out]);
     }
-  } catch (error) {
+  } catch {
     // Fail silently
   }
 }

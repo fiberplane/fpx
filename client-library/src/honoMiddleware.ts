@@ -30,9 +30,23 @@ type Config = {
 
 type CreateConfig = (context: Context) => Config;
 
-export function createHonoMiddleware(options: {
+const defaultCreateConfig = (c: Context) => {
+  return {
+    endpoint: c.env?.MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs",
+    service: c.env?.SERVICE_NAME || "unknown",
+    libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
+    monitor: {
+      fetch: true,
+      logging: true,
+      requests: true,
+    },
+  };
+};
+
+export function createHonoMiddleware(options?: {
   createConfig: CreateConfig;
 }) {
+  const createConfig = options?.createConfig ?? defaultCreateConfig;
   return async function honoMiddleware(c: Context, next: () => Promise<void>) {
     const {
       endpoint,
@@ -40,10 +54,11 @@ export function createHonoMiddleware(options: {
       libraryDebugMode,
       monitor: {
         fetch: monitorFetch,
-        logging: monitorLogging,
-        requests: monitorRequests,
+        // TODO - implement these controls/features
+        // logging: monitorLogging,
+        // requests: monitorRequests,
       },
-    } = options.createConfig(c);
+    } = createConfig(c);
     const ctx = c.executionCtx;
 
     // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs

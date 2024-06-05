@@ -1,31 +1,51 @@
 {
+  "version": "0.0.8",
+  "name": "@mizu-dev/studio",
+  "description": "Local development debugging interface for Hono apps",
+  "author": "Fiberplane<info@fiberplane.com>",
+  "type": "module",
   "scripts": {
-    "node:dev": "tsx watch src/index.node.ts",
-    "wrangler:dev": "wrangler dev src/index.worker.tsx",
-    "dev": "npm run node:dev",
-    "deploy": "wrangler deploy --minify src/index.worker.tsx",
+    "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx migrate.ts"
+    "db:migrate": "tsx migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "build": "npm run db:generate && tsc",
+    "format": "biome check . --write",
+    "lint": "biome lint . && tsc --noEmit",
+    "lint:ci": "biome ci . #api"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT or Apache 2",
+  "keywords": ["hono", "local", "debugging"],
+  "bin": {
+    "mizu": "./bin/cli.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
-    "@neondatabase/serverless": "^0.9.3",
+    "@hono/zod-validator": "^0.2.2",
+    "@libsql/client": "^0.6.2",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.2",
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.21.2",
     "drizzle-orm": "^0.30.10",
+    "drizzle-zod": "^0.5.1",
     "hono": "^4.3.7",
+    "octokit": "^4.0.2",
     "openai": "^4.47.1",
     "source-map": "^0.7.4",
-    "ws": "^8.17.0"
+    "ws": "^8.17.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
+    "@octokit/types": "^13.5.0",
     "@types/node": "^20.11.17",
     "@types/ws": "^8.5.10",
-    "dotenv": "^16.4.5",
-    "drizzle-kit": "^0.21.2",
-    "postgres": "^3.4.4",
+    "ts-to-zod": "^3.8.5",
     "tsx": "^4.10.5",
-    "wrangler": "^3.47.0"
+    "typescript": "^5.4.5"
   }
 }

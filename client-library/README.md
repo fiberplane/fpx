@@ -1,16 +1,58 @@
 # Mizu Client
 
-This is a client library that will send telemetry data to the Mizu server (in `../api`).
+This is a client library that will send telemetry data to the *local* Mizu server.
 
-Note that it monkey-patches `console.*` functions to send logs to the Mizu server.
+Note that it monkey-patches `console.*` functions to send logs to the Mizu server, 
+so any time you use a `console.log`, `console.error`, etc., in your app, we will send that data to Mizu!
 
-So, any time you use a `console.log`, `console.error`, etc., in your app, we will send that data to Mizu!
+## Quick Start
+
+Create hono project
+```sh
+# Create a hono project, using cloudflare-workers runtime
+npm create hono@latest my-hono-project
+# > cloudflare-workers
+```
+
+Install middleware
+
+```sh
+npm i @mizu-dev/hono
+```
+
+Add middleware
+
+```ts
+import { Hono } from "hono";
+import { createHonoMiddleware } from "@mizu-dev/hono";
+
+const app = new Hono();
+
+app.use(createHonoMiddleware())
+
+app.get("/", (c) => {
+	return c.text("Hello Hono!");
+});
+
+export default app;
+```
+
+Launch UI
+
+```sh
+npx @mizu-dev/studio
+```
+
+Visit `http://localhost:8788` to see your logs come in as you test your app!
+
+## Long Start
 
 This readme takes you through:
 
 - Creating a Hono Project
-- Adding the mizu "client library"
+- Installing the mizu client library
 - Configuring your project to use mizu
+- Launching the mizu UI
 
 ## Create a Hono project
 
@@ -18,23 +60,14 @@ Create a new Hono project with the following command. When prompted, choose `clo
 
 ```sh
 npm create hono@latest my-hono-project
+# > cloudflare-workers
 ```
 
 ## Install the mizu client
 
-### Copy the `mizu.ts` file
-To install the mizu client, add this package as a dependency:
-
-``` bash
-npm install 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
-
-# or with yarn:
-yarn add 'https://gitpkg.now.sh/brettimus/mizu/client-library?client-package-refactor'
+```sh
+npm i @mizu-dev/hono
 ```
-
-### Trouble getting the latest version
-
-If you're not getting the latest version, it might be that your package manager is caching an older version of the package.  As a work around you may want to clear your local cache by running something like `yarn cache clean`
 
 ### Add middleware
 
@@ -43,8 +76,8 @@ Add the mizu import, and then add middleware definitions **AT THE TOP OF YOUR AP
 If you only just started your project, you can copy paste the entire contents below into your `src/index.ts`:
 
 ```ts
-import { Context, Hono } from "hono";
-import { createHonoMiddleware } from "mizu";
+import { type Context, Hono } from "hono";
+import { createHonoMiddleware } from "@mizu-dev/hono";
 
 const app = new Hono();
 
@@ -79,4 +112,12 @@ echo -e '\nMIZU_ENDPOINT=http://localhost:8788/v0/logs\n' >> .dev.vars
 
 You should be good to go! Just execute `npm run dev` to kick off your new Hono project..
 
-Make requests to your Hono app, and the logs should show up in the Mizu UI at `http://localhost:5173`!
+Make requests to your Hono app, and the logs should show up in the Mizu UI!
+
+## Launch the Mizu UI
+
+```sh
+npx @mizu-dev/studio
+```
+
+That's it! You should see your logs in the Mizu UI.
