@@ -34,3 +34,4 @@ yarn-error.log
 # Personal files
 mizu.boots.code-workspace
 start-dev.sh
+model-experiments/.ipynb_checkpoints
