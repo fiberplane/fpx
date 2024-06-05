@@ -1,16 +1,16 @@
 # Mizu Client
 
-This is a client library that will send telemetry data to the Mizu server (in `../api`).
+This is a client library that will send telemetry data to the *local* Mizu server.
 
-Note that it monkey-patches `console.*` functions to send logs to the Mizu server.
-
-So, any time you use a `console.log`, `console.error`, etc., in your app, we will send that data to Mizu!
+Note that it monkey-patches `console.*` functions to send logs to the Mizu server, 
+so any time you use a `console.log`, `console.error`, etc., in your app, we will send that data to Mizu!
 
 This readme takes you through:
 
 - Creating a Hono Project
-- Adding the mizu "client library"
+- Installing the mizu client library
 - Configuring your project to use mizu
+- Launching the mizu UI
 
 ## Create a Hono project
 
@@ -18,11 +18,14 @@ Create a new Hono project with the following command. When prompted, choose `clo
 
 ```sh
 npm create hono@latest my-hono-project
+# > cloudflare-workers
 ```
 
 ## Install the mizu client
 
-
+```sh
+npm i @mizu-dev/hono-middleware
+```
 
 ### Add middleware
 
@@ -31,7 +34,7 @@ Add the mizu import, and then add middleware definitions **AT THE TOP OF YOUR AP
 If you only just started your project, you can copy paste the entire contents below into your `src/index.ts`:
 
 ```ts
-import { Context, Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { createHonoMiddleware } from "@mizu-dev/hono-middleware";
 
 const app = new Hono();
@@ -67,4 +70,12 @@ echo -e '\nMIZU_ENDPOINT=http://localhost:8788/v0/logs\n' >> .dev.vars
 
 You should be good to go! Just execute `npm run dev` to kick off your new Hono project..
 
-Make requests to your Hono app, and the logs should show up in the Mizu UI at `http://localhost:5173`!
+Make requests to your Hono app, and the logs should show up in the Mizu UI!
+
+## Launch the Mizu UI
+
+```sh
+npx @mizu-dev/studio
+```
+
+That's it! You should see your logs in the Mizu UI.
