@@ -8,7 +8,7 @@
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
-    "db:seed": "tsx test-content/seed.ts",
+    "db:seed": "tsx scripts/seed.ts",
     "build": "npm run db:generate && tsc",
     "format": "biome check . --write",
     "lint": "biome lint . && tsc --noEmit",

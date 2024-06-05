@@ -7,6 +7,7 @@ src/*
 
 # do not publish playground scripts that are just useful for testing things
 test-content/*
+scripts/*
 
 # do not publish biome config
 biome.jsonc
