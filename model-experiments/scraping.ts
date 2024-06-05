@@ -2,13 +2,13 @@ import { Octokit } from "https://esm.sh/@octokit/core@6.1.2?dts";
 import { throttling } from "https://esm.sh/@octokit/plugin-throttling@9.3.0";
 import { paginateRest } from "https://esm.sh/@octokit/plugin-paginate-rest@11.3.0";
 import { restEndpointMethods } from "https://esm.sh/@octokit/plugin-rest-endpoint-methods@13.2.1";
+import type { GetResponseDataTypeFromEndpointMethod } from "https://esm.sh/v135/@octokit/types@13.5.0";
 
 const PatchedOctokit = Octokit.plugin(
   throttling,
   restEndpointMethods,
   paginateRest,
 );
-import { GetResponseDataTypeFromEndpointMethod } from "https://esm.sh/v135/@octokit/types@13.5.0";
 
 const octokit = new PatchedOctokit({
   auth: Deno.env.get("GITHUB_TOKEN"),
@@ -66,12 +66,15 @@ let fetchingInProgress = false;
 async function fetchIssues(owner: string, repo: string) {
   fetchingInProgress = true;
   console.log(`Fetching issues for ${owner}/${repo}`);
-  const iterator = octokit.paginate.iterator("GET /repos/{owner}/{repo}/issues?state=all", {
-    owner,
-    repo,
-    since: "2022-09-01", // NOTE: arbitrary date should probably revisit
-    per_page: 100,
-  });
+  const iterator = octokit.paginate.iterator(
+    "GET /repos/{owner}/{repo}/issues?state=all",
+    {
+      owner,
+      repo,
+      since: "2022-09-01", // NOTE: arbitrary date should probably revisit
+      per_page: 100,
+    },
+  );
 
   let issues: GithubIssue[] = [];
 
@@ -79,7 +82,11 @@ async function fetchIssues(owner: string, repo: string) {
     issues = issues.concat(page.data as GithubIssue[]);
   }
 
+  const fileName = `${owner}-${repo}.json`;
+
   console.log(`Fetched ${issues.length} issues for ${owner}/${repo}`);
+  console.log(`Writing ${issues.length} issues to file ${fileName}`);
+  Deno.writeTextFileSync(fileName, JSON.stringify(issues));
   return { [`${owner}/${repo}`]: issues };
 }
 
@@ -92,14 +99,6 @@ for (const { owner, repo } of REPOS) {
   } catch (error) {
     console.error(`Error fetching issues for ${owner}/${repo}`, error);
   }
-}
-
-try {
-  const fileName = "issues.json";
-  console.log(`Writing ${ISSUES.length} issues to file ${fileName}`);
-  Deno.writeTextFileSync(fileName, JSON.stringify(ISSUES));
-} catch (error) {
-  console.error(`Error writing issues to file`, error);
 }
 
 const handleExit = async () => {
