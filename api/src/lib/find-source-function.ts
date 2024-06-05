@@ -1,5 +1,5 @@
-import fs from "fs";
-import { promisify } from "util";
+import fs from "node:fs";
+import { promisify } from "node:util";
 import { parse } from "acorn";
 import { simple as walkSimple } from "acorn-walk";
 import { SourceMapConsumer } from "source-map";
@@ -87,7 +87,7 @@ async function findOriginalSource(
   line: number,
   column: number,
 ) {
-  const mapFile = jsFile + ".map"; // Adjust if your source map is located elsewhere
+  const mapFile = `${jsFile}.map`; // Adjust if your source map is located elsewhere
   const sourceMapContent = JSON.parse(fs.readFileSync(mapFile, "utf8"));
 
   return await SourceMapConsumer.with(sourceMapContent, null, (consumer) => {

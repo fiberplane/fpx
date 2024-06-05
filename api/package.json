@@ -3,7 +3,8 @@
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
-    "format": "biome check . --write"
+    "format": "biome check . --write",
+    "lint": "biome lint . && tsc --noEmit"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
