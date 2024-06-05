@@ -46,7 +46,6 @@
     "@types/ws": "^8.5.10",
     "ts-to-zod": "^3.8.5",
     "tsx": "^4.10.5",
-    "typescript": "^5.4.5",
-    "wrangler": "^3.47.0"
+    "typescript": "^5.4.5"
   }
 }
