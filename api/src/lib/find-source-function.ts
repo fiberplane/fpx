@@ -167,7 +167,7 @@ export async function findSourceFunction(
     return c.json(bug);
   }`;
 
-  const FILE_PATH = './scripts/function-loc-index.js';
+  const FILE_PATH = './test-content/function-loc-index.js';
 
  *
  */
