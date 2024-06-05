@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
 import { execSync } from "node:child_process";
-import path from "node:path";
+import path, { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const args = process.argv.slice(2);
 const script = args[0];
@@ -33,4 +37,3 @@ function runScript(scriptName) {
 
   execSync(command, { stdio: "inherit" });
 }
-
