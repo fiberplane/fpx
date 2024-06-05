@@ -32,4 +32,4 @@
           run: npm run lint:ci --workspaces
 
         - name: Build all workspaces
-          run: npm run build --workspaces
+          run: npm run build --workspaces --if-present
