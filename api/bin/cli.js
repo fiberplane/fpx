@@ -4,13 +4,15 @@ import { execSync } from "node:child_process";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const args = process.argv.slice(2);
 const script = args[0];
 
-// HACK - if no script is specified, migrate then open studio
+// HACK - if no script is specified, migrate then start running studio
+//        this is a quick way to get started!
 const scripts = !script ? ["migrate", "studio"] : [script];
 
 const validScripts = {
