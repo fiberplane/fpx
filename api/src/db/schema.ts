@@ -65,6 +65,20 @@ const normalizeLabels = {
   ),
 };
 
+// Eventually this might be a separate table? Either way for now just keeping schemas
+// in one place
+export const dependencySchema = z.object({
+  name: z.string(),
+  version: z.string(),
+  repository: z.object({
+    owner: z.string(),
+    repo: z.string(),
+    url: z.string(),
+  }),
+});
+
+export type Dependency = z.infer<typeof dependencySchema>;
+
 export const newGithubIssueSchema = createInsertSchema(
   githubIssues,
   normalizeLabels,

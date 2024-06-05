@@ -1,21 +1,7 @@
 import { Hono } from "hono";
-import { z } from "zod";
-import { zValidator } from "@hono/zod-validator";
 import { Bindings, Variables } from "@/lib/types";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
-
-const dependencySchema = z.object({
-  name: z.string(),
-  version: z.string(),
-  repository: z.object({
-    owner: z.string(),
-    repo: z.string(),
-    url: z.string(),
-  }),
-});
-
-type Dependency = z.infer<typeof dependencySchema>;
 
 // NOTE: hardcoded for now for simplicity, will eventually dynamically
 // parse the package.json file
