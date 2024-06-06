@@ -20,7 +20,6 @@ import { IGNORE_MIZU_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
 export function replaceFetch({
   skipMonkeyPatch,
 }: { skipMonkeyPatch: boolean }) {
-  const requestId = generateUUID();
   const originalFetch = globalThis.fetch;
 
   if (skipMonkeyPatch) {
@@ -29,26 +28,14 @@ export function replaceFetch({
 
   // @ts-ignore
   globalThis.fetch = async (...args) => {
+    const requestId = generateUUID();
     const start = Date.now();
-    const [resource, init] = args;
-    const method = init?.method || "GET";
-
-    const url =
-      typeof resource === "string"
-        ? resource
-        : resource instanceof URL
-          ? resource.toString()
-          : resource.url;
-
-    const body = init?.body ? await new Response(init.body).text() : null;
-
-    const requestHeaders: { [key: string]: string } = {};
-    if (init?.headers) {
-      const headers = new Headers(init.headers);
-      headers.forEach((value, key) => {
-        requestHeaders[key] = value;
-      });
-    }
+    const {
+      url,
+      method,
+      body,
+      headers: requestHeaders,
+    } = await getRequestData(...args);
 
     console.log(
       JSON.stringify({
@@ -66,40 +53,35 @@ export function replaceFetch({
 
     try {
       const response = await originalFetch(...args);
+      const end = Date.now();
+      const elapsed = end - start;
+
       const clonedResponse = response.clone();
 
       if (!clonedResponse.ok) {
-        const body: string | null =
-          // @ts-ignore: weird type conflict between cloned response and `Response` type
-          await tryGetResponseBodyAsText(clonedResponse);
-
         // @ts-ignore: weird type conflict between cloned response and `Response` type
-        const headers = getResponseHeaders(clonedResponse);
+        const { body, headers, status, statusText } = await getResponseData(clonedResponse);
 
         // Count any not-ok responses as a fetch_error
         console.error(
           JSON.stringify({
             lifecycle: "fetch_error",
             requestId,
-            status: clonedResponse.status,
-            statusText: clonedResponse.statusText,
+            status,
+            statusText,
             body,
             url,
             headers,
+            end,
+            elapsed,
           }),
           IGNORE_MIZU_LOGGER_LOG,
         );
       }
 
-      const body: string | null =
-        // @ts-ignore: weird type conflict between cloned response and `Response` type
-        await tryGetResponseBodyAsText(clonedResponse);
-
       // @ts-ignore: weird type conflict between cloned response and `Response` type
-      const headers = getResponseHeaders(clonedResponse);
+      const { body, headers, status, statusText } = await getResponseData(clonedResponse);
 
-      const end = Date.now();
-      const elapsed = end - start;
       console.log(
         JSON.stringify({
           lifecycle: "fetch_end",
@@ -107,8 +89,8 @@ export function replaceFetch({
           end,
           elapsed,
           url,
-          status: clonedResponse.status,
-          statusText: clonedResponse.statusText,
+          status,
+          statusText,
           headers,
           body,
         }),
@@ -152,4 +134,49 @@ function getResponseHeaders(clonedResponse: Response) {
     headers[key] = value;
   });
   return headers;
+}
+
+async function getRequestData(...args: Parameters<typeof fetch>) {
+  const [resource, init] = args;
+  const method = init?.method || "GET";
+
+  const url =
+    typeof resource === "string"
+      ? resource
+      : resource instanceof URL
+        ? resource.toString()
+        : resource.url;
+
+  const body = init?.body ? await new Response(init.body).text() : null;
+
+  const requestHeaders: { [key: string]: string } = {};
+  if (init?.headers) {
+    const headers = new Headers(init.headers);
+    headers.forEach((value, key) => {
+      requestHeaders[key] = value;
+    });
+  }
+
+  return {
+    url,
+    method,
+    body,
+    headers: requestHeaders,
+  }
+}
+
+async function getResponseData(clonedResponse: Response) {
+  const body: string | null =
+    // @ts-ignore: weird type conflict between cloned response and `Response` type
+    await tryGetResponseBodyAsText(clonedResponse);
+
+  // @ts-ignore: weird type conflict between cloned response and `Response` type
+  const headers = getResponseHeaders(clonedResponse);
+
+  return {
+    body,
+    headers,
+    status: clonedResponse.status,
+    statusText: clonedResponse.statusText,
+  }
 }
