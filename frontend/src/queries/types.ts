@@ -29,37 +29,52 @@ const MizuRequestEndSchema = z
   })
   .passthrough();
 
-
 // Define the init object schema
-const FetchInitSchema = z.object({
-  method: z.string().optional(),
-  headers: z.record(z.string()).optional(),
-  body: z.string().nullish(),
-  mode: z.enum(["cors", "no-cors", "same-origin"]).optional(),
-  credentials: z.enum(["omit", "same-origin", "include"]).optional(),
-  cache: z.enum(["default", "no-store", "reload", "no-cache", "force-cache", "only-if-cached"]).optional(),
-  redirect: z.enum(["follow", "error", "manual"]).optional(),
-  referrer: z.string().optional(),
-  referrerPolicy: z.enum([
-    "",
-    "no-referrer",
-    "no-referrer-when-downgrade",
-    "same-origin",
-    "origin",
-    "strict-origin",
-    "origin-when-cross-origin",
-    "strict-origin-when-cross-origin",
-    "unsafe-url",
-  ]).optional(),
-  integrity: z.string().optional(),
-  keepalive: z.boolean().optional(),
-  signal: z.instanceof(AbortSignal).optional(),
-}).partial();
+const FetchInitSchema = z
+  .object({
+    method: z.string().optional(),
+    headers: z.record(z.string()).optional(),
+    body: z.string().nullish(),
+    mode: z.enum(["cors", "no-cors", "same-origin"]).optional(),
+    credentials: z.enum(["omit", "same-origin", "include"]).optional(),
+    cache: z
+      .enum([
+        "default",
+        "no-store",
+        "reload",
+        "no-cache",
+        "force-cache",
+        "only-if-cached",
+      ])
+      .optional(),
+    redirect: z.enum(["follow", "error", "manual"]).optional(),
+    referrer: z.string().optional(),
+    referrerPolicy: z
+      .enum([
+        "",
+        "no-referrer",
+        "no-referrer-when-downgrade",
+        "same-origin",
+        "origin",
+        "strict-origin",
+        "origin-when-cross-origin",
+        "strict-origin-when-cross-origin",
+        "unsafe-url",
+      ])
+      .optional(),
+    integrity: z.string().optional(),
+    keepalive: z.boolean().optional(),
+    signal: z.instanceof(AbortSignal).optional(),
+  })
+  .partial();
 
 // Define the fetch arguments schema
 const FetchArgumentsSchema = z.union([
   z.tuple([z.union([z.string(), z.instanceof(URL), z.instanceof(Request)])]),
-  z.tuple([z.union([z.string(), z.instanceof(URL), z.instanceof(Request)]), FetchInitSchema])
+  z.tuple([
+    z.union([z.string(), z.instanceof(URL), z.instanceof(Request)]),
+    FetchInitSchema,
+  ]),
 ]);
 
 const MizuFetchStartSchema = z
@@ -71,7 +86,7 @@ const MizuFetchStartSchema = z
     method: z.string(),
     body: z.string().nullable(),
     headers: z.record(z.string()),
-    args: FetchArgumentsSchema
+    args: FetchArgumentsSchema,
   })
   .passthrough();
 
