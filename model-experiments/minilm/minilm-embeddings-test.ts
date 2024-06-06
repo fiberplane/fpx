@@ -4,11 +4,12 @@
 import { restoreFromFile } from "@orama/plugin-data-persistence/server";
 import { search } from "@orama/orama";
 import { Endpoints } from "@octokit/types";
-import fs from "node:fs";
+import * as fs from "node:fs";
 import {
   FeatureExtractionPipelineOptions,
   pipeline,
 } from "@xenova/transformers";
+import { optionsMiniLmEmbedder } from "./minilm-embeddings.js";
 
 type GithubIssue =
   Endpoints["GET /repos/{owner}/{repo}/issues"]["response"]["data"][number];
@@ -17,11 +18,6 @@ const miniLmEmbedder = await pipeline(
   "feature-extraction",
   "Xenova/all-MiniLM-L6-v2",
 );
-
-const optionsMiniLmEmbedder: FeatureExtractionPipelineOptions = {
-  pooling: "mean",
-  normalize: true,
-};
 
 const db = await restoreFromFile("binary", "minilm-embeddings.msp");
 
