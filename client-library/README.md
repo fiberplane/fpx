@@ -1,9 +1,9 @@
 # Mizu Client
 
-This is a client library that will send telemetry data to the *local* Mizu server.
+This is a client library that will send telemetry data to a *local* Mizu server upon every incoming request and outgoing response.
 
-Note that it monkey-patches `console.*` functions to send logs to the Mizu server, 
-so any time you use a `console.log`, `console.error`, etc., in your app, we will send that data to Mizu!
+Note that it also monkey-patches `console.*` functions to send logs to the Mizu server, 
+so any time you use a `console.log`, `console.error`, etc., in your app, it will send that data to Mizu.
 
 ## Quick Start
 
@@ -45,16 +45,16 @@ npx @mizu-dev/studio
 
 Visit `http://localhost:8788` to see your logs come in as you test your app!
 
-## Long Start
+## Usage
 
-This readme takes you through:
+This section takes you through:
 
 - Creating a Hono Project
 - Installing the mizu client library
-- Configuring your project to use mizu
+- **Configuring** your project to use mizu
 - Launching the mizu UI
 
-## Create a Hono project
+### Create a Hono project
 
 Create a new Hono project with the following command. When prompted, choose `cloudflare-workers` as the template.
 
@@ -63,7 +63,7 @@ npm create hono@latest my-hono-project
 # > cloudflare-workers
 ```
 
-## Install the mizu client
+### Install the mizu client
 
 ```sh
 npm i @mizu-dev/hono
@@ -102,9 +102,9 @@ app.get("/", (c) => {
 export default app;
 ```
 
-## Add `MIZU_ENDPOINT` environment variable
+### Add `MIZU_ENDPOINT` environment variable
 
-Add `MIZU_ENDPOINT=http://localhost:8788/v0/logs` to your `.dev.vars` file!
+Add `MIZU_ENDPOINT=http://localhost:8788/v0/logs` to your `.dev.vars` file. E.g.,
 
 ```sh
 echo -e '\nMIZU_ENDPOINT=http://localhost:8788/v0/logs\n' >> .dev.vars
@@ -112,12 +112,12 @@ echo -e '\nMIZU_ENDPOINT=http://localhost:8788/v0/logs\n' >> .dev.vars
 
 You should be good to go! Just execute `npm run dev` to kick off your new Hono project..
 
-Make requests to your Hono app, and the logs should show up in the Mizu UI!
+Make requests to your Hono app, and the logs should show up in the mizu UI!
 
-## Launch the Mizu UI
+### Launch the mizu UI
 
 ```sh
 npx @mizu-dev/studio
 ```
 
-That's it! You should see your logs in the Mizu UI.
+That's it! You should see your logs in the mizu UI.

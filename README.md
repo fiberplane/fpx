@@ -35,7 +35,7 @@ Follow the instructions in the [`client-library` README](./client-library/README
 
 ## Developing
 
-This project uses biome and npm monorepos.
+This project uses typescript, biome and npm workspaces. The frontend package also uses eslint for linting purposes, all other packages use biome for linting (formatting is always done wit biome).
 
 In the project root you can format all codebases with `npm run format`.
 
