@@ -59,8 +59,9 @@ export function replaceFetch({
       const clonedResponse = response.clone();
 
       if (!clonedResponse.ok) {
-        // @ts-ignore: weird type conflict between cloned response and `Response` type
-        const { body, headers, status, statusText } = await getResponseData(clonedResponse);
+        const { body, headers, status, statusText } =
+          // @ts-ignore: weird type conflict between cloned response and `Response` type
+          await getResponseData(clonedResponse);
 
         // Count any not-ok responses as a fetch_error
         console.error(
@@ -79,8 +80,9 @@ export function replaceFetch({
         );
       }
 
-      // @ts-ignore: weird type conflict between cloned response and `Response` type
-      const { body, headers, status, statusText } = await getResponseData(clonedResponse);
+      const { body, headers, status, statusText } =
+        // @ts-ignore: weird type conflict between cloned response and `Response` type
+        await getResponseData(clonedResponse);
 
       console.log(
         JSON.stringify({
@@ -162,7 +164,7 @@ async function getRequestData(...args: Parameters<typeof fetch>) {
     method,
     body,
     headers: requestHeaders,
-  }
+  };
 }
 
 async function getResponseData(clonedResponse: Response) {
@@ -178,5 +180,5 @@ async function getResponseData(clonedResponse: Response) {
     headers,
     status: clonedResponse.status,
     statusText: clonedResponse.statusText,
-  }
+  };
 }
