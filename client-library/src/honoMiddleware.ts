@@ -6,6 +6,8 @@ import {
   errorToJson,
   extractCallerLocation,
   generateUUID,
+  getBaseUrl,
+  isMessageFinalEvent,
   neonDbErrorToJson,
   polyfillWaitUntil,
   shouldIgnoreMizuLog,
@@ -127,8 +129,10 @@ export function createHonoMiddleware(options?: {
           // HACK - Optionally log a link to the mizu dashboard for the "response" log
           let friendlyLink: undefined | string;
           if (isMessageFinalEvent(message)) {
-            // HACK - host needs to be 5173 locally, but whatever MIZU_ENDPOINT host is when package is distributed...
-            friendlyLink = `Inspect in Mizu: http://localhost:8788/requests/${traceId}`;
+            // NOTE - host should be 5173 locally, but when the package is distributed
+            //        we need to use whatever MIZU_ENDPOINT host is
+            const baseUrl = getBaseUrl(endpoint);
+            friendlyLink = `Inspect in Mizu: ${baseUrl}/requests/${traceId}`;
           }
           // HACK - Try parsing the message as json and extracting all the fields we care about logging prettily
           tryPrettyPrintLoggerLog(originalConsoleMethod, message, friendlyLink);
@@ -150,15 +154,4 @@ export function createHonoMiddleware(options?: {
   };
 }
 
-/**
- * Utility can be used to determine if a message is a final event in a request/response lifecycle
- * This means the `lifecycle` property is "response" as of writing
- */
-function isMessageFinalEvent(message: string) {
-  try {
-    const parsed = JSON.parse(message);
-    return parsed.lifecycle === "response";
-  } catch {
-    return false;
-  }
-}
+

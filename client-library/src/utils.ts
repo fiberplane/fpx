@@ -158,3 +158,26 @@ export const shouldPrettifyMizuLog = (printFnArgs: unknown[]) =>
 
 export const shouldIgnoreMizuLog = (printFnArgs: unknown[]) =>
   printFnArgs?.[1] === IGNORE_MIZU_LOGGER_LOG;
+
+
+export function getBaseUrl(url: string): string | null {
+  try {
+    const { protocol, host } = new URL(url);
+    return `${protocol}//${host}`;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Utility can be used to determine if a message is a final event in a request/response lifecycle
+ * As of writing, this means the `lifecycle` property of the message is "response" 
+ */
+export function isMessageFinalEvent(message: string) {
+  try {
+    const parsed = JSON.parse(message);
+    return parsed?.lifecycle === "response";
+  } catch {
+    return false;
+  }
+}
