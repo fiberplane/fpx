@@ -87,9 +87,9 @@ const createConfig = (c: Context) => {
   service: c.env?.SERVICE_NAME || "unknown",
   libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
   monitor: {
-   fetch: true,
-   logging: true,
-   requests: true,
+   fetch: true, // set to false if you do not want to monkey-path fetch and send data about external network requests to mizu
+   logging: true, // not yet implemented!
+   requests: true, // set to false if you do not want to log data about each request and response to mizu
   },
  };
 }
