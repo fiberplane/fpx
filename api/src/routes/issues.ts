@@ -64,11 +64,22 @@ app.get(
     const db = ctx.get("db");
 
     const githubTokenSchema = z.string().min(1);
-    const githubToken = githubTokenSchema.parse(
+
+    const githubTokenResult = githubTokenSchema.safeParse(
       ctx.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN,
     );
 
-    const issues = await getGitHubIssues(owner, repo, githubToken, db);
+    if (githubTokenResult.error) {
+      console.log("Error parsing github token", githubTokenResult.error);
+      throw new Error(githubTokenResult.error.message);
+    }
+
+    const issues = await getGitHubIssues(
+      owner,
+      repo,
+      githubTokenResult.data,
+      db,
+    );
     return ctx.json(issues);
   },
 );
@@ -103,40 +114,72 @@ async function getGitHubIssues(
   // const response = fs.readFileSync("./issues-cache.json", "utf8");
   const octokit = new Octokit({ auth: githubToken });
 
-  const response = await octokit.paginate(
+  const iterator = octokit.paginate.iterator(
     `GET /repos/${owner}/${repo}/issues?state=all`,
     {
       owner,
       repo,
+      per_page: 100,
     },
   );
 
-  const fetchedIssues = z
-    .array(
-      newGithubIssueSchema
-        .extend({
-          // making sure we always record the owner and repo
-          owner: z.string().default(owner),
-          repo: z.string().default(repo),
-          // We only care if the object exists not whatever's inside it
-          pullRequest: z.object({}).passthrough().nullish(),
-          html_url: z.string().url(),
-        })
-        .transform((issue) => ({ ...issue, url: issue.html_url })),
-    )
-    .min(1)
-    .safeParse(response);
+  const fetchedIssuesSchema = z.array(
+    newGithubIssueSchema
+      .extend({
+        // extending the default schema to make sure we account for how the github api returns the data
+        pullRequest: z.object({}).passthrough().nullish(), // We only care if the object exists not whatever's inside it
+        html_url: z.string().url(),
+        created_at: z.string(),
+        updated_at: z.string(),
+        closed_at: z.string().nullable(),
 
-  if (fetchedIssues.success) {
-    const filteredIssues = fetchedIssues.data.filter(
-      (issue) => !issue.pullRequest,
-    );
-    await db.insert(githubIssues).values(filteredIssues);
-    return filteredIssues;
+        // need to define these as optional as github api doesn't return them
+        owner: z.string().optional(),
+        repo: z.string().optional(),
+        type: z.string().optional(),
+      })
+      .transform(
+        //	transforming the data to match the schema and discard the extra fields
+        ({
+          html_url,
+          created_at,
+          updated_at,
+          closed_at,
+          pullRequest,
+          ...issue
+        }) => ({
+          ...issue,
+          owner: owner,
+          repo: repo,
+          url: html_url,
+          createdAt: created_at,
+          updatedAt: updated_at,
+          closedAt: closed_at,
+          type: pullRequest ? ("pull_request" as const) : ("issue" as const),
+        }),
+      ),
+  );
+
+  let fetchedIssues: z.infer<typeof fetchedIssuesSchema> = [];
+
+  for await (const response of iterator) {
+    const fetchedPage = fetchedIssuesSchema.min(1).safeParse(response.data);
+
+    console.log(fetchedPage);
+
+    if (fetchedPage.error) {
+      console.log("Failed parsing fetched issues page");
+      console.log(fetchedPage.error);
+      continue;
+    }
+
+    if (fetchedPage.success) {
+      fetchedIssues = [...fetchedIssues, ...fetchedPage.data];
+      await db.insert(githubIssues).values(fetchedPage.data);
+    }
   }
 
-  console.log("Error fetching issues from github");
-  throw new Error(fetchedIssues.error.message);
+  return fetchedIssues;
 }
 
 export default app;
