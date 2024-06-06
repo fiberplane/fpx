@@ -44,7 +44,9 @@ export function tryPrettyPrintLoggerLog(
       fn.apply(fn, [linkToMizuUi]);
     }
   } catch {
-    // Fail silently
+    // Fail silently for now
+    // TODO - We should log something because this branch might be reached
+    //        if things were not set up correctly
   }
 }
 
