@@ -13,10 +13,14 @@ export type ExtendedExecutionContext = ExecutionContext & {
 
 export type PrintFunc = (str: string, ...rest: unknown[]) => void;
 
+/**
+ * Prints a log for requests and responses
+ * If a `linkToMizuUi` is provided, it will be printed as well
+ */
 export function tryPrettyPrintLoggerLog(
   fn: PrintFunc,
   message: string,
-  friendlyLink?: string,
+  linkToMizuUi?: string,
 ) {
   try {
     const requestOrResponse = JSON.parse(message);
@@ -36,8 +40,8 @@ export function tryPrettyPrintLoggerLog(
       fn.apply(fn, [out]);
     }
 
-    if (friendlyLink) {
-      fn.apply(fn, [friendlyLink]);
+    if (linkToMizuUi) {
+      fn.apply(fn, [linkToMizuUi]);
     }
   } catch {
     // Fail silently
@@ -172,11 +176,27 @@ export function getBaseUrl(url: string): string | null {
  * Utility can be used to determine if a message is a final event in a request/response lifecycle
  * As of writing, this means the `lifecycle` property of the message is "response"
  */
-export function isMessageFinalEvent(message: string) {
+function isMessageFinalEvent(message: string) {
   try {
     const parsed = JSON.parse(message);
     return parsed?.lifecycle === "response";
   } catch {
     return false;
   }
+}
+
+export function getFriendlyLinkToMizuIfMessageIsResponse({
+  mizuEndpoint,
+  traceId,
+  message,
+}: { mizuEndpoint: string; message: string; traceId: string }) {
+  let friendlyLink: undefined | string;
+  if (isMessageFinalEvent(message)) {
+    // NOTE - host should be 5173 locally, but when the package is distributed
+    //        we need to use whatever MIZU_ENDPOINT host is
+    const baseUrl = getBaseUrl(mizuEndpoint);
+    friendlyLink = `Inspect in Mizu: ${baseUrl}/requests/${traceId}`;
+  }
+
+  return friendlyLink;
 }
