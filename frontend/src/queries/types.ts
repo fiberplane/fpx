@@ -29,47 +29,53 @@ const MizuRequestEndSchema = z
   })
   .passthrough();
 
-const MizuFetchStartSchema = z.object({
-  lifecycle: z.literal("fetch_start"),
-  requestId: z.string(),
-  start: z.number(),
-  url: z.string(),
-  method: z.string(),
-  body: z.string().nullable(),
-  headers: z.record(z.string()),
-  // FIXME - Haven't gotten this type right yet...
-  //
-  // args: z.tuple([
-  //   z.union([z.string(), z.instanceof(URL), z.object({ url: z.string() })]),
-  //   z.object({
-  //     method: z.string().optional(),
-  //     headers: z.record(z.string()).optional(),
-  //     body: z.string().optional()
-  //   }).optional()
-  // ])
-}).passthrough();
+const MizuFetchStartSchema = z
+  .object({
+    lifecycle: z.literal("fetch_start"),
+    requestId: z.string(),
+    start: z.number(),
+    url: z.string(),
+    method: z.string(),
+    body: z.string().nullable(),
+    headers: z.record(z.string()),
+    // FIXME - Haven't gotten this type right yet...
+    //
+    // args: z.tuple([
+    //   z.union([z.string(), z.instanceof(URL), z.object({ url: z.string() })]),
+    //   z.object({
+    //     method: z.string().optional(),
+    //     headers: z.record(z.string()).optional(),
+    //     body: z.string().optional()
+    //   }).optional()
+    // ])
+  })
+  .passthrough();
 
-const MizuFetchEndSchema = z.object({
-  lifecycle: z.literal("fetch_end"),
-  requestId: z.string(),
-  end: z.number(),
-  elapsed: z.number(),
-  url: z.string(),
-  status: z.number(),
-  statusText: z.string(),
-  headers: z.record(z.string()),
-  body: z.string().nullable()
-}).passthrough();
+const MizuFetchEndSchema = z
+  .object({
+    lifecycle: z.literal("fetch_end"),
+    requestId: z.string(),
+    end: z.number(),
+    elapsed: z.number(),
+    url: z.string(),
+    status: z.number(),
+    statusText: z.string(),
+    headers: z.record(z.string()),
+    body: z.string().nullable(),
+  })
+  .passthrough();
 
-const MizuFetchErrorSchema = z.object({
-  lifecycle: z.literal("fetch_error"),
-  requestId: z.string(),
-  status: z.number(),
-  statusText: z.string(),
-  headers: z.record(z.string()),
-  body: z.string().nullable(),
-  url: z.string()
-}).passthrough();
+const MizuFetchErrorSchema = z
+  .object({
+    lifecycle: z.literal("fetch_error"),
+    requestId: z.string(),
+    status: z.number(),
+    statusText: z.string(),
+    headers: z.record(z.string()),
+    body: z.string().nullable(),
+    url: z.string(),
+  })
+  .passthrough();
 
 // TODO MizuFetchLoggingErrorSchema
 
@@ -81,7 +87,7 @@ const MizuReqResMessageSchema = z.discriminatedUnion("lifecycle", [
 const MizuFetchMessageSchema = z.discriminatedUnion("lifecycle", [
   MizuFetchStartSchema,
   MizuFetchEndSchema,
-  MizuFetchErrorSchema
+  MizuFetchErrorSchema,
   // MizuFetchLoggingErrorSchema,
 ]);
 
