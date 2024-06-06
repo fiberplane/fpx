@@ -6,11 +6,11 @@ import {
   errorToJson,
   extractCallerLocation,
   generateUUID,
-  getFriendlyLinkToMizuIfMessageIsResponse,
   neonDbErrorToJson,
   polyfillWaitUntil,
   shouldIgnoreMizuLog,
   shouldPrettifyMizuLog,
+  tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
 } from "./utils";
 
@@ -146,8 +146,7 @@ export function createHonoMiddleware(options?: {
 
         if (!libraryDebugMode && shouldPrettifyMizuLog(applyArgs)) {
           // Optionally log a link to the mizu dashboard for the "response" log
-          // Sorry, I couldn't think of a longer name for the helper function
-          const linkToMizuUi = getFriendlyLinkToMizuIfMessageIsResponse({
+          const linkToMizuUi = tryCreateFriendlyLink({
             message,
             traceId,
             mizuEndpoint: endpoint,

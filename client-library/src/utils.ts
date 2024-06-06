@@ -187,7 +187,12 @@ function isMessageFinalEvent(message: string) {
   }
 }
 
-export function getFriendlyLinkToMizuIfMessageIsResponse({
+/**
+ * Create a friendly link to the mizu dashboard, but only for the final `response` log.
+ *
+ * Returns undefined for all other messages.
+ */
+export function tryCreateFriendlyLink({
   mizuEndpoint,
   traceId,
   message,
