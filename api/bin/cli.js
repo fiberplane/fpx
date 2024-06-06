@@ -13,14 +13,17 @@ const script = args[0];
 
 // HACK - if no script is specified, migrate then start running studio
 //        this is a quick way to get started!
-const scripts = !script ? ["migrate", "studio"] : [script];
+const scriptsToRun = !script ? ["migrate", "studio"] : [script];
 
 const validScripts = {
   migrate: "dist/migrate.js",
   studio: "dist/src/index.node.js",
 };
 
-scripts.forEach(runScript);
+addGitIgnore();
+
+scriptsToRun.forEach(runScript);
+
 
 function runScript(scriptName) {
   const scriptPath = validScripts[scriptName];
@@ -38,4 +41,28 @@ function runScript(scriptName) {
   const command = `node ${path.join(scriptDir, scriptPath)}`;
 
   execSync(command, { stdio: "inherit" });
+}
+
+/**
+ * Function that adds `mizu.dev` to `.gitignore`
+ * 
+ * As of writing, only works when `.gitignore` is in the directory in which
+ * this executable is run.
+ */
+function addGitIgnore() {
+  // IMPROVE - Search for nearest git repository and add to that instead
+  const gitignorePath = path.resolve(process.cwd(), ".gitignore");
+  const gitignoreEntry = "# mizu local database\nmizu.db\n";
+
+  if (fs.existsSync(gitignorePath)) {
+    const gitignoreContent = fs.readFileSync(gitignorePath, "utf8");
+    // IMPROVE - Split by line and look for a line that starts with mizu.db, follow by a space or nothing
+    if (!gitignoreContent.includes("mizu.db")) {
+      fs.appendFileSync(gitignorePath, gitignoreEntry);
+      console.debug(".gitignore updated with mizu.db entry.");
+    }
+  } else {
+    // fs.writeFileSync(gitignorePath, gitignoreEntry);
+    // console.log(".gitignore created and mizu.db entry added.");
+  }
 }
