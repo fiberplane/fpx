@@ -131,8 +131,15 @@ export function createHonoMiddleware(options?: {
 
         const applyArgs = args?.length ? [message, ...args] : [message];
 
-        // In practice, we ignore any additional logging to the console for fetch requests themselves
-        // Otherwise, things get real noisy
+        // To explain the use of this `shouldIgnoreMizuLog` function a bit more:
+        //
+        // The middleware itself uses `console.log` and `console.error` to send logs to mizu.
+        //
+        // Specifically, it does this in the monkeypatched version of `fetch`.
+        //
+        // So, we want to short circuit those logs and not actually print them to the user's console
+        // Otherwise, things get realllyyyy noisy.
+        //
         if (shouldIgnoreMizuLog(applyArgs)) {
           return;
         }

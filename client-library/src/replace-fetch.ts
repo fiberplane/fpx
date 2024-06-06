@@ -4,8 +4,10 @@ import { IGNORE_MIZU_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
  * Hacky function that monkey-patches fetch to send data about network requests to mizu.
  *
  * We log data with the `IGNORE_MIZU_LOGGER_LOG` symbol in order to avoid printing it to the user's console.
+ * That symbol is used by the monkey-patched console.* methods to avoid _actually_ printing the logs to the console.
+ * Seem confusing? Yes. Yes it is. However, relying on our monkey-patched console.* methods allows us to make use of the current traceId, etc.
  *
- * Has an option to skip monkey-patching, so that the user can configure whether or not to use this functionality.
+ * This function also has an option to skip monkey-patching, so that the user can configure whether or not to use this functionality.
  *
  * Returns the original fetch (the fetch we're monkey patching), so the middleware can still use it to send log data to mizu.
  * Returns an `undo` function, so that the middleware can undo the monkey-patching after the request is finished.
