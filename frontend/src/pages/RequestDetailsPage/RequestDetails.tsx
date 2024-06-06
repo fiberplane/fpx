@@ -19,6 +19,8 @@ import { Separator } from "@/components/ui/separator";
 import {
   getVSCodeLinkFromCallerLocation,
   getVSCodeLinkFromError,
+  isMizuFetchErrorMessage,
+  isMizuFetchLoggingErrorMessage,
 } from "@/queries";
 import {
   type CallerLocation,
@@ -200,7 +202,7 @@ const FetchResponseLog = ({ log }: { log: MizuLog }) => {
     ? log?.message?.url
     : "UNKNOWN_URL";
   const description = `Fetch Response: ${url}`;
-  console.log("FETCH REQUEST", log.args);
+  console.log("FETCH RESPONSE", url, log.args);
 
   return (
     <LogCard>
@@ -219,8 +221,11 @@ const FetchResponseLog = ({ log }: { log: MizuLog }) => {
 };
 
 const FetchErrorLog = ({ log }: { log: MizuLog }) => {
-  const description = `Fetch Response: ${"todo"}`;
-  console.log("FETCH REQUEST", log.args);
+  const url = isMizuFetchErrorMessage(log.message)
+    ? log?.message?.url
+    : "UNKNOWN_URL";
+  const description = `Fetch Error: ${url}`;
+  console.log("FETCH HAD ERROR", url, log.args);
 
   return (
     <LogCard>
@@ -228,6 +233,30 @@ const FetchErrorLog = ({ log }: { log: MizuLog }) => {
         timestamp={log.timestamp}
         traceId={log.traceId}
         eventName="Fetch Error"
+        description={description}
+      />
+
+      <div className="mt-2">
+        <KeyValueGrid data={log.message} />
+      </div>
+    </LogCard>
+  );
+};
+
+// Displayed when mizu couldn't parse the response of a fetch request
+const FetchLoggingErrorLog = ({ log }: { log: MizuLog }) => {
+  const url = isMizuFetchLoggingErrorMessage(log.message)
+    ? log?.message?.url
+    : "UNKNOWN_URL";
+  const description = `Fetch Result Unknown: ${url}`;
+  console.log("FETCH RESPONSE COULD NOT BE PARSED BY MIZU MIDDLEWARE", log);
+
+  return (
+    <LogCard>
+      <LogDetailsHeader
+        timestamp={log.timestamp}
+        traceId={log.traceId}
+        eventName="Fetch Result Unknown"
         description={description}
       />
 
@@ -630,6 +659,10 @@ export const LogDetails = ({
 
   if (lifecycle === "fetch_error") {
     return <FetchErrorLog log={log} />;
+  }
+
+  if (lifecycle === "fetch_logging_error") {
+    return <FetchLoggingErrorLog log={log} />;
   }
 
   if (lifecycle === "response") {

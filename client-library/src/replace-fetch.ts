@@ -105,6 +105,7 @@ export function replaceFetch({
         JSON.stringify({
           lifecycle: "fetch_logging_error",
           requestId,
+          url,
           error: err instanceof Error ? errorToJson(err) : err,
         }),
         IGNORE_MIZU_LOGGER_LOG,

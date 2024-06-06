@@ -128,6 +128,7 @@ const MizuFetchLoggingErrorSchema = z
   .object({
     lifecycle: z.literal("fetch_logging_error"),
     requestId: z.string(),
+    url: z.string().optional(),
     error: z.union([MizuErrorMessageSchema, z.string(), z.unknown()]),
   })
   .passthrough();
@@ -227,6 +228,12 @@ export const isMizuFetchErrorMessage = (
   message: unknown,
 ): message is z.infer<typeof MizuFetchErrorSchema> => {
   return MizuFetchErrorSchema.safeParse(message).success;
+};
+
+export const isMizuFetchLoggingErrorMessage = (
+  message: unknown,
+): message is z.infer<typeof MizuFetchLoggingErrorSchema> => {
+  return MizuFetchLoggingErrorSchema.safeParse(message).success;
 };
 
 export const isMizuErrorMessage = (

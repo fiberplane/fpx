@@ -13,6 +13,8 @@ export {
   isMizuErrorMessage,
   isMizuFetchStartMessage,
   isMizuFetchEndMessage,
+  isMizuFetchErrorMessage,
+  isMizuFetchLoggingErrorMessage,
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "./types";
