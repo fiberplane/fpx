@@ -1,8 +1,9 @@
-import { Octokit } from "https://esm.sh/@octokit/core@6.1.2?dts";
-import { throttling } from "https://esm.sh/@octokit/plugin-throttling@9.3.0";
-import { paginateRest } from "https://esm.sh/@octokit/plugin-paginate-rest@11.3.0";
-import { restEndpointMethods } from "https://esm.sh/@octokit/plugin-rest-endpoint-methods@13.2.1";
-import type { GetResponseDataTypeFromEndpointMethod } from "https://esm.sh/v135/@octokit/types@13.5.0";
+import { Octokit } from "@octokit/core";
+import { throttling } from "@octokit/plugin-throttling";
+import { paginateRest } from "@octokit/plugin-paginate-rest";
+import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
+import type { GetResponseDataTypeFromEndpointMethod } from "@octokit/types";
+import fs from "node:fs";
 
 const PatchedOctokit = Octokit.plugin(
   throttling,
@@ -11,7 +12,7 @@ const PatchedOctokit = Octokit.plugin(
 );
 
 const octokit = new PatchedOctokit({
-  auth: Deno.env.get("GITHUB_TOKEN"),
+  auth: process.env.GITHUB_TOKEN,
   throttle: {
     onRateLimit: (retryAfter, options, octokit, retryCount) => {
       octokit.log.warn(
@@ -86,7 +87,7 @@ async function fetchIssues(owner: string, repo: string) {
 
   console.log(`Fetched ${issues.length} issues for ${owner}/${repo}`);
   console.log(`Writing ${issues.length} issues to file ${fileName}`);
-  Deno.writeTextFileSync(fileName, JSON.stringify(issues));
+  fs.writeFileSync(fileName, JSON.stringify(issues));
   return { [`${owner}/${repo}`]: issues };
 }
 
@@ -100,22 +101,3 @@ for (const { owner, repo } of REPOS) {
     console.error(`Error fetching issues for ${owner}/${repo}`, error);
   }
 }
-
-const handleExit = async () => {
-  if (fetchingInProgress) {
-    console.log("Waiting for fetch operations to complete...");
-    while (fetchingInProgress) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    console.log("Fetch operations completed. Exiting...");
-  } else {
-    console.log("No fetch operations in progress. Exiting...");
-  }
-};
-
-Deno.addSignalListener("SIGINT", handleExit);
-Deno.addSignalListener("SIGTERM", handleExit);
-
-setTimeout(() => {
-  Deno.exit(0);
-}, 1);
