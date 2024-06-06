@@ -1,27 +1,29 @@
 {
-  "name": "model-experiments",
-  "type": "module",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "scraping": "tsx scraping.ts",
-		"minilm:create": "tsx minilm-embeddings.ts",
-		"minilm:test": "tsx minilm-embeddings-test.ts"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@octokit/core": "^6.1.2",
-    "@octokit/plugin-paginate-rest": "^11.3.0",
-    "@octokit/plugin-rest-endpoint-methods": "^13.2.1",
-    "@octokit/plugin-throttling": "^9.3.0",
-    "@orama/orama": "^2.0.19",
-    "@orama/plugin-data-persistence": "^2.0.19",
-    "@xenova/transformers": "^2.17.2",
-    "tsx": "^4.12.0"
-  },
-  "devDependencies": {
-    "@octokit/types": "^13.5.0"
-  }
+	"name": "model-experiments",
+	"type": "module",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"scraping": "tsx scraping.ts",
+		"minilm:create": "tsx minilm/minilm-embeddings.ts",
+		"minilm:test": "tsx minilm/minilm-embeddings-test.ts",
+		"mistral:create": "tsx mistral/mistral-embeddings.ts",
+		"mistral:test": "tsx mistral/mistral-embeddings-test.ts"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@octokit/core": "^6.1.2",
+		"@octokit/plugin-paginate-rest": "^11.3.0",
+		"@octokit/plugin-rest-endpoint-methods": "^13.2.1",
+		"@octokit/plugin-throttling": "^9.3.0",
+		"@orama/orama": "^2.0.19",
+		"@orama/plugin-data-persistence": "^2.0.19",
+		"@xenova/transformers": "^2.17.2",
+		"tsx": "^4.12.0"
+	},
+	"devDependencies": {
+		"@octokit/types": "^13.5.0"
+	}
 }
