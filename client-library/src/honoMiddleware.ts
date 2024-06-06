@@ -6,8 +6,7 @@ import {
   errorToJson,
   extractCallerLocation,
   generateUUID,
-  getBaseUrl,
-  isMessageFinalEvent,
+  getFriendlyLinkToMizuIfMessageIsResponse,
   neonDbErrorToJson,
   polyfillWaitUntil,
   shouldIgnoreMizuLog,
@@ -22,10 +21,11 @@ type Config = {
   /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
   libraryDebugMode?: boolean;
   monitor: {
-    // TODO - implement this control/feature
+    /** Send data to mizu about each fetch call made during a handler's lifetime */
     fetch: boolean;
     // TODO - implement this control/feature
     logging: boolean;
+    /** Send data to mizu about each incoming request and outgoing response */
     requests: boolean;
   };
 };
@@ -58,7 +58,7 @@ export function createHonoMiddleware(options?: {
         fetch: monitorFetch,
         // TODO - implement these controls/features
         // logging: monitorLogging,
-        // requests: monitorRequests,
+        requests: monitorRequests,
       },
     } = createConfig(c);
     const ctx = c.executionCtx;
@@ -69,7 +69,11 @@ export function createHonoMiddleware(options?: {
 
     const teardownFunctions: Array<() => void> = [];
 
-    const { originalFetch, undo: undoReplaceFetch } = replaceFetch();
+    const { originalFetch, undo: undoReplaceFetch } = replaceFetch({
+      skipMonkeyPatch: !monitorFetch,
+    });
+    // We need to undo our monkeypatching since workers can operate in a shared environment
+    // This is similar to how we need to undo our monkeypatching of `console.*` methods (see HACK comment below)
     teardownFunctions.push(undoReplaceFetch);
 
     // TODO - (future) Take the traceId from headers but then fall back to uuid here?
@@ -113,6 +117,9 @@ export function createHonoMiddleware(options?: {
           timestamp,
         };
         ctx.waitUntil(
+          // Use `originalFetch` to avoid an infinite loop of logging to mizu
+          // If we use our monkeyPatched version, then each fetch logs to mizu,
+          // which triggers another fetch to log to mizu, etc.
           originalFetch(endpoint, {
             method: "POST",
             headers: {
@@ -121,28 +128,33 @@ export function createHonoMiddleware(options?: {
             body: JSON.stringify(payload),
           }),
         );
+
         const applyArgs = args?.length ? [message, ...args] : [message];
+
+        // In practice, we ignore any additional logging to the console for fetch requests themselves
+        // Otherwise, things get real noisy
         if (shouldIgnoreMizuLog(applyArgs)) {
           return;
         }
+
         if (!libraryDebugMode && shouldPrettifyMizuLog(applyArgs)) {
-          // HACK - Optionally log a link to the mizu dashboard for the "response" log
-          let friendlyLink: undefined | string;
-          if (isMessageFinalEvent(message)) {
-            // NOTE - host should be 5173 locally, but when the package is distributed
-            //        we need to use whatever MIZU_ENDPOINT host is
-            const baseUrl = getBaseUrl(endpoint);
-            friendlyLink = `Inspect in Mizu: ${baseUrl}/requests/${traceId}`;
-          }
-          // HACK - Try parsing the message as json and extracting all the fields we care about logging prettily
-          tryPrettyPrintLoggerLog(originalConsoleMethod, message, friendlyLink);
+          // Optionally log a link to the mizu dashboard for the "response" log
+          // Sorry, I couldn't think of a longer name for the helper function
+          const linkToMizuUi = getFriendlyLinkToMizuIfMessageIsResponse({
+            message,
+            traceId,
+            mizuEndpoint: endpoint,
+          });
+
+          // Try parsing the message as json and extracting all the fields we care about logging prettily
+          tryPrettyPrintLoggerLog(originalConsoleMethod, message, linkToMizuUi);
         } else {
           originalConsoleMethod.apply(originalConsoleMethod, applyArgs);
         }
       };
     }
 
-    if (monitorFetch) {
+    if (monitorRequests) {
       await log(c, next);
     } else {
       await next();
