@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync } from "node:child_process";
+import fs from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,7 +25,6 @@ addGitIgnore();
 
 scriptsToRun.forEach(runScript);
 
-
 function runScript(scriptName) {
   const scriptPath = validScripts[scriptName];
   if (!scriptPath) {
@@ -45,7 +45,7 @@ function runScript(scriptName) {
 
 /**
  * Function that adds `mizu.dev` to `.gitignore`
- * 
+ *
  * As of writing, only works when `.gitignore` is in the directory in which
  * this executable is run.
  */
