@@ -12,3 +12,6 @@ bun.lockb
 
 # mac
 .DS_Store
+
+# packed files
+mizu-dev-hono-*.tgz
