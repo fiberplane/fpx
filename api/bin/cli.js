@@ -50,7 +50,7 @@ function runScript(scriptName) {
  * this executable is run.
  */
 function addGitIgnore() {
-  // IMPROVE - Search for nearest git repository and add to that instead
+  // IMPROVE - Search for nearest git repository and add to the root .gitignore instead
   const gitignorePath = path.resolve(process.cwd(), ".gitignore");
   const gitignoreEntry = "# mizu local database\nmizu.db\n";
 
@@ -61,8 +61,5 @@ function addGitIgnore() {
       fs.appendFileSync(gitignorePath, gitignoreEntry);
       console.debug(".gitignore updated with mizu.db entry.");
     }
-  } else {
-    // fs.writeFileSync(gitignorePath, gitignoreEntry);
-    // console.log(".gitignore created and mizu.db entry added.");
   }
 }
