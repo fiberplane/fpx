@@ -30,8 +30,8 @@ const db = drizzle(createClient({ url: databaseUrl }));
   const issues = JSON.parse(issuesFile);
   const logs = JSON.parse(logsFile);
 
-  let {rowsAffected} = await db.insert(githubIssues).values(issues);
-  console.log('Inserted', rowsAffected, 'github issues');
-  ({ rowsAffected} = await db.insert(mizuLogs).values(logs));
-  console.log('Inserted', rowsAffected, 'logs');
+  let { rowsAffected } = await db.insert(githubIssues).values(issues);
+  console.log("Inserted", rowsAffected, "github issues");
+  ({ rowsAffected } = await db.insert(mizuLogs).values(logs));
+  console.log("Inserted", rowsAffected, "logs");
 })();
