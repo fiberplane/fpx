@@ -121,3 +121,7 @@ npx @mizu-dev/studio
 ```
 
 That's it! You should see your logs in the mizu UI.
+
+## Local Development
+
+See [DEVELOPMENT.md](./DEVELOPMENT.md) for instructions on how to develop this library.

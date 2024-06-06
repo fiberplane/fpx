@@ -31,6 +31,8 @@ import {
   type MizuTrace,
   isKnownMizuMessage,
   isMizuErrorMessage,
+  isMizuFetchStartMessage,
+  isMizuFetchEndMessage,
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "@/queries";
@@ -171,7 +173,8 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
 };
 
 const FetchRequestLog = ({ log }: { log: MizuLog }) => {
-  const description = `Fetch Request: ${"todo"}`;
+  const url = isMizuFetchStartMessage(log.message) ? log?.message?.url : "UNKNOWN_URL";
+  const description = `Fetch Request: ${url}`;
   console.log("FETCH REQUEST", log.args);
 
   return (
@@ -191,7 +194,8 @@ const FetchRequestLog = ({ log }: { log: MizuLog }) => {
 };
 
 const FetchResponseLog = ({ log }: { log: MizuLog }) => {
-  const description = `Fetch Response: ${"todo"}`;
+  const url = isMizuFetchEndMessage(log.message) ? log?.message?.url : "UNKNOWN_URL";
+  const description = `Fetch Response: ${url}`;
   console.log("FETCH REQUEST", log.args);
 
   return (

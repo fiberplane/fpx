@@ -29,9 +29,60 @@ const MizuRequestEndSchema = z
   })
   .passthrough();
 
+const MizuFetchStartSchema = z.object({
+  lifecycle: z.literal("fetch_start"),
+  requestId: z.string(),
+  start: z.number(),
+  url: z.string(),
+  method: z.string(),
+  body: z.string().nullable(),
+  headers: z.record(z.string()),
+  // FIXME - Haven't gotten this type right yet...
+  //
+  // args: z.tuple([
+  //   z.union([z.string(), z.instanceof(URL), z.object({ url: z.string() })]),
+  //   z.object({
+  //     method: z.string().optional(),
+  //     headers: z.record(z.string()).optional(),
+  //     body: z.string().optional()
+  //   }).optional()
+  // ])
+}).passthrough();
+
+const MizuFetchEndSchema = z.object({
+  lifecycle: z.literal("fetch_end"),
+  requestId: z.string(),
+  end: z.number(),
+  elapsed: z.number(),
+  url: z.string(),
+  status: z.number(),
+  statusText: z.string(),
+  headers: z.record(z.string()),
+  body: z.string().nullable()
+}).passthrough();
+
+const MizuFetchErrorSchema = z.object({
+  lifecycle: z.literal("fetch_error"),
+  requestId: z.string(),
+  status: z.number(),
+  statusText: z.string(),
+  headers: z.record(z.string()),
+  body: z.string().nullable(),
+  url: z.string()
+}).passthrough();
+
+// TODO MizuFetchLoggingErrorSchema
+
 const MizuReqResMessageSchema = z.discriminatedUnion("lifecycle", [
   MizuRequestStartSchema,
   MizuRequestEndSchema,
+]);
+
+const MizuFetchMessageSchema = z.discriminatedUnion("lifecycle", [
+  MizuFetchStartSchema,
+  MizuFetchEndSchema,
+  MizuFetchErrorSchema
+  // MizuFetchLoggingErrorSchema,
 ]);
 
 // TODO - tie to level: error
@@ -43,6 +94,7 @@ const MizuErrorMessageSchema = z.object({
 
 const MizuKnownMessageSchema = z.union([
   MizuReqResMessageSchema,
+  MizuFetchMessageSchema,
   MizuErrorMessageSchema,
 ]);
 
@@ -105,6 +157,24 @@ export const isMizuRequestEndMessage = (
 ): message is MizuRequestEnd => {
   const result = MizuRequestEndSchema.safeParse(message);
   return result.success;
+};
+
+export const isMizuFetchStartMessage = (
+  message: unknown,
+): message is z.infer<typeof MizuFetchStartSchema> => {
+  return MizuFetchStartSchema.safeParse(message).success;
+};
+
+export const isMizuFetchEndMessage = (
+  message: unknown,
+): message is z.infer<typeof MizuFetchEndSchema> => {
+  return MizuFetchEndSchema.safeParse(message).success;
+};
+
+export const isMizuFetchErrorMessage = (
+  message: unknown,
+): message is z.infer<typeof MizuFetchErrorSchema> => {
+  return MizuFetchErrorSchema.safeParse(message).success;
 };
 
 export const isMizuErrorMessage = (
