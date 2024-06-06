@@ -3,6 +3,13 @@ import { z } from "zod";
 // TODO: figure out if this is really the only type of k/v pair we want to support
 export const KeyValueSchema = z.record(z.string());
 
+// TODO - tie to level: error
+const MizuErrorMessageSchema = z.object({
+  message: z.string(),
+  stack: z.string().optional(),
+  name: z.string(),
+});
+
 const MizuRequestStartSchema = z
   .object({
     lifecycle: z.literal("request"),
@@ -116,7 +123,14 @@ const MizuFetchErrorSchema = z
   })
   .passthrough();
 
-// TODO MizuFetchLoggingErrorSchema
+// NOTE - This happens if there was an error in mizu iteslf when trying to collect response info
+const MizuFetchLoggingErrorSchema = z
+  .object({
+    lifecycle: z.literal("fetch_logging_error"),
+    requestId: z.string(),
+    error: z.union([MizuErrorMessageSchema, z.string(), z.unknown()]),
+  })
+  .passthrough();
 
 const MizuReqResMessageSchema = z.discriminatedUnion("lifecycle", [
   MizuRequestStartSchema,
@@ -127,15 +141,8 @@ const MizuFetchMessageSchema = z.discriminatedUnion("lifecycle", [
   MizuFetchStartSchema,
   MizuFetchEndSchema,
   MizuFetchErrorSchema,
-  // MizuFetchLoggingErrorSchema,
+  MizuFetchLoggingErrorSchema,
 ]);
-
-// TODO - tie to level: error
-const MizuErrorMessageSchema = z.object({
-  message: z.string(),
-  stack: z.string().optional(),
-  name: z.string(),
-});
 
 const MizuKnownMessageSchema = z.union([
   MizuReqResMessageSchema,
