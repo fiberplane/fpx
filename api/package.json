@@ -1,5 +1,5 @@
 {
-  "version": "0.0.9",
+  "version": "0.1.0",
   "name": "@mizu-dev/studio",
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
