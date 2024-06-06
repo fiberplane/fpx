@@ -22,12 +22,8 @@ export const mizuLogs = sqliteTable("mizu_logs", {
   ignored: integer("ignored", { mode: "boolean" }).default(false),
   args: text("args", { mode: "json" }), // NOTE - Should only be present iff message is a string
   callerLocation: text("caller_location", { mode: "json" }),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at")
-    .notNull()
-    .default(sql`(CURRENT_TIMESTAMP)`),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at") .notNull().default(sql`(CURRENT_TIMESTAMP)`),
   matchingIssues: text("matching_issues", { mode: "json" }).$type<
     number[] | null
   >(),
