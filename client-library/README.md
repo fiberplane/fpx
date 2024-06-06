@@ -31,7 +31,7 @@ const app = new Hono();
 app.use(createHonoMiddleware())
 
 app.get("/", (c) => {
-	return c.text("Hello Hono!");
+  return c.text("Hello Hono!");
 });
 
 export default app;
@@ -96,7 +96,7 @@ const createConfig = (c: Context) => {
 
 app.use(createHonoMiddleware({ createConfig }))
 app.get("/", (c) => {
-	return c.text("Hello Hono!");
+  return c.text("Hello Hono!");
 });
 
 export default app;
