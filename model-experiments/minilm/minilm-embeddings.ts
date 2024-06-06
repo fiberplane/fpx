@@ -8,7 +8,7 @@ import {
   restoreFromFile,
   persistToFile,
 } from "@orama/plugin-data-persistence/server";
-import fs from "node:fs/promises";
+import * as fs from "node:fs/promises";
 
 const files = [
   "drizzle-team-drizzle-orm.json",
@@ -23,7 +23,7 @@ const miniLmEmbedder = await pipeline(
   "Xenova/all-MiniLM-L6-v2",
 );
 
-const optionsMiniLmEmbedder: FeatureExtractionPipelineOptions = {
+export const optionsMiniLmEmbedder: FeatureExtractionPipelineOptions = {
   pooling: "mean",
   normalize: true,
 };
