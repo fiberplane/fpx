@@ -1,7 +1,13 @@
-import { QueryClient, QueryClientProvider, useQuery } from "react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryFunctionContext,
+  useQuery,
+} from "react-query";
 
 import { objectWithKeyAndValue } from "@/utils";
 import {
+  GitHubIssuesSchema,
   MizuApiLogResponseSchema,
   type MizuLog,
   type MizuRequestEnd,
@@ -115,4 +121,27 @@ export function getTraceDescription(trace: MizuTrace) {
     return `${method} ${path}`;
   }
   return "Unknown trace";
+}
+
+export function useRelevantIssues(traceId: string) {
+  return useQuery({
+    queryKey: ["relevantIssues", traceId],
+    queryFn: fetchRelevantIssues,
+  });
+}
+
+async function fetchRelevantIssues(
+  context: QueryFunctionContext<[string, string]>,
+) {
+  const traceId = context.queryKey[1];
+  try {
+    const response = await fetch(`/v0/relevant-issues/${traceId}`, {
+      mode: "cors",
+    });
+    const data = await response.json();
+    return GitHubIssuesSchema.parse(data);
+    // return data as Array<number>;
+  } catch (e: unknown) {
+    console.error("Error fetching GitHub issue for a trace: ", e);
+  }
 }

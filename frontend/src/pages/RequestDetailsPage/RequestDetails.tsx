@@ -429,7 +429,7 @@ const InfoLog = ({ log }: { log: MizuLog }) => {
   return (
     <LogCard>
       <LogDetailsHeader
-        eventName="console.log"
+        eventName={`console.${log.level}`}
         traceId={log.traceId}
         timestamp={log.timestamp}
         description={""}

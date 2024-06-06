@@ -14,6 +14,7 @@ import { useMizuTraces } from "@/queries";
 import { isError } from "react-query";
 import { useParams } from "react-router-dom";
 
+import { RelatedIssue } from "./RelatedIssue";
 import { TraceDetails } from "./RequestDetails";
 
 function useRequestDetails(traceId?: string) {
@@ -33,6 +34,7 @@ export function RequestDetailsPage() {
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
+        {traceId && <RelatedIssue traceId={traceId} />}
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="error">Errors</TabsTrigger>

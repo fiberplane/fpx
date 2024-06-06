@@ -122,3 +122,32 @@ export const isKnownMizuMessage = (
 export const MizuApiLogResponseSchema = z.object({
   logs: z.array(MizuLogSchema),
 });
+
+export const GitHubLabelSchema = z.union([
+  z.string(),
+  z.object({
+    id: z.number().optional(),
+    node_id: z.string().optional(),
+    url: z.string().optional(),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    color: z.string().optional(),
+    default: z.boolean().optional(),
+  }),
+]);
+
+export const GitHubIssueSchema = z.object({
+  id: z.number(),
+  owner: z.string(),
+  repo: z.string(),
+  url: z.string(),
+  title: z.string(),
+  body: z.string(),
+  state: z.enum(["open", "closed"]),
+  labels: z.array(GitHubLabelSchema),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  closedAt: z.string(),
+});
+
+export const GitHubIssuesSchema = z.array(GitHubIssueSchema);
