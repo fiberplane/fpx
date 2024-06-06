@@ -1,11 +1,11 @@
-import * as schema from "@/db/schema";
-import type { Bindings, Variables } from "@/lib/types";
-import { tryParseJsonObjectMessage } from "@/lib/utils";
 import { zValidator } from "@hono/zod-validator";
 import { desc, inArray, ne } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
+import * as schema from "../db/schema.js";
+import type { Bindings, Variables } from "../lib/types.js";
+import { tryParseJsonObjectMessage } from "../lib/utils.js";
 
 const { mizuLogs } = schema;
 

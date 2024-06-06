@@ -125,14 +125,14 @@ export function RequestsPage() {
             variant="outline"
             className="h-8 gap-1"
             onClick={() => {
-              fetch("http://localhost:8788/v0/logs/ignore", {
+              fetch("/v0/logs/ignore", {
                 method: "POST",
                 body: JSON.stringify({
                   logIds: query.data?.flatMap((t) => t.logs?.map((l) => l.id)),
                 }),
               }).then(() => {
                 query.refetch();
-                alert("Successfully ignored all");
+                // alert("Successfully ignored all");
               });
             }}
           >
@@ -146,7 +146,7 @@ export function RequestsPage() {
             size="sm"
             className="h-8 gap-1"
             onClick={() => {
-              fetch("http://localhost:8788/v0/logs/delete-all-hack", {
+              fetch("/v0/logs/delete-all-hack", {
                 method: "POST",
               }).then(() => {
                 query.refetch();

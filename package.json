@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "description": "> Japanese for \"water\"",
   "scripts": {
-    "lint": "biome lint .",
-    "format": "biome check . --write"
+    "build:mizu-studio": "npm run clean:mizu-studio && npm run build:api && npm run build:frontend",
+    "build:api": "npm run --workspace api build",
+    "build:frontend": "npm run --workspace frontend build && cp -r frontend/dist/* api/dist",
+    "clean:mizu-studio": "npm run clean:api && npm run clean:frontend",
+    "clean:api": "rimraf api/dist",
+    "clean:frontend": "rimraf frontend/dist",
+    "format": "biome check . --write",
+    "lint": "biome lint ."
   },
   "repository": {
     "type": "git",
@@ -17,5 +23,8 @@
   "workspaces": ["client-library", "frontend", "api"],
   "dependencies": {
     "@biomejs/biome": "^1.8.0"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.7"
   }
 }

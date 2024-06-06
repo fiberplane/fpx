@@ -24,7 +24,7 @@ ReferenceError: process is not defined at file:///Users/brettbeutell/fiber/bug/.
 `.trim();
 
 
-findOriginalPosition('./scripts/index.js', 12662, 19).then(pos => {
+findOriginalPosition('./test-content/index.js', 12662, 19).then(pos => {
   const vscodeLink = `vscode://file/${pos.source}:${pos.line}:${pos.column}`;
   console.log("vscodeLink", vscodeLink);
 })

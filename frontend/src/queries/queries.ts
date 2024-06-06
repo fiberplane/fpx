@@ -23,7 +23,7 @@ export function useMizuTraces() {
 
 async function fetchMizuTraces() {
   try {
-    const response = await fetch("http://localhost:8788/v0/logs", {
+    const response = await fetch("/v0/logs", {
       mode: "cors",
     });
     const responseData = await response.json();

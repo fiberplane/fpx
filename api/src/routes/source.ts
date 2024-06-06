@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs";
-import { findSourceFunction } from "@/lib/find-source-function";
-import type { Bindings, Variables } from "@/lib/types";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { SourceMapConsumer } from "source-map";
 import { z } from "zod";
+
+import { findSourceFunction } from "../lib/find-source-function.js";
+import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 

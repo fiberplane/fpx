@@ -97,7 +97,7 @@ const functionText = `async (c) => {
   return c.json(bug);
 }`;
 
-const FILE_PATH = './scripts/function-loc-index.js';
+const FILE_PATH = './test-content/function-loc-index.js';
 findFunctionByDefinition(FILE_PATH, functionText).then(async loc => {
   console.log('Function location:', loc);
   const functionStartLine = loc?.startLine ?? 0;

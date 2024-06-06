@@ -52,10 +52,9 @@ function useHandlerSourceCode(source?: string, handler?: string) {
     });
     const fetchSourceLocation = async () => {
       try {
-        const pos = await fetch(
-          `http://localhost:8788/v0/source-function?${query.toString()}`,
-          { method: "POST" },
-        ).then((r) => {
+        const pos = await fetch(`/v0/source-function?${query.toString()}`, {
+          method: "POST",
+        }).then((r) => {
           if (!r.ok) {
             throw new Error(
               `Failed to fetch source location from source map: ${r.status}`,
@@ -93,7 +92,7 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
     const fetchAiAnalysis = async () => {
       setLoading(true);
       try {
-        const r = await fetch("http://localhost:8788/v0/analyze-error", {
+        const r = await fetch("/v0/analyze-error", {
           method: "POST",
           body,
         }).then((r) => {
