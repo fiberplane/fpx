@@ -127,7 +127,7 @@ async function getGitHubIssues(
     newGithubIssueSchema
       .extend({
         // extending the default schema to make sure we account for how the github api returns the data
-        pullRequest: z.object({}).passthrough().nullish(), // We only care if the object exists not whatever's inside it
+        pull_request: z.object({}).nullish(),
         html_url: z.string().url(),
         created_at: z.string(),
         updated_at: z.string(),
@@ -145,7 +145,7 @@ async function getGitHubIssues(
           created_at,
           updated_at,
           closed_at,
-          pullRequest,
+          pull_request,
           ...issue
         }) => ({
           ...issue,
@@ -155,7 +155,7 @@ async function getGitHubIssues(
           createdAt: created_at,
           updatedAt: updated_at,
           closedAt: closed_at,
-          type: pullRequest ? ("pull_request" as const) : ("issue" as const),
+          type: pull_request ? ("pull_request" as const) : ("issue" as const),
         }),
       ),
   );
@@ -164,8 +164,6 @@ async function getGitHubIssues(
 
   for await (const response of iterator) {
     const fetchedPage = fetchedIssuesSchema.min(1).safeParse(response.data);
-
-    console.log(fetchedPage);
 
     if (fetchedPage.error) {
       console.log("Failed parsing fetched issues page");
