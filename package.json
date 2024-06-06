@@ -1,7 +1,7 @@
 {
   "name": "fpx",
   "version": "1.0.0",
-  "description": "> Japanese for \"water\"",
+  "description": "Local development debugging interface for Hono apps, powered by OpenTelemetry",
   "scripts": {
     "build:mizu-studio": "npm run clean:mizu-studio && npm run build:api && npm run build:frontend",
     "build:api": "npm run --workspace api build",
