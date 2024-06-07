@@ -9,7 +9,7 @@
     "clean:mizu-studio": "npm run clean:api && npm run clean:frontend",
     "clean:api": "rimraf api/dist",
     "clean:frontend": "rimraf frontend/dist",
-    "format": "biome check . --write",
+    "format": "biome format . --write",
     "lint": "biome lint ."
   },
   "repository": {
