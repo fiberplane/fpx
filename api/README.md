@@ -30,10 +30,10 @@ npm link
 
 # Test it out
 cd /some/random/dir
-npx mizu
+npx --prefer-local mizu
 
 # If you need to use a different port
-MIZU_PORT=8790 npx mizu
+MIZU_PORT=8790 npx --prefer-local mizu
 
 # To unlink afterwards, first find the linked package name (something like @mizu-dev/studio)
 # then use that name in the `npm unlink` command

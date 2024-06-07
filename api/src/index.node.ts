@@ -72,7 +72,7 @@ const server = serve({
 }) as ReturnType<typeof createServer>;
 console.log(`Server is running: http://localhost:${port}`);
 
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({ server, path: "/ws" });
 
 wss.on("connection", (ws) => {
   console.log("WebSocket connection established", ws.OPEN);

@@ -11,6 +11,10 @@ export {
   type MizuTrace,
   isKnownMizuMessage,
   isMizuErrorMessage,
+  isMizuFetchStartMessage,
+  isMizuFetchEndMessage,
+  isMizuFetchErrorMessage,
+  isMizuFetchLoggingErrorMessage,
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "./types";

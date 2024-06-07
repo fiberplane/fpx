@@ -5,14 +5,18 @@ import { drizzle } from "drizzle-orm/libsql";
 import { githubIssues, mizuLogs } from "../src/db/schema";
 config({ path: ".dev.vars" });
 
-const dbUrl = process.env.DATABASE_URL;
+import { DEFAULT_DATABASE_URL } from "../src/constants.js";
 
-if (!dbUrl) {
+// Set the environment vars
+config({ path: ".dev.vars" });
+const databaseUrl = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL;
+
+if (!databaseUrl) {
   console.error("DATABASE_URL not defined");
   process.exit(1);
 }
 
-const db = drizzle(createClient({ url: dbUrl }));
+const db = drizzle(createClient({ url: databaseUrl }));
 
 (async () => {
   const issuesFile = await fs.readFile(
@@ -26,6 +30,8 @@ const db = drizzle(createClient({ url: dbUrl }));
   const issues = JSON.parse(issuesFile);
   const logs = JSON.parse(logsFile);
 
-  await db.insert(githubIssues).values(issues);
-  await db.insert(mizuLogs).values(logs);
+  let { rowsAffected } = await db.insert(githubIssues).values(issues);
+  console.log("Inserted", rowsAffected, "github issues");
+  ({ rowsAffected } = await db.insert(mizuLogs).values(logs));
+  console.log("Inserted", rowsAffected, "logs");
 })();

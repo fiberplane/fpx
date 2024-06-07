@@ -2,6 +2,9 @@ node_modules
 .dev.vars
 .dev.vars.example
 
+# do not publish packed files (from local testing)
+mizu-dev-hono-*.tgz
+
 # do not publish src
 src/*
 

@@ -34,7 +34,7 @@ export function RequestsPage() {
   const query = useMizuTraces();
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:8789");
+    const socket = new WebSocket("/ws");
 
     socket.onopen = () => {
       console.log("Connected to update server");
