@@ -8,6 +8,8 @@ import {
 } from "@tanstack/react-table";
 import { clsx } from "clsx";
 
+import { useKeySequence } from "@/hooks";
+
 import {
   Table,
   TableBody,
@@ -16,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useEffect, useState } from "react";
 
 // Extend the ColumnMeta type to include headerClassName and cellClassName
 //
@@ -67,6 +70,30 @@ export function DataTable<TData, TValue>({
     }),
   });
 
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number>(0);
+  const rows = table.getRowModel().rows;
+  const rowCount = rows.length;
+
+  useKeySequence(["j"], () => {
+    setSelectedRowIndex((prevIndex) =>
+      prevIndex === null || prevIndex === rowCount - 1 ? 0 : prevIndex + 1,
+    );
+  });
+
+  useKeySequence(["k"], () => {
+    setSelectedRowIndex((prevIndex) =>
+      prevIndex === null || prevIndex === 0 ? rowCount - 1 : prevIndex - 1,
+    );
+  });
+
+  useKeySequence(["Enter"], () => {
+    if (selectedRowIndex !== null) {
+      const selectedRow = rows[selectedRowIndex];
+      console.log(selectedRowIndex, selectedRow);
+      handleRowClick?.(selectedRow);
+    }
+  });
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -95,11 +122,12 @@ export function DataTable<TData, TValue>({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row, rowIdx) => (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
                 onClick={() => handleRowClick?.(row)}
+                className={rowIdx === selectedRowIndex ? "bg-gray-100" : ""}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell

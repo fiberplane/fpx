@@ -12,8 +12,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMizuTraces } from "@/queries";
 import { isError } from "react-query";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
+import { useKeySequence } from "@/hooks";
 import { TraceDetails } from "./RequestDetails";
 
 function useRequestDetails(traceId?: string) {
@@ -29,6 +30,12 @@ function useRequestDetails(traceId?: string) {
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
   const { trace } = useRequestDetails(traceId);
+
+  const nav = useNavigate();
+
+  useKeySequence(["Escape"], () => {
+    nav("/requests");
+  });
 
   return (
     <Tabs defaultValue="all">
