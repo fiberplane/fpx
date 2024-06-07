@@ -78,7 +78,10 @@ const MizuTraceSchema = z.object({
   id: z.string(),
   description: z.string(),
   status: z.string(),
+  method: z.string(),
+  path: z.string(),
   duration: z.string(),
+  size: z.number().nonnegative().nullable(),
   logs: z.array(MizuLogSchema),
 });
 

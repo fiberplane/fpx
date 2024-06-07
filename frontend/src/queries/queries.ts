@@ -43,8 +43,11 @@ async function fetchMizuTraces() {
             id: log.traceId,
             description: "",
             status: "",
+            method: "",
+            path: "",
             duration: "",
             logs: [] as Array<MizuLog>,
+            size: null,
           });
         }
         const trace = map.get(log.traceId);
@@ -78,14 +81,27 @@ async function fetchMizuTraces() {
         return comparison;
       });
 
-      trace.duration = "TODO";
+      // We're currently not using the description field, so we may want to remove this
       trace.description = getTraceDescription(trace);
 
       const response = trace.logs.find((l) =>
         isMizuRequestEndMessage(l.message),
       ) as (MizuLog & { message: MizuRequestEnd }) | undefined;
+      const request = trace.logs.find((l) =>
+        isMizuRequestStartMessage(l.message),
+      ) as (MizuLog & { message: MizuRequestStart }) | undefined;
+
       const status = response?.message.status;
       trace.status = typeof status === "string" ? status : "unknown";
+      const size = response?.message.body.length;
+      trace.size = typeof size === "number" ? size : null;
+      const duration = response?.message.elapsed;
+      trace.duration = typeof duration === "string" ? duration : "-";
+
+      const method = request?.message.method;
+      trace.method = typeof method === "string" ? method : "unknown";
+      const path = request?.message.path;
+      trace.path = typeof path === "string" ? path : "unknown";
       traces.push(trace);
     }
 
