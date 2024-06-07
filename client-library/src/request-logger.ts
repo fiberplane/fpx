@@ -100,16 +100,21 @@ export async function log(
     resHeaders[key] = value;
   });
 
+  const isWebSocket = c.res.status === 101;
+
   // Clone the response so the original isn't affected when we read the body
-  let body: string;
-  try {
-    const clonedResponse = c.res.clone();
-    // TODO - Read based off of content-type header
-    body = await clonedResponse.text();
-  } catch (error) {
-    // TODO - Check when this fails
-    console.error("Error reading response body:", error);
-    body = "__COULD_NOT_PARSE_BODY__";
+  let body: string | undefined;
+
+  if (!isWebSocket) {
+    try {
+      const clonedResponse = c.res.clone();
+      // TODO - Read based off of content-type header
+      body = await clonedResponse.text();
+    } catch (error) {
+      // TODO - Check when this fails
+      console.error("Error reading response body:", error);
+      body = "__COULD_NOT_PARSE_BODY__";
+    }
   }
 
   // NOTE - Use errFn (console.error) if the status is 4xx or 5xx
