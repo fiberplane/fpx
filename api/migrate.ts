@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
 
 // We need a fallback for the database url if none is specified
 // This fallback should be the same as in the Hono app
-const databaseUrl = process.env.MIZU_DATABASE_URL ?? DEFAULT_DATABASE_URL;
+const databaseUrl = process.env.FPX_DATABASE_URL ?? DEFAULT_DATABASE_URL;
 const sql = createClient({ url: databaseUrl });
 const db = drizzle(sql);
 

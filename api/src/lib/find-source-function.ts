@@ -161,7 +161,7 @@ export async function findSourceFunction(
   const functionText = `async (c) => {
     const { id: idString } = c.req.param();
     const id = Number.parseInt(idString, 10);
-    const sql2 = zs(process.env.MIZU_DATABASE_URL ?? "");
+    const sql2 = zs(process.env.FPX_DATABASE_URL ?? "");
     const db = drizzle(sql2, { schema: schema_exports });
     const bug = await db.select().from(bugs).where(eq(bugs.id, id));
     return c.json(bug);

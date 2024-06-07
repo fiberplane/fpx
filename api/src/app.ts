@@ -26,7 +26,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   // Lau: similarly adding wsConnections so they can be used in outher modules
   app.use(async (c, next) => {
     const sql = createClient({
-      url: env(c).MIZU_DATABASE_URL ?? DEFAULT_DATABASE_URL,
+      url: env(c).FPX_DATABASE_URL ?? DEFAULT_DATABASE_URL,
     });
     const db = drizzle(sql, { schema });
     c.set("db", db);

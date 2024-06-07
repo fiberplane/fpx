@@ -9,6 +9,6 @@ export default {
   dialect: "sqlite",
   dbCredentials: {
     // biome-ignore lint/style/noNonNullAssertion: we want this to fail if not defined
-    url: process.env.MIZU_DATABASE_URL!,
+    url: process.env.FPX_DATABASE_URL!,
   },
 } satisfies Config;
