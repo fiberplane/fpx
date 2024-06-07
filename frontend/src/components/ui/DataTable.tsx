@@ -77,7 +77,7 @@ export function DataTable<TData, TValue>({
   useEffect(() => {
     rowsRef.current = table.getRowModel().rows;
     selectedRowIdxRef.current = selectedRowIndex;
-  }, [table.getRowModel().rows, selectedRowIndex]);
+  }, [table, selectedRowIndex]);
 
   const handleNextRow = useCallback(() => {
     setSelectedRowIndex((prevIndex) =>
@@ -100,7 +100,7 @@ export function DataTable<TData, TValue>({
       const selectedRow = rowsRef.current[selectedRowIdxRef.current];
       handleRowClick?.(selectedRow);
     }
-  }, [selectedRowIndex]);
+  }, [selectedRowIndex, handleRowClick]);
 
   useKeySequence(["j"], handleNextRow);
   useKeySequence(["k"], handlePrevRow);
