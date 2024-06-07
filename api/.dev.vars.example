@@ -1,1 +1,1 @@
-DATABASE_URL=file:mizu.db
+MIZU_DATABASE_URL=file:mizu.db

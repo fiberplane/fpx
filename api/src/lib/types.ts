@@ -5,7 +5,7 @@ import type { WebSocket } from "ws";
 import type * as schema from "../db/schema.js";
 
 export type Bindings = {
-  DATABASE_URL: string;
+  MIZU_DATABASE_URL: string;
   OPENAI_API_KEY: string;
   GITHUB_TOKEN: string;
 };

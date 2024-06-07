@@ -9,10 +9,10 @@ import { DEFAULT_DATABASE_URL } from "../src/constants.js";
 
 // Set the environment vars
 config({ path: ".dev.vars" });
-const databaseUrl = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL;
+const databaseUrl = process.env.MIZU_DATABASE_URL ?? DEFAULT_DATABASE_URL;
 
 if (!databaseUrl) {
-  console.error("DATABASE_URL not defined");
+  console.error("MIZU_DATABASE_URL not defined");
   process.exit(1);
 }
 
