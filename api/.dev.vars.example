@@ -1,1 +1,1 @@
-MIZU_DATABASE_URL=file:mizu.db
+FPX_DATABASE_URL=file:mizu.db
