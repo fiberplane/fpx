@@ -20,9 +20,9 @@ export function useKeySequence(
     [],
   );
 
-	// this is so we can call the useKeySequence hook multiple times
-	// an alternative would be to have a `useKeySequences([{sequence, callback}])` hook
-	// to register all in one
+  // this is so we can call the useKeySequence hook multiple times
+  // an alternative would be to have a `useKeySequences([{sequence, callback}])` hook
+  // to register all in one
   useEffect(() => {
     sequenceRef.current.push({ sequence, callback });
   }, [sequence, callback]);
