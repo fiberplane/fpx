@@ -21,12 +21,20 @@ export const mizuLogs = sqliteTable("mizu_logs", {
   message: text("message", { mode: "json" }),
   ignored: integer("ignored", { mode: "boolean" }).default(false),
   args: text("args", { mode: "json" }), // NOTE - Should only be present iff message is a string
-  callerLocation: text("caller_location", { mode: "json" }),
+  callerLocation: text("caller_location", { mode: "json" }).$type<
+    z.infer<typeof CallerLocationSchema>
+  >(),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   matchingIssues: text("matching_issues", { mode: "json" }).$type<
     number[] | null
   >(),
+});
+
+const CallerLocationSchema = z.object({
+  file: z.string(),
+  line: z.string(),
+  column: z.string(),
 });
 
 export const githubIssues = sqliteTable("github_issues", {
