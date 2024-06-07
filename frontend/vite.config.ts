@@ -13,6 +13,7 @@ export default defineConfig({
     proxy: {
       // string shorthand: http://localhost:5173/v0 -> http://localhost:8788/v0
       "/v0": "http://localhost:8788",
+      "/ws": "ws://localhost:8788", // shorthand to get websocket working in dev
     },
   },
 });
