@@ -32,6 +32,11 @@ app.get(
       }
     }
 
+    // If there are no matchingIssueId's we can return early
+    if (matchingIssueIds.length === 0) {
+      return ctx.json([]);
+    }
+
     const relevantIssues = z
       .array(schema.githubIssueSchema)
       .default([])
