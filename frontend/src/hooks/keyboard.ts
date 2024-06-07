@@ -40,9 +40,9 @@ export function useKeySequence(
 
       return updatedSequence;
     });
-		// including the deps here would recreate callback whenever the deps change
-		// which is not what we want
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+    // including the deps here would recreate callback whenever the deps change
+    // which is not what we want
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
