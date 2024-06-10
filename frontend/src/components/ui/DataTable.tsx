@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 // Extend the ColumnMeta type to include headerClassName and cellClassName
 //
@@ -80,7 +80,7 @@ export function DataTable<TData, TValue>({
 
       return prevIndex + 1;
     });
-  }, [selectedRowIndex, rows]);
+  }, [rows]);
 
   const handlePrevRow = useCallback(() => {
     setSelectedRowIndex((prevIndex) => {
@@ -88,14 +88,14 @@ export function DataTable<TData, TValue>({
       if (prevIndex - 1 < 0) return prevIndex;
       return prevIndex - 1;
     });
-  }, [selectedRowIndex, rows]);
+  }, []);
 
   const handleRowSelect = useCallback(() => {
     if (selectedRowIndex !== null && rows.length > 0) {
       const selectedRow = rows[selectedRowIndex];
       handleRowClick?.(selectedRow);
     }
-  }, [selectedRowIndex, rows]);
+  }, [selectedRowIndex, rows, handleRowClick]);
 
   useKeySequence(["j"], handleNextRow);
   useKeySequence(["k"], handlePrevRow);
