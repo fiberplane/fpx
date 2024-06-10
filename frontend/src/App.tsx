@@ -6,21 +6,24 @@ import { RequestsPage } from "./pages/RequestsPage/Requests";
 import { ThemeProvider } from "./components/theme-provider";
 
 export function App() {
-	return (
-		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-			<QueryClientProvider client={queryClient}>
-				<Router>
-					<Layout>
-						<Routes>
-							<Route path="/" element={<RequestsPage />} />
-							<Route path="/requests" element={<RequestsPage />} />
-							<Route path="/requests/:traceId" element={<RequestDetailsPage />} />
-						</Routes>
-					</Layout>
-				</Router>
-			</QueryClientProvider>
-		</ThemeProvider>
-	);
+  return (
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<RequestsPage />} />
+              <Route path="/requests" element={<RequestsPage />} />
+              <Route
+                path="/requests/:traceId"
+                element={<RequestDetailsPage />}
+              />
+            </Routes>
+          </Layout>
+        </Router>
+      </QueryClientProvider>
+    </ThemeProvider>
+  );
 }
 
 export default App;
