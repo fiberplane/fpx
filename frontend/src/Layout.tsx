@@ -3,9 +3,11 @@ import {
   DashboardIcon,
   BarChartIcon as LineChart, // FIXME
   MixerHorizontalIcon,
+  MoonIcon,
   CubeIcon as Package,
   LayoutIcon as PanelLeft,
   MagnifyingGlassIcon as Search,
+  SunIcon,
   AvatarIcon as UserIcon,
 } from "@radix-ui/react-icons";
 import type React from "react";
@@ -41,6 +43,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Fragment, type SVGProps, useMemo } from "react";
+import { useTheme } from "./hooks/theme";
 
 const WaveIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
   <svg
@@ -123,6 +126,26 @@ const MizuBreadcrumbs: React.FC = () => {
         )}
       </BreadcrumbList>
     </Breadcrumb>
+  );
+};
+
+const DarkModeToggle = () => {
+  const { theme, setTheme } = useTheme();
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="bg-transparent rounded-full text-gray-400"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+    >
+      <div>
+        {theme === "dark" ? (
+          <SunIcon width={36} height={36} />
+        ) : (
+          <MoonIcon width={36} height={36} />
+        )}
+      </div>
+    </Button>
   );
 };
 
@@ -297,6 +320,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <DarkModeToggle />
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           {children}
