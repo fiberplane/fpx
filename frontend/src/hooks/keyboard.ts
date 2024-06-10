@@ -35,14 +35,16 @@ export function useKeySequence(
         -sequenceRef.current.length,
       );
 
-      if (updatedSequence.join("") === sequenceRef.current.join("")) {
-        callbackRef.current();
-        return [];
-      }
-
       return updatedSequence;
     });
   }, []);
+
+  useEffect(() => {
+    if (keySequence.join("") === sequenceRef.current.join("")) {
+      callbackRef.current();
+      setKeySequence([]);
+    }
+  }, [keySequence]);
 
   useEffect(() => {
     const resetSequence = () => setKeySequence([]);
