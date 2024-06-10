@@ -78,6 +78,8 @@ Issue: https://github.com/honojs/hono/issues/2664
 
 ## HTTPException status ignore ((4.3.7))
 
+> Would need description of the issue from user
+
 Issue: https://github.com/honojs/hono/issues/2707
 
 Possibly Deno only? 
