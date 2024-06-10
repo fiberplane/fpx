@@ -1,5 +1,6 @@
 import type { NeonDbError } from "@neondatabase/serverless";
 import type { Context } from "hono";
+import { replaceFetch } from "./replace-fetch";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
 import {
   errorToJson,
@@ -7,7 +8,9 @@ import {
   generateUUID,
   neonDbErrorToJson,
   polyfillWaitUntil,
+  shouldIgnoreMizuLog,
   shouldPrettifyMizuLog,
+  tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
 } from "./utils";
 
@@ -18,19 +21,34 @@ type Config = {
   /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
   libraryDebugMode?: boolean;
   monitor: {
-    // TODO - implement this control/feature
+    /** Send data to mizu about each fetch call made during a handler's lifetime */
     fetch: boolean;
     // TODO - implement this control/feature
     logging: boolean;
+    /** Send data to mizu about each incoming request and outgoing response */
     requests: boolean;
   };
 };
 
 type CreateConfig = (context: Context) => Config;
 
-export function createHonoMiddleware(options: {
+const defaultCreateConfig = (c: Context) => {
+  return {
+    endpoint: c.env?.MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs",
+    service: c.env?.SERVICE_NAME || "unknown",
+    libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
+    monitor: {
+      fetch: true,
+      logging: true,
+      requests: true,
+    },
+  };
+};
+
+export function createHonoMiddleware(options?: {
   createConfig: CreateConfig;
 }) {
+  const createConfig = options?.createConfig ?? defaultCreateConfig;
   return async function honoMiddleware(c: Context, next: () => Promise<void>) {
     const {
       endpoint,
@@ -38,10 +56,11 @@ export function createHonoMiddleware(options: {
       libraryDebugMode,
       monitor: {
         fetch: monitorFetch,
-        logging: monitorLogging,
+        // TODO - implement these controls/features
+        // logging: monitorLogging,
         requests: monitorRequests,
       },
-    } = options.createConfig(c);
+    } = createConfig(c);
     const ctx = c.executionCtx;
 
     // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs
@@ -49,6 +68,13 @@ export function createHonoMiddleware(options: {
     polyfillWaitUntil(ctx);
 
     const teardownFunctions: Array<() => void> = [];
+
+    const { originalFetch, undo: undoReplaceFetch } = replaceFetch({
+      skipMonkeyPatch: !monitorFetch,
+    });
+    // We need to undo our monkeypatching since workers can operate in a shared environment
+    // This is similar to how we need to undo our monkeypatching of `console.*` methods (see HACK comment below)
+    teardownFunctions.push(undoReplaceFetch);
 
     // TODO - (future) Take the traceId from headers but then fall back to uuid here?
     const traceId = generateUUID();
@@ -91,7 +117,10 @@ export function createHonoMiddleware(options: {
           timestamp,
         };
         ctx.waitUntil(
-          fetch(endpoint, {
+          // Use `originalFetch` to avoid an infinite loop of logging to mizu
+          // If we use our monkeyPatched version, then each fetch logs to mizu,
+          // which triggers another fetch to log to mizu, etc.
+          originalFetch(endpoint, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -99,17 +128,39 @@ export function createHonoMiddleware(options: {
             body: JSON.stringify(payload),
           }),
         );
+
         const applyArgs = args?.length ? [message, ...args] : [message];
+
+        // To explain the use of this `shouldIgnoreMizuLog` function a bit more:
+        //
+        // The middleware itself uses `console.log` and `console.error` to send logs to mizu.
+        //
+        // Specifically, it does this in the monkeypatched version of `fetch`.
+        //
+        // So, we want to short circuit those logs and not actually print them to the user's console
+        // Otherwise, things get realllyyyy noisy.
+        //
+        if (shouldIgnoreMizuLog(applyArgs)) {
+          return;
+        }
+
         if (!libraryDebugMode && shouldPrettifyMizuLog(applyArgs)) {
-          // HACK - Try parsing the message as json and extracting all the fields we care about logging prettily
-          tryPrettyPrintLoggerLog(originalConsoleMethod, message);
+          // Optionally log a link to the mizu dashboard for the "response" log
+          const linkToMizuUi = tryCreateFriendlyLink({
+            message,
+            traceId,
+            mizuEndpoint: endpoint,
+          });
+
+          // Try parsing the message as json and extracting all the fields we care about logging prettily
+          tryPrettyPrintLoggerLog(originalConsoleMethod, message, linkToMizuUi);
         } else {
           originalConsoleMethod.apply(originalConsoleMethod, applyArgs);
         }
       };
     }
 
-    if (monitorFetch) {
+    if (monitorRequests) {
       await log(c, next);
     } else {
       await next();

@@ -1,10 +1,8 @@
+
 ## Running mizu
 
 ```sh
 npm install
-
-# NOTE - Before running db migrations, you need to follow the instructions in `Configuring Neon (the Database)`
-
 npm run db:generate
 npm run db:migrate
 
@@ -20,10 +18,38 @@ npm run dev
 - Add it to `.dev.vars`
 - Voilà
 
-## Otlp (NOT IMPLEMENTED)
+## Publishing
 
-This would be how to run an otel collector with the config file in this repo:
+### Testing npx command locally
 
 ```sh
-docker run -v $(pwd)/config.yaml:/etc/otelcol-contrib/config.yaml otel/opentelemetry-collector-contrib:0.100.0
+# From the fpx PROJECT ROOT!
+npm run build:mizu-studio
+cd api
+npm link
+
+# Test it out
+cd /some/random/dir
+npx --prefer-local mizu
+
+# If you need to use a different port
+MIZU_PORT=8790 npx --prefer-local mizu
+
+# To unlink afterwards, first find the linked package name (something like @mizu-dev/studio)
+# then use that name in the `npm unlink` command
+npm ls -g --depth=0 --link=true
+npm unlink $NAME_OF_THIS_PACKAGE -g
+```
+
+### Officially publishing
+
+```sh
+# ***Start in the fpx project root!***
+npm run build:mizu-studio
+cd api
+npm publish
+
+# Then test like this
+cd /some/random/dir
+npx @mizu-dev/studio
 ```

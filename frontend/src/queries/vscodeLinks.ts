@@ -22,26 +22,40 @@ export async function getVSCodeLinkFromError(errorDetails: { stack: string }) {
 /**
  * NOTE - Only works when running api with `npm run node:dev`
  */
-export async function getVSCodeLinkFromCallerLocation(callerLocation: { file: string; line: string; column: string }) {
+export async function getVSCodeLinkFromCallerLocation(callerLocation: {
+  file: string;
+  line: string;
+  column: string;
+}) {
   const source = callerLocation.file.replace(/^file:\/\//, "");
   const sourceMapLocation = `${source}.map`;
-  const pos = await fetchPositionFromSourceMap(sourceMapLocation, callerLocation.line, callerLocation.column);
+  const pos = await fetchPositionFromSourceMap(
+    sourceMapLocation,
+    callerLocation.line,
+    callerLocation.column,
+  );
   const vscodeLink = `vscode://file/${pos.source}:${pos.line}:${pos.column}`;
   return vscodeLink;
 }
 
-async function fetchPositionFromSourceMap(sourceMapLocation: string, line: string, column: string) {
+async function fetchPositionFromSourceMap(
+  sourceMapLocation: string,
+  line: string,
+  column: string,
+) {
   const query = new URLSearchParams({
     source: sourceMapLocation,
     line: line,
-    column: column
+    column: column,
   });
   try {
-    const pos = await fetch(`http://localhost:8788/v0/source?${query.toString()}`).then(r => {
+    const pos = await fetch(`/v0/source?${query.toString()}`).then((r) => {
       if (!r.ok) {
-        throw new Error(`Failed to fetch source location from source map: ${r.status}`);
+        throw new Error(
+          `Failed to fetch source location from source map: ${r.status}`,
+        );
       }
-      return r.json()
+      return r.json();
     });
     return pos;
   } catch (err) {
@@ -55,7 +69,11 @@ function parseStackTrace(stack: string) {
   const regex = /file:\/\/(\/[\w\-. /]+):(\d+):(\d+)/;
   // TODO - skip `neon` when looking for match - could not get this regex to work
   // const regex = /at (?!(neon\b))[^(\n]+ \(?(file:\/\/[^:]+):(\d+):(\d+)\)?/;
-  const stackLines = stack.split("\n").filter(l => /^\s+at/.test(l)).map(l => l.trim()).filter(l => !l.startsWith("at neon"))
+  const stackLines = stack
+    .split("\n")
+    .filter((l) => /^\s+at/.test(l))
+    .map((l) => l.trim())
+    .filter((l) => !l.startsWith("at neon"));
 
   // Attempt to match the regex pattern against the provided stack trace
   let match;
@@ -74,8 +92,8 @@ function parseStackTrace(stack: string) {
     const [, source, line, column] = match;
     return {
       source,
-      line: parseInt(line, 10),
-      column: parseInt(column, 10)
+      line: Number.parseInt(line, 10),
+      column: Number.parseInt(column, 10),
     };
   } else {
     // Return null or throw an error if no match is found

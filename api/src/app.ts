@@ -1,31 +1,32 @@
-import { Hono } from "hono";
-import { env } from "hono/adapter";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
+import { Hono } from "hono";
+import { env } from "hono/adapter";
+import { logger } from "hono/logger";
 import type { WebSocket } from "ws";
 
-import * as schema from "./db/schema";
-import { Bindings, Variables } from "./lib/types";
-import logs from "./routes/logs";
-import openai from "./routes/openai";
-import source from "./routes/source";
-import { logger } from "hono/logger";
-import dependencies from "./routes/dependencies";
-import issues from "./routes/issues";
+import { DEFAULT_DATABASE_URL } from "./constants.js";
+import * as schema from "./db/schema.js";
+import type { Bindings, Variables } from "./lib/types.js";
+import dependencies from "./routes/dependencies.js";
+import issues from "./routes/issues.js";
+import logs from "./routes/logs.js";
+import openai from "./routes/openai.js";
+import source from "./routes/source.js";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-  // biome-ignore lint/suspicious/noExplicitAny:
   // this is a bucket of any kind of errors that we just want to log
   // and make available on a route
+  // biome-ignore lint/suspicious/noExplicitAny: this is a bucket of any kind of errors that we just want to log
   const DB_ERRORS: Array<any> = [];
 
   // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
   // Lau: similarly adding wsConnections so they can be used in outher modules
   app.use(async (c, next) => {
     const sql = createClient({
-      url: env(c).DATABASE_URL,
+      url: env(c).FPX_DATABASE_URL ?? DEFAULT_DATABASE_URL,
     });
     const db = drizzle(sql, { schema });
     c.set("db", db);

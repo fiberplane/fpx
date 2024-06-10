@@ -1,11 +1,11 @@
+import { zValidator } from "@hono/zod-validator";
+import { desc, inArray, ne } from "drizzle-orm";
 import { Hono } from "hono";
-import { Bindings, Variables } from "@/lib/types";
-import * as schema from "@/db/schema";
-import { inArray, ne, desc } from "drizzle-orm";
-import { tryParseJsonObjectMessage } from "@/lib/utils";
 import { cors } from "hono/cors";
 import { z } from "zod";
-import { zValidator } from "@hono/zod-validator";
+import * as schema from "../db/schema.js";
+import type { Bindings, Variables } from "../lib/types.js";
+import { tryParseJsonObjectMessage } from "../lib/utils.js";
 
 const { mizuLogs } = schema;
 

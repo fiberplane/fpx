@@ -2,6 +2,8 @@ import type { NeonDbError } from "@neondatabase/serverless";
 
 // HACK - We inject this symbol in our request/response logger in order to skip logging massive payloads
 export const PRETTIFY_MIZU_LOGGER_LOG = Symbol("PRETTIFY_MIZU_LOGGER_LOG");
+// HACK - We inject this symbol in our request/response logger to avoid infintie loop of logging on fetches
+export const IGNORE_MIZU_LOGGER_LOG = Symbol("IGNORE_MIZU_LOGGER_LOG");
 
 export type ExtendedExecutionContext = ExecutionContext & {
   __waitUntilTimer?: ReturnType<typeof setInterval>;
@@ -11,7 +13,15 @@ export type ExtendedExecutionContext = ExecutionContext & {
 
 export type PrintFunc = (str: string, ...rest: unknown[]) => void;
 
-export function tryPrettyPrintLoggerLog(fn: PrintFunc, message: string) {
+/**
+ * Prints a log for requests and responses
+ * If a `linkToMizuUi` is provided, it will be printed as well
+ */
+export function tryPrettyPrintLoggerLog(
+  fn: PrintFunc,
+  message: string,
+  linkToMizuUi?: string,
+) {
   try {
     const requestOrResponse = JSON.parse(message);
     const lifecycle = requestOrResponse?.lifecycle;
@@ -29,8 +39,14 @@ export function tryPrettyPrintLoggerLog(fn: PrintFunc, message: string) {
     if (out) {
       fn.apply(fn, [out]);
     }
-  } catch (error) {
-    // Fail silently
+
+    if (linkToMizuUi) {
+      fn.apply(fn, [linkToMizuUi]);
+    }
+  } catch {
+    // Fail silently for now
+    // TODO - We should log something because this branch might be reached
+    //        if things were not set up correctly
   }
 }
 
@@ -145,3 +161,49 @@ export function extractCallerLocation(callerLineFromStackTrace?: string) {
 
 export const shouldPrettifyMizuLog = (printFnArgs: unknown[]) =>
   printFnArgs?.[1] === PRETTIFY_MIZU_LOGGER_LOG;
+
+export const shouldIgnoreMizuLog = (printFnArgs: unknown[]) =>
+  printFnArgs?.[1] === IGNORE_MIZU_LOGGER_LOG;
+
+export function getBaseUrl(url: string): string | null {
+  try {
+    const { protocol, host } = new URL(url);
+    return `${protocol}//${host}`;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Utility can be used to determine if a message is a final event in a request/response lifecycle
+ * As of writing, this means the `lifecycle` property of the message is "response"
+ */
+function isMessageFinalEvent(message: string) {
+  try {
+    const parsed = JSON.parse(message);
+    return parsed?.lifecycle === "response";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Create a friendly link to the mizu dashboard, but only for the final `response` log.
+ *
+ * Returns undefined for all other messages.
+ */
+export function tryCreateFriendlyLink({
+  mizuEndpoint,
+  traceId,
+  message,
+}: { mizuEndpoint: string; message: string; traceId: string }) {
+  let friendlyLink: undefined | string;
+  if (isMessageFinalEvent(message)) {
+    // NOTE - host should be 5173 locally, but when the package is distributed
+    //        we need to use whatever MIZU_ENDPOINT host is
+    const baseUrl = getBaseUrl(mizuEndpoint);
+    friendlyLink = `Inspect in Mizu: ${baseUrl}/requests/${traceId}`;
+  }
+
+  return friendlyLink;
+}

@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { MiddlewareHandler, RouterRoute } from "hono/types";
+import type { RouterRoute } from "hono/types";
 import { getPath } from "hono/utils/url";
 
 export const RECORDED_CONSOLE_METHODS = [
@@ -101,9 +101,9 @@ export async function log(
   });
 
   // Clone the response so the original isn't affected when we read the body
-  const clonedResponse = c.res.clone();
   let body: string;
   try {
+    const clonedResponse = c.res.clone();
     // TODO - Read based off of content-type header
     body = await clonedResponse.text();
   } catch (error) {

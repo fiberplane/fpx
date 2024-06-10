@@ -1,6 +1,4 @@
-import {
-  MoonIcon,
-} from "@radix-ui/react-icons"
+import { MoonIcon } from "@radix-ui/react-icons";
 
 import {
   Card,
@@ -9,27 +7,22 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import { useMizuTraces } from "@/queries"
-import { isError } from "react-query"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMizuTraces } from "@/queries";
+import { isError } from "react-query";
 import { useParams } from "react-router-dom";
 
 import { TraceDetails } from "./RequestDetails";
 
 function useRequestDetails(traceId?: string) {
   const query = useMizuTraces();
-  const trace = traceId ? query.data?.find(t => t.id === traceId) : undefined;
+  const trace = traceId ? query.data?.find((t) => t.id === traceId) : undefined;
   return {
     isLoading: query.isLoading,
     isError: isError(query),
-    trace
+    trace,
   };
 }
 
@@ -57,7 +50,9 @@ export function RequestDetailsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {trace ? <TraceDetails trace={trace} /> : (
+            {trace ? (
+              <TraceDetails trace={trace} />
+            ) : (
               <div className="flex items-center justify-center h-32">
                 <MoonIcon className="w-8 h-8 text-gray-400" />
                 <span className="ml-2 text-gray-400">No logs found</span>
@@ -67,11 +62,10 @@ export function RequestDetailsPage() {
           <CardFooter>
             {trace?.logs?.length ? (
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{trace?.logs?.length}</strong> of <strong>{trace?.logs?.length}</strong>{" "}
-                events
+                Showing <strong>1-{trace?.logs?.length}</strong> of{" "}
+                <strong>{trace?.logs?.length}</strong> events
               </div>
             ) : null}
-
           </CardFooter>
         </Card>
       </TabsContent>
@@ -83,18 +77,17 @@ export function RequestDetailsPage() {
               View requests that had any error logs
             </CardDescription>
           </CardHeader>
-          <CardContent>
-          </CardContent>
+          <CardContent />
           <CardFooter>
             {trace?.logs?.length ? (
               <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{trace?.logs?.length}</strong> of <strong>{trace?.logs?.length}</strong>{" "}
-                events
+                Showing <strong>1-{trace?.logs?.length}</strong> of{" "}
+                <strong>{trace?.logs?.length}</strong> events
               </div>
             ) : null}
           </CardFooter>
         </Card>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

@@ -1,11 +1,11 @@
 // Only using for global types
 
-import { LibSQLDatabase } from "drizzle-orm/libsql";
-import * as schema from "@/db/schema";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { WebSocket } from "ws";
+import type * as schema from "../db/schema.js";
 
 export type Bindings = {
-  DATABASE_URL: string;
+  FPX_DATABASE_URL: string;
   OPENAI_API_KEY: string;
   GITHUB_TOKEN: string;
 };
@@ -13,6 +13,6 @@ export type Bindings = {
 export type Variables = {
   db: LibSQLDatabase<typeof schema>;
   wsConnections: Set<WebSocket>;
+  // biome-ignore lint/suspicious/noExplicitAny:
   dbErrors: Array<any>;
 };
-
