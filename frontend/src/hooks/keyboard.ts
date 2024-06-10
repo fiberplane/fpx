@@ -16,16 +16,14 @@ export function useKeySequence(
 ) {
   const [keySequence, setKeySequence] = useState<string[]>([]);
   const timeoutRef = useRef<number | undefined>(undefined);
-  const sequenceRef = useRef<{ sequence: string[]; callback: () => void }[]>(
-    [],
-  );
+  const callbackRef = useRef(callback);
 
   // this is so we can call the useKeySequence hook multiple times
   // an alternative would be to have a `useKeySequences([{sequence, callback}])` hook
   // to register all in one
   useEffect(() => {
-    sequenceRef.current.push({ sequence, callback });
-  }, [sequence, callback]);
+    callbackRef.current = callback;
+  }, [callback]);
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     setKeySequence((prevKeySequence) => {
@@ -34,7 +32,7 @@ export function useKeySequence(
       );
 
       if (updatedSequence.join("") === sequence.join("")) {
-        callback();
+        callbackRef.current();
         return [];
       }
 
