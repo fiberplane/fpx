@@ -17,30 +17,31 @@ export function useKeySequence(
   const [keySequence, setKeySequence] = useState<string[]>([]);
   const timeoutRef = useRef<number | undefined>(undefined);
   const callbackRef = useRef(callback);
+  const sequenceRef = useRef(sequence);
 
-  // this is so we can call the useKeySequence hook multiple times
-  // an alternative would be to have a `useKeySequences([{sequence, callback}])` hook
-  // to register all in one
+  // ensure that the callback and sequence are updated when they change
+  useEffect(() => {
+    sequenceRef.current = sequence;
+  }, [sequence]);
+
   useEffect(() => {
     callbackRef.current = callback;
   }, [callback]);
 
+  // create and persist the callback across re-renders
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     setKeySequence((prevKeySequence) => {
       const updatedSequence = [...prevKeySequence, event.key].slice(
-        -sequence.length,
+        -sequenceRef.current.length,
       );
 
-      if (updatedSequence.join("") === sequence.join("")) {
+      if (updatedSequence.join("") === sequenceRef.current.join("")) {
         callbackRef.current();
         return [];
       }
 
       return updatedSequence;
     });
-    // including the deps here would recreate callback whenever the deps change
-    // which is not what we want
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
