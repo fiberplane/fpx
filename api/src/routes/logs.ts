@@ -37,41 +37,39 @@ const schemaPostLogs = z.object({
 
 app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
   const routeInspectorHeader = ctx.req.header("X-Fpx-Route-Inspector");
-  if (routeInspectorHeader) {
-    // parse routes and insert them into the database
-    const { routes } = ctx.req.valid("json");
-
-    if (routes.length > 0) {
-      const db = ctx.get("db");
-      const dbErrors = ctx.get("dbErrors");
-      try {
-        for (const route of routes) {
-          await db
-            .insert(appRoutes)
-            .values(route)
-            .onConflictDoUpdate({
-              target: [appRoutes.path, appRoutes.method],
-              set: { handler: route.handler },
-            });
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          console.log("DB ERROR FOR:", { routes }, error);
-          dbErrors.push(error);
-        }
-      }
-    }
-
-    return ctx.text("OK");
-  }
-  const { level, service, message, args, traceId, callerLocation, timestamp } =
-    ctx.req.valid("json");
+  const {
+    level,
+    service,
+    message,
+    args,
+    traceId,
+    callerLocation,
+    timestamp,
+    routes,
+  } = ctx.req.valid("json");
 
   const db = ctx.get("db");
   const dbErrors = ctx.get("dbErrors");
   const parsedMessage = tryParseJsonObjectMessage(message);
 
   try {
+    if (routes.length > 0) {
+      for (const route of routes) {
+        await db
+          .insert(appRoutes)
+          .values(route)
+          .onConflictDoUpdate({
+            target: [appRoutes.path, appRoutes.method],
+            set: { handler: route.handler },
+          });
+      }
+    }
+
+    if (routeInspectorHeader) {
+      // header indicates this is a route probe so we return early
+      return ctx.text("OK");
+    }
+
     // Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
     const mizuLevel = level === "log" ? "info" : level;
     await db.insert(mizuLogs).values({
