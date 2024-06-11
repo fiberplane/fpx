@@ -45,8 +45,15 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
       const db = ctx.get("db");
       const dbErrors = ctx.get("dbErrors");
       try {
-				// FIXME: deduplicate and adjudicate the source of truth for routes
-        await db.insert(appRoutes).values(routes);
+        for (const route of routes) {
+          await db
+            .insert(appRoutes)
+            .values(route)
+            .onConflictDoUpdate({
+              target: [appRoutes.path, appRoutes.method],
+              set: { handler: route.handler },
+            });
+        }
       } catch (error) {
         if (error instanceof Error) {
           console.log("DB ERROR FOR:", { routes }, error);
