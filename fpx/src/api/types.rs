@@ -1,6 +1,7 @@
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use typeshare::typeshare;
 
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
@@ -141,8 +142,9 @@ impl From<RequestAdded> for ServerMessage {
 
 /// A request that has been captured by fpx.
 #[derive(Clone, Serialize, Deserialize)]
+#[typeshare]
 pub struct Request {
-    pub id: i64,
+    pub id: u32,
     pub method: String,
     pub url: String,
     pub body: Option<String>,
@@ -151,7 +153,7 @@ pub struct Request {
 
 impl Request {
     pub fn new(
-        id: i64,
+        id: u32,
         method: String,
         url: String,
         body: String,

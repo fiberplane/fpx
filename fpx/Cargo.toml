@@ -7,7 +7,7 @@ license = { workspace = true }
 repository = { workspace = true }
 
 [dependencies]
-anyhow = { version = "1.0" }
+anyhow = { workspace = true }
 async-trait = { version = "0.1" }
 axum = { version = "0.7", features = [
     "http1",
@@ -16,7 +16,7 @@ axum = { version = "0.7", features = [
     "tokio",
     "query",
 ] }
-clap = { version = "4.0", features = ["derive", "env"] }
+clap = { workspace = true, features = ["derive", "env"] }
 futures-util = { version = "0.3" }
 http = { version = "1.1" }
 http-body-util = { version = "0.1" }
@@ -45,4 +45,5 @@ toml = { version = "0.8" }
 tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.24" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+typeshare = { workspace = true }
 url = { version = "2.5" }

@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["fpx"]
+members = ["fpx", "xtask"]
+default-members = ["fpx"]
 
 [workspace.package]
 authors = ["Fiberplane <info@fiberplane.com>"]
@@ -8,3 +9,9 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/fiberplane/fpx"
 
 [workspace.dependencies]
+anyhow = { version = "1.0" }
+clap = { version = "4.0", features = ["derive", "env"] }
+tokio = { version = "1.37", features = ["rt-multi-thread", "signal"] }
+tracing = { version = "0.1" }
+typeshare = { version = "1.0" }
+url = { version = "2.5" }
