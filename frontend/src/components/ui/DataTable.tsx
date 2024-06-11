@@ -130,34 +130,31 @@ export function DataTable<TData, TValue>({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, rowIdx) => {
-              // console.log("row", row.getIsSelected(), row.id)
-              return (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  onClick={() => handleRowClick?.(row)}
-                  onMouseEnter={() => setSelectedRowIndex(rowIdx)}
-                  onMouseLeave={() => setSelectedRowIndex(null)}
-                  className={`${rowIdx === selectedRowIndex ? "bg-muted/50" : ""} transition-none`}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={clsx(
-                        "py-1",
-                        cell.column.columnDef.meta?.cellClassName,
-                      )}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              );
-            })
+            table.getRowModel().rows.map((row, rowIdx) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                onClick={() => handleRowClick?.(row)}
+                onMouseEnter={() => setSelectedRowIndex(rowIdx)}
+                onMouseLeave={() => setSelectedRowIndex(null)}
+                className={clsx(
+                  { "bg-muted/50": rowIdx === selectedRowIndex },
+                  "transition-none",
+                )}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell
+                    key={cell.id}
+                    className={clsx(
+                      "py-1",
+                      cell.column.columnDef.meta?.cellClassName,
+                    )}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
           ) : (
             <TableRow>
               <TableCell
