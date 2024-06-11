@@ -279,7 +279,7 @@ export const GitHubIssueSchema = z.object({
   labels: z.array(GitHubLabelSchema),
   createdAt: z.string(),
   updatedAt: z.string(),
-  closedAt: z.string(),
+  closedAt: z.string().nullable(),
 });
 
 export const GitHubIssuesSchema = z.array(GitHubIssueSchema);

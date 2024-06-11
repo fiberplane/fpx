@@ -14,8 +14,9 @@ import { useMizuTraces } from "@/queries";
 import { isError } from "react-query";
 import { useParams } from "react-router-dom";
 
-import { RelatedIssue } from "./RelatedIssue";
+import { RelatedIssueCounter } from "./RelatedIssueCounter";
 import { TraceDetails } from "./RequestDetails";
+import { RelatedIssueContent } from "./RelatedIssueContent";
 
 function useRequestDetails(traceId?: string) {
   const query = useMizuTraces();
@@ -34,10 +35,16 @@ export function RequestDetailsPage() {
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
-        {traceId && <RelatedIssue traceId={traceId} />}
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="error">Errors</TabsTrigger>
+          <TabsTrigger value="issues" className="relative">Related issues
+            {traceId &&
+              <div className="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -top-2 -end-2 dark:border-gray-900">
+                <RelatedIssueCounter traceId={traceId} />
+              </div>
+            }
+          </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
           {/* TODO - Add global table action buttons? */}
@@ -90,6 +97,9 @@ export function RequestDetailsPage() {
           </CardFooter>
         </Card>
       </TabsContent>
-    </Tabs>
+      <TabsContent value="issues">
+        {traceId && <RelatedIssueContent traceId={traceId} />}
+      </TabsContent>
+    </Tabs >
   );
 }
