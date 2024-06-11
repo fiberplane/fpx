@@ -1,5 +1,5 @@
 import type { NeonDbError } from "@neondatabase/serverless";
-import type { Context } from "hono";
+import type { Context, Hono } from "hono";
 import { replaceFetch } from "./replace-fetch";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
 import {
@@ -45,9 +45,12 @@ const defaultCreateConfig = (c: Context) => {
   };
 };
 
-export function createHonoMiddleware(options?: {
-  createConfig: CreateConfig;
-}) {
+export function createHonoMiddleware(
+  app?: Hono,
+  options?: {
+    createConfig: CreateConfig;
+  },
+) {
   const createConfig = options?.createConfig ?? defaultCreateConfig;
   return async function honoMiddleware(c: Context, next: () => Promise<void>) {
     const {
@@ -62,6 +65,13 @@ export function createHonoMiddleware(options?: {
       },
     } = createConfig(c);
     const ctx = c.executionCtx;
+
+    if (!app) {
+      // Logging here before we patch the console.* methods so we don't cause trouble
+      console.log(
+        "Hono object was not provided to createHonoMiddleware, skipping route inspection...",
+      );
+    }
 
     // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs
     //         https://github.com/highlight/highlight/pull/6480
@@ -107,6 +117,16 @@ export function createHonoMiddleware(options?: {
           message = JSON.stringify(errorToJson(message));
         }
 
+        const routeInspectorHeader = c.req.header("X-Fpx-Route-Inspector");
+
+        const routes = app
+          ? app?.routes.map((route) => ({
+              method: route.method,
+              path: route.path,
+              handler: route.handler.toString(),
+            }))
+          : [];
+
         const payload = {
           level,
           traceId,
@@ -115,16 +135,22 @@ export function createHonoMiddleware(options?: {
           args,
           callerLocation,
           timestamp,
+          routes,
         };
+
+        const headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        if (routeInspectorHeader) {
+          headers.append("X-Fpx-Route-Inspector", "enabled");
+        }
+
         ctx.waitUntil(
           // Use `originalFetch` to avoid an infinite loop of logging to mizu
           // If we use our monkeyPatched version, then each fetch logs to mizu,
           // which triggers another fetch to log to mizu, etc.
           originalFetch(endpoint, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers,
             body: JSON.stringify(payload),
           }),
         );
