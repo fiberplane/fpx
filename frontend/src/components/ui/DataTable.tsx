@@ -1,3 +1,4 @@
+import { useHandler } from "@fiberplane/hooks";
 import {
   type ColumnDef,
   type Row,
@@ -18,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 // Extend the ColumnMeta type to include headerClassName and cellClassName
 //
@@ -73,29 +74,29 @@ export function DataTable<TData, TValue>({
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const rows = table.getRowModel().rows;
 
-  const handleNextRow = useCallback(() => {
+  const handleNextRow = useHandler(() => {
     setSelectedRowIndex((prevIndex) => {
       if (prevIndex === null) return 0;
       if (prevIndex + 1 >= rows.length) return prevIndex;
 
       return prevIndex + 1;
     });
-  }, [rows]);
+  });
 
-  const handlePrevRow = useCallback(() => {
+  const handlePrevRow = useHandler(() => {
     setSelectedRowIndex((prevIndex) => {
       if (prevIndex === null) return 0;
       if (prevIndex - 1 < 0) return prevIndex;
       return prevIndex - 1;
     });
-  }, []);
+  });
 
-  const handleRowSelect = useCallback(() => {
+  const handleRowSelect = useHandler(() => {
     if (selectedRowIndex !== null && rows.length > 0) {
       const selectedRow = rows[selectedRowIndex];
       handleRowClick?.(selectedRow);
     }
-  }, [selectedRowIndex, rows, handleRowClick]);
+  });
 
   useKeySequence(["j"], handleNextRow);
   useKeySequence(["k"], handlePrevRow);
