@@ -450,7 +450,7 @@ const ErrorLog = ({
           </div>
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
-            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+            <div className="mt-2 max-h-[200px] overflow-y-scroll bg-muted hover:text-gray-700 ">
               {messagePayload.stack}
             </div>
           </CollapsibleContent>
@@ -472,7 +472,7 @@ const InfoLog = ({ log }: { log: MizuLog }) => {
         description={""}
       />
       <div className="mt-2 font-sans">{description}</div>
-      <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+      <div className="mt-2 max-h-[200px] overflow-y-scroll bg-muted hover:text-gray-700 ">
         {JSON.stringify(log.args, null, 2)}
       </div>
 
@@ -600,10 +600,10 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
                   KeyValueSchema.safeParse(value).data;
                 return (
                   <div key={key}>
-                    <div className="font-mono font-semibold text-gray-600">
+                    <div className="font-mono font-semibold text-current">
                       {key}
                     </div>
-                    <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
+                    <div className="font-sans text-secondary-foreground max-h-[200px] overflow-y-auto mt-1">
                       {keyValue ? (
                         <EnvGrid env={keyValue} />
                       ) : (
