@@ -1,3 +1,4 @@
+import { useHandler } from "@fiberplane/hooks";
 import {
   type ColumnDef,
   type Row,
@@ -8,6 +9,8 @@ import {
 } from "@tanstack/react-table";
 import { clsx } from "clsx";
 
+import { useKeySequence } from "@/hooks";
+
 import {
   Table,
   TableBody,
@@ -16,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useState } from "react";
 
 // Extend the ColumnMeta type to include headerClassName and cellClassName
 //
@@ -67,6 +71,37 @@ export function DataTable<TData, TValue>({
     }),
   });
 
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const rows = table.getRowModel().rows;
+
+  const handleNextRow = useHandler(() => {
+    setSelectedRowIndex((prevIndex) => {
+      if (prevIndex === null) return 0;
+      if (prevIndex + 1 >= rows.length) return prevIndex;
+
+      return prevIndex + 1;
+    });
+  });
+
+  const handlePrevRow = useHandler(() => {
+    setSelectedRowIndex((prevIndex) => {
+      if (prevIndex === null) return 0;
+      if (prevIndex - 1 < 0) return prevIndex;
+      return prevIndex - 1;
+    });
+  });
+
+  const handleRowSelect = useHandler(() => {
+    if (selectedRowIndex !== null && rows.length > 0) {
+      const selectedRow = rows[selectedRowIndex];
+      handleRowClick?.(selectedRow);
+    }
+  });
+
+  useKeySequence(["j"], handleNextRow);
+  useKeySequence(["k"], handlePrevRow);
+  useKeySequence(["Enter"], handleRowSelect);
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -95,11 +130,17 @@ export function DataTable<TData, TValue>({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row, rowIdx) => (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
                 onClick={() => handleRowClick?.(row)}
+                onMouseEnter={() => setSelectedRowIndex(rowIdx)}
+                onMouseLeave={() => setSelectedRowIndex(null)}
+                className={clsx(
+                  { "bg-muted/50": rowIdx === selectedRowIndex },
+                  "transition-none",
+                )}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell

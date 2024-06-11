@@ -4,7 +4,7 @@ import {
   TrashIcon,
   // ListBulletIcon as ListFilter, // FIXME
 } from "@radix-ui/react-icons";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
 
@@ -29,6 +29,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type MizuTrace, useMizuTraces } from "@/queries";
+import { Row } from "@tanstack/react-table";
 import { columns } from "./columns";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
@@ -48,11 +49,18 @@ const RequestsTable = ({
     );
   }, [traces, filter]);
 
+  const handleRowClick = useCallback(
+    (row: Row<MizuTrace>) => {
+      navigate(`/requests/${row.id}`);
+    },
+    [navigate],
+  );
+
   return (
     <DataTable
       columns={columns}
       data={filteredTraces ?? []}
-      handleRowClick={(row) => navigate(`/requests/${row.id}`)}
+      handleRowClick={handleRowClick}
     />
   );
 };
