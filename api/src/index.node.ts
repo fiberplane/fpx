@@ -72,8 +72,26 @@ const server = serve({
 }) as ReturnType<typeof createServer>;
 console.log(`Server is running: http://localhost:${port}`);
 
-const wss = new WebSocketServer({ server, path: "/ws" });
+const targetPort = +(process.argv[2] ?? 8787); // default to 8787 (Cloudflare workers)
+console.log(`Firing off a router probe on port ${targetPort}...`);
+async function routerProbe() {
+  const headers = new Headers();
+  headers.append("X-Fpx-Route-Inspector", "enabled");
+  return await fetch("http://localhost:8787/", {
+    method: "GET",
+    headers,
+  });
+}
 
+routerProbe()
+  .then(() => {
+    console.log("Router probe successful");
+  })
+  .catch(() => {
+    console.log("Router probe failed");
+  });
+
+const wss = new WebSocketServer({ server, path: "/ws" });
 wss.on("connection", (ws) => {
   console.log("WebSocket connection established", ws.OPEN);
   wsConnections.add(ws);
