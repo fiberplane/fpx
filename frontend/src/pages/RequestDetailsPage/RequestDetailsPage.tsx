@@ -31,10 +31,10 @@ export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
   const { trace } = useRequestDetails(traceId);
 
-  const nav = useNavigate();
+  const navigate = useNavigate();
 
   useKeySequence(["Escape"], () => {
-    nav("/requests");
+    navigate("/requests");
   });
 
   return (
