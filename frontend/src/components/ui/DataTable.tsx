@@ -136,8 +136,9 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   onClick={() => handleRowClick?.(row)}
-                  className={rowIdx === selectedRowIndex ? "bg-muted/50" : ""}
-                  className={`${ rowIdx === selectedRowIndex ? "bg-muted/50" : "" } transition-none`}
+                  onMouseEnter={() => setSelectedRowIndex(rowIdx)}
+                  onMouseLeave={() => setSelectedRowIndex(null)}
+                  className={`${rowIdx === selectedRowIndex ? "bg-muted/50" : ""} transition-none`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
