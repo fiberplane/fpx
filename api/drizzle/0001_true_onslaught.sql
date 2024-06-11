@@ -1,1 +1,0 @@
-ALTER TABLE `mizu_logs` ADD `matching_issues` text;

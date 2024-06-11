@@ -1,3 +1,10 @@
+CREATE TABLE `app_routes` (
+	`path` text,
+	`method` text,
+	`handler` text,
+	PRIMARY KEY(`method`, `path`)
+);
+--> statement-breakpoint
 CREATE TABLE `github_issues` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`owner` text NOT NULL,
@@ -6,6 +13,7 @@ CREATE TABLE `github_issues` (
 	`title` text DEFAULT '' NOT NULL,
 	`body` text,
 	`state` text NOT NULL,
+	`type` text NOT NULL,
 	`labels` text,
 	`created_at` text,
 	`updated_at` text,
@@ -23,5 +31,6 @@ CREATE TABLE `mizu_logs` (
 	`args` text,
 	`caller_location` text,
 	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`matching_issues` text
 );

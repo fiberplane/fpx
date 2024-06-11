@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import * as schema from "../db/schema.js";
+import { appRoutes } from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import { tryParseJsonObjectMessage } from "../lib/utils.js";
 
@@ -29,9 +30,33 @@ const schemaPostLogs = z.object({
     })
     .nullable(),
   timestamp: z.string(),
+  routes: z.array(
+    z.object({ method: z.string(), path: z.string(), handler: z.string() }),
+  ),
 });
 
 app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
+  const routeInspectorHeader = ctx.req.header("X-Fpx-Route-Inspector");
+  if (routeInspectorHeader) {
+    // parse routes and insert them into the database
+    const { routes } = ctx.req.valid("json");
+
+    if (routes.length > 0) {
+      const db = ctx.get("db");
+      const dbErrors = ctx.get("dbErrors");
+      try {
+				// FIXME: deduplicate and adjudicate the source of truth for routes
+        await db.insert(appRoutes).values(routes);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log("DB ERROR FOR:", { routes }, error);
+          dbErrors.push(error);
+        }
+      }
+    }
+
+    return ctx.text("OK");
+  }
   const { level, service, message, args, traceId, callerLocation, timestamp } =
     ctx.req.valid("json");
 

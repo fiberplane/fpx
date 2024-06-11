@@ -1,9 +1,47 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3b7856bb-97be-44f5-94e5-7db0468e7778",
+  "id": "d774f39c-c52b-4240-a3b0-d676a3699385",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "app_routes": {
+      "name": "app_routes",
+      "columns": {
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "method": {
+          "name": "method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "handler": {
+          "name": "handler",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "id": {
+          "columns": [
+            "method",
+            "path"
+          ],
+          "name": "id"
+        }
+      },
+      "uniqueConstraints": {}
+    },
     "github_issues": {
       "name": "github_issues",
       "columns": {
@@ -52,6 +90,13 @@
         },
         "state": {
           "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -173,6 +218,13 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(CURRENT_TIMESTAMP)"
+        },
+        "matching_issues": {
+          "name": "matching_issues",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
