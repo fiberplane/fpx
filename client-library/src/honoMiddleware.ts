@@ -120,11 +120,13 @@ export function createHonoMiddleware(
         const routeInspectorHeader = c.req.header("X-Fpx-Route-Inspector");
 
         const routes = app
-          ? app?.routes.map((route) => ({
-              method: route.method,
-              path: route.path,
-              handler: route.handler.toString(),
-            }))
+          ? app?.routes
+              .filter((route) => route.handler.length === 1) // Filter out routes where handlers have two arguments (those are middleware)
+              .map((route) => ({
+                method: route.method,
+                path: route.path,
+                handler: route.handler.toString(),
+              }))
           : [];
 
         const payload = {
