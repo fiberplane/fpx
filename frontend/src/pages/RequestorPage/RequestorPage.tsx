@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
-import Editor from "@monaco-editor/react"; // Import Monaco Editor
+import Editor from "@monaco-editor/react";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import {
   SyntheticEvent,
@@ -106,7 +106,7 @@ export const RequestorPage = () => {
         selectedRoute={selectedRoute}
         handleRouteClick={handleRouteClick}
       />
-      <div className="flex-grow flex flex-col">
+      <div className="flex flex-col flex-1">
         <RequestInput
           method={selectedRoute?.method}
           path={selectedRoute?.path}
@@ -293,60 +293,81 @@ function RequestMeta(props: RequestMetaProps) {
     setRequestHeaders,
   } = props;
 
+  const { width, handleResize } = useResizableWidth(256);
+
   return (
-    <div className="w-1/4 min-w-[350px] border-r-2 border-muted p-4">
-      <Tabs defaultValue="params">
-        <div className="flex items-center justify-start">
-          <TabsList>
-            <TabsTrigger value="params" className="text-sm font-medium">
-              Params
-            </TabsTrigger>
-            <TabsTrigger value="headers" className="text-sm font-medium">
-              Headers
-            </TabsTrigger>
-            <TabsTrigger value="body" className="text-sm font-medium">
-              Body
-            </TabsTrigger>
-          </TabsList>
-        </div>
-        <TabsContent value="params">
-          <KeyValueForm
-            keyValueParameters={queryParams}
-            onChange={(params) => {
-              setQueryParams(params);
-            }}
-          />
-        </TabsContent>
-        <TabsContent value="headers">
-          <KeyValueForm
-            keyValueParameters={requestHeaders}
-            onChange={(headers) => {
-              setRequestHeaders(headers);
-            }}
-          />
-        </TabsContent>
-        <TabsContent value="body">
-          <Editor
-            height="400px"
-            defaultLanguage="json"
-            defaultValue="{}"
-            onChange={(value) => setBody(value)}
-            options={{
-              minimap: { enabled: false, autohide: true },
-              tabSize: 2,
-              codeLens: false,
-              scrollbar: { vertical: "auto", horizontal: "auto" },
-              theme: "vs-light",
-              padding: {
-                top: 0,
-                bottom: 0,
-              },
-              lineNumbersMinChars: 3,
-            }}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+    <Resizable
+      className="min-w-[200px]"
+      width={width} // Initial width
+      axis="x" // Restrict resizing to the horizontal axis
+      onResize={handleResize}
+      resizeHandles={["e"]} // Limit resize handle to just the east (right) handle
+      handle={(_, ref) => (
+        // Render a custom handle component, so we can indicate "resizability"
+        // along the entire right side of the container
+        <ResizableHandle ref={ref} />
+      )}
+    >
+      <div
+        style={{ width: `${width}px` }}
+        className="w-1/4 min-w-[350px] border-r-2 border-muted p-4"
+      >
+        <Tabs defaultValue="params">
+          <div className="flex items-center justify-start">
+            <TabsList>
+              <TabsTrigger value="params" className="text-sm font-medium">
+                Params
+              </TabsTrigger>
+              <TabsTrigger value="headers" className="text-sm font-medium">
+                Headers
+              </TabsTrigger>
+              <TabsTrigger value="body" className="text-sm font-medium">
+                Body
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="params">
+            <KeyValueForm
+              keyValueParameters={queryParams}
+              onChange={(params) => {
+                setQueryParams(params);
+              }}
+            />
+          </TabsContent>
+          <TabsContent value="headers">
+            <KeyValueForm
+              keyValueParameters={requestHeaders}
+              onChange={(headers) => {
+                setRequestHeaders(headers);
+              }}
+            />
+          </TabsContent>
+          <TabsContent value="body">
+            <Editor
+              height="400px"
+              defaultLanguage="json"
+              defaultValue="{}"
+              onChange={(value) => setBody(value)}
+              options={{
+                minimap: { enabled: false, autohide: true },
+                tabSize: 2,
+                codeLens: false,
+                scrollbar: { vertical: "auto", horizontal: "auto" },
+                theme: "vs-light",
+                padding: {
+                  top: 0,
+                  bottom: 0,
+                },
+                lineNumbersMinChars: 3,
+                wordWrap: "on",
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </Resizable>
   );
 }
 
@@ -356,6 +377,55 @@ const NoResponse = () => (
   </div>
 );
 
+function isJson(str: string) {
+  try {
+    JSON.parse(str);
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+function ResponseBody({ response }: { response?: Requestornator }) {
+  const body = response?.app_responses?.responseBody;
+
+  // Special rendering for JSON
+  if (body && isJson(body)) {
+    const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
+    return (
+      <Editor
+        height="600px"
+        defaultLanguage="json"
+        value={prettyBody}
+        options={{
+          minimap: { enabled: false },
+          tabSize: 2,
+          codeLens: false,
+          scrollbar: { vertical: "auto", horizontal: "hidden" },
+          theme: "vs-light",
+          padding: {
+            top: 0,
+            bottom: 0,
+          },
+          lineNumbersMinChars: 3,
+          wordWrap: "on",
+          scrollBeyondLastLine: false,
+          readOnly: true,
+          automaticLayout: true,
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="p-4 bg-gray-100 rounded-lg shadow-lg">
+      <pre className="text-sm text-gray-800 whitespace-pre-wrap">
+        <code>{body}</code>
+      </pre>
+    </div>
+  );
+}
+
 function ResponseDetails({ response }: { response?: Requestornator }) {
   return (
     <div className="flex-grow flex flex-col p-4">
@@ -363,7 +433,7 @@ function ResponseDetails({ response }: { response?: Requestornator }) {
         <div className="text-lg font-medium">Response</div>
       </div>
       {response ? (
-        response?.app_responses?.responseBody
+        <ResponseBody response={response} />
       ) : (
         <div className="flex-grow flex items-center justify-center text-gray-400">
           <NoResponse />
