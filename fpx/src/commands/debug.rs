@@ -11,7 +11,8 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Test client to interact with a local development server.
+    /// Start a WebSocket connection to the server. This will dump any message
+    /// it receives to the console.
     #[clap(alias = "ws")]
     WebSocket(ws::Args),
 }

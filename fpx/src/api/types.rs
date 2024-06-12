@@ -94,6 +94,7 @@ pub struct ClientMessage {
 
 impl ClientMessage {
     /// Create a new client message with a random message id (u32).
+    #[allow(dead_code)] // Required since we do not send any messages
     pub fn new(details: ClientMessageDetails) -> Self {
         let mut rng = rand::thread_rng();
         let message_id: u32 = rng.gen();

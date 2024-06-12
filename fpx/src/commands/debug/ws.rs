@@ -1,10 +1,8 @@
-use crate::api::types::{ClientMessage, ClientMessageDetails, FPX_WEBSOCKET_ID_HEADER};
+use crate::api::types::FPX_WEBSOCKET_ID_HEADER;
 use anyhow::{Context, Result};
 use futures_util::{SinkExt, StreamExt};
 use std::sync::Arc;
-use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::sync::Mutex;
-use tokio_tungstenite::tungstenite::Message;
 use tracing::{error, info};
 use url::Url;
 
@@ -27,27 +25,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
     let (write, mut read) = ws_stream.split();
     let write = Arc::new(Mutex::new(write));
 
-    let w1 = write.clone();
-    let enter_task = tokio::spawn(async move {
-        let write = w1;
-        let stdin = tokio::io::stdin();
-        let reader = BufReader::new(stdin);
-        let mut lines = reader.lines();
-        loop {
-            let _ = lines.next_line().await;
-
-            info!("Sending message");
-            let message = ClientMessage::new(ClientMessageDetails::Debug);
-            let message = serde_json::to_string(&message).expect("Unable to serialize message");
-            let mut lock = write.lock().await;
-
-            lock.send(Message::Text(message))
-                .await
-                .expect("Unable to send message");
-        }
-    });
-
-    let ctrlc_task = tokio::spawn(async {
+    tokio::spawn(async {
         let write = write;
 
         loop {
@@ -75,9 +53,6 @@ pub async fn handle_command(args: Args) -> Result<()> {
             }
         }
     }
-
-    enter_task.abort();
-    ctrlc_task.abort();
 
     Ok(())
 }
