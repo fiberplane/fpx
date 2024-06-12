@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import Editor from "@monaco-editor/react"; // Import Monaco Editor
+import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import {
   SyntheticEvent,
   forwardRef,
@@ -11,64 +11,27 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Resizable, ResizeCallbackData } from "react-resizable";
-import "react-resizable/css/styles.css"; // Import the styles for the resizable component
-
-import "./MonacoEditorOverrides.css";
-import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
+import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import {
-  KeyValueForm,
-  KeyValueParameter,
-  createParameterId,
-  useKeyValueForm,
-} from "./KeyValueForm";
+  type ProbedRoute,
+  Requestornator,
+  getUrl,
+  useFetchRequestorRequests,
+  useMakeRequest,
+  useProbedRoutes,
+} from "./queries";
+
+import "react-resizable/css/styles.css"; // Import the styles for the resizable component
+import { useRequestorFormData } from "./data";
 
 // import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
-type ProbedRoute = {
-  path: string;
-  method: string;
-  handler: string;
-};
-
-function getProbedRoutes(): Promise<ProbedRoute[]> {
-  return fetch("/v0/app-routes").then((r) => r.json());
-}
-
-function makeRequest({
-  path,
-  method,
-  body,
-}: {
-  path: string;
-  method: string;
-  body: string;
-}) {
-  return fetch("/v0/requestor-request", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      path,
-      method,
-      body,
-    }),
-  }).then((r) => r.json());
-}
-
-export const RequestorPage = () => {
-  const { data: routes, isLoading } = useQuery({
-    queryKey: ["appRoutes"],
-    queryFn: getProbedRoutes,
-  });
-
+function useAutoselectRoute({
+  isLoading,
+  routes,
+}: { isLoading: boolean; routes?: ProbedRoute[] }) {
   const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(null);
-
-  const handleRouteClick = (route: ProbedRoute) => {
-    setSelectedRoute(route);
-  };
 
   useEffect(() => {
     const shouldAutoselectRoute =
@@ -79,46 +42,52 @@ export const RequestorPage = () => {
     }
   }, [routes, isLoading, selectedRoute]);
 
-  // TODO - Making a request
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: makeRequest,
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["requestorRequests"] });
-    },
+  return { selectedRoute, setSelectedRoute };
+}
+
+export const RequestorPage = () => {
+  const { data: routes, isLoading } = useProbedRoutes();
+
+  const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
+    isLoading,
+    routes,
   });
 
-  // TODO - Fetch history of requestor requests
-  //
-  // const { data: requestorRequests } = useQuery({
-  //   queryKey: ['requestorRequests'],
-  //   queryFn: () => fetch("/v0/requestor-requests").then(r => r.json()),
-  // })
+  const handleRouteClick = (route: ProbedRoute) => {
+    setSelectedRoute(route);
+  };
 
-  const [body, setBody] = useState<string | undefined>("");
+  const { data: allRequests } = useFetchRequestorRequests();
+  console.log("allRequests", allRequests);
+  const mostRecentMatchingResponse = allRequests?.find(
+    (r: Requestornator) =>
+      r?.app_requests?.requestUrl === getUrl(selectedRoute?.path) &&
+      r?.app_requests?.requestMethod === selectedRoute?.method,
+  );
+
+  const {
+    body,
+    setBody,
+    requestHeaders,
+    setRequestHeaders,
+    queryParams,
+    setQueryParams,
+  } = useRequestorFormData();
+
+  const requestorRequests = useMakeRequest();
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (selectedRoute) {
-      mutation.mutate({
+      requestorRequests.mutate({
         path: selectedRoute.path,
         method: selectedRoute.method,
         body: body ?? "", // FIXME
+        headers: requestHeaders,
+        queryParams,
       });
     }
   };
-
-  const {
-    keyValueParameters: queryParams,
-    setKeyValueParameters: setQueryParams,
-  } = useKeyValueForm();
-
-  const {
-    keyValueParameters: requestHeaders,
-    setKeyValueParameters: setRequestHeaders,
-  } = useKeyValueForm();
 
   return (
     <div className="flex h-full">
@@ -141,7 +110,7 @@ export const RequestorPage = () => {
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
           />
-          <ResponseDetails />
+          <ResponseDetails response={mostRecentMatchingResponse} />
         </div>
       </div>
     </div>
@@ -184,6 +153,7 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
 
   return (
     <Resizable
+      className="min-w-[200px]"
       width={width} // Initial width
       axis="x" // Restrict resizing to the horizontal axis
       onResize={handleResize}
@@ -260,7 +230,7 @@ type RequestInputProps = {
 function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
   const [value, setValue] = useState("");
   useEffect(() => {
-    const url = `http://localhost:8787${path ?? ""}`;
+    const url = getUrl(path);
     setValue(url);
   }, [path]);
 
@@ -288,7 +258,7 @@ function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
           />
         </div>
         <div className="flex items-center space-x-2 p-2">
-          <Button size="sm" type="button">
+          <Button size="sm" type="submit">
             Send
           </Button>
         </div>
@@ -370,15 +340,25 @@ function RequestMeta(props: RequestMetaProps) {
   );
 }
 
-function ResponseDetails() {
+const NoResponse = () => (
+  <div className="flex flex-col items-center justify-center p-4">
+    <div className="text-gray-400">No response yet</div>
+  </div>
+);
+
+function ResponseDetails({ response }: { response?: Requestornator }) {
   return (
     <div className="flex-grow flex flex-col p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="text-lg font-medium">Response</div>
       </div>
-      <div className="flex-grow flex items-center justify-center text-gray-400">
-        <span>🌀 Connection refused</span>
-      </div>
+      {response ? (
+        response?.app_responses?.responseBody
+      ) : (
+        <div className="flex-grow flex items-center justify-center text-gray-400">
+          <NoResponse />
+        </div>
+      )}
     </div>
   );
 }

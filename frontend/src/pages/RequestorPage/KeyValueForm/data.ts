@@ -140,3 +140,20 @@ function generateUUID() {
   const randomPart = () => Math.random().toString(36).substring(2, 15);
   return `${timeStamp}-${randomPart()}-${randomPart()}`;
 }
+
+export function reduceKeyValueParameters(parameters: KeyValueParameter[]) {
+  return parameters.reduce(
+    (o, param) => {
+      if (isDraftParameter(param)) {
+        return o;
+      }
+      const { key, value, enabled } = param;
+      if (!enabled) {
+        return o;
+      }
+      o[key] = value;
+      return o;
+    },
+    {} as Record<string, string>,
+  );
+}
