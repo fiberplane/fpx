@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "model-experiments"
+version = "0.1.0"
+description = ""
+authors = ["Fiberplane <info@fiberplane.com>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+mlflow = "^2.13.2"
+setuptools = "^70.0.0"
+jupyterlab = "^4.2.2"
+sentence-transformers = "^3.0.1"
+pandas = "^2.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

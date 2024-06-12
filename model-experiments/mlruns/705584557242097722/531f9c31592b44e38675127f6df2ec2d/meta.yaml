@@ -1,0 +1,16 @@
+artifact_uri: mlflow-artifacts:/705584557242097722/531f9c31592b44e38675127f6df2ec2d/artifacts
+deleted_time: 1718220941882
+end_time: 1718220120323
+entry_point_name: ''
+experiment_id: '705584557242097722'
+lifecycle_stage: deleted
+run_id: 531f9c31592b44e38675127f6df2ec2d
+run_name: sentence-transformers/all-mpnet-base-v2
+run_uuid: 531f9c31592b44e38675127f6df2ec2d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718220120008
+status: 3
+tags: []
+user_id: actualwitch

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/705584557242097722/bd338b3a5bb648fba883170b9c254a15/artifacts
+end_time: 1718220967075
+entry_point_name: ''
+experiment_id: '705584557242097722'
+lifecycle_stage: active
+run_id: bd338b3a5bb648fba883170b9c254a15
+run_name: all-MiniLM-L12-v2
+run_uuid: bd338b3a5bb648fba883170b9c254a15
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718220966993
+status: 3
+tags: []
+user_id: actualwitch
