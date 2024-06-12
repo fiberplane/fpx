@@ -1,3 +1,4 @@
+export type KeyColor = "text-orange-500" | "text-blue-500";
 
 /**
  * A "key-value parameter" is a record containing `key` and `value` properties.

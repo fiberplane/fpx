@@ -1,27 +1,8 @@
-import { useState } from "react";
 import { ChangeKeyValueParametersHandler, DraftKeyValueParameter, KeyValueParameter } from "./types";
 
 export const noop = () => { };
 
-const createParameterId = () => generateUUID();
-
-const INITIAL_KEY_VALUE_PARAMETER: KeyValueParameter = {
-  id: createParameterId(),
-  key: "",
-  value: "",
-  enabled: false,
-};
-
-export const useKeyValueForm = () => {
-  const [keyValueParameters, setKeyValueParameters] = useState<KeyValueParameter[]>([{
-    ...INITIAL_KEY_VALUE_PARAMETER
-  }]);
-
-  return {
-    keyValueParameters,
-    setKeyValueParameters,
-  };
-};
+export const createParameterId = () => generateUUID();
 
 export const initializeKeyValueFormData = (): DraftKeyValueParameter[] => {
   return []

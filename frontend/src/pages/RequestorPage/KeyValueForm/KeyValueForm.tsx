@@ -2,6 +2,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChangeKeyValueParametersHandler, KeyValueParameter } from "./types";
 import { createChangeEnabled, createChangeKey, createChangeValue, isDraftParameter, noop } from "./data";
+import { TrashIcon } from "@radix-ui/react-icons";
+import { useState } from "react";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];
@@ -28,15 +30,18 @@ const KeyValueRow = (props: KeyValueRowProps) => {
     parameter,
   } = props;
   const { enabled, key, value } = parameter;
-
+  const [isHovering, setIsHovering] = useState(false);
   return (
-    <div className="flex items-center space-x-0 rounded bg-muted px-1 py-2">
-      <Checkbox className="mr-1" checked={enabled} disabled={isDraft} onCheckedChange={() => {
+    <div className="flex items-center space-x-0 rounded bg-muted p-2" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+      <Checkbox className="mr-2" checked={enabled} disabled={isDraft} onCheckedChange={() => {
         const handler = isDraft ? noop : () => onChangeEnabled(!enabled);
         return handler();
       }} />
-      <Input type="text" value={key} placeholder="name" onChange={e => onChangeKey(e.target.value)} className="w-24 bg-transparent shadow-none px-2 py-0 text-sm border-none" />
-      <Input type="text" value={value} placeholder="value" onChange={e => onChangeValue(e.target.value)} className="flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none" />
+      <Input type="text" value={key} placeholder="name" onChange={e => onChangeKey(e.target.value)} className="w-24 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none focus:text-blue-600" />
+      <Input type="text" value={value} placeholder="value" onChange={e => onChangeValue(e.target.value)} className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none" />
+      {!isDraft && isHovering && (
+        <TrashIcon className="ml-1 w-6 h-6 cursor-pointer" onClick={removeValue} />
+      )}
     </div>
   )
 }
