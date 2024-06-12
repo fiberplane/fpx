@@ -1,4 +1,3 @@
-
 import { useTimeAgo } from "../../hooks";
 
 export function TimeAgo(props: { date: string }) {
@@ -8,5 +7,5 @@ export function TimeAgo(props: { date: string }) {
     return null;
   }
 
-  return <span>{time}</span>
+  return <span>{time}</span>;
 }

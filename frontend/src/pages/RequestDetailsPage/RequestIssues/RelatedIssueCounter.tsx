@@ -11,7 +11,5 @@ export function RelatedIssueCounter({ traceId }: { traceId: string }) {
     return null;
   }
 
-  // console.log("issues", issues);
-  return issues && issues.length || null
-  // return <div>issues.length: {issues?.length}</div>;
+  return (issues && issues.length) || null;
 }

@@ -7,6 +7,7 @@ import {
 
 import { objectWithKeyAndValue } from "@/utils";
 import {
+  DependenciesSchema,
   GitHubIssuesSchema,
   MizuApiLogResponseSchema,
   type MizuLog,
@@ -159,5 +160,25 @@ async function fetchRelevantIssues(
     // return data as Array<number>;
   } catch (e: unknown) {
     console.error("Error fetching GitHub issue for a trace: ", e);
+  }
+}
+
+export function useDependencies() {
+  return useQuery({
+    queryKey: ["dependencies"],
+    queryFn: fetchDependencies,
+  });
+}
+
+async function fetchDependencies() {
+  try {
+    const response = await fetch("/v0/dependencies", {
+      mode: "cors",
+    });
+
+    const data = await response.json();
+    return DependenciesSchema.parse(data);
+  } catch (e: unknown) {
+    console.error("Error fetching dependencies: ", e);
   }
 }

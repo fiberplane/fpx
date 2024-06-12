@@ -282,4 +282,21 @@ export const GitHubIssueSchema = z.object({
   closedAt: z.string().nullable(),
 });
 
+export type GithubIssue = z.infer<typeof GitHubIssueSchema>;
+
 export const GitHubIssuesSchema = z.array(GitHubIssueSchema);
+
+export const DependencySchema = z.object({
+  name: z.string(),
+  version: z.string(),
+  repository: z.object({
+    owner: z.string(),
+    repo: z.string(),
+    url: z.string(),
+  }),
+});
+export type Dependency = z.infer<typeof DependencySchema>;
+
+export const DependenciesSchema = z.array(DependencySchema);
+
+export type Dependencies = z.infer<typeof DependenciesSchema>;
