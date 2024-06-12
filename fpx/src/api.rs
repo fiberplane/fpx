@@ -36,7 +36,6 @@ pub async fn create_api(
     };
 
     axum::Router::new()
-        // .route("/api/requests", get(handlers::request_list_handler))
         .route(
             "/api/requests/:id",
             get(handlers::request_get_handler).delete(handlers::request_delete_handler),
@@ -45,12 +44,6 @@ pub async fn create_api(
             "/api/inspectors",
             get(handlers::inspector_list_handler).post(handlers::inspector_create_handler),
         )
-        // .route(
-        //     "/api/inspectors/:id",
-        //     get(handlers::inspector_get_handlers)
-        //         .patch(handlers::inspector_update_handlers)
-        //         .delete(handlers::inspector_delete_handlers),
-        // )
         .route("/api/inspect", any(handlers::inspect_request_handler))
         .route("/api/inspect/:id", any(handlers::inspect_request_handler))
         .route("/api/v1/logs", get(handlers::logs_handler))
