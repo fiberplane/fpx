@@ -179,7 +179,6 @@ const FetchRequestLog = ({ log }: { log: MizuLog }) => {
     ? log?.message?.url
     : "UNKNOWN_URL";
   const description = `Fetch Request: ${url}`;
-  console.log("FETCH REQUEST", log.args);
 
   return (
     <LogCard>
@@ -202,7 +201,6 @@ const FetchResponseLog = ({ log }: { log: MizuLog }) => {
     ? log?.message?.url
     : "UNKNOWN_URL";
   const description = `Fetch Response: ${url}`;
-  console.log("FETCH RESPONSE", url, log.args);
 
   return (
     <LogCard>

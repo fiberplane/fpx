@@ -4,8 +4,9 @@ import {
   TrashIcon,
   // ListBulletIcon as ListFilter, // FIXME
 } from "@radix-ui/react-icons";
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
+import { useNavigate } from "react-router-dom";
 
 import {
   Card,
@@ -24,10 +25,45 @@ import {
 //   DropdownMenuTrigger,
 // } from "@/components/ui/dropdown-menu"
 
+import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMizuTraces } from "@/queries";
-import { RequestsTable } from "./RequestsTable";
+import { type MizuTrace, useMizuTraces } from "@/queries";
+import { Row } from "@tanstack/react-table";
+import { columns } from "./columns";
+
+type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
+
+const RequestsTable = ({
+  traces,
+  filter,
+}: { traces: MizuTrace[]; filter: LevelFilter }) => {
+  const navigate = useNavigate();
+
+  const filteredTraces = useMemo(() => {
+    if (filter === "all") {
+      return traces;
+    }
+    return traces.filter((trace) =>
+      trace.logs.some((log) => log.level === filter),
+    );
+  }, [traces, filter]);
+
+  const handleRowClick = useCallback(
+    (row: Row<MizuTrace>) => {
+      navigate(`/requests/${row.id}`);
+    },
+    [navigate],
+  );
+
+  return (
+    <DataTable
+      columns={columns}
+      data={filteredTraces ?? []}
+      handleRowClick={handleRowClick}
+    />
+  );
+};
 
 export function RequestsPage() {
   const queryClient = useQueryClient();

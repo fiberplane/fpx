@@ -10,15 +10,23 @@ import {
 } from "@/components/ui/card";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useParams } from "react-router-dom";
 
 import { useRequestDetails } from "@/hooks";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { useKeySequence } from "@/hooks";
 import { TraceDetails } from "./RequestDetails";
 import { RelatedIssueCounter, RelatedIssuesContent } from "./RequestIssues";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
   const { trace } = useRequestDetails(traceId);
+
+  const navigate = useNavigate();
+
+  useKeySequence(["Escape"], () => {
+    navigate("/requests");
+  });
 
   return (
     <Tabs defaultValue="all">
