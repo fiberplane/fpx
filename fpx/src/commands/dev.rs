@@ -21,6 +21,10 @@ pub struct Args {
     /// fpx directory
     #[arg(short, long, env, default_value = DEFAULT_FPX_DIRECTORY)]
     pub fpx_directory: PathBuf,
+
+    /// Enable in-memory database. Useful when debugging.
+    #[clap(long, env, hide = true)]
+    pub in_memory_database: bool,
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
@@ -87,9 +91,12 @@ pub async fn handle_command(args: Args) -> Result<()> {
 }
 
 async fn open_store(args: &Args) -> Result<LibSqlStore> {
-    // let db_path = DataPath::Local(PathBuf::from("/tmp/fpx.db"));
-    let db_path = DataPath::Local(args.fpx_directory.join("fpx.db"));
-    // let db_path = DataPath::InMemory;
+    let db_path = if args.in_memory_database {
+        DataPath::InMemory
+    } else {
+        DataPath::Local(args.fpx_directory.join("fpx.db"))
+    };
+
     let store = LibSqlStore::open(db_path).await?;
 
     Ok(store)
