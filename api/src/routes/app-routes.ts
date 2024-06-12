@@ -1,17 +1,16 @@
 import {
-  NewAppRequest,
+  type NewAppRequest,
   appRequestInsertSchema,
   appRequests,
   appResponseInsertSchema,
   appResponses,
   appRoutes,
 } from "@/db/schema.js";
-import { Hono } from "hono";
-import type { Bindings, Variables } from "../lib/types.js";
-import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { hc } from "hono/client";
 import { eq } from "drizzle-orm";
+import { Hono } from "hono";
+import { z } from "zod";
+import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -43,11 +42,11 @@ app.post(
     } = ctx.req.valid("json");
 
     const db = ctx.get("db");
-    const dbErrors = ctx.get("dbErrors");
 
     const requestObject = {
       method: requestMethod,
-      body: requestBody ?? (undefined as any), // ah just make it work
+      // biome-ignore lint/suspicious/noExplicitAny: just make it work
+      body: requestBody ?? (undefined as any),
       headers: requestHeaders ?? undefined,
     };
 
@@ -83,9 +82,11 @@ app.post(
           body: z.instanceof(ReadableStream),
           traceId: z.string().optional(),
         })
-        .transform(async ({ headers, status, body }) => {
-          let responseHeaders: Record<string, string> = {};
-          headers.forEach((value, key) => (responseHeaders[key] = value));
+        .transform(async ({ headers, status }) => {
+          const responseHeaders: Record<string, string> = {};
+          for (const [key, value] of headers.entries()) {
+            responseHeaders[key] = value;
+          }
 
           return {
             responseHeaders,
