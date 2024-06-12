@@ -34,9 +34,9 @@ impl RequestAdded {
     }
 }
 
-impl Into<ServerMessage> for RequestAdded {
-    fn into(self) -> ServerMessage {
-        ServerMessage::RequestAdded(Box::new(self))
+impl From<RequestAdded> for ServerMessage {
+    fn from(request_added: RequestAdded) -> Self {
+        ServerMessage::RequestAdded(Box::new(request_added))
     }
 }
 

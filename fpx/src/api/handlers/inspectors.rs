@@ -19,7 +19,7 @@ pub async fn inspector_create_handler(
     }): State<ApiState>,
     Json(inspector_config): Json<InspectorConfig>,
 ) -> impl IntoResponse {
-    let _inspector = inspector_service
+    inspector_service
         .create(inspector_config, true)
         .await
         .unwrap();

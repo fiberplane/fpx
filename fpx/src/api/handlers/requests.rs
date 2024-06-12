@@ -11,9 +11,7 @@ pub async fn request_get_handler(
 
     let request = store.request_get(&tx, id).await.unwrap(); // TODO
 
-    let body = serde_json::to_string_pretty(&request).unwrap();
-
-    body
+    serde_json::to_string_pretty(&request).unwrap()
 }
 
 pub async fn request_delete_handler() -> impl IntoResponse {

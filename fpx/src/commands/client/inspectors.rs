@@ -58,5 +58,7 @@ async fn create_inspector(args: CreateArgs) -> Result<()> {
         .error_for_status()
         .context("Invalid response status")?;
 
+    println!("{}", response.text().await?);
+
     Ok(())
 }

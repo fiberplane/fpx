@@ -36,7 +36,7 @@ impl InspectorService {
         events: Arc<ServerEvents>,
     ) -> Result<Self> {
         // Get all the .toml files
-        let configs: Vec<_> = std::fs::read_dir(&config_path.join("inspectors"))
+        let configs: Vec<_> = std::fs::read_dir(config_path.join("inspectors"))
             .with_context(|| format!("Unable to read the contents: {config_path:?}"))?
             // Ignore any entries that result in a error
             .filter_map(Result::ok)
@@ -51,7 +51,7 @@ impl InspectorService {
                         return None;
                     }
                 }
-                return None;
+                None
             })
             // Read the content and parse as InspectorConfig
             .map(|path| {
