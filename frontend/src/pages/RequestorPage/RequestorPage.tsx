@@ -11,6 +11,7 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 
 import "./MonacoEditorOverrides.css";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
+import { KeyValueForm, KeyValueParameter, createParameterId, useKeyValueForm } from "./KeyValueForm";
 
 // import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
@@ -90,15 +91,23 @@ export const RequestorPage = () => {
     }
   }
 
+  const {
+    keyValueParameters: queryParams,
+    setKeyValueParameters: setQueryParams,
+  } = useKeyValueForm();
+
+  const {
+    keyValueParameters: requestHeaders,
+    setKeyValueParameters: setRequestHeaders,
+  } = useKeyValueForm();
+
   return (
     <div className="flex h-full">
       <SideBar routes={routes} selectedRoute={selectedRoute} handleRouteClick={handleRouteClick} />
-      {/* Main Content */}
       <div className="flex-grow flex flex-col">
-        {/* Header */}
         <RequestInput method={selectedRoute?.method} path={selectedRoute?.path} onSubmit={onSubmit} />
         <div className="flex flex-grow">
-          <RequestMeta setBody={setBody} />
+          <RequestMeta setBody={setBody} queryParams={queryParams} requestHeaders={requestHeaders} setQueryParams={setQueryParams} setRequestHeaders={setRequestHeaders} />
           <ResponseDetails />
         </div>
       </div>
@@ -155,16 +164,16 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
       )}
     >
       <div style={{ width: `${width}px`}} className={cn("bg-muted text-gray-700 flex flex-col px-4 rounded overflow-x-hidden")}>
-        <div className="flex items-center rounded font-semibold py-3">
+        <h2 className="flex items-center rounded font-semibold py-3 text-lg">
           Routes
-        </div>
+        </h2>
         <div className="flex-grow mt-4">
           <div className="">
             <div className="font-medium text-sm h-9 flex items-center">
               <ShowDetectedIcon className="h-3.5 w-3.5 mr-1" onClick={() => {
                 setShowDetectedRoutes(current => !current)
               }} />
-              Detected
+              Detected Routes
             </div>
             {
               showDetectedRoutes && (<div className="space-y-0 px-3.5">
@@ -216,7 +225,7 @@ function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
           <Input type="text" value={value} onChange={e => setValue(e.target.value)} className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0" />
         </div>
         <div className="flex items-center space-x-2 p-2">
-          <Button size="sm" type="button" className="bg-gray-400 text-white">Send</Button>
+          <Button size="sm" type="button">Send</Button>
         </div>
       </form>
     </div>
@@ -224,25 +233,18 @@ function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
   )
 }
 
-const KeyValueInput = () => {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center space-x-0 rounded bg-muted px-1 py-2">
-        <Checkbox className="mr-1" />
-        <Input type="text" placeholder="name" className="w-24 bg-transparent shadow-none px-2 py-0 text-sm border-none" />
-        <Input type="text" placeholder="value" className="flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none" />
-      </div>
-      {/* Add more parameter rows as needed */}
-    </div>
-  )
-}
-
 type RequestMetaProps = {
   setBody: (body?: string) => void;
+  queryParams: KeyValueParameter[];
+  setQueryParams: (params: KeyValueParameter[]) => void;
+  setRequestHeaders: (headers: KeyValueParameter[]) => void;
+  requestHeaders: KeyValueParameter[];
 }
-function RequestMeta({ setBody }: RequestMetaProps) {
+function RequestMeta(props: RequestMetaProps) {
+  const { setBody, queryParams, requestHeaders, setQueryParams, setRequestHeaders } = props;
+  
   return (
-    <div className="w-1/4 min-w-[300px] border-r-2 border-muted p-4">
+    <div className="w-1/4 min-w-[350px] border-r-2 border-muted p-4">
       <Tabs defaultValue="params">
         <div className="flex items-center justify-start">
           <TabsList>
@@ -252,10 +254,20 @@ function RequestMeta({ setBody }: RequestMetaProps) {
           </TabsList>
         </div>
         <TabsContent value="params">
-          <KeyValueInput />
+          <KeyValueForm
+            keyValueParameters={queryParams}
+            onChange={(params) => {
+              setQueryParams(params)
+            }}
+          />
         </TabsContent>
         <TabsContent value="headers">
-          <KeyValueInput />
+          <KeyValueForm
+            keyValueParameters={requestHeaders}
+            onChange={(headers) => {
+              setRequestHeaders(headers)
+            }}
+          />
         </TabsContent>
         <TabsContent value="body">
           <Editor
