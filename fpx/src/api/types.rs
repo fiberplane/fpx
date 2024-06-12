@@ -1,6 +1,5 @@
-use std::collections::BTreeMap;
-
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 

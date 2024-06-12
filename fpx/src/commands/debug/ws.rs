@@ -1,3 +1,4 @@
+use crate::api::types::{ClientMessage, FPX_WEBSOCKET_ID_HEADER};
 use anyhow::{Context, Result};
 use futures_util::{SinkExt, StreamExt};
 use std::sync::Arc;
@@ -6,8 +7,6 @@ use tokio::sync::Mutex;
 use tokio_tungstenite::tungstenite::Message;
 use tracing::{error, info};
 use url::Url;
-
-use crate::api::types::{ClientMessage, FPX_WEBSOCKET_ID_HEADER};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {

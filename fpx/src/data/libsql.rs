@@ -1,11 +1,10 @@
+use crate::api::types::Request;
 use anyhow::{Context, Result};
 use libsql::{params, Builder, Connection, Database, Transaction};
 use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use tracing::{debug, trace};
-
-use crate::api::types::Request;
 
 pub struct LibSqlStore {
     _database: Database,
@@ -200,19 +199,6 @@ impl LibSqlStore {
 
     pub async fn request_list(_tx: &Transaction) -> Result<Vec<Request>> {
         todo!()
-        // let mut rows = tx
-        //     .query("SELECT id, method, url, body FROM requests", ())
-        //     .await
-        //     .context("Unable to create request")?;
-
-        // let mut results = vec![];
-        // while let Some(row) = rows.next().await.context("Unable to get row")? {
-        //     let method: String = row.get(1).context("Unable to get method")?;
-        //     let url: String = row.get(2).context("Unable to get url")?;
-        //     results.push((method, url));
-        // }
-
-        // Ok(results)
     }
 
     pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<Request> {
@@ -232,7 +218,6 @@ impl LibSqlStore {
                 let headers = serde_json::from_str(&headers)?;
                 Request::new(row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, headers)
             }
-            // Some(row) => Request::new(row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?),
             None => anyhow::bail!("Unable to get request"),
         };
 
@@ -250,6 +235,3 @@ static MIGRATIONS: &[(&str, &str)] = &[(
     "20240604_create_requests",
     include_str!("migrations/20240604_create_requests.sql"),
 )];
-
-#[cfg(test)]
-mod tests {}

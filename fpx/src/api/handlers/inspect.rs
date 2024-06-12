@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use super::ApiState;
 use crate::api::types::RequestAdded;
 use crate::data::libsql::LibSqlStore;
@@ -7,6 +5,7 @@ use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use http_body_util::BodyExt as _;
+use std::collections::BTreeMap;
 
 #[tracing::instrument(skip_all)]
 pub async fn inspect_request_handler(
