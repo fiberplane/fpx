@@ -3,8 +3,9 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import Editor from "@monaco-editor/react"; // Import Monaco Editor
+import { Button } from "@/components/ui/button";
 
 // import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
@@ -16,6 +17,24 @@ type ProbedRoute = {
 
 function getProbedRoutes(): Promise<ProbedRoute[]> {
   return fetch("/v0/app-routes").then(r => r.json());
+}
+
+function makeRequest({ path, method, body }: {
+  path: string;
+  method: string;
+  body: string;
+}) {
+  return fetch("/v0/requestor-request", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      path,
+      method,
+      body,
+    }),
+  }).then(r => r.json());
 }
 
 export const RequestorPage = () => {
@@ -35,13 +54,46 @@ export const RequestorPage = () => {
     }
   }, [routes, isLoading, selectedRoute])
 
+  // TODO - Making a request 
+  // Access the client
+  const queryClient = useQueryClient()
+
+  // Queries
+
+  // Mutations
+  const mutation = useMutation({
+    mutationFn: makeRequest,
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['requestorRequests'] })
+    },
+  })
+
+  // const { data: requestorRequests } = useQuery({
+  //   queryKey: ['requestorRequests'],
+  //   queryFn: () => fetch("/v0/requestor-requests").then(r => r.json()),
+  // })
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (selectedRoute) {
+      mutation.mutate({
+        path: selectedRoute.path,
+        method: selectedRoute.method,
+        body: ""
+        // body: editor.getValue(),
+      })
+    }
+  }
+
   return (
     <div className="flex h-full">
       <SideBar routes={routes} selectedRoute={selectedRoute} handleRouteClick={handleRouteClick} />
       {/* Main Content */}
       <div className="flex-grow flex flex-col">
         {/* Header */}
-        <RequestInput method={selectedRoute?.method} path={selectedRoute?.path} />
+        <RequestInput method={selectedRoute?.method} path={selectedRoute?.path} onSubmit={onSubmit}/>
         <div className="flex flex-grow">
           <RequestMeta />
           <ResponseDetails />
@@ -61,11 +113,12 @@ type SidebarProps = {
 
 function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
   return (
-    <div className="w-64 bg-gray-100 text-gray-700 flex flex-col p-4">
-      <div className="text-lg font-semibold mb-4">Routes</div>
+    <div className="w-64 bg-muted text-gray-700 flex flex-col px-4 rounded">
+      <div className="flex items-center h-10 rounded font-semibold">
+        Routes
+      </div>
       <div className="flex-grow">
-        <div className="text-sm font-medium mb-2">Detected</div>
-        <div className="space-y-2">
+        <div className="space-y-0">
           {routes?.map?.((route, index) => (
             <div
               key={index}
@@ -87,28 +140,40 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
   )
 }
 
-function RequestInput({ method = "GET", path }: { method?: string; path?: string }) {
+type RequestInputProps = {
+  method?: string;
+  path?: string;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}
+
+function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
   const [value, setValue] = useState("");
   useEffect(() => {
     const url = `http://localhost:8787${path ?? ""}`;
     setValue(url)
   }, [path])
+
   return (
-    <div className="flex items-center justify-between p-4 rounded bg-gray-100">
-      <div className="flex flex-grow items-center space-x-2">
-        {/* <RequestMethodCombobox /> */}
-        <span className={cn("text-white px-2 py-1 rounded font-mono", getHttpMethodTextColor(method))}>GET</span>
-        <Input type="text" value={value} onChange={e => setValue(e.target.value)} className="w-full bg-transparent font-mono border-none shadow-none focus:ring-0" />
-      </div>
-      <button className="bg-gray-500 text-white px-4 py-2 rounded">Send</button>
+    <div className="px-4">
+      <form onSubmit={onSubmit} className="flex items-center justify-between rounded bg-muted">
+        <div className="flex flex-grow items-center space-x-2">
+          {/* <RequestMethodCombobox /> */}
+          <span className={cn("text-white px-4 py-1 rounded font-mono", getHttpMethodTextColor(method))}>GET</span>
+          <Input type="text" value={value} onChange={e => setValue(e.target.value)} className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0" />
+        </div>
+        <div className="flex items-center space-x-2 p-2">
+          <Button size="sm" type="button" className="bg-gray-500 text-white">Send</Button>
+        </div>
+      </form>
     </div>
+
   )
 }
 
 const KeyValueInput = () => {
   return (
     <div className="space-y-2">
-      <div className="flex items-center space-x-0 rounded bg-gray-100 px-1 py-2">
+      <div className="flex items-center space-x-0 rounded bg-muted px-1 py-2">
         <Checkbox className="mr-1" />
         <Input type="text" placeholder="name" className="w-24 bg-transparent shadow-none px-2 py-0 text-sm border-none" />
         <Input type="text" placeholder="value" className="flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none" />
@@ -120,7 +185,7 @@ const KeyValueInput = () => {
 
 function RequestMeta() {
   return (
-    <div className="w-1/4 min-w-[300px] border-r border-gray-300 p-4">
+    <div className="w-1/4 min-w-[300px] border-r-2 border-muted p-4">
       <Tabs defaultValue="params">
         <div className="flex items-center justify-start">
           <TabsList>
