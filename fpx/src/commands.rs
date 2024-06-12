@@ -24,13 +24,15 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Command {
-    /// Debug related commands.
+    /// A cli client to interact with a running fpx dev server.
     Client(client::Args),
 
     /// Debug related commands.
+    #[clap(hide = true)]
     Debug(debug::Args),
 
-    /// Start a local development server.
+    /// Start a local dev server.
+    #[clap(aliases = &["up", "d", "start"])]
     Dev(dev::Args),
 }
 

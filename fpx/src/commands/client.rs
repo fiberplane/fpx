@@ -24,8 +24,10 @@ pub struct Args {
 #[derive(Subcommand, Debug)]
 pub enum Command {
     /// Inspector related endpoints
+    #[clap(hide = true)] // Not released yet
     Inspectors(inspectors::Args),
 
+    /// List, retrieve, and delete RequestResponses
     Requests(requests::Args),
 }
 
