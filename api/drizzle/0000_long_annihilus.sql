@@ -1,3 +1,27 @@
+CREATE TABLE `app_requests` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`request_method` text NOT NULL,
+	`request_url` text NOT NULL,
+	`request_headers` text,
+	`request_query_params` text,
+	`request_body` text,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE `app_responses` (
+	`id` integer PRIMARY KEY NOT NULL,
+	`trace_id` text NOT NULL,
+	`response_status_code` integer,
+	`response_time` integer,
+	`response_headers` text,
+	`response_body` text,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`request_id` integer,
+	FOREIGN KEY (`request_id`) REFERENCES `app_requests`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `app_routes` (
 	`path` text,
 	`method` text,
