@@ -120,6 +120,7 @@ pub struct RequestAdded {
 
     /// The id of the inspector that was associated with the request. This is
     /// null in the case where the request was send to `/api/inspect`.
+    #[serde(skip_serializing_if = "Option::is_none")]
     inspector_id: Option<i64>,
 }
 
