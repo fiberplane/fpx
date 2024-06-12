@@ -1,7 +1,6 @@
 import type { Endpoints } from "@octokit/types";
 import { relations, sql } from "drizzle-orm";
 import {
-  blob,
   integer,
   primaryKey,
   sqliteTable,
@@ -44,8 +43,6 @@ export type NewAppRoute = z.infer<typeof appRoutesInsertSchema>;
 // 4. get a response from the app server including the traceId
 // 5. construct the response object and persist it
 // 6. we need to forward that response to the client
-
-type QueryParams = Record<string, string>;
 
 export const appRequests = sqliteTable("app_requests", {
   id: integer("id", { mode: "number" }).primaryKey(),
