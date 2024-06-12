@@ -108,15 +108,10 @@ function RequestInput({ method = "GET", path }: { method?: string; path?: string
 const KeyValueInput = () => {
   return (
     <div className="space-y-2">
-      <div className="flex items-center space-x-2">
-        <Checkbox />
-        <Input type="text" placeholder="name" className="w-24 bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
-        <Input type="text" placeholder="value" className="flex-grow bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
-      </div>
-      <div className="flex items-center space-x-2">
-        <Checkbox />
-        <Input type="text" placeholder="name" className="w-24 bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
-        <Input type="text" placeholder="value" className="flex-grow bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
+      <div className="flex items-center space-x-0 rounded bg-gray-100 px-1 py-2">
+        <Checkbox className="mr-1" />
+        <Input type="text" placeholder="name" className="w-24 bg-transparent shadow-none px-2 py-0 text-sm border-none" />
+        <Input type="text" placeholder="value" className="flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none" />
       </div>
       {/* Add more parameter rows as needed */}
     </div>
