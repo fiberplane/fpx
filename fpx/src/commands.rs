@@ -5,6 +5,7 @@ use url::Url;
 pub mod client;
 pub mod debug;
 pub mod dev;
+pub mod system;
 
 /// FPX - Super-charge your local development.
 #[derive(Parser, Debug)]
@@ -34,6 +35,9 @@ pub enum Command {
     /// Start a local dev server.
     #[clap(aliases = &["up", "d", "start"])]
     Dev(dev::Args),
+
+    /// System related commands.
+    System(system::Args),
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
@@ -41,5 +45,6 @@ pub async fn handle_command(args: Args) -> Result<()> {
         Command::Client(args) => client::handle_command(args).await,
         Command::Debug(args) => debug::handle_command(args).await,
         Command::Dev(args) => dev::handle_command(args).await,
+        Command::System(args) => system::handle_command(args).await,
     }
 }
