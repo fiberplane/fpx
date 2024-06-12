@@ -2,12 +2,15 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
-import { useEffect, useState } from "react";
+import { SyntheticEvent, forwardRef, useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import Editor from "@monaco-editor/react"; // Import Monaco Editor
 import { Button } from "@/components/ui/button";
+import { Resizable, ResizeCallbackData } from "react-resizable";
+import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 
 import "./MonacoEditorOverrides.css";
+import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 
 // import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
@@ -111,32 +114,83 @@ type SidebarProps = {
   handleRouteClick: (route: ProbedRoute) => void;
 }
 
+function useResizableWidth(initialWidth: number, min = 200, max = 600) {
+  const [width, setWidth] = useState(initialWidth);
+
+  const getClampedWidth = useCallback(
+    (newWidth: number) => {
+      return Math.min(max, Math.max(newWidth, min));
+    },
+    [min, max],
+  );
+
+  const handleResize = useCallback(
+    (_event: SyntheticEvent, { size }: ResizeCallbackData) => {
+      setWidth(getClampedWidth(size.width));
+    },
+    [getClampedWidth],
+  );
+
+  return { width, handleResize };
+}
+
 function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
+  const [showDetectedRoutes, setShowDetectedRoutes] = useState(true);
+  const ShowDetectedIcon = showDetectedRoutes ? CaretDownIcon : CaretRightIcon;
+
+  const { width, handleResize } = useResizableWidth(256);
+
   return (
-    <div className="w-64 bg-muted text-gray-700 flex flex-col px-4 rounded">
-      <div className="flex items-center h-10 rounded font-semibold">
-        Routes
-      </div>
-      <div className="flex-grow">
-        <div className="space-y-0">
-          {routes?.map?.((route, index) => (
-            <div
-              key={index}
-              onClick={() => handleRouteClick(route)}
-              className={cn('flex items-center p-1 rounded cursor-pointer font-mono text-sm', {
-                'bg-gray-300': selectedRoute === route,
-                'hover:bg-gray-200': selectedRoute !== route,
-              })}            >
-              <span className={cn("text-xs", getHttpMethodTextColor(route.method))}>{route.method}</span>
-              <span className="ml-2">{route.path}</span>
+    <Resizable
+      width={width} // Initial width
+      axis="x" // Restrict resizing to the horizontal axis
+      onResize={handleResize}
+      resizeHandles={["e"]} // Limit resize handle to just the east (right) handle
+      handle={(_, ref) => (
+        // Render a custom handle component, so we can indicate "resizability"
+        // along the entire right side of the container
+        <ResizableHandle
+          ref={ref}
+        />
+      )}
+    >
+      <div style={{ width: `${width}px`}} className={cn("bg-muted text-gray-700 flex flex-col px-4 rounded overflow-x-hidden")}>
+        <div className="flex items-center rounded font-semibold py-3">
+          Routes
+        </div>
+        <div className="flex-grow mt-4">
+          <div className="">
+            <div className="font-medium text-sm h-9 flex items-center">
+              <ShowDetectedIcon className="h-3.5 w-3.5 mr-1" onClick={() => {
+                setShowDetectedRoutes(current => !current)
+              }} />
+              Detected
             </div>
-          ))}
+            {
+              showDetectedRoutes && (<div className="space-y-0 px-3.5">
+                {routes?.map?.((route, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleRouteClick(route)}
+                    className={cn('flex items-center p-1 rounded cursor-pointer font-mono text-sm', {
+                      'bg-gray-300': selectedRoute === route,
+                      'hover:bg-gray-200': selectedRoute !== route,
+                    })}            >
+                    <span className={cn("text-xs", getHttpMethodTextColor(route.method))}>{route.method}</span>
+                    <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">{route.path}</span>
+                  </div>
+                ))}
+              </div>)
+            }
+
+          </div>
+
+        </div>
+        <div className="mt-auto">
+          {/* Settings? */}
         </div>
       </div>
-      <div className="mt-auto">
-        {/* Settings? */}
-      </div>
-    </div>
+    </Resizable>
   )
 }
 
@@ -158,11 +212,11 @@ function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
       <form onSubmit={onSubmit} className="flex items-center justify-between rounded bg-muted">
         <div className="flex flex-grow items-center space-x-2">
           {/* <RequestMethodCombobox /> */}
-          <span className={cn("text-white px-4 py-1 rounded font-mono", getHttpMethodTextColor(method))}>GET</span>
+          <span className={cn("text-white min-w-12 px-4 py-1 rounded font-mono", getHttpMethodTextColor(method))}>{method}</span>
           <Input type="text" value={value} onChange={e => setValue(e.target.value)} className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0" />
         </div>
         <div className="flex items-center space-x-2 p-2">
-          <Button size="sm" type="button" className="bg-gray-500 text-white">Send</Button>
+          <Button size="sm" type="button" className="bg-gray-400 text-white">Send</Button>
         </div>
       </form>
     </div>
@@ -204,7 +258,7 @@ function RequestMeta({ setBody }: RequestMetaProps) {
           <KeyValueInput />
         </TabsContent>
         <TabsContent value="body">
-          <Editor 
+          <Editor
             height="400px" defaultLanguage="json" defaultValue="{}"
             onChange={(value) => setBody(value)}
             options={{
@@ -249,3 +303,9 @@ function getHttpMethodTextColor(method: string) {
     OPTIONS: 'text-blue-300',
   }[method]
 }
+
+interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> { }
+
+const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>((props, ref) => (
+  <div ref={ref} className="w-[15px] h-full cursor-ew-resize top-0 right-[-8px] absolute z-10" {...props} />
+));
