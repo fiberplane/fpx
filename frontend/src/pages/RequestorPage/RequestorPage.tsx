@@ -7,6 +7,8 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import Editor from "@monaco-editor/react"; // Import Monaco Editor
 import { Button } from "@/components/ui/button";
 
+import "./MonacoEditorOverrides.css";
+
 // import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
 type ProbedRoute = {
@@ -55,12 +57,7 @@ export const RequestorPage = () => {
   }, [routes, isLoading, selectedRoute])
 
   // TODO - Making a request 
-  // Access the client
   const queryClient = useQueryClient()
-
-  // Queries
-
-  // Mutations
   const mutation = useMutation({
     mutationFn: makeRequest,
     onSuccess: () => {
@@ -69,10 +66,14 @@ export const RequestorPage = () => {
     },
   })
 
+  // TODO - Fetch history of requestor requests
+  //
   // const { data: requestorRequests } = useQuery({
   //   queryKey: ['requestorRequests'],
   //   queryFn: () => fetch("/v0/requestor-requests").then(r => r.json()),
   // })
+
+  const [body, setBody] = useState<string | undefined>("");
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,8 +82,7 @@ export const RequestorPage = () => {
       mutation.mutate({
         path: selectedRoute.path,
         method: selectedRoute.method,
-        body: ""
-        // body: editor.getValue(),
+        body: body ?? "", // FIXME
       })
     }
   }
@@ -93,9 +93,9 @@ export const RequestorPage = () => {
       {/* Main Content */}
       <div className="flex-grow flex flex-col">
         {/* Header */}
-        <RequestInput method={selectedRoute?.method} path={selectedRoute?.path} onSubmit={onSubmit}/>
+        <RequestInput method={selectedRoute?.method} path={selectedRoute?.path} onSubmit={onSubmit} />
         <div className="flex flex-grow">
-          <RequestMeta />
+          <RequestMeta setBody={setBody} />
           <ResponseDetails />
         </div>
       </div>
@@ -183,7 +183,10 @@ const KeyValueInput = () => {
   )
 }
 
-function RequestMeta() {
+type RequestMetaProps = {
+  setBody: (body?: string) => void;
+}
+function RequestMeta({ setBody }: RequestMetaProps) {
   return (
     <div className="w-1/4 min-w-[300px] border-r-2 border-muted p-4">
       <Tabs defaultValue="params">
@@ -201,7 +204,22 @@ function RequestMeta() {
           <KeyValueInput />
         </TabsContent>
         <TabsContent value="body">
-          <Editor height="400px" defaultLanguage="json" defaultValue="{}" />
+          <Editor 
+            height="400px" defaultLanguage="json" defaultValue="{}"
+            onChange={(value) => setBody(value)}
+            options={{
+              minimap: { enabled: false, autohide: true, },
+              tabSize: 2,
+              codeLens: false,
+              scrollbar: { vertical: "auto", horizontal: "auto" },
+              theme: "vs-light",
+              padding: {
+                top: 0,
+                bottom: 0
+              },
+              lineNumbersMinChars: 3
+            }}
+          />
         </TabsContent>
       </Tabs>
     </div>
