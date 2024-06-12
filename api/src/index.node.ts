@@ -77,7 +77,7 @@ console.log(`Firing off a router probe on port ${targetPort}...`);
 async function routerProbe() {
   const headers = new Headers();
   headers.append("X-Fpx-Route-Inspector", "enabled");
-  return await fetch("http://localhost:8787/", {
+  return await fetch(`http://localhost:${targetPort}/`, {
     method: "GET",
     headers,
   });
