@@ -1,5 +1,5 @@
 use super::ApiState;
-use crate::api::types::RequestAdded;
+use crate::api::types;
 use crate::data::libsql::LibSqlStore;
 use axum::extract::Request;
 use axum::extract::State;
@@ -58,8 +58,9 @@ pub async fn inspect_request_handler(
 
     tx.commit().await.unwrap(); // TODO
 
-    events.broadcast(RequestAdded::new(request_id, None).into());
+    events.broadcast(types::RequestAdded::new(request_id, None).into());
 
+    // TODO: This should return the same payload as the GET /requests/{id} endpoint
     base_url
         .join(&format!("api/requests/{}", request_id))
         .unwrap()

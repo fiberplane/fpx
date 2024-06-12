@@ -1,4 +1,4 @@
-use crate::api::types::{ClientMessage, FPX_WEBSOCKET_ID_HEADER};
+use crate::api::types::{ClientMessage, ClientMessageDetails, FPX_WEBSOCKET_ID_HEADER};
 use anyhow::{Context, Result};
 use futures_util::{SinkExt, StreamExt};
 use std::sync::Arc;
@@ -37,7 +37,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
             let _ = lines.next_line().await;
 
             info!("Sending message");
-            let message = ClientMessage::Debug;
+            let message = ClientMessage::new(ClientMessageDetails::Debug);
             let message = serde_json::to_string(&message).expect("Unable to serialize message");
             let mut lock = write.lock().await;
 

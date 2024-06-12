@@ -1,5 +1,6 @@
 use super::types::{ClientMessage, ServerMessage, FPX_WEBSOCKET_ID_HEADER};
 use super::ApiState;
+use crate::api::types::ServerError;
 use crate::events::ServerEvents;
 use axum::extract::ws::{Message, WebSocket};
 use axum::extract::{State, WebSocketUpgrade};
@@ -86,13 +87,15 @@ async fn ws_socket_read(mut read: SplitStream<WebSocket>, reply: mpsc::Sender<Se
                 let message: Result<ClientMessage, _> = serde_json::from_str(&msg);
 
                 match message {
-                    Ok(ClientMessage::Debug) => {
-                        debug!("Received debug message, sending ack");
-                        let _ = reply.send(ServerMessage::Ack).await;
+                    Ok(message) => {
+                        debug!("Received message, sending ack");
+                        let message = ServerMessage::ack(message.message_id);
+                        let _ = reply.send(message).await;
                     }
                     Err(err) => {
                         warn!(?err, "Error parsing message");
-                        let _ = reply.send(ServerMessage::Error).await;
+                        let message = ServerMessage::error(None, ServerError::InvalidMessage);
+                        let _ = reply.send(message).await;
                     }
                 };
             }

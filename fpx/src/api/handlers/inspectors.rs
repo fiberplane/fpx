@@ -24,5 +24,7 @@ pub async fn inspector_create_handler(
         .await
         .unwrap();
 
+    // TODO: This should return the same payload as the GET /inspectors/{id} endpoint
+
     "Ok"
 }
