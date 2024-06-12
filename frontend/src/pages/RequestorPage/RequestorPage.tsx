@@ -1,7 +1,8 @@
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import Editor from "@monaco-editor/react"; // Import Monaco Editor
 
@@ -13,18 +14,26 @@ type ProbedRoute = {
   handler: string;
 };
 
-function getProbedRoutes() {
+function getProbedRoutes(): Promise<ProbedRoute[]> {
   return fetch("/v0/app-routes").then(r => r.json());
 }
 
 export const RequestorPage = () => {
-  const { data: routes } = useQuery({ queryKey: ['appRoutes'], queryFn: getProbedRoutes })
+  const { data: routes, isLoading } = useQuery({ queryKey: ['appRoutes'], queryFn: getProbedRoutes })
 
   const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(null);
 
   const handleRouteClick = (route: ProbedRoute) => {
     setSelectedRoute(route);
   };
+
+  useEffect(() => {
+    const shouldAutoselectRoute = !isLoading && routes?.length && selectedRoute === null
+    if (shouldAutoselectRoute) {
+      const autoselectedRoute = routes.find(r => r.path === "/") ?? routes[0];
+      setSelectedRoute(autoselectedRoute);
+    }
+  }, [routes, isLoading, selectedRoute])
 
   return (
     <div className="flex h-full">
@@ -78,13 +87,18 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
   )
 }
 
-function RequestInput({ method = "GET" }: { method?: string; }) {
+function RequestInput({ method = "GET", path }: { method?: string; path?: string }) {
+  const [value, setValue] = useState("");
+  useEffect(() => {
+    const url = `http://localhost:8787${path ?? ""}`;
+    setValue(url)
+  }, [path])
   return (
-    <div className="flex items-center justify-between p-4 border-b border-gray-300">
-      <div className="flex items-center space-x-2">
+    <div className="flex items-center justify-between p-4 rounded bg-gray-100">
+      <div className="flex flex-grow items-center space-x-2">
         {/* <RequestMethodCombobox /> */}
-        <span className={cn("text-white px-2 py-1 rounded", getHttpMethodTextColor(method))}>GET</span>
-        <input type="text" defaultValue="http://localhost:8787/" className="w-full bg-transparent border-none focus:ring-0" />
+        <span className={cn("text-white px-2 py-1 rounded font-mono", getHttpMethodTextColor(method))}>GET</span>
+        <Input type="text" value={value} onChange={e => setValue(e.target.value)} className="w-full bg-transparent font-mono border-none shadow-none focus:ring-0" />
       </div>
       <button className="bg-gray-500 text-white px-4 py-2 rounded">Send</button>
     </div>
@@ -96,13 +110,13 @@ const KeyValueInput = () => {
     <div className="space-y-2">
       <div className="flex items-center space-x-2">
         <Checkbox />
-        <input type="text" placeholder="name" className="w-24 bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
-        <input type="text" placeholder="value" className="flex-grow bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
+        <Input type="text" placeholder="name" className="w-24 bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
+        <Input type="text" placeholder="value" className="flex-grow bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
       </div>
       <div className="flex items-center space-x-2">
         <Checkbox />
-        <input type="text" placeholder="name" className="w-24 bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
-        <input type="text" placeholder="value" className="flex-grow bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
+        <Input type="text" placeholder="name" className="w-24 bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
+        <Input type="text" placeholder="value" className="flex-grow bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm" />
       </div>
       {/* Add more parameter rows as needed */}
     </div>
