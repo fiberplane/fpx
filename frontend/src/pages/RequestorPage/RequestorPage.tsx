@@ -59,11 +59,21 @@ export const RequestorPage = () => {
 
   const { data: allRequests } = useFetchRequestorRequests();
   console.log("allRequests", allRequests);
-  const mostRecentMatchingResponse = allRequests?.find(
-    (r: Requestornator) =>
-      r?.app_requests?.requestUrl === getUrl(selectedRoute?.path) &&
-      r?.app_requests?.requestMethod === selectedRoute?.method,
-  );
+  const mostRecentMatchingResponse = allRequests
+    ?.filter(
+      (r: Requestornator) =>
+        r?.app_requests?.requestUrl === getUrl(selectedRoute?.path) &&
+        r?.app_requests?.requestMethod === selectedRoute?.method,
+    )
+    ?.reduce((latest: Requestornator, current: Requestornator) => {
+      if (!latest) {
+        return current;
+      }
+      if (latest.app_responses.updatedAt > current.app_responses.updatedAt) {
+        return latest;
+      }
+      return current;
+    }, undefined);
 
   const {
     body,

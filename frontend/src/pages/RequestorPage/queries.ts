@@ -17,6 +17,7 @@ export type Requestornator = {
     responseStatusCode: string;
     responseBody: string;
     responseHeaders: Record<string, string>;
+    updatedAt: string;
   };
 };
 
