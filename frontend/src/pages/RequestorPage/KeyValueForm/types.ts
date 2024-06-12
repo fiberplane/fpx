@@ -23,5 +23,5 @@ export type DraftKeyValueParameter = KeyValueParameter & {
 };
 
 export type ChangeKeyValueParametersHandler = (
-  newQueryParams: KeyValueParameter[]
+  newQueryParams: KeyValueParameter[],
 ) => void;

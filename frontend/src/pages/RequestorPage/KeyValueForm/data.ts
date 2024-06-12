@@ -1,18 +1,22 @@
-import { ChangeKeyValueParametersHandler, DraftKeyValueParameter, KeyValueParameter } from "./types";
+import {
+  ChangeKeyValueParametersHandler,
+  DraftKeyValueParameter,
+  KeyValueParameter,
+} from "./types";
 
-export const noop = () => { };
+export const noop = () => {};
 
 export const createParameterId = () => generateUUID();
 
 export const initializeKeyValueFormData = (): DraftKeyValueParameter[] => {
-  return []
+  return [];
 };
 
 /**
  * Type guard to determine if a {@link KeyValueParameter} is a {@link DraftKeyValueParameter}.
  */
 export const isDraftParameter = (
-  parameter: KeyValueParameter
+  parameter: KeyValueParameter,
 ): parameter is DraftKeyValueParameter => {
   return (
     parameter.enabled === false &&
@@ -40,7 +44,7 @@ export const countParameters = (parameters: KeyValueParameter[]): number => {
 export function createChangeEnabled(
   onChange: ChangeKeyValueParametersHandler,
   allParameters: KeyValueParameter[],
-  parameter: KeyValueParameter
+  parameter: KeyValueParameter,
 ) {
   return modifyKeyValueParameter(
     onChange,
@@ -51,7 +55,7 @@ export function createChangeEnabled(
         ...parameterToModify,
         enabled,
       };
-    }
+    },
   );
 }
 
@@ -61,7 +65,7 @@ export function createChangeEnabled(
 export function createChangeKey(
   onChange: ChangeKeyValueParametersHandler,
   allParameters: KeyValueParameter[],
-  parameter: KeyValueParameter
+  parameter: KeyValueParameter,
 ) {
   return modifyKeyValueParameter(
     onChange,
@@ -72,7 +76,7 @@ export function createChangeKey(
         ...parameterToModify,
         key: newKey,
       };
-    }
+    },
   );
 }
 
@@ -82,7 +86,7 @@ export function createChangeKey(
 export function createChangeValue(
   onChange: ChangeKeyValueParametersHandler,
   allParameters: KeyValueParameter[],
-  parameter: KeyValueParameter
+  parameter: KeyValueParameter,
 ) {
   return modifyKeyValueParameter(
     onChange,
@@ -93,7 +97,7 @@ export function createChangeValue(
         ...parameterToModify,
         value: newValue,
       };
-    }
+    },
   );
 }
 
@@ -107,7 +111,7 @@ function modifyKeyValueParameter<T>(
   onChange: ChangeKeyValueParametersHandler,
   allParameters: KeyValueParameter[],
   parameter: KeyValueParameter,
-  mapNewValue: (p: KeyValueParameter, newValue: T) => KeyValueParameter
+  mapNewValue: (p: KeyValueParameter, newValue: T) => KeyValueParameter,
 ) {
   return (newValue: T) => {
     const newQueryParams = allParameters.map((otherParameter) => {
@@ -127,8 +131,6 @@ function modifyKeyValueParameter<T>(
     onChange(newQueryParams);
   };
 }
-
-
 
 /**
  * Quick and dirty uuid utility

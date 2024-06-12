@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
-import type { KeyValueParameter, DraftKeyValueParameter } from "./types";
-import { isDraftParameter, createParameterId } from "./data";
+import { createParameterId, isDraftParameter } from "./data";
+import type { DraftKeyValueParameter, KeyValueParameter } from "./types";
 
 const INITIAL_KEY_VALUE_PARAMETER: KeyValueParameter = {
   id: createParameterId(),
@@ -11,18 +11,22 @@ const INITIAL_KEY_VALUE_PARAMETER: KeyValueParameter = {
 };
 
 export const useKeyValueForm = () => {
-  const [_keyValueParameters, setKeyValueParameters] = useState<KeyValueParameter[]>([{
-    ...INITIAL_KEY_VALUE_PARAMETER
-  }]);
+  const [_keyValueParameters, setKeyValueParameters] = useState<
+    KeyValueParameter[]
+  >([
+    {
+      ...INITIAL_KEY_VALUE_PARAMETER,
+    },
+  ]);
 
-  const { parameters: keyValueParameters } = useKeyValueParameters(_keyValueParameters);
+  const { parameters: keyValueParameters } =
+    useKeyValueParameters(_keyValueParameters);
 
   return {
     keyValueParameters,
     setKeyValueParameters,
   };
 };
-
 
 /**
  * Hook that manages the state of a key-value form, ensuring that there is always a single
@@ -33,7 +37,7 @@ export const useKeyValueForm = () => {
 export function useKeyValueParameters(parameters: KeyValueParameter[]) {
   const parametersWithDraft = useMemo(
     () => enforceTerminalDraftParameter(parameters.map(disableBlankParameter)),
-    [parameters]
+    [parameters],
   );
 
   return { parameters: parametersWithDraft };
@@ -80,7 +84,7 @@ const enforceTerminalDraftParameter = (parameters: KeyValueParameter[]) => {
  * If there are multiple draft parameters, all will be filtered out, and a new draft parameter will be appended at the end.
  */
 export const enforceSingleTerminalDraftParameter = (
-  parameters: KeyValueParameter[]
+  parameters: KeyValueParameter[],
 ) => {
   const firstDraftParameterIndex = parameters.findIndex(isDraftParameter);
 

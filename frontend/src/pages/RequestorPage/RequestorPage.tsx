@@ -1,17 +1,28 @@
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
-import { SyntheticEvent, forwardRef, useCallback, useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
 import Editor from "@monaco-editor/react"; // Import Monaco Editor
-import { Button } from "@/components/ui/button";
+import {
+  SyntheticEvent,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Resizable, ResizeCallbackData } from "react-resizable";
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 
 import "./MonacoEditorOverrides.css";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
-import { KeyValueForm, KeyValueParameter, createParameterId, useKeyValueForm } from "./KeyValueForm";
+import {
+  KeyValueForm,
+  KeyValueParameter,
+  createParameterId,
+  useKeyValueForm,
+} from "./KeyValueForm";
 
 // import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
@@ -22,10 +33,14 @@ type ProbedRoute = {
 };
 
 function getProbedRoutes(): Promise<ProbedRoute[]> {
-  return fetch("/v0/app-routes").then(r => r.json());
+  return fetch("/v0/app-routes").then((r) => r.json());
 }
 
-function makeRequest({ path, method, body }: {
+function makeRequest({
+  path,
+  method,
+  body,
+}: {
   path: string;
   method: string;
   body: string;
@@ -40,11 +55,14 @@ function makeRequest({ path, method, body }: {
       method,
       body,
     }),
-  }).then(r => r.json());
+  }).then((r) => r.json());
 }
 
 export const RequestorPage = () => {
-  const { data: routes, isLoading } = useQuery({ queryKey: ['appRoutes'], queryFn: getProbedRoutes })
+  const { data: routes, isLoading } = useQuery({
+    queryKey: ["appRoutes"],
+    queryFn: getProbedRoutes,
+  });
 
   const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(null);
 
@@ -53,22 +71,23 @@ export const RequestorPage = () => {
   };
 
   useEffect(() => {
-    const shouldAutoselectRoute = !isLoading && routes?.length && selectedRoute === null
+    const shouldAutoselectRoute =
+      !isLoading && routes?.length && selectedRoute === null;
     if (shouldAutoselectRoute) {
-      const autoselectedRoute = routes.find(r => r.path === "/") ?? routes[0];
+      const autoselectedRoute = routes.find((r) => r.path === "/") ?? routes[0];
       setSelectedRoute(autoselectedRoute);
     }
-  }, [routes, isLoading, selectedRoute])
+  }, [routes, isLoading, selectedRoute]);
 
-  // TODO - Making a request 
-  const queryClient = useQueryClient()
+  // TODO - Making a request
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: makeRequest,
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['requestorRequests'] })
+      queryClient.invalidateQueries({ queryKey: ["requestorRequests"] });
     },
-  })
+  });
 
   // TODO - Fetch history of requestor requests
   //
@@ -87,9 +106,9 @@ export const RequestorPage = () => {
         path: selectedRoute.path,
         method: selectedRoute.method,
         body: body ?? "", // FIXME
-      })
+      });
     }
-  }
+  };
 
   const {
     keyValueParameters: queryParams,
@@ -103,11 +122,25 @@ export const RequestorPage = () => {
 
   return (
     <div className="flex h-full">
-      <SideBar routes={routes} selectedRoute={selectedRoute} handleRouteClick={handleRouteClick} />
+      <SideBar
+        routes={routes}
+        selectedRoute={selectedRoute}
+        handleRouteClick={handleRouteClick}
+      />
       <div className="flex-grow flex flex-col">
-        <RequestInput method={selectedRoute?.method} path={selectedRoute?.path} onSubmit={onSubmit} />
+        <RequestInput
+          method={selectedRoute?.method}
+          path={selectedRoute?.path}
+          onSubmit={onSubmit}
+        />
         <div className="flex flex-grow">
-          <RequestMeta setBody={setBody} queryParams={queryParams} requestHeaders={requestHeaders} setQueryParams={setQueryParams} setRequestHeaders={setRequestHeaders} />
+          <RequestMeta
+            setBody={setBody}
+            queryParams={queryParams}
+            requestHeaders={requestHeaders}
+            setQueryParams={setQueryParams}
+            setRequestHeaders={setRequestHeaders}
+          />
           <ResponseDetails />
         </div>
       </div>
@@ -121,7 +154,7 @@ type SidebarProps = {
   routes?: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
-}
+};
 
 function useResizableWidth(initialWidth: number, min = 200, max = 600) {
   const [width, setWidth] = useState(initialWidth);
@@ -158,79 +191,110 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
       handle={(_, ref) => (
         // Render a custom handle component, so we can indicate "resizability"
         // along the entire right side of the container
-        <ResizableHandle
-          ref={ref}
-        />
+        <ResizableHandle ref={ref} />
       )}
     >
-      <div style={{ width: `${width}px`}} className={cn("bg-muted text-gray-700 flex flex-col px-4 rounded overflow-x-hidden")}>
+      <div
+        style={{ width: `${width}px` }}
+        className={cn(
+          "bg-muted text-gray-700 flex flex-col px-4 rounded overflow-x-hidden",
+        )}
+      >
         <h2 className="flex items-center rounded font-semibold py-3 text-lg">
           Routes
         </h2>
         <div className="flex-grow mt-4">
           <div className="">
             <div className="font-medium text-sm h-9 flex items-center">
-              <ShowDetectedIcon className="h-3.5 w-3.5 mr-1" onClick={() => {
-                setShowDetectedRoutes(current => !current)
-              }} />
+              <ShowDetectedIcon
+                className="h-3.5 w-3.5 mr-1"
+                onClick={() => {
+                  setShowDetectedRoutes((current) => !current);
+                }}
+              />
               Detected Routes
             </div>
-            {
-              showDetectedRoutes && (<div className="space-y-0 px-3.5">
+            {showDetectedRoutes && (
+              <div className="space-y-0 px-3.5">
                 {routes?.map?.((route, index) => (
                   <div
                     key={index}
                     onClick={() => handleRouteClick(route)}
-                    className={cn('flex items-center p-1 rounded cursor-pointer font-mono text-sm', {
-                      'bg-gray-300': selectedRoute === route,
-                      'hover:bg-gray-200': selectedRoute !== route,
-                    })}            >
-                    <span className={cn("text-xs", getHttpMethodTextColor(route.method))}>{route.method}</span>
-                    <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">{route.path}</span>
+                    className={cn(
+                      "flex items-center p-1 rounded cursor-pointer font-mono text-sm",
+                      {
+                        "bg-gray-300": selectedRoute === route,
+                        "hover:bg-gray-200": selectedRoute !== route,
+                      },
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "text-xs",
+                        getHttpMethodTextColor(route.method),
+                      )}
+                    >
+                      {route.method}
+                    </span>
+                    <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                      {route.path}
+                    </span>
                   </div>
                 ))}
-              </div>)
-            }
-
+              </div>
+            )}
           </div>
-
         </div>
-        <div className="mt-auto">
-          {/* Settings? */}
-        </div>
+        <div className="mt-auto">{/* Settings? */}</div>
       </div>
     </Resizable>
-  )
+  );
 }
 
 type RequestInputProps = {
   method?: string;
   path?: string;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}
+};
 
 function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
   const [value, setValue] = useState("");
   useEffect(() => {
     const url = `http://localhost:8787${path ?? ""}`;
-    setValue(url)
-  }, [path])
+    setValue(url);
+  }, [path]);
 
   return (
     <div className="px-4">
-      <form onSubmit={onSubmit} className="flex items-center justify-between rounded bg-muted">
+      <form
+        onSubmit={onSubmit}
+        className="flex items-center justify-between rounded bg-muted"
+      >
         <div className="flex flex-grow items-center space-x-2">
           {/* <RequestMethodCombobox /> */}
-          <span className={cn("text-white min-w-12 px-4 py-1 rounded font-mono", getHttpMethodTextColor(method))}>{method}</span>
-          <Input type="text" value={value} onChange={e => setValue(e.target.value)} className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0" />
+          <span
+            className={cn(
+              "text-white min-w-12 px-4 py-1 rounded font-mono",
+              getHttpMethodTextColor(method),
+            )}
+          >
+            {method}
+          </span>
+          <Input
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
+          />
         </div>
         <div className="flex items-center space-x-2 p-2">
-          <Button size="sm" type="button">Send</Button>
+          <Button size="sm" type="button">
+            Send
+          </Button>
         </div>
       </form>
     </div>
-
-  )
+  );
 }
 
 type RequestMetaProps = {
@@ -239,25 +303,37 @@ type RequestMetaProps = {
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   requestHeaders: KeyValueParameter[];
-}
+};
 function RequestMeta(props: RequestMetaProps) {
-  const { setBody, queryParams, requestHeaders, setQueryParams, setRequestHeaders } = props;
-  
+  const {
+    setBody,
+    queryParams,
+    requestHeaders,
+    setQueryParams,
+    setRequestHeaders,
+  } = props;
+
   return (
     <div className="w-1/4 min-w-[350px] border-r-2 border-muted p-4">
       <Tabs defaultValue="params">
         <div className="flex items-center justify-start">
           <TabsList>
-            <TabsTrigger value="params" className="text-sm font-medium">Params</TabsTrigger>
-            <TabsTrigger value="headers" className="text-sm font-medium">Headers</TabsTrigger>
-            <TabsTrigger value="body" className="text-sm font-medium">Body</TabsTrigger>
+            <TabsTrigger value="params" className="text-sm font-medium">
+              Params
+            </TabsTrigger>
+            <TabsTrigger value="headers" className="text-sm font-medium">
+              Headers
+            </TabsTrigger>
+            <TabsTrigger value="body" className="text-sm font-medium">
+              Body
+            </TabsTrigger>
           </TabsList>
         </div>
         <TabsContent value="params">
           <KeyValueForm
             keyValueParameters={queryParams}
             onChange={(params) => {
-              setQueryParams(params)
+              setQueryParams(params);
             }}
           />
         </TabsContent>
@@ -265,31 +341,33 @@ function RequestMeta(props: RequestMetaProps) {
           <KeyValueForm
             keyValueParameters={requestHeaders}
             onChange={(headers) => {
-              setRequestHeaders(headers)
+              setRequestHeaders(headers);
             }}
           />
         </TabsContent>
         <TabsContent value="body">
           <Editor
-            height="400px" defaultLanguage="json" defaultValue="{}"
+            height="400px"
+            defaultLanguage="json"
+            defaultValue="{}"
             onChange={(value) => setBody(value)}
             options={{
-              minimap: { enabled: false, autohide: true, },
+              minimap: { enabled: false, autohide: true },
               tabSize: 2,
               codeLens: false,
               scrollbar: { vertical: "auto", horizontal: "auto" },
               theme: "vs-light",
               padding: {
                 top: 0,
-                bottom: 0
+                bottom: 0,
               },
-              lineNumbersMinChars: 3
+              lineNumbersMinChars: 3,
             }}
           />
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
 
 function ResponseDetails() {
@@ -302,22 +380,28 @@ function ResponseDetails() {
         <span>🌀 Connection refused</span>
       </div>
     </div>
-  )
+  );
 }
 
 function getHttpMethodTextColor(method: string) {
   return {
-    GET: 'text-green-500',
-    POST: 'text-yellow-500',
-    PUT: 'text-orange-500',
-    PATCH: 'text-orange-500',
-    DELETE: 'text-red-500',
-    OPTIONS: 'text-blue-300',
-  }[method]
+    GET: "text-green-500",
+    POST: "text-yellow-500",
+    PUT: "text-orange-500",
+    PATCH: "text-orange-500",
+    DELETE: "text-red-500",
+    OPTIONS: "text-blue-300",
+  }[method];
 }
 
-interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>((props, ref) => (
-  <div ref={ref} className="w-[15px] h-full cursor-ew-resize top-0 right-[-8px] absolute z-10" {...props} />
-));
+const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>(
+  (props, ref) => (
+    <div
+      ref={ref}
+      className="w-[15px] h-full cursor-ew-resize top-0 right-[-8px] absolute z-10"
+      {...props}
+    />
+  ),
+);
