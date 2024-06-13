@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import Editor, { loader } from "@monaco-editor/react";
-import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
+import { CaretDownIcon, CaretRightIcon, CodeIcon } from "@radix-ui/react-icons";
 import {
   ComponentProps,
   SyntheticEvent,
@@ -123,7 +123,9 @@ export const RequestorPage = () => {
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
           />
-          <ResponseDetails response={mostRecentMatchingResponse} />
+          <div className="flex-grow flex flex-col items-stretch">
+            {mostRecentMatchingResponse ? <ResponseDetails response={mostRecentMatchingResponse} /> : <ResponseInstructions />}
+          </div>
         </div>
       </div>
     </div>
@@ -368,6 +370,12 @@ const NoResponse = () => (
   </div>
 );
 
+const NoHeaders = () => (
+  <div className="flex flex-col items-center justify-center p-4">
+    <div className="text-gray-400">No headers... yet?!</div>
+  </div>
+);
+
 function isJson(str: string) {
   try {
     JSON.parse(str);
@@ -436,38 +444,52 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   );
 }
 
+function ResponseInstructions() {
+  return (
+    <div className="flex-grow flex items-center justify-center text-gray-400">
+      <div className="flex flex-col items-center justify-center p-4">
+        <CodeIcon className="w-10 h-10" />
+        <div className="text-gray-600 mt-4 text-xl">No response yet</div>
+        <div className="text-gray-600 mt-2">Send a request to see a response!</div>
+      </div>
+    </div>
+  )
+}
+
 function ResponseDetails({ response }: { response?: Requestornator }) {
   return (
-    <div className="flex-grow flex flex-col items-stretch">
-      <Tabs defaultValue="body" className="h-full">
-        <div className="flex items-center">
-          <TabsList className="w-full justify-start rounded-none border-b space-x-6">
-            <CustomTabTrigger value="body">Response</CustomTabTrigger>
-            <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
-            <CustomTabTrigger value="fpx">FPX</CustomTabTrigger>
-          </TabsList>
+    <Tabs defaultValue="body" className="h-full">
+      <div className="flex items-center">
+        <TabsList className="w-full justify-start rounded-none border-b space-x-6">
+          <CustomTabTrigger value="body">Response</CustomTabTrigger>
+          <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
+          <CustomTabTrigger value="fpx">FPX</CustomTabTrigger>
+        </TabsList>
+      </div>
+      <TabsContent value="body" className="h-full">
+        <div className="px-3 h-full">
+          {response ? (
+            <ResponseBody response={response} />
+          ) : (
+            <div className="flex-grow flex items-center justify-center text-gray-400">
+              <NoResponse />
+            </div>
+          )}
         </div>
-        <TabsContent value="body" className="h-full">
-          <div className="px-3 h-full">
-            {response ? (
-              <ResponseBody response={response} />
-            ) : (
-              <div className="flex-grow flex items-center justify-center text-gray-400">
-                <NoResponse />
-              </div>
-            )}
-          </div>
-        </TabsContent>
-        <TabsContent value="headers">
-          <div className="px-1">
-            <HeaderTable
-              headers={response?.app_responses?.responseHeaders ?? {}}
-            />
-          </div>
-        </TabsContent>
-        <TabsContent value="fpx">COME BACK SOON HOMIE!</TabsContent>
-      </Tabs>
-    </div>
+      </TabsContent>
+      <TabsContent value="headers">
+        <div className="px-1">
+          {
+            response?.app_responses?.responseHeaders
+              ? <HeaderTable
+                headers={response?.app_responses?.responseHeaders ?? {}}
+              />
+              : <NoHeaders />
+          }
+        </div>
+      </TabsContent>
+      <TabsContent value="fpx">COME BACK SOON HOMIE!</TabsContent>
+    </Tabs>
   );
 
   return (
@@ -490,7 +512,7 @@ function getHttpMethodTextColor(method: string) {
   }[method];
 }
 
-interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>(
   (props, ref) => (
