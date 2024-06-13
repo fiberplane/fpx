@@ -449,7 +449,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 function ResponseDetails({ response }: { response?: Requestornator }) {
   return (
     <div className="flex-grow flex flex-col items-stretch">
-      <Tabs defaultValue="body">
+      <Tabs defaultValue="body" className="h-full">
         <div className="flex items-center">
           <TabsList className="w-full justify-start rounded-none border-b space-x-6">
             <CustomTabTrigger value="body">
@@ -464,7 +464,7 @@ function ResponseDetails({ response }: { response?: Requestornator }) {
           </TabsList>
         </div>
         <TabsContent value="body" className="h-full">
-          <div className="px-3">
+          <div className="px-3 h-full">
             {response ? (
               <ResponseBody response={response} />
             ) : (
