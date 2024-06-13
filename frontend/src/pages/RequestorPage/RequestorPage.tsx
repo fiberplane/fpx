@@ -5,6 +5,7 @@ import { cn } from "@/utils";
 import Editor, { loader } from "@monaco-editor/react";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import {
+  ComponentProps,
   SyntheticEvent,
   forwardRef,
   useCallback,
@@ -107,7 +108,7 @@ export const RequestorPage = () => {
         selectedRoute={selectedRoute}
         handleRouteClick={handleRouteClick}
       />
-      <div className="flex flex-col flex-1 ml-2">
+      <div className="flex flex-col flex-1 ml-4">
         <RequestInput
           method={selectedRoute?.method}
           path={selectedRoute?.path}
@@ -160,7 +161,7 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
   const [showDetectedRoutes, setShowDetectedRoutes] = useState(true);
   const ShowDetectedIcon = showDetectedRoutes ? CaretDownIcon : CaretRightIcon;
 
-  const { width, handleResize } = useResizableWidth(256);
+  const { width, handleResize } = useResizableWidth(320);
 
   return (
     <Resizable
@@ -178,17 +179,17 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
       <div
         style={{ width: `${width}px` }}
         className={cn(
-          "bg-muted text-gray-700 flex flex-col px-4 rounded overflow-x-hidden",
+          "flex flex-col px-4 overflow-x-hidden border-r",
         )}
       >
-        <h2 className="flex items-center rounded font-semibold py-3 text-lg">
-          Routes
+        <h2 className="flex items-center rounded font-semibold">
+          Endpoints
         </h2>
         <div className="flex-grow mt-4">
           <div className="">
-            <div className="font-medium text-sm h-9 flex items-center">
+            <div className="font-medium text-sm flex items-center mb-1">
               <ShowDetectedIcon
-                className="h-3.5 w-3.5 mr-1"
+                className="h-4 w-4 mr-0.5 cursor-pointer"
                 onClick={() => {
                   setShowDetectedRoutes((current) => !current);
                 }}
@@ -196,22 +197,23 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
               Detected Routes
             </div>
             {showDetectedRoutes && (
-              <div className="space-y-0 px-3.5">
+              <div className="space-y-0">
                 {routes?.map?.((route, index) => (
                   <div
                     key={index}
                     onClick={() => handleRouteClick(route)}
                     className={cn(
-                      "flex items-center p-1 rounded cursor-pointer font-mono text-sm",
+                      "flex items-center py-1 px-5 rounded cursor-pointer font-mono text-sm",
                       {
-                        "bg-gray-300": selectedRoute === route,
-                        "hover:bg-gray-200": selectedRoute !== route,
+                        "bg-muted": selectedRoute === route,
+                        "hover:bg-muted": selectedRoute !== route,
                       },
                     )}
                   >
                     <span
                       className={cn(
                         "text-xs",
+                        "min-w-12", // HACK - Magic number, will break of "OPTIONS", etc
                         getHttpMethodTextColor(route.method),
                       )}
                     >
@@ -314,17 +316,17 @@ function RequestMeta(props: RequestMetaProps) {
         className="w-1/4 min-w-[350px] border-r"
       >
         <Tabs defaultValue="params">
-          <div className="flex items-center justify-start ">
-            <TabsList className="w-full justify-start rounded-none border-b">
-              <TabsTrigger value="params" className="p-1 mx-2 h-9 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-inherit data-[state=active]:rounded-none data-[state=active]:border-b">
+          <div className="flex items-center">
+            <TabsList className="w-full justify-start rounded-none border-b space-x-6">
+              <CustomTabTrigger value="params">
                 Params
-              </TabsTrigger>
-              <TabsTrigger value="headers" className="p-1 mx-2 h-9 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-inherit data-[state=active]:rounded-none data-[state=active]:border-b">
+              </CustomTabTrigger>
+              <CustomTabTrigger value="headers">
                 Headers
-              </TabsTrigger>
-              <TabsTrigger value="body" className="p-1 mx-2 h-9 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-inherit data-[state=active]:rounded-none data-[state=active]:border-b">
+              </CustomTabTrigger>
+              <CustomTabTrigger value="body">
                 Body
-              </TabsTrigger>
+              </CustomTabTrigger>
             </TabsList>
           </div>
           <TabsContent value="params">
@@ -465,7 +467,7 @@ function getHttpMethodTextColor(method: string) {
   }[method];
 }
 
-interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>(
   (props, ref) => (
@@ -476,3 +478,28 @@ const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>(
     />
   ),
 );
+
+
+function CustomTabTrigger(props: ComponentProps<typeof TabsTrigger>) {
+  return (
+    <TabsTrigger
+      {...props}
+      className={cn(
+        "py-1",
+        "px-0",
+        "text-left",
+        "h-9",
+        "ml-2",
+        "text-sm",
+        "font-normal",
+        "border-b",
+        "border-transparent",
+        "data-[state=active]:shadow-none",
+        "data-[state=active]:bg-inherit",
+        "data-[state=active]:rounded-none",
+        "data-[state=active]:border-blue-500",
+        props.className
+      )}
+    />
+  )
+}
