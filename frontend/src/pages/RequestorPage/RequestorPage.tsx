@@ -458,8 +458,8 @@ function ResponseDetails({ response }: { response?: Requestornator }) {
             <CustomTabTrigger value="headers">
               Headers
             </CustomTabTrigger>
-            <CustomTabTrigger value="mizu">
-              Mizu Magic
+            <CustomTabTrigger value="fpx">
+              FPX
             </CustomTabTrigger>
           </TabsList>
         </div>
@@ -479,7 +479,7 @@ function ResponseDetails({ response }: { response?: Requestornator }) {
             <HeaderTable headers={response?.app_responses?.responseHeaders ?? {}} />
           </div>
         </TabsContent>
-        <TabsContent value="mizu">
+        <TabsContent value="fpx">
           COME BACK SOON HOMIE!
         </TabsContent>
       </Tabs>
