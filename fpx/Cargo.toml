@@ -21,7 +21,7 @@ futures-util = { version = "0.3" }
 http = { version = "1.1" }
 http-body-util = { version = "0.1" }
 include_dir = { version = "0.7.3" }
-libsql = { version = "0.3" }
+libsql = { version = "0.4" }
 once_cell = { version = "1.19" }
 opentelemetry = { version = "0.23" }
 opentelemetry_sdk = { version = "0.23", features = ["rt-tokio"] }
@@ -40,7 +40,7 @@ reqwest = { version = "0.12", default-features = false, features = [
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
 tokio = { version = "1.37", features = ["rt-multi-thread", "signal"] }
-tokio-tungstenite = { version = "0.21", features = ["rustls-tls-webpki-roots"] }
+tokio-tungstenite = { version = "0.21", features = ["rustls-tls-webpki-roots"] } # This should be kept the same as whatever Axum has
 toml = { version = "0.8" }
 tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.24" }
