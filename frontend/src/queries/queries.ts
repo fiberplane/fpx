@@ -157,7 +157,6 @@ async function fetchRelevantIssues(
     });
     const data = await response.json();
     return GitHubIssuesSchema.parse(data);
-    // return data as Array<number>;
   } catch (e: unknown) {
     console.error("Error fetching GitHub issue for a trace: ", e);
   }
@@ -178,6 +177,32 @@ async function fetchDependencies() {
 
     const data = await response.json();
     return DependenciesSchema.parse(data);
+  } catch (e: unknown) {
+    console.error("Error fetching dependencies: ", e);
+  }
+}
+
+export function useGitHubIssues(owner: string, repo: string) {
+  return useQuery({
+    queryKey: ["githubIssues", owner, repo],
+    queryFn: fetchGitHubIssues,
+  });
+  // /v0/github-issues/:owner/:repo
+}
+
+async function fetchGitHubIssues(
+  context: QueryFunctionContext<[string, string, string]>,
+) {
+  const owner = context.queryKey[1];
+  const repo = context.queryKey[2];
+  // const repo =
+  try {
+    const response = await fetch(`/v0/github-issues/${owner}/${repo}`, {
+      mode: "cors",
+    });
+
+    const data = await response.json();
+    return GitHubIssuesSchema.parse(data);
   } catch (e: unknown) {
     console.error("Error fetching dependencies: ", e);
   }

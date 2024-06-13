@@ -1,20 +1,14 @@
 import { Chunk, findAll } from "highlight-words-core";
 
 export function getChunks(text: string, searchWords: string[]) {
-  const rawChunks = findAll({
+  let chunks = findAll({
     searchWords,
     textToHighlight: text,
     findChunks,
   }).filter((chunk) => chunk.highlight);
 
-  const paddedChunks = addSurroundingWords(rawChunks, text);
-  // const paddedChunks = rawChunks.length ? addSurroundingWords(rawChunks, issue.body) : rawChunks;
-  console.log(searchWords);
-  if (paddedChunks.length > 0) {
-    console.log("before", rawChunks, "after", paddedChunks);
-  }
-  // return paddedChunks;
-  return mergeChunks(paddedChunks);
+  chunks = addSurroundingWords(chunks, text);
+  return mergeChunks(chunks);
 }
 
 function mergeChunks(chunks: Array<Chunk>) {
@@ -103,36 +97,25 @@ function getSuffixIndex(text: string, index: number) {
   return match ? index + match[0].length : null;
 }
 
-const sanitize = (text: string) => text;
-
+// This is based on the default findChunks function from highlight-words-core
 const findChunks = ({
   autoEscape,
   caseSensitive,
-  // sanitize = sanitize,
   searchWords,
   textToHighlight,
 }: {
   autoEscape?: boolean;
   caseSensitive?: boolean;
-  // sanitize?: typeof defaultSanitize,
   searchWords: Array<string>;
   textToHighlight: string;
 }): Array<Chunk> => {
-  textToHighlight = sanitize(textToHighlight);
   return searchWords
     .filter((searchWord) => searchWord) // Remove empty words
     .reduce(
       (chunks, searchWord) => {
-        searchWord = sanitize(searchWord);
+        const word = autoEscape ? escapeRegExpFn(searchWord) : searchWord;
 
-        if (autoEscape) {
-          searchWord = escapeRegExpFn(searchWord);
-        }
-
-        const regex = new RegExp(
-          `\\b${searchWord}\\b`,
-          caseSensitive ? "g" : "gi",
-        );
+        const regex = new RegExp(`\\b${word}\\b`, caseSensitive ? "g" : "gi");
         let match;
         while ((match = regex.exec(textToHighlight))) {
           const start = match.index;
@@ -155,6 +138,7 @@ const findChunks = ({
     );
 };
 
+// Util function for findChunks
 function escapeRegExpFn(string: string): string {
   return string.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
 }

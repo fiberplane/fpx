@@ -19,11 +19,13 @@ type Props = Pick<
 
 export const RelatedIssueCard = memo(function RelatedIssueCard({
   searchWords,
+
   ...issue
 }: Props) {
+  const body = issue.body ?? "";
   const chunks = useMemo(() => {
-    return getChunks(issue.body, searchWords);
-  }, [issue.body, searchWords]);
+    return getChunks(body, searchWords);
+  }, [body, searchWords]);
 
   return (
     <a href={issue.url} className="block" target="_blank" rel="noreferrer">
@@ -48,7 +50,7 @@ export const RelatedIssueCard = memo(function RelatedIssueCard({
         </div>
         <div>
           {chunks.map((chunk, index) => {
-            const section = issue.body.substring(chunk.start, chunk.end);
+            const section = body?.substring(chunk.start, chunk.end) || "";
 
             if (chunk.highlight === false) {
               return <span key={index}>{section}</span>;

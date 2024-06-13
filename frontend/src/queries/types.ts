@@ -274,7 +274,7 @@ export const GitHubIssueSchema = z.object({
   repo: z.string(),
   url: z.string(),
   title: z.string(),
-  body: z.string(),
+  body: z.string().nullable(),
   state: z.enum(["open", "closed"]),
   labels: z.array(GitHubLabelSchema),
   createdAt: z.string(),
