@@ -187,7 +187,6 @@ export function useGitHubIssues(owner: string, repo: string) {
     queryKey: ["githubIssues", owner, repo],
     queryFn: fetchGitHubIssues,
   });
-  // /v0/github-issues/:owner/:repo
 }
 
 async function fetchGitHubIssues(
@@ -195,7 +194,6 @@ async function fetchGitHubIssues(
 ) {
   const owner = context.queryKey[1];
   const repo = context.queryKey[2];
-  // const repo =
   try {
     const response = await fetch(`/v0/github-issues/${owner}/${repo}`, {
       mode: "cors",
