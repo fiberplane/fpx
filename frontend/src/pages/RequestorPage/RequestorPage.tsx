@@ -446,8 +446,8 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 
 function ResponseInstructions() {
   return (
-    <div className="flex-grow flex items-center justify-center text-gray-400">
-      <div className="flex flex-col items-center justify-center p-4">
+    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32">
+      <div className="flex flex-col items-center justify-center p-4 ">
         <CodeIcon className="w-10 h-10" />
         <div className="text-gray-600 mt-4 text-xl">No response yet</div>
         <div className="text-gray-600 mt-2">Send a request to see a response!</div>
