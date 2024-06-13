@@ -66,10 +66,21 @@ fn setup_tracing(args: &commands::Args) -> Result<()> {
     Ok(())
 }
 
+/// Ensure that all the necessary directories are created for fpx.
+///
+/// This includes the top level fpx working directory and many of the
+/// directories for other modules.
 async fn initialize_fpx_dir(path: &Path) -> Result<()> {
+    // Create top level fpx directory
     std::fs::DirBuilder::new()
         .recursive(true)
         .create(path)
+        .with_context(|| format!("Failed to create fpx working directory: {:?}", path))?;
+
+    // Create inspectors directory
+    std::fs::DirBuilder::new()
+        .recursive(true)
+        .create(path.join("inspectors"))
         .with_context(|| format!("Failed to create fpx working directory: {:?}", path))?;
 
     Ok(())
