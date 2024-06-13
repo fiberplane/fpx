@@ -145,8 +145,8 @@ pub struct Request {
     pub id: i64,
     pub method: String,
     pub url: String,
-    pub headers: BTreeMap<String, String>,
     pub body: Option<String>,
+    pub headers: BTreeMap<String, String>,
 }
 
 impl Request {
