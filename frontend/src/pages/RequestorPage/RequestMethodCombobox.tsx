@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/utils";
+import { getHttpMethodTextColor } from "./method";
 
 const methods = [
   {
@@ -35,33 +36,44 @@ const methods = [
     label: "PATCH",
   },
   {
-    value: "OPTION",
-    label: "OPTION",
-  },
-  {
     value: "DELETE",
     label: "DELETE",
   },
+  {
+    value: "OPTIONS",
+    label: "OPTIONS",
+  },
+  {
+    value: "HEAD",
+    label: "HEAD",
+  },
 ];
 
-export function RequestMethodCombobox() {
+export function RequestMethodCombobox({ method }: { method: string; }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("GET");
-
+  const [value, setValue] = React.useState(method);
+  const matchedMethod = value ? methods.find((m) => m.value === value)?.label : "GET"
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="w-[140px] justify-between"
+          className="text-left"
         >
-          {value ? methods.find((m) => m.value === value)?.label : "GET"}
-          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <span
+            className={cn(
+              "font-mono min-w-12",
+              getHttpMethodTextColor(matchedMethod ?? ""),
+            )}
+          >
+            {matchedMethod}
+          </span>
+          <CaretSortIcon className="ml-1 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[120px] p-0">
         <Command>
           <CommandList>
             <CommandGroup>
@@ -74,7 +86,14 @@ export function RequestMethodCombobox() {
                     setOpen(false);
                   }}
                 >
-                  {framework.label}
+                  <span
+                    className={cn(
+                      "text-whitefont-mono",
+                      getHttpMethodTextColor(framework.label ?? ""),
+                    )}
+                  >
+                    {framework.label}
+                  </span>
                   <CheckIcon
                     className={cn(
                       "ml-auto h-4 w-4",
@@ -90,3 +109,4 @@ export function RequestMethodCombobox() {
     </Popover>
   );
 }
+
