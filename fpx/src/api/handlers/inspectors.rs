@@ -1,6 +1,7 @@
 use crate::{api::ApiState, inspector::InspectorConfig};
 use axum::{extract::State, response::IntoResponse, Json};
 
+#[tracing::instrument(skip_all)]
 pub async fn inspector_list_handler(
     State(ApiState {
         inspector_service, ..
@@ -13,6 +14,7 @@ pub async fn inspector_list_handler(
     Json(result)
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn inspector_create_handler(
     State(ApiState {
         inspector_service, ..

@@ -3,6 +3,7 @@ use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use http::StatusCode;
 
+#[tracing::instrument(skip_all)]
 pub async fn request_get_handler(
     State(ApiState { store, .. }): State<ApiState>,
     Path(id): Path<i64>,
@@ -14,6 +15,7 @@ pub async fn request_get_handler(
     serde_json::to_string_pretty(&request).unwrap()
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn request_delete_handler() -> impl IntoResponse {
     StatusCode::NOT_IMPLEMENTED
 }

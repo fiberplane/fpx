@@ -121,9 +121,6 @@ async fn migrations_list(tx: &Transaction) -> Result<Vec<String>> {
 
     while let Some(row) = rows.next().await? {
         let name: String = row.get(0)?;
-        let created_at: f64 = row.get(1)?;
-        trace!("Migration {} applied at {}", name, created_at);
-
         results.push(name);
     }
 

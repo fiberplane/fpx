@@ -62,6 +62,7 @@ impl LibSqlStore {
             .context("Unable to start a transaction")
     }
 
+    #[tracing::instrument(skip_all)]
     pub async fn request_create(
         tx: &Transaction,
         method: &str,
@@ -94,10 +95,12 @@ impl LibSqlStore {
         Ok(result)
     }
 
+    #[tracing::instrument(skip_all)]
     pub async fn request_list(_tx: &Transaction) -> Result<Vec<Request>> {
         todo!()
     }
 
+    #[tracing::instrument(skip_all)]
     pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<Request> {
         let mut rows = tx
             .query(
