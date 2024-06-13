@@ -1,3 +1,11 @@
+//! This module contains code related to the inspectors. An inspector allows us
+//! to create a transparent proxy which will capture all requests, proxy them to
+//! remote address and then return the response to to the original requester. It
+//! will store the original request and the response to the client.
+//!
+//! Note that this is a work in progress implementation. Currently some features
+//! do not work as expected or are implemented at all.
+
 use crate::api::types::RequestAdded;
 use crate::data::libsql::LibSqlStore;
 use crate::events::ServerEvents;
