@@ -5,6 +5,8 @@ use tracing::{debug, trace};
 
 use super::libsql::LibSqlStore;
 
+// NOTE: We should probably create our own include, which will store it sorted,
+//       as an array, and with just the name and sql as the expected types.
 static MIGRATIONS: Dir<'_> = include_dir::include_dir!("$CARGO_MANIFEST_DIR/src/data/migrations");
 
 static MIGRATIONS_BOOTSTRAP: &str = "
@@ -29,14 +31,22 @@ pub async fn migrate(store: &LibSqlStore) -> Result<()> {
 
     let already_applied_migrations = migrations_list(&tx).await?;
 
+    let mut sorted_migrations: Vec<_> = MIGRATIONS
+        .files()
+        .filter_map(|entry| {
+            if entry.path().extension()? != "sql" {
+                return None;
+            } else {
+                Some((entry.path().file_stem()?.to_str()?, entry.contents_utf8()?))
+            }
+        })
+        .collect();
+    // Note sure how include_dir handles sorting, so make sure we always sort on
+    // the name, so that we apply the migrations in the correct, expected order.
+    sorted_migrations.sort_by(|(left_name, _), (right_name, _)| left_name.cmp(right_name));
+
     let mut applied_migrations = 0;
-    for (current_migration, sql) in MIGRATIONS.files().filter_map(|entry| {
-        if entry.path().extension()? != "sql" {
-            return None;
-        } else {
-            Some((entry.path().file_stem()?.to_str()?, entry.contents_utf8()?))
-        }
-    }) {
+    for (current_migration, sql) in sorted_migrations {
         if already_applied_migrations
             .iter()
             .any(|run_migration| run_migration == current_migration)
