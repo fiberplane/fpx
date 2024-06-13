@@ -4,9 +4,9 @@ use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::runtime;
 use opentelemetry_sdk::{trace, Resource};
+use std::env;
 use std::path::Path;
 use tracing_opentelemetry::OpenTelemetryLayer;
-use tracing_subscriber::layer::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Registry};
@@ -27,8 +27,17 @@ async fn main() -> Result<()> {
 }
 
 fn setup_tracing(args: &commands::Args) -> Result<()> {
-    let filter_layer = EnvFilter::from_default_env();
-    let log_layer = tracing_subscriber::fmt::layer().with_filter(EnvFilter::from_default_env());
+    let filter_layer = {
+        if let Ok(rust_log) = env::var("RUST_LOG") {
+            // User specified a custom $RUST_LOG, so use that
+            EnvFilter::builder().parse(rust_log)?
+        } else {
+            // No $RUST_LOG or invalid content, so use a custom default
+            EnvFilter::builder().parse("fpx=info,error")?
+        }
+    };
+
+    let log_layer = tracing_subscriber::fmt::layer();
 
     let trace_layer = if args.enable_tracing {
         // This tracer is responsible for sending the actual traces.
