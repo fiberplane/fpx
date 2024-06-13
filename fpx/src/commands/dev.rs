@@ -1,5 +1,6 @@
 use crate::api;
 use crate::data::libsql::{DataPath, LibSqlStore};
+use crate::data::migrations::migrate;
 use crate::events::Events;
 use crate::{initialize_fpx_dir, DEFAULT_FPX_DIRECTORY};
 use anyhow::{Context, Result};
@@ -31,7 +32,10 @@ pub async fn handle_command(args: Args) -> Result<()> {
     initialize_fpx_dir(args.fpx_directory.as_path()).await?;
 
     let store = Arc::new(open_store(&args).await?);
-    store.migrations_run().await?;
+
+    let tx = store.start_transaction().await?;
+
+    migrate(tx).await?;
 
     // Create a shared events struct, which allows events to be send to
     // WebSocket connections.
