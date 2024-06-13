@@ -1,6 +1,7 @@
 use crate::data::libsql::LibSqlStore;
 use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
+use axum::extract::FromRef;
 use axum::response::Html;
 use axum::routing::{any, get};
 use std::sync::Arc;
@@ -19,6 +20,24 @@ pub struct ApiState {
     events: Arc<ServerEvents>,
     store: Arc<LibSqlStore>,
     inspector_service: Arc<InspectorService>,
+}
+
+impl FromRef<ApiState> for Arc<LibSqlStore> {
+    fn from_ref(api_state: &ApiState) -> Arc<LibSqlStore> {
+        api_state.store.clone()
+    }
+}
+
+impl FromRef<ApiState> for Arc<ServerEvents> {
+    fn from_ref(api_state: &ApiState) -> Arc<ServerEvents> {
+        api_state.events.clone()
+    }
+}
+
+impl FromRef<ApiState> for Arc<InspectorService> {
+    fn from_ref(api_state: &ApiState) -> Arc<InspectorService> {
+        api_state.inspector_service.clone()
+    }
 }
 
 /// Create a API and expose it through a axum router.
