@@ -17,8 +17,6 @@ pub mod data;
 mod events;
 mod inspector;
 
-static DEFAULT_FPX_DIRECTORY: &str = "./.fpx";
-
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = commands::Args::parse();

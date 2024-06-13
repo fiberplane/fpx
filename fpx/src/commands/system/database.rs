@@ -3,15 +3,13 @@ use clap::Subcommand;
 use std::path::PathBuf;
 use tracing::{error, info};
 
-use crate::DEFAULT_FPX_DIRECTORY;
-
 #[derive(clap::Args, Debug)]
 pub struct Args {
     #[command(subcommand)]
     pub command: Command,
 
     /// fpx directory
-    #[arg(short, long, env, default_value = DEFAULT_FPX_DIRECTORY)]
+    #[arg(from_global)]
     pub fpx_directory: PathBuf,
 }
 

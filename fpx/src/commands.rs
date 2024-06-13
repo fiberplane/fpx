@@ -1,11 +1,14 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use std::path::PathBuf;
 use url::Url;
 
 pub mod client;
 pub mod debug;
 pub mod dev;
 pub mod system;
+
+static DEFAULT_FPX_DIRECTORY: &str = ".fpx";
 
 /// FPX - Super-charge your local development.
 #[derive(Parser, Debug)]
@@ -21,6 +24,10 @@ pub struct Args {
     /// Endpoint of the OTLP collector.
     #[clap(long, env, default_value = "http://localhost:4317")]
     pub otlp_endpoint: Url,
+
+    /// fpx directory
+    #[arg(global = true, short, long, env, default_value = DEFAULT_FPX_DIRECTORY)]
+    pub fpx_directory: PathBuf,
 }
 
 #[derive(Subcommand, Debug)]

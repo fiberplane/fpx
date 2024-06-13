@@ -2,7 +2,7 @@ use crate::api;
 use crate::data::libsql::{DataPath, LibSqlStore};
 use crate::data::migrations::migrate;
 use crate::events::Events;
-use crate::{initialize_fpx_dir, DEFAULT_FPX_DIRECTORY};
+use crate::initialize_fpx_dir;
 use anyhow::{Context, Result};
 use std::sync::Arc;
 use std::{path::PathBuf, process::exit};
@@ -19,13 +19,13 @@ pub struct Args {
     #[arg(short, long, env, default_value = "http://localhost:6767")]
     pub base_url: url::Url,
 
-    /// fpx directory
-    #[arg(short, long, env, default_value = DEFAULT_FPX_DIRECTORY)]
-    pub fpx_directory: PathBuf,
-
     /// Enable in-memory database. Useful when debugging.
     #[clap(long, env, hide = true)]
     pub in_memory_database: bool,
+
+    /// fpx directory
+    #[arg(from_global)]
+    pub fpx_directory: PathBuf,
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
