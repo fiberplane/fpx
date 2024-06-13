@@ -26,6 +26,7 @@ import { customTheme } from './Editor';
 
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 import { useRequestorFormData } from "./data";
+import { HeaderTable } from "./HeaderTable";
 
 // import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
@@ -114,7 +115,7 @@ export const RequestorPage = () => {
           path={selectedRoute?.path}
           onSubmit={onSubmit}
         />
-        <div className="flex flex-grow mt-4 rounded overflow-hidden border">
+        <div className="flex flex-grow items-stretch mt-4 rounded overflow-hidden border">
           <RequestMeta
             setBody={setBody}
             queryParams={queryParams}
@@ -313,7 +314,7 @@ function RequestMeta(props: RequestMetaProps) {
     >
       <div
         style={{ width: `${width}px` }}
-        className="w-1/4 min-w-[350px] border-r"
+        className="min-w-[350px] border-r"
       >
         <Tabs defaultValue="params">
           <div className="flex items-center">
@@ -427,10 +428,19 @@ function ResponseBody({ response }: { response?: Requestornator }) {
     );
   }
 
+  const lines = body?.split('\n')?.map((line, index) => (
+    <div key={index} className="flex h-full">
+      <span className="w-8 text-right pr-2 text-gray-600 bg-muted mr-1">{index + 1}</span>
+      <span>{line}</span>
+    </div>
+  )) ?? [];
+
+  // TODO - if response is empty, show that in a ux friendly way
+
   return (
     <div className="mt-4">
       <pre className="text-sm font-mono text-gray-800 whitespace-pre-wrap">
-        <code>{body}</code>
+        <code className="h-full">{lines}</code>
       </pre>
     </div>
   );
@@ -438,7 +448,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 
 function ResponseDetails({ response }: { response?: Requestornator }) {
   return (
-    <div className="flex-grow flex flex-col">
+    <div className="flex-grow flex flex-col items-stretch">
       <Tabs defaultValue="body">
         <div className="flex items-center">
           <TabsList className="w-full justify-start rounded-none border-b space-x-6">
@@ -453,7 +463,7 @@ function ResponseDetails({ response }: { response?: Requestornator }) {
             </CustomTabTrigger>
           </TabsList>
         </div>
-        <TabsContent value="body">
+        <TabsContent value="body" className="h-full">
           <div className="px-3">
             {response ? (
               <ResponseBody response={response} />
@@ -465,7 +475,9 @@ function ResponseDetails({ response }: { response?: Requestornator }) {
           </div>
         </TabsContent>
         <TabsContent value="headers">
-          ...
+          <div className="px-1">
+            <HeaderTable headers={response?.app_responses?.responseHeaders ?? {}} />
+          </div>
         </TabsContent>
         <TabsContent value="mizu">
           COME BACK SOON HOMIE!
