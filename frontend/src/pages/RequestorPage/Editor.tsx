@@ -1,5 +1,5 @@
 export const customTheme = {
-  base: 'vs' as const,
+  base: "vs" as const,
   inherit: true,
   rules: [
     // { token: 'comment', foreground: 'ffa500', fontStyle: 'italic underline' },
@@ -9,9 +9,9 @@ export const customTheme = {
     // { token: 'number', foreground: '00ffff' },
   ],
   colors: {
-    'editor.background': 'hsl(var(--muted))',
+    "editor.background": "hsl(var(--muted))",
     // 'editor.foreground': '#FFFFFF',
-    'editor.lineHighlightBackground': '#2B2B2B',
+    "editor.lineHighlightBackground": "#2B2B2B",
     // 'editorCursor.foreground': '#FFFFFF',
     // 'editorWhitespace.foreground': '#FFFFFF',
   },

@@ -1,5 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import {
@@ -10,7 +11,6 @@ import {
   noop,
 } from "./data";
 import { ChangeKeyValueParametersHandler, KeyValueParameter } from "./types";
-import { cn } from "@/utils";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];
@@ -66,17 +66,18 @@ const KeyValueRow = (props: KeyValueRowProps) => {
         onChange={(e) => onChangeValue(e.target.value)}
         className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none"
       />
-      <div className={cn("ml-1 flex invisible", {
-        visible: !isDraft && isHovering
-      })}>
+      <div
+        className={cn("ml-1 flex invisible", {
+          visible: !isDraft && isHovering,
+        })}
+      >
         <TrashIcon
           className={cn("w-4 h-4", {
-            'cursor-pointer': !isDraft,
+            "cursor-pointer": !isDraft,
           })}
           onClick={() => !isDraft && removeValue()}
         />
       </div>
-      
     </div>
   );
 };

@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 import { Resizable, ResizeCallbackData } from "react-resizable";
+import { customTheme } from "./Editor";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import {
   type ProbedRoute,
@@ -22,11 +23,10 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
-import { customTheme } from './Editor';
 
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
-import { useRequestorFormData } from "./data";
 import { HeaderTable } from "./HeaderTable";
+import { useRequestorFormData } from "./data";
 
 // import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
@@ -179,13 +179,9 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
     >
       <div
         style={{ width: `${width}px` }}
-        className={cn(
-          "flex flex-col px-4 overflow-x-hidden border-r",
-        )}
+        className={cn("flex flex-col px-4 overflow-x-hidden border-r")}
       >
-        <h2 className="flex items-center rounded font-semibold">
-          Endpoints
-        </h2>
+        <h2 className="flex items-center rounded font-semibold">Endpoints</h2>
         <div className="flex-grow mt-4">
           <div className="">
             <div className="font-medium text-sm flex items-center mb-1">
@@ -312,22 +308,13 @@ function RequestMeta(props: RequestMetaProps) {
         <ResizableHandle ref={ref} />
       )}
     >
-      <div
-        style={{ width: `${width}px` }}
-        className="min-w-[350px] border-r"
-      >
+      <div style={{ width: `${width}px` }} className="min-w-[350px] border-r">
         <Tabs defaultValue="params">
           <div className="flex items-center">
             <TabsList className="w-full justify-start rounded-none border-b space-x-6">
-              <CustomTabTrigger value="params">
-                Params
-              </CustomTabTrigger>
-              <CustomTabTrigger value="headers">
-                Headers
-              </CustomTabTrigger>
-              <CustomTabTrigger value="body">
-                Body
-              </CustomTabTrigger>
+              <CustomTabTrigger value="params">Params</CustomTabTrigger>
+              <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
+              <CustomTabTrigger value="body">Body</CustomTabTrigger>
             </TabsList>
           </div>
           <TabsContent value="params">
@@ -395,8 +382,8 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 
   useEffect(() => {
     loader.init().then((monaco) => {
-      monaco.editor.defineTheme('customTheme', customTheme);
-      monaco.editor.setTheme('customTheme');
+      monaco.editor.defineTheme("customTheme", customTheme);
+      monaco.editor.setTheme("customTheme");
     });
   }, []);
 
@@ -428,12 +415,15 @@ function ResponseBody({ response }: { response?: Requestornator }) {
     );
   }
 
-  const lines = body?.split('\n')?.map((line, index) => (
-    <div key={index} className="flex h-full">
-      <span className="w-8 text-right pr-2 text-gray-600 bg-muted mr-1">{index + 1}</span>
-      <span>{line}</span>
-    </div>
-  )) ?? [];
+  const lines =
+    body?.split("\n")?.map((line, index) => (
+      <div key={index} className="flex h-full">
+        <span className="w-8 text-right pr-2 text-gray-600 bg-muted mr-1">
+          {index + 1}
+        </span>
+        <span>{line}</span>
+      </div>
+    )) ?? [];
 
   // TODO - if response is empty, show that in a ux friendly way
 
@@ -452,15 +442,9 @@ function ResponseDetails({ response }: { response?: Requestornator }) {
       <Tabs defaultValue="body" className="h-full">
         <div className="flex items-center">
           <TabsList className="w-full justify-start rounded-none border-b space-x-6">
-            <CustomTabTrigger value="body">
-              Response
-            </CustomTabTrigger>
-            <CustomTabTrigger value="headers">
-              Headers
-            </CustomTabTrigger>
-            <CustomTabTrigger value="fpx">
-              FPX
-            </CustomTabTrigger>
+            <CustomTabTrigger value="body">Response</CustomTabTrigger>
+            <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
+            <CustomTabTrigger value="fpx">FPX</CustomTabTrigger>
           </TabsList>
         </div>
         <TabsContent value="body" className="h-full">
@@ -476,23 +460,21 @@ function ResponseDetails({ response }: { response?: Requestornator }) {
         </TabsContent>
         <TabsContent value="headers">
           <div className="px-1">
-            <HeaderTable headers={response?.app_responses?.responseHeaders ?? {}} />
+            <HeaderTable
+              headers={response?.app_responses?.responseHeaders ?? {}}
+            />
           </div>
         </TabsContent>
-        <TabsContent value="fpx">
-          COME BACK SOON HOMIE!
-        </TabsContent>
+        <TabsContent value="fpx">COME BACK SOON HOMIE!</TabsContent>
       </Tabs>
     </div>
-  )
+  );
 
   return (
     <div className="flex-grow flex flex-col">
       <div className="flex items-center space-x-2 h-9 bg-muted px-2 py-1 border-b">
         <div className="text-sm font-medium">Response</div>
       </div>
-  
-
     </div>
   );
 }
@@ -508,7 +490,7 @@ function getHttpMethodTextColor(method: string) {
   }[method];
 }
 
-interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>(
   (props, ref) => (
@@ -519,7 +501,6 @@ const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>(
     />
   ),
 );
-
 
 function CustomTabTrigger(props: ComponentProps<typeof TabsTrigger>) {
   return (
@@ -539,8 +520,8 @@ function CustomTabTrigger(props: ComponentProps<typeof TabsTrigger>) {
         "data-[state=active]:bg-inherit",
         "data-[state=active]:rounded-none",
         "data-[state=active]:border-blue-500",
-        props.className
+        props.className,
       )}
     />
-  )
+  );
 }

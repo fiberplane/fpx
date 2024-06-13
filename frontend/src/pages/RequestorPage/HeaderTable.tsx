@@ -5,7 +5,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
 export function HeaderTable({ headers }: { headers: Record<string, string> }) {
   return (
@@ -25,5 +25,5 @@ export function HeaderTable({ headers }: { headers: Record<string, string> }) {
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }
