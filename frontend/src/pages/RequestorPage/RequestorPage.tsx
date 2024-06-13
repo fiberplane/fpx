@@ -14,9 +14,9 @@ import {
 import { Resizable, ResizeCallbackData } from "react-resizable";
 
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
+import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
 import { CustomTabTrigger } from "./Tabs";
-import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useRequestorFormData } from "./data";
 import {
   type ProbedRoute,
@@ -29,7 +29,6 @@ import {
 
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 import { getHttpMethodTextColor } from "./method";
-
 
 function useAutoselectRoute({
   isLoading,
@@ -360,7 +359,6 @@ function RequestMeta(props: RequestMetaProps) {
     </Resizable>
   );
 }
-
 
 interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
 

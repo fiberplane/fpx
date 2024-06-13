@@ -49,10 +49,12 @@ const methods = [
   },
 ];
 
-export function RequestMethodCombobox({ method }: { method: string; }) {
+export function RequestMethodCombobox({ method }: { method: string }) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(method);
-  const matchedMethod = value ? methods.find((m) => m.value === value)?.label : "GET"
+  const matchedMethod = value
+    ? methods.find((m) => m.value === value)?.label
+    : "GET";
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -109,4 +111,3 @@ export function RequestMethodCombobox({ method }: { method: string; }) {
     </Popover>
   );
 }
-
