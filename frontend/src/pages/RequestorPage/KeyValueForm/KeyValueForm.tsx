@@ -10,6 +10,7 @@ import {
   noop,
 } from "./data";
 import { ChangeKeyValueParametersHandler, KeyValueParameter } from "./types";
+import { cn } from "@/utils";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];
@@ -38,12 +39,12 @@ const KeyValueRow = (props: KeyValueRowProps) => {
   const [isHovering, setIsHovering] = useState(false);
   return (
     <div
-      className="flex items-center space-x-0 rounded bg-muted p-2"
+      className="flex items-center space-x-0 rounded px-2 py-0"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
       <Checkbox
-        className="mr-2"
+        className="mr-1"
         checked={enabled}
         disabled={isDraft}
         onCheckedChange={() => {
@@ -65,12 +66,17 @@ const KeyValueRow = (props: KeyValueRowProps) => {
         onChange={(e) => onChangeValue(e.target.value)}
         className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none"
       />
-      {!isDraft && isHovering && (
+      <div className={cn("ml-1 flex invisible", {
+        visible: !isDraft && isHovering
+      })}>
         <TrashIcon
-          className="ml-1 w-6 h-6 cursor-pointer"
-          onClick={removeValue}
+          className={cn("w-4 h-4", {
+            'cursor-pointer': !isDraft,
+          })}
+          onClick={() => !isDraft && removeValue()}
         />
-      )}
+      </div>
+      
     </div>
   );
 };

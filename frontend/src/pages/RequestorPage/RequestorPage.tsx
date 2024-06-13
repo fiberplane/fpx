@@ -107,13 +107,13 @@ export const RequestorPage = () => {
         selectedRoute={selectedRoute}
         handleRouteClick={handleRouteClick}
       />
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 ml-2">
         <RequestInput
           method={selectedRoute?.method}
           path={selectedRoute?.path}
           onSubmit={onSubmit}
         />
-        <div className="flex flex-grow">
+        <div className="flex flex-grow mt-4 rounded overflow-hidden border">
           <RequestMeta
             setBody={setBody}
             queryParams={queryParams}
@@ -246,10 +246,10 @@ function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
   }, [path]);
 
   return (
-    <div className="px-4">
+    <div className="">
       <form
         onSubmit={onSubmit}
-        className="flex items-center justify-between rounded bg-muted"
+        className="flex items-center justify-between rounded bg-muted border"
       >
         <div className="flex flex-grow items-center space-x-2">
           {/* <RequestMethodCombobox /> */}
@@ -311,18 +311,18 @@ function RequestMeta(props: RequestMetaProps) {
     >
       <div
         style={{ width: `${width}px` }}
-        className="w-1/4 min-w-[350px] border-r-2 border-muted p-4"
+        className="w-1/4 min-w-[350px] border-r"
       >
         <Tabs defaultValue="params">
-          <div className="flex items-center justify-start">
-            <TabsList>
-              <TabsTrigger value="params" className="text-sm font-medium">
+          <div className="flex items-center justify-start ">
+            <TabsList className="w-full justify-start rounded-none border-b">
+              <TabsTrigger value="params" className="p-1 mx-2 h-9 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-inherit data-[state=active]:rounded-none data-[state=active]:border-b">
                 Params
               </TabsTrigger>
-              <TabsTrigger value="headers" className="text-sm font-medium">
+              <TabsTrigger value="headers" className="p-1 mx-2 h-9 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-inherit data-[state=active]:rounded-none data-[state=active]:border-b">
                 Headers
               </TabsTrigger>
-              <TabsTrigger value="body" className="text-sm font-medium">
+              <TabsTrigger value="body" className="p-1 mx-2 h-9 text-sm font-medium data-[state=active]:shadow-none data-[state=active]:bg-inherit data-[state=active]:rounded-none data-[state=active]:border-b">
                 Body
               </TabsTrigger>
             </TabsList>
@@ -426,8 +426,8 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   }
 
   return (
-    <div className="p-4 bg-gray-100 rounded-lg shadow-lg">
-      <pre className="text-sm text-gray-800 whitespace-pre-wrap">
+    <div className="mt-4">
+      <pre className="text-sm font-mono text-gray-800 whitespace-pre-wrap">
         <code>{body}</code>
       </pre>
     </div>
@@ -436,17 +436,20 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 
 function ResponseDetails({ response }: { response?: Requestornator }) {
   return (
-    <div className="flex-grow flex flex-col p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-lg font-medium">Response</div>
+    <div className="flex-grow flex flex-col">
+      <div className="flex items-center space-x-2 h-9 bg-muted px-2 py-1 border-b">
+        <div className="text-sm font-medium">Response</div>
       </div>
-      {response ? (
-        <ResponseBody response={response} />
-      ) : (
-        <div className="flex-grow flex items-center justify-center text-gray-400">
-          <NoResponse />
-        </div>
-      )}
+      <div className="p-2">
+        {response ? (
+          <ResponseBody response={response} />
+        ) : (
+          <div className="flex-grow flex items-center justify-center text-gray-400">
+            <NoResponse />
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }
