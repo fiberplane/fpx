@@ -33,9 +33,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     let store = Arc::new(open_store(&args).await?);
 
-    let tx = store.start_transaction().await?;
-
-    migrate(tx).await?;
+    migrate(&store).await?;
 
     // Create a shared events struct, which allows events to be send to
     // WebSocket connections.

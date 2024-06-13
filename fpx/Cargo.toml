@@ -19,7 +19,17 @@ axum = { version = "0.7", features = [
 clap = { version = "4.0", features = ["derive", "env"] }
 futures-util = { version = "0.3" }
 http = { version = "1.1" }
+http-body-util = { version = "0.1" }
+include_dir = { version = "0.7.3" }
+libsql = { version = "0.3" }
 once_cell = { version = "1.19" }
+opentelemetry = { version = "0.23" }
+opentelemetry_sdk = { version = "0.23", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.16", features = [
+    "http-json",
+    "reqwest-client",
+    "reqwest-rustls-webkpi-roots",
+] }
 rand = { version = "0.8.5" }
 reqwest = { version = "0.12", default-features = false, features = [
     "charset",
@@ -31,21 +41,8 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
 tokio = { version = "1.37", features = ["rt-multi-thread", "signal"] }
 tokio-tungstenite = { version = "0.21", features = ["rustls-tls-webpki-roots"] }
+toml = { version = "0.8" }
 tracing = { version = "0.1" }
+tracing-opentelemetry = { version = "0.24" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = { version = "2.5" }
-
-
-tracing-opentelemetry = { version = "0.24" }
-
-opentelemetry = { version = "0.23" }
-opentelemetry_sdk = { version = "0.23", features = ["rt-tokio"] }
-opentelemetry-otlp = { version = "0.16", features = [
-    "http-json",
-    "reqwest-client",
-    "reqwest-rustls-webkpi-roots",
-] }
-http-body-util = { version = "0.1" }
-libsql = { version = "0.3" }
-
-toml = { version = "0.8" }
