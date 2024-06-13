@@ -25,7 +25,7 @@ use tracing::{error, info, trace};
 
 /// This service manages multiple inspectors.
 pub struct InspectorService {
-    config_path: PathBuf,
+    inspector_config_path: PathBuf,
 
     inspectors: Vec<InspectorInstance>,
 
@@ -44,7 +44,7 @@ impl InspectorService {
         events: Arc<ServerEvents>,
     ) -> Result<Self> {
         // Get all the .toml files
-        let configs: Vec<_> = std::fs::read_dir(config_path.join("inspectors"))
+        let configs: Vec<_> = std::fs::read_dir(&config_path)
             .with_context(|| format!("Unable to read the contents: {config_path:?}"))?
             // Ignore any entries that result in a error
             .filter_map(Result::ok)
@@ -83,7 +83,7 @@ impl InspectorService {
             shutdown,
             store,
             events,
-            config_path,
+            inspector_config_path: config_path,
         };
 
         for config in configs {
@@ -118,8 +118,7 @@ impl InspectorService {
             let serialized_toml = toml::to_string_pretty(&inspector_config)
                 .with_context(|| "Unable to serialize the inspector config")?;
             let path = self
-                .config_path
-                .join("inspectors")
+                .inspector_config_path
                 .join(format!("{}.toml", inspector_config.name));
             let mut file = File::create(path).await?;
             file.write_all(serialized_toml.as_bytes()).await?;

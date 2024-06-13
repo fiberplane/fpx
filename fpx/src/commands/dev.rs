@@ -40,7 +40,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
     let events = Arc::new(Events::new());
 
     let inspector_service = crate::inspector::InspectorService::start(
-        args.fpx_directory,
+        args.fpx_directory.join("inspectors"),
         store.clone(),
         events.clone(),
     )
