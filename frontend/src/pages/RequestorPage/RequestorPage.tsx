@@ -439,18 +439,47 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 function ResponseDetails({ response }: { response?: Requestornator }) {
   return (
     <div className="flex-grow flex flex-col">
+      <Tabs defaultValue="body">
+        <div className="flex items-center">
+          <TabsList className="w-full justify-start rounded-none border-b space-x-6">
+            <CustomTabTrigger value="body">
+              Response
+            </CustomTabTrigger>
+            <CustomTabTrigger value="headers">
+              Headers
+            </CustomTabTrigger>
+            <CustomTabTrigger value="mizu">
+              Mizu Magic
+            </CustomTabTrigger>
+          </TabsList>
+        </div>
+        <TabsContent value="body">
+          <div className="px-3">
+            {response ? (
+              <ResponseBody response={response} />
+            ) : (
+              <div className="flex-grow flex items-center justify-center text-gray-400">
+                <NoResponse />
+              </div>
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="headers">
+          ...
+        </TabsContent>
+        <TabsContent value="mizu">
+          COME BACK SOON HOMIE!
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+
+  return (
+    <div className="flex-grow flex flex-col">
       <div className="flex items-center space-x-2 h-9 bg-muted px-2 py-1 border-b">
         <div className="text-sm font-medium">Response</div>
       </div>
-      <div className="p-2">
-        {response ? (
-          <ResponseBody response={response} />
-        ) : (
-          <div className="flex-grow flex items-center justify-center text-gray-400">
-            <NoResponse />
-          </div>
-        )}
-      </div>
+  
 
     </div>
   );
