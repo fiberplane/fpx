@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
-import Editor from "@monaco-editor/react";
+import Editor, { loader } from "@monaco-editor/react";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import {
   SyntheticEvent,
@@ -21,6 +21,7 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
+import { customTheme } from './Editor';
 
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 import { useRequestorFormData } from "./data";
@@ -388,6 +389,13 @@ function isJson(str: string) {
 
 function ResponseBody({ response }: { response?: Requestornator }) {
   const body = response?.app_responses?.responseBody;
+
+  useEffect(() => {
+    loader.init().then((monaco) => {
+      monaco.editor.defineTheme('customTheme', customTheme);
+      monaco.editor.setTheme('customTheme');
+    });
+  }, []);
 
   // Special rendering for JSON
   if (body && isJson(body)) {
