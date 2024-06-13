@@ -1,9 +1,11 @@
 import { DataTable } from "@/components/ui/DataTable";
+import { IssueIconWithStatus } from "@/components/ui/IssueIconWithStatus";
 import { useDependencies, useGitHubIssues } from "@/queries/queries";
 import { GithubIssue } from "@/queries/types";
 import { ColumnDef, getPaginationRowModel } from "@tanstack/react-table";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { IssueSection } from "../RequestDetailsPage/RequestIssues/RelatedIssuesContent/IssueSection";
+import { TimeAgo } from "../RequestDetailsPage/TimeAgo";
 
 export function IssuesPage() {
   const { data, isLoading, isError } = useDependencies();
@@ -24,7 +26,7 @@ export function IssuesPage() {
 
   return (
     <IssueSection title="Issues" description="View issues for a dependency">
-      <div className="flex gap-4 py-4">
+      <div className="flex gap-4 pb-6">
         <div className="font-bold">Filter dependencies:</div>
         <ul className="flex gap-4">
           {data?.map((dependency) => (
@@ -54,6 +56,18 @@ export function IssuesPage() {
 function Issues(props: { owner: string; repo: string }) {
   const { data, isError, isLoading } = useGitHubIssues(props.owner, props.repo);
 
+  // Sort by created at
+  const sortedData = useMemo(
+    () =>
+      data &&
+      [...data].sort((a, b) => {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      }),
+    [data],
+  );
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -62,15 +76,18 @@ function Issues(props: { owner: string; repo: string }) {
     return <div>Error loading issues</div>;
   }
 
-  if (!data || data.length === 0) {
+  if (!sortedData || sortedData.length === 0) {
     return <div>No issues</div>;
   }
 
   return (
     <DataTable
       columns={columns}
-      data={data}
+      data={sortedData}
       getPaginationRowModel={getPaginationRowModel<GithubIssue>}
+      handleRowClick={(row) => {
+        window.open(row.original.url, "_blank");
+      }}
     />
   );
 }
@@ -78,18 +95,46 @@ function Issues(props: { owner: string; repo: string }) {
 const columns: Array<ColumnDef<GithubIssue>> = [
   {
     header: "Title",
-    accessorKey: "title",
-  },
-  {
-    header: "State",
-    accessorKey: "state",
+    meta: {
+      headerClassName: "pl-11",
+    },
+    cell: (props) => {
+      return (
+        <a
+          href={props.row.original.url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex gap-4 items-center"
+        >
+          <IssueIconWithStatus
+            isPr={props.row.original.url.includes("/pull/")}
+            isClosed={!!props.row.original.closedAt}
+            className="w-5 h-5"
+          />
+          <div className="grid items-center">
+            <span className="font-bold text-lg">
+              {props.row.original.title}
+            </span>
+            <span className="text-muted-foreground">
+              #{props.row.original.id}
+            </span>
+          </div>
+        </a>
+      );
+    },
   },
   {
     header: "Created At",
     accessorKey: "createdAt",
+    cell: (props) => {
+      return <TimeAgo date={props.row.original.createdAt} />;
+    },
   },
   {
     header: "Updated At",
     accessorKey: "updatedAt",
+    cell: (props) => {
+      return <TimeAgo date={props.row.original.updatedAt} />;
+    },
   },
 ];

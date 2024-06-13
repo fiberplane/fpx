@@ -1,8 +1,8 @@
 import { GithubIssue } from "@/queries/types";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { memo, useMemo } from "react";
+import { IssueIconWithStatus } from "../../../../../components/ui/IssueIconWithStatus";
 import { TimeAgo } from "../../../TimeAgo";
-import { RelatedIcon } from "./RelatedIcon";
 import { getChunks } from "./utils";
 
 type Props = Pick<
@@ -32,7 +32,7 @@ export const RelatedIssueCard = memo(function RelatedIssueCard({
       <div className="py-6 px-4 -mx-4 rounded-sm hover:bg-neutral-100">
         <div className="flex items-center justify-between">
           <div className="truncate text-sm font-medium flex gap-1 items-center">
-            <RelatedIcon
+            <IssueIconWithStatus
               isPr={issue.url.includes("/pull/")}
               isClosed={!!issue.closedAt}
             />
