@@ -39,7 +39,10 @@ pub struct CreateArgs {
 
 async fn create_inspector(args: CreateArgs) -> Result<()> {
     let client = reqwest::Client::new();
-    let url = args.base_url.join("api/inspectors").unwrap();
+    let url = args
+        .base_url
+        .join("api/inspectors")
+        .context("Unable to create route")?;
 
     let inspector_config = InspectorConfig {
         name: args.name,
