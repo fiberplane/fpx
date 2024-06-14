@@ -138,7 +138,7 @@ export function createHonoMiddleware<E extends Env, S extends Schema, P extends 
         const routeInspectorHeader = c.req.header("X-Fpx-Route-Inspector");
 
         const routes = app
-          ? app?.routes?.map((route: RouterRoute) => ({
+          ? app?.routes?.map((route) => ({
             method: route.method,
             path: route.path,
             handler: route.handler.toString(),

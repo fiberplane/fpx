@@ -4,7 +4,7 @@
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
   "main": "dist/index.js",
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0-alpha.3",
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3"
   },
