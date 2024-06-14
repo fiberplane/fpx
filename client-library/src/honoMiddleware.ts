@@ -54,13 +54,11 @@ const defaultConfig = {
   },
 };
 
-export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
+export function createHonoMiddleware<E extends Env, S extends Schema, P extends string, App extends Hono<E, S, P>>(
   app?: App,
   config?: FpxConfig,
 ) {
-  // type ThisHonoContext = Parameters<MiddlewareHandler<ExtractEnv<App>, ExtractBasePath<App>>>[0];
-
-  const handler = createMiddleware(async function honoMiddleware(c, next) {
+  const handler: MiddlewareHandler<E, P> = (async function honoMiddleware(c, next) {
     const {
       libraryDebugMode,
       monitor: {
@@ -78,7 +76,10 @@ export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
      }
     };
 
+
+    // @ts-expect-error not typed well
     const endpoint = env<FpxEnv>(c).MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs";
+    // @ts-expect-error not typed well
     const service = env<FpxEnv>(c).SERVICE_NAME || "unknown";
 
     const ctx = c.executionCtx;
