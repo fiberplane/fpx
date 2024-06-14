@@ -1,13 +1,13 @@
-import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
-import { CodeIcon } from "@radix-ui/react-icons";
-import { useEffect } from "react";
-import { MonacoJsonEditor, useCustomMonacoTheme } from "./Editors";
-import { Requestornator } from "./queries";
-
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
+
+import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
 import { noop } from "@/utils";
+import { CodeIcon } from "@radix-ui/react-icons";
+import { MonacoJsonEditor, useCustomMonacoTheme } from "./Editors";
+import { CodeMirrorJsonEditor } from "./Editors";
 import { HeaderTable } from "./HeaderTable";
 import { CustomTabTrigger } from "./Tabs";
+import { Requestornator } from "./queries";
 
 export function ResponseInstructions() {
   return (
@@ -86,6 +86,9 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   // Special rendering for JSON
   if (body && isJson(body)) {
     const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
+
+    return <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />;
+
     return (
       <MonacoJsonEditor
         height="600px"

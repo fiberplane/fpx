@@ -15,6 +15,7 @@ import {
 import { Resizable, ResizeCallbackData } from "react-resizable";
 
 import { MonacoJsonEditor } from "./Editors";
+import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
@@ -335,7 +336,12 @@ function RequestMeta(props: RequestMetaProps) {
             />
           </TabsContent>
           <TabsContent value="body">
-            <MonacoJsonEditor onChange={setBody} value={body} />
+            <CodeMirrorJsonEditor
+              onChange={setBody}
+              value={body}
+              maxHeight="800px"
+            />
+            {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
           </TabsContent>
         </Tabs>
       </div>
