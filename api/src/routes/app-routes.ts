@@ -84,9 +84,10 @@ app.post(
         })
         .transform(async ({ headers, status }) => {
           const responseHeaders: Record<string, string> = {};
-          for (const [key, value] of headers.entries()) {
-            responseHeaders[key] = value;
-          }
+          // NOTE - Order of arguments when you do `forEach` on a Headers object is (headerValue, headerName)
+          headers.forEach((headerValue, headerName) => {
+            responseHeaders[headerName] = headerValue;
+          })
 
           return {
             responseHeaders,
