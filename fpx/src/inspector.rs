@@ -16,23 +16,18 @@ use axum::routing::any;
 use futures_util::Future;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::ops::Deref;
 use std::path::PathBuf;
+use std::sync::Arc;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::broadcast;
 use tracing::{error, info, trace};
 
 /// This service manages multiple inspectors.
+#[derive(Clone)]
 pub struct InspectorService {
-    inspector_config_path: PathBuf,
-
-    inspectors: Vec<InspectorInstance>,
-
-    /// Temporary way to shutdown all the inspectors.
-    shutdown: broadcast::Sender<()>,
-
-    store: Store,
-    events: ServerEvents,
+    inspector_service: Arc<InspectorServiceImpl>,
 }
 
 impl InspectorService {
@@ -73,7 +68,7 @@ impl InspectorService {
             .collect();
 
         let (shutdown, _) = broadcast::channel(100);
-        let result = InspectorService {
+        let inspector_service = InspectorServiceImpl {
             inspectors: Vec::new(),
             shutdown,
             store,
@@ -85,7 +80,7 @@ impl InspectorService {
             match config {
                 Ok(config) => {
                     trace!("Starting inspector: {:#?}", config.name);
-                    result.create(config, false).await?;
+                    inspector_service.create(config, false).await?;
                 }
                 Err(e) => {
                     error!("Error: {:#?}", e);
@@ -93,9 +88,33 @@ impl InspectorService {
             }
         }
 
-        Ok(result)
+        Ok(Self {
+            inspector_service: Arc::new(inspector_service),
+        })
     }
+}
 
+impl Deref for InspectorService {
+    type Target = InspectorServiceImpl;
+
+    fn deref(&self) -> &Self::Target {
+        self.inspector_service.deref()
+    }
+}
+
+pub struct InspectorServiceImpl {
+    inspector_config_path: PathBuf,
+
+    inspectors: Vec<InspectorInstance>,
+
+    /// Temporary way to shutdown all the inspectors.
+    shutdown: broadcast::Sender<()>,
+
+    store: Store,
+    events: ServerEvents,
+}
+
+impl InspectorServiceImpl {
     pub async fn list(&self) -> Result<Vec<&InspectorConfig>> {
         let result = self
             .inspectors

@@ -35,7 +35,7 @@ pub async fn migrate(store: &Store) -> Result<()> {
         .files()
         .filter_map(|entry| {
             if entry.path().extension()? != "sql" {
-                return None;
+                None
             } else {
                 Some((entry.path().file_stem()?.to_str()?, entry.contents_utf8()?))
             }

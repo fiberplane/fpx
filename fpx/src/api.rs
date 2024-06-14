@@ -4,7 +4,6 @@ use crate::inspector::InspectorService;
 use axum::extract::FromRef;
 use axum::response::Html;
 use axum::routing::{any, get};
-use std::sync::Arc;
 use url::Url;
 
 mod handlers;
@@ -19,7 +18,7 @@ pub struct ApiState {
 
     events: ServerEvents,
     store: Store,
-    inspector_service: Arc<InspectorService>,
+    inspector_service: InspectorService,
 }
 
 impl FromRef<ApiState> for Store {
@@ -34,8 +33,8 @@ impl FromRef<ApiState> for ServerEvents {
     }
 }
 
-impl FromRef<ApiState> for Arc<InspectorService> {
-    fn from_ref(api_state: &ApiState) -> Arc<InspectorService> {
+impl FromRef<ApiState> for InspectorService {
+    fn from_ref(api_state: &ApiState) -> InspectorService {
         api_state.inspector_service.clone()
     }
 }
@@ -45,7 +44,7 @@ pub async fn create_api(
     base_url: url::Url,
     events: ServerEvents,
     store: Store,
-    inspector_service: Arc<InspectorService>,
+    inspector_service: InspectorService,
 ) -> axum::Router {
     let api_state = ApiState {
         base_url,

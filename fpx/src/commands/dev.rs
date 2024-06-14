@@ -4,7 +4,6 @@ use crate::data::store::{DataPath, Store};
 use crate::events::Events;
 use crate::initialize_fpx_dir;
 use anyhow::{Context, Result};
-use std::sync::Arc;
 use std::{path::PathBuf, process::exit};
 use tracing::info;
 use tracing::warn;
@@ -46,13 +45,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
     )
     .await?;
 
-    let app = api::create_api(
-        args.base_url.clone(),
-        events,
-        store,
-        Arc::new(inspector_service),
-    )
-    .await;
+    let app = api::create_api(args.base_url.clone(), events, store, inspector_service).await;
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)
         .await
