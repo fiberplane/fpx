@@ -36,9 +36,6 @@ type FpxConfig = {
   };
 };
 
-type ExtractEnv<T> = T extends Hono<infer E, any, any> ? E : never;
-type ExtractBasePath<T> = T extends Hono<any, any, infer P> ? P : never;
-
 const defaultConfig = {
   libraryDebugMode: false,
   monitor: {
@@ -48,14 +45,13 @@ const defaultConfig = {
   },
 };
 
-
-export function createHonoMiddleware<E extends Env, S extends Schema, P extends string, App extends Hono<E, S, P>>(
+export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
   app?: App,
   config?: FpxConfig,
-): MiddlewareHandler<ExtractEnv<App>, ExtractBasePath<App>> {
+) {
   // type ThisHonoContext = Parameters<MiddlewareHandler<ExtractEnv<App>, ExtractBasePath<App>>>[0];
 
-  const handler: MiddlewareHandler<ExtractEnv<App>, ExtractBasePath<App>> = async function honoMiddleware(c, next) {
+  const handler: MiddlewareHandler = async function honoMiddleware(c, next) {
     const {
       libraryDebugMode,
       monitor: {
@@ -64,7 +60,7 @@ export function createHonoMiddleware<E extends Env, S extends Schema, P extends 
         // TODO - implement this control/feature
         // logging: monitorLogging,
       },
-    } = { 
+    }: FpxConfig = { 
       ...defaultConfig,
      ...config,
      monitor: {
@@ -72,10 +68,8 @@ export function createHonoMiddleware<E extends Env, S extends Schema, P extends 
        ...config?.monitor,
      }
     };
-    // FIXME
-    // @ts-ignore
+
     const endpoint = env<FpxEnv>(c).MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs";
-    // @ts-ignore
     const service = env<FpxEnv>(c).SERVICE_NAME || "unknown";
 
     const ctx = c.executionCtx;
