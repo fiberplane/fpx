@@ -3,6 +3,7 @@
     "target": "ESNext",
     "module": "NodeNext",
     "strict": true,
+    "noErrorTruncation": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
     "types": ["node"],
