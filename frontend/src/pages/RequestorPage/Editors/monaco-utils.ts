@@ -21,7 +21,7 @@ export const customMonacoTheme = {
     // { token: 'number', foreground: '00ffff' },
   ],
   colors: {
-    "editor.background": "hsl(var(--muted))",
+    "editor.background": "#C86604",
     // 'editor.foreground': '#FFFFFF',
     "editor.lineHighlightBackground": "#2B2B2B",
     // 'editorCursor.foreground': '#FFFFFF',
