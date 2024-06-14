@@ -17,7 +17,6 @@ function mergeChunks(chunks: Array<Chunk>) {
   }
 
   const mergedChunks: Chunk[] = [{ ...chunks[0] }];
-
   // Iterate through the chunks and merge adjacent ones
   for (let i = 1; i < chunks.length; i++) {
     const previous = mergedChunks[mergedChunks.length - 1];
@@ -93,22 +92,22 @@ function getSuffixIndex(text: string, index: number) {
 
   // Execute the regex on the substring
   const match = regex.exec(substring);
-  console.log("match", match);
   return match ? index + match[0].length : null;
 }
 
-// This is based on the default findChunks function from highlight-words-core
-const findChunks = ({
-  autoEscape,
-  caseSensitive,
-  searchWords,
-  textToHighlight,
-}: {
+type Options = {
   autoEscape?: boolean;
   caseSensitive?: boolean;
   searchWords: Array<string>;
   textToHighlight: string;
-}): Array<Chunk> => {
+};
+// This is based on the default findChunks function from highlight-words-core
+function findChunks({
+  autoEscape = false,
+  caseSensitive = false,
+  searchWords,
+  textToHighlight,
+}: Options): Array<Chunk> {
   return searchWords
     .filter((searchWord) => searchWord) // Remove empty words
     .reduce(

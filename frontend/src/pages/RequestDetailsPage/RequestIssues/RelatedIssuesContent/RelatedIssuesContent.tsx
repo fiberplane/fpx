@@ -6,7 +6,7 @@ export function RelatedIssuesContent(props: { traceId: string }) {
   const { traceId } = props;
 
   return (
-    <div className="flex flex-row">
+    <div className="flex flex-row gap-2">
       <CardSection
         className="basis-2/3"
         title="Related issues"

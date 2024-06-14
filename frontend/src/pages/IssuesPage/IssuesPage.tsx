@@ -4,8 +4,8 @@ import { useDependencies, useGitHubIssues } from "@/queries/queries";
 import { GithubIssue } from "@/queries/types";
 import { ColumnDef, getPaginationRowModel } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { IssueSection } from "../RequestDetailsPage/RequestIssues/RelatedIssuesContent/IssueSection";
 import { TimeAgo } from "../RequestDetailsPage/TimeAgo";
+import { CardSection } from "@/components/ui/card";
 
 export function IssuesPage() {
   const { data, isLoading, isError } = useDependencies();
@@ -25,7 +25,7 @@ export function IssuesPage() {
   const repo = item?.repository.repo;
 
   return (
-    <IssueSection title="Issues" description="View issues for a dependency">
+    <CardSection title="Issues" description="View issues for a dependency">
       <div className="flex gap-4 pb-6">
         <div className="font-bold">Filter dependencies:</div>
         <ul className="flex gap-4">
@@ -49,7 +49,7 @@ export function IssuesPage() {
         </ul>
       </div>
       {owner && repo && <Issues owner={owner} repo={repo} />}
-    </IssueSection>
+    </CardSection>
   );
 }
 

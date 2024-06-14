@@ -1,6 +1,7 @@
 import { GithubIssue } from "@/queries/types";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { memo, useMemo } from "react";
+
 import { IssueIconWithStatus } from "../../../../../components/ui/IssueIconWithStatus";
 import { TimeAgo } from "../../../TimeAgo";
 import { getChunks } from "./utils";
@@ -19,7 +20,6 @@ type Props = Pick<
 
 export const RelatedIssueCard = memo(function RelatedIssueCard({
   searchWords,
-
   ...issue
 }: Props) {
   const body = issue.body ?? "";
@@ -51,7 +51,6 @@ export const RelatedIssueCard = memo(function RelatedIssueCard({
         <div>
           {chunks.map((chunk, index) => {
             const section = body?.substring(chunk.start, chunk.end) || "";
-
             if (chunk.highlight === false) {
               return <span key={index}>{section}</span>;
             }
