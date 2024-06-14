@@ -15,6 +15,13 @@
       "when": 1718363729674,
       "tag": "0001_bent_magus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1718364089354,
+      "tag": "0002_supreme_ares",
+      "breakpoints": true
     }
   ]
 }

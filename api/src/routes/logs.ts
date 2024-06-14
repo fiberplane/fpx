@@ -31,7 +31,12 @@ const schemaPostLogs = z.object({
     .nullable(),
   timestamp: z.string(),
   routes: z.array(
-    z.object({ method: z.string(), path: z.string(), handler: z.string(), handlerType: z.string() }),
+    z.object({
+      method: z.string(),
+      path: z.string(),
+      handler: z.string(),
+      handlerType: z.string(),
+    }),
   ),
 });
 
@@ -54,13 +59,19 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
 
   try {
     if (routes.length > 0) {
+      // "Unregister" all app routes (including middleware)
+      await db.update(appRoutes).set({ currentlyRegistered: false });
+      // "Re-register" all current app routes
       for (const route of routes) {
         await db
           .insert(appRoutes)
-          .values(route)
+          .values({
+            ...route,
+            currentlyRegistered: true,
+          })
           .onConflictDoUpdate({
-            target: [appRoutes.path, appRoutes.method],
-            set: { handler: route.handler },
+            target: [appRoutes.path, appRoutes.method, appRoutes.handlerType],
+            set: { handler: route.handler, currentlyRegistered: true },
           });
       }
     }

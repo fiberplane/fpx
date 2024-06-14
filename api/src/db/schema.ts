@@ -24,6 +24,10 @@ export const appRoutes = sqliteTable(
     method: text("method", { mode: "text" }),
     handler: text("handler", { mode: "text" }),
     handlerType: text("handler_type", { mode: "text" }),
+    // A flag that indicates if this route is currently registered or the result of an old scan
+    currentlyRegistered: integer("currentlyRegistered", {
+      mode: "boolean",
+    }).default(false),
   },
   (table) => {
     return {

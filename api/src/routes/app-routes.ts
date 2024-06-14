@@ -87,7 +87,7 @@ app.post(
           // NOTE - Order of arguments when you do `forEach` on a Headers object is (headerValue, headerName)
           headers.forEach((headerValue, headerName) => {
             responseHeaders[headerName] = headerValue;
-          })
+          });
 
           return {
             responseHeaders,
