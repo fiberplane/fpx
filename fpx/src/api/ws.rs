@@ -1,5 +1,4 @@
 use super::types::{ClientMessage, ServerMessage, FPX_WEBSOCKET_ID_HEADER};
-use super::ApiState;
 use crate::api::types::ServerError;
 use crate::events::ServerEvents;
 use axum::extract::ws::{Message, WebSocket};
@@ -12,10 +11,7 @@ use tokio::sync::broadcast::Receiver;
 use tokio::sync::mpsc;
 use tracing::{debug, error, trace, warn};
 
-pub async fn ws_handler(
-    ws: WebSocketUpgrade,
-    State(ApiState { events, .. }): State<ApiState>,
-) -> Response {
+pub async fn ws_handler(ws: WebSocketUpgrade, State(events): State<ServerEvents>) -> Response {
     let ws_id = generate_ws_id();
 
     let mut result = ws
