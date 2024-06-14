@@ -14,8 +14,17 @@ import {
   tryPrettyPrintLoggerLog,
 } from "./utils";
 import { createMiddleware } from "hono/factory";
-import { RouterRoute } from "hono/types";
+import { RouterRoute as HonoRouterRoute } from "hono/types";
 import { env } from 'hono/adapter'
+
+// Type hack!
+//
+// Context parameter is not comparable across apps (?)
+type RouterRoute = {
+  path: HonoRouterRoute["path"];
+  method: HonoRouterRoute["method"];
+  handler: Function;
+}
 
 type FpxEnv = {
   MIZU_ENDPOINT: string;
@@ -51,7 +60,7 @@ export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
 ) {
   // type ThisHonoContext = Parameters<MiddlewareHandler<ExtractEnv<App>, ExtractBasePath<App>>>[0];
 
-  const handler: MiddlewareHandler = async function honoMiddleware(c, next) {
+  const handler = createMiddleware(async function honoMiddleware(c, next) {
     const {
       libraryDebugMode,
       monitor: {
@@ -205,7 +214,7 @@ export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
     for (const teardownFunction of teardownFunctions) {
       teardownFunction();
     }
-  };
+  });
 
   return handler;
 }

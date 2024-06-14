@@ -4,10 +4,9 @@
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
   "main": "dist/index.js",
-  "version": "0.1.0-beta.3",
+  "version": "0.2.0-alpha.1",
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.3",
-    "hono": "^4.3.9"
+    "@neondatabase/serverless": "^0.9.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.7.3",
@@ -15,6 +14,7 @@
     "@swc/cli": "^0.3.12",
     "@swc/core": "^1.5.22",
     "@swc/plugin-transform-imports": "^2.0.4",
+    "hono": "^4.3.9",
     "rimraf": "^5.0.7",
     "typescript": "^5.4.5"
   },
