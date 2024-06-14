@@ -1,4 +1,5 @@
 import type { NeonDbError } from "@neondatabase/serverless";
+import type { Hono } from "hono";
 import { env } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
 import { replaceFetch } from "./replace-fetch";
@@ -15,15 +16,6 @@ import {
   tryPrettyPrintLoggerLog,
 } from "./utils";
 
-// Type hack! Will explain later
-//
-type RouterRoute = {
-  path: string;
-  method: string;
-  // biome-ignore lint/complexity/noBannedTypes: need to figure out how to type this correctly later
-  handler: Function;
-};
-
 type FpxEnv = {
   MIZU_ENDPOINT: string;
   SERVICE_NAME?: string;
@@ -32,7 +24,7 @@ type FpxEnv = {
 
 type FpxConfig = {
   /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
-  libraryDebugMode?: boolean;
+  libraryDebugMode: boolean;
   monitor: {
     /** Send data to mizu about each fetch call made during a handler's lifetime */
     fetch: boolean;
@@ -43,6 +35,11 @@ type FpxConfig = {
   };
 };
 
+// TODO - Create helper type for making deeply partial types
+type FpxConfigOptions = Partial<FpxConfig & {
+  monitor: Partial<FpxConfig["monitor"]>
+}>
+
 const defaultConfig = {
   libraryDebugMode: false,
   monitor: {
@@ -52,11 +49,11 @@ const defaultConfig = {
   },
 };
 
-export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
+export function createHonoMiddleware<App extends Hono>(
   app?: App,
-  config?: FpxConfig,
+  config?: FpxConfigOptions,
 ) {
-  const handler = createMiddleware(async function honoMiddleware(c, next) {
+  const handler = createMiddleware(async function fpxHonoMiddleware(c, next) {
     const {
       libraryDebugMode,
       monitor: {
@@ -65,14 +62,7 @@ export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
         // TODO - implement this control/feature
         // logging: monitorLogging,
       },
-    }: FpxConfig = {
-      ...defaultConfig,
-      ...config,
-      monitor: {
-        ...defaultConfig.monitor,
-        ...config?.monitor,
-      },
-    };
+    } = mergeConfigs(defaultConfig, config);
 
     const endpoint =
       env<FpxEnv>(c).MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs";
@@ -214,4 +204,14 @@ export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
   });
 
   return handler;
+}
+
+/**
+ * Last-in-wins deep merge for FpxConfig
+ */
+function mergeConfigs(fallbackConfig: FpxConfig, userConfig?: FpxConfigOptions): FpxConfig {
+  return {
+    libraryDebugMode: userConfig?.libraryDebugMode ?? fallbackConfig.libraryDebugMode,
+    monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
+  };
 }
