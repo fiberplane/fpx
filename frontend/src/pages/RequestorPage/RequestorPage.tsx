@@ -10,6 +10,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { Resizable, ResizeCallbackData } from "react-resizable";
@@ -50,7 +51,11 @@ function useAutoselectRoute({
 }
 
 export const RequestorPage = () => {
-  const { data: routes, isLoading } = useProbedRoutes();
+  const { data: routesAndMiddleware, isLoading } = useProbedRoutes();
+
+  const routes = useMemo(() => {
+    return routesAndMiddleware?.filter(r => r.handlerType === "route") ?? [];
+  }, [routesAndMiddleware])
 
   const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
     isLoading,

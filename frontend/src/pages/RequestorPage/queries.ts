@@ -5,6 +5,8 @@ export type ProbedRoute = {
   path: string;
   method: string;
   handler: string;
+  handlerType: "route" | "middleware";
+  currentlyRegistered: boolean;
 };
 
 export type Requestornator = {
