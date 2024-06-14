@@ -209,6 +209,7 @@ export function createHonoMiddleware<App extends HonoApp>(
     }
 
     if (monitorRequests) {
+      c.res.headers.append("x-fpx-trace-id", traceId);
       await log(c, next);
     } else {
       await next();
