@@ -142,8 +142,9 @@ export function createHonoMiddleware(
 
         const headers = new Headers();
         headers.append("Content-Type", "application/json");
+        headers.append("x-fpx-trace-id", traceId);
         if (routeInspectorHeader) {
-          headers.append("X-Fpx-Route-Inspector", "enabled");
+          headers.append("x-Fpx-Route-Inspector", "enabled");
         }
 
         ctx.waitUntil(
