@@ -1,7 +1,14 @@
-import { QueryClient, QueryClientProvider, useQuery } from "react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  QueryFunctionContext,
+  useQuery,
+} from "react-query";
 
 import { objectWithKeyAndValue } from "@/utils";
 import {
+  DependenciesSchema,
+  GitHubIssuesSchema,
   MizuApiLogResponseSchema,
   type MizuLog,
   type MizuRequestEnd,
@@ -37,8 +44,11 @@ async function fetchMizuTraces() {
             id: log.traceId,
             description: "",
             status: "",
+            method: "",
+            path: "",
             duration: "",
             logs: [] as Array<MizuLog>,
+            size: null,
           });
         }
         const trace = map.get(log.traceId);
@@ -72,14 +82,27 @@ async function fetchMizuTraces() {
         return comparison;
       });
 
-      trace.duration = "TODO";
+      // We're currently not using the description field, so we may want to remove this
       trace.description = getTraceDescription(trace);
 
       const response = trace.logs.find((l) =>
         isMizuRequestEndMessage(l.message),
       ) as (MizuLog & { message: MizuRequestEnd }) | undefined;
+      const request = trace.logs.find((l) =>
+        isMizuRequestStartMessage(l.message),
+      ) as (MizuLog & { message: MizuRequestStart }) | undefined;
+
       const status = response?.message.status;
       trace.status = typeof status === "string" ? status : "unknown";
+      const size = response?.message.body.length;
+      trace.size = typeof size === "number" ? size : null;
+      const duration = response?.message.elapsed;
+      trace.duration = typeof duration === "string" ? duration : "-";
+
+      const method = request?.message.method;
+      trace.method = typeof method === "string" ? method : "unknown";
+      const path = request?.message.path;
+      trace.path = typeof path === "string" ? path : "unknown";
       traces.push(trace);
     }
 
@@ -92,6 +115,7 @@ async function fetchMizuTraces() {
     return traces;
   } catch (e: unknown) {
     console.error("Error fetching logs: ", e);
+    throw e;
   }
 }
 
@@ -115,4 +139,48 @@ export function getTraceDescription(trace: MizuTrace) {
     return `${method} ${path}`;
   }
   return "Unknown trace";
+}
+
+export function useRelevantIssues(traceId: string) {
+  return useQuery({
+    queryKey: ["relevantIssues", traceId],
+    queryFn: fetchRelevantIssues,
+  });
+}
+
+async function fetchRelevantIssues(
+  context: QueryFunctionContext<[string, string]>,
+) {
+  const traceId = context.queryKey[1];
+  try {
+    const response = await fetch(`/v0/relevant-issues/${traceId}`, {
+      mode: "cors",
+    });
+    const data = await response.json();
+    return GitHubIssuesSchema.parse(data);
+  } catch (e: unknown) {
+    console.error("Error fetching GitHub issue for a trace: ", e);
+    throw e;
+  }
+}
+
+export function useDependencies() {
+  return useQuery({
+    queryKey: ["dependencies"],
+    queryFn: fetchDependencies,
+  });
+}
+
+async function fetchDependencies() {
+  try {
+    const response = await fetch("/v0/dependencies", {
+      mode: "cors",
+    });
+
+    const data = await response.json();
+    return DependenciesSchema.parse(data);
+  } catch (e: unknown) {
+    console.error("Error fetching dependencies: ", e);
+    throw e;
+  }
 }

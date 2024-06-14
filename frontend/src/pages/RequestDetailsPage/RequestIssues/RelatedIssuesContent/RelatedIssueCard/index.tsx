@@ -1,0 +1,1 @@
+export { RelatedIssueCard } from "./RelatedIssueCard";

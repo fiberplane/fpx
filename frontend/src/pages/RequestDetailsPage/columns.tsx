@@ -10,7 +10,6 @@ import {
 
 import type { MizuTrace } from "@/queries";
 import { formatDate } from "@/utils";
-// import type { MizuTrace } from "@/queries/decoders"
 import { TraceDetails } from "./RequestDetails";
 
 // Extend the ColumnMeta type to include headerClassName and cellClassName
