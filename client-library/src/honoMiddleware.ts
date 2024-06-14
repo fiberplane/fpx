@@ -1,5 +1,4 @@
 import type { NeonDbError } from "@neondatabase/serverless";
-import type { Hono } from "hono";
 import { env } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
 import { replaceFetch } from "./replace-fetch";
@@ -15,6 +14,21 @@ import {
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
 } from "./utils";
+
+// Type hack that makes our middleware types play nicely with Hono types
+type RouterRoute = {
+  method: string;
+  path: string;
+  // We can't use the type of a handler that's exported by Hono for some reason.
+  // When we do that, our types end up mismatching with the user's app!
+  //
+  // biome-ignore lint/complexity/noBannedTypes:
+  handler: Function;
+};
+
+type HonoApp = {
+  routes: RouterRoute[];
+};
 
 type FpxEnv = {
   MIZU_ENDPOINT: string;
@@ -36,9 +50,11 @@ type FpxConfig = {
 };
 
 // TODO - Create helper type for making deeply partial types
-type FpxConfigOptions = Partial<FpxConfig & {
-  monitor: Partial<FpxConfig["monitor"]>
-}>
+type FpxConfigOptions = Partial<
+  FpxConfig & {
+    monitor: Partial<FpxConfig["monitor"]>;
+  }
+>;
 
 const defaultConfig = {
   libraryDebugMode: false,
@@ -49,7 +65,7 @@ const defaultConfig = {
   },
 };
 
-export function createHonoMiddleware<App extends Hono>(
+export function createHonoMiddleware<App extends HonoApp>(
   app?: App,
   config?: FpxConfigOptions,
 ) {
@@ -209,9 +225,13 @@ export function createHonoMiddleware<App extends Hono>(
 /**
  * Last-in-wins deep merge for FpxConfig
  */
-function mergeConfigs(fallbackConfig: FpxConfig, userConfig?: FpxConfigOptions): FpxConfig {
+function mergeConfigs(
+  fallbackConfig: FpxConfig,
+  userConfig?: FpxConfigOptions,
+): FpxConfig {
   return {
-    libraryDebugMode: userConfig?.libraryDebugMode ?? fallbackConfig.libraryDebugMode,
+    libraryDebugMode:
+      userConfig?.libraryDebugMode ?? fallbackConfig.libraryDebugMode,
     monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
 }
