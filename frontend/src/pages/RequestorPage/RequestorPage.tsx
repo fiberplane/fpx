@@ -1,8 +1,9 @@
+import "react-resizable/css/styles.css"; // Import the styles for the resizable component
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
 import { cn } from "@/utils";
-import Editor from "@monaco-editor/react";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import {
   SyntheticEvent,
@@ -13,11 +14,13 @@ import {
 } from "react";
 import { Resizable, ResizeCallbackData } from "react-resizable";
 
+import { MonacoJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
 import { CustomTabTrigger } from "./Tabs";
 import { useRequestorFormData } from "./data";
+import { getHttpMethodTextColor } from "./method";
 import {
   type ProbedRoute,
   Requestornator,
@@ -26,9 +29,6 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
-
-import "react-resizable/css/styles.css"; // Import the styles for the resizable component
-import { getHttpMethodTextColor } from "./method";
 
 function useAutoselectRoute({
   isLoading,
@@ -117,6 +117,7 @@ export const RequestorPage = () => {
         />
         <div className="flex flex-grow items-stretch mt-4 rounded overflow-hidden border">
           <RequestMeta
+            body={body}
             setBody={setBody}
             queryParams={queryParams}
             requestHeaders={requestHeaders}
@@ -216,7 +217,7 @@ function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
                     <span
                       className={cn(
                         "text-xs",
-                        "min-w-12", // HACK - Magic number, will break of "OPTIONS", etc
+                        "min-w-12",
                         getHttpMethodTextColor(route.method),
                       )}
                     >
@@ -276,6 +277,7 @@ function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
 }
 
 type RequestMetaProps = {
+  body?: string;
   setBody: (body?: string) => void;
   queryParams: KeyValueParameter[];
   setQueryParams: (params: KeyValueParameter[]) => void;
@@ -284,6 +286,7 @@ type RequestMetaProps = {
 };
 function RequestMeta(props: RequestMetaProps) {
   const {
+    body,
     setBody,
     queryParams,
     requestHeaders,
@@ -332,27 +335,7 @@ function RequestMeta(props: RequestMetaProps) {
             />
           </TabsContent>
           <TabsContent value="body">
-            <Editor
-              height="400px"
-              defaultLanguage="json"
-              defaultValue="{}"
-              onChange={(value) => setBody(value)}
-              options={{
-                minimap: { enabled: false, autohide: true },
-                tabSize: 2,
-                codeLens: false,
-                scrollbar: { vertical: "auto", horizontal: "auto" },
-                theme: "vs-light",
-                padding: {
-                  top: 0,
-                  bottom: 0,
-                },
-                lineNumbersMinChars: 3,
-                wordWrap: "on",
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-              }}
-            />
+            <MonacoJsonEditor onChange={setBody} value={body} />
           </TabsContent>
         </Tabs>
       </div>

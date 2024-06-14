@@ -1,4 +1,16 @@
-export const customTheme = {
+import { loader } from "@monaco-editor/react";
+import { useEffect } from "react";
+
+export const useCustomMonacoTheme = () => {
+  useEffect(() => {
+    loader.init().then((monaco) => {
+      monaco.editor.defineTheme("customMonacoTheme", customMonacoTheme);
+      monaco.editor.setTheme("customMonacoTheme");
+    });
+  }, []);
+};
+
+export const customMonacoTheme = {
   base: "vs" as const,
   inherit: true,
   rules: [

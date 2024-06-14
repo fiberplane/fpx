@@ -4,8 +4,6 @@ import {
   KeyValueParameter,
 } from "./types";
 
-export const noop = () => {};
-
 export const createParameterId = () => generateUUID();
 
 export const initializeKeyValueFormData = (): DraftKeyValueParameter[] => {

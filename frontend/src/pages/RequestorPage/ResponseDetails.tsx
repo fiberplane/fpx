@@ -1,11 +1,11 @@
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
-import Editor, { loader } from "@monaco-editor/react";
 import { CodeIcon } from "@radix-ui/react-icons";
 import { useEffect } from "react";
-import { customTheme } from "./Editor";
+import { MonacoJsonEditor, useCustomMonacoTheme } from "./Editors";
 import { Requestornator } from "./queries";
 
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
+import { noop } from "@/utils";
 import { HeaderTable } from "./HeaderTable";
 import { CustomTabTrigger } from "./Tabs";
 
@@ -80,37 +80,18 @@ function isJson(str: string) {
 function ResponseBody({ response }: { response?: Requestornator }) {
   const body = response?.app_responses?.responseBody;
 
-  useEffect(() => {
-    loader.init().then((monaco) => {
-      monaco.editor.defineTheme("customTheme", customTheme);
-      monaco.editor.setTheme("customTheme");
-    });
-  }, []);
+  // TODO - Not yet working...
+  useCustomMonacoTheme();
 
   // Special rendering for JSON
   if (body && isJson(body)) {
     const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
     return (
-      <Editor
+      <MonacoJsonEditor
         height="600px"
-        defaultLanguage="json"
         value={prettyBody}
-        options={{
-          minimap: { enabled: false },
-          tabSize: 2,
-          codeLens: false,
-          scrollbar: { vertical: "auto", horizontal: "hidden" },
-          theme: "vs-light",
-          padding: {
-            top: 0,
-            bottom: 0,
-          },
-          lineNumbersMinChars: 3,
-          wordWrap: "on",
-          scrollBeyondLastLine: false,
-          readOnly: true,
-          automaticLayout: true,
-        }}
+        readOnly
+        onChange={noop}
       />
     );
   }

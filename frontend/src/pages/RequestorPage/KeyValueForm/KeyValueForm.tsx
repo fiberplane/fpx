@@ -1,6 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/utils";
+import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import {
@@ -8,7 +8,6 @@ import {
   createChangeKey,
   createChangeValue,
   isDraftParameter,
-  noop,
 } from "./data";
 import { ChangeKeyValueParametersHandler, KeyValueParameter } from "./types";
 
