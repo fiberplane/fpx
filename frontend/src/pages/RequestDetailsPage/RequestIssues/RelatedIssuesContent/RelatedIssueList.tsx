@@ -40,19 +40,16 @@ export function RelatedIssueList(props: { traceId: string }) {
   }
 
   if (!issues || issues.length === 0 || !query) {
-    return <div>No data</div>;
+    return (
+      <div className="items-center gap-2 justify-center flex text-gray-500 mt-4">
+        <ExclamationTriangleIcon />
+        No related issues found
+      </div>
+    );
   }
 
   return (
     <ul role="list" className="divide-y divide-gray-200">
-      {issues.length === 0 && (
-        <li>
-          <div className="items-center gap-2 justify-center flex text-gray-500">
-            <ExclamationTriangleIcon />
-            No related issues found
-          </div>
-        </li>
-      )}
       {issues.map((issue) => (
         <li key={issue.id}>
           <a href={`/issues/${issue.id}`} className="block">

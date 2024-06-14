@@ -115,6 +115,7 @@ async function fetchMizuTraces() {
     return traces;
   } catch (e: unknown) {
     console.error("Error fetching logs: ", e);
+    throw e;
   }
 }
 
@@ -157,9 +158,9 @@ async function fetchRelevantIssues(
     });
     const data = await response.json();
     return GitHubIssuesSchema.parse(data);
-    // return data as Array<number>;
   } catch (e: unknown) {
     console.error("Error fetching GitHub issue for a trace: ", e);
+    throw e;
   }
 }
 
@@ -180,5 +181,6 @@ async function fetchDependencies() {
     return DependenciesSchema.parse(data);
   } catch (e: unknown) {
     console.error("Error fetching dependencies: ", e);
+    throw e;
   }
 }

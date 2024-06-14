@@ -8,12 +8,6 @@ export function getChunks(text: string, searchWords: string[]) {
   }).filter((chunk) => chunk.highlight);
 
   const paddedChunks = addSurroundingWords(rawChunks, text);
-  // const paddedChunks = rawChunks.length ? addSurroundingWords(rawChunks, issue.body) : rawChunks;
-  console.log(searchWords);
-  if (paddedChunks.length > 0) {
-    console.log("before", rawChunks, "after", paddedChunks);
-  }
-  // return paddedChunks;
   return mergeChunks(paddedChunks);
 }
 
@@ -99,7 +93,6 @@ function getSuffixIndex(text: string, index: number) {
 
   // Execute the regex on the substring
   const match = regex.exec(substring);
-  console.log("match", match);
   return match ? index + match[0].length : null;
 }
 
