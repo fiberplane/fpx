@@ -1,18 +1,21 @@
-use crate::events::EventsState;
-use crate::types::{ClientMessage, ServerMessage, FPX_WEBSOCKET_ID_HEADER};
+use super::types::{ClientMessage, ServerMessage, FPX_WEBSOCKET_ID_HEADER};
+use super::ApiState;
+use crate::api::types::ServerError;
+use crate::events::ServerEvents;
 use axum::extract::ws::{Message, WebSocket};
 use axum::extract::{State, WebSocketUpgrade};
 use axum::response::Response;
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::{SinkExt, StreamExt};
 use rand::Rng;
+use std::sync::Arc;
 use tokio::sync::broadcast::Receiver;
 use tokio::sync::mpsc;
 use tracing::{debug, error, trace, warn};
 
 pub async fn ws_handler(
     ws: WebSocketUpgrade,
-    State(events): State<EventsState<ServerMessage>>,
+    State(ApiState { events, .. }): State<ApiState>,
 ) -> Response {
     let ws_id = generate_ws_id();
 
@@ -37,7 +40,7 @@ fn ws_failed_callback(err: axum::Error) {
     error!(?err, "Failed to upgrade WebSocket connection");
 }
 
-async fn ws_socket(socket: WebSocket, events: EventsState<ServerMessage>, _ws_id: u32) {
+async fn ws_socket(socket: WebSocket, events: Arc<ServerEvents>, _ws_id: u32) {
     trace!("WebSocket connection connected");
 
     // Subscribe to the broadcast channel. This will contain all messages that
@@ -84,13 +87,15 @@ async fn ws_socket_read(mut read: SplitStream<WebSocket>, reply: mpsc::Sender<Se
                 let message: Result<ClientMessage, _> = serde_json::from_str(&msg);
 
                 match message {
-                    Ok(ClientMessage::Debug) => {
-                        debug!("Received debug message, sending ack");
-                        let _ = reply.send(ServerMessage::Ack).await;
+                    Ok(message) => {
+                        debug!("Received message, sending ack");
+                        let message = ServerMessage::ack(message.message_id);
+                        let _ = reply.send(message).await;
                     }
                     Err(err) => {
                         warn!(?err, "Error parsing message");
-                        let _ = reply.send(ServerMessage::Error).await;
+                        let message = ServerMessage::error(None, ServerError::InvalidMessage);
+                        let _ = reply.send(message).await;
                     }
                 };
             }
