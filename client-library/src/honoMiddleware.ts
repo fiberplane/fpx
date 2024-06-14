@@ -1,5 +1,6 @@
 import type { NeonDbError } from "@neondatabase/serverless";
-import type { Context, Env, Hono, MiddlewareHandler, Schema } from "hono";
+import { env } from "hono/adapter";
+import { createMiddleware } from "hono/factory";
 import { replaceFetch } from "./replace-fetch";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
 import {
@@ -13,24 +14,21 @@ import {
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
 } from "./utils";
-import { createMiddleware } from "hono/factory";
-import { RouterRoute as HonoRouterRoute } from "hono/types";
-import { env } from 'hono/adapter'
 
-// Type hack!
+// Type hack! Will explain later
 //
-// Context parameter is not comparable across apps (?)
 type RouterRoute = {
-  path: HonoRouterRoute["path"];
-  method: HonoRouterRoute["method"];
+  path: string;
+  method: string;
+  // biome-ignore lint/complexity/noBannedTypes: need to figure out how to type this correctly later
   handler: Function;
-}
+};
 
 type FpxEnv = {
   MIZU_ENDPOINT: string;
   SERVICE_NAME?: string;
   FPX_LIBRARY_DEBUG_MODE?: string;
-}
+};
 
 type FpxConfig = {
   /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
@@ -54,11 +52,11 @@ const defaultConfig = {
   },
 };
 
-export function createHonoMiddleware<E extends Env, S extends Schema, P extends string, App extends Hono<E, S, P>>(
+export function createHonoMiddleware<App extends { routes: RouterRoute[] }>(
   app?: App,
   config?: FpxConfig,
 ) {
-  const handler: MiddlewareHandler<E, P> = (async function honoMiddleware(c, next) {
+  const handler = createMiddleware(async function honoMiddleware(c, next) {
     const {
       libraryDebugMode,
       monitor: {
@@ -67,19 +65,17 @@ export function createHonoMiddleware<E extends Env, S extends Schema, P extends 
         // TODO - implement this control/feature
         // logging: monitorLogging,
       },
-    }: FpxConfig = { 
+    }: FpxConfig = {
       ...defaultConfig,
-     ...config,
-     monitor: {
-      ...defaultConfig.monitor,
-       ...config?.monitor,
-     }
+      ...config,
+      monitor: {
+        ...defaultConfig.monitor,
+        ...config?.monitor,
+      },
     };
 
-
-    // @ts-expect-error not typed well
-    const endpoint = env<FpxEnv>(c).MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs";
-    // @ts-expect-error not typed well
+    const endpoint =
+      env<FpxEnv>(c).MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs";
     const service = env<FpxEnv>(c).SERVICE_NAME || "unknown";
 
     const ctx = c.executionCtx;
@@ -139,11 +135,11 @@ export function createHonoMiddleware<E extends Env, S extends Schema, P extends 
 
         const routes = app
           ? app?.routes?.map((route) => ({
-            method: route.method,
-            path: route.path,
-            handler: route.handler.toString(),
-            handlerType: route.handler.length < 2 ? "route" : "middleware",
-          }))
+              method: route.method,
+              path: route.path,
+              handler: route.handler.toString(),
+              handlerType: route.handler.length < 2 ? "route" : "middleware",
+            }))
           : [];
 
         const payload = {
@@ -219,4 +215,3 @@ export function createHonoMiddleware<E extends Env, S extends Schema, P extends 
 
   return handler;
 }
-
