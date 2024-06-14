@@ -15,11 +15,15 @@ import {
 } from "./utils";
 import { createMiddleware } from "hono/factory";
 import { RouterRoute } from "hono/types";
+import { env } from 'hono/adapter'
 
-type Config = {
-  endpoint: string;
-  /** Name of service (not in use, but will be helpful later) */
-  service?: string;
+type FpxEnv = {
+  MIZU_ENDPOINT: string;
+  SERVICE_NAME?: string;
+  FPX_LIBRARY_DEBUG_MODE?: string;
+}
+
+type FpxConfig = {
   /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
   libraryDebugMode?: boolean;
   monitor: {
@@ -32,42 +36,48 @@ type Config = {
   };
 };
 
-type CreateConfig = (context: Context) => Config;
+type ExtractEnv<T> = T extends Hono<infer E, any, any> ? E : never;
+type ExtractBasePath<T> = T extends Hono<any, any, infer P> ? P : never;
 
-const defaultCreateConfig = (c: Context) => {
-  return {
-    endpoint: c.env?.MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs",
-    service: c.env?.SERVICE_NAME || "unknown",
-    libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
-    monitor: {
-      fetch: true,
-      logging: true,
-      requests: true,
-    },
-  };
+const defaultConfig = {
+  libraryDebugMode: false,
+  monitor: {
+    fetch: true,
+    logging: true,
+    requests: true,
+  },
 };
 
 
-export function createHonoMiddleware<E extends Env, S extends Schema, B extends string, App extends Hono<E,S,B>>(
+export function createHonoMiddleware<E extends Env, S extends Schema, P extends string, App extends Hono<E, S, P>>(
   app?: App,
-  options?: {
-    createConfig: CreateConfig;
-  },
-) {
+  config?: FpxConfig,
+): MiddlewareHandler<ExtractEnv<App>, ExtractBasePath<App>> {
+  // type ThisHonoContext = Parameters<MiddlewareHandler<ExtractEnv<App>, ExtractBasePath<App>>>[0];
 
-  const createConfig = options?.createConfig ?? defaultCreateConfig;
-  return createMiddleware<E, B>(async function honoMiddleware(c, next) {
+  const handler: MiddlewareHandler<ExtractEnv<App>, ExtractBasePath<App>> = async function honoMiddleware(c, next) {
     const {
-      endpoint,
-      service,
       libraryDebugMode,
       monitor: {
         fetch: monitorFetch,
-        // TODO - implement these controls/features
-        // logging: monitorLogging,
         requests: monitorRequests,
+        // TODO - implement this control/feature
+        // logging: monitorLogging,
       },
-    } = createConfig(c);
+    } = { 
+      ...defaultConfig,
+     ...config,
+     monitor: {
+      ...defaultConfig.monitor,
+       ...config?.monitor,
+     }
+    };
+    // FIXME
+    // @ts-ignore
+    const endpoint = env<FpxEnv>(c).MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs";
+    // @ts-ignore
+    const service = env<FpxEnv>(c).SERVICE_NAME || "unknown";
+
     const ctx = c.executionCtx;
 
     if (!app) {
@@ -124,12 +134,12 @@ export function createHonoMiddleware<E extends Env, S extends Schema, B extends 
         const routeInspectorHeader = c.req.header("X-Fpx-Route-Inspector");
 
         const routes = app
-          ? app?.routes?.map((route) => ({
-              method: route.method,
-              path: route.path,
-              handler: route.handler.toString(),
-              handlerType: route.handler.length < 2 ? "route" : "middleware",
-            }))
+          ? app?.routes?.map((route: RouterRoute) => ({
+            method: route.method,
+            path: route.path,
+            handler: route.handler.toString(),
+            handlerType: route.handler.length < 2 ? "route" : "middleware",
+          }))
           : [];
 
         const payload = {
@@ -201,5 +211,8 @@ export function createHonoMiddleware<E extends Env, S extends Schema, B extends 
     for (const teardownFunction of teardownFunctions) {
       teardownFunction();
     }
-  });
+  };
+
+  return handler;
 }
+
