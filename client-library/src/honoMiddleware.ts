@@ -1,6 +1,5 @@
 import type { NeonDbError } from "@neondatabase/serverless";
-import type { Context } from "hono";
-import type { HonoBase } from "hono/hono-base";
+import type { Context, Env, Hono, MiddlewareHandler, Schema } from "hono";
 import { replaceFetch } from "./replace-fetch";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
 import {
@@ -14,6 +13,8 @@ import {
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
 } from "./utils";
+import { createMiddleware } from "hono/factory";
+import { RouterRoute } from "hono/types";
 
 type Config = {
   endpoint: string;
@@ -46,14 +47,16 @@ const defaultCreateConfig = (c: Context) => {
   };
 };
 
-export function createHonoMiddleware<App extends HonoBase>(
+
+export function createHonoMiddleware<E extends Env, S extends Schema, B extends string, App extends Hono<E,S,B>>(
   app?: App,
   options?: {
     createConfig: CreateConfig;
   },
 ) {
+
   const createConfig = options?.createConfig ?? defaultCreateConfig;
-  return async function honoMiddleware(c: Context, next: () => Promise<void>) {
+  return createMiddleware<E, B>(async function honoMiddleware(c, next) {
     const {
       endpoint,
       service,
@@ -198,5 +201,5 @@ export function createHonoMiddleware<App extends HonoBase>(
     for (const teardownFunction of teardownFunctions) {
       teardownFunction();
     }
-  };
+  });
 }
