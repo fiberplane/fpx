@@ -26,7 +26,9 @@ CREATE TABLE `app_routes` (
 	`path` text,
 	`method` text,
 	`handler` text,
-	PRIMARY KEY(`method`, `path`)
+	`handler_type` text,
+	`currentlyRegistered` integer DEFAULT false,
+	PRIMARY KEY(`handler_type`, `method`, `path`)
 );
 --> statement-breakpoint
 CREATE TABLE `github_issues` (

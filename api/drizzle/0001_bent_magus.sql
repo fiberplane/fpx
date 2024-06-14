@@ -1,1 +1,0 @@
-ALTER TABLE `app_routes` ADD `handler_type` text;

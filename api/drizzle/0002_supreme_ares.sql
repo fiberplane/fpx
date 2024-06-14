@@ -1,1 +1,0 @@
-ALTER TABLE `app_routes` ADD `currentlyRegistered` integer DEFAULT false;

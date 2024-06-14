@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1718202487565,
-      "tag": "0000_long_annihilus",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1718363729674,
-      "tag": "0001_bent_magus",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1718364089354,
-      "tag": "0002_supreme_ares",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1718364548973,
-      "tag": "0003_productive_old_lace",
+      "when": 1718364631004,
+      "tag": "0000_overjoyed_yellow_claw",
       "breakpoints": true
     }
   ]

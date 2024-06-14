@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ace60b84-173c-4f72-b2d6-76375d7ff8fe",
+  "id": "9342dc9f-1fa0-4dc4-b7a5-432897443166",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "app_requests": {
@@ -182,6 +182,21 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "handler_type": {
+          "name": "handler_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "currentlyRegistered": {
+          "name": "currentlyRegistered",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
         }
       },
       "indexes": {},
@@ -189,6 +204,7 @@
       "compositePrimaryKeys": {
         "id": {
           "columns": [
+            "handler_type",
             "method",
             "path"
           ],
