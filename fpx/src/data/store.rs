@@ -1,25 +1,30 @@
 use crate::api::types::Request;
 use anyhow::{Context, Result};
-use libsql::{params, Builder, Connection, Database, Transaction};
+use libsql::{params, Builder, Connection, Transaction};
 use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 
-pub struct LibSqlStore {
-    _database: Database,
+/// Store is a abstraction around data access.
+///
+/// It has a single connection open to the database (either file or in-memory).
+/// The [`Connection`]'s implementation is already relying on a Arc, so we do
+/// not have to do do anything there.
+#[derive(Clone)]
+pub struct Store {
     connection: Connection,
 }
 
 pub enum DataPath {
     InMemory,
-    Local(PathBuf),
+    File(PathBuf),
 }
 
 impl DataPath {
     pub fn as_path(&self) -> &Path {
         match self {
             DataPath::InMemory => Path::new(":memory:"),
-            DataPath::Local(path) => path.as_path(),
+            DataPath::File(path) => path.as_path(),
         }
     }
 }
@@ -28,14 +33,16 @@ impl Display for DataPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             DataPath::InMemory => write!(f, ":memory:"),
-            DataPath::Local(path) => write!(f, "{}", path.display()),
+            DataPath::File(path) => write!(f, "{}", path.display()),
         }
     }
 }
 
-impl LibSqlStore {
+impl Store {
     /// Open a new store with the specified path
     pub async fn open(path: DataPath) -> Result<Self> {
+        // Not sure if we need this database object, but for now we just drop
+        // it.
         let database = Builder::new_local(path.as_path())
             .build()
             .await
@@ -45,10 +52,7 @@ impl LibSqlStore {
             .connect()
             .with_context(|| format!("failed to connect to libSQL database: {}", path))?;
 
-        Ok(LibSqlStore {
-            _database: database,
-            connection,
-        })
+        Ok(Store { connection })
     }
 
     pub async fn in_memory() -> Result<Self> {

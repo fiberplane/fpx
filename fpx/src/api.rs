@@ -1,4 +1,4 @@
-use crate::data::libsql::LibSqlStore;
+use crate::data::store::Store;
 use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
 use axum::extract::FromRef;
@@ -18,12 +18,12 @@ pub struct ApiState {
     base_url: Url,
 
     events: Arc<ServerEvents>,
-    store: Arc<LibSqlStore>,
+    store: Store,
     inspector_service: Arc<InspectorService>,
 }
 
-impl FromRef<ApiState> for Arc<LibSqlStore> {
-    fn from_ref(api_state: &ApiState) -> Arc<LibSqlStore> {
+impl FromRef<ApiState> for Store {
+    fn from_ref(api_state: &ApiState) -> Store {
         api_state.store.clone()
     }
 }
@@ -44,7 +44,7 @@ impl FromRef<ApiState> for Arc<InspectorService> {
 pub async fn create_api(
     base_url: url::Url,
     events: Arc<ServerEvents>,
-    store: Arc<LibSqlStore>,
+    store: Store,
     inspector_service: Arc<InspectorService>,
 ) -> axum::Router {
     let api_state = ApiState {

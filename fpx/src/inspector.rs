@@ -7,7 +7,7 @@
 //! do not work as expected or are implemented at all.
 
 use crate::api::types::RequestAdded;
-use crate::data::libsql::LibSqlStore;
+use crate::data::store::Store;
 use crate::events::ServerEvents;
 use anyhow::{Context, Result};
 use axum::extract::{Path, Request, State};
@@ -32,7 +32,7 @@ pub struct InspectorService {
     /// Temporary way to shutdown all the inspectors.
     shutdown: broadcast::Sender<()>,
 
-    store: Arc<LibSqlStore>,
+    store: Store,
     events: Arc<ServerEvents>,
 }
 
@@ -40,7 +40,7 @@ impl InspectorService {
     /// Create and start an inspector service.
     pub async fn start(
         config_path: PathBuf,
-        store: Arc<LibSqlStore>,
+        store: Store,
         events: Arc<ServerEvents>,
     ) -> Result<Self> {
         // Get all the .toml files
@@ -168,16 +168,12 @@ pub struct InspectorConfig {
 pub struct InspectorInstance {
     config: InspectorConfig,
 
-    store: Arc<LibSqlStore>,
+    store: Store,
     events: Arc<ServerEvents>,
 }
 
 impl InspectorInstance {
-    pub fn new(
-        config: InspectorConfig,
-        store: Arc<LibSqlStore>,
-        events: Arc<ServerEvents>,
-    ) -> Self {
+    pub fn new(config: InspectorConfig, store: Store, events: Arc<ServerEvents>) -> Self {
         Self {
             config,
             store,
@@ -221,7 +217,7 @@ impl InspectorInstance {
 
 #[derive(Clone)]
 struct InspectorState {
-    store: Arc<LibSqlStore>,
+    store: Store,
     events: Arc<ServerEvents>,
 }
 
@@ -243,7 +239,7 @@ async fn handle_request(
         })
         .collect();
 
-    let request_id = LibSqlStore::request_create(
+    let request_id = Store::request_create(
         &tx,
         req.method().as_ref(),
         &req.uri().to_string(),
