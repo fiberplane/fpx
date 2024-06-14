@@ -73,7 +73,7 @@ app.post(
 
     // We extract the header from the response and delete it so it doesn't duplicate
     const traceId = response.headers.get("x-fpx-trace-id");
-    
+
     const { responseBody, responseTime, responseHeaders, responseStatusCode } =
       await appResponseInsertSchema
         .extend({

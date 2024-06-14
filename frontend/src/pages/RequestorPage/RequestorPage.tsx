@@ -54,8 +54,8 @@ export const RequestorPage = () => {
   const { data: routesAndMiddleware, isLoading } = useProbedRoutes();
 
   const routes = useMemo(() => {
-    return routesAndMiddleware?.filter(r => r.handlerType === "route") ?? [];
-  }, [routesAndMiddleware])
+    return routesAndMiddleware?.filter((r) => r.handlerType === "route") ?? [];
+  }, [routesAndMiddleware]);
 
   const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
     isLoading,
