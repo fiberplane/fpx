@@ -1,6 +1,6 @@
 use super::ApiState;
 use crate::api::types;
-use crate::data::store::Store;
+use crate::data::Store;
 use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;

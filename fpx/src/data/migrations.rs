@@ -3,7 +3,7 @@ use include_dir::Dir;
 use libsql::{params, Transaction};
 use tracing::{debug, trace};
 
-use super::store::Store;
+use super::Store;
 
 // NOTE: We should probably create our own include, which will store it sorted,
 //       as an array, and with just the name and sql as the expected types.

@@ -1,4 +1,4 @@
-use crate::data::store::Store;
+use crate::data::Store;
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use http::StatusCode;

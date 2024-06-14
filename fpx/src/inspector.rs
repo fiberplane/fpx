@@ -7,7 +7,7 @@
 //! do not work as expected or are implemented at all.
 
 use crate::api::types::RequestAdded;
-use crate::data::store::Store;
+use crate::data::Store;
 use crate::events::ServerEvents;
 use anyhow::{Context, Result};
 use axum::extract::{Path, Request, State};

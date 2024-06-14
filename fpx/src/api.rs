@@ -1,4 +1,4 @@
-use crate::data::store::Store;
+use crate::data::Store;
 use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
 use axum::extract::FromRef;

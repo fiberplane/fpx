@@ -1,6 +1,6 @@
 use crate::api;
 use crate::data::migrations::migrate;
-use crate::data::store::{DataPath, Store};
+use crate::data::{DataPath, Store};
 use crate::events::Events;
 use crate::initialize_fpx_dir;
 use anyhow::{Context, Result};
