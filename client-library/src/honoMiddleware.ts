@@ -121,11 +121,11 @@ export function createHonoMiddleware(
 
         const routes = app
           ? app?.routes
-              .filter((route) => route.handler.length === 1) // Filter out routes where handlers have two arguments (those are middleware)
               .map((route) => ({
                 method: route.method,
                 path: route.path,
                 handler: route.handler.toString(),
+                handlerType: route.handler.length < 2 ? "route" : "middleware",
               }))
           : [];
 

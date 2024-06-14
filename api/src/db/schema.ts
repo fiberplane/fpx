@@ -23,6 +23,7 @@ export const appRoutes = sqliteTable(
     path: text("path", { mode: "text" }),
     method: text("method", { mode: "text" }),
     handler: text("handler", { mode: "text" }),
+    handlerType: text("handler_type", { mode: "text" }),
   },
   (table) => {
     return {

@@ -31,7 +31,7 @@ const schemaPostLogs = z.object({
     .nullable(),
   timestamp: z.string(),
   routes: z.array(
-    z.object({ method: z.string(), path: z.string(), handler: z.string() }),
+    z.object({ method: z.string(), path: z.string(), handler: z.string(), handlerType: z.string() }),
   ),
 });
 
