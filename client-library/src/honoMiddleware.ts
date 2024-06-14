@@ -1,5 +1,6 @@
 import type { NeonDbError } from "@neondatabase/serverless";
-import type { Context, Hono } from "hono";
+import type { Context } from "hono";
+import type { HonoBase } from "hono/hono-base";
 import { replaceFetch } from "./replace-fetch";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
 import {
@@ -45,8 +46,8 @@ const defaultCreateConfig = (c: Context) => {
   };
 };
 
-export function createHonoMiddleware(
-  app?: Hono,
+export function createHonoMiddleware<App extends HonoBase>(
+  app?: App,
   options?: {
     createConfig: CreateConfig;
   },
@@ -120,7 +121,7 @@ export function createHonoMiddleware(
         const routeInspectorHeader = c.req.header("X-Fpx-Route-Inspector");
 
         const routes = app
-          ? app?.routes.map((route) => ({
+          ? app?.routes?.map((route) => ({
               method: route.method,
               path: route.path,
               handler: route.handler.toString(),
