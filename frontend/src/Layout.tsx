@@ -22,7 +22,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
           <NavLink
             to="/requests"
             className={({ isActive }) =>
-              `rounded ${isActive ? "bg-neutral-200" : ""} inline-block p-2`
+              `rounded ${isActive ? "bg-muted" : ""} inline-block p-2`
             }
           >
             Requests
@@ -30,7 +30,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
           <NavLink
             to="/issues"
             className={({ isActive }) =>
-              `rounded-sm ${isActive ? "bg-neutral-200" : ""} inline-block p-2`
+              `rounded-sm ${isActive ? "bg-muted" : ""} inline-block p-2`
             }
           >
             Issues
