@@ -37,7 +37,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     // Create a shared events struct, which allows events to be send to
     // WebSocket connections.
-    let events = Arc::new(Events::new());
+    let events = Events::new();
 
     let inspector_service = crate::inspector::InspectorService::start(
         args.fpx_directory.join("inspectors"),

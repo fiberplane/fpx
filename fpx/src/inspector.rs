@@ -17,7 +17,6 @@ use futures_util::Future;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
-use std::sync::Arc;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::broadcast;
@@ -33,16 +32,12 @@ pub struct InspectorService {
     shutdown: broadcast::Sender<()>,
 
     store: Store,
-    events: Arc<ServerEvents>,
+    events: ServerEvents,
 }
 
 impl InspectorService {
     /// Create and start an inspector service.
-    pub async fn start(
-        config_path: PathBuf,
-        store: Store,
-        events: Arc<ServerEvents>,
-    ) -> Result<Self> {
+    pub async fn start(config_path: PathBuf, store: Store, events: ServerEvents) -> Result<Self> {
         // Get all the .toml files
         let configs: Vec<_> = std::fs::read_dir(&config_path)
             .with_context(|| format!("Unable to read the contents: {config_path:?}"))?
@@ -169,11 +164,11 @@ pub struct InspectorInstance {
     config: InspectorConfig,
 
     store: Store,
-    events: Arc<ServerEvents>,
+    events: ServerEvents,
 }
 
 impl InspectorInstance {
-    pub fn new(config: InspectorConfig, store: Store, events: Arc<ServerEvents>) -> Self {
+    pub fn new(config: InspectorConfig, store: Store, events: ServerEvents) -> Self {
         Self {
             config,
             store,
@@ -218,7 +213,7 @@ impl InspectorInstance {
 #[derive(Clone)]
 struct InspectorState {
     store: Store,
-    events: Arc<ServerEvents>,
+    events: ServerEvents,
 }
 
 async fn handle_request(

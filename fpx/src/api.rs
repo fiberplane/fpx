@@ -17,7 +17,7 @@ pub struct ApiState {
     /// are running this behind a reverse proxy.
     base_url: Url,
 
-    events: Arc<ServerEvents>,
+    events: ServerEvents,
     store: Store,
     inspector_service: Arc<InspectorService>,
 }
@@ -28,8 +28,8 @@ impl FromRef<ApiState> for Store {
     }
 }
 
-impl FromRef<ApiState> for Arc<ServerEvents> {
-    fn from_ref(api_state: &ApiState) -> Arc<ServerEvents> {
+impl FromRef<ApiState> for ServerEvents {
+    fn from_ref(api_state: &ApiState) -> ServerEvents {
         api_state.events.clone()
     }
 }
@@ -43,7 +43,7 @@ impl FromRef<ApiState> for Arc<InspectorService> {
 /// Create a API and expose it through a axum router.
 pub async fn create_api(
     base_url: url::Url,
-    events: Arc<ServerEvents>,
+    events: ServerEvents,
     store: Store,
     inspector_service: Arc<InspectorService>,
 ) -> axum::Router {
