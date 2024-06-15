@@ -8,6 +8,7 @@ import { CodeMirrorJsonEditor } from "./Editors";
 import { HeaderTable } from "./HeaderTable";
 import { CustomTabTrigger } from "./Tabs";
 import { Requestornator } from "./queries";
+import { FpxDetails } from "./FpxDetails";
 
 export function ResponseInstructions() {
   return (
@@ -55,16 +56,12 @@ export function ResponseDetails({ response }: { response?: Requestornator }) {
           )}
         </div>
       </TabsContent>
-      <TabsContent value="fpx">COME BACK SOON HOMIE!</TabsContent>
+      <TabsContent value="fpx">
+        <div className="px-3 py-1">
+          <FpxDetails response={response} />
+        </div>
+      </TabsContent>
     </Tabs>
-  );
-
-  return (
-    <div className="flex-grow flex flex-col">
-      <div className="flex items-center space-x-2 h-9 bg-muted px-2 py-1 border-b">
-        <div className="text-sm font-medium">Response</div>
-      </div>
-    </div>
   );
 }
 

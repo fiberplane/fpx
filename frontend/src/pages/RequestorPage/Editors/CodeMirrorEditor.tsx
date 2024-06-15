@@ -7,6 +7,7 @@ import CodeMirror from "@uiw/react-codemirror";
 
 type CodeMirrorEditorProps = {
   height?: string;
+  minHeight?: string;
   maxHeight?: string;
   theme?: string;
   readOnly?: boolean;
@@ -15,13 +16,13 @@ type CodeMirrorEditorProps = {
 };
 
 export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
-  const { height, value, onChange, readOnly } = props;
+  const { height, value, onChange, readOnly, minHeight = "200px", maxHeight } = props;
   return (
     <CodeMirror
       value={value}
       height={height}
-      maxHeight={props.maxHeight}
-      minHeight="200px"
+      maxHeight={maxHeight}
+      minHeight={minHeight}
       extensions={[json()]}
       onChange={onChange}
       theme={vscodeLight}
@@ -37,11 +38,13 @@ type CodeMirrorTypescriptEditorProps = CodeMirrorEditorProps & {
 export function CodeMirrorTypescriptEditor(
   props: CodeMirrorTypescriptEditorProps,
 ) {
-  const { height = "400px", value, onChange, jsx } = props;
+  const { height, value, onChange, jsx, minHeight, maxHeight } = props;
   return (
     <CodeMirror
       value={value}
       height={height}
+      minHeight={minHeight}
+      maxHeight={maxHeight}
       extensions={[javascript({ jsx, typescript: true })]}
       onChange={onChange}
     />

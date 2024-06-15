@@ -50,13 +50,39 @@ function useAutoselectRoute({
   return { selectedRoute, setSelectedRoute };
 }
 
+function useMostRecentRequestornator(selectedRoute: ProbedRoute | null, all: Requestornator[]) {
+  return useMemo<Requestornator | undefined>(() => {
+    const matchingResponses = all
+      ?.filter(
+        (r: Requestornator) =>
+          r?.app_requests?.requestUrl === getUrl(selectedRoute?.path) &&
+          r?.app_requests?.requestMethod === selectedRoute?.method,
+      )
+    
+    // Descending sort by updatedAt
+    matchingResponses?.sort((a, b) => {
+      if (a.app_responses.updatedAt > b.app_responses.updatedAt) {
+        return -1;
+      }
+      if (a.app_responses.updatedAt < b.app_responses.updatedAt) {
+        return 1;
+      }
+      return 0;
+    });
+
+    return matchingResponses?.[0];
+  }, [all, selectedRoute])
+}
+
 export const RequestorPage = () => {
   const { data: routesAndMiddleware, isLoading } = useProbedRoutes();
 
+  // NOTE - Response includes middleware, so filter for only routes
   const routes = useMemo(() => {
     return routesAndMiddleware?.filter((r) => r.handlerType === "route") ?? [];
   }, [routesAndMiddleware]);
 
+  // Select the home route if it exists, otherwise fall back to the first route in the list
   const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
     isLoading,
     routes,
@@ -67,22 +93,7 @@ export const RequestorPage = () => {
   };
 
   const { data: allRequests } = useFetchRequestorRequests();
-  console.log("allRequests", allRequests);
-  const mostRecentMatchingResponse = allRequests
-    ?.filter(
-      (r: Requestornator) =>
-        r?.app_requests?.requestUrl === getUrl(selectedRoute?.path) &&
-        r?.app_requests?.requestMethod === selectedRoute?.method,
-    )
-    ?.reduce((latest: Requestornator, current: Requestornator) => {
-      if (!latest) {
-        return current;
-      }
-      if (latest.app_responses.updatedAt > current.app_responses.updatedAt) {
-        return latest;
-      }
-      return current;
-    }, undefined);
+  const mostRecentMatchingResponse = useMostRecentRequestornator(selectedRoute, allRequests);
 
   const {
     body,
@@ -93,19 +104,21 @@ export const RequestorPage = () => {
     setQueryParams,
   } = useRequestorFormData();
 
-  const requestorRequests = useMakeRequest();
+  const requestorRequestMaker = useMakeRequest();
 
+  // Send a request when we submit the form
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (selectedRoute) {
-      requestorRequests.mutate({
-        path: selectedRoute.path,
-        method: selectedRoute.method,
-        body: body ?? "", // FIXME
-        headers: requestHeaders,
-        queryParams,
-      });
+    if (!selectedRoute) {
+      return;
     }
+    requestorRequestMaker.mutate({
+      path: selectedRoute.path,
+      method: selectedRoute.method,
+      body: body ?? "", // FIXME
+      headers: requestHeaders,
+      queryParams,
+    });
   };
 
   return (

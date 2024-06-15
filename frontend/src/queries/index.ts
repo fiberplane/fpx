@@ -30,3 +30,5 @@ export {
   getVSCodeLinkFromCallerLocation,
   getVSCodeLinkFromError,
 } from "./vscodeLinks";
+
+export { useHandlerSourceCode } from './source-code';
