@@ -50,15 +50,17 @@ function useAutoselectRoute({
   return { selectedRoute, setSelectedRoute };
 }
 
-function useMostRecentRequestornator(selectedRoute: ProbedRoute | null, all: Requestornator[]) {
+function useMostRecentRequestornator(
+  selectedRoute: ProbedRoute | null,
+  all: Requestornator[],
+) {
   return useMemo<Requestornator | undefined>(() => {
-    const matchingResponses = all
-      ?.filter(
-        (r: Requestornator) =>
-          r?.app_requests?.requestUrl === getUrl(selectedRoute?.path) &&
-          r?.app_requests?.requestMethod === selectedRoute?.method,
-      )
-    
+    const matchingResponses = all?.filter(
+      (r: Requestornator) =>
+        r?.app_requests?.requestUrl === getUrl(selectedRoute?.path) &&
+        r?.app_requests?.requestMethod === selectedRoute?.method,
+    );
+
     // Descending sort by updatedAt
     matchingResponses?.sort((a, b) => {
       if (a.app_responses.updatedAt > b.app_responses.updatedAt) {
@@ -71,7 +73,7 @@ function useMostRecentRequestornator(selectedRoute: ProbedRoute | null, all: Req
     });
 
     return matchingResponses?.[0];
-  }, [all, selectedRoute])
+  }, [all, selectedRoute]);
 }
 
 export const RequestorPage = () => {
@@ -93,7 +95,10 @@ export const RequestorPage = () => {
   };
 
   const { data: allRequests } = useFetchRequestorRequests();
-  const mostRecentMatchingResponse = useMostRecentRequestornator(selectedRoute, allRequests);
+  const mostRecentMatchingResponse = useMostRecentRequestornator(
+    selectedRoute,
+    allRequests,
+  );
 
   const {
     body,

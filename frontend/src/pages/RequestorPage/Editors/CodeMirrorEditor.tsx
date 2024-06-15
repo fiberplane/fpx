@@ -16,7 +16,14 @@ type CodeMirrorEditorProps = {
 };
 
 export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
-  const { height, value, onChange, readOnly, minHeight = "200px", maxHeight } = props;
+  const {
+    height,
+    value,
+    onChange,
+    readOnly,
+    minHeight = "200px",
+    maxHeight,
+  } = props;
   return (
     <CodeMirror
       value={value}

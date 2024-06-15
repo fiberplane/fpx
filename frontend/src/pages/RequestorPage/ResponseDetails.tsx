@@ -5,10 +5,10 @@ import { noop } from "@/utils";
 import { CodeIcon } from "@radix-ui/react-icons";
 import { MonacoJsonEditor, useCustomMonacoTheme } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
+import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
 import { CustomTabTrigger } from "./Tabs";
 import { Requestornator } from "./queries";
-import { FpxDetails } from "./FpxDetails";
 
 export function ResponseInstructions() {
   return (

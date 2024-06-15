@@ -1,11 +1,23 @@
-import { MizuLog, MizuRequestEnd, MizuRequestStart, isMizuRequestEndMessage, isMizuRequestStartMessage, useHandlerSourceCode, useMizuTraces } from "@/queries";
-import { Requestornator } from "./queries";
-import { HeaderTable } from "./HeaderTable";
-import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
-import { useState } from "react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  MizuLog,
+  MizuRequestEnd,
+  MizuRequestStart,
+  isMizuRequestEndMessage,
+  isMizuRequestStartMessage,
+  useHandlerSourceCode,
+  useMizuTraces,
+} from "@/queries";
 import { CaretSortIcon } from "@radix-ui/react-icons";
+import { useState } from "react";
+import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
+import { HeaderTable } from "./HeaderTable";
+import { Requestornator } from "./queries";
 
 type FpxDetailsProps = {
   response?: Requestornator;
@@ -14,9 +26,7 @@ type FpxDetailsProps = {
 export function FpxDetails({ response }: FpxDetailsProps) {
   const hasTrace = !!response?.app_responses?.traceId;
   return (
-    <div>
-      {hasTrace ? <TraceDetails response={response} /> : "no trace"} 
-    </div>
+    <div>{hasTrace ? <TraceDetails response={response} /> : "no trace"}</div>
   );
 }
 
@@ -33,7 +43,7 @@ function useTrace(traceId: string) {
     isNotFound,
     isLoading,
     error,
-  }
+  };
 }
 
 function TraceDetails({ response }: TraceDetailsProps) {
@@ -41,14 +51,13 @@ function TraceDetails({ response }: TraceDetailsProps) {
   const { trace, isNotFound } = useTrace(traceId);
 
   if (isNotFound) {
-    return <div>Trace not found</div>
+    return <div>Trace not found</div>;
   }
 
   // console.log("HI FOUND TRACE!", trace);
   const fpxRequestMessage = getRequestMessage(trace?.logs || []);
   const fpxResponseMessage = getResponseMessage(trace?.logs || []);
   const shouldShowSourceFunction = fpxRequestMessage && fpxResponseMessage;
-
 
   return (
     <div>
@@ -69,7 +78,12 @@ function TraceDetails({ response }: TraceDetailsProps) {
           ) : (
             <div>
               Could not find source code, only compiled code:
-              <CodeMirrorTypescriptEditor jsx value={fpxResponseMessage?.handler} readOnly onChange={() => { }} />
+              <CodeMirrorTypescriptEditor
+                jsx
+                value={fpxResponseMessage?.handler}
+                readOnly
+                onChange={() => {}}
+              />
             </div>
           )}
         </div>
@@ -88,9 +102,12 @@ type SourceFunctionProps = {
   fpxRequestMessage: MizuRequestStart;
   fpxResponseMessage: MizuRequestEnd;
 };
-function SourceFunction({ fpxRequestMessage, fpxResponseMessage }: SourceFunctionProps) {
-  const source = (fpxRequestMessage)?.file;
-  const handler = (fpxResponseMessage)?.handler;
+function SourceFunction({
+  fpxRequestMessage,
+  fpxResponseMessage,
+}: SourceFunctionProps) {
+  const source = fpxRequestMessage?.file;
+  const handler = fpxResponseMessage?.handler;
   const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
 
   // TODO - Use CodeMirror
@@ -100,7 +117,7 @@ function SourceFunction({ fpxRequestMessage, fpxResponseMessage }: SourceFunctio
         jsx
         value={handlerSourceCode}
         readOnly
-        onChange={() => { }}
+        onChange={() => {}}
         minHeight="100px"
       />
     </div>
@@ -123,14 +140,14 @@ function getResponseMessage(logs: MizuLog[]) {
   }
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false)
+function Section({
+  title,
+  children,
+}: { title: string; children: React.ReactNode }) {
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-    >
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <div className="rounded-md border mt-1 px-1 pt-1 pb-2 shadow-sm">
         <SectionTitle>
           <CollapsibleTrigger asChild>
@@ -141,18 +158,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
             </Button>
           </CollapsibleTrigger>
         </SectionTitle>
-        <CollapsibleContent className="">
-          {children}
-        </CollapsibleContent>
+        <CollapsibleContent className="">{children}</CollapsibleContent>
       </div>
     </Collapsible>
   );
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-md mt-2 pt-1 pb-2 text-sm">
-      {children}
-    </div>
-  );
+  return <div className="rounded-md mt-2 pt-1 pb-2 text-sm">{children}</div>;
 }
