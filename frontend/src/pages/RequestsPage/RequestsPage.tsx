@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,7 +15,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type MizuTrace, useMizuTraces } from "@/queries";
-import { Row } from "@tanstack/react-table";
+import { Row, getPaginationRowModel } from "@tanstack/react-table";
 import { columns } from "./columns";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
@@ -48,6 +47,7 @@ const RequestsTable = ({
       columns={columns}
       data={filteredTraces ?? []}
       handleRowClick={handleRowClick}
+      getPaginationRowModel={getPaginationRowModel<MizuTrace>}
     />
   );
 };
@@ -120,14 +120,6 @@ export function RequestsPage() {
           <CardContent>
             <RequestsTable traces={query.data ?? []} filter="all" />
           </CardContent>
-          <CardFooter>
-            {query?.data?.length ? (
-              <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{query?.data?.length}</strong> of{" "}
-                <strong>{query?.data?.length}</strong> requests
-              </div>
-            ) : null}
-          </CardFooter>
         </Card>
       </TabsContent>
       <TabsContent value="error">
@@ -141,14 +133,6 @@ export function RequestsPage() {
           <CardContent>
             <RequestsTable traces={query.data ?? []} filter="error" />
           </CardContent>
-          <CardFooter>
-            {query?.data?.length ? (
-              <div className="text-xs text-muted-foreground">
-                Showing <strong>1-{query?.data?.length}</strong> of{" "}
-                <strong>{query?.data?.length}</strong> requests
-              </div>
-            ) : null}
-          </CardFooter>
         </Card>
       </TabsContent>
     </Tabs>

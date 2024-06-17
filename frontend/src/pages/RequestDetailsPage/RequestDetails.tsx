@@ -432,9 +432,9 @@ const ErrorLog = ({
             <CollapsibleTrigger asChild>
               <Button className="p-0 h-3" variant="link" size="sm">
                 {!isOpen ? (
-                  <CaretRightIcon className="h-4 w-4" />
+                  <CaretRightIcon className="h-4 w-4 text-cyan-400" />
                 ) : (
-                  <CaretDownIcon className="h-4 w-4" />
+                    <CaretDownIcon className="h-4 w-4 text-cyan-400" />
                 )}
                 <span className="sr-only">{isOpen ? "Hide" : "Show"}</span>
               </Button>
@@ -448,7 +448,7 @@ const ErrorLog = ({
           </div>
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
-            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-400 hover:text-gray-200 ">
               {messagePayload.stack}
             </div>
           </CollapsibleContent>
