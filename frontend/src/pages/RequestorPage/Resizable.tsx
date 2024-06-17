@@ -1,3 +1,5 @@
+import "react-resizable/css/styles.css"; // Import the styles for the resizable component
+
 import { forwardRef } from "react";
 
 interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
