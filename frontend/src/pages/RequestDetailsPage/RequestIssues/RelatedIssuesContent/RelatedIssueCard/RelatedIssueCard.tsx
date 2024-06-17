@@ -1,8 +1,9 @@
 import { GithubIssue } from "@/queries/types";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { memo, useMemo } from "react";
+
+import { IssueIconWithStatus } from "../../../../../components/ui/IssueIconWithStatus";
 import { TimeAgo } from "../../../TimeAgo";
-import { RelatedIcon } from "./RelatedIcon";
 import { getChunks } from "./utils";
 
 type Props = Pick<
@@ -21,16 +22,17 @@ export const RelatedIssueCard = memo(function RelatedIssueCard({
   searchWords,
   ...issue
 }: Props) {
+  const body = issue.body ?? "";
   const chunks = useMemo(() => {
-    return getChunks(issue.body, searchWords);
-  }, [issue.body, searchWords]);
+    return getChunks(body, searchWords);
+  }, [body, searchWords]);
 
   return (
     <a href={issue.url} className="block" target="_blank" rel="noreferrer">
-      <div className="py-6 px-4 -mx-4 rounded-sm hover:bg-neutral-100">
+      <div className="py-6 px-4 -mx-4 rounded-sm hover:bg-muted/50">
         <div className="flex items-center justify-between">
           <div className="truncate text-sm font-medium flex gap-1 items-center">
-            <RelatedIcon
+            <IssueIconWithStatus
               isPr={issue.url.includes("/pull/")}
               isClosed={!!issue.closedAt}
             />
@@ -48,8 +50,7 @@ export const RelatedIssueCard = memo(function RelatedIssueCard({
         </div>
         <div>
           {chunks.map((chunk, index) => {
-            const section = issue.body.substring(chunk.start, chunk.end);
-
+            const section = body?.substring(chunk.start, chunk.end) || "";
             if (chunk.highlight === false) {
               return <span key={index}>{section}</span>;
             }
@@ -57,7 +58,7 @@ export const RelatedIssueCard = memo(function RelatedIssueCard({
             return (
               <span
                 key={index}
-                className="bg-yellow-100 rounded-sm inline-block px-1"
+                className="bg-accent text-accent-foreground rounded-sm inline-block px-1"
               >
                 {section}
               </span>
