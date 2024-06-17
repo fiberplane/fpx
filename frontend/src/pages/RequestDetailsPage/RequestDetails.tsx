@@ -491,19 +491,19 @@ const MagicSuggestion = ({
   children,
 }: { suggestion: ReactNode | string; children?: ReactNode }) => {
   return (
-    <div className="font-sans rounded-lg border border-purple-400 bg-purple-50 mt-4 px-2 py-3 text-sm shadow-md">
+    <div className="font-sans rounded-lg border border-primary-foreground bg-primary mt-4 px-2 py-3 text-sm shadow-md">
       <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2">
-        <div className="text-purple-800 flex items-center">
+        <div className="text-primary-foreground flex items-center">
           <MagicWandIcon className="h-3.5 w-3.5" />{" "}
           {/* Adjusted icon size for better visual balance */}
         </div>
         <div className="text-left flex items-center">
-          <div className="text-purple-800">
+          <div className="text-primary-foreground">
             <span className="font-semibold mr-2">Suggestion</span>
           </div>
         </div>
         <div />
-        <div className="text-purple-800">{suggestion}</div>
+        <div className="text-primary-foreground">{suggestion}</div>
       </div>
       {children}
     </div>
@@ -593,25 +593,25 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
           {typeof data === "string"
             ? data
             : Object.entries(data).map(([key, value]) => {
-                const keyValue =
-                  (key === "env" || key === "headers") &&
-                  KeyValueSchema.safeParse(value).data;
-                return (
-                  <div key={key}>
-                    <div className="font-mono font-semibold text-gray-600">
-                      {key}
-                    </div>
-                    <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
-                      {keyValue ? (
-                        <EnvGrid env={keyValue} />
-                      ) : (
-                        formatValue(value)
-                      )}
-                    </div>
-                    <Separator className="my-1" />
+              const keyValue =
+                (key === "env" || key === "headers") &&
+                KeyValueSchema.safeParse(value).data;
+              return (
+                <div key={key}>
+                  <div className="font-mono font-semibold text-gray-600">
+                    {key}
                   </div>
-                );
-              })}
+                  <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
+                    {keyValue ? (
+                      <EnvGrid env={keyValue} />
+                    ) : (
+                      formatValue(value)
+                    )}
+                  </div>
+                  <Separator className="my-1" />
+                </div>
+              );
+            })}
         </div>
       </CollapsibleContent>
     </Collapsible>

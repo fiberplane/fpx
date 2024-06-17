@@ -29,7 +29,7 @@ export const RelatedIssueCard = memo(function RelatedIssueCard({
 
   return (
     <a href={issue.url} className="block" target="_blank" rel="noreferrer">
-      <div className="py-6 px-4 -mx-4 rounded-sm hover:bg-neutral-100">
+      <div className="py-6 px-4 -mx-4 rounded-sm hover:bg-muted/50">
         <div className="flex items-center justify-between">
           <div className="truncate text-sm font-medium flex gap-1 items-center">
             <IssueIconWithStatus
@@ -58,7 +58,7 @@ export const RelatedIssueCard = memo(function RelatedIssueCard({
             return (
               <span
                 key={index}
-                className="bg-yellow-100 rounded-sm inline-block px-1"
+                className="bg-accent text-accent-foreground rounded-sm inline-block px-1"
               >
                 {section}
               </span>

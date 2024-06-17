@@ -92,13 +92,13 @@ export function DataTable<TData, TValue>({
     }),
     ...(getPaginationRowModel
       ? {
-          getPaginationRowModel: getPaginationRowModel(),
-          onPaginationChange: setPagination, //update the pagination state when internal APIs mutate the pagination state
-          state: {
-            //...
-            pagination,
-          },
-        }
+        getPaginationRowModel: getPaginationRowModel(),
+        onPaginationChange: setPagination, //update the pagination state when internal APIs mutate the pagination state
+        state: {
+          //...
+          pagination,
+        },
+      }
       : {}),
   });
 
@@ -150,9 +150,9 @@ export function DataTable<TData, TValue>({
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                   </TableHead>
                 );
               })}
@@ -226,6 +226,7 @@ export function DataTable<TData, TValue>({
             onChange={(e) => {
               table.setPageSize(Number(e.target.value));
             }}
+            className="fg-foreground bg-background"
           >
             {[10, 20, 30, 40, 50].map((pageSize) => (
               <option key={pageSize} value={pageSize}>

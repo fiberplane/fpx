@@ -27,18 +27,17 @@ export function IssuesPage() {
   return (
     <CardSection title="Issues" description="View issues for a dependency">
       <div className="flex gap-4 pb-6">
-        <div className="font-bold">Filter dependencies:</div>
+        <div className="font-semibold">Filter dependencies:</div>
         <ul className="flex gap-4">
           {data?.map((dependency) => (
             <li key={dependency.repository.url}>
-              <label className="flex gap-1">
+              <label className="flex gap-1 fg-muted">
                 <input
                   type="radio"
                   value={dependency.name}
                   name="dependency"
                   defaultChecked={dependency.name === current}
                   onChange={() => {
-                    console.log(".s.dfsdfs", current, dependency.name);
                     setSelected(dependency.name);
                   }}
                 />
@@ -112,7 +111,7 @@ const columns: Array<ColumnDef<GithubIssue>> = [
             className="w-5 h-5"
           />
           <div className="grid items-center">
-            <span className="font-bold text-lg">
+            <span className="font-medium text-lg">
               {props.row.original.title}
             </span>
             <span className="text-muted-foreground">
