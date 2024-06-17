@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isJson } from "@/utils";
 import { useEffect, useMemo, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { RequestPanel } from "./RequestPanel";
@@ -104,10 +105,13 @@ export const RequestorPage = () => {
     if (!selectedRoute) {
       return;
     }
+    // FIXME
+    const cleverBody =
+      typeof body === "string" && isJson(body) ? JSON.parse(body) : body ?? "";
     requestorRequestMaker.mutate({
       path: selectedRoute.path,
       method: selectedRoute.method,
-      body: body ?? "", // FIXME
+      body: cleverBody,
       headers: requestHeaders,
       queryParams,
     });

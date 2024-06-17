@@ -26,3 +26,12 @@ export function objectWithKeyAndValue<T extends string, V>(
 }
 
 export function noop() {}
+
+export function isJson(str: string) {
+  try {
+    JSON.parse(str);
+  } catch {
+    return false;
+  }
+  return true;
+}
