@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/utils";
+import { useEffect } from "react";
 import { getHttpMethodTextColor } from "./method";
 
 const methods = [
@@ -52,6 +53,10 @@ const methods = [
 export function RequestMethodCombobox({ method }: { method: string }) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(method);
+  // HACK - antipattern
+  useEffect(() => {
+    setValue(method);
+  }, [method]);
   const matchedMethod = value
     ? methods.find((m) => m.value === value)?.label
     : "GET";

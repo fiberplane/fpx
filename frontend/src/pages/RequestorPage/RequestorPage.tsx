@@ -106,8 +106,13 @@ export const RequestorPage = () => {
       return;
     }
     // FIXME
-    const cleverBody =
+    let cleverBody =
       typeof body === "string" && isJson(body) ? JSON.parse(body) : body ?? "";
+
+    // HACK - Mizu API expects an object...
+    if (cleverBody === "") {
+      cleverBody = {};
+    }
     requestorRequestMaker.mutate({
       path: selectedRoute.path,
       method: selectedRoute.method,
