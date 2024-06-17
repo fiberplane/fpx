@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { Octokit } from "octokit";
 import { z } from "zod";
@@ -59,6 +60,9 @@ app.get(
   },
 );
 
+/**
+ * You can run `npm run db:seed` to avoid slamming the GitHub API locally.
+ */
 app.get(
   "/v0/github-issues/:owner/:repo",
   cors(),
@@ -68,26 +72,36 @@ app.get(
 
     const db = ctx.get("db");
 
-    const githubTokenSchema = z.string().min(1);
+    const githubToken = parseGitHubTokenIfExists(env(ctx).GITHUB_TOKEN);
 
-    const githubTokenResult = githubTokenSchema.safeParse(
-      ctx.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN,
-    );
+    const issues = await getGitHubIssues(owner, repo, githubToken, db);
+
+    return ctx.json(issues);
+  },
+);
+
+/**
+ * Validate token if it is a string and throw error
+ * Otherwise, return empty string.
+ *
+ * Allows us to not set a GITHUB_TOKEN and still make calls to the GitHub API...
+ */
+function parseGitHubTokenIfExists(token?: string) {
+  const githubTokenSchema = z.string().min(1);
+
+  if (token) {
+    const githubTokenResult = githubTokenSchema.safeParse(token);
 
     if (githubTokenResult.error) {
       console.log("Error parsing github token", githubTokenResult.error);
       throw new Error(githubTokenResult.error.message);
     }
 
-    const issues = await getGitHubIssues(
-      owner,
-      repo,
-      githubTokenResult.data,
-      db,
-    );
-    return ctx.json(issues);
-  },
-);
+    return githubTokenResult.data;
+  }
+
+  return "";
+}
 
 async function getGitHubIssues(
   owner: string,
