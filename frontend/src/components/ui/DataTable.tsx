@@ -20,7 +20,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { clsx } from "clsx";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -211,105 +211,115 @@ export function DataTable<TData, TValue>({
 }
 
 function DataTablePagination<TData>({ table }: { table: TableType<TData> }) {
-  const pageSize = table.getState().pagination.pageSize;
+  const currentPageIndex = table.getState().pagination.pageIndex;
+  const pageCount = table.getPageCount();
   const canPreviousPage = table.getCanPreviousPage();
   const canNextPage = table.getCanNextPage();
   const goToPage = (pageIndex: number) => table.setPageIndex(pageIndex);
 
-  const currentPageIndex = table.getState().pagination.pageIndex; // + 1 for human readable
-  const pageCount = table.getPageCount();
+  const pageIndexButtons = useMemo(() => {
+    const pageIndexes: Array<number> = [];
 
-  const numericPaginationButtons = [];
-  if (pageCount > 1) {
+    if (pageCount < 2) {
+      return pageIndexes;
+    }
+
     if (currentPageIndex > 0) {
-      numericPaginationButtons.push(currentPageIndex - 1);
+      pageIndexes.push(currentPageIndex - 1);
     }
-    numericPaginationButtons.push(currentPageIndex);
+
+    pageIndexes.push(currentPageIndex);
+
     if (currentPageIndex < pageCount - 1) {
-      numericPaginationButtons.push(currentPageIndex + 1);
+      pageIndexes.push(currentPageIndex + 1);
     }
-  }
+    return pageIndexes;
+  }, [currentPageIndex, pageCount]);
 
   return (
-    <>
-      <>
-        <div className="mt-4">
-          {pageCount > 1 && (
-            <Pagination>
-              <PaginationContent>
-                {canPreviousPage && (
-                  <PaginationItem>
-                    <PaginationPrevious onClick={() => table.previousPage()} />
-                  </PaginationItem>
-                )}
-                {currentPageIndex > 3 && (
-                  <PaginationItem>
-                    <PaginationLink>
-                      <PaginationLink onClick={() => table.firstPage()}>
-                        1
-                      </PaginationLink>
-                    </PaginationLink>
-                  </PaginationItem>
-                )}
-                {currentPageIndex > 2 && (
-                  <PaginationItem>
-                    <PaginationLink>
-                      <PaginationEllipsis />
-                    </PaginationLink>
-                  </PaginationItem>
-                )}
-                {numericPaginationButtons.map((index) => {
-                  return (
-                    <PaginationItem key={index}>
-                      <PaginationLink
-                        isActive={index === currentPageIndex}
-                        onClick={() => goToPage(index)}
-                      >
-                        {index + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
-                {currentPageIndex < pageCount - 3 && (
-                  <>
-                    <PaginationItem>
-                      <PaginationLink>
-                        <PaginationEllipsis />
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink onClick={() => table.lastPage()}>
-                        {pageCount}
-                      </PaginationLink>
-                    </PaginationItem>
-                  </>
-                )}
-                {canNextPage && (
-                  <PaginationItem>
-                    <PaginationNext onClick={() => table.nextPage()} />
-                  </PaginationItem>
-                )}
-              </PaginationContent>
-            </Pagination>
-          )}
+    <div className="mt-4">
+      {pageCount > 1 && (
+        <Pagination>
+          <PaginationContent>
+            {canPreviousPage && (
+              <PaginationItem>
+                <PaginationPrevious onClick={() => table.previousPage()} />
+              </PaginationItem>
+            )}
+            {currentPageIndex > 3 && (
+              <PaginationItem>
+                <PaginationLink>
+                  <PaginationLink onClick={() => table.firstPage()}>
+                    1
+                  </PaginationLink>
+                </PaginationLink>
+              </PaginationItem>
+            )}
+            {currentPageIndex > 2 && (
+              <PaginationItem>
+                <PaginationLink>
+                  <PaginationEllipsis />
+                </PaginationLink>
+              </PaginationItem>
+            )}
+            {pageIndexButtons.map((index) => {
+              return (
+                <PaginationItem key={index}>
+                  <PaginationLink
+                    isActive={index === currentPageIndex}
+                    onClick={() => goToPage(index)}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            })}
+            {currentPageIndex < pageCount - 3 && (
+              <>
+                <PaginationItem>
+                  <PaginationLink>
+                    <PaginationEllipsis />
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink onClick={() => table.lastPage()}>
+                    {pageCount}
+                  </PaginationLink>
+                </PaginationItem>
+              </>
+            )}
+            {canNextPage && (
+              <PaginationItem>
+                <PaginationNext onClick={() => table.nextPage()} />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
+      )}
+      <PageSizeMenu table={table} />
+    </div>
+  );
+}
 
-          <div className="flex text-gray-300 items-center gap-2 py-2 mt-4 mb-2 justify-center">
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value));
-              }}
-              className="fg-foreground bg-background text-sm"
-            >
-              {[10, 20, 30, 40, 50].map((pageSizeOption) => (
-                <option key={pageSizeOption} value={pageSizeOption}>
-                  Show {pageSizeOption} Results Per Page
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </>
-    </>
+function PageSizeMenu<TData>({ table }: { table: TableType<TData> }) {
+  const pageSize = table.getState().pagination.pageSize;
+  const PAGE_SIZE_OPTIONS = useMemo(() => [10, 20, 30, 40, 50], []);
+
+  return (
+    <div className="flex text-gray-300 items-center gap-2 py-2 mt-4 mb-2 justify-center">
+      <select
+        value={pageSize}
+        onChange={(e) => {
+          table.setPageSize(Number(e.target.value));
+        }}
+        className="fg-foreground bg-background text-sm"
+      >
+        {PAGE_SIZE_OPTIONS.map((pageSizeOption) => (
+          <option key={pageSizeOption} value={pageSizeOption}>
+            Show {pageSizeOption} Results Per Page
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
