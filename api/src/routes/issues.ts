@@ -2,13 +2,13 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { Octokit } from "octokit";
 import { z } from "zod";
 import { githubIssues, newGithubIssueSchema } from "../db/schema.js";
 import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { env } from "hono/adapter";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -89,12 +89,7 @@ app.get(
       githubToken = "";
     }
 
-    const issues = await getGitHubIssues(
-      owner,
-      repo,
-      githubToken,
-      db,
-    );
+    const issues = await getGitHubIssues(owner, repo, githubToken, db);
 
     return ctx.json(issues);
   },

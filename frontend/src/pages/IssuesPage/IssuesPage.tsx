@@ -1,9 +1,12 @@
 import { DataTable } from "@/components/ui/DataTable";
 import { IssueIconWithStatus } from "@/components/ui/IssueIconWithStatus";
 import { CardSection } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useDependencies, useGitHubIssues } from "@/queries/queries";
 import { GithubIssue } from "@/queries/types";
 import { ColumnDef, getPaginationRowModel } from "@tanstack/react-table";
+
 import { useMemo, useState } from "react";
 import { TimeAgo } from "../RequestDetailsPage/TimeAgo";
 
@@ -28,24 +31,28 @@ export function IssuesPage() {
     <CardSection title="Issues" description="View issues for a dependency">
       <div className="flex gap-4 pb-6">
         <div className="font-semibold">Filter dependencies:</div>
-        <ul className="flex gap-4">
+        <RadioGroup
+          defaultValue={current}
+          className="inline-flex"
+          onValueChange={(newValue) => {
+            setSelected(newValue);
+          }}
+        >
           {data?.map((dependency) => (
-            <li key={dependency.repository.url}>
-              <label className="flex gap-1 fg-muted">
-                <input
-                  type="radio"
-                  value={dependency.name}
-                  name="dependency"
-                  defaultChecked={dependency.name === current}
-                  onChange={() => {
-                    setSelected(dependency.name);
-                  }}
-                />
+            <div
+              key={dependency.repository.url}
+              className="inline-flex items-center space-x-2 fg-muted"
+            >
+              <RadioGroupItem
+                value={dependency.name}
+                id={`dependency-${dependency.name}`}
+              />
+              <Label htmlFor={`dependency-${dependency.name}`}>
                 {dependency.name}
-              </label>
-            </li>
+              </Label>
+            </div>
           ))}
-        </ul>
+        </RadioGroup>
       </div>
       {owner && repo && <Issues owner={owner} repo={repo} />}
     </CardSection>

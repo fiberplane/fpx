@@ -23,6 +23,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState } from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./pagination";
 
 // Extend the ColumnMeta type to include headerClassName and cellClassName
 //
@@ -198,58 +207,111 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
-      {getPaginationRowModel && (
-        <div className="flex items-center gap-2 py-2 pt-8 justify-center">
-          <button
-            className="inline-block border rounded p-1 disabled:opacity-50 hover:bg-muted disabled:hover:bg-transparent"
-            onClick={() => table.firstPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {"<<"}
-          </button>
-          <button
-            className="inline-block border rounded p-1 disabled:opacity-50 hover:bg-muted disabled:hover:bg-transparent"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            {"<"}
-          </button>
-          <span className="flex items-center gap-1">
-            <div>Page</div>
-            <strong>
-              {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount().toLocaleString()}
-            </strong>
-          </span>
-          <select
-            value={table.getState().pagination.pageSize}
-            onChange={(e) => {
-              table.setPageSize(Number(e.target.value));
-            }}
-            className="fg-foreground bg-background"
-          >
-            {[10, 20, 30, 40, 50].map((pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                Show {pageSize}
-              </option>
-            ))}
-          </select>
-          <button
-            className="inline-block border rounded p-1 disabled:opacity-50 hover:bg-muted disabled:hover:bg-transparent"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {">"}
-          </button>
-          <button
-            className="inline-block border rounded p-1 disabled:opacity-50 hover:bg-muted disabled:hover:bg-transparent"
-            onClick={() => table.lastPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            {">>"}
-          </button>
-        </div>
-      )}
+      {getPaginationRowModel && <DataTablePagination table={table} />}
     </div>
+  );
+}
+
+function DataTablePagination<TData>({ table }: { table: TableType<TData> }) {
+  const pageSize = table.getState().pagination.pageSize;
+  const canPreviousPage = table.getCanPreviousPage();
+  const canNextPage = table.getCanNextPage();
+  const goToPage = (pageIndex: number) => table.setPageIndex(pageIndex);
+
+  const currentPageIndex = table.getState().pagination.pageIndex; // + 1 for human readable
+  const pageCount = table.getPageCount();
+
+  const numericPaginationButtons = [];
+  if (pageCount > 1) {
+    if (currentPageIndex > 0) {
+      numericPaginationButtons.push(currentPageIndex - 1);
+    }
+    numericPaginationButtons.push(currentPageIndex);
+    if (currentPageIndex < pageCount - 1) {
+      numericPaginationButtons.push(currentPageIndex + 1);
+    }
+  }
+
+  return (
+    <>
+      <>
+        <div className="mt-4">
+          {pageCount > 1 && (
+            <Pagination>
+              <PaginationContent>
+                {canPreviousPage && (
+                  <PaginationItem>
+                    <PaginationPrevious onClick={() => table.previousPage()} />
+                  </PaginationItem>
+                )}
+                {currentPageIndex > 3 && (
+                  <PaginationItem>
+                    <PaginationLink>
+                      <PaginationLink onClick={() => table.firstPage()}>
+                        1
+                      </PaginationLink>
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                {currentPageIndex > 2 && (
+                  <PaginationItem>
+                    <PaginationLink>
+                      <PaginationEllipsis />
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                {numericPaginationButtons.map((index) => {
+                  return (
+                    <PaginationItem key={index}>
+                      <PaginationLink
+                        isActive={index === currentPageIndex}
+                        onClick={() => goToPage(index)}
+                      >
+                        {index + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+                {currentPageIndex < pageCount - 3 && (
+                  <>
+                    <PaginationItem>
+                      <PaginationLink>
+                        <PaginationEllipsis />
+                      </PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationLink onClick={() => table.lastPage()}>
+                        {pageCount}
+                      </PaginationLink>
+                    </PaginationItem>
+                  </>
+                )}
+                {canNextPage && (
+                  <PaginationItem>
+                    <PaginationNext onClick={() => table.nextPage()} />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
+          )}
+
+          <div className="flex text-gray-300 items-center gap-2 py-2 mt-4 mb-2 justify-center">
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                table.setPageSize(Number(e.target.value));
+              }}
+              className="fg-foreground bg-background text-sm"
+            >
+              {[10, 20, 30, 40, 50].map((pageSizeOption) => (
+                <option key={pageSizeOption} value={pageSizeOption}>
+                  Show {pageSizeOption} Results Per Page
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </>
+    </>
   );
 }
