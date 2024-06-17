@@ -1,11 +1,9 @@
-use crate::{api::ApiState, inspector::InspectorConfig};
+use crate::inspector::{InspectorConfig, InspectorService};
 use axum::{extract::State, response::IntoResponse, Json};
 
 #[tracing::instrument(skip_all)]
 pub async fn inspector_list_handler(
-    State(ApiState {
-        inspector_service, ..
-    }): State<ApiState>,
+    State(inspector_service): State<InspectorService>,
 ) -> impl IntoResponse {
     let inspectors = inspector_service.list().await.unwrap();
 
@@ -16,9 +14,7 @@ pub async fn inspector_list_handler(
 
 #[tracing::instrument(skip_all)]
 pub async fn inspector_create_handler(
-    State(ApiState {
-        inspector_service, ..
-    }): State<ApiState>,
+    State(inspector_service): State<InspectorService>,
     Json(inspector_config): Json<InspectorConfig>,
 ) -> impl IntoResponse {
     inspector_service
