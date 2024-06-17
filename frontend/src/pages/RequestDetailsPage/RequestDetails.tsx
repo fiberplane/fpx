@@ -434,7 +434,7 @@ const ErrorLog = ({
                 {!isOpen ? (
                   <CaretRightIcon className="h-4 w-4 text-cyan-400" />
                 ) : (
-                    <CaretDownIcon className="h-4 w-4 text-cyan-400" />
+                  <CaretDownIcon className="h-4 w-4 text-cyan-400" />
                 )}
                 <span className="sr-only">{isOpen ? "Hide" : "Show"}</span>
               </Button>
