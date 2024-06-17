@@ -60,6 +60,9 @@ app.get(
   },
 );
 
+/**
+ * You can run `npm run db:seed` to avoid slamming the GitHub API locally.
+ */
 app.get(
   "/v0/github-issues/:owner/:repo",
   cors(),
@@ -69,31 +72,36 @@ app.get(
 
     const db = ctx.get("db");
 
-    const githubTokenSchema = z.string().min(1);
-
-    let githubToken: string;
-
-    const envGitHubToken = env(ctx).GITHUB_TOKEN;
-    if (envGitHubToken) {
-      const githubTokenResult = githubTokenSchema.safeParse(
-        env(ctx).GITHUB_TOKEN,
-      );
-
-      if (githubTokenResult.error) {
-        console.log("Error parsing github token", githubTokenResult.error);
-        throw new Error(githubTokenResult.error.message);
-      }
-
-      githubToken = githubTokenResult.data;
-    } else {
-      githubToken = "";
-    }
+    const githubToken = parseGitHubTokenIfExists(env(ctx).GITHUB_TOKEN);
 
     const issues = await getGitHubIssues(owner, repo, githubToken, db);
 
     return ctx.json(issues);
   },
 );
+
+/**
+ * Validate token if it is a string and throw error
+ * Otherwise, return empty string.
+ *
+ * Allows us to not set a GITHUB_TOKEN and still make calls to the GitHub API...
+ */
+function parseGitHubTokenIfExists(token?: string) {
+  const githubTokenSchema = z.string().min(1);
+
+  if (token) {
+    const githubTokenResult = githubTokenSchema.safeParse(token);
+
+    if (githubTokenResult.error) {
+      console.log("Error parsing github token", githubTokenResult.error);
+      throw new Error(githubTokenResult.error.message);
+    }
+
+    return githubTokenResult.data;
+  }
+
+  return "";
+}
 
 async function getGitHubIssues(
   owner: string,
