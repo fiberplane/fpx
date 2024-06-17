@@ -4,8 +4,8 @@ import WaveIcon from "./Wave.svg";
 
 const Branding = () => {
   return (
-    <div className="">
-      <WaveIcon />
+    <div>
+      <WaveIcon height="32px" width="32px" />
     </div>
   );
 }
