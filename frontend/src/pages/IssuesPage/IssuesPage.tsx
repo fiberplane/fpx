@@ -130,14 +130,14 @@ const columns: Array<ColumnDef<GithubIssue>> = [
     },
   },
   {
-    header: "Created At",
+    header: "Created",
     accessorKey: "createdAt",
     cell: (props) => {
       return <TimeAgo date={props.row.original.createdAt} />;
     },
   },
   {
-    header: "Updated At",
+    header: "Updated",
     accessorKey: "updatedAt",
     cell: (props) => {
       return <TimeAgo date={props.row.original.updatedAt} />;
