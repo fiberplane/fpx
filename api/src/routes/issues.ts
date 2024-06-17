@@ -71,21 +71,31 @@ app.get(
 
     const githubTokenSchema = z.string().min(1);
 
-    const githubTokenResult = githubTokenSchema.safeParse(
-      env(ctx).GITHUB_TOKEN,
-    );
+    let githubToken: string;
 
-    if (githubTokenResult.error) {
-      console.log("Error parsing github token", githubTokenResult.error);
-      throw new Error(githubTokenResult.error.message);
+    const envGitHubToken = env(ctx).GITHUB_TOKEN;
+    if (envGitHubToken) {
+      const githubTokenResult = githubTokenSchema.safeParse(
+        env(ctx).GITHUB_TOKEN,
+      );
+
+      if (githubTokenResult.error) {
+        console.log("Error parsing github token", githubTokenResult.error);
+        throw new Error(githubTokenResult.error.message);
+      }
+
+      githubToken = githubTokenResult.data;
+    } else {
+      githubToken = "";
     }
 
     const issues = await getGitHubIssues(
       owner,
       repo,
-      githubTokenResult.data,
+      githubToken,
       db,
     );
+
     return ctx.json(issues);
   },
 );
