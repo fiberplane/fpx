@@ -2,26 +2,16 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
-import {
-  SyntheticEvent,
-  forwardRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { Resizable, ResizeCallbackData } from "react-resizable";
-
-import { MonacoJsonEditor } from "./Editors";
-import { CodeMirrorJsonEditor } from "./Editors";
-import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
+import { useEffect, useMemo, useState } from "react";
+import { Resizable } from "react-resizable";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
+import { RequestPanel } from "./RequestPanel";
+import { ResizableHandle } from "./Resizable";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
-import { CustomTabTrigger } from "./Tabs";
 import { useRequestorFormData } from "./data";
+import { useResizableWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
 import {
   type ProbedRoute,
@@ -140,7 +130,7 @@ export const RequestorPage = () => {
           onSubmit={onSubmit}
         />
         <div className="flex flex-grow items-stretch mt-4 rounded overflow-hidden border">
-          <RequestMeta
+          <RequestPanel
             body={body}
             setBody={setBody}
             queryParams={queryParams}
@@ -168,26 +158,6 @@ type SidebarProps = {
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
 };
-
-function useResizableWidth(initialWidth: number, min = 200, max = 600) {
-  const [width, setWidth] = useState(initialWidth);
-
-  const getClampedWidth = useCallback(
-    (newWidth: number) => {
-      return Math.min(max, Math.max(newWidth, min));
-    },
-    [min, max],
-  );
-
-  const handleResize = useCallback(
-    (_event: SyntheticEvent, { size }: ResizeCallbackData) => {
-      setWidth(getClampedWidth(size.width));
-    },
-    [getClampedWidth],
-  );
-
-  return { width, handleResize };
-}
 
 function SideBar({ routes, selectedRoute, handleRouteClick }: SidebarProps) {
   const [showDetectedRoutes, setShowDetectedRoutes] = useState(true);
@@ -299,87 +269,3 @@ function RequestInput({ method = "GET", path, onSubmit }: RequestInputProps) {
     </div>
   );
 }
-
-type RequestMetaProps = {
-  body?: string;
-  setBody: (body?: string) => void;
-  queryParams: KeyValueParameter[];
-  setQueryParams: (params: KeyValueParameter[]) => void;
-  setRequestHeaders: (headers: KeyValueParameter[]) => void;
-  requestHeaders: KeyValueParameter[];
-};
-function RequestMeta(props: RequestMetaProps) {
-  const {
-    body,
-    setBody,
-    queryParams,
-    requestHeaders,
-    setQueryParams,
-    setRequestHeaders,
-  } = props;
-
-  const { width, handleResize } = useResizableWidth(256);
-
-  return (
-    <Resizable
-      className="min-w-[200px]"
-      width={width} // Initial width
-      axis="x" // Restrict resizing to the horizontal axis
-      onResize={handleResize}
-      resizeHandles={["e"]} // Limit resize handle to just the east (right) handle
-      handle={(_, ref) => (
-        // Render a custom handle component, so we can indicate "resizability"
-        // along the entire right side of the container
-        <ResizableHandle ref={ref} />
-      )}
-    >
-      <div style={{ width: `${width}px` }} className="min-w-[350px] border-r">
-        <Tabs defaultValue="params">
-          <div className="flex items-center">
-            <TabsList className="w-full justify-start rounded-none border-b space-x-6">
-              <CustomTabTrigger value="params">Params</CustomTabTrigger>
-              <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
-              <CustomTabTrigger value="body">Body</CustomTabTrigger>
-            </TabsList>
-          </div>
-          <TabsContent value="params">
-            <KeyValueForm
-              keyValueParameters={queryParams}
-              onChange={(params) => {
-                setQueryParams(params);
-              }}
-            />
-          </TabsContent>
-          <TabsContent value="headers">
-            <KeyValueForm
-              keyValueParameters={requestHeaders}
-              onChange={(headers) => {
-                setRequestHeaders(headers);
-              }}
-            />
-          </TabsContent>
-          <TabsContent value="body">
-            <CodeMirrorJsonEditor
-              onChange={setBody}
-              value={body}
-              maxHeight="800px"
-            />
-            {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </Resizable>
-  );
-}
-
-interface ResizableHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const ResizableHandle = forwardRef<HTMLDivElement, ResizableHandleProps>(
-  (props, ref) => (
-    <div
-      ref={ref}
-      className="w-[15px] h-full cursor-ew-resize top-0 right-[-8px] absolute z-10"
-      {...props}
-    />
-  ),
-);

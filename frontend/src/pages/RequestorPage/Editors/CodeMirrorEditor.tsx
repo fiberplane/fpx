@@ -16,9 +16,9 @@ type CodeMirrorEditorProps = {
 };
 
 const smallerFontSizeTheme = EditorView.theme({
-  '&': {
-    fontSize: '14px',
-  }
+  "&": {
+    fontSize: "14px",
+  },
 });
 
 export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
