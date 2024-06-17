@@ -3,7 +3,7 @@ import "./CodeMirrorEditorCssOverrides.css";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
 import { vscodeLight } from "@uiw/codemirror-theme-vscode";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 
 type CodeMirrorEditorProps = {
   height?: string;
@@ -15,6 +15,12 @@ type CodeMirrorEditorProps = {
   onChange: (value?: string) => void;
 };
 
+const smallerFontSizeTheme = EditorView.theme({
+  '&': {
+    fontSize: '14px',
+  }
+});
+
 export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
   const {
     height,
@@ -24,6 +30,7 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
     minHeight = "200px",
     maxHeight,
   } = props;
+
   return (
     <CodeMirror
       value={value}
@@ -32,7 +39,7 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       minHeight={minHeight}
       extensions={[json()]}
       onChange={onChange}
-      theme={vscodeLight}
+      theme={[vscodeLight, smallerFontSizeTheme]}
       readOnly={readOnly}
     />
   );
