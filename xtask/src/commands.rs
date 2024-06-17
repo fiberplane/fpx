@@ -1,6 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
+pub mod schemas;
 pub mod types;
 
 /// FPX - Super-charge your local development.
@@ -15,10 +16,12 @@ pub struct Args {
 pub enum Command {
     /// Generate TypeScript types
     GenerateTypes(types::Args),
+    GenerateSchemas(schemas::Args),
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
     match args.command {
         Command::GenerateTypes(args) => types::handle_command(args).await,
+        Command::GenerateSchemas(args) => schemas::handle_command(args).await,
     }
 }

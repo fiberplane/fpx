@@ -10,3 +10,7 @@ url = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 tracing = { workspace = true }
 typeshare-core = { version = "1.9" }
+schemars = { workspace = true }
+fpx = { path = "../fpx" }
+serde = { workspace = true }
+serde_json = { workspace = true }
