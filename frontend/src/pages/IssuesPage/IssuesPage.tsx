@@ -1,11 +1,11 @@
 import { DataTable } from "@/components/ui/DataTable";
 import { IssueIconWithStatus } from "@/components/ui/IssueIconWithStatus";
+import { CardSection } from "@/components/ui/card";
 import { useDependencies, useGitHubIssues } from "@/queries/queries";
 import { GithubIssue } from "@/queries/types";
 import { ColumnDef, getPaginationRowModel } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { TimeAgo } from "../RequestDetailsPage/TimeAgo";
-import { CardSection } from "@/components/ui/card";
 
 export function IssuesPage() {
   const { data, isLoading, isError } = useDependencies();

@@ -8,7 +8,7 @@ const Branding = () => {
       <WaveIcon height="32px" width="32px" />
     </div>
   );
-}
+};
 
 export const Layout: React.FC<{ children?: React.ReactNode }> = ({
   children,

@@ -135,7 +135,7 @@ function findChunks({
       },
       [] as Array<Chunk>,
     );
-};
+}
 
 // Util function for findChunks
 function escapeRegExpFn(string: string): string {

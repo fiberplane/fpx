@@ -1,6 +1,4 @@
-import {
-  TrashIcon,
-} from "@radix-ui/react-icons";
+import { TrashIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
