@@ -41,11 +41,35 @@ export const columns: ColumnDef<MizuTrace>[] = [
     },
   },
   {
-    accessorKey: "description",
-    header: "Summary",
+    accessorKey: "method",
+    header: "Method",
+    meta: {
+      headerClassName: "w-[80px]",
+      cellClassName: "font-mono",
+    },
+  },
+  {
+    accessorKey: "path",
+    header: "Path",
     meta: {
       headerClassName: "",
-      cellClassName: "font-medium",
+      cellClassName: "font-mono",
+    },
+  },
+  {
+    accessorKey: "duration",
+    header: "Duration",
+    meta: {
+      headerClassName: "w-[80px]",
+      cellClassName: "font-mono",
+    },
+  },
+  {
+    accessorKey: "size",
+    header: "Size",
+    meta: {
+      headerClassName: "w-[80px]",
+      cellClassName: "font-mono",
     },
   },
   {
@@ -54,7 +78,7 @@ export const columns: ColumnDef<MizuTrace>[] = [
     accessorFn: (row) => formatDate(new Date(row.logs?.[0]?.timestamp)),
     meta: {
       // NOTE - This is how to hide a cell depending on breakpoint!
-      headerClassName: "hidden md:table-cell",
+      headerClassName: "hidden md:table-cell w-16",
       cellClassName: "hidden md:table-cell font-mono text-xs",
     },
   },
@@ -62,7 +86,7 @@ export const columns: ColumnDef<MizuTrace>[] = [
     id: "open",
     cell: (props) => <RequestSheet trace={props.row.original} />,
     meta: {
-      headerClassName: "",
+      headerClassName: "w-16",
       cellClassName: "flex items-center space-x-2",
     },
   }),
