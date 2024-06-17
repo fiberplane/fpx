@@ -1,5 +1,4 @@
 use super::types::{ClientMessage, ServerMessage, FPX_WEBSOCKET_ID_HEADER};
-use super::ApiState;
 use crate::api::types::ServerError;
 use crate::events::ServerEvents;
 use axum::extract::ws::{Message, WebSocket};
@@ -8,15 +7,11 @@ use axum::response::Response;
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::{SinkExt, StreamExt};
 use rand::Rng;
-use std::sync::Arc;
 use tokio::sync::broadcast::Receiver;
 use tokio::sync::mpsc;
 use tracing::{debug, error, trace, warn};
 
-pub async fn ws_handler(
-    ws: WebSocketUpgrade,
-    State(ApiState { events, .. }): State<ApiState>,
-) -> Response {
+pub async fn ws_handler(ws: WebSocketUpgrade, State(events): State<ServerEvents>) -> Response {
     let ws_id = generate_ws_id();
 
     let mut result = ws
@@ -40,7 +35,7 @@ fn ws_failed_callback(err: axum::Error) {
     error!(?err, "Failed to upgrade WebSocket connection");
 }
 
-async fn ws_socket(socket: WebSocket, events: Arc<ServerEvents>, _ws_id: u32) {
+async fn ws_socket(socket: WebSocket, events: ServerEvents, _ws_id: u32) {
     trace!("WebSocket connection connected");
 
     // Subscribe to the broadcast channel. This will contain all messages that

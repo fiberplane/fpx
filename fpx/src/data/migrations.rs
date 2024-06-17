@@ -3,7 +3,7 @@ use include_dir::Dir;
 use libsql::{params, Transaction};
 use tracing::{debug, trace};
 
-use super::libsql::LibSqlStore;
+use super::Store;
 
 // NOTE: We should probably create our own include, which will store it sorted,
 //       as an array, and with just the name and sql as the expected types.
@@ -23,7 +23,7 @@ CREATE TABLE _fpx_migrations  (
 /// have not been applied yet. This could mean that if a migration has been
 /// added in between other migrations that it will be run.
 #[tracing::instrument(skip(store))]
-pub async fn migrate(store: &LibSqlStore) -> Result<()> {
+pub async fn migrate(store: &Store) -> Result<()> {
     debug!("Running migrations");
 
     let tx = store.start_transaction().await?;
@@ -35,7 +35,7 @@ pub async fn migrate(store: &LibSqlStore) -> Result<()> {
         .files()
         .filter_map(|entry| {
             if entry.path().extension()? != "sql" {
-                return None;
+                None
             } else {
                 Some((entry.path().file_stem()?.to_str()?, entry.contents_utf8()?))
             }

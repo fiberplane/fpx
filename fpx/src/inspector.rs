@@ -7,7 +7,7 @@
 //! do not work as expected or are implemented at all.
 
 use crate::api::types::RequestAdded;
-use crate::data::libsql::LibSqlStore;
+use crate::data::Store;
 use crate::events::ServerEvents;
 use anyhow::{Context, Result};
 use axum::extract::{Path, Request, State};
@@ -16,6 +16,7 @@ use axum::routing::any;
 use futures_util::Future;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::ops::Deref;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::fs::File;
@@ -24,25 +25,14 @@ use tokio::sync::broadcast;
 use tracing::{error, info, trace};
 
 /// This service manages multiple inspectors.
+#[derive(Clone)]
 pub struct InspectorService {
-    inspector_config_path: PathBuf,
-
-    inspectors: Vec<InspectorInstance>,
-
-    /// Temporary way to shutdown all the inspectors.
-    shutdown: broadcast::Sender<()>,
-
-    store: Arc<LibSqlStore>,
-    events: Arc<ServerEvents>,
+    inspector_service: Arc<InspectorServiceImpl>,
 }
 
 impl InspectorService {
     /// Create and start an inspector service.
-    pub async fn start(
-        config_path: PathBuf,
-        store: Arc<LibSqlStore>,
-        events: Arc<ServerEvents>,
-    ) -> Result<Self> {
+    pub async fn start(config_path: PathBuf, store: Store, events: ServerEvents) -> Result<Self> {
         // Get all the .toml files
         let configs: Vec<_> = std::fs::read_dir(&config_path)
             .with_context(|| format!("Unable to read the contents: {config_path:?}"))?
@@ -78,7 +68,7 @@ impl InspectorService {
             .collect();
 
         let (shutdown, _) = broadcast::channel(100);
-        let result = InspectorService {
+        let inspector_service = InspectorServiceImpl {
             inspectors: Vec::new(),
             shutdown,
             store,
@@ -90,7 +80,7 @@ impl InspectorService {
             match config {
                 Ok(config) => {
                     trace!("Starting inspector: {:#?}", config.name);
-                    result.create(config, false).await?;
+                    inspector_service.create(config, false).await?;
                 }
                 Err(e) => {
                     error!("Error: {:#?}", e);
@@ -98,9 +88,33 @@ impl InspectorService {
             }
         }
 
-        Ok(result)
+        Ok(Self {
+            inspector_service: Arc::new(inspector_service),
+        })
     }
+}
 
+impl Deref for InspectorService {
+    type Target = InspectorServiceImpl;
+
+    fn deref(&self) -> &Self::Target {
+        self.inspector_service.deref()
+    }
+}
+
+pub struct InspectorServiceImpl {
+    inspector_config_path: PathBuf,
+
+    inspectors: Vec<InspectorInstance>,
+
+    /// Temporary way to shutdown all the inspectors.
+    shutdown: broadcast::Sender<()>,
+
+    store: Store,
+    events: ServerEvents,
+}
+
+impl InspectorServiceImpl {
     pub async fn list(&self) -> Result<Vec<&InspectorConfig>> {
         let result = self
             .inspectors
@@ -168,16 +182,12 @@ pub struct InspectorConfig {
 pub struct InspectorInstance {
     config: InspectorConfig,
 
-    store: Arc<LibSqlStore>,
-    events: Arc<ServerEvents>,
+    store: Store,
+    events: ServerEvents,
 }
 
 impl InspectorInstance {
-    pub fn new(
-        config: InspectorConfig,
-        store: Arc<LibSqlStore>,
-        events: Arc<ServerEvents>,
-    ) -> Self {
+    pub fn new(config: InspectorConfig, store: Store, events: ServerEvents) -> Self {
         Self {
             config,
             store,
@@ -221,8 +231,8 @@ impl InspectorInstance {
 
 #[derive(Clone)]
 struct InspectorState {
-    store: Arc<LibSqlStore>,
-    events: Arc<ServerEvents>,
+    store: Store,
+    events: ServerEvents,
 }
 
 async fn handle_request(
@@ -243,7 +253,7 @@ async fn handle_request(
         })
         .collect();
 
-    let request_id = LibSqlStore::request_create(
+    let request_id = Store::request_create(
         &tx,
         req.method().as_ref(),
         &req.uri().to_string(),
