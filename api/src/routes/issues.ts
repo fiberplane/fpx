@@ -8,6 +8,7 @@ import { z } from "zod";
 import { githubIssues, newGithubIssueSchema } from "../db/schema.js";
 import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
+import { env } from "hono/adapter";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -71,7 +72,7 @@ app.get(
     const githubTokenSchema = z.string().min(1);
 
     const githubTokenResult = githubTokenSchema.safeParse(
-      ctx.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN,
+      env(ctx).GITHUB_TOKEN,
     );
 
     if (githubTokenResult.error) {
