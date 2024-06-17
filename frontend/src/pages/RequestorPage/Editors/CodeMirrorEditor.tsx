@@ -19,8 +19,8 @@ type CodeMirrorEditorProps = {
 const customTheme = EditorView.theme({
   "&": {
     fontSize: "14px",
-    // #020817
-    backgroundColor: 'rgba(30, 41, 59, 0.3)',  // Set your desired background color here
+    // HACK
+    background: "transparent !important",
   },
 });
 
@@ -64,6 +64,7 @@ export function CodeMirrorTypescriptEditor(
       maxHeight={maxHeight}
       extensions={[javascript({ jsx, typescript: true })]}
       onChange={onChange}
+      theme={[duotoneDark, customTheme]}
     />
   );
 }
