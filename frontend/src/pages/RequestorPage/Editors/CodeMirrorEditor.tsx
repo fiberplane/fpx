@@ -2,7 +2,8 @@ import "./CodeMirrorEditorCssOverrides.css";
 
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
-import { vscodeLight } from "@uiw/codemirror-theme-vscode";
+import { duotoneDark } from "@uiw/codemirror-theme-duotone";
+
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 
 type CodeMirrorEditorProps = {
@@ -15,9 +16,11 @@ type CodeMirrorEditorProps = {
   onChange: (value?: string) => void;
 };
 
-const smallerFontSizeTheme = EditorView.theme({
+const customTheme = EditorView.theme({
   "&": {
     fontSize: "14px",
+    // #020817
+    backgroundColor: 'rgba(30, 41, 59, 0.3)',  // Set your desired background color here
   },
 });
 
@@ -39,7 +42,7 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       minHeight={minHeight}
       extensions={[json()]}
       onChange={onChange}
-      theme={[vscodeLight, smallerFontSizeTheme]}
+      theme={[duotoneDark, customTheme]}
       readOnly={readOnly}
     />
   );
