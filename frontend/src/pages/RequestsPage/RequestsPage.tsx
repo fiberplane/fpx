@@ -1,8 +1,5 @@
 import {
-  MoonIcon,
-  // FileIcon,
   TrashIcon,
-  // ListBulletIcon as ListFilter, // FIXME
 } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo } from "react";
 import { useQueryClient } from "react-query";
@@ -16,14 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-// import {
-//   DropdownMenu,
-//   DropdownMenuCheckboxItem,
-//   DropdownMenuContent,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu"
+
 
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
@@ -102,53 +92,6 @@ export function RequestsPage() {
           </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
-          {/* <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-1">
-                <ListFilter className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Filter
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem checked>
-                Error
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>
-                Ignored
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button size="sm" variant="outline" className="h-8 gap-1">
-            <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Export
-            </span>
-          </Button> */}
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 gap-1"
-            onClick={() => {
-              fetch("/v0/logs/ignore", {
-                method: "POST",
-                body: JSON.stringify({
-                  logIds: query.data?.flatMap((t) => t.logs?.map((l) => l.id)),
-                }),
-              }).then(() => {
-                query.refetch();
-                // alert("Successfully ignored all");
-              });
-            }}
-          >
-            <MoonIcon className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Ignore All
-            </span>
-          </Button>
           <Button
             variant="destructive"
             size="sm"
