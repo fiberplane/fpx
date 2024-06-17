@@ -9,6 +9,7 @@ import {
 import Layout from "./Layout";
 import { IssuesPage } from "./pages/IssuesPage/IssuesPage";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
+import { RequestorPage } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 
 export function App() {
@@ -20,6 +21,7 @@ export function App() {
             <Route path="/" element={<Redirect />} />
             <Route path="/requests" element={<RequestsPage />} />
             <Route path="/requests/:traceId" element={<RequestDetailsPage />} />
+            <Route path="/requestor" element={<RequestorPage />} />
             <Route path="/issues" element={<IssuesPage />} />
           </Routes>
         </Layout>

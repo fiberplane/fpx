@@ -46,7 +46,9 @@ app.post(
     const requestObject = {
       method: requestMethod,
       // biome-ignore lint/suspicious/noExplicitAny: just make it work
-      body: requestBody ?? (undefined as any),
+      body:
+        (requestBody ? JSON.stringify(requestBody) : requestBody) ??
+        (undefined as any),
       headers: requestHeaders ?? undefined,
     };
 

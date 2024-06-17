@@ -24,3 +24,14 @@ export function objectWithKeyAndValue<T extends string, V>(
 ): value is { [K in T]: V } {
   return objectWithKey(value, key) && value[key] === expectedValue;
 }
+
+export function noop() {}
+
+export function isJson(str: string) {
+  try {
+    JSON.parse(str);
+  } catch {
+    return false;
+  }
+  return true;
+}
