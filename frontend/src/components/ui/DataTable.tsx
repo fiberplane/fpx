@@ -1,3 +1,12 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useKeySequence } from "@/hooks";
 import { useHandler } from "@fiberplane/hooks";
 import {
   type ColumnDef,
@@ -11,17 +20,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { clsx } from "clsx";
-
-import { useKeySequence } from "@/hooks";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useState } from "react";
 import {
   Pagination,
