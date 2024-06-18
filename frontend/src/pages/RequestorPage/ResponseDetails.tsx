@@ -3,7 +3,7 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
 import { isJson, noop } from "@/utils";
 import { CodeIcon } from "@radix-ui/react-icons";
-import { MonacoJsonEditor, useCustomMonacoTheme } from "./Editors";
+import { MonacoJsonEditor } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
@@ -53,9 +53,6 @@ export function ResponseDetails({ response }: { response?: Requestornator }) {
 
 function ResponseBody({ response }: { response?: Requestornator }) {
   const body = response?.app_responses?.responseBody;
-
-  // TODO - Not yet working...
-  // useCustomMonacoTheme();
 
   // Special rendering for JSON
   if (body && isJson(body)) {

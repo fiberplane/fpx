@@ -14,7 +14,10 @@ import {
   useFetchRequestorRequests,
   useMakeRequest,
   useProbedRoutes,
+  useGenerateRequest,
 } from "./queries";
+import { MagicWandIcon } from "@radix-ui/react-icons";
+import { createKeyValueParameters } from "./KeyValueForm";
 
 function useAutoselectRoute({
   isLoading,
@@ -122,6 +125,30 @@ export const RequestorPage = () => {
     });
   };
 
+  // TODO 
+  // /v0/generate-request
+  const { data: generatedRequest, refetch: generateRequest } = useGenerateRequest(selectedRoute?.handler);
+
+  const fillInRequest = () => {
+    generateRequest().then(({ data, isError }) => {
+      if (isError) {
+        console.error(data);
+        return;
+      }
+
+      const body = data.request?.body;
+      const queryParams = data.request?.queryParams;
+      if (body) {
+        setBody(body);
+      }
+      if (queryParams) {
+        // TODO - Tighten up types, this could wreak havoc
+        const newParameters = createKeyValueParameters(queryParams);
+        setQueryParams(newParameters);
+      }
+    })
+  }
+
   return (
     <div className="flex h-full">
       <RoutesPanel
@@ -130,6 +157,11 @@ export const RequestorPage = () => {
         handleRouteClick={handleRouteClick}
       />
       <div className="flex flex-col flex-1 ml-4">
+        <div className="mb-2 flex items-center justify-end">
+          <Button variant="ghost" size="sm" onClick={fillInRequest}>
+            <MagicWandIcon className="w-4 h-4" />
+          </Button>
+        </div>
         <RequestInput
           method={selectedRoute?.method}
           path={selectedRoute?.path}

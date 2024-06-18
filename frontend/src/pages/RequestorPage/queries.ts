@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient, QueryFunction, QueryMeta } from "react-query";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
 
 export type ProbedRoute = {
@@ -87,4 +87,29 @@ export function makeRequest({
       requestQueryParams: reduceKeyValueParameters(queryParams),
     }),
   }).then((r) => r.json());
+}
+
+
+// const generateRequest = ({ meta }: { meta?: QueryMeta }) => {
+//   const handler = meta?.handler;
+//   console.log("HIII META", meta)
+//   return fetch("/v0/generate-request", { method: "POST", body: JSON.stringify({ handler })}).then((r) => r.json());
+// }
+
+const generateRequest = (handler: string) => {
+  return fetch("/v0/generate-request", {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+    body: JSON.stringify({ handler })
+  }).then((r) => r.json());
+}
+
+export function useGenerateRequest(handler: string) {
+  return useQuery({
+    queryKey: ["generateRequest"],
+    queryFn: () => generateRequest(handler),
+    enabled: false,
+  });
 }

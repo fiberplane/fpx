@@ -155,3 +155,14 @@ export function reduceKeyValueParameters(parameters: KeyValueParameter[]) {
     {} as Record<string, string>,
   );
 }
+
+export function createKeyValueParameters(replacements: Array<{ key: string; value: string; }>) {
+  return replacements.map(({ key, value }) => {
+    return {
+      id: createParameterId(),
+      key,
+      value,
+      enabled: true,
+    };
+  })
+}
