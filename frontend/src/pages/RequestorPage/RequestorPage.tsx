@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MizuTrace, useMizuTraces } from "@/queries";
 import { isJson } from "@/utils";
 import { MagicWandIcon } from "@radix-ui/react-icons";
 import { useEffect, useMemo, useState } from "react";
@@ -18,7 +19,6 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
-import { MizuTrace, useMizuTraces } from "@/queries";
 
 export const RequestorPage = () => {
   const { data: routesAndMiddleware, isLoading } = useProbedRoutes();
@@ -244,7 +244,7 @@ function useAutoselectRoute({
  * this will look for the most recent request made against that route.
  */
 function useMostRecentRequestornator(
-  requestInputs: { path: string; method: string; route?: string; },
+  requestInputs: { path: string; method: string; route?: string },
   all: Requestornator[],
   traces: MizuTrace[],
 ) {
@@ -261,13 +261,12 @@ function useMostRecentRequestornator(
     //        then sees if those traces have any corresponding responses.
     //        It's very convoluted... and smelly
     const matchingTraces = traces?.filter(
-      t => t.route === requestInputs.route
-    )
-    const matchingTraceIds = matchingTraces?.map(t => t.id);
+      (t) => t.route === requestInputs.route,
+    );
+    const matchingTraceIds = matchingTraces?.map((t) => t.id);
     for (const matchingTraceId of matchingTraceIds ?? []) {
       const responseForTrace = all?.find(
-        (r: Requestornator) =>
-          r?.app_responses?.traceId === matchingTraceId,
+        (r: Requestornator) => r?.app_responses?.traceId === matchingTraceId,
       );
       if (responseForTrace && !matchingResponses?.includes(responseForTrace)) {
         matchingResponses?.push(responseForTrace);

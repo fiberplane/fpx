@@ -71,10 +71,9 @@ const FetchInitSchema = z
       .optional(),
     integrity: z.string().optional(),
     keepalive: z.boolean().optional(),
-    signal: z.union([
-      z.instanceof(AbortSignal).optional(),
-      z.unknown(),
-    ]).optional(),
+    signal: z
+      .union([z.instanceof(AbortSignal).optional(), z.unknown()])
+      .optional(),
   })
   .partial();
 

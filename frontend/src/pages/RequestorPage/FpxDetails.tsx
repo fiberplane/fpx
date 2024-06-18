@@ -16,9 +16,9 @@ import {
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
+import { EventsTable } from "./EventsTable";
 import { HeaderTable } from "./HeaderTable";
 import { Requestornator } from "./queries";
-import { EventsTable } from "./EventsTable";
 
 type FpxDetailsProps = {
   response?: Requestornator;
@@ -92,7 +92,6 @@ function TraceDetails({ response }: TraceDetailsProps) {
           )}
         </div>
       </Section>
-
 
       {/* <h2>Headers Sent</h2> */}
       {/* <code>{JSON.stringify(fpxResponseMessage, null, 2)}</code> */}

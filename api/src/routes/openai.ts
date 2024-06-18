@@ -1,5 +1,4 @@
 import { zValidator } from "@hono/zod-validator";
-import { createHonoMiddleware } from '@mizu-dev/hono'
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
