@@ -68,7 +68,7 @@ export const RequestorPage = () => {
     traces,
   );
 
-  const requestorRequestMaker = useMakeRequest();
+  const { mutate: makeRequest, isLoading: isRequestorRequesting } = useMakeRequest();
 
   // Send a request when we submit the form
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -84,7 +84,7 @@ export const RequestorPage = () => {
     if (cleverBody === "") {
       cleverBody = {};
     }
-    requestorRequestMaker.mutate({
+    makeRequest({
       path,
       method,
       body: cleverBody,
@@ -95,7 +95,7 @@ export const RequestorPage = () => {
 
   // TODO
   // /v0/generate-request
-  const { data: generatedRequest, refetch: generateRequest } =
+  const { isLoading: isLoadingParameters, refetch: generateRequest } =
     useGenerateRequest(selectedRoute);
 
   const fillInRequest = () => {
@@ -130,8 +130,8 @@ export const RequestorPage = () => {
         handleRouteClick={handleRouteClick}
       />
       <div className="flex flex-col flex-1 ml-4">
-        <div className="mb-2 flex items-center justify-end">
-          <Button variant="ghost" size="sm" onClick={fillInRequest}>
+        <div className="mb-2 flex items-center justify-start">
+          <Button variant="ghost" size="sm" onClick={fillInRequest} disabled={isLoadingParameters}>
             <MagicWandIcon className="w-4 h-4" />
           </Button>
         </div>
@@ -141,6 +141,7 @@ export const RequestorPage = () => {
           path={path}
           setPath={setPath}
           onSubmit={onSubmit}
+          isRequestorRequesting={isRequestorRequesting}
         />
         <div className="flex flex-grow items-stretch mt-4 rounded overflow-hidden border max-w-screen">
           <RequestPanel
@@ -152,7 +153,7 @@ export const RequestorPage = () => {
             setRequestHeaders={setRequestHeaders}
           />
           <div className="flex-grow flex flex-col items-stretch">
-            {mostRecentMatchingResponse ? (
+            {isRequestorRequesting ? <div>Loading...</div> : mostRecentMatchingResponse ? (
               <ResponseDetails response={mostRecentMatchingResponse} />
             ) : (
               <ResponseInstructions />
@@ -172,6 +173,7 @@ type RequestInputProps = {
   path?: string;
   setPath: (path: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  isRequestorRequesting?: boolean;
 };
 
 function RequestInput({
@@ -180,6 +182,7 @@ function RequestInput({
   path,
   setPath,
   onSubmit,
+  isRequestorRequesting,
 }: RequestInputProps) {
   const [value, setValue] = useState("");
   useEffect(() => {
@@ -212,7 +215,7 @@ function RequestInput({
           />
         </div>
         <div className="flex items-center space-x-2 p-2">
-          <Button size="sm" type="submit">
+          <Button size="sm" type="submit" disabled={isRequestorRequesting}>
             Send
           </Button>
         </div>
@@ -261,7 +264,7 @@ function useMostRecentRequestornator(
     //        then sees if those traces have any corresponding responses.
     //        It's very convoluted... and smelly
     const matchingTraces = traces?.filter(
-      (t) => t.route === requestInputs.route,
+      (t) => t.route === requestInputs.route && t.method === requestInputs.method,
     );
     const matchingTraceIds = matchingTraces?.map((t) => t.id);
     for (const matchingTraceId of matchingTraceIds ?? []) {
