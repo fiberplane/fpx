@@ -17,11 +17,11 @@ export function ResponseDetails({ response }: { response?: Requestornator }) {
         <TabsList className="w-full justify-start rounded-none border-b space-x-6">
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
-          <CustomTabTrigger value="fpx">FPX</CustomTabTrigger>
+          <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
         </TabsList>
       </div>
       <TabsContent value="body" className="h-full">
-        <div className="px-3 h-full">
+        <div className="px-3 h-full flex max-w-full">
           {response ? (
             <ResponseBody response={response} />
           ) : (
@@ -42,7 +42,7 @@ export function ResponseDetails({ response }: { response?: Requestornator }) {
           )}
         </div>
       </TabsContent>
-      <TabsContent value="fpx">
+      <TabsContent value="debug">
         <div className="px-3 py-1">
           <FpxDetails response={response} />
         </div>
@@ -58,7 +58,11 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   if (body && isJson(body)) {
     const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
 
-    return <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />;
+    return (
+      <div className="flex flex-grow items-stretch mt-4 rounded overflow-hidden border max-w-full">
+        <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+      </div>
+    );
 
     return (
       <MonacoJsonEditor

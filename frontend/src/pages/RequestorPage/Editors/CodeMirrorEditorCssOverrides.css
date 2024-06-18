@@ -1,3 +1,10 @@
 .cm-theme .cm-focused {
   outline: none;
 }
+
+.cm-editor {
+  overflow-x: auto;
+  white-space: pre;
+  width: 100%; /* Ensure the editor takes the full width of its container */
+  max-width: 1200px;
+}

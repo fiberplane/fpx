@@ -18,9 +18,11 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
+import { MizuTrace, useMizuTraces } from "@/queries";
 
 export const RequestorPage = () => {
   const { data: routesAndMiddleware, isLoading } = useProbedRoutes();
+  const { data: traces } = useMizuTraces();
 
   // NOTE - Response includes middleware, so filter for only routes
   const routes = useMemo(() => {
@@ -36,12 +38,6 @@ export const RequestorPage = () => {
   const handleRouteClick = (route: ProbedRoute) => {
     setSelectedRoute(route);
   };
-
-  const { data: allRequests } = useFetchRequestorRequests();
-  const mostRecentMatchingResponse = useMostRecentRequestornator(
-    selectedRoute,
-    allRequests,
-  );
 
   const {
     path,
@@ -63,6 +59,14 @@ export const RequestorPage = () => {
       setMethod(selectedRoute.method);
     }
   }, [selectedRoute]);
+
+  const { data: allRequests } = useFetchRequestorRequests();
+  const mostRecentMatchingResponse = useMostRecentRequestornator(
+    { path, method, route: selectedRoute?.path },
+    allRequests,
+    // @ts-expect-error - Types from useMizuTraces do not seem to match MizuTrace[]
+    traces,
+  );
 
   const requestorRequestMaker = useMakeRequest();
 
@@ -138,7 +142,7 @@ export const RequestorPage = () => {
           setPath={setPath}
           onSubmit={onSubmit}
         />
-        <div className="flex flex-grow items-stretch mt-4 rounded overflow-hidden border">
+        <div className="flex flex-grow items-stretch mt-4 rounded overflow-hidden border max-w-screen">
           <RequestPanel
             body={body}
             setBody={setBody}
@@ -240,15 +244,35 @@ function useAutoselectRoute({
  * this will look for the most recent request made against that route.
  */
 function useMostRecentRequestornator(
-  selectedRoute: ProbedRoute | null,
+  requestInputs: { path: string; method: string; route?: string; },
   all: Requestornator[],
+  traces: MizuTrace[],
 ) {
   return useMemo<Requestornator | undefined>(() => {
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestUrl === getUrl(selectedRoute?.path) &&
-        r?.app_requests?.requestMethod === selectedRoute?.method,
+        r?.app_requests?.requestUrl === getUrl(requestInputs?.path) &&
+        r?.app_requests?.requestMethod === requestInputs?.method,
     );
+
+    // HACK - When the route parameters are modified in the url input, we no longer can match the request to a response
+    //        e.g., for `/bugs/:id`, we cannot find requests to `/bugs/123`
+    //        This logic looks for traces that have a route pattern that's the same as what has been selected from the side bar,
+    //        then sees if those traces have any corresponding responses.
+    //        It's very convoluted... and smelly
+    const matchingTraces = traces?.filter(
+      t => t.route === requestInputs.route
+    )
+    const matchingTraceIds = matchingTraces?.map(t => t.id);
+    for (const matchingTraceId of matchingTraceIds ?? []) {
+      const responseForTrace = all?.find(
+        (r: Requestornator) =>
+          r?.app_responses?.traceId === matchingTraceId,
+      );
+      if (responseForTrace && !matchingResponses?.includes(responseForTrace)) {
+        matchingResponses?.push(responseForTrace);
+      }
+    }
 
     // Descending sort by updatedAt
     matchingResponses?.sort((a, b) => {
@@ -266,5 +290,5 @@ function useMostRecentRequestornator(
     });
 
     return matchingResponses?.[0];
-  }, [all, selectedRoute]);
+  }, [all, requestInputs, traces]);
 }

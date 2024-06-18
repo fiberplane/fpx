@@ -18,6 +18,7 @@ import { useState } from "react";
 import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
 import { HeaderTable } from "./HeaderTable";
 import { Requestornator } from "./queries";
+import { EventsTable } from "./EventsTable";
 
 type FpxDetailsProps = {
   response?: Requestornator;
@@ -62,6 +63,9 @@ function TraceDetails({ response }: TraceDetailsProps) {
   return (
     <div>
       {/* <code>{JSON.stringify(request, null, 2)}</code> */}
+      <Section title="Events" defaultIsOpen>
+        <EventsTable logs={trace?.logs} />
+      </Section>
       <Section title="Environment">
         <HeaderTable headers={fpxRequestMessage?.env ?? {}} />
       </Section>
@@ -89,9 +93,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
         </div>
       </Section>
 
-      <Section title="Response!">
-        <div>TODO</div>
-      </Section>
+
       {/* <h2>Headers Sent</h2> */}
       {/* <code>{JSON.stringify(fpxResponseMessage, null, 2)}</code> */}
     </div>
@@ -143,8 +145,9 @@ function getResponseMessage(logs: MizuLog[]) {
 function Section({
   title,
   children,
-}: { title: string; children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
+  defaultIsOpen = false,
+}: { title: string; children: React.ReactNode; defaultIsOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(defaultIsOpen);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
