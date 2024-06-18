@@ -44,9 +44,28 @@ export function RequestPanel(props: RequestPanelProps) {
         <Tabs defaultValue="params">
           <div className="flex items-center">
             <TabsList className="w-full justify-start rounded-none border-b space-x-6">
-              <CustomTabTrigger value="params">Params</CustomTabTrigger>
-              <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
-              <CustomTabTrigger value="body">Body</CustomTabTrigger>
+              <CustomTabTrigger value="params">
+                Params
+                {queryParams?.length > 1 && (
+                  <span className="ml-1 text-gray-400 font-mono text-xs">
+                    ({queryParams.length - 1})
+                  </span>
+                )}
+              </CustomTabTrigger>
+              <CustomTabTrigger value="headers">
+                Headers
+                {requestHeaders?.length > 1 && (
+                  <span className="ml-1 text-gray-400 font-mono text-xs">
+                    ({requestHeaders.length - 1})
+                  </span>
+                )}
+              </CustomTabTrigger>
+              <CustomTabTrigger value="body">
+                Body
+                {(body?.length ?? 0) > 0 && (
+                  <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
+                )}
+              </CustomTabTrigger>
             </TabsList>
           </div>
           <TabsContent value="params">

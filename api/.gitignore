@@ -13,6 +13,7 @@ bun.lockb
 
 # db
 mizu.db
+mizu-*.db
 
 # NOTE - usually it is safe to keep .neon in version control
 #        however, since everyone will be using their own database,

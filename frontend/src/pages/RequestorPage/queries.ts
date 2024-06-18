@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient, QueryFunction, QueryMeta } from "react-query";
+import {
+  QueryFunction,
+  QueryMeta,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "react-query";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
 
 export type ProbedRoute = {
@@ -10,10 +16,11 @@ export type ProbedRoute = {
 };
 
 export type Requestornator = {
-  // todo
+  // TODO
   app_requests: {
     requestUrl: string;
     requestMethod: string;
+    updatedAt: string;
   };
   app_responses: {
     responseStatusCode: string;
@@ -89,27 +96,28 @@ export function makeRequest({
   }).then((r) => r.json());
 }
 
-
 // const generateRequest = ({ meta }: { meta?: QueryMeta }) => {
 //   const handler = meta?.handler;
 //   console.log("HIII META", meta)
 //   return fetch("/v0/generate-request", { method: "POST", body: JSON.stringify({ handler })}).then((r) => r.json());
 // }
 
-const generateRequest = (handler: string) => {
+const generateRequest = (route: ProbedRoute | null) => {
+  // FIXME
+  const { handler, method, path } = route ?? {};
   return fetch("/v0/generate-request", {
     headers: {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: JSON.stringify({ handler })
+    body: JSON.stringify({ handler, method, path }),
   }).then((r) => r.json());
-}
+};
 
-export function useGenerateRequest(handler: string) {
+export function useGenerateRequest(route: ProbedRoute | null) {
   return useQuery({
     queryKey: ["generateRequest"],
-    queryFn: () => generateRequest(handler),
+    queryFn: () => generateRequest(route),
     enabled: false,
   });
 }

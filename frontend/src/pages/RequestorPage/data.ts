@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useKeyValueForm } from "./KeyValueForm";
 
 export function useRequestorFormData() {
+  const [method, setMethod] = useState<string>("GET");
+  const [path, setPath] = useState<string>("");
+
   const [body, setBody] = useState<string | undefined>("");
 
   const {
@@ -15,6 +18,10 @@ export function useRequestorFormData() {
   } = useKeyValueForm();
 
   return {
+    path,
+    setPath,
+    method,
+    setMethod,
     body,
     setBody,
     queryParams,

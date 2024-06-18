@@ -156,7 +156,9 @@ export function reduceKeyValueParameters(parameters: KeyValueParameter[]) {
   );
 }
 
-export function createKeyValueParameters(replacements: Array<{ key: string; value: string; }>) {
+export function createKeyValueParameters(
+  replacements: Array<{ key: string; value: string }>,
+) {
   return replacements.map(({ key, value }) => {
     return {
       id: createParameterId(),
@@ -164,5 +166,5 @@ export function createKeyValueParameters(replacements: Array<{ key: string; valu
       value,
       enabled: true,
     };
-  })
+  });
 }

@@ -26,7 +26,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
       </nav>
       <div className="flex-grow flex flex-col sm:gap-4 py-1 pb-2">
         <header className="py-2 pb-3 sticky top-0 z-30 flex items-center gap-2 border-b bg-background px-4 sm:static sm:h-auto sm:bg-transparent sm:px-6 text-sm">
-          <HeaderNavLink to="/requestor">Requestor</HeaderNavLink>
+          <HeaderNavLink to="/requestor">Routes</HeaderNavLink>
           <HeaderNavLink to="/requests">Requests</HeaderNavLink>
           <HeaderNavLink to="/issues">Issues</HeaderNavLink>
         </header>

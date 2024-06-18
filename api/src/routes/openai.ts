@@ -12,10 +12,10 @@ app.post(
   cors(),
   zValidator(
     "json",
-    z.object({ handler: z.string() }),
+    z.object({ handler: z.string(), method: z.string(), path: z.string() }),
   ),
   async (ctx) => {
-    const { handler } = ctx.req.valid("json");
+    const { handler, method, path } = ctx.req.valid("json");
 
     const openaiClient = new OpenAI({
       apiKey: ctx.env.OPENAI_API_KEY,
@@ -27,82 +27,103 @@ app.post(
       // NOTE - We can restrict the response to be from this single tool call
       tool_choice: { type: "function", function: { name: "make_request" } },
       // Define the make_request tool
-      tools: [{
-        type: "function" as const,
-        function: {
-          name: "make_request",
-          description: "Generates some random data for a request to the backend",
-          // Describe parameters as json schema
-          // https://json-schema.org/understanding-json-schema/
-          parameters: {
-            type: "object",
-            properties: {
-              queryParams: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    key: {
-                      type: "string",
-                    },
-                    value: {
-                      type: "string",
+      tools: [
+        {
+          type: "function" as const,
+          function: {
+            name: "make_request",
+            description:
+              "Generates some random data for a request to the backend",
+            // Describe parameters as json schema
+            // https://json-schema.org/understanding-json-schema/
+            parameters: {
+              type: "object",
+              properties: {
+                path: {
+                  type: "string",
+                },
+                routeParams: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      key: {
+                        type: "string",
+                      },
+                      value: {
+                        type: "string",
+                      },
                     },
                   },
                 },
+                queryParams: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      key: {
+                        type: "string",
+                      },
+                      value: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+                // NOTE - If we want to support different body types, this could be helpful
+                body: {
+                  type: "string",
+                },
+                //
+                // Best possible description of a json request body...
+                // body: {
+                //   "oneOf": [
+                //     {
+                //       "type": "object",
+                //       "description": "JSON object body"
+                //     },
+                //     {
+                //       "type": "array",
+                //       "description": "JSON array body",
+                //       items: {} // Explicitly define items
+                //     },
+                //     {
+                //       "type": "string",
+                //       "description": "String body"
+                //     },
+                //     {
+                //       "type": "object",
+                //       "description": "FormData body",
+                //       "properties": {
+                //         "fields": {
+                //           "type": "object",
+                //           "additionalProperties": {
+                //             "oneOf": [
+                //               {
+                //                 "type": "string"
+                //               },
+                //               {
+                //                 "type": "array",
+                //                 "items": {
+                //                   "type": "string"
+                //                 }
+                //               }
+                //             ]
+                //           }
+                //         }
+                //       },
+                //       "required": ["fields"],
+                //       "additionalProperties": false
+                //     }
+                //   ]
+                // },
               },
-              // NOTE - If we want to support different body types, this could be helpful
-              body: {
-                type: "string",
-              }
-              //
-              // Best possible description of a json request body...
-              // body: {
-              //   "oneOf": [
-              //     {
-              //       "type": "object",
-              //       "description": "JSON object body"
-              //     },
-              //     {
-              //       "type": "array",
-              //       "description": "JSON array body",
-              //       items: {} // Explicitly define items
-              //     },
-              //     {
-              //       "type": "string",
-              //       "description": "String body"
-              //     },
-              //     {
-              //       "type": "object",
-              //       "description": "FormData body",
-              //       "properties": {
-              //         "fields": {
-              //           "type": "object",
-              //           "additionalProperties": {
-              //             "oneOf": [
-              //               {
-              //                 "type": "string"
-              //               },
-              //               {
-              //                 "type": "array",
-              //                 "items": {
-              //                   "type": "string"
-              //                 }
-              //               }
-              //             ]
-              //           }
-              //         }
-              //       },
-              //       "required": ["fields"],
-              //       "additionalProperties": false
-              //     }
-              //   ]
-              // },
+              // TODO - Mark fields like `routeParams` as required based on the route definition?
+              required: ["path"],
             },
-            // required: ["queryParams", "body"],
           },
         },
-      }],
+      ],
       messages: [
         {
           role: "system",
@@ -115,18 +136,26 @@ app.post(
 
             Be clever and creative with test data. Avoid just writing things like "test".
 
-            Use the tool "make_request". Always respond in valid JSON.
+            For example, if you get a route like \`/users/:id\`, you should return a URL like:
+            \`/users/1234567890\` and a routeParams parameter like this:
 
+            { "routeParams": { "key": ":id", "value": "1234567890" } }
+
+            If you get a route like this \`/users\`, you should return a URL like:
+
+            Use the tool "make_request". Always respond in valid JSON.
           `),
         },
         {
           role: "user",
           content: cleanPrompt(`
-            I need to make a request to the following handler:
+            I need to make a request to one of my Hono api handlers.
 
-            It should be to route:
+            It should be a ${method} request to route: ${path}
+
+            Here is the code for the handler:
             ${handler}
-          `)
+          `),
         },
       ],
       temperature: 0.1,
@@ -138,19 +167,19 @@ app.post(
       choices: [{ message }],
     } = response;
 
-    console.log("message", message)
-    const makeRequestCall = message.tool_calls?.[0]
+    console.log("message", message);
+    const makeRequestCall = message.tool_calls?.[0];
     const toolArgs = makeRequestCall?.function?.arguments;
-    console.log("toolArgs", toolArgs)
-    const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null
+    console.log("toolArgs", toolArgs);
+    const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
     console.log("parsedArgs", parsedArgs);
     // const requestDescription = parsedArgs?.[0];
 
     return ctx.json({
-      request: parsedArgs
+      request: parsedArgs,
     });
-  }
-)
+  },
+);
 
 app.post(
   "/v0/analyze-error",
@@ -191,7 +220,7 @@ app.post(
             ${errorMessage}
             This error originated in the following route handler for my Hono application:
             ${handlerSourceCode}
-          `)
+          `),
         },
       ],
       temperature: 0,
@@ -212,7 +241,8 @@ app.post(
 export default app;
 
 function cleanPrompt(prompt: string) {
-  return prompt.trim()
+  return prompt
+    .trim()
     .split("\n")
     .map((l) => l.trim())
     .join("\n");

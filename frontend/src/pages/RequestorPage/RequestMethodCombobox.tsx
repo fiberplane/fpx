@@ -50,24 +50,30 @@ const methods = [
   },
 ];
 
-export function RequestMethodCombobox({ method }: { method: string }) {
+export function RequestMethodCombobox({
+  method,
+  setMethod,
+}: { method: string; setMethod: (method: string) => void }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState(method);
+  // const [value, setValue] = React.useState(method);
   // HACK - antipattern
-  useEffect(() => {
-    setValue(method);
-  }, [method]);
-  const matchedMethod = value
-    ? methods.find((m) => m.value === value)?.label
+  // useEffect(() => {
+  //   setValue(method);
+  // }, [method]);
+  const matchedMethod = method
+    ? methods.find((m) => m.value === method)?.label
     : "GET";
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={false} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
           role="combobox"
           aria-expanded={open}
           className="text-left"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
         >
           <span
             className={cn(
@@ -77,7 +83,7 @@ export function RequestMethodCombobox({ method }: { method: string }) {
           >
             {matchedMethod}
           </span>
-          <CaretSortIcon className="ml-1 h-4 w-4 shrink-0 opacity-50" />
+          {/* <CaretSortIcon className="ml-1 h-4 w-4 shrink-0 opacity-50" /> */}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[120px] p-0">
@@ -89,7 +95,7 @@ export function RequestMethodCombobox({ method }: { method: string }) {
                   key={framework.value}
                   value={framework.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
+                    setMethod(currentValue === method ? "" : currentValue);
                     setOpen(false);
                   }}
                 >
@@ -104,7 +110,7 @@ export function RequestMethodCombobox({ method }: { method: string }) {
                   <CheckIcon
                     className={cn(
                       "ml-auto h-4 w-4",
-                      value === framework.value ? "opacity-100" : "opacity-0",
+                      method === framework.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                 </CommandItem>
