@@ -77,7 +77,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   const lines =
     body?.split("\n")?.map((line, index) => (
       <div key={index} className="flex h-full">
-        <span className="w-8 text-right pr-2 text-gray-600 bg-muted mr-1">
+        <span className="w-8 text-right pr-2 text-gray-500 bg-muted mr-1">
           {index + 1}
         </span>
         <span>{line}</span>
@@ -88,7 +88,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 
   return (
     <div className="mt-4">
-      <pre className="text-sm font-mono text-gray-800 whitespace-pre-wrap">
+      <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>
     </div>
