@@ -1,28 +1,71 @@
-use std::{fs::File, io::Write};
+use std::{fs::File, io::Write, path::Path};
 
 use anyhow::Result;
-use fpx::schemas::{MyOtherStruct, MyStruct};
-use schemars::schema_for;
+use fpx::schemas::{ClientMessage, Request, RequestAdded, ServerMessage};
+use schemars::{schema::RootSchema, schema_for};
 use serde_json::Value;
 
 #[derive(clap::Args, Debug)]
-pub struct Args {}
+pub struct Args {
+    #[arg(short, long, env, default_value = "frontend")]
+    pub project_directory: String,
+    #[arg(short, long, env, default_value = "src/schemas.ts")]
+    pub output_path: String,
+}
 
-// TODO: Clean up
-pub async fn handle_command(_args: Args) -> Result<()> {
-    let schemas = Vec::from([schema_for!(MyStruct), schema_for!(MyOtherStruct)]);
+pub async fn handle_command(args: Args) -> Result<()> {
+    let schemas = Vec::from([
+        schema_for!(ClientMessage),
+        schema_for!(Request),
+        schema_for!(RequestAdded),
+        schema_for!(ServerMessage),
+    ]);
 
+    let zod_schema = generate_zod_schemas(&args.project_directory, &schemas)?;
+
+    let mut file = File::create(Path::new(&args.project_directory).join(args.output_path.clone()))?;
+    file.write_all(&zod_schema)?;
+
+    // Run formatter
+    let output = std::process::Command::new("npx")
+        .args([
+            "@biomejs/biome",
+            "format",
+            "--write",
+            args.output_path.as_str(),
+        ])
+        .current_dir(args.project_directory)
+        .output()?;
+
+    if !output.status.success() {
+        eprintln!(
+            "Failed to run Biome: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+
+        anyhow::bail!("Command failed")
+    }
+
+    println!("Succesfully generated schemas");
+
+    Ok(())
+}
+
+fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Result<Vec<u8>> {
     let mut zod_schemas: Vec<String> = Vec::new();
 
     for (index, schema) in schemas.iter().enumerate() {
-        let schema_string = serde_json::to_string_pretty(&schema)?;
+        // Parse the json schema as JSON and get the schema title
         let schema_json = serde_json::to_value(&schema)?;
 
         if let Some(title) = schema_json.get("title").and_then(Value::as_str) {
+            // Convert the schema to a pretty string
+            let schema_string = serde_json::to_string_pretty(&schema)?;
+
             // Execute npx CLI tool json-schema-to-zod and capture its output
             let output = std::process::Command::new("npx")
                 .args(["json-schema-to-zod", "-n", &title, "-i", &schema_string])
-                .current_dir("frontend")
+                .current_dir(npx_directory.clone())
                 .output()?;
 
             if output.status.success() {
@@ -44,27 +87,18 @@ pub async fn handle_command(_args: Args) -> Result<()> {
                 zod_schemas.push(zod_schema.to_string());
                 // add inferred type export to the schema
                 zod_schemas.push(format!("export type {} = z.infer<typeof {}>", title, title));
+                println!("Generated Zod Schema: {}", title);
             } else {
-                // TODO: Implement error handling
-                println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+                eprintln!(
+                    "Failed to generate Zod schema for {}: {}",
+                    title,
+                    String::from_utf8_lossy(&output.stderr)
+                );
+
+                anyhow::bail!("Command failed")
             }
         }
     }
 
-    // TODO: Clean up and improve (should probably use Clap arguments?)
-    let mut file = File::create("frontend/src/schemas.ts")?;
-    file.write_all(zod_schemas.join("\n\n").as_bytes())?;
-
-    // Run formatter
-    let output = std::process::Command::new("npx")
-        .args(["@biomejs/biome", "format", "--write", "src/schemas.ts"])
-        .current_dir("frontend")
-        .output()?;
-
-    if !output.status.success() {
-        // TODO: Implement error handling
-        println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
-    }
-
-    Ok(())
+    Ok(zod_schemas.join("\n\n").as_bytes().to_owned())
 }

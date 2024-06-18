@@ -8,7 +8,6 @@ use std::sync::Arc;
 use url::Url;
 
 mod handlers;
-pub mod types;
 mod ws;
 
 #[derive(Clone)]

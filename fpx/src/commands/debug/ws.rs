@@ -1,4 +1,4 @@
-use crate::api::types::FPX_WEBSOCKET_ID_HEADER;
+use crate::schemas::FPX_WEBSOCKET_ID_HEADER;
 use anyhow::{Context, Result};
 use futures_util::{SinkExt, StreamExt};
 use std::sync::Arc;

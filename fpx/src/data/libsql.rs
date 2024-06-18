@@ -1,4 +1,4 @@
-use crate::api::types::Request;
+use crate::schemas::Request;
 use anyhow::{Context, Result};
 use libsql::{params, Builder, Connection, Database, Transaction};
 use std::collections::BTreeMap;
