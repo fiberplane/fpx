@@ -71,17 +71,20 @@ const FetchInitSchema = z
       .optional(),
     integrity: z.string().optional(),
     keepalive: z.boolean().optional(),
-    signal: z.instanceof(AbortSignal).optional(),
+    signal: z.union([
+      z.instanceof(AbortSignal).optional(),
+      z.unknown(),
+    ]).optional(),
   })
   .partial();
 
 // Define the fetch arguments schema
 const FetchArgumentsSchema = z.union([
-  z.tuple([z.union([z.string(), z.instanceof(URL), z.instanceof(Request)])]),
   z.tuple([
     z.union([z.string(), z.instanceof(URL), z.instanceof(Request)]),
     FetchInitSchema,
   ]),
+  z.tuple([z.union([z.string(), z.instanceof(URL), z.instanceof(Request)])]),
 ]);
 
 const MizuFetchStartSchema = z
@@ -185,6 +188,7 @@ const MizuTraceSchema = z.object({
   status: z.string(),
   method: z.string(),
   path: z.string(),
+  route: z.string().optional(),
   duration: z.string(),
   size: z.number().nonnegative().nullable(),
   logs: z.array(MizuLogSchema),
