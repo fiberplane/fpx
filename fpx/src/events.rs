@@ -11,6 +11,7 @@ use tracing::trace;
 /// A [`Events`] implementation for the [`ServerMessage`] type.
 pub type ServerEvents = Events<ServerMessage>;
 
+#[derive(Clone)]
 pub struct Events<M> {
     sender: broadcast::Sender<M>,
 }

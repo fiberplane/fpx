@@ -432,9 +432,9 @@ const ErrorLog = ({
             <CollapsibleTrigger asChild>
               <Button className="p-0 h-3" variant="link" size="sm">
                 {!isOpen ? (
-                  <CaretRightIcon className="h-4 w-4" />
+                  <CaretRightIcon className="h-4 w-4 text-cyan-400" />
                 ) : (
-                  <CaretDownIcon className="h-4 w-4" />
+                  <CaretDownIcon className="h-4 w-4 text-cyan-400" />
                 )}
                 <span className="sr-only">{isOpen ? "Hide" : "Show"}</span>
               </Button>
@@ -448,7 +448,7 @@ const ErrorLog = ({
           </div>
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
-            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-400 hover:text-gray-200 ">
               {messagePayload.stack}
             </div>
           </CollapsibleContent>
@@ -464,7 +464,7 @@ const InfoLog = ({ log }: { log: MizuLog }) => {
   return (
     <LogCard>
       <LogDetailsHeader
-        eventName="console.log"
+        eventName={`console.${log.level}`}
         traceId={log.traceId}
         timestamp={log.timestamp}
         description={""}
@@ -491,19 +491,19 @@ const MagicSuggestion = ({
   children,
 }: { suggestion: ReactNode | string; children?: ReactNode }) => {
   return (
-    <div className="font-sans rounded-lg border border-purple-400 bg-purple-50 mt-4 px-2 py-3 text-sm shadow-md">
+    <div className="font-sans rounded-lg border border-primary-foreground bg-primary mt-4 px-2 py-3 text-sm shadow-md">
       <div className="grid grid-cols-[auto_1fr] gap-y-1 gap-x-2">
-        <div className="text-purple-800 flex items-center">
+        <div className="text-primary-foreground flex items-center">
           <MagicWandIcon className="h-3.5 w-3.5" />{" "}
           {/* Adjusted icon size for better visual balance */}
         </div>
         <div className="text-left flex items-center">
-          <div className="text-purple-800">
+          <div className="text-primary-foreground">
             <span className="font-semibold mr-2">Suggestion</span>
           </div>
         </div>
         <div />
-        <div className="text-purple-800">{suggestion}</div>
+        <div className="text-primary-foreground">{suggestion}</div>
       </div>
       {children}
     </div>
@@ -577,7 +577,7 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
         </h4> */}
         <CollapsibleTrigger asChild>
           <Button
-            className="group p-0 h-4 text-cyan-700"
+            className="group p-0 h-4 text-cyan-500"
             variant="link"
             size="sm"
           >
@@ -598,10 +598,10 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
                   KeyValueSchema.safeParse(value).data;
                 return (
                   <div key={key}>
-                    <div className="font-mono font-semibold text-gray-600">
+                    <div className="font-mono font-semibold text-gray-300">
                       {key}
                     </div>
-                    <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
+                    <div className="font-sans text-gray-200 max-h-[200px] overflow-y-auto mt-1">
                       {keyValue ? (
                         <EnvGrid env={keyValue} />
                       ) : (

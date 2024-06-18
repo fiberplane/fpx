@@ -1,5 +1,5 @@
 use super::ApiState;
-use crate::data::libsql::LibSqlStore;
+use crate::data::Store;
 use crate::schemas;
 use axum::extract::Request;
 use axum::extract::State;
@@ -46,7 +46,7 @@ pub async fn inspect_request_handler(
             )
         })
         .collect();
-    let request_id: i64 = LibSqlStore::request_create(
+    let request_id: i64 = Store::request_create(
         &tx,
         parts.method.as_ref(),
         &parts.uri.to_string(),

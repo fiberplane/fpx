@@ -1,10 +1,9 @@
 use crate::api;
-use crate::data::libsql::{DataPath, LibSqlStore};
 use crate::data::migrations::migrate;
+use crate::data::{DataPath, Store};
 use crate::events::Events;
 use crate::initialize_fpx_dir;
 use anyhow::{Context, Result};
-use std::sync::Arc;
 use std::{path::PathBuf, process::exit};
 use tracing::info;
 use tracing::warn;
@@ -31,13 +30,13 @@ pub struct Args {
 pub async fn handle_command(args: Args) -> Result<()> {
     initialize_fpx_dir(args.fpx_directory.as_path()).await?;
 
-    let store = Arc::new(open_store(&args).await?);
+    let store = open_store(&args).await?;
 
     migrate(&store).await?;
 
     // Create a shared events struct, which allows events to be send to
     // WebSocket connections.
-    let events = Arc::new(Events::new());
+    let events = Events::new();
 
     let inspector_service = crate::inspector::InspectorService::start(
         args.fpx_directory.join("inspectors"),
@@ -46,13 +45,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
     )
     .await?;
 
-    let app = api::create_api(
-        args.base_url.clone(),
-        events,
-        store,
-        Arc::new(inspector_service),
-    )
-    .await;
+    let app = api::create_api(args.base_url.clone(), events, store, inspector_service).await;
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)
         .await
@@ -92,14 +85,14 @@ pub async fn handle_command(args: Args) -> Result<()> {
     Ok(())
 }
 
-async fn open_store(args: &Args) -> Result<LibSqlStore> {
+async fn open_store(args: &Args) -> Result<Store> {
     let db_path = if args.in_memory_database {
         DataPath::InMemory
     } else {
-        DataPath::Local(args.fpx_directory.join("fpx.db"))
+        DataPath::File(args.fpx_directory.join("fpx.db"))
     };
 
-    let store = LibSqlStore::open(db_path).await?;
+    let store = Store::open(db_path).await?;
 
     Ok(store)
 }

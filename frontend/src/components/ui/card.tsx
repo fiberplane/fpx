@@ -73,6 +73,23 @@ const CardFooter = React.forwardRef<
 ));
 CardFooter.displayName = "CardFooter";
 
+function CardSection(props: {
+  title: React.ReactNode;
+  description: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <Card className={props.className}>
+      <CardHeader>
+        <CardTitle>{props.title}</CardTitle>
+        <CardDescription>{props.description}</CardDescription>
+      </CardHeader>
+      <CardContent>{props.children}</CardContent>
+    </Card>
+  );
+}
+
 export {
   Card,
   CardHeader,
@@ -80,4 +97,5 @@ export {
   CardTitle,
   CardDescription,
   CardContent,
+  CardSection,
 };
