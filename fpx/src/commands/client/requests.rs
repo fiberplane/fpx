@@ -26,11 +26,11 @@ pub async fn handle_command(args: Args) -> Result<()> {
 ///
 #[derive(clap::Args, Debug)]
 pub struct GetArgs {
+    pub request_id: i64,
+
     /// Base url of the fpx dev server.
     #[arg(from_global)]
     pub base_url: Url,
-
-    pub request_id: i64,
 }
 
 async fn get_request(args: GetArgs) -> Result<()> {

@@ -15,12 +15,16 @@ impl ApiClient {
         Self { client, base_url }
     }
 
-    pub async fn do_req<T, E>(&self, method: Method, path: String) -> Result<T, ApiClientError<E>>
+    pub async fn do_req<T, E>(
+        &self,
+        method: Method,
+        path: impl AsRef<str>,
+    ) -> Result<T, ApiClientError<E>>
     where
         T: serde::de::DeserializeOwned,
         E: serde::de::DeserializeOwned,
     {
-        let u = self.base_url.join(&path)?;
+        let u = self.base_url.join(path.as_ref())?;
 
         let req = self.client.request(method, u);
 
