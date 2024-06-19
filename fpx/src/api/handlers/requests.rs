@@ -21,6 +21,8 @@ pub async fn request_get_handler(
 }
 
 #[derive(Debug, Serialize, Deserialize, Error)]
+#[serde(tag = "error", content = "details", rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum RequestGetError {
     #[error("Request not found")]
     RequestNotFound,

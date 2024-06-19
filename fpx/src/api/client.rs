@@ -1,4 +1,4 @@
-use super::errors::{ApiClientError, CommonError};
+use super::errors::ApiClientError;
 use super::handlers::RequestGetError;
 use super::types::Request;
 use anyhow::Result;
@@ -43,19 +43,7 @@ impl ApiClient {
             return Ok(result);
         }
 
-        // Try to parse the result as a ServiceError.
-        if let Ok(result) = serde_json::from_slice::<E>(&body) {
-            return Err(ApiClientError::ServiceError(result));
-        }
-
-        // Try to parse the result as CommonError.
-        if let Ok(result) = serde_json::from_slice::<CommonError>(&body) {
-            return Err(ApiClientError::CommonError(result));
-        }
-
-        // If both failed, return the status_code and the body for the user to
-        // debug.
-        Err(ApiClientError::InvalidResponse(status_code, body))
+        Err(ApiClientError::from_response(status_code, body))
     }
 
     pub async fn request_get(
