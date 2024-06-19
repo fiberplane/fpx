@@ -15,7 +15,6 @@ mod api;
 mod commands;
 pub mod data;
 mod events;
-mod ext;
 mod inspector;
 
 #[tokio::main]

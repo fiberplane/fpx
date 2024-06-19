@@ -1,6 +1,7 @@
 use crate::api::types::Request;
-use anyhow::{Context, Result};
-use libsql::{params, Builder, Connection, Transaction};
+use anyhow::{anyhow, Context, Result};
+use libsql::{de, params, Builder, Connection, Rows, Transaction};
+use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
@@ -137,10 +138,47 @@ impl Store {
     }
 }
 
+pub(crate) trait RowsExt {
+    /// `T` must be a `struct`
+    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T>;
+
+    /// `T` must be a `struct`
+    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>>;
+
+    /// `T` must be a `struct`
+    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>>;
+}
+
+impl RowsExt for Rows {
+    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T> {
+        self.fetch_optional()
+            .await?
+            .ok_or_else(|| anyhow!("put db error here"))
+    }
+
+    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>> {
+        match self.next().await? {
+            Some(row) => Ok(Some(
+                de::from_row(&row).context("failed to map into target type")?,
+            )),
+            None => Ok(None),
+        }
+    }
+
+    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>> {
+        let mut results = Vec::new();
+
+        while let Some(row) = self.next().await? {
+            results.push(de::from_row(&row).context("failed to map into target type")?);
+        }
+
+        Ok(results)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::data::Store;
-    use crate::ext::RowsExt;
+    use crate::data::{RowsExt, Store};
     use serde::Deserialize;
 
     #[tokio::test]
@@ -148,7 +186,7 @@ mod tests {
         let store = Store::in_memory().await.unwrap();
 
         {
-            let mut tx = store.start_transaction().await.unwrap();
+            let tx = store.start_transaction().await.unwrap();
 
             #[derive(Deserialize)]
             struct Test {
@@ -163,10 +201,12 @@ mod tests {
                 .await
                 .unwrap();
 
+            assert_eq!(fone.test, 1);
+
             // create a temporary table and immediately drop it. this returns 0 rows without using existing tables
             let fopt: Option<Test> = tx
                 .query(
-                    "create temporary table temp_table (id integer); drop table temp_table;",
+                    "create temporary table temp_table (id integer); drop table temp_table",
                     (),
                 )
                 .await
@@ -175,6 +215,8 @@ mod tests {
                 .await
                 .unwrap();
 
+            assert!(fopt.is_none());
+
             let fall: Vec<Test> = tx
                 .query("select 1 as test union all select 2 union all select 3", ())
                 .await
@@ -182,10 +224,6 @@ mod tests {
                 .fetch_all()
                 .await
                 .unwrap();
-
-            assert_eq!(fone.test, 1);
-
-            assert!(fopt.is_none());
 
             assert_eq!(fall.len(), 3);
             assert_eq!(fall[0].test, 1);
