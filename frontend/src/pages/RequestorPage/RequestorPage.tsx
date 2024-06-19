@@ -1,5 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { MizuTrace, useMizuTraces } from "@/queries";
 import { isJson } from "@/utils";
 import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
@@ -7,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createKeyValueParameters } from "./KeyValueForm";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { RequestPanel } from "./RequestPanel";
+import { RequestorHistory } from "./RequestorHistory";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
 import { RoutesPanel } from "./RoutesPanel";
 import { useRequestorFormData } from "./data";
@@ -19,8 +28,6 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { RequestorHistory } from "./RequestorHistory";
 
 export const RequestorPage = () => {
   const { data: routesAndMiddleware, isLoading } = useProbedRoutes();
@@ -60,7 +67,7 @@ export const RequestorPage = () => {
       setPath(selectedRoute.path);
       setMethod(selectedRoute.method);
     }
-  }, [selectedRoute]);
+  }, [selectedRoute, setMethod, setPath]);
 
   const { data: allRequests } = useFetchRequestorRequests();
   const mostRecentMatchingResponse = useMostRecentRequestornator(
@@ -70,16 +77,25 @@ export const RequestorPage = () => {
     traces,
   );
 
-  const [history, setHistory] = useState<{ responseBody: string; responseHeaders: Record<string, string>, traceId: string; responseStatusCode: number; }[]>([]);
-
-  const { data: returnedRequest, mutate: makeRequest, isLoading: isRequestorRequesting } = useMakeRequest();
-
-  // HACK - When we make a request, add it to the history
-  useEffect(() => {
-    if (returnedRequest) {
-      setHistory((h) => [returnedRequest, ...h]);
+  // Keep a history of recent requests and responses
+  const history = useMemo<Array<Requestornator>>(() => {
+    if (allRequests) {
+      const cloned = [...allRequests];
+      cloned.sort(sortRequestornatorsDescending);
+      return cloned;
     }
-  }, [returnedRequest])
+    return [];
+  }, [allRequests]);
+
+  const recentHistory = useMemo(() => {
+    return history.slice(0, 5);
+  }, [history]);
+
+  const {
+    // data: returnedRequest,
+    mutate: makeRequest,
+    isLoading: isRequestorRequesting,
+  } = useMakeRequest();
 
   // Send a request when we submit the form
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -107,7 +123,7 @@ export const RequestorPage = () => {
   // TODO
   // /v0/generate-request
   const { isLoading: isLoadingParameters, refetch: generateRequest } =
-    useGenerateRequest(selectedRoute);
+    useGenerateRequest(selectedRoute, recentHistory);
 
   const fillInRequest = () => {
     generateRequest().then(({ data, isError }) => {
@@ -142,7 +158,12 @@ export const RequestorPage = () => {
       />
       <div className="flex flex-col flex-1 ml-4">
         <div className="mb-2 flex items-center justify-start space-x-0">
-          <Button variant="ghost" size="sm" onClick={fillInRequest} disabled={isLoadingParameters}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fillInRequest}
+            disabled={isLoadingParameters}
+          >
             <MagicWandIcon className="w-4 h-4" />
           </Button>
           <Sheet>
@@ -161,8 +182,6 @@ export const RequestorPage = () => {
               <RequestorHistory history={history} />
             </SheetContent>
           </Sheet>
-          
-
         </div>
         <RequestInput
           method={method}
@@ -182,7 +201,9 @@ export const RequestorPage = () => {
             setRequestHeaders={setRequestHeaders}
           />
           <div className="flex-grow flex flex-col items-stretch">
-            {isRequestorRequesting ? <div>Loading...</div> : mostRecentMatchingResponse ? (
+            {isRequestorRequesting ? (
+              <div>Loading...</div>
+            ) : mostRecentMatchingResponse ? (
               <ResponseDetails response={mostRecentMatchingResponse} />
             ) : (
               <ResponseInstructions />
@@ -293,7 +314,8 @@ function useMostRecentRequestornator(
     //        then sees if those traces have any corresponding responses.
     //        It's very convoluted... and smelly
     const matchingTraces = traces?.filter(
-      (t) => t.route === requestInputs.route && t.method === requestInputs.method,
+      (t) =>
+        t.route === requestInputs.route && t.method === requestInputs.method,
     );
     const matchingTraceIds = matchingTraces?.map((t) => t.id);
     for (const matchingTraceId of matchingTraceIds ?? []) {
@@ -306,20 +328,22 @@ function useMostRecentRequestornator(
     }
 
     // Descending sort by updatedAt
-    matchingResponses?.sort((a, b) => {
-      const aLatestTimestamp =
-        a.app_responses?.updatedAt ?? a.app_requests?.updatedAt;
-      const bLatestTimestamp =
-        b.app_responses?.updatedAt ?? b.app_requests?.updatedAt;
-      if (aLatestTimestamp > bLatestTimestamp) {
-        return -1;
-      }
-      if (aLatestTimestamp < bLatestTimestamp) {
-        return 1;
-      }
-      return 0;
-    });
+    matchingResponses?.sort(sortRequestornatorsDescending);
 
     return matchingResponses?.[0];
   }, [all, requestInputs, traces]);
+}
+
+function sortRequestornatorsDescending(a: Requestornator, b: Requestornator) {
+  const aLatestTimestamp =
+    a.app_responses?.updatedAt ?? a.app_requests?.updatedAt;
+  const bLatestTimestamp =
+    b.app_responses?.updatedAt ?? b.app_requests?.updatedAt;
+  if (aLatestTimestamp > bLatestTimestamp) {
+    return -1;
+  }
+  if (aLatestTimestamp < bLatestTimestamp) {
+    return 1;
+  }
+  return 0;
 }

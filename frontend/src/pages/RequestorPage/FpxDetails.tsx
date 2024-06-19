@@ -35,7 +35,6 @@ type TraceDetailsProps = {
   response: Requestornator;
 };
 
-
 function TraceDetails({ response }: TraceDetailsProps) {
   const traceId = response.app_responses.traceId;
   const { trace, isNotFound } = useTrace(traceId);

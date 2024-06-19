@@ -1,3 +1,4 @@
+import { useMizuTraces } from "@/queries";
 import {
   QueryFunction,
   QueryMeta,
@@ -6,7 +7,6 @@ import {
   useQueryClient,
 } from "react-query";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
-import { useMizuTraces } from "@/queries";
 
 export type ProbedRoute = {
   path: string;
@@ -106,26 +106,40 @@ export function makeRequest({
 //   return fetch("/v0/generate-request", { method: "POST", body: JSON.stringify({ handler })}).then((r) => r.json());
 // }
 
-const generateRequest = (route: ProbedRoute | null) => {
-  // FIXME
+const generateRequest = (
+  route: ProbedRoute | null,
+  history: Array<Requestornator>,
+) => {
+  // FIXME - type wonkiness
   const { handler, method, path } = route ?? {};
+  const simplifiedHistory = history.map((h) =>
+    [
+      `[Request]`,
+      `${h.app_requests.requestMethod} ${h.app_requests.requestUrl}`,
+      `[Response]`,
+      `Status: ${h.app_responses.responseStatusCode}`,
+      `Body: ${h.app_responses.responseBody}`,
+    ].join("\n***\n"),
+  );
   return fetch("/v0/generate-request", {
     headers: {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: JSON.stringify({ handler, method, path }),
+    body: JSON.stringify({ handler, method, path, history: simplifiedHistory }),
   }).then((r) => r.json());
 };
 
-export function useGenerateRequest(route: ProbedRoute | null) {
+export function useGenerateRequest(
+  route: ProbedRoute | null,
+  history: Array<Requestornator>,
+) {
   return useQuery({
     queryKey: ["generateRequest"],
-    queryFn: () => generateRequest(route),
+    queryFn: () => generateRequest(route, history),
     enabled: false,
   });
 }
-
 
 export function useTrace(traceId: string) {
   const { data: traces, isLoading, error } = useMizuTraces();

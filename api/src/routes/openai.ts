@@ -18,6 +18,8 @@ app.post(
     // const { handler, method, path } = ctx.req.valid("json");
     const { handler, method, path, history } = await ctx.req.json();
 
+    console.log("HISTORY!!!", history);
+
     const openaiClient = new OpenAI({
       apiKey: ctx.env.OPENAI_API_KEY,
     });
@@ -152,11 +154,13 @@ app.post(
           content: cleanPrompt(`
             I need to make a request to one of my Hono api handlers.
 
-            Here are some recent requests/responses, which you can use as inspiration:
+            Here are some recent requests/responses, which you can use as inspiration for future requests.
+            E.g., if we recently created a resource, you can look that resource up.
+            <history>
+            ${history?.join("\n") ?? "NO HISTORY"}
+            </history>
 
-            ${history.map((h: unknown) => JSON.stringify(h)).join("\n")}
-
-            It should be a ${method} request to route: ${path}
+            The request you make should be a ${method} request to route: ${path}
 
             Here is the code for the handler:
             ${handler}
