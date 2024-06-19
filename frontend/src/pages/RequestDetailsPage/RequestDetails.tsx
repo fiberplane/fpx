@@ -450,7 +450,6 @@ const ErrorLog = ({
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
             <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-400 hover:text-gray-200 ">
-
               <pre className="font-mono p-1">
                 <code>
                   <StackTrace stackTrace={stack ?? ""} />
@@ -599,25 +598,25 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
           {typeof data === "string"
             ? data
             : Object.entries(data).map(([key, value]) => {
-              const keyValue =
-                (key === "env" || key === "headers") &&
-                KeyValueSchema.safeParse(value).data;
-              return (
-                <div key={key}>
-                  <div className="font-mono font-semibold text-gray-300">
-                    {key}
+                const keyValue =
+                  (key === "env" || key === "headers") &&
+                  KeyValueSchema.safeParse(value).data;
+                return (
+                  <div key={key}>
+                    <div className="font-mono font-semibold text-gray-300">
+                      {key}
+                    </div>
+                    <div className="font-sans text-gray-200 max-h-[200px] overflow-y-auto mt-1">
+                      {keyValue ? (
+                        <EnvGrid env={keyValue} />
+                      ) : (
+                        formatValue(value)
+                      )}
+                    </div>
+                    <Separator className="my-1" />
                   </div>
-                  <div className="font-sans text-gray-200 max-h-[200px] overflow-y-auto mt-1">
-                    {keyValue ? (
-                      <EnvGrid env={keyValue} />
-                    ) : (
-                      formatValue(value)
-                    )}
-                  </div>
-                  <Separator className="my-1" />
-                </div>
-              );
-            })}
+                );
+              })}
         </div>
       </CollapsibleContent>
     </Collapsible>
