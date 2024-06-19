@@ -128,7 +128,6 @@ app.get("/v0/logs", cors(), async (ctx) => {
         updated_at: l.updatedAt,
         caller_location: l.callerLocation,
         message: parsedMessage,
-        // message: tryParseJsonObjectMessage(l.message),
       };
     }),
   );
