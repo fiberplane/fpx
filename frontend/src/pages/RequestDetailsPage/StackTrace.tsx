@@ -1,13 +1,7 @@
 import { Fragment } from "react";
 
 export function StackTrace({ stackTrace }: { stackTrace: string }) {
-  // enhances file:// to be actual links
-
-  return transformStack(stackTrace);
-}
-
-function transformStack(stack: string) {
-  const lines = stack.split("\n");
+  const lines = stackTrace.split("\n");
 
   return lines.map((line, index) => {
     const match = line.match(
