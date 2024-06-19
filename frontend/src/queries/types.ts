@@ -204,6 +204,10 @@ export type CallerLocation = z.infer<typeof CallerLocationSchema>;
 export type MizuRequestStart = z.infer<typeof MizuRequestStartSchema>;
 export type MizuRequestEnd = z.infer<typeof MizuRequestEndSchema>;
 export type MizuErrorMessage = z.infer<typeof MizuErrorMessageSchema>;
+export type MizuFetchStart = z.infer<typeof MizuFetchStartSchema>;
+export type MizuFetchEnd = z.infer<typeof MizuFetchEndSchema>;
+export type MizuFetchError = z.infer<typeof MizuFetchErrorSchema>;
+export type MizuFetchLoggingError = z.infer<typeof MizuFetchLoggingErrorSchema>;
 
 export const isMizuRequestStartMessage = (
   message: unknown,
