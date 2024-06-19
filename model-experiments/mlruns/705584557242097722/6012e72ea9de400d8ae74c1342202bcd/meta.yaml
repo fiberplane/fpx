@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/705584557242097722/6012e72ea9de400d8ae74c1342202bcd/artifacts
+end_time: 1718220952576
+entry_point_name: ''
+experiment_id: '705584557242097722'
+lifecycle_stage: active
+run_id: 6012e72ea9de400d8ae74c1342202bcd
+run_name: all-mpnet-base-v2
+run_uuid: 6012e72ea9de400d8ae74c1342202bcd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718220952492
+status: 3
+tags: []
+user_id: actualwitch

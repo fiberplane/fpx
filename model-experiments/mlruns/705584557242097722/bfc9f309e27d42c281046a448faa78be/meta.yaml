@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/705584557242097722/bfc9f309e27d42c281046a448faa78be/artifacts
+end_time: 1718222688981
+entry_point_name: ''
+experiment_id: '705584557242097722'
+lifecycle_stage: active
+run_id: bfc9f309e27d42c281046a448faa78be
+run_name: gte-small
+run_uuid: bfc9f309e27d42c281046a448faa78be
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1718222688868
+status: 3
+tags: []
+user_id: actualwitch

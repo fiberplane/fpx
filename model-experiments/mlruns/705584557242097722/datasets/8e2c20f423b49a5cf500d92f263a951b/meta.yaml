@@ -1,0 +1,10 @@
+digest: f673f606
+name: dataset
+profile: '{"num_rows": 3, "num_elements": 9}'
+schema: '{"mlflow_colspec": [{"type": "string", "name": "question", "required": true},
+  {"type": "array", "items": {"type": "string"}, "name": "ground_truth", "required":
+  true}, {"type": "array", "items": {"type": "string"}, "name": "top_5_results", "required":
+  true}]}'
+source: '{"tags": {"mlflow.user": "actualwitch", "mlflow.source.name": "/Users/actualwitch/Library/Caches/pypoetry/virtualenvs/model-experiments-HuNPz4NV-py3.12/lib/python3.12/site-packages/ipykernel_launcher.py",
+  "mlflow.source.type": "LOCAL"}}'
+source_type: code
