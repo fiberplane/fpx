@@ -136,3 +136,57 @@ impl Store {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use serde::Deserialize;
+    use crate::data::Store;
+    use crate::ext::RowsExt;
+
+    #[tokio::test]
+    async fn test_extensions() {
+        let store = Store::in_memory().await.unwrap();
+
+        {
+            let mut tx = store.start_transaction().await.unwrap();
+
+            #[derive(Deserialize)]
+            struct Test {
+                test: i32
+            }
+
+            let fone: Test = tx.query("select 1 as test", ())
+                .await
+                .unwrap()
+                .fetch_one()
+                .await
+                .unwrap();
+
+            // create a temporary table and immediately drop it. this returns 0 rows without using existing tables
+            let fopt: Option<Test> = tx.query("create temporary table temp_table (id integer); drop table temp_table;", ())
+                .await
+                .unwrap()
+                .fetch_optional()
+                .await
+                .unwrap();
+
+            let fall: Vec<Test> = tx.query("select 1 as test union all select 2 union all select 3", ())
+                .await
+                .unwrap()
+                .fetch_all()
+                .await
+                .unwrap();
+
+            assert_eq!(fone.test, 1);
+
+            assert!(fopt.is_none());
+
+            assert_eq!(fall.len(), 3);
+            assert_eq!(fall[0].test, 1);
+            assert_eq!(fall[1].test, 2);
+            assert_eq!(fall[2].test, 3);
+
+            tx.commit().await.unwrap();
+        }
+    }
+}
