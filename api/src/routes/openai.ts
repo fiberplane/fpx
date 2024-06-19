@@ -5,6 +5,25 @@ import OpenAI from "openai";
 import { z } from "zod";
 import type { Bindings, Variables } from "../lib/types.js";
 
+const PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
+  You are a code debugging assistant for apps that use Hono (web framework), 
+  Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
+  You need to help craft a request to route handlers. 
+  You will be provided the source code for handlers, and you should generate
+  query parameters and a request body that will test the request.
+
+  Be clever and creative with test data. Avoid just writing things like "test".
+
+  For example, if you get a route like \`/users/:id\`, you should return a URL like:
+  \`/users/1234567890\` and a routeParams parameter like this:
+
+  { "routeParams": { "key": ":id", "value": "1234567890" } }
+
+  If you get a route like this \`/users\`, you should return a URL like:
+
+  Use the tool "make_request". Always respond in valid JSON.
+`);
+
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.post(
@@ -12,13 +31,11 @@ app.post(
   cors(),
   // zValidator(
   //   "json",
-  //   z.object({ handler: z.string(), method: z.string(), path: z.string() }),
+  //   z.object({ handler: z.string(), method: z.string(), path: z.string(), history: z.array(z.string()).optional() }),
   // ),
   async (ctx) => {
-    // const { handler, method, path } = ctx.req.valid("json");
+    // const { handler, method, path, history } = ctx.req.valid("json");
     const { handler, method, path, history } = await ctx.req.json();
-
-    console.log("HISTORY!!!", history);
 
     const openaiClient = new OpenAI({
       apiKey: ctx.env.OPENAI_API_KEY,
@@ -37,8 +54,7 @@ app.post(
             name: "make_request",
             description:
               "Generates some random data for a request to the backend",
-            // Describe parameters as json schema
-            // https://json-schema.org/understanding-json-schema/
+            // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
             parameters: {
               type: "object",
               properties: {
@@ -73,10 +89,11 @@ app.post(
                     },
                   },
                 },
-                // NOTE - If we want to support different body types, this could be helpful
                 body: {
                   type: "string",
                 },
+                // NOTE - If we want to support different body types, this could be helpful
+                //
                 //
                 // Best possible description of a json request body...
                 // body: {
@@ -130,24 +147,7 @@ app.post(
       messages: [
         {
           role: "system",
-          content: cleanPrompt(`
-            You are a code debugging assistant for apps that use Hono (web framework), 
-            Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
-            You need to help craft a request to route handlers. 
-            You will be provided the source code for handlers, and you should generate
-            query parameters and a request body that will test the request.
-
-            Be clever and creative with test data. Avoid just writing things like "test".
-
-            For example, if you get a route like \`/users/:id\`, you should return a URL like:
-            \`/users/1234567890\` and a routeParams parameter like this:
-
-            { "routeParams": { "key": ":id", "value": "1234567890" } }
-
-            If you get a route like this \`/users\`, you should return a URL like:
-
-            Use the tool "make_request". Always respond in valid JSON.
-          `),
+          content: PARAMETER_GENERATION_SYSTEM_PROMPT,
         },
         {
           role: "user",
@@ -172,17 +172,12 @@ app.post(
     });
 
     const {
-      // id: responseId,
       choices: [{ message }],
     } = response;
 
-    console.log("message", message);
     const makeRequestCall = message.tool_calls?.[0];
     const toolArgs = makeRequestCall?.function?.arguments;
-    console.log("toolArgs", toolArgs);
     const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
-    console.log("parsedArgs", parsedArgs);
-    // const requestDescription = parsedArgs?.[0];
 
     return ctx.json({
       request: parsedArgs,
