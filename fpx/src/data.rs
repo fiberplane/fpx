@@ -1,5 +1,5 @@
 use crate::api::types::Request;
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use libsql::{de, params, Builder, Connection, Rows, Transaction};
 use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
@@ -143,6 +143,9 @@ pub enum DbError {
     #[error("No rows were returned")]
     NotFound,
 
+    #[error("failed to deserialize into `T`: {message}")]
+    FailedDeserialize { message: String },
+
     #[error("Unexpected number of rows was returned")]
     UnexpectedRowsReturned,
 
@@ -155,36 +158,40 @@ pub enum DbError {
 
 pub(crate) trait RowsExt {
     /// `T` must be a `struct`
-    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T>;
+    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T, DbError>;
 
     /// `T` must be a `struct`
-    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>>;
+    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>, DbError>;
 
     /// `T` must be a `struct`
-    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>>;
+    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>, DbError>;
 }
 
 impl RowsExt for Rows {
-    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T> {
-        self.fetch_optional()
-            .await?
-            .ok_or_else(|| anyhow!("put db error here"))
+    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T, DbError> {
+        self.fetch_optional().await?.ok_or(DbError::NotFound)
     }
 
-    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>> {
+    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>, DbError> {
         match self.next().await? {
-            Some(row) => Ok(Some(
-                de::from_row(&row).context("failed to map into target type")?,
-            )),
+            Some(row) => Ok(Some(de::from_row(&row).map_err(|err| {
+                DbError::FailedDeserialize {
+                    message: err.to_string(),
+                }
+            })?)),
             None => Ok(None),
         }
     }
 
-    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>> {
+    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>, DbError> {
         let mut results = Vec::new();
 
         while let Some(row) = self.next().await? {
-            results.push(de::from_row(&row).context("failed to map into target type")?);
+            results.push(
+                de::from_row(&row).map_err(|err| DbError::FailedDeserialize {
+                    message: err.to_string(),
+                })?,
+            );
         }
 
         Ok(results)
