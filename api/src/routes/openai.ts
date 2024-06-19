@@ -200,13 +200,7 @@ app.post(
     });
 
     const response = await openaiClient.chat.completions.create({
-      // NOTE - This model (should?) guarantee function calling to have json output
       model: "gpt-4o",
-      // NOTE - We can restrict the response to be from this single tool call
-      // tool_choice: {
-      // 	type: "function",
-      // 	function: { name: "extract_useful_queries" },
-      // },
       messages: [
         {
           role: "system",
@@ -245,7 +239,7 @@ app.post(
 /**
  * Used in AI Builders Demo
  *
- * Takes in an fpx trace and tries to make sense of the error messages along the way
+ * Takes in an fpx trace and tries to make sense of what happened when a route was invoked.
  */
 app.post("/v0/summarize-trace-error", cors(), async (ctx) => {
   const { handlerSourceCode, trace } = await ctx.req.json();
@@ -255,27 +249,25 @@ app.post("/v0/summarize-trace-error", cors(), async (ctx) => {
   });
 
   const response = await openaiClient.chat.completions.create({
-    // NOTE - This model (should?) guarantee function calling to have json output
     model: "gpt-4o",
-    // NOTE - We can restrict the response to be from this single tool call
-    // tool_choice: {
-    // 	type: "function",
-    // 	function: { name: "extract_useful_queries" },
-    // },
     messages: [
       {
         role: "system",
         content: cleanPrompt(`
             You are a code debugging assistant for apps that use Hono (web framework), 
             Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
-            You are given a function and an error message.
-            Provide a succinct summary/overview of the error.
+
+            You are given a route handler and some trace events that happened when the handler was executed.
+
+            Provide a succinct summary/overview of what happened, especially if there was an error.
 
             If you have a suggestion for a fix, give that too. But always be concise!!!
 
             We are rendering your response in a compact UI.
 
             If you don't see any errors, just summarize what happened as briefly as possible.
+
+            Format your response as markdown. Do not include a "summary" heading specifically, because that's already in our UI.
           `),
       },
       {
@@ -284,10 +276,7 @@ app.post("/v0/summarize-trace-error", cors(), async (ctx) => {
             I tried to invoke the following handler in my hono app while making a request:
             ${handlerSourceCode}
 
-            These were the request parameters I used:
-            // TODO - ignore for now
-
-            And this is a summary of event data (logs, network requests) that happened:
+            And this is a summary of event data (logs, network requests) that happened inside my app:
             ${trace.join("\n")}
           `),
       },
@@ -302,7 +291,7 @@ app.post("/v0/summarize-trace-error", cors(), async (ctx) => {
   } = response;
 
   return ctx.json({
-    suggestion: message.content,
+    summary: message.content,
   });
 });
 

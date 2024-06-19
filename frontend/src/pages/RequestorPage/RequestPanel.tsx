@@ -40,7 +40,7 @@ export function RequestPanel(props: RequestPanelProps) {
         <ResizableHandle ref={ref} />
       )}
     >
-      <div style={{ width: `${width}px` }} className="min-w-[350px] border-r">
+      <div style={{ width: `${width}px` }} className="min-w-[200px] border-r">
         <Tabs defaultValue="params">
           <div className="flex items-center">
             <TabsList className="w-full justify-start rounded-none border-b space-x-6">
