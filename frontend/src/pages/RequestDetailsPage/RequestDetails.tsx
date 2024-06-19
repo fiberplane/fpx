@@ -38,6 +38,7 @@ import {
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "@/queries";
+import { StackTrace } from "./StackTrace";
 
 function useHandlerSourceCode(source?: string, handler?: string) {
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(
@@ -449,7 +450,11 @@ const ErrorLog = ({
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
             <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
-              {messagePayload.stack}
+              <pre className="font-mono p-1">
+                <code>
+                  <StackTrace stackTrace={stack ?? ""} />
+                </code>
+              </pre>
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -593,25 +598,25 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
           {typeof data === "string"
             ? data
             : Object.entries(data).map(([key, value]) => {
-                const keyValue =
-                  (key === "env" || key === "headers") &&
-                  KeyValueSchema.safeParse(value).data;
-                return (
-                  <div key={key}>
-                    <div className="font-mono font-semibold text-gray-600">
-                      {key}
-                    </div>
-                    <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
-                      {keyValue ? (
-                        <EnvGrid env={keyValue} />
-                      ) : (
-                        formatValue(value)
-                      )}
-                    </div>
-                    <Separator className="my-1" />
+              const keyValue =
+                (key === "env" || key === "headers") &&
+                KeyValueSchema.safeParse(value).data;
+              return (
+                <div key={key}>
+                  <div className="font-mono font-semibold text-gray-600">
+                    {key}
                   </div>
-                );
-              })}
+                  <div className="font-sans text-gray-800 max-h-[200px] overflow-y-auto mt-1">
+                    {keyValue ? (
+                      <EnvGrid env={keyValue} />
+                    ) : (
+                      formatValue(value)
+                    )}
+                  </div>
+                  <Separator className="my-1" />
+                </div>
+              );
+            })}
         </div>
       </CollapsibleContent>
     </Collapsible>

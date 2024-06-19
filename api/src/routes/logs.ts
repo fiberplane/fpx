@@ -3,9 +3,13 @@ import { desc, inArray, ne } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
+import { access, readFile } from "node:fs/promises";
+import { SourceMapConsumer} from "source-map"
+
 import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import { tryParseJsonObjectMessage } from "../lib/utils.js";
+import { SourceMap } from "node:module";
 
 const { mizuLogs } = schema;
 
@@ -101,18 +105,85 @@ app.get("/v0/logs", cors(), async (ctx) => {
   const logsQuery = showIgnored
     ? db.select().from(mizuLogs)
     : db.select().from(mizuLogs).where(ne(mizuLogs.ignored, true));
-  const logs = await logsQuery.orderBy(desc(mizuLogs.timestamp));
+  const logResults = await logsQuery
+    .orderBy(desc(mizuLogs.timestamp));
+
+  const logs = await Promise.all(logResults.map(async (l) => {
+      const parsedResult = ErrorMessageSchema.safeParse(l.message);
+      const stack = parsedResult.success  && parsedResult.data.stack &&  await transformStack(parsedResult.data.stack);
+      const parsedMessage = stack && parsedResult.data? {
+        ...parsedResult.data,
+        stack,
+       } : l.message;
+
+      return ({
+        ...l,
+        trace_id: l.traceId,
+        created_at: l.createdAt,
+        updated_at: l.updatedAt,
+        caller_location: l.callerLocation,
+        message: parsedMessage
+        // message: tryParseJsonObjectMessage(l.message),
+      })
+    }));
+
+
   return ctx.json({
     // HACK - switching to drizzle meant renaming a bunch of fields oy vey
-    logs: logs.map((l) => ({
-      ...l,
-      trace_id: l.traceId,
-      created_at: l.createdAt,
-      updated_at: l.updatedAt,
-      caller_location: l.callerLocation,
-      // message: tryParseJsonObjectMessage(l.message),
-    })),
+    logs,
   });
+});
+
+async function transformStack(stack: string) {
+  const lines = stack
+  .split("\n");
+
+  const parsedLines = await Promise.all(lines.map(async (line) => {
+      const match = line.match(/at(( ?<method>[\w\.]* \()?| )(?<file>.*):(?<lineNumber>\d+):(?<columnNumber>\d+)(\))?$/);
+      if (!match || !match.groups) {
+        return line;
+      }
+
+      const {method, file, lineNumber, columnNumber} = match.groups;
+
+      const filePath = `${file.trim().replace("file://", "")}.map`;
+      try {
+        const fileData = await readFile(filePath, "utf8");
+        const data = JSON.parse(fileData);
+        const consumer = await new SourceMapConsumer(data);
+        const pos = consumer.originalPositionFor({
+          line: Number.parseInt(lineNumber , 10),
+          column: Number.parseInt(columnNumber, 10),
+        });
+        consumer.destroy();
+        if (pos.source) {
+          const name = pos.name || method;
+          return `${extractIndentation(line)}at ${name ? `${name.trim()} (` : ''}file://${pos.source}:${pos.line}:${pos.column}${name ? `)` : ''}`;
+        } 
+
+        return line;
+
+      } catch (err) { 
+        return line;
+      }
+
+    }));
+  return parsedLines.join("\n");
+}
+
+function extractIndentation(source: string) {
+  // Regular expression to match leading whitespace (spaces or tabs)
+  const match = source.match(/^\s*/);
+  
+  // Extract the matched indentation
+  const indentation = match ? match[0] : '';
+  return indentation;
+}
+
+const ErrorMessageSchema = z.object({
+  message: z.string(),
+  stack: z.string().optional(),
+  name: z.string(),
 });
 
 export default app;
