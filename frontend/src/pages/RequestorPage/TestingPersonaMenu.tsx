@@ -33,7 +33,7 @@ export function TestingPersonaMenu({
           <DropdownMenuRadioItem value="Friendly">
             Friendly
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="QA">QA</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="QA">Hostile</DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
