@@ -24,7 +24,7 @@ export function EventsTable({ logs }: { logs?: MizuLog[] }) {
     return <div className="p-4">No logs</div>;
   }
 
-  console.log("fil", filteredLogs);
+  console.log("filtered logs for events table", filteredLogs);
 
   return (
     <Table>
@@ -51,7 +51,7 @@ function getEventName(log: MizuLog) {
     return "fetch end";
   }
   if (log.level === "error") {
-    return "error log";
+    return <span className="text-red-400">error log</span>;
   }
   return `${log.level} log`;
 }

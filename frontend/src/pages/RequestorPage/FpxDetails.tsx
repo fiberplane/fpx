@@ -18,7 +18,7 @@ import { useState } from "react";
 import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
 import { EventsTable } from "./EventsTable";
 import { HeaderTable } from "./HeaderTable";
-import { Requestornator, useTrace } from "./queries";
+import { Requestornator, useSummarizeError, useTrace } from "./queries";
 
 type FpxDetailsProps = {
   response?: Requestornator;
@@ -39,6 +39,12 @@ function TraceDetails({ response }: TraceDetailsProps) {
   const traceId = response.app_responses.traceId;
   const { trace, isNotFound } = useTrace(traceId);
 
+  const {
+    data: aiSummary,
+    isLoading: isLoadingAiSummary,
+    refetch: fetchAiSummary,
+  } = useSummarizeError(trace);
+
   if (isNotFound) {
     return <div>Trace not found</div>;
   }
@@ -50,6 +56,16 @@ function TraceDetails({ response }: TraceDetailsProps) {
 
   return (
     <div>
+      <Section title="Summary" defaultIsOpen>
+        <Button onClick={() => fetchAiSummary()}>Get AI Summary</Button>
+        <div>
+          {aiSummary && (
+            <code className="max-w-[300px] overflow-scroll">
+              {JSON.stringify(aiSummary, null, 2)}
+            </code>
+          )}
+        </div>
+      </Section>
       {/* <code>{JSON.stringify(request, null, 2)}</code> */}
       <Section title="Events" defaultIsOpen>
         <EventsTable logs={trace?.logs} />
