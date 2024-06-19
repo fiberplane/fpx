@@ -15,8 +15,8 @@ mod api;
 mod commands;
 pub mod data;
 mod events;
-mod inspector;
 mod ext;
+mod inspector;
 
 #[tokio::main]
 async fn main() -> Result<()> {

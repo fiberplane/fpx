@@ -1,7 +1,6 @@
-use libsql::{de, Row, Rows};
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
+use libsql::{de, Rows};
 use serde::de::DeserializeOwned;
-use serde::Deserialize;
 
 pub(crate) trait RowsExt {
     async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T>;
@@ -15,20 +14,18 @@ impl RowsExt for Rows {
     /// `T` must be a `struct`
     async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T> {
         match self.next().await? {
-            Some(row) => {
-                Ok(de::from_row(&row).context("failed to map into target type")?)
-            }
-            None => todo!("put db error here")
+            Some(row) => Ok(de::from_row(&row).context("failed to map into target type")?),
+            None => todo!("put db error here"),
         }
     }
 
     /// `T` must be a `struct`
     async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>> {
         match self.next().await? {
-            Some(row) => {
-                Ok(Some(de::from_row(&row).context("failed to map into target type")?))
-            }
-            None => Ok(None)
+            Some(row) => Ok(Some(
+                de::from_row(&row).context("failed to map into target type")?,
+            )),
+            None => Ok(None),
         }
     }
 
