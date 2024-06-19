@@ -49,7 +49,7 @@ impl ServerMessage {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "details")]
+#[serde(tag = "type", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ServerMessageDetails {
     /// A message was received and processed successfully. See the outer message
@@ -73,7 +73,7 @@ impl From<ServerMessageDetails> for ServerMessage {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "error", content = "details")]
+#[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ServerError {
     /// A message was received that could not be parsed.
@@ -107,13 +107,14 @@ impl ClientMessage {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "details")]
+#[serde(tag = "type", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ClientMessageDetails {
     Debug,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RequestAdded {
     /// The id of the request that has been captured.
     request_id: i64,
@@ -141,6 +142,7 @@ impl From<RequestAdded> for ServerMessage {
 
 /// A request that has been captured by fpx.
 #[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Request {
     pub id: i64,
     pub method: String,

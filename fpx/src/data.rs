@@ -5,6 +5,7 @@ use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
+use thiserror::Error;
 
 pub mod migrations;
 
@@ -62,11 +63,11 @@ impl Store {
         Self::open(DataPath::InMemory).await
     }
 
-    pub async fn start_transaction(&self) -> Result<Transaction> {
+    pub async fn start_transaction(&self) -> Result<Transaction, DbError> {
         self.connection
             .transaction()
             .await
-            .context("Unable to start a transaction")
+            .map_err(DbError::InternalError)
     }
 
     #[tracing::instrument(skip_all)]
@@ -108,34 +109,48 @@ impl Store {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<Request> {
+    pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<Request, DbError> {
         let mut rows = tx
             .query(
                 "SELECT id, method, url, body, headers FROM requests WHERE id = ?",
                 params!(id),
             )
-            .await
-            .context("Unable to create request")?;
+            .await?;
 
         // Get the first row which contains the only result.
-        let row = rows.next().await.context("Unable to get row")?;
+        let row = rows.next().await?;
         let result = match row {
             Some(row) => {
                 let headers: String = row.get(4)?;
                 let headers = serde_json::from_str(&headers)?;
                 Request::new(row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, headers)
             }
-            None => anyhow::bail!("Unable to get request"),
+            None => return Err(DbError::NotFound),
         };
 
         // Make sure that there is only 1 row.
-        let row = rows.next().await.context("Unable to get row")?;
+        let row = rows.next().await?;
         if row.is_some() {
-            anyhow::bail!("Unable to get last insert rowid");
+            return Err(DbError::UnexpectedRowsReturned);
         }
 
         Ok(result)
     }
+}
+
+#[derive(Debug, Error)]
+pub enum DbError {
+    #[error("No rows were returned")]
+    NotFound,
+
+    #[error("Unexpected number of rows was returned")]
+    UnexpectedRowsReturned,
+
+    #[error("Unable to deserialize JSON: {0}")]
+    InvalidJson(#[from] serde_json::Error),
+
+    #[error("Internal database error occurred: {0}")]
+    InternalError(#[from] libsql::Error),
 }
 
 pub(crate) trait RowsExt {
