@@ -1,8 +1,11 @@
+//! API client for the FPX API.
+
 use super::errors::ApiClientError;
 use super::handlers::RequestGetError;
 use super::types::Request;
 use anyhow::Result;
 use http::Method;
+use tracing::trace;
 use url::Url;
 
 pub struct ApiClient {
@@ -11,11 +14,18 @@ pub struct ApiClient {
 }
 
 impl ApiClient {
-    pub fn new(client: reqwest::Client, base_url: Url) -> Self {
+    /// Create a new ApiClient with a default reqwest::Client.
+    pub fn new(base_url: Url) -> Self {
+        let client = reqwest::Client::new();
+
+        Self::with_client(client, base_url)
+    }
+
+    pub fn with_client(client: reqwest::Client, base_url: Url) -> Self {
         Self { client, base_url }
     }
 
-    pub async fn do_req<T, E>(
+    async fn do_req<T, E>(
         &self,
         method: Method,
         path: impl AsRef<str>,
@@ -38,14 +48,21 @@ impl ApiClient {
         // Read the entire response into a local buffer.
         let body = response.bytes().await?;
 
-        // Try to parse the result as R.
-        if let Ok(result) = serde_json::from_slice::<T>(&body) {
-            return Ok(result);
+        // Try to parse the result as T.
+        match serde_json::from_slice::<T>(&body) {
+            Ok(result) => Ok(result),
+            Err(err) => {
+                trace!(
+                    ?status_code,
+                    ?err,
+                    "Failed to parse response as expected type"
+                );
+                Err(ApiClientError::from_response(status_code, body))
+            }
         }
-
-        Err(ApiClientError::from_response(status_code, body))
     }
 
+    /// Retrieve the details of a single request.
     pub async fn request_get(
         &self,
         request_id: i64,

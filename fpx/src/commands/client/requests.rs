@@ -34,8 +34,7 @@ pub struct GetArgs {
 }
 
 async fn get_request(args: GetArgs) -> Result<()> {
-    let client = reqwest::Client::new();
-    let api_client = ApiClient::new(client, args.base_url.clone());
+    let api_client = ApiClient::new(args.base_url.clone());
 
     let request = api_client.request_get(args.request_id).await?;
 
