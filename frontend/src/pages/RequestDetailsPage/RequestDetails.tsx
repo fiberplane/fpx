@@ -449,7 +449,7 @@ const ErrorLog = ({
           </div>
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
-            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-400 hover:text-gray-200 ">
+            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-400">
               <pre className="font-mono p-1">
                 <code>
                   <StackTrace stackTrace={stack ?? ""} />

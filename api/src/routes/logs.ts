@@ -112,7 +112,8 @@ app.get("/v0/logs", cors(), async (ctx) => {
       const stack =
         parsedResult.success &&
         parsedResult.data.stack &&
-        (await transformStack(parsedResult.data.stack));
+        await transformStack(parsedResult.data.stack);
+
       const parsedMessage =
         stack && parsedResult.data
           ? {
@@ -143,9 +144,10 @@ async function transformStack(stack: string) {
 
   const parsedLines = await Promise.all(
     lines.map(async (line) => {
-      const match = line.match(
-        /at(( ?<method>[\w\.]* \()?| )(?<file>.*):(?<lineNumber>\d+):(?<columnNumber>\d+)(\))?$/,
-      );
+
+      const regex =  /at (?:(?<method>[^\s]+) \()?file:\/\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)\)?/;
+
+      const match = line.match(regex);
       if (!match || !match.groups) {
         return line;
       }
@@ -164,7 +166,7 @@ async function transformStack(stack: string) {
         consumer.destroy();
         if (pos.source) {
           const name = pos.name || method;
-          return `${extractIndentation(line)}at ${name ? `${name.trim()} (` : ""}file://${pos.source}:${pos.line}:${pos.column}${name ? ")" : ""}`;
+          return `${copyIndentation(line)}at ${name ? `${name.trim()} (` : ""}file://${pos.source}:${pos.line}:${pos.column}${name ? ")" : ""}`;
         }
 
         return line;
@@ -176,7 +178,7 @@ async function transformStack(stack: string) {
   return parsedLines.join("\n");
 }
 
-function extractIndentation(source: string) {
+function copyIndentation(source: string) {
   // Regular expression to match leading whitespace (spaces or tabs)
   const match = source.match(/^\s*/);
 

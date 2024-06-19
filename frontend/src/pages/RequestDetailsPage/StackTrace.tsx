@@ -4,9 +4,10 @@ export function StackTrace({ stackTrace }: { stackTrace: string }) {
   const lines = stackTrace.split("\n");
 
   return lines.map((line, index) => {
-    const match = line.match(
-      /at(( ?<method>[\w.]* \()?| )(?<file>.*):(?<lineNumber>\d+):(?<columnNumber>\d+)(\))?$/,
-    );
+    const regex =
+      /at (?:(?<method>[^\s]+) \()?file:\/\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)\)?/;
+
+    const match = line.match(regex);
     if (!match || !match.groups) {
       return (
         <Fragment key={index}>
@@ -22,7 +23,7 @@ export function StackTrace({ stackTrace }: { stackTrace: string }) {
       return (
         <Fragment key={index}>
           {extractIndentation(line)}
-          {method ? `${method.trim()} ` : ""}
+          at {method ? `${method.trim()} ` : ""}
           <a
             className="text-primary underline-offset-4 hover:underline"
             href={`vscode://${file.trim()}:${lineNumber}:${columnNumber}`}
