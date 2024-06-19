@@ -119,7 +119,7 @@ mod tests {
         }
     }
 
-    /// Test to convert Service Error in a ApiServerError to a ApiClientError.
+    /// Test to convert Common Error in a ApiServerError to a ApiClientError.
     #[tokio::test]
     async fn api_server_error_to_api_client_error_common_error() {
         let response =
