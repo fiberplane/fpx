@@ -27,6 +27,7 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@tanstack/react-table": "^8.17.3",
     "@types/highlight-words-core": "^1.2.3",
+    "@uiw/react-json-view": "^2.0.0-alpha.24",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^2.30.0",
