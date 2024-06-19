@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import { z } from "zod";
 import type { Bindings, Variables } from "../lib/types.js";
 
-const PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
+const FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
   You are a code debugging assistant for apps that use Hono (web framework), 
   Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
   You need to help craft a request to route handlers. 
@@ -19,7 +19,28 @@ const PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
 
   { "routeParams": { "key": ":id", "value": "1234567890" } }
 
-  If you get a route like this \`/users\`, you should return a URL like:
+  Use the tool "make_request". Always respond in valid JSON.
+`);
+
+const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
+  You are an expert QA Engineer and code debugging assistant for apps that use Hono (web framework), 
+  Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
+
+  You need to help craft a request to route handlers. 
+  You will be provided the source code for handlers, and you should generate
+  query parameters and a request body that will test the request.
+
+  Be clever and creative with test data. Avoid just writing things like "test".
+
+  For example, if you get a route like \`/users/:id\`, you should return a URL like:
+  \`/users/1234567890\` and a routeParams parameter like this:
+
+  { "routeParams": { "key": ":id", "value": "1234567890" } }
+
+  You should focus on trying to break things. You are a QA. 
+  You are the enemy of bugs. To protect quality, you must find bugs.
+  Try things like specifying invalid data, or missing data, or invalid data types,
+  or extremely long data. Try to break the system.
 
   Use the tool "make_request". Always respond in valid JSON.
 `);
@@ -35,7 +56,7 @@ app.post(
   // ),
   async (ctx) => {
     // const { handler, method, path, history } = ctx.req.valid("json");
-    const { handler, method, path, history } = await ctx.req.json();
+    const { handler, method, path, history, persona } = await ctx.req.json();
 
     const openaiClient = new OpenAI({
       apiKey: ctx.env.OPENAI_API_KEY,
@@ -147,7 +168,10 @@ app.post(
       messages: [
         {
           role: "system",
-          content: PARAMETER_GENERATION_SYSTEM_PROMPT,
+          content:
+            persona === "QA"
+              ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
+              : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
         },
         {
           role: "user",
@@ -155,7 +179,8 @@ app.post(
             I need to make a request to one of my Hono api handlers.
 
             Here are some recent requests/responses, which you can use as inspiration for future requests.
-            E.g., if we recently created a resource, you can look that resource up.
+            ${persona !== "QA" ? "E.g., if we recently created a resource, you can look that resource up." : ""}
+
             <history>
             ${history?.join("\n") ?? "NO HISTORY"}
             </history>
@@ -164,6 +189,8 @@ app.post(
 
             Here is the code for the handler:
             ${handler}
+
+            ${persona === "QA" ? "REMEMBER YOU ARE A QA. DELIBERATELY TRY TO MISUSE THE API." : ""}
           `),
         },
       ],

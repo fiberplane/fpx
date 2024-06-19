@@ -112,6 +112,7 @@ export function makeRequest({
 const generateRequest = (
   route: ProbedRoute | null,
   history: Array<Requestornator>,
+  persona: string,
 ) => {
   // FIXME - type wonkiness
   const { handler, method, path } = route ?? {};
@@ -129,17 +130,24 @@ const generateRequest = (
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: JSON.stringify({ handler, method, path, history: simplifiedHistory }),
+    body: JSON.stringify({
+      handler,
+      method,
+      path,
+      history: simplifiedHistory,
+      persona,
+    }),
   }).then((r) => r.json());
 };
 
 export function useGenerateRequest(
   route: ProbedRoute | null,
   history: Array<Requestornator>,
+  persona = "Friendly",
 ) {
   return useQuery({
     queryKey: ["generateRequest"],
-    queryFn: () => generateRequest(route, history),
+    queryFn: () => generateRequest(route, history, persona),
     enabled: false,
   });
 }

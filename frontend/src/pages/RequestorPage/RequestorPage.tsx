@@ -18,6 +18,7 @@ import { RequestPanel } from "./RequestPanel";
 import { RequestorHistory } from "./RequestorHistory";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
 import { RoutesPanel } from "./RoutesPanel";
+import { TestingPersonaMenu } from "./TestingPersonaMenu";
 import { useRequestorFormData } from "./data";
 import {
   type ProbedRoute,
@@ -60,6 +61,7 @@ export const RequestorPage = () => {
     queryParams,
     setQueryParams,
   } = useRequestorFormData();
+  const [testingPersona, setTestingPersona] = useState<string>("Friendly");
 
   // HACK - Antipattern
   useEffect(() => {
@@ -123,7 +125,7 @@ export const RequestorPage = () => {
   // TODO
   // /v0/generate-request
   const { isLoading: isLoadingParameters, refetch: generateRequest } =
-    useGenerateRequest(selectedRoute, recentHistory);
+    useGenerateRequest(selectedRoute, recentHistory, testingPersona);
 
   const fillInRequest = () => {
     generateRequest().then(({ data, isError }) => {
@@ -182,6 +184,10 @@ export const RequestorPage = () => {
               <RequestorHistory history={history} />
             </SheetContent>
           </Sheet>
+          <TestingPersonaMenu
+            persona={testingPersona}
+            onPersonaChange={setTestingPersona}
+          />
         </div>
         <RequestInput
           method={method}

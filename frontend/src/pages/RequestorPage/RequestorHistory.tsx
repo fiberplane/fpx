@@ -17,7 +17,9 @@ export function RequestorHistory({ history }: RequestorHistoryProps) {
   return (
     <>
       {!history.length && (
-        <div>No request history yet. Make a request to see it here.</div>
+        <div className="mt-2 text-sm border p-2 shadow rounded">
+          No request history yet. Make a request to see it here.
+        </div>
       )}
       {history
         .filter((h) => !!h)
