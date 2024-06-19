@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MizuTrace, useMizuTraces } from "@/queries";
 import { isJson } from "@/utils";
-import { MagicWandIcon } from "@radix-ui/react-icons";
+import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { useEffect, useMemo, useState } from "react";
 import { createKeyValueParameters } from "./KeyValueForm";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
@@ -19,6 +19,8 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { RequestorHistory } from "./RequestorHistory";
 
 export const RequestorPage = () => {
   const { data: routesAndMiddleware, isLoading } = useProbedRoutes();
@@ -68,7 +70,16 @@ export const RequestorPage = () => {
     traces,
   );
 
-  const { mutate: makeRequest, isLoading: isRequestorRequesting } = useMakeRequest();
+  const [history, setHistory] = useState<{ responseBody: string; responseHeaders: Record<string, string>, traceId: string; responseStatusCode: number; }[]>([]);
+
+  const { data: returnedRequest, mutate: makeRequest, isLoading: isRequestorRequesting } = useMakeRequest();
+
+  // HACK - When we make a request, add it to the history
+  useEffect(() => {
+    if (returnedRequest) {
+      setHistory((h) => [returnedRequest, ...h]);
+    }
+  }, [returnedRequest])
 
   // Send a request when we submit the form
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -130,10 +141,28 @@ export const RequestorPage = () => {
         handleRouteClick={handleRouteClick}
       />
       <div className="flex flex-col flex-1 ml-4">
-        <div className="mb-2 flex items-center justify-start">
+        <div className="mb-2 flex items-center justify-start space-x-0">
           <Button variant="ghost" size="sm" onClick={fillInRequest} disabled={isLoadingParameters}>
             <MagicWandIcon className="w-4 h-4" />
           </Button>
+          <Sheet>
+            <SheetTrigger>
+              <Button variant="ghost" size="sm">
+                <CountdownTimerIcon className="w-4 h-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[400px] sm:w-[600px]">
+              <SheetHeader>
+                <SheetTitle>History</SheetTitle>
+                <SheetDescription>
+                  View the history of recent requests.
+                </SheetDescription>
+              </SheetHeader>
+              <RequestorHistory history={history} />
+            </SheetContent>
+          </Sheet>
+          
+
         </div>
         <RequestInput
           method={method}

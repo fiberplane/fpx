@@ -10,12 +10,13 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.post(
   "/v0/generate-request",
   cors(),
-  zValidator(
-    "json",
-    z.object({ handler: z.string(), method: z.string(), path: z.string() }),
-  ),
+  // zValidator(
+  //   "json",
+  //   z.object({ handler: z.string(), method: z.string(), path: z.string() }),
+  // ),
   async (ctx) => {
-    const { handler, method, path } = ctx.req.valid("json");
+    // const { handler, method, path } = ctx.req.valid("json");
+    const { handler, method, path, history } = await ctx.req.json();
 
     const openaiClient = new OpenAI({
       apiKey: ctx.env.OPENAI_API_KEY,
@@ -150,6 +151,10 @@ app.post(
           role: "user",
           content: cleanPrompt(`
             I need to make a request to one of my Hono api handlers.
+
+            Here are some recent requests/responses, which you can use as inspiration:
+
+            ${history.map((h: unknown) => JSON.stringify(h)).join("\n")}
 
             It should be a ${method} request to route: ${path}
 

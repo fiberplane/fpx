@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "react-query";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
+import { useMizuTraces } from "@/queries";
 
 export type ProbedRoute = {
   path: string;
@@ -18,11 +19,14 @@ export type ProbedRoute = {
 export type Requestornator = {
   // TODO
   app_requests: {
+    id: number;
     requestUrl: string;
     requestMethod: string;
     updatedAt: string;
   };
+  // NOTE - can be undefined if request failed, at least that happened to me locally
   app_responses: {
+    id: number;
     responseStatusCode: string;
     responseBody: string;
     responseHeaders: Record<string, string>;
@@ -120,4 +124,17 @@ export function useGenerateRequest(route: ProbedRoute | null) {
     queryFn: () => generateRequest(route),
     enabled: false,
   });
+}
+
+
+export function useTrace(traceId: string) {
+  const { data: traces, isLoading, error } = useMizuTraces();
+  const trace = traces?.find((t) => t.id === traceId);
+  const isNotFound = !trace && !error && !isLoading;
+  return {
+    trace,
+    isNotFound,
+    isLoading,
+    error,
+  };
 }

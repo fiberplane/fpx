@@ -18,7 +18,7 @@ import { useState } from "react";
 import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
 import { EventsTable } from "./EventsTable";
 import { HeaderTable } from "./HeaderTable";
-import { Requestornator } from "./queries";
+import { Requestornator, useTrace } from "./queries";
 
 type FpxDetailsProps = {
   response?: Requestornator;
@@ -35,17 +35,6 @@ type TraceDetailsProps = {
   response: Requestornator;
 };
 
-function useTrace(traceId: string) {
-  const { data: traces, isLoading, error } = useMizuTraces();
-  const trace = traces?.find((t) => t.id === traceId);
-  const isNotFound = !trace && !error && !isLoading;
-  return {
-    trace,
-    isNotFound,
-    isLoading,
-    error,
-  };
-}
 
 function TraceDetails({ response }: TraceDetailsProps) {
   const traceId = response.app_responses.traceId;
