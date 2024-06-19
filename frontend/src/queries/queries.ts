@@ -184,3 +184,28 @@ async function fetchDependencies() {
     throw e;
   }
 }
+
+export function useGitHubIssues(owner: string, repo: string) {
+  return useQuery({
+    queryKey: ["githubIssues", owner, repo],
+    queryFn: fetchGitHubIssues,
+  });
+}
+
+async function fetchGitHubIssues(
+  context: QueryFunctionContext<[string, string, string]>,
+) {
+  const owner = context.queryKey[1];
+  const repo = context.queryKey[2];
+  try {
+    const response = await fetch(`/v0/github-issues/${owner}/${repo}`, {
+      mode: "cors",
+    });
+
+    const data = await response.json();
+    return GitHubIssuesSchema.parse(data);
+  } catch (e: unknown) {
+    console.error("Error fetching GitHub issues: ", e);
+    throw e;
+  }
+}

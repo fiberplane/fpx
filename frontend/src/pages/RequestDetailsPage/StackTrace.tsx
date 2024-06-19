@@ -19,16 +19,16 @@ export function StackTrace({ stackTrace }: { stackTrace: string }) {
     const { method, file, lineNumber, columnNumber } = match.groups;
 
     if (file) {
-      console.log(match.groups);
       return (
         <Fragment key={index}>
           {extractIndentation(line)}
+          {method ? `${method.trim()} ` : ""}
           <a
-            className="text-blue-500 hover:underline"
+            className="text-primary underline-offset-4 hover:underline"
             href={`vscode://${file.trim()}:${lineNumber}:${columnNumber}`}
           >
             {method
-              ? `${method.trim()} (${file}:${lineNumber}:${columnNumber})`
+              ? `(${file.trim()}:${lineNumber}:${columnNumber})`
               : `${file.trim()}:${lineNumber}:${columnNumber}`}
           </a>
           {"\n"}

@@ -1,14 +1,14 @@
 import { Chunk, findAll } from "highlight-words-core";
 
 export function getChunks(text: string, searchWords: string[]) {
-  const rawChunks = findAll({
+  let chunks = findAll({
     searchWords,
     textToHighlight: text,
     findChunks,
   }).filter((chunk) => chunk.highlight);
 
-  const paddedChunks = addSurroundingWords(rawChunks, text);
-  return mergeChunks(paddedChunks);
+  chunks = addSurroundingWords(chunks, text);
+  return mergeChunks(chunks);
 }
 
 function mergeChunks(chunks: Array<Chunk>) {
@@ -17,7 +17,6 @@ function mergeChunks(chunks: Array<Chunk>) {
   }
 
   const mergedChunks: Chunk[] = [{ ...chunks[0] }];
-
   // Iterate through the chunks and merge adjacent ones
   for (let i = 1; i < chunks.length; i++) {
     const previous = mergedChunks[mergedChunks.length - 1];
@@ -96,36 +95,26 @@ function getSuffixIndex(text: string, index: number) {
   return match ? index + match[0].length : null;
 }
 
-const sanitize = (text: string) => text;
-
-const findChunks = ({
-  autoEscape,
-  caseSensitive,
-  // sanitize = sanitize,
-  searchWords,
-  textToHighlight,
-}: {
+type Options = {
   autoEscape?: boolean;
   caseSensitive?: boolean;
-  // sanitize?: typeof defaultSanitize,
   searchWords: Array<string>;
   textToHighlight: string;
-}): Array<Chunk> => {
-  textToHighlight = sanitize(textToHighlight);
+};
+// This is based on the default findChunks function from highlight-words-core
+function findChunks({
+  autoEscape = false,
+  caseSensitive = false,
+  searchWords,
+  textToHighlight,
+}: Options): Array<Chunk> {
   return searchWords
     .filter((searchWord) => searchWord) // Remove empty words
     .reduce(
       (chunks, searchWord) => {
-        searchWord = sanitize(searchWord);
+        const word = autoEscape ? escapeRegExpFn(searchWord) : searchWord;
 
-        if (autoEscape) {
-          searchWord = escapeRegExpFn(searchWord);
-        }
-
-        const regex = new RegExp(
-          `\\b${searchWord}\\b`,
-          caseSensitive ? "g" : "gi",
-        );
+        const regex = new RegExp(`\\b${word}\\b`, caseSensitive ? "g" : "gi");
         let match;
         while ((match = regex.exec(textToHighlight))) {
           const start = match.index;
@@ -146,8 +135,9 @@ const findChunks = ({
       },
       [] as Array<Chunk>,
     );
-};
+}
 
+// Util function for findChunks
 function escapeRegExpFn(string: string): string {
   return string.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
 }

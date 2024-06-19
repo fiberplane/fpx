@@ -24,8 +24,8 @@ export function DependenciesList() {
             href={dependency.repository.url}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-500 hover:underline flex gap-2
-            items-center hover:text-blue-700 block"
+            className="text-primary hover:underline flex gap-2
+            items-center block"
           >
             <GitHubLogoIcon className="inline-block" /> {dependency.name}
           </a>

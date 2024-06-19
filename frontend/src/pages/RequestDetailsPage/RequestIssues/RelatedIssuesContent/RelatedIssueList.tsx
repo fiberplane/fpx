@@ -49,7 +49,7 @@ export function RelatedIssueList(props: { traceId: string }) {
   }
 
   return (
-    <ul role="list" className="divide-y divide-gray-200">
+    <ul role="list" className="divide-y divide-gray-700">
       {issues.map((issue) => (
         <li key={issue.id}>
           <a href={`/issues/${issue.id}`} className="block">
