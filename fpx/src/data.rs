@@ -1,4 +1,5 @@
 use crate::api::types::Request;
+use crate::models::DbRequest;
 use anyhow::{Context, Result};
 use libsql::{de, params, Builder, Connection, Rows, Transaction};
 use serde::de::DeserializeOwned;
@@ -79,28 +80,18 @@ impl Store {
         headers: BTreeMap<String, String>,
     ) -> Result<i64> {
         let headers = serde_json::to_string(&headers)?;
-        let mut rows = tx
+
+        let request: DbRequest = tx
             .query(
-                "INSERT INTO requests (method, url, body, headers) VALUES (?, ?, ?, ?) RETURNING id, method, url, body, headers",
+                "INSERT INTO requests (method, url, body, headers) VALUES (?, ?, ?, ?) RETURNING *",
                 (method, url, body, headers),
             )
             .await
-            .context("Unable to create request")?;
+            .context("Unable to create request")?
+            .fetch_one()
+            .await?;
 
-        // Get the first row which contains the only result.
-        let row = rows.next().await.context("Unable to get row")?;
-        let result = match row {
-            Some(row) => row.get::<i64>(0)?,
-            None => anyhow::bail!("Unable to get last insert rowid"),
-        };
-
-        // Make sure that there is only 1 row.
-        let row = rows.next().await.context("Unable to get row")?;
-        if row.is_some() {
-            anyhow::bail!("Unable to get last insert rowid");
-        }
-
-        Ok(result)
+        Ok(request.id)
     }
 
     #[tracing::instrument(skip_all)]
@@ -110,31 +101,13 @@ impl Store {
 
     #[tracing::instrument(skip_all)]
     pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<Request, DbError> {
-        let mut rows = tx
-            .query(
-                "SELECT id, method, url, body, headers FROM requests WHERE id = ?",
-                params!(id),
-            )
+        let request: DbRequest = tx
+            .query("SELECT * FROM requests WHERE id = ?", params!(id))
+            .await?
+            .fetch_one()
             .await?;
 
-        // Get the first row which contains the only result.
-        let row = rows.next().await?;
-        let result = match row {
-            Some(row) => {
-                let headers: String = row.get(4)?;
-                let headers = serde_json::from_str(&headers)?;
-                Request::new(row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, headers)
-            }
-            None => return Err(DbError::NotFound),
-        };
-
-        // Make sure that there is only 1 row.
-        let row = rows.next().await?;
-        if row.is_some() {
-            return Err(DbError::UnexpectedRowsReturned);
-        }
-
-        Ok(result)
+        Ok(request.into())
     }
 }
 
