@@ -5,7 +5,7 @@ export function StackTrace({ stackTrace }: { stackTrace: string }) {
 
   return lines.map((line, index) => {
     const match = line.match(
-      /at(( ?<method>[\w\.]* \()?| )(?<file>.*):(?<lineNumber>\d+):(?<columnNumber>\d+)(\))?$/,
+      /at(( ?<method>[\w.]* \()?| )(?<file>.*):(?<lineNumber>\d+):(?<columnNumber>\d+)(\))?$/,
     );
     if (!match || !match.groups) {
       return (
