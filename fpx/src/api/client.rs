@@ -16,7 +16,11 @@ pub struct ApiClient {
 impl ApiClient {
     /// Create a new ApiClient with a default reqwest::Client.
     pub fn new(base_url: Url) -> Self {
-        let client = reqwest::Client::new();
+        let version = env!("CARGO_PKG_VERSION");
+        let client = reqwest::Client::builder()
+            .user_agent(format!("fpx/{version}"))
+            .build()
+            .expect("should be able to create reqwest client");
 
         Self::with_client(client, base_url)
     }
