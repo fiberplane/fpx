@@ -152,7 +152,7 @@ export const RequestorPage = () => {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full pt-4">
       <RoutesPanel
         routes={routes}
         selectedRoute={selectedRoute}
