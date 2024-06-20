@@ -1,7 +1,6 @@
 use crate::api::types::Request;
 use anyhow::{Context, Result};
 use libsql::{de, params, Builder, Connection, Rows, Transaction};
-use models::DbRequest;
 use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
 use std::fmt::Display;
@@ -82,7 +81,7 @@ impl Store {
     ) -> Result<i64> {
         let headers = serde_json::to_string(&headers)?;
 
-        let request: DbRequest = tx
+        let request: models::Request = tx
             .query(
                 "INSERT INTO requests (method, url, body, headers) VALUES (?, ?, ?, ?) RETURNING *",
                 (method, url, body, headers),
@@ -102,7 +101,7 @@ impl Store {
 
     #[tracing::instrument(skip_all)]
     pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<Request, DbError> {
-        let request: DbRequest = tx
+        let request: models::Request = tx
             .query("SELECT * FROM requests WHERE id = ?", params!(id))
             .await?
             .fetch_one()
