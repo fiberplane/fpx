@@ -10,7 +10,7 @@ const TEN_SECONDS = 10_000;
 const HALF_MINUTE = 30_000;
 const MINUTE = 60_000; /* 60 * 1000ms */
 const HOUR = 3_600_000; /* 60 * 60 * 1000ms */
-const DAY = 86_400_000; /* 24 hours, 24 * 60 * 60 * 1000ms */
+// const DAY = 86_400_000; /* 24 hours, 24 * 60 * 60 * 1000ms */
 
 // By defining the intervals this way, we can determine which interval should
 // be applied in a time window. This allows us to give more descriptive readable
@@ -29,10 +29,6 @@ const INTERVALS = {
     interval: MINUTE,
     nextInterval: HOUR,
   },
-  [HOUR]: {
-    interval: HOUR,
-    nextInterval: DAY,
-  },
 } as const;
 
 /**
@@ -45,9 +41,9 @@ const INTERVALS = {
  */
 export function useTimeAgo(
   date: string | undefined,
-  options?: { strict: boolean },
+  options?: { strict: boolean, fallbackWithTime?: boolean, fallbackWithDate?: boolean},
 ) {
-  const { strict = false } = options || {};
+  const { strict = false, fallbackWithTime = false, fallbackWithDate = true } = options || {};
 
   const interval = useRef<(typeof INTERVALS)[keyof typeof INTERVALS]>(
     INTERVALS[FIVE_SECONDS],
@@ -76,13 +72,18 @@ export function useTimeAgo(
     };
 
     const setConstantDate = () => {
-      const constantDate = format(parsedDate, "LLLL d, yyyy");
+      let formatString = fallbackWithDate ? "LLLL d, yyyy" : "";
+      formatString = fallbackWithTime ? `hh:mm:ss${formatString ? ` ${formatString}`: ''}` : formatString;
+
+      const constantDate = format(parsedDate, 
+        formatString
+      );
       setFormattedDate(constantDate);
     };
 
     // Prevent calling the timeout when we know >= 24hrs has passed & set a
     // formatted post date string.
-    if (getDifferenceInMilliseconds() >= DAY) {
+    if (getDifferenceInMilliseconds() >= HOUR) {
       setConstantDate();
       return;
     }
@@ -93,13 +94,13 @@ export function useTimeAgo(
         const differenceInMilliSeconds = getDifferenceInMilliseconds();
         // Prevent calling a new timeout when we know >= 24hrs has passed & set
         // a formatted post date string.
-        if (differenceInMilliSeconds >= DAY) {
+        if (differenceInMilliSeconds >= HOUR) {
           setConstantDate();
           return;
         }
 
         if (differenceInMilliSeconds >= interval.current.nextInterval) {
-          if (interval.current.nextInterval === DAY) {
+          if (interval.current.nextInterval === HOUR) {
             setConstantDate();
             return;
           }
