@@ -87,7 +87,7 @@ pub enum ServerError {
 #[serde(rename_all = "camelCase")]
 pub struct ClientMessage {
     /// A unique identifier for this message. This will be used by certain
-    /// server message to refer back to this message, such as Ack or Error.
+    /// server messages to refer back to this message, such as Ack or Error.
     pub message_id: String,
 
     #[serde(flatten)]

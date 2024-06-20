@@ -14,6 +14,7 @@ pub struct Args {
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
+    // Define which types should be used to generate schemas
     let schemas = Vec::from([
         schema_for!(ClientMessage),
         schema_for!(Request),
@@ -23,7 +24,8 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     let zod_schema = generate_zod_schemas(&args.project_directory, &schemas)?;
 
-    let mut file = File::create(Path::new(&args.project_directory).join(args.output_path.clone()))?;
+    let file_path = Path::new(&args.project_directory).join(args.output_path.clone());
+    let mut file = File::create(file_path.clone())?;
     file.write_all(&zod_schema)?;
 
     // Run formatter
@@ -46,12 +48,16 @@ pub async fn handle_command(args: Args) -> Result<()> {
         anyhow::bail!("Command failed")
     }
 
-    println!("Succesfully generated schemas");
+    println!(
+        "Succesfully generated schemas at: {}",
+        file_path.to_str().unwrap()
+    );
 
     Ok(())
 }
 
 fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Result<Vec<u8>> {
+    println!("Generating types & schemas:");
     let mut zod_schemas: Vec<String> = Vec::new();
 
     for (index, schema) in schemas.iter().enumerate() {
@@ -59,12 +65,19 @@ fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Re
         let schema_json = serde_json::to_value(&schema)?;
 
         if let Some(title) = schema_json.get("title").and_then(Value::as_str) {
+            let schema_name = format!("{}Schema", title);
             // Convert the schema to a pretty string
             let schema_string = serde_json::to_string_pretty(&schema)?;
 
             // Execute npx CLI tool json-schema-to-zod and capture its output
             let output = std::process::Command::new("npx")
-                .args(["json-schema-to-zod", "-n", &title, "-i", &schema_string])
+                .args([
+                    "json-schema-to-zod",
+                    "-n",
+                    &schema_name,
+                    "-i",
+                    &schema_string,
+                ])
                 .current_dir(npx_directory.clone())
                 .output()?;
 
@@ -86,11 +99,14 @@ fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Re
 
                 zod_schemas.push(zod_schema.to_string());
                 // add inferred type export to the schema
-                zod_schemas.push(format!("export type {} = z.infer<typeof {}>", title, title));
-                println!("Generated Zod Schema: {}", title);
+                zod_schemas.push(format!(
+                    "export type {} = z.infer<typeof {}>",
+                    title, schema_name
+                ));
+                println!("✓ {}", title);
             } else {
                 eprintln!(
-                    "Failed to generate Zod schema for {}: {}",
+                    "Generating {} failed: {}",
                     title,
                     String::from_utf8_lossy(&output.stderr)
                 );
