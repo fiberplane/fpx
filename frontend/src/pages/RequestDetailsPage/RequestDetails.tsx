@@ -384,7 +384,7 @@ const ErrorLog = ({
     }
   }, [stack]);
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(!!stack);
 
   const vscodeLink = vsCodeLink || vsCodeLinkAlt;
   return (

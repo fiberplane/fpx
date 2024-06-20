@@ -145,7 +145,7 @@ async function transformStack(stack: string) {
   const parsedLines = await Promise.all(
     lines.map(async (line) => {
       const regex =
-        /at (?:(?<method>[^\s]+) \()?file:\/\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)\)?/;
+        /at (?:(?<method>[^\s]+) \()?file:\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)\)?/;
 
       const match = line.match(regex);
       if (!match || !match.groups) {
