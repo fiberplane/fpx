@@ -174,7 +174,10 @@ impl RowsExt for Rows {
 #[cfg(test)]
 mod tests {
     use crate::data::{RowsExt, Store};
+    use crate::models::Json;
+    use libsql::params;
     use serde::Deserialize;
+    use std::collections::BTreeMap;
 
     #[tokio::test]
     async fn test_extensions() {
@@ -224,6 +227,21 @@ mod tests {
             assert_eq!(fall[0].test, 1);
             assert_eq!(fall[1].test, 2);
             assert_eq!(fall[2].test, 3);
+
+            #[derive(Deserialize)]
+            struct TestJson {
+                test: Json<BTreeMap<String, i32>>,
+            }
+
+            let json: TestJson = tx
+                .query("select ? as test", params![r#"{"test":1}"#])
+                .await
+                .unwrap()
+                .fetch_one()
+                .await
+                .unwrap();
+
+            assert_eq!(json.test["test"], 1);
 
             tx.commit().await.unwrap();
         }
