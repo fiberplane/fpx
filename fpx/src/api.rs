@@ -3,7 +3,7 @@ use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
 use axum::extract::FromRef;
 use axum::response::Html;
-use axum::routing::{any, get};
+use axum::routing::{any, get, post};
 use url::Url;
 
 mod handlers;
@@ -66,6 +66,7 @@ pub async fn create_api(
         .route("/api/inspect/:id", any(handlers::inspect_request_handler))
         .route("/api/v1/logs", get(handlers::logs_handler))
         .route("/api/ws", get(ws::ws_handler))
+        .route("/api/requestor", post(handlers::execute_requestor))
         .route("/", get(|| async { Html("Hello, world!") }))
         .with_state(api_state)
 }
