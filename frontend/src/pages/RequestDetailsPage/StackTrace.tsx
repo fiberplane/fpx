@@ -5,7 +5,7 @@ export function StackTrace({ stackTrace }: { stackTrace: string }) {
 
   return lines.map((line, index) => {
     const regex =
-      /at (?:(?<method>[^\s]+) \()?file:\/\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)\)?/;
+      /at (?:(?<method>[^\s]+) \()?file:\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)\)?/;
 
     const match = line.match(regex);
     if (!match || !match.groups) {
@@ -18,27 +18,18 @@ export function StackTrace({ stackTrace }: { stackTrace: string }) {
     }
 
     const { method, file, lineNumber, columnNumber } = match.groups;
-
-    if (file) {
-      return (
-        <Fragment key={index}>
-          {extractIndentation(line)}
-          at {method ? `${method.trim()} ` : ""}
-          <a
-            className="text-primary underline-offset-4 hover:underline"
-            href={`vscode://${file.trim()}:${lineNumber}:${columnNumber}`}
-          >
-            {method
-              ? `(${file.trim()}:${lineNumber}:${columnNumber})`
-              : `${file.trim()}:${lineNumber}:${columnNumber}`}
-          </a>
-          {"\n"}
-        </Fragment>
-      );
-    }
     return (
       <Fragment key={index}>
-        {line}
+        {extractIndentation(line)}
+        at {method ? `${method.trim()} (` : ""}
+        <a
+          className="text-primary underline-offset-4 hover:underline"
+          href={`vscode://${file.trim()}:${lineNumber}:${columnNumber}`}
+        >
+          {file.trim()}:{lineNumber}:{columnNumber}
+        </a>
+        {method
+          && ")"}
         {"\n"}
       </Fragment>
     );
