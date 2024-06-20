@@ -1,7 +1,7 @@
 use crate::api::types::Request;
-use crate::models::DbRequest;
 use anyhow::{Context, Result};
 use libsql::{de, params, Builder, Connection, Rows, Transaction};
+use models::DbRequest;
 use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
 use std::fmt::Display;
@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 pub mod migrations;
+mod models;
 
 /// Store is a abstraction around data access.
 ///
@@ -119,9 +120,6 @@ pub enum DbError {
     #[error("failed to deserialize into `T`: {message}")]
     FailedDeserialize { message: String },
 
-    #[error("Unexpected number of rows was returned")]
-    UnexpectedRowsReturned,
-
     #[error("Unable to deserialize JSON: {0}")]
     InvalidJson(#[from] serde_json::Error),
 
@@ -173,8 +171,8 @@ impl RowsExt for Rows {
 
 #[cfg(test)]
 mod tests {
+    use crate::data::models::Json;
     use crate::data::{RowsExt, Store};
-    use crate::models::Json;
     use libsql::params;
     use serde::Deserialize;
     use std::collections::BTreeMap;
