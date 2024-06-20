@@ -41,9 +41,17 @@ const INTERVALS = {
  */
 export function useTimeAgo(
   date: string | undefined,
-  options?: { strict: boolean, fallbackWithTime?: boolean, fallbackWithDate?: boolean},
+  options?: {
+    strict: boolean;
+    fallbackWithTime?: boolean;
+    fallbackWithDate?: boolean;
+  },
 ) {
-  const { strict = false, fallbackWithTime = false, fallbackWithDate = true } = options || {};
+  const {
+    strict = false,
+    fallbackWithTime = false,
+    fallbackWithDate = true,
+  } = options || {};
 
   const interval = useRef<(typeof INTERVALS)[keyof typeof INTERVALS]>(
     INTERVALS[FIVE_SECONDS],
@@ -73,11 +81,11 @@ export function useTimeAgo(
 
     const setConstantDate = () => {
       let formatString = fallbackWithDate ? "LLLL d, yyyy" : "";
-      formatString = fallbackWithTime ? `hh:mm:ss${formatString ? ` ${formatString}`: ''}` : formatString;
+      formatString = fallbackWithTime
+        ? `hh:mm:ss${formatString ? ` ${formatString}` : ""}`
+        : formatString;
 
-      const constantDate = format(parsedDate, 
-        formatString
-      );
+      const constantDate = format(parsedDate, formatString);
       setFormattedDate(constantDate);
     };
 
