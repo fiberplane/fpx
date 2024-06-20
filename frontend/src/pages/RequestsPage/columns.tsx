@@ -2,13 +2,11 @@ import {
   ExclamationTriangleIcon,
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
-import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { type ColumnDef } from "@tanstack/react-table";
 
 import type { MizuTrace } from "@/queries";
-import { formatDate } from "@/utils";
-import { RequestSheet } from "./RequestSheet";
-
-const columnHelper = createColumnHelper<MizuTrace>();
+import { Link } from "react-router-dom";
+import { TimeAgo } from "../RequestDetailsPage/TimeAgo";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
 //         in order to support fast refresh with Vite
@@ -51,6 +49,13 @@ export const columns: ColumnDef<MizuTrace>[] = [
   {
     accessorKey: "path",
     header: "Path",
+    cell: (props) => {
+      return (
+        <Link className="hover:underline" to={`/requests/${props.row.id}`}>
+          {props.row.original.path}
+        </Link>
+      );
+    },
     meta: {
       headerClassName: "",
       cellClassName: "font-mono",
@@ -75,19 +80,17 @@ export const columns: ColumnDef<MizuTrace>[] = [
   {
     id: "timestamp",
     header: "Timestamp",
-    accessorFn: (row) => formatDate(new Date(row.logs?.[0]?.timestamp)),
+    cell: (props) => (
+      <TimeAgo
+        date={props.row.original.logs?.[0]?.timestamp}
+        fallbackWithTime
+        fallbackWithDate={false}
+      />
+    ),
     meta: {
       // NOTE - This is how to hide a cell depending on breakpoint!
-      headerClassName: "hidden md:table-cell w-16",
+      headerClassName: "hidden md:table-cell w-36",
       cellClassName: "hidden md:table-cell font-mono text-xs",
     },
   },
-  columnHelper.display({
-    id: "open",
-    cell: (props) => <RequestSheet trace={props.row.original} />,
-    meta: {
-      headerClassName: "w-16",
-      cellClassName: "flex items-center space-x-2",
-    },
-  }),
 ];

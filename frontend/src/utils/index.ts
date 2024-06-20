@@ -24,3 +24,14 @@ export function objectWithKeyAndValue<T extends string, V>(
 ): value is { [K in T]: V } {
   return objectWithKey(value, key) && value[key] === expectedValue;
 }
+
+export const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+
+export function isModifierKeyPressed(
+  event: KeyboardEvent | MouseEvent | React.MouseEvent | React.KeyboardEvent,
+) {
+  if (isMac) {
+    return event.metaKey;
+  }
+  return event.ctrlKey;
+}
