@@ -1,5 +1,7 @@
-use anyhow::{Context, Result};
+use crate::api::client::ApiClient;
+use anyhow::Result;
 use clap::Subcommand;
+use std::io::stdout;
 use url::Url;
 
 #[derive(clap::Args, Debug)]
@@ -16,7 +18,7 @@ pub enum Command {
 
 pub async fn handle_command(args: Args) -> Result<()> {
     match args.command {
-        Command::Get(args) => create_inspector(args).await,
+        Command::Get(args) => get_request(args).await,
     }
 }
 
@@ -24,29 +26,19 @@ pub async fn handle_command(args: Args) -> Result<()> {
 ///
 #[derive(clap::Args, Debug)]
 pub struct GetArgs {
+    pub request_id: i64,
+
     /// Base url of the fpx dev server.
     #[arg(from_global)]
     pub base_url: Url,
-
-    pub request_id: u64,
 }
 
-async fn create_inspector(args: GetArgs) -> Result<()> {
-    let client = reqwest::Client::new();
-    let url = args
-        .base_url
-        .join(&format!("api/requests/{}", args.request_id))
-        .unwrap();
+async fn get_request(args: GetArgs) -> Result<()> {
+    let api_client = ApiClient::new(args.base_url.clone());
 
-    let response = client
-        .get(url)
-        .send()
-        .await
-        .context("Unable to send request")?
-        .error_for_status()
-        .context("Invalid response status")?;
+    let request = api_client.request_get(args.request_id).await?;
 
-    println!("{}", response.text().await?);
+    serde_json::to_writer_pretty(stdout(), &request)?;
 
     Ok(())
 }
