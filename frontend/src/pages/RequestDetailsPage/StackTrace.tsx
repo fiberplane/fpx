@@ -24,7 +24,7 @@ export function StackTrace({ stackTrace }: { stackTrace: string }) {
         at {method ? `${method.trim()} (` : ""}
         <a
           className="text-primary underline-offset-4 hover:underline"
-          href={`vscode://${file.trim()}:${lineNumber}:${columnNumber}`}
+          href={`vscode://file/${file.trim()}:${lineNumber}:${columnNumber}`}
         >
           {file.trim()}:{lineNumber}:{columnNumber}
         </a>
