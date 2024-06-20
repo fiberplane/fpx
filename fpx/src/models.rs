@@ -2,17 +2,34 @@ use crate::api::types::Request;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer};
 use std::collections::BTreeMap;
-use std::marker::PhantomData;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 #[derive(Debug)]
-pub(crate) struct Json<T>(T);
+pub(crate) struct Json<T: DeserializeOwned>(T);
 
-impl<T> Deref for Json<T> {
+impl<T: DeserializeOwned> Deref for Json<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl<T: DeserializeOwned> DerefMut for Json<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<T: DeserializeOwned> AsRef<T> for Json<T> {
+    fn as_ref(&self) -> &T {
+        &self.0
+    }
+}
+
+impl<T: DeserializeOwned> AsMut<T> for Json<T> {
+    fn as_mut(&mut self) -> &mut T {
+        &mut self.0
     }
 }
 
