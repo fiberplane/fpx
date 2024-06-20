@@ -6,7 +6,9 @@ use axum::response::Html;
 use axum::routing::{any, get};
 use url::Url;
 
-mod handlers;
+pub mod client;
+mod errors;
+pub mod handlers;
 mod ws;
 
 #[derive(Clone)]

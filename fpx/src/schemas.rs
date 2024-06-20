@@ -51,7 +51,7 @@ impl ServerMessage {
 }
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "details")]
+#[serde(tag = "type", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ServerMessageDetails {
     /// A message was received and processed successfully. See the outer message
@@ -75,7 +75,7 @@ impl From<ServerMessageDetails> for ServerMessage {
 }
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "error", content = "details")]
+#[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ServerError {
     /// A message was received that could not be parsed.
@@ -109,16 +109,17 @@ impl ClientMessage {
 }
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "type", content = "details")]
+#[serde(tag = "type", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ClientMessageDetails {
     Debug,
 }
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RequestAdded {
     /// The id of the request that has been captured.
-    request_id: i64,
+    request_id: u32,
 
     /// The id of the inspector that was associated with the request. This is
     /// null in the case where the request was send to `/api/inspect`.
@@ -127,7 +128,7 @@ pub struct RequestAdded {
 }
 
 impl RequestAdded {
-    pub fn new(request_id: i64, inspector_id: Option<i64>) -> Self {
+    pub fn new(request_id: u32, inspector_id: Option<i64>) -> Self {
         Self {
             request_id,
             inspector_id,
@@ -143,6 +144,7 @@ impl From<RequestAdded> for ServerMessage {
 
 /// A request that has been captured by fpx.
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Request {
     pub id: u32,
     pub method: String,
