@@ -127,7 +127,7 @@ export function useTimeAgo(
     return () => {
       clearTimeout(formatTimeout);
     };
-  }, [date, strict]);
+  }, [date, strict, fallbackWithTime, fallbackWithDate]);
 
   return formattedDate;
 }
