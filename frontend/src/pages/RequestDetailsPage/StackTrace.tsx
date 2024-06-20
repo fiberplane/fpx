@@ -28,8 +28,7 @@ export function StackTrace({ stackTrace }: { stackTrace: string }) {
         >
           {file.trim()}:{lineNumber}:{columnNumber}
         </a>
-        {method
-          && ")"}
+        {method && ")"}
         {"\n"}
       </Fragment>
     );
