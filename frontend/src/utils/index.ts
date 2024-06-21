@@ -39,14 +39,9 @@ export function isJson(str: string) {
 /**
  * Utility to see if an unknown type (an error) has a nonempty string property called "message"
  */
-export function hasStringMessage(error: unknown): error is { message: string } {
+export function errorHasMessage(error: unknown): error is { message: string } {
   if (!error) {
     return false;
   }
-  return (
-    typeof error === "object" &&
-    "message" in error &&
-    typeof error.message === "string" &&
-    error.message !== ""
-  );
+  return objectWithKey(error, "message") && typeof error.message === "string" && !!error.message
 }

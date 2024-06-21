@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { useUpdateSettings } from "@/queries";
-import { hasStringMessage } from "@/utils";
+import { errorHasMessage } from "@/utils";
 
 const FormSchema = z.object({
   ai_features: z.boolean(),
@@ -56,7 +56,7 @@ export function SettingsForm({
             description: (
               <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
                 <code className="text-red-400">
-                  {hasStringMessage(error) ? error.message : "Unknown error"}
+                  {errorHasMessage(error) ? error.message : "Unknown error"}
                 </code>
               </pre>
             ),
