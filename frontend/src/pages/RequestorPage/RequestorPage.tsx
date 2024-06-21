@@ -106,10 +106,10 @@ export const RequestorPage = () => {
         "py-2",
         "flex flex-col space-y-4",
         "md:grid md:grid-cols-[auto_1fr] md:space-y-0 md:py-2 md:gap-0",
-        "h-full",
+        "h-[calc(100vh-64px)]"
       )}
     >
-      <div className={cn("max-h-full", "relative")}>
+      <div className={cn("max-h-full", "relative", "overflow-y-scroll", "overflow-x-hidden")}>
         <RoutesPanel
           routes={routes}
           selectedRoute={selectedRoute}
