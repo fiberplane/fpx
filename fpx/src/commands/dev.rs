@@ -45,7 +45,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
     )
     .await?;
 
-    let app = api::create_api(args.base_url.clone(), events, store, inspector_service).await;
+    let app = api::create_api(args.base_url.clone(), events, store, inspector_service);
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)
         .await
