@@ -27,87 +27,7 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
-
-function useRoutes() {
-  const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
-  const routes = useMemo(() => {
-    return routesAndMiddleware?.filter((r) => r.handlerType === "route") ?? [];
-  }, [routesAndMiddleware]);
-
-  // Select the home route if it exists, otherwise fall back to the first route in the list
-  const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
-    isLoading,
-    routes,
-  });
-
-  const handleRouteClick = useCallback(
-    (route: ProbedRoute) => {
-      setSelectedRoute(route);
-    },
-    [setSelectedRoute],
-  );
-
-  return {
-    isError,
-    isLoading,
-    routes,
-    selectedRoute,
-    handleRouteClick,
-  };
-}
-
-function useRequestorHistory() {
-  const { data: allRequests } = useFetchRequestorRequests();
-
-  // Keep a history of recent requests and responses
-  const history = useMemo<Array<Requestornator>>(() => {
-    if (allRequests) {
-      const cloned = [...allRequests];
-      cloned.sort(sortRequestornatorsDescending);
-      return cloned;
-    }
-    return [];
-  }, [allRequests]);
-
-  // Array of all requests made this session
-  //
-  // This is purposefully in memory so that we clear the response panel
-  // when the user refreshes the page
-  //
-  const [sessionHistoryTraceIds, setSessionHistoryTraceIds] = useState<
-    Array<string>
-  >([]);
-
-  // We want to keep track of requests in history... however, I think this should be encapsulated with the
-  // query logic itself (instead of something we need to remember to wire together with the `mutate` call)
-  const recordRequestInSessionHistory = (traceId: string) =>
-    setSessionHistoryTraceIds((current) => [traceId, ...current]);
-
-  // HACK - We can load history entries this way! Just pass in a traceId for now, and then it shoooould appear in the UI
-  //        Later we should match based off of request id or something more clever
-  const loadHistoricalRequest = recordRequestInSessionHistory;
-
-  // Keep a local history of requests that the user has made in the UI
-  const sessionHistory = useMemo(() => {
-    return sessionHistoryTraceIds.reduce(
-      (matchedRequestornators, traceId) => {
-        const match = history.find((r) => r.app_responses?.traceId === traceId);
-        if (match) {
-          matchedRequestornators.push(match);
-        }
-        return matchedRequestornators;
-      },
-      [] as Array<Requestornator>,
-    );
-  }, [history, sessionHistoryTraceIds]);
-
-  return {
-    history,
-    sessionHistory,
-    recordRequestInSessionHistory,
-    loadHistoricalRequest,
-  };
-}
+import { KeyValueParameter } from "./KeyValueForm";
 
 export const RequestorPage = () => {
   const { data: traces } = useMizuTraces();
@@ -153,50 +73,16 @@ export const RequestorPage = () => {
     useMakeRequest();
 
   // Send a request when we submit the form
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!selectedRoute) {
-      return;
-    }
-
-    // FIXME
-    let cleverBody =
-      typeof body === "string" && isJson(body) ? JSON.parse(body) : body ?? "";
-
-    // HACK - Mizu API expects an object...
-    if (cleverBody === "") {
-      cleverBody = {};
-    }
-
-    makeRequest(
-      {
-        path,
-        method,
-        body: cleverBody,
-        headers: requestHeaders,
-        queryParams,
-      },
-      {
-        onSuccess(data) {
-          // This is the response data i presume?
-          console.log(
-            "Made request... this is the response data I hope?",
-            data,
-          );
-          const traceId = data?.traceId;
-          if (traceId && typeof traceId === "string") {
-            recordRequestInSessionHistory(traceId);
-          } else {
-            debugger;
-          }
-        },
-        onError() {
-          // TODO - Show Toast
-        },
-      },
-    );
-  };
+  const onSubmit = useRequestorSubmitHandler({
+    body,
+    path,
+    method,
+    queryParams,
+    requestHeaders,
+    makeRequest,
+    recordRequestInSessionHistory,
+    selectedRoute,
+  });
 
   const {
     enabled: aiEnabled,
@@ -341,6 +227,156 @@ function RequestInput({
     </div>
   );
 }
+
+
+function useRoutes() {
+  const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
+  const routes = useMemo(() => {
+    return routesAndMiddleware?.filter((r) => r.handlerType === "route") ?? [];
+  }, [routesAndMiddleware]);
+
+  // Select the home route if it exists, otherwise fall back to the first route in the list
+  const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
+    isLoading,
+    routes,
+  });
+
+  const handleRouteClick = useCallback(
+    (route: ProbedRoute) => {
+      setSelectedRoute(route);
+    },
+    [setSelectedRoute],
+  );
+
+  return {
+    isError,
+    isLoading,
+    routes,
+    selectedRoute,
+    handleRouteClick,
+  };
+}
+
+function useRequestorHistory() {
+  const { data: allRequests } = useFetchRequestorRequests();
+
+  // Keep a history of recent requests and responses
+  const history = useMemo<Array<Requestornator>>(() => {
+    if (allRequests) {
+      const cloned = [...allRequests];
+      cloned.sort(sortRequestornatorsDescending);
+      return cloned;
+    }
+    return [];
+  }, [allRequests]);
+
+  // Array of all requests made this session
+  //
+  // This is purposefully in memory so that we clear the response panel
+  // when the user refreshes the page
+  //
+  const [sessionHistoryTraceIds, setSessionHistoryTraceIds] = useState<
+    Array<string>
+  >([]);
+
+  // We want to keep track of requests in history... however, I think this should be encapsulated with the
+  // query logic itself (instead of something we need to remember to wire together with the `mutate` call)
+  const recordRequestInSessionHistory = (traceId: string) =>
+    setSessionHistoryTraceIds((current) => [traceId, ...current]);
+
+  // HACK - We can load history entries this way! Just pass in a traceId for now, and then it shoooould appear in the UI
+  //        Later we should match based off of request id or something more clever
+  const loadHistoricalRequest = recordRequestInSessionHistory;
+
+  // Keep a local history of requests that the user has made in the UI
+  const sessionHistory = useMemo(() => {
+    return sessionHistoryTraceIds.reduce(
+      (matchedRequestornators, traceId) => {
+        const match = history.find((r) => r.app_responses?.traceId === traceId);
+        if (match) {
+          matchedRequestornators.push(match);
+        }
+        return matchedRequestornators;
+      },
+      [] as Array<Requestornator>,
+    );
+  }, [history, sessionHistoryTraceIds]);
+
+  return {
+    history,
+    sessionHistory,
+    recordRequestInSessionHistory,
+    loadHistoricalRequest,
+  };
+}
+
+function useRequestorSubmitHandler({
+  selectedRoute,
+  body,
+  path,
+  method,
+  queryParams,
+  requestHeaders,
+  makeRequest,
+  recordRequestInSessionHistory,
+}: {
+  selectedRoute: ProbedRoute | null;
+  body: string | undefined;
+  path: string;
+  method: string;
+  queryParams: KeyValueParameter[];
+  requestHeaders: KeyValueParameter[];
+  makeRequest: ReturnType<typeof useMakeRequest>["mutate"];
+  recordRequestInSessionHistory: (traceId: string) => void;
+}) {
+  return useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // FIXME - This blocks user from making requests when no routes have been detected
+    if (!selectedRoute) {
+      return;
+    }
+
+    // FIXME
+    let cleverBody =
+      typeof body === "string" && isJson(body) ? JSON.parse(body) : body ?? "";
+
+    // HACK - Mizu API expects an object...
+    if (cleverBody === "") {
+      cleverBody = {};
+    }
+
+    makeRequest(
+      {
+        path,
+        method,
+        body: cleverBody,
+        headers: requestHeaders,
+        queryParams,
+      },
+      {
+        onSuccess(data) {
+          // This is the response data i presume?
+          console.log(
+            "Made request... this is the response data I hope?",
+            data,
+          );
+          const traceId = data?.traceId;
+          if (traceId && typeof traceId === "string") {
+            recordRequestInSessionHistory(traceId);
+          } else {
+            debugger;
+          }
+        },
+        onError(error) {
+          // TODO - Show Toast
+          console.error("Submit error!", error)
+        },
+      },
+    );
+  }, [body, makeRequest, method, path, queryParams, recordRequestInSessionHistory, requestHeaders, selectedRoute]);
+}
+
 
 function useAutoselectRoute({
   isLoading,
