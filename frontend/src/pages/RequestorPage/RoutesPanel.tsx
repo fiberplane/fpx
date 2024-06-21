@@ -27,7 +27,7 @@ export function RoutesPanel({
   handleRouteClick,
 }: RoutesPanelProps) {
   const isMd = useIsMdScreen();
-  const collapsible = !isMd
+  const collapsible = !isMd;
   const { width, handleResize } = useResizableWidth(320);
   const styleWidth = useStyleWidth(width);
 
@@ -83,7 +83,7 @@ export function RoutesPanel({
             style={isMd ? styleWidth : undefined}
             className={cn(
               "px-4 overflow-hidden overflow-y-scroll border rounded-md",
-              "md:h-full"
+              "md:h-full",
             )}
           >
             <CollapsibleTrigger asChild>
@@ -153,7 +153,6 @@ export function RoutesPanel({
           </div>
         </Collapsible>
       </div>
-  
     </Resizable>
   );
 }

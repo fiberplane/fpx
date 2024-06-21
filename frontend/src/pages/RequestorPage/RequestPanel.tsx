@@ -1,5 +1,6 @@
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
+import { cn } from "@/utils";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
@@ -68,8 +69,11 @@ function RequestMeta(props: RequestPanelProps) {
     setRequestHeaders,
   } = props;
   return (
-    <div className="min-w-[200px] border-r sm:border-none">
-      <Tabs defaultValue="params">
+    <div className="min-w-[200px] border-r sm:border-none max-h-full">
+      <Tabs
+        defaultValue="params"
+        className={cn("overflow-hidden overflow-y-auto max-h-full")}
+      >
         <div className="flex items-center">
           <CustomTabsList>
             <CustomTabTrigger value="params">
@@ -96,8 +100,16 @@ function RequestMeta(props: RequestPanelProps) {
             </CustomTabTrigger>
           </CustomTabsList>
         </div>
-        <div className="pt-2 pb-4 px-3">
-          <TabsContent value="params">
+        <div
+          className={cn(
+            "pt-2 pb-4 px-3",
+            cn("overflow-hidden overflow-y-auto max-h-full"),
+          )}
+        >
+          <TabsContent
+            value="params"
+            className={cn("overflow-hidden overflow-y-auto max-h-full")}
+          >
             <div className="uppercase text-gray-400 text-sm mb-1">
               Query Parameters
             </div>

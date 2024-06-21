@@ -154,7 +154,7 @@ function Method({ method }: { method: string }) {
 }
 
 function StatusCode({ status }: { status: string | number }) {
-  const strStatus = status.toString();
+  const strStatus = status?.toString() ?? "-";
   const isGreen = strStatus.startsWith("2");
   const isOrange = strStatus.startsWith("4");
   const isRed = strStatus.startsWith("5");
@@ -172,7 +172,7 @@ function StatusCode({ status }: { status: string | number }) {
         isRed && ["text-red-400", "bg-red-800"],
       )}
     >
-      {status}
+      {strStatus}
     </span>
   );
 }

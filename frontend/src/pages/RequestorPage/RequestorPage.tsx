@@ -106,10 +106,17 @@ export const RequestorPage = () => {
         "py-2",
         "flex flex-col space-y-4",
         "md:grid md:grid-cols-[auto_1fr] md:space-y-0 md:py-2 md:gap-0",
-        "h-[calc(100vh-64px)]"
+        "h-[calc(100vh-64px)]",
       )}
     >
-      <div className={cn("max-h-full", "relative", "overflow-y-scroll", "overflow-x-hidden")}>
+      <div
+        className={cn(
+          "max-h-full",
+          "relative",
+          "overflow-y-scroll",
+          "md:overflow-x-hidden",
+        )}
+      >
         <RoutesPanel
           routes={routes}
           selectedRoute={selectedRoute}
@@ -117,7 +124,17 @@ export const RequestorPage = () => {
         />
       </div>
 
-      <div className="flex flex-col flex-1 md:ml-4 md:col-auto">
+      <div
+        className={cn(
+          "flex flex-col flex-1 md:ml-4 md:col-auto",
+          cn(
+            "max-h-full",
+            "relative",
+            "overflow-y-auto",
+            "md:overflow-x-hidden",
+          ),
+        )}
+      >
         {aiEnabled && (
           <div className="mb-2 flex items-center justify-start space-x-0">
             <Button
