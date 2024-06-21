@@ -9,7 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { MizuTrace, useMizuTraces } from "@/queries";
-import { isJson } from "@/utils";
+import { cn, isJson } from "@/utils";
 import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { KeyValueParameter } from "./KeyValueForm";
@@ -99,12 +99,19 @@ export const RequestorPage = () => {
   });
 
   return (
-    <div className="flex h-full pt-4">
+    <div
+      className={cn(
+        "flex flex-col space-y-4",
+        "md:flex-row md:space-y-0",
+        "h-full pt-4",
+      )}
+    >
       <RoutesPanel
         routes={routes}
         selectedRoute={selectedRoute}
         handleRouteClick={handleRouteClick}
       />
+
       <div className="flex flex-col flex-1 ml-4">
         {aiEnabled && (
           <div className="mb-2 flex items-center justify-start space-x-0">
@@ -369,8 +376,6 @@ function useRequestorSubmitHandler({
             const traceId = data?.traceId;
             if (traceId && typeof traceId === "string") {
               recordRequestInSessionHistory(traceId);
-            } else {
-              debugger;
             }
           },
           onError(error) {

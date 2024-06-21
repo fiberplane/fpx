@@ -1,6 +1,19 @@
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
-import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { useMedia } from "@fiberplane/hooks";
+import {
+  CaretDownIcon,
+  CaretRightIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+} from "@radix-ui/react-icons";
+import { useMemo, useState } from "react";
 import { Resizable } from "react-resizable";
 import { ResizableHandle } from "./Resizable";
 import { useResizableWidth } from "./hooks";
@@ -18,14 +31,35 @@ export function RoutesPanel({
   selectedRoute,
   handleRouteClick,
 }: RoutesPanelProps) {
-  const [showDetectedRoutes, setShowDetectedRoutes] = useState(true);
-  const ShowDetectedIcon = showDetectedRoutes ? CaretDownIcon : CaretRightIcon;
+  // HACK - reusing `md` breakpoint from tailwind
+  const isMdSize = useMedia("(min-width: 768px)");
 
+  return isMdSize ? (
+    <ResizableRoutes
+      routes={routes}
+      selectedRoute={selectedRoute}
+      handleRouteClick={handleRouteClick}
+    />
+  ) : (
+    <Routes
+      routes={routes}
+      selectedRoute={selectedRoute}
+      handleRouteClick={handleRouteClick}
+      collapsible
+    />
+  );
+}
+
+function ResizableRoutes({
+  routes,
+  selectedRoute,
+  handleRouteClick,
+}: RoutesPanelProps) {
   const { width, handleResize } = useResizableWidth(320);
 
   return (
     <Resizable
-      className="min-w-[200px]"
+      className="md:min-w-[200px]"
       width={width} // Initial width
       axis="x" // Restrict resizing to the horizontal axis
       onResize={handleResize}
@@ -36,14 +70,60 @@ export function RoutesPanel({
         <ResizableHandle ref={ref} />
       )}
     >
+      <Routes
+        routes={routes}
+        selectedRoute={selectedRoute}
+        handleRouteClick={handleRouteClick}
+        width={width}
+      />
+    </Resizable>
+  );
+}
+
+function Routes({
+  routes,
+  selectedRoute,
+  handleRouteClick,
+  width,
+  collapsible,
+}: RoutesPanelProps & { width?: number; collapsible?: boolean }) {
+  const styleWidth = useMemo(
+    () => (width ? { width: `${width}px` } : undefined),
+    [width],
+  );
+  const [showDetectedRoutes, setShowDetectedRoutes] = useState(true);
+  const ShowDetectedIcon = showDetectedRoutes ? CaretDownIcon : CaretRightIcon;
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Collapsible
+      className="md:h-full"
+      open={collapsible ? isOpen : true}
+      onOpenChange={setIsOpen}
+    >
       <div
-        style={{ width: `${width}px` }}
-        className={cn("flex flex-col px-4 overflow-x-hidden border-r")}
+        style={styleWidth}
+        className={cn(
+          "flex flex-col md:h-full px-4 overflow-x-hidden border rounded-md",
+        )}
       >
-        <h2 className="flex items-center rounded font-semibold">Endpoints</h2>
-        <div className="flex-grow mt-4">
-          <div className="">
-            <div className="font-medium text-sm flex items-center mb-1">
+        <CollapsibleTrigger asChild>
+          <h2 className="flex items-center justify-between rounded cursor-pointer py-4 text-base md:h-12 md:cursor-default">
+            Endpoints
+            {collapsible ? <CaretDownIcon className="h-4 w-4" /> : null}
+          </h2>
+        </CollapsibleTrigger>
+        {/* TODO - Make internally scrollable */}
+        <CollapsibleContent className="max-h-[400px] md:max-h-none md:mt-2 pb-4">
+          <div>
+            <div className="flex items-center space-x-2">
+              <Input className="text-sm" placeholder="Search endpoints" />
+              {/* TODO - Create a route? */}
+              <Button variant="secondary" className="p-2.5">
+                <PlusIcon className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="font-medium text-sm flex items-center mb-1 mt-4">
               <ShowDetectedIcon
                 className="h-4 w-4 mr-0.5 cursor-pointer"
                 onClick={() => {
@@ -83,9 +163,9 @@ export function RoutesPanel({
               </div>
             )}
           </div>
-        </div>
-        <div className="mt-auto">{/* Settings? */}</div>
+          <div className="mt-auto">{/* Settings? */}</div>
+        </CollapsibleContent>
       </div>
-    </Resizable>
+    </Collapsible>
   );
 }
