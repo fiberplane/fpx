@@ -110,7 +110,6 @@ function Routes({
         // ...routes,
         // ...routes,
         // ...routes,
-
       ];
     }
     return routes?.filter((r) => r.path.includes(filterValue));
@@ -124,9 +123,7 @@ function Routes({
     >
       <div
         style={styleWidth}
-        className={cn(
-          "md:h-full px-4 overflow-hidden border rounded-md",
-        )}
+        className={cn("md:h-full px-4 overflow-hidden border rounded-md")}
       >
         <CollapsibleTrigger asChild>
           <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12 md:cursor-default">

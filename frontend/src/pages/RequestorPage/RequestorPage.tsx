@@ -115,7 +115,6 @@ export const RequestorPage = () => {
           selectedRoute={selectedRoute}
           handleRouteClick={setRoute}
         />
-
       </div>
 
       <div className="flex flex-col flex-1 md:ml-4 md:col-auto">

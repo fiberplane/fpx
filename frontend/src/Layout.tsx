@@ -1,9 +1,9 @@
 import type React from "react";
+import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
 import WaveIcon from "./Wave.svg";
 import FpxIcon from "./fpx.svg";
 import { cn } from "./utils";
-import { ComponentProps } from "react";
 
 const Branding = () => {
   return (
@@ -32,13 +32,15 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
           {/* TODO - Breadcrumbs */}
         </div>
       </nav>
-      <main className={cn(
-        "grid items-start gap-4 py-2 px-4 ",
-        "sm:px-6 sm:py-0",
-        "md:gap-8",
-        "overflow-scroll",
-        "h-[calc(100vh-64px)]"
-      )}>
+      <main
+        className={cn(
+          "grid items-start gap-4 py-2 px-4 ",
+          "sm:px-6 sm:py-0",
+          "md:gap-8",
+          "overflow-scroll",
+          "h-[calc(100vh-64px)]",
+        )}
+      >
         {children}
       </main>
     </div>
