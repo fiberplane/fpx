@@ -5,18 +5,18 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { useIsMdScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { useMedia } from "@fiberplane/hooks";
 import {
   CaretDownIcon,
   CaretRightIcon,
-  MagnifyingGlassIcon,
+  // MagnifyingGlassIcon,
   PlusIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { Resizable } from "react-resizable";
 import { ResizableHandle } from "./Resizable";
-import { useResizableWidth } from "./hooks";
+import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute } from "./queries";
 
@@ -31,10 +31,9 @@ export function RoutesPanel({
   selectedRoute,
   handleRouteClick,
 }: RoutesPanelProps) {
-  // HACK - reusing `md` breakpoint from tailwind
-  const isMdSize = useMedia("(min-width: 768px)");
+  const isMd = useIsMdScreen();
 
-  return isMdSize ? (
+  return isMd ? (
     <ResizableRoutes
       routes={routes}
       selectedRoute={selectedRoute}
@@ -56,6 +55,7 @@ function ResizableRoutes({
   handleRouteClick,
 }: RoutesPanelProps) {
   const { width, handleResize } = useResizableWidth(320);
+  const styleWidth = useStyleWidth(width);
 
   return (
     <Resizable
@@ -70,12 +70,14 @@ function ResizableRoutes({
         <ResizableHandle ref={ref} />
       )}
     >
-      <Routes
-        routes={routes}
-        selectedRoute={selectedRoute}
-        handleRouteClick={handleRouteClick}
-        width={width}
-      />
+      <div style={styleWidth} className={cn("md:h-full")}>
+        <Routes
+          routes={routes}
+          selectedRoute={selectedRoute}
+          handleRouteClick={handleRouteClick}
+          width={width}
+        />
+      </div>
     </Resizable>
   );
 }
@@ -87,10 +89,8 @@ function Routes({
   width,
   collapsible,
 }: RoutesPanelProps & { width?: number; collapsible?: boolean }) {
-  const styleWidth = useMemo(
-    () => (width ? { width: `${width}px` } : undefined),
-    [width],
-  );
+  const styleWidth = useStyleWidth(width);
+
   const [showDetectedRoutes, setShowDetectedRoutes] = useState(true);
   const ShowDetectedIcon = showDetectedRoutes ? CaretDownIcon : CaretRightIcon;
   const [isOpen, setIsOpen] = useState(false);

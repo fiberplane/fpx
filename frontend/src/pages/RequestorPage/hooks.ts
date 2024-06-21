@@ -1,4 +1,4 @@
-import { SyntheticEvent, useCallback, useState } from "react";
+import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { ResizeCallbackData } from "react-resizable";
 
 export function useResizableWidth(initialWidth: number, min = 200, max = 600) {
@@ -19,4 +19,8 @@ export function useResizableWidth(initialWidth: number, min = 200, max = 600) {
   );
 
   return { width, handleResize };
+}
+
+export function useStyleWidth(width?: number) {
+  return useMemo(() => (width ? { width: `${width}px` } : undefined), [width]);
 }

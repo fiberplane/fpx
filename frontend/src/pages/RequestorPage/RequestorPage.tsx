@@ -59,8 +59,6 @@ export const RequestorPage = () => {
   const { history, sessionHistory, recordRequestInSessionHistory } =
     useRequestorHistory();
 
-  console.log("hi session history", sessionHistory);
-
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
     sessionHistory,
@@ -152,7 +150,20 @@ export const RequestorPage = () => {
           onSubmit={onSubmit}
           isRequestorRequesting={isRequestorRequesting}
         />
-        <div className="flex flex-grow items-stretch mt-4 rounded overflow-hidden border max-w-screen">
+        <div
+          className={cn(
+            "flex",
+            "flex-grow",
+            "items-stretch",
+            "mt-4",
+            "rounded",
+            "overflow-hidden",
+            "border",
+            // HACK - This prevents overflow from getting too excessive.
+            //        Need to resolve the problem with inner content expanding the parent
+            "max-w-screen",
+          )}
+        >
           <RequestPanel
             body={body}
             setBody={setBody}
