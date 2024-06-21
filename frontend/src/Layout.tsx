@@ -17,7 +17,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128">
       <nav className="flex gap-4 sm:gap-4 py-4 sm:py-0 justify-between items-center h-[64px] border-b ">
-        <div className="sticky top-0 flex items-center gap-2 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 py-2 text-sm">
+        <div className="sticky top-0 flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent sm:px-6 py-2 text-sm">
           <Branding />
           <div className="ml-2">
             <div className="flex items-center gap-2 text-sm">

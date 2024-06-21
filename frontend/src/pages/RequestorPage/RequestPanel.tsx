@@ -88,30 +88,33 @@ function RequestMeta(props: RequestPanelProps) {
             </CustomTabTrigger>
           </TabsList>
         </div>
-        <TabsContent value="params">
-          <KeyValueForm
-            keyValueParameters={queryParams}
-            onChange={(params) => {
-              setQueryParams(params);
-            }}
-          />
-        </TabsContent>
-        <TabsContent value="headers">
-          <KeyValueForm
-            keyValueParameters={requestHeaders}
-            onChange={(headers) => {
-              setRequestHeaders(headers);
-            }}
-          />
-        </TabsContent>
-        <TabsContent value="body">
-          <CodeMirrorJsonEditor
-            onChange={setBody}
-            value={body}
-            maxHeight="800px"
-          />
-          {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
-        </TabsContent>
+        <div className="pt-2 pb-4">
+          <TabsContent value="params">
+            <KeyValueForm
+              keyValueParameters={queryParams}
+              onChange={(params) => {
+                setQueryParams(params);
+              }}
+            />
+          </TabsContent>
+          <TabsContent value="headers">
+            <KeyValueForm
+              keyValueParameters={requestHeaders}
+              onChange={(headers) => {
+                setRequestHeaders(headers);
+              }}
+            />
+          </TabsContent>
+          <TabsContent value="body">
+            <CodeMirrorJsonEditor
+              onChange={setBody}
+              value={body}
+              maxHeight="800px"
+            />
+            {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
+          </TabsContent>
+        </div>
+  
       </Tabs>
     </div>
   );

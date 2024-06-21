@@ -15,7 +15,7 @@ import { KeyValueParameter } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorHistory } from "./RequestorHistory";
 import { RequestorInput } from "./RequestorInput";
-import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
+import { ResponsePanel } from "./ResponsePanel";
 import { RoutesPanel } from "./RoutesPanel";
 import { TestingPersonaMenu, useAi } from "./ai";
 import { useRequestorFormData } from "./data";
@@ -153,7 +153,9 @@ export const RequestorPage = () => {
         <div
           className={cn(
             "flex",
+            "flex-col",
             "flex-grow",
+            "sm:flex-row",
             "items-stretch",
             "mt-4",
             "rounded",
@@ -173,13 +175,7 @@ export const RequestorPage = () => {
             setRequestHeaders={setRequestHeaders}
           />
           <div className="flex-grow flex flex-col items-stretch">
-            {isRequestorRequesting ? (
-              <div>Loading...</div>
-            ) : mostRecentRequestornatorForRoute ? (
-              <ResponseDetails response={mostRecentRequestornatorForRoute} />
-            ) : (
-              <ResponseInstructions />
-            )}
+            <ResponsePanel response={mostRecentRequestornatorForRoute} isLoading={isRequestorRequesting} />
           </div>
         </div>
       </div>

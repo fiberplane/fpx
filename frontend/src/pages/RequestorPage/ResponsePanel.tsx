@@ -2,7 +2,6 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
 import { isJson, noop } from "@/utils";
-import { CodeIcon } from "@radix-ui/react-icons";
 import { MonacoJsonEditor } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
@@ -10,7 +9,7 @@ import { HeaderTable } from "./HeaderTable";
 import { CustomTabTrigger } from "./Tabs";
 import { Requestornator } from "./queries";
 
-export function ResponseDetails({ response }: { response?: Requestornator }) {
+export function ResponsePanel({ response, isLoading }: { response?: Requestornator, isLoading: boolean }) {
   return (
     <Tabs defaultValue="body" className="h-full">
       <div className="flex items-center">
@@ -21,30 +20,32 @@ export function ResponseDetails({ response }: { response?: Requestornator }) {
         </TabsList>
       </div>
       <TabsContent value="body" className="h-full">
-        <div className="px-3 h-full flex max-w-full">
+        <div className="px-1 h-full flex max-w-full">
           {response ? (
             <ResponseBody response={response} />
           ) : (
-            <div className="flex-grow flex items-center justify-center text-gray-400">
-              <NoResponse />
-            </div>
+            <NoResponse />
           )}
         </div>
       </TabsContent>
-      <TabsContent value="headers">
-        <div className="px-1">
-          {response?.app_responses?.responseHeaders ? (
+      <TabsContent value="headers" className="h-full">
+        <div className="px-1 h-full flex">
+          {response ? (
             <HeaderTable
               headers={response?.app_responses?.responseHeaders ?? {}}
             />
           ) : (
-            <NoHeaders />
+            <NoResponse />
           )}
         </div>
       </TabsContent>
-      <TabsContent value="debug">
-        <div className="px-3 py-1">
-          <FpxDetails response={response} />
+      <TabsContent value="debug" className="h-full">
+        <div className="px-3 py-1 h-full flex">
+          {response ? (
+            <FpxDetails response={response} />
+          ) : (
+            <NoResponse />
+          )}
         </div>
       </TabsContent>
     </Tabs>
@@ -85,7 +86,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
       </div>
     )) ?? [];
 
-  // TODO - if response is empty, show that in a ux friendly way
+  // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
   return (
     <div className="mt-4">
@@ -96,26 +97,13 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   );
 }
 
-const NoResponse = () => (
-  <div className="flex flex-col items-center justify-center p-4">
-    <div className="text-gray-400">No response yet</div>
-  </div>
-);
-
-const NoHeaders = () => (
-  <div className="flex flex-col items-center justify-center p-4">
-    <div className="text-gray-400">No headers... yet?!</div>
-  </div>
-);
-
-export function ResponseInstructions() {
+function NoResponse() {
   return (
     <div className="flex-grow flex items-center justify-center text-gray-400 mb-32">
-      <div className="flex flex-col items-center justify-center p-4 ">
-        <CodeIcon className="w-10 h-10" />
-        <div className="text-gray-600 mt-4 text-xl">No response yet</div>
-        <div className="text-gray-600 mt-2">
-          Send a request to see a response!
+      <div className="flex flex-col items-center justify-center p-4">
+        <div className="mt-4 text-md text-white text-center">Enter a URL and hit send to see a response</div>
+        <div className="mt-2 text-ms text-gray-400 text-center font-light">
+          Or load a past request from your history
         </div>
       </div>
     </div>

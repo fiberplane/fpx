@@ -32,7 +32,7 @@ type FpxDetailsProps = {
 export function FpxDetails({ response }: FpxDetailsProps) {
   const hasTrace = !!response?.app_responses?.traceId;
   return (
-    <div>{hasTrace ? <TraceDetails response={response} /> : "no trace"}</div>
+    <div className="w-full">{hasTrace ? <TraceDetails response={response} /> : <div className="text-center"></div>}</div>
   );
 }
 
