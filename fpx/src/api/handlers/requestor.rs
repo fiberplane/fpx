@@ -1,7 +1,7 @@
 use std::{collections::BTreeMap, str::FromStr};
 
 use axum::{extract::State, response::IntoResponse, Json};
-use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
+use http::{HeaderMap, HeaderName, HeaderValue};
 use reqwest::RequestBuilder;
 use serde::{Deserialize, Serialize};
 
@@ -37,7 +37,7 @@ impl Into<String> for HttpMethod {
 #[derive(Serialize)]
 pub struct Response {
     request_id: i64,
-    status: i64,
+    status: u16,
     headers: BTreeMap<String, String>,
     body: Option<String>,
 }
@@ -84,11 +84,7 @@ pub async fn execute_requestor(
         response_header_map.insert(key.to_string(), String::from(val.to_str().unwrap()));
     }
 
-    let status = match response.status() {
-        StatusCode::OK => 200,
-        _ => 0,
-    };
-
+    let status = response.status().as_u16();
     let body = &response.text().await.unwrap();
 
     Json(Response {
