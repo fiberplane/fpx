@@ -1,10 +1,9 @@
+import { eq } from "drizzle-orm";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { tryParseJsonObjectMessage } from "../lib/utils.js";
-import { eq } from "drizzle-orm";
-import { LibSQLDatabase } from "drizzle-orm/libsql";
 
 const { settings } = schema;
 
@@ -16,8 +15,8 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
  */
 app.get("/v0/settings", cors(), async (ctx) => {
   const db = ctx.get("db");
-  const settingsRecord = await findOrCreateSettings(db)
-  return ctx.json(settingsRecord)
+  const settingsRecord = await findOrCreateSettings(db);
+  return ctx.json(settingsRecord);
 });
 
 /**
@@ -29,14 +28,21 @@ app.post("/v0/settings", cors(), async (ctx) => {
   const { content } = await ctx.req.json();
   const db = ctx.get("db");
   const updatedSettings = updateSettings(db, content);
-  return ctx.json(updatedSettings)
+  return ctx.json(updatedSettings);
 });
 
 export default app;
 
-async function updateSettings(db: LibSQLDatabase<typeof schema>, content: object) {
+async function updateSettings(
+  db: LibSQLDatabase<typeof schema>,
+  content: object,
+) {
   const currentSettings = await findOrCreateSettings(db);
-  return await db.update(settings).set({ content }).where(eq(settings.id, currentSettings.id)).returning();
+  return await db
+    .update(settings)
+    .set({ content })
+    .where(eq(settings.id, currentSettings.id))
+    .returning();
 }
 
 async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
@@ -46,7 +52,10 @@ async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
     return settingsRecords[0];
   }
 
-  const createdRecord = await db.insert(settings).values({ content: {} }).returning();
+  const createdRecord = await db
+    .insert(settings)
+    .values({ content: {} })
+    .returning();
 
   return createdRecord[0];
 }

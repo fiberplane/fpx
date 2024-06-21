@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
-const FPX_USER_SETTINGS_QUERY_KEY = "FPX_USER_SETTINGS"
+const FPX_USER_SETTINGS_QUERY_KEY = "FPX_USER_SETTINGS";
 
 export function useFetchSettings() {
   return useQuery({
@@ -21,14 +21,15 @@ function updateSettings({ content }: { content: object }) {
   }).then((r) => r.json());
 }
 
-
 export function useUpdateSettings() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: updateSettings,
     onSuccess: () => {
       // Invalidate and refetch requestor requests
-      queryClient.invalidateQueries({ queryKey: [FPX_USER_SETTINGS_QUERY_KEY] });
+      queryClient.invalidateQueries({
+        queryKey: [FPX_USER_SETTINGS_QUERY_KEY],
+      });
     },
   });
 

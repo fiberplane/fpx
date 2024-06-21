@@ -224,7 +224,6 @@ export type MizuLog = typeof mizuLogs.$inferSelect; // return type when queried
 // When you create a record
 export type NewMizuLog = typeof mizuLogs.$inferInsert; // insert type
 
-
 export const settings = sqliteTable("settings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   content: text("content", { mode: "json" }),

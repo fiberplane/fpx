@@ -13,8 +13,8 @@ import dependencies from "./routes/dependencies.js";
 import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
 import openai from "./routes/openai.js";
-import source from "./routes/source.js";
 import settings from "./routes/settings.js";
+import source from "./routes/source.js";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
