@@ -6,6 +6,9 @@ authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 
+[features]
+embed-studio = [] # When enabled it will embed Studio from frontend/dist
+
 [dependencies]
 anyhow = { workspace = true }
 async-trait = { version = "0.1" }
