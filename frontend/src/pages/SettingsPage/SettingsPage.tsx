@@ -5,7 +5,7 @@ import { SettingsForm } from "./SettingsForm";
 export function SettingsPage() {
   const { data, isLoading, isError } = useFetchSettings();
   return (
-    <div className="mt-4 max-w-[600px]">
+    <div className="mt-4 max-w-[600px] overflow-y-scroll">
       {isLoading ? (
         <Skeleton className="w-full h-24" />
       ) : isError ? (
@@ -13,10 +13,6 @@ export function SettingsPage() {
       ) : (
         <SettingsForm settings={data?.content} />
       )}
-      <SettingsForm settings={{}} />
-      <SettingsForm settings={{}} />
-      <SettingsForm settings={{}} />
-
     </div>
   );
 }
