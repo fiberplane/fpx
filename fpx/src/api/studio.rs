@@ -20,12 +20,13 @@ pub async fn default_handler(req: Request) -> impl IntoResponse {
         })
         .or_else(|| STUDIO_DIST.get_file("index.html"));
 
-    // Just return 404 if not file was found.
+    // Just return 404 if no file was found.
     let Some(file) = file else {
         return StatusCode::NOT_FOUND.into_response();
     };
 
-    let content = file.contents_utf8().unwrap();
+    let content = file.contents();
+
     // Naive content type detection
     let content_type = match file.path().extension().and_then(|ext| ext.to_str()) {
         Some("html") => "text/html",
