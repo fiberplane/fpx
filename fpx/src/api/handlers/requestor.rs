@@ -61,8 +61,7 @@ pub async fn execute_requestor(
         &payload.url,
         &payload.body,
         &request_headers,
-    )
-    .await;
+    );
 
     let response = request.send().await.unwrap();
 
@@ -100,7 +99,7 @@ pub async fn execute_requestor(
     })
 }
 
-async fn build_request(
+fn build_request(
     method: &HttpMethod,
     url: &str,
     body: &Option<String>,
