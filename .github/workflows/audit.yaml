@@ -4,16 +4,20 @@ name: Audit
 on:
   push:
     branches: ["**"]
+
     paths:
       - "**/Cargo.toml"
       - "**/Cargo.lock"
       - "**/deny.toml"
+      - ".github/workflows/audit.yaml"
+
   schedule:
     - cron: "23 1 * * *"
+
   workflow_dispatch:
 
 jobs:
-  rust_audit:
+  audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

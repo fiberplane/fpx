@@ -1,6 +1,6 @@
 # Test and build the project.
 ---
-name: Build API
+name: Build
 
 on:
   # Allow manual trigger
@@ -15,7 +15,7 @@ on:
     branches: ["main"]
 
 jobs:
-  build-rust:
+  build:
     strategy:
       matrix:
         include:
