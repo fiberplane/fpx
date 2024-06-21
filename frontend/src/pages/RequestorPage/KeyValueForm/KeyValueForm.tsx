@@ -20,25 +20,25 @@ type KeyValueRowProps = {
   isDraft: boolean;
   parameter: KeyValueParameter;
   onChangeEnabled: (enabled: boolean) => void;
-  onChangeKey: (key: string) => void;
+  onChangeKey?: (key: string) => void;
   onChangeValue: (value: string) => void;
-  removeValue: () => void;
+  removeValue?: () => void;
 };
 
-const KeyValueRow = (props: KeyValueRowProps) => {
+export const KeyValueRow = (props: KeyValueRowProps) => {
   const {
     isDraft,
     onChangeEnabled,
     onChangeKey,
     onChangeValue,
-    removeValue, // TODO - Implement removal
+    removeValue,
     parameter,
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
   return (
     <div
-      className="flex items-center space-x-0 rounded px-2 py-0"
+      className="flex items-center space-x-0 rounded p-0"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -55,7 +55,8 @@ const KeyValueRow = (props: KeyValueRowProps) => {
         type="text"
         value={key}
         placeholder="name"
-        onChange={(e) => onChangeKey(e.target.value)}
+        readOnly={!onChangeKey}
+        onChange={(e) => onChangeKey?.(e.target.value)}
         className="w-24 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none focus:text-blue-600"
       />
       <Input
@@ -67,14 +68,14 @@ const KeyValueRow = (props: KeyValueRowProps) => {
       />
       <div
         className={cn("ml-1 flex invisible", {
-          visible: !isDraft && isHovering,
+          visible: !isDraft && isHovering && !!removeValue,
         })}
       >
         <TrashIcon
           className={cn("w-4 h-4", {
             "cursor-pointer": !isDraft,
           })}
-          onClick={() => !isDraft && removeValue()}
+          onClick={() => !isDraft && removeValue?.()}
         />
       </div>
     </div>

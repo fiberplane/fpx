@@ -1,5 +1,6 @@
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { isJson, noop } from "@/utils";
 import { MonacoJsonEditor } from "./Editors";
@@ -9,7 +10,12 @@ import { HeaderTable } from "./HeaderTable";
 import { CustomTabTrigger, CustomTabsList } from "./Tabs";
 import { Requestornator } from "./queries";
 
-export function ResponsePanel({ response, isLoading }: { response?: Requestornator, isLoading: boolean }) {
+// TODO - Create skeleton loading components for each tab content
+
+export function ResponsePanel({
+  response,
+  isLoading,
+}: { response?: Requestornator; isLoading: boolean }) {
   return (
     <Tabs defaultValue="body" className="h-full">
       <div className="flex items-center">
@@ -20,8 +26,10 @@ export function ResponsePanel({ response, isLoading }: { response?: Requestornat
         </CustomTabsList>
       </div>
       <TabsContent value="body" className="h-full">
-        <div className="px-1 h-full flex max-w-full">
-          {response ? (
+        <div className="px-3 py-2 h-full flex max-w-full">
+          {isLoading ? (
+            <Loading />
+          ) : response ? (
             <ResponseBody response={response} />
           ) : (
             <NoResponse />
@@ -29,8 +37,10 @@ export function ResponsePanel({ response, isLoading }: { response?: Requestornat
         </div>
       </TabsContent>
       <TabsContent value="headers" className="h-full">
-        <div className="px-1 h-full flex">
-          {response ? (
+        <div className="px-3 py-2 h-full flex">
+          {isLoading ? (
+            <Loading />
+          ) : response ? (
             <HeaderTable
               headers={response?.app_responses?.responseHeaders ?? {}}
             />
@@ -40,8 +50,10 @@ export function ResponsePanel({ response, isLoading }: { response?: Requestornat
         </div>
       </TabsContent>
       <TabsContent value="debug" className="h-full">
-        <div className="px-3 py-1 h-full flex">
-          {response ? (
+        <div className="px-3 py-2 h-full flex">
+          {isLoading ? (
+            <Loading />
+          ) : response ? (
             <FpxDetails response={response} />
           ) : (
             <NoResponse />
@@ -89,7 +101,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
   return (
-    <div className="mt-4">
+    <div className="">
       <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>
@@ -101,11 +113,17 @@ function NoResponse() {
   return (
     <div className="flex-grow flex items-center justify-center text-gray-400 mb-32">
       <div className="flex flex-col items-center justify-center p-4">
-        <div className="mt-4 text-md text-white text-center">Enter a URL and hit send to see a response</div>
+        <div className="mt-4 text-md text-white text-center">
+          Enter a URL and hit send to see a response
+        </div>
         <div className="mt-2 text-ms text-gray-400 text-center font-light">
           Or load a past request from your history
         </div>
       </div>
     </div>
   );
+}
+
+function Loading() {
+  return <Skeleton className="w-full h-32" />;
 }

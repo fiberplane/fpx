@@ -3,6 +3,7 @@ import { useIsSmScreen } from "@/hooks";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
+import { PathParamForm } from "./PathParamForm/PathParamForm";
 import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsList } from "./Tabs";
 import { useResizableWidth, useStyleWidth } from "./hooks";
@@ -10,7 +11,9 @@ import { useResizableWidth, useStyleWidth } from "./hooks";
 type RequestPanelProps = {
   body?: string;
   setBody: (body?: string) => void;
+  pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
+  setPathParams: (params: KeyValueParameter[]) => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   requestHeaders: KeyValueParameter[];
@@ -53,8 +56,10 @@ function RequestMeta(props: RequestPanelProps) {
   const {
     body,
     setBody,
+    pathParams,
     queryParams,
     requestHeaders,
+    setPathParams,
     setQueryParams,
     setRequestHeaders,
   } = props;
@@ -87,12 +92,24 @@ function RequestMeta(props: RequestPanelProps) {
             </CustomTabTrigger>
           </CustomTabsList>
         </div>
-        <div className="pt-2 pb-4">
+        <div className="pt-2 pb-4 px-3">
           <TabsContent value="params">
+            <div className="uppercase text-gray-400 text-sm mb-1">
+              Query Parameters
+            </div>
             <KeyValueForm
               keyValueParameters={queryParams}
               onChange={(params) => {
                 setQueryParams(params);
+              }}
+            />
+            <div className="uppercase text-gray-400 text-sm mt-4 mb-1">
+              Path Parameters
+            </div>
+            <PathParamForm
+              keyValueParameters={pathParams}
+              onChange={(params) => {
+                setPathParams(params);
               }}
             />
           </TabsContent>
@@ -113,7 +130,6 @@ function RequestMeta(props: RequestPanelProps) {
             {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
           </TabsContent>
         </div>
-  
       </Tabs>
     </div>
   );

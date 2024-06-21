@@ -39,11 +39,13 @@ export const RequestorPage = () => {
     setMethod,
     body,
     setBody,
+    pathParams,
+    setPathParams,
     requestHeaders,
     setRequestHeaders,
     queryParams,
     setQueryParams,
-  } = useRequestorFormData();
+  } = useRequestorFormData(selectedRoute);
 
   // HACK - Antipattern?
   //
@@ -76,6 +78,7 @@ export const RequestorPage = () => {
     path,
     method,
     queryParams,
+    pathParams, // ???
     requestHeaders,
     makeRequest,
     recordRequestInSessionHistory,
@@ -169,13 +172,18 @@ export const RequestorPage = () => {
           <RequestPanel
             body={body}
             setBody={setBody}
+            pathParams={pathParams}
             queryParams={queryParams}
             requestHeaders={requestHeaders}
+            setPathParams={setPathParams}
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
           />
           <div className="flex-grow flex flex-col items-stretch">
-            <ResponsePanel response={mostRecentRequestornatorForRoute} isLoading={isRequestorRequesting} />
+            <ResponsePanel
+              response={mostRecentRequestornatorForRoute}
+              isLoading={isRequestorRequesting}
+            />
           </div>
         </div>
       </div>
