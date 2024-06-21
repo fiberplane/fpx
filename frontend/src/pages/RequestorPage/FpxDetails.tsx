@@ -5,6 +5,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAiEnabled } from "@/hooks/useAiEnabled";
 import {
   MizuLog,
   MizuRequestEnd,
@@ -12,7 +13,7 @@ import {
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
   useHandlerSourceCode,
-  useMizuTraces,
+  // useMizuTraces,
 } from "@/queries";
 import { cn } from "@/utils";
 import { CaretSortIcon } from "@radix-ui/react-icons";
@@ -43,6 +44,7 @@ type TraceDetailsProps = {
 };
 
 function TraceDetails({ response }: TraceDetailsProps) {
+  const aiEnabled = useAiEnabled();
   const traceId = response.app_responses.traceId;
   const { trace, isNotFound } = useTrace(traceId);
 
@@ -54,12 +56,13 @@ function TraceDetails({ response }: TraceDetailsProps) {
     refetch: fetchAiSummary,
   } = useSummarizeError(trace);
 
+  // TODO - use query key with trace id in fetch call so we can avoid unnecessary requests when other values update...
   useEffect(() => {
-    if (trace) {
+    if (trace && aiEnabled) {
       console.log("Fetching ai summary...");
       fetchAiSummary();
     }
-  }, [fetchAiSummary]);
+  }, [fetchAiSummary, aiEnabled]);
 
   if (isNotFound) {
     return <div>Trace not found</div>;
@@ -75,25 +78,28 @@ function TraceDetails({ response }: TraceDetailsProps) {
 
   return (
     <div>
-      <div className="">
-        <h3 className="pt-1 pb-2 text-sm">Summary</h3>
-        <div className="max-w-[600px] font-light">
-          {isLoadingAiSummary ||
-          isFetchingAiSummary ||
-          isRefetchingAiSummary ? (
-            <div className="p2">
-              <div className="text-sm text-gray-400 mb-2">
-                Loading AI Summary...
+      {aiEnabled && (
+        <div className="">
+          <h3 className="pt-1 pb-2 text-sm">Summary</h3>
+          <div className="max-w-[600px] font-light">
+            {isLoadingAiSummary ||
+            isFetchingAiSummary ||
+            isRefetchingAiSummary ? (
+              <div className="p2">
+                <div className="text-sm text-gray-400 mb-2">
+                  Loading AI Summary...
+                </div>
+                <Skeleton className="h-24 w-[400px] rounded-md mb-2" />
               </div>
-              <Skeleton className="h-24 w-[400px] rounded-md mb-2" />
-            </div>
-          ) : aiSummary && aiSummary?.summary ? (
-            <AiSummary summary={aiSummary.summary} />
-          ) : (
-            <div className="p2">Nothing to show, soz</div>
-          )}
+            ) : aiSummary && aiSummary?.summary ? (
+              <AiSummary summary={aiSummary.summary} />
+            ) : (
+              <div className="p2">Nothing to show, soz</div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
       <Section title="Events" defaultIsOpen>
         <EventsTable logs={trace?.logs} />
       </Section>
