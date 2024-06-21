@@ -109,7 +109,7 @@ export const RequestorPage = () => {
         "h-full",
       )}
     >
-      <div className={cn("max-h-full")}>
+      <div className={cn("max-h-full", "relative")}>
         <RoutesPanel
           routes={routes}
           selectedRoute={selectedRoute}
@@ -154,6 +154,7 @@ export const RequestorPage = () => {
             "rounded-md",
             "overflow-hidden",
             "border",
+            "relative",
             // HACK - This prevents overflow from getting too excessive.
             // FIXME - Need to resolve the problem with inner content expanding the parent
             "max-w-screen",

@@ -96,20 +96,20 @@ function Routes({
     if (cleanFilter.length < 3) {
       return [
         ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
-        // ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
+        ...routes,
       ];
     }
     return routes?.filter((r) => r.path.includes(filterValue));
@@ -123,7 +123,10 @@ function Routes({
     >
       <div
         style={styleWidth}
-        className={cn("md:h-full px-4 overflow-hidden border rounded-md")}
+        className={cn(
+          "px-4 overflow-hidden border rounded-md",
+          "md:h-full"
+        )}
       >
         <CollapsibleTrigger asChild>
           <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12 md:cursor-default">
@@ -133,7 +136,7 @@ function Routes({
         </CollapsibleTrigger>
         {/* TODO - Make internally scrollable */}
         <CollapsibleContent className="md:mt-2 pb-4">
-          <div>
+          <div className="">
             <div className="flex items-center space-x-2">
               <Input
                 className="text-sm"
@@ -146,45 +149,47 @@ function Routes({
                 <PlusIcon className="h-4 w-4" />
               </Button>
             </div>
-            <div className="font-medium text-sm flex items-center mb-1 mt-4">
-              <ShowDetectedIcon
-                className="h-4 w-4 mr-0.5 cursor-pointer"
-                onClick={() => {
-                  setShowDetectedRoutes((current) => !current);
-                }}
-              />
-              Detected in app
-            </div>
-            {showDetectedRoutes && (
-              <div className="space-y-0 overflow-y-scroll">
-                {filteredRoutes?.map?.((route, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleRouteClick(route)}
-                    className={cn(
-                      "flex items-center py-1 px-5 rounded cursor-pointer font-mono text-sm",
-                      {
-                        "bg-muted": selectedRoute === route,
-                        "hover:bg-muted": selectedRoute !== route,
-                      },
-                    )}
-                  >
-                    <span
+            <div>
+              <div className="font-medium text-sm flex items-center mb-1 mt-4">
+                <ShowDetectedIcon
+                  className="h-4 w-4 mr-0.5 cursor-pointer"
+                  onClick={() => {
+                    setShowDetectedRoutes((current) => !current);
+                  }}
+                />
+                Detected in app
+              </div>
+              {showDetectedRoutes && (
+                <div className="space-y-0 overflow-y-scroll">
+                  {filteredRoutes?.map?.((route, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleRouteClick(route)}
                       className={cn(
-                        "text-xs",
-                        "min-w-12",
-                        getHttpMethodTextColor(route.method),
+                        "flex items-center py-1 px-5 rounded cursor-pointer font-mono text-sm",
+                        {
+                          "bg-muted": selectedRoute === route,
+                          "hover:bg-muted": selectedRoute !== route,
+                        },
                       )}
                     >
-                      {route.method}
-                    </span>
-                    <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                      {route.path}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <span
+                        className={cn(
+                          "text-xs",
+                          "min-w-12",
+                          getHttpMethodTextColor(route.method),
+                        )}
+                      >
+                        {route.method}
+                      </span>
+                      <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">
+                        {route.path}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="mt-auto">{/* Settings? */}</div>
         </CollapsibleContent>
