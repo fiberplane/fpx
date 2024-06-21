@@ -1,3 +1,8 @@
+// ================================================= //
+// This file is generated. PLEASE DO NOT MODIFY.     //
+// Run `cargo xtask generate-schemas` to regenerate. //
+// ================================================= //
+
 import { z } from "zod";
 
 export const ClientMessageSchema = z

@@ -58,7 +58,12 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
 fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Result<Vec<u8>> {
     println!("Generating types & schemas:");
-    let mut zod_schemas: Vec<String> = Vec::new();
+    let mut zod_schemas: Vec<String> = Vec::from([String::from(
+        "// ================================================= //
+        // This file is generated. PLEASE DO NOT MODIFY.     //
+        // Run `cargo xtask generate-schemas` to regenerate. //
+        // ================================================= //",
+    )]);
 
     for (index, schema) in schemas.iter().enumerate() {
         // Parse the json schema as JSON and get the schema title
