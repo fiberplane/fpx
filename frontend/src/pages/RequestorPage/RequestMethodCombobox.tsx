@@ -53,16 +53,21 @@ const methods = [
 export function RequestMethodCombobox({
   method,
   setMethod,
-}: { method: string; setMethod: (method: string) => void }) {
+  // NOTE - For the first version of Requestor, we don't want people messing too much with
+  //        The "method" in the input, so we just disable ability to change the method via
+  //        the combobox.
+  allowUserToChange,
+}: {
+  method: string;
+  setMethod: (method: string) => void;
+  allowUserToChange?: boolean;
+}) {
   const [open, setOpen] = React.useState(false);
-  // const [value, setValue] = React.useState(method);
-  // HACK - antipattern
-  // useEffect(() => {
-  //   setValue(method);
-  // }, [method]);
+
   const matchedMethod = method
     ? methods.find((m) => m.value === method)?.label
     : "GET";
+
   return (
     <Popover open={false} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -70,14 +75,16 @@ export function RequestMethodCombobox({
           variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="text-left"
+          className={cn("text-left", {
+            "pointer-events-none": !allowUserToChange,
+          })}
           onClick={(e) => {
             e.stopPropagation();
           }}
         >
           <span
             className={cn(
-              "font-mono min-w-12",
+              "font-mono min-w-4",
               getHttpMethodTextColor(matchedMethod ?? ""),
             )}
           >

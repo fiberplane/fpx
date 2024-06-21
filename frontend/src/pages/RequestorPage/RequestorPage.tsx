@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -13,9 +12,9 @@ import { cn, isJson } from "@/utils";
 import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { KeyValueParameter } from "./KeyValueForm";
-import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorHistory } from "./RequestorHistory";
+import { RequestorInput } from "./RequestorInput";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
 import { RoutesPanel } from "./RoutesPanel";
 import { TestingPersonaMenu, useAi } from "./ai";
@@ -23,7 +22,6 @@ import { useRequestorFormData } from "./data";
 import {
   type ProbedRoute,
   Requestornator,
-  getUrl,
   useFetchRequestorRequests,
   useMakeRequest,
   useProbedRoutes,
@@ -112,7 +110,7 @@ export const RequestorPage = () => {
         handleRouteClick={handleRouteClick}
       />
 
-      <div className="flex flex-col flex-1 ml-4">
+      <div className="flex flex-col flex-1 md:ml-4">
         {aiEnabled && (
           <div className="mb-2 flex items-center justify-start space-x-0">
             <Button
@@ -146,7 +144,7 @@ export const RequestorPage = () => {
           </div>
         )}
 
-        <RequestInput
+        <RequestorInput
           method={method}
           setMethod={setMethod}
           path={path}
@@ -179,63 +177,6 @@ export const RequestorPage = () => {
 };
 
 export default RequestorPage;
-
-type RequestInputProps = {
-  method: string;
-  setMethod: (method: string) => void;
-  path?: string;
-  setPath: (path: string) => void;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  isRequestorRequesting?: boolean;
-};
-
-function RequestInput({
-  method,
-  setMethod,
-  path,
-  setPath,
-  onSubmit,
-  isRequestorRequesting,
-}: RequestInputProps) {
-  const [value, setValue] = useState("");
-  useEffect(() => {
-    const url = getUrl(path);
-    setValue(url);
-  }, [path]);
-
-  return (
-    <div className="">
-      <form
-        onSubmit={onSubmit}
-        className="flex items-center justify-between rounded bg-muted border"
-      >
-        <div className="flex flex-grow items-center space-x-0">
-          <RequestMethodCombobox method={method} setMethod={setMethod} />
-          <Input
-            type="text"
-            value={value}
-            onChange={(e) => {
-              setValue(e.target.value);
-              try {
-                const url = new URL(e.target.value);
-                setPath(url.pathname);
-              } catch {
-                // TODO - Error state
-                console.error("Invalid URL", e.target.value);
-              }
-            }}
-            className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
-          />
-        </div>
-        <div className="flex items-center space-x-2 p-2">
-          <Button size="sm" type="submit" disabled={isRequestorRequesting}>
-            Send
-          </Button>
-        </div>
-      </form>
-    </div>
-  );
-}
 
 function useRoutes() {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
