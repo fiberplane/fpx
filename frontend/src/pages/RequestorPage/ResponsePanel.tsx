@@ -3,26 +3,43 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { isJson, noop } from "@/utils";
+import { ClockIcon } from "@radix-ui/react-icons";
 import { MonacoJsonEditor } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
+import { RequestorHistory } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsList } from "./Tabs";
 import { Requestornator } from "./queries";
 
 // TODO - Create skeleton loading components for each tab content
 
+type Props = {
+  response?: Requestornator;
+  isLoading: boolean;
+  history: Array<Requestornator>;
+  loadHistoricalRequest: (traceId: string) => void;
+};
+
 export function ResponsePanel({
   response,
   isLoading,
-}: { response?: Requestornator; isLoading: boolean }) {
+  history,
+  loadHistoricalRequest,
+}: Props) {
   return (
     <Tabs defaultValue="body" className="h-full">
       <div className="flex items-center">
-        <CustomTabsList>
+        <CustomTabsList className="flex">
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
+          <div className="flex-grow flex justify-end">
+            <CustomTabTrigger value="history" className="mr-2">
+              <ClockIcon className="h-3.5 w-3.5 mr-2" />
+              History
+            </CustomTabTrigger>
+          </div>
         </CustomTabsList>
       </div>
       <TabsContent value="body" className="h-full">
@@ -58,6 +75,14 @@ export function ResponsePanel({
           ) : (
             <NoResponse />
           )}
+        </div>
+      </TabsContent>
+      <TabsContent value="history" className="h-full">
+        <div className="px-3 py-2 h-full flex flex-col">
+          <RequestorHistory
+            history={history}
+            loadHistoricalRequest={loadHistoricalRequest}
+          />
         </div>
       </TabsContent>
     </Tabs>

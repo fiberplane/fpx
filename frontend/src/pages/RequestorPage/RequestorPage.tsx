@@ -58,8 +58,12 @@ export const RequestorPage = () => {
     }
   }, [selectedRoute, setMethod, setPath]);
 
-  const { history, sessionHistory, recordRequestInSessionHistory } =
-    useRequestorHistory();
+  const {
+    history,
+    sessionHistory,
+    recordRequestInSessionHistory,
+    loadHistoricalRequest,
+  } = useRequestorHistory({ routes, setRoute: handleRouteClick });
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
@@ -78,7 +82,6 @@ export const RequestorPage = () => {
     path,
     method,
     queryParams,
-    pathParams, // ???
     requestHeaders,
     makeRequest,
     recordRequestInSessionHistory,
@@ -185,6 +188,8 @@ export const RequestorPage = () => {
             <ResponsePanel
               response={mostRecentRequestornatorForRoute}
               isLoading={isRequestorRequesting}
+              history={history}
+              loadHistoricalRequest={loadHistoricalRequest}
             />
           </div>
         </div>
@@ -223,7 +228,10 @@ function useRoutes() {
   };
 }
 
-function useRequestorHistory() {
+function useRequestorHistory({
+  routes,
+  setRoute,
+}: { routes: ProbedRoute[]; setRoute: (r: ProbedRoute) => void }) {
   const { data: allRequests } = useFetchRequestorRequests();
 
   // Keep a history of recent requests and responses
@@ -250,9 +258,22 @@ function useRequestorHistory() {
   const recordRequestInSessionHistory = (traceId: string) =>
     setSessionHistoryTraceIds((current) => [traceId, ...current]);
 
-  // HACK - We can load history entries this way! Just pass in a traceId for now, and then it shoooould appear in the UI
-  //        Later we should match based off of request id or something more clever
-  const loadHistoricalRequest = recordRequestInSessionHistory;
+  // This feels wrong... but it's a way to load a past request back into the UI
+  const loadHistoricalRequest = (traceId: string) => {
+    recordRequestInSessionHistory(traceId);
+    const match = history.find((r) => r.app_responses?.traceId === traceId);
+    if (match) {
+      const method = match.app_requests.requestMethod;
+      const routePattern = match.app_requests.requestRoute;
+      const matchedRoute = routes.find(
+        (r) => r.path === routePattern && r.method === method,
+      );
+      if (matchedRoute) {
+        setRoute(matchedRoute);
+        // TODO - Set all the headers and stuff
+      }
+    }
+  };
 
   // Keep a local history of requests that the user has made in the UI
   const sessionHistory = useMemo(() => {

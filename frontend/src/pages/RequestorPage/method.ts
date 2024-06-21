@@ -1,6 +1,6 @@
 export function getHttpMethodTextColor(method: string) {
   return {
-    GET: "text-green-500",
+    GET: "text-blue-500",
     POST: "text-yellow-500",
     PUT: "text-orange-500",
     PATCH: "text-orange-500",
