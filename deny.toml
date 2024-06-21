@@ -4,22 +4,13 @@ yanked = "deny"
 
 [licenses]
 allow = [
-    "Unicode-3.0",
     "Apache-2.0",
-    "MIT",
-    "ISC",
-    "Unicode-DFS-2016",
     "BSD-3-Clause",
+    "ISC",
+    "MIT",
     "MPL-2.0",
     "OpenSSL",
-
-    # "0BSD",
-    # "Apache-2.0 WITH LLVM-exception",
-    # "BSD-2-Clause",
-    # "CC0-1.0",
-    # "Unlicense",
-    # "WTFPL",
-    # "Zlib",
+    "Unicode-DFS-2016",
 ]
 confidence-threshold = 0.8
 exceptions = []
