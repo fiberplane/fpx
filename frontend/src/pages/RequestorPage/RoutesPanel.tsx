@@ -27,7 +27,6 @@ export function RoutesPanel({
   handleRouteClick,
 }: RoutesPanelProps) {
   const isMd = useIsMdScreen();
-
   return isMd ? (
     <ResizableRoutes
       routes={routes}
@@ -39,7 +38,8 @@ export function RoutesPanel({
       routes={routes}
       selectedRoute={selectedRoute}
       handleRouteClick={handleRouteClick}
-      collapsible
+      // FIXME
+      collapsible={!isMd}
     />
   );
 }
@@ -54,7 +54,7 @@ function ResizableRoutes({
 
   return (
     <Resizable
-      className="md:min-w-[200px]"
+      className={`md:min-w-[200px] md:w-[${width}px] md:mt-0`}
       width={width} // Initial width
       axis="x" // Restrict resizing to the horizontal axis
       onResize={handleResize}
@@ -94,7 +94,24 @@ function Routes({
   const filteredRoutes = useMemo(() => {
     const cleanFilter = filterValue.trim().toLowerCase();
     if (cleanFilter.length < 3) {
-      return routes;
+      return [
+        ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+        // ...routes,
+
+      ];
     }
     return routes?.filter((r) => r.path.includes(filterValue));
   }, [filterValue, routes]);
@@ -108,7 +125,7 @@ function Routes({
       <div
         style={styleWidth}
         className={cn(
-          "flex flex-col md:h-full px-4 overflow-x-hidden border rounded-md",
+          "md:h-full px-4 overflow-hidden border rounded-md",
         )}
       >
         <CollapsibleTrigger asChild>
@@ -118,7 +135,7 @@ function Routes({
           </h2>
         </CollapsibleTrigger>
         {/* TODO - Make internally scrollable */}
-        <CollapsibleContent className="max-h-[400px] md:max-h-none md:mt-2 pb-4">
+        <CollapsibleContent className="md:mt-2 pb-4">
           <div>
             <div className="flex items-center space-x-2">
               <Input
@@ -142,7 +159,7 @@ function Routes({
               Detected in app
             </div>
             {showDetectedRoutes && (
-              <div className="space-y-0">
+              <div className="space-y-0 overflow-y-scroll">
                 {filteredRoutes?.map?.((route, index) => (
                   <div
                     key={index}

@@ -13,6 +13,10 @@ export function SettingsPage() {
       ) : (
         <SettingsForm settings={data?.content} />
       )}
+      <SettingsForm settings={{}} />
+      <SettingsForm settings={{}} />
+      <SettingsForm settings={{}} />
+
     </div>
   );
 }

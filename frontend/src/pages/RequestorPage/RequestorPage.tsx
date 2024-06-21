@@ -103,18 +103,22 @@ export const RequestorPage = () => {
   return (
     <div
       className={cn(
+        "py-2",
         "flex flex-col space-y-4",
-        "md:flex-row md:space-y-0",
-        "h-full pt-4",
+        "md:grid md:grid-cols-[auto_1fr] md:space-y-0 md:py-2 md:gap-0",
+        "h-full",
       )}
     >
-      <RoutesPanel
-        routes={routes}
-        selectedRoute={selectedRoute}
-        handleRouteClick={setRoute}
-      />
+      <div className={cn("max-h-full")}>
+        <RoutesPanel
+          routes={routes}
+          selectedRoute={selectedRoute}
+          handleRouteClick={setRoute}
+        />
 
-      <div className="flex flex-col flex-1 md:ml-4">
+      </div>
+
+      <div className="flex flex-col flex-1 md:ml-4 md:col-auto">
         {aiEnabled && (
           <div className="mb-2 flex items-center justify-start space-x-0">
             <Button
