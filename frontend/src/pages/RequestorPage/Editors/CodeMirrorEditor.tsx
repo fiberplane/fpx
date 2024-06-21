@@ -55,13 +55,15 @@ type CodeMirrorTypescriptEditorProps = CodeMirrorEditorProps & {
 export function CodeMirrorTypescriptEditor(
   props: CodeMirrorTypescriptEditorProps,
 ) {
-  const { height, value, onChange, jsx, minHeight, maxHeight } = props;
+  const { height, value, onChange, jsx, minHeight, maxHeight, readOnly } =
+    props;
   return (
     <CodeMirror
       value={value}
       height={height}
       minHeight={minHeight}
       maxHeight={maxHeight}
+      readOnly={readOnly}
       extensions={[javascript({ jsx, typescript: true })]}
       onChange={onChange}
       theme={[duotoneDark, customTheme]}

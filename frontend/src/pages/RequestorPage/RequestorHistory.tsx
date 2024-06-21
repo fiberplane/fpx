@@ -117,7 +117,7 @@ export function HistoryEntry({
         </div>
 
         {isOpen && (
-          <div className="flex flex-col space-y-1">
+          <div className="flex flex-col space-y-2 pl-6 py-1">
             <div className="border-b py-1">
               <h3>Request</h3>
               {requestBody ? (

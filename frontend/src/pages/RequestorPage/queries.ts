@@ -17,6 +17,11 @@ export type Requestornator = {
     requestUrl: string;
     requestMethod: string;
     requestRoute: string;
+    requestHeaders?: Record<string, string> | null;
+    requestQueryParams?: Record<string, string> | null;
+    requestPathParams?: Record<string, string> | null;
+    // FIXME - the body could be anything json serializable...
+    requestBody?: object | string | null;
     updatedAt: string;
   };
   // NOTE - can be undefined if request failed, at least that happened to me locally
@@ -33,7 +38,11 @@ export type Requestornator = {
 const REQUESTOR_REQUESTS_KEY = "requestorRequests";
 
 export function getUrl(path?: string) {
-  return `http://localhost:8787${path ?? ""}`;
+  const DEFAULT_BASE_URL = "http://localhost:8787";
+  if (path?.startsWith(DEFAULT_BASE_URL)) {
+    return path;
+  }
+  return `${DEFAULT_BASE_URL}${path ?? ""}`;
 }
 
 function getProbedRoutes(): Promise<ProbedRoute[]> {
@@ -72,6 +81,7 @@ export function makeRequest({
   method,
   body,
   headers,
+  pathParams,
   queryParams,
   route,
 }: {
@@ -79,6 +89,7 @@ export function makeRequest({
   method: string;
   body?: string;
   headers: KeyValueParameter[];
+  pathParams?: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   route?: string;
 }) {
@@ -92,6 +103,7 @@ export function makeRequest({
       requestMethod: method,
       requestBody: method === "GET" ? undefined : body,
       requestHeaders: reduceKeyValueParameters(headers),
+      requestPathParams: reduceKeyValueParameters(pathParams ?? []),
       requestQueryParams: reduceKeyValueParameters(queryParams),
       requestRoute: route,
     }),

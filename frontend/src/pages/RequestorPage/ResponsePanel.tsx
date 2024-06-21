@@ -79,10 +79,14 @@ export function ResponsePanel({
       </TabsContent>
       <TabsContent value="history" className="h-full">
         <div className="px-3 py-2 h-full flex flex-col">
-          <RequestorHistory
-            history={history}
-            loadHistoricalRequest={loadHistoricalRequest}
-          />
+          {history?.length > 0 ? (
+            <RequestorHistory
+              history={history}
+              loadHistoricalRequest={loadHistoricalRequest}
+            />
+          ) : (
+            <NoHistory />
+          )}
         </div>
       </TabsContent>
     </Tabs>
@@ -130,6 +134,21 @@ function ResponseBody({ response }: { response?: Requestornator }) {
       <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>
+    </div>
+  );
+}
+
+function NoHistory() {
+  return (
+    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32">
+      <div className="flex flex-col items-center justify-center p-4">
+        <div className="mt-4 text-md text-white text-center">
+          You have no requests in your history
+        </div>
+        <div className="mt-2 text-ms text-gray-400 text-center font-light">
+          Start making some requests!
+        </div>
+      </div>
     </div>
   );
 }

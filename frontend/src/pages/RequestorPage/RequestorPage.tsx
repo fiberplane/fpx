@@ -11,7 +11,7 @@ import { MizuTrace, useMizuTraces } from "@/queries";
 import { cn, isJson } from "@/utils";
 import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { KeyValueParameter } from "./KeyValueForm";
+import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorHistory } from "./RequestorHistory";
 import { RequestorInput } from "./RequestorInput";
@@ -30,7 +30,7 @@ import {
 export const RequestorPage = () => {
   const { data: traces } = useMizuTraces();
 
-  const { routes, selectedRoute, handleRouteClick } = useRoutes();
+  const { routes, selectedRoute, setSelectedRoute: setRoute } = useRoutes();
 
   const {
     path,
@@ -63,7 +63,15 @@ export const RequestorPage = () => {
     sessionHistory,
     recordRequestInSessionHistory,
     loadHistoricalRequest,
-  } = useRequestorHistory({ routes, setRoute: handleRouteClick });
+  } = useRequestorHistory({
+    routes,
+    setRoute,
+    setPath,
+    setPathParams,
+    setBody,
+    setQueryParams,
+    setRequestHeaders,
+  });
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
@@ -81,6 +89,7 @@ export const RequestorPage = () => {
     body,
     path,
     method,
+    pathParams,
     queryParams,
     requestHeaders,
     makeRequest,
@@ -111,7 +120,7 @@ export const RequestorPage = () => {
       <RoutesPanel
         routes={routes}
         selectedRoute={selectedRoute}
-        handleRouteClick={handleRouteClick}
+        handleRouteClick={setRoute}
       />
 
       <div className="flex flex-col flex-1 md:ml-4">
@@ -138,7 +147,10 @@ export const RequestorPage = () => {
                     View the history of recent requests.
                   </SheetDescription>
                 </SheetHeader>
-                <RequestorHistory history={history} />
+                <RequestorHistory
+                  history={history}
+                  loadHistoricalRequest={loadHistoricalRequest}
+                />
               </SheetContent>
             </Sheet>
             <TestingPersonaMenu
@@ -184,7 +196,7 @@ export const RequestorPage = () => {
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
           />
-          <div className="flex-grow flex flex-col items-stretch">
+          <div className="flex flex-col items-stretch flex-auto">
             <ResponsePanel
               response={mostRecentRequestornatorForRoute}
               isLoading={isRequestorRequesting}
@@ -212,26 +224,34 @@ function useRoutes() {
     routes,
   });
 
-  const handleRouteClick = useCallback(
-    (route: ProbedRoute) => {
-      setSelectedRoute(route);
-    },
-    [setSelectedRoute],
-  );
-
   return {
     isError,
     isLoading,
     routes,
     selectedRoute,
-    handleRouteClick,
+    setSelectedRoute,
   };
 }
+
+type RequestorHistoryHookArgs = {
+  routes: ProbedRoute[];
+  setRoute: (r: ProbedRoute) => void;
+  setPath: (path: string) => void;
+  setBody: (body?: string) => void;
+  setPathParams: (headers: KeyValueParameter[]) => void;
+  setQueryParams: (params: KeyValueParameter[]) => void;
+  setRequestHeaders: (headers: KeyValueParameter[]) => void;
+};
 
 function useRequestorHistory({
   routes,
   setRoute,
-}: { routes: ProbedRoute[]; setRoute: (r: ProbedRoute) => void }) {
+  setPath,
+  setPathParams,
+  setRequestHeaders,
+  setBody,
+  setQueryParams,
+}: RequestorHistoryHookArgs) {
   const { data: allRequests } = useFetchRequestorRequests();
 
   // Keep a history of recent requests and responses
@@ -270,7 +290,41 @@ function useRequestorHistory({
       );
       if (matchedRoute) {
         setRoute(matchedRoute);
-        // TODO - Set all the headers and stuff
+        const path = match.app_requests.requestUrl;
+
+        setPath(path);
+
+        const headers = match.app_requests.requestHeaders ?? {};
+        setRequestHeaders(
+          createKeyValueParameters(
+            Object.entries(headers).map(([key, value]) => ({ key, value })),
+          ),
+        );
+
+        const queryParams = match.app_requests.requestQueryParams ?? {};
+        setQueryParams(
+          createKeyValueParameters(
+            Object.entries(queryParams).map(([key, value]) => ({
+              key,
+              value,
+            })),
+          ),
+        );
+
+        const pathParams = match.app_requests.requestPathParams ?? {};
+        setPathParams(
+          createKeyValueParameters(
+            Object.entries(pathParams).map(([key, value]) => ({
+              key,
+              value,
+            })),
+          ),
+        );
+
+        const body = match.app_requests.requestBody;
+        const safeBody =
+          body && typeof body !== "string" ? JSON.stringify(body) : body;
+        setBody(safeBody ?? undefined);
       }
     }
   };
@@ -302,6 +356,7 @@ function useRequestorSubmitHandler({
   body,
   path,
   method,
+  pathParams,
   queryParams,
   requestHeaders,
   makeRequest,
@@ -311,6 +366,7 @@ function useRequestorSubmitHandler({
   body: string | undefined;
   path: string;
   method: string;
+  pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
   makeRequest: ReturnType<typeof useMakeRequest>["mutate"];
@@ -342,16 +398,12 @@ function useRequestorSubmitHandler({
           method,
           body: cleverBody,
           headers: requestHeaders,
+          pathParams,
           queryParams,
           route: selectedRoute.path,
         },
         {
           onSuccess(data) {
-            // This is the response data i presume?
-            console.log(
-              "Made request... this is the response data I hope?",
-              data,
-            );
             const traceId = data?.traceId;
             if (traceId && typeof traceId === "string") {
               recordRequestInSessionHistory(traceId);

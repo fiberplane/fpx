@@ -38,6 +38,7 @@ app.post(
       requestUrl,
       requestHeaders,
       requestQueryParams,
+      requestPathParams,
       requestBody,
       requestRoute,
     } = ctx.req.valid("json");
@@ -59,6 +60,7 @@ app.post(
       requestMethod,
       requestUrl,
       requestHeaders,
+      requestPathParams,
       requestQueryParams,
       requestBody,
       requestRoute,

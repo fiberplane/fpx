@@ -75,6 +75,7 @@ export const appRequests = sqliteTable("app_requests", {
     Record<string, string>
   >(),
   requestQueryParams: text("request_query_params", { mode: "json" }),
+  requestPathParams: text("request_path_params", { mode: "json" }),
   requestBody: text("request_body", { mode: "json" }),
   // The hono route corresponding to this request
   requestRoute: text("request_route"),
