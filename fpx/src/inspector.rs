@@ -6,9 +6,9 @@
 //! Note that this is a work in progress implementation. Currently some features
 //! do not work as expected or are implemented at all.
 
-use crate::api::types::RequestAdded;
 use crate::data::Store;
 use crate::events::ServerEvents;
+use crate::models::RequestAdded;
 use anyhow::{Context, Result};
 use axum::extract::{Path, Request, State};
 use axum::response::IntoResponse;

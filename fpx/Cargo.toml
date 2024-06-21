@@ -7,7 +7,7 @@ license = { workspace = true }
 repository = { workspace = true }
 
 [dependencies]
-anyhow = { version = "1.0" }
+anyhow = { workspace = true }
 async-trait = { version = "0.1" }
 axum = { version = "0.7", features = [
     "http1",
@@ -16,8 +16,8 @@ axum = { version = "0.7", features = [
     "tokio",
     "query",
 ] }
+clap = { workspace = true, features = ["derive", "env"] }
 bytes = { version = "1.6" }
-clap = { version = "4.0", features = ["derive", "env"] }
 futures-util = { version = "0.3" }
 http = { version = "1.1" }
 http-body-util = { version = "0.1" }
@@ -38,8 +38,8 @@ reqwest = { version = "0.12", default-features = false, features = [
     "rustls-tls",
     "json",
 ] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0" }
+serde = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { version = "1.0" }
 tokio = { version = "1.37", features = ["rt-multi-thread", "signal"] }
 tokio-tungstenite = { version = "0.21", features = [
@@ -50,3 +50,4 @@ tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.24" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = { version = "2.5" }
+schemars = { workspace = true }

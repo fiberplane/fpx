@@ -1,6 +1,5 @@
-use super::types::{ClientMessage, ServerMessage, FPX_WEBSOCKET_ID_HEADER};
-use crate::api::types::ServerError;
 use crate::events::ServerEvents;
+use crate::models::{ClientMessage, ServerError, ServerMessage, FPX_WEBSOCKET_ID_HEADER};
 use axum::extract::ws::{Message, WebSocket};
 use axum::extract::{State, WebSocketUpgrade};
 use axum::response::Response;

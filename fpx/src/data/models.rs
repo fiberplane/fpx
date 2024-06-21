@@ -1,8 +1,9 @@
-use crate::api::types;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer};
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
+
+use crate::models;
 
 #[derive(Debug)]
 pub(crate) struct Json<T: DeserializeOwned>(T);
@@ -47,15 +48,15 @@ impl<'de, T: DeserializeOwned> Deserialize<'de> for Json<T> {
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct Request {
-    pub(crate) id: i64,
+    pub(crate) id: u32,
     pub(crate) method: String,
     pub(crate) url: String,
     pub(crate) body: String,
     pub(crate) headers: Json<BTreeMap<String, String>>,
 }
 
-impl From<Request> for types::Request {
+impl From<Request> for models::Request {
     fn from(req: Request) -> Self {
-        types::Request::new(req.id, req.method, req.url, req.body, req.headers.0)
+        models::Request::new(req.id, req.method, req.url, req.body, req.headers.0)
     }
 }

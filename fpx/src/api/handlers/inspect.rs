@@ -1,5 +1,6 @@
-use crate::api::{types, ApiState};
+use crate::api::ApiState;
 use crate::data::Store;
+use crate::models;
 use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;
@@ -45,7 +46,7 @@ pub async fn inspect_request_handler(
             )
         })
         .collect();
-    let request_id: i64 = Store::request_create(
+    let request_id: u32 = Store::request_create(
         &tx,
         parts.method.as_ref(),
         &parts.uri.to_string(),
@@ -57,7 +58,7 @@ pub async fn inspect_request_handler(
 
     tx.commit().await.unwrap(); // TODO
 
-    events.broadcast(types::RequestAdded::new(request_id, None).into());
+    events.broadcast(models::RequestAdded::new(request_id, None).into());
 
     // TODO: This should return the same payload as the GET /requests/{id} endpoint
     base_url

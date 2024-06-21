@@ -9,7 +9,6 @@ use url::Url;
 pub mod client;
 mod errors;
 pub mod handlers;
-pub mod types;
 mod ws;
 
 #[derive(Clone)]

@@ -1,8 +1,9 @@
 //! API client for the FPX API.
 
+use crate::models::Request;
+
 use super::errors::ApiClientError;
 use super::handlers::RequestGetError;
-use super::types::Request;
 use anyhow::Result;
 use http::Method;
 use tracing::trace;

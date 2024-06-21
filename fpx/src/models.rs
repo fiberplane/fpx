@@ -1,11 +1,13 @@
-use rand::Rng;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use rand::Rng;
 use std::collections::BTreeMap;
 
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
 /// Messages that are send from the server to the client.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ServerMessage {
     /// If this is a response to a client message, then this field contains the
@@ -48,7 +50,7 @@ impl ServerMessage {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ServerMessageDetails {
@@ -72,7 +74,7 @@ impl From<ServerMessageDetails> for ServerMessage {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ServerError {
@@ -81,11 +83,11 @@ pub enum ServerError {
 }
 
 /// Messages that are send from the client to the server.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientMessage {
     /// A unique identifier for this message. This will be used by certain
-    /// server message to refer back to this message, such as Ack or Error.
+    /// server messages to refer back to this message, such as Ack or Error.
     pub message_id: String,
 
     #[serde(flatten)]
@@ -106,18 +108,18 @@ impl ClientMessage {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ClientMessageDetails {
     Debug,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RequestAdded {
     /// The id of the request that has been captured.
-    request_id: i64,
+    request_id: u32,
 
     /// The id of the inspector that was associated with the request. This is
     /// null in the case where the request was send to `/api/inspect`.
@@ -126,7 +128,7 @@ pub struct RequestAdded {
 }
 
 impl RequestAdded {
-    pub fn new(request_id: i64, inspector_id: Option<i64>) -> Self {
+    pub fn new(request_id: u32, inspector_id: Option<i64>) -> Self {
         Self {
             request_id,
             inspector_id,
@@ -141,10 +143,10 @@ impl From<RequestAdded> for ServerMessage {
 }
 
 /// A request that has been captured by fpx.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
-    pub id: i64,
+    pub id: u32,
     pub method: String,
     pub url: String,
     pub body: Option<String>,
@@ -153,7 +155,7 @@ pub struct Request {
 
 impl Request {
     pub fn new(
-        id: i64,
+        id: u32,
         method: String,
         url: String,
         body: String,

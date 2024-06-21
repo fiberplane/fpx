@@ -1,4 +1,3 @@
-use crate::api::types::Request;
 use anyhow::{Context, Result};
 use libsql::{de, params, Builder, Connection, Rows, Transaction};
 use serde::de::DeserializeOwned;
@@ -6,6 +5,8 @@ use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+
+use crate::models::Request;
 
 pub mod migrations;
 mod models;
@@ -78,7 +79,7 @@ impl Store {
         url: &str,
         body: &str,
         headers: BTreeMap<String, String>,
-    ) -> Result<i64> {
+    ) -> Result<u32> {
         let headers = serde_json::to_string(&headers)?;
 
         let request: models::Request = tx
