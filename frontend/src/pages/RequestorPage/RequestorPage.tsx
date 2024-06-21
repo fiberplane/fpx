@@ -61,7 +61,9 @@ export const RequestorPage = () => {
   const { history, sessionHistory, recordRequestInSessionHistory } =
     useRequestorHistory();
 
-  const requestornator = useMostRecentRequestornator(
+  console.log("hi session history", sessionHistory);
+
+  const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
     sessionHistory,
     // FIXME
@@ -157,8 +159,8 @@ export const RequestorPage = () => {
           <div className="flex-grow flex flex-col items-stretch">
             {isRequestorRequesting ? (
               <div>Loading...</div>
-            ) : requestornator ? (
-              <ResponseDetails response={requestornator} />
+            ) : mostRecentRequestornatorForRoute ? (
+              <ResponseDetails response={mostRecentRequestornatorForRoute} />
             ) : (
               <ResponseInstructions />
             )}
@@ -272,7 +274,7 @@ function useRequestorHistory() {
   // Array of all requests made this session
   //
   // This is purposefully in memory so that we clear the response panel
-  // when the user refreshes the page
+  // when the user refreshes the page.
   //
   const [sessionHistoryTraceIds, setSessionHistoryTraceIds] = useState<
     Array<string>
@@ -421,8 +423,7 @@ function useMostRecentRequestornator(
   return useMemo<Requestornator | undefined>(() => {
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestUrl === getUrl(requestInputs?.path) &&
-        r?.app_requests?.requestMethod === requestInputs?.method,
+        r?.app_requests?.requestRoute === requestInputs.route,
     );
 
     // HACK - When the route parameters are modified in the url input, we no longer can match the request to a response

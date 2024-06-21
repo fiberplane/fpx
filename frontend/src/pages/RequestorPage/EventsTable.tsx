@@ -21,10 +21,8 @@ export function EventsTable({ logs }: { logs?: MizuLog[] }) {
   }, [logs]);
 
   if (!filteredLogs) {
-    return <div className="p-4">No logs</div>;
+    return <div className="mb-4">No logs</div>;
   }
-
-  console.log("filtered logs for events table", filteredLogs);
 
   if (!filteredLogs.length) {
     return (

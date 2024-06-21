@@ -16,6 +16,7 @@ export type Requestornator = {
     id: number;
     requestUrl: string;
     requestMethod: string;
+    requestRoute: string;
     updatedAt: string;
   };
   // NOTE - can be undefined if request failed, at least that happened to me locally
