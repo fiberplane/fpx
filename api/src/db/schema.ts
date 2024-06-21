@@ -22,9 +22,11 @@ export const appRoutes = sqliteTable(
   {
     path: text("path", { mode: "text" }),
     method: text("method", { mode: "text" }),
+    // The text of the function serving the request
     handler: text("handler", { mode: "text" }),
+    // In practice, handler_type is either "route" or "middleware" - I didn't feel like defining an enum
     handlerType: text("handler_type", { mode: "text" }),
-    // A flag that indicates if this route is currently registered or the result of an old scan
+    // A flag that indicates if this route is currently registered or the result of an old probe
     currentlyRegistered: integer("currentlyRegistered", {
       mode: "boolean",
     }).default(false),
@@ -221,3 +223,11 @@ export const mizuLogSchema = createSelectSchema(mizuLogs);
 export type MizuLog = typeof mizuLogs.$inferSelect; // return type when queried
 // When you create a record
 export type NewMizuLog = typeof mizuLogs.$inferInsert; // insert type
+
+
+export const settings = sqliteTable("settings", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  content: text("content", { mode: "json" }),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+});

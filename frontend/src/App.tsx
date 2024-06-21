@@ -11,6 +11,7 @@ import { IssuesPage } from "./pages/IssuesPage/IssuesPage";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import { RequestorPage } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
+import { SettingsPage } from "./pages/SettingsPage";
 
 export function App() {
   return (
@@ -23,6 +24,7 @@ export function App() {
             <Route path="/requests/:traceId" element={<RequestDetailsPage />} />
             <Route path="/requestor" element={<RequestorPage />} />
             <Route path="/issues" element={<IssuesPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </Layout>
       </Router>

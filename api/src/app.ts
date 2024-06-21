@@ -14,6 +14,7 @@ import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
 import openai from "./routes/openai.js";
 import source from "./routes/source.js";
+import settings from "./routes/settings.js";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -59,6 +60,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   app.route("/", dependencies);
   app.route("/", issues);
   app.route("/", appRoutes);
+  app.route("/", settings);
 
   // HACK - Route to inspect any db errors during this session
   app.get("db-errors", async (c) => {
