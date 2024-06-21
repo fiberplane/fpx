@@ -1,6 +1,6 @@
 use crate::api::ApiState;
 use crate::data::Store;
-use crate::schemas;
+use crate::models;
 use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;
@@ -58,7 +58,7 @@ pub async fn inspect_request_handler(
 
     tx.commit().await.unwrap(); // TODO
 
-    events.broadcast(schemas::RequestAdded::new(request_id, None).into());
+    events.broadcast(models::RequestAdded::new(request_id, None).into());
 
     // TODO: This should return the same payload as the GET /requests/{id} endpoint
     base_url

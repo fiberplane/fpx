@@ -6,7 +6,7 @@ use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::schemas::Request;
+use crate::models::Request;
 
 pub mod migrations;
 mod models;

@@ -1,7 +1,7 @@
 use std::{fs::File, io::Write, path::Path};
 
 use anyhow::Result;
-use fpx::schemas::{ClientMessage, Request, RequestAdded, ServerMessage};
+use fpx::models::{ClientMessage, Request, RequestAdded, ServerMessage};
 use schemars::{schema::RootSchema, schema_for};
 use serde_json::Value;
 

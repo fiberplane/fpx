@@ -16,7 +16,7 @@ mod commands;
 pub mod data;
 mod events;
 mod inspector;
-pub mod schemas;
+pub mod models;
 
 #[tokio::main]
 async fn main() -> Result<()> {

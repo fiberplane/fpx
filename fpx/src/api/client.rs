@@ -1,6 +1,6 @@
 //! API client for the FPX API.
 
-use crate::schemas::Request;
+use crate::models::Request;
 
 use super::errors::ApiClientError;
 use super::handlers::RequestGetError;

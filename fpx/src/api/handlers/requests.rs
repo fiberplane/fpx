@@ -1,6 +1,6 @@
 use crate::api::errors::{ApiServerError, CommonError};
 use crate::data::{DbError, Store};
-use crate::schemas::Request;
+use crate::models::Request;
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::Json;

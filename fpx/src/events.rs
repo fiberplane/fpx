@@ -4,7 +4,7 @@
 //! the [`broadcast::Receiver`] struct. So we might want to reconsider this
 //! module.
 
-use crate::schemas::ServerMessage;
+use crate::models::ServerMessage;
 use tokio::sync::broadcast;
 use tracing::trace;
 

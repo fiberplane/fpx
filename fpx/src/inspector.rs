@@ -8,7 +8,7 @@
 
 use crate::data::Store;
 use crate::events::ServerEvents;
-use crate::schemas::RequestAdded;
+use crate::models::RequestAdded;
 use anyhow::{Context, Result};
 use axum::extract::{Path, Request, State};
 use axum::response::IntoResponse;

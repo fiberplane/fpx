@@ -3,7 +3,7 @@ use serde::{Deserialize, Deserializer};
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 
-use crate::schemas;
+use crate::models;
 
 #[derive(Debug)]
 pub(crate) struct Json<T: DeserializeOwned>(T);
@@ -55,8 +55,8 @@ pub(crate) struct Request {
     pub(crate) headers: Json<BTreeMap<String, String>>,
 }
 
-impl From<Request> for schemas::Request {
+impl From<Request> for models::Request {
     fn from(req: Request) -> Self {
-        schemas::Request::new(req.id, req.method, req.url, req.body, req.headers.0)
+        models::Request::new(req.id, req.method, req.url, req.body, req.headers.0)
     }
 }
