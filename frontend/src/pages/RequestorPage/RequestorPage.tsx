@@ -175,6 +175,8 @@ export const RequestorPage = () => {
             pathParams={pathParams}
             queryParams={queryParams}
             requestHeaders={requestHeaders}
+            setPath={setPath}
+            currentRoute={selectedRoute?.path}
             setPathParams={setPathParams}
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}

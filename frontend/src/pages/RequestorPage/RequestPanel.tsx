@@ -9,10 +9,12 @@ import { CustomTabTrigger, CustomTabsList } from "./Tabs";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 
 type RequestPanelProps = {
+  currentRoute?: string;
   body?: string;
   setBody: (body?: string) => void;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
+  setPath: (path: string) => void;
   setPathParams: (params: KeyValueParameter[]) => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
@@ -54,11 +56,13 @@ function ResizableRequestMeta(props: RequestPanelProps) {
 
 function RequestMeta(props: RequestPanelProps) {
   const {
+    currentRoute,
     body,
     setBody,
     pathParams,
     queryParams,
     requestHeaders,
+    setPath,
     setPathParams,
     setQueryParams,
     setRequestHeaders,
@@ -103,15 +107,33 @@ function RequestMeta(props: RequestPanelProps) {
                 setQueryParams(params);
               }}
             />
-            <div className="uppercase text-gray-400 text-sm mt-4 mb-1">
-              Path Parameters
-            </div>
-            <PathParamForm
-              keyValueParameters={pathParams}
-              onChange={(params) => {
-                setPathParams(params);
-              }}
-            />
+            {pathParams.length > 0 ? (
+              <>
+                <div className="uppercase text-gray-400 text-sm mt-4 mb-1">
+                  Path Parameters
+                </div>
+                <PathParamForm
+                  keyValueParameters={pathParams}
+                  onChange={(params) => {
+                    setPathParams(params);
+                    if (!currentRoute) {
+                      return;
+                    }
+                    let nextPath = currentRoute;
+                    for (const param of params) {
+                      if (!param.enabled) {
+                        continue;
+                      }
+                      nextPath = nextPath.replace(
+                        param.key,
+                        param.value ?? param.key,
+                      );
+                    }
+                    setPath(nextPath);
+                  }}
+                />
+              </>
+            ) : null}
           </TabsContent>
           <TabsContent value="headers">
             <KeyValueForm

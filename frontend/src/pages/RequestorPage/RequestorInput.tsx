@@ -41,6 +41,7 @@ export function RequestorInput({
           allowUserToChange={false}
         />
         <Input
+          readOnly // FIXME - We want to make this dynamic but it's a little weird with path params, etc
           type="text"
           value={value}
           onChange={(e) => {
