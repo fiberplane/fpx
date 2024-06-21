@@ -15,6 +15,13 @@
       "when": 1718951718568,
       "tag": "0001_jazzy_quasimodo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1718972676943,
+      "tag": "0002_parallel_imperial_guard",
+      "breakpoints": true
     }
   ]
 }

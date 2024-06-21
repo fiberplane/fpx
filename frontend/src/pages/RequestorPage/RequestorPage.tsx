@@ -12,6 +12,7 @@ import { MizuTrace, useMizuTraces } from "@/queries";
 import { isJson } from "@/utils";
 import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { KeyValueParameter } from "./KeyValueForm";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorHistory } from "./RequestorHistory";
@@ -27,7 +28,6 @@ import {
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
-import { KeyValueParameter } from "./KeyValueForm";
 
 export const RequestorPage = () => {
   const { data: traces } = useMizuTraces();
@@ -228,7 +228,6 @@ function RequestInput({
   );
 }
 
-
 function useRoutes() {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
@@ -329,54 +328,68 @@ function useRequestorSubmitHandler({
   makeRequest: ReturnType<typeof useMakeRequest>["mutate"];
   recordRequestInSessionHistory: (traceId: string) => void;
 }) {
-  return useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  return useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
 
-    // FIXME - This blocks user from making requests when no routes have been detected
-    if (!selectedRoute) {
-      return;
-    }
+      // FIXME - This blocks user from making requests when no routes have been detected
+      if (!selectedRoute) {
+        return;
+      }
 
-    // FIXME
-    let cleverBody =
-      typeof body === "string" && isJson(body) ? JSON.parse(body) : body ?? "";
+      // FIXME
+      let cleverBody =
+        typeof body === "string" && isJson(body)
+          ? JSON.parse(body)
+          : body ?? "";
 
-    // HACK - Mizu API expects an object...
-    if (cleverBody === "") {
-      cleverBody = {};
-    }
+      // HACK - Mizu API expects an object...
+      if (cleverBody === "") {
+        cleverBody = {};
+      }
 
-    makeRequest(
-      {
-        path,
-        method,
-        body: cleverBody,
-        headers: requestHeaders,
-        queryParams,
-      },
-      {
-        onSuccess(data) {
-          // This is the response data i presume?
-          console.log(
-            "Made request... this is the response data I hope?",
-            data,
-          );
-          const traceId = data?.traceId;
-          if (traceId && typeof traceId === "string") {
-            recordRequestInSessionHistory(traceId);
-          } else {
-            debugger;
-          }
+      makeRequest(
+        {
+          path,
+          method,
+          body: cleverBody,
+          headers: requestHeaders,
+          queryParams,
+          route: selectedRoute.path,
         },
-        onError(error) {
-          // TODO - Show Toast
-          console.error("Submit error!", error)
+        {
+          onSuccess(data) {
+            // This is the response data i presume?
+            console.log(
+              "Made request... this is the response data I hope?",
+              data,
+            );
+            const traceId = data?.traceId;
+            if (traceId && typeof traceId === "string") {
+              recordRequestInSessionHistory(traceId);
+            } else {
+              debugger;
+            }
+          },
+          onError(error) {
+            // TODO - Show Toast
+            console.error("Submit error!", error);
+          },
         },
-      },
-    );
-  }, [body, makeRequest, method, path, queryParams, recordRequestInSessionHistory, requestHeaders, selectedRoute]);
+      );
+    },
+    [
+      body,
+      makeRequest,
+      method,
+      path,
+      queryParams,
+      recordRequestInSessionHistory,
+      requestHeaders,
+      selectedRoute,
+    ],
+  );
 }
-
 
 function useAutoselectRoute({
   isLoading,

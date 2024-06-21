@@ -72,12 +72,14 @@ export function makeRequest({
   body,
   headers,
   queryParams,
+  route,
 }: {
   path: string;
   method: string;
-  body: string;
+  body?: string;
   headers: KeyValueParameter[];
   queryParams: KeyValueParameter[];
+  route?: string;
 }) {
   return fetch("/v0/send-request", {
     method: "POST",
@@ -90,6 +92,7 @@ export function makeRequest({
       requestBody: method === "GET" ? undefined : body,
       requestHeaders: reduceKeyValueParameters(headers),
       requestQueryParams: reduceKeyValueParameters(queryParams),
+      requestRoute: route,
     }),
   }).then((r) => r.json());
 }

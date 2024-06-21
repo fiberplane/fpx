@@ -39,6 +39,7 @@ app.post(
       requestHeaders,
       requestQueryParams,
       requestBody,
+      requestRoute,
     } = ctx.req.valid("json");
 
     const db = ctx.get("db");
@@ -60,6 +61,7 @@ app.post(
       requestHeaders,
       requestQueryParams,
       requestBody,
+      requestRoute,
     };
 
     const insertResult = await db

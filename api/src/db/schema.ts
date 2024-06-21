@@ -76,6 +76,8 @@ export const appRequests = sqliteTable("app_requests", {
   >(),
   requestQueryParams: text("request_query_params", { mode: "json" }),
   requestBody: text("request_body", { mode: "json" }),
+  // The hono route corresponding to this request
+  requestRoute: text("request_route"),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   // responseId: integer("response_id").references(() => appResponses.id),

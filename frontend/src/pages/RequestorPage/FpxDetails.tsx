@@ -22,8 +22,8 @@ import ReactMarkdown from "react-markdown";
 import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
 import { EventsTable } from "./EventsTable";
 import { HeaderTable } from "./HeaderTable";
+import { useSummarizeError } from "./ai";
 import { Requestornator, useTrace } from "./queries";
-import { useSummarizeError } from "./ai"
 
 type FpxDetailsProps = {
   response?: Requestornator;
