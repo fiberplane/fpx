@@ -11,7 +11,7 @@ import {
 import { MizuTrace, useMizuTraces } from "@/queries";
 import { isJson } from "@/utils";
 import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorHistory } from "./RequestorHistory";
@@ -28,11 +28,8 @@ import {
   useProbedRoutes,
 } from "./queries";
 
-export const RequestorPage = () => {
-  const { data: routesAndMiddleware, isLoading } = useProbedRoutes();
-  const { data: traces } = useMizuTraces();
-
-  // NOTE - Response includes middleware, so filter for only routes
+function useRoutes() {
+  const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     return routesAndMiddleware?.filter((r) => r.handlerType === "route") ?? [];
   }, [routesAndMiddleware]);
@@ -43,9 +40,79 @@ export const RequestorPage = () => {
     routes,
   });
 
-  const handleRouteClick = (route: ProbedRoute) => {
-    setSelectedRoute(route);
+  const handleRouteClick = useCallback(
+    (route: ProbedRoute) => {
+      setSelectedRoute(route);
+    },
+    [setSelectedRoute],
+  );
+
+  return {
+    isError,
+    isLoading,
+    routes,
+    selectedRoute,
+    handleRouteClick,
   };
+}
+
+function useRequestorHistory() {
+  const { data: allRequests } = useFetchRequestorRequests();
+
+  // Keep a history of recent requests and responses
+  const history = useMemo<Array<Requestornator>>(() => {
+    if (allRequests) {
+      const cloned = [...allRequests];
+      cloned.sort(sortRequestornatorsDescending);
+      return cloned;
+    }
+    return [];
+  }, [allRequests]);
+
+  // Array of all requests made this session
+  //
+  // This is purposefully in memory so that we clear the response panel
+  // when the user refreshes the page
+  //
+  const [sessionHistoryTraceIds, setSessionHistoryTraceIds] = useState<
+    Array<string>
+  >([]);
+
+  // We want to keep track of requests in history... however, I think this should be encapsulated with the
+  // query logic itself (instead of something we need to remember to wire together with the `mutate` call)
+  const recordRequestInSessionHistory = (traceId: string) =>
+    setSessionHistoryTraceIds((current) => [traceId, ...current]);
+
+  // HACK - We can load history entries this way! Just pass in a traceId for now, and then it shoooould appear in the UI
+  //        Later we should match based off of request id or something more clever
+  const loadHistoricalRequest = recordRequestInSessionHistory;
+
+  // Keep a local history of requests that the user has made in the UI
+  const sessionHistory = useMemo(() => {
+    return sessionHistoryTraceIds.reduce(
+      (matchedRequestornators, traceId) => {
+        const match = history.find((r) => r.app_responses?.traceId === traceId);
+        if (match) {
+          matchedRequestornators.push(match);
+        }
+        return matchedRequestornators;
+      },
+      [] as Array<Requestornator>,
+    );
+  }, [history, sessionHistoryTraceIds]);
+
+  return {
+    history,
+    sessionHistory,
+    recordRequestInSessionHistory,
+    loadHistoricalRequest,
+  };
+}
+
+export const RequestorPage = () => {
+  const { data: traces } = useMizuTraces();
+
+  const { routes, selectedRoute, handleRouteClick } = useRoutes();
 
   const {
     path,
@@ -60,7 +127,10 @@ export const RequestorPage = () => {
     setQueryParams,
   } = useRequestorFormData();
 
-  // HACK - Antipattern
+  // HACK - Antipattern?
+  //
+  //        If the selected route changes,
+  //        update our form data
   useEffect(() => {
     if (selectedRoute) {
       setPath(selectedRoute.path);
@@ -68,23 +138,16 @@ export const RequestorPage = () => {
     }
   }, [selectedRoute, setMethod, setPath]);
 
-  const { data: allRequests } = useFetchRequestorRequests();
-  const mostRecentMatchingResponse = useMostRecentRequestornator(
+  const { history, sessionHistory, recordRequestInSessionHistory } =
+    useRequestorHistory();
+
+  const requestornator = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
-    allRequests,
+    sessionHistory,
+    // FIXME
     // @ts-expect-error - Types from useMizuTraces do not seem to match MizuTrace[]
     traces,
   );
-
-  // Keep a history of recent requests and responses
-  const history = useMemo<Array<Requestornator>>(() => {
-    if (allRequests) {
-      const cloned = [...allRequests];
-      cloned.sort(sortRequestornatorsDescending);
-      return cloned;
-    }
-    return [];
-  }, [allRequests]);
 
   const { mutate: makeRequest, isLoading: isRequestorRequesting } =
     useMakeRequest();
@@ -92,9 +155,11 @@ export const RequestorPage = () => {
   // Send a request when we submit the form
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!selectedRoute) {
       return;
     }
+
     // FIXME
     let cleverBody =
       typeof body === "string" && isJson(body) ? JSON.parse(body) : body ?? "";
@@ -103,13 +168,34 @@ export const RequestorPage = () => {
     if (cleverBody === "") {
       cleverBody = {};
     }
-    makeRequest({
-      path,
-      method,
-      body: cleverBody,
-      headers: requestHeaders,
-      queryParams,
-    });
+
+    makeRequest(
+      {
+        path,
+        method,
+        body: cleverBody,
+        headers: requestHeaders,
+        queryParams,
+      },
+      {
+        onSuccess(data) {
+          // This is the response data i presume?
+          console.log(
+            "Made request... this is the response data I hope?",
+            data,
+          );
+          const traceId = data?.traceId;
+          if (traceId && typeof traceId === "string") {
+            recordRequestInSessionHistory(traceId);
+          } else {
+            debugger;
+          }
+        },
+        onError() {
+          // TODO - Show Toast
+        },
+      },
+    );
   };
 
   const {
@@ -185,8 +271,8 @@ export const RequestorPage = () => {
           <div className="flex-grow flex flex-col items-stretch">
             {isRequestorRequesting ? (
               <div>Loading...</div>
-            ) : mostRecentMatchingResponse ? (
-              <ResponseDetails response={mostRecentMatchingResponse} />
+            ) : requestornator ? (
+              <ResponseDetails response={requestornator} />
             ) : (
               <ResponseInstructions />
             )}

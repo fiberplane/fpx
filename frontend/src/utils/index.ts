@@ -43,5 +43,9 @@ export function errorHasMessage(error: unknown): error is { message: string } {
   if (!error) {
     return false;
   }
-  return objectWithKey(error, "message") && typeof error.message === "string" && !!error.message
+  return (
+    objectWithKey(error, "message") &&
+    typeof error.message === "string" &&
+    !!error.message
+  );
 }
