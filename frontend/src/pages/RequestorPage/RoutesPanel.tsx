@@ -108,7 +108,7 @@ function Routes({
         )}
       >
         <CollapsibleTrigger asChild>
-          <h2 className="flex items-center justify-between rounded cursor-pointer py-4 text-base md:h-12 md:cursor-default">
+          <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12 md:cursor-default">
             Endpoints
             {collapsible ? <CaretDownIcon className="h-4 w-4" /> : null}
           </h2>

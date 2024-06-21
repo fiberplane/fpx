@@ -1,11 +1,10 @@
-import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
-import { useMemo } from "react";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { ResizableHandle } from "./Resizable";
-import { CustomTabTrigger } from "./Tabs";
+import { CustomTabTrigger, CustomTabsList } from "./Tabs";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 
 type RequestPanelProps = {
@@ -63,7 +62,7 @@ function RequestMeta(props: RequestPanelProps) {
     <div className="min-w-[200px] border-r sm:border-none">
       <Tabs defaultValue="params">
         <div className="flex items-center">
-          <TabsList className="w-full justify-start rounded-none border-b space-x-6">
+          <CustomTabsList>
             <CustomTabTrigger value="params">
               Params
               {queryParams?.length > 1 && (
@@ -86,7 +85,7 @@ function RequestMeta(props: RequestPanelProps) {
                 <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
               )}
             </CustomTabTrigger>
-          </TabsList>
+          </CustomTabsList>
         </div>
         <div className="pt-2 pb-4">
           <TabsContent value="params">

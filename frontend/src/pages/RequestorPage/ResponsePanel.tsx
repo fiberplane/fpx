@@ -1,23 +1,23 @@
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 
-import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { isJson, noop } from "@/utils";
 import { MonacoJsonEditor } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
-import { CustomTabTrigger } from "./Tabs";
+import { CustomTabTrigger, CustomTabsList } from "./Tabs";
 import { Requestornator } from "./queries";
 
 export function ResponsePanel({ response, isLoading }: { response?: Requestornator, isLoading: boolean }) {
   return (
     <Tabs defaultValue="body" className="h-full">
       <div className="flex items-center">
-        <TabsList className="w-full justify-start rounded-none border-b space-x-6">
+        <CustomTabsList>
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
-        </TabsList>
+        </CustomTabsList>
       </div>
       <TabsContent value="body" className="h-full">
         <div className="px-1 h-full flex max-w-full">

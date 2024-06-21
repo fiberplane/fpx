@@ -158,11 +158,11 @@ export const RequestorPage = () => {
             "sm:flex-row",
             "items-stretch",
             "mt-4",
-            "rounded",
+            "rounded-md",
             "overflow-hidden",
             "border",
             // HACK - This prevents overflow from getting too excessive.
-            //        Need to resolve the problem with inner content expanding the parent
+            // FIXME - Need to resolve the problem with inner content expanding the parent
             "max-w-screen",
           )}
         >
