@@ -127,6 +127,7 @@ pub enum DbError {
     InternalError(#[from] libsql::Error),
 }
 
+#[allow(dead_code)]
 pub(crate) trait RowsExt {
     /// `T` must be a `struct`
     async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T, DbError>;
