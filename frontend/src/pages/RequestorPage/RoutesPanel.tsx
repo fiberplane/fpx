@@ -10,7 +10,6 @@ import { cn } from "@/utils";
 import {
   CaretDownIcon,
   CaretRightIcon,
-  // MagnifyingGlassIcon,
   PlusIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
@@ -95,6 +94,15 @@ function Routes({
   const ShowDetectedIcon = showDetectedRoutes ? CaretDownIcon : CaretRightIcon;
   const [isOpen, setIsOpen] = useState(false);
 
+  const [filterValue, setFilterValue] = useState("");
+  const filteredRoutes = useMemo(() => {
+    const cleanFilter = filterValue.trim().toLowerCase();
+    if (cleanFilter.length < 3) {
+      return routes;
+    }
+    return routes?.filter(r => r.path.includes(filterValue))
+  }, [filterValue, routes])
+
   return (
     <Collapsible
       className="md:h-full"
@@ -117,7 +125,7 @@ function Routes({
         <CollapsibleContent className="max-h-[400px] md:max-h-none md:mt-2 pb-4">
           <div>
             <div className="flex items-center space-x-2">
-              <Input className="text-sm" placeholder="Search endpoints" />
+              <Input className="text-sm" placeholder="Search endpoints" value={filterValue} onChange={(e) => setFilterValue(e.target.value)} />
               {/* TODO - Create a route? */}
               <Button variant="secondary" className="p-2.5">
                 <PlusIcon className="h-4 w-4" />
@@ -134,7 +142,7 @@ function Routes({
             </div>
             {showDetectedRoutes && (
               <div className="space-y-0">
-                {routes?.map?.((route, index) => (
+                {filteredRoutes?.map?.((route, index) => (
                   <div
                     key={index}
                     onClick={() => handleRouteClick(route)}
