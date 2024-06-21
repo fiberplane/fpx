@@ -1,19 +1,10 @@
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { MizuTrace, useMizuTraces } from "@/queries";
 import { cn, isJson } from "@/utils";
-import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
+import { MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
-import { RequestorHistory } from "./RequestorHistory";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesPanel } from "./RoutesPanel";

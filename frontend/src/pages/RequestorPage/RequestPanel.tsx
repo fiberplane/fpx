@@ -32,11 +32,11 @@ export function RequestPanel(props: RequestPanelProps) {
 }
 
 function ResizableRequestMeta(props: RequestPanelProps) {
-  const { width, handleResize } = useResizableWidth(256);
+  const { width, handleResize } = useResizableWidth(300);
   const styleWidth = useStyleWidth(width);
   return (
     <Resizable
-      className="min-w-[200px]"
+      className="min-w-[200px] md:flex-none"
       width={width} // Initial width
       axis="x" // Restrict resizing to the horizontal axis
       onResize={handleResize}
