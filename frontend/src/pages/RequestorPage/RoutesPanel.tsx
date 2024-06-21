@@ -7,11 +7,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useIsMdScreen } from "@/hooks";
 import { cn } from "@/utils";
-import {
-  CaretDownIcon,
-  CaretRightIcon,
-  PlusIcon,
-} from "@radix-ui/react-icons";
+import { CaretDownIcon, CaretRightIcon, PlusIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { Resizable } from "react-resizable";
 import { ResizableHandle } from "./Resizable";
@@ -100,8 +96,8 @@ function Routes({
     if (cleanFilter.length < 3) {
       return routes;
     }
-    return routes?.filter(r => r.path.includes(filterValue))
-  }, [filterValue, routes])
+    return routes?.filter((r) => r.path.includes(filterValue));
+  }, [filterValue, routes]);
 
   return (
     <Collapsible
@@ -125,7 +121,12 @@ function Routes({
         <CollapsibleContent className="max-h-[400px] md:max-h-none md:mt-2 pb-4">
           <div>
             <div className="flex items-center space-x-2">
-              <Input className="text-sm" placeholder="Search endpoints" value={filterValue} onChange={(e) => setFilterValue(e.target.value)} />
+              <Input
+                className="text-sm"
+                placeholder="Search endpoints"
+                value={filterValue}
+                onChange={(e) => setFilterValue(e.target.value)}
+              />
               {/* TODO - Create a route? */}
               <Button variant="secondary" className="p-2.5">
                 <PlusIcon className="h-4 w-4" />
@@ -138,7 +139,7 @@ function Routes({
                   setShowDetectedRoutes((current) => !current);
                 }}
               />
-              Detected Routes
+              Detected in app
             </div>
             {showDetectedRoutes && (
               <div className="space-y-0">

@@ -136,6 +136,9 @@ function RequestMeta(props: RequestPanelProps) {
             ) : null}
           </TabsContent>
           <TabsContent value="headers">
+            <div className="uppercase text-gray-400 text-sm mb-1">
+              Request Headers
+            </div>
             <KeyValueForm
               keyValueParameters={requestHeaders}
               onChange={(headers) => {

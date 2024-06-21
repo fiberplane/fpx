@@ -134,25 +134,6 @@ export const RequestorPage = () => {
             >
               <MagicWandIcon className="w-4 h-4" />
             </Button>
-            <Sheet>
-              <SheetTrigger>
-                <Button variant="ghost" size="sm">
-                  <CountdownTimerIcon className="w-4 h-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-[400px] sm:w-[600px]">
-                <SheetHeader>
-                  <SheetTitle>History</SheetTitle>
-                  <SheetDescription>
-                    View the history of recent requests.
-                  </SheetDescription>
-                </SheetHeader>
-                <RequestorHistory
-                  history={history}
-                  loadHistoricalRequest={loadHistoricalRequest}
-                />
-              </SheetContent>
-            </Sheet>
             <TestingPersonaMenu
               persona={testingPersona}
               onPersonaChange={setTestingPersona}
@@ -421,6 +402,7 @@ function useRequestorSubmitHandler({
       makeRequest,
       method,
       path,
+      pathParams,
       queryParams,
       recordRequestInSessionHistory,
       requestHeaders,
