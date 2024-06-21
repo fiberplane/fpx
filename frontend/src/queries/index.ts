@@ -31,6 +31,6 @@ export {
   getVSCodeLinkFromError,
 } from "./vscodeLinks";
 
-export { useHandlerSourceCode } from "./source-code";
+export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
 
 export { useFetchSettings, useUpdateSettings } from "./settings";

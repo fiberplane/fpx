@@ -2,8 +2,9 @@ import { toast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useMemo, useState } from "react";
 import { z } from "zod";
-import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
-import { ProbedRoute, Requestornator, useAiRequestData } from "./queries";
+import { KeyValueParameter, createKeyValueParameters } from "../KeyValueForm";
+import { ProbedRoute, Requestornator } from "../queries";
+import { useAiRequestData } from "./generate-request-data";
 
 export const FRIENDLY = "Friendly" as const;
 export const HOSTILE = "QA" as const;
@@ -17,7 +18,7 @@ type FormSetters = {
 };
 
 export function useAi(
-  selectedRoute: ProbedRoute,
+  selectedRoute: ProbedRoute | null,
   requestHistory: Array<Requestornator>,
   formSetters: FormSetters,
 ) {

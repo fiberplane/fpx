@@ -8,25 +8,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { MizuTrace, useMizuTraces } from "@/queries";
 import { isJson } from "@/utils";
 import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
 import { useEffect, useMemo, useState } from "react";
-import { createKeyValueParameters } from "./KeyValueForm";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorHistory } from "./RequestorHistory";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
 import { RoutesPanel } from "./RoutesPanel";
-import { TestingPersonaMenu } from "./TestingPersonaMenu";
-import { useAi } from "./ai";
+import { TestingPersonaMenu, useAi } from "./ai";
 import { useRequestorFormData } from "./data";
 import {
   type ProbedRoute,
   Requestornator,
   getUrl,
-  useAiRequestData,
   useFetchRequestorRequests,
   useMakeRequest,
   useProbedRoutes,
