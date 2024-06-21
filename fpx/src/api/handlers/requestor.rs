@@ -2,9 +2,18 @@ use std::{collections::BTreeMap, str::FromStr};
 
 use axum::{extract::State, response::IntoResponse, Json};
 use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
+use reqwest::RequestBuilder;
 use serde::{Deserialize, Serialize};
 
 use crate::data::Store;
+
+#[derive(Deserialize, Serialize)]
+pub struct Request {
+    method: HttpMethod,
+    url: String,
+    body: Option<String>,
+    headers: BTreeMap<String, String>,
+}
 
 #[derive(Clone, Copy, Deserialize, Serialize)]
 pub enum HttpMethod {
@@ -25,14 +34,6 @@ impl Into<String> for HttpMethod {
     }
 }
 
-#[derive(Deserialize, Serialize)]
-pub struct Request {
-    method: HttpMethod,
-    url: String,
-    body: String,
-    headers: BTreeMap<String, String>,
-}
-
 #[derive(Serialize)]
 pub struct Response {
     request_id: i64,
@@ -45,8 +46,6 @@ pub async fn execute_requestor(
     State(store): State<Store>,
     Json(payload): Json<Request>,
 ) -> impl IntoResponse {
-    let client = reqwest::Client::new();
-
     let tx = store.start_transaction().await.unwrap();
 
     let mut request_headers = HeaderMap::new();
@@ -57,29 +56,24 @@ pub async fn execute_requestor(
         request_headers.insert(header_name, header_value);
     }
 
-    let response = match payload.method {
-        HttpMethod::GET => client.get(&payload.url),
-        HttpMethod::POST => client.post(&payload.url),
-        HttpMethod::PATCH => client.patch(&payload.url),
-        HttpMethod::DELETE => client.delete(&payload.url),
-    }
-    .body(payload.body.clone())
-    .headers(request_headers)
-    .send()
-    .await
-    .unwrap();
-
-    let method: String = payload.method.into();
-
-    let request_id = Store::request_create(
-        &tx,
-        method.as_str(),
+    let request = build_request(
+        &payload.method,
         &payload.url,
         &payload.body,
-        payload.headers,
+        &request_headers,
     )
-    .await
-    .unwrap();
+    .await;
+
+    let response = request.send().await.unwrap();
+
+    let method: String = payload.method.into();
+    // TODO: Store should probably support optional bodies
+    let body = payload.body.unwrap_or(String::from(""));
+
+    let request_id =
+        Store::request_create(&tx, method.as_str(), &payload.url, &body, payload.headers)
+            .await
+            .unwrap();
 
     tx.commit().await.unwrap();
 
@@ -104,4 +98,27 @@ pub async fn execute_requestor(
         headers: response_header_map,
         body: Some(body.to_owned()),
     })
+}
+
+async fn build_request(
+    method: &HttpMethod,
+    url: &str,
+    body: &Option<String>,
+    headers: &HeaderMap,
+) -> RequestBuilder {
+    let client = reqwest::Client::new();
+
+    let handler = match method {
+        HttpMethod::GET => client.get(url),
+        HttpMethod::POST => client.post(url),
+        HttpMethod::PATCH => client.patch(url),
+        HttpMethod::DELETE => client.delete(url),
+    };
+
+    let handler = match body {
+        Some(body) => handler.body(body.clone()),
+        None => handler,
+    };
+
+    handler.headers(headers.clone())
 }
