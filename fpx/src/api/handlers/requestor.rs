@@ -9,9 +9,9 @@ use crate::data::Store;
 #[derive(Deserialize, Serialize)]
 pub enum HttpMethod {
     GET,
-    // POST,
-    // PATCH,
-    // DELETE,
+    POST,
+    PATCH,
+    DELETE,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -82,30 +82,117 @@ pub async fn execute_requestor(
                 headers: response_header_map,
                 body: Some(body.to_owned()),
             })
-        } // RequestorMethod::POST => {
-          //     let body = client
-          //         .post(payload.url.clone())
-          //         .body(payload.body.clone())
-          //         .headers(headers)
-          //         .send()
-          //         .await
-          //         .unwrap()
-          //         .text()
-          //         .await
-          //         .unwrap();
-          //
-          //     let request_id =
-          //         Store::request_create(&tx, "POST", &payload.url, &payload.body, payload.headers)
-          //             .await
-          //             .unwrap();
-          //
-          //     tx.commit().await.unwrap();
-          //
-          //     println!("Created POST request with id: {}", request_id);
-          //
-          //     Json(body)
-          // }
-          // RequestorMethod::PATCH => {}
-          // RequestorMethod::DELETE => {}
+        }
+        HttpMethod::POST => {
+            let response = client
+                .post(payload.url.clone())
+                .body(payload.body.clone())
+                .headers(request_headers)
+                .send()
+                .await
+                .unwrap();
+
+            let request_id =
+                Store::request_create(&tx, "POST", &payload.url, &payload.body, payload.headers)
+                    .await
+                    .unwrap();
+
+            tx.commit().await.unwrap();
+
+            println!("Created POST request with id: {}", request_id);
+
+            let response_headers = &response.headers();
+            let mut response_header_map: BTreeMap<String, String> = BTreeMap::new();
+            for (key, val) in response_headers.iter() {
+                response_header_map.insert(key.to_string(), String::from(val.to_str().unwrap()));
+            }
+
+            let status = match response.status() {
+                StatusCode::OK => 200,
+                _ => 0,
+            };
+
+            let body = &response.text().await.unwrap();
+
+            Json(Response {
+                status,
+                headers: response_header_map,
+                body: Some(body.to_owned()),
+            })
+        }
+        HttpMethod::PATCH => {
+            let response = client
+                .patch(payload.url.clone())
+                .body(payload.body.clone())
+                .headers(request_headers)
+                .send()
+                .await
+                .unwrap();
+
+            let request_id =
+                Store::request_create(&tx, "PATCH", &payload.url, &payload.body, payload.headers)
+                    .await
+                    .unwrap();
+
+            tx.commit().await.unwrap();
+
+            println!("Created PATCH request with id: {}", request_id);
+
+            let response_headers = &response.headers();
+            let mut response_header_map: BTreeMap<String, String> = BTreeMap::new();
+            for (key, val) in response_headers.iter() {
+                response_header_map.insert(key.to_string(), String::from(val.to_str().unwrap()));
+            }
+
+            let status = match response.status() {
+                StatusCode::OK => 200,
+                _ => 0,
+            };
+
+            let body = &response.text().await.unwrap();
+
+            Json(Response {
+                status,
+                headers: response_header_map,
+                body: Some(body.to_owned()),
+            })
+        }
+        HttpMethod::DELETE => {
+            let response = client
+                .delete(payload.url.clone())
+                .body(payload.body.clone())
+                .headers(request_headers)
+                .send()
+                .await
+                .unwrap();
+
+            let request_id =
+                Store::request_create(&tx, "DELETE", &payload.url, &payload.body, payload.headers)
+                    .await
+                    .unwrap();
+
+            tx.commit().await.unwrap();
+
+            println!("Created DELETE request with id: {}", request_id);
+
+            let response_headers = &response.headers();
+            let mut response_header_map: BTreeMap<String, String> = BTreeMap::new();
+            for (key, val) in response_headers.iter() {
+                response_header_map.insert(key.to_string(), String::from(val.to_str().unwrap()));
+            }
+
+            let status = match response.status() {
+                StatusCode::OK => 200,
+                _ => 0,
+            };
+
+            let body = &response.text().await.unwrap();
+
+            Json(Response {
+                status,
+                headers: response_header_map,
+                body: Some(body.to_owned()),
+            })
+        }
     }
 }
