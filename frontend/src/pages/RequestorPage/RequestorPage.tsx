@@ -8,6 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { MizuTrace, useMizuTraces } from "@/queries";
 import { isJson } from "@/utils";
 import { CountdownTimerIcon, MagicWandIcon } from "@radix-ui/react-icons";
@@ -19,13 +20,14 @@ import { RequestorHistory } from "./RequestorHistory";
 import { ResponseDetails, ResponseInstructions } from "./ResponseDetails";
 import { RoutesPanel } from "./RoutesPanel";
 import { TestingPersonaMenu } from "./TestingPersonaMenu";
+import { useAi } from "./ai";
 import { useRequestorFormData } from "./data";
 import {
   type ProbedRoute,
   Requestornator,
   getUrl,
+  useAiRequestData,
   useFetchRequestorRequests,
-  useGenerateRequest,
   useMakeRequest,
   useProbedRoutes,
 } from "./queries";
@@ -61,7 +63,6 @@ export const RequestorPage = () => {
     queryParams,
     setQueryParams,
   } = useRequestorFormData();
-  const [testingPersona, setTestingPersona] = useState<string>("Friendly");
 
   // HACK - Antipattern
   useEffect(() => {
@@ -89,15 +90,8 @@ export const RequestorPage = () => {
     return [];
   }, [allRequests]);
 
-  const recentHistory = useMemo(() => {
-    return history.slice(0, 5);
-  }, [history]);
-
-  const {
-    // data: returnedRequest,
-    mutate: makeRequest,
-    isLoading: isRequestorRequesting,
-  } = useMakeRequest();
+  const { mutate: makeRequest, isLoading: isRequestorRequesting } =
+    useMakeRequest();
 
   // Send a request when we submit the form
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -122,34 +116,17 @@ export const RequestorPage = () => {
     });
   };
 
-  // TODO
-  // /v0/generate-request
-  const { isLoading: isLoadingParameters, refetch: generateRequest } =
-    useGenerateRequest(selectedRoute, recentHistory, testingPersona);
-
-  const fillInRequest = () => {
-    generateRequest().then(({ data, isError }) => {
-      if (isError) {
-        console.error(data);
-        return;
-      }
-
-      const body = data.request?.body;
-      const queryParams = data.request?.queryParams;
-      const path = data.request?.path;
-      if (body) {
-        setBody(body);
-      }
-      if (queryParams) {
-        // TODO - Tighten up types, this could wreak havoc
-        const newParameters = createKeyValueParameters(queryParams);
-        setQueryParams(newParameters);
-      }
-      if (path) {
-        setPath(path);
-      }
-    });
-  };
+  const {
+    enabled: aiEnabled,
+    isLoadingParameters,
+    fillInRequest,
+    testingPersona,
+    setTestingPersona,
+  } = useAi(selectedRoute, history, {
+    setBody,
+    setQueryParams,
+    setPath,
+  });
 
   return (
     <div className="flex h-full pt-4">
@@ -159,36 +136,39 @@ export const RequestorPage = () => {
         handleRouteClick={handleRouteClick}
       />
       <div className="flex flex-col flex-1 ml-4">
-        <div className="mb-2 flex items-center justify-start space-x-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={fillInRequest}
-            disabled={isLoadingParameters}
-          >
-            <MagicWandIcon className="w-4 h-4" />
-          </Button>
-          <Sheet>
-            <SheetTrigger>
-              <Button variant="ghost" size="sm">
-                <CountdownTimerIcon className="w-4 h-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="w-[400px] sm:w-[600px]">
-              <SheetHeader>
-                <SheetTitle>History</SheetTitle>
-                <SheetDescription>
-                  View the history of recent requests.
-                </SheetDescription>
-              </SheetHeader>
-              <RequestorHistory history={history} />
-            </SheetContent>
-          </Sheet>
-          <TestingPersonaMenu
-            persona={testingPersona}
-            onPersonaChange={setTestingPersona}
-          />
-        </div>
+        {aiEnabled && (
+          <div className="mb-2 flex items-center justify-start space-x-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={fillInRequest}
+              disabled={isLoadingParameters}
+            >
+              <MagicWandIcon className="w-4 h-4" />
+            </Button>
+            <Sheet>
+              <SheetTrigger>
+                <Button variant="ghost" size="sm">
+                  <CountdownTimerIcon className="w-4 h-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="w-[400px] sm:w-[600px]">
+                <SheetHeader>
+                  <SheetTitle>History</SheetTitle>
+                  <SheetDescription>
+                    View the history of recent requests.
+                  </SheetDescription>
+                </SheetHeader>
+                <RequestorHistory history={history} />
+              </SheetContent>
+            </Sheet>
+            <TestingPersonaMenu
+              persona={testingPersona}
+              onPersonaChange={setTestingPersona}
+            />
+          </div>
+        )}
+
         <RequestInput
           method={method}
           setMethod={setMethod}

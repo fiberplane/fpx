@@ -103,13 +103,7 @@ export function makeRequest({
   }).then((r) => r.json());
 }
 
-// const generateRequest = ({ meta }: { meta?: QueryMeta }) => {
-//   const handler = meta?.handler;
-//   console.log("HIII META", meta)
-//   return fetch("/v0/generate-request", { method: "POST", body: JSON.stringify({ handler })}).then((r) => r.json());
-// }
-
-const generateRequest = (
+const fetchAiRequestData = (
   route: ProbedRoute | null,
   history: Array<Requestornator>,
   persona: string,
@@ -140,14 +134,14 @@ const generateRequest = (
   }).then((r) => r.json());
 };
 
-export function useGenerateRequest(
+export function useAiRequestData(
   route: ProbedRoute | null,
   history: Array<Requestornator>,
   persona = "Friendly",
 ) {
   return useQuery({
     queryKey: ["generateRequest"],
-    queryFn: () => generateRequest(route, history, persona),
+    queryFn: () => fetchAiRequestData(route, history, persona),
     enabled: false,
   });
 }
