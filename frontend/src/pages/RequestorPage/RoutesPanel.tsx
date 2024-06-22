@@ -73,7 +73,7 @@ export function RoutesPanel({
           </div>
         </div>
         <div className="overflow-y-scroll relative">
-          <div className="font-medium text-sm flex items-center mb-1 mt-2">
+          <div className="font-medium text-sm flex items-center mb-2 mt-2">
             <ShowDetectedIcon
               className="h-4 w-4 mr-0.5 cursor-pointer"
               onClick={() => {

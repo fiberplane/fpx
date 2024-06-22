@@ -74,7 +74,7 @@ function RequestMeta(props: RequestPanelProps) {
         defaultValue="params"
         className={cn("overflow-hidden overflow-y-auto max-h-full")}
       >
-        <div className="flex items-center">
+        <div className="flex items-center sticky top-0">
           <CustomTabsList>
             <CustomTabTrigger value="params">
               Params
@@ -144,6 +144,7 @@ function RequestMeta(props: RequestPanelProps) {
                     setPath(nextPath);
                   }}
                 />
+                <div className="h-1 w-full" />
               </>
             ) : null}
           </TabsContent>
