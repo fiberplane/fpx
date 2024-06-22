@@ -93,6 +93,11 @@ export const appResponses = sqliteTable("app_responses", {
     [key: string]: string;
   }>(),
   responseBody: text("response_body", { mode: "text" }),
+  failureReason: text("failure_reason"),
+  failureDetails: text("failure_details", { mode: "json" }).$type<{
+    [key: string]: string;
+  }>(),
+  isFailure: integer("is_failure", { mode: "boolean" }).default(false),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   requestId: integer("request_id").references(() => appRequests.id),

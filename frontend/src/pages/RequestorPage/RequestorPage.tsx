@@ -68,9 +68,6 @@ export const RequestorPage = () => {
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
     sessionHistory,
-    // FIXME
-    // @ts-expect-error - Types from useMizuTraces do not seem to match MizuTrace[]
-    traces,
   );
 
   const { mutate: makeRequest, isLoading: isRequestorRequesting } =
@@ -460,7 +457,6 @@ function useAutoselectRoute({
 function useMostRecentRequestornator(
   requestInputs: { path: string; method: string; route?: string },
   all: Requestornator[],
-  traces: MizuTrace[],
 ) {
   return useMemo<Requestornator | undefined>(() => {
     const matchingResponses = all?.filter(
@@ -468,30 +464,11 @@ function useMostRecentRequestornator(
         r?.app_requests?.requestRoute === requestInputs.route,
     );
 
-    // HACK - When the route parameters are modified in the url input, we no longer can match the request to a response
-    //        e.g., for `/bugs/:id`, we cannot find requests to `/bugs/123`
-    //        This logic looks for traces that have a route pattern that's the same as what has been selected from the side bar,
-    //        then sees if those traces have any corresponding responses.
-    //        It's very convoluted... and smelly
-    const matchingTraces = traces?.filter(
-      (t) =>
-        t.route === requestInputs.route && t.method === requestInputs.method,
-    );
-    const matchingTraceIds = matchingTraces?.map((t) => t.id);
-    for (const matchingTraceId of matchingTraceIds ?? []) {
-      const responseForTrace = all?.find(
-        (r: Requestornator) => r?.app_responses?.traceId === matchingTraceId,
-      );
-      if (responseForTrace && !matchingResponses?.includes(responseForTrace)) {
-        matchingResponses?.push(responseForTrace);
-      }
-    }
-
     // Descending sort by updatedAt
     matchingResponses?.sort(sortRequestornatorsDescending);
 
     return matchingResponses?.[0];
-  }, [all, requestInputs, traces]);
+  }, [all, requestInputs]);
 }
 
 function sortRequestornatorsDescending(a: Requestornator, b: Requestornator) {
