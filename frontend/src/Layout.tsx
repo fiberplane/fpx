@@ -37,7 +37,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
           "grid items-start gap-4 py-2 px-4 ",
           "sm:px-6 sm:py-0",
           "md:gap-8",
-          "overflow-scroll",
+          "overflow-hidden",
           "h-[calc(100vh-64px)]",
         )}
       >

@@ -30,7 +30,7 @@ export function ResponsePanel({
   return (
     <Tabs defaultValue="body" className="h-full">
       <div className="flex items-center">
-        <CustomTabsList className="flex">
+        <CustomTabsList className="flex sticky top-0">
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
@@ -140,7 +140,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 
 function NoHistory() {
   return (
-    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32">
+    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32 max-h-[600px]">
       <div className="flex flex-col items-center justify-center p-4">
         <div className="mt-4 text-md text-white text-center">
           You have no requests in your history
@@ -155,7 +155,7 @@ function NoHistory() {
 
 function NoResponse() {
   return (
-    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32">
+    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32 max-h-[600px]">
       <div className="flex flex-col items-center justify-center p-4">
         <div className="mt-4 text-md text-white text-center">
           Enter a URL and hit send to see a response

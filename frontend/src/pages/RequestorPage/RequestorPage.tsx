@@ -104,9 +104,9 @@ export const RequestorPage = () => {
     <div
       className={cn(
         "py-2",
-        "flex flex-col space-y-4",
+        "space-y-4",
         "md:grid md:grid-cols-[auto_1fr] md:space-y-0 md:py-2 md:gap-0",
-        "h-[calc(100vh-64px)]",
+        "h-[calc(100vh-64px)]"
       )}
     >
       <div
@@ -126,11 +126,12 @@ export const RequestorPage = () => {
 
       <div
         className={cn(
-          "flex flex-col flex-1 md:ml-4 md:col-auto",
+          "flex flex-col flex-1", // Makes container extend to bottom of screen
+          "md:ml-4 md:col-auto",
           cn(
             "max-h-full",
             "relative",
-            "overflow-y-auto",
+            "overflow-y-auto", // NOTE - Changing this to overflow-y-auto makes the entire container scrollable
             "md:overflow-x-hidden",
           ),
         )}
@@ -160,21 +161,24 @@ export const RequestorPage = () => {
           onSubmit={onSubmit}
           isRequestorRequesting={isRequestorRequesting}
         />
+
         <div
           className={cn(
             "flex",
             "flex-col",
             "flex-grow",
+            "sm:grid",
+            "sm:grid-cols-[auto_1fr]",
             "sm:flex-row",
             "items-stretch",
             "mt-4",
             "rounded-md",
-            "overflow-hidden",
+            "overflow-scroll",
             "border",
             "relative",
             // HACK - This prevents overflow from getting too excessive.
             // FIXME - Need to resolve the problem with inner content expanding the parent
-            "max-w-screen",
+            // "max-w-screen"
           )}
         >
           <RequestPanel
