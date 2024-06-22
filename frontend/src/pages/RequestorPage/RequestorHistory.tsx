@@ -27,14 +27,11 @@ export function RequestorHistory({
         .map((h) => {
           const id = h.app_requests?.id;
           const traceId = h.app_responses?.traceId;
-          const requestMethod = h.app_requests?.requestMethod;
-          const responseStatusCode = h.app_responses?.responseStatusCode;
           return (
             <HistoryEntry
               key={traceId ?? id}
               traceId={traceId}
-              requestMethod={requestMethod}
-              responseStatusCode={responseStatusCode}
+              response={h}
               loadHistoricalRequest={loadHistoricalRequest}
             />
           );
@@ -45,19 +42,25 @@ export function RequestorHistory({
 
 type HistoryEntryProps = {
   traceId: string;
-  responseStatusCode: number | string;
-  requestMethod: string;
+  response: Requestornator;
   loadHistoricalRequest: (traceId: string) => void;
 };
 
 export function HistoryEntry({
   traceId,
-  responseStatusCode,
-  requestMethod,
+  response,
   loadHistoricalRequest,
 }: HistoryEntryProps) {
+  const isFailure = response?.app_responses?.isFailure;
+  const requestMethod = response.app_requests?.requestMethod;
+  const responseStatusCode = response.app_responses?.responseStatusCode;
+
   const [isOpen, setIsOpen] = useState(false);
   const { isLoading, isNotFound, trace } = useTrace(traceId);
+
+  const fallbackUrl = parsePathFromRequestUrl(
+    response.app_requests?.requestUrl,
+  );
 
   const requestBody = useMemo(() => {
     if (trace?.logs) {
@@ -88,7 +91,7 @@ export function HistoryEntry({
         <div className="flex space-between cursor-pointer text-gray-300">
           <div className="flex space-x-2 items-center">
             <CaretSortIcon className="mx-1 w-3.5 h-3.5" />
-            <StatusCode status={responseStatusCode} />
+            <StatusCode status={responseStatusCode} isFailure={isFailure} />
             <Method method={requestMethod} />
             <span
               className={cn(
@@ -97,9 +100,11 @@ export function HistoryEntry({
             >
               {isLoading
                 ? "Loading"
-                : isNotFound
-                  ? "Details missing"
-                  : trace?.path}
+                : isFailure
+                  ? fallbackUrl || "Request failed to send"
+                  : isNotFound
+                    ? "Details missing"
+                    : trace?.path}
             </span>
           </div>
           <div className="flex items-center ml-auto mr-2">
@@ -119,20 +124,32 @@ export function HistoryEntry({
 
         {isOpen && (
           <div className="flex flex-col space-y-2 pl-6 py-1">
-            <div className="border-b py-1">
-              <h3>Request</h3>
-              {requestBody ? (
-                <code className="text-gray-300 block my-1">{requestBody}</code>
-              ) : (
-                <div className="text-gray-400 block my-1 italic">
-                  No request body
+            {isFailure ? (
+              <div className="text-gray-400 block my-1 italic">
+                Request failed to send
+              </div>
+            ) : (
+              <>
+                <div className="border-b py-1">
+                  <h3>Request</h3>
+                  {requestBody ? (
+                    <code className="text-gray-300 block my-1">
+                      {requestBody}
+                    </code>
+                  ) : (
+                    <div className="text-gray-400 block my-1 italic">
+                      No request body
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="py-1">
-              <h3>Response</h3>
-              <code className="text-gray-300 block my-1">{responseBody}</code>
-            </div>
+                <div className="py-1">
+                  <h3>Response</h3>
+                  <code className="text-gray-300 block my-1">
+                    {responseBody}
+                  </code>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -154,7 +171,10 @@ function Method({ method }: { method: string }) {
   );
 }
 
-function StatusCode({ status }: { status: string | number }) {
+function StatusCode({
+  status,
+  isFailure,
+}: { status: string | number; isFailure: boolean }) {
   const strStatus = status?.toString() ?? "-";
   const isGreen = strStatus.startsWith("2");
   const isOrange = strStatus.startsWith("4");
@@ -170,10 +190,19 @@ function StatusCode({ status }: { status: string | number }) {
         "font-sans",
         isGreen && ["text-green-400", "bg-green-800"],
         isOrange && ["text-orange-400", "bg-orange-800"],
-        isRed && ["text-red-400", "bg-red-800"],
+        (isRed || isFailure) && ["text-red-400", "bg-red-800"],
       )}
     >
-      {strStatus}
+      {isFailure ? "Fail" : strStatus}
     </span>
   );
+}
+
+function parsePathFromRequestUrl(url: string) {
+  try {
+    const fancyUrl = new URL(url);
+    return fancyUrl.pathname;
+  } catch {
+    return null;
+  }
 }
