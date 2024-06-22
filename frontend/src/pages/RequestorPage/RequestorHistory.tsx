@@ -25,12 +25,13 @@ export function RequestorHistory({
       {history
         .filter((h) => !!h)
         .map((h) => {
+          const id = h.app_requests?.id;
           const traceId = h.app_responses?.traceId;
           const requestMethod = h.app_requests?.requestMethod;
           const responseStatusCode = h.app_responses?.responseStatusCode;
           return (
             <HistoryEntry
-              key={traceId}
+              key={traceId ?? id}
               traceId={traceId}
               requestMethod={requestMethod}
               responseStatusCode={responseStatusCode}

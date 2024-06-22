@@ -30,23 +30,7 @@ export function RoutesPanel({
   const filteredRoutes = useMemo(() => {
     const cleanFilter = filterValue.trim().toLowerCase();
     if (cleanFilter.length < 3 && routes) {
-      return [
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-        ...routes,
-      ];
+      return routes;
     }
     return routes?.filter((r) => r.path.includes(filterValue));
   }, [filterValue, routes]);
