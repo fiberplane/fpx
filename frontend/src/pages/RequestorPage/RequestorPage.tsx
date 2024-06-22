@@ -7,6 +7,7 @@ import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
+import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { TestingPersonaMenu, useAi } from "./ai";
 import { useRequestorFormData } from "./data";
@@ -105,8 +106,8 @@ export const RequestorPage = () => {
       className={cn(
         "py-2",
         "space-y-4",
-        "md:grid md:grid-cols-[auto_1fr] md:space-y-0 md:py-2 md:gap-0",
-        "h-[calc(100vh-64px)]"
+        "lg:grid lg:grid-cols-[auto_1fr] lg:space-y-0 lg:py-2 lg:gap-0",
+        "h-[calc(100vh-64px)]",
       )}
     >
       <div
@@ -114,9 +115,16 @@ export const RequestorPage = () => {
           "max-h-full",
           "relative",
           "overflow-y-scroll",
-          "md:overflow-x-hidden",
+          "lg:overflow-x-hidden",
         )}
       >
+        <div className="lg:hidden">
+          <RoutesCombobox
+            routes={routes}
+            selectedRoute={selectedRoute}
+            handleRouteClick={setRoute}
+          />
+        </div>
         <RoutesPanel
           routes={routes}
           selectedRoute={selectedRoute}
@@ -127,12 +135,12 @@ export const RequestorPage = () => {
       <div
         className={cn(
           "flex flex-col flex-1", // Makes container extend to bottom of screen
-          "md:ml-4 md:col-auto",
+          "lg:ml-4 lg:col-auto",
           cn(
             "max-h-full",
             "relative",
             "overflow-y-auto", // NOTE - Changing this to overflow-y-auto makes the entire container scrollable
-            "md:overflow-x-hidden",
+            "lg:overflow-x-hidden",
           ),
         )}
       >
