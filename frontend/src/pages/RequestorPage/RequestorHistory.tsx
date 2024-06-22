@@ -60,6 +60,7 @@ export function HistoryEntry({
 
   const fallbackUrl = parsePathFromRequestUrl(
     response.app_requests?.requestUrl,
+    response.app_requests?.requestQueryParams ?? undefined,
   );
 
   const requestBody = useMemo(() => {
@@ -102,9 +103,7 @@ export function HistoryEntry({
                 ? "Loading"
                 : isFailure
                   ? fallbackUrl || "Request failed to send"
-                  : isNotFound
-                    ? "Details missing"
-                    : trace?.path}
+                  : fallbackUrl || "Details missing"}
             </span>
           </div>
           <div className="flex items-center ml-auto mr-2">
@@ -198,10 +197,18 @@ function StatusCode({
   );
 }
 
-function parsePathFromRequestUrl(url: string) {
+function parsePathFromRequestUrl(
+  url: string,
+  queryParams?: Record<string, string>,
+) {
   try {
     const fancyUrl = new URL(url);
-    return fancyUrl.pathname;
+    if (queryParams) {
+      for (const [key, value] of Object.entries(queryParams)) {
+        fancyUrl.searchParams.set(key, value);
+      }
+    }
+    return `${fancyUrl.pathname}${fancyUrl.search}`;
   } catch {
     return null;
   }
