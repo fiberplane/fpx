@@ -106,8 +106,8 @@ export function createHonoMiddleware<App extends HonoApp>(
     // This is similar to how we need to undo our monkeypatching of `console.*` methods (see HACK comment below)
     teardownFunctions.push(undoReplaceFetch);
 
-    // TODO - (future) Take the traceId from headers but then fall back to uuid here?
-    const traceId = generateUUID();
+    // NOTE - Take the traceId from headers but then fall back to uuid here
+    const traceId = c.req.header("x-fpx-trace-id") || generateUUID();
 
     // We monkeypatch `console.*` methods because it's the only way to send consumable logs locally without setting up an otel colletor
     for (const level of RECORDED_CONSOLE_METHODS) {

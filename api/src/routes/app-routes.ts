@@ -11,6 +11,7 @@ import { eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { z } from "zod";
+import { generateUUID } from "..//lib/utils.js";
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 
@@ -38,6 +39,8 @@ app.post(
   "/v0/send-request",
   zValidator("json", appRequestInsertSchema),
   async (ctx) => {
+    const traceId = ctx.req.header("x-fpx-trace-id") ?? generateUUID();
+
     const {
       requestMethod,
       requestUrl,
@@ -50,13 +53,20 @@ app.post(
 
     const db = ctx.get("db");
 
+    // NOTE - We want to pass the trace-id through to the service we're calling
+    //        This helps us optionally correlate requests more easily in the frontend
+    const modifiedRequestHeaders = {
+      ...(requestHeaders ?? {}),
+      "x-fpx-trace-id": traceId,
+    };
+
     const requestObject = {
       method: requestMethod,
       body:
         (requestBody ? JSON.stringify(requestBody) : requestBody) ??
         // biome-ignore lint/suspicious/noExplicitAny: just make it work
         (undefined as any),
-      headers: requestHeaders ?? undefined,
+      headers: modifiedRequestHeaders,
     };
 
     const finalUrl = resolveUrl(requestUrl, requestQueryParams);
@@ -88,9 +98,15 @@ app.post(
         responseTime,
         responseHeaders,
         responseBody,
-        traceId,
+        traceId: responseTraceId,
         isFailure,
       } = await handleSuccessfulRequest(db, requestId, duration, response);
+
+      if (responseTraceId !== traceId) {
+        console.warn(
+          `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
+        );
+      }
 
       return ctx.json({
         responseStatusCode,
@@ -98,14 +114,21 @@ app.post(
         responseHeaders,
         responseBody,
         isFailure,
-        traceId,
+        traceId: responseTraceId,
+        requestId,
       });
     } catch (fetchError) {
       // NOTE - This will happen when the service is unreachable.
       //        Could be good to parse the error for more information!
       const responseTime = Date.now() - startTime;
-      const { failureDetails, failureReason, traceId, isFailure } =
-        await handleFailedRequest(db, requestId, responseTime, fetchError);
+      const { failureDetails, failureReason, isFailure } =
+        await handleFailedRequest(
+          db,
+          requestId,
+          traceId,
+          responseTime,
+          fetchError,
+        );
 
       return ctx.json({
         isFailure,
@@ -113,6 +136,7 @@ app.post(
         failureDetails,
         failureReason,
         traceId,
+        requestId,
       });
     }
   },
@@ -200,6 +224,7 @@ export function errorToJson(error: Error) {
 async function handleFailedRequest(
   db: DbType,
   requestId: RequestIdType,
+  traceId: string,
   responseTime: number,
   error: unknown,
 ) {
@@ -211,7 +236,6 @@ async function handleFailedRequest(
   if (error instanceof Error) {
     failureDetails = errorToJson(error);
   }
-  const traceId = "";
 
   await db.insert(appResponses).values([
     {

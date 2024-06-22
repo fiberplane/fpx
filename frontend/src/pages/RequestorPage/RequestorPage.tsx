@@ -70,6 +70,11 @@ export const RequestorPage = () => {
     sessionHistory,
   );
 
+  console.log(
+    "mostRecentRequestornatorForRoute",
+    mostRecentRequestornatorForRoute,
+  );
+
   const { mutate: makeRequest, isLoading: isRequestorRequesting } =
     useMakeRequest();
 
@@ -409,6 +414,11 @@ function useRequestorSubmitHandler({
             const traceId = data?.traceId;
             if (traceId && typeof traceId === "string") {
               recordRequestInSessionHistory(traceId);
+            } else {
+              console.error(
+                "RequestorPage: onSuccess: traceId is not a string",
+                data,
+              );
             }
           },
           onError(error) {
