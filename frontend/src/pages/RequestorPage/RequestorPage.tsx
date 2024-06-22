@@ -138,6 +138,7 @@ export const RequestorPage = () => {
         className={cn(
           "flex flex-col flex-1", // Makes container extend to bottom of screen
           "lg:ml-4 lg:col-auto",
+          "max-lg:h-full",
           cn(
             "max-h-full",
             "relative",

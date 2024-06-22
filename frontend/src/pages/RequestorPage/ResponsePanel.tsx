@@ -3,7 +3,7 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { isJson, noop } from "@/utils";
-import { ClockIcon } from "@radix-ui/react-icons";
+import { ClockIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { MonacoJsonEditor } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
@@ -27,10 +27,11 @@ export function ResponsePanel({
   history,
   loadHistoricalRequest,
 }: Props) {
+  const isFailure = !!response?.app_responses?.isFailure;
   return (
     <Tabs defaultValue="body" className="h-full">
       <div className="flex items-center">
-        <CustomTabsList className="flex sticky top-0">
+        <CustomTabsList className="flex">
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
@@ -43,39 +44,39 @@ export function ResponsePanel({
         </CustomTabsList>
       </div>
       <TabsContent value="body" className="h-full">
-        <div className="px-3 py-2 h-full flex max-w-full">
-          {isLoading ? (
-            <Loading />
-          ) : response ? (
-            <ResponseBody response={response} />
-          ) : (
-            <NoResponse />
-          )}
-        </div>
+        <TabContentInner
+          isLoading={isLoading}
+          isEmpty={!response}
+          isFailure={isFailure}
+          FailState={<FailedRequest response={response} />}
+          EmptyState={<NoResponse />}
+        >
+          <ResponseBody response={response} />
+        </TabContentInner>
       </TabsContent>
       <TabsContent value="headers" className="h-full">
-        <div className="px-3 py-2 h-full flex">
-          {isLoading ? (
-            <Loading />
-          ) : response ? (
-            <HeaderTable
-              headers={response?.app_responses?.responseHeaders ?? {}}
-            />
-          ) : (
-            <NoResponse />
-          )}
-        </div>
+        <TabContentInner
+          isLoading={isLoading}
+          isEmpty={!response}
+          isFailure={isFailure}
+          FailState={<FailedRequest response={response} />}
+          EmptyState={<NoResponse />}
+        >
+          <HeaderTable
+            headers={response?.app_responses?.responseHeaders ?? {}}
+          />
+        </TabContentInner>
       </TabsContent>
       <TabsContent value="debug" className="h-full">
-        <div className="px-3 py-2 h-full flex">
-          {isLoading ? (
-            <Loading />
-          ) : response ? (
-            <FpxDetails response={response} />
-          ) : (
-            <NoResponse />
-          )}
-        </div>
+        <TabContentInner
+          isLoading={isLoading}
+          isEmpty={!response}
+          isFailure={isFailure}
+          FailState={<FailedRequest response={response} />}
+          EmptyState={<NoResponse />}
+        >
+          <FpxDetails response={response} />
+        </TabContentInner>
       </TabsContent>
       <TabsContent value="history" className="h-full">
         <div className="px-3 py-2 h-full flex flex-col">
@@ -93,8 +94,63 @@ export function ResponsePanel({
   );
 }
 
+function TabContentInner({
+  isLoading,
+  isEmpty,
+  isFailure,
+  EmptyState,
+  FailState,
+  children,
+}: {
+  children: React.ReactNode;
+  EmptyState: JSX.Element;
+  FailState: JSX.Element;
+  isFailure: boolean;
+  isLoading: boolean;
+  isEmpty: boolean;
+}) {
+  return (
+    <div className="px-3 py-2 h-full flex">
+      {isLoading ? (
+        <Loading />
+      ) : isFailure ? (
+        <>{FailState}</>
+      ) : !isEmpty ? (
+        <>{children}</>
+      ) : (
+        <>{EmptyState}</>
+      )}
+    </div>
+  );
+}
+
+function FailedRequest({ response }: { response?: Requestornator }) {
+  // TODO - Show a more friendly error message
+  // const failureReason = response?.app_responses?.failureReason;
+  // const failureDetails = response?.app_responses?.failureDetails;
+  return (
+    <div className="flex flex-col items-center justify-center text-gray-400 max-h-[600px] w-full lg:mb-32">
+      <div className="flex flex-col items-center justify-center p-4">
+        <LinkBreak2Icon className="h-10 w-10 text-red-200" />
+        <div className="mt-4 text-md text-white text-center">
+          Request failed
+        </div>
+        <div className="mt-2 text-ms text-gray-400 text-center font-light">
+          Make sure your service is up and running!
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ResponseBody({ response }: { response?: Requestornator }) {
+  const isFailure = response?.app_responses?.isFailure;
   const body = response?.app_responses?.responseBody;
+
+  // This means we couldn't even contact the service
+  if (isFailure) {
+    return <FailedRequest response={response} />;
+  }
 
   // Special rendering for JSON
   if (body && isJson(body)) {

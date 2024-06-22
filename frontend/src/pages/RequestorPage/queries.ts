@@ -31,6 +31,8 @@ export type Requestornator = {
     responseBody: string;
     responseHeaders: Record<string, string>;
     traceId: string;
+    isFailure: boolean;
+    failureReason: string | null;
     updatedAt: string;
   };
 };
