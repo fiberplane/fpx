@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { z } from "zod";
-import { generateUUID } from "..//lib/utils.js";
+import { errorToJson, generateUUID } from "..//lib/utils.js";
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 
@@ -207,14 +207,6 @@ function hasMessage(error: unknown): error is { message: string } {
     "message" in error &&
     typeof error?.message === "string"
   );
-}
-export function errorToJson(error: Error) {
-  return {
-    name: error.name, // Includes the name of the error, e.g., 'TypeError'
-    message: error.message, // The message string of the error
-    stack: error.stack ?? "", // Stack trace of where the error occurred (useful for debugging)
-    // Optionally add more properties here if needed
-  };
 }
 
 /**

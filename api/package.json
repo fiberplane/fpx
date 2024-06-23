@@ -12,7 +12,8 @@
     "build": "npm run db:generate && tsc",
     "format": "biome check . --write",
     "lint": "biome lint . && tsc --noEmit",
-    "lint:ci": "biome ci . #api"
+    "lint:ci": "biome ci . #api",
+    "test": "vitest --run"
   },
   "publishConfig": {
     "access": "public"
@@ -46,6 +47,7 @@
     "@types/ws": "^8.5.10",
     "ts-to-zod": "^3.8.5",
     "tsx": "^4.10.5",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
   }
 }

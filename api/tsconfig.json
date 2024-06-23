@@ -6,7 +6,7 @@
     "noErrorTruncation": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
-    "types": ["node"],
+    "types": ["vitest/globals", "node"],
     "declaration": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
