@@ -1,4 +1,4 @@
-import { differenceInMilliseconds as calculateDifferenceInMilliseconds} from "date-fns/differenceInMilliseconds";
+import { differenceInMilliseconds as calculateDifferenceInMilliseconds } from "date-fns/differenceInMilliseconds";
 import { format } from "date-fns/format";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";

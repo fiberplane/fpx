@@ -39,7 +39,9 @@ const server = serve({
 console.log(`FPX Server is running: http://localhost:${port}`);
 
 // Fire off an async probe to the service we want to monitor
-const serviceTargetArgument = process.argv[2];
+// This will collect information on all routes that the service exposes
+// Which powers a postman-like UI to ping routes and see responses
+const serviceTargetArgument = process.env.MIZU_SERVICE_TARGET;
 const probeMaxRetries = 10;
 const probeDelay = 1000;
 probeRoutesWithExponentialBackoff(

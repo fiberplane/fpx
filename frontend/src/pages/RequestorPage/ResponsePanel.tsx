@@ -127,16 +127,15 @@ function TabContentInner({
 function FailedRequest({ response }: { response?: Requestornator }) {
   // TODO - Show a more friendly error message
   const failureReason = response?.app_responses?.failureReason;
-  const friendlyMessage = failureReason === "fetch failed" ? "Service unreachable" : null;
+  const friendlyMessage =
+    failureReason === "fetch failed" ? "Service unreachable" : null;
   // const failureDetails = response?.app_responses?.failureDetails;
   return (
     <div className="flex flex-col items-center justify-center text-gray-400 max-h-[600px] w-full lg:mb-32">
       <div className="flex flex-col items-center justify-center p-4">
         <LinkBreak2Icon className="h-10 w-10 text-red-200" />
         <div className="mt-4 text-md text-white text-center">
-          Request failed {
-            friendlyMessage ? ` - ${friendlyMessage}` : ""
-          }
+          Request failed {friendlyMessage ? ` - ${friendlyMessage}` : ""}
         </div>
         <div className="mt-2 text-ms text-gray-400 text-center font-light">
           Make sure your api is up and has FPX Middleware enabled!

@@ -69,7 +69,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
       console.log("Fetching ai summary...");
       fetchAiSummary();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchAiSummary, aiEnabled]);
 
   if (isNotFound) {
