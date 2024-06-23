@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { isMizuRequestEndMessage, isMizuRequestStartMessage } from "@/queries";
-import { cn } from "@/utils";
-import { CaretSortIcon, LoopIcon } from "@radix-ui/react-icons";
+import { cn, parsePathFromRequestUrl } from "@/utils";
+import { CaretSortIcon, SymbolIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { getHttpMethodTextColor } from "./method";
 import { Requestornator, useTrace } from "./queries";
@@ -98,6 +98,8 @@ export function HistoryEntry({
             <Method method={requestMethod} />
             <span
               className={cn(
+                "whitespace-nowrap",
+                "overflow-ellipsis",
                 "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
               )}
             >
@@ -118,7 +120,7 @@ export function HistoryEntry({
                 loadHistoricalRequest(traceId);
               }}
             >
-              <LoopIcon className="h-4 w-4" />
+              <SymbolIcon className="ml-1 h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -197,23 +199,6 @@ function StatusCode({
       {isFailure ? "Fail" : strStatus}
     </span>
   );
-}
-
-function parsePathFromRequestUrl(
-  url: string,
-  queryParams?: Record<string, string>,
-) {
-  try {
-    const fancyUrl = new URL(url);
-    if (queryParams) {
-      for (const [key, value] of Object.entries(queryParams)) {
-        fancyUrl.searchParams.set(key, value);
-      }
-    }
-    return `${fancyUrl.pathname}${fancyUrl.search}`;
-  } catch {
-    return null;
-  }
 }
 
 function truncatePathWithEllipsis(path: string | null) {

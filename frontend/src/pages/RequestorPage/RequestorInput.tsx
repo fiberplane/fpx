@@ -24,6 +24,7 @@ export function RequestorInput({
 }: RequestInputProps) {
   const [value, setValue] = useState("");
 
+  // HACK - If path changes externally, update the value here
   useEffect(() => {
     const url = getUrl(path);
     setValue(url);

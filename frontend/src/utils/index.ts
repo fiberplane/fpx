@@ -36,6 +36,23 @@ export function isJson(str: string) {
   return true;
 }
 
+export function parsePathFromRequestUrl(
+  url: string,
+  queryParams?: Record<string, string>,
+) {
+  try {
+    const fancyUrl = new URL(url);
+    if (queryParams) {
+      for (const [key, value] of Object.entries(queryParams)) {
+        fancyUrl.searchParams.set(key, value);
+      }
+    }
+    return `${fancyUrl.pathname}${fancyUrl.search}`;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Utility to see if an unknown type (an error) has a nonempty string property called "message"
  */

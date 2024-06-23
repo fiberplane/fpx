@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { MizuTrace, useMizuTraces } from "@/queries";
-import { cn, isJson } from "@/utils";
+import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
 import { MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
@@ -20,7 +20,7 @@ import {
 } from "./queries";
 
 export const RequestorPage = () => {
-  const { routes, selectedRoute, setSelectedRoute: setRoute } = useRoutes();
+  const { routes, selectedRoute, setSelectedRoute } = useRoutes();
 
   const {
     path,
@@ -35,7 +35,8 @@ export const RequestorPage = () => {
     setRequestHeaders,
     queryParams,
     setQueryParams,
-  } = useRequestorFormData(selectedRoute);
+    handleSelectRoute,
+  } = useRequestorFormData(selectedRoute, setSelectedRoute);
 
   const {
     history,
@@ -44,7 +45,7 @@ export const RequestorPage = () => {
     loadHistoricalRequest,
   } = useRequestorHistory({
     routes,
-    setRoute,
+    handleSelectRoute,
     setPath,
     setPathParams,
     setBody,
@@ -106,13 +107,13 @@ export const RequestorPage = () => {
           <RoutesCombobox
             routes={routes}
             selectedRoute={selectedRoute}
-            handleRouteClick={setRoute}
+            handleRouteClick={handleSelectRoute}
           />
         </div>
         <RoutesPanel
           routes={routes}
           selectedRoute={selectedRoute}
-          handleRouteClick={setRoute}
+          handleRouteClick={handleSelectRoute}
         />
       </div>
 
@@ -221,7 +222,7 @@ function useRoutes() {
 
 type RequestorHistoryHookArgs = {
   routes: ProbedRoute[];
-  setRoute: (r: ProbedRoute) => void;
+  handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
   setPath: (path: string) => void;
   setBody: (body?: string) => void;
   setPathParams: (headers: KeyValueParameter[]) => void;
@@ -231,7 +232,7 @@ type RequestorHistoryHookArgs = {
 
 function useRequestorHistory({
   routes,
-  setRoute,
+  handleSelectRoute,
   setPath,
   setPathParams,
   setRequestHeaders,
@@ -275,9 +276,20 @@ function useRequestorHistory({
         (r) => r.path === routePattern && r.method === method,
       );
       if (matchedRoute) {
-        setRoute(matchedRoute);
-        const path = match.app_requests.requestUrl;
+        const pathParamsObject = match.app_requests.requestPathParams ?? {};
+        const pathParams = createKeyValueParameters(
+          Object.entries(pathParamsObject).map(([key, value]) => ({
+            key,
+            value,
+          })),
+        );
 
+        // NOTE - Helps us set path parameters correctly
+        handleSelectRoute(matchedRoute, pathParams);
+
+        // Reset the path to the *exact* path of the request, instead of the route pattern
+        const path =
+          parsePathFromRequestUrl(match.app_requests.requestUrl) ?? "";
         setPath(path);
 
         const headers = match.app_requests.requestHeaders ?? {};
@@ -297,16 +309,7 @@ function useRequestorHistory({
           ),
         );
 
-        const pathParams = match.app_requests.requestPathParams ?? {};
-        setPathParams(
-          createKeyValueParameters(
-            Object.entries(pathParams).map(([key, value]) => ({
-              key,
-              value,
-            })),
-          ),
-        );
-
+        // NOTE - We set the body to be a string for now, since that helps us render it in the UI
         const body = match.app_requests.requestBody;
         const safeBody =
           body && typeof body !== "string" ? JSON.stringify(body) : body;

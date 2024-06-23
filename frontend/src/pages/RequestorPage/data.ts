@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   KeyValueParameter,
   // createKeyValueParameters,
@@ -6,7 +6,10 @@ import {
 } from "./KeyValueForm";
 import { ProbedRoute } from "./queries";
 
-export function useRequestorFormData(selectedRoute: ProbedRoute | null) {
+export function useRequestorFormData(
+  selectedRoute: ProbedRoute | null,
+  setRoute: (route: ProbedRoute) => void,
+) {
   const [method, setMethod] = useState<string>("GET");
   const [path, setPath] = useState<string>("");
 
@@ -37,26 +40,30 @@ export function useRequestorFormData(selectedRoute: ProbedRoute | null) {
     extractPathParams(selectedRoutePath ?? "").map(mapPathKey),
   );
 
-  // Antipatterns ahead!
-  //
-  // Keeping state (of selected route), then setting it in an effect whenever it changes.
-  //
-  // Basically, we want to update form data whenever the user
-  // selects a new route from the sidebar
-
-  // Update the method and path to the newly selected route
-  useEffect(() => {
-    if (selectedRoute) {
-      setMethod(selectedRoute.method);
-      setPath(selectedRoute.path);
-      // HACK - This will 1000% break when we allow editing of the url input
-      //        Curious how insomnia handles this?
-      //
-      // TODO - need to fix this for when a route is loaded from history!
-      const newPathKeys = extractPathParams(selectedRoute.path);
-      setPathParams(newPathKeys.map(mapPathKey));
-    }
-  }, [selectedRoute]);
+  // We want to update form data whenever the user selects a new route from the sidebar
+  // It's better to wrap up this "new route selected" behavior in a handler,
+  // instead of reacting to changes in the selected route via useEffect
+  // This way, we can also handle the case where the user selects a route from the history.
+  const handleSelectRoute = useCallback(
+    (newRoute: ProbedRoute, pathParams?: KeyValueParameter[]) => {
+      if (newRoute) {
+        setRoute(newRoute);
+        setMethod(newRoute.method);
+        setPath(newRoute.path);
+        if (pathParams) {
+          setPathParams(pathParams);
+        } else {
+          // HACK - This will 1000% break when we allow editing of the url input
+          //        Curious how insomnia handles this?
+          //
+          // TODO - need to fix this for when a route is loaded from history!
+          const newPathKeys = extractPathParams(newRoute.path);
+          setPathParams(newPathKeys.map(mapPathKey));
+        }
+      }
+    },
+    [setRoute],
+  );
 
   return {
     path,
@@ -71,6 +78,7 @@ export function useRequestorFormData(selectedRoute: ProbedRoute | null) {
     setPathParams,
     requestHeaders,
     setRequestHeaders,
+    handleSelectRoute,
   };
 }
 
