@@ -41,15 +41,15 @@ export function RoutesCombobox(props: RoutesComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between h-12 bg-transparent mt-2"
         >
-          Endpoints
+          Select a Route
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0 w-96 shadow-md" align="start">
         <Command className="bg-[rgb(12,18,32)]">
-          <CommandInput placeholder="Search endpoints..." className="h-12" />
+          <CommandInput placeholder="Search routes..." className="h-12" />
           <CommandList>
-            <CommandEmpty>No endpoint found.</CommandEmpty>
+            <CommandEmpty>No route found.</CommandEmpty>
             <CommandGroup>
               {routes?.map((route) => {
                 const identifier = `${route.method}-${route.path}`;
