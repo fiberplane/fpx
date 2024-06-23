@@ -118,15 +118,12 @@ export const RequestorPage = () => {
 
       <div
         className={cn(
-          "flex flex-col flex-1", // Makes container extend to bottom of screen
+          "flex flex-col flex-1 max-lg:h-full", // Extend container to bottom of screen
           "lg:ml-4 lg:col-auto",
-          "max-lg:h-full",
-          cn(
-            "max-h-full",
-            "relative",
-            "overflow-y-auto", // NOTE - Changing this to overflow-y-auto makes the entire container scrollable
-            "lg:overflow-x-hidden",
-          ),
+          "max-h-full",
+          "relative",
+          "overflow-y-auto", // NOTE - This overflow-y-auto is what makes the entire container scrollable
+          "lg:overflow-x-hidden",
         )}
       >
         {aiEnabled && (
@@ -168,10 +165,9 @@ export const RequestorPage = () => {
             "rounded-md",
             "overflow-scroll",
             "border",
-            "relative",
             // HACK - This prevents overflow from getting too excessive.
             // FIXME - Need to resolve the problem with inner content expanding the parent
-            // "max-w-screen"
+            "max-w-screen",
           )}
         >
           <RequestPanel

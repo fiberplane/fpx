@@ -29,7 +29,7 @@ export function RequestorHistory({
           const traceId = h.app_responses?.traceId;
           return (
             <HistoryEntry
-              key={traceId ?? id}
+              key={traceId || id}
               traceId={traceId}
               response={h}
               loadHistoricalRequest={loadHistoricalRequest}
@@ -56,11 +56,13 @@ export function HistoryEntry({
   const responseStatusCode = response.app_responses?.responseStatusCode;
 
   const [isOpen, setIsOpen] = useState(false);
-  const { isLoading, isNotFound, trace } = useTrace(traceId);
+  const { isLoading, trace } = useTrace(traceId);
 
-  const fallbackUrl = parsePathFromRequestUrl(
-    response.app_requests?.requestUrl,
-    response.app_requests?.requestQueryParams ?? undefined,
+  const fallbackUrl = truncatePathWithEllipsis(
+    parsePathFromRequestUrl(
+      response.app_requests?.requestUrl,
+      response.app_requests?.requestQueryParams ?? undefined,
+    ),
   );
 
   const requestBody = useMemo(() => {
@@ -212,4 +214,12 @@ function parsePathFromRequestUrl(
   } catch {
     return null;
   }
+}
+
+function truncatePathWithEllipsis(path: string | null) {
+  if (path === null) {
+    return null;
+  }
+  const maxLength = 50;
+  return path.length > maxLength ? `${path.slice(0, maxLength)}...` : path;
 }
