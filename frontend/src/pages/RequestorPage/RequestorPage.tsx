@@ -464,10 +464,8 @@ function useMostRecentRequestornator(
 }
 
 function sortRequestornatorsDescending(a: Requestornator, b: Requestornator) {
-  const aLatestTimestamp =
-    a.app_responses?.updatedAt ?? a.app_requests?.updatedAt;
-  const bLatestTimestamp =
-    b.app_responses?.updatedAt ?? b.app_requests?.updatedAt;
+  const aLatestTimestamp = a.app_requests?.updatedAt;
+  const bLatestTimestamp = b.app_requests?.updatedAt;
   if (aLatestTimestamp > bLatestTimestamp) {
     return -1;
   }
