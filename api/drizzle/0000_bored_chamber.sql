@@ -4,7 +4,9 @@ CREATE TABLE `app_requests` (
 	`request_url` text NOT NULL,
 	`request_headers` text,
 	`request_query_params` text,
+	`request_path_params` text,
 	`request_body` text,
+	`request_route` text,
 	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
 );
@@ -16,6 +18,9 @@ CREATE TABLE `app_responses` (
 	`response_time` integer,
 	`response_headers` text,
 	`response_body` text,
+	`failure_reason` text,
+	`failure_details` text,
+	`is_failure` integer DEFAULT false,
 	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`request_id` integer,
@@ -59,4 +64,11 @@ CREATE TABLE `mizu_logs` (
 	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`matching_issues` text
+);
+--> statement-breakpoint
+CREATE TABLE `settings` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`content` text,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
 );

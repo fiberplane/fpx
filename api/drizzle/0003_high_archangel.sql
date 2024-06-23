@@ -1,1 +1,0 @@
-ALTER TABLE `app_requests` ADD `request_path_params` text;

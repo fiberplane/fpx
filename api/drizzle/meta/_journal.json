@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1718364631004,
-      "tag": "0000_overjoyed_yellow_claw",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1718951718568,
-      "tag": "0001_jazzy_quasimodo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1718972676943,
-      "tag": "0002_parallel_imperial_guard",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1718992988117,
-      "tag": "0003_high_archangel",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1719067917685,
-      "tag": "0004_silent_wildside",
+      "when": 1719169884108,
+      "tag": "0000_bored_chamber",
       "breakpoints": true
     }
   ]
