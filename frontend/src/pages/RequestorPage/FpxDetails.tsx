@@ -43,8 +43,8 @@ export function FpxDetails({ response }: FpxDetailsProps) {
 }
 
 // NOTE - Useful for testing rendering of ai markdown in the DOM
-const MOCK_AI_SUMMARY =
-  "The request to `/api/geese/9876543210` resulted in a 500 error. The error occurred because the value `9876543210` is out of range for the integer type in PostgreSQL.\n\n### Suggested Fix:\nEnsure the `id` parameter is within the valid range for an integer or change the database schema to use a larger integer type (e.g., `BIGINT`).\n\n```sql\nALTER TABLE geese ALTER COLUMN id TYPE BIGINT;\n```\n\nAdditionally, you might want to validate the `id` parameter before querying the database:\n\n```javascript\nconst id = parseInt(c.req.param('id'), 10);\nif (isNaN(id) || id > Number.MAX_SAFE_INTEGER) {\n  return c.json({ message: 'Invalid ID' }, 400);\n}\n```";
+// const MOCK_AI_SUMMARY =
+//   "The request to `/api/geese/9876543210` resulted in a 500 error. The error occurred because the value `9876543210` is out of range for the integer type in PostgreSQL.\n\n### Suggested Fix:\nEnsure the `id` parameter is within the valid range for an integer or change the database schema to use a larger integer type (e.g., `BIGINT`).\n\n```sql\nALTER TABLE geese ALTER COLUMN id TYPE BIGINT;\n```\n\nAdditionally, you might want to validate the `id` parameter before querying the database:\n\n```javascript\nconst id = parseInt(c.req.param('id'), 10);\nif (isNaN(id) || id > Number.MAX_SAFE_INTEGER) {\n  return c.json({ message: 'Invalid ID' }, 400);\n}\n```";
 
 type TraceDetailsProps = {
   response: Requestornator;
@@ -69,6 +69,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
       console.log("Fetching ai summary...");
       fetchAiSummary();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchAiSummary, aiEnabled]);
 
   if (isNotFound) {
@@ -219,21 +220,25 @@ function AiSummary({ summary }: { summary: string }) {
     <div className="text-sm font-light border p-2 rounded max-w-[680px]">
       <ReactMarkdown
         components={{
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           h1: ({ node, ...props }) => (
             <h1 className="text-lg font-bold my-2 text-gray-400" {...props} />
           ),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           h2: ({ node, ...props }) => (
             <h2
               className="text-lg font-semibold my-2 text-gray-400"
               {...props}
             />
           ),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           h3: ({ node, ...props }) => (
             <h3
               className="text-md font-semibold mt-2 mb-1 text-gray-300"
               {...props}
             />
           ),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           strong: ({ node, ...props }) => (
             <strong className="font-semibold" {...props} />
           ),

@@ -75,5 +75,6 @@ function getEventDescription(log: MizuLog) {
   if (isMizuErrorMessage(log?.message)) {
     return log.message.message;
   }
+  // @ts-expect-error - trust me i am a dolphin
   return String(log?.message?.message ?? log?.message);
 }

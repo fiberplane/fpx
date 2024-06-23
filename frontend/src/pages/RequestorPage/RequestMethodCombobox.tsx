@@ -1,4 +1,4 @@
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+import { CheckIcon } from "@radix-ui/react-icons";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/utils";
-import { useEffect } from "react";
 import { getHttpMethodTextColor } from "./method";
 
 const methods = [
@@ -90,7 +89,7 @@ export function RequestMethodCombobox({
           >
             {matchedMethod}
           </span>
-          {/* <CaretSortIcon className="ml-1 h-4 w-4 shrink-0 opacity-50" /> */}
+          {/* <lassName="ml-1 h-4 w-4 shrink-0 opacity-50" /> */}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[120px] p-0">

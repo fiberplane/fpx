@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { MizuTrace, useMizuTraces } from "@/queries";
 import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
 import { MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -234,7 +233,6 @@ function useRequestorHistory({
   routes,
   handleSelectRoute,
   setPath,
-  setPathParams,
   setRequestHeaders,
   setBody,
   setQueryParams,
