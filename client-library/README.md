@@ -28,7 +28,7 @@ import { createHonoMiddleware } from "@mizu-dev/hono";
 
 const app = new Hono();
 
-app.use(createHonoMiddleware())
+app.use(createHonoMiddleware(app))
 
 app.get("/", (c) => {
   return c.text("Hello Hono!");
@@ -94,7 +94,7 @@ const createConfig = (c: Context) => {
  };
 }
 
-app.use(createHonoMiddleware({ createConfig }))
+app.use(createHonoMiddleware(app, { createConfig }))
 app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
