@@ -31,24 +31,32 @@ export function useRequestorFormData(selectedRoute: ProbedRoute | null) {
     setKeyValueParameters: setRequestHeaders,
   } = useKeyValueForm();
 
-  // Antipattern ahead!
-  //
-  // - Keeping state, then setting it in an effect...
-
+  // If there's already a route selected, then its path keys and values should be the default shown
   const selectedRoutePath = selectedRoute?.path;
-
   const [pathParams, setPathParams] = useState<KeyValueParameter[]>(
     extractPathParams(selectedRoutePath ?? "").map(mapPathKey),
   );
 
-  // HACK - This will 1000% break when we allow editing of the url input
-  //        Curious how insomnia handles this
+  // Antipatterns ahead!
+  //
+  // Keeping state (of selected route), then setting it in an effect whenever it changes.
+  //
+  // Basically, we want to update form data whenever the user
+  // selects a new route from the sidebar
+
+  // Update the method and path to the newly selected route
   useEffect(() => {
-    if (selectedRoutePath) {
-      const newPathKeys = extractPathParams(selectedRoutePath);
+    if (selectedRoute) {
+      setMethod(selectedRoute.method);
+      setPath(selectedRoute.path);
+      // HACK - This will 1000% break when we allow editing of the url input
+      //        Curious how insomnia handles this?
+      //
+      // TODO - need to fix this for when a route is loaded from history!
+      const newPathKeys = extractPathParams(selectedRoute.path);
       setPathParams(newPathKeys.map(mapPathKey));
     }
-  }, [selectedRoutePath]);
+  }, [selectedRoute]);
 
   return {
     path,

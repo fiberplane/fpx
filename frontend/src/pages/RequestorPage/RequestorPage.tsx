@@ -20,8 +20,6 @@ import {
 } from "./queries";
 
 export const RequestorPage = () => {
-  const { data: traces } = useMizuTraces();
-
   const { routes, selectedRoute, setSelectedRoute: setRoute } = useRoutes();
 
   const {
@@ -38,17 +36,6 @@ export const RequestorPage = () => {
     queryParams,
     setQueryParams,
   } = useRequestorFormData(selectedRoute);
-
-  // HACK - Antipattern?
-  //
-  //        If the selected route changes,
-  //        update our form data
-  useEffect(() => {
-    if (selectedRoute) {
-      setPath(selectedRoute.path);
-      setMethod(selectedRoute.method);
-    }
-  }, [selectedRoute, setMethod, setPath]);
 
   const {
     history,
@@ -68,11 +55,6 @@ export const RequestorPage = () => {
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
     sessionHistory,
-  );
-
-  console.log(
-    "mostRecentRequestornatorForRoute",
-    mostRecentRequestornatorForRoute,
   );
 
   const { mutate: makeRequest, isLoading: isRequestorRequesting } =

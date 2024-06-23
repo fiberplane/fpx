@@ -108,7 +108,11 @@ function RequestMeta(props: RequestPanelProps) {
         >
           <TabsContent
             value="params"
-            className={cn("overflow-hidden overflow-y-auto max-h-full")}
+            className={cn(
+              "overflow-hidden overflow-y-auto max-h-full",
+              // NOTE - Needs bottom padding to avoid clipping the input of the last item
+              "pb-1",
+            )}
           >
             <div className="uppercase text-gray-400 text-sm mb-1">
               Query Parameters
@@ -144,7 +148,6 @@ function RequestMeta(props: RequestPanelProps) {
                     setPath(nextPath);
                   }}
                 />
-                <div className="h-1 w-full" />
               </>
             ) : null}
           </TabsContent>
