@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
+import { env } from "hono/adapter";
 import { z } from "zod";
 import {
   type NewAppRequest,
@@ -23,7 +24,11 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v0/app-routes", async (ctx) => {
   const db = ctx.get("db");
   const routes = await db.select().from(appRoutes);
-  return ctx.json(routes);
+  const baseUrl = env(ctx).MIZU_SERVICE_TARGET ?? "http://localhost:8787";
+  return ctx.json({
+    baseUrl,
+    routes,
+  });
 });
 
 app.get("/v0/all-requests", async (ctx) => {

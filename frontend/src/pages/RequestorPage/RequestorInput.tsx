@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
-import { getUrl } from "./queries";
 
 type RequestInputProps = {
   method: string;
@@ -12,6 +11,7 @@ type RequestInputProps = {
   setPath: (path: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
+  addBaseUrl: (path: string) => string;
 };
 
 export function RequestorInput({
@@ -21,14 +21,15 @@ export function RequestorInput({
   setPath,
   onSubmit,
   isRequestorRequesting,
+  addBaseUrl,
 }: RequestInputProps) {
   const [value, setValue] = useState("");
 
   // HACK - If path changes externally, update the value here
   useEffect(() => {
-    const url = getUrl(path);
+    const url = addBaseUrl(path ?? "");
     setValue(url);
-  }, [path]);
+  }, [path, addBaseUrl]);
 
   return (
     <form

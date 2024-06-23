@@ -39,15 +39,12 @@ export type Requestornator = {
 
 const REQUESTOR_REQUESTS_KEY = "requestorRequests";
 
-export function getUrl(path?: string) {
-  const DEFAULT_BASE_URL = "http://localhost:8787";
-  if (path?.startsWith(DEFAULT_BASE_URL)) {
-    return path;
-  }
-  return `${DEFAULT_BASE_URL}${path ?? ""}`;
-}
+type ProbedRoutesResponse = {
+  baseUrl: string;
+  routes: ProbedRoute[];
+};
 
-function getProbedRoutes(): Promise<ProbedRoute[]> {
+function getProbedRoutes(): Promise<ProbedRoutesResponse> {
   return fetch("/v0/app-routes").then((r) => r.json());
 }
 
@@ -79,6 +76,7 @@ export function useMakeRequest() {
 }
 
 export function makeRequest({
+  addBaseUrl,
   path,
   method,
   body,
@@ -87,6 +85,7 @@ export function makeRequest({
   queryParams,
   route,
 }: {
+  addBaseUrl: (path: string) => string;
   path: string;
   method: string;
   body?: string;
@@ -101,7 +100,7 @@ export function makeRequest({
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      requestUrl: getUrl(path),
+      requestUrl: addBaseUrl(path),
       requestMethod: method,
       requestBody: method === "GET" ? undefined : body,
       requestHeaders: reduceKeyValueParameters(headers),

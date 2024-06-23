@@ -19,7 +19,7 @@ import {
 } from "./queries";
 
 export const RequestorPage = () => {
-  const { routes, selectedRoute, setSelectedRoute } = useRoutes();
+  const { routes, addBaseUrl, selectedRoute, setSelectedRoute } = useRoutes();
 
   const {
     path,
@@ -63,6 +63,7 @@ export const RequestorPage = () => {
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
     body,
+    addBaseUrl,
     path,
     method,
     pathParams,
@@ -144,6 +145,7 @@ export const RequestorPage = () => {
         )}
 
         <RequestorInput
+          addBaseUrl={addBaseUrl}
           method={method}
           setMethod={setMethod}
           path={path}
@@ -201,8 +203,22 @@ export default RequestorPage;
 function useRoutes() {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
-    return routesAndMiddleware?.filter((r) => r.handlerType === "route") ?? [];
+    return (
+      routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
+      []
+    );
   }, [routesAndMiddleware]);
+  // TODO - Support swapping out base url...
+  const addBaseUrl = useCallback(
+    (path: string) => {
+      const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
+      if (path?.startsWith(baseUrl)) {
+        return path;
+      }
+      return `${baseUrl}${path}`;
+    },
+    [routesAndMiddleware],
+  );
 
   // Select the home route if it exists, otherwise fall back to the first route in the list
   const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
@@ -214,6 +230,7 @@ function useRoutes() {
     isError,
     isLoading,
     routes,
+    addBaseUrl,
     selectedRoute,
     setSelectedRoute,
   };
@@ -342,6 +359,7 @@ function useRequestorSubmitHandler({
   selectedRoute,
   body,
   path,
+  addBaseUrl,
   method,
   pathParams,
   queryParams,
@@ -349,6 +367,7 @@ function useRequestorSubmitHandler({
   makeRequest,
   recordRequestInSessionHistory,
 }: {
+  addBaseUrl: (path: string) => string;
   selectedRoute: ProbedRoute | null;
   body: string | undefined;
   path: string;
@@ -381,6 +400,7 @@ function useRequestorSubmitHandler({
 
       makeRequest(
         {
+          addBaseUrl,
           path,
           method,
           body: cleverBody,
