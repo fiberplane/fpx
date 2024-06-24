@@ -16,7 +16,7 @@ import {
   // useMizuTraces,
 } from "@/queries";
 import { cn } from "@/utils";
-import { CaretSortIcon } from "@radix-ui/react-icons";
+import { CaretSortIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
@@ -31,15 +31,7 @@ type FpxDetailsProps = {
 
 export function FpxDetails({ response }: FpxDetailsProps) {
   const hasTrace = !!response?.app_responses?.traceId;
-  return (
-    <div className="w-full">
-      {hasTrace ? (
-        <TraceDetails response={response} />
-      ) : (
-        <div className="text-center"></div>
-      )}
-    </div>
-  );
+  return hasTrace ? <TraceDetails response={response} /> : <NoTrace />;
 }
 
 // NOTE - Useful for testing rendering of ai markdown in the DOM
@@ -85,7 +77,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
   }
 
   return (
-    <div>
+    <div className="mt-2">
       {aiEnabled && (
         <div className="">
           <h3 className="pt-1 pb-2 text-sm">Summary</h3>
@@ -279,6 +271,22 @@ function AiSummary({ summary }: { summary: string }) {
       >
         {summary}
       </ReactMarkdown>
+    </div>
+  );
+}
+
+function NoTrace() {
+  return (
+    <div className="flex flex-col items-center justify-center text-gray-400 max-h-[600px] h-full w-full lg:mb-32">
+      <div className="flex flex-col items-center justify-center p-4">
+        <LinkBreak2Icon className="h-10 w-10 text-red-200" />
+        <div className="mt-4 text-md text-white text-center">
+          No trace found
+        </div>
+        <div className="mt-2 text-ms text-gray-400 text-center font-light">
+          Could not correlate the request with application logs or traces
+        </div>
+      </div>
     </div>
   );
 }

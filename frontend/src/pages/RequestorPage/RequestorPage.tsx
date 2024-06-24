@@ -185,6 +185,7 @@ export const RequestorPage = () => {
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
           />
+
           <div className="flex flex-col items-stretch flex-auto">
             <ResponsePanel
               response={mostRecentRequestornatorForRoute}
@@ -440,6 +441,7 @@ function useRequestorSubmitHandler({
       recordRequestInSessionHistory,
       requestHeaders,
       selectedRoute,
+      addBaseUrl,
     ],
   );
 }

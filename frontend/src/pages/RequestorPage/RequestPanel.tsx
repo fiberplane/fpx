@@ -7,7 +7,7 @@ import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { PathParamForm } from "./PathParamForm/PathParamForm";
 import { ResizableHandle } from "./Resizable";
-import { CustomTabTrigger, CustomTabsList } from "./Tabs";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 
 type RequestPanelProps = {
@@ -106,118 +106,115 @@ function RequestMeta(props: RequestPanelProps) {
             )}
           </CustomTabsList>
         </div>
-        <div
+        <CustomTabsContent
+          value="params"
           className={cn(
-            "pt-2 pb-4 px-3",
-            cn("overflow-hidden overflow-y-auto max-h-full"),
+            "overflow-hidden overflow-y-auto max-h-full",
+            // Need a lil bottom padding to avoid clipping the inputs of the last row in the form
+            "pb-1",
           )}
         >
-          <TabsContent
-            value="params"
-            className={cn(
-              "overflow-hidden overflow-y-auto max-h-full",
-              // NOTE - Needs bottom padding to avoid clipping the input of the last item
-              "pb-1",
-            )}
-          >
-            <div className="uppercase text-gray-400 text-sm mb-1 flex items-center justify-between">
-              <span>Query Parameters</span>
-
-              <EraserIcon
-                className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
-                onClick={() => {
-                  setQueryParams([]);
-                }}
-              />
-            </div>
-            <KeyValueForm
-              keyValueParameters={queryParams}
-              onChange={(params) => {
-                setQueryParams(params);
-              }}
-            />
-            {pathParams.length > 0 ? (
-              <>
-                <PanelSectionHeader
-                  title="Path parameters"
-                  handleClearData={() => {
-                    setPathParams((currentPathParams) => {
-                      return currentPathParams.map((param) => {
-                        return {
-                          ...param,
-                          value: "",
-                          enabled: false,
-                        };
-                      });
-                    });
-                  }}
-                  className="mt-4"
-                />
-                <PathParamForm
-                  keyValueParameters={pathParams}
-                  onChange={(params) => {
-                    setPathParams(params);
-                    if (!currentRoute) {
-                      return;
-                    }
-                    let nextPath = currentRoute;
-                    for (const param of params) {
-                      if (!param.enabled) {
-                        continue;
-                      }
-                      nextPath = nextPath.replace(
-                        param.key,
-                        param.value ?? param.key,
-                      );
-                    }
-                    setPath(nextPath);
-                  }}
-                />
-              </>
-            ) : null}
-          </TabsContent>
-          <TabsContent value="headers">
-            <PanelSectionHeader
-              title="Request Headers"
-              handleClearData={() => {
-                setRequestHeaders([]);
-              }}
-            />
-            <KeyValueForm
-              keyValueParameters={requestHeaders}
-              onChange={(headers) => {
-                setRequestHeaders(headers);
-              }}
-            />
-          </TabsContent>
-          {shouldShowBody && (
-            <TabsContent value="body">
+          <PanelSectionHeader
+            title="Query parameters"
+            handleClearData={() => {
+              setQueryParams([]);
+            }}
+          />
+          <KeyValueForm
+            keyValueParameters={queryParams}
+            onChange={(params) => {
+              setQueryParams(params);
+            }}
+          />
+          {pathParams.length > 0 ? (
+            <>
               <PanelSectionHeader
-                title="Request Body"
+                title="Path parameters"
                 handleClearData={() => {
-                  setBody(undefined);
+                  setPathParams((currentPathParams) => {
+                    return currentPathParams.map((param) => {
+                      return {
+                        ...param,
+                        value: "",
+                        enabled: false,
+                      };
+                    });
+                  });
                 }}
-                className="mb-2"
+                className="mt-4"
               />
-              <CodeMirrorJsonEditor
-                onChange={setBody}
-                value={body}
-                maxHeight="800px"
+              <PathParamForm
+                keyValueParameters={pathParams}
+                onChange={(params) => {
+                  setPathParams(params);
+                  if (!currentRoute) {
+                    return;
+                  }
+                  let nextPath = currentRoute;
+                  for (const param of params) {
+                    if (!param.enabled) {
+                      continue;
+                    }
+                    nextPath = nextPath.replace(
+                      param.key,
+                      param.value ?? param.key,
+                    );
+                  }
+                  setPath(nextPath);
+                }}
               />
-              {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
-            </TabsContent>
-          )}
-        </div>
+            </>
+          ) : null}
+        </CustomTabsContent>
+        <CustomTabsContent value="headers">
+          <PanelSectionHeader
+            title="Request Headers"
+            handleClearData={() => {
+              setRequestHeaders([]);
+            }}
+          />
+          <KeyValueForm
+            keyValueParameters={requestHeaders}
+            onChange={(headers) => {
+              setRequestHeaders(headers);
+            }}
+          />
+        </CustomTabsContent>
+        {shouldShowBody && (
+          <CustomTabsContent value="body">
+            <PanelSectionHeader
+              title="Request Body"
+              handleClearData={() => {
+                setBody(undefined);
+              }}
+              className="mb-2"
+            />
+            <CodeMirrorJsonEditor
+              onChange={setBody}
+              value={body}
+              maxHeight="800px"
+            />
+            {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
+          </CustomTabsContent>
+        )}
       </Tabs>
     </div>
   );
 }
 
+type PanelSectionHeaderProps = {
+  title: string;
+  handleClearData?: () => void;
+  className?: string;
+  children?: React.ReactNode;
+};
+
 export function PanelSectionHeader({
   title,
   handleClearData,
   className,
-}: { title: string; handleClearData: () => void; className?: string }) {
+  children,
+}: PanelSectionHeaderProps) {
   return (
     <div
       className={cn(
@@ -227,12 +224,16 @@ export function PanelSectionHeader({
     >
       <span>{title}</span>
 
-      <EraserIcon
-        className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
-        onClick={() => {
-          handleClearData();
-        }}
-      />
+      {children}
+
+      {handleClearData && (
+        <EraserIcon
+          className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
+          onClick={() => {
+            handleClearData();
+          }}
+        />
+      )}
     </div>
   );
 }

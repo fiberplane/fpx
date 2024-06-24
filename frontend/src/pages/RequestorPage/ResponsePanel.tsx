@@ -1,13 +1,19 @@
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
 import { isJson, noop } from "@/utils";
-import { ClockIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
+import {
+  ArrowTopRightIcon,
+  ClockIcon,
+  LinkBreak2Icon,
+} from "@radix-ui/react-icons";
+import { Link } from "react-router-dom";
 import { MonacoJsonEditor } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
+import { PanelSectionHeader } from "./RequestPanel";
 import { RequestorHistory } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { Requestornator } from "./queries";
@@ -43,7 +49,7 @@ export function ResponsePanel({
           </div>
         </CustomTabsList>
       </div>
-      <CustomTabsContent value="body">
+      <CustomTabsContent value="body" className="flex'">
         <TabContentInner
           isLoading={isLoading}
           isEmpty={!response}
@@ -54,7 +60,7 @@ export function ResponsePanel({
           <ResponseBody response={response} />
         </TabContentInner>
       </CustomTabsContent>
-      <CustomTabsContent value="headers">
+      <CustomTabsContent value="headers" className="flex'">
         <TabContentInner
           isLoading={isLoading}
           isEmpty={!response}
@@ -62,12 +68,13 @@ export function ResponsePanel({
           FailState={<FailedRequest response={response} />}
           EmptyState={<NoResponse />}
         >
+          <PanelSectionHeader title="Response Headers" />
           <HeaderTable
             headers={response?.app_responses?.responseHeaders ?? {}}
           />
         </TabContentInner>
       </CustomTabsContent>
-      <CustomTabsContent value="debug">
+      <CustomTabsContent value="debug" className="flex'">
         <TabContentInner
           isLoading={isLoading}
           isEmpty={!response}
@@ -75,10 +82,19 @@ export function ResponsePanel({
           FailState={<FailedRequest response={response} />}
           EmptyState={<NoResponse />}
         >
+          <PanelSectionHeader title=" ">
+            <Link
+              to={`/requests/${response?.app_responses?.traceId}`}
+              className="text-blue-400 hover:underline hover:text-blue-300 transition-colors flex items-center"
+            >
+              Go to Request Details
+              <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+            </Link>
+          </PanelSectionHeader>
           <FpxDetails response={response} />
         </TabContentInner>
       </CustomTabsContent>
-      <CustomTabsContent value="history" className="flex-col">
+      <CustomTabsContent value="history" className="flex flex-col">
         {history?.length > 0 ? (
           <RequestorHistory
             history={history}
@@ -118,27 +134,6 @@ function TabContentInner({
     <>{children}</>
   ) : (
     <>{EmptyState}</>
-  );
-}
-
-function FailedRequest({ response }: { response?: Requestornator }) {
-  // TODO - Show a more friendly error message
-  const failureReason = response?.app_responses?.failureReason;
-  const friendlyMessage =
-    failureReason === "fetch failed" ? "Service unreachable" : null;
-  // const failureDetails = response?.app_responses?.failureDetails;
-  return (
-    <div className="flex flex-col items-center justify-center text-gray-400 max-h-[600px] w-full lg:mb-32">
-      <div className="flex flex-col items-center justify-center p-4">
-        <LinkBreak2Icon className="h-10 w-10 text-red-200" />
-        <div className="mt-4 text-md text-white text-center">
-          Request failed {friendlyMessage ? ` - ${friendlyMessage}` : ""}
-        </div>
-        <div className="mt-2 text-ms text-gray-400 text-center font-light">
-          Make sure your api is up and has FPX Middleware enabled!
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -195,7 +190,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 
 function NoHistory() {
   return (
-    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32 max-h-[600px]">
+    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32 h-full max-h-[600px]">
       <div className="flex flex-col items-center justify-center p-4">
         <div className="mt-4 text-md text-white text-center">
           You have no requests in your history
@@ -210,7 +205,7 @@ function NoHistory() {
 
 function NoResponse() {
   return (
-    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32 max-h-[600px]">
+    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32 h-full max-h-[600px]">
       <div className="flex flex-col items-center justify-center p-4">
         <div className="mt-4 text-md text-white text-center">
           Enter a URL and hit send to see a response
@@ -225,4 +220,25 @@ function NoResponse() {
 
 function Loading() {
   return <Skeleton className="w-full h-32" />;
+}
+
+function FailedRequest({ response }: { response?: Requestornator }) {
+  // TODO - Show a more friendly error message
+  const failureReason = response?.app_responses?.failureReason;
+  const friendlyMessage =
+    failureReason === "fetch failed" ? "Service unreachable" : null;
+  // const failureDetails = response?.app_responses?.failureDetails;
+  return (
+    <div className="flex flex-col items-center justify-center text-gray-400 max-h-[600px] w-full lg:mb-32">
+      <div className="flex flex-col items-center justify-center p-4">
+        <LinkBreak2Icon className="h-10 w-10 text-red-200" />
+        <div className="mt-4 text-md text-white text-center">
+          Request failed {friendlyMessage ? ` - ${friendlyMessage}` : ""}
+        </div>
+        <div className="mt-2 text-ms text-gray-400 text-center font-light">
+          Make sure your api is up and has FPX Middleware enabled!
+        </div>
+      </div>
+    </div>
+  );
 }

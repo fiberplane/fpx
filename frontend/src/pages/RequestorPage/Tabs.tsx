@@ -55,19 +55,8 @@ export const CustomTabsContent = React.forwardRef<
     ref={ref}
     {...props}
     className={cn(
-      "px-3 py-2 flex data-[state=active]:h-full data-[state=inactive]:hidden",
+      "px-3 py-2 data-[state=active]:h-full data-[state=inactive]:hidden",
       className,
     )}
   />
 ));
-
-// type CustomTabsContentProps = ComponentProps<typeof TabsContent>;
-
-// export function CustomTabsContent(props: CustomTabsContentProps) {
-//   return (
-//     <TabsContent
-//       {...props}
-//       className={cn("px-3 py-2 flex data-[active]:h-full", props.className)}
-//     />
-//   );
-// }
