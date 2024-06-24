@@ -159,7 +159,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
     const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
 
     return (
-      <div className="flex flex-grow items-stretch rounded overflow-hidden border max-w-full">
+      <div className="flex flex-grow items-stretch overflow-hidden max-w-full">
         <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
       </div>
     );

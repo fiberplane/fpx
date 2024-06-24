@@ -1,6 +1,7 @@
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
+import { EraserIcon } from "@radix-ui/react-icons";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
@@ -16,7 +17,7 @@ type RequestPanelProps = {
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   setPath: (path: string) => void;
-  setPathParams: (params: KeyValueParameter[]) => void;
+  setPathParams: React.Dispatch<React.SetStateAction<KeyValueParameter[]>>;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   requestHeaders: KeyValueParameter[];
@@ -114,8 +115,15 @@ function RequestMeta(props: RequestPanelProps) {
               "pb-1",
             )}
           >
-            <div className="uppercase text-gray-400 text-sm mb-1">
-              Query Parameters
+            <div className="uppercase text-gray-400 text-sm mb-1 flex items-center justify-between">
+              <span>Query Parameters</span>
+
+              <EraserIcon
+                className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
+                onClick={() => {
+                  setQueryParams([]);
+                }}
+              />
             </div>
             <KeyValueForm
               keyValueParameters={queryParams}
@@ -125,9 +133,21 @@ function RequestMeta(props: RequestPanelProps) {
             />
             {pathParams.length > 0 ? (
               <>
-                <div className="uppercase text-gray-400 text-sm mt-4 mb-1">
-                  Path Parameters
-                </div>
+                <PanelSectionHeader
+                  title="Path parameters"
+                  handleClearData={() => {
+                    setPathParams((currentPathParams) => {
+                      return currentPathParams.map((param) => {
+                        return {
+                          ...param,
+                          value: "",
+                          enabled: false,
+                        };
+                      });
+                    });
+                  }}
+                  className="mt-4"
+                />
                 <PathParamForm
                   keyValueParameters={pathParams}
                   onChange={(params) => {
@@ -152,9 +172,12 @@ function RequestMeta(props: RequestPanelProps) {
             ) : null}
           </TabsContent>
           <TabsContent value="headers">
-            <div className="uppercase text-gray-400 text-sm mb-1">
-              Request Headers
-            </div>
+            <PanelSectionHeader
+              title="Request Headers"
+              handleClearData={() => {
+                setRequestHeaders([]);
+              }}
+            />
             <KeyValueForm
               keyValueParameters={requestHeaders}
               onChange={(headers) => {
@@ -163,6 +186,13 @@ function RequestMeta(props: RequestPanelProps) {
             />
           </TabsContent>
           <TabsContent value="body">
+            <PanelSectionHeader
+              title="Request Body"
+              handleClearData={() => {
+                setBody(undefined);
+              }}
+              className="mb-2"
+            />
             <CodeMirrorJsonEditor
               onChange={setBody}
               value={body}
@@ -172,6 +202,30 @@ function RequestMeta(props: RequestPanelProps) {
           </TabsContent>
         </div>
       </Tabs>
+    </div>
+  );
+}
+
+function PanelSectionHeader({
+  title,
+  handleClearData,
+  className,
+}: { title: string; handleClearData: () => void; className?: string }) {
+  return (
+    <div
+      className={cn(
+        "uppercase text-gray-400 text-sm mb-1 flex items-center justify-between",
+        className,
+      )}
+    >
+      <span>{title}</span>
+
+      <EraserIcon
+        className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
+        onClick={() => {
+          handleClearData();
+        }}
+      />
     </div>
   );
 }
