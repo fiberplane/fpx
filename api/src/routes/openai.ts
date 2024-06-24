@@ -15,9 +15,9 @@ const FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
   Be clever and creative with test data. Avoid just writing things like "test".
 
   For example, if you get a route like \`/users/:id\`, you should return a URL like:
-  \`/users/1234567890\` and a routeParams parameter like this:
+  \`/users/1234567890\` and a pathParams parameter like this:
 
-  { "routeParams": { "key": ":id", "value": "1234567890" } }
+  { "pathParams": { "key": ":id", "value": "1234567890" } }
 
   Use the tool "make_request". Always respond in valid JSON.
 `);
@@ -33,9 +33,9 @@ const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
   Be clever and creative with test data. Avoid just writing things like "test".
 
   For example, if you get a route like \`/users/:id\`, you should return a URL like:
-  \`/users/1234567890\` and a routeParams parameter like this:
+  \`/users/1234567890\` and a pathParams parameter like this:
 
-  { "routeParams": { "key": ":id", "value": "1234567890" } }
+  { "pathParams": { "key": ":id", "value": "1234567890" } }
 
   You should focus on trying to break things. You are a QA. 
   You are the enemy of bugs. To protect quality, you must find bugs.
@@ -82,7 +82,7 @@ app.post(
                 path: {
                   type: "string",
                 },
-                routeParams: {
+                pathParams: {
                   type: "array",
                   items: {
                     type: "object",
@@ -159,7 +159,7 @@ app.post(
                 //   ]
                 // },
               },
-              // TODO - Mark fields like `routeParams` as required based on the route definition?
+              // TODO - Mark fields like `pathParams` as required based on the route definition?
               required: ["path"],
             },
           },

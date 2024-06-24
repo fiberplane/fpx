@@ -85,6 +85,7 @@ export const RequestorPage = () => {
     setBody,
     setQueryParams,
     setPath,
+    setPathParams,
   });
 
   return (
