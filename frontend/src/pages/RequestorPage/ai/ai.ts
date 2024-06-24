@@ -50,12 +50,14 @@ export function useAi(
       const queryParams = data.request?.queryParams;
       const path = data.request?.path;
 
+
       if (body) {
         setBody(body);
       }
 
       // NOTE - We need to be clear on the types here, otherwise this could wreak havoc on our form data
       if (validateQueryParamsFromResponse(queryParams)) {
+
         const newParameters = createKeyValueParameters(queryParams);
         setQueryParams(newParameters);
       } else {
@@ -84,7 +86,7 @@ const QueryParamSchema = z.object({
 const isQueryParamReplacement = (
   queryParam: unknown,
 ): queryParam is z.infer<typeof QueryParamSchema> => {
-  return QueryParamSchema.safeParse(queryParam).success;
+  return !!QueryParamSchema.safeParse(queryParam).success;
 };
 
 function validateQueryParamsFromResponse(
@@ -94,7 +96,7 @@ function validateQueryParamsFromResponse(
     !!queryParams &&
     Array.isArray(queryParams) &&
     queryParams.every((qp) => {
-      isQueryParamReplacement(qp);
+      return isQueryParamReplacement(qp);
     })
   );
 }
