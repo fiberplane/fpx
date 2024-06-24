@@ -470,7 +470,8 @@ function useMostRecentRequestornator(
   return useMemo<Requestornator | undefined>(() => {
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestRoute === requestInputs.route,
+        r?.app_requests?.requestRoute === requestInputs.route &&
+        r?.app_requests?.requestMethod === requestInputs.method
     );
 
     // Descending sort by updatedAt
