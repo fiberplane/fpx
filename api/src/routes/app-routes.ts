@@ -177,7 +177,7 @@ async function handleSuccessfulRequest(
         return {
           responseHeaders,
           responseStatusCode: status,
-          responseBody: await response.text(),
+          responseBody: await safeReadTextBody(response),
           responseTime: duration,
         };
       })
@@ -203,6 +203,13 @@ async function handleSuccessfulRequest(
     responseBody,
     traceId,
   };
+}
+
+function safeReadTextBody(response: Response) {
+  return response.text().catch((error) => {
+    console.error("Failed to parse response body", error);
+    return null;
+  });
 }
 
 function hasMessage(error: unknown): error is { message: string } {

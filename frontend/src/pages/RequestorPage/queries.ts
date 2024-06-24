@@ -1,5 +1,6 @@
 import { useMizuTraces } from "@/queries";
 import { useMutation, useQuery, useQueryClient } from "react-query";
+import { z } from "zod";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
 
 export type ProbedRoute = {
@@ -9,6 +10,19 @@ export type ProbedRoute = {
   handlerType: "route" | "middleware";
   currentlyRegistered: boolean;
 };
+
+const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(JsonSchema),
+    z.record(JsonSchema),
+  ]),
+);
+
+type JsonSchemaType = z.infer<typeof JsonSchema>;
 
 export type Requestornator = {
   // TODO
@@ -20,8 +34,7 @@ export type Requestornator = {
     requestHeaders?: Record<string, string> | null;
     requestQueryParams?: Record<string, string> | null;
     requestPathParams?: Record<string, string> | null;
-    // FIXME - the body could be anything json serializable...
-    requestBody?: object | string | null;
+    requestBody?: JsonSchemaType;
     updatedAt: string;
   };
   // NOTE - can be undefined if request failed, at least that happened to me locally
@@ -102,7 +115,8 @@ export function makeRequest({
     body: JSON.stringify({
       requestUrl: addBaseUrl(path),
       requestMethod: method,
-      requestBody: method === "GET" ? undefined : body,
+      // TODO - Should we remove request bodies for GET requests automatically?
+      requestBody: body,
       requestHeaders: reduceKeyValueParameters(headers),
       requestPathParams: reduceKeyValueParameters(pathParams ?? []),
       requestQueryParams: reduceKeyValueParameters(queryParams),

@@ -110,11 +110,21 @@ export const appResponseRelations = relations(appResponses, ({ one }) => ({
   }),
 }));
 
-// Otherwise I have a generic `Json` type which is hard to work with
+const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(JsonSchema),
+    z.record(JsonSchema),
+  ]),
+);
+
 // TODO: probably could be reworked but this is stub anyway so who cares
 const refineRequestObjects = {
   requestQueryParams: z.record(z.string()).optional(),
-  requestBody: z.record(z.string(), z.any()).optional(),
+  requestBody: JsonSchema.optional(),
   requestHeaders: z.record(z.string()).optional(),
 };
 

@@ -324,11 +324,16 @@ function useRequestorHistory({
           ),
         );
 
-        // NOTE - We set the body to be a string for now, since that helps us render it in the UI
+        // NOTE - We set the body to be undefined or a (json serialized) string for now,
+        //        since that helps us render it in the UI (specifically in CodeMirror editors)
         const body = match.app_requests.requestBody;
-        const safeBody =
-          body && typeof body !== "string" ? JSON.stringify(body) : body;
-        setBody(safeBody ?? undefined);
+        if (body === undefined || body === null) {
+          setBody(undefined);
+        } else {
+          const safeBody =
+            typeof body !== "string" ? JSON.stringify(body) : body;
+          setBody(safeBody);
+        }
       }
     }
   };
@@ -387,23 +392,19 @@ function useRequestorSubmitHandler({
         return;
       }
 
-      // FIXME
-      let cleverBody =
-        typeof body === "string" && isJson(body)
-          ? JSON.parse(body)
-          : body ?? "";
-
-      // HACK - Mizu API expects an object...
-      if (cleverBody === "") {
-        cleverBody = {};
-      }
+      // FIXME - We need to consider if the user is trying to actually send a JSON body
+      //         For now we just assume it's always JSON
+      //         This code will break if, for example, the user passes the string "null" as the body...
+      //         in that case, the body will be converted to null, which is not what they want.
+      const hackyBody =
+        typeof body === "string" && isJson(body) ? JSON.parse(body) : body;
 
       makeRequest(
         {
           addBaseUrl,
           path,
           method,
-          body: cleverBody,
+          body: hackyBody,
           headers: requestHeaders,
           pathParams,
           queryParams,
