@@ -49,8 +49,8 @@ export function useRequestorFormData(
       if (newRoute) {
         setRoute(newRoute);
         setMethod(newRoute.method);
-        // NOTE - Reset the body for GET requests
-        if (newRoute.method === "GET") {
+        // Reset the body for GET and HEAD requests
+        if (newRoute.method === "GET" || newRoute.method === "HEAD") {
           setBody(undefined);
         }
         setPath(newRoute.path);

@@ -173,6 +173,7 @@ export const RequestorPage = () => {
           )}
         >
           <RequestPanel
+            method={method}
             body={body}
             setBody={setBody}
             pathParams={pathParams}

@@ -12,6 +12,7 @@ import { useResizableWidth, useStyleWidth } from "./hooks";
 
 type RequestPanelProps = {
   currentRoute?: string;
+  method: string;
   body?: string;
   setBody: (body?: string) => void;
   pathParams: KeyValueParameter[];
@@ -59,6 +60,7 @@ function ResizableRequestMeta(props: RequestPanelProps) {
 function RequestMeta(props: RequestPanelProps) {
   const {
     currentRoute,
+    method,
     body,
     setBody,
     pathParams,
@@ -69,6 +71,7 @@ function RequestMeta(props: RequestPanelProps) {
     setQueryParams,
     setRequestHeaders,
   } = props;
+  const shouldShowBody = method !== "GET" && method !== "HEAD";
   return (
     <div className="min-w-[200px] border-r sm:border-none max-h-full">
       <Tabs
@@ -93,12 +96,14 @@ function RequestMeta(props: RequestPanelProps) {
                 </span>
               )}
             </CustomTabTrigger>
-            <CustomTabTrigger value="body">
-              Body
-              {(body?.length ?? 0) > 0 && (
-                <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
-              )}
-            </CustomTabTrigger>
+            {shouldShowBody && (
+              <CustomTabTrigger value="body">
+                Body
+                {(body?.length ?? 0) > 0 && (
+                  <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
+                )}
+              </CustomTabTrigger>
+            )}
           </CustomTabsList>
         </div>
         <div
@@ -185,28 +190,30 @@ function RequestMeta(props: RequestPanelProps) {
               }}
             />
           </TabsContent>
-          <TabsContent value="body">
-            <PanelSectionHeader
-              title="Request Body"
-              handleClearData={() => {
-                setBody(undefined);
-              }}
-              className="mb-2"
-            />
-            <CodeMirrorJsonEditor
-              onChange={setBody}
-              value={body}
-              maxHeight="800px"
-            />
-            {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
-          </TabsContent>
+          {shouldShowBody && (
+            <TabsContent value="body">
+              <PanelSectionHeader
+                title="Request Body"
+                handleClearData={() => {
+                  setBody(undefined);
+                }}
+                className="mb-2"
+              />
+              <CodeMirrorJsonEditor
+                onChange={setBody}
+                value={body}
+                maxHeight="800px"
+              />
+              {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
+            </TabsContent>
+          )}
         </div>
       </Tabs>
     </div>
   );
 }
 
-function PanelSectionHeader({
+export function PanelSectionHeader({
   title,
   handleClearData,
   className,

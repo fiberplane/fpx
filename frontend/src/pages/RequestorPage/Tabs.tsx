@@ -1,4 +1,4 @@
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as React from "react";
@@ -46,3 +46,28 @@ export function CustomTabTrigger(props: ComponentProps<typeof TabsTrigger>) {
     />
   );
 }
+
+export const CustomTabsContent = React.forwardRef<
+  React.ElementRef<typeof TabsContent>,
+  React.ComponentPropsWithoutRef<typeof TabsContent>
+>(({ className, ...props }, ref) => (
+  <TabsContent
+    ref={ref}
+    {...props}
+    className={cn(
+      "px-3 py-2 flex data-[state=active]:h-full data-[state=inactive]:hidden",
+      className,
+    )}
+  />
+));
+
+// type CustomTabsContentProps = ComponentProps<typeof TabsContent>;
+
+// export function CustomTabsContent(props: CustomTabsContentProps) {
+//   return (
+//     <TabsContent
+//       {...props}
+//       className={cn("px-3 py-2 flex data-[active]:h-full", props.className)}
+//     />
+//   );
+// }

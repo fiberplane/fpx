@@ -9,7 +9,7 @@ import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
 import { RequestorHistory } from "./RequestorHistory";
-import { CustomTabTrigger, CustomTabsList } from "./Tabs";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { Requestornator } from "./queries";
 
 // TODO - Create skeleton loading components for each tab content
@@ -43,7 +43,7 @@ export function ResponsePanel({
           </div>
         </CustomTabsList>
       </div>
-      <TabsContent value="body" className="h-full">
+      <CustomTabsContent value="body">
         <TabContentInner
           isLoading={isLoading}
           isEmpty={!response}
@@ -53,8 +53,8 @@ export function ResponsePanel({
         >
           <ResponseBody response={response} />
         </TabContentInner>
-      </TabsContent>
-      <TabsContent value="headers" className="h-full">
+      </CustomTabsContent>
+      <CustomTabsContent value="headers">
         <TabContentInner
           isLoading={isLoading}
           isEmpty={!response}
@@ -66,8 +66,8 @@ export function ResponsePanel({
             headers={response?.app_responses?.responseHeaders ?? {}}
           />
         </TabContentInner>
-      </TabsContent>
-      <TabsContent value="debug" className="h-full">
+      </CustomTabsContent>
+      <CustomTabsContent value="debug">
         <TabContentInner
           isLoading={isLoading}
           isEmpty={!response}
@@ -77,23 +77,24 @@ export function ResponsePanel({
         >
           <FpxDetails response={response} />
         </TabContentInner>
-      </TabsContent>
-      <TabsContent value="history" className="h-full">
-        <div className="px-3 py-2 h-full flex flex-col">
-          {history?.length > 0 ? (
-            <RequestorHistory
-              history={history}
-              loadHistoricalRequest={loadHistoricalRequest}
-            />
-          ) : (
-            <NoHistory />
-          )}
-        </div>
-      </TabsContent>
+      </CustomTabsContent>
+      <CustomTabsContent value="history" className="flex-col">
+        {history?.length > 0 ? (
+          <RequestorHistory
+            history={history}
+            loadHistoricalRequest={loadHistoricalRequest}
+          />
+        ) : (
+          <NoHistory />
+        )}
+      </CustomTabsContent>
     </Tabs>
   );
 }
 
+/**
+ * Helper component for handling loading/failure/empty states in tab content
+ */
 function TabContentInner({
   isLoading,
   isEmpty,
@@ -109,18 +110,14 @@ function TabContentInner({
   isLoading: boolean;
   isEmpty: boolean;
 }) {
-  return (
-    <div className="px-3 py-2 h-full flex">
-      {isLoading ? (
-        <Loading />
-      ) : isFailure ? (
-        <>{FailState}</>
-      ) : !isEmpty ? (
-        <>{children}</>
-      ) : (
-        <>{EmptyState}</>
-      )}
-    </div>
+  return isLoading ? (
+    <Loading />
+  ) : isFailure ? (
+    <>{FailState}</>
+  ) : !isEmpty ? (
+    <>{children}</>
+  ) : (
+    <>{EmptyState}</>
   );
 }
 
