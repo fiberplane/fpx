@@ -36,7 +36,7 @@ impl Into<String> for HttpMethod {
 
 #[derive(Serialize)]
 pub struct Response {
-    request_id: i64,
+    request_id: u32,
     status: u16,
     headers: BTreeMap<String, String>,
     body: Option<String>,
