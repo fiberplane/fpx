@@ -2,7 +2,7 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
-import { isJson, noop } from "@/utils";
+import { cn, isJson, noop, parsePathFromRequestUrl } from "@/utils";
 import {
   ArrowTopRightIcon,
   ClockIcon,
@@ -14,7 +14,7 @@ import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
 import { PanelSectionHeader } from "./RequestPanel";
-import { RequestorHistory } from "./RequestorHistory";
+import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { Requestornator } from "./queries";
 
@@ -54,9 +54,11 @@ export function ResponsePanel({
           isLoading={isLoading}
           isEmpty={!response}
           isFailure={isFailure}
+          LoadingState={<LoadingResponseBody />}
           FailState={<FailedRequest response={response} />}
           EmptyState={<NoResponse />}
         >
+          <ResponseSummary response={response} />
           <ResponseBody response={response} />
         </TabContentInner>
       </CustomTabsContent>
@@ -65,6 +67,7 @@ export function ResponsePanel({
           isLoading={isLoading}
           isEmpty={!response}
           isFailure={isFailure}
+          LoadingState={<LoadingHeadersTable />}
           FailState={<FailedRequest response={response} />}
           EmptyState={<NoResponse />}
         >
@@ -82,14 +85,16 @@ export function ResponsePanel({
           FailState={<FailedRequest response={response} />}
           EmptyState={<NoResponse />}
         >
-          <PanelSectionHeader title=" ">
-            <Link
-              to={`/requests/${response?.app_responses?.traceId}`}
-              className="text-blue-400 hover:underline hover:text-blue-300 transition-colors flex items-center"
-            >
-              Go to Request Details
-              <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
-            </Link>
+          <PanelSectionHeader title="Debug">
+            {response?.app_responses?.traceId && (
+              <Link
+                to={`/requests/${response?.app_responses?.traceId}`}
+                className="text-blue-400 hover:underline hover:text-blue-300 transition-colors flex items-center"
+              >
+                View More
+                <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+              </Link>
+            )}
           </PanelSectionHeader>
           <FpxDetails response={response} />
         </TabContentInner>
@@ -115,6 +120,7 @@ function TabContentInner({
   isLoading,
   isEmpty,
   isFailure,
+  LoadingState = <Loading />,
   EmptyState,
   FailState,
   children,
@@ -122,18 +128,47 @@ function TabContentInner({
   children: React.ReactNode;
   EmptyState: JSX.Element;
   FailState: JSX.Element;
+  LoadingState?: JSX.Element;
   isFailure: boolean;
   isLoading: boolean;
   isEmpty: boolean;
 }) {
   return isLoading ? (
-    <Loading />
+    <>{LoadingState}</>
   ) : isFailure ? (
     <>{FailState}</>
   ) : !isEmpty ? (
     <>{children}</>
   ) : (
     <>{EmptyState}</>
+  );
+}
+
+function ResponseSummary({ response }: { response?: Requestornator }) {
+  const status = response?.app_responses?.responseStatusCode;
+  const method = response?.app_requests?.requestMethod;
+  // const url = response?.app_requests?.requestUrl;
+  const url = parsePathFromRequestUrl(
+    response?.app_requests?.requestUrl ?? "",
+    response?.app_requests?.requestQueryParams ?? undefined,
+  );
+  return (
+    <div className="flex items-center mb-4 space-x-2 text-sm">
+      <StatusCode status={status ?? "—"} isFailure={!status} />
+      <div>
+        <Method method={method ?? "—"} />
+        <span
+          className={cn(
+            "whitespace-nowrap",
+            "overflow-ellipsis",
+            "ml-2",
+            "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
+          )}
+        >
+          {url}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -219,7 +254,53 @@ function NoResponse() {
 }
 
 function Loading() {
-  return <Skeleton className="w-full h-32" />;
+  return (
+    <>
+      <Skeleton className="w-full h-4" />
+      <Skeleton className="w-full h-32 mt-2" />
+    </>
+  );
+}
+
+function LoadingResponseBody() {
+  return (
+    <>
+      <div className="flex space-x-2">
+        <Skeleton className="w-16 h-4" />
+        <Skeleton className="w-8 h-4" />
+        <Skeleton className="w-full h-4" />
+      </div>
+      <Skeleton className="w-full h-32 mt-2" />
+    </>
+  );
+}
+
+function LoadingHeadersTable() {
+  return (
+    <>
+      <Skeleton className="w-full h-4" />
+      <div className="flex mt-2 space-x-2">
+        <Skeleton className="w-[200px] h-8" />
+        <Skeleton className="flex-grow h-8" />
+      </div>
+      <div className="flex mt-2 space-x-2">
+        <Skeleton className="w-[200px] h-8" />
+        <Skeleton className="flex-grow h-8" />
+      </div>
+      <div className="flex mt-2 space-x-2">
+        <Skeleton className="w-[200px] h-8" />
+        <Skeleton className="flex-grow h-8" />
+      </div>
+      <div className="flex mt-2 space-x-2">
+        <Skeleton className="w-[200px] h-8" />
+        <Skeleton className="flex-grow h-8" />
+      </div>
+      <div className="flex mt-2 space-x-2">
+        <Skeleton className="w-[200px] h-8" />
+        <Skeleton className="flex-grow h-8" />
+      </div>
+    </>
+  );
 }
 
 function FailedRequest({ response }: { response?: Requestornator }) {

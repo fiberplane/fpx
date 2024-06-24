@@ -3,6 +3,7 @@ import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
 import { MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
+import { useSessionHistory } from "./RequesetorHistoryContext";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
@@ -210,7 +211,9 @@ function useRoutes() {
       []
     );
   }, [routesAndMiddleware]);
-  // TODO - Support swapping out base url...
+
+  // TODO - Support swapping out base url in UI,
+  //        right now you can only change it by modifying MIZU_SERVICE_TARGET
   const addBaseUrl = useCallback(
     (path: string) => {
       const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
@@ -256,6 +259,10 @@ function useRequestorHistory({
   setBody,
   setQueryParams,
 }: RequestorHistoryHookArgs) {
+  const {
+    sessionHistory: sessionHistoryTraceIds,
+    recordRequestInSessionHistory,
+  } = useSessionHistory();
   const { data: allRequests } = useFetchRequestorRequests();
 
   // Keep a history of recent requests and responses
@@ -267,20 +274,6 @@ function useRequestorHistory({
     }
     return [];
   }, [allRequests]);
-
-  // Array of all requests made this session
-  //
-  // This is purposefully in memory so that we clear the response panel
-  // when the user refreshes the page.
-  //
-  const [sessionHistoryTraceIds, setSessionHistoryTraceIds] = useState<
-    Array<string>
-  >([]);
-
-  // We want to keep track of requests in history... however, I think this should be encapsulated with the
-  // query logic itself (instead of something we need to remember to wire together with the `mutate` call)
-  const recordRequestInSessionHistory = (traceId: string) =>
-    setSessionHistoryTraceIds((current) => [traceId, ...current]);
 
   // This feels wrong... but it's a way to load a past request back into the UI
   const loadHistoricalRequest = (traceId: string) => {

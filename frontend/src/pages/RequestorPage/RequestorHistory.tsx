@@ -160,7 +160,7 @@ export function HistoryEntry({
   );
 }
 
-function Method({ method }: { method: string }) {
+export function Method({ method }: { method: string }) {
   return (
     <span
       className={cn(
@@ -174,7 +174,7 @@ function Method({ method }: { method: string }) {
   );
 }
 
-function StatusCode({
+export function StatusCode({
   status,
   isFailure,
 }: { status: string | number; isFailure: boolean }) {

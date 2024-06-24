@@ -26,7 +26,7 @@ export function EventsTable({ logs }: { logs?: MizuLog[] }) {
 
   if (!filteredLogs.length) {
     return (
-      <div className="pl-8 text-gray-400 font-italic text-sm">
+      <div className="pl-8 text-gray-400 font-italic text-sm pb-2">
         <div>No logs</div>
       </div>
     );
@@ -37,7 +37,9 @@ export function EventsTable({ logs }: { logs?: MizuLog[] }) {
       <TableBody>
         {filteredLogs.map((log) => (
           <TableRow key={log.id}>
-            <TableCell className="w-[100px]">{getEventName(log)}</TableCell>
+            <TableCell className="w-[100px] text-gray-400">
+              {getEventName(log)}
+            </TableCell>
             <TableCell>{getEventDescription(log)}</TableCell>
           </TableRow>
         ))}

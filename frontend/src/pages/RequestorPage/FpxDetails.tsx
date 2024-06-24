@@ -106,7 +106,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
       <Section title="Environment">
         <HeaderTable headers={fpxRequestMessage?.env ?? {}} />
       </Section>
-      <Section title="Headers Received">
+      <Section title="Headers Your API Received">
         <HeaderTable headers={fpxRequestMessage?.headers ?? {}} />
       </Section>
       <Section title="Source Function">
@@ -187,7 +187,7 @@ function Section({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="rounded-md border mt-1 px-1 pt-1 pb-2 shadow-sm">
+      <div className="rounded-md border mt-2 px-1 pt-1 pb-2 shadow-sm">
         <SectionTitle>
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm">
