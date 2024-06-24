@@ -334,6 +334,8 @@ function useRequestorHistory({
   };
 
   // Keep a local history of requests that the user has made in the UI
+  // This should be a subset of the full history
+  // These will be cleared on page reload
   const sessionHistory = useMemo(() => {
     return sessionHistoryTraceIds.reduce(
       (matchedRequestornators, traceId) => {
