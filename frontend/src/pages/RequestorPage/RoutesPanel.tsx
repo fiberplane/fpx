@@ -57,12 +57,12 @@ export function RoutesPanel({
       >
         <div className="sticky top-0 z-10 bg-[rgb(12,18,32)]">
           <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12">
-            Endpoints
+            Routes
           </h2>
           <div className="flex items-center space-x-2 pb-3">
             <Input
               className="text-sm"
-              placeholder="Search endpoints"
+              placeholder="Search routes"
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
             />
