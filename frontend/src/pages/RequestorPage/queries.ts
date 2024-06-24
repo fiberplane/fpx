@@ -115,8 +115,8 @@ export function makeRequest({
     body: JSON.stringify({
       requestUrl: addBaseUrl(path),
       requestMethod: method,
-      // TODO - Should we remove request bodies for GET requests automatically?
-      requestBody: body,
+      // NOTE - GET / HEAD requests cannot have a body
+      requestBody: method === "GET" || method === "HEAD" ? undefined : body,
       requestHeaders: reduceKeyValueParameters(headers),
       requestPathParams: reduceKeyValueParameters(pathParams ?? []),
       requestQueryParams: reduceKeyValueParameters(queryParams),
