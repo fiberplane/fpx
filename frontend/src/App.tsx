@@ -34,7 +34,7 @@ export function App() {
 
 export default App;
 
-function Redirect({ to = "/requests" }: { to?: string }): ReactNode {
+function Redirect({ to = "/requestor" }: { to?: string }): ReactNode {
   const navigate = useNavigate();
   useEffect(() => {
     navigate(to);
