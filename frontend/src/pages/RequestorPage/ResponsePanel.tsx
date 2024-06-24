@@ -159,6 +159,7 @@ function ResponseSummary({ response }: { response?: Requestornator }) {
         <Method method={method ?? "—"} />
         <span
           className={cn(
+            "font-mono",
             "whitespace-nowrap",
             "overflow-ellipsis",
             "ml-2",
