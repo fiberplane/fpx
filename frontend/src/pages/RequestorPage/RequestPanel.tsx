@@ -1,4 +1,4 @@
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { EraserIcon } from "@radix-ui/react-icons";
