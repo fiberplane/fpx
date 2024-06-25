@@ -1,5 +1,6 @@
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { cn, isJson, noop, parsePathFromRequestUrl } from "@/utils";
@@ -60,8 +61,18 @@ export function ResponsePanel({
             FailState={<FailedRequest response={response} />}
             EmptyState={<NoResponse />}
           >
-            <ResponseSummary response={response} />
-            <ResponseBody response={response} />
+            <div className="h-full grid grid-rows-[auto_1fr]">
+              <ResponseSummary response={response} />
+              <ResponseBody response={response} />
+              <div className="flex justify-end pt-2 pb-3 absolute bottom-0 right-3">
+                <Link to={`/requests/${response?.app_responses?.traceId}`}>
+                  <Button variant="secondary">
+                    Go to Response Details
+                    <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="headers">
@@ -190,7 +201,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
     const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
 
     return (
-      <div className="flex flex-grow items-stretch overflow-hidden max-w-full">
+      <div className="overflow-hidden overflow-y-scroll w-full">
         <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
       </div>
     );
@@ -219,7 +230,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
   return (
-    <div className="">
+    <div className="overflow-hidden overflow-y-scroll w-full">
       <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>
@@ -310,11 +321,13 @@ function FailedRequest({ response }: { response?: Requestornator }) {
     failureReason === "fetch failed" ? "Service unreachable" : null;
   // const failureDetails = response?.app_responses?.failureDetails;
   return (
-    <div className="flex flex-col items-center justify-center text-gray-400 max-h-[600px] w-full lg:mb-32">
+    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center justify-center p-4">
         <LinkBreak2Icon className="h-10 w-10 text-red-200" />
         <div className="mt-4 text-md text-white text-center">
-          Request failed {friendlyMessage ? ` - ${friendlyMessage}` : ""}
+          {friendlyMessage
+            ? `Request failed: ${friendlyMessage}`
+            : "Request failed"}
         </div>
         <div className="mt-2 text-ms text-gray-400 text-center font-light">
           Make sure your api is up and has FPX Middleware enabled!

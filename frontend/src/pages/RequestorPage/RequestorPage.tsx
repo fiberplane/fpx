@@ -20,9 +20,13 @@ import {
 } from "./queries";
 
 import "./RequestorPage.css";
+import { useLocation } from "react-router-dom";
 
 export const RequestorPage = () => {
-  const { routes, addBaseUrl, selectedRoute, setSelectedRoute } = useRoutes();
+  const { state: historyStateWithRoute } = useLocation();
+  const { routes, addBaseUrl, selectedRoute, setSelectedRoute } = useRoutes(
+    historyStateWithRoute,
+  );
 
   const {
     path,
@@ -210,7 +214,8 @@ export const RequestorPage = () => {
 
 export default RequestorPage;
 
-function useRoutes() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function useRoutes(browserHistoryState: any) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     return (
@@ -236,6 +241,7 @@ function useRoutes() {
   const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
     isLoading,
     routes,
+    preferRoute: browserHistoryState?.route,
   });
 
   return {
@@ -451,12 +457,21 @@ function useRequestorSubmitHandler({
 function useAutoselectRoute({
   isLoading,
   routes,
-}: { isLoading: boolean; routes?: ProbedRoute[] }) {
-  const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(null);
+  preferRoute,
+}: { isLoading: boolean; routes?: ProbedRoute[]; preferRoute?: ProbedRoute }) {
+  const preferredAutoselected =
+    routes?.find((r) => {
+      return r.path === preferRoute?.path && r.method === preferRoute?.method;
+    }) ?? null;
+
+  const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(
+    preferredAutoselected,
+  );
 
   useEffect(() => {
     const shouldAutoselectRoute =
       !isLoading && routes?.length && selectedRoute === null;
+
     if (shouldAutoselectRoute) {
       const autoselectedRoute = routes.find((r) => r.path === "/") ?? routes[0];
       setSelectedRoute(autoselectedRoute);

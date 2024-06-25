@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   KeyValueParameter,
   // createKeyValueParameters,
@@ -10,11 +11,9 @@ export function useRequestorFormData(
   selectedRoute: ProbedRoute | null,
   setRoute: (route: ProbedRoute) => void,
 ) {
-  const [method, setMethod] = useState<string>("GET");
-  const [path, setPath] = useState<string>("");
-
+  const [method, setMethod] = useState<string>(selectedRoute?.method || "GET");
+  const [path, setPath] = useState<string>(selectedRoute?.path ?? "");
   const [body, setBody] = useState<string | undefined>("");
-
   const {
     keyValueParameters: queryParams,
     setKeyValueParameters: setQueryParams,
@@ -40,6 +39,9 @@ export function useRequestorFormData(
     extractPathParams(selectedRoutePath ?? "").map(mapPathKey),
   );
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   // We want to update form data whenever the user selects a new route from the sidebar
   // It's better to wrap up this "new route selected" behavior in a handler,
   // instead of reacting to changes in the selected route via useEffect
@@ -64,9 +66,15 @@ export function useRequestorFormData(
           const newPathKeys = extractPathParams(newRoute.path);
           setPathParams(newPathKeys.map(mapPathKey));
         }
+
+        // NOTE - This _could_ give us the ability to maintain state of requestor UI in history...
+        navigate(location.pathname + location.search + location.hash, {
+          replace: true,
+          state: { route: newRoute },
+        });
       }
     },
-    [setRoute],
+    [setRoute, navigate, location],
   );
 
   return {
