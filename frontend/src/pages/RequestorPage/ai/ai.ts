@@ -58,7 +58,6 @@ export function useAi(
 
       // NOTE - We need to be clear on the types here, otherwise this could wreak havoc on our form data
       if (validateQueryParamsFromResponse(queryParams)) {
-
         const newParameters = createKeyValueParameters(queryParams);
         setQueryParams(newParameters);
       } else {
@@ -70,9 +69,11 @@ export function useAi(
 
       // TODO - Validate path params
       if (pathParams) {
-        setPathParams(current => {
-          return current.map(pathParam => {
-            const replacement = pathParams?.find((p: KeyValueParameter) => p?.key === pathParam.key);
+        setPathParams((current) => {
+          return current.map((pathParam) => {
+            const replacement = pathParams?.find(
+              (p: KeyValueParameter) => p?.key === pathParam.key,
+            );
             if (replacement) {
               return {
                 ...pathParam,

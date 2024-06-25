@@ -131,7 +131,9 @@ export const RequestorPage = () => {
       <div
         className={cn(
           "grid",
-          aiEnabled ? "fpx-requestor-grid-rows--ai-enabled" : "fpx-requestor-grid-rows",
+          aiEnabled
+            ? "fpx-requestor-grid-rows--ai-enabled"
+            : "fpx-requestor-grid-rows",
           "gap-2",
           "h-[calc(100%-0.6rem)]",
           "lg:h-full",

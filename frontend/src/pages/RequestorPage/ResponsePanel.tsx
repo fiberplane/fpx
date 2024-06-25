@@ -36,7 +36,10 @@ export function ResponsePanel({
   const isFailure = !!response?.app_responses?.isFailure;
   return (
     <div className="overflow-hidden h-full relative">
-      <Tabs defaultValue="body" className="grid grid-rows-[auto_1fr] h-full overflow-hidden">
+      <Tabs
+        defaultValue="body"
+        className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
+      >
         <CustomTabsList>
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>

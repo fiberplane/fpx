@@ -78,7 +78,7 @@ function RequestMeta(props: RequestPanelProps) {
       className={cn(
         "min-w-[200px] border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
-        "overflow-hidden max-h-full"
+        "overflow-hidden max-h-full",
       )}
     >
       <CustomTabsList>
