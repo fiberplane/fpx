@@ -46,7 +46,7 @@ fn setup_tracing(args: &commands::Args) -> Result<()> {
             .tracing()
             .with_exporter(
                 opentelemetry_otlp::new_exporter()
-                    .http()
+                    .tonic()
                     .with_endpoint(args.otlp_endpoint.to_string()),
             )
             .with_trace_config(
@@ -54,7 +54,6 @@ fn setup_tracing(args: &commands::Args) -> Result<()> {
                     .with_resource(Resource::new(vec![KeyValue::new("service.name", "fpx")])),
             )
             .install_batch(runtime::Tokio)
-            // .install_simple()
             .context("unable to install tracer")?;
 
         // This layer will take the traces from the `tracing` crate and send
