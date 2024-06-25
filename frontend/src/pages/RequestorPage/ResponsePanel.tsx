@@ -14,7 +14,6 @@ import { MonacoJsonEditor } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
-import { PanelSectionHeader } from "./RequestPanel";
 import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { Requestornator } from "./queries";
@@ -64,14 +63,16 @@ export function ResponsePanel({
             <div className="h-full grid grid-rows-[auto_1fr]">
               <ResponseSummary response={response} />
               <ResponseBody response={response} />
-              <div className="flex justify-end pt-2 pb-3 absolute bottom-0 right-3">
-                <Link to={`/requests/${response?.app_responses?.traceId}`}>
-                  <Button variant="secondary">
-                    Go to Response Details
-                    <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
-                  </Button>
-                </Link>
-              </div>
+              {response?.app_responses?.traceId && (
+                <div className="flex justify-end pt-2 pb-3 absolute bottom-0 right-3">
+                  <Link to={`/requests/${response?.app_responses?.traceId}`}>
+                    <Button variant="secondary">
+                      Go to Trace Details
+                      <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </TabContentInner>
         </CustomTabsContent>
@@ -84,7 +85,6 @@ export function ResponsePanel({
             FailState={<FailedRequest response={response} />}
             EmptyState={<NoResponse />}
           >
-            <PanelSectionHeader title="Response Headers" />
             <HeaderTable
               headers={response?.app_responses?.responseHeaders ?? {}}
             />
@@ -98,18 +98,17 @@ export function ResponsePanel({
             FailState={<FailedRequest response={response} />}
             EmptyState={<NoResponse />}
           >
-            <PanelSectionHeader title="Debug">
-              {response?.app_responses?.traceId && (
-                <Link
-                  to={`/requests/${response?.app_responses?.traceId}`}
-                  className="text-blue-400 hover:underline hover:text-blue-300 transition-colors flex items-center"
-                >
-                  View More
-                  <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
-                </Link>
-              )}
-            </PanelSectionHeader>
             <FpxDetails response={response} />
+            {response?.app_responses?.traceId && (
+              <div className="flex justify-end pt-2 pb-3 absolute bottom-0 right-3">
+                <Link to={`/requests/${response?.app_responses?.traceId}`}>
+                  <Button variant="secondary">
+                    Go to Trace Details
+                    <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+            )}
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="history">
