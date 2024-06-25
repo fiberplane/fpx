@@ -46,8 +46,8 @@ export function ResponsePanel({
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
           <div className="flex-grow flex justify-end">
             <CustomTabTrigger value="history" className="mr-2">
-              <ClockIcon className="h-3.5 w-3.5 mr-2" />
-              History
+              <ClockIcon className="h-3.5 w-3.5" />
+              <span className="hidden md:inline-block ml-2">History</span>
             </CustomTabTrigger>
           </div>
         </CustomTabsList>
