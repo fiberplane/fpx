@@ -12,6 +12,11 @@ import { RoutesPanel } from "./RoutesPanel";
 import { TestingPersonaMenu, useAi } from "./ai";
 import { useRequestorFormData } from "./data";
 import {
+  type PersistedUiState,
+  usePersistedUiState,
+  useSaveUiState,
+} from "./persistUiState";
+import {
   type ProbedRoute,
   Requestornator,
   useFetchRequestorRequests,
@@ -20,13 +25,12 @@ import {
 } from "./queries";
 
 import "./RequestorPage.css";
-import { useLocation } from "react-router-dom";
 
 export const RequestorPage = () => {
-  const { state: historyStateWithRoute } = useLocation();
-  const { routes, addBaseUrl, selectedRoute, setSelectedRoute } = useRoutes(
-    historyStateWithRoute,
-  );
+  const browserHistoryState = usePersistedUiState();
+
+  const { routes, addBaseUrl, selectedRoute, setSelectedRoute } =
+    useRoutes(browserHistoryState);
 
   const {
     path,
@@ -42,7 +46,23 @@ export const RequestorPage = () => {
     queryParams,
     setQueryParams,
     handleSelectRoute,
-  } = useRequestorFormData(selectedRoute, setSelectedRoute);
+  } = useRequestorFormData(
+    selectedRoute,
+    setSelectedRoute,
+    browserHistoryState,
+  );
+
+  // When we unmount, save the current state of UI to the browser history
+  // This allows us to reload the page when you press "Back" in the browser
+  useSaveUiState({
+    route: selectedRoute,
+    path,
+    method,
+    body,
+    pathParams,
+    queryParams,
+    requestHeaders,
+  });
 
   const {
     history,
@@ -214,8 +234,7 @@ export const RequestorPage = () => {
 
 export default RequestorPage;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function useRoutes(browserHistoryState: any) {
+function useRoutes(browserHistoryState?: PersistedUiState) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     return (
@@ -458,7 +477,11 @@ function useAutoselectRoute({
   isLoading,
   routes,
   preferRoute,
-}: { isLoading: boolean; routes?: ProbedRoute[]; preferRoute?: ProbedRoute }) {
+}: {
+  isLoading: boolean;
+  routes?: ProbedRoute[];
+  preferRoute?: { path: string; method: string };
+}) {
   const preferredAutoselected =
     routes?.find((r) => {
       return r.path === preferRoute?.path && r.method === preferRoute?.method;

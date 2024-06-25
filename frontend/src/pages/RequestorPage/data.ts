@@ -1,23 +1,26 @@
 import { useCallback, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import {
-  KeyValueParameter,
-  // createKeyValueParameters,
-  useKeyValueForm,
-} from "./KeyValueForm";
+import { KeyValueParameter, useKeyValueForm } from "./KeyValueForm";
+import { PersistedUiState } from "./persistUiState";
 import { ProbedRoute } from "./queries";
 
 export function useRequestorFormData(
   selectedRoute: ProbedRoute | null,
   setRoute: (route: ProbedRoute) => void,
+  initialBrowserHistoryState?: PersistedUiState,
 ) {
-  const [method, setMethod] = useState<string>(selectedRoute?.method || "GET");
-  const [path, setPath] = useState<string>(selectedRoute?.path ?? "");
-  const [body, setBody] = useState<string | undefined>("");
+  const [method, setMethod] = useState<string>(
+    initialBrowserHistoryState?.method || selectedRoute?.method || "GET",
+  );
+  const [path, setPath] = useState<string>(
+    initialBrowserHistoryState?.path ?? selectedRoute?.path ?? "",
+  );
+  const [body, setBody] = useState<string | undefined>(
+    initialBrowserHistoryState?.body,
+  );
   const {
     keyValueParameters: queryParams,
     setKeyValueParameters: setQueryParams,
-  } = useKeyValueForm();
+  } = useKeyValueForm(initialBrowserHistoryState?.queryParams);
 
   // NOTE - Use this to test overflow
   // useEffect(() => {
@@ -31,16 +34,18 @@ export function useRequestorFormData(
   const {
     keyValueParameters: requestHeaders,
     setKeyValueParameters: setRequestHeaders,
-  } = useKeyValueForm();
+  } = useKeyValueForm(initialBrowserHistoryState?.requestHeaders);
 
   // If there's already a route selected, then its path keys and values should be the default shown
-  const selectedRoutePath = selectedRoute?.path;
+  const selectedRoutePath =
+    initialBrowserHistoryState?.route?.path ??
+    selectedRoute?.path ??
+    initialBrowserHistoryState?.path ??
+    "";
   const [pathParams, setPathParams] = useState<KeyValueParameter[]>(
-    extractPathParams(selectedRoutePath ?? "").map(mapPathKey),
+    initialBrowserHistoryState?.pathParams ??
+      extractPathParams(selectedRoutePath ?? "").map(mapPathKey),
   );
-
-  const location = useLocation();
-  const navigate = useNavigate();
 
   // We want to update form data whenever the user selects a new route from the sidebar
   // It's better to wrap up this "new route selected" behavior in a handler,
@@ -66,15 +71,9 @@ export function useRequestorFormData(
           const newPathKeys = extractPathParams(newRoute.path);
           setPathParams(newPathKeys.map(mapPathKey));
         }
-
-        // NOTE - This _could_ give us the ability to maintain state of requestor UI in history...
-        navigate(location.pathname + location.search + location.hash, {
-          replace: true,
-          state: { route: newRoute },
-        });
       }
     },
-    [setRoute, navigate, location],
+    [setRoute],
   );
 
   return {

@@ -10,14 +10,16 @@ const INITIAL_KEY_VALUE_PARAMETER: KeyValueParameter = {
   enabled: false,
 };
 
-export const useKeyValueForm = () => {
+export const useKeyValueForm = (initial?: KeyValueParameter[]) => {
   const [_keyValueParameters, setKeyValueParameters] = useState<
     KeyValueParameter[]
-  >([
-    {
-      ...INITIAL_KEY_VALUE_PARAMETER,
-    },
-  ]);
+  >(
+    initial ?? [
+      {
+        ...INITIAL_KEY_VALUE_PARAMETER,
+      },
+    ],
+  );
 
   const { parameters: keyValueParameters } =
     useKeyValueParameters(_keyValueParameters);
