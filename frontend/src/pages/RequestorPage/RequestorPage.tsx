@@ -93,7 +93,7 @@ export const RequestorPage = () => {
       className={cn(
         "py-2",
         "space-y-4",
-        "lg:grid lg:grid-cols-[auto_1fr] lg:space-y-0 lg:py-2 lg:gap-0",
+        "lg:grid lg:grid-cols-[auto_1fr] lg:space-y-0 lg:py-2 lg:gap-4",
         "h-[calc(100vh-64px)]",
       )}
     >
@@ -121,8 +121,8 @@ export const RequestorPage = () => {
 
       <div
         className={cn(
-          "flex flex-col flex-1 max-lg:h-full", // Extend container to bottom of screen
-          "lg:ml-4 lg:col-auto",
+          "grid",
+          aiEnabled ? "grid-rows-[auto_auto_1fr]" : "grid-rows-[auto_1fr]",
           "max-h-full",
           "relative",
           "overflow-y-auto", // NOTE - This overflow-y-auto is what makes the entire container scrollable
