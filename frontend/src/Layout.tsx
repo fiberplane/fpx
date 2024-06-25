@@ -32,7 +32,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
       </nav>
       <main
         className={cn(
-          "items-start gap-4 py-2 px-4 ",
+          "py-2 px-4",
           "sm:px-6 sm:py-0",
           "md:gap-8",
           "overflow-hidden",

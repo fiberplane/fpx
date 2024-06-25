@@ -97,13 +97,13 @@ export const RequestorPage = () => {
         "h-[calc(100vh-64px)]",
         // We want to `grid` all the things
         "grid",
-        "space-y-2",
+        "py-2 gap-2",
         // Define row templates up until the `lg` breakpoint
         "max-lg:grid-rows-[auto_1fr]",
         // Define column templates for the `lg` breakpoint
         "lg:grid-cols-[auto_1fr]",
         // Adjust spacing at the large breakpoint
-        "lg:space-y-0 lg:py-2 lg:gap-4",
+        "lg:py-2 lg:gap-4",
       )}
     >
       <div
@@ -133,8 +133,8 @@ export const RequestorPage = () => {
           "grid",
           aiEnabled ? "fpx-requestor-grid-rows--ai-enabled" : "fpx-requestor-grid-rows",
           "gap-2",
-          "h-full",
-          "max-h-full",
+          "h-[calc(100%-0.6rem)]",
+          "lg:h-full",
           "relative",
           "overflow-scroll",
           "sm:overflow-hidden",
