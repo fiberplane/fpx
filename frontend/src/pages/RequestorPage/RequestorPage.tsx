@@ -103,7 +103,7 @@ export const RequestorPage = () => {
         // Define column templates for the `lg` breakpoint
         "lg:grid-cols-[auto_1fr]",
         // Adjust spacing at the large breakpoint
-        "lg:py-2 lg:gap-4",
+        "lg:gap-4",
       )}
     >
       <div
@@ -135,6 +135,7 @@ export const RequestorPage = () => {
             ? "fpx-requestor-grid-rows--ai-enabled"
             : "fpx-requestor-grid-rows",
           "gap-2",
+          // HACK - This is a workaround to prevent the grid from overflowing on smaller screens
           "h-[calc(100%-0.6rem)]",
           "lg:h-full",
           "relative",
