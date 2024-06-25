@@ -1,6 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   KeyValueParameter,
+  createKeyValueParameters,
   // createKeyValueParameters,
   useKeyValueForm,
 } from "./KeyValueForm";
@@ -21,13 +22,13 @@ export function useRequestorFormData(
   } = useKeyValueForm();
 
   // TEST - overflow
-  // useEffect(() => {
-  //   setQueryParams(
-  //     createKeyValueParameters(
-  //       Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
-  //     ),
-  //   );
-  // }, []);
+  useEffect(() => {
+    setQueryParams(
+      createKeyValueParameters(
+        Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
+      ),
+    );
+  }, []);
 
   const {
     keyValueParameters: requestHeaders,

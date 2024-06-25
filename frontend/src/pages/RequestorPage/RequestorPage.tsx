@@ -19,6 +19,8 @@ import {
   useProbedRoutes,
 } from "./queries";
 
+import "./RequestorPage.css";
+
 export const RequestorPage = () => {
   const { routes, addBaseUrl, selectedRoute, setSelectedRoute } = useRoutes();
 
@@ -91,10 +93,17 @@ export const RequestorPage = () => {
   return (
     <div
       className={cn(
-        "py-2",
-        "space-y-4",
-        "lg:grid lg:grid-cols-[auto_1fr] lg:space-y-0 lg:py-2 lg:gap-4",
+        // It's critical the parent has a fixed height for our grid layout to work
         "h-[calc(100vh-64px)]",
+        // We want to `grid` all the things
+        "grid",
+        "space-y-2",
+        // Define row templates up until the `lg` breakpoint
+        "max-lg:grid-rows-[auto_1fr]",
+        // Define column templates for the `lg` breakpoint
+        "lg:grid-cols-[auto_1fr]",
+        // Adjust spacing at the large breakpoint
+        "lg:space-y-0 lg:py-2 lg:gap-4",
       )}
     >
       <div
@@ -122,15 +131,17 @@ export const RequestorPage = () => {
       <div
         className={cn(
           "grid",
-          aiEnabled ? "grid-rows-[auto_auto_1fr]" : "grid-rows-[auto_1fr]",
+          aiEnabled ? "fpx-requestor-grid-rows--ai-enabled" : "fpx-requestor-grid-rows",
+          "gap-2",
+          "h-full",
           "max-h-full",
           "relative",
-          "overflow-y-auto", // NOTE - This overflow-y-auto is what makes the entire container scrollable
-          "lg:overflow-x-hidden",
+          "overflow-scroll",
+          "sm:overflow-hidden",
         )}
       >
         {aiEnabled && (
-          <div className="mb-2 flex items-center justify-start space-x-0">
+          <div className="flex items-center justify-start space-x-0 h-9 pt-2">
             <Button
               variant="ghost"
               size="sm"
@@ -158,20 +169,14 @@ export const RequestorPage = () => {
 
         <div
           className={cn(
-            "flex",
-            "flex-col",
-            "flex-grow",
-            "sm:grid",
+            "grid",
             "sm:grid-cols-[auto_1fr]",
-            "sm:flex-row",
-            "items-stretch",
-            "mt-4",
             "rounded-md",
-            "overflow-scroll",
             "border",
             // HACK - This prevents overflow from getting too excessive.
             // FIXME - Need to resolve the problem with inner content expanding the parent
             "max-w-screen",
+            "max-h-full",
           )}
         >
           <RequestPanel
@@ -188,14 +193,12 @@ export const RequestorPage = () => {
             setRequestHeaders={setRequestHeaders}
           />
 
-          <div className="flex flex-col items-stretch flex-auto">
-            <ResponsePanel
-              response={mostRecentRequestornatorForRoute}
-              isLoading={isRequestorRequesting}
-              history={history}
-              loadHistoricalRequest={loadHistoricalRequest}
-            />
-          </div>
+          <ResponsePanel
+            response={mostRecentRequestornatorForRoute}
+            isLoading={isRequestorRequesting}
+            history={history}
+            loadHistoricalRequest={loadHistoricalRequest}
+          />
         </div>
       </div>
     </div>

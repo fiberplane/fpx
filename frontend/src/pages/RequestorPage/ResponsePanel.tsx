@@ -35,9 +35,9 @@ export function ResponsePanel({
 }: Props) {
   const isFailure = !!response?.app_responses?.isFailure;
   return (
-    <Tabs defaultValue="body" className="h-full">
-      <div className="flex items-center">
-        <CustomTabsList className="flex">
+    <div className="overflow-hidden h-full relative">
+      <Tabs defaultValue="body" className="grid grid-rows-[auto_1fr] h-full overflow-hidden">
+        <CustomTabsList>
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
@@ -48,68 +48,68 @@ export function ResponsePanel({
             </CustomTabTrigger>
           </div>
         </CustomTabsList>
-      </div>
-      <CustomTabsContent value="body" className="flex'">
-        <TabContentInner
-          isLoading={isLoading}
-          isEmpty={!response}
-          isFailure={isFailure}
-          LoadingState={<LoadingResponseBody />}
-          FailState={<FailedRequest response={response} />}
-          EmptyState={<NoResponse />}
-        >
-          <ResponseSummary response={response} />
-          <ResponseBody response={response} />
-        </TabContentInner>
-      </CustomTabsContent>
-      <CustomTabsContent value="headers" className="flex'">
-        <TabContentInner
-          isLoading={isLoading}
-          isEmpty={!response}
-          isFailure={isFailure}
-          LoadingState={<LoadingHeadersTable />}
-          FailState={<FailedRequest response={response} />}
-          EmptyState={<NoResponse />}
-        >
-          <PanelSectionHeader title="Response Headers" />
-          <HeaderTable
-            headers={response?.app_responses?.responseHeaders ?? {}}
-          />
-        </TabContentInner>
-      </CustomTabsContent>
-      <CustomTabsContent value="debug" className="flex'">
-        <TabContentInner
-          isLoading={isLoading}
-          isEmpty={!response}
-          isFailure={isFailure}
-          FailState={<FailedRequest response={response} />}
-          EmptyState={<NoResponse />}
-        >
-          <PanelSectionHeader title="Debug">
-            {response?.app_responses?.traceId && (
-              <Link
-                to={`/requests/${response?.app_responses?.traceId}`}
-                className="text-blue-400 hover:underline hover:text-blue-300 transition-colors flex items-center"
-              >
-                View More
-                <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
-              </Link>
-            )}
-          </PanelSectionHeader>
-          <FpxDetails response={response} />
-        </TabContentInner>
-      </CustomTabsContent>
-      <CustomTabsContent value="history" className="flex flex-col">
-        {history?.length > 0 ? (
-          <RequestorHistory
-            history={history}
-            loadHistoricalRequest={loadHistoricalRequest}
-          />
-        ) : (
-          <NoHistory />
-        )}
-      </CustomTabsContent>
-    </Tabs>
+        <CustomTabsContent value="body">
+          <TabContentInner
+            isLoading={isLoading}
+            isEmpty={!response}
+            isFailure={isFailure}
+            LoadingState={<LoadingResponseBody />}
+            FailState={<FailedRequest response={response} />}
+            EmptyState={<NoResponse />}
+          >
+            <ResponseSummary response={response} />
+            <ResponseBody response={response} />
+          </TabContentInner>
+        </CustomTabsContent>
+        <CustomTabsContent value="headers">
+          <TabContentInner
+            isLoading={isLoading}
+            isEmpty={!response}
+            isFailure={isFailure}
+            LoadingState={<LoadingHeadersTable />}
+            FailState={<FailedRequest response={response} />}
+            EmptyState={<NoResponse />}
+          >
+            <PanelSectionHeader title="Response Headers" />
+            <HeaderTable
+              headers={response?.app_responses?.responseHeaders ?? {}}
+            />
+          </TabContentInner>
+        </CustomTabsContent>
+        <CustomTabsContent value="debug">
+          <TabContentInner
+            isLoading={isLoading}
+            isEmpty={!response}
+            isFailure={isFailure}
+            FailState={<FailedRequest response={response} />}
+            EmptyState={<NoResponse />}
+          >
+            <PanelSectionHeader title="Debug">
+              {response?.app_responses?.traceId && (
+                <Link
+                  to={`/requests/${response?.app_responses?.traceId}`}
+                  className="text-blue-400 hover:underline hover:text-blue-300 transition-colors flex items-center"
+                >
+                  View More
+                  <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+                </Link>
+              )}
+            </PanelSectionHeader>
+            <FpxDetails response={response} />
+          </TabContentInner>
+        </CustomTabsContent>
+        <CustomTabsContent value="history">
+          {history?.length > 0 ? (
+            <RequestorHistory
+              history={history}
+              loadHistoricalRequest={loadHistoricalRequest}
+            />
+          ) : (
+            <NoHistory />
+          )}
+        </CustomTabsContent>
+      </Tabs>
+    </div>
   );
 }
 
