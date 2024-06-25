@@ -229,14 +229,12 @@ function ResponseBody({ response }: { response?: Requestornator }) {
 
 function NoHistory() {
   return (
-    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32 h-full max-h-[600px]">
-      <div className="flex flex-col items-center justify-center p-4">
-        <div className="mt-4 text-md text-white text-center">
-          You have no requests in your history
-        </div>
-        <div className="mt-2 text-ms text-gray-400 text-center font-light">
-          Start making some requests!
-        </div>
+    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
+      <div className="text-md text-white text-center">
+        You have no requests in your history
+      </div>
+      <div className="mt-1 sm:mt-2 text-ms text-gray-400 text-center font-light">
+        Start making some requests!
       </div>
     </div>
   );
@@ -244,14 +242,12 @@ function NoHistory() {
 
 function NoResponse() {
   return (
-    <div className="flex-grow flex items-center justify-center text-gray-400 mb-32 h-full max-h-[600px]">
-      <div className="flex flex-col items-center justify-center p-4">
-        <div className="mt-4 text-md text-white text-center">
-          Enter a URL and hit send to see a response
-        </div>
-        <div className="mt-2 text-ms text-gray-400 text-center font-light">
-          Or load a past request from your history
-        </div>
+    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
+      <div className="text-md text-white text-center">
+        Enter a URL and hit send to see a response
+      </div>
+      <div className="mt-1 sm:mt-2 text-ms text-gray-400 text-center font-light">
+        Or load a past request from your history
       </div>
     </div>
   );
