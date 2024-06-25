@@ -66,3 +66,14 @@ export function errorHasMessage(error: unknown): error is { message: string } {
     !!error.message
   );
 }
+
+export const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+
+export function isModifierKeyPressed(
+  event: KeyboardEvent | MouseEvent | React.MouseEvent | React.KeyboardEvent,
+) {
+  if (isMac) {
+    return event.metaKey;
+  }
+  return event.ctrlKey;
+}

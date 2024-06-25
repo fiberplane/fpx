@@ -41,6 +41,12 @@ In the project root you can format all typescript codebases with `npm run format
 
 You will also want to use the project root to prepare the npx command for the distributable API. See the root's `package.json` scripts, as well as the api's README for more details on testing the npx command.
 
+### Generating Schemas / Types
+
+The Rust types that will be used to generate the schemas are defined in `xtask/src/commands/schemas.rs`.
+
+To generate the `frontend/src/schemas.ts` file, simply run `cargo xtask generate-schemas` in the project root directory.
+
 ## License
 
 All code within the `fpx` repository is distributed under the terms of

@@ -84,9 +84,6 @@ export function RequestsPage() {
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="error">Error Responses</TabsTrigger>
-          <TabsTrigger value="ignored" className="hidden sm:flex">
-            With Any Errors
-          </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
           <Button

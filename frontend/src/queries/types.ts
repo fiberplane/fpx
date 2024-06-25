@@ -156,6 +156,7 @@ const MizuKnownMessageSchema = z.union([
 const MizuMessageSchema = z.union([
   MizuKnownMessageSchema,
   z.string(),
+  z.null(),
   z
     .object({})
     .passthrough(), // HACK - catch all other messages
@@ -173,7 +174,7 @@ export const MizuLogSchema = z.object({
   timestamp: z.string(),
   level: z.string(), // TODO - use enum from db schema?
   message: MizuMessageSchema,
-  args: z.unknown().nullish(), // NOTE - arguments passed to console.*
+  args: z.array(z.unknown()), // NOTE - arguments passed to console.*
   callerLocation: CallerLocationSchema.nullish(),
   ignored: z.boolean().nullish(),
   service: z.string().nullish(),

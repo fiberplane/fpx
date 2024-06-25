@@ -1,4 +1,3 @@
-import type { NeonDbError } from "@neondatabase/serverless";
 import { env } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
 import { replaceFetch } from "./replace-fetch";
@@ -7,10 +6,10 @@ import {
   errorToJson,
   extractCallerLocation,
   generateUUID,
-  neonDbErrorToJson,
   polyfillWaitUntil,
   shouldIgnoreMizuLog,
   shouldPrettifyMizuLog,
+  specialFormatMessage,
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
 } from "./utils";
@@ -119,23 +118,22 @@ export function createHonoMiddleware<App extends HonoApp>(
       });
 
       // TODO - Fix type of `originalMessage`, since devs could really put anything in there...
-      console[level] = (
-        originalMessage: string | Error | NeonDbError,
-        ...args: unknown[]
-      ) => {
+      console[level] = (originalMessage: unknown, ...args: unknown[]) => {
         const timestamp = new Date().toISOString();
 
         const callerLocation = extractCallerLocation(
           (new Error().stack ?? "").split("\n")[2],
         );
 
-        let message = originalMessage;
-        if (typeof message !== "string" && message.name === "NeonDbError") {
-          message = JSON.stringify(neonDbErrorToJson(message as NeonDbError));
-        }
-        if (message instanceof Error) {
-          message = JSON.stringify(errorToJson(message));
-        }
+        const message = specialFormatMessage(originalMessage);
+
+        const argsToSend = args.map((arg) => {
+          if (arg instanceof Error) {
+            return errorToJson(arg);
+          }
+
+          return arg;
+        });
 
         const routeInspectorHeader = c.req.header("X-Fpx-Route-Inspector");
 
@@ -153,7 +151,7 @@ export function createHonoMiddleware<App extends HonoApp>(
           traceId,
           service,
           message,
-          args,
+          args: argsToSend,
           callerLocation,
           timestamp,
           routes,
@@ -195,13 +193,17 @@ export function createHonoMiddleware<App extends HonoApp>(
         if (!libraryDebugMode && shouldPrettifyMizuLog(applyArgs)) {
           // Optionally log a link to the mizu dashboard for the "response" log
           const linkToMizuUi = tryCreateFriendlyLink({
-            message,
+            message: JSON.stringify(message),
             traceId,
             mizuEndpoint: endpoint,
           });
 
           // Try parsing the message as json and extracting all the fields we care about logging prettily
-          tryPrettyPrintLoggerLog(originalConsoleMethod, message, linkToMizuUi);
+          tryPrettyPrintLoggerLog(
+            originalConsoleMethod,
+            JSON.stringify(message),
+            linkToMizuUi,
+          );
         } else {
           originalConsoleMethod.apply(originalConsoleMethod, applyArgs);
         }

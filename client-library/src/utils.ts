@@ -207,3 +207,20 @@ export function tryCreateFriendlyLink({
 
   return friendlyLink;
 }
+
+export function specialFormatMessage(message: unknown) {
+  if (message instanceof Error) {
+    return JSON.stringify(
+      message.name === "NeonDbError"
+        ? neonDbErrorToJson(message as NeonDbError)
+        : errorToJson(message),
+    );
+  }
+
+  // TODO handle `undefined` better as a value
+  if (message === undefined) {
+    return null;
+  }
+
+  return message;
+}

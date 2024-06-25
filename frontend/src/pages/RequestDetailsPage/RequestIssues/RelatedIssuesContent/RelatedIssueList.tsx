@@ -65,7 +65,8 @@ function getQueryFromLog(log: MizuLog) {
   const message =
     typeof log.message === "string"
       ? log.message
-      : "message" in log.message &&
+      : log.message &&
+        "message" in log.message &&
         typeof log.message.message === "string" &&
         log.message.message;
 

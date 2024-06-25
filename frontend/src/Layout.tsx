@@ -50,7 +50,7 @@ const HeaderNavLink = (props: ComponentProps<typeof NavLink>) => {
     <NavLink
       {...props}
       className={({ isActive }) =>
-        `rounded ${isActive ? "bg-muted" : ""} inline-block py-2 px-4`
+        `rounded ${isActive ? "bg-muted" : ""} inline-block py-2 px-4 hover:underline`
       }
     />
   );

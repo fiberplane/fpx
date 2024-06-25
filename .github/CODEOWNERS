@@ -1,0 +1,9 @@
+# Rust cli related files
+fpx       @fiberplane/fpx-cli-devs
+xtask     @fiberplane/fpx-cli-devs
+Cargo.*   @fiberplane/fpx-cli-devs
+.cargo    @fiberplane/fpx-cli-devs
+deny.toml @fiberplane/fpx-cli-devs
+
+# Workflow related files
+.github @fiberplane/infrastructure-devs

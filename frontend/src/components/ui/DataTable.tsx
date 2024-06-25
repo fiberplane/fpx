@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useKeySequence } from "@/hooks";
+import { isModifierKeyPressed } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import {
   type ColumnDef,
@@ -172,7 +173,9 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                onClick={() => handleRowClick?.(row)}
+                onClick={(event) =>
+                  !isModifierKeyPressed(event) && handleRowClick?.(row)
+                }
                 onMouseEnter={() => setSelectedRowIndex(rowIdx)}
                 onMouseLeave={() => setSelectedRowIndex(null)}
                 className={clsx(
