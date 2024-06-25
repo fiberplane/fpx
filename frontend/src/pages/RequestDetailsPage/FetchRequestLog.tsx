@@ -1,10 +1,10 @@
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { MizuLog, isMizuFetchStartMessage } from "@/queries";
+import { isMizuFetchStartMessage } from "@/queries";
+import { MizuFetchStart } from "@/queries/types";
 import { KeyValueTable } from "./KeyValueTable";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 
-export function FetchRequestLog({ log }: { log: MizuLog }) {
-  const { message } = log;
+export function FetchRequestLog({ message }: { message: MizuFetchStart }) {
   const url = isMizuFetchStartMessage(message) ? message?.url : "UNKNOWN_URL";
 
   const { headers, body, method } = message;
@@ -21,14 +21,16 @@ export function FetchRequestLog({ log }: { log: MizuLog }) {
 
       {headers && <KeyValueTable keyValue={headers} caption="Headers" />}
 
-      <Card className="bg-muted/20 rounded-xl">
-        <CardTitle className="text-sm p-2 font-normal bg-muted/50 rounded-t-xl">
-          Body
-        </CardTitle>
-        <CardContent className="p-2">
-          <TextOrJsonViewer text={body} />
-        </CardContent>
-      </Card>
+      {body !== null && (
+        <Card className="bg-muted/20 rounded-xl">
+          <CardTitle className="text-sm p-2 font-normal bg-muted/50 rounded-t-xl">
+            Body
+          </CardTitle>
+          <CardContent className="p-2">
+            <TextOrJsonViewer text={body} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* <pre> { */}
       {/*   JSON.stringify(log, null, 2) */}

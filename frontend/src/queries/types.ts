@@ -202,6 +202,11 @@ export type MizuRequestStart = z.infer<typeof MizuRequestStartSchema>;
 export type MizuRequestEnd = z.infer<typeof MizuRequestEndSchema>;
 export type MizuErrorMessage = z.infer<typeof MizuErrorMessageSchema>;
 
+// types of MizuFetchMessages
+export type MizuFetchStart = z.infer<typeof MizuFetchStartSchema>;
+export type MizuFetchEnd = z.infer<typeof MizuFetchEndSchema>;
+export type MizuFetchError = z.infer<typeof MizuFetchErrorSchema>;
+
 export const isMizuRequestStartMessage = (
   message: unknown,
 ): message is MizuRequestStart => {

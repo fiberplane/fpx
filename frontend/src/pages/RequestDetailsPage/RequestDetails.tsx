@@ -471,7 +471,7 @@ const ErrorLog = ({
   );
 };
 
-const DefaultLogCard = ({ log }: { log: MizuLog }) => {
+export const DefaultLogCard = ({ log }: { log: MizuLog }) => {
   const description = typeof log.message === "string" ? `${log.message}` : null;
   const vsCodeLink = useCallerLocation(log.callerLocation ?? null);
   const args =
@@ -479,7 +479,7 @@ const DefaultLogCard = ({ log }: { log: MizuLog }) => {
   return (
     <LogCard>
       <LogDetailsHeader
-        eventName={`console.${log.level}`}
+        eventName={`log.${log.level}`}
         traceId={log.traceId}
         timestamp={log.timestamp}
         description={description || ""}
@@ -618,25 +618,25 @@ const KeyValueGrid: React.FC<KVGridProps> = ({ data }) => {
           {typeof data === "string"
             ? data
             : Object.entries(data).map(([key, value]) => {
-                const keyValue =
-                  (key === "env" || key === "headers") &&
-                  KeyValueSchema.safeParse(value).data;
-                return (
-                  <div key={key}>
-                    <div className="font-mono font-semibold text-gray-300">
-                      {key}
-                    </div>
-                    <div className="font-sans text-gray-200 max-h-[200px] overflow-y-auto mt-1">
-                      {keyValue ? (
-                        <EnvGrid env={keyValue} />
-                      ) : (
-                        formatValue(value)
-                      )}
-                    </div>
-                    <Separator className="my-1" />
+              const keyValue =
+                (key === "env" || key === "headers") &&
+                KeyValueSchema.safeParse(value).data;
+              return (
+                <div key={key}>
+                  <div className="font-mono font-semibold text-gray-300">
+                    {key}
                   </div>
-                );
-              })}
+                  <div className="font-sans text-gray-200 max-h-[200px] overflow-y-auto mt-1">
+                    {keyValue ? (
+                      <EnvGrid env={keyValue} />
+                    ) : (
+                      formatValue(value)
+                    )}
+                  </div>
+                  <Separator className="my-1" />
+                </div>
+              );
+            })}
         </div>
       </CollapsibleContent>
     </Collapsible>

@@ -9,16 +9,21 @@ import { Separator } from "@/components/ui/separator";
 import { Status } from "@/components/ui/status";
 import { useKeySequence } from "@/hooks";
 import {
+  MizuFetchEnd,
+  MizuFetchStart,
   MizuLog,
   MizuRequestEnd,
   MizuRequestStart,
   MizuTrace,
+  isMizuFetchEndMessage,
   isMizuFetchStartMessage,
+  isMizuRequestEndMessage,
+  isMizuRequestStartMessage,
   useMizuTraces,
 } from "@/queries";
 import { useEffect, useState } from "react";
-import { z } from "zod";
 import { KeyValueTable } from "./KeyValueTable";
+import { DefaultLogCard } from "./RequestDetails";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 
 export function RequestDetailsPage() {
@@ -145,56 +150,27 @@ function TraceDetails({ trace }: { trace: MizuTrace }) {
   );
 }
 
-const LifecycleSchema = z
-  .enum([
-    "request",
-    "response",
-    "fetch_start",
-    "fetch_end",
-    "fetch_error",
-    "fetch_logging_error",
-  ])
-  .optional();
-
-const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
-
 function LogDetails({ log }: { log: MizuLog }) {
   const { message } = log;
 
-  const lifecycle =
-    typeof message === "object" &&
-    "lifecycle" in message &&
-    LifecycleSchema.parse(message?.lifecycle);
+  if (isMizuRequestStartMessage(message)) {
+    return <RequestLog message={message} />;
+  }
 
-  const level =
-    typeof message === "object" && "level" in message
-      ? LogLevelSchema.parse(message?.level)
-      : "info";
+  if (isMizuFetchStartMessage(message)) {
+    return <FetchRequestLog message={message} />;
+  }
+  if (isMizuRequestEndMessage(message)) {
+    return <ResponseLog message={message} />;
+  }
+  if (isMizuFetchEndMessage(message)) {
+    return <FetchResponseLog message={message} />;
+  }
 
-  const lookup = lifecycle || level;
-
-  const logTypeToComponent = {
-    request: (
-      <RequestLog log={log as MizuLog & { message: MizuRequestStart }} />
-    ),
-    debug: RequestLog,
-    info: RequestLog,
-    warn: RequestLog,
-    error: RequestLog,
-    fetch_start: <FetchRequestLog log={log} />,
-    fetch_end: <FetchResponseLog log={log} />,
-    fetch_error: RequestLog,
-    fetch_logging_error: RequestLog,
-    response: (
-      <ResponseLog log={log as MizuLog & { message: MizuRequestEnd }} />
-    ),
-  };
-
-  return logTypeToComponent[lookup] ?? null;
+  return <DefaultLogCard log={log} />;
 }
 
-function RequestLog({ log }: { log: MizuLog & { message: MizuRequestStart } }) {
-  const { message } = log;
+function RequestLog({ message }: { message: MizuRequestStart }) {
   const { method, path, headers, query, params } = message;
 
   return (
@@ -211,11 +187,9 @@ function RequestLog({ log }: { log: MizuLog & { message: MizuRequestStart } }) {
   );
 }
 
-function ResponseLog({ log }: { log: MizuLog & { message: MizuRequestEnd } }) {
-  const { message } = log;
+function ResponseLog({ message }: { message: MizuRequestEnd }) {
   const { status, headers, body } = message;
 
-  console.log(log);
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center gap-4">
@@ -235,10 +209,8 @@ function ResponseLog({ log }: { log: MizuLog & { message: MizuRequestEnd } }) {
   );
 }
 
-function FetchRequestLog({ log }: { log: MizuLog }) {
-  const { message } = log;
-  const url = isMizuFetchStartMessage(message) ? message?.url : "UNKNOWN_URL";
-  const { headers, body, method } = message;
+function FetchRequestLog({ message }: { message: MizuFetchStart }) {
+  const { headers, body, method, url } = message;
   return (
     <section className="flex flex-col gap-4">
       <div className="flex gap-2 items-center">
@@ -258,8 +230,7 @@ function FetchRequestLog({ log }: { log: MizuLog }) {
   );
 }
 
-function FetchResponseLog({ log }: { log: MizuLog }) {
-  const { message } = log;
+function FetchResponseLog({ message }: { message: MizuFetchEnd }) {
   const { status, headers, body } = message;
 
   return (
