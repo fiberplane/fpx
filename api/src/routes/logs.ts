@@ -144,15 +144,18 @@ async function transformStack(stack: string) {
 
   const parsedLines = await Promise.all(
     lines.map(async (line) => {
-      const regex =
-        /at (?:(?<method>[^\s]+) \()?file:\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)\)?/;
-
-      const match = line.match(regex);
+      const fileLocationMatch =
+        /file:\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)/;
+      const match = line.match(fileLocationMatch);
       if (!match || !match.groups) {
         return line;
       }
 
-      const { method, file, lineNumber, columnNumber } = match.groups;
+      const { file, lineNumber, columnNumber } = match.groups;
+      const methodMatch = line.match(
+        /at (?<method>(async )?[\w \[\]\.<>]+) (\()?file:\/\//,
+      );
+      const method = methodMatch?.groups?.method;
 
       const filePath = `${file.trim().replace("file://", "")}.map`;
       try {
