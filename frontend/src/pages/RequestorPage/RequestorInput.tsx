@@ -6,9 +6,9 @@ import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
 type RequestInputProps = {
   method: string;
-  setMethod: (method: string) => void;
+  handleMethodChange: (method: string) => void;
   path?: string;
-  setPath: (path: string) => void;
+  handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
   addBaseUrl: (path: string) => string;
@@ -16,9 +16,9 @@ type RequestInputProps = {
 
 export function RequestorInput({
   method,
-  setMethod,
+  handleMethodChange,
   path,
-  setPath,
+  handlePathInputChange,
   onSubmit,
   isRequestorRequesting,
   addBaseUrl,
@@ -26,6 +26,8 @@ export function RequestorInput({
   const [value, setValue] = useState("");
 
   // HACK - If path changes externally, update the value here
+  // This happens if the user clicks a route in the sidebar, for example,
+  // or when they load a request from history
   useEffect(() => {
     const url = addBaseUrl(path ?? "");
     setValue(url);
@@ -39,18 +41,18 @@ export function RequestorInput({
       <div className="flex flex-grow items-center space-x-0">
         <RequestMethodCombobox
           method={method}
-          setMethod={setMethod}
-          allowUserToChange={false}
+          handleMethodChange={handleMethodChange}
+          allowUserToChange
         />
         <Input
-          readOnly // FIXME - We want to make this dynamic but it's a little weird with path params, etc
           type="text"
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
             try {
               const url = new URL(e.target.value);
-              setPath(url.pathname);
+              // setPath(url.pathname);
+              handlePathInputChange(url.pathname);
             } catch {
               // TODO - Error state
               console.error("Invalid URL", e.target.value);

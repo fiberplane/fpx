@@ -51,14 +51,14 @@ const methods = [
 
 export function RequestMethodCombobox({
   method,
-  setMethod,
+  handleMethodChange,
   // NOTE - For the first version of Requestor, we don't want people messing too much with
   //        The "method" in the input, so we just disable ability to change the method via
   //        the combobox.
   allowUserToChange,
 }: {
   method: string;
-  setMethod: (method: string) => void;
+  handleMethodChange: (method: string) => void;
   allowUserToChange?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
@@ -68,7 +68,7 @@ export function RequestMethodCombobox({
     : "GET";
 
   return (
-    <Popover open={false} onOpenChange={setOpen}>
+    <Popover open={allowUserToChange ? open : false} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -78,7 +78,9 @@ export function RequestMethodCombobox({
             "pointer-events-none": !allowUserToChange,
           })}
           onClick={(e) => {
-            e.stopPropagation();
+            if (!allowUserToChange) {
+              e.stopPropagation();
+            }
           }}
         >
           <span
@@ -92,7 +94,7 @@ export function RequestMethodCombobox({
           {/* <lassName="ml-1 h-4 w-4 shrink-0 opacity-50" /> */}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[120px] p-0">
+      <PopoverContent className="w-[120px] p-0" align="start">
         <Command>
           <CommandList>
             <CommandGroup>
@@ -101,7 +103,7 @@ export function RequestMethodCombobox({
                   key={framework.value}
                   value={framework.value}
                   onSelect={(currentValue) => {
-                    setMethod(currentValue === method ? "" : currentValue);
+                    handleMethodChange(currentValue);
                     setOpen(false);
                   }}
                 >

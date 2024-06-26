@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
 import { MagicWandIcon } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { useSessionHistory } from "./RequestorHistoryContext";
@@ -11,20 +11,16 @@ import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { TestingPersonaMenu, useAi } from "./ai";
 import { useRequestorFormData } from "./data";
-import {
-  type PersistedUiState,
-  usePersistedUiState,
-  useSaveUiState,
-} from "./persistUiState";
+import { usePersistedUiState, useSaveUiState } from "./persistUiState";
 import {
   type ProbedRoute,
   Requestornator,
   useFetchRequestorRequests,
   useMakeRequest,
-  useProbedRoutes,
 } from "./queries";
 
 import "./RequestorPage.css";
+import { useReselectRouteHack, useRoutes } from "./routes";
 
 export const RequestorPage = () => {
   const browserHistoryState = usePersistedUiState();
@@ -35,8 +31,9 @@ export const RequestorPage = () => {
   const {
     path,
     setPath,
+    handlePathInputChange,
     method,
-    setMethod,
+    handleMethodChange,
     body,
     setBody,
     pathParams,
@@ -47,10 +44,22 @@ export const RequestorPage = () => {
     setQueryParams,
     handleSelectRoute,
   } = useRequestorFormData(
+    routes,
     selectedRoute,
     setSelectedRoute,
     browserHistoryState,
   );
+
+  console.log("method", method);
+
+  useReselectRouteHack({
+    selectedRoute,
+    setSelectedRoute,
+    routes,
+    path,
+    method,
+    setPathParams,
+  });
 
   // When we unmount, save the current state of UI to the browser history
   // This allows us to reload the page when you press "Back" in the browser
@@ -187,9 +196,9 @@ export const RequestorPage = () => {
         <RequestorInput
           addBaseUrl={addBaseUrl}
           method={method}
-          setMethod={setMethod}
+          handleMethodChange={handleMethodChange}
           path={path}
-          setPath={setPath}
+          handlePathInputChange={handlePathInputChange}
           onSubmit={onSubmit}
           isRequestorRequesting={isRequestorRequesting}
         />
@@ -233,45 +242,6 @@ export const RequestorPage = () => {
 };
 
 export default RequestorPage;
-
-function useRoutes(browserHistoryState?: PersistedUiState) {
-  const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
-  const routes = useMemo(() => {
-    return (
-      routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
-      []
-    );
-  }, [routesAndMiddleware]);
-
-  // TODO - Support swapping out base url in UI,
-  //        right now you can only change it by modifying MIZU_SERVICE_TARGET
-  const addBaseUrl = useCallback(
-    (path: string) => {
-      const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
-      if (path?.startsWith(baseUrl)) {
-        return path;
-      }
-      return `${baseUrl}${path}`;
-    },
-    [routesAndMiddleware],
-  );
-
-  // Select the home route if it exists, otherwise fall back to the first route in the list
-  const { selectedRoute, setSelectedRoute } = useAutoselectRoute({
-    isLoading,
-    routes,
-    preferRoute: browserHistoryState?.route,
-  });
-
-  return {
-    isError,
-    isLoading,
-    routes,
-    addBaseUrl,
-    selectedRoute,
-    setSelectedRoute,
-  };
-}
 
 type RequestorHistoryHookArgs = {
   routes: ProbedRoute[];
@@ -471,37 +441,6 @@ function useRequestorSubmitHandler({
       addBaseUrl,
     ],
   );
-}
-
-function useAutoselectRoute({
-  isLoading,
-  routes,
-  preferRoute,
-}: {
-  isLoading: boolean;
-  routes?: ProbedRoute[];
-  preferRoute?: { path: string; method: string };
-}) {
-  const preferredAutoselected =
-    routes?.find((r) => {
-      return r.path === preferRoute?.path && r.method === preferRoute?.method;
-    }) ?? null;
-
-  const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(
-    preferredAutoselected,
-  );
-
-  useEffect(() => {
-    const shouldAutoselectRoute =
-      !isLoading && routes?.length && selectedRoute === null;
-
-    if (shouldAutoselectRoute) {
-      const autoselectedRoute = routes.find((r) => r.path === "/") ?? routes[0];
-      setSelectedRoute(autoselectedRoute);
-    }
-  }, [routes, isLoading, selectedRoute]);
-
-  return { selectedRoute, setSelectedRoute };
 }
 
 /**

@@ -1,18 +1,20 @@
 import { useCallback, useState } from "react";
 import { KeyValueParameter, useKeyValueForm } from "./KeyValueForm";
+import { diffPaths, hasChangedPathParam } from "./diff-paths";
 import { PersistedUiState } from "./persistUiState";
 import { ProbedRoute } from "./queries";
 
 export function useRequestorFormData(
+  routes: ProbedRoute[],
   selectedRoute: ProbedRoute | null,
-  setRoute: (route: ProbedRoute) => void,
+  setRoute: (route: ProbedRoute | null) => void,
   initialBrowserHistoryState?: PersistedUiState,
 ) {
   const [method, setMethod] = useState<string>(
     initialBrowserHistoryState?.method || selectedRoute?.method || "GET",
   );
   const [path, setPath] = useState<string>(
-    initialBrowserHistoryState?.path ?? selectedRoute?.path ?? "",
+    initialBrowserHistoryState?.path ?? selectedRoute?.path ?? "/",
   );
   const [body, setBody] = useState<string | undefined>(
     initialBrowserHistoryState?.body,
@@ -47,6 +49,80 @@ export function useRequestorFormData(
       extractPathParams(selectedRoutePath ?? "").map(mapPathKey),
   );
 
+  /**
+   * - Check if new path matches selectedRoute
+   * - Update pathParams
+   * - Update selectedRoute
+   *
+   * NOTE - This is VERY rudimentary matching logic...
+   */
+  const handlePathInputChange = useCallback(
+    (newPath: string) => {
+      if (!selectedRoute) {
+        setPath(newPath);
+        return;
+      }
+      const diffParts = diffPaths(selectedRoute?.path, newPath);
+
+      // Nothing changed, so don't change the curretly selected route
+      if (diffParts.length === 0) {
+        setPath(newPath);
+        return;
+      }
+
+      if (diffParts.length === 1) {
+        const [oldPart, newPart] = diffParts[0];
+        if (oldPart && newPart === "") {
+          setPath(newPath);
+          return;
+        }
+      }
+
+      // If only one segment changed, and that segment was a path parameter
+      // we *might* be able to get away with not setting a new route
+      if (hasChangedPathParam(diffParts)) {
+        const [oldPart, newPart] = diffParts[0];
+
+        // If the new part is an empty string, it's possible the user is removing then adding a new path param
+        // NOTE - if the newPart is undefined, we assume they're just editing the path entirely
+        if (newPart === "") {
+          setPath(newPath);
+          return;
+        }
+        if (newPart && oldPart?.includes(newPart)) {
+          setPath(newPath);
+          return;
+        }
+        if (newPart && !newPart.startsWith(":")) {
+          setPath(newPath);
+          return;
+        }
+      }
+
+      // TODO - Create draft route in side panel or something crazy like that?
+      setRoute(null);
+      setPath(newPath);
+      // TODO - Extract new path params
+      setPathParams(extractPathParams(newPath).map(mapPathKey));
+    },
+    [selectedRoute, setRoute],
+  );
+
+  const handleMethodChange = useCallback(
+    (newMethod: string) => {
+      setMethod(newMethod);
+      const matchingRoute = routes.find(
+        (r) => r.path === path && r.method === newMethod,
+      );
+      if (matchingRoute) {
+        setRoute(matchingRoute);
+      } else {
+        setRoute(null);
+      }
+    },
+    [routes, path, setRoute],
+  );
+
   // We want to update form data whenever the user selects a new route from the sidebar
   // It's better to wrap up this "new route selected" behavior in a handler,
   // instead of reacting to changes in the selected route via useEffect
@@ -79,8 +155,10 @@ export function useRequestorFormData(
   return {
     path,
     setPath,
+    handlePathInputChange,
     method,
     setMethod,
+    handleMethodChange,
     body,
     setBody,
     queryParams,
@@ -93,11 +171,11 @@ export function useRequestorFormData(
   };
 }
 
-function mapPathKey(key: string) {
+export function mapPathKey(key: string) {
   return { key, value: "", id: key, enabled: false };
 }
 
-function extractPathParams(path: string) {
+export function extractPathParams(path: string) {
   const regex = /.*\/(:[a-zA-Z]+).*/;
 
   const result: Array<string> = [];
