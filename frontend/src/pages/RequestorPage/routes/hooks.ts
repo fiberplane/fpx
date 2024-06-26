@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { KeyValueParameter } from "./KeyValueForm";
-import { extractPathParams, mapPathKey } from "./data";
-import { PersistedUiState } from "./persistUiState";
-import { ProbedRoute, useProbedRoutes } from "./queries";
+import { KeyValueParameter } from "../KeyValueForm";
+import { extractPathParams, mapPathKey } from "../data";
+import { PersistedUiState } from "../persistUiState";
+import { ProbedRoute, useProbedRoutes } from "../queries";
 
 export function useRoutes(browserHistoryState?: PersistedUiState) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
@@ -43,7 +43,7 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
   };
 }
 
-export function useAutoselectInitialRoute({
+function useAutoselectInitialRoute({
   isLoading,
   routes,
   preferRoute,

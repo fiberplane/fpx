@@ -18,9 +18,9 @@ import {
   useFetchRequestorRequests,
   useMakeRequest,
 } from "./queries";
-
-import "./RequestorPage.css";
 import { useReselectRouteHack, useRoutes } from "./routes";
+// We need some special CSS for grid layout that tailwind cannot handle
+import "./RequestorPage.css";
 
 export const RequestorPage = () => {
   const browserHistoryState = usePersistedUiState();

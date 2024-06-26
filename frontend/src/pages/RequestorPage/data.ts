@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import { KeyValueParameter, useKeyValueForm } from "./KeyValueForm";
-import { diffPaths, hasChangedPathParam } from "./diff-paths";
 import { PersistedUiState } from "./persistUiState";
 import { ProbedRoute } from "./queries";
+import { diffPaths, hasChangedPathParam } from "./routes/diff-paths";
 
 export function useRequestorFormData(
   routes: ProbedRoute[],
