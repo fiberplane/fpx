@@ -170,3 +170,23 @@ impl Request {
         }
     }
 }
+
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum HttpMethod {
+    GET,
+    POST,
+    PATCH,
+    DELETE,
+}
+
+impl Into<String> for HttpMethod {
+    fn into(self) -> String {
+        match self {
+            HttpMethod::GET => String::from("GET"),
+            HttpMethod::POST => String::from("POST"),
+            HttpMethod::PATCH => String::from("PATCH"),
+            HttpMethod::DELETE => String::from("DELETE"),
+        }
+    }
+}

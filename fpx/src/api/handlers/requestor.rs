@@ -5,34 +5,34 @@ use http::{HeaderMap, HeaderName, HeaderValue};
 use reqwest::RequestBuilder;
 use serde::{Deserialize, Serialize};
 
-use crate::data::Store;
+use crate::{data::Store, models::Request};
 
-#[derive(Deserialize, Serialize)]
-pub struct Request {
-    method: HttpMethod,
-    url: String,
-    body: Option<String>,
-    headers: BTreeMap<String, String>,
-}
-
-#[derive(Clone, Copy, Deserialize, Serialize)]
-pub enum HttpMethod {
-    GET,
-    POST,
-    PATCH,
-    DELETE,
-}
-
-impl Into<String> for HttpMethod {
-    fn into(self) -> String {
-        match self {
-            HttpMethod::GET => String::from("GET"),
-            HttpMethod::POST => String::from("POST"),
-            HttpMethod::PATCH => String::from("PATCH"),
-            HttpMethod::DELETE => String::from("DELETE"),
-        }
-    }
-}
+// #[derive(JsonSchema, Deserialize, Serialize)]
+// pub struct Request {
+//     method: HttpMethod,
+//     url: String,
+//     body: Option<String>,
+//     headers: BTreeMap<String, String>,
+// }
+//
+// #[derive(Clone, Copy, Deserialize, Serialize)]
+// pub enum HttpMethod {
+//     GET,
+//     POST,
+//     PATCH,
+//     DELETE,
+// }
+//
+// impl Into<String> for HttpMethod {
+//     fn into(self) -> String {
+//         match self {
+//             HttpMethod::GET => String::from("GET"),
+//             HttpMethod::POST => String::from("POST"),
+//             HttpMethod::PATCH => String::from("PATCH"),
+//             HttpMethod::DELETE => String::from("DELETE"),
+//         }
+//     }
+// }
 
 #[derive(Serialize)]
 pub struct Response {
@@ -85,18 +85,18 @@ pub async fn execute_requestor(
     }
 
     let status = response.status().as_u16();
-    let body = &response.text().await.unwrap();
+    let response_body = &response.text().await.unwrap();
 
     Json(Response {
         request_id,
         status,
         headers: response_header_map,
-        body: Some(body.to_owned()),
+        body: Some(response_body.to_owned()),
     })
 }
 
 fn build_request(
-    method: &HttpMethod,
+    method: &str,
     url: &str,
     body: &Option<String>,
     headers: &HeaderMap,
@@ -104,10 +104,11 @@ fn build_request(
     let client = reqwest::Client::new();
 
     let handler = match method {
-        HttpMethod::GET => client.get(url),
-        HttpMethod::POST => client.post(url),
-        HttpMethod::PATCH => client.patch(url),
-        HttpMethod::DELETE => client.delete(url),
+        "GET" => client.get(url),
+        "POST" => client.post(url),
+        "PATCH " => client.patch(url),
+        "DELETE" => client.delete(url),
+        _ => todo!(),
     };
 
     let handler = match body {
