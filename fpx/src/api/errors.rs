@@ -27,6 +27,12 @@ where
     }
 }
 
+impl<E> From<E> for ApiServerError<E> {
+    fn from(value: E) -> Self {
+        ApiServerError::ServiceError(value)
+    }
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum ApiClientError<E> {

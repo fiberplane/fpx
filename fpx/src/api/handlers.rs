@@ -1,5 +1,6 @@
 use axum::response::IntoResponse;
 
+pub(crate) mod canned_requests;
 mod inspect;
 mod inspectors;
 mod requests;

@@ -4,6 +4,7 @@ use crate::inspector::InspectorService;
 use axum::extract::FromRef;
 use axum::routing::{any, get};
 use http::StatusCode;
+use std::path::PathBuf;
 use url::Url;
 
 pub mod client;
@@ -12,11 +13,18 @@ pub mod handlers;
 mod studio;
 mod ws;
 
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct FpxDirectoryPath(pub PathBuf);
+
 #[derive(Clone)]
 pub struct ApiState {
     /// The base url on which this server is running. Override this when you
     /// are running this behind a reverse proxy.
     base_url: Url,
+
+    /// the location of the fpx directory
+    fpx_directory: FpxDirectoryPath,
 
     events: ServerEvents,
     store: Store,
@@ -24,31 +32,38 @@ pub struct ApiState {
 }
 
 impl FromRef<ApiState> for Store {
-    fn from_ref(api_state: &ApiState) -> Store {
+    fn from_ref(api_state: &ApiState) -> Self {
         api_state.store.clone()
     }
 }
 
 impl FromRef<ApiState> for ServerEvents {
-    fn from_ref(api_state: &ApiState) -> ServerEvents {
+    fn from_ref(api_state: &ApiState) -> Self {
         api_state.events.clone()
     }
 }
 
 impl FromRef<ApiState> for InspectorService {
-    fn from_ref(api_state: &ApiState) -> InspectorService {
+    fn from_ref(api_state: &ApiState) -> Self {
         api_state.inspector_service.clone()
+    }
+}
+
+impl FromRef<ApiState> for FpxDirectoryPath {
+    fn from_ref(api_state: &ApiState) -> Self {
+        api_state.fpx_directory.clone()
     }
 }
 
 /// Create a API and expose it through a axum router.
 pub fn create_api(
     base_url: url::Url,
+    fpx_directory: PathBuf,
     events: ServerEvents,
     store: Store,
     inspector_service: InspectorService,
 ) -> axum::Router {
-    let api_router = api_router(base_url, events, store, inspector_service);
+    let api_router = api_router(base_url, fpx_directory, events, store, inspector_service);
     axum::Router::new()
         .nest("/api/", api_router)
         .fallback(studio::default_handler)
@@ -56,12 +71,14 @@ pub fn create_api(
 
 fn api_router(
     base_url: url::Url,
+    fpx_directory: PathBuf,
     events: ServerEvents,
     store: Store,
     inspector_service: InspectorService,
 ) -> axum::Router {
     let api_state = ApiState {
         base_url,
+        fpx_directory: FpxDirectoryPath(fpx_directory),
         events,
         store,
         inspector_service,
