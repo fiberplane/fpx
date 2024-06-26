@@ -41,7 +41,7 @@ pub async fn execute_requestor(
     )
     .await?;
 
-    tx.commit().await?;
+    store.commit_transaction(tx).await?;
 
     let response = request.await?;
 
