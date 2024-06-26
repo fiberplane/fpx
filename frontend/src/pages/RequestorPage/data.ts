@@ -77,6 +77,7 @@ export function useRequestorFormData(
   const handleMethodChange = useCallback(
     (newMethod: string) => {
       setMethod(newMethod);
+
       const matchingRoute = findMatchedRoute(routes, path, newMethod);
 
       if (matchingRoute) {
