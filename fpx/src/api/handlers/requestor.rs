@@ -1,82 +1,43 @@
 use std::{collections::BTreeMap, str::FromStr};
 
 use axum::{extract::State, response::IntoResponse, Json};
-use http::{HeaderMap, HeaderName, HeaderValue};
-use reqwest::RequestBuilder;
-use serde::{Deserialize, Serialize};
+use http::{HeaderMap, HeaderName, HeaderValue, Method};
 
-use crate::{data::Store, models::Request};
+use crate::{
+    data::Store,
+    models::{RequestorRequestPayload, Response},
+};
 
-// #[derive(JsonSchema, Deserialize, Serialize)]
-// pub struct Request {
-//     method: HttpMethod,
-//     url: String,
-//     body: Option<String>,
-//     headers: BTreeMap<String, String>,
-// }
-//
-// #[derive(Clone, Copy, Deserialize, Serialize)]
-// pub enum HttpMethod {
-//     GET,
-//     POST,
-//     PATCH,
-//     DELETE,
-// }
-//
-// impl Into<String> for HttpMethod {
-//     fn into(self) -> String {
-//         match self {
-//             HttpMethod::GET => String::from("GET"),
-//             HttpMethod::POST => String::from("POST"),
-//             HttpMethod::PATCH => String::from("PATCH"),
-//             HttpMethod::DELETE => String::from("DELETE"),
-//         }
-//     }
-// }
-
-#[derive(Serialize)]
-pub struct Response {
-    request_id: u32,
-    status: u16,
-    headers: BTreeMap<String, String>,
-    body: Option<String>,
-}
-
+#[tracing::instrument(skip_all)]
 pub async fn execute_requestor(
     State(store): State<Store>,
-    Json(payload): Json<Request>,
+    Json(payload): Json<RequestorRequestPayload>,
 ) -> impl IntoResponse {
-    let tx = store.start_transaction().await.unwrap();
+    let tx = store.start_transaction().await.unwrap(); // TODO
 
-    let mut request_headers = HeaderMap::new();
+    let request_body = payload.body.unwrap_or_default();
+    let request_headers = payload.headers.unwrap_or_default();
 
-    for (key, val) in payload.headers.iter() {
-        let header_name = HeaderName::from_str(key.as_str()).unwrap();
-        let header_value = HeaderValue::from_str(val.as_str()).unwrap();
-        request_headers.insert(header_name, header_value);
-    }
-
-    let request = build_request(
+    let request = handle_request(
         &payload.method,
         &payload.url,
-        &payload.body,
         &request_headers,
+        request_body.clone(),
     );
 
-    let response = request.send().await.unwrap();
+    let request_id = Store::request_create(
+        &tx,
+        payload.method.as_str(),
+        &payload.url,
+        &request_body,
+        request_headers.clone(),
+    )
+    .await
+    .unwrap(); // TODO
 
-    let method: String = payload.method.into();
-    // TODO: Store should probably support optional bodies
-    let body = payload.body.unwrap_or(String::from(""));
+    tx.commit().await.unwrap(); // TODO
 
-    let request_id =
-        Store::request_create(&tx, method.as_str(), &payload.url, &body, payload.headers)
-            .await
-            .unwrap();
-
-    tx.commit().await.unwrap();
-
-    println!("Created {} request with id: {}", method, request_id);
+    let response = request.await.unwrap(); // TODO
 
     let response_headers = &response.headers();
     let mut response_header_map: BTreeMap<String, String> = BTreeMap::new();
@@ -84,37 +45,40 @@ pub async fn execute_requestor(
         response_header_map.insert(key.to_string(), String::from(val.to_str().unwrap()));
     }
 
-    let status = response.status().as_u16();
-    let response_body = &response.text().await.unwrap();
+    let response_status = response.status().as_u16();
+    let response_body = &response.text().await.unwrap(); // TODO
 
     Json(Response {
-        request_id,
-        status,
+        id: request_id,
+        status: response_status,
         headers: response_header_map,
         body: Some(response_body.to_owned()),
+        url: payload.url,
     })
 }
 
-fn build_request(
-    method: &str,
-    url: &str,
-    body: &Option<String>,
-    headers: &HeaderMap,
-) -> RequestBuilder {
-    let client = reqwest::Client::new();
+async fn handle_request(
+    request_method: &String,
+    url: &String,
+    headers: &BTreeMap<String, String>,
+    body: String,
+) -> Result<reqwest::Response, reqwest::Error> {
+    let request_method: Method = Method::from_bytes(request_method.as_bytes()).unwrap(); // TODO
 
-    let handler = match method {
-        "GET" => client.get(url),
-        "POST" => client.post(url),
-        "PATCH " => client.patch(url),
-        "DELETE" => client.delete(url),
-        _ => todo!(),
-    };
+    let mut header_map = HeaderMap::new();
 
-    let handler = match body {
-        Some(body) => handler.body(body.clone()),
-        None => handler,
-    };
+    for (key, val) in headers.iter() {
+        if let Ok(header_name) = HeaderName::from_str(key.as_str()) {
+            if let Ok(header_value) = HeaderValue::from_bytes(val.as_bytes()) {
+                header_map.insert(header_name, header_value);
+            }
+        }
+    }
 
-    handler.headers(headers.clone())
+    reqwest::Client::new()
+        .request(request_method, url)
+        .headers(header_map)
+        .body(body)
+        .send()
+        .await
 }

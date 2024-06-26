@@ -171,22 +171,41 @@ impl Request {
     }
 }
 
+/// A response that has been captured by fpx.
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub enum HttpMethod {
-    GET,
-    POST,
-    PATCH,
-    DELETE,
+pub struct Response {
+    pub id: u32,
+    pub status: u16,
+    pub url: String,
+    pub body: Option<String>,
+    pub headers: BTreeMap<String, String>,
 }
 
-impl Into<String> for HttpMethod {
-    fn into(self) -> String {
-        match self {
-            HttpMethod::GET => String::from("GET"),
-            HttpMethod::POST => String::from("POST"),
-            HttpMethod::PATCH => String::from("PATCH"),
-            HttpMethod::DELETE => String::from("DELETE"),
+impl Response {
+    pub fn new(
+        id: u32,
+        status: u16,
+        url: String,
+        body: String,
+        headers: BTreeMap<String, String>,
+    ) -> Self {
+        Self {
+            id,
+            status,
+            url,
+            headers,
+            body: Some(body),
         }
     }
+}
+
+/// The payload that describes the request that Requestor has to execute
+// TODO: This should probably not be in models?
+#[derive(JsonSchema, Deserialize, Serialize)]
+pub struct RequestorRequestPayload {
+    pub method: String,
+    pub url: String,
+    pub body: Option<String>,
+    pub headers: Option<BTreeMap<String, String>>,
 }

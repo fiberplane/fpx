@@ -79,7 +79,7 @@ fn api_router(
         .route("/inspect/:id", any(handlers::inspect_request_handler))
         .route("/v1/logs", get(handlers::logs_handler))
         .route("/ws", get(ws::ws_handler))
-        .route("/api/requestor", post(handlers::execute_requestor))
+        .route("/requestor", post(handlers::execute_requestor))
         .fallback(StatusCode::NOT_FOUND)
         .with_state(api_state)
 }
