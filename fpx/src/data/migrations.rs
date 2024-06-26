@@ -1,9 +1,8 @@
+use super::{Store, Transaction};
 use anyhow::{Context, Result};
 use include_dir::Dir;
-use libsql::{params, Transaction};
+use libsql::params;
 use tracing::{debug, trace};
-
-use super::Store;
 
 // NOTE: We should probably create our own include, which will store it sorted,
 //       as an array, and with just the name and sql as the expected types.
@@ -69,7 +68,7 @@ pub async fn migrate(store: &Store) -> Result<()> {
 
     debug!(applied_migrations, "Migration complete");
 
-    tx.commit().await.unwrap(); // TODO
+    store.commit_transaction(tx).await?;
 
     Ok(())
 }

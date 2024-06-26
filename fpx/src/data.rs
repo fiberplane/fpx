@@ -1,15 +1,25 @@
+use crate::models::Request;
 use anyhow::{Context, Result};
-use libsql::{de, params, Builder, Connection, Rows, Transaction};
+use libsql::{de, params, Builder, Connection, Rows};
 use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
 use std::fmt::Display;
+use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::models::Request;
-
 pub mod migrations;
 mod models;
+
+pub struct Transaction(libsql::Transaction);
+
+impl Deref for Transaction {
+    type Target = libsql::Transaction;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 /// Store is a abstraction around data access.
 ///
@@ -69,7 +79,12 @@ impl Store {
         self.connection
             .transaction()
             .await
+            .map(Transaction)
             .map_err(DbError::InternalError)
+    }
+
+    pub async fn commit_transaction(&self, tx: Transaction) -> Result<(), DbError> {
+        tx.0.commit().await.map_err(DbError::InternalError)
     }
 
     #[tracing::instrument(skip_all)]
@@ -242,7 +257,7 @@ mod tests {
 
             assert_eq!(json.test["test"], 1);
 
-            tx.commit().await.unwrap();
+            store.commit_transaction(tx).await.unwrap();
         }
     }
 }

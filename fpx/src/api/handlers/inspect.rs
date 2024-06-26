@@ -56,7 +56,7 @@ pub async fn inspect_request_handler(
     .await
     .unwrap(); // TODO
 
-    tx.commit().await.unwrap(); // TODO
+    store.commit_transaction(tx).await.unwrap(); // TODO
 
     events.broadcast(models::RequestAdded::new(request_id, None).into());
 
