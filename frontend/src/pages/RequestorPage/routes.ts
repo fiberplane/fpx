@@ -72,7 +72,6 @@ export function useAutoselectInitialRoute({
       !hasAlreadyAutoSelected;
 
     if (shouldAutoselectInitialRoute) {
-      console.log("Autoselecting route...");
       const autoselectedRoute = routes.find((r) => r.path === "/") ?? routes[0];
       setSelectedRoute(autoselectedRoute);
       // HACK - Only autoselect with this logic once for initializaiton. There's a better way to do this, just need to refactor things a bit

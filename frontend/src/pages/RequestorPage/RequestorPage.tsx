@@ -50,8 +50,6 @@ export const RequestorPage = () => {
     browserHistoryState,
   );
 
-  console.log("method", method);
-
   useReselectRouteHack({
     selectedRoute,
     setSelectedRoute,
