@@ -44,9 +44,9 @@ export function createHonoMiddleware(options?: {
     const config = createConfig(c);
 
     const provider = new BasicTracerProvider();
-    const consoleExporter = new ConsoleSpanExporter();
-    const consoleSpanProcessor = new SimpleSpanProcessor(consoleExporter);
-    provider.addSpanProcessor(consoleSpanProcessor);
+    // const consoleExporter = new ConsoleSpanExporter();
+    // const consoleSpanProcessor = new SimpleSpanProcessor(consoleExporter);
+    // provider.addSpanProcessor(consoleSpanProcessor);
     const exporter = new OTLPTraceExporter({
       url: config.endpoint,
     });
@@ -95,6 +95,7 @@ export function createHonoMiddleware(options?: {
     // await processor.forceFlush();
     // await processor.shutdown();
     // await exporter.shutdown();
+    await provider.shutdown();
     console.log('finished');
     for (const teardownFunction of teardownFunctions) {
       teardownFunction();
