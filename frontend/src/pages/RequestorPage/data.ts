@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { KeyValueParameter, useKeyValueForm } from "./KeyValueForm";
 import { PersistedUiState } from "./persistUiState";
 import { ProbedRoute } from "./queries";
-import { diffPaths, hasChangedPathParam } from "./routes/diff-paths";
+import { shouldDeselectRoute } from "./routes";
 
 export function useRequestorFormData(
   routes: ProbedRoute[],
@@ -50,60 +50,25 @@ export function useRequestorFormData(
   );
 
   /**
-   * - Check if new path matches selectedRoute
-   * - Update pathParams
-   * - Update selectedRoute
-   *
-   * NOTE - This is VERY rudimentary matching logic...
+   * Some additional logic for possibly deselecting the currently selected route from the sidebar,
+   * whenever the user updates the url input.
    */
   const handlePathInputChange = useCallback(
     (newPath: string) => {
       if (!selectedRoute) {
         setPath(newPath);
+        setPathParams(extractPathParams(newPath).map(mapPathKey));
         return;
       }
-      const diffParts = diffPaths(selectedRoute?.path, newPath);
+      
+      const shouldDeselect = selectedRoute && shouldDeselectRoute(selectedRoute.path, newPath);
 
-      // Nothing changed, so don't change the curretly selected route
-      if (diffParts.length === 0) {
-        setPath(newPath);
-        return;
-      }
-
-      if (diffParts.length === 1) {
-        const [oldPart, newPart] = diffParts[0];
-        if (oldPart && newPart === "") {
-          setPath(newPath);
-          return;
-        }
-      }
-
-      // If only one segment changed, and that segment was a path parameter
-      // we *might* be able to get away with not setting a new route
-      if (hasChangedPathParam(diffParts)) {
-        const [oldPart, newPart] = diffParts[0];
-
-        // If the new part is an empty string, it's possible the user is removing then adding a new path param
-        // NOTE - if the newPart is undefined, we assume they're just editing the path entirely
-        if (newPart === "") {
-          setPath(newPath);
-          return;
-        }
-        if (newPart && oldPart?.includes(newPart)) {
-          setPath(newPath);
-          return;
-        }
-        if (newPart && !newPart.startsWith(":")) {
-          setPath(newPath);
-          return;
-        }
-      }
-
-      // TODO - Create draft route in side panel or something crazy like that?
-      setRoute(null);
       setPath(newPath);
-      // TODO - Extract new path params
-      setPathParams(extractPathParams(newPath).map(mapPathKey));
+      if (shouldDeselect) {
+        // TODO - Create draft route in side panel or something crazy like that?
+        setRoute(null);
+        setPathParams(extractPathParams(newPath).map(mapPathKey));
+      }
     },
     [selectedRoute, setRoute],
   );
