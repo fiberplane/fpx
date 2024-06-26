@@ -1,11 +1,11 @@
 import { diffPaths, hasChangedPathParam } from "./diff-paths";
 
 /**
- * Hacky, temporary heuristic to prevent the selected route in the side-bar 
+ * Hacky, temporary heuristic to prevent the selected route in the side-bar
  * from being deselected in certain cases
  *
  * @param oldPath - Should be the currently selected route's path, possibly with path parameters
- * @param newPath 
+ * @param newPath
  */
 export function shouldDeselectRoute(oldPath: string, newPath: string) {
   const segmentDiffs = diffPaths(oldPath, newPath);

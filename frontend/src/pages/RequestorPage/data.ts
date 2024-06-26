@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { KeyValueParameter, useKeyValueForm } from "./KeyValueForm";
 import { PersistedUiState } from "./persistUiState";
 import { ProbedRoute } from "./queries";
-import { shouldDeselectRoute } from "./routes";
+import { findMatchedRoute, shouldDeselectRoute } from "./routes";
 
 export function useRequestorFormData(
   routes: ProbedRoute[],
@@ -60,8 +60,9 @@ export function useRequestorFormData(
         setPathParams(extractPathParams(newPath).map(mapPathKey));
         return;
       }
-      
-      const shouldDeselect = selectedRoute && shouldDeselectRoute(selectedRoute.path, newPath);
+
+      const shouldDeselect =
+        selectedRoute && shouldDeselectRoute(selectedRoute.path, newPath);
 
       setPath(newPath);
       if (shouldDeselect) {
@@ -76,9 +77,8 @@ export function useRequestorFormData(
   const handleMethodChange = useCallback(
     (newMethod: string) => {
       setMethod(newMethod);
-      const matchingRoute = routes.find(
-        (r) => r.path === path && r.method === newMethod,
-      );
+      const matchingRoute = findMatchedRoute(routes, path, newMethod);
+
       if (matchingRoute) {
         setRoute(matchingRoute);
       } else {

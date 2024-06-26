@@ -1,4 +1,4 @@
-import { diffPaths } from "./routes/diff-paths";
+import { diffPaths } from "./diff-paths";
 
 describe("diffPaths", () => {
   it("handles realistic case: `/users/:id` and `/users/:i`", () => {

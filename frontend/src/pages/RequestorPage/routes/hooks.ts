@@ -3,6 +3,7 @@ import { KeyValueParameter } from "../KeyValueForm";
 import { extractPathParams, mapPathKey } from "../data";
 import { PersistedUiState } from "../persistUiState";
 import { ProbedRoute, useProbedRoutes } from "../queries";
+import { findMatchedRoute } from "./match";
 
 export function useRoutes(browserHistoryState?: PersistedUiState) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
@@ -49,16 +50,17 @@ function useAutoselectInitialRoute({
   preferRoute,
 }: {
   isLoading: boolean;
-  routes?: ProbedRoute[];
+  routes: ProbedRoute[];
   preferRoute?: { path: string; method: string };
 }) {
-  const preferredAutoselected =
-    routes?.find((r) => {
-      return r.path === preferRoute?.path && r.method === preferRoute?.method;
-    }) ?? null;
+  const preferredAutoselected = findMatchedRoute(
+    routes,
+    preferRoute?.path,
+    preferRoute?.method,
+  );
 
   const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(
-    preferredAutoselected,
+    preferredAutoselected ?? null,
   );
 
   const [hasAlreadyAutoSelected, setHasAlreadyAutoSelected] = useState(false);

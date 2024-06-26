@@ -18,7 +18,7 @@ import {
   useFetchRequestorRequests,
   useMakeRequest,
 } from "./queries";
-import { useReselectRouteHack, useRoutes } from "./routes";
+import { findMatchedRoute, useReselectRouteHack, useRoutes } from "./routes";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./RequestorPage.css";
 
@@ -282,9 +282,8 @@ function useRequestorHistory({
     if (match) {
       const method = match.app_requests.requestMethod;
       const routePattern = match.app_requests.requestRoute;
-      const matchedRoute = routes.find(
-        (r) => r.path === routePattern && r.method === method,
-      );
+      const matchedRoute = findMatchedRoute(routes, routePattern, method);
+
       if (matchedRoute) {
         const pathParamsObject = match.app_requests.requestPathParams ?? {};
         const pathParams = createKeyValueParameters(
