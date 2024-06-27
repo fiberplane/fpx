@@ -1,9 +1,12 @@
+import { Span, SpanStatusCode, context, trace } from "@opentelemetry/api";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import {
+  BasicTracerProvider,
+  SimpleSpanProcessor,
+} from "@opentelemetry/sdk-trace-base";
 import type { Context } from "hono";
-import { polyfillWaitUntil } from "./waitUntil";
-import { BasicTracerProvider, ConsoleSpanExporter, SimpleSpanProcessor, SpanExporter } from "@opentelemetry/sdk-trace-base";
-import { SpanStatusCode, trace} from "@opentelemetry/api";
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-
+import { AsyncLocalStorageContextManager } from "./context";
+import { enableWaitUntilTracing, polyfillWaitUntil } from "./waitUntil";
 
 type Config = {
   endpoint: string;
@@ -43,6 +46,11 @@ export function createHonoMiddleware(options?: {
   return async function honoMiddleware(c: Context, next: () => Promise<void>) {
     const config = createConfig(c);
 
+    console.log("about to create a manager... oh boy");
+    const asyncHooksContextManager = new AsyncLocalStorageContextManager();
+    console.log("manager created", asyncHooksContextManager);
+    // asyncHooksContextManager.enable();
+    context.setGlobalContextManager(asyncHooksContextManager);
     const provider = new BasicTracerProvider();
     // const consoleExporter = new ConsoleSpanExporter();
     // const consoleSpanProcessor = new SimpleSpanProcessor(consoleExporter);
@@ -53,53 +61,57 @@ export function createHonoMiddleware(options?: {
     provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
     provider.register();
     // const {
-      // endpoint,
-      // service,
-      // libraryDebugMode,
-      // monitor: {
-        // fetch: monitorFetch,
-        // TODO - implement these controls/features
-        // logging: monitorLogging,
-        // requests: monitorRequests,
-      // },
+    // endpoint,
+    // service,
+    // libraryDebugMode,
+    // monitor: {
+    // fetch: monitorFetch,
+    // TODO - implement these controls/features
+    // logging: monitorLogging,
+    // requests: monitorRequests,
+    // },
     // } = createConfig(c);
     // console.log(createConfig(c));
-    const ctx = c.executionCtx;
+    // const ctx = c.executionCtx;
     // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs
     //         https://github.com/highlight/highlight/pull/6480
-    polyfillWaitUntil(ctx);
+    // polyfillWaitUntil(ctx);
 
-    const teardownFunctions: Array<() => void> = [];
-    
+    // Create spans for waitUntil
+    // enableWaitUntilTracing(ctx);
+
+    // const teardownFunctions: Array<() => void> = [];
+    // const tracer = trace.getTracer("otel-example-tracer-node");
+    // const span = trace.getActiveSpan();
+
+    const handleRouteSpan = (span: Span) => {
+      console.log("there should be an active span", !!trace.getActiveSpan());
+      return Promise.resolve()
+        .then(next)
+        .then(() => {
+          console.log("done calling next");
+          span.setStatus({ code: SpanStatusCode.OK });
+        })
+        .catch((error) => {
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: error instanceof Error ? error.message : "Unknown error",
+          });
+          throw error;
+        })
+        .finally(() => {
+          console.log("ending span");
+          span.end();
+        });
+    };
 
     const tracer = trace.getTracer("otel-example-tracer-node");
+    await tracer.startActiveSpan("route", handleRouteSpan);
+    await provider.forceFlush();
 
-    await tracer.startActiveSpan("main", async (span) => {
-      try {
-        await next();
-        span.setStatus({code: SpanStatusCode.OK});
-      } catch (error) {
-        span.setStatus({
-          code: SpanStatusCode.ERROR,
-          message: error instanceof Error ? error.message : "Unknown error",
-        });
-        throw error;
-      } finally {
-        console.log('closing span');
-        span.end();
-      }
-    });
-    console.log('next');
-    // tracer.
-    // span.setAttribute("service.name", "my-service")
-    // await processor.forceFlush();
-    // await processor.shutdown();
-    // await exporter.shutdown();
-    await provider.shutdown();
-    console.log('finished');
-    for (const teardownFunction of teardownFunctions) {
-      teardownFunction();
-    }
-
-  }
+    // for (const teardownFunction of teardownFunctions) {
+    //   teardownFunction();
+    // }
+    // console.log("this still happened?")
+  };
 }

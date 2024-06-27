@@ -1,10 +1,16 @@
-import { context, trace, Tracer, TracerOptions, TracerProvider } from '@opentelemetry/api'
+import {
+  Tracer,
+  TracerOptions,
+  TracerProvider,
+  context,
+  trace,
+} from "@opentelemetry/api";
 
-import { SpanProcessor } from '@opentelemetry/sdk-trace-base'
-import { Resource } from '@opentelemetry/resources'
+import { Resource } from "@opentelemetry/resources";
+import { SpanProcessor } from "@opentelemetry/sdk-trace-base";
 
-import { AsyncLocalStorageContextManager } from './context.js'
-import { WorkerTracer } from './tracer.js'
+import { AsyncLocalStorageContextManager } from "./context.js";
+import { WorkerTracer } from "./tracer.js";
 
 /**
  * Register this TracerProvider for use with the OpenTelemetry API.
@@ -14,25 +20,25 @@ import { WorkerTracer } from './tracer.js'
  * @param config Configuration object for SDK registration
  */
 export class WorkerTracerProvider implements TracerProvider {
-	private spanProcessors: SpanProcessor[]
-	private resource: Resource
-	private tracers: Record<string, Tracer> = {}
+  private spanProcessors: SpanProcessor[];
+  private resource: Resource;
+  private tracers: Record<string, Tracer> = {};
 
-	constructor(spanProcessors: SpanProcessor[], resource: Resource) {
-		this.spanProcessors = spanProcessors
-		this.resource = resource
-	}
+  constructor(spanProcessors: SpanProcessor[], resource: Resource) {
+    this.spanProcessors = spanProcessors;
+    this.resource = resource;
+  }
 
-	getTracer(name: string, version?: string, options?: TracerOptions): Tracer {
-		const key = `${name}@${version || ''}:${options?.schemaUrl || ''}`
-		if (!this.tracers[key]) {
-			this.tracers[key] = new WorkerTracer(this.spanProcessors, this.resource)
-		}
-		return this.tracers[key]!
-	}
+  getTracer(name: string, version?: string, options?: TracerOptions): Tracer {
+    const key = `${name}@${version || ""}:${options?.schemaUrl || ""}`;
+    if (!this.tracers[key]) {
+      this.tracers[key] = new WorkerTracer(this.spanProcessors, this.resource);
+    }
+    return this.tracers[key]!;
+  }
 
-	register(): void {
-		trace.setGlobalTracerProvider(this)
-		context.setGlobalContextManager(new AsyncLocalStorageContextManager())
-	}
+  register(): void {
+    trace.setGlobalTracerProvider(this);
+    context.setGlobalContextManager(new AsyncLocalStorageContextManager());
+  }
 }
