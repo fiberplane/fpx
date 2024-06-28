@@ -1,10 +1,10 @@
-use crate::api::grpc::protos::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceServiceServer;
 use crate::api::grpc::GrpcService;
 use crate::api::{self};
 use crate::data::migrations::migrate;
 use crate::data::{DataPath, Store};
 use crate::events::Events;
 use crate::initialize_fpx_dir;
+use crate::models::otel::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceServiceServer;
 use anyhow::{Context, Result};
 use std::future::IntoFuture;
 use std::{path::PathBuf, process::exit};

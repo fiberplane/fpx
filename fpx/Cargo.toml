@@ -5,7 +5,6 @@ edition = "2021"
 authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
-build = "build.rs"
 
 [features]
 embed-studio = [] # When enabled it will embed Studio from frontend/dist

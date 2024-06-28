@@ -3264,6 +3264,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
+ "tonic-build",
  "tracing",
  "typeshare-core",
  "url",

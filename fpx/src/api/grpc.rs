@@ -1,14 +1,10 @@
 use crate::data::{DbError, Store};
 use crate::events::ServerEvents;
-use crate::models::TraceAdded;
-use protos::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceService;
-use protos::opentelemetry::proto::collector::trace::v1::{
+use crate::models::otel::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceService;
+use crate::models::otel::opentelemetry::proto::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
 };
-
-pub mod protos {
-    tonic::include_proto!("opentelemetry_proto");
-}
+use crate::models::TraceAdded;
 
 #[derive(Clone)]
 pub struct GrpcService {

@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use thiserror::Error;
 
+pub mod otel;
+
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
 /// Messages that are send from the server to the client.
