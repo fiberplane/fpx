@@ -21,6 +21,7 @@ import {
 import { findMatchedRoute, useReselectRouteHack, useRoutes } from "./routes";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./RequestorPage.css";
+import { BACKGROUND_LAYER } from "./styles";
 
 export const RequestorPage = () => {
   const browserHistoryState = usePersistedUiState();
@@ -203,6 +204,7 @@ export const RequestorPage = () => {
 
         <div
           className={cn(
+            BACKGROUND_LAYER,
             "grid",
             "sm:grid-cols-[auto_1fr]",
             "rounded-md",

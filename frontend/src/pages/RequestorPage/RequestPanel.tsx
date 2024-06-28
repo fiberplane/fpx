@@ -188,7 +188,6 @@ function RequestMeta(props: RequestPanelProps) {
             handleClearData={() => {
               setBody(undefined);
             }}
-            className="mb-2"
           />
           <CodeMirrorJsonEditor
             onChange={setBody}
@@ -218,7 +217,7 @@ export function PanelSectionHeader({
   return (
     <div
       className={cn(
-        "uppercase text-gray-400 text-sm mb-1 flex items-center justify-between",
+        "uppercase text-gray-400 text-sm mb-2 flex items-center justify-between",
         className,
       )}
     >

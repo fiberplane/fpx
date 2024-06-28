@@ -8,6 +8,7 @@ import { ResizableHandle } from "./Resizable";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute } from "./queries";
+import { BACKGROUND_LAYER } from "./styles";
 
 type RoutesPanelProps = {
   routes?: ProbedRoute[];
@@ -51,18 +52,20 @@ export function RoutesPanel({
       <div
         style={styleWidth}
         className={cn(
-          "bg-[rgba(255,255,255,0.05)]",
+          BACKGROUND_LAYER,
           "px-4 overflow-hidden overflow-y-scroll border rounded-md",
           "lg:h-full",
         )}
       >
-        <div className={cn(
-          "sticky top-0 z-10",
-          // HACK - This needs to have an explicity bg color so that when we scroll behind it,
-          //        the content doesn't show line-through
-          // TODO - Improve the grid layout to remove the need to have this be sticky and have a bg color
-          "bg-[rgb(24,30,43)]"
-          )}>
+        <div
+          className={cn(
+            "sticky top-0 z-10",
+            // HACK - This needs to have an explicity bg color so that when we scroll behind it,
+            //        the content doesn't show line-through
+            // TODO - Improve the grid layout to remove the need to have this be sticky and have a bg color
+            "bg-[rgb(24,30,43)]",
+          )}
+        >
           <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12">
             Routes
           </h2>
@@ -90,7 +93,7 @@ export function RoutesPanel({
             Detected in app
           </div>
           {showDetectedRoutes && (
-            <div className="space-y-0 overflow-y-scroll">
+            <div className="space-y-0.5 overflow-y-scroll">
               {filteredRoutes?.map?.((route, index) => (
                 <div
                   key={index}

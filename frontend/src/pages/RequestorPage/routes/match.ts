@@ -1,8 +1,8 @@
-import { RegExpRouter } from 'hono/router/reg-exp-router';
-import { SmartRouter } from 'hono/router/smart-router';
-import { TrieRouter } from 'hono/router/trie-router';
+import { noop } from "@/utils";
+import { RegExpRouter } from "hono/router/reg-exp-router";
+import { SmartRouter } from "hono/router/smart-router";
+import { TrieRouter } from "hono/router/trie-router";
 import { ProbedRoute } from "../queries";
-import { noop } from '@/utils';
 
 export function findMatchedRoute(
   routes: ProbedRoute[],
@@ -20,11 +20,15 @@ export function findMatchedRoute(
 /**
  * Prototype of doing route matching in the browser with Hono itself
  */
-export function findSmartRouterMatch(routes: ProbedRoute[], pathname: string, method: string) {
+export function findSmartRouterMatch(
+  routes: ProbedRoute[],
+  pathname: string,
+  method: string,
+) {
   const routers = [new RegExpRouter(), new TrieRouter()];
-  const router = new SmartRouter({routers});
+  const router = new SmartRouter({ routers });
   for (const route of routes) {
-    router.add(route.method, route.path, noop)
+    router.add(route.method, route.path, noop);
   }
   const match = router.match(method, pathname);
   return match;

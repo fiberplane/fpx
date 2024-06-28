@@ -86,7 +86,7 @@ export const KeyValueForm = (props: Props) => {
   const { onChange, keyValueParameters } = props;
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-0">
       {keyValueParameters.map((parameter) => {
         const isDraft = isDraftParameter(parameter);
         return (
