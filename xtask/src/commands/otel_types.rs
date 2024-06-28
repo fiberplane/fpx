@@ -26,11 +26,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     tonic_build::configure()
         .emit_rerun_if_changed(false)
-        .message_attribute(
-            ".",
-            "#[derive(serde::Deserialize, serde::Serialize)] #[serde(rename_all = \"snake_case\")]",
-        )
-        .enum_attribute(
+        .type_attribute(
             ".",
             "#[derive(serde::Deserialize, serde::Serialize)] #[serde(rename_all = \"snake_case\")]",
         )

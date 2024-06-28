@@ -215,7 +215,9 @@ pub mod span {
         /// Attribute keys MUST be unique (it is not allowed to have more than one
         /// attribute with the same key).
         #[prost(message, repeated, tag = "3")]
-        pub attributes: ::prost::alloc::vec::Vec<super::super::super::common::v1::KeyValue>,
+        pub attributes: ::prost::alloc::vec::Vec<
+            super::super::super::common::v1::KeyValue,
+        >,
         /// dropped_attributes_count is the number of dropped attributes. If the value is 0,
         /// then no attributes were dropped.
         #[prost(uint32, tag = "4")]
@@ -244,7 +246,9 @@ pub mod span {
         /// Attribute keys MUST be unique (it is not allowed to have more than one
         /// attribute with the same key).
         #[prost(message, repeated, tag = "4")]
-        pub attributes: ::prost::alloc::vec::Vec<super::super::super::common::v1::KeyValue>,
+        pub attributes: ::prost::alloc::vec::Vec<
+            super::super::super::common::v1::KeyValue,
+        >,
         /// dropped_attributes_count is the number of dropped attributes. If the value is 0,
         /// then no attributes were dropped.
         #[prost(uint32, tag = "5")]
@@ -273,7 +277,17 @@ pub mod span {
     /// in addition to a parent/child relationship.
     #[derive(serde::Deserialize, serde::Serialize)]
     #[serde(rename_all = "snake_case")]
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum SpanKind {
         /// Unspecified. Do NOT use as default.
@@ -346,7 +360,17 @@ pub mod status {
     /// <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#set-status>
     #[derive(serde::Deserialize, serde::Serialize)]
     #[serde(rename_all = "snake_case")]
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum StatusCode {
         /// The default status.
