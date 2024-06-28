@@ -10,7 +10,6 @@ import {
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
 import { Link } from "react-router-dom";
-import { MonacoJsonEditor } from "./Editors";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
@@ -203,15 +202,6 @@ function ResponseBody({ response }: { response?: Requestornator }) {
       <div className="overflow-hidden overflow-y-scroll w-full">
         <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
       </div>
-    );
-
-    return (
-      <MonacoJsonEditor
-        height="600px"
-        value={prettyBody}
-        readOnly
-        onChange={noop}
-      />
     );
   }
 

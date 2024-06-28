@@ -1,3 +1,7 @@
+/**
+ * NOT IN USE - Example code for if we want to try using Monaco editor, to feel more like VSCode
+ */
+
 import { loader } from "@monaco-editor/react";
 import { useEffect } from "react";
 

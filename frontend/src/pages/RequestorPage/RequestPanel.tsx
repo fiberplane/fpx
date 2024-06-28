@@ -194,7 +194,6 @@ function RequestMeta(props: RequestPanelProps) {
             value={body}
             maxHeight="800px"
           />
-          {/* <MonacoJsonEditor onChange={setBody} value={body} /> */}
         </CustomTabsContent>
       )}
     </Tabs>
