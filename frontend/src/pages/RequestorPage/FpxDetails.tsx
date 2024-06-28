@@ -14,7 +14,7 @@ import {
   isMizuRequestStartMessage,
   useHandlerSourceCode,
 } from "@/queries";
-import { cn } from "@/utils";
+import { cn, noop } from "@/utils";
 import { CaretSortIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -131,15 +131,12 @@ function TraceDetails({ response }: TraceDetailsProps) {
                 jsx
                 value={fpxResponseMessage?.handler}
                 readOnly
-                onChange={() => {}}
+                onChange={noop}
               />
             </div>
           )}
         </div>
       </Section>
-
-      {/* <h2>Headers Sent</h2> */}
-      {/* <code>{JSON.stringify(fpxResponseMessage, null, 2)}</code> */}
     </div>
   );
 }
@@ -156,14 +153,13 @@ function SourceFunction({
   const handler = fpxResponseMessage?.handler;
   const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
 
-  // TODO - Use CodeMirror
   return (
     <div>
       <CodeMirrorTypescriptEditor
         jsx
         value={handlerSourceCode}
         readOnly
-        onChange={() => {}}
+        onChange={noop}
         minHeight="100px"
       />
     </div>
