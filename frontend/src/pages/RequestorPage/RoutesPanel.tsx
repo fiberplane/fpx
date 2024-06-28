@@ -51,11 +51,18 @@ export function RoutesPanel({
       <div
         style={styleWidth}
         className={cn(
+          "bg-[rgba(255,255,255,0.05)]",
           "px-4 overflow-hidden overflow-y-scroll border rounded-md",
           "lg:h-full",
         )}
       >
-        <div className="sticky top-0 z-10 bg-[rgb(12,18,32)]">
+        <div className={cn(
+          "sticky top-0 z-10",
+          // HACK - This needs to have an explicity bg color so that when we scroll behind it,
+          //        the content doesn't show line-through
+          // TODO - Improve the grid layout to remove the need to have this be sticky and have a bg color
+          "bg-[rgb(24,30,43)]"
+          )}>
           <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12">
             Routes
           </h2>
