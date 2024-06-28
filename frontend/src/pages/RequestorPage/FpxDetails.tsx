@@ -13,7 +13,6 @@ import {
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
   useHandlerSourceCode,
-  // useMizuTraces,
 } from "@/queries";
 import { cn } from "@/utils";
 import { CaretSortIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
@@ -25,6 +24,9 @@ import { HeaderTable } from "./HeaderTable";
 import { useSummarizeError } from "./ai";
 import { Requestornator, useTrace } from "./queries";
 
+// NOTE - Useful for testing rendering of ai markdown in the DOM without hitting openai
+// const MOCK_AI_SUMMARY = getMockAiSummary();
+
 type FpxDetailsProps = {
   response?: Requestornator;
 };
@@ -33,10 +35,6 @@ export function FpxDetails({ response }: FpxDetailsProps) {
   const hasTrace = !!response?.app_responses?.traceId;
   return hasTrace ? <TraceDetails response={response} /> : <NoTrace />;
 }
-
-// NOTE - Useful for testing rendering of ai markdown in the DOM
-// const MOCK_AI_SUMMARY =
-//   "The request to `/api/geese/9876543210` resulted in a 500 error. The error occurred because the value `9876543210` is out of range for the integer type in PostgreSQL.\n\n### Suggested Fix:\nEnsure the `id` parameter is within the valid range for an integer or change the database schema to use a larger integer type (e.g., `BIGINT`).\n\n```sql\nALTER TABLE geese ALTER COLUMN id TYPE BIGINT;\n```\n\nAdditionally, you might want to validate the `id` parameter before querying the database:\n\n```javascript\nconst id = parseInt(c.req.param('id'), 10);\nif (isNaN(id) || id > Number.MAX_SAFE_INTEGER) {\n  return c.json({ message: 'Invalid ID' }, 400);\n}\n```";
 
 type TraceDetailsProps = {
   response: Requestornator;
@@ -56,13 +54,18 @@ function TraceDetails({ response }: TraceDetailsProps) {
   } = useSummarizeError(trace);
 
   // TODO - use query key with trace id in fetch call so we can avoid unnecessary requests when other values update...
+  const lastFetchedTraceId = aiSummary?.traceId;
   useEffect(() => {
-    if (trace && aiEnabled) {
-      console.log("Fetching ai summary...");
+    if (
+      trace &&
+      trace.id !== lastFetchedTraceId &&
+      aiEnabled &&
+      !isFetchingAiSummary
+    ) {
       fetchAiSummary();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchAiSummary, aiEnabled]);
+  }, [trace, fetchAiSummary, aiEnabled, isFetchingAiSummary]);
 
   if (isNotFound) {
     return <div>Trace not found</div>;
@@ -81,7 +84,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
       {aiEnabled && (
         <div className="">
           <h3 className="pt-1 pb-2 text-sm">Summary</h3>
-          <div className="max-w-[600px] font-light">
+          <div className="font-light">
             {isLoadingAiSummary ||
             isFetchingAiSummary ||
             isRefetchingAiSummary ? (
@@ -89,7 +92,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
                 <div className="text-sm text-gray-400 mb-2">
                   Loading AI Summary...
                 </div>
-                <Skeleton className="h-24 w-[400px] rounded-md mb-2" />
+                <Skeleton className="h-24 w-full rounded-md mb-2" />
               </div>
             ) : aiSummary && aiSummary?.summary ? (
               <AiSummary summary={aiSummary.summary} />

@@ -29,7 +29,7 @@ async function summarizeError(trace?: MizuTrace) {
   // This serializes events from the trace in a format that's a bit more digestible for an LLM
   const simplifiedTrace = serializeTraceForLLM(trace);
 
-  return fetch("/v0/summarize-trace-error", {
+  return fetch(`/v0/summarize-trace-error/${trace?.id}`, {
     headers: {
       "Content-Type": "application/json",
     },

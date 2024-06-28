@@ -268,8 +268,9 @@ app.post(
  *
  * Takes in an fpx trace and tries to make sense of what happened when a route was invoked.
  */
-app.post("/v0/summarize-trace-error", cors(), async (ctx) => {
+app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
   const { handlerSourceCode, trace } = await ctx.req.json();
+  const traceId = ctx.req.param("traceId");
 
   const openaiClient = new OpenAI({
     apiKey: ctx.env.OPENAI_API_KEY,
@@ -319,6 +320,7 @@ app.post("/v0/summarize-trace-error", cors(), async (ctx) => {
 
   return ctx.json({
     summary: message.content,
+    traceId,
   });
 });
 
