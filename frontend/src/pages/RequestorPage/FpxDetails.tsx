@@ -64,8 +64,13 @@ function TraceDetails({ response }: TraceDetailsProps) {
     ) {
       fetchAiSummary();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trace, fetchAiSummary, aiEnabled, isFetchingAiSummary]);
+  }, [
+    trace,
+    lastFetchedTraceId,
+    fetchAiSummary,
+    aiEnabled,
+    isFetchingAiSummary,
+  ]);
 
   if (isNotFound) {
     return <div>Trace not found</div>;
