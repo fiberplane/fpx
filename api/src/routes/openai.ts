@@ -47,135 +47,82 @@ const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-app.post(
-  "/v0/generate-request",
-  cors(),
-  // zValidator(
-  //   "json",
-  //   z.object({ handler: z.string(), method: z.string(), path: z.string(), history: z.array(z.string()).optional() }),
-  // ),
-  async (ctx) => {
-    // const { handler, method, path, history } = ctx.req.valid("json");
-    const { handler, method, path, history, persona } = await ctx.req.json();
+app.post("/v0/generate-request", cors(), async (ctx) => {
+  const { handler, method, path, history, persona } = await ctx.req.json();
 
-    const openaiClient = new OpenAI({
-      apiKey: ctx.env.OPENAI_API_KEY,
-    });
+  const openaiClient = new OpenAI({
+    apiKey: ctx.env.OPENAI_API_KEY,
+  });
 
-    const response = await openaiClient.chat.completions.create({
-      // NOTE - This model should guarantee function calling to have json output
-      model: "gpt-4o",
-      // NOTE - We can restrict the response to be from this single tool call
-      tool_choice: { type: "function", function: { name: "make_request" } },
-      // Define the make_request tool
-      tools: [
-        {
-          type: "function" as const,
-          function: {
-            name: "make_request",
-            description:
-              "Generates some random data for a request to the backend",
-            // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
-            parameters: {
-              type: "object",
-              properties: {
-                path: {
-                  type: "string",
-                },
-                pathParams: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      key: {
-                        type: "string",
-                      },
-                      value: {
-                        type: "string",
-                      },
-                    },
-                  },
-                },
-                queryParams: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      key: {
-                        type: "string",
-                      },
-                      value: {
-                        type: "string",
-                      },
-                    },
-                  },
-                },
-                body: {
-                  type: "string",
-                },
-                // NOTE - If we want to support different body types, this could be helpful
-                //
-                //
-                // Best possible description of a json request body...
-                // body: {
-                //   "oneOf": [
-                //     {
-                //       "type": "object",
-                //       "description": "JSON object body"
-                //     },
-                //     {
-                //       "type": "array",
-                //       "description": "JSON array body",
-                //       items: {} // Explicitly define items
-                //     },
-                //     {
-                //       "type": "string",
-                //       "description": "String body"
-                //     },
-                //     {
-                //       "type": "object",
-                //       "description": "FormData body",
-                //       "properties": {
-                //         "fields": {
-                //           "type": "object",
-                //           "additionalProperties": {
-                //             "oneOf": [
-                //               {
-                //                 "type": "string"
-                //               },
-                //               {
-                //                 "type": "array",
-                //                 "items": {
-                //                   "type": "string"
-                //                 }
-                //               }
-                //             ]
-                //           }
-                //         }
-                //       },
-                //       "required": ["fields"],
-                //       "additionalProperties": false
-                //     }
-                //   ]
-                // },
+  const response = await openaiClient.chat.completions.create({
+    // NOTE - This model should guarantee function calling to have json output
+    model: "gpt-4o",
+    // NOTE - We can restrict the response to be from this single tool call
+    tool_choice: { type: "function", function: { name: "make_request" } },
+    // Define the make_request tool
+    tools: [
+      {
+        type: "function" as const,
+        function: {
+          name: "make_request",
+          description:
+            "Generates some random data for a request to the backend",
+          // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
+          parameters: {
+            type: "object",
+            properties: {
+              path: {
+                type: "string",
               },
-              // TODO - Mark fields like `pathParams` as required based on the route definition?
-              required: ["path"],
+              pathParams: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    key: {
+                      type: "string",
+                    },
+                    value: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              queryParams: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    key: {
+                      type: "string",
+                    },
+                    value: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              body: {
+                type: "string",
+              },
             },
+            // TODO - Mark fields like `pathParams` as required based on the route definition?
+            required: ["path"],
           },
         },
-      ],
-      messages: [
-        {
-          role: "system",
-          content:
-            persona === "QA"
-              ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
-              : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
-        },
-        {
-          role: "user",
-          content: cleanPrompt(`
+      },
+    ],
+    messages: [
+      {
+        role: "system",
+        content:
+          persona === "QA"
+            ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
+            : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
+      },
+      {
+        role: "user",
+        content: cleanPrompt(`
             I need to make a request to one of my Hono api handlers.
 
             Here are some recent requests/responses, which you can use as inspiration for future requests.
@@ -192,25 +139,24 @@ app.post(
 
             ${persona === "QA" ? "REMEMBER YOU ARE A QA. DELIBERATELY TRY TO MISUSE THE API." : ""}
           `),
-        },
-      ],
-      temperature: 0.1,
-      max_tokens: 4096,
-    });
+      },
+    ],
+    temperature: 0.18,
+    max_tokens: 4096,
+  });
 
-    const {
-      choices: [{ message }],
-    } = response;
+  const {
+    choices: [{ message }],
+  } = response;
 
-    const makeRequestCall = message.tool_calls?.[0];
-    const toolArgs = makeRequestCall?.function?.arguments;
-    const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
+  const makeRequestCall = message.tool_calls?.[0];
+  const toolArgs = makeRequestCall?.function?.arguments;
+  const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
 
-    return ctx.json({
-      request: parsedArgs,
-    });
-  },
-);
+  return ctx.json({
+    request: parsedArgs,
+  });
+});
 
 app.post(
   "/v0/analyze-error",
@@ -253,7 +199,6 @@ app.post(
     });
 
     const {
-      // id: responseId,
       choices: [{ message }],
     } = response;
 
@@ -314,7 +259,6 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
   });
 
   const {
-    // id: responseId,
     choices: [{ message }],
   } = response;
 
