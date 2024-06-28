@@ -1,4 +1,4 @@
-import { Span, SpanStatusCode, context, trace } from "@opentelemetry/api";
+import { type Span, SpanStatusCode, context, trace } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import {
   BasicTracerProvider,
@@ -6,7 +6,6 @@ import {
 } from "@opentelemetry/sdk-trace-base";
 import type { Context } from "hono";
 import { AsyncLocalStorageContextManager } from "./context";
-import { enableWaitUntilTracing, polyfillWaitUntil } from "./waitUntil";
 
 type Config = {
   endpoint: string;
@@ -46,10 +45,9 @@ export function createHonoMiddleware(options?: {
   return async function honoMiddleware(c: Context, next: () => Promise<void>) {
     const config = createConfig(c);
 
-    console.log("about to create a manager... oh boy");
+    // console.log("about to create a manager... oh boy");
     const asyncHooksContextManager = new AsyncLocalStorageContextManager();
-    console.log("manager created", asyncHooksContextManager);
-    // asyncHooksContextManager.enable();
+    // console.log("manager created", asyncHooksContextManager);
     context.setGlobalContextManager(asyncHooksContextManager);
     const provider = new BasicTracerProvider();
     // const consoleExporter = new ConsoleSpanExporter();
@@ -85,7 +83,6 @@ export function createHonoMiddleware(options?: {
     // const span = trace.getActiveSpan();
 
     const handleRouteSpan = (span: Span) => {
-      console.log("there should be an active span", !!trace.getActiveSpan());
       return Promise.resolve()
         .then(next)
         .then(() => {
@@ -108,10 +105,5 @@ export function createHonoMiddleware(options?: {
     const tracer = trace.getTracer("otel-example-tracer-node");
     await tracer.startActiveSpan("route", handleRouteSpan);
     await provider.forceFlush();
-
-    // for (const teardownFunction of teardownFunctions) {
-    //   teardownFunction();
-    // }
-    // console.log("this still happened?")
   };
 }
