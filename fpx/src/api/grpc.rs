@@ -1,5 +1,6 @@
 use crate::data::{DbError, Store};
 use crate::events::ServerEvents;
+use crate::models::TraceAdded;
 use protos::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceService;
 use protos::opentelemetry::proto::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
@@ -9,6 +10,7 @@ pub mod protos {
     tonic::include_proto!("opentelemetry_proto");
 }
 
+#[derive(Clone)]
 pub struct GrpcService {
     store: Store,
     events: ServerEvents,
@@ -27,11 +29,13 @@ impl TraceService for GrpcService {
         request: tonic::Request<ExportTraceServiceRequest>,
     ) -> Result<tonic::Response<ExportTraceServiceResponse>, tonic::Status> {
         let tx = self.store.start_transaction().await?;
-        let trace = ();
-
-        // self.store.trace_create(&tx, trace).await?;
+        // let trace = ();
 
         self.store.commit_transaction(tx).await?;
+
+        let trace_ids = request.get_ref().extract_trace_ids();
+
+        self.events.broadcast(TraceAdded::new(trace_ids).into());
 
         let message = ExportTraceServiceResponse {
             partial_success: None,
@@ -40,11 +44,24 @@ impl TraceService for GrpcService {
     }
 }
 
+impl ExportTraceServiceRequest {
+    pub fn extract_trace_ids(&self) -> Vec<Vec<u8>> {
+        self.resource_spans
+            .iter()
+            .flat_map(|span| {
+                span.scope_spans.iter().flat_map(|scope_span| {
+                    scope_span.spans.iter().map(|inner| inner.trace_id.clone())
+                })
+            })
+            .collect()
+    }
+}
+
 impl From<DbError> for tonic::Status {
     fn from(err: DbError) -> Self {
         match err {
             DbError::NotFound => todo!(),
-            DbError::FailedDeserialize { message } => todo!(),
+            DbError::FailedDeserialize { .. } => todo!(),
             DbError::InvalidJson(_) => todo!(),
             DbError::InternalError(_) => todo!(),
         }

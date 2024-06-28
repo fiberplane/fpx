@@ -3,13 +3,12 @@ use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
 use axum::extract::FromRef;
 use axum::routing::{any, get, post};
-use grpc::GrpcService;
 use http::StatusCode;
 use url::Url;
 
 pub mod client;
 pub mod errors;
-mod grpc;
+pub mod grpc;
 pub mod handlers;
 mod studio;
 mod ws;
@@ -51,7 +50,7 @@ pub fn create_api(
     inspector_service: InspectorService,
 ) -> axum::Router {
     let api_router = api_router(base_url, events.clone(), store.clone(), inspector_service);
-    let grpc_service = GrpcService::new(store, events);
+
     axum::Router::new()
         .nest("/api/", api_router)
         .fallback(studio::default_handler)

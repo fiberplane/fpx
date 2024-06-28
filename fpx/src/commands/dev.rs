@@ -1,10 +1,14 @@
-use crate::api;
+use crate::api::grpc::protos::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceServiceServer;
+use crate::api::grpc::GrpcService;
+use crate::api::{self};
 use crate::data::migrations::migrate;
 use crate::data::{DataPath, Store};
 use crate::events::Events;
 use crate::initialize_fpx_dir;
 use anyhow::{Context, Result};
+use std::future::IntoFuture;
 use std::{path::PathBuf, process::exit};
+use tokio::select;
 use tracing::info;
 use tracing::warn;
 
@@ -45,7 +49,13 @@ pub async fn handle_command(args: Args) -> Result<()> {
     )
     .await?;
 
-    let app = api::create_api(args.base_url.clone(), events, store, inspector_service);
+    let app = api::create_api(
+        args.base_url.clone(),
+        events.clone(),
+        store.clone(),
+        inspector_service,
+    );
+    let grpc_service = GrpcService::new(store, events);
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)
         .await
@@ -75,10 +85,17 @@ pub async fn handle_command(args: Args) -> Result<()> {
         "Starting server",
     );
 
-    axum::serve(listener, app)
+    let task1 = axum::serve(listener, app)
         .with_graceful_shutdown(shutdown)
-        .await
-        .context("Failed to start the HTTP server")?;
+        .into_future();
+    let task2 = tonic::transport::Server::builder()
+        .add_service(TraceServiceServer::new(grpc_service))
+        .serve("127.0.0.1:4317".parse()?);
+
+    select! {
+        _ = task1 => {},
+        _ = task2 => {},
+    };
 
     info!("Server shutdown gracefully");
 

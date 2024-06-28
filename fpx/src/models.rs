@@ -69,6 +69,8 @@ pub enum ServerMessageDetails {
     /// A request has been captured. It contains a reference to the request id
     /// and optionally a reference to the inspector id.
     RequestAdded(Box<RequestAdded>),
+
+    TraceAdded(Box<TraceAdded>),
 }
 
 impl From<ServerMessageDetails> for ServerMessage {
@@ -140,8 +142,26 @@ impl RequestAdded {
 }
 
 impl From<RequestAdded> for ServerMessage {
-    fn from(request_added: RequestAdded) -> Self {
-        ServerMessageDetails::RequestAdded(Box::new(request_added)).into()
+    fn from(val: RequestAdded) -> Self {
+        ServerMessageDetails::RequestAdded(Box::new(val)).into()
+    }
+}
+
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TraceAdded {
+    trace_ids: Vec<Vec<u8>>,
+}
+
+impl TraceAdded {
+    pub fn new(trace_ids: Vec<Vec<u8>>) -> Self {
+        Self { trace_ids }
+    }
+}
+
+impl From<TraceAdded> for ServerMessage {
+    fn from(val: TraceAdded) -> Self {
+        ServerMessageDetails::TraceAdded(Box::new(val)).into()
     }
 }
 
