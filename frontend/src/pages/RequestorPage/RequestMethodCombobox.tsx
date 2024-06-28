@@ -4,9 +4,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
-  // CommandEmpty,
   CommandGroup,
-  // CommandInput,
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
@@ -52,9 +50,6 @@ const methods = [
 export function RequestMethodCombobox({
   method,
   handleMethodChange,
-  // NOTE - For the first version of Requestor, we don't want people messing too much with
-  //        The "method" in the input, so we just disable ability to change the method via
-  //        the combobox.
   allowUserToChange,
 }: {
   method: string;
@@ -91,7 +86,6 @@ export function RequestMethodCombobox({
           >
             {matchedMethod}
           </span>
-          {/* <lassName="ml-1 h-4 w-4 shrink-0 opacity-50" /> */}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[120px] p-0" align="start">
