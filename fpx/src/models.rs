@@ -1,6 +1,5 @@
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
 use crate::data::DbError;
-use http::StatusCode;
 use rand::Rng;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -241,10 +240,10 @@ pub struct RequestorRequestPayload {
 pub enum RequestorError {}
 
 impl ApiError for RequestorError {
-    fn status_code(&self) -> StatusCode {
+    fn status_code(&self) -> http::StatusCode {
         // NOTE: RequestorError doesn't have any explicit errors, so just
         // return a NOT_IMPLEMENTED status code for now.
-        StatusCode::NOT_IMPLEMENTED
+        http::StatusCode::NOT_IMPLEMENTED
     }
 }
 
@@ -264,4 +263,83 @@ impl From<reqwest::Error> for ApiServerError<RequestorError> {
     fn from(_err: reqwest::Error) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
+}
+
+pub struct ResourceSpans {
+    pub resource: Resource,
+    pub scope_spans: Vec<ScopeSpans>,
+    pub schema_url: Option<String>,
+}
+
+pub struct Resource {
+    pub attributes: BTreeMap<String, String>,
+    pub dropped_attributes_count: u32,
+}
+
+pub struct ScopeSpans {
+    pub instrumentation_scope: InstrumentationScope,
+    pub spans: Vec<Span>,
+    pub schema_url: Option<String>,
+}
+
+pub struct InstrumentationScope {
+    pub name: Option<String>,
+    pub version: Option<String>,
+    pub attributes: BTreeMap<String, String>,
+    pub dropped_attributes_count: u32,
+}
+
+pub struct Span {
+    pub trace_id: Vec<u8>,
+    pub span_id: Vec<u8>,
+    pub trace_state: Option<String>,
+    pub parent_span_id: Vec<u8>,
+    pub flags: u32,
+    pub name: String,
+    pub kind: SpanKind,
+    pub start_time_unix_nano: u64,
+    pub end_time_unix_nano: u64,
+    pub attributes: BTreeMap<String, String>,
+    pub dropped_attributes_count: u32,
+    pub events: Vec<Event>,
+    pub dropped_events_count: u32,
+    pub links: Vec<Link>,
+    pub dropped_links_count: u32,
+    pub status: Status,
+}
+
+pub enum SpanKind {
+    Unspecified,
+    Internal,
+    Server,
+    Client,
+    Producer,
+    Consumer,
+}
+
+pub struct Event {
+    pub time_unix_nano: u64,
+    pub name: String,
+    pub attributes: BTreeMap<String, String>,
+    pub dropped_attributes_count: u32,
+}
+
+pub struct Link {
+    pub trace_id: Vec<u8>,
+    pub span_id: Vec<u8>,
+    pub trace_state: Option<String>,
+    pub attributes: BTreeMap<String, String>,
+    pub dropped_attributes_count: u32,
+    pub flags: u16,
+}
+
+pub struct Status {
+    pub code: StatusCode,
+    pub message: String,
+}
+
+pub enum StatusCode {
+    Unset,
+    Ok,
+    Error,
 }
