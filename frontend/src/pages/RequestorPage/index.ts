@@ -1,2 +1,2 @@
 export { RequestorPage } from "./RequestorPage";
-export { RequestorSessionHistoryProvider } from "./RequestorHistoryContext";
+export { RequestorSessionHistoryProvider } from "./RequestorSessionHistoryContext";

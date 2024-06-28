@@ -4,7 +4,7 @@ import { MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useMemo } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
-import { useSessionHistory } from "./RequestorHistoryContext";
+import { useSessionHistory } from "./RequestorSessionHistoryContext";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
