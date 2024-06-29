@@ -148,6 +148,7 @@ function RequestMeta(props: RequestPanelProps) {
               keyValueParameters={pathParams}
               onChange={(params) => {
                 setPathParams(params);
+                // NOTE - This breaks the ability to ...
                 if (!currentRoute) {
                   return;
                 }
@@ -158,7 +159,7 @@ function RequestMeta(props: RequestPanelProps) {
                   }
                   nextPath = nextPath.replace(
                     param.key,
-                    param.value ?? param.key,
+                    param.value || param.key,
                   );
                 }
                 setPath(nextPath);

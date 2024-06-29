@@ -12,12 +12,15 @@ import { BACKGROUND_LAYER } from "./styles";
 
 type RoutesPanelProps = {
   routes?: ProbedRoute[];
+  draftRoutes?: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
 };
 
 export function RoutesPanel({
   routes,
+  // NOTE - Draft routes not yet implemented, waiting for future PR
+  draftRoutes,
   selectedRoute,
   handleRouteClick,
 }: RoutesPanelProps) {
@@ -35,6 +38,22 @@ export function RoutesPanel({
     }
     return routes?.filter((r) => r.path.includes(filterValue));
   }, [filterValue, routes]);
+
+  const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
+    return routes?.some((r) => !r.currentlyRegistered) ?? false;
+  }, [routes]);
+
+  const hasAnyDraftRoutes = useMemo(() => {
+    return routes?.some((r) => !r.isDraft) ?? false;
+  }, [routes]);
+
+  const prevDetectedRoutes = useMemo(() => {
+    return filteredRoutes?.filter((r) => !r.currentlyRegistered) ?? [];
+  }, [filteredRoutes]);
+
+  const detectedRoutes = useMemo(() => {
+    return filteredRoutes?.filter((r) => r.currentlyRegistered) ?? [];
+  }, [filteredRoutes]);
 
   return (
     <Resizable
@@ -83,6 +102,15 @@ export function RoutesPanel({
           </div>
         </div>
         <div className="overflow-y-scroll relative">
+          {hasAnyDraftRoutes && (
+            <RoutesSection
+              title="Draft routes"
+              routes={draftRoutes ?? []}
+              selectedRoute={selectedRoute}
+              handleRouteClick={handleRouteClick}
+            />
+          )}
+
           <div className="font-medium text-sm flex items-center mb-2 mt-2">
             <ShowDetectedIcon
               className="h-4 w-4 mr-0.5 cursor-pointer"
@@ -94,7 +122,7 @@ export function RoutesPanel({
           </div>
           {showDetectedRoutes && (
             <div className="space-y-0.5 overflow-y-scroll">
-              {filteredRoutes?.map?.((route, index) => (
+              {detectedRoutes?.map?.((route, index) => (
                 <div
                   key={index}
                   onClick={() => handleRouteClick(route)}
@@ -111,10 +139,67 @@ export function RoutesPanel({
               ))}
             </div>
           )}
+
+          {hasAnyPreviouslyDetectedRoutes && (
+            <RoutesSection
+              title="Previously detected routes"
+              routes={prevDetectedRoutes}
+              selectedRoute={selectedRoute}
+              handleRouteClick={handleRouteClick}
+            />
+          )}
         </div>
-        <div className="mt-auto">{/* Settings? */}</div>
       </div>
     </Resizable>
+  );
+}
+
+type RoutesSectionProps = {
+  title: string;
+  routes: ProbedRoute[];
+  selectedRoute: ProbedRoute | null;
+  handleRouteClick: (route: ProbedRoute) => void;
+};
+
+function RoutesSection(props: RoutesSectionProps) {
+  const { title, routes, selectedRoute, handleRouteClick } = props;
+
+  const [showRoutesSection, setShowRoutesSection] = useState(true);
+  const ShowRoutesSectionIcon = showRoutesSection
+    ? CaretDownIcon
+    : CaretRightIcon;
+
+  return (
+    <>
+      <div className="font-medium text-sm flex items-center mb-2 mt-4">
+        <ShowRoutesSectionIcon
+          className="h-4 w-4 mr-0.5 cursor-pointer"
+          onClick={() => {
+            setShowRoutesSection((current) => !current);
+          }}
+        />
+        {title}
+      </div>
+      {showRoutesSection && (
+        <div className="space-y-0.5 overflow-y-scroll">
+          {routes?.map?.((route, index) => (
+            <div
+              key={index}
+              onClick={() => handleRouteClick(route)}
+              className={cn(
+                "flex items-center py-1 px-5 rounded cursor-pointer font-mono text-sm",
+                {
+                  "bg-muted": selectedRoute === route,
+                  "hover:bg-muted": selectedRoute !== route,
+                },
+              )}
+            >
+              <RouteItem route={route} />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 

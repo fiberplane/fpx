@@ -9,6 +9,8 @@ export type ProbedRoute = {
   handler: string;
   handlerType: "route" | "middleware";
   currentlyRegistered: boolean;
+  // TODO - Implement
+  isDraft?: boolean;
 };
 
 const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
