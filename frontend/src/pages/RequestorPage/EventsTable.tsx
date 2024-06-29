@@ -20,11 +20,7 @@ export function EventsTable({ logs }: { logs?: MizuLog[] }) {
     });
   }, [logs]);
 
-  if (!filteredLogs) {
-    return <div className="mb-4">No logs</div>;
-  }
-
-  if (!filteredLogs.length) {
+  if (!filteredLogs || !filteredLogs.length) {
     return (
       <div className="pl-8 text-gray-400 font-italic text-sm pb-2">
         <div>No logs</div>
