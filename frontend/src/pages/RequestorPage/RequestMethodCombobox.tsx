@@ -51,10 +51,12 @@ export function RequestMethodCombobox({
   method,
   handleMethodChange,
   allowUserToChange,
+  className,
 }: {
   method: string;
   handleMethodChange: (method: string) => void;
   allowUserToChange?: boolean;
+  className?: string;
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -71,6 +73,7 @@ export function RequestMethodCombobox({
           aria-expanded={open}
           className={cn("text-left", {
             "pointer-events-none": !allowUserToChange,
+            className,
           })}
           onClick={(e) => {
             if (!allowUserToChange) {
