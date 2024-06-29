@@ -27,9 +27,6 @@ export function RoutesPanel({
   const { width, handleResize } = useResizableWidth(320);
   const styleWidth = useStyleWidth(width);
 
-  const [showDetectedRoutes, setShowDetectedRoutes] = useState(true);
-  const ShowDetectedIcon = showDetectedRoutes ? CaretDownIcon : CaretRightIcon;
-
   const [filterValue, setFilterValue] = useState("");
   const filteredRoutes = useMemo(() => {
     const cleanFilter = filterValue.trim().toLowerCase();
@@ -111,34 +108,12 @@ export function RoutesPanel({
             />
           )}
 
-          <div className="font-medium text-sm flex items-center mb-2 mt-2">
-            <ShowDetectedIcon
-              className="h-4 w-4 mr-0.5 cursor-pointer"
-              onClick={() => {
-                setShowDetectedRoutes((current) => !current);
-              }}
-            />
-            Detected in app
-          </div>
-          {showDetectedRoutes && (
-            <div className="space-y-0.5 overflow-y-scroll">
-              {detectedRoutes?.map?.((route, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleRouteClick(route)}
-                  className={cn(
-                    "flex items-center py-1 px-5 rounded cursor-pointer font-mono text-sm",
-                    {
-                      "bg-muted": selectedRoute === route,
-                      "hover:bg-muted": selectedRoute !== route,
-                    },
-                  )}
-                >
-                  <RouteItem route={route} />
-                </div>
-              ))}
-            </div>
-          )}
+          <RoutesSection
+            title="Detected in app"
+            routes={detectedRoutes}
+            selectedRoute={selectedRoute}
+            handleRouteClick={handleRouteClick}
+          />
 
           {hasAnyPreviouslyDetectedRoutes && (
             <RoutesSection
