@@ -24,6 +24,7 @@ export function AddRouteButton() {
   };
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // TODO - autoclose popover
     console.log("submitting", method, path);
     addRoute({ path, method });
   };
@@ -70,6 +71,7 @@ export function AddRouteButton() {
                 }}
                 value={path}
                 className="col-span-2 h-8 font-mono"
+                autoFocus
               />
             </div>
           </div>

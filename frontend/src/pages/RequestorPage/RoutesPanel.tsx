@@ -1,12 +1,17 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn, noop } from "@/utils";
-import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
+import {
+  CaretDownIcon,
+  CaretRightIcon,
+  TrashIcon,
+} from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { Resizable } from "react-resizable";
 import { ResizableHandle } from "./Resizable";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
-import { ProbedRoute } from "./queries";
+import { ProbedRoute, useDeleteRoute } from "./queries";
 import { AddRouteButton } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 
@@ -183,7 +188,7 @@ function RoutesSection(props: RoutesSectionProps) {
               key={index}
               onClick={() => handleRouteClick(route)}
               className={cn(
-                "flex items-center py-1 px-5 rounded cursor-pointer font-mono text-sm",
+                "flex items-center py-1 pl-5 pr-2 rounded cursor-pointer font-mono text-sm",
                 {
                   "bg-muted": selectedRoute === route,
                   "hover:bg-muted": selectedRoute !== route,
@@ -200,6 +205,8 @@ function RoutesSection(props: RoutesSectionProps) {
 }
 
 export function RouteItem({ route }: { route: ProbedRoute }) {
+  const { mutate: deleteRoute } = useDeleteRoute();
+  const canDeleteRoute = route.addedByUser || !route.currentlyRegistered;
   return (
     <>
       <span
@@ -214,6 +221,20 @@ export function RouteItem({ route }: { route: ProbedRoute }) {
       <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">
         {route.path}
       </span>
+      {
+        // TODO - Add a delete button here
+        canDeleteRoute && (
+          <div className="ml-auto flex items-center group">
+            <TrashIcon
+              className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hove:pointer-events-auto invisible group-hover:visible "
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteRoute({ path: route.path, method: route.method });
+              }}
+            />
+          </div>
+        )
+      }
     </>
   );
 }

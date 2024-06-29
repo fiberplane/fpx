@@ -6,6 +6,7 @@ import { ProbedRoute, useProbedRoutes } from "../queries";
 import { findMatchedRoute } from "./match";
 
 export function useRoutes(browserHistoryState?: PersistedUiState) {
+  // NOTE - Not yet in use
   const [draftRoute, setDraftRoute] = useState<ProbedRoute | null>(null);
 
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();

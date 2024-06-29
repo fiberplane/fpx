@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
@@ -45,6 +45,25 @@ app.post("/v0/app-routes", async (ctx) => {
       handler: "CODE NOT AVAILABLE",
       addedByUser: true,
     })
+    .returning();
+  return ctx.json(createdRoute?.[0]);
+});
+
+app.delete("/v0/app-routes/:method/:path", async (ctx) => {
+  const db = ctx.get("db");
+  const { method, path } = ctx.req.param();
+  const decodedPath = decodeURIComponent(path);
+  const createdRoute = await db
+    .delete(appRoutes)
+    .where(
+      and(
+        eq(appRoutes.method, method),
+        eq(appRoutes.path, decodedPath),
+        eq(appRoutes.handlerType, "route"),
+        // Only allow deleting routes that were NOT auto-detected
+        eq(appRoutes.currentlyRegistered, false),
+      ),
+    )
     .returning();
   return ctx.json(createdRoute?.[0]);
 });
