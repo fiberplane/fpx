@@ -51,10 +51,9 @@ export function RequestorInput({
             setValue(e.target.value);
             try {
               const url = new URL(e.target.value);
-              // setPath(url.pathname);
               handlePathInputChange(url.pathname);
             } catch {
-              // TODO - Error state
+              // TODO - Error state? Toast?
               console.error("Invalid URL", e.target.value);
             }
           }}
