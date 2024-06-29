@@ -6,13 +6,17 @@ import { ProbedRoute, useProbedRoutes } from "../queries";
 import { findMatchedRoute } from "./match";
 
 export function useRoutes(browserHistoryState?: PersistedUiState) {
+  const [draftRoute, setDraftRoute] = useState<ProbedRoute | null>(null);
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
-    return (
-      routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
+    const routes = routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
       []
+
+    const routesWithDrafts = draftRoute ? [draftRoute, ...routes] : routes;
+    return (
+      routesWithDrafts
     );
-  }, [routesAndMiddleware]);
+  }, [routesAndMiddleware, draftRoute]);
 
   // TODO - Support swapping out base url in UI,
   //        right now you can only change it by modifying MIZU_SERVICE_TARGET in the API
@@ -41,6 +45,7 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
     addBaseUrl,
     selectedRoute,
     setSelectedRoute,
+    setDraftRoute,
   };
 }
 
