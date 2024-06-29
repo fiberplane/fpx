@@ -71,10 +71,13 @@ export function RequestMethodCombobox({
           variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className={cn("text-left", {
-            "pointer-events-none": !allowUserToChange,
+          className={cn(
+            "text-left",
+            {
+              "pointer-events-none": !allowUserToChange,
+            },
             className,
-          })}
+          )}
           onClick={(e) => {
             if (!allowUserToChange) {
               e.stopPropagation();

@@ -57,7 +57,7 @@ export function AddRouteButton() {
                 method={method}
                 handleMethodChange={handleMethodChange}
                 allowUserToChange
-                className="p-1"
+                className="px-2 mr-2"
               />
             </div>
             <div className="grid items-center">

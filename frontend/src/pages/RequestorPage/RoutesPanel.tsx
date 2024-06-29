@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn, noop } from "@/utils";
+import { cn } from "@/utils";
 import {
   CaretDownIcon,
   CaretRightIcon,
