@@ -27,6 +27,14 @@ export function RoutesPanel({
   const { width, handleResize } = useResizableWidth(320);
   const styleWidth = useStyleWidth(width);
 
+  const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
+    return routes?.some((r) => !r.currentlyRegistered) ?? false;
+  }, [routes]);
+
+  const hasAnyDraftRoutes = useMemo(() => {
+    return routes?.some((r) => !r.isDraft) ?? false;
+  }, [routes]);
+
   const [filterValue, setFilterValue] = useState("");
   const filteredRoutes = useMemo(() => {
     const cleanFilter = filterValue.trim().toLowerCase();
@@ -35,14 +43,6 @@ export function RoutesPanel({
     }
     return routes?.filter((r) => r.path.includes(filterValue));
   }, [filterValue, routes]);
-
-  const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
-    return routes?.some((r) => !r.currentlyRegistered) ?? false;
-  }, [routes]);
-
-  const hasAnyDraftRoutes = useMemo(() => {
-    return routes?.some((r) => !r.isDraft) ?? false;
-  }, [routes]);
 
   const prevDetectedRoutes = useMemo(() => {
     return filteredRoutes?.filter((r) => !r.currentlyRegistered) ?? [];
