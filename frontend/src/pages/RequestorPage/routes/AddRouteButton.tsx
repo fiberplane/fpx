@@ -7,10 +7,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { PlusIcon } from "@radix-ui/react-icons";
-import { RequestMethodCombobox } from "../RequestMethodCombobox";
 import { useState } from "react";
+import { RequestMethodCombobox } from "../RequestMethodCombobox";
+import { useAddRoute } from "../queries";
 
 export function AddRouteButton() {
+  const { mutate: addRoute } = useAddRoute();
+
   const [method, setMethod] = useState("GET");
   const handleMethodChange = (method: string) => {
     setMethod(method);
@@ -21,8 +24,9 @@ export function AddRouteButton() {
   };
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("submit", method, path);
-  }
+    console.log("submitting", method, path);
+    addRoute({ path, method });
+  };
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -44,7 +48,9 @@ export function AddRouteButton() {
           </div>
           <div className="grid grid-cols-[auto_1fr]">
             <div className="grid items-center">
-              <Label className="sr-only" htmlFor="width">Method</Label>
+              <Label className="sr-only" htmlFor="width">
+                Method
+              </Label>
               <RequestMethodCombobox
                 method={method}
                 handleMethodChange={handleMethodChange}
@@ -53,7 +59,9 @@ export function AddRouteButton() {
               />
             </div>
             <div className="grid items-center">
-              <Label className="sr-only" htmlFor="pathPattern">Path Pattern</Label>
+              <Label className="sr-only" htmlFor="pathPattern">
+                Path Pattern
+              </Label>
               <Input
                 id="pathPattern"
                 type="text"

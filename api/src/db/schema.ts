@@ -30,6 +30,10 @@ export const appRoutes = sqliteTable(
     currentlyRegistered: integer("currentlyRegistered", {
       mode: "boolean",
     }).default(false),
+    // A flag for routes that get added manually by user
+    addedByUser: integer("addedByUser", {
+      mode: "boolean",
+    }).default(false),
   },
   (table) => {
     return {

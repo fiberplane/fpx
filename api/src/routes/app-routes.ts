@@ -31,6 +31,24 @@ app.get("/v0/app-routes", async (ctx) => {
   });
 });
 
+app.post("/v0/app-routes", async (ctx) => {
+  const db = ctx.get("db");
+  const { path, method } = await ctx.req.json();
+  // TODO - Handle `SQLITE_CONSTRAINT_PRIMARYKEY` error
+  const createdRoute = await db
+    .insert(appRoutes)
+    .values({
+      path,
+      method,
+      handlerType: "route",
+      // TODO
+      handler: "CODE NOT AVAILABLE",
+      addedByUser: true,
+    })
+    .returning();
+  return ctx.json(createdRoute?.[0]);
+});
+
 app.get("/v0/all-requests", async (ctx) => {
   const db = ctx.get("db");
   const requests = await db

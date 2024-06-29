@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { cn } from "@/utils";
+import { cn, noop } from "@/utils";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { Resizable } from "react-resizable";
@@ -32,7 +32,11 @@ export function RoutesPanel({
   }, [routes]);
 
   const hasAnyDraftRoutes = useMemo(() => {
-    return routes?.some((r) => !r.isDraft) ?? false;
+    return routes?.some((r) => r.isDraft) ?? false;
+  }, [routes]);
+
+  const hasAnyUserAddedRoutes = useMemo(() => {
+    return routes?.some((r) => r.addedByUser) ?? false;
   }, [routes]);
 
   const [filterValue, setFilterValue] = useState("");
@@ -45,11 +49,21 @@ export function RoutesPanel({
   }, [filterValue, routes]);
 
   const prevDetectedRoutes = useMemo(() => {
-    return filteredRoutes?.filter((r) => !r.currentlyRegistered) ?? [];
+    return (
+      filteredRoutes?.filter((r) => !r.addedByUser && !r.currentlyRegistered) ??
+      []
+    );
   }, [filteredRoutes]);
 
   const detectedRoutes = useMemo(() => {
-    return filteredRoutes?.filter((r) => r.currentlyRegistered) ?? [];
+    return (
+      filteredRoutes?.filter((r) => !r.addedByUser && r.currentlyRegistered) ??
+      []
+    );
+  }, [filteredRoutes]);
+
+  const userAddedRoutes = useMemo(() => {
+    return filteredRoutes?.filter((r) => r.addedByUser) ?? [];
   }, [filteredRoutes]);
 
   return (
@@ -101,6 +115,15 @@ export function RoutesPanel({
             <RoutesSection
               title="Draft routes"
               routes={draftRoutes ?? []}
+              selectedRoute={selectedRoute}
+              handleRouteClick={handleRouteClick}
+            />
+          )}
+
+          {hasAnyUserAddedRoutes && (
+            <RoutesSection
+              title="Custom routes"
+              routes={userAddedRoutes ?? []}
               selectedRoute={selectedRoute}
               handleRouteClick={handleRouteClick}
             />

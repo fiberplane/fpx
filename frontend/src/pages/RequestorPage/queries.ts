@@ -9,6 +9,7 @@ export type ProbedRoute = {
   handler: string;
   handlerType: "route" | "middleware";
   currentlyRegistered: boolean;
+  addedByUser: boolean;
   // TODO - Implement
   isDraft?: boolean;
 };
@@ -26,8 +27,8 @@ const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
 
 type JsonSchemaType = z.infer<typeof JsonSchema>;
 
+// TODO - Use validation schema
 export type Requestornator = {
-  // TODO
   app_requests: {
     id: number;
     requestUrl: string;
@@ -63,11 +64,46 @@ function getProbedRoutes(): Promise<ProbedRoutesResponse> {
   return fetch("/v0/app-routes").then((r) => r.json());
 }
 
+const PROBED_ROUTES_KEY = "appRoutes";
+
 export function useProbedRoutes() {
   return useQuery({
-    queryKey: ["appRoutes"],
+    queryKey: [PROBED_ROUTES_KEY],
     queryFn: getProbedRoutes,
   });
+}
+
+function addRoute({
+  path,
+  method,
+}: {
+  path: string;
+  method: string;
+}) {
+  return fetch("/v0/app-routes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      path,
+      method,
+    }),
+  }).then((r) => r.json());
+}
+
+export function useAddRoute() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: addRoute,
+    onSuccess: () => {
+      // Invalidate and refetch app routes... not sure if this will mess with the currently selected route,
+      // or if we want to autoselect the new route, or what
+      queryClient.invalidateQueries({ queryKey: [PROBED_ROUTES_KEY] });
+    },
+  });
+
+  return mutation;
 }
 
 export function useFetchRequestorRequests() {
