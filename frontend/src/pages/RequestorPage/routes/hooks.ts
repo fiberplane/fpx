@@ -7,15 +7,15 @@ import { findMatchedRoute } from "./match";
 
 export function useRoutes(browserHistoryState?: PersistedUiState) {
   const [draftRoute, setDraftRoute] = useState<ProbedRoute | null>(null);
+
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
-    const routes = routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
-      []
+    const routes =
+      routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
+      [];
 
     const routesWithDrafts = draftRoute ? [draftRoute, ...routes] : routes;
-    return (
-      routesWithDrafts
-    );
+    return routesWithDrafts;
   }, [routesAndMiddleware, draftRoute]);
 
   // TODO - Support swapping out base url in UI,
@@ -110,7 +110,7 @@ export function useReselectRouteHack({
   method: string;
 }) {
   useEffect(() => {
-    // Shot circuit if there's already a selected route
+    // Short circuit if there's already a selected route
     if (selectedRoute) {
       return;
     }

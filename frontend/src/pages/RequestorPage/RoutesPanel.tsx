@@ -1,13 +1,13 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
-import { CaretDownIcon, CaretRightIcon, PlusIcon } from "@radix-ui/react-icons";
+import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { Resizable } from "react-resizable";
 import { ResizableHandle } from "./Resizable";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute } from "./queries";
+import { AddRouteButton } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 
 type RoutesPanelProps = {
@@ -93,9 +93,7 @@ export function RoutesPanel({
               onChange={(e) => setFilterValue(e.target.value)}
             />
             {/* TODO - Create a route? */}
-            <Button variant="secondary" className="p-2.5">
-              <PlusIcon className="h-4 w-4" />
-            </Button>
+            <AddRouteButton />
           </div>
         </div>
         <div className="overflow-y-scroll relative">
