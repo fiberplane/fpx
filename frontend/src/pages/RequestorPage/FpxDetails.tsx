@@ -80,10 +80,6 @@ function TraceDetails({ response }: TraceDetailsProps) {
   const fpxResponseMessage = getResponseMessage(trace?.logs || []);
   const shouldShowSourceFunction = fpxRequestMessage && fpxResponseMessage;
 
-  if (aiSummary?.summary) {
-    // console.log("AI SUMMARY", aiSummary.summary);
-  }
-
   return (
     <div className="mt-2">
       {aiEnabled && (
