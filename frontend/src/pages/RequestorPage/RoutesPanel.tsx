@@ -226,7 +226,7 @@ export function RouteItem({ route }: { route: ProbedRoute }) {
         canDeleteRoute && (
           <div className="ml-auto flex items-center group">
             <TrashIcon
-              className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hove:pointer-events-auto invisible group-hover:visible "
+              className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hover:pointer-events-auto invisible group-hover:visible"
               onClick={(e) => {
                 e.stopPropagation();
                 deleteRoute({ path: route.path, method: route.method });

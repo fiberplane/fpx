@@ -12,6 +12,8 @@ import { RequestMethodCombobox } from "../RequestMethodCombobox";
 import { useAddRoute } from "../queries";
 
 export function AddRouteButton() {
+  const [open, setOpen] = useState(false);
+
   const { mutate: addRoute } = useAddRoute();
 
   const [method, setMethod] = useState("GET");
@@ -24,12 +26,11 @@ export function AddRouteButton() {
   };
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO - autoclose popover
-    console.log("submitting", method, path);
     addRoute({ path, method });
+    setOpen(false);
   };
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="secondary" className="p-2.5">
           <PlusIcon className="h-4 w-4" />
