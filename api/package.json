@@ -41,6 +41,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.8.0",
     "@cloudflare/workers-types": "^4.20240403.0",
     "@octokit/types": "^13.5.0",
     "@types/node": "^20.11.17",
