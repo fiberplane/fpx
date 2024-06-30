@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { useCustomRoutesEnabled } from "@/hooks";
 import { cn } from "@/utils";
 import {
   CaretDownIcon,
@@ -13,7 +14,6 @@ import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute, useDeleteRoute } from "./queries";
 import { AddRouteButton } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
-import { useCustomRoutesEnabled } from "@/hooks";
 
 type RoutesPanelProps = {
   routes?: ProbedRoute[];
@@ -112,9 +112,7 @@ export function RoutesPanel({
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
             />
-            {customRoutesEnabled && (
-              <AddRouteButton />
-            )}
+            {customRoutesEnabled && <AddRouteButton />}
           </div>
         </div>
         <div className="overflow-y-scroll relative">
