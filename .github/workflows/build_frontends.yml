@@ -33,12 +33,12 @@
         - name: Install Biome CLI for Linux
           run: npm install @biomejs/cli-linux-x64 --save-dev
 
-        # HACK: Install rollup due to npm bug with optional dependencies
-        - name: Install Rollup for x64
-          run: npm install @biomejs/cli-linux-x64 --save-dev
-
         - name: Lint all workspaces
           run: npm run lint:ci --workspaces
+
+        # HACK: Install rollup to make client-library build succeed due to npm bug with optional dependencies
+        - name: Install Rollup for Linux
+          run: npm install @rollup/rollup-linux-x64-gnu --save-dev
 
         - name: Build all workspaces
           run: npm run build --workspaces --if-present
