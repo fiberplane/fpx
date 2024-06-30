@@ -34,6 +34,9 @@
         - name: Install dependencies
           run: npm ci --workspaces
 
+        - name: Install Biome CLI for Linux
+          run: npm install @biomejs/cli-linux-x64 --save-dev
+
         - name: Verify Biome installation
           run: ls -la node_modules/@biomejs/biome/bin/
 
