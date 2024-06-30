@@ -40,5 +40,9 @@
         - name: Install Rollup for Linux
           run: npm install @rollup/rollup-linux-x64-gnu --save-dev
 
+        # HACK: For some reason need to install swc bindings in CI too
+        - name: Install swc
+          run: npm instlal @swc/cli @swc/core @swc/plugin-transform-imports --save-dev
+
         - name: Build all workspaces
           run: npm run build --workspaces --if-present
