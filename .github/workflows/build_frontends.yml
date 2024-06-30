@@ -25,6 +25,10 @@
           with:
             node-version: lts/*
             cache: npm
+
+        - name: Install Biome
+          run: npm install -g @biomejs/biome
+
         - name: Install dependencies
           run: npm ci --workspaces
 
