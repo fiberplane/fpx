@@ -29,7 +29,7 @@ app.use("/*", staticServerMiddleware);
 app.get("*", frontendRoutesHandler);
 
 // Serve the API
-const port = +(process.env.MIZU_PORT ?? 8788);
+const port = +(process.env.FPX_PORT ?? 8788);
 const server = serve({
   fetch: app.fetch,
   port,
@@ -41,7 +41,7 @@ console.log(`FPX Server is running: http://localhost:${port}`);
 // Fire off an async probe to the service we want to monitor
 // This will collect information on all routes that the service exposes
 // Which powers a postman-like UI to ping routes and see responses
-const serviceTargetArgument = process.env.MIZU_SERVICE_TARGET;
+const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
 const probeMaxRetries = 10;
 const probeDelay = 1000;
 probeRoutesWithExponentialBackoff(

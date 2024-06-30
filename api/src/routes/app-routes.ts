@@ -24,7 +24,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v0/app-routes", async (ctx) => {
   const db = ctx.get("db");
   const routes = await db.select().from(appRoutes);
-  const baseUrl = env(ctx).MIZU_SERVICE_TARGET ?? "http://localhost:8787";
+  const baseUrl = env(ctx).FPX_SERVICE_TARGET ?? "http://localhost:8787";
   return ctx.json({
     baseUrl,
     routes,

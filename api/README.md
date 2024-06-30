@@ -1,5 +1,4 @@
-
-## Running mizu
+## Running fpx
 
 ```sh
 npm install
@@ -24,21 +23,21 @@ npm run dev
 
 ```sh
 # From the fpx PROJECT ROOT!
-npm run build:mizu-studio
+npm run build:fpx-studio
 cd api
 npm link
 
 # Test it out
 cd /some/random/dir
-npx --prefer-local mizu
+npx --prefer-local fpx
 
 # If you need to serve the api on a different port
-MIZU_PORT=8790 npx --prefer-local mizu
+FPX_PORT=8790 npx --prefer-local fpx
 
 # If your service is running on something other than http://localhost:8787
-MIZU_SERVICE_TARGET=http://localhost:1234 npx --prefer-local mizu
+FPX_SERVICE_TARGET=http://localhost:1234 npx --prefer-local fpx
 
-# To unlink afterwards, first find the linked package name (something like @mizu-dev/studio)
+# To unlink afterwards, first find the linked package name (something like @fpx/studio)
 # then use that name in the `npm unlink` command
 npm ls -g --depth=0 --link=true
 npm unlink $NAME_OF_THIS_PACKAGE -g
@@ -48,11 +47,11 @@ npm unlink $NAME_OF_THIS_PACKAGE -g
 
 ```sh
 # ***Start in the fpx project root!***
-npm run build:mizu-studio
+npm run build:fpx-studio
 cd api
 npm publish
 
 # Then test like this
 cd /some/random/dir
-npx @mizu-dev/studio
+npx @fpx/studio
 ```
