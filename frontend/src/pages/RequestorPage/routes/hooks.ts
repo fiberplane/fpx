@@ -20,7 +20,7 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
   }, [routesAndMiddleware, draftRoute]);
 
   // TODO - Support swapping out base url in UI,
-  //        right now you can only change it by modifying MIZU_SERVICE_TARGET in the API
+  //        right now you can only change it by modifying FPX_SERVICE_TARGET in the API
   const addBaseUrl = useCallback(
     (path: string) => {
       const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
