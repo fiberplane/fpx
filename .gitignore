@@ -26,7 +26,6 @@ target
 !.yarn/sdks
 !.yarn/versions
 node_modules
-# package-lock.json
 yarn-error.log
 
 # Build tools
