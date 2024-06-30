@@ -34,6 +34,9 @@
         - name: Install dependencies
           run: npm ci --workspaces
 
+        - name: Verify Biome installation
+          run: ls -la node_modules/@biomejs/biome/bin/
+
         - name: Lint all workspaces
           run: npm run lint:ci --workspaces
 
