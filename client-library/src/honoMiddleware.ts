@@ -7,8 +7,8 @@ import {
   extractCallerLocation,
   generateUUID,
   polyfillWaitUntil,
-  shouldIgnoreMizuLog,
-  shouldPrettifyMizuLog,
+  shouldIgnoreFpxLog,
+  shouldPrettifyFpxLog,
   specialFormatMessage,
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
@@ -30,20 +30,20 @@ type HonoApp = {
 };
 
 type FpxEnv = {
-  MIZU_ENDPOINT: string;
+  FPX_ENDPOINT: string;
   SERVICE_NAME?: string;
   FPX_LIBRARY_DEBUG_MODE?: string;
 };
 
 type FpxConfig = {
-  /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
+  /** Use `libraryDebugMode` to log into the terminal what we are sending to the FPX server on each request/response */
   libraryDebugMode: boolean;
   monitor: {
-    /** Send data to mizu about each fetch call made during a handler's lifetime */
+    /** Send data to FPX about each fetch call made during a handler's lifetime */
     fetch: boolean;
     // TODO - implement this control/feature
     logging: boolean;
-    /** Send data to mizu about each incoming request and outgoing response */
+    /** Send data to FPX about each incoming request and outgoing response */
     requests: boolean;
   };
 };
@@ -80,7 +80,7 @@ export function createHonoMiddleware<App extends HonoApp>(
     } = mergeConfigs(defaultConfig, config);
 
     const endpoint =
-      env<FpxEnv>(c).MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs";
+      env<FpxEnv>(c).FPX_ENDPOINT ?? "http://localhost:8788/v0/logs";
     const service = env<FpxEnv>(c).SERVICE_NAME || "unknown";
 
     const ctx = c.executionCtx;
@@ -165,9 +165,9 @@ export function createHonoMiddleware<App extends HonoApp>(
         }
 
         ctx.waitUntil(
-          // Use `originalFetch` to avoid an infinite loop of logging to mizu
-          // If we use our monkeyPatched version, then each fetch logs to mizu,
-          // which triggers another fetch to log to mizu, etc.
+          // Use `originalFetch` to avoid an infinite loop of logging to FPX
+          // If we use our monkeyPatched version, then each fetch logs to FPX,
+          // which triggers another fetch to log to FPX, etc.
           originalFetch(endpoint, {
             method: "POST",
             headers,
@@ -177,32 +177,32 @@ export function createHonoMiddleware<App extends HonoApp>(
 
         const applyArgs = args?.length ? [message, ...args] : [message];
 
-        // To explain the use of this `shouldIgnoreMizuLog` function a bit more:
+        // To explain the use of this `shouldIgnoreFpxLog` function a bit more:
         //
-        // The middleware itself uses `console.log` and `console.error` to send logs to mizu.
+        // The middleware itself uses `console.log` and `console.error` to send logs to FPX.
         //
         // Specifically, it does this in the monkeypatched version of `fetch`.
         //
         // So, we want to short circuit those logs and not actually print them to the user's console
         // Otherwise, things get realllyyyy noisy.
         //
-        if (shouldIgnoreMizuLog(applyArgs)) {
+        if (shouldIgnoreFpxLog(applyArgs)) {
           return;
         }
 
-        if (!libraryDebugMode && shouldPrettifyMizuLog(applyArgs)) {
-          // Optionally log a link to the mizu dashboard for the "response" log
-          const linkToMizuUi = tryCreateFriendlyLink({
+        if (!libraryDebugMode && shouldPrettifyFpxLog(applyArgs)) {
+          // Optionally log a link to the FPX dashboard for the "response" log
+          const linkToFpxUi = tryCreateFriendlyLink({
             message: JSON.stringify(message),
             traceId,
-            mizuEndpoint: endpoint,
+            fpxEndpoint: endpoint,
           });
 
           // Try parsing the message as json and extracting all the fields we care about logging prettily
           tryPrettyPrintLoggerLog(
             originalConsoleMethod,
             JSON.stringify(message),
-            linkToMizuUi,
+            linkToFpxUi,
           );
         } else {
           originalConsoleMethod.apply(originalConsoleMethod, applyArgs);

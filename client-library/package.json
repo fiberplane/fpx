@@ -1,6 +1,6 @@
 {
-  "name": "@mizu-dev/hono",
-  "description": "Hono middleware to forward data to a local instance of @mizu-dev/studio",
+  "name": "@fpx/hono",
+  "description": "Hono middleware to forward data to a local instance of @fpx/studio",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
   "main": "dist/index.js",
