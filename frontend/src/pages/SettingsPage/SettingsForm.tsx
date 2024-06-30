@@ -20,6 +20,7 @@ import { errorHasMessage } from "@/utils";
 const FormSchema = z.object({
   ai_features: z.boolean(),
   openai_api_key: z.string().optional(),
+  custom_routes: z.boolean(),
 });
 
 export function SettingsForm({
@@ -32,6 +33,7 @@ export function SettingsForm({
     defaultValues: {
       ai_features: !!settings?.aiEnabled,
       openai_api_key: settings.openaiApiKey,
+      custom_routes: !!settings?.customRoutesEnabled,
     },
   });
 
@@ -42,6 +44,7 @@ export function SettingsForm({
           aiEnabled: data.ai_features,
           // Remove the stored api key if the feature is disabled
           openaiApiKey: data.ai_features ? data.openai_api_key : undefined,
+          customRoutesEnabled: data.custom_routes,
         },
       },
       {
@@ -118,6 +121,28 @@ export function SettingsForm({
                       )}
                     />
                   ) : null}
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="custom_routes"
+              render={({ field }) => (
+                <FormItem className="rounded-lg border p-4">
+                  <div className="flex flex-row items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Custom Routes</FormLabel>
+                      <FormDescription>
+                        Enable or disable custom routes
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </div>
                 </FormItem>
               )}
             />

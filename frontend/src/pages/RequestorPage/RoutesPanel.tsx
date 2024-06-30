@@ -11,8 +11,9 @@ import { ResizableHandle } from "./Resizable";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute, useDeleteRoute } from "./queries";
-import { AddRouteButton } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
+import { useCustomRoutesEnabled } from "@/hooks";
+import { AddRouteButton } from "./routes";
 
 type RoutesPanelProps = {
   routes?: ProbedRoute[];
@@ -28,6 +29,7 @@ export function RoutesPanel({
   selectedRoute,
   handleRouteClick,
 }: RoutesPanelProps) {
+  const customRoutesEnabled = useCustomRoutesEnabled();
   const { width, handleResize } = useResizableWidth(320);
   const styleWidth = useStyleWidth(width);
 
@@ -110,8 +112,10 @@ export function RoutesPanel({
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
             />
-            {/* TODO - Create a route? */}
-            <AddRouteButton />
+            {/* Uncomment when we have a create route button */}
+            {customRoutesEnabled && (
+              <AddRouteButton /> // Conditionally render AddRouteButton
+            )}
           </div>
         </div>
         <div className="overflow-y-scroll relative">
