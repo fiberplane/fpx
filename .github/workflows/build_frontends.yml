@@ -29,7 +29,12 @@
         - name: Install dependencies
           run: npm ci --workspaces
 
+        # HACK: Install Biome CLI for Linux due to npm bug with optional dependencies
         - name: Install Biome CLI for Linux
+          run: npm install @biomejs/cli-linux-x64 --save-dev
+
+        # HACK: Install rollup due to npm bug with optional dependencies
+        - name: Install Rollup for x64
           run: npm install @biomejs/cli-linux-x64 --save-dev
 
         - name: Lint all workspaces
