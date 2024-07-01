@@ -101,13 +101,18 @@ export function RequestDetailsPage() {
 
   return (
     <div className={cn(
-      "h-full",
+      "h-full w-full",
       "relative",
+      "overflow-hidden",
       "overflow-y-scroll",
-      "py-4 px-2",
-      "sm:px-6 sm:py-3",
+      "px-2 sm:px-6",
+      "grid grid-rows-[auto_1fr]",
     )}>
-      <div className="flex gap-4 items-center">
+      <div className={cn(
+        "flex gap-4 items-center",
+        "py-8",
+        "sm:gap-8 sm:py-10",
+      )}>
         <h2 className="text-2xl font-semibold">Request Detail</h2>
         <div className="flex gap-2">
           <Button
@@ -128,15 +133,31 @@ export function RequestDetailsPage() {
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-5">
-        <div className="col-span-1 sticky top-4 self-start">
+      <div className={cn(
+        "grid grid-cols-[auto_1fr] gap-4 sm:gap-4 md:gap-6",
+        "w-full"
+      )}>
+        <div className={cn(
+          "hidden sm:block sm:sticky sm:top-4 self-start",
+          "sm:w-[220px]",
+          "md:w-[280px]",
+        )}>
           <Minimap trace={trace} />
         </div>
-        <div className="flex flex-col col-span-4 gap-4 justify-center mx-8 lg:mx-16 py-4">
-          {trace && <Summary trace={trace} />}
-          <Separator />
+        <div className={cn(
+          "grid items-center gap-4 overflow-x-auto relative",
+          "sm:max-w-full",
+          "w-full",
+          "sm:grid-rows-[auto_1fr]",
+          "overflow-hidden"
+        )}>
+          <div className="w-full relative">
+            {trace && <Summary trace={trace} />}
+          </div>
 
-          <div>{trace ? <TraceDetails trace={trace} /> : null}</div>
+          <div className="w-full relative">
+            {trace ? <TraceDetails trace={trace} /> : null}
+          </div>
         </div>
       </div>
     </div>
@@ -183,27 +204,26 @@ function Summary({ trace }: { trace: MizuTrace }) {
     : undefined;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="grid gap-4 max-w-full">
       <h3 className="text-xl font-semibold">Summary</h3>
-      <Card className="bg-muted/20">
-        <CardContent className="flex flex-col gap-4 p-4">
+      <Card className="bg-muted/20 max-w-full">
+        <CardContent className="grid gap-4 p-4">
           <div className="flex gap-2 items-center">
             <Status statusCode={Number(trace?.status)} />
             <span className="text-primary text-sm">{trace?.method}</span>
             <p className="text-sm">{trace?.path}</p>
           </div>
-          <div></div>
           <h4 className="uppercase text-xs text-muted-foreground">
             {hasErrors ? "ERRORS" : "RESPONSE"}
           </h4>
           {hasErrors ? (
             errors.map((error, idx) => (
-              <a href={`#log-error-${error?.name}`} key={idx}>
+              <a className="block w-full" href={`#log-error-${error?.name}`} key={idx}>
                 <Card
                   key={idx}
-                  className="rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
+                  className="max-w-full w-full relative rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
                 >
-                  <CardContent className="p-2 overflow-x-auto whitespace-pre-wrap">
+                  <CardContent className="p-2 overflow-x-hidden whitespace-normal w-full">
                     {error?.name}: {error?.message}
                   </CardContent>
                 </Card>
@@ -224,7 +244,7 @@ function Summary({ trace }: { trace: MizuTrace }) {
 
 function TraceDetails({ trace }: { trace: MizuTrace }) {
   return (
-    <div className="flex flex-col gap-8" id="trace-details">
+    <div className="grid gap-8" id="trace-details">
       {trace?.logs &&
         trace?.logs.map((log) => (
           <Card key={log.id}>

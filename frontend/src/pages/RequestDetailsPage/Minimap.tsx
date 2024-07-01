@@ -23,7 +23,7 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
     return trace.logs
       .map((log) => {
         const { message } = log;
-        console.log("message", message);
+        // console.log("message", message);
         if (isMizuRequestStartMessage(message)) {
           return {
             id: `request-${message.method}-${message.path}`,
@@ -124,7 +124,7 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
                 "bg-muted": activeId === item.id,
               })}
             >
-              <a href={`#${item.id}`} className="flex gap-2 items-center">
+              <a href={`#${item.id}`} className="flex gap-2 items-center text-sm">
                 <span className="">{item.title}</span>
                 {item.status && <Status statusCode={Number(item.status)} />}
                 {item.method && (
