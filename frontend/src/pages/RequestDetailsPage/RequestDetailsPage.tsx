@@ -100,7 +100,13 @@ export function RequestDetailsPage() {
   });
 
   return (
-    <div className={cn("h-full", "relative", "overflow-y-scroll")}>
+    <div className={cn(
+      "h-full",
+      "relative",
+      "overflow-y-scroll",
+      "py-4 px-2",
+      "sm:px-6 sm:py-3",
+    )}>
       <div className="flex gap-4 items-center">
         <h2 className="text-2xl font-semibold">Request Detail</h2>
         <div className="flex gap-2">
@@ -126,7 +132,7 @@ export function RequestDetailsPage() {
         <div className="col-span-1 sticky top-4 self-start">
           <Minimap trace={trace} />
         </div>
-        <div className="flex flex-col col-span-4 gap-4 justify-center mx-16 py-4">
+        <div className="flex flex-col col-span-4 gap-4 justify-center mx-8 lg:mx-16 py-4">
           {trace && <Summary trace={trace} />}
           <Separator />
 
