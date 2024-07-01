@@ -1,38 +1,28 @@
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { MizuLog, isMizuFetchStartMessage } from "@/queries";
+import { MizuFetchStart } from "@/queries/types";
+import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
-import { TextOrJsonViewer } from "./TextJsonViewer";
+import { RequestMethod } from "./Method";
 
-export function FetchRequestLog({ log }: { log: MizuLog }) {
-  const { message } = log;
-  const url = isMizuFetchStartMessage(message) ? message?.url : "UNKNOWN_URL";
-
-  const { headers, body, method } = message;
-
+export function FetchRequestLog({ message }: { message: MizuFetchStart }) {
+  const { headers, body, method, url } = message;
+  const id = `fetch-request-${method}-${url}`;
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex gap-2 items-center">
+    <section className="flex flex-col gap-4" id={id}>
+      <div className="flex flex-col md:flex-row gap-4 max-md:justify-content md:items-center">
         <h3 className="text-xl font-semibold">
-          <span className="font-mono lowercase">Fetch</span> Request
+          <span className="font-mono bg-muted/50 p-1 rounded-lg lowercase text-orange-500">
+            Fetch
+          </span>{" "}
+          Request
         </h3>
-        <span className="text-primary text-xs">{method}</span>
-        <p className="text-xs">{url}</p>
+        <div className="flex flex-grow gap-2 items-center">
+          <RequestMethod method={method} />
+          <p className="text-sm flex-grow overflow-ellipsis">{url}</p>
+        </div>
       </div>
 
       {headers && <KeyValueTable keyValue={headers} caption="Headers" />}
-
-      <Card className="bg-muted/20 rounded-xl">
-        <CardTitle className="text-sm p-2 font-normal bg-muted/50 rounded-t-xl">
-          Body
-        </CardTitle>
-        <CardContent className="p-2">
-          <TextOrJsonViewer text={body} />
-        </CardContent>
-      </Card>
-
-      {/* <pre> { */}
-      {/*   JSON.stringify(log, null, 2) */}
-      {/* }</pre> */}
+      {body && <BodyViewer body={body} />}
     </section>
   );
 }

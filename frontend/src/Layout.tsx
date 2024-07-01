@@ -31,11 +31,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
         </div>
       </nav>
       <main
-        className={cn(
-          "md:gap-8",
-          "overflow-hidden",
-          "h-[calc(100vh-64px)]",
-        )}
+        className={cn("md:gap-8", "overflow-hidden", "h-[calc(100vh-64px)]")}
       >
         {children}
       </main>

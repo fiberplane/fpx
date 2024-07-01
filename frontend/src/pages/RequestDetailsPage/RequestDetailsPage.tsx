@@ -22,19 +22,20 @@ import {
   isMizuFetchErrorMessage,
   isMizuRequestEndMessage,
 } from "@/queries/types";
+import { cn } from "@/utils";
 import { useEffect, useState } from "react";
 import { z } from "zod";
+import { getHttpMethodTextColor } from "../RequestorPage/method";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
-import { FetchRequestLog } from "./FetchRequestLog.1";
+import { FetchRequestLog } from "./FetchRequestLog";
 import { FetchResponseErrorLog } from "./FetchResponseErrorLog";
 import { FetchResponseLog } from "./FetchResponseLog";
-import { KeyValueTable } from "./KeyValueTable";
 import { LogLog } from "./LogLog";
+import { RequestMethod } from "./Method";
 import { Minimap } from "./Minimap";
 import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
-import { cn } from "@/utils";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -99,20 +100,24 @@ export function RequestDetailsPage() {
   });
 
   return (
-    <div className={cn(
-      "h-full",
-      "relative",
-      "overflow-hidden",
-      "overflow-y-scroll",
-      "px-2 pb-4 sm:px-4 sm:pb-8",
-      "md:px-6",
-      "grid grid-rows-[auto_1fr]",
-    )}>
-      <div className={cn(
-        "flex gap-4 items-center justify-between",
-        "py-8",
-        "sm:gap-8 sm:py-10",
-      )}>
+    <div
+      className={cn(
+        "h-full",
+        "relative",
+        "overflow-hidden",
+        "overflow-y-scroll",
+        "px-2 pb-4 sm:px-4 sm:pb-8",
+        "md:px-6",
+        "grid grid-rows-[auto_1fr]",
+      )}
+    >
+      <div
+        className={cn(
+          "flex gap-4 items-center justify-between",
+          "py-8",
+          "sm:gap-8 sm:py-10",
+        )}
+      >
         <h2 className="text-2xl font-semibold">Request Detail</h2>
         <div className="flex gap-2">
           <Button
@@ -133,23 +138,37 @@ export function RequestDetailsPage() {
           </Button>
         </div>
       </div>
-      <div className={cn(
-        "grid sm:grid-cols-[auto_1fr] gap-4 sm:gap-4 md:gap-6",
-        "w-full"
-      )}>
-        <div className={cn(
-          "hidden sm:block sm:sticky sm:top-4 self-start",
-          "sm:w-[220px]",
-          "md:w-[280px]",
-        )}>
+      <div
+        className={cn(
+          "grid sm:grid-cols-[auto_1fr] gap-4 sm:gap-4 md:gap-6",
+          "w-full",
+        )}
+      >
+        <div
+          className={cn(
+            "hidden sm:block sm:sticky sm:top-4 self-start",
+            "sm:w-[220px]",
+            "md:w-[280px]",
+          )}
+        >
           <Minimap trace={trace} />
         </div>
-        <div className={cn(
-          "grid items-center gap-4 overflow-x-auto relative",
-          "sm:grid-rows-[auto_1fr]",
-        )}>
-          {trace ? <Summary trace={trace} /> : <div className="w-full relative" />}
-          {trace ? <TraceDetails trace={trace} /> : <div className="w-full relative" />}
+        <div
+          className={cn(
+            "grid items-center gap-4 overflow-x-auto relative",
+            "sm:grid-rows-[auto_1fr]",
+          )}
+        >
+          {trace ? (
+            <Summary trace={trace} />
+          ) : (
+            <div className="w-full relative" />
+          )}
+          {trace ? (
+            <TraceDetails trace={trace} />
+          ) : (
+            <div className="w-full relative" />
+          )}
         </div>
       </div>
     </div>
@@ -202,8 +221,8 @@ function Summary({ trace }: { trace: MizuTrace }) {
         <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
           <div className="flex gap-2 items-center">
             <Status statusCode={Number(trace?.status)} />
-            <span className="text-primary text-sm">{trace?.method}</span>
-            <p className="text-sm">{trace?.path}</p>
+            <RequestMethod method={trace?.method} />
+            <p className="text-sm font-mono">{trace?.path}</p>
           </div>
           <div className="grid gap-2 overflow-x-auto">
             <h4 className="uppercase text-xs text-muted-foreground">
@@ -211,7 +230,11 @@ function Summary({ trace }: { trace: MizuTrace }) {
             </h4>
             {hasErrors ? (
               errors.map((error, idx) => (
-                <a className="block" href={`#log-error-${error?.name}`} key={idx}>
+                <a
+                  className="block"
+                  href={`#log-error-${error?.name}`}
+                  key={idx}
+                >
                   <Card
                     key={idx}
                     className="relative rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"

@@ -1,6 +1,7 @@
 import { MizuRequestStart } from "@/queries";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
+import { RequestMethod } from "./Method";
 
 export function RequestLog({ message }: { message: MizuRequestStart }) {
   const { method, path, headers, query, params, body } = message;
@@ -11,7 +12,7 @@ export function RequestLog({ message }: { message: MizuRequestStart }) {
       <div className="flex gap-4 items-center">
         <h3 className="text-xl font-semibold">Incoming Request</h3>
         <div className="flex gap-2 items-center pt-1">
-          <span className="text-primary text-sm">{method}</span>
+          <RequestMethod method={method} />
           <p className="text-sm font-mono">{path}</p>
         </div>
       </div>

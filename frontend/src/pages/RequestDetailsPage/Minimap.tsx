@@ -8,8 +8,11 @@ import {
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "@/queries";
+import { cn } from "@/utils";
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getHttpMethodTextColor } from "../RequestorPage/method";
+import { RequestMethod } from "./Method";
 import { TocItem } from "./RequestDetailsPage";
 
 export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
@@ -124,12 +127,13 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
                 "bg-muted": activeId === item.id,
               })}
             >
-              <a href={`#${item.id}`} className="flex gap-2 items-center text-sm">
+              <a
+                href={`#${item.id}`}
+                className="flex gap-2 items-center text-sm"
+              >
                 <span className="">{item.title}</span>
                 {item.status && <Status statusCode={Number(item.status)} />}
-                {item.method && (
-                  <span className="text-primary text-xs">{item.method}</span>
-                )}
+                {item.method && <RequestMethod method={item.method} />}
               </a>
             </div>
           </div>
