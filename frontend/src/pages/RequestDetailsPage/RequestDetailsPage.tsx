@@ -203,7 +203,7 @@ function Summary({ trace }: { trace: MizuTrace }) {
                   key={idx}
                   className="rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
                 >
-                  <CardContent className="p-2">
+                  <CardContent className="p-2 overflow-x-auto whitespace-pre-wrap">
                     {error?.name}: {error?.message}
                   </CardContent>
                 </Card>
