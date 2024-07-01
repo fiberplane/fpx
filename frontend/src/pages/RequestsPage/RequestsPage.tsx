@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type MizuTrace, useMizuTraces } from "@/queries";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
 import { columns } from "./columns";
+import { cn } from "@/utils";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
@@ -79,7 +80,11 @@ export function RequestsPage() {
   }, [queryClient]);
 
   return (
-    <Tabs defaultValue="all">
+    <Tabs defaultValue="all" className={cn(
+      "py-4 px-2",
+      "sm:px-4 sm:py-4",
+      "md:px-6 md:py-6",
+    )}>
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>

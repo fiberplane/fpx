@@ -198,7 +198,7 @@ function Summary({ trace }: { trace: MizuTrace }) {
           </h4>
           {hasErrors ? (
             errors.map((error, idx) => (
-              <a href={`#log-error-${error?.name}`}>
+              <a href={`#log-error-${error?.name}`} key={idx}>
                 <Card
                   key={idx}
                   className="rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
@@ -227,7 +227,7 @@ function TraceDetails({ trace }: { trace: MizuTrace }) {
     <div className="flex flex-col gap-8" id="trace-details">
       {trace?.logs &&
         trace?.logs.map((log) => (
-          <Card>
+          <Card key={log.id}>
             <CardContent className="p-4 bg-muted/40">
               <LogDetails key={log.id} log={log} />
             </CardContent>
