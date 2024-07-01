@@ -1,4 +1,5 @@
-import type { Context } from "hono";
+import { env } from "hono/adapter";
+import { createMiddleware } from "hono/factory";
 import { replaceFetch } from "./replace-fetch";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
 import {
@@ -13,12 +14,30 @@ import {
   tryPrettyPrintLoggerLog,
 } from "./utils";
 
-type Config = {
-  endpoint: string;
-  /** Name of service (not in use, but will be helpful later) */
-  service?: string;
+// Type hack that makes our middleware types play nicely with Hono types
+type RouterRoute = {
+  method: string;
+  path: string;
+  // We can't use the type of a handler that's exported by Hono for some reason.
+  // When we do that, our types end up mismatching with the user's app!
+  //
+  // biome-ignore lint/complexity/noBannedTypes:
+  handler: Function;
+};
+
+type HonoApp = {
+  routes: RouterRoute[];
+};
+
+type FpxEnv = {
+  MIZU_ENDPOINT: string;
+  SERVICE_NAME?: string;
+  FPX_LIBRARY_DEBUG_MODE?: string;
+};
+
+type FpxConfig = {
   /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
-  libraryDebugMode?: boolean;
+  libraryDebugMode: boolean;
   monitor: {
     /** Send data to mizu about each fetch call made during a handler's lifetime */
     fetch: boolean;
@@ -29,38 +48,49 @@ type Config = {
   };
 };
 
-type CreateConfig = (context: Context) => Config;
+// TODO - Create helper type for making deeply partial types
+type FpxConfigOptions = Partial<
+  FpxConfig & {
+    monitor: Partial<FpxConfig["monitor"]>;
+  }
+>;
 
-const defaultCreateConfig = (c: Context) => {
-  return {
-    endpoint: c.env?.MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs",
-    service: c.env?.SERVICE_NAME || "unknown",
-    libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
-    monitor: {
-      fetch: true,
-      logging: true,
-      requests: true,
-    },
-  };
+const defaultConfig = {
+  libraryDebugMode: false,
+  monitor: {
+    fetch: true,
+    logging: true,
+    requests: true,
+  },
 };
 
-export function createHonoMiddleware(options?: {
-  createConfig: CreateConfig;
-}) {
-  const createConfig = options?.createConfig ?? defaultCreateConfig;
-  return async function honoMiddleware(c: Context, next: () => Promise<void>) {
+export function createHonoMiddleware<App extends HonoApp>(
+  app?: App,
+  config?: FpxConfigOptions,
+) {
+  const handler = createMiddleware(async function fpxHonoMiddleware(c, next) {
     const {
-      endpoint,
-      service,
       libraryDebugMode,
       monitor: {
         fetch: monitorFetch,
-        // TODO - implement these controls/features
-        // logging: monitorLogging,
         requests: monitorRequests,
+        // TODO - implement this control/feature
+        // logging: monitorLogging,
       },
-    } = createConfig(c);
+    } = mergeConfigs(defaultConfig, config);
+
+    const endpoint =
+      env<FpxEnv>(c).MIZU_ENDPOINT ?? "http://localhost:8788/v0/logs";
+    const service = env<FpxEnv>(c).SERVICE_NAME || "unknown";
+
     const ctx = c.executionCtx;
+
+    if (!app) {
+      // Logging here before we patch the console.* methods so we don't cause trouble
+      console.log(
+        "Hono object was not provided to createHonoMiddleware, skipping route inspection...",
+      );
+    }
 
     // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs
     //         https://github.com/highlight/highlight/pull/6480
@@ -75,8 +105,8 @@ export function createHonoMiddleware(options?: {
     // This is similar to how we need to undo our monkeypatching of `console.*` methods (see HACK comment below)
     teardownFunctions.push(undoReplaceFetch);
 
-    // TODO - (future) Take the traceId from headers but then fall back to uuid here?
-    const traceId = generateUUID();
+    // NOTE - Take the traceId from headers but then fall back to uuid here
+    const traceId = c.req.header("x-fpx-trace-id") || generateUUID();
 
     // We monkeypatch `console.*` methods because it's the only way to send consumable logs locally without setting up an otel colletor
     for (const level of RECORDED_CONSOLE_METHODS) {
@@ -105,6 +135,17 @@ export function createHonoMiddleware(options?: {
           return arg;
         });
 
+        const routeInspectorHeader = c.req.header("X-Fpx-Route-Inspector");
+
+        const routes = app
+          ? app?.routes?.map((route) => ({
+              method: route.method,
+              path: route.path,
+              handler: route.handler.toString(),
+              handlerType: route.handler.length < 2 ? "route" : "middleware",
+            }))
+          : [];
+
         const payload = {
           level,
           traceId,
@@ -113,16 +154,23 @@ export function createHonoMiddleware(options?: {
           args: argsToSend,
           callerLocation,
           timestamp,
+          routes,
         };
+
+        const headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        headers.append("x-fpx-trace-id", traceId);
+        if (routeInspectorHeader) {
+          headers.append("x-Fpx-Route-Inspector", "enabled");
+        }
+
         ctx.waitUntil(
           // Use `originalFetch` to avoid an infinite loop of logging to mizu
           // If we use our monkeyPatched version, then each fetch logs to mizu,
           // which triggers another fetch to log to mizu, etc.
           originalFetch(endpoint, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers,
             body: JSON.stringify(payload),
           }),
         );
@@ -163,6 +211,7 @@ export function createHonoMiddleware(options?: {
     }
 
     if (monitorRequests) {
+      c.res.headers.append("x-fpx-trace-id", traceId);
       await log(c, next);
     } else {
       await next();
@@ -171,5 +220,21 @@ export function createHonoMiddleware(options?: {
     for (const teardownFunction of teardownFunctions) {
       teardownFunction();
     }
+  });
+
+  return handler;
+}
+
+/**
+ * Last-in-wins deep merge for FpxConfig
+ */
+function mergeConfigs(
+  fallbackConfig: FpxConfig,
+  userConfig?: FpxConfigOptions,
+): FpxConfig {
+  return {
+    libraryDebugMode:
+      userConfig?.libraryDebugMode ?? fallbackConfig.libraryDebugMode,
+    monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
 }

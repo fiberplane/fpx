@@ -1,0 +1,1 @@
+ALTER TABLE `app_routes` ADD `addedByUser` integer DEFAULT false;

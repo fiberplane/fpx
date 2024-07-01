@@ -32,8 +32,11 @@ npm link
 cd /some/random/dir
 npx --prefer-local mizu
 
-# If you need to use a different port
+# If you need to serve the api on a different port
 MIZU_PORT=8790 npx --prefer-local mizu
+
+# If your service is running on something other than http://localhost:8787
+MIZU_SERVICE_TARGET=http://localhost:1234 npx --prefer-local mizu
 
 # To unlink afterwards, first find the linked package name (something like @mizu-dev/studio)
 # then use that name in the `npm unlink` command

@@ -3,19 +3,17 @@
     "target": "ESNext",
     "module": "NodeNext",
     "strict": true,
+    "noErrorTruncation": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
-    "types": ["node"],
+    "types": ["vitest/globals", "node"],
     "declaration": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "outDir": "./dist",
     "rootDir": ".",
     "esModuleInterop": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "baseUrl": "."
   },
   "include": ["src/**/*", "migrate.ts"],
   "exclude": ["node_modules", "dist", "test-content"]

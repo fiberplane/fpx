@@ -28,7 +28,7 @@ import { createHonoMiddleware } from "@mizu-dev/hono";
 
 const app = new Hono();
 
-app.use(createHonoMiddleware())
+app.use(createHonoMiddleware(app))
 
 app.get("/", (c) => {
   return c.text("Hello Hono!");
@@ -94,7 +94,7 @@ const createConfig = (c: Context) => {
  };
 }
 
-app.use(createHonoMiddleware({ createConfig }))
+app.use(createHonoMiddleware(app, { createConfig }))
 app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
@@ -118,6 +118,12 @@ Make requests to your Hono app, and the logs should show up in the mizu UI!
 
 ```sh
 npx @mizu-dev/studio
+
+# Launch the UI on a different port
+MIZU_PORT=8789 npx @mizu-dev/studio
+
+# Point the UI to your service, to autodetect its routes
+MIZU_SERVICE_TARGET=http://localhost:1234 npx @mizu-dev/studio
 ```
 
 That's it! You should see your logs in the mizu UI.
