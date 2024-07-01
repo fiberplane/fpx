@@ -31,7 +31,7 @@ type HonoApp = {
 
 type FpxEnv = {
   FPX_ENDPOINT: string;
-  SERVICE_NAME?: string;
+  FPX_SERVICE_NAME?: string;
   FPX_LIBRARY_DEBUG_MODE?: string;
 };
 
@@ -81,7 +81,7 @@ export function createHonoMiddleware<App extends HonoApp>(
 
     const endpoint =
       env<FpxEnv>(c).FPX_ENDPOINT ?? "http://localhost:8788/v0/logs";
-    const service = env<FpxEnv>(c).SERVICE_NAME || "unknown";
+    const service = env<FpxEnv>(c).FPX_SERVICE_NAME || "unknown";
 
     const ctx = c.executionCtx;
 

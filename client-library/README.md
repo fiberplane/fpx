@@ -84,7 +84,7 @@ const app = new Hono();
 const createConfig = (c: Context) => {
  return {
   endpoint: c.env?.FPX_ENDPOINT,
-  service: c.env?.SERVICE_NAME || "unknown",
+  service: c.env?.FPX_SERVICE_NAME || "unknown",
   libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
   monitor: {
    fetch: true, // set to false if you do not want to monkey-path fetch and send data about external network requests to FPX
