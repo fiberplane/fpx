@@ -1,12 +1,12 @@
 import { type Span, SpanStatusCode, context, trace } from "@opentelemetry/api";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import {
   BasicTracerProvider,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
 import type { ExecutionContext, Hono } from "hono";
-import { AsyncLocalStorageContextManager } from "../src/context";
-import { enableWaitUntilTracing } from "../src/waitUntil";
+import { AsyncLocalStorageContextManager } from "./context";
+import { enableWaitUntilTracing } from "./waitUntil";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 
 type Config = {
   endpoint: string;
