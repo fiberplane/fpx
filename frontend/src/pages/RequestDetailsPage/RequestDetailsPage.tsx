@@ -4,7 +4,6 @@ import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Status } from "@/components/ui/status";
 import { useKeySequence } from "@/hooks";
 import {
@@ -101,15 +100,16 @@ export function RequestDetailsPage() {
 
   return (
     <div className={cn(
-      "h-full w-full",
+      "h-full",
       "relative",
       "overflow-hidden",
       "overflow-y-scroll",
-      "px-2 sm:px-6",
+      "px-2 pb-4 sm:px-4 sm:pb-8",
+      "md:px-6",
       "grid grid-rows-[auto_1fr]",
     )}>
       <div className={cn(
-        "flex gap-4 items-center",
+        "flex gap-4 items-center justify-between",
         "py-8",
         "sm:gap-8 sm:py-10",
       )}>
@@ -134,7 +134,7 @@ export function RequestDetailsPage() {
         </div>
       </div>
       <div className={cn(
-        "grid grid-cols-[auto_1fr] gap-4 sm:gap-4 md:gap-6",
+        "grid sm:grid-cols-[auto_1fr] gap-4 sm:gap-4 md:gap-6",
         "w-full"
       )}>
         <div className={cn(
@@ -146,18 +146,10 @@ export function RequestDetailsPage() {
         </div>
         <div className={cn(
           "grid items-center gap-4 overflow-x-auto relative",
-          "sm:max-w-full",
-          "w-full",
           "sm:grid-rows-[auto_1fr]",
-          "overflow-hidden"
         )}>
-          <div className="w-full relative">
-            {trace && <Summary trace={trace} />}
-          </div>
-
-          <div className="w-full relative">
-            {trace ? <TraceDetails trace={trace} /> : null}
-          </div>
+          {trace ? <Summary trace={trace} /> : <div className="w-full relative" />}
+          {trace ? <TraceDetails trace={trace} /> : <div className="w-full relative" />}
         </div>
       </div>
     </div>
@@ -204,38 +196,40 @@ function Summary({ trace }: { trace: MizuTrace }) {
     : undefined;
 
   return (
-    <div className="grid gap-4 max-w-full">
+    <div className="grid gap-4 grid-rows-[auto_1fr] overflow-hidden">
       <h3 className="text-xl font-semibold">Summary</h3>
-      <Card className="bg-muted/20 max-w-full">
-        <CardContent className="grid gap-4 p-4">
+      <Card className="bg-muted/20">
+        <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
           <div className="flex gap-2 items-center">
             <Status statusCode={Number(trace?.status)} />
             <span className="text-primary text-sm">{trace?.method}</span>
             <p className="text-sm">{trace?.path}</p>
           </div>
-          <h4 className="uppercase text-xs text-muted-foreground">
-            {hasErrors ? "ERRORS" : "RESPONSE"}
-          </h4>
-          {hasErrors ? (
-            errors.map((error, idx) => (
-              <a className="block w-full" href={`#log-error-${error?.name}`} key={idx}>
-                <Card
-                  key={idx}
-                  className="max-w-full w-full relative rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
-                >
-                  <CardContent className="p-2 overflow-x-hidden whitespace-normal w-full">
-                    {error?.name}: {error?.message}
-                  </CardContent>
-                </Card>
-              </a>
-            ))
-          ) : (
-            <Card>
-              <CardContent className="p-2 bg-secondary rounded-lg">
-                {body && <TextOrJsonViewer text={body} collapsed />}
-              </CardContent>
-            </Card>
-          )}
+          <div className="grid gap-2 overflow-x-auto">
+            <h4 className="uppercase text-xs text-muted-foreground">
+              {hasErrors ? "ERRORS" : "RESPONSE"}
+            </h4>
+            {hasErrors ? (
+              errors.map((error, idx) => (
+                <a className="block" href={`#log-error-${error?.name}`} key={idx}>
+                  <Card
+                    key={idx}
+                    className="relative rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
+                  >
+                    <CardContent className="p-2 whitespace-pre-wrap">
+                      {error?.name}: {error?.message}
+                    </CardContent>
+                  </Card>
+                </a>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="p-2 bg-secondary rounded-lg">
+                  {body && <TextOrJsonViewer text={body} collapsed />}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -244,10 +238,10 @@ function Summary({ trace }: { trace: MizuTrace }) {
 
 function TraceDetails({ trace }: { trace: MizuTrace }) {
   return (
-    <div className="grid gap-8" id="trace-details">
+    <div className="grid gap-4" id="trace-details">
       {trace?.logs &&
         trace?.logs.map((log) => (
-          <Card key={log.id}>
+          <Card key={log.id} className="overflow-hidden">
             <CardContent className="p-4 bg-muted/40">
               <LogDetails key={log.id} log={log} />
             </CardContent>

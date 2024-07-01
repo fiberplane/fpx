@@ -527,7 +527,7 @@ const LogDetailsHeader = ({
   description,
   traceId,
   timestamp,
-}: { eventName: string; description: string } & Pick<
+}: { eventName: string; description: ReactNode } & Pick<
   MizuLog,
   "traceId" | "timestamp"
 >) => {
