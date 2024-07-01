@@ -35,6 +35,7 @@ import { Minimap } from "./Minimap";
 import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
+import { cn } from "@/utils";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -99,7 +100,7 @@ export function RequestDetailsPage() {
   });
 
   return (
-    <>
+    <div className={cn("h-full", "relative", "overflow-y-scroll")}>
       <div className="flex gap-4 items-center">
         <h2 className="text-2xl font-semibold">Request Detail</h2>
         <div className="flex gap-2">
@@ -132,7 +133,7 @@ export function RequestDetailsPage() {
           <div>{trace ? <TraceDetails trace={trace} /> : null}</div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
