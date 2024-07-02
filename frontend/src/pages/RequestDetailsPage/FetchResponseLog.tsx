@@ -2,7 +2,7 @@ import { Status } from "@/components/ui/status";
 import { MizuFetchEnd } from "@/queries/types";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
-import { SectionHeading } from "./shared";
+import { RequestPath, SectionHeading } from "./shared";
 
 export function FetchResponseLog({
   message,
@@ -21,7 +21,7 @@ export function FetchResponseLog({
           Response
         </SectionHeading>
         <Status statusCode={Number(status)} />
-        <p className="text-sm">{url}</p>
+        <RequestPath>{url}</RequestPath>
       </div>
       {headers && <KeyValueTable keyValue={headers} caption="Headers" />}
       {body && <BodyViewer body={body} />}
