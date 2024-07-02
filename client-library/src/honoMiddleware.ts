@@ -79,8 +79,19 @@ export function createHonoMiddleware<App extends HonoApp>(
       },
     } = mergeConfigs(defaultConfig, config);
 
-    const endpoint =
-      env<FpxEnv>(c).FPX_ENDPOINT ?? "http://localhost:8788/v0/logs";
+    // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,
+    //        so that people won't accidentally deploy to production with our middleware and 
+    //        start sending data to the default url.
+    const endpoint = env<FpxEnv>(c).FPX_ENDPOINT;
+    const isEnabled = !!endpoint;
+
+    if (!isEnabled) {
+      // NOTE - In local env, we could print something a little more friendly, about adding FPX_ENDPOINT to .dev.vars
+      console.log("FPX_ENDPOINT is not set. Skipping FPX middleware.");
+      await next();
+      return;
+    }
+
     const service = env<FpxEnv>(c).FPX_SERVICE_NAME || "unknown";
 
     const ctx = c.executionCtx;
@@ -88,7 +99,7 @@ export function createHonoMiddleware<App extends HonoApp>(
     if (!app) {
       // Logging here before we patch the console.* methods so we don't cause trouble
       console.log(
-        "Hono object was not provided to createHonoMiddleware, skipping route inspection...",
+        "Hono app was not passed to createHonoMiddleware. Skipping automatic route detection.",
       );
     }
 
