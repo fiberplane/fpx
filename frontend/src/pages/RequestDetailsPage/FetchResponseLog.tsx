@@ -4,9 +4,12 @@ import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
 import { SectionHeading } from "./shared";
 
-export function FetchResponseLog({ message }: { message: MizuFetchEnd }) {
+export function FetchResponseLog({
+  message,
+  logId,
+}: { message: MizuFetchEnd; logId: string }) {
   const { status, headers, body, url } = message;
-  const id = `fetch-response-${status}-${url}`;
+  const id = `fetch-response-${status}-${url}-${logId}`;
 
   return (
     <section className="flex flex-col gap-4" id={id}>

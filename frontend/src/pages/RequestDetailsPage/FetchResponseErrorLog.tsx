@@ -6,9 +6,10 @@ import { SectionHeading } from "./shared";
 
 export function FetchResponseErrorLog({
   message,
-}: { message: MizuFetchError }) {
+  logId,
+}: { message: MizuFetchError; logId: string }) {
   const { status, headers, body, url } = message;
-  const id = `fetch-response-error-${status}-${url}`;
+  const id = `fetch-response-error-${status}-${url}-${logId}`;
 
   return (
     <section className="flex flex-col gap-4" id={id}>

@@ -4,9 +4,12 @@ import { KeyValueTable } from "./KeyValueTable";
 import { RequestMethod } from "./shared";
 import { RequestPath, SectionHeading } from "./shared";
 
-export function FetchRequestLog({ message }: { message: MizuFetchStart }) {
+export function FetchRequestLog({
+  message,
+  logId,
+}: { message: MizuFetchStart; logId: string }) {
   const { headers, body, method, url } = message;
-  const id = `fetch-request-${method}-${url}`;
+  const id = `fetch-request-${method}-${url}-${logId}`;
   return (
     <section className="flex flex-col gap-4" id={id}>
       <div className="flex flex-col md:flex-row gap-4 max-md:justify-content md:items-center">

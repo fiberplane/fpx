@@ -4,9 +4,12 @@ import { KeyValueTable } from "./KeyValueTable";
 import { RequestMethod } from "./shared";
 import { RequestPath, SectionHeading } from "./shared";
 
-export function RequestLog({ message }: { message: MizuRequestStart }) {
+export function RequestLog({
+  message,
+  logId,
+}: { message: MizuRequestStart; logId: string }) {
   const { method, path, headers, query, params, body } = message;
-  const id = `request-${method}-${path}`;
+  const id = `request-${method}-${path}-${logId}`;
 
   return (
     <section className="flex flex-col gap-4" id={id}>
