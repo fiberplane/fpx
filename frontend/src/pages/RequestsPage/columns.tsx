@@ -1,12 +1,11 @@
-import {
-  ExclamationTriangleIcon,
-  InfoCircledIcon,
-} from "@radix-ui/react-icons";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { type ColumnDef } from "@tanstack/react-table";
 
+import { Status } from "@/components/ui/status";
 import type { MizuTrace } from "@/queries";
 import { Link } from "react-router-dom";
 import { TimeAgo } from "../RequestDetailsPage/TimeAgo";
+import { RequestMethod } from "../RequestDetailsPage/shared";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
 //         in order to support fast refresh with Vite
@@ -17,32 +16,37 @@ export const columns: ColumnDef<MizuTrace>[] = [
     header: () => <span className="sr-only">Icon</span>,
     cell: (props) => {
       return (
-        <>
+        <span className="text-gray-300">
           {props.row.getValue("isError") ? (
             <ExclamationTriangleIcon className="h-3.5 w-3.5" />
-          ) : (
-            <InfoCircledIcon className="h-3.5 w-3.5" />
-          )}
-        </>
+          ) : null}
+        </span>
       );
     },
     meta: {
-      headerClassName: "w-[32px]",
+      headerClassName: "hidden sm:table-cell w-[32px]",
+      cellClassName: "hidden sm:table-cell",
     },
   },
   {
     accessorKey: "status",
     header: "Status",
+    cell: (props) => {
+      return <Status statusCode={props.row.getValue("status")} />;
+    },
     meta: {
-      headerClassName: "w-[80px]",
+      headerClassName: "w-20",
       cellClassName: "font-mono",
     },
   },
   {
     accessorKey: "method",
     header: "Method",
+    cell: (props) => {
+      return <RequestMethod method={props.row.getValue("method")} />;
+    },
     meta: {
-      headerClassName: "w-[80px]",
+      headerClassName: "w-20",
       cellClassName: "font-mono",
     },
   },
@@ -65,16 +69,16 @@ export const columns: ColumnDef<MizuTrace>[] = [
     accessorKey: "duration",
     header: "Duration",
     meta: {
-      headerClassName: "w-[80px]",
-      cellClassName: "font-mono",
+      headerClassName: "hidden sm:table-cell w-[80px]",
+      cellClassName: "hidden sm:table-cell font-mono",
     },
   },
   {
     accessorKey: "size",
     header: "Size",
     meta: {
-      headerClassName: "w-[80px]",
-      cellClassName: "font-mono",
+      headerClassName: "hidden md:table-cell w-[80px]",
+      cellClassName: "hidden md:table-cell font-mono",
     },
   },
   {

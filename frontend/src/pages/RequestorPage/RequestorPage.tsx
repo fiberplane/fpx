@@ -129,7 +129,9 @@ export const RequestorPage = () => {
         "h-[calc(100vh-64px)]",
         // We want to `grid` all the things
         "grid",
-        "py-2 gap-2",
+        "gap-2",
+        "py-4 px-2",
+        "sm:px-4 sm:py-3",
         // Define row templates up until the `lg` breakpoint
         "max-lg:grid-rows-[auto_1fr]",
         // Define column templates for the `lg` breakpoint

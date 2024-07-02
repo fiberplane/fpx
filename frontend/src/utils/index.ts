@@ -53,18 +53,25 @@ export function parsePathFromRequestUrl(
   }
 }
 
+export function hasStringMessage(
+  object: unknown,
+): object is { message: string } {
+  return objectWithKey(object, "message") && typeof object.message === "string";
+}
+
 /**
  * Utility to see if an unknown type (an error) has a nonempty string property called "message"
  */
 export function errorHasMessage(error: unknown): error is { message: string } {
-  if (!error) {
-    return false;
-  }
-  return (
-    objectWithKey(error, "message") &&
-    typeof error.message === "string" &&
-    !!error.message
-  );
+  return hasStringMessage(error) && !!error.message;
+}
+
+export function objectHasStack(error: unknown): error is { stack: string } {
+  return objectWithKey(error, "stack") && typeof error.stack === "string";
+}
+
+export function objectHasName(error: unknown): error is { name: string } {
+  return objectWithKey(error, "name") && typeof error.name === "string";
 }
 
 export const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
