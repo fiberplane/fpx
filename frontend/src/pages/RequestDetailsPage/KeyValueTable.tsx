@@ -21,7 +21,7 @@ export function KeyValueTable({
           {tableEntries.length > 0 ? (
             tableEntries.map(([key, value]) => (
               <TableRow key={key}>
-                <TableCell className="font-medium w-[200px] uppercase text-xs text-muted-foreground">
+                <TableCell className="font-medium min-w-[140px] lg:min-w-[200px] uppercase text-xs text-muted-foreground">
                   {key}
                 </TableCell>
                 <TableCell className="font-mono">{value}</TableCell>
