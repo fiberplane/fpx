@@ -8,10 +8,8 @@ import {
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "@/queries";
-import { cn } from "@/utils";
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getHttpMethodTextColor } from "../RequestorPage/method";
 import { RequestMethod } from "./Method";
 import { TocItem } from "./RequestDetailsPage";
 
@@ -79,7 +77,7 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
           };
         }
       })
-      .filter((item) => item !== undefined);
+      .filter((item) => item !== undefined) as TocItem[];
   }, [trace]);
 
   const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {

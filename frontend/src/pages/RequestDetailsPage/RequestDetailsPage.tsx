@@ -1,4 +1,4 @@
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useRequestDetails } from "@/hooks";
 import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
@@ -25,7 +25,6 @@ import {
 import { cn } from "@/utils";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { getHttpMethodTextColor } from "../RequestorPage/method";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 import { FetchRequestLog } from "./FetchRequestLog";
 import { FetchResponseErrorLog } from "./FetchResponseErrorLog";
