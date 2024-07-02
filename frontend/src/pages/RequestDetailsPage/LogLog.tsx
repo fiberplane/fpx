@@ -1,4 +1,5 @@
 import { MizuMessage } from "@/queries";
+import { hasStringMessage, objectHasName, objectHasStack } from "@/utils";
 import { LogLevel } from "./RequestDetailsPage";
 import { StackTrace } from "./StackTrace";
 
@@ -6,18 +7,15 @@ export function LogLog({
   message,
   level,
 }: { message: string | MizuMessage; level: LogLevel }) {
-  // FIXME: why are these unknowns?
   const description =
-    typeof message === "string" ? message : (message.message as string);
-  const stack =
-    typeof message === "object" &&
-    "stack" in message &&
-    (message.stack as string);
+    typeof message === "string"
+      ? message
+      : hasStringMessage(message)
+        ? message.message
+        : "";
+  const stack = objectHasStack(message) ? message.stack : null;
 
-  const name =
-    typeof message === "object" &&
-    "name" in message &&
-    (message.name as string);
+  const name = objectHasName(message) ? message.name : null;
 
   const heading = `console.${level ? level : "error"}${name && ": " + name}`;
   const id = `log-${level ? level : "error"}-${name}`;
