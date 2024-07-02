@@ -132,7 +132,7 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
   }, [toc, handleObserve]);
 
   return (
-    <div className="grid h-[calc(100vh-80px)] overflow-y-auto">
+    <div className="flex flex-col h-[calc(100vh-80px)] overflow-y-auto">
       {toc.length > 0 &&
         toc.map((item, idx) => (
           <div
