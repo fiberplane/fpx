@@ -1,21 +1,13 @@
-import { TrashIcon } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useMemo } from "react";
-import { useQueryClient } from "react-query";
-import { useNavigate } from "react-router-dom";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type MizuTrace, useMizuTraces } from "@/queries";
+import { cn } from "@/utils";
+import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
+import { useCallback, useEffect, useMemo } from "react";
+import { useQueryClient } from "react-query";
+import { useNavigate } from "react-router-dom";
 import { columns } from "./columns";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
@@ -79,7 +71,17 @@ export function RequestsPage() {
   }, [queryClient]);
 
   return (
-    <Tabs defaultValue="all">
+    <Tabs
+      defaultValue="all"
+      className={cn(
+        "py-4 px-2",
+        "sm:px-4 sm:py-4",
+        "md:px-6 md:py-6",
+        "h-full",
+        "overflow-y-auto",
+        "grid gap-2 grid-rows-[auto_1fr]",
+      )}
+    >
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
@@ -107,30 +109,10 @@ export function RequestsPage() {
         </div>
       </div>
       <TabsContent value="all">
-        <Card x-chunk="dashboard-06-chunk-0">
-          <CardHeader>
-            <CardTitle>Requests</CardTitle>
-            <CardDescription>
-              Inspect requests to your development environment
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RequestsTable traces={query.data ?? []} filter="all" />
-          </CardContent>
-        </Card>
+        <RequestsTable traces={query.data ?? []} filter="all" />
       </TabsContent>
       <TabsContent value="error">
-        <Card x-chunk="dashboard-06-chunk-0">
-          <CardHeader>
-            <CardTitle>4xx and 5xx Errors</CardTitle>
-            <CardDescription>
-              View requests that resulted in 4xx or 5xx errors
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RequestsTable traces={query.data ?? []} filter="error" />
-          </CardContent>
-        </Card>
+        <RequestsTable traces={query.data ?? []} filter="error" />
       </TabsContent>
     </Tabs>
   );

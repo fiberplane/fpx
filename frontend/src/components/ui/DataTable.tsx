@@ -142,72 +142,77 @@ export function DataTable<TData, TValue>({
   useKeySequence(["Enter"], handleRowSelect);
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    className={
-                      header.column.columnDef.meta?.headerClassName || ""
-                    }
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, rowIdx) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                onClick={(event) =>
-                  !isModifierKeyPressed(event) && handleRowClick?.(row)
-                }
-                onMouseEnter={() => setSelectedRowIndex(rowIdx)}
-                onMouseLeave={() => setSelectedRowIndex(null)}
-                className={clsx(
-                  { "bg-muted/50": rowIdx === selectedRowIndex },
-                  "transition-none",
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={clsx(
-                      "py-1",
-                      cell.column.columnDef.meta?.cellClassName,
-                    )}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+    <div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader className={clsx("bg-muted/80")}>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={
+                        header.column.columnDef.meta?.headerClassName || ""
+                      }
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center font-mono"
-              >
-                No Results
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody className="bg-muted/20 fg-foreground">
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row, rowIdx) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  onClick={(event) =>
+                    !isModifierKeyPressed(event) && handleRowClick?.(row)
+                  }
+                  onMouseEnter={() => setSelectedRowIndex(rowIdx)}
+                  onMouseLeave={() => setSelectedRowIndex(null)}
+                  className={clsx(
+                    { "bg-muted/50": rowIdx === selectedRowIndex },
+                    "transition-none",
+                  )}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={clsx(
+                        "py-2",
+                        cell.column.columnDef.meta?.cellClassName,
+                      )}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center font-mono"
+                >
+                  No Results
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
       {getPaginationRowModel && <DataTablePagination table={table} />}
     </div>
   );
@@ -240,66 +245,70 @@ function DataTablePagination<TData>({ table }: { table: TableType<TData> }) {
   }, [currentPageIndex, pageCount]);
 
   return (
-    <div className="mt-4">
-      {pageCount > 1 && (
-        <Pagination>
-          <PaginationContent>
-            {canPreviousPage && (
-              <PaginationItem>
-                <PaginationPrevious onClick={() => table.previousPage()} />
-              </PaginationItem>
-            )}
-            {currentPageIndex > 3 && (
-              <PaginationItem>
-                <PaginationLink>
-                  <PaginationLink onClick={() => table.firstPage()}>
+    <div className="my-2 flex justify-between">
+      <PageSizeMenu table={table} />
+      <div>
+        {pageCount > 1 && (
+          <Pagination>
+            <PaginationContent>
+              {canPreviousPage && (
+                <PaginationItem>
+                  <PaginationPrevious
+                    size="sm"
+                    onClick={() => table.previousPage()}
+                  />
+                </PaginationItem>
+              )}
+              {currentPageIndex > 3 && (
+                <PaginationItem>
+                  <PaginationLink size="sm" onClick={() => table.firstPage()}>
                     1
                   </PaginationLink>
-                </PaginationLink>
-              </PaginationItem>
-            )}
-            {currentPageIndex > 2 && (
-              <PaginationItem>
-                <PaginationLink>
-                  <PaginationEllipsis />
-                </PaginationLink>
-              </PaginationItem>
-            )}
-            {pageIndexButtons.map((index) => {
-              return (
-                <PaginationItem key={index}>
-                  <PaginationLink
-                    isActive={index === currentPageIndex}
-                    onClick={() => goToPage(index)}
-                  >
-                    {index + 1}
-                  </PaginationLink>
                 </PaginationItem>
-              );
-            })}
-            {currentPageIndex < pageCount - 3 && (
-              <>
+              )}
+              {currentPageIndex > 2 && (
                 <PaginationItem>
-                  <PaginationLink>
+                  <PaginationLink size="sm">
                     <PaginationEllipsis />
                   </PaginationLink>
                 </PaginationItem>
+              )}
+              {pageIndexButtons.map((index) => {
+                return (
+                  <PaginationItem key={index}>
+                    <PaginationLink
+                      size="sm"
+                      isActive={index === currentPageIndex}
+                      onClick={() => goToPage(index)}
+                    >
+                      {index + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              {currentPageIndex < pageCount - 3 && (
+                <>
+                  <PaginationItem>
+                    <PaginationLink size="sm">
+                      <PaginationEllipsis />
+                    </PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink size="sm" onClick={() => table.lastPage()}>
+                      {pageCount}
+                    </PaginationLink>
+                  </PaginationItem>
+                </>
+              )}
+              {canNextPage && (
                 <PaginationItem>
-                  <PaginationLink onClick={() => table.lastPage()}>
-                    {pageCount}
-                  </PaginationLink>
+                  <PaginationNext size="sm" onClick={() => table.nextPage()} />
                 </PaginationItem>
-              </>
-            )}
-            {canNextPage && (
-              <PaginationItem>
-                <PaginationNext onClick={() => table.nextPage()} />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
-      )}
-      <PageSizeMenu table={table} />
+              )}
+            </PaginationContent>
+          </Pagination>
+        )}
+      </div>
     </div>
   );
 }
@@ -309,17 +318,17 @@ function PageSizeMenu<TData>({ table }: { table: TableType<TData> }) {
   const PAGE_SIZE_OPTIONS = useMemo(() => [10, 20, 30, 40, 50], []);
 
   return (
-    <div className="flex text-gray-300 items-center gap-2 py-2 mt-4 mb-2 justify-center">
+    <div className="flex text-gray-300 items-center gap-2 py-2 px-2">
       <select
         value={pageSize}
         onChange={(e) => {
           table.setPageSize(Number(e.target.value));
         }}
-        className="fg-foreground bg-background text-sm"
+        className="fg-foreground bg-transparent text-sm"
       >
         {PAGE_SIZE_OPTIONS.map((pageSizeOption) => (
           <option key={pageSizeOption} value={pageSizeOption}>
-            Show {pageSizeOption} Results Per Page
+            {pageSizeOption} Results Per Page
           </option>
         ))}
       </select>
