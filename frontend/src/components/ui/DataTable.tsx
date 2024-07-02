@@ -144,7 +144,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="rounded-md border">
       <Table>
-        <TableHeader>
+        <TableHeader className={clsx("bg-muted/80")}>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -167,7 +167,7 @@ export function DataTable<TData, TValue>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="bg-muted/40 fg-foreground">
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row, rowIdx) => (
               <TableRow
@@ -187,7 +187,7 @@ export function DataTable<TData, TValue>({
                   <TableCell
                     key={cell.id}
                     className={clsx(
-                      "py-1",
+                      "py-2",
                       cell.column.columnDef.meta?.cellClassName,
                     )}
                   >
@@ -240,66 +240,68 @@ function DataTablePagination<TData>({ table }: { table: TableType<TData> }) {
   }, [currentPageIndex, pageCount]);
 
   return (
-    <div className="mt-4">
-      {pageCount > 1 && (
-        <Pagination>
-          <PaginationContent>
-            {canPreviousPage && (
-              <PaginationItem>
-                <PaginationPrevious onClick={() => table.previousPage()} />
-              </PaginationItem>
-            )}
-            {currentPageIndex > 3 && (
-              <PaginationItem>
-                <PaginationLink>
-                  <PaginationLink onClick={() => table.firstPage()}>
-                    1
-                  </PaginationLink>
-                </PaginationLink>
-              </PaginationItem>
-            )}
-            {currentPageIndex > 2 && (
-              <PaginationItem>
-                <PaginationLink>
-                  <PaginationEllipsis />
-                </PaginationLink>
-              </PaginationItem>
-            )}
-            {pageIndexButtons.map((index) => {
-              return (
-                <PaginationItem key={index}>
-                  <PaginationLink
-                    isActive={index === currentPageIndex}
-                    onClick={() => goToPage(index)}
-                  >
-                    {index + 1}
+    <div className="my-2 flex justify-between">
+      <PageSizeMenu table={table} />
+      <div>
+        {pageCount > 1 && (
+          <Pagination>
+            <PaginationContent>
+              {canPreviousPage && (
+                <PaginationItem>
+                  <PaginationPrevious onClick={() => table.previousPage()} />
+                </PaginationItem>
+              )}
+              {currentPageIndex > 3 && (
+                <PaginationItem>
+                  <PaginationLink>
+                    <PaginationLink onClick={() => table.firstPage()}>
+                      1
+                    </PaginationLink>
                   </PaginationLink>
                 </PaginationItem>
-              );
-            })}
-            {currentPageIndex < pageCount - 3 && (
-              <>
+              )}
+              {currentPageIndex > 2 && (
                 <PaginationItem>
                   <PaginationLink>
                     <PaginationEllipsis />
                   </PaginationLink>
                 </PaginationItem>
+              )}
+              {pageIndexButtons.map((index) => {
+                return (
+                  <PaginationItem key={index}>
+                    <PaginationLink
+                      isActive={index === currentPageIndex}
+                      onClick={() => goToPage(index)}
+                    >
+                      {index + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              {currentPageIndex < pageCount - 3 && (
+                <>
+                  <PaginationItem>
+                    <PaginationLink>
+                      <PaginationEllipsis />
+                    </PaginationLink>
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink onClick={() => table.lastPage()}>
+                      {pageCount}
+                    </PaginationLink>
+                  </PaginationItem>
+                </>
+              )}
+              {canNextPage && (
                 <PaginationItem>
-                  <PaginationLink onClick={() => table.lastPage()}>
-                    {pageCount}
-                  </PaginationLink>
+                  <PaginationNext onClick={() => table.nextPage()} />
                 </PaginationItem>
-              </>
-            )}
-            {canNextPage && (
-              <PaginationItem>
-                <PaginationNext onClick={() => table.nextPage()} />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
-      )}
-      <PageSizeMenu table={table} />
+              )}
+            </PaginationContent>
+          </Pagination>
+        )}
+      </div>
     </div>
   );
 }
@@ -309,17 +311,17 @@ function PageSizeMenu<TData>({ table }: { table: TableType<TData> }) {
   const PAGE_SIZE_OPTIONS = useMemo(() => [10, 20, 30, 40, 50], []);
 
   return (
-    <div className="flex text-gray-300 items-center gap-2 py-2 mt-4 mb-2 justify-center">
+    <div className="flex text-gray-300 items-center gap-2 py-2 px-2">
       <select
         value={pageSize}
         onChange={(e) => {
           table.setPageSize(Number(e.target.value));
         }}
-        className="fg-foreground bg-background text-sm"
+        className="fg-foreground bg-transparent text-sm"
       >
         {PAGE_SIZE_OPTIONS.map((pageSizeOption) => (
           <option key={pageSizeOption} value={pageSizeOption}>
-            Show {pageSizeOption} Results Per Page
+            {pageSizeOption} Results Per Page
           </option>
         ))}
       </select>

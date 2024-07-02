@@ -82,7 +82,14 @@ export function RequestsPage() {
   return (
     <Tabs
       defaultValue="all"
-      className={cn("py-4 px-2", "sm:px-4 sm:py-4", "md:px-6 md:py-6")}
+      className={cn(
+        "py-4 px-2",
+        "sm:px-4 sm:py-4",
+        "md:px-6 md:py-6",
+        "h-full",
+        "overflow-y-auto",
+        "grid gap-2 grid-rows-[auto_1fr]",
+      )}
     >
       <div className="flex items-center">
         <TabsList>
@@ -111,30 +118,10 @@ export function RequestsPage() {
         </div>
       </div>
       <TabsContent value="all">
-        <Card x-chunk="dashboard-06-chunk-0">
-          <CardHeader>
-            <CardTitle>Requests</CardTitle>
-            <CardDescription>
-              Inspect requests to your development environment
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RequestsTable traces={query.data ?? []} filter="all" />
-          </CardContent>
-        </Card>
+        <RequestsTable traces={query.data ?? []} filter="all" />
       </TabsContent>
       <TabsContent value="error">
-        <Card x-chunk="dashboard-06-chunk-0">
-          <CardHeader>
-            <CardTitle>4xx and 5xx Errors</CardTitle>
-            <CardDescription>
-              View requests that resulted in 4xx or 5xx errors
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RequestsTable traces={query.data ?? []} filter="error" />
-          </CardContent>
-        </Card>
+        <RequestsTable traces={query.data ?? []} filter="error" />
       </TabsContent>
     </Tabs>
   );
