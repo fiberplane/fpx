@@ -1,22 +1,13 @@
-import { TrashIcon } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useMemo } from "react";
-import { useQueryClient } from "react-query";
-import { useNavigate } from "react-router-dom";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type MizuTrace, useMizuTraces } from "@/queries";
 import { cn } from "@/utils";
+import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
+import { useCallback, useEffect, useMemo } from "react";
+import { useQueryClient } from "react-query";
+import { useNavigate } from "react-router-dom";
 import { columns } from "./columns";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
