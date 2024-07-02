@@ -17,8 +17,8 @@ export function LogLog({
 
   const name = objectHasName(message) ? message.name : null;
 
-  const heading = `console.${level ? level : "error"}${name && ": " + name}`;
-  const id = `log-${level ? level : "error"}-${name}`;
+  const heading = `console.${level || "info"}${name && ": " + name}`;
+  const id = `log-${level || "info"}-${name}`;
 
   return (
     <section className="flex flex-col gap-4" id={id}>
