@@ -35,6 +35,7 @@ import { Minimap } from "./Minimap";
 import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
+import { SectionHeading } from "./Typography";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -105,16 +106,17 @@ export function RequestDetailsPage() {
         "relative",
         "overflow-hidden",
         "overflow-y-scroll",
-        "px-2 pb-4 sm:px-4 sm:pb-8",
-        "md:px-6",
         "grid grid-rows-[auto_1fr]",
+        "px-2 pb-4",
+        "sm:px-4 sm:pb-8",
+        "md:px-6",
       )}
     >
       <div
         className={cn(
           "flex gap-4 items-center justify-between",
           "py-8",
-          "sm:gap-8 sm:py-10",
+          "sm:gap-6 sm:py-8",
         )}
       >
         <h2 className="text-2xl font-semibold">Request Detail</h2>
@@ -139,8 +141,9 @@ export function RequestDetailsPage() {
       </div>
       <div
         className={cn(
-          "grid sm:grid-cols-[auto_1fr] gap-4 sm:gap-4 md:gap-6",
-          "w-full",
+          "grid gap-4",
+          "sm:grid-cols-[auto_1fr] sm:gap-4",
+          "md:gap-6",
         )}
       >
         <div
@@ -214,8 +217,8 @@ function Summary({ trace }: { trace: MizuTrace }) {
     : undefined;
 
   return (
-    <div className="grid gap-4 grid-rows-[auto_1fr] overflow-hidden">
-      <h3 className="text-xl font-semibold">Summary</h3>
+    <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
+      <SectionHeading>Summary</SectionHeading>
       <Card className="bg-muted/20">
         <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
           <div className="flex gap-2 items-center">

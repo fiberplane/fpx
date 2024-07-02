@@ -3,6 +3,7 @@ import { Status } from "@/components/ui/status";
 import { MizuRequestEnd } from "@/queries";
 import { KeyValueTable } from "./KeyValueTable";
 import { TextOrJsonViewer } from "./TextJsonViewer";
+import { SectionHeading } from "./Typography";
 
 export function ResponseLog({ message }: { message: MizuRequestEnd }) {
   const { status, headers, body } = message;
@@ -11,7 +12,7 @@ export function ResponseLog({ message }: { message: MizuRequestEnd }) {
   return (
     <section className="flex flex-col gap-4" id={id}>
       <div className="flex items-center gap-4">
-        <h3 className="text-xl font-semibold">Outgoing Response</h3>
+        <SectionHeading>Outgoing Response</SectionHeading>
         <Status statusCode={Number(status)} />
       </div>
       <KeyValueTable keyValue={headers} caption="Headers" />

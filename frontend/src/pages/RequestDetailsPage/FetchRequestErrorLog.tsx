@@ -1,6 +1,7 @@
 import { isMizuErrorMessage } from "@/queries";
 import { MizuFetchLoggingError } from "@/queries/types";
 import { StackTrace } from "./StackTrace";
+import { SectionHeading } from "./Typography";
 
 export function FetchRequestErrorLog({
   message,
@@ -16,12 +17,12 @@ export function FetchRequestErrorLog({
   return (
     <section className="flex flex-col gap-4" id={id}>
       <div className="flex items-center gap-4">
-        <h3 className="text-xl font-semibold">
+        <SectionHeading>
           <span className="font-mono bg-muted/50 p-1 rounded-lg lowercase text-orange-500">
             Fetch
           </span>{" "}
           Request Failed
-        </h3>
+        </SectionHeading>
         <p className="text-sm">{url}</p>
       </div>
       {description && <p>{description}</p>}
