@@ -26,42 +26,42 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
         const { message } = log;
         if (isMizuRequestStartMessage(message)) {
           return {
-            id: `request-${message.method}-${message.path}`,
+            id: `request-${message.method}-${message.path}-${log.id}`,
             title: "Request",
             method: message.method,
           };
         }
         if (isMizuRequestEndMessage(message)) {
           return {
-            id: `response-${message.status}-${message.path}`,
+            id: `response-${message.status}-${message.path}-${log.id}`,
             title: "Response",
             status: message.status,
           };
         }
         if (isMizuFetchStartMessage(message)) {
           return {
-            id: `fetch-request-${message.method}-${message.url}`,
+            id: `fetch-request-${message.method}-${message.url}-${log.id}`,
             title: "Fetch Request",
             method: message.method,
           };
         }
         if (isMizuFetchEndMessage(message)) {
           return {
-            id: `fetch-response-${message.status}-${message.url}`,
+            id: `fetch-response-${message.status}-${message.url}-${log.id}`,
             title: "Fetch Response",
             status: message.status,
           };
         }
         if (isMizuFetchErrorMessage(message)) {
           return {
-            id: `fetch-response-error-${message.status}-${message.url}`,
+            id: `fetch-response-error-${message.status}-${message.url}-${log.id}`,
             title: "Fetch Response Error",
             status: message.status,
           };
         }
         if (isMizuFetchLoggingErrorMessage(message)) {
           return {
-            id: `fetch-request-error-${message.url}`,
+            id: `fetch-request-error-${message.url}-${log.id}`,
             title: "Fetch Request Failed",
           };
         }
@@ -71,13 +71,35 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
           ("level" in log || "name" in message)
         ) {
           return {
-            id: `log-${log.level}-${message.name}`,
+            id: `log-${log.level}-${message.name}-${log.id}`,
             title: `console.${log.level ? log.level : "error"}: ${message.message}`,
           };
         }
       })
       .filter((item) => item !== undefined) as TocItem[];
   }, [trace]);
+
+  // Scroll minimap item into view if it is out of viewport
+  useEffect(() => {
+    const element = document.querySelector(`[data-toc-id="${activeId}"]`);
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    if (element) {
+      timeoutId = setTimeout(() => {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "nearest",
+        });
+      }, 300);
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [activeId]);
 
   const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {
     for (const entry of entries) {
@@ -91,7 +113,6 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
     observer.current = new IntersectionObserver(handleObserve, {
       // TODO - This might need more tweaking
       rootMargin: "0px 0px -33% 0px",
-      threshold: [0, 0.25, 0.5, 0.75, 1],
     });
 
     const { current: currentObserver } = observer;
@@ -111,11 +132,12 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
   }, [toc, handleObserve]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-[calc(100vh-80px)] overflow-y-auto">
       {toc.length > 0 &&
         toc.map((item, idx) => (
           <div
             key={idx}
+            data-toc-id={item.id}
             className={clsx("border-l-2", {
               "border-l-blue-800": activeId === item.id,
               "border-l-gray-800": activeId !== item.id,

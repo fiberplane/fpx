@@ -2,11 +2,14 @@ import { Status } from "@/components/ui/status";
 import { MizuFetchEnd } from "@/queries/types";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
-import { SectionHeading } from "./shared";
+import { RequestPath, SectionHeading } from "./shared";
 
-export function FetchResponseLog({ message }: { message: MizuFetchEnd }) {
+export function FetchResponseLog({
+  message,
+  logId,
+}: { message: MizuFetchEnd; logId: string }) {
   const { status, headers, body, url } = message;
-  const id = `fetch-response-${status}-${url}`;
+  const id = `fetch-response-${status}-${url}-${logId}`;
 
   return (
     <section className="flex flex-col gap-4" id={id}>
@@ -18,7 +21,7 @@ export function FetchResponseLog({ message }: { message: MizuFetchEnd }) {
           Response
         </SectionHeading>
         <Status statusCode={Number(status)} />
-        <p className="text-sm">{url}</p>
+        <RequestPath>{url}</RequestPath>
       </div>
       {headers && <KeyValueTable keyValue={headers} caption="Headers" />}
       {body && <BodyViewer body={body} />}

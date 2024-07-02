@@ -303,23 +303,51 @@ function LogDetails({ log }: { log: MizuLog }) {
   if (lifecycle) {
     switch (lifecycle) {
       case "request":
-        return <RequestLog message={message as MizuRequestStart} />;
+        return (
+          <RequestLog
+            message={message as MizuRequestStart}
+            logId={String(log.id)}
+          />
+        );
 
       case "response":
-        return <ResponseLog message={message as MizuRequestEnd} />;
+        return (
+          <ResponseLog
+            message={message as MizuRequestEnd}
+            logId={String(log.id)}
+          />
+        );
 
       case "fetch_start":
-        return <FetchRequestLog message={message as MizuFetchStart} />;
+        return (
+          <FetchRequestLog
+            message={message as MizuFetchStart}
+            logId={String(log.id)}
+          />
+        );
 
       case "fetch_end":
-        return <FetchResponseLog message={message as MizuFetchEnd} />;
+        return (
+          <FetchResponseLog
+            message={message as MizuFetchEnd}
+            logId={String(log.id)}
+          />
+        );
 
       case "fetch_error":
-        return <FetchResponseErrorLog message={message as MizuFetchError} />;
+        return (
+          <FetchResponseErrorLog
+            message={message as MizuFetchError}
+            logId={String(log.id)}
+          />
+        );
 
       case "fetch_logging_error":
         return (
-          <FetchRequestErrorLog message={message as MizuFetchLoggingError} />
+          <FetchRequestErrorLog
+            message={message as MizuFetchLoggingError}
+            logId={String(log.id)}
+          />
         );
     }
   }

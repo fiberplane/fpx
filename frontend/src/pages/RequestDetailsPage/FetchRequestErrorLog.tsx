@@ -5,9 +5,10 @@ import { SectionHeading } from "./shared";
 
 export function FetchRequestErrorLog({
   message,
-}: { message: MizuFetchLoggingError }) {
+  logId,
+}: { message: MizuFetchLoggingError; logId: string }) {
   const { url, error } = message;
-  const id = `fetch-request-error-${url}`;
+  const id = `fetch-request-error-${url}-${logId}`;
 
   const stack = isMizuErrorMessage(error) && error.stack;
   const description = isMizuErrorMessage(error)

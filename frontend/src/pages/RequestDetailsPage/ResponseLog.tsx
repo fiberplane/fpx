@@ -5,9 +5,12 @@ import { KeyValueTable } from "./KeyValueTable";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 import { SectionHeading } from "./shared";
 
-export function ResponseLog({ message }: { message: MizuRequestEnd }) {
+export function ResponseLog({
+  message,
+  logId,
+}: { message: MizuRequestEnd; logId: string }) {
   const { status, headers, body } = message;
-  const id = `response-${status}-${message.path}`;
+  const id = `response-${status}-${message.path}-${logId}`;
 
   return (
     <section className="flex flex-col gap-4" id={id}>
