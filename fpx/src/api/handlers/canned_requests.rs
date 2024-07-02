@@ -1,7 +1,7 @@
 use crate::api::errors::ApiServerError;
-use crate::api::FpxDirectoryPath;
+use crate::api::Config;
 use crate::canned_requests::{CannedRequest, SaveLocation};
-use axum::extract::{Query, State};
+use axum::extract::State;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use http::StatusCode;
@@ -11,44 +11,47 @@ use std::collections::BTreeMap;
 use thiserror::Error;
 use tracing::{error, instrument};
 
-#[instrument(skip(fpx_directory_path))]
+#[instrument(skip(config))]
 pub async fn canned_request_create(
-    State(FpxDirectoryPath(fpx_directory_path)): State<FpxDirectoryPath>,
-    Query(args): Query<CannedRequestCreateArgs>,
-    Json(canned_request): Json<CannedRequest>,
+    State(config): State<Config>,
+    Json(mut canned_request): Json<NewCannedRequest>,
 ) -> Result<StatusCode, ApiServerError<CannedRequestCreateError>> {
-    let save_location = SaveLocation::try_parse(&args.type_, fpx_directory_path)
-        .map_err(|_| CannedRequestCreateError::UnknownType)?;
+    let save_location = SaveLocation::try_parse(&canned_request.type_, config.fpx_directory)
+        .map_err(|_| CannedRequestCreateError::InvalidType)?;
 
-    canned_request.save(save_location).await?;
+    canned_request.request.name = canned_request.name;
+    canned_request
+        .request
+        .save(save_location)
+        .await
+        .map_err(|err| CannedRequestCreateError::Internal(err))?;
 
     Ok(StatusCode::CREATED)
 }
 
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
-struct CannedRequestCreateArgs {
+struct NewCannedRequest {
     #[serde(rename = "type")]
     type_: String,
-
     name: String,
+    request: CannedRequest,
 }
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+#[derive(Debug, Serialize, Error)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
+#[allow(dead_code)]
 pub enum CannedRequestCreateError {
     #[error("unknown type, expected `ephemeral`, `personal` or `shared`")]
-    UnknownType,
+    InvalidType,
 
-    #[error("failed to create directory")]
-    DirectoryCreationFailed,
-
-    #[error("failed to serialize")]
-    SerializationFailed,
-
-    #[error("failed to write to file")]
-    FileWriteFailed,
+    #[error("failed to handle request: {0:?}")]
+    Internal(
+        #[serde(skip_serializing)]
+        #[from]
+        anyhow::Error,
+    ),
 }
 
 impl IntoResponse for CannedRequestCreateError {
@@ -59,19 +62,17 @@ impl IntoResponse for CannedRequestCreateError {
             .expect("Failed to serialize CannedRequestCreateError, should not happen");
 
         let status_code = match self {
-            CannedRequestCreateError::UnknownType => StatusCode::BAD_REQUEST,
-            CannedRequestCreateError::DirectoryCreationFailed => StatusCode::INTERNAL_SERVER_ERROR,
-            CannedRequestCreateError::SerializationFailed => StatusCode::INTERNAL_SERVER_ERROR,
-            CannedRequestCreateError::FileWriteFailed => StatusCode::INTERNAL_SERVER_ERROR,
+            CannedRequestCreateError::InvalidType => StatusCode::BAD_REQUEST,
+            CannedRequestCreateError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
         (status_code, body).into_response()
     }
 }
 
-#[instrument(skip(fpx_directory_path))]
+#[instrument(skip(config))]
 pub async fn canned_request_list(
-    State(FpxDirectoryPath(fpx_directory_path)): State<FpxDirectoryPath>,
+    State(config): State<Config>,
 ) -> Result<Json<BTreeMap<String, Vec<CannedRequest>>>, CannedRequestListError> {
     let map = BTreeMap::from([
         (
@@ -80,7 +81,7 @@ pub async fn canned_request_list(
         ),
         (
             "personal".to_string(),
-            CannedRequest::load_all(SaveLocation::Personal(fpx_directory_path)).await?,
+            CannedRequest::load_all(SaveLocation::Personal(config.fpx_directory)).await?,
         ),
         ("shared".to_string(), vec![]),
     ]);
@@ -88,24 +89,19 @@ pub async fn canned_request_list(
     Ok(Json(map))
 }
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+#[derive(Debug, Serialize, Error)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum CannedRequestListError {
-    #[error("failed to convert file name from OsString into &str")]
-    OsStringConversionFailed,
-
-    #[error("file not found")]
+    #[error("canned request not found")]
     NotFound,
 
-    #[error("failed to read directory")]
-    DirectoryReadFailed,
-
-    #[error("failed to read file")]
-    FileReadFailed,
-
-    #[error("failed to deserialize")]
-    DeserializationFailed,
+    #[error("failed to handle request: {0:?}")]
+    Internal(
+        #[serde(skip_serializing)]
+        #[from]
+        anyhow::Error,
+    ),
 }
 
 impl IntoResponse for CannedRequestListError {
@@ -116,11 +112,8 @@ impl IntoResponse for CannedRequestListError {
             .expect("Failed to serialize CannedRequestListError, should not happen");
 
         let status_code = match self {
-            CannedRequestListError::OsStringConversionFailed => StatusCode::INTERNAL_SERVER_ERROR,
+            CannedRequestListError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
             CannedRequestListError::NotFound => StatusCode::NOT_FOUND,
-            CannedRequestListError::DirectoryReadFailed => StatusCode::INTERNAL_SERVER_ERROR,
-            CannedRequestListError::FileReadFailed => StatusCode::INTERNAL_SERVER_ERROR,
-            CannedRequestListError::DeserializationFailed => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
         (status_code, body).into_response()

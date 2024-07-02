@@ -1,5 +1,5 @@
-use crate::api::handlers::canned_requests::{CannedRequestCreateError, CannedRequestListError};
-use anyhow::{bail, Result};
+use crate::api::handlers::canned_requests::CannedRequestListError;
+use anyhow::{anyhow, bail, Context, Result};
 use http::Method;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,7 @@ static EPHEMERAL_REQUESTS: Lazy<RwLock<BTreeMap<String, CannedRequest>>> =
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CannedRequest {
     #[serde(default, skip)]
-    name: String,
+    pub name: String,
 
     #[serde_as(as = "DisplayFromStr")]
     pub method: Method,
@@ -78,18 +78,22 @@ impl CannedRequest {
             SaveLocation::Personal(path) | SaveLocation::Shared(path) => {
                 let mut dir = fs::read_dir(path)
                     .await
-                    .map_err(|_| CannedRequestListError::DirectoryReadFailed)?;
+                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err)))?;
                 let mut results = vec![];
 
                 while let Some(entry) = dir
                     .next_entry()
                     .await
-                    .map_err(|_| CannedRequestListError::FileReadFailed)?
+                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err)))?
                 {
                     let file_name = entry
                         .file_name()
                         .to_str()
-                        .ok_or_else(|| CannedRequestListError::OsStringConversionFailed)?
+                        .ok_or_else(|| {
+                            CannedRequestListError::Internal(anyhow!(
+                                "conversion into os string failed"
+                            ))
+                        })?
                         .to_string();
 
                     let Some((file_name, extension)) = file_name.rsplit_once('.') else {
@@ -126,10 +130,10 @@ impl CannedRequest {
 
                 let data = fs::read_to_string(path)
                     .await
-                    .map_err(|_| CannedRequestListError::FileReadFailed)?;
+                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err)))?;
 
                 let mut data: Self = toml::from_str(&data)
-                    .map_err(|_| CannedRequestListError::DeserializationFailed)?;
+                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err)))?;
                 data.name = name.to_string();
 
                 Ok(data)
@@ -137,7 +141,7 @@ impl CannedRequest {
         }
     }
 
-    pub async fn save(self, location: SaveLocation) -> Result<(), CannedRequestCreateError> {
+    pub async fn save(self, location: SaveLocation) -> Result<()> {
         match location {
             SaveLocation::Ephemeral => {
                 EPHEMERAL_REQUESTS
@@ -150,16 +154,14 @@ impl CannedRequest {
             SaveLocation::Personal(path) | SaveLocation::Shared(path) => {
                 fs::create_dir_all(&path)
                     .await
-                    .map_err(|_| CannedRequestCreateError::DirectoryCreationFailed)?;
+                    .context("failed to create directory")?;
 
                 let data = toml::to_string_pretty(&self)
-                    .map_err(|_| CannedRequestCreateError::SerializationFailed)?;
+                    .context("failed to serialize into toml format")?;
 
                 let file = path.join(format!("{}.toml", self.name));
 
-                fs::write(file, data)
-                    .await
-                    .map_err(|_| CannedRequestCreateError::FileWriteFailed)
+                fs::write(file, data).await.context("failed to write file")
             }
         }
     }

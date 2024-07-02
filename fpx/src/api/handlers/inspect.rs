@@ -1,4 +1,4 @@
-use crate::api::ApiState;
+use crate::api::{ApiState, Config};
 use crate::data::Store;
 use crate::models;
 use axum::extract::Request;
@@ -9,12 +9,8 @@ use std::collections::BTreeMap;
 
 #[tracing::instrument(skip_all)]
 pub async fn inspect_request_handler(
-    State(ApiState {
-        base_url,
-        events,
-        store,
-        ..
-    }): State<ApiState>,
+    State(config): State<Config>,
+    State(ApiState { events, store, .. }): State<ApiState>,
     req: Request,
 ) -> impl IntoResponse {
     let (parts, body) = req.into_parts();
@@ -61,7 +57,8 @@ pub async fn inspect_request_handler(
     events.broadcast(models::RequestAdded::new(request_id, None).into());
 
     // TODO: This should return the same payload as the GET /requests/{id} endpoint
-    base_url
+    config
+        .base_url
         .join(&format!("api/requests/{}", request_id))
         .unwrap()
         .to_string()

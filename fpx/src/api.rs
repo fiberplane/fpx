@@ -13,19 +13,20 @@ pub mod handlers;
 mod studio;
 mod ws;
 
-#[repr(transparent)]
-#[derive(Debug, Clone)]
-pub struct FpxDirectoryPath(pub PathBuf);
-
 #[derive(Clone)]
-pub struct ApiState {
+#[allow(dead_code)]
+pub struct Config {
     /// The base url on which this server is running. Override this when you
     /// are running this behind a reverse proxy.
     base_url: Url,
 
     /// the location of the fpx directory
-    fpx_directory: FpxDirectoryPath,
+    fpx_directory: PathBuf,
+}
 
+#[derive(Clone)]
+pub struct ApiState {
+    config: Config,
     events: ServerEvents,
     store: Store,
     inspector_service: InspectorService,
@@ -49,9 +50,9 @@ impl FromRef<ApiState> for InspectorService {
     }
 }
 
-impl FromRef<ApiState> for FpxDirectoryPath {
+impl FromRef<ApiState> for Config {
     fn from_ref(api_state: &ApiState) -> Self {
-        api_state.fpx_directory.clone()
+        api_state.config.clone()
     }
 }
 
@@ -70,15 +71,17 @@ pub fn create_api(
 }
 
 fn api_router(
-    base_url: url::Url,
+    base_url: Url,
     fpx_directory: PathBuf,
     events: ServerEvents,
     store: Store,
     inspector_service: InspectorService,
 ) -> axum::Router {
     let api_state = ApiState {
-        base_url,
-        fpx_directory: FpxDirectoryPath(fpx_directory),
+        config: Config {
+            base_url,
+            fpx_directory,
+        },
         events,
         store,
         inspector_service,
