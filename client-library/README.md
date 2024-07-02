@@ -17,14 +17,14 @@ npm create hono@latest my-hono-project
 Install middleware
 
 ```sh
-npm i @fpx/hono
+npm i @fiberplane/hono
 ```
 
 Add middleware
 
 ```ts
 import { Hono } from "hono";
-import { createHonoMiddleware } from "@fpx/hono";
+import { createHonoMiddleware } from "@fiberplane/hono";
 
 const app = new Hono();
 
@@ -40,7 +40,7 @@ export default app;
 Launch UI
 
 ```sh
-npx @fpx/studio
+npx @fiberplane/studio
 ```
 
 Visit `http://localhost:8788` to see your logs come in as you test your app!
@@ -66,18 +66,18 @@ npm create hono@latest my-hono-project
 ### Install the FPX Hono Middleware
 
 ```sh
-npm i @fpx/hono
+npm i @fiberplane/hono
 ```
 
 ### Add middleware
 
-Add the `@fpx/hono` import, and then add middleware definitions **AT THE TOP OF YOUR APP**, ideally in your `src/index.ts`
+Add the `@fiberplane/hono` import, and then add middleware definitions **AT THE TOP OF YOUR APP**, ideally in your `src/index.ts`
 
 If you only just started your project, you can copy paste the entire contents below into your `src/index.ts`:
 
 ```ts
 import { type Context, Hono } from "hono";
-import { createHonoMiddleware } from "@fpx/hono";
+import { createHonoMiddleware } from "@fiberplane/hono";
 
 const app = new Hono();
 
@@ -117,13 +117,13 @@ Make requests to your Hono app, and the logs should show up in the FPX UI!
 ### Launch the FPX UI
 
 ```sh
-npx @fpx/studio
+npx @fiberplane/studio
 
 # Launch the UI on a different port
-FPX_PORT=8789 npx @fpx/studio
+FPX_PORT=8789 npx @fiberplane/studio
 
 # Point the UI to your service, to autodetect its routes
-FPX_SERVICE_TARGET=http://localhost:1234 npx @fpx/studio
+FPX_SERVICE_TARGET=http://localhost:1234 npx @fiberplane/studio
 ```
 
 That's it! You should see your logs in the FPX UI.

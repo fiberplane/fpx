@@ -37,7 +37,7 @@ FPX_PORT=8790 npx --prefer-local fpx
 # If your service is running on something other than http://localhost:8787
 FPX_SERVICE_TARGET=http://localhost:1234 npx --prefer-local fpx
 
-# To unlink afterwards, first find the linked package name (something like @fpx/studio)
+# To unlink afterwards, first find the linked package name (something like @fiberplane/studio)
 # then use that name in the `npm unlink` command
 npm ls -g --depth=0 --link=true
 npm unlink $NAME_OF_THIS_PACKAGE -g
@@ -53,5 +53,5 @@ npm publish
 
 # Then test like this
 cd /some/random/dir
-npx @fpx/studio
+npx @fiberplane/studio
 ```

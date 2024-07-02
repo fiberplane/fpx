@@ -13,13 +13,13 @@ npm link
 
 # Change directories to another project that uses FPX Hono middleware
 cd /path/to/test/project
-npm link @fpx/hono
+npm link @fiberplane/hono
 ```
 
 No need to install the package in your other project, just import it:
 
 ```ts
-import { createHonoMiddleware } from "@fpx/hono";
+import { createHonoMiddleware } from "@fiberplane/hono";
 ```
 
 Then, once you are done testing locally, remember to unlink the package
@@ -28,7 +28,7 @@ Then, once you are done testing locally, remember to unlink the package
 # check the link exists
 npm ls -g --depth=0 --link=true
 # remove the link
-npm unlink @fpx/hono -g
+npm unlink @fiberplane/hono -g
 ```
 
 ## `npm pack`
@@ -39,5 +39,5 @@ This command will create a tarball that you can install as a file reference in a
 npm pack
 cd /path/to/other/projenct
 # Replace the version command with the tarball that was created
-npm install /path/to/client-library/@fpx-hono-x.y.z.tgz
+npm install /path/to/client-library/@fiberplane-hono-x.y.z.tgz
 ```
