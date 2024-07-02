@@ -10,8 +10,8 @@ import {
 } from "@/queries";
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { RequestMethod } from "./Method";
 import { TocItem } from "./RequestDetailsPage";
+import { RequestMethod } from "./shared";
 
 export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
   const [activeId, setActiveId] = useState<string>("");

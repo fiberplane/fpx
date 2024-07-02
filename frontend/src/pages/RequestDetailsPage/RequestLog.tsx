@@ -1,8 +1,8 @@
 import { MizuRequestStart } from "@/queries";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
-import { RequestMethod } from "./Method";
-import { SectionHeading } from "./Typography";
+import { RequestMethod } from "./shared";
+import { RequestPath, SectionHeading } from "./shared";
 
 export function RequestLog({ message }: { message: MizuRequestStart }) {
   const { method, path, headers, query, params, body } = message;
@@ -14,7 +14,7 @@ export function RequestLog({ message }: { message: MizuRequestStart }) {
         <SectionHeading>Incoming Request</SectionHeading>
         <div className="flex gap-2 items-center pt-1">
           <RequestMethod method={method} />
-          <p className="text-sm font-mono">{path}</p>
+          <RequestPath>{path}</RequestPath>
         </div>
       </div>
       <KeyValueTable keyValue={headers} caption="Headers" />

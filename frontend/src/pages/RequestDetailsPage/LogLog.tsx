@@ -2,7 +2,7 @@ import { MizuMessage } from "@/queries";
 import { hasStringMessage, objectHasName, objectHasStack } from "@/utils";
 import { LogLevel } from "./RequestDetailsPage";
 import { StackTrace } from "./StackTrace";
-import { SectionHeading } from "./Typography";
+import { SectionHeading } from "./shared";
 
 export function LogLog({
   message,

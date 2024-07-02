@@ -1,8 +1,8 @@
 import { MizuFetchStart } from "@/queries/types";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
-import { RequestMethod } from "./Method";
-import { SectionHeading } from "./Typography";
+import { RequestMethod } from "./shared";
+import { RequestPath, SectionHeading } from "./shared";
 
 export function FetchRequestLog({ message }: { message: MizuFetchStart }) {
   const { headers, body, method, url } = message;
@@ -18,7 +18,9 @@ export function FetchRequestLog({ message }: { message: MizuFetchStart }) {
         </SectionHeading>
         <div className="flex flex-grow gap-2 items-center">
           <RequestMethod method={method} />
-          <p className="text-sm flex-grow overflow-ellipsis">{url}</p>
+          <RequestPath className="flex-grow overflow-ellipsis">
+            {url}
+          </RequestPath>
         </div>
       </div>
 

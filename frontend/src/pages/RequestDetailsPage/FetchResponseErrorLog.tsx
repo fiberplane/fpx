@@ -2,7 +2,7 @@ import { Status } from "@/components/ui/status";
 import { MizuFetchError } from "@/queries/types";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
-import { SectionHeading } from "./Typography";
+import { SectionHeading } from "./shared";
 
 export function FetchResponseErrorLog({
   message,

@@ -3,7 +3,7 @@ import { Status } from "@/components/ui/status";
 import { MizuRequestEnd } from "@/queries";
 import { KeyValueTable } from "./KeyValueTable";
 import { TextOrJsonViewer } from "./TextJsonViewer";
-import { SectionHeading } from "./Typography";
+import { SectionHeading } from "./shared";
 
 export function ResponseLog({ message }: { message: MizuRequestEnd }) {
   const { status, headers, body } = message;

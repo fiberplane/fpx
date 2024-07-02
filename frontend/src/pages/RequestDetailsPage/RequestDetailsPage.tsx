@@ -30,12 +30,11 @@ import { FetchRequestLog } from "./FetchRequestLog";
 import { FetchResponseErrorLog } from "./FetchResponseErrorLog";
 import { FetchResponseLog } from "./FetchResponseLog";
 import { LogLog } from "./LogLog";
-import { RequestMethod } from "./Method";
 import { Minimap } from "./Minimap";
 import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
-import { SectionHeading } from "./Typography";
+import { FpxCard, RequestMethod, SectionHeading } from "./shared";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -119,7 +118,7 @@ export function RequestDetailsPage() {
           "sm:gap-6 sm:py-8",
         )}
       >
-        <h2 className="text-2xl font-semibold">Request Detail</h2>
+        <h2 className="text-2xl font-semibold">Request Details</h2>
         <div className="flex gap-2">
           <Button
             variant="secondary"
@@ -219,7 +218,7 @@ function Summary({ trace }: { trace: MizuTrace }) {
   return (
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
       <SectionHeading>Summary</SectionHeading>
-      <Card className="bg-muted/20">
+      <FpxCard className="bg-muted/20">
         <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
           <div className="flex gap-2 items-center">
             <Status statusCode={Number(trace?.status)} />
@@ -248,15 +247,15 @@ function Summary({ trace }: { trace: MizuTrace }) {
                 </a>
               ))
             ) : (
-              <Card>
-                <CardContent className="p-2 bg-secondary rounded-lg">
+              <FpxCard>
+                <CardContent className="p-2 bg-secondary rounded-sm">
                   {body && <TextOrJsonViewer text={body} collapsed />}
                 </CardContent>
-              </Card>
+              </FpxCard>
             )}
           </div>
         </CardContent>
-      </Card>
+      </FpxCard>
     </div>
   );
 }
@@ -266,11 +265,11 @@ function TraceDetails({ trace }: { trace: MizuTrace }) {
     <div className="grid gap-4" id="trace-details">
       {trace?.logs &&
         trace?.logs.map((log) => (
-          <Card key={log.id} className="overflow-hidden">
+          <FpxCard key={log.id} className="overflow-hidden">
             <CardContent className="p-4 bg-muted/40">
               <LogDetails key={log.id} log={log} />
             </CardContent>
-          </Card>
+          </FpxCard>
         ))}
     </div>
   );

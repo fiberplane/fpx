@@ -1,7 +1,7 @@
 import { isMizuErrorMessage } from "@/queries";
 import { MizuFetchLoggingError } from "@/queries/types";
 import { StackTrace } from "./StackTrace";
-import { SectionHeading } from "./Typography";
+import { SectionHeading } from "./shared";
 
 export function FetchRequestErrorLog({
   message,
