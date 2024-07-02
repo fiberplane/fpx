@@ -79,6 +79,28 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
       .filter((item) => item !== undefined) as TocItem[];
   }, [trace]);
 
+  // Scroll minimap item into view if it is out of viewport
+  useEffect(() => {
+    const element = document.querySelector(`[data-toc-id="${activeId}"]`);
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    if (element) {
+      timeoutId = setTimeout(() => {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "nearest",
+        });
+      }, 300);
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [activeId]);
+
   const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {
     for (const entry of entries) {
       if (entry.isIntersecting) {
@@ -110,11 +132,12 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
   }, [toc, handleObserve]);
 
   return (
-    <div className="flex flex-col">
+    <div className="grid h-[calc(100vh-80px)] overflow-y-auto">
       {toc.length > 0 &&
         toc.map((item, idx) => (
           <div
             key={idx}
+            data-toc-id={item.id}
             className={clsx("border-l-2", {
               "border-l-blue-800": activeId === item.id,
               "border-l-gray-800": activeId !== item.id,
