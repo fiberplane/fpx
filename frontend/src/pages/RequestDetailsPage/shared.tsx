@@ -34,7 +34,13 @@ export function RequestMethod({
   className,
 }: { method: string; className?: string }) {
   return (
-    <span className={cn("text-sm", getHttpMethodTextColor(method), className)}>
+    <span
+      className={cn(
+        "text-sm uppercase",
+        getHttpMethodTextColor(method),
+        className,
+      )}
+    >
       {method}
     </span>
   );

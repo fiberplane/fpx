@@ -7,5 +7,5 @@ export function getHttpMethodTextColor(method: string) {
     DELETE: "text-red-500",
     OPTIONS: "text-blue-300",
     HEAD: "text-gray-600",
-  }[method];
+  }[String(method).toUpperCase()];
 }
