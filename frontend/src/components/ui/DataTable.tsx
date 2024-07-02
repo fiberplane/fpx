@@ -142,72 +142,77 @@ export function DataTable<TData, TValue>({
   useKeySequence(["Enter"], handleRowSelect);
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader className={clsx("bg-muted/80")}>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    className={
-                      header.column.columnDef.meta?.headerClassName || ""
-                    }
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody className="bg-muted/40 fg-foreground">
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row, rowIdx) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                onClick={(event) =>
-                  !isModifierKeyPressed(event) && handleRowClick?.(row)
-                }
-                onMouseEnter={() => setSelectedRowIndex(rowIdx)}
-                onMouseLeave={() => setSelectedRowIndex(null)}
-                className={clsx(
-                  { "bg-muted/50": rowIdx === selectedRowIndex },
-                  "transition-none",
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={clsx(
-                      "py-2",
-                      cell.column.columnDef.meta?.cellClassName,
-                    )}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+    <div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader className={clsx("bg-muted/80")}>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      className={
+                        header.column.columnDef.meta?.headerClassName || ""
+                      }
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center font-mono"
-              >
-                No Results
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody className="bg-muted/20 fg-foreground">
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row, rowIdx) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  onClick={(event) =>
+                    !isModifierKeyPressed(event) && handleRowClick?.(row)
+                  }
+                  onMouseEnter={() => setSelectedRowIndex(rowIdx)}
+                  onMouseLeave={() => setSelectedRowIndex(null)}
+                  className={clsx(
+                    { "bg-muted/50": rowIdx === selectedRowIndex },
+                    "transition-none",
+                  )}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className={clsx(
+                        "py-2",
+                        cell.column.columnDef.meta?.cellClassName,
+                      )}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center font-mono"
+                >
+                  No Results
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
       {getPaginationRowModel && <DataTablePagination table={table} />}
     </div>
   );
@@ -248,21 +253,22 @@ function DataTablePagination<TData>({ table }: { table: TableType<TData> }) {
             <PaginationContent>
               {canPreviousPage && (
                 <PaginationItem>
-                  <PaginationPrevious onClick={() => table.previousPage()} />
+                  <PaginationPrevious
+                    size="sm"
+                    onClick={() => table.previousPage()}
+                  />
                 </PaginationItem>
               )}
               {currentPageIndex > 3 && (
                 <PaginationItem>
-                  <PaginationLink>
-                    <PaginationLink onClick={() => table.firstPage()}>
-                      1
-                    </PaginationLink>
+                  <PaginationLink size="sm" onClick={() => table.firstPage()}>
+                    1
                   </PaginationLink>
                 </PaginationItem>
               )}
               {currentPageIndex > 2 && (
                 <PaginationItem>
-                  <PaginationLink>
+                  <PaginationLink size="sm">
                     <PaginationEllipsis />
                   </PaginationLink>
                 </PaginationItem>
@@ -271,6 +277,7 @@ function DataTablePagination<TData>({ table }: { table: TableType<TData> }) {
                 return (
                   <PaginationItem key={index}>
                     <PaginationLink
+                      size="sm"
                       isActive={index === currentPageIndex}
                       onClick={() => goToPage(index)}
                     >
@@ -282,12 +289,12 @@ function DataTablePagination<TData>({ table }: { table: TableType<TData> }) {
               {currentPageIndex < pageCount - 3 && (
                 <>
                   <PaginationItem>
-                    <PaginationLink>
+                    <PaginationLink size="sm">
                       <PaginationEllipsis />
                     </PaginationLink>
                   </PaginationItem>
                   <PaginationItem>
-                    <PaginationLink onClick={() => table.lastPage()}>
+                    <PaginationLink size="sm" onClick={() => table.lastPage()}>
                       {pageCount}
                     </PaginationLink>
                   </PaginationItem>
@@ -295,7 +302,7 @@ function DataTablePagination<TData>({ table }: { table: TableType<TData> }) {
               )}
               {canNextPage && (
                 <PaginationItem>
-                  <PaginationNext onClick={() => table.nextPage()} />
+                  <PaginationNext size="sm" onClick={() => table.nextPage()} />
                 </PaginationItem>
               )}
             </PaginationContent>

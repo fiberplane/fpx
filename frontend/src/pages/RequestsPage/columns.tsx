@@ -5,6 +5,7 @@ import { Status } from "@/components/ui/status";
 import type { MizuTrace } from "@/queries";
 import { Link } from "react-router-dom";
 import { TimeAgo } from "../RequestDetailsPage/TimeAgo";
+import { RequestMethod } from "../RequestDetailsPage/shared";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
 //         in order to support fast refresh with Vite
@@ -34,15 +35,18 @@ export const columns: ColumnDef<MizuTrace>[] = [
       return <Status statusCode={props.row.getValue("status")} />;
     },
     meta: {
-      headerClassName: "w-[80px]",
+      headerClassName: "w-20",
       cellClassName: "font-mono",
     },
   },
   {
     accessorKey: "method",
     header: "Method",
+    cell: (props) => {
+      return <RequestMethod method={props.row.getValue("method")} />;
+    },
     meta: {
-      headerClassName: "w-[80px]",
+      headerClassName: "w-20",
       cellClassName: "font-mono",
     },
   },
