@@ -24,7 +24,6 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
     return trace.logs
       .map((log) => {
         const { message } = log;
-        // console.log("message", message);
         if (isMizuRequestStartMessage(message)) {
           return {
             id: `request-${message.method}-${message.path}`,
@@ -90,7 +89,9 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
 
   useEffect(() => {
     observer.current = new IntersectionObserver(handleObserve, {
-      rootMargin: "-33% 0px 0px 0px",
+      // TODO - This might need more tweaking
+      rootMargin: "0px 0px -33% 0px",
+      threshold: [0, 0.25, 0.5, 0.75, 1],
     });
 
     const { current: currentObserver } = observer;
