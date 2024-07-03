@@ -35,7 +35,10 @@ const REPOSITORY_ROOT_DIR = findGitRoot();
 // Loading some possible configuration from the environment
 const PACKAGE_JSON = safeParseJSONFile(PACKAGE_JSON_PATH);
 const PROJECT_PORT = readWranglerPort();
-const USER_V0_CONFIG = readUserConfig();
+const {
+  initialized: IS_INITIALIZING_FPX,
+  config: USER_V0_CONFIG
+} = readUserConfig();
 const USER_VARS = {};
 
 runWizard();
@@ -45,8 +48,13 @@ runWizard();
  * If there are valid values in .fpxconfig, we skip asking questions
  */
 async function runWizard() {
-  const FPX_PORT = getFallbackFpxPort() || await askUser("Which port should fpx studio run on?", 8788);
-  const FPX_SERVICE_TARGET = getFallbackServiceTarget() || await askUser("Which port is your service running on?", 8787);
+  const FPX_PORT = IS_INITIALIZING_FPX ?
+    await askUser("Which port should fpx studio run on?", getFallbackFpxPort() || 8788)
+    : getFallbackFpxPort() || await askUser("Which port should fpx studio run on?", 8788);
+
+  const FPX_SERVICE_TARGET = IS_INITIALIZING_FPX ? 
+    await askUser("Which port is your service running on?", getFallbackServiceTarget() || 8787)
+    : getFallbackServiceTarget() || await askUser("Which port is your service running on?", 8787);
 
   if (!USER_V0_CONFIG.FPX_PORT) {
     USER_V0_CONFIG.FPX_PORT = FPX_PORT;
@@ -118,15 +126,27 @@ function readWranglerPort() {
 }
 
 function readUserConfig() {
+  let initialized = false;
   const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
   const configPath = path.join(configDir, CONFIG_FILE_NAME);
   if (!fs.existsSync(configDir)) {
+    initialized = true;
     fs.mkdirSync(configDir);
   }
   if (!fs.existsSync(configPath)) {
+    initialized = true;
     fs.writeFileSync(configPath, JSON.stringify({}));
   }
-  return safeParseJSONFile(configPath) || {};
+
+  let config = safeParseJSONFile(configPath);
+  if (!config) {
+    initialized = true;
+    config = {};
+  }
+  return {
+    initialized,
+    config
+  };
 }
 
 function saveUserConfig(config) {
