@@ -71,6 +71,7 @@ fn api_router(
             "/requests/:id",
             get(handlers::request_get_handler).delete(handlers::request_delete_handler),
         )
+        .route("/requestor", post(handlers::execute_requestor))
         .route(
             "/inspectors",
             get(handlers::inspector_list_handler).post(handlers::inspector_create_handler),
@@ -79,7 +80,6 @@ fn api_router(
         .route("/inspect/:id", any(handlers::inspect_request_handler))
         .route("/v1/logs", get(handlers::logs_handler))
         .route("/ws", get(ws::ws_handler))
-        .route("/requestor", post(handlers::execute_requestor))
         .fallback(StatusCode::NOT_FOUND)
         .with_state(api_state)
 }
