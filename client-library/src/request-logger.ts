@@ -10,7 +10,7 @@ export const RECORDED_CONSOLE_METHODS = [
   "warn",
 ] as const;
 
-import { PRETTIFY_MIZU_LOGGER_LOG, type PrintFunc } from "./utils";
+import { PRETTIFY_FPX_LOGGER_LOG, type PrintFunc } from "./utils";
 
 // === LOGGER FUNCTION === //
 function logReq(
@@ -23,6 +23,7 @@ function logReq(
   query: Record<string, string>,
   // Originating file of the request handler
   file?: string | null,
+  requestBody?: unknown,
 ) {
   const out = {
     lifecycle: "request",
@@ -33,10 +34,11 @@ function logReq(
     params,
     query,
     file,
+    body: requestBody,
   };
 
   // NOTE - We log a symbol that allows us to hide the log in the terminal UI by default and print something prettier
-  fn(JSON.stringify(out), PRETTIFY_MIZU_LOGGER_LOG);
+  fn(JSON.stringify(out), PRETTIFY_FPX_LOGGER_LOG);
 }
 
 export async function log(
@@ -60,6 +62,29 @@ export async function log(
   const { method } = c.req;
   const path = getPath(c.req.raw);
 
+  let requestBody: unknown;
+  try {
+    const clone = c.req.raw.clone();
+    const reader = clone.body?.getReader();
+    if (reader) {
+      const decoder = new TextDecoder("utf-8");
+      let data = "";
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          data += decoder.decode(value, { stream: !done });
+        }
+      }
+
+      requestBody = data;
+    }
+  } catch {
+    // swallow any error
+  }
+
   // Copy request headers into plain object
   const reqHeaders: Record<string, string> = {};
   c.req.raw.headers.forEach((value, key) => {
@@ -76,12 +101,11 @@ export async function log(
     c.req.param(),
     requestQueryStringParameters,
     file,
+    requestBody,
   );
-
   const start = Date.now();
 
   await next();
-
   const elapsed = time(start);
 
   const matchedPathPattern = c.req.routePath;
@@ -169,14 +193,14 @@ function logRes(
     path,
     route: matchedPathPattern,
     handler: matchedPathHandler,
-    handlerType, // Unsure if this is useful... or how
-    status: status?.toString(), // HACK - For compatibiltiy with mizu UI
+    handlerType,
+    status: status?.toString(), // HACK - For compatibiltiy with fpx UI
     headers,
     body,
     elapsed,
   };
 
-  fn(JSON.stringify(out), PRETTIFY_MIZU_LOGGER_LOG);
+  fn(JSON.stringify(out), PRETTIFY_FPX_LOGGER_LOG);
 }
 
 const humanize = (times: string[]) => {

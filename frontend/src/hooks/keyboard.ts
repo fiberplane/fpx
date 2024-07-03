@@ -30,6 +30,7 @@ export function useKeySequence(
 
   // create and persist the callback across re-renders
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    // event.preventDefault();
     setKeySequence((prevKeySequence) => {
       const updatedSequence = [...prevKeySequence, event.key].slice(
         -sequenceRef.current.length,

@@ -21,6 +21,7 @@ import {
   getVSCodeLinkFromError,
   isMizuFetchErrorMessage,
   isMizuFetchLoggingErrorMessage,
+  useHandlerSourceCode,
 } from "@/queries";
 import {
   type CallerLocation,
@@ -39,46 +40,6 @@ import {
   isMizuRequestStartMessage,
 } from "@/queries";
 import { StackTrace } from "./StackTrace";
-
-function useHandlerSourceCode(source?: string, handler?: string) {
-  const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(
-    null,
-  );
-  useEffect(() => {
-    if (!source) {
-      return;
-    }
-    if (!handler) {
-      return;
-    }
-    const query = new URLSearchParams({
-      source,
-      handler,
-    });
-    const fetchSourceLocation = async () => {
-      try {
-        const pos = await fetch(`/v0/source-function?${query.toString()}`, {
-          method: "POST",
-        }).then((r) => {
-          if (!r.ok) {
-            throw new Error(
-              `Failed to fetch source location from source map: ${r.status}`,
-            );
-          }
-          return r.json().then((r) => setHandlerSourceCode(r.functionText));
-        });
-        return pos;
-      } catch (err) {
-        console.debug("Could not fetch source location from source map", err);
-        return null;
-      }
-    };
-
-    fetchSourceLocation();
-  }, [handler, source]);
-
-  return handlerSourceCode;
-}
 
 function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
   const [response, setResponse] = useState<string | null>(null);
@@ -168,9 +129,11 @@ const RequestLog = ({ log }: { log: MizuLog }) => {
         eventName="Incoming Request"
         description={description}
       />
-      <div className="mt-2">
-        <KeyValueGrid data={log.message} />
-      </div>
+      {log.message !== null && (
+        <div className="mt-2">
+          <KeyValueGrid data={log.message} />
+        </div>
+      )}
     </LogCard>
   );
 };
@@ -190,9 +153,11 @@ const FetchRequestLog = ({ log }: { log: MizuLog }) => {
         description={description}
       />
 
-      <div className="mt-2">
-        <KeyValueGrid data={log.message} />
-      </div>
+      {log.message !== null && (
+        <div className="mt-2">
+          <KeyValueGrid data={log.message} />
+        </div>
+      )}
     </LogCard>
   );
 };
@@ -212,9 +177,11 @@ const FetchResponseLog = ({ log }: { log: MizuLog }) => {
         description={description}
       />
 
-      <div className="mt-2">
-        <KeyValueGrid data={log.message} />
-      </div>
+      {log.message !== null && (
+        <div className="mt-2">
+          <KeyValueGrid data={log.message} />
+        </div>
+      )}
     </LogCard>
   );
 };
@@ -235,9 +202,11 @@ const FetchErrorLog = ({ log }: { log: MizuLog }) => {
         description={description}
       />
 
-      <div className="mt-2">
-        <KeyValueGrid data={log.message} />
-      </div>
+      {log.message !== null && (
+        <div className="mt-2">
+          <KeyValueGrid data={log.message} />
+        </div>
+      )}
     </LogCard>
   );
 };
@@ -259,9 +228,11 @@ const FetchLoggingErrorLog = ({ log }: { log: MizuLog }) => {
         description={description}
       />
 
-      <div className="mt-2">
-        <KeyValueGrid data={log.message} />
-      </div>
+      {log.message !== null && (
+        <div className="mt-2">
+          <KeyValueGrid data={log.message} />
+        </div>
+      )}
     </LogCard>
   );
 };
@@ -310,9 +281,11 @@ const ResponseLog = ({ log }: { log: MizuLog }) => {
         description={description}
       />
       {magicSuggestion && <MagicSuggestion suggestion={magicSuggestion} />}
-      <div className="mt-2">
-        <KeyValueGrid data={log.message} />
-      </div>
+      {log.message !== null && (
+        <div className="mt-2">
+          <KeyValueGrid data={log.message} />
+        </div>
+      )}
     </LogCard>
   );
 };
@@ -450,11 +423,7 @@ const ErrorLog = ({
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
             <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-400">
-              <pre className="font-mono p-1">
-                <code>
-                  <StackTrace stackTrace={stack ?? ""} />
-                </code>
-              </pre>
+              <StackTrace stackTrace={stack ?? ""} />
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -463,21 +432,33 @@ const ErrorLog = ({
   );
 };
 
-const InfoLog = ({ log }: { log: MizuLog }) => {
-  const description = `${log.message}`;
+const DefaultLogCard = ({ log }: { log: MizuLog }) => {
+  const description = typeof log.message === "string" ? `${log.message}` : null;
   const vsCodeLink = useCallerLocation(log.callerLocation ?? null);
+  const args =
+    typeof log.message === "string" ? log.args : [log.message, ...log.args];
   return (
     <LogCard>
       <LogDetailsHeader
         eventName={`console.${log.level}`}
         traceId={log.traceId}
         timestamp={log.timestamp}
-        description={""}
+        description={description || ""}
       />
-      <div className="mt-2 font-sans">{description}</div>
-      <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
-        {JSON.stringify(log.args, null, 2)}
-      </div>
+      {args.length > 0 && (
+        <>
+          <div className="mt-2">Args:</div>
+
+          <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+            {args.map((arg, index) => {
+              if (isMizuErrorMessage(arg) && arg.stack) {
+                return <StackTrace key={index} stackTrace={arg.stack} />;
+              }
+              return <div key={index}>{JSON.stringify(arg, null, 2)}</div>;
+            })}
+          </div>
+        </>
+      )}
 
       {vsCodeLink && (
         <div className="mt-2 flex justify-end">
@@ -546,7 +527,7 @@ const LogDetailsHeader = ({
   description,
   traceId,
   timestamp,
-}: { eventName: string; description: string } & Pick<
+}: { eventName: string; description: ReactNode } & Pick<
   MizuLog,
   "traceId" | "timestamp"
 >) => {
@@ -644,7 +625,7 @@ export const LogDetails = ({
 }: { log: MizuLog; handlerSourceCode: string }) => {
   const { message } = log;
   const lifecycle =
-    typeof message === "object" && "lifecycle" in message
+    message && typeof message === "object" && "lifecycle" in message
       ? message.lifecycle
       : null;
 
@@ -684,26 +665,7 @@ export const LogDetails = ({
     );
   }
 
-  if (typeof message === "string") {
-    return <InfoLog log={log} />;
-  }
-
-  return (
-    <div className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm">
-      {message &&
-        typeof message === "object" &&
-        Object.entries(message).map(([key, value]) => {
-          return (
-            <div
-              key={key}
-              className="rounded-md border mt-2 px-4 py-2 font-mono text-sm shadow-sm"
-            >
-              {key}: {formatValue(value)}
-            </div>
-          );
-        })}
-    </div>
-  );
+  return <DefaultLogCard log={log} />;
 };
 
 function formatValue(value: unknown): ReactNode {

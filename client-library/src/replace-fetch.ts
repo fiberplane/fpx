@@ -1,15 +1,15 @@
-import { IGNORE_MIZU_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
+import { IGNORE_FPX_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
 
 /**
- * Hacky function that monkey-patches fetch to send data about network requests to mizu.
+ * Hacky function that monkey-patches fetch to send data about network requests to fpx.
  *
- * We log data with the `IGNORE_MIZU_LOGGER_LOG` symbol in order to avoid printing it to the user's console.
+ * We log data with the `IGNORE_FPX_LOGGER_LOG` symbol in order to avoid printing it to the user's console.
  * That symbol is used by the monkey-patched console.* methods to avoid _actually_ printing the logs to the console.
  * Seem confusing? Yes. Yes it is. However, relying on our monkey-patched console.* methods allows us to make use of the current traceId, etc.
  *
  * This function also has an option to skip monkey-patching, so that the user can configure whether or not to use this functionality.
  *
- * Returns the original fetch (the fetch we're monkey patching), so the middleware can still use it to send log data to mizu.
+ * Returns the original fetch (the fetch we're monkey patching), so the middleware can still use it to send log data to fpx.
  * Returns an `undo` function, so that the middleware can undo the monkey-patching after the request is finished.
  * (This "undo" functionality is really important in cloudflare workers!)
  *
@@ -48,7 +48,7 @@ export function replaceFetch({
         headers: requestHeaders, // Parsed headers
         args, // Full request args
       }),
-      IGNORE_MIZU_LOGGER_LOG,
+      IGNORE_FPX_LOGGER_LOG,
     );
 
     try {
@@ -76,7 +76,7 @@ export function replaceFetch({
             end,
             elapsed,
           }),
-          IGNORE_MIZU_LOGGER_LOG,
+          IGNORE_FPX_LOGGER_LOG,
         );
       }
 
@@ -96,7 +96,7 @@ export function replaceFetch({
           headers,
           body,
         }),
-        IGNORE_MIZU_LOGGER_LOG,
+        IGNORE_FPX_LOGGER_LOG,
       );
 
       return response;
@@ -108,7 +108,7 @@ export function replaceFetch({
           url,
           error: err instanceof Error ? errorToJson(err) : err,
         }),
-        IGNORE_MIZU_LOGGER_LOG,
+        IGNORE_FPX_LOGGER_LOG,
       );
       throw err;
     }

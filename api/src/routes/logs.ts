@@ -7,6 +7,7 @@ import { SourceMapConsumer } from "source-map";
 import { z } from "zod";
 
 import * as schema from "../db/schema.js";
+import { appRoutes } from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import { tryParseJsonObjectMessage } from "../lib/utils.js";
 
@@ -32,17 +33,57 @@ const schemaPostLogs = z.object({
     })
     .nullable(),
   timestamp: z.string(),
+  routes: z.array(
+    z.object({
+      method: z.string(),
+      path: z.string(),
+      handler: z.string(),
+      handlerType: z.string(),
+    }),
+  ),
 });
 
 app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
-  const { level, service, message, args, traceId, callerLocation, timestamp } =
-    ctx.req.valid("json");
+  const routeInspectorHeader = ctx.req.header("X-Fpx-Route-Inspector");
+  const {
+    level,
+    service,
+    message,
+    args,
+    traceId,
+    callerLocation,
+    timestamp,
+    routes,
+  } = ctx.req.valid("json");
 
   const db = ctx.get("db");
   const dbErrors = ctx.get("dbErrors");
   const parsedMessage = tryParseJsonObjectMessage(message);
 
   try {
+    if (routes.length > 0) {
+      // "Unregister" all app routes (including middleware)
+      await db.update(appRoutes).set({ currentlyRegistered: false });
+      // "Re-register" all current app routes
+      for (const route of routes) {
+        await db
+          .insert(appRoutes)
+          .values({
+            ...route,
+            currentlyRegistered: true,
+          })
+          .onConflictDoUpdate({
+            target: [appRoutes.path, appRoutes.method, appRoutes.handlerType],
+            set: { handler: route.handler, currentlyRegistered: true },
+          });
+      }
+    }
+
+    if (routeInspectorHeader) {
+      // header indicates this is a route probe so we return early
+      return ctx.text("OK");
+    }
+
     // Ideally would use `c.ctx.waitUntil` on sql call here but no need to optimize this project yet or maybe ever
     const mizuLevel = level === "log" ? "info" : level;
     await db.insert(mizuLogs).values({
@@ -144,15 +185,18 @@ async function transformStack(stack: string) {
 
   const parsedLines = await Promise.all(
     lines.map(async (line) => {
-      const regex =
-        /at (?:(?<method>[^\s]+) \()?file:\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)\)?/;
-
-      const match = line.match(regex);
+      const fileLocationMatch =
+        /file:\/\/(?<file>[^\s]+):(?<lineNumber>\d+):(?<columnNumber>\d+)/;
+      const match = line.match(fileLocationMatch);
       if (!match || !match.groups) {
         return line;
       }
 
-      const { method, file, lineNumber, columnNumber } = match.groups;
+      const { file, lineNumber, columnNumber } = match.groups;
+      const methodMatch = line.match(
+        /at (?<method>(async )?[\w \[\]\.<>]+) (\()?file:\/\//,
+      );
+      const method = methodMatch?.groups?.method;
 
       const filePath = `${file.trim().replace("file://", "")}.map`;
       try {

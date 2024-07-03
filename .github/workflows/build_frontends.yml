@@ -25,11 +25,24 @@
           with:
             node-version: lts/*
             cache: npm
+
         - name: Install dependencies
           run: npm ci --workspaces
 
+        # HACK: Install Biome CLI for Linux due to npm bug with optional dependencies
+        - name: Install Biome CLI for Linux
+          run: npm install @biomejs/cli-linux-x64 --save-dev
+
         - name: Lint all workspaces
           run: npm run lint:ci --workspaces
+
+        # HACK: Install rollup to make client-library build succeed due to npm bug with optional dependencies
+        - name: Install Rollup for Linux
+          run: npm install @rollup/rollup-linux-x64-gnu --save-dev
+
+        # HACK: For some reason need to install swc bindings in CI too
+        - name: Install swc
+          run: npm install @swc/cli @swc/core @swc/plugin-transform-imports --save-dev
 
         - name: Build all workspaces
           run: npm run build --workspaces --if-present
