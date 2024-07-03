@@ -5,6 +5,7 @@ use http::StatusCode;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::fmt::Formatter;
+use std::ops::{Deref, DerefMut};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -136,6 +137,20 @@ impl<'de> Deserialize<'de> for AnyhowError {
 impl From<anyhow::Error> for AnyhowError {
     fn from(value: anyhow::Error) -> Self {
         Self(value)
+    }
+}
+
+impl Deref for AnyhowError {
+    type Target = anyhow::Error;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for AnyhowError {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
