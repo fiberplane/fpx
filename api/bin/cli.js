@@ -48,6 +48,10 @@ runWizard();
  * If there are valid values in .fpxconfig, we skip asking questions
  */
 async function runWizard() {
+  // This looks confusing but the basic pattern is:
+  // - If we're initializing, ask the user where we should run. Default is dynamic depending on env.
+  // - If we're not initializing, try to skip the question based on local config, fall back to asking them.
+  //
   const FPX_PORT = IS_INITIALIZING_FPX ?
     await askUser("Which port should fpx studio run on?", getFallbackFpxPort() || 8788)
     : getFallbackFpxPort() || await askUser("Which port should fpx studio run on?", 8788);
