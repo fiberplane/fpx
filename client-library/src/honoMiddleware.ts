@@ -80,7 +80,7 @@ export function createHonoMiddleware<App extends HonoApp>(
     } = mergeConfigs(defaultConfig, config);
 
     // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,
-    //        so that people won't accidentally deploy to production with our middleware and 
+    //        so that people won't accidentally deploy to production with our middleware and
     //        start sending data to the default url.
     const endpoint = env<FpxEnv>(c).FPX_ENDPOINT;
     const isEnabled = !!endpoint;
