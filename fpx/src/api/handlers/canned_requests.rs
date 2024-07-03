@@ -1,12 +1,11 @@
-use crate::api::errors::ApiServerError;
+use crate::api::errors::{AnyhowError, ApiServerError};
 use crate::api::Config;
 use crate::canned_requests::{CannedRequest, SaveLocation};
 use axum::extract::State;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use http::StatusCode;
-use serde::Serialize;
-use serde_with::serde_derive::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use thiserror::Error;
 use tracing::{error, instrument};
@@ -24,7 +23,7 @@ pub async fn canned_request_create(
         .request
         .save(save_location)
         .await
-        .map_err(|err| CannedRequestCreateError::Internal(err))?;
+        .map_err(|err| CannedRequestCreateError::Internal(err.into()))?;
 
     Ok(StatusCode::CREATED)
 }
@@ -38,7 +37,7 @@ struct NewCannedRequest {
     request: CannedRequest,
 }
 
-#[derive(Debug, Serialize, Error)]
+#[derive(Debug, Error, Serialize, Deserialize)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 #[allow(dead_code)]
@@ -48,9 +47,9 @@ pub enum CannedRequestCreateError {
 
     #[error("failed to handle request: {0:?}")]
     Internal(
-        #[serde(skip_serializing)]
+        #[serde(skip, default)]
         #[from]
-        anyhow::Error,
+        AnyhowError,
     ),
 }
 
@@ -89,7 +88,7 @@ pub async fn canned_request_list(
     Ok(Json(map))
 }
 
-#[derive(Debug, Serialize, Error)]
+#[derive(Debug, Serialize, Deserialize, Error)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum CannedRequestListError {
@@ -98,9 +97,9 @@ pub enum CannedRequestListError {
 
     #[error("failed to handle request: {0:?}")]
     Internal(
-        #[serde(skip_serializing)]
+        #[serde(skip, default)]
         #[from]
-        anyhow::Error,
+        AnyhowError,
     ),
 }
 

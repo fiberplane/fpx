@@ -1,7 +1,10 @@
+use anyhow::anyhow;
 use axum::response::IntoResponse;
 use bytes::Bytes;
 use http::StatusCode;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt;
+use std::fmt::Formatter;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -94,6 +97,49 @@ impl IntoResponse for CommonError {
         (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
     }
 }
+
+#[derive(Debug)]
+#[repr(transparent)]
+/// Wrapper type for [`anyhow::Error`] which implements [`Serialize`] and [`Deserialize`]
+pub struct AnyhowError(pub anyhow::Error);
+
+impl fmt::Display for AnyhowError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Default for AnyhowError {
+    fn default() -> Self {
+        Self(anyhow!("error not supplied"))
+    }
+}
+
+impl Serialize for AnyhowError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_unit()
+    }
+}
+
+impl<'de> Deserialize<'de> for AnyhowError {
+    fn deserialize<D>(_: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(Default::default())
+    }
+}
+
+impl From<anyhow::Error> for AnyhowError {
+    fn from(value: anyhow::Error) -> Self {
+        Self(value)
+    }
+}
+
+impl std::error::Error for AnyhowError {}
 
 #[cfg(test)]
 mod tests {

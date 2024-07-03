@@ -78,21 +78,21 @@ impl CannedRequest {
             SaveLocation::Personal(path) | SaveLocation::Shared(path) => {
                 let mut dir = fs::read_dir(path)
                     .await
-                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err)))?;
+                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err).into()))?;
                 let mut results = vec![];
 
                 while let Some(entry) = dir
                     .next_entry()
                     .await
-                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err)))?
+                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err).into()))?
                 {
                     let file_name = entry
                         .file_name()
                         .to_str()
                         .ok_or_else(|| {
-                            CannedRequestListError::Internal(anyhow!(
-                                "conversion into os string failed"
-                            ))
+                            CannedRequestListError::Internal(
+                                anyhow!("conversion into os string failed").into(),
+                            )
                         })?
                         .to_string();
 
@@ -130,10 +130,10 @@ impl CannedRequest {
 
                 let data = fs::read_to_string(path)
                     .await
-                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err)))?;
+                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err).into()))?;
 
                 let mut data: Self = toml::from_str(&data)
-                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err)))?;
+                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err).into()))?;
                 data.name = name.to_string();
 
                 Ok(data)
