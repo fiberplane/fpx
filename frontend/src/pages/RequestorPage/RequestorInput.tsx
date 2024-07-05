@@ -12,6 +12,7 @@ type RequestInputProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
   addBaseUrl: (path: string) => string;
+  formRef: React.RefObject<HTMLFormElement>;
 };
 
 export function RequestorInput({
@@ -22,6 +23,7 @@ export function RequestorInput({
   onSubmit,
   isRequestorRequesting,
   addBaseUrl,
+  formRef
 }: RequestInputProps) {
   const [value, setValue] = useState("");
 
@@ -35,6 +37,7 @@ export function RequestorInput({
 
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
       className="flex items-center justify-between rounded-md bg-muted border"
     >
