@@ -1,13 +1,18 @@
 import type React from "react";
 import { ComponentProps, useEffect, useState } from "react";
 import { NavLink, Outlet, useParams } from "react-router-dom";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "./components/ui/breadcrumb";
+import { Status } from "./components/ui/status";
 import FpxIcon from "./fpx.svg";
-import { cn } from "./utils";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator } from "./components/ui/breadcrumb";
 import { useRequestDetails } from "./hooks";
 import { RequestMethod } from "./pages/RequestDetailsPage/shared";
-import { Status } from "./components/ui/status";
 import { useMizuTraces } from "./queries";
+import { cn } from "./utils";
 
 const Branding = () => {
   return (
@@ -17,9 +22,7 @@ const Branding = () => {
   );
 };
 
-export const Layout: React.FC<{ children?: React.ReactNode }> = ({
-  children,
-}) => {
+export const Layout: React.FC<{ children?: React.ReactNode }> = () => {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
       <nav className="flex gap-4 sm:gap-4 py-4 sm:py-0 justify-between items-center h-[64px] border-b">
@@ -49,8 +52,9 @@ const RequestLink = ({ props }: { props?: ComponentProps<typeof NavLink> }) => {
   const { trace } = useRequestDetails(traceId);
   const { data: traces } = useMizuTraces();
 
-
-  const mostRecentRequest = traces?.find((t) => t.method === trace?.method && t.path === trace?.path)
+  const mostRecentRequest = traces?.find(
+    (t) => t.method === trace?.method && t.path === trace?.path,
+  );
 
   const [isMostRecent, setIsMostRecent] = useState(true);
 
@@ -60,36 +64,48 @@ const RequestLink = ({ props }: { props?: ComponentProps<typeof NavLink> }) => {
     } else {
       setIsMostRecent(false);
     }
-  }, [mostRecentRequest, trace])
+  }, [mostRecentRequest, trace]);
 
   if (!traceId && !trace) {
-    return <HeaderNavLink {...props} to="/requests">Requests</HeaderNavLink>
+    return (
+      <HeaderNavLink {...props} to="/requests">
+        Requests
+      </HeaderNavLink>
+    );
   }
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <NavLink className="pl-4 py-2 text-white" to="/requests">Requests</NavLink>
+          <NavLink className="pl-4 py-2 text-white" to="/requests">
+            Requests
+          </NavLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <NavLink to={`/requests/${traceId}`} className="rounded bg-muted px-4 py-2 flex gap-2 items-center text-white">
-            <RequestMethod method={trace?.method} />
+          <NavLink
+            to={`/requests/${traceId}`}
+            className="rounded bg-muted px-4 py-2 flex gap-2 items-center text-white"
+          >
+            {trace && <RequestMethod method={trace?.method} />}
             <span>{trace?.path}</span>
             <Status statusCode={Number(trace?.status)} />
           </NavLink>
         </BreadcrumbItem>
-        {!isMostRecent && 
+        {!isMostRecent && (
           <BreadcrumbItem className="ml-4">
             <NavLink to={`/requests/${mostRecentRequest?.id}`}>
-              <span className="text-white bg-blue-800 px-4 py-2 rounded">Go to the most recent response</span>
+              <span className="text-white bg-blue-800 px-4 py-2 rounded">
+                Go to the most recent response
+              </span>
             </NavLink>
-        </BreadcrumbItem>}
+          </BreadcrumbItem>
+        )}
       </BreadcrumbList>
     </Breadcrumb>
-  )
-}
+  );
+};
 
 const HeaderNavLink = (props: ComponentProps<typeof NavLink>) => {
   return (
