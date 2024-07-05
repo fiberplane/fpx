@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 type RequestInputProps = {
   method: string;
@@ -64,15 +66,27 @@ export function RequestorInput({
         />
       </div>
       <div className="flex items-center space-x-2 p-2">
-        <Button
-          size="sm"
-          type="submit"
-          disabled={isRequestorRequesting}
-          className="p-2 md:p-2.5"
-        >
-          <span className="hidden md:inline">Send</span>
-          <TriangleRightIcon className="md:hidden w-6 h-6" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                size="sm"
+                type="submit"
+                disabled={isRequestorRequesting}
+                className="p-2 md:p-2.5"
+              >
+                <span className="hidden md:inline">Send</span>
+                <TriangleRightIcon className="md:hidden w-6 h-6" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-muted/75 text-white">
+              <p>Send Request
+                {/* Figoure ot if mac or other */}
+              <Badge className="ml-1" variant="outline">⌘ + ↩</Badge>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </form>
   );
