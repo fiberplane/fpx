@@ -1,6 +1,7 @@
 import type React from "react";
 import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
+import { NavLink, Outlet, useParams } from "react-router-dom";
 import FpxIcon from "./fpx.svg";
 import { cn } from "./utils";
 
@@ -33,7 +34,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
       <main
         className={cn("md:gap-8", "overflow-hidden", "h-[calc(100vh-64px)]")}
       >
-        {children}
+        <Outlet />
       </main>
     </div>
   );
