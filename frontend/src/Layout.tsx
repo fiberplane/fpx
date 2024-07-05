@@ -1,5 +1,5 @@
 import type React from "react";
-import { ComponentProps, useEffect, useState } from "react";
+import { ComponentProps, useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useParams } from "react-router-dom";
 import {
   Breadcrumb,
@@ -50,21 +50,25 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = () => {
 const RequestLink = ({ props }: { props?: ComponentProps<typeof NavLink> }) => {
   const { traceId } = useParams();
   const { trace } = useRequestDetails(traceId);
-  const { data: traces } = useMizuTraces();
+  const { data: traces, isLoading, isFetching } = useMizuTraces();
 
-  const mostRecentRequest = traces?.find(
+  const mostRecentRequest = useMemo(() => traces?.find(
     (t) => t.method === trace?.method && t.path === trace?.path,
-  );
+  ), [traces, trace]);
 
   const [isMostRecent, setIsMostRecent] = useState(true);
 
+  const checkMostRecentRequest = useCallback(() => trace?.id === mostRecentRequest?.id, [trace, mostRecentRequest])
+
   useEffect(() => {
-    if (trace?.id === mostRecentRequest?.id) {
-      setIsMostRecent(true);
-    } else {
-      setIsMostRecent(false);
-    }
-  }, [mostRecentRequest, trace]);
+    console.log("isFetching", isFetching)
+    console.log("isLoading", isLoading)
+    console.log("TRACES CHANGED", traces)
+  }, [traces, isFetching, isLoading])
+
+  useEffect(() => {
+    setIsMostRecent(checkMostRecentRequest());
+  }, [checkMostRecentRequest]);
 
   if (!traceId && !trace) {
     return (
