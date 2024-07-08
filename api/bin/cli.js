@@ -189,7 +189,7 @@ async function askUser(question, defaultValue) {
 }
 
 /**
- * Function that adds `mizu.dev` to `.gitignore`
+ * Function that adds `fpx.dev` to `.gitignore`
  *
  * As of writing, only works when `.gitignore` is in the directory in which
  * this executable is run.
@@ -209,13 +209,13 @@ function addGitIgnore() {
     fs.writeFileSync(gitignorePath, "");
   }
 
-  const gitignoreEntry = "# fpx local database\nmizu.db\n";
+  const gitignoreEntry = "# fpx local database\nfpx.db\n";
 
   if (fs.existsSync(gitignorePath)) {
     const gitignoreContent = fs.readFileSync(gitignorePath, "utf8");
-    if (!gitignoreContent.includes("mizu.db")) {
+    if (!gitignoreContent.includes("fpx.db")) {
       fs.appendFileSync(gitignorePath, gitignoreEntry);
-      console.debug(".gitignore updated with mizu.db entry.");
+      console.debug(".gitignore updated with fpx.db entry.");
     }
   }
 }
