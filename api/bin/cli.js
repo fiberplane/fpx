@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --experimental-modules
 
 import { execSync } from "node:child_process";
 import fs from "node:fs";
