@@ -14,8 +14,8 @@ const __dirname = dirname(__filename);
 const args = process.argv.slice(2);
 const script = args[0];
 
-// HACK - if no script is specified, migrate the db then start running studio
-//        this is a quick way to get started!
+// HACK - If no script is specified, migrate the db then start running studio
+//        This is a quick way to get started!
 const scriptsToRun = !script ? ["migrate", "studio"] : [script];
 
 const validScripts = {
@@ -37,7 +37,10 @@ const PACKAGE_JSON = safeParseJSONFile(PACKAGE_JSON_PATH);
 const PROJECT_PORT = readWranglerPort();
 const { initialized: IS_INITIALIZING_FPX, config: USER_V0_CONFIG } =
   readUserConfig();
+
 const USER_VARS = {};
+
+loadUserConfigIntoUserVars();
 
 runWizard();
 
@@ -47,16 +50,21 @@ runWizard();
  */
 async function runWizard() {
   // This looks confusing but the basic pattern is:
-  // - If we're initializing, ask the user where we should run. Default is dynamic depending on env.
+  // - If we're initializing, ask the user where we should run.
+  //   The default (fallback) value is dynamic depending on env.
   // - If we're not initializing, try to skip the question based on local config, fall back to asking them.
   //
-  const FPX_PORT = IS_INITIALIZING_FPX
-    ? await askUser(
-        "Which port should fpx studio run on?",
-        getFallbackFpxPort() || 8788,
-      )
-    : getFallbackFpxPort() ||
-      (await askUser("Which port should fpx studio run on?", 8788));
+  const hasConfiguredFpxPort = getFallbackFpxPort() !== null;
+  const fpxPortFallback = getFallbackFpxPort() || 8788;
+  const fpxPortQuestion = "Which port should fpx studio run on? ";
+  let FPX_PORT;
+  if (IS_INITIALIZING_FPX) {
+    FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
+  } else if (hasConfiguredFpxPort) {
+    FPX_PORT = fpxPortFallback;
+  } else {
+    FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
+  }
 
   const FPX_SERVICE_TARGET = IS_INITIALIZING_FPX
     ? await askUser(
@@ -66,21 +74,29 @@ async function runWizard() {
     : getFallbackServiceTarget() ||
       (await askUser("Which port is your service running on?", 8787));
 
-  if (!USER_V0_CONFIG.FPX_PORT) {
-    USER_V0_CONFIG.FPX_PORT = FPX_PORT;
+  const shouldAddToGitIgnoreAnswer = shouldAskToAddGitIgnore()
+    ? await askUser("Add fpx.db to .gitignore?", "y")
+    : "n";
+
+  const shouldGitIgnore = cliAnswerToBool(shouldAddToGitIgnoreAnswer);
+
+  if (!USER_VARS.FPX_PORT) {
+    USER_VARS.FPX_PORT = FPX_PORT;
   }
-  if (!USER_V0_CONFIG.FPX_SERVICE_TARGET) {
-    USER_V0_CONFIG.FPX_SERVICE_TARGET = FPX_SERVICE_TARGET;
+  if (!USER_VARS.FPX_SERVICE_TARGET) {
+    USER_VARS.FPX_SERVICE_TARGET = FPX_SERVICE_TARGET;
   }
 
   const SERVICE_NAME = getFallbackServiceName();
-  if (!USER_V0_CONFIG.FPX_SERVICE_NAME && SERVICE_NAME) {
-    USER_V0_CONFIG.FPX_SERVICE_NAME = SERVICE_NAME;
+  if (!USER_VARS.FPX_SERVICE_NAME && SERVICE_NAME) {
+    USER_VARS.FPX_SERVICE_NAME = SERVICE_NAME;
   }
 
-  saveUserConfig(USER_V0_CONFIG);
+  saveUserConfig(USER_VARS);
 
-  addGitIgnore();
+  if (shouldGitIgnore) {
+    addGitIgnore();
+  }
 
   scriptsToRun.forEach(runScript);
 }
@@ -106,6 +122,9 @@ function runScript(scriptName) {
   });
 }
 
+/**
+ * Looks for the project root by looking for a `package.json` file
+ */
 function findProjectRoot() {
   const projectRoot = findInParentDirs("package.json");
   if (!projectRoot) {
@@ -139,6 +158,13 @@ function readWranglerPort() {
   }
 }
 
+/**
+ * Reads the user's configuration from the `.fpxconfig` directory
+ *
+ * Returns an object with the following properties:
+ * - initialized: boolean - whether the config file was just initialized
+ * - config: object - the configuration object
+ */
 function readUserConfig() {
   let initialized = false;
   const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
@@ -157,22 +183,54 @@ function readUserConfig() {
     initialized = true;
     config = {};
   }
+
   return {
     initialized,
     config,
   };
 }
 
+/**
+ * Load the user's configuration into the USER_VARS object
+ *
+ * Hacky way to have some control over the configuration and env vars
+ * that we ultimately inject when we run the api.
+ */
+function loadUserConfigIntoUserVars() {
+  if (USER_V0_CONFIG?.FPX_PORT) {
+    USER_VARS.FPX_PORT = USER_V0_CONFIG.FPX_PORT;
+  }
+  if (USER_V0_CONFIG?.FPX_SERVICE_TARGET) {
+    USER_VARS.FPX_SERVICE_TARGET = USER_V0_CONFIG.FPX_SERVICE_TARGET;
+  }
+  if (USER_V0_CONFIG?.FPX_SERVICE_NAME) {
+    USER_VARS.FPX_SERVICE_NAME = USER_V0_CONFIG.FPX_SERVICE_NAME;
+  }
+}
+
+/**
+ * Saves the user's configuration to the `.fpxconfig` directory
+ */
 function saveUserConfig(config) {
   const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
   const configPath = path.join(configDir, CONFIG_FILE_NAME);
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
+/**
+ * Get the fallback port for FPX to run on
+ *
+ * This is either from the environment or the user's config
+ */
 function getFallbackFpxPort() {
   return process.env.FPX_PORT || USER_VARS.FPX_PORT || null;
 }
 
+/**
+ * Get the fallback service name for FPX
+ *
+ * This is either from the environment, the user's config, or the package.json file
+ */
 function getFallbackServiceName() {
   return (
     process.env.FPX_SERVICE_NAME ||
@@ -182,6 +240,11 @@ function getFallbackServiceName() {
   );
 }
 
+/**
+ * Get the fallback service target for FPX
+ *
+ * This is either from the environment, the user's config, or the wrangler.toml file
+ */
 function getFallbackServiceTarget() {
   return (
     process.env.FPX_SERVICE_TARGET ||
@@ -209,7 +272,16 @@ async function askUser(question, defaultValue) {
 }
 
 /**
- * Function that adds `fpx.dev` to `.gitignore`
+ * Should we ask the user to add fpx.db to .gitignore?
+ *
+ * This is only true if we're initializing FPX and we're in a git repository
+ */
+function shouldAskToAddGitIgnore() {
+  return IS_INITIALIZING_FPX && !!REPOSITORY_ROOT_DIR;
+}
+
+/**
+ * Function that adds `fpx.db` to `.gitignore`
  *
  * As of writing, only works when `.gitignore` is in the directory in which
  * this executable is run.
@@ -240,12 +312,21 @@ function addGitIgnore() {
   }
 }
 
+/**
+ * Find the path to the .gitignore file
+ *
+ * This is either in the current directory or in the parent directories
+ */
 function findGitIgnore() {
   const gitIgnorePath = findInParentDirs(".gitignore");
   return gitIgnorePath || path.join(process.cwd(), ".gitignore");
 }
 
 // === UTILS === //
+
+/**
+ * Find the path to a file, recurisvely searching the parent directories
+ */
 function findInParentDirs(fileName) {
   let currentDir = process.cwd();
   const visitedDirs = new Set();
@@ -274,4 +355,16 @@ function safeParseJSONFile(filePath) {
     }
   }
   return null;
+}
+
+/**
+ * Convert a user provided yes/no CLI answer to a boolean
+ *
+ * This is used to convert the answer to a boolean, with a fallback value
+ */
+function cliAnswerToBool(answer, fallback = false) {
+  if (typeof answer !== "string") {
+    return null;
+  }
+  return answer.toLowerCase().trim().startsWith("y") ? true : !!fallback;
 }
