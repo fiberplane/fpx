@@ -4,6 +4,9 @@
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
