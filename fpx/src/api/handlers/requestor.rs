@@ -1,15 +1,12 @@
-use anyhow::Error;
 use std::{collections::BTreeMap, str::FromStr};
 
-use axum::{extract::State, response::IntoResponse, Json};
-use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
-use serde::Serialize;
-use thiserror::Error;
+use axum::{extract::State, Json};
+use http::{HeaderMap, HeaderName, HeaderValue, Method};
 
 use crate::{
     api::errors::ApiServerError,
-    data::{DbError, Store},
-    models,
+    data::Store,
+    models::{self, RequestorError},
 };
 
 #[tracing::instrument(skip_all)]
@@ -89,67 +86,4 @@ fn prepare_headers(header_map: &HeaderMap) -> BTreeMap<String, String> {
     }
 
     response_header_map
-}
-
-#[derive(Debug, Serialize, Error)]
-#[serde(tag = "error", content = "details", rename_all = "camelCase")]
-#[allow(dead_code)]
-pub enum RequestorError {
-    #[error("failed to handle request: {0:?}")]
-    Internal(
-        #[serde(skip_serializing)]
-        #[from]
-        anyhow::Error,
-    ),
-    #[error("database error: {0:?}")]
-    DbError(
-        #[serde(skip_serializing)]
-        #[from]
-        DbError,
-    ),
-    #[error("libsql error: {0:?}")]
-    LibsqlError(
-        #[serde(skip_serializing)]
-        #[from]
-        libsql::Error,
-    ),
-    #[error("Request error: {0:?}")]
-    RequestError(
-        #[serde(skip_serializing)]
-        #[from]
-        reqwest::Error,
-    ),
-}
-
-impl IntoResponse for RequestorError {
-    fn into_response(self) -> axum::response::Response {
-        let status = StatusCode::INTERNAL_SERVER_ERROR;
-        let body = serde_json::to_vec(&self).expect("test");
-
-        (status, body).into_response()
-    }
-}
-
-impl From<DbError> for ApiServerError<RequestorError> {
-    fn from(err: DbError) -> Self {
-        ApiServerError::ServiceError(RequestorError::DbError(err))
-    }
-}
-
-impl From<Error> for ApiServerError<RequestorError> {
-    fn from(err: Error) -> Self {
-        ApiServerError::ServiceError(RequestorError::Internal(err))
-    }
-}
-
-impl From<libsql::Error> for ApiServerError<RequestorError> {
-    fn from(err: libsql::Error) -> Self {
-        ApiServerError::ServiceError(RequestorError::LibsqlError(err))
-    }
-}
-
-impl From<reqwest::Error> for ApiServerError<RequestorError> {
-    fn from(err: reqwest::Error) -> Self {
-        ApiServerError::ServiceError(RequestorError::RequestError(err))
-    }
 }

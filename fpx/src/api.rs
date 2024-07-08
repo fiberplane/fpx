@@ -7,7 +7,7 @@ use http::StatusCode;
 use url::Url;
 
 pub mod client;
-mod errors;
+pub mod errors;
 pub mod handlers;
 mod studio;
 mod ws;

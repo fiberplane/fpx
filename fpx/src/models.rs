@@ -1,8 +1,14 @@
+use anyhow::Error;
+use axum::response::IntoResponse;
+use http::StatusCode;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use rand::Rng;
 use std::collections::BTreeMap;
+
+use crate::{api::errors::ApiServerError, data::DbError};
 
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
@@ -208,4 +214,46 @@ pub struct RequestorRequestPayload {
     pub url: String,
     pub body: Option<String>,
     pub headers: Option<BTreeMap<String, String>>,
+}
+
+// TODO: Improve later to get more specific error handling
+#[derive(JsonSchema, Debug, Serialize, Error)]
+#[serde(tag = "error", content = "details", rename_all = "camelCase")]
+#[allow(dead_code)]
+pub enum RequestorError {
+    #[error("Internal server error")]
+    Internal,
+}
+
+impl IntoResponse for RequestorError {
+    fn into_response(self) -> axum::response::Response {
+        let status = StatusCode::INTERNAL_SERVER_ERROR;
+        let body = serde_json::to_vec(&self).expect("test");
+
+        (status, body).into_response()
+    }
+}
+
+impl From<DbError> for ApiServerError<RequestorError> {
+    fn from(_err: DbError) -> Self {
+        ApiServerError::ServiceError(RequestorError::Internal)
+    }
+}
+
+impl From<Error> for ApiServerError<RequestorError> {
+    fn from(_err: Error) -> Self {
+        ApiServerError::ServiceError(RequestorError::Internal)
+    }
+}
+
+impl From<libsql::Error> for ApiServerError<RequestorError> {
+    fn from(_err: libsql::Error) -> Self {
+        ApiServerError::ServiceError(RequestorError::Internal)
+    }
+}
+
+impl From<reqwest::Error> for ApiServerError<RequestorError> {
+    fn from(_err: reqwest::Error) -> Self {
+        ApiServerError::ServiceError(RequestorError::Internal)
+    }
 }
