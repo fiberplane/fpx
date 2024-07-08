@@ -3,6 +3,7 @@ import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { createFactory } from "hono/factory";
+import logger from "./logger.js";
 
 // Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
@@ -31,7 +32,7 @@ export const staticServerMiddleware = serveStatic({
   // NOTE - Need to specify a relative path to assets for the frontend build
   root: getRelativePathToFrontendDist(),
   onNotFound(path, _c) {
-    console.error("Not found", path);
+    logger.error("Not found", path);
   },
 });
 
@@ -61,20 +62,20 @@ function getRelativePathToFrontendDist() {
 
   for (const possiblePath of possiblePaths) {
     if (fs.existsSync(possiblePath)) {
-      console.debug("Found frontend folder!", possiblePath);
+      logger.debug("Found frontend folder!", possiblePath);
 
       const relativePathToFrontend = path.relative(
         currentWorkingDir,
         possiblePath,
       );
 
-      console.debug("relativePathToFrontend", relativePathToFrontend);
+      logger.debug("relativePathToFrontend", relativePathToFrontend);
 
       return relativePathToFrontend;
     }
   }
 
-  console.error("Frontend build not found in the expected locations.");
+  logger.error("Frontend build not found in the expected locations.");
 }
 
 /**
@@ -90,5 +91,5 @@ function getPathToFrontendFolder() {
     }
   }
 
-  console.error("Frontend build not found in the expected locations.");
+  logger.error("Frontend build not found in the expected locations.");
 }

@@ -4,6 +4,7 @@ import { config } from "dotenv";
 import { type WebSocket, WebSocketServer } from "ws";
 
 import { createApp } from "./app.js";
+import logger from "./logger.js";
 import { probeRoutesWithExponentialBackoff } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
@@ -36,7 +37,20 @@ const server = serve({
   createServer,
 }) as ReturnType<typeof createServer>;
 
-console.log(`FPX Server is running: http://localhost:${port}`);
+server.on("listening", () => {
+  logger.info(`FPX Server is running: http://localhost:${port}`);
+});
+
+server.on("error", (err) => {
+  if ("code" in err && err.code === "EADDRINUSE") {
+    console.error(
+      `Port ${port} is already in use. Please choose a different port for FPX.`,
+    );
+    process.exit(1);
+  } else {
+    console.error("Server error:", err);
+  }
+});
 
 // Fire off an async probe to the service we want to monitor
 // This will collect information on all routes that the service exposes
@@ -59,7 +73,15 @@ wss.on("connection", (ws) => {
     console.log("ping");
     ws.send("pong");
   });
-  ws.on("error", console.error);
+  ws.on("error", (err) => {
+    if ("code" in err && err.code === "EADDRINUSE") {
+      console.error(
+        "WebSocket error: Address in use. Please choose a different port.",
+      );
+    } else {
+      console.error("WebSocket error:", err);
+    }
+  });
   ws.on("close", (code) => {
     wsConnections.delete(ws);
     console.log("WebSocket connection closed", code);

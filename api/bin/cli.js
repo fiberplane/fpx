@@ -2,6 +2,7 @@
 
 import { execSync } from "node:child_process";
 import fs from "node:fs";
+import net from "node:net";
 import path, { dirname } from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
@@ -49,6 +50,10 @@ runWizard();
  * If there are valid values in .fpxconfig, we skip asking questions
  */
 async function runWizard() {
+  if (IS_INITIALIZING_FPX) {
+    console.log("Initializing FPX...");
+  }
+
   // This looks confusing but the basic pattern is:
   // - If we're initializing, ask the user where we should run.
   //   The default (fallback) value is dynamic depending on env.
@@ -66,6 +71,18 @@ async function runWizard() {
     FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
   }
 
+  // If the user's selected port for running FPX is taken, try to find a new fallback and then ask again
+  while (await isPortTaken(FPX_PORT)) {
+    let nextFallback = (Number.parseInt(FPX_PORT, 10) + 1).toString();
+    if (nextFallback === getFallbackServiceTarget()?.toString()) {
+      nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
+    }
+    FPX_PORT = await askUser(
+      `Port ${FPX_PORT} is already in use. Please choose a different port for FPX.`,
+      nextFallback,
+    );
+  }
+
   const FPX_SERVICE_TARGET = IS_INITIALIZING_FPX
     ? await askUser(
         "Which port is your service running on?",
@@ -80,12 +97,9 @@ async function runWizard() {
 
   const shouldGitIgnore = cliAnswerToBool(shouldAddToGitIgnoreAnswer);
 
-  if (!USER_VARS.FPX_PORT) {
-    USER_VARS.FPX_PORT = FPX_PORT;
-  }
-  if (!USER_VARS.FPX_SERVICE_TARGET) {
-    USER_VARS.FPX_SERVICE_TARGET = FPX_SERVICE_TARGET;
-  }
+  // Refresh the config with any new values
+  USER_VARS.FPX_PORT = FPX_PORT;
+  USER_VARS.FPX_SERVICE_TARGET = FPX_SERVICE_TARGET;
 
   const SERVICE_NAME = getFallbackServiceName();
   if (!USER_VARS.FPX_SERVICE_NAME && SERVICE_NAME) {
@@ -150,7 +164,7 @@ function readWranglerPort() {
     if (fs.existsSync(wranglerPath)) {
       const wranglerContent = fs.readFileSync(wranglerPath, "utf8");
       const wranglerConfig = toml.parse(wranglerContent);
-      return wranglerConfig?.port || null;
+      return wranglerConfig?.dev?.port || null;
     }
   } catch (_error) {
     // Silent error because we fallback to other values
@@ -367,4 +381,53 @@ function cliAnswerToBool(answer, fallback = false) {
     return null;
   }
   return answer.toLowerCase().trim().startsWith("y") ? true : !!fallback;
+}
+
+/**
+ * Check if a port is taken
+ *
+ * This is a hacky way to check if a port is taken, because the `net` module
+ * doesn't have a built-in way to do this.
+ *
+ * We check on both IPv4 and IPv6, and bind to 0.0.0.0 and ::, since only looking at localhost didn't actually work for me!
+ *
+ * @param {number} port - The port to check
+ * @returns {Promise<boolean>} - Resolves to true if the port is taken, false otherwise
+ */
+async function isPortTaken(port) {
+  return new Promise((resolve, reject) => {
+    let successCount = 0;
+
+    const testIPv4 = net
+      .createServer()
+      .once("error", (err) => {
+        if (err.code !== "EADDRINUSE") return reject(err);
+        resolve(true);
+      })
+      .once("listening", () => {
+        testIPv4
+          .once("close", () => {
+            successCount++;
+            if (successCount === 2) resolve(false);
+          })
+          .close();
+      })
+      .listen(port, "0.0.0.0");
+
+    const testIPv6 = net
+      .createServer()
+      .once("error", (err) => {
+        if (err.code !== "EADDRINUSE") return reject(err);
+        resolve(true);
+      })
+      .once("listening", () => {
+        testIPv6
+          .once("close", () => {
+            successCount++;
+            if (successCount === 2) resolve(false);
+          })
+          .close();
+      })
+      .listen(port, "::");
+  });
 }
