@@ -22,12 +22,7 @@
     "access": "public"
   },
   "license": "MIT or Apache 2",
-  "keywords": [
-    "hono",
-    "hono middleware",
-    "local",
-    "debugging"
-  ],
+  "keywords": ["hono", "hono middleware", "local", "debugging"],
   "scripts": {
     "format": "biome check . --write",
     "lint": "biome lint .",

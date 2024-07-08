@@ -3,8 +3,8 @@
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path, { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import readline from "node:readline";
+import { fileURLToPath } from "node:url";
 import toml from "toml";
 
 // Shim __filename and __dirname since we're using esm
@@ -35,10 +35,8 @@ const REPOSITORY_ROOT_DIR = findGitRoot();
 // Loading some possible configuration from the environment
 const PACKAGE_JSON = safeParseJSONFile(PACKAGE_JSON_PATH);
 const PROJECT_PORT = readWranglerPort();
-const {
-  initialized: IS_INITIALIZING_FPX,
-  config: USER_V0_CONFIG
-} = readUserConfig();
+const { initialized: IS_INITIALIZING_FPX, config: USER_V0_CONFIG } =
+  readUserConfig();
 const USER_VARS = {};
 
 runWizard();
@@ -52,13 +50,21 @@ async function runWizard() {
   // - If we're initializing, ask the user where we should run. Default is dynamic depending on env.
   // - If we're not initializing, try to skip the question based on local config, fall back to asking them.
   //
-  const FPX_PORT = IS_INITIALIZING_FPX ?
-    await askUser("Which port should fpx studio run on?", getFallbackFpxPort() || 8788)
-    : getFallbackFpxPort() || await askUser("Which port should fpx studio run on?", 8788);
+  const FPX_PORT = IS_INITIALIZING_FPX
+    ? await askUser(
+        "Which port should fpx studio run on?",
+        getFallbackFpxPort() || 8788,
+      )
+    : getFallbackFpxPort() ||
+      (await askUser("Which port should fpx studio run on?", 8788));
 
-  const FPX_SERVICE_TARGET = IS_INITIALIZING_FPX ? 
-    await askUser("Which port is your service running on?", getFallbackServiceTarget() || 8787)
-    : getFallbackServiceTarget() || await askUser("Which port is your service running on?", 8787);
+  const FPX_SERVICE_TARGET = IS_INITIALIZING_FPX
+    ? await askUser(
+        "Which port is your service running on?",
+        getFallbackServiceTarget() || 8787,
+      )
+    : getFallbackServiceTarget() ||
+      (await askUser("Which port is your service running on?", 8787));
 
   if (!USER_V0_CONFIG.FPX_PORT) {
     USER_V0_CONFIG.FPX_PORT = FPX_PORT;
@@ -94,7 +100,10 @@ function runScript(scriptName) {
   // Construct the command to run the appropriate script in the `dist` folder
   const command = `node ${path.join(scriptDir, scriptPath)}`;
 
-  execSync(command, { stdio: "inherit", env: { ...USER_VARS, ...process.env } });
+  execSync(command, {
+    stdio: "inherit",
+    env: { ...USER_VARS, ...process.env },
+  });
 }
 
 function findProjectRoot() {
@@ -124,7 +133,8 @@ function readWranglerPort() {
       const wranglerConfig = toml.parse(wranglerContent);
       return wranglerConfig?.port || null;
     }
-  } catch (error) {
+  } catch (_error) {
+    // Silent error because we fallback to other values
     return null;
   }
 }
@@ -149,7 +159,7 @@ function readUserConfig() {
   }
   return {
     initialized,
-    config
+    config,
   };
 }
 
@@ -164,11 +174,21 @@ function getFallbackFpxPort() {
 }
 
 function getFallbackServiceName() {
-  return process.env.FPX_SERVICE_NAME || USER_VARS.FPX_SERVICE_NAME || PACKAGE_JSON?.name || null;
+  return (
+    process.env.FPX_SERVICE_NAME ||
+    USER_VARS.FPX_SERVICE_NAME ||
+    PACKAGE_JSON?.name ||
+    null
+  );
 }
 
 function getFallbackServiceTarget() {
-  return process.env.FPX_SERVICE_TARGET || USER_VARS.FPX_SERVICE_TARGET || PROJECT_PORT || null;
+  return (
+    process.env.FPX_SERVICE_TARGET ||
+    USER_VARS.FPX_SERVICE_TARGET ||
+    PROJECT_PORT ||
+    null
+  );
 }
 
 /**
@@ -248,7 +268,8 @@ function safeParseJSONFile(filePath) {
     try {
       const data = fs.readFileSync(filePath, "utf8");
       return JSON.parse(data);
-    } catch (error) {
+    } catch (_error) {
+      // Silent error because we fallback to other values
       return null;
     }
   }
