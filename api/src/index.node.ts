@@ -38,7 +38,8 @@ const server = serve({
 }) as ReturnType<typeof createServer>;
 
 server.on("listening", () => {
-  logger.info(`FPX Server is running: http://localhost:${port}`);
+  logger.info("FPX Studio is up and running!");
+  logger.info(`Visit: http://localhost:${port}`);
 });
 
 server.on("error", (err) => {

@@ -54,34 +54,9 @@ async function runWizard() {
     console.log("Initializing FPX...");
   }
 
-  // This looks confusing but the basic pattern is:
-  // - If we're initializing, ask the user where we should run.
-  //   The default (fallback) value is dynamic depending on env.
-  // - If we're not initializing, try to skip the question based on local config, fall back to asking them.
-  //
-  const hasConfiguredFpxPort = getFallbackFpxPort() !== null;
-  const fpxPortFallback = getFallbackFpxPort() || 8788;
-  const fpxPortQuestion = "Which port should fpx studio run on? ";
-  let FPX_PORT;
-  if (IS_INITIALIZING_FPX) {
-    FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
-  } else if (hasConfiguredFpxPort) {
-    FPX_PORT = fpxPortFallback;
-  } else {
-    FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
-  }
+  const FPX_PORT = await getFpxPort();
 
-  // If the user's selected port for running FPX is taken, try to find a new fallback and then ask again
-  while (await isPortTaken(FPX_PORT)) {
-    let nextFallback = (Number.parseInt(FPX_PORT, 10) + 1).toString();
-    if (nextFallback === getFallbackServiceTarget()?.toString()) {
-      nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
-    }
-    FPX_PORT = await askUser(
-      `Port ${FPX_PORT} is already in use. Please choose a different port for FPX.`,
-      nextFallback,
-    );
-  }
+  await updateEnvFileWithFpxEndpoint(FPX_PORT);
 
   const FPX_SERVICE_TARGET = IS_INITIALIZING_FPX
     ? await askUser(
@@ -92,7 +67,7 @@ async function runWizard() {
       (await askUser("Which port is your service running on?", 8787));
 
   const shouldAddToGitIgnoreAnswer = shouldAskToAddGitIgnore()
-    ? await askUser("Add fpx.db to .gitignore?", "y")
+    ? await askUser("May we add fpx.db to your .gitignore?", "y")
     : "n";
 
   const shouldGitIgnore = cliAnswerToBool(shouldAddToGitIgnoreAnswer);
@@ -113,6 +88,67 @@ async function runWizard() {
   }
 
   scriptsToRun.forEach(runScript);
+}
+
+async function updateEnvFileWithFpxEndpoint(fpxPort) {
+  const expectedFpxEndpoint = `http://localhost:${fpxPort}/v0/logs`;
+
+  const envFilePath = findEnvVarFile();
+  const envFileName = envFilePath && path.basename(envFilePath);
+  const fpxEndpoint = envFilePath && getFpxEndpointFromEnvFile(envFilePath);
+  const isDifferent = fpxEndpoint !== expectedFpxEndpoint;
+
+  const shouldAsk = envFilePath && !fpxEndpoint && isDifferent;
+
+  if (shouldAsk) {
+    const question = `May we update your ${envFileName} file with FPX_ENDPOINT=${expectedFpxEndpoint}`;
+    const updateEnvVarAnswer = await askUser(question, "y");
+    const shouldUpdateEnvVar = cliAnswerToBool(updateEnvVarAnswer);
+    if (shouldUpdateEnvVar) {
+      fs.appendFileSync(
+        envFilePath,
+        `\nFPX_ENDPOINT=http://localhost:${fpxPort}/v0/logs\n`,
+      );
+      console.log(`Updated ${envFileName}.`);
+    }
+  }
+}
+
+/**
+ * Get the port for FPX Studio to run on
+ */
+async function getFpxPort() {
+  // This looks confusing but the basic pattern is:
+  // - If we're initializing, ask the user where we should run.
+  //   The default (fallback) value is dynamic depending on env.
+  // - If we're not initializing, try to skip the question based on local config, fall back to asking them.
+  //
+  const hasConfiguredFpxPort = getFallbackFpxPort() !== null;
+  const fpxPortFallback = getFallbackFpxPort() || 8788;
+  const fpxPortQuestion = "Which port should fpx studio run on? ";
+  let FPX_PORT;
+  if (IS_INITIALIZING_FPX) {
+    FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
+  } else if (hasConfiguredFpxPort) {
+    FPX_PORT = fpxPortFallback;
+  } else {
+    FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
+  }
+
+  // If the user's selected port for running FPX is taken, try to find a new fallback and then ask again
+  while (await isPortTaken(FPX_PORT)) {
+    let nextFallback = (Number.parseInt(FPX_PORT, 10) + 1).toString();
+    // Make sure the fallback doesn't conflict with the service target
+    if (nextFallback === getFallbackServiceTarget()?.toString()) {
+      nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
+    }
+    FPX_PORT = await askUser(
+      `Port ${FPX_PORT} is already in use. Please choose a different port for FPX.`,
+      nextFallback,
+    );
+  }
+
+  return FPX_PORT;
 }
 
 function runScript(scriptName) {
@@ -334,6 +370,34 @@ function addGitIgnore() {
 function findGitIgnore() {
   const gitIgnorePath = findInParentDirs(".gitignore");
   return gitIgnorePath || path.join(process.cwd(), ".gitignore");
+}
+
+/**
+ * Find the environment variable file with the given precedence
+ */
+function findEnvVarFile() {
+  const envFiles = [".dev.vars", ".env.local", ".env.dev", ".env"];
+  for (const file of envFiles) {
+    const filePath = path.join(PROJECT_ROOT_DIR, file);
+    if (fs.existsSync(filePath)) {
+      return filePath;
+    }
+  }
+  return null;
+}
+
+/**
+ * Read the environment variable file and check for FPX_ENDPOINT
+ */
+function getFpxEndpointFromEnvFile(envFilePath) {
+  try {
+    const envContent = fs.readFileSync(envFilePath, "utf8");
+    const match = envContent.match(/^FPX_ENDPOINT=(.*)$/m);
+    return match ? match[1] : null;
+  } catch (_error) {
+    // Silent error because we do not want errors to stop the cli from running
+    return null;
+  }
 }
 
 // === UTILS === //
