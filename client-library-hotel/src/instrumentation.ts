@@ -1,4 +1,5 @@
 import { context, trace } from "@opentelemetry/api";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import {
   BasicTracerProvider,
   SimpleSpanProcessor,
@@ -6,10 +7,9 @@ import {
 import type { ExecutionContext, Hono } from "hono";
 import { AsyncLocalStorageContextManager } from "./context";
 import { enableWaitUntilTracing } from "./waitUntil";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 
+import { wrap } from "shimmer";
 import { withSpan } from "./util";
-import { wrap,  } from "shimmer";
 
 type Config = {
   endpoint: string;
@@ -48,12 +48,15 @@ export function instrument(
 ) {
   const createConfig = options?.createConfig ?? defaultCreateConfig;
 
-  
   wrap(console, "log", (original) => {
-    return function (message: string, ...args: any[]) {
-      const span = trace.getActiveSpan()
+    return (message: string, ...args: unknown[]) => {
+      const span = trace.getActiveSpan();
       if (span) {
-        span.addEvent("log", { message, level: "info", arguments: JSON.stringify(args)  });
+        span.addEvent("log", {
+          message,
+          level: "info",
+          arguments: JSON.stringify(args),
+        });
       }
       return original(message, ...args);
     };

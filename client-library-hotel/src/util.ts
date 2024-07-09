@@ -1,6 +1,6 @@
-import { Span, SpanStatusCode, trace } from "@opentelemetry/api";
+import { type Span, SpanStatusCode, trace } from "@opentelemetry/api";
 
-export async function withSpan(name: string, fn: () => any) {
+export async function withSpan(name: string, fn: () => unknown) {
   return await spanPromise(name, Promise.resolve().then(fn));
 }
 
@@ -25,5 +25,4 @@ export async function spanPromise<T>(name: string, promise: Promise<T>) {
 
   const tracer = trace.getTracer("otel-example-tracer-node");
   return await tracer.startActiveSpan(name, handleRouteSpan);
-
 }

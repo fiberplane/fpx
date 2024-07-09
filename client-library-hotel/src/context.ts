@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-import { ContextManager, Context, ROOT_CONTEXT } from '@opentelemetry/api'
 //@ts-ignore
-import { AsyncLocalStorage } from 'node:async_hooks'
+import { AsyncLocalStorage } from "node:async_hooks";
 //@ts-ignore
-import { EventEmitter } from 'node:events'
+import { EventEmitter } from "node:events";
+import {
+  type Context,
+  type ContextManager,
+  ROOT_CONTEXT,
+} from "@opentelemetry/api";
 
-type Func<T> = (...args: unknown[]) => T
+type Func<T> = (...args: unknown[]) => T;
 
 /**
  * Store a map for each event of all original listeners and their "patched"
@@ -28,225 +32,242 @@ type Func<T> = (...args: unknown[]) => T
  * patched function will be also removed.
  */
 interface PatchMap {
-	[name: string]: WeakMap<Func<void>, Func<void>>
+  [name: string]: WeakMap<Func<void>, Func<void>>;
 }
 
 const ADD_LISTENER_METHODS = [
-	'addListener' as const,
-	'on' as const,
-	'once' as const,
-	'prependListener' as const,
-	'prependOnceListener' as const,
-]
+  "addListener" as const,
+  "on" as const,
+  "once" as const,
+  "prependListener" as const,
+  "prependOnceListener" as const,
+];
 
 abstract class AbstractAsyncHooksContextManager implements ContextManager {
-	abstract active(): Context
+  abstract active(): Context;
 
-	abstract with<A extends unknown[], F extends (...args: A) => ReturnType<F>>(
-		context: Context,
-		fn: F,
-		thisArg?: ThisParameterType<F>,
-		...args: A
-	): ReturnType<F>
+  abstract with<A extends unknown[], F extends (...args: A) => ReturnType<F>>(
+    context: Context,
+    fn: F,
+    thisArg?: ThisParameterType<F>,
+    ...args: A
+  ): ReturnType<F>;
 
-	abstract enable(): this
+  abstract enable(): this;
 
-	abstract disable(): this
+  abstract disable(): this;
 
-	/**
-	 * Binds a the certain context or the active one to the target function and then returns the target
-	 * @param context A context (span) to be bind to target
-	 * @param target a function or event emitter. When target or one of its callbacks is called,
-	 *  the provided context will be used as the active context for the duration of the call.
-	 */
-	bind<T>(context: Context, target: T): T {
-		if (target instanceof EventEmitter) {
-			return this._bindEventEmitter(context, target)
-		}
+  /**
+   * Binds a the certain context or the active one to the target function and then returns the target
+   * @param context A context (span) to be bind to target
+   * @param target a function or event emitter. When target or one of its callbacks is called,
+   *  the provided context will be used as the active context for the duration of the call.
+   */
+  bind<T>(context: Context, target: T): T {
+    if (target instanceof EventEmitter) {
+      return this._bindEventEmitter(context, target);
+    }
 
-		if (typeof target === 'function') {
-			return this._bindFunction(context, target)
-		}
-		return target
-	}
+    if (typeof target === "function") {
+      return this._bindFunction(context, target);
+    }
+    return target;
+  }
 
-	private _bindFunction<T extends Function>(context: Context, target: T): T {
-		const manager = this
-		const contextWrapper = function (this: never, ...args: unknown[]) {
-			return manager.with(context, () => target.apply(this, args))
-		}
-		Object.defineProperty(contextWrapper, 'length', {
-			enumerable: false,
-			configurable: true,
-			writable: false,
-			value: target.length,
-		})
-		/**
-		 * It isn't possible to tell Typescript that contextWrapper is the same as T
-		 * so we forced to cast as any here.
-		 */
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		return contextWrapper as any
-	}
+  // biome-ignore lint/complexity/noBannedTypes: This comes from the open-telemetry library
+  private _bindFunction<T extends Function>(context: Context, target: T): T {
+    const manager = this;
+    const contextWrapper = function (this: never, ...args: unknown[]) {
+      return manager.with(context, () => target.apply(this, args));
+    };
+    Object.defineProperty(contextWrapper, "length", {
+      enumerable: false,
+      configurable: true,
+      writable: false,
+      value: target.length,
+    });
+    /**
+     * It isn't possible to tell Typescript that contextWrapper is the same as T
+     * so we forced to cast as any here.
+     */
+    // biome-ignore lint/suspicious/noExplicitAny: this comes from the open-telemetry library
+    return contextWrapper as any;
+  }
 
-	/**
-	 * By default, EventEmitter call their callback with their context, which we do
-	 * not want, instead we will bind a specific context to all callbacks that
-	 * go through it.
-	 * @param context the context we want to bind
-	 * @param ee EventEmitter an instance of EventEmitter to patch
-	 */
-	private _bindEventEmitter<T extends EventEmitter>(context: Context, ee: T): T {
-		const map = this._getPatchMap(ee)
-		if (map !== undefined) return ee
-		this._createPatchMap(ee)
+  /**
+   * By default, EventEmitter call their callback with their context, which we do
+   * not want, instead we will bind a specific context to all callbacks that
+   * go through it.
+   * @param context the context we want to bind
+   * @param ee EventEmitter an instance of EventEmitter to patch
+   */
+  private _bindEventEmitter<T extends EventEmitter>(
+    context: Context,
+    ee: T,
+  ): T {
+    const map = this._getPatchMap(ee);
+    if (map !== undefined) return ee;
+    this._createPatchMap(ee);
 
-		// patch methods that add a listener to propagate context
-		ADD_LISTENER_METHODS.forEach((methodName) => {
-			if (ee[methodName] === undefined) return
-			ee[methodName] = this._patchAddListener(ee, ee[methodName], context)
-		})
-		// patch methods that remove a listener
-		if (typeof ee.removeListener === 'function') {
-			ee.removeListener = this._patchRemoveListener(ee, ee.removeListener)
-		}
-		if (typeof ee.off === 'function') {
-			ee.off = this._patchRemoveListener(ee, ee.off)
-		}
-		// patch method that remove all listeners
-		if (typeof ee.removeAllListeners === 'function') {
-			ee.removeAllListeners = this._patchRemoveAllListeners(ee, ee.removeAllListeners)
-		}
-		return ee
-	}
+    // patch methods that add a listener to propagate context
+    // biome-ignore lint/complexity/noForEach: This comes from the open-telemetry library
+    ADD_LISTENER_METHODS.forEach((methodName) => {
+      if (ee[methodName] === undefined) return;
+      ee[methodName] = this._patchAddListener(ee, ee[methodName], context);
+    });
+    // patch methods that remove a listener
+    if (typeof ee.removeListener === "function") {
+      ee.removeListener = this._patchRemoveListener(ee, ee.removeListener);
+    }
+    if (typeof ee.off === "function") {
+      ee.off = this._patchRemoveListener(ee, ee.off);
+    }
+    // patch method that remove all listeners
+    if (typeof ee.removeAllListeners === "function") {
+      ee.removeAllListeners = this._patchRemoveAllListeners(
+        ee,
+        ee.removeAllListeners,
+      );
+    }
+    return ee;
+  }
 
-	/**
-	 * Patch methods that remove a given listener so that we match the "patched"
-	 * version of that listener (the one that propagate context).
-	 * @param ee EventEmitter instance
-	 * @param original reference to the patched method
-	 */
-	private _patchRemoveListener(ee: EventEmitter, original: Function) {
-		const contextManager = this
-		return function (this: never, event: string, listener: Func<void>) {
-			const events = contextManager._getPatchMap(ee)?.[event]
-			if (events === undefined) {
-				return original.call(this, event, listener)
-			}
-			const patchedListener = events.get(listener)
-			return original.call(this, event, patchedListener || listener)
-		}
-	}
+  /**
+   * Patch methods that remove a given listener so that we match the "patched"
+   * version of that listener (the one that propagate context).
+   * @param ee EventEmitter instance
+   * @param original reference to the patched method
+   */
+  // biome-ignore lint/complexity/noBannedTypes: This comes from the open-telemetry library
+  private _patchRemoveListener(ee: EventEmitter, original: Function) {
+    const contextManager = this;
+    return function (this: never, event: string, listener: Func<void>) {
+      const events = contextManager._getPatchMap(ee)?.[event];
+      if (events === undefined) {
+        return original.call(this, event, listener);
+      }
+      const patchedListener = events.get(listener);
+      return original.call(this, event, patchedListener || listener);
+    };
+  }
 
-	/**
-	 * Patch methods that remove all listeners so we remove our
-	 * internal references for a given event.
-	 * @param ee EventEmitter instance
-	 * @param original reference to the patched method
-	 */
-	private _patchRemoveAllListeners(ee: EventEmitter, original: Function) {
-		const contextManager = this
-		return function (this: never, event: string) {
-			const map = contextManager._getPatchMap(ee)
-			if (map !== undefined) {
-				if (arguments.length === 0) {
-					contextManager._createPatchMap(ee)
-				} else if (map[event] !== undefined) {
-					delete map[event]
-				}
-			}
-			return original.apply(this, arguments)
-		}
-	}
+  /**
+   * Patch methods that remove all listeners so we remove our
+   * internal references for a given event.
+   * @param ee EventEmitter instance
+   * @param original reference to the patched method
+   */
+  // biome-ignore lint/complexity/noBannedTypes: This comes from the open-telemetry library
+  private _patchRemoveAllListeners(ee: EventEmitter, original: Function) {
+    const contextManager = this;
+    return function (this: never, event: string) {
+      const map = contextManager._getPatchMap(ee);
+      if (map !== undefined) {
+        // biome-ignore lint/style/noArguments: this comes from the open-telemetry library
+        if (arguments.length === 0) {
+          contextManager._createPatchMap(ee);
+        } else if (map[event] !== undefined) {
+          delete map[event];
+        }
+      }
+      // biome-ignore lint/style/noArguments: this comes from the open-telemetry library
+      return original.apply(this, arguments);
+    };
+  }
 
-	/**
-	 * Patch methods on an event emitter instance that can add listeners so we
-	 * can force them to propagate a given context.
-	 * @param ee EventEmitter instance
-	 * @param original reference to the patched method
-	 * @param [context] context to propagate when calling listeners
-	 */
-	private _patchAddListener(ee: EventEmitter, original: Function, context: Context) {
-		const contextManager = this
-		return function (this: never, event: string, listener: Func<void>) {
-			/**
-			 * This check is required to prevent double-wrapping the listener.
-			 * The implementation for ee.once wraps the listener and calls ee.on.
-			 * Without this check, we would wrap that wrapped listener.
-			 * This causes an issue because ee.removeListener depends on the onceWrapper
-			 * to properly remove the listener. If we wrap their wrapper, we break
-			 * that detection.
-			 */
-			if (contextManager._wrapped) {
-				return original.call(this, event, listener)
-			}
-			let map = contextManager._getPatchMap(ee)
-			if (map === undefined) {
-				map = contextManager._createPatchMap(ee)
-			}
-			let listeners = map[event]
-			if (listeners === undefined) {
-				listeners = new WeakMap()
-				map[event] = listeners
-			}
-			const patchedListener = contextManager.bind(context, listener)
-			// store a weak reference of the user listener to ours
-			listeners.set(listener, patchedListener)
+  /**
+   * Patch methods on an event emitter instance that can add listeners so we
+   * can force them to propagate a given context.
+   * @param ee EventEmitter instance
+   * @param original reference to the patched method
+   * @param [context] context to propagate when calling listeners
+   */
+  private _patchAddListener(
+    ee: EventEmitter,
+    // biome-ignore lint/complexity/noBannedTypes: This comes from the open-telemetry library
+    original: Function,
+    context: Context,
+  ) {
+    const contextManager = this;
+    return function (this: never, event: string, listener: Func<void>) {
+      /**
+       * This check is required to prevent double-wrapping the listener.
+       * The implementation for ee.once wraps the listener and calls ee.on.
+       * Without this check, we would wrap that wrapped listener.
+       * This causes an issue because ee.removeListener depends on the onceWrapper
+       * to properly remove the listener. If we wrap their wrapper, we break
+       * that detection.
+       */
+      if (contextManager._wrapped) {
+        return original.call(this, event, listener);
+      }
+      let map = contextManager._getPatchMap(ee);
+      if (map === undefined) {
+        map = contextManager._createPatchMap(ee);
+      }
+      let listeners = map[event];
+      if (listeners === undefined) {
+        listeners = new WeakMap();
+        map[event] = listeners;
+      }
+      const patchedListener = contextManager.bind(context, listener);
+      // store a weak reference of the user listener to ours
+      listeners.set(listener, patchedListener);
 
-			/**
-			 * See comment at the start of this function for the explanation of this property.
-			 */
-			contextManager._wrapped = true
-			try {
-				return original.call(this, event, patchedListener)
-			} finally {
-				contextManager._wrapped = false
-			}
-		}
-	}
+      /**
+       * See comment at the start of this function for the explanation of this property.
+       */
+      contextManager._wrapped = true;
+      try {
+        return original.call(this, event, patchedListener);
+      } finally {
+        contextManager._wrapped = false;
+      }
+    };
+  }
 
-	private _createPatchMap(ee: EventEmitter): PatchMap {
-		const map = Object.create(null)
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		;(ee as any)[this._kOtListeners] = map
-		return map
-	}
-	private _getPatchMap(ee: EventEmitter): PatchMap | undefined {
-		return (ee as never)[this._kOtListeners]
-	}
+  private _createPatchMap(ee: EventEmitter): PatchMap {
+    const map = Object.create(null);
+    // biome-ignore lint/suspicious/noExplicitAny: this comes from the open-telemetry library
+    (ee as any)[this._kOtListeners] = map;
+    return map;
+  }
+  private _getPatchMap(ee: EventEmitter): PatchMap | undefined {
+    return (ee as never)[this._kOtListeners];
+  }
 
-	private readonly _kOtListeners = Symbol('OtListeners')
-	private _wrapped = false
+  private readonly _kOtListeners = Symbol("OtListeners");
+  private _wrapped = false;
 }
 
 export class AsyncLocalStorageContextManager extends AbstractAsyncHooksContextManager {
-	private _asyncLocalStorage: AsyncLocalStorage<Context>
+  private _asyncLocalStorage: AsyncLocalStorage<Context>;
 
-	constructor() {
-		super()
-		this._asyncLocalStorage = new AsyncLocalStorage()
-	}
+  constructor() {
+    super();
+    this._asyncLocalStorage = new AsyncLocalStorage();
+  }
 
-	active(): Context {
-		return this._asyncLocalStorage.getStore() ?? ROOT_CONTEXT
-	}
+  active(): Context {
+    return this._asyncLocalStorage.getStore() ?? ROOT_CONTEXT;
+  }
 
-	with<A extends unknown[], F extends (...args: A) => ReturnType<F>>(
-		context: Context,
-		fn: F,
-		thisArg?: ThisParameterType<F>,
-		...args: A
-	): ReturnType<F> {
-		const cb = thisArg == null ? fn : fn.bind(thisArg)
-		return this._asyncLocalStorage.run(context, cb as never, ...args)
-	}
+  with<A extends unknown[], F extends (...args: A) => ReturnType<F>>(
+    context: Context,
+    fn: F,
+    thisArg?: ThisParameterType<F>,
+    ...args: A
+  ): ReturnType<F> {
+    const cb = thisArg == null ? fn : fn.bind(thisArg);
+    return this._asyncLocalStorage.run(context, cb as never, ...args);
+  }
 
-	enable(): this {
-		return this
-	}
+  enable(): this {
+    return this;
+  }
 
-	disable(): this {
-		this._asyncLocalStorage.disable()
-		return this
-	}
+  disable(): this {
+    this._asyncLocalStorage.disable();
+    return this;
+  }
 }

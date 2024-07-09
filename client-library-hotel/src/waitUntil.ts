@@ -1,5 +1,5 @@
-import { SpanStatusCode, trace } from "@opentelemetry/api";
-import { withSpan, spanPromise } from "./util";
+import { trace } from "@opentelemetry/api";
+import { spanPromise } from "./util";
 
 export type ExtendedExecutionContext = ExecutionContext & {
   __waitUntilTimer?: ReturnType<typeof setInterval>;
@@ -40,7 +40,7 @@ export function enableWaitUntilTracing(context: ExecutionContext) {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (prop === "waitUntil" && typeof value === "function") {
-        return function waitUntil(this: any, promise: Promise<any>) {
+        return function waitUntil(this: unknown, promise: Promise<unknown>) {
           const activeSpan = trace.getActiveSpan();
           //@ts-ignore
           const scope = this === receiver ? target : this;
@@ -49,7 +49,7 @@ export function enableWaitUntilTracing(context: ExecutionContext) {
           }
 
           const result = value.apply(scope, [promise]);
-          spanPromise("waitUntil", result); 
+          spanPromise("waitUntil", result);
         };
       }
       return value;
