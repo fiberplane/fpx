@@ -1,4 +1,4 @@
-import { type Span, SpanStatusCode, context, trace } from "@opentelemetry/api";
+import { context, trace } from "@opentelemetry/api";
 import {
   BasicTracerProvider,
   SimpleSpanProcessor,
@@ -7,6 +7,9 @@ import type { ExecutionContext, Hono } from "hono";
 import { AsyncLocalStorageContextManager } from "./context";
 import { enableWaitUntilTracing } from "./waitUntil";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
+
+import { withSpan } from "./util";
+import { wrap,  } from "shimmer";
 
 type Config = {
   endpoint: string;
@@ -28,7 +31,7 @@ type CreateConfig = (env: Record<string, string>) => Config;
 
 const defaultCreateConfig = (env?: Record<string, string>) => {
   return {
-    endpoint: env?.MIZU_ENDPOINT ?? "http://localhost:8788/v0/traces",
+    endpoint: env?.MIZU_ENDPOINT ?? "http://localhost:4317",
     // service: c.env?.SERVICE_NAME || "unknown",
     libraryDebugMode: env?.LIBRARY_DEBUG_MODE,
     monitor: {
@@ -39,13 +42,22 @@ const defaultCreateConfig = (env?: Record<string, string>) => {
   } as Config;
 };
 
-type FetchFn = typeof Hono.prototype.fetch;
-
 export function instrument(
   app: Hono,
   options?: { createConfig?: CreateConfig },
 ) {
   const createConfig = options?.createConfig ?? defaultCreateConfig;
+
+  
+  wrap(console, "log", (original) => {
+    return function (message: string, ...args: any[]) {
+      const span = trace.getActiveSpan()
+      if (span) {
+        span.addEvent("log", { message, level: "info", arguments: JSON.stringify(args)  });
+      }
+      return original(message, ...args);
+    };
+  });
 
   return new Proxy(app, {
     get(target, prop, receiver) {
@@ -66,7 +78,7 @@ export function instrument(
             : undefined;
 
           const next = () => value(request, env, proxyExecutionCtx);
-          const result = await withSpan(next);
+          const result = await withSpan("route", next);
 
           executionCtx.waitUntil(provider.forceFlush());
           return result;
@@ -90,28 +102,4 @@ function setupTracerProvider(config: Config) {
   provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
   provider.register();
   return provider;
-}
-
-async function withSpan(fn: () => any) {
-  const handleRouteSpan = (span: Span) => {
-    return Promise.resolve()
-      .then(fn)
-      .then((result) => {
-        span.setStatus({ code: SpanStatusCode.OK });
-        return result;
-      })
-      .catch((error) => {
-        span.setStatus({
-          code: SpanStatusCode.ERROR,
-          message: error instanceof Error ? error.message : "Unknown error",
-        });
-        throw error;
-      })
-      .finally(() => {
-        span.end();
-      });
-  };
-
-  const tracer = trace.getTracer("otel-example-tracer-node");
-  return await tracer.startActiveSpan("route", handleRouteSpan);
 }

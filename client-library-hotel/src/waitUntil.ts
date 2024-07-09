@@ -1,4 +1,5 @@
 import { SpanStatusCode, trace } from "@opentelemetry/api";
+import { withSpan, spanPromise } from "./util";
 
 export type ExtendedExecutionContext = ExecutionContext & {
   __waitUntilTimer?: ReturnType<typeof setInterval>;
@@ -34,48 +35,21 @@ export function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
   };
 }
 
-type WaitUntilFn = ExecutionContext["waitUntil"];
-
 export function enableWaitUntilTracing(context: ExecutionContext) {
   const proxyContext = new Proxy(context, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (prop === "waitUntil" && typeof value === "function") {
-        console.log("returning modified function", value);
-
-        return function waitUntil(promise: Promise<any>) {
-          console.log("this function is called");
+        return function waitUntil(this: any, promise: Promise<any>) {
           const activeSpan = trace.getActiveSpan();
+          //@ts-ignore
+          const scope = this === receiver ? target : this;
           if (!activeSpan) {
-            console.log("no active span", value, promise);
-            return value.apply(this === receiver ? target : this, [promise]);
+            return value.apply(scope, [promise]);
           }
 
-          console.log("active span", !!activeSpan);
-          // activeSpan.add
-          const tracer = trace.getTracer("otel-example-tracer-node");
-          const span = tracer.startSpan("waitUntil");
-          value.apply(this === receiver ? target : this, [promise]);
-
-          promise
-            .then((result) => {
-              console.log("result ok");
-              span.setStatus({ code: SpanStatusCode.OK });
-              return result;
-            })
-            .catch((error) => {
-              span.setStatus({ code: SpanStatusCode.ERROR });
-
-              if (error instanceof Error) {
-                span.recordException(error);
-              }
-
-              throw error;
-            })
-            .finally(() => {
-              console.log("span done");
-              span.end();
-            });
+          const result = value.apply(scope, [promise]);
+          spanPromise("waitUntil", result); 
         };
       }
       return value;
@@ -84,13 +58,3 @@ export function enableWaitUntilTracing(context: ExecutionContext) {
 
   return proxyContext;
 }
-
-// function wrapper(fn: WaitUntilFn, context: ExecutionContext) {
-// return function (...args: Parameters<WaitUntilFn>) {
-//   return fn.apply(context, args);
-// };
-// }
-
-// function wrap<T extends (...args: any[]) => any>(fn: T, handler: ProxyHandler<T>): T {
-//   return new Proxy(fn, handler)
-// }
