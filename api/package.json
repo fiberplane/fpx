@@ -32,6 +32,7 @@
     "@libsql/client": "^0.6.2",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.2",
+    "chalk": "^5.3.0",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.21.2",
     "drizzle-orm": "^0.30.10",

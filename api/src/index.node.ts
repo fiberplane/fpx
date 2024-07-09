@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { serve } from "@hono/node-server";
+import chalk from "chalk";
 import { config } from "dotenv";
 import { type WebSocket, WebSocketServer } from "ws";
 
@@ -38,8 +39,10 @@ const server = serve({
 }) as ReturnType<typeof createServer>;
 
 server.on("listening", () => {
-  logger.info("FPX Studio is up and running!");
-  logger.info(`Visit: http://localhost:${port}`);
+  const runningMessage = chalk.green("FPX Studio is up!");
+  const localhostLink = chalk.blue(`http://localhost:${port}`);
+  const visitMessage = `Visit ${localhostLink} to get started`;
+  logger.info(`\n${runningMessage} ${visitMessage}\n`);
 });
 
 server.on("error", (err) => {

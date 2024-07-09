@@ -2,11 +2,19 @@
 
 import { execSync } from "node:child_process";
 import fs from "node:fs";
-import net from "node:net";
 import path, { dirname } from "node:path";
-import readline from "node:readline";
 import { fileURLToPath } from "node:url";
+import chalk from "chalk";
 import toml from "toml";
+
+import logger from "./logger.js";
+import {
+  askUser,
+  cliAnswerToBool,
+  findInParentDirs,
+  isPortTaken,
+  safeParseJSONFile,
+} from "./utils.js";
 
 // Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
@@ -50,7 +58,9 @@ runWizard();
  */
 async function runWizard() {
   if (IS_INITIALIZING_FPX) {
-    console.log("Initializing FPX...");
+    logger.info(chalk.dim("\nInitializing FPX...\n"));
+  } else {
+    logger.info(chalk.dim(`\nLoading FPX config from ${CONFIG_DIR_NAME}...`));
   }
 
   const FPX_PORT = await getFpxPort();
@@ -58,6 +68,8 @@ async function runWizard() {
   await updateEnvFileWithFpxEndpoint(FPX_PORT);
 
   const FPX_SERVICE_TARGET = await getServiceTarget();
+
+  await pingTargetAndConfirm(FPX_SERVICE_TARGET);
 
   const FPX_DATABASE_URL = getFpxDatabaseUrl();
 
@@ -88,7 +100,7 @@ async function getFpxPort() {
   //
   const hasConfiguredFpxPort = getFallbackFpxPort() !== null;
   const fpxPortFallback = getFallbackFpxPort() || 8788;
-  const fpxPortQuestion = "Which port should fpx studio run on? ";
+  const fpxPortQuestion = "  Which port should fpx studio run on? ";
   let FPX_PORT;
   if (IS_INITIALIZING_FPX) {
     FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
@@ -106,7 +118,7 @@ async function getFpxPort() {
       nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
     }
     FPX_PORT = await askUser(
-      `Port ${FPX_PORT} is already in use. Please choose a different port for FPX.`,
+      `  ⚠️ Port ${FPX_PORT} is already in use. Please choose a different port for FPX.`,
       nextFallback,
     );
   }
@@ -129,15 +141,25 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
   const shouldAsk = envFilePath && (!fpxEndpoint || isDifferent);
 
   if (shouldAsk) {
-    const question = `May we update your ${envFileName} file with FPX_ENDPOINT=${expectedFpxEndpoint}`;
+    const envVarLine = `FPX_ENDPOINT=${expectedFpxEndpoint}`;
+    const question = `  Update ${envFileName} with ${chalk.yellow(envVarLine)}?`;
     const updateEnvVarAnswer = await askUser(question, "y");
     const shouldUpdateEnvVar = cliAnswerToBool(updateEnvVarAnswer);
+    // TODO - Replace the line if it exists
     if (shouldUpdateEnvVar) {
-      fs.appendFileSync(
-        envFilePath,
-        `\nFPX_ENDPOINT=http://localhost:${fpxPort}/v0/logs\n`,
+      if (fpxEndpoint !== null) {
+        logger.debug(
+          `Replacing ${fpxEndpoint} with ${envVarLine} in ${envFilePath}`,
+        );
+        replaceEnvVarLine(envFilePath, envVarLine);
+      } else {
+        fs.appendFileSync(envFilePath, `\n${envVarLine}\n`);
+      }
+      logger.info(
+        chalk.dim(
+          `  Updated ${envFileName}. Restart your api to apply changes!`,
+        ),
       );
-      console.log(`Updated ${envFileName}.`);
     }
   }
 }
@@ -147,7 +169,7 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
  * This is necessary for auto detecting the routes of the app
  */
 async function getServiceTarget() {
-  const fpxTargetQuestion = "Which port is your service running on?";
+  const fpxTargetQuestion = "  Which port is your api running on?";
   const fpxTargetFallback = getFallbackServiceTarget() || 8787;
   const hasConfiguredTarget = getFallbackServiceTarget() !== null;
 
@@ -169,12 +191,25 @@ async function getServiceTarget() {
 }
 
 /**
+ * Checks if there is a service running on the target port
+ * If not, asks the user to confirm whether to continue
+ */
+async function pingTargetAndConfirm(port) {
+  const isServiceUp = await isPortTaken(port);
+  if (!isServiceUp) {
+    await askUser(
+      `  ⚠️ Could not find your api on port ${port}. Remember to start it!\n\n${chalk.dim("(Press enter to continue.)")}`,
+    );
+  }
+}
+
+/**
  * Run the specified script (assumed to be in ../scripts)
  */
 function runScript(scriptName) {
   const scriptPath = validScripts[scriptName];
   if (!scriptPath) {
-    console.error(
+    logger.error(
       `Invalid script "${scriptName}". Valid scripts are: ${Object.keys(validScripts).join(", ")}`,
     );
     process.exit(1);
@@ -337,23 +372,6 @@ function getFallbackServiceTarget() {
 }
 
 /**
- * Quick helper for asking the user for input, with a default value
- */
-async function askUser(question, defaultValue) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return new Promise((resolve) => {
-    rl.question(`${question} (default: ${defaultValue}): `, (answer) => {
-      rl.close();
-      resolve(answer?.trim() || defaultValue);
-    });
-  });
-}
-
-/**
  * Find the environment variable file with the given precedence
  */
 function findEnvVarFile() {
@@ -373,12 +391,23 @@ function findEnvVarFile() {
 function getFpxEndpointFromEnvFile(envFilePath) {
   try {
     const envContent = fs.readFileSync(envFilePath, "utf8");
+    // NOTE - This regex uses multiline mode
     const match = envContent.match(/^FPX_ENDPOINT=(.*)$/m);
     return match ? match[1] : null;
   } catch (_error) {
     // Silent error because we do not want errors to stop the cli from running
     return null;
   }
+}
+
+/**
+ * Replace the line in the env file with the new value
+ */
+function replaceEnvVarLine(envFilePath, envVarLine) {
+  const envContent = fs.readFileSync(envFilePath, "utf8");
+  // NOTE - This regex uses multiline mode
+  const updatedContent = envContent.replace(/^FPX_ENDPOINT=.*$/m, envVarLine);
+  fs.writeFileSync(envFilePath, updatedContent);
 }
 
 /**
@@ -390,100 +419,4 @@ function getFpxDatabaseUrl() {
   const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
   const dbPath = path.join(configDir, "fpx.db");
   return `file:${dbPath}`;
-}
-
-// === UTILS === //
-
-/**
- * Find the path to a file, recurisvely searching the parent directories
- */
-function findInParentDirs(fileName) {
-  let currentDir = process.cwd();
-  const visitedDirs = new Set();
-  while (currentDir !== path.parse(currentDir).root) {
-    if (visitedDirs.has(currentDir)) {
-      break;
-    }
-    visitedDirs.add(currentDir);
-    const filePath = path.join(currentDir, fileName);
-    if (fs.existsSync(filePath)) {
-      return filePath;
-    }
-    currentDir = path.dirname(currentDir);
-  }
-  return null;
-}
-
-function safeParseJSONFile(filePath) {
-  if (fs.existsSync(filePath)) {
-    try {
-      const data = fs.readFileSync(filePath, "utf8");
-      return JSON.parse(data);
-    } catch (_error) {
-      // Silent error because we fallback to other values
-      return null;
-    }
-  }
-  return null;
-}
-
-/**
- * Convert a user provided yes/no CLI answer to a boolean
- *
- * This is used to convert the answer to a boolean, with a fallback value
- */
-function cliAnswerToBool(answer, fallback = false) {
-  if (typeof answer !== "string") {
-    return null;
-  }
-  return answer.toLowerCase().trim().startsWith("y") ? true : !!fallback;
-}
-
-/**
- * Check if a port is taken
- *
- * This is a hacky way to check if a port is taken, because the `net` module
- * doesn't have a built-in way to do this.
- *
- * We check on both IPv4 and IPv6, and bind to 0.0.0.0 and ::, since only looking at localhost didn't actually work for me!
- *
- * @param {number} port - The port to check
- * @returns {Promise<boolean>} - Resolves to true if the port is taken, false otherwise
- */
-async function isPortTaken(port) {
-  return new Promise((resolve, reject) => {
-    let successCount = 0;
-
-    const testIPv4 = net
-      .createServer()
-      .once("error", (err) => {
-        if (err.code !== "EADDRINUSE") return reject(err);
-        resolve(true);
-      })
-      .once("listening", () => {
-        testIPv4
-          .once("close", () => {
-            successCount++;
-            if (successCount === 2) resolve(false);
-          })
-          .close();
-      })
-      .listen(port, "0.0.0.0");
-
-    const testIPv6 = net
-      .createServer()
-      .once("error", (err) => {
-        if (err.code !== "EADDRINUSE") return reject(err);
-        resolve(true);
-      })
-      .once("listening", () => {
-        testIPv6
-          .once("close", () => {
-            successCount++;
-            if (successCount === 2) resolve(false);
-          })
-          .close();
-      })
-      .listen(port, "::");
-  });
 }

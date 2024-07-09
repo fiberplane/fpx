@@ -3,7 +3,6 @@ import { and, eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
-import logger from "src/logger.js";
 import { z } from "zod";
 import {
   type NewAppRequest,
@@ -16,6 +15,7 @@ import {
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import { errorToJson, generateUUID } from "../lib/utils.js";
+import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
 
 type RequestIdType = schema.AppResponse["requestId"];

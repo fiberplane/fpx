@@ -23,16 +23,16 @@ export async function probeRoutesWithExponentialBackoff(
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
       logger.debug(
-        `Failed to detect routes for service ${serviceUrl}:`,
+        `⚠️ Failed to detect routes for api ${serviceUrl}:`,
         errorMessage,
       );
       if (attempt < maxRetries) {
         const backoffDelay = Math.min(delay * 2 ** attempt, maxDelay);
-        logger.debug(`Retrying in ${backoffDelay}ms...`);
+        logger.debug(`  Retrying in ${backoffDelay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, backoffDelay));
       } else {
         logger.error(
-          "Failed to detect service routes. Giving up. Restart fpx to try again!",
+          "⚠️ Failed to detect api routes. Giving up! Restart fpx to try again.",
         );
       }
     }
