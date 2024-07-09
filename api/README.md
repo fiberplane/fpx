@@ -8,8 +8,10 @@ npm run db:migrate
 # NOTE - This app runs Hono in a Node.js execution context by default,
 #        Since we need access to the filesystem to do fun stuff
 npm run dev 
-```
 
+# If you want more granular logging locally, you can set the FPX_LOG_LEVEL env var
+FPX_LOG_LEVEL=debug npm run dev
+```
 
 ### Adding some AI
 

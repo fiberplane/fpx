@@ -2,12 +2,13 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
-import { logger } from "hono/logger";
+import { logger as honoLogger } from "hono/logger";
 import type { WebSocket } from "ws";
 
 import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
+import logger from "./logger.js";
 import appRoutes from "./routes/app-routes.js";
 import dependencies from "./routes/dependencies.js";
 import issues from "./routes/issues.js";
@@ -46,12 +47,12 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     try {
       await next();
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       return c.json({ error: "Internal server error" }, 500);
     }
   });
 
-  app.use(logger()); // add a logger FWIW..
+  app.use(honoLogger()); // add a logger FWIW..
 
   // All routes are modularized in the ./routes folder
   app.route("/", logs);

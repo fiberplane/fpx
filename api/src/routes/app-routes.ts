@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
+import logger from "src/logger.js";
 import { z } from "zod";
 import {
   type NewAppRequest,
@@ -149,7 +150,7 @@ app.post(
       } = await handleSuccessfulRequest(db, requestId, duration, response);
 
       if (responseTraceId !== traceId) {
-        console.warn(
+        logger.warn(
           `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
         );
       }
@@ -248,7 +249,7 @@ async function handleSuccessfulRequest(
 
 function safeReadTextBody(response: Response) {
   return response.text().catch((error) => {
-    console.error("Failed to parse response body", error);
+    logger.error("Failed to parse response body", error);
     return null;
   });
 }
