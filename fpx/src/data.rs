@@ -7,9 +7,12 @@ use std::fmt::Display;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+use tracing::error;
 
 pub mod migrations;
 mod models;
+#[cfg(test)]
+mod tests;
 
 pub struct Transaction(libsql::Transaction);
 
@@ -125,18 +128,79 @@ impl Store {
 
         Ok(request.into())
     }
+
+    /// Create a new span in the database. This will return a new span with any
+    /// fields potentially updated.
+    pub async fn span_create(
+        &self,
+        tx: &Transaction,
+        span: models::Span,
+    ) -> Result<models::Span, DbError> {
+        let span = tx
+            .query(
+                "INSERT INTO spans
+                    (
+                        trace_id,
+                        span_id,
+                        parent_trace_id,
+                        name,
+                        kind,
+                        scope_name,
+                        scope_version
+                    )
+                    VALUES
+                        ($1, $2, $3, $4, $5, $6, $7)
+                    RETURNING *",
+                (
+                    span.trace_id,
+                    span.span_id,
+                    span.parent_trace_id,
+                    span.name,
+                    span.kind.as_ref(),
+                    span.scope_name,
+                    span.scope_version,
+                ),
+            )
+            .await?
+            .fetch_one()
+            .await?;
+
+        Ok(span)
+    }
+
+    /// Retrieve a single span from the database.
+    pub async fn span_get(
+        &self,
+        tx: &Transaction,
+        trace_id: impl Into<TraceId>,
+        span_id: impl Into<SpanId>,
+    ) -> Result<models::Span, DbError> {
+        let trace_id = trace_id.into();
+        let span_id = span_id.into();
+
+        let span = tx
+            .query(
+                "SELECT * FROM spans WHERE trace_id={} AND span_id={}",
+                (trace_id, span_id),
+            )
+            .await?
+            .fetch_one()
+            .await?;
+
+        Ok(span)
+    }
 }
+
+type TraceId = String;
+type SpanId = String;
 
 #[derive(Debug, Error)]
 pub enum DbError {
     #[error("No rows were returned")]
     NotFound,
 
-    #[error("failed to deserialize into `T`: {message}")]
-    FailedDeserialize { message: String },
-
-    #[error("Unable to deserialize JSON: {0}")]
-    InvalidJson(#[from] serde_json::Error),
+    #[error("failed to deserialize into `T`: {0}")]
+    FailedDeserialize(#[from] serde::de::value::Error),
 
     #[error("Internal database error occurred: {0}")]
     InternalError(#[from] libsql::Error),
@@ -160,12 +224,9 @@ impl RowsExt for Rows {
     }
 
     async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>, DbError> {
+        error!("doing a fetch optional");
         match self.next().await? {
-            Some(row) => Ok(Some(de::from_row(&row).map_err(|err| {
-                DbError::FailedDeserialize {
-                    message: err.to_string(),
-                }
-            })?)),
+            Some(row) => Ok(Some(de::from_row(&row)?)),
             None => Ok(None),
         }
     }
@@ -174,90 +235,9 @@ impl RowsExt for Rows {
         let mut results = Vec::new();
 
         while let Some(row) = self.next().await? {
-            results.push(
-                de::from_row(&row).map_err(|err| DbError::FailedDeserialize {
-                    message: err.to_string(),
-                })?,
-            );
+            results.push(de::from_row(&row)?);
         }
 
         Ok(results)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::data::models::Json;
-    use crate::data::{RowsExt, Store};
-    use libsql::params;
-    use serde::Deserialize;
-    use std::collections::BTreeMap;
-
-    #[tokio::test]
-    async fn test_extensions() {
-        let store = Store::in_memory().await.unwrap();
-
-        {
-            let tx = store.start_transaction().await.unwrap();
-
-            #[derive(Deserialize)]
-            struct Test {
-                test: i32,
-            }
-
-            let fone: Test = tx
-                .query("select 1 as test", ())
-                .await
-                .unwrap()
-                .fetch_one()
-                .await
-                .unwrap();
-
-            assert_eq!(fone.test, 1);
-
-            // create a temporary table and immediately drop it. this returns 0 rows without using existing tables
-            let fopt: Option<Test> = tx
-                .query(
-                    "create temporary table temp_table (id integer); drop table temp_table",
-                    (),
-                )
-                .await
-                .unwrap()
-                .fetch_optional()
-                .await
-                .unwrap();
-
-            assert!(fopt.is_none());
-
-            let fall: Vec<Test> = tx
-                .query("select 1 as test union all select 2 union all select 3", ())
-                .await
-                .unwrap()
-                .fetch_all()
-                .await
-                .unwrap();
-
-            assert_eq!(fall.len(), 3);
-            assert_eq!(fall[0].test, 1);
-            assert_eq!(fall[1].test, 2);
-            assert_eq!(fall[2].test, 3);
-
-            #[derive(Deserialize)]
-            struct TestJson {
-                test: Json<BTreeMap<String, i32>>,
-            }
-
-            let json: TestJson = tx
-                .query("select ? as test", params![r#"{"test":1}"#])
-                .await
-                .unwrap()
-                .fetch_one()
-                .await
-                .unwrap();
-
-            assert_eq!(json.test["test"], 1);
-
-            store.commit_transaction(tx).await.unwrap();
-        }
     }
 }

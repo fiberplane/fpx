@@ -31,6 +31,9 @@ impl TraceService for GrpcService {
 
         let trace_ids = request.get_ref().extract_trace_ids();
 
+        let serialized = serde_json::to_string(request.get_ref()).unwrap();
+        eprintln!("dump:\n{}", serialized);
+
         self.events.broadcast(TraceAdded::new(trace_ids).into());
 
         let message = ExportTraceServiceResponse {
@@ -58,7 +61,6 @@ impl From<DbError> for tonic::Status {
         match err {
             DbError::NotFound => todo!(),
             DbError::FailedDeserialize { .. } => todo!(),
-            DbError::InvalidJson(_) => todo!(),
             DbError::InternalError(_) => todo!(),
         }
     }

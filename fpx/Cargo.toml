@@ -42,8 +42,10 @@ reqwest = { version = "0.12", default-features = false, features = [
     "rustls-tls",
     "json",
 ] }
+schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+strum = { version = "0.26", features = ["derive"] }
 thiserror = { version = "1.0" }
 tokio = { version = "1.37", features = ["rt-multi-thread", "signal"] }
 tokio-tungstenite = { version = "0.21", features = [
@@ -54,8 +56,11 @@ tonic = { version = "0.11" }
 tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.24" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+typed-builder = { version = "0.18" }
 url = { version = "2.5" }
-schemars = { workspace = true }
+
+[dev-dependencies]
+test-log = { version = "0.2", default-features = false, features = ["trace"] }
 
 [build-dependencies]
 tonic-build = "0.11"
