@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { serve } from "@hono/node-server";
 import { config } from "dotenv";
 import { type WebSocket, WebSocketServer } from "ws";
+import fs from "node:fs";
 
 import { createApp } from "./app.js";
 import { probeRoutesWithExponentialBackoff } from "./probe-routes.js";
@@ -9,6 +10,7 @@ import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
+import { getIgnoredPaths } from "./lib/utils.js";
 
 config({ path: ".dev.vars" });
 
@@ -44,11 +46,22 @@ console.log(`FPX Server is running: http://localhost:${port}`);
 const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
 const probeMaxRetries = 10;
 const probeDelay = 1000;
-probeRoutesWithExponentialBackoff(
-  serviceTargetArgument,
-  probeMaxRetries,
-  probeDelay,
-);
+const watchDir = process.env.FPX_WATCH_DIR ?? process.cwd();
+
+const ignoredPaths = getIgnoredPaths();
+
+fs.watch(watchDir, { recursive: true }, async (eventType, filename) => {
+  if (!filename) return
+  if (ignoredPaths.includes(filename)) return
+  console.log(`File ${filename} ${eventType}, sending a new probe`);
+
+  probeRoutesWithExponentialBackoff(
+    serviceTargetArgument,
+    probeMaxRetries,
+    probeDelay,
+  );
+})
+
 
 const wss = new WebSocketServer({ server, path: "/ws" });
 wss.on("connection", (ws) => {
