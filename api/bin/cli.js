@@ -58,19 +58,9 @@ async function runWizard() {
 
   await updateEnvFileWithFpxEndpoint(FPX_PORT);
 
-  const FPX_SERVICE_TARGET = IS_INITIALIZING_FPX
-    ? await askUser(
-        "Which port is your service running on?",
-        getFallbackServiceTarget() || 8787,
-      )
-    : getFallbackServiceTarget() ||
-      (await askUser("Which port is your service running on?", 8787));
+  const FPX_SERVICE_TARGET = await getServiceTarget();
 
-  const shouldAddToGitIgnoreAnswer = shouldAskToAddGitIgnore()
-    ? await askUser("May we add fpx.db to your .gitignore?", "y")
-    : "n";
-
-  const shouldGitIgnore = cliAnswerToBool(shouldAddToGitIgnoreAnswer);
+  await maybeUpdateGitIgnore();
 
   // Refresh the config with any new values
   USER_VARS.FPX_PORT = FPX_PORT;
@@ -81,37 +71,10 @@ async function runWizard() {
     USER_VARS.FPX_SERVICE_NAME = SERVICE_NAME;
   }
 
+  // Save the user's configuration to the .fpxconfig directory
   saveUserConfig(USER_VARS);
 
-  if (shouldGitIgnore) {
-    addGitIgnore();
-  }
-
   scriptsToRun.forEach(runScript);
-}
-
-async function updateEnvFileWithFpxEndpoint(fpxPort) {
-  const expectedFpxEndpoint = `http://localhost:${fpxPort}/v0/logs`;
-
-  const envFilePath = findEnvVarFile();
-  const envFileName = envFilePath && path.basename(envFilePath);
-  const fpxEndpoint = envFilePath && getFpxEndpointFromEnvFile(envFilePath);
-  const isDifferent = fpxEndpoint !== expectedFpxEndpoint;
-
-  const shouldAsk = envFilePath && !fpxEndpoint && isDifferent;
-
-  if (shouldAsk) {
-    const question = `May we update your ${envFileName} file with FPX_ENDPOINT=${expectedFpxEndpoint}`;
-    const updateEnvVarAnswer = await askUser(question, "y");
-    const shouldUpdateEnvVar = cliAnswerToBool(updateEnvVarAnswer);
-    if (shouldUpdateEnvVar) {
-      fs.appendFileSync(
-        envFilePath,
-        `\nFPX_ENDPOINT=http://localhost:${fpxPort}/v0/logs\n`,
-      );
-      console.log(`Updated ${envFileName}.`);
-    }
-  }
 }
 
 /**
@@ -149,6 +112,79 @@ async function getFpxPort() {
   }
 
   return FPX_PORT;
+}
+
+/**
+ * Update the project's env file with the FPX_ENDPOINT variable,
+ * if we can determine the env file to update.
+ */
+async function updateEnvFileWithFpxEndpoint(fpxPort) {
+  const expectedFpxEndpoint = `http://localhost:${fpxPort}/v0/logs`;
+
+  const envFilePath = findEnvVarFile();
+  const envFileName = envFilePath && path.basename(envFilePath);
+  const fpxEndpoint = envFilePath && getFpxEndpointFromEnvFile(envFilePath);
+  const isDifferent = fpxEndpoint !== expectedFpxEndpoint;
+
+  const shouldAsk = envFilePath && !fpxEndpoint && isDifferent;
+
+  if (shouldAsk) {
+    const question = `May we update your ${envFileName} file with FPX_ENDPOINT=${expectedFpxEndpoint}`;
+    const updateEnvVarAnswer = await askUser(question, "y");
+    const shouldUpdateEnvVar = cliAnswerToBool(updateEnvVarAnswer);
+    if (shouldUpdateEnvVar) {
+      fs.appendFileSync(
+        envFilePath,
+        `\nFPX_ENDPOINT=http://localhost:${fpxPort}/v0/logs\n`,
+      );
+      console.log(`Updated ${envFileName}.`);
+    }
+  }
+}
+
+/**
+ * Get the service target for FPX (the service we should monitor)
+ * This is necessary for auto detecting the routes of the app
+ */
+async function getServiceTarget() {
+  const fpxTargetQuestion = "Which port is your service running on?";
+  const fpxTargetFallback = getFallbackServiceTarget() || 8787;
+  const hasConfiguredTarget = getFallbackServiceTarget() !== null;
+
+  // This looks confusing but the basic pattern is:
+  // - If we're initializing, ask the user where we should run.
+  //   The default (fallback) value is dynamic depending on env.
+  // - If we're not initializing, try to skip the question based on local config, fall back to asking them.
+  //
+  let FPX_SERVICE_TARGET;
+  if (IS_INITIALIZING_FPX) {
+    FPX_SERVICE_TARGET = await askUser(fpxTargetQuestion, fpxTargetFallback);
+  } else if (hasConfiguredTarget) {
+    FPX_SERVICE_TARGET = getFallbackServiceTarget();
+  } else {
+    FPX_SERVICE_TARGET = await askUser(fpxTargetQuestion, fpxTargetFallback);
+  }
+
+  return FPX_SERVICE_TARGET;
+}
+
+/**
+ * Update the project's .gitignore file with the FPX database,
+ * if we determine we're in a git repo, and the user gives permission.
+ */
+async function maybeUpdateGitIgnore() {
+  const shouldAddToGitIgnoreAnswer = shouldAskToAddGitIgnore()
+    ? await askUser(
+        "May we add our local database, fpx.db, to your .gitignore?",
+        "y",
+      )
+    : "n";
+
+  const shouldGitIgnore = cliAnswerToBool(shouldAddToGitIgnoreAnswer);
+
+  if (shouldGitIgnore) {
+    addGitIgnore();
+  }
 }
 
 function runScript(scriptName) {
@@ -351,7 +387,7 @@ function addGitIgnore() {
     fs.writeFileSync(gitignorePath, "");
   }
 
-  const gitignoreEntry = "# fpx local database\nfpx.db\n";
+  const gitignoreEntry = "\n# fpx local database\nfpx.db\n";
 
   if (fs.existsSync(gitignorePath)) {
     const gitignoreContent = fs.readFileSync(gitignorePath, "utf8");
