@@ -44,12 +44,12 @@ server.on("listening", () => {
 
 server.on("error", (err) => {
   if ("code" in err && err.code === "EADDRINUSE") {
-    console.error(
+    logger.error(
       `Port ${port} is already in use. Please choose a different port for FPX.`,
     );
     process.exit(1);
   } else {
-    console.error("Server error:", err);
+    logger.error("Server error:", err);
   }
 });
 
@@ -67,24 +67,24 @@ probeRoutesWithExponentialBackoff(
 
 const wss = new WebSocketServer({ server, path: "/ws" });
 wss.on("connection", (ws) => {
-  console.log("WebSocket connection established", ws.OPEN);
+  logger.debug("WebSocket connection established", ws.OPEN);
   wsConnections.add(ws);
 
   ws.on("ping", () => {
-    console.log("ping");
+    logger.debug("ping");
     ws.send("pong");
   });
   ws.on("error", (err) => {
     if ("code" in err && err.code === "EADDRINUSE") {
-      console.error(
+      logger.error(
         "WebSocket error: Address in use. Please choose a different port.",
       );
     } else {
-      console.error("WebSocket error:", err);
+      logger.error("WebSocket error:", err);
     }
   });
   ws.on("close", (code) => {
     wsConnections.delete(ws);
-    console.log("WebSocket connection closed", code);
+    logger.debug("WebSocket connection closed", code);
   });
 });
