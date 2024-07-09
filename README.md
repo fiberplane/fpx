@@ -1,12 +1,10 @@
-# 💧 mizu (水)
-
-> Japanese for "water"
+# fpx
 
 ## Description
 
 This has an api and a frontend that can consume telemetry data from a Hono app.
 
-To connect your Hono app to the api, you'll need to add the code in the [`client-library`](./client-library) folder to your Hono app. This will send telemetry data to the api.
+To connect your Hono app to the api, you'll need to add the code in the [`client-library`](./client-library). You can do this via NPM, or linking to the local codebase. Please read [client-library/README.md](./client-library/README.md) for instructions.
 
 Worth noting is that the api connects to a local libsql (sqlite) database. Setup steps for this are simple (just need to run migrations), and are in [api/README.md](./api/README.md).
 
@@ -35,9 +33,9 @@ Follow the instructions in the [`client-library` README](./client-library/README
 
 ## Developing
 
-This project uses typescript, biome and npm workspaces. The frontend package also uses eslint for linting purposes, all other packages use biome for linting (formatting is always done wit biome).
+This project uses typescript, biome and npm workspaces. The frontend package also uses eslint for linting purposes, all other packages use biome for linting (formatting is always done with biome).
 
-In the project root you can format all codebases with `npm run format`.
+In the project root you can format all typescript codebases with `npm run format`.
 
 You will also want to use the project root to prepare the npx command for the distributable API. See the root's `package.json` scripts, as well as the api's README for more details on testing the npx command.
 

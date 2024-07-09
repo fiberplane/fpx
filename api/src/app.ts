@@ -8,10 +8,12 @@ import type { WebSocket } from "ws";
 import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
+import appRoutes from "./routes/app-routes.js";
 import dependencies from "./routes/dependencies.js";
 import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
 import openai from "./routes/openai.js";
+import settings from "./routes/settings.js";
 import source from "./routes/source.js";
 import traces from "./routes/traces.js";
 
@@ -59,6 +61,8 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   app.route("/", dependencies);
   app.route("/", issues);
   app.route("/", traces);
+  app.route("/", appRoutes);
+  app.route("/", settings);
 
   // HACK - Route to inspect any db errors during this session
   app.get("db-errors", async (c) => {

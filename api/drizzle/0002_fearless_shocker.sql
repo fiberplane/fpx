@@ -1,1 +1,0 @@
-ALTER TABLE `github_issues` ADD `type` text NOT NULL;

@@ -1,6 +1,11 @@
 import type { Endpoints } from "@octokit/types";
-import { sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { relations, sql } from "drizzle-orm";
+import {
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -10,6 +15,140 @@ type OctokitResponseGithubIssues =
   Endpoints["GET /repos/{owner}/{repo}/issues"]["response"];
 
 type OctokitGithubIssue = OctokitResponseGithubIssues["data"][number];
+
+// this is the template
+export const appRoutes = sqliteTable(
+  "app_routes",
+  {
+    path: text("path", { mode: "text" }),
+    method: text("method", { mode: "text" }),
+    // The text of the function serving the request
+    handler: text("handler", { mode: "text" }),
+    // In practice, handler_type is either "route" or "middleware" - I didn't feel like defining an enum
+    handlerType: text("handler_type", { mode: "text" }),
+    // A flag that indicates if this route is currently registered or the result of an old probe
+    currentlyRegistered: integer("currentlyRegistered", {
+      mode: "boolean",
+    }).default(false),
+    // A flag for routes that get added manually by user
+    addedByUser: integer("addedByUser", {
+      mode: "boolean",
+    }).default(false),
+  },
+  (table) => {
+    return {
+      id: primaryKey({
+        name: "id",
+        columns: [table.method, table.path, table.handlerType],
+      }),
+    };
+  },
+);
+
+export const appRoutesSelectSchema = createSelectSchema(appRoutes);
+export const appRoutesInsertSchema = createInsertSchema(appRoutes);
+
+export type AppRoute = z.infer<typeof appRoutesSelectSchema>;
+export type NewAppRoute = z.infer<typeof appRoutesInsertSchema>;
+
+// 1. get a request from the client: url, method, headers, body
+// 2. construct the request object and persist it
+// 3. we need to forward that request to our app server
+// 4. get a response from the app server including the traceId
+// 5. construct the response object and persist it
+// 6. we need to forward that response to the client
+
+export const appRequests = sqliteTable("app_requests", {
+  id: integer("id", { mode: "number" }).primaryKey(),
+  requestMethod: text("request_method", {
+    mode: "text",
+    enum: [
+      "GET",
+      "POST",
+      "PATCH",
+      "PUT",
+      "DELETE",
+      "HEAD",
+      "OPTIONS",
+      "CONNECT",
+      "TRACE",
+    ],
+  }).notNull(),
+  requestUrl: text("request_url", { mode: "text" }).notNull(),
+  requestHeaders: text("request_headers", { mode: "json" }).$type<
+    Record<string, string>
+  >(),
+  requestQueryParams: text("request_query_params", { mode: "json" }),
+  requestPathParams: text("request_path_params", { mode: "json" }),
+  requestBody: text("request_body", { mode: "json" }),
+  // The hono route corresponding to this request
+  requestRoute: text("request_route"),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  // responseId: integer("response_id").references(() => appResponses.id),
+});
+
+export const appResponses = sqliteTable("app_responses", {
+  id: integer("id", { mode: "number" }).primaryKey(),
+  traceId: text("trace_id", { mode: "text" }).notNull(),
+  responseStatusCode: integer("response_status_code", { mode: "number" }),
+  responseTime: integer("response_time", { mode: "number" }),
+  responseHeaders: text("response_headers", { mode: "json" }).$type<{
+    [key: string]: string;
+  }>(),
+  responseBody: text("response_body", { mode: "text" }),
+  failureReason: text("failure_reason"),
+  failureDetails: text("failure_details", { mode: "json" }).$type<{
+    [key: string]: string;
+  }>(),
+  isFailure: integer("is_failure", { mode: "boolean" }).default(false),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  requestId: integer("request_id").references(() => appRequests.id),
+});
+
+export const appResponseRelations = relations(appResponses, ({ one }) => ({
+  requestId: one(appRequests, {
+    fields: [appResponses.requestId],
+    references: [appRequests.id],
+  }),
+}));
+
+const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(JsonSchema),
+    z.record(JsonSchema),
+  ]),
+);
+
+// TODO: probably could be reworked but this is stub anyway so who cares
+const refineRequestObjects = {
+  requestQueryParams: z.record(z.string()).optional(),
+  requestBody: JsonSchema.optional(),
+  requestHeaders: z.record(z.string()).optional(),
+};
+
+export const appRequestSelectSchema = createSelectSchema(
+  appRequests,
+  refineRequestObjects,
+);
+export const appRequestInsertSchema = createInsertSchema(
+  appRequests,
+  refineRequestObjects,
+);
+
+export type AppRequest = z.infer<typeof appRequestSelectSchema>;
+export type NewAppRequest = z.infer<typeof appRequestInsertSchema>;
+
+export const appResponseSelectSchema = createSelectSchema(appResponses);
+export const appResponseInsertSchema = createInsertSchema(appResponses);
+
+export type AppResponse = z.infer<typeof appResponseSelectSchema>;
+export type NewAppResponse = z.infer<typeof appResponseInsertSchema>;
 
 // HELPFUL: https://orm.drizzle.team/docs/column-types/sqlite
 export const mizuLogs = sqliteTable("mizu_logs", {
@@ -106,3 +245,10 @@ export const mizuLogSchema = createSelectSchema(mizuLogs);
 export type MizuLog = typeof mizuLogs.$inferSelect; // return type when queried
 // When you create a record
 export type NewMizuLog = typeof mizuLogs.$inferInsert; // insert type
+
+export const settings = sqliteTable("settings", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  content: text("content", { mode: "json" }),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+});

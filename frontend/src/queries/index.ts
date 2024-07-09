@@ -30,3 +30,7 @@ export {
   getVSCodeLinkFromCallerLocation,
   getVSCodeLinkFromError,
 } from "./vscodeLinks";
+
+export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
+
+export { useFetchSettings, useUpdateSettings } from "./settings";

@@ -46,6 +46,7 @@ async function fetchMizuTraces() {
             status: "",
             method: "",
             path: "",
+            route: "", // Matched route
             duration: "",
             logs: [] as Array<MizuLog>,
             size: null,
@@ -98,6 +99,8 @@ async function fetchMizuTraces() {
       trace.size = typeof size === "number" ? size : null;
       const duration = response?.message.elapsed;
       trace.duration = typeof duration === "string" ? duration : "-";
+      const route = response?.message.route;
+      trace.route = typeof route === "string" ? route : undefined;
 
       const method = request?.message.method;
       trace.method = typeof method === "string" ? method : "unknown";

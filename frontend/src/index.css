@@ -54,5 +54,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
   }
 }

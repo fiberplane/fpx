@@ -71,17 +71,19 @@ const FetchInitSchema = z
       .optional(),
     integrity: z.string().optional(),
     keepalive: z.boolean().optional(),
-    signal: z.instanceof(AbortSignal).optional(),
+    signal: z
+      .union([z.instanceof(AbortSignal).optional(), z.unknown()])
+      .optional(),
   })
   .partial();
 
 // Define the fetch arguments schema
 const FetchArgumentsSchema = z.union([
-  z.tuple([z.union([z.string(), z.instanceof(URL), z.instanceof(Request)])]),
   z.tuple([
     z.union([z.string(), z.instanceof(URL), z.instanceof(Request)]),
     FetchInitSchema,
   ]),
+  z.tuple([z.union([z.string(), z.instanceof(URL), z.instanceof(Request)])]),
 ]);
 
 const MizuFetchStartSchema = z
@@ -186,6 +188,7 @@ const MizuTraceSchema = z.object({
   status: z.string(),
   method: z.string(),
   path: z.string(),
+  route: z.string().optional(),
   duration: z.string(),
   size: z.number().nonnegative().nullable(),
   logs: z.array(MizuLogSchema),
@@ -201,6 +204,10 @@ export type CallerLocation = z.infer<typeof CallerLocationSchema>;
 export type MizuRequestStart = z.infer<typeof MizuRequestStartSchema>;
 export type MizuRequestEnd = z.infer<typeof MizuRequestEndSchema>;
 export type MizuErrorMessage = z.infer<typeof MizuErrorMessageSchema>;
+export type MizuFetchStart = z.infer<typeof MizuFetchStartSchema>;
+export type MizuFetchEnd = z.infer<typeof MizuFetchEndSchema>;
+export type MizuFetchError = z.infer<typeof MizuFetchErrorSchema>;
+export type MizuFetchLoggingError = z.infer<typeof MizuFetchLoggingErrorSchema>;
 
 export const isMizuRequestStartMessage = (
   message: unknown,

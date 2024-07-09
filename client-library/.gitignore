@@ -5,6 +5,7 @@ dist
 .swc
 
 # Change them to your taste:
+# ignore lockfile since we are in monorepo
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
