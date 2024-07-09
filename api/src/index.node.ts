@@ -1,16 +1,16 @@
+import fs from "node:fs";
 import { createServer } from "node:http";
 import { serve } from "@hono/node-server";
 import { config } from "dotenv";
 import { type WebSocket, WebSocketServer } from "ws";
-import fs from "node:fs";
 
 import { createApp } from "./app.js";
+import { getIgnoredPaths } from "./lib/utils.js";
 import { probeRoutesWithExponentialBackoff } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
-import { getIgnoredPaths } from "./lib/utils.js";
 
 config({ path: ".dev.vars" });
 
@@ -51,8 +51,8 @@ const watchDir = process.env.FPX_WATCH_DIR ?? process.cwd();
 const ignoredPaths = getIgnoredPaths();
 
 fs.watch(watchDir, { recursive: true }, async (eventType, filename) => {
-  if (!filename) return
-  if (ignoredPaths.includes(filename)) return
+  if (!filename) return;
+  if (ignoredPaths.includes(filename)) return;
   console.log(`File ${filename} ${eventType}, sending a new probe`);
 
   probeRoutesWithExponentialBackoff(
@@ -60,8 +60,7 @@ fs.watch(watchDir, { recursive: true }, async (eventType, filename) => {
     probeMaxRetries,
     probeDelay,
   );
-})
-
+});
 
 const wss = new WebSocketServer({ server, path: "/ws" });
 wss.on("connection", (ws) => {

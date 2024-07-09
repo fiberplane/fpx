@@ -33,15 +33,14 @@ export function errorToJson(error: Error) {
 }
 
 export function getIgnoredPaths() {
-
-const defaultIgnoredPaths = [
-  ".git", 
-  "node_modules",
-  "dist", 
-  ".fpx", 
-  ".swc", 
-  ".wrangler"
-];
+  const defaultIgnoredPaths = [
+    ".git",
+    "node_modules",
+    "dist",
+    ".fpx",
+    ".swc",
+    ".wrangler",
+  ];
 
   const paths = fs.readdirSync("./", { withFileTypes: true });
   const gitignoreFiles = paths.filter((path) => path.name === ".gitignore");
@@ -51,9 +50,8 @@ const defaultIgnoredPaths = [
     return content
       .split("\n")
       .filter((line) => line.trim() !== "")
-      .filter((line) => !line.startsWith("#"))
+      .filter((line) => !line.startsWith("#"));
   });
-
 
   return defaultIgnoredPaths.concat(...gitignoredPaths);
 }
