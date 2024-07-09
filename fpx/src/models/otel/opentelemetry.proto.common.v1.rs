@@ -2,8 +2,6 @@
 /// AnyValue is used to represent any type of attribute value. AnyValue may contain a
 /// primitive value such as a string or integer or it may contain an arbitrary nested
 /// object containing arrays, key-value lists and primitives.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct AnyValue {
@@ -16,8 +14,6 @@ pub struct AnyValue {
 pub mod any_value {
     /// The value is one of the listed fields. It is valid for all values to be unspecified
     /// in which case this AnyValue is considered to be "empty".
-    #[derive(serde::Deserialize, serde::Serialize)]
-    #[serde(rename_all = "snake_case")]
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Oneof)]
     pub enum Value {
@@ -39,8 +35,6 @@ pub mod any_value {
 }
 /// ArrayValue is a list of AnyValue messages. We need ArrayValue as a message
 /// since oneof in AnyValue does not allow repeated fields.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ArrayValue {
@@ -53,8 +47,6 @@ pub struct ArrayValue {
 /// a list of KeyValue messages (e.g. in Span) we use `repeated KeyValue` directly to
 /// avoid unnecessary extra wrapping (which slows down the protocol). The 2 approaches
 /// are semantically equivalent.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct KeyValueList {
@@ -67,8 +59,6 @@ pub struct KeyValueList {
 }
 /// KeyValue is a key-value pair that is used to store Span attributes, Link
 /// attributes, etc.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct KeyValue {
@@ -79,8 +69,6 @@ pub struct KeyValue {
 }
 /// InstrumentationScope is a message representing the instrumentation scope information
 /// such as the fully qualified name and version.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct InstrumentationScope {

@@ -61,6 +61,3 @@ url = { version = "2.5" }
 
 [dev-dependencies]
 test-log = { version = "0.2", default-features = false, features = ["trace"] }
-
-[build-dependencies]
-tonic-build = "0.11"

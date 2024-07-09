@@ -9,12 +9,13 @@ repository = { workspace = true }
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive", "env"] }
-url = { workspace = true }
+fpx = { version = "0.1.0", path = "../fpx" }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 tracing = { workspace = true }
 typeshare-core = { version = "1.9" }
-schemars = { workspace = true }
-fpx = { version = "0.1.0", path = "../fpx" }
-serde = { workspace = true }
-serde_json = { workspace = true }
+url = { workspace = true }
+
 tonic-build = { version = "0.11", features = ["cleanup-markdown"] }

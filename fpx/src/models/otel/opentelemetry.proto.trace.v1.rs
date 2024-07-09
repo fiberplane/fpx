@@ -9,8 +9,6 @@
 ///
 /// When new fields are added into this message, the OTLP request MUST be updated
 /// as well.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TracesData {
@@ -23,8 +21,6 @@ pub struct TracesData {
     pub resource_spans: ::prost::alloc::vec::Vec<ResourceSpans>,
 }
 /// A collection of ScopeSpans from a Resource.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ResourceSpans {
@@ -44,8 +40,6 @@ pub struct ResourceSpans {
     pub schema_url: ::prost::alloc::string::String,
 }
 /// A collection of Spans produced by an InstrumentationScope.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ScopeSpans {
@@ -67,8 +61,6 @@ pub struct ScopeSpans {
 /// A Span represents a single operation performed by a single component of the system.
 ///
 /// The next available field id is 17.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Span {
@@ -199,8 +191,6 @@ pub struct Span {
 pub mod span {
     /// Event is a time-stamped annotation of the span, consisting of user-supplied
     /// text description and key-value pairs.
-    #[derive(serde::Deserialize, serde::Serialize)]
-    #[serde(rename_all = "snake_case")]
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Event {
@@ -227,8 +217,6 @@ pub mod span {
     /// different trace. For example, this can be used in batching operations,
     /// where a single batch handler processes multiple requests from different
     /// traces or when the handler receives a request from a different project.
-    #[derive(serde::Deserialize, serde::Serialize)]
-    #[serde(rename_all = "snake_case")]
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Link {
@@ -275,8 +263,6 @@ pub mod span {
     }
     /// SpanKind is the type of span. Can be used to specify additional relationships between spans
     /// in addition to a parent/child relationship.
-    #[derive(serde::Deserialize, serde::Serialize)]
-    #[serde(rename_all = "snake_case")]
     #[derive(
         Clone,
         Copy,
@@ -342,8 +328,6 @@ pub mod span {
 }
 /// The Status type defines a logical error model that is suitable for different
 /// programming environments, including REST APIs and RPC APIs.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Status {
@@ -358,8 +342,6 @@ pub struct Status {
 pub mod status {
     /// For the semantics of status codes see
     /// <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/api.md#set-status>
-    #[derive(serde::Deserialize, serde::Serialize)]
-    #[serde(rename_all = "snake_case")]
     #[derive(
         Clone,
         Copy,
@@ -418,8 +400,6 @@ pub mod status {
 /// OpenTelemetry protocol.  Older Span producers do not set this
 /// field, consequently consumers should not rely on the absence of a
 /// particular flag bit to indicate the presence of a particular feature.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(rename_all = "snake_case")]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 pub enum SpanFlags {

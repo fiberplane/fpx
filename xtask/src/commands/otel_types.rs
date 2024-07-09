@@ -26,20 +26,11 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     tonic_build::configure()
         .emit_rerun_if_changed(false)
-        .type_attribute(
-            ".",
-            "#[derive(serde::Deserialize, serde::Serialize)] #[serde(rename_all = \"snake_case\")]",
-        )
         .include_file(args.include_file)
         .build_client(false)
         .build_server(true)
         .out_dir(args.output_path)
-        .compile(
-            &args.proto_files,
-            &args.include_paths,
-            // &["../opentelemetry-proto/opentelemetry/proto/collector/trace/v1/trace_service.proto"],
-            // &["../opentelemetry-proto"],
-        )?;
+        .compile(&args.proto_files, &args.include_paths)?;
 
     Ok(())
 }

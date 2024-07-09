@@ -629,7 +629,6 @@ dependencies = [
  "tokio-tungstenite",
  "toml",
  "tonic",
- "tonic-build",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
