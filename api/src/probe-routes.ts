@@ -8,6 +8,7 @@ export async function probeRoutesWithExponentialBackoff(
   serviceArg: string | number | undefined,
   maxRetries: number,
   delay = 1000,
+  maxDelay = 16000,
 ) {
   const serviceUrl = resolveServiceArg(serviceArg);
   let attempt = 0;
@@ -21,16 +22,16 @@ export async function probeRoutesWithExponentialBackoff(
       attempt++;
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      logger.error(
+      logger.debug(
         `Failed to detect routes for service ${serviceUrl}:`,
         errorMessage,
       );
       if (attempt < maxRetries) {
-        const backoffDelay = delay * 2 ** attempt;
-        logger.info(`Retrying in ${backoffDelay}ms...`);
+        const backoffDelay = Math.min(delay * 2 ** attempt, maxDelay);
+        logger.debug(`Retrying in ${backoffDelay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, backoffDelay));
       } else {
-        logger.info(
+        logger.error(
           "Failed to detect service routes. Giving up. Restart fpx to try again!",
         );
       }
