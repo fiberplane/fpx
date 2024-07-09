@@ -88,14 +88,16 @@ async fn test_create_span() {
     let store = create_test_database().await;
 
     let tx = store.start_transaction().await.unwrap();
-    let span = Span::builder()
-        .trace_id(123)
-        .span_id(123)
-        .name("test name")
-        .scope_name("test scope name")
-        .scope_version("test scope version")
-        .kind(SpanKind::Server)
-        .build();
+    let span = Span {
+        id: 0,
+        trace_id: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
+        span_id: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
+        parent_span_id: None,
+        name: "test name".to_string(),
+        kind: SpanKind::Server,
+        scope_name: None,
+        scope_version: None,
+    };
 
     let span = store.span_create(&tx, span).await.unwrap();
 

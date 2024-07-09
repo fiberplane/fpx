@@ -10,7 +10,7 @@ use thiserror::Error;
 use tracing::error;
 
 pub mod migrations;
-mod models;
+pub mod models;
 #[cfg(test)]
 mod tests;
 
@@ -142,7 +142,7 @@ impl Store {
                     (
                         trace_id,
                         span_id,
-                        parent_trace_id,
+                        parent_span_id,
                         name,
                         kind,
                         scope_name,
@@ -154,7 +154,7 @@ impl Store {
                 (
                     span.trace_id,
                     span.span_id,
-                    span.parent_trace_id,
+                    span.parent_span_id,
                     span.name,
                     span.kind.as_ref(),
                     span.scope_name,

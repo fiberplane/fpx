@@ -56,8 +56,9 @@ tonic = { version = "0.11" }
 tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.24" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-typed-builder = { version = "0.18" }
 url = { version = "2.5" }
+
+opentelemetry-proto = { version = "0.6", features = ["gen-tonic-messages"] }
 
 [dev-dependencies]
 test-log = { version = "0.2", default-features = false, features = ["trace"] }

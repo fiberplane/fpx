@@ -1,10 +1,10 @@
 use crate::data::{DbError, Store};
 use crate::events::ServerEvents;
-use crate::models::otel::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceService;
-use crate::models::otel::opentelemetry::proto::collector::trace::v1::{
+use crate::models::TraceAdded;
+use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceService;
+use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
 };
-use crate::models::TraceAdded;
 
 #[derive(Clone)]
 pub struct GrpcService {
@@ -25,11 +25,12 @@ impl TraceService for GrpcService {
         request: tonic::Request<ExportTraceServiceRequest>,
     ) -> Result<tonic::Response<ExportTraceServiceResponse>, tonic::Status> {
         let tx = self.store.start_transaction().await?;
-        // let trace = ();
+
+        // let spans: Vec<Span> = request.get_ref();
 
         self.store.commit_transaction(tx).await?;
 
-        let trace_ids = request.get_ref().extract_trace_ids();
+        let trace_ids = extract_trace_ids(request.get_ref());
 
         // let serialized = serde_json::to_string(request.get_ref()).unwrap();
         // eprintln!("dump:\n{}", serialized);
@@ -43,17 +44,16 @@ impl TraceService for GrpcService {
     }
 }
 
-impl ExportTraceServiceRequest {
-    pub fn extract_trace_ids(&self) -> Vec<Vec<u8>> {
-        self.resource_spans
-            .iter()
-            .flat_map(|span| {
-                span.scope_spans.iter().flat_map(|scope_span| {
-                    scope_span.spans.iter().map(|inner| inner.trace_id.clone())
-                })
-            })
-            .collect()
-    }
+pub fn extract_trace_ids(message: &ExportTraceServiceRequest) -> Vec<Vec<u8>> {
+    message
+        .resource_spans
+        .iter()
+        .flat_map(|span| {
+            span.scope_spans
+                .iter()
+                .flat_map(|scope_span| scope_span.spans.iter().map(|inner| inner.trace_id.clone()))
+        })
+        .collect()
 }
 
 impl From<DbError> for tonic::Status {

@@ -1,15 +1,15 @@
+use crate::models;
+use anyhow::Result;
 use bytes::Bytes;
+use opentelemetry_proto::tonic::trace::v1::TracesData;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 use strum::AsRefStr;
-use typed_builder::TypedBuilder;
-
-use crate::models;
 
 #[derive(Debug)]
-pub(crate) struct Json<T: DeserializeOwned>(T);
+pub struct Json<T: DeserializeOwned>(T);
 
 impl<T: DeserializeOwned> Deref for Json<T> {
     type Target = T;
@@ -64,30 +64,23 @@ impl From<Request> for models::Request {
     }
 }
 
-#[derive(Serialize, Deserialize, TypedBuilder)]
+#[derive(Serialize, Deserialize)]
 pub struct Span {
     /// The internal ID of the span. Should probably not be exposed at all.
     /// Probably better to use a composite key of trace_id and span_id.
-    #[builder(setter(skip), default = 0)]
     pub id: i64,
 
-    pub trace_id: i64,
-    pub span_id: i64,
+    pub trace_id: Vec<u8>,
+    pub span_id: Vec<u8>,
 
-    #[builder(default)]
-    pub parent_trace_id: Option<i64>,
+    pub parent_span_id: Option<Vec<u8>>,
 
-    #[builder(setter(into))]
     pub name: String,
 
-    #[builder(default = SpanKind::Internal)]
     pub kind: SpanKind,
 
-    #[builder(setter(into))]
-    pub scope_name: String,
-
-    #[builder(setter(into))]
-    pub scope_version: String,
+    pub scope_name: Option<String>,
+    pub scope_version: Option<String>,
     // TODOs:
     // pub status: Json<SpanStatus>,
     // pub links: Json<Vec<SpanLink>>,
@@ -97,6 +90,46 @@ pub struct Span {
     // pub scope_attributes: Json<AttributeMap>,
     // pub start_time: i64,
     // pub end_time: i64,
+}
+
+impl Span {
+    pub fn from_otel(traces_data: TracesData) -> Result<Vec<Self>> {
+        let mut result = vec![];
+
+        for resource_span in traces_data.resource_spans {
+            for scope_span in resource_span.scope_spans {
+                let mut scope_name = None;
+                let mut scope_version = None;
+
+                if let Some(scope) = scope_span.scope {
+                    scope_name = Some(scope.name);
+                    scope_version = Some(scope.version);
+                }
+
+                for span in scope_span.spans {
+                    let parent_span_id = if span.parent_span_id.is_empty() {
+                        None
+                    } else {
+                        Some(span.parent_span_id)
+                    };
+
+                    let span = Span {
+                        id: 0,
+                        trace_id: span.trace_id,
+                        span_id: span.span_id,
+                        parent_span_id,
+                        name: span.name,
+                        kind: SpanKind::Internal,
+                        scope_name: scope_name.clone(),
+                        scope_version: scope_version.clone(),
+                    };
+                    result.push(span);
+                }
+            }
+        }
+
+        Ok(result)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
