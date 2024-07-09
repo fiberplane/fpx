@@ -6,17 +6,13 @@ export async function withSpan<T>(name: string, fn: () => Promise<T>) {
 
 export async function spanPromise<T>(name: string, fn: () => Promise<T>) {
   const handleRouteSpan = (span: Span) => {
-    console.log("Handle route span");
     return Promise.resolve()
       .then(fn)
       .then((result) => {
-        console.log("-> active?", !!trace.getActiveSpan());
-
         span.setStatus({ code: SpanStatusCode.OK });
         return result;
       })
       .catch((error) => {
-        console.log("-> error");
         span.setStatus({
           code: SpanStatusCode.ERROR,
           message: error instanceof Error ? error.message : "Unknown error",
@@ -24,7 +20,6 @@ export async function spanPromise<T>(name: string, fn: () => Promise<T>) {
         throw error;
       })
       .finally(() => {
-        console.log("span.end()");
         span.end();
       });
   };
