@@ -42,6 +42,7 @@ export function enableWaitUntilTracing(context: ExecutionContext) {
       if (prop === "waitUntil" && typeof value === "function") {
         return function waitUntil(this: unknown, promise: Promise<unknown>) {
           const activeSpan = trace.getActiveSpan();
+          console.log("activeSpan", !!activeSpan);
           //@ts-ignore
           const scope = this === receiver ? target : this;
           if (!activeSpan) {
