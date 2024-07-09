@@ -31,7 +31,6 @@ const CONFIG_FILE_NAME = "fpx.v0.config.json";
 // Paths to relevant project directories and files
 const PROJECT_ROOT_DIR = findProjectRoot();
 const PACKAGE_JSON_PATH = path.join(PROJECT_ROOT_DIR, "package.json");
-const REPOSITORY_ROOT_DIR = findGitRoot();
 
 // Loading some possible configuration from the environment
 const PACKAGE_JSON = safeParseJSONFile(PACKAGE_JSON_PATH);
@@ -60,11 +59,12 @@ async function runWizard() {
 
   const FPX_SERVICE_TARGET = await getServiceTarget();
 
-  await maybeUpdateGitIgnore();
+  const FPX_DATABASE_URL = getFpxDatabaseUrl();
 
   // Refresh the config with any new values
   USER_VARS.FPX_PORT = FPX_PORT;
   USER_VARS.FPX_SERVICE_TARGET = FPX_SERVICE_TARGET;
+  USER_VARS.FPX_DATABASE_URL = FPX_DATABASE_URL;
 
   const SERVICE_NAME = getFallbackServiceName();
   if (!USER_VARS.FPX_SERVICE_NAME && SERVICE_NAME) {
@@ -126,7 +126,7 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
   const fpxEndpoint = envFilePath && getFpxEndpointFromEnvFile(envFilePath);
   const isDifferent = fpxEndpoint !== expectedFpxEndpoint;
 
-  const shouldAsk = envFilePath && !fpxEndpoint && isDifferent;
+  const shouldAsk = envFilePath && (!fpxEndpoint || isDifferent);
 
   if (shouldAsk) {
     const question = `May we update your ${envFileName} file with FPX_ENDPOINT=${expectedFpxEndpoint}`;
@@ -169,24 +169,8 @@ async function getServiceTarget() {
 }
 
 /**
- * Update the project's .gitignore file with the FPX database,
- * if we determine we're in a git repo, and the user gives permission.
+ * Run the specified script (assumed to be in ../scripts)
  */
-async function maybeUpdateGitIgnore() {
-  const shouldAddToGitIgnoreAnswer = shouldAskToAddGitIgnore()
-    ? await askUser(
-        "May we add our local database, fpx.db, to your .gitignore?",
-        "y",
-      )
-    : "n";
-
-  const shouldGitIgnore = cliAnswerToBool(shouldAddToGitIgnoreAnswer);
-
-  if (shouldGitIgnore) {
-    addGitIgnore();
-  }
-}
-
 function runScript(scriptName) {
   const scriptPath = validScripts[scriptName];
   if (!scriptPath) {
@@ -220,14 +204,6 @@ function findProjectRoot() {
 }
 
 /**
- * Find the root of the git repository, if we're in one
- */
-function findGitRoot() {
-  const gitRoot = findInParentDirs(".git");
-  return gitRoot ? path.dirname(gitRoot) : null;
-}
-
-/**
  * Read the service port from wrangler.toml, if it exists
  */
 function readWranglerPort() {
@@ -255,13 +231,30 @@ function readUserConfig() {
   let initialized = false;
   const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
   const configPath = path.join(configDir, CONFIG_FILE_NAME);
+  const gitignorePath = path.join(configDir, ".gitignore");
+  const gitignoreEntry = "\n# fpx local database\nfpx.db\n";
+
+  // Create the .fpxconfig directory if it doesn't exist
   if (!fs.existsSync(configDir)) {
     initialized = true;
     fs.mkdirSync(configDir);
   }
+
+  // Create the fpx configuration file if it doesn't exist
   if (!fs.existsSync(configPath)) {
     initialized = true;
     fs.writeFileSync(configPath, JSON.stringify({}));
+  }
+
+  // Create a .gitignore in the config dir
+  // Add the fpx.db file to the .gitignore file if it doesn't exist
+  if (!fs.existsSync(gitignorePath)) {
+    fs.writeFileSync(gitignorePath, gitignoreEntry);
+  }
+
+  const gitignoreContent = fs.readFileSync(gitignorePath, "utf8");
+  if (!gitignoreContent.includes("fpx.db")) {
+    fs.appendFileSync(gitignorePath, gitignoreEntry);
   }
 
   let config = safeParseJSONFile(configPath);
@@ -291,6 +284,9 @@ function loadUserConfigIntoUserVars() {
   }
   if (USER_V0_CONFIG?.FPX_SERVICE_NAME) {
     USER_VARS.FPX_SERVICE_NAME = USER_V0_CONFIG.FPX_SERVICE_NAME;
+  }
+  if (USER_V0_CONFIG?.FPX_DATABASE_URL) {
+    USER_VARS.FPX_DATABASE_URL = USER_V0_CONFIG.FPX_DATABASE_URL;
   }
 }
 
@@ -358,57 +354,6 @@ async function askUser(question, defaultValue) {
 }
 
 /**
- * Should we ask the user to add fpx.db to .gitignore?
- *
- * This is only true if we're initializing FPX and we're in a git repository
- */
-function shouldAskToAddGitIgnore() {
-  return IS_INITIALIZING_FPX && !!REPOSITORY_ROOT_DIR;
-}
-
-/**
- * Function that adds `fpx.db` to `.gitignore`
- *
- * As of writing, only works when `.gitignore` is in the directory in which
- * this executable is run.
- */
-function addGitIgnore() {
-  const gitignorePath = findGitIgnore();
-
-  if (!REPOSITORY_ROOT_DIR) {
-    return;
-  }
-
-  if (!gitignorePath) {
-    return;
-  }
-
-  if (!fs.existsSync(gitignorePath)) {
-    fs.writeFileSync(gitignorePath, "");
-  }
-
-  const gitignoreEntry = "\n# fpx local database\nfpx.db\n";
-
-  if (fs.existsSync(gitignorePath)) {
-    const gitignoreContent = fs.readFileSync(gitignorePath, "utf8");
-    if (!gitignoreContent.includes("fpx.db")) {
-      fs.appendFileSync(gitignorePath, gitignoreEntry);
-      console.debug(".gitignore updated with fpx.db entry.");
-    }
-  }
-}
-
-/**
- * Find the path to the .gitignore file
- *
- * This is either in the current directory or in the parent directories
- */
-function findGitIgnore() {
-  const gitIgnorePath = findInParentDirs(".gitignore");
-  return gitIgnorePath || path.join(process.cwd(), ".gitignore");
-}
-
-/**
  * Find the environment variable file with the given precedence
  */
 function findEnvVarFile() {
@@ -434,6 +379,17 @@ function getFpxEndpointFromEnvFile(envFilePath) {
     // Silent error because we do not want errors to stop the cli from running
     return null;
   }
+}
+
+/**
+ * Get the path to the FPX database
+ *
+ * This is in the `.fpxconfig` directory, which allows us to gitignore it more cleanly
+ */
+function getFpxDatabaseUrl() {
+  const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
+  const dbPath = path.join(configDir, "fpx.db");
+  return `file:${dbPath}`;
 }
 
 // === UTILS === //
