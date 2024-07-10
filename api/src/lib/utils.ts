@@ -38,6 +38,11 @@ export function getIgnoredPaths() {
     ".git",
     "node_modules",
     "dist",
+    "out",
+    "fpx.db",
+    "fpx.db-journal",
+    "mizu.db",
+    "mizu.db-journal",
     ".fpx",
     ".fpxconfig",
     ".swc",
@@ -52,10 +57,16 @@ export function getIgnoredPaths() {
     const gitignoredPaths = gitignoreFiles.map((gitignoreFile) => {
       const filePath = path.join(currentDir, gitignoreFile.name);
       const content = fs.readFileSync(filePath, "utf8");
-      return content
-        .split("\n")
-        .filter((line) => line.trim() !== "")
-        .filter((line) => !line.startsWith("#"));
+      return (
+        content
+          .split("\n")
+          .filter((line) => line.trim() !== "")
+          // Filter out comments
+          .filter((line) => !line.startsWith("#"))
+          // Filter out negations, since we're using minimatch on a per-pattern basis
+          // so, `!.yarn/releases` would match like all files
+          .filter((line) => !line.startsWith("!"))
+      );
     });
 
     return defaultIgnoredPaths.concat(...gitignoredPaths.flat());

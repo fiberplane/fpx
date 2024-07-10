@@ -1,12 +1,13 @@
 import fs from "node:fs";
 import { createServer } from "node:http";
+import path from "node:path";
 import { serve } from "@hono/node-server";
 import { config } from "dotenv";
+import { minimatch } from "minimatch";
 import { type WebSocket, WebSocketServer } from "ws";
-
 import { createApp } from "./app.js";
 import { getIgnoredPaths } from "./lib/utils.js";
-import { probeRoutesWithExponentialBackoff } from "./probe-routes.js";
+import { debouncedProbeRoutesWithExponentialBackoff } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
@@ -50,12 +51,38 @@ const watchDir = process.env.FPX_WATCH_DIR ?? process.cwd();
 
 const ignoredPaths = getIgnoredPaths();
 
+debouncedProbeRoutesWithExponentialBackoff(
+  serviceTargetArgument,
+  probeMaxRetries,
+  probeDelay,
+);
+
 fs.watch(watchDir, { recursive: true }, async (eventType, filename) => {
-  if (!filename) return;
-  if (ignoredPaths.includes(filename)) return;
+  if (!filename) {
+    return;
+  }
+  if (ignoredPaths.includes(filename)) {
+    return;
+  }
+  // E.g., ignore everything inside the `.wrangler` directory
+  if (
+    ignoredPaths.some((pattern) => filename.startsWith(`${pattern}${path.sep}`))
+  ) {
+    return;
+  }
+  // E.g., ignore all files with the given name (e.g., `fpx.db`, `fpx.db-journal`)
+  if (ignoredPaths.some((pattern) => path.basename(filename) === pattern)) {
+    return;
+  }
+  // Use minimatch to see if the filename matches any of the ignored patterns
+  // This is because gitignore can have glob patterns, etc
+  if (ignoredPaths.some((pattern) => minimatch(filename, pattern))) {
+    return;
+  }
+
   console.debug(`File ${filename} ${eventType}, sending a new probe`);
 
-  probeRoutesWithExponentialBackoff(
+  debouncedProbeRoutesWithExponentialBackoff(
     serviceTargetArgument,
     probeMaxRetries,
     probeDelay,

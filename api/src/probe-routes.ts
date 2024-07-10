@@ -1,3 +1,30 @@
+let debounceTimeout: NodeJS.Timeout | null = null;
+
+// biome-ignore lint/suspicious/noExplicitAny: Trust me, this is easier
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
+  // biome-ignore lint/suspicious/noExplicitAny: Trust me, this is easier
+  return (...args: any[]) => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    debounceTimeout = setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
+}
+
+/**
+ * Since we are calling the route probe inside a file watcher, we should implement
+ * debouncing to avoid spamming the service with requests.
+ * 
+ * HACK - Since we are monitoring ts files, we need a short delay to let the code
+ *        for the service recompile.
+ */
+export const debouncedProbeRoutesWithExponentialBackoff = debounce(
+  probeRoutesWithExponentialBackoff,
+  1500,
+);
+
 /**
  * Asynchronously probe the routes of a service with exponential backoff.
  * Makes a request to the service root route with the `X-Fpx-Route-Inspector` header set to `enabled`.
