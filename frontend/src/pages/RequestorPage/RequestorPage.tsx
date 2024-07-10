@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
 import { MagicWandIcon } from "@radix-ui/react-icons";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -21,6 +21,7 @@ import {
 import { findMatchedRoute, useReselectRouteHack, useRoutes } from "./routes";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./RequestorPage.css";
+import { useHotkeys } from "react-hotkeys-hook";
 import { BACKGROUND_LAYER } from "./styles";
 
 export const RequestorPage = () => {
@@ -107,6 +108,16 @@ export const RequestorPage = () => {
     makeRequest,
     recordRequestInSessionHistory,
     selectedRoute,
+  });
+
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useHotkeys("mod+enter", () => {
+    if (formRef.current) {
+      formRef.current.dispatchEvent(
+        new Event("submit", { cancelable: true, bubbles: true }),
+      );
+    }
   });
 
   const {
@@ -202,6 +213,7 @@ export const RequestorPage = () => {
           handlePathInputChange={handlePathInputChange}
           onSubmit={onSubmit}
           isRequestorRequesting={isRequestorRequesting}
+          formRef={formRef}
         />
 
         <div
