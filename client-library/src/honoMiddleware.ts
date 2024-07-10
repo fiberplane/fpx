@@ -87,7 +87,7 @@ export function createHonoMiddleware<App extends HonoApp>(
 
     if (!isEnabled) {
       // NOTE - In local env, we could print something a little more friendly, about adding FPX_ENDPOINT to .dev.vars
-      console.log("FPX_ENDPOINT is not set. Skipping FPX middleware.");
+      console.debug("FPX_ENDPOINT is not set. Skipping FPX middleware.");
       await next();
       return;
     }
