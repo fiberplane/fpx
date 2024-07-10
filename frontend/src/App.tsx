@@ -21,19 +21,21 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <RequestorSessionHistoryProvider>
         <Router>
-          <Layout>
+          {/* <Layout> */}
             <Routes>
-              <Route path="/" element={<Redirect />} />
-              <Route path="/requests" element={<RequestsPage />} />
-              <Route
-                path="/requests/:traceId"
-                element={<RequestDetailsPage />}
-              />
-              <Route path="/requestor" element={<RequestorPage />} />
-              <Route path="/issues" element={<IssuesPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
+              <Route element={<Layout />}>
+                <Route path="/" element={<Redirect />} />
+                <Route path="/requests" element={<RequestsPage />} />
+                <Route
+                  path="/requests/:traceId"
+                  element={<RequestDetailsPage />}
+                />
+                <Route path="/requestor" element={<RequestorPage />} />
+                <Route path="/issues" element={<IssuesPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
             </Routes>
-          </Layout>
+          {/* </Layout> */}
         </Router>
       </RequestorSessionHistoryProvider>
     </QueryClientProvider>

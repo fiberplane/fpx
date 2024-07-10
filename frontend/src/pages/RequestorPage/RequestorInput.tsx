@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 type RequestInputProps = {
   method: string;
@@ -12,6 +14,7 @@ type RequestInputProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
   addBaseUrl: (path: string) => string;
+  formRef: React.RefObject<HTMLFormElement>;
 };
 
 export function RequestorInput({
@@ -22,6 +25,7 @@ export function RequestorInput({
   onSubmit,
   isRequestorRequesting,
   addBaseUrl,
+  formRef
 }: RequestInputProps) {
   const [value, setValue] = useState("");
 
@@ -35,6 +39,7 @@ export function RequestorInput({
 
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
       className="flex items-center justify-between rounded-md bg-muted border"
     >
@@ -61,15 +66,27 @@ export function RequestorInput({
         />
       </div>
       <div className="flex items-center space-x-2 p-2">
-        <Button
-          size="sm"
-          type="submit"
-          disabled={isRequestorRequesting}
-          className="p-2 md:p-2.5"
-        >
-          <span className="hidden md:inline">Send</span>
-          <TriangleRightIcon className="md:hidden w-6 h-6" />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                size="sm"
+                type="submit"
+                disabled={isRequestorRequesting}
+                className="p-2 md:p-2.5"
+              >
+                <span className="hidden md:inline">Send</span>
+                <TriangleRightIcon className="md:hidden w-6 h-6" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-muted/75 text-white">
+              <p>Send Request
+                {/* Figoure ot if mac or other */}
+              <Badge className="ml-1" variant="outline">⌘ + ↩</Badge>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </form>
   );

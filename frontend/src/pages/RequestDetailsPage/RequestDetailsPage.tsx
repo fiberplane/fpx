@@ -5,12 +5,12 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Status } from "@/components/ui/status";
-import { useKeySequence } from "@/hooks";
 import {
   MizuLog,
   MizuRequestEnd,
   MizuRequestStart,
   MizuTrace,
+  queryClient,
   useMizuTraces,
 } from "@/queries";
 import {
@@ -21,9 +21,11 @@ import {
   isMizuErrorMessage,
   isMizuFetchErrorMessage,
   isMizuRequestEndMessage,
+  isMizuRequestStartMessage,
 } from "@/queries/types";
 import { cn } from "@/utils";
 import { useEffect, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { z } from "zod";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 import { FetchRequestLog } from "./FetchRequestLog";
@@ -35,6 +37,9 @@ import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 import { FpxCard, RequestMethod, SectionHeading } from "./shared";
+import { Badge } from "@/components/ui/badge";
+import { useMakeRequest, useProbedRoutes } from "../RequestorPage/queries";
+import { KeyValueParameter } from "../RequestorPage/KeyValueForm";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -84,7 +89,7 @@ export function RequestDetailsPage() {
     };
   }, []);
 
-  useKeySequence(["Escape"], () => {
+  useHotkeys(["Escape"], () => {
     // catch all the cases where the user is in the input field
     // and we don't want to exit the page
     if (isInputFocused) {
@@ -97,6 +102,46 @@ export function RequestDetailsPage() {
 
     navigate("/requests");
   });
+
+
+  const { mutate: makeRequest, isLoading: isRequestorRequesting } =
+    useMakeRequest();
+
+  const requestLog = trace?.logs.find((l) => isMizuRequestStartMessage(l.message));
+
+  const { message: requestMessage } = requestLog as { message: MizuRequestStart };
+
+  const headers: KeyValueParameter[] = Object.entries(requestMessage.headers).map(([key, value]) => {
+    return {
+      id: key,
+      key,
+      value,
+      enabled: true
+    }
+  })
+
+  const queryParams: KeyValueParameter[] | undefined = requestMessage?.query && Object.entries(requestMessage.query).map(([key, value]) => {
+    return {
+      id: key,
+      key,
+      value,
+      enabled: true
+    }
+  })
+
+  const pathParams: KeyValueParameter[] | undefined = requestMessage?.params && Object.entries(requestMessage.params).map(([key, value]) => {
+    return {
+      id: key,
+      key,
+      value,
+      enabled: true
+    }
+  })
+
+  const { data: routesAndMiddleware } = useProbedRoutes();
+  const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
+  const addBaseUrl = (path: string) => `${baseUrl}${path}`;
+
 
   return (
     <div
@@ -120,6 +165,27 @@ export function RequestDetailsPage() {
       >
         <h2 className="text-2xl font-semibold">Request Details</h2>
         <div className="flex gap-2">
+          <Button
+            disabled={isRequestorRequesting}
+            onClick={async () => {
+              makeRequest({
+                addBaseUrl,
+                headers,
+                path: requestMessage.path,
+                queryParams: queryParams ?? [],
+                pathParams,
+                method: requestMessage.method,
+              })
+              await queryClient.invalidateQueries({
+                queryKey: ["mizuTraces"]
+              })
+            }}
+          >
+            Replay
+            <Badge variant="outline" className="ml-1 text-background text-xs">
+              ⌘ + Enter
+            </Badge>
+          </Button>
           <Button
             variant="secondary"
             size="icon"
