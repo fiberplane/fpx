@@ -5,7 +5,6 @@ import fs from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import chalk from "chalk";
-import toml from "toml";
 
 import logger from "./logger.js";
 import {
@@ -14,6 +13,7 @@ import {
   findInParentDirs,
   isPortTaken,
   safeParseJSONFile,
+  safeParseTomlFile,
 } from "./utils.js";
 
 // Shim __filename and __dirname since we're using esm
@@ -37,10 +37,12 @@ const CONFIG_DIR_NAME = ".fpxconfig";
 const CONFIG_FILE_NAME = "fpx.v0.config.json";
 
 // Paths to relevant project directories and files
+const WRANGLER_TOML_PATH = findInParentDirs("wrangler.toml");
+const PACKAGE_JSON_PATH = findInParentDirs("package.json");
 const PROJECT_ROOT_DIR = findProjectRoot();
-const PACKAGE_JSON_PATH = path.join(PROJECT_ROOT_DIR, "package.json");
 
 // Loading some possible configuration from the environment
+const WRANGLER_TOML = safeParseTomlFile(WRANGLER_TOML_PATH);
 const PACKAGE_JSON = safeParseJSONFile(PACKAGE_JSON_PATH);
 const PROJECT_PORT = readWranglerPort();
 const { initialized: IS_INITIALIZING_FPX, config: USER_V0_CONFIG } =
@@ -135,6 +137,10 @@ async function getFpxPort() {
  */
 async function updateEnvFileWithFpxEndpoint(fpxPort) {
   const expectedFpxEndpoint = `http://localhost:${fpxPort}/v0/logs`;
+
+  if (shouldCreateDevVarsFile()) {
+    touchDevVarsFile();
+  }
 
   const envFilePath = findEnvVarFile();
   const envFileName = envFilePath && path.basename(envFilePath);
@@ -243,10 +249,11 @@ function runScript(scriptName) {
 }
 
 /**
- * Looks for the project root by looking for a `package.json` file
+ * Looks for the project root by looking first for a `wrangler.toml` file, then a `package.json` file
+ * Searches all parent directories up to the root of the filesystem
  */
 function findProjectRoot() {
-  const projectRoot = findInParentDirs("package.json");
+  const projectRoot = WRANGLER_TOML_PATH || PACKAGE_JSON_PATH;
   if (!projectRoot) {
     return null;
   }
@@ -257,17 +264,14 @@ function findProjectRoot() {
  * Read the service port from wrangler.toml, if it exists
  */
 function readWranglerPort() {
-  try {
-    const wranglerPath = path.join(process.cwd(), "wrangler.toml");
-    if (fs.existsSync(wranglerPath)) {
-      const wranglerContent = fs.readFileSync(wranglerPath, "utf8");
-      const wranglerConfig = toml.parse(wranglerContent);
-      return wranglerConfig?.dev?.port || null;
-    }
-  } catch (_error) {
-    // Silent error because we fallback to other values
-    return null;
-  }
+  return WRANGLER_TOML?.dev?.port || null;
+}
+
+/**
+ * Check if the project has a wrangler.toml file in the current working directory
+ */
+function hasWranglerToml() {
+  return WRANGLER_TOML_PATH !== null;
 }
 
 /**
@@ -398,6 +402,36 @@ function findEnvVarFile() {
     }
   }
   return null;
+}
+
+/**
+ * Create an empty .dev.vars file in the project root
+ */
+function touchDevVarsFile() {
+  try {
+    fs.writeFileSync(path.join(PROJECT_ROOT_DIR, ".dev.vars"), "");
+    logger.info(chalk.dim("  ℹ️ Created an empty .dev.vars file"));
+  } catch {
+    logger.debug(chalk.red("  ❤️‍🩹 Failed to create .dev.vars file"));
+  }
+}
+
+/**
+ * Check if we should create the .dev.vars file
+ *
+ * This is true if the user has a wrangler.toml file in the project root
+ * and the .dev.vars file does not exist there
+ */
+function shouldCreateDevVarsFile() {
+  if (!hasWranglerToml()) {
+    return false;
+  }
+  const devVarsFilePath = path.join(PROJECT_ROOT_DIR, ".dev.vars");
+  try {
+    return !fs.existsSync(devVarsFilePath);
+  } catch {
+    return false;
+  }
 }
 
 /**

@@ -3,6 +3,7 @@ import net from "node:net";
 import path from "node:path";
 import readline from "node:readline";
 import chalk from "chalk";
+import toml from "toml";
 
 import logger from "./logger.js";
 
@@ -60,6 +61,23 @@ export function safeParseJSONFile(filePath) {
       // Silent error because we fallback to other values
       return null;
     }
+  }
+  return null;
+}
+
+/**
+ * Safely parse a TOML file.
+ * @param {string} filePath - The path to the TOML file.
+ * @returns {object|null} - The parsed TOML object, or null if parsing fails.
+ */
+export function safeParseTomlFile(filePath) {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, "utf8");
+      return toml.parse(fileContent);
+    }
+  } catch (error) {
+    logger.debug(`Failed to parse TOML file at ${filePath}:`, error);
   }
   return null;
 }

@@ -1,5 +1,7 @@
 ## Running fpx
 
+To run this project locally, follow these commands:
+
 ```sh
 npm install
 npm run db:generate
@@ -10,6 +12,7 @@ npm run db:migrate
 npm run dev 
 
 # If you want more granular logging locally, you can set the FPX_LOG_LEVEL env var
+# (This will also be read from .dev.vars)
 FPX_LOG_LEVEL=debug npm run dev
 ```
 
@@ -21,7 +24,7 @@ FPX_LOG_LEVEL=debug npm run dev
 
 ## Publishing
 
-### Testing npx command locally
+### Testing the npx command locally
 
 ```sh
 # From the fpx PROJECT ROOT!
