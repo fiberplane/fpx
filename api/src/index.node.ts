@@ -4,10 +4,9 @@ import chalk from "chalk";
 import { config } from "dotenv";
 import figlet from "figlet";
 import { type WebSocket, WebSocketServer } from "ws";
-
 import { createApp } from "./app.js";
 import logger from "./logger.js";
-import { probeRoutesWithExponentialBackoff } from "./probe-routes.js";
+import { startRouteProbeWatcher } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
@@ -58,18 +57,16 @@ server.on("error", (err) => {
   }
 });
 
-// Fire off an async probe to the service we want to monitor
-// This will collect information on all routes that the service exposes
-// Which powers a postman-like UI to ping routes and see responses
-const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
-const probeMaxRetries = 10;
-const probeDelay = 1000;
-probeRoutesWithExponentialBackoff(
-  serviceTargetArgument,
-  probeMaxRetries,
-  probeDelay,
-);
+// First, fire off an async probe to the service we want to monitor
+//   - This will collect information on all routes that the service exposes
+//   - This powers a postman-like UI to ping routes and see responses
+//
+// Additionally, this will watch for changes to files in the project directory,
+//   - If a file changes, send a new probe to the service
+const watchDir = process.env.FPX_WATCH_DIR ?? process.cwd();
+startRouteProbeWatcher(watchDir);
 
+// Set up websocket server
 const wss = new WebSocketServer({ server, path: "/ws" });
 wss.on("connection", (ws) => {
   logger.debug("WebSocket connection established", ws.OPEN);
