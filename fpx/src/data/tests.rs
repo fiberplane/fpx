@@ -1,5 +1,6 @@
-use crate::data::models::{Json, Span, SpanKind};
+use crate::data::models::{Json, Span};
 use crate::data::{migrations, RowsExt, Store};
+use crate::models::SpanKind;
 use libsql::params;
 use serde::Deserialize;
 use std::collections::BTreeMap;

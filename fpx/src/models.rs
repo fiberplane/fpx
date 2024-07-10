@@ -1,12 +1,12 @@
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
-use crate::data::DbError;
+use crate::data::{self, DbError};
+use opentelemetry_proto::tonic::trace::v1::span;
 use rand::Rng;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use strum::AsRefStr;
 use thiserror::Error;
-
-use crate::data;
 
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
@@ -302,29 +302,42 @@ pub struct Span {
 }
 
 impl From<data::models::Span> for Span {
-    fn from(value: data::models::Span) -> Self {
-        let trace_id = hex::encode(value.trace_id);
-        let span_id = hex::encode(value.span_id);
-        let parent_span_id = value.parent_span_id.map(hex::encode);
+    fn from(span: data::models::Span) -> Self {
+        let trace_id = hex::encode(span.trace_id);
+        let span_id = hex::encode(span.span_id);
+        let parent_span_id = span.parent_span_id.map(hex::encode);
 
         Self {
             trace_id,
             span_id,
             parent_span_id,
-            name: value.name,
-            kind: SpanKind::Internal,
+            name: span.name,
+            kind: span.kind,
         }
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(AsRefStr, Serialize, Deserialize, PartialEq, Debug)]
 pub enum SpanKind {
-    Unspecified,
     Internal,
     Server,
     Client,
     Producer,
     Consumer,
+    Unspecified,
+}
+
+impl From<span::SpanKind> for SpanKind {
+    fn from(value: span::SpanKind) -> Self {
+        match value {
+            span::SpanKind::Unspecified => SpanKind::Unspecified,
+            span::SpanKind::Internal => SpanKind::Internal,
+            span::SpanKind::Server => SpanKind::Server,
+            span::SpanKind::Client => SpanKind::Client,
+            span::SpanKind::Producer => SpanKind::Producer,
+            span::SpanKind::Consumer => SpanKind::Consumer,
+        }
+    }
 }
 
 pub struct Event {

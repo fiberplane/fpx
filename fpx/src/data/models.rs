@@ -1,4 +1,4 @@
-use crate::models;
+use crate::models::{self, SpanKind};
 use anyhow::Result;
 use bytes::Bytes;
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
@@ -6,7 +6,6 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
-use strum::AsRefStr;
 
 #[derive(Debug)]
 pub struct Json<T: DeserializeOwned>(T);
@@ -107,6 +106,7 @@ impl Span {
                 }
 
                 for span in scope_span.spans {
+                    let kind = span.kind().into();
                     let parent_span_id = if span.parent_span_id.is_empty() {
                         None
                     } else {
@@ -119,7 +119,7 @@ impl Span {
                         span_id: span.span_id,
                         parent_span_id,
                         name: span.name,
-                        kind: SpanKind::Internal,
+                        kind,
                         scope_name: scope_name.clone(),
                         scope_version: scope_version.clone(),
                     };
@@ -143,15 +143,6 @@ pub enum SpanStatusCode {
     Unset,
     Ok,
     Error,
-}
-
-#[derive(AsRefStr, Serialize, Deserialize, PartialEq, Debug)]
-pub enum SpanKind {
-    Internal,
-    Server,
-    Client,
-    Producer,
-    Consumer,
 }
 
 #[derive(Deserialize)]
