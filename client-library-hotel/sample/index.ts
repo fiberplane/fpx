@@ -1,6 +1,5 @@
 import { Hono } from "hono";
-import { instrument } from "../src";
-import { measure } from "../src/util";
+import { instrument, measure } from "../src";
 
 const app = new Hono();
 
