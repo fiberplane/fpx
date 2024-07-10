@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Status } from "@/components/ui/status";
-import { useKeySequence } from "@/hooks";
 import {
   MizuLog,
   MizuRequestEnd,
@@ -24,6 +23,7 @@ import {
 } from "@/queries/types";
 import { cn } from "@/utils";
 import { useEffect, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { z } from "zod";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 import { FetchRequestLog } from "./FetchRequestLog";
@@ -84,7 +84,7 @@ export function RequestDetailsPage() {
     };
   }, []);
 
-  useKeySequence(["Escape"], () => {
+  useHotkeys(["Escape"], () => {
     // catch all the cases where the user is in the input field
     // and we don't want to exit the page
     if (isInputFocused) {
