@@ -86,12 +86,12 @@ export function instrument(
             ? enableWaitUntilTracing(executionCtx)
             : undefined;
 
-          const next = () => {
+          const next = async () => {
             trace.getActiveSpan()?.setAttributes({
               [SEMATTRS_HTTP_URL]: request.url,
               [SEMATTRS_HTTP_METHOD]: request.method,
             });
-            return value(request, env, proxyExecutionCtx);
+            return await value(request, env, proxyExecutionCtx);
           };
           const result = await withSpan("route", next);
 
