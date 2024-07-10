@@ -96,36 +96,42 @@ async function runWizard() {
  */
 async function getFpxPort() {
   // This looks confusing but the basic pattern is:
-  // - If we're initializing, ask the user where we should run.
-  //   The default (fallback) value is dynamic depending on env.
-  // - If we're not initializing, try to skip the question based on local config, fall back to asking them.
+  // - If we're initializing use the fallback value, which is dynamic depending on env.
+  // - If we're not initializing, try to determine based on the local config
+  //  - If there was a preconfigured port, but it's taken, ask the user to choose a new port
   //
   const hasConfiguredFpxPort = getFallbackFpxPort() !== null;
   const fpxPortFallback = getFallbackFpxPort() || 8788;
-  const fpxPortQuestion = "  Which port should FPX Studio run on? ";
-  let FPX_PORT;
-  if (IS_INITIALIZING_FPX) {
-    FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
-  } else if (hasConfiguredFpxPort) {
-    FPX_PORT = fpxPortFallback;
-  } else {
-    FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
-  }
+  let FPX_PORT = fpxPortFallback;
 
-  // If the user's selected port for running FPX is taken, try to find a new fallback and then ask again
+  // If the user's selected port for running FPX is taken, try to find a new fallback
+  // If the user specified a port to run on already, ask them to choose a new port
   while (await isPortTaken(FPX_PORT)) {
-    let nextFallback = (Number.parseInt(FPX_PORT, 10) + 1).toString();
-    // Make sure the fallback doesn't conflict with the service target
-    if (nextFallback === getFallbackServiceTarget()?.toString()) {
-      nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
-    }
     const portAlreadyInUse = chalk.yellow(
       `Port ${FPX_PORT} is already in use.`,
     );
-    FPX_PORT = await askUser(
-      `  ⚠️ ${portAlreadyInUse}\n  Please choose a different port for FPX.`,
-      nextFallback,
-    );
+    logger.debug(`${portAlreadyInUse}, looking for another one...`);
+
+    // Find a new fallback port
+    let nextFallback = (Number.parseInt(FPX_PORT, 10) + 1).toString();
+
+    // Make sure the fallback doesn't conflict with the service target
+    const serviceTarget = getFallbackServiceTarget()?.toString();
+    const hasConflict =
+      nextFallback === serviceTarget ||
+      serviceTarget?.endsWith(`:${nextFallback}`);
+    if (hasConflict) {
+      nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
+    }
+
+    if (hasConfiguredFpxPort) {
+      FPX_PORT = await askUser(
+        `  ⚠️ ${portAlreadyInUse}\n  Please choose a different port for FPX.`,
+        nextFallback,
+      );
+    } else {
+      FPX_PORT = nextFallback;
+    }
   }
 
   return FPX_PORT;
