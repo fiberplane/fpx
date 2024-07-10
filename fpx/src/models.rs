@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use thiserror::Error;
 
+use crate::data;
+
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
 /// Messages that are send from the server to the client.
@@ -69,7 +71,7 @@ pub enum ServerMessageDetails {
     /// and optionally a reference to the inspector id.
     RequestAdded(Box<RequestAdded>),
 
-    TraceAdded(Box<TraceAdded>),
+    SpanAdded(Box<SpanAdded>),
 }
 
 impl From<ServerMessageDetails> for ServerMessage {
@@ -148,19 +150,22 @@ impl From<RequestAdded> for ServerMessage {
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TraceAdded {
-    trace_ids: Vec<Vec<u8>>,
+pub struct SpanAdded {
+    /// New spans that have been added. The key is the trace ID and the values
+    /// are the spans ID's for that specific trace. Both trace and span ID are
+    /// hex encoded.
+    new_spans: Vec<(String, String)>,
 }
 
-impl TraceAdded {
-    pub fn new(trace_ids: Vec<Vec<u8>>) -> Self {
-        Self { trace_ids }
+impl SpanAdded {
+    pub fn new(new_spans: Vec<(String, String)>) -> Self {
+        Self { new_spans }
     }
 }
 
-impl From<TraceAdded> for ServerMessage {
-    fn from(val: TraceAdded) -> Self {
-        ServerMessageDetails::TraceAdded(Box::new(val)).into()
+impl From<SpanAdded> for ServerMessage {
+    fn from(val: SpanAdded) -> Self {
+        ServerMessageDetails::SpanAdded(Box::new(val)).into()
     }
 }
 
@@ -287,25 +292,32 @@ pub struct InstrumentationScope {
     pub dropped_attributes_count: u32,
 }
 
+#[derive(Deserialize, Serialize)]
 pub struct Span {
-    pub trace_id: Vec<u8>,
-    pub span_id: Vec<u8>,
-    pub trace_state: Option<String>,
-    pub parent_span_id: Vec<u8>,
-    pub flags: u32,
+    pub trace_id: String,
+    pub span_id: String,
+    pub parent_span_id: Option<String>,
     pub name: String,
     pub kind: SpanKind,
-    pub start_time_unix_nano: u64,
-    pub end_time_unix_nano: u64,
-    pub attributes: BTreeMap<String, String>,
-    pub dropped_attributes_count: u32,
-    pub events: Vec<Event>,
-    pub dropped_events_count: u32,
-    pub links: Vec<Link>,
-    pub dropped_links_count: u32,
-    pub status: Status,
 }
 
+impl From<data::models::Span> for Span {
+    fn from(value: data::models::Span) -> Self {
+        let trace_id = hex::encode(value.trace_id);
+        let span_id = hex::encode(value.span_id);
+        let parent_span_id = value.parent_span_id.map(hex::encode);
+
+        Self {
+            trace_id,
+            span_id,
+            parent_span_id,
+            name: value.name,
+            kind: SpanKind::Internal,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize)]
 pub enum SpanKind {
     Unspecified,
     Internal,

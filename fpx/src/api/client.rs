@@ -1,9 +1,9 @@
 //! API client for the FPX API.
 
-use crate::models::Request;
-
 use super::errors::ApiClientError;
+use super::handlers::spans::SpanGetError;
 use super::handlers::RequestGetError;
+use crate::models::Request;
 use anyhow::Result;
 use http::Method;
 use tracing::trace;
@@ -73,6 +73,20 @@ impl ApiClient {
         request_id: i64,
     ) -> Result<Request, ApiClientError<RequestGetError>> {
         let path = format!("api/requests/{}", request_id);
+
+        self.do_req(Method::GET, path).await
+    }
+
+    pub async fn span_get(
+        &self,
+        trace_id: impl AsRef<str>,
+        span_id: impl AsRef<str>,
+    ) -> Result<crate::models::Span, ApiClientError<SpanGetError>> {
+        let path = format!(
+            "api/traces/{}/spans/{}",
+            trace_id.as_ref(),
+            span_id.as_ref()
+        );
 
         self.do_req(Method::GET, path).await
     }

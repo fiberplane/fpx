@@ -1,6 +1,7 @@
+use crate::data::models::Span;
 use crate::data::{DbError, Store};
 use crate::events::ServerEvents;
-use crate::models::TraceAdded;
+use crate::models::SpanAdded;
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceService;
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
@@ -24,18 +25,21 @@ impl TraceService for GrpcService {
         &self,
         request: tonic::Request<ExportTraceServiceRequest>,
     ) -> Result<tonic::Response<ExportTraceServiceResponse>, tonic::Status> {
+        let trace_ids = extract_trace_ids(request.get_ref());
+
+        let (_, _, export_trace_service_request) = request.into_parts();
+
         let tx = self.store.start_transaction().await?;
 
-        // let spans: Vec<Span> = request.get_ref();
+        let spans = Span::from_collector_request(export_trace_service_request);
+
+        for span in spans {
+            self.store.span_create(&tx, span).await?;
+        }
 
         self.store.commit_transaction(tx).await?;
 
-        let trace_ids = extract_trace_ids(request.get_ref());
-
-        // let serialized = serde_json::to_string(request.get_ref()).unwrap();
-        // eprintln!("dump:\n{}", serialized);
-
-        self.events.broadcast(TraceAdded::new(trace_ids).into());
+        self.events.broadcast(SpanAdded::new(trace_ids).into());
 
         let message = ExportTraceServiceResponse {
             partial_success: None,
@@ -44,14 +48,18 @@ impl TraceService for GrpcService {
     }
 }
 
-pub fn extract_trace_ids(message: &ExportTraceServiceRequest) -> Vec<Vec<u8>> {
+pub fn extract_trace_ids(message: &ExportTraceServiceRequest) -> Vec<(String, String)> {
     message
         .resource_spans
         .iter()
         .flat_map(|span| {
-            span.scope_spans
-                .iter()
-                .flat_map(|scope_span| scope_span.spans.iter().map(|inner| inner.trace_id.clone()))
+            span.scope_spans.iter().flat_map(|scope_span| {
+                scope_span.spans.iter().map(|inner| {
+                    let trace_id = hex::encode(&inner.trace_id);
+                    let span_id = hex::encode(&inner.span_id);
+                    (trace_id, span_id)
+                })
+            })
         })
         .collect()
 }

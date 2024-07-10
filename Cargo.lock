@@ -608,6 +608,7 @@ dependencies = [
  "bytes",
  "clap",
  "futures-util",
+ "hex",
  "http 1.1.0",
  "http-body-util",
  "include_dir",

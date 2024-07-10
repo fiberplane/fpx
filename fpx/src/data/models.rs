@@ -1,7 +1,7 @@
 use crate::models;
 use anyhow::Result;
 use bytes::Bytes;
-use opentelemetry_proto::tonic::trace::v1::TracesData;
+use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::BTreeMap;
@@ -93,7 +93,7 @@ pub struct Span {
 }
 
 impl Span {
-    pub fn from_otel(traces_data: TracesData) -> Result<Vec<Self>> {
+    pub fn from_collector_request(traces_data: ExportTraceServiceRequest) -> Vec<Self> {
         let mut result = vec![];
 
         for resource_span in traces_data.resource_spans {
@@ -128,7 +128,7 @@ impl Span {
             }
         }
 
-        Ok(result)
+        result
     }
 }
 

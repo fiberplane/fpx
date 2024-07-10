@@ -172,15 +172,12 @@ impl Store {
     pub async fn span_get(
         &self,
         tx: &Transaction,
-        trace_id: impl Into<TraceId>,
-        span_id: impl Into<SpanId>,
+        trace_id: Vec<u8>,
+        span_id: Vec<u8>,
     ) -> Result<models::Span, DbError> {
-        let trace_id = trace_id.into();
-        let span_id = span_id.into();
-
         let span = tx
             .query(
-                "SELECT * FROM spans WHERE trace_id={} AND span_id={}",
+                "SELECT * FROM spans WHERE trace_id=$1 AND span_id=$2",
                 (trace_id, span_id),
             )
             .await?
@@ -190,9 +187,6 @@ impl Store {
         Ok(span)
     }
 }
-
-type TraceId = String;
-type SpanId = String;
 
 #[derive(Debug, Error)]
 pub enum DbError {
@@ -224,7 +218,6 @@ impl RowsExt for Rows {
     }
 
     async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>, DbError> {
-        error!("doing a fetch optional");
         match self.next().await? {
             Some(row) => Ok(Some(de::from_row(&row)?)),
             None => Ok(None),

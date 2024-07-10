@@ -80,8 +80,11 @@ fn api_router(
         )
         .route("/inspect", any(handlers::inspect_request_handler))
         .route("/inspect/:id", any(handlers::inspect_request_handler))
-        .route("/v1/logs", get(handlers::logs_handler))
         .route("/ws", get(ws::ws_handler))
+        .route(
+            "/traces/:trace_id/spans/:span_id",
+            get(handlers::spans::span_get_handler),
+        )
         .fallback(StatusCode::NOT_FOUND)
         .with_state(api_state)
 }
