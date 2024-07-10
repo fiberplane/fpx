@@ -169,10 +169,7 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
   const operation = !fpxEndpoint
     ? `  Add FPX Studio endpoint to ${envFileName}?`
     : `  Update FPX Studio endpoint in ${envFileName}?`;
-  const question = [
-    chalk.yellow(lede),
-    operation,
-  ].filter(Boolean).join("\n");
+  const question = [chalk.yellow(lede), operation].filter(Boolean).join("\n");
   const updateEnvVarAnswer = await askUser(question, "y");
   const shouldUpdateEnvVar = cliAnswerToBool(updateEnvVarAnswer);
 

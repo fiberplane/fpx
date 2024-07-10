@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0-beta.3",
+  "version": "0.2.0-beta.4",
   "name": "@fiberplane/studio",
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
@@ -24,7 +24,7 @@
   "license": "MIT or Apache 2",
   "keywords": ["hono", "local", "debugging"],
   "bin": {
-    "fpx": "./bin/cli.js"
+    "fpx": "bin/cli.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
