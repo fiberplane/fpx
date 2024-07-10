@@ -29,9 +29,11 @@ bun.lockb
 
 # db
 mizu.db
-
-# old neon config - can remove after merging https://github.com/fiberplane/fpx/pull/9
-.neon
+mizu.db*
+fpx.db
+fpx.db*
+.fpxconfig
+.fpxconfig/*
 
 # Rust targets
 **/target
