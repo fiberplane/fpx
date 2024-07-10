@@ -114,10 +114,10 @@ export const RequestorPage = () => {
 
   useHotkeys("mod+enter", () => {
     if (formRef.current) {
-      formRef.current.dispatchEvent(
-        new Event("submit", { cancelable: true, bubbles: true }),
-      );
+      formRef.current.requestSubmit();
     }
+  }, {
+    enableOnFormTags: ["input"],
   });
 
   const {
