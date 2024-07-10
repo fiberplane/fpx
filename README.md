@@ -27,9 +27,9 @@ The next two sections take you through how to do this.
 1. `cd frontend` in a separate shell, and spin up the frontend (follow instructions in in [frontend/README](./frontend/README.md))
 1. Check the frontend is running on `http://localhost:5173`
 
-### Adding Mizu to your Hono project
+### Adding FPX to your Hono project
 
-Follow the instructions in the [`client-library` README](./client-library/README.md) to add Mizu telemetry to your Hono project.
+Follow the instructions in the [`client-library` README](./client-library/README.md) to add FPX telemetry to your Hono project.
 
 ## Developing
 
