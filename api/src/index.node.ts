@@ -53,7 +53,7 @@ const ignoredPaths = getIgnoredPaths();
 fs.watch(watchDir, { recursive: true }, async (eventType, filename) => {
   if (!filename) return;
   if (ignoredPaths.includes(filename)) return;
-  console.log(`File ${filename} ${eventType}, sending a new probe`);
+  console.debug(`File ${filename} ${eventType}, sending a new probe`);
 
   probeRoutesWithExponentialBackoff(
     serviceTargetArgument,
