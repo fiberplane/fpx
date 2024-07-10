@@ -2,6 +2,7 @@ import path from "node:path";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import svgr from "vite-plugin-svgr";
+import { faviconsPlugin } from "@darkobits/vite-plugin-favicons";
 
 export default defineConfig({
   plugins: [
@@ -9,6 +10,9 @@ export default defineConfig({
     svgr({
       svgrOptions: { exportType: "default", ref: true },
       include: "**/*.svg",
+    }),
+    faviconsPlugin({
+      icons: { favicons: { source: "./assets/fpx.svg" } }
     }),
   ],
   resolve: {
