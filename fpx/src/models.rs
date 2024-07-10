@@ -299,6 +299,12 @@ pub struct Span {
     pub parent_span_id: Option<String>,
     pub name: String,
     pub kind: SpanKind,
+
+    #[serde(with = "time::serde::rfc3339")]
+    pub start_time: time::OffsetDateTime,
+
+    #[serde(with = "time::serde::rfc3339")]
+    pub end_time: time::OffsetDateTime,
 }
 
 impl From<data::models::Span> for Span {
@@ -313,6 +319,8 @@ impl From<data::models::Span> for Span {
             parent_span_id,
             name: span.name,
             kind: span.kind,
+            start_time: span.start_time.into(),
+            end_time: span.end_time.into(),
         }
     }
 }

@@ -35,7 +35,7 @@ opentelemetry-otlp = { version = "0.16", features = [
     "reqwest-client",
     "reqwest-rustls-webkpi-roots",
 ] }
-prost = { version = "0.12" }
+opentelemetry-proto = { version = "0.6", features = ["gen-tonic-messages"] }
 rand = { version = "0.8.5" }
 reqwest = { version = "0.12", default-features = false, features = [
     "charset",
@@ -48,6 +48,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 strum = { version = "0.26", features = ["derive"] }
 thiserror = { version = "1.0" }
+time = { version = "0.3.17", features = ["serde-human-readable"] }
 tokio = { version = "1.37", features = ["rt-multi-thread", "signal"] }
 tokio-tungstenite = { version = "0.21", features = [
     "rustls-tls-webpki-roots",
@@ -59,7 +60,6 @@ tracing-opentelemetry = { version = "0.24" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = { version = "2.5" }
 
-opentelemetry-proto = { version = "0.6", features = ["gen-tonic-messages"] }
 
 [dev-dependencies]
 test-log = { version = "0.2", default-features = false, features = ["trace"] }

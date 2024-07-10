@@ -1,52 +1,9 @@
+use super::{Json, Timestamp};
 use crate::models::{self, SpanKind};
-use anyhow::Result;
 use bytes::Bytes;
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::Deserialize;
 use std::collections::BTreeMap;
-use std::ops::{Deref, DerefMut};
-
-#[derive(Debug)]
-pub struct Json<T: DeserializeOwned>(T);
-
-impl<T: DeserializeOwned> Deref for Json<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<T: DeserializeOwned> DerefMut for Json<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<T: DeserializeOwned> AsRef<T> for Json<T> {
-    fn as_ref(&self) -> &T {
-        &self.0
-    }
-}
-
-impl<T: DeserializeOwned> AsMut<T> for Json<T> {
-    fn as_mut(&mut self) -> &mut T {
-        &mut self.0
-    }
-}
-
-impl<'de, T: DeserializeOwned> Deserialize<'de> for Json<T> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let string: String = Deserialize::deserialize(deserializer)?;
-        let json: T = serde_json::from_str(&string).map_err(serde::de::Error::custom)?;
-
-        Ok(Json(json))
-    }
-}
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct Request {
@@ -63,7 +20,7 @@ impl From<Request> for models::Request {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct Span {
     /// The internal ID of the span. Should probably not be exposed at all.
     /// Probably better to use a composite key of trace_id and span_id.
@@ -87,8 +44,8 @@ pub struct Span {
     // pub attributes: Json<AttributeMap>,
     // pub resources_attributes: Json<AttributeMap>,
     // pub scope_attributes: Json<AttributeMap>,
-    // pub start_time: i64,
-    // pub end_time: i64,
+    pub start_time: Timestamp,
+    pub end_time: Timestamp,
 }
 
 impl Span {
@@ -107,6 +64,8 @@ impl Span {
 
                 for span in scope_span.spans {
                     let kind = span.kind().into();
+                    let start_time = Timestamp(span.start_time_unix_nano);
+                    let end_time = Timestamp(span.end_time_unix_nano);
                     let parent_span_id = if span.parent_span_id.is_empty() {
                         None
                     } else {
@@ -122,6 +81,8 @@ impl Span {
                         kind,
                         scope_name: scope_name.clone(),
                         scope_version: scope_version.clone(),
+                        start_time,
+                        end_time,
                     };
                     result.push(span);
                 }
@@ -132,13 +93,13 @@ impl Span {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct SpanStatus {
     pub message: String,
     pub code: SpanStatusCode,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub enum SpanStatusCode {
     Unset,
     Ok,

@@ -6,5 +6,7 @@ CREATE TABLE spans (
     name TEXT,
     kind TEXT,
     scope_name TEXT NULL,
-    scope_version TEXT NULL
+    scope_version TEXT NULL,
+    start_time INTEGER,
+    end_time INTEGER
 ) STRICT

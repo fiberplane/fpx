@@ -6,6 +6,7 @@ use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::Trac
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
 };
+use tracing::error;
 
 #[derive(Clone)]
 pub struct GrpcService {
@@ -66,10 +67,11 @@ pub fn extract_trace_ids(message: &ExportTraceServiceRequest) -> Vec<(String, St
 
 impl From<DbError> for tonic::Status {
     fn from(err: DbError) -> Self {
+        error!("Database error: {:?}", err);
         match err {
-            DbError::NotFound => todo!(),
-            DbError::FailedDeserialize { .. } => todo!(),
-            DbError::InternalError(_) => todo!(),
+            DbError::NotFound => tonic::Status::not_found("message"),
+            DbError::FailedDeserialize { .. } => tonic::Status::internal("internal database error"),
+            DbError::InternalError(_) => tonic::Status::internal("internal error"),
         }
     }
 }

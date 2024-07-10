@@ -2,9 +2,10 @@ use crate::models::Request;
 use anyhow::{Context, Result};
 use libsql::{de, params, Builder, Connection, Rows};
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Deserializer};
 use std::collections::BTreeMap;
 use std::fmt::Display;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 use tracing::error;
@@ -146,10 +147,12 @@ impl Store {
                         name,
                         kind,
                         scope_name,
-                        scope_version
+                        scope_version,
+                        start_time,
+                        end_time
                     )
                     VALUES
-                        ($1, $2, $3, $4, $5, $6, $7)
+                        ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     RETURNING *",
                 (
                     span.trace_id,
@@ -159,6 +162,8 @@ impl Store {
                     span.kind.as_ref(),
                     span.scope_name,
                     span.scope_version,
+                    span.start_time.unix_nanos(),
+                    span.end_time.unix_nanos(),
                 ),
             )
             .await?
@@ -232,5 +237,100 @@ impl RowsExt for Rows {
         }
 
         Ok(results)
+    }
+}
+
+#[derive(Debug)]
+pub struct Json<T: DeserializeOwned>(T);
+
+impl<T: DeserializeOwned> Deref for Json<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T: DeserializeOwned> DerefMut for Json<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<T: DeserializeOwned> AsRef<T> for Json<T> {
+    fn as_ref(&self) -> &T {
+        &self.0
+    }
+}
+
+impl<T: DeserializeOwned> AsMut<T> for Json<T> {
+    fn as_mut(&mut self) -> &mut T {
+        &mut self.0
+    }
+}
+
+impl<'de, T: DeserializeOwned> Deserialize<'de> for Json<T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let string: String = Deserialize::deserialize(deserializer)?;
+        let json: T = serde_json::from_str(&string).map_err(serde::de::Error::custom)?;
+
+        Ok(Json(json))
+    }
+}
+
+pub struct Timestamp(u64);
+
+impl Timestamp {
+    pub fn unix_nanos(&self) -> u64 {
+        self.0
+    }
+}
+
+impl From<Timestamp> for time::OffsetDateTime {
+    fn from(timestamp: Timestamp) -> Self {
+        // NOTE: this should not happen any time soon, so we should be able to
+        //       get away with this for now.
+        time::OffsetDateTime::from_unix_timestamp_nanos(timestamp.unix_nanos() as i128)
+            .expect("timestamp is too large for OffsetDateTime")
+    }
+}
+
+impl Deref for Timestamp {
+    type Target = u64;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Timestamp {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl AsRef<u64> for Timestamp {
+    fn as_ref(&self) -> &u64 {
+        &self.0
+    }
+}
+
+impl AsMut<u64> for Timestamp {
+    fn as_mut(&mut self) -> &mut u64 {
+        &mut self.0
+    }
+}
+
+impl<'de> Deserialize<'de> for Timestamp {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let timestamp: i64 = Deserialize::deserialize(deserializer)?;
+
+        Ok(Timestamp(timestamp as u64))
     }
 }
