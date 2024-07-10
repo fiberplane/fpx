@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 
 /**
  * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value
@@ -38,20 +39,28 @@ export function getIgnoredPaths() {
     "node_modules",
     "dist",
     ".fpx",
+    ".fpxconfig",
     ".swc",
     ".wrangler",
   ];
 
-  const paths = fs.readdirSync("./", { withFileTypes: true });
-  const gitignoreFiles = paths.filter((path) => path.name === ".gitignore");
+  try {
+    const currentDir = process.cwd();
+    const paths = fs.readdirSync(currentDir, { withFileTypes: true });
+    const gitignoreFiles = paths.filter((path) => path.name === ".gitignore");
 
-  const gitignoredPaths = gitignoreFiles.map((gitignoreFile) => {
-    const content = fs.readFileSync(gitignoreFile.name, "utf8");
-    return content
-      .split("\n")
-      .filter((line) => line.trim() !== "")
-      .filter((line) => !line.startsWith("#"));
-  });
+    const gitignoredPaths = gitignoreFiles.map((gitignoreFile) => {
+      const filePath = path.join(currentDir, gitignoreFile.name);
+      const content = fs.readFileSync(filePath, "utf8");
+      return content
+        .split("\n")
+        .filter((line) => line.trim() !== "")
+        .filter((line) => !line.startsWith("#"));
+    });
 
-  return defaultIgnoredPaths.concat(...gitignoredPaths);
+    return defaultIgnoredPaths.concat(...gitignoredPaths.flat());
+  } catch (error) {
+    console.error("Error reading .gitignore files", error);
+    return defaultIgnoredPaths;
+  }
 }
