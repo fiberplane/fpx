@@ -58,6 +58,25 @@ export const RequestAddedSchema = z.object({
 
 export type RequestAdded = z.infer<typeof RequestAddedSchema>;
 
+export const RequestorErrorSchema = z.object({ error: z.literal("internal") });
+
+export type RequestorError = z.infer<typeof RequestorErrorSchema>;
+
+export const RequestorRequestPayloadSchema = z
+  .object({
+    body: z.union([z.string(), z.null()]).optional(),
+    headers: z.union([z.record(z.string()), z.null()]).optional(),
+    method: z.string(),
+    url: z.string(),
+  })
+  .describe(
+    "The payload that describes the request that Requestor has to execute",
+  );
+
+export type RequestorRequestPayload = z.infer<
+  typeof RequestorRequestPayloadSchema
+>;
+
 export const ServerMessageSchema = z
   .object({
     messageId: z

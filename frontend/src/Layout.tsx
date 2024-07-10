@@ -1,7 +1,7 @@
 import type React from "react";
 import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
-import FpxIcon from "./fpx.svg";
+import FpxIcon from "./assets/fpx.svg";
 import { cn } from "./utils";
 
 const Branding = () => {
