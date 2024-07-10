@@ -27,13 +27,17 @@ bun.lockb
 # mac
 .DS_Store
 
-# db
+# dbs
 mizu.db
 mizu.db*
+mizu*.db
 fpx.db
 fpx.db*
+fpx*.db
 .fpxconfig
 .fpxconfig/*
+.fpx
+.fpx/*
 
 # Rust targets
 **/target
@@ -64,6 +68,8 @@ yarn-error.log
 .parcel-cache*
 .nx/cache
 *.tsbuildinfo
+
+.git/*
 
 # Personal files
 mizu.boots.code-workspace
