@@ -1,8 +1,11 @@
 import { createServer } from "node:http";
 import { serve } from "@hono/node-server";
+import chalk from "chalk";
 import { config } from "dotenv";
+import figlet from "figlet";
 import { type WebSocket, WebSocketServer } from "ws";
 import { createApp } from "./app.js";
+import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
@@ -35,7 +38,24 @@ const server = serve({
   createServer,
 }) as ReturnType<typeof createServer>;
 
-console.log(`FPX Server is running: http://localhost:${port}`);
+server.on("listening", () => {
+  const fpxLogo = chalk.greenBright(figlet.textSync("FPX Studio"));
+  const runningMessage = "FPX Studio is up!";
+  const localhostLink = chalk.blue(`http://localhost:${port}`);
+  const visitMessage = `Visit ${localhostLink} to get started`;
+  logger.info(`${fpxLogo}\n${runningMessage} ${visitMessage}\n`);
+});
+
+server.on("error", (err) => {
+  if ("code" in err && err.code === "EADDRINUSE") {
+    logger.error(
+      `Port ${port} is already in use. Please choose a different port for FPX.`,
+    );
+    process.exit(1);
+  } else {
+    logger.error("Server error:", err);
+  }
+});
 
 // First, fire off an async probe to the service we want to monitor
 //   - This will collect information on all routes that the service exposes
@@ -49,16 +69,24 @@ startRouteProbeWatcher(watchDir);
 // Set up websocket server
 const wss = new WebSocketServer({ server, path: "/ws" });
 wss.on("connection", (ws) => {
-  console.log("WebSocket connection established", ws.OPEN);
+  logger.debug("WebSocket connection established", ws.OPEN);
   wsConnections.add(ws);
 
   ws.on("ping", () => {
-    console.log("ping");
+    logger.debug("ping");
     ws.send("pong");
   });
-  ws.on("error", console.error);
+  ws.on("error", (err) => {
+    if ("code" in err && err.code === "EADDRINUSE") {
+      logger.error(
+        "WebSocket error: Address in use. Please choose a different port.",
+      );
+    } else {
+      logger.error("WebSocket error:", err);
+    }
+  });
   ws.on("close", (code) => {
     wsConnections.delete(ws);
-    console.log("WebSocket connection closed", code);
+    logger.debug("WebSocket connection closed", code);
   });
 });

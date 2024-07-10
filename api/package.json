@@ -1,9 +1,12 @@
 {
-  "version": "0.1.0-beta.1",
+  "version": "0.2.0",
   "name": "@fiberplane/studio",
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
@@ -21,7 +24,7 @@
   "license": "MIT or Apache 2",
   "keywords": ["hono", "local", "debugging"],
   "bin": {
-    "fpx": "./bin/cli.js"
+    "fpx": "bin/cli.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
@@ -29,21 +32,25 @@
     "@libsql/client": "^0.6.2",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.2",
+    "chalk": "^5.3.0",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.21.2",
     "drizzle-orm": "^0.30.10",
     "drizzle-zod": "^0.5.1",
+    "figlet": "^1.7.0",
     "hono": "^4.3.7",
     "minimatch": "^10.0.1",
     "octokit": "^4.0.2",
     "openai": "^4.47.1",
     "source-map": "^0.7.4",
+    "toml": "^3.0.0",
     "ws": "^8.17.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
     "@octokit/types": "^13.5.0",
+    "@types/figlet": "^1.5.8",
     "@types/node": "^20.11.17",
     "@types/ws": "^8.5.10",
     "ts-to-zod": "^3.8.5",

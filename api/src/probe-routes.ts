@@ -1,6 +1,6 @@
 import fs from "node:fs";
-
 import { getIgnoredPaths, shouldIgnoreFile } from "./lib/utils.js";
+import logger from "./logger.js";
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 
@@ -50,7 +50,7 @@ export function startRouteProbeWatcher(watchDir: string) {
       return;
     }
 
-    console.debug(`File ${filename} ${eventType}, sending a new probe`);
+    logger.debug(`File ${filename} ${eventType}, sending a new probe`);
 
     debouncedProbeRoutesWithExponentialBackoff(
       serviceTargetArgument,
@@ -68,6 +68,7 @@ async function probeRoutesWithExponentialBackoff(
   serviceArg: string | number | undefined,
   maxRetries: number,
   delay = 1000,
+  maxDelay = 16000,
 ) {
   const serviceUrl = resolveServiceArg(serviceArg);
   let attempt = 0;
@@ -75,23 +76,23 @@ async function probeRoutesWithExponentialBackoff(
   while (attempt < maxRetries) {
     try {
       await routerProbe(serviceUrl);
-      console.log(`Detected routes for ${serviceUrl} successfully!`);
+      logger.debug(`Detected routes for ${serviceUrl} successfully!`);
       return;
     } catch (error) {
       attempt++;
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      console.error(
-        `Router probe for service ${serviceUrl} failed (attempt ${attempt}):`,
+      logger.debug(
+        `⚠️ Failed to detect routes for api ${serviceUrl}:`,
         errorMessage,
       );
       if (attempt < maxRetries) {
-        const backoffDelay = delay * 2 ** attempt;
-        console.log(`Retrying in ${backoffDelay}ms...`);
+        const backoffDelay = Math.min(delay * 2 ** attempt, maxDelay);
+        logger.debug(`  Retrying in ${backoffDelay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, backoffDelay));
       } else {
-        console.log(
-          "Router probe max retries reached. Giving up. Restart the service to try again.",
+        logger.error(
+          "⚠️ Failed to detect api routes. Giving up! Restart fpx to try again.",
         );
       }
     }
@@ -133,7 +134,7 @@ export function resolveServiceArg(
   }
   const targetPort = Number.parseInt(serviceArg, 10);
   if (!targetPort) {
-    console.error(
+    logger.error(
       `Invalid service argument ${serviceArg}. Using default ${fallback}.`,
     );
     return fallback;

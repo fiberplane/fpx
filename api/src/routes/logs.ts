@@ -57,7 +57,6 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
   } = ctx.req.valid("json");
 
   const db = ctx.get("db");
-  const dbErrors = ctx.get("dbErrors");
   const parsedMessage = tryParseJsonObjectMessage(message);
 
   try {
@@ -110,7 +109,6 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
     if (err instanceof Error) {
       console.log("DB ERROR FOR:", { message, parsedMessage });
       console.error(err);
-      dbErrors.push(err);
     }
     return ctx.json({ error: "Error processing log data" }, 500);
   }
