@@ -44,5 +44,9 @@
         - name: Install swc
           run: npm install @swc/cli @swc/core @swc/plugin-transform-imports --save-dev
 
+        # HACK: This is getting ridiculous, but we need the linux-x64 build for sharp
+        - name: Install sharp
+          run: npm install --os=linux --cpu=x64 sharp --save-dev
+
         - name: Build all workspaces
           run: npm run build --workspaces --if-present
