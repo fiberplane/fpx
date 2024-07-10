@@ -100,7 +100,7 @@ async function getFpxPort() {
   //
   const hasConfiguredFpxPort = getFallbackFpxPort() !== null;
   const fpxPortFallback = getFallbackFpxPort() || 8788;
-  const fpxPortQuestion = "  Which port should fpx studio run on? ";
+  const fpxPortQuestion = "  Which port should FPX Studio run on? ";
   let FPX_PORT;
   if (IS_INITIALIZING_FPX) {
     FPX_PORT = await askUser(fpxPortQuestion, fpxPortFallback);
