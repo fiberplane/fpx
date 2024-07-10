@@ -45,7 +45,14 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     }
   });
 
-  app.use(honoLogger()); // add a logger FWIW..
+  // Set up the builtin hono logger, but use debug logs from our logger
+  // This means users of fpx cli will not see the request logs in their terminal,
+  // but if you want to see them locally, set `FPX_LOG_LEVEL=debug`
+  app.use(
+    honoLogger((message: string, ...rest: string[]) => {
+      logger.debug(message, ...rest);
+    }),
+  );
 
   // All routes are modularized in the ./routes folder
   app.route("/", logs);
