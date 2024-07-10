@@ -102,9 +102,10 @@ def get_prompt_gemma(template):
     return prompt
 
 def get_template(model):
-    if "gemma" in model:
+    normalized = model.lower()
+    if "gemma" in normalized:
         return lambda template: get_prompt_gemma(template)
-    if "llama" in model:
+    if "llama" in normalized:
         return lambda template: get_prompt_llama(template)
     raise ValueError("Unknown model")
 
