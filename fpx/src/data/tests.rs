@@ -101,6 +101,9 @@ async fn test_create_span() {
         scope_version: None,
         start_time: Timestamp::now(),
         end_time: Timestamp::now(),
+        attributes: Default::default(),
+        scope_attributes: Default::default(),
+        resource_attributes: Default::default(),
     };
 
     let span = store.span_create(&tx, span).await.unwrap();

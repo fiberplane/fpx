@@ -291,6 +291,15 @@ impl<T> AsMut<T> for Json<T> {
     }
 }
 
+impl<T> Default for Json<T>
+where
+    T: Default,
+{
+    fn default() -> Self {
+        Self(T::default())
+    }
+}
+
 impl<'de, T> Deserialize<'de> for Json<T>
 where
     T: DeserializeOwned,
