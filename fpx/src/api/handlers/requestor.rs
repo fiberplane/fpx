@@ -4,17 +4,13 @@ use crate::models::{self, RequestorError};
 use axum::{extract::State, Json};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use once_cell::sync::Lazy;
-use reqwest::redirect::{Action, Attempt, Policy};
 use reqwest::Client;
 use std::{collections::BTreeMap, str::FromStr, time::Duration};
 
 static REQUESTOR_CLIENT: Lazy<Client> = Lazy::new(|| {
     Client::builder()
-        .no_gzip()
         .connect_timeout(Duration::from_secs(30))
         .user_agent("FPX Requestor")
-        .redirect(Policy::custom(redirect_policy))
-        .http1_only()
         .build()
         .expect("failed to initialize requestor client")
 });
@@ -96,14 +92,4 @@ fn prepare_headers(header_map: &HeaderMap) -> BTreeMap<String, String> {
     }
 
     response_header_map
-}
-
-fn redirect_policy(attempt: Attempt) -> Action {
-    let attempts = attempt.previous().len();
-
-    if attempts > 5 {
-        return attempt.error("exceeded max redirect depth of 5");
-    }
-
-    attempt.follow()
 }
