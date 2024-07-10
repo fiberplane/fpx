@@ -365,12 +365,13 @@ function getFallbackFpxPort() {
 /**
  * Get the fallback service name for FPX
  *
- * This is either from the environment, the user's config, or the package.json file
+ * This is either from the environment, the user's config, the wrangler.toml file, or the package.json file
  */
 function getFallbackServiceName() {
   return (
     process.env.FPX_SERVICE_NAME ||
     USER_VARS.FPX_SERVICE_NAME ||
+    WRANGLER_TOML?.name ||
     PACKAGE_JSON?.name ||
     null
   );
