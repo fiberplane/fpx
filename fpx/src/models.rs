@@ -1,8 +1,13 @@
+use axum::response::IntoResponse;
+use http::StatusCode;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use rand::Rng;
 use std::collections::BTreeMap;
+
+use crate::{api::errors::ApiServerError, data::DbError};
 
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
@@ -168,5 +173,79 @@ impl Request {
             headers,
             body: Some(body),
         }
+    }
+}
+
+/// A response that has been captured by fpx.
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Response {
+    pub id: u32,
+    pub status: u16,
+    pub url: String,
+    pub body: Option<String>,
+    pub headers: BTreeMap<String, String>,
+}
+
+impl Response {
+    pub fn new(
+        id: u32,
+        status: u16,
+        url: String,
+        body: String,
+        headers: BTreeMap<String, String>,
+    ) -> Self {
+        Self {
+            id,
+            status,
+            url,
+            headers,
+            body: Some(body),
+        }
+    }
+}
+
+/// The payload that describes the request that Requestor has to execute
+#[derive(JsonSchema, Deserialize, Serialize)]
+pub struct RequestorRequestPayload {
+    pub method: String,
+    pub url: String,
+    pub body: Option<String>,
+    pub headers: Option<BTreeMap<String, String>>,
+}
+
+// TODO: Improve later to get more specific error handling
+#[derive(JsonSchema, Debug, Serialize, Error)]
+#[serde(tag = "error", content = "details", rename_all = "camelCase")]
+#[allow(dead_code)]
+pub enum RequestorError {
+    #[error("Internal server error")]
+    Internal,
+}
+
+impl IntoResponse for RequestorError {
+    fn into_response(self) -> axum::response::Response {
+        let status = StatusCode::INTERNAL_SERVER_ERROR;
+        let body = serde_json::to_vec(&self).expect("test");
+
+        (status, body).into_response()
+    }
+}
+
+impl From<DbError> for ApiServerError<RequestorError> {
+    fn from(_err: DbError) -> Self {
+        ApiServerError::ServiceError(RequestorError::Internal)
+    }
+}
+
+impl From<libsql::Error> for ApiServerError<RequestorError> {
+    fn from(_err: libsql::Error) -> Self {
+        ApiServerError::ServiceError(RequestorError::Internal)
+    }
+}
+
+impl From<reqwest::Error> for ApiServerError<RequestorError> {
+    fn from(_err: reqwest::Error) -> Self {
+        ApiServerError::ServiceError(RequestorError::Internal)
     }
 }
