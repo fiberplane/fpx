@@ -19,6 +19,8 @@ export async function askUser(prompt, defaultValue) {
     const dimmedDefaultValue = chalk.dim(`(default: ${defaultValue})`);
     const question = defaultValue ? `${prompt} ${dimmedDefaultValue} ` : prompt;
     rl.question(question, (answer) => {
+      // If we don't have a default value, move the cursor up one line to remove the question
+      // This assumes that a lack of a default value implies we are telling the user something, instead of asking them for input
       if (!defaultValue) {
         readline.moveCursor(process.stdout, 0, -1);
         readline.clearLine(process.stdout, 0);
