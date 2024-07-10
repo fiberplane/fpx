@@ -22,6 +22,7 @@ const loop = measure("loop", (n: number) => {
 
 app.get("/", async (c) => {
   console.log("Hello Hono!");
+  console.error("This is an error");
   // This should execute beyond the requests time
   c.executionCtx.waitUntil(sleep(10));
   loop(15);

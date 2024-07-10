@@ -14,9 +14,8 @@ import {
   SEMATTRS_HTTP_URL,
   SEMRESATTRS_SERVICE_NAME,
 } from "@opentelemetry/semantic-conventions";
-import { wrap } from "shimmer";
 import { measure } from "./util";
-
+import {patchConsole} from "./log"
 type Config = {
   endpoint: string;
   /** Name of service (not in use, but will be helpful later) */
@@ -54,20 +53,7 @@ export function instrument(
 ) {
   const createConfig = options?.createConfig ?? defaultCreateConfig;
 
-  wrap(console, "log", (original) => {
-    return (message: string, ...args: unknown[]) => {
-      const span = trace.getActiveSpan();
-      if (span) {
-        span.addEvent("log", {
-          message,
-          level: "info",
-          arguments: JSON.stringify(args),
-        });
-      }
-      return original(message, ...args);
-    };
-  });
-
+  patchConsole();
   return new Proxy(app, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
