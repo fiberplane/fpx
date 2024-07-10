@@ -1,8 +1,70 @@
+import fs from "node:fs";
+
+import { getIgnoredPaths, shouldIgnoreFile } from "./lib/utils.js";
+
+let debounceTimeout: NodeJS.Timeout | null = null;
+
+// biome-ignore lint/suspicious/noExplicitAny: Trust me, this is easier
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
+  // biome-ignore lint/suspicious/noExplicitAny: Trust me, this is easier
+  return (...args: any[]) => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    debounceTimeout = setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
+}
+
+/**
+ * Since we are calling the route probe inside a file watcher, we should implement
+ * debouncing to avoid spamming the service with requests.
+ *
+ * HACK - Since we are monitoring ts files, we need a short delay to let the code
+ *        for the service recompile.
+ */
+const debouncedProbeRoutesWithExponentialBackoff = debounce(
+  probeRoutesWithExponentialBackoff,
+  1500,
+);
+
+export function startRouteProbeWatcher(watchDir: string) {
+  // Fire off an async probe to the service we want to monitor
+  // This will collect information on all routes that the service exposes
+  // Which powers a postman-like UI to ping routes and see responses
+  const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
+  const probeMaxRetries = 10;
+  const probeDelay = 1000;
+
+  debouncedProbeRoutesWithExponentialBackoff(
+    serviceTargetArgument,
+    probeMaxRetries,
+    probeDelay,
+  );
+
+  const ignoredPaths = getIgnoredPaths();
+
+  fs.watch(watchDir, { recursive: true }, async (eventType, filename) => {
+    if (shouldIgnoreFile(filename, ignoredPaths)) {
+      return;
+    }
+
+    console.debug(`File ${filename} ${eventType}, sending a new probe`);
+
+    debouncedProbeRoutesWithExponentialBackoff(
+      serviceTargetArgument,
+      probeMaxRetries,
+      probeDelay,
+    );
+  });
+}
+
 /**
  * Asynchronously probe the routes of a service with exponential backoff.
  * Makes a request to the service root route with the `X-Fpx-Route-Inspector` header set to `enabled`.
  */
-export async function probeRoutesWithExponentialBackoff(
+async function probeRoutesWithExponentialBackoff(
   serviceArg: string | number | undefined,
   maxRetries: number,
   delay = 1000,
