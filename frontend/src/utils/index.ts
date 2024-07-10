@@ -25,6 +25,55 @@ export function objectWithKeyAndValue<T extends string, V>(
   return objectWithKey(value, key) && value[key] === expectedValue;
 }
 
+export function noop() {}
+
+export function isJson(str: string) {
+  try {
+    JSON.parse(str);
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+export function parsePathFromRequestUrl(
+  url: string,
+  queryParams?: Record<string, string>,
+) {
+  try {
+    const fancyUrl = new URL(url);
+    if (queryParams) {
+      for (const [key, value] of Object.entries(queryParams)) {
+        fancyUrl.searchParams.set(key, value);
+      }
+    }
+    return `${fancyUrl.pathname}${fancyUrl.search}`;
+  } catch {
+    return null;
+  }
+}
+
+export function hasStringMessage(
+  object: unknown,
+): object is { message: string } {
+  return objectWithKey(object, "message") && typeof object.message === "string";
+}
+
+/**
+ * Utility to see if an unknown type (an error) has a nonempty string property called "message"
+ */
+export function errorHasMessage(error: unknown): error is { message: string } {
+  return hasStringMessage(error) && !!error.message;
+}
+
+export function objectHasStack(error: unknown): error is { stack: string } {
+  return objectWithKey(error, "stack") && typeof error.stack === "string";
+}
+
+export function objectHasName(error: unknown): error is { name: string } {
+  return objectWithKey(error, "name") && typeof error.name === "string";
+}
+
 export const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 
 export function isModifierKeyPressed(

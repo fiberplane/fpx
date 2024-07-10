@@ -3,6 +3,7 @@ use bytes::Bytes;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tracing::warn;
 
 #[derive(Debug, Error)]
 pub enum ApiServerError<E> {
@@ -24,6 +25,13 @@ where
             ApiServerError::ServiceError(err) => err.into_response(),
             ApiServerError::CommonError(err) => err.into_response(),
         }
+    }
+}
+
+impl<E> From<anyhow::Error> for ApiServerError<E> {
+    fn from(err: anyhow::Error) -> Self {
+        warn!(?err, "An anyhow error was converted to a ApiServerError");
+        ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
 
@@ -143,5 +151,21 @@ mod tests {
             },
             err => panic!("Unexpected error: {:?}", err),
         }
+    }
+
+    /// Test to confirm that a anyhow::Error can be converted into a
+    /// ApiServerError.
+    #[tokio::test]
+    async fn anyhow_error_into_api_server_error() {
+        let anyhow_error = anyhow::Error::msg("some random anyhow error");
+        let api_server_error: ApiServerError<()> = anyhow_error.into();
+
+        match api_server_error {
+            ApiServerError::CommonError(err) => match err {
+                CommonError::InternalServerError => (),
+                err => panic!("Unexpected common error: {:?}", err),
+            },
+            err => panic!("Unexpected error: {:?}", err),
+        };
     }
 }

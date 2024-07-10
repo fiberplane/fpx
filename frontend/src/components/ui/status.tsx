@@ -1,21 +1,30 @@
 import { Badge } from "@/components/ui/badge";
 import clsx from "clsx";
 
-export function Status({ statusCode: statusCode }: { statusCode: number }) {
+export function Status({
+  className,
+  statusCode,
+}: { className?: string; statusCode: number }) {
   return (
     <Badge
       variant="secondary"
       className={clsx(
         "rounded",
+        "font-normal",
+        "px-1.5",
         {
-          "bg-green-950 text-green-300": statusCode / 100 === 2,
+          "bg-green-950/60 hover:bg-green-950/60 text-green-400":
+            statusCode / 100 === 2,
         },
         {
-          "bg-yellow-950 text-yellow-300": statusCode / 100 === 4,
+          "bg-yellow-950/60 hover:bg-yellow-950/60 text-yellow-500":
+            statusCode / 100 === 4,
         },
         {
-          "bg-red-950 text-red-300": statusCode / 100 === 5,
+          "bg-red-950/60 hover:bg-red-950/60 text-red-400":
+            statusCode / 100 === 5,
         },
+        className,
       )}
     >
       {statusCode}

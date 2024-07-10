@@ -1,0 +1,3 @@
+{
+  "summary": "The handler executed successfully. It received a request at the root path `/` and sent a `200` response. The response content was dynamically adjusted based on the presence of the `shouldHonk` query parameter."
+}
