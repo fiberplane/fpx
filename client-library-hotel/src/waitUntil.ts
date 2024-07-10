@@ -5,7 +5,10 @@ export type ExtendedExecutionContext = ExecutionContext & {
 };
 
 export function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
+  console.log("adding waitUntilFinished");
+
   if (typeof ctx.waitUntil !== "function") {
+    console.log("Polyfilling waitUntil");
     if (!Array.isArray(ctx.__waitUntilPromises)) {
       ctx.__waitUntilPromises = [];
     }
@@ -32,25 +35,22 @@ export function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
 }
 
 export function enableWaitUntilTracing(context: ExecutionContext) {
+  const promises: Promise<void>[] = [];
   const proxyContext = new Proxy(context, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (prop === "waitUntil" && typeof value === "function") {
         return function waitUntil(this: unknown, promise: Promise<unknown>) {
-          // const activeSpan = trace.getActiveSpan();
-          //@ts-ignore
           const scope = this === receiver ? target : this;
-          // if (!activeSpan) {
-          return value.apply(scope, [promise]);
-          // }
-
-          // const result = value.apply(scope, [promise]);
-          // spanPromise("waitUntil", result);
+          const result = value.apply(scope, [promise]);
+          promises.push(result);
+          return result;
         };
       }
+
       return value;
     },
   });
 
-  return proxyContext;
+  return { proxyContext, promises };
 }

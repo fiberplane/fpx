@@ -15,7 +15,7 @@ import {
   SEMRESATTRS_SERVICE_NAME,
 } from "@opentelemetry/semantic-conventions";
 import { wrap } from "shimmer";
-import { withSpan } from "./util";
+import { measure } from "./util";
 
 type Config = {
   endpoint: string;
@@ -82,20 +82,27 @@ export function instrument(
           const provider = setupTracerProvider(config);
 
           // Enable tracing for waitUntil
-          const proxyExecutionCtx = executionCtx
-            ? enableWaitUntilTracing(executionCtx)
-            : undefined;
+          const { proxyContext: proxyExecutionCtx, promises } =
+            enableWaitUntilTracing(executionCtx);
 
-          const next = async () => {
+          const next = measure("route", async () => {
             trace.getActiveSpan()?.setAttributes({
               [SEMATTRS_HTTP_URL]: request.url,
               [SEMATTRS_HTTP_METHOD]: request.method,
             });
             return await value(request, env, proxyExecutionCtx);
-          };
-          const result = await withSpan("route", next);
+          });
 
-          executionCtx.waitUntil(provider.forceFlush());
+          const result = await next();
+
+          // Make sure all promises are resolved before sending data to the server
+          executionCtx.waitUntil(
+            Promise.all(promises).finally(() => {
+              console.log("force flush");
+              return provider.forceFlush();
+            }),
+          );
+          console.log("returning result");
           return result;
         };
       }

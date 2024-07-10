@@ -15,9 +15,17 @@ const sleep = measure("sleep", (ms: number) => {
   );
 });
 
+const loop = measure("loop", (n: number) => {
+  for (let i = 0; i < n; i++) {
+    console.log(`Loop iteration ${i}`);
+  }
+});
+
 app.get("/", async (c) => {
   console.log("Hello Hono!");
+  // This should execute beyond the requests time
   c.executionCtx.waitUntil(sleep(10));
+  loop(15);
   return c.text("Hello Hono!");
 });
 
