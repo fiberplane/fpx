@@ -20,11 +20,6 @@ import source from "./routes/source.js";
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-  // this is a bucket of any kind of errors that we just want to log
-  // and make available on a route
-  // biome-ignore lint/suspicious/noExplicitAny: this is a bucket of any kind of errors that we just want to log
-  const DB_ERRORS: Array<any> = [];
-
   // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
   // Lau: similarly adding wsConnections so they can be used in outher modules
   app.use(async (c, next) => {
@@ -37,8 +32,6 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     if (wsConnections) {
       c.set("wsConnections", wsConnections);
     }
-
-    c.set("dbErrors", DB_ERRORS);
 
     await next();
   });
@@ -62,12 +55,6 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   app.route("/", issues);
   app.route("/", appRoutes);
   app.route("/", settings);
-
-  // HACK - Route to inspect any db errors during this session
-  app.get("db-errors", async (c) => {
-    const dbErrors = c.get("dbErrors");
-    return c.json(dbErrors);
-  });
 
   return app;
 }
