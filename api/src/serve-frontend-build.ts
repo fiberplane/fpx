@@ -32,7 +32,7 @@ export const staticServerMiddleware = serveStatic({
   // NOTE - Need to specify a relative path to assets for the frontend build
   root: getRelativePathToFrontendDist(),
   onNotFound(path, _c) {
-    logger.error("Not found", path);
+    logger.debug("Not found", path);
   },
 });
 

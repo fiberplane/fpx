@@ -19,6 +19,10 @@ export async function askUser(prompt, defaultValue) {
     const dimmedDefaultValue = chalk.dim(`(default: ${defaultValue})`);
     const question = defaultValue ? `${prompt} ${dimmedDefaultValue} ` : prompt;
     rl.question(question, (answer) => {
+      if (!defaultValue) {
+        readline.moveCursor(process.stdout, 0, -1);
+        readline.clearLine(process.stdout, 0);
+      }
       rl.close();
       resolve(answer?.trim() || defaultValue);
     });

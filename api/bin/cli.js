@@ -117,8 +117,11 @@ async function getFpxPort() {
     if (nextFallback === getFallbackServiceTarget()?.toString()) {
       nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
     }
+    const portAlreadyInUse = chalk.yellow(
+      `Port ${FPX_PORT} is already in use.`,
+    );
     FPX_PORT = await askUser(
-      `  ⚠️ Port ${FPX_PORT} is already in use. Please choose a different port for FPX.`,
+      `  ⚠️ ${portAlreadyInUse}\n  Please choose a different port for FPX.`,
       nextFallback,
     );
   }
@@ -138,30 +141,42 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
   const fpxEndpoint = envFilePath && getFpxEndpointFromEnvFile(envFilePath);
   const isDifferent = fpxEndpoint !== expectedFpxEndpoint;
 
+  // Ask the user if we should update the env file
+  // - if an env file exists and the fpx endpoint is missing
+  // - if an env file exists and the fpx endpoint is different
   const shouldAsk = envFilePath && (!fpxEndpoint || isDifferent);
 
-  if (shouldAsk) {
-    const envVarLine = `FPX_ENDPOINT=${expectedFpxEndpoint}`;
-    const question = `  Update ${envFileName} with ${chalk.yellow(envVarLine)}?`;
-    const updateEnvVarAnswer = await askUser(question, "y");
-    const shouldUpdateEnvVar = cliAnswerToBool(updateEnvVarAnswer);
-    // TODO - Replace the line if it exists
-    if (shouldUpdateEnvVar) {
-      if (fpxEndpoint !== null) {
-        logger.debug(
-          `Replacing ${fpxEndpoint} with ${envVarLine} in ${envFilePath}`,
-        );
-        replaceEnvVarLine(envFilePath, envVarLine);
-      } else {
-        fs.appendFileSync(envFilePath, `\n${envVarLine}\n`);
-      }
-      logger.info(
-        chalk.dim(
-          `  Updated ${envFileName}. Restart your api to apply changes!`,
-        ),
-      );
-    }
+  if (!shouldAsk) {
+    return;
   }
+
+  const envVarLine = `FPX_ENDPOINT=${expectedFpxEndpoint}`;
+  const lede = !fpxEndpoint
+    ? `  ⚠️ ${envFileName} needs to point to FPX Studio`
+    : `  ⚠️ ${envFileName} points to a different FPX Studio endpoint`;
+  const operation = !fpxEndpoint ? "Add" : "Update";
+  const question = [
+    chalk.yellow(lede),
+    `  ${operation} FPX Studio endpoint in ${envFileName}?`,
+  ].join("\n");
+  const updateEnvVarAnswer = await askUser(question, "y");
+  const shouldUpdateEnvVar = cliAnswerToBool(updateEnvVarAnswer);
+
+  if (!shouldUpdateEnvVar) {
+    return;
+  }
+
+  if (fpxEndpoint !== null) {
+    logger.debug(
+      `Replacing ${fpxEndpoint} with ${envVarLine} in ${envFilePath}`,
+    );
+    replaceEnvVarLine(envFilePath, envVarLine);
+  } else {
+    fs.appendFileSync(envFilePath, `\n${envVarLine}\n`);
+  }
+  logger.info(
+    chalk.dim(`  ℹ️ Updated ${envFileName}. Remember to restart your api!`),
+  );
 }
 
 /**
@@ -198,7 +213,7 @@ async function pingTargetAndConfirm(port) {
   const isServiceUp = await isPortTaken(port);
   if (!isServiceUp) {
     await askUser(
-      `  ⚠️ Could not find your api on port ${port}. Remember to start it!\n\n${chalk.dim("(Press enter to continue.)")}`,
+      `  ⚠️ Could not find your api on port ${port}. Remember to start it!\n  ${chalk.dim("(Press enter to continue.)")}`,
     );
   }
 }
