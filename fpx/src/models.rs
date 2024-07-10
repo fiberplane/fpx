@@ -1,4 +1,3 @@
-use anyhow::Error;
 use axum::response::IntoResponse;
 use http::StatusCode;
 use schemars::JsonSchema;
@@ -207,7 +206,6 @@ impl Response {
 }
 
 /// The payload that describes the request that Requestor has to execute
-// TODO: This should probably not be in models?
 #[derive(JsonSchema, Deserialize, Serialize)]
 pub struct RequestorRequestPayload {
     pub method: String,
@@ -236,12 +234,6 @@ impl IntoResponse for RequestorError {
 
 impl From<DbError> for ApiServerError<RequestorError> {
     fn from(_err: DbError) -> Self {
-        ApiServerError::ServiceError(RequestorError::Internal)
-    }
-}
-
-impl From<Error> for ApiServerError<RequestorError> {
-    fn from(_err: Error) -> Self {
         ApiServerError::ServiceError(RequestorError::Internal)
     }
 }

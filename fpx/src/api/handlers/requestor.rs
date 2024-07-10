@@ -1,13 +1,23 @@
-use std::{collections::BTreeMap, str::FromStr};
-
+use crate::api::errors::ApiServerError;
+use crate::data::Store;
+use crate::models::{self, RequestorError};
 use axum::{extract::State, Json};
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
+use once_cell::sync::Lazy;
+use reqwest::redirect::{Action, Attempt, Policy};
+use reqwest::Client;
+use std::{collections::BTreeMap, str::FromStr, time::Duration};
 
-use crate::{
-    api::errors::ApiServerError,
-    data::Store,
-    models::{self, RequestorError},
-};
+static REQUESTOR_CLIENT: Lazy<Client> = Lazy::new(|| {
+    Client::builder()
+        .no_gzip()
+        .connect_timeout(Duration::from_secs(30))
+        .user_agent("FPX Requestor")
+        .redirect(Policy::custom(redirect_policy))
+        .http1_only()
+        .build()
+        .expect("failed to initialize requestor client")
+});
 
 #[tracing::instrument(skip_all)]
 pub async fn execute_requestor(
@@ -70,7 +80,7 @@ async fn handle_request(
         }
     }
 
-    reqwest::Client::new()
+    REQUESTOR_CLIENT
         .request(request_method, url)
         .headers(header_map)
         .body(body)
@@ -86,4 +96,14 @@ fn prepare_headers(header_map: &HeaderMap) -> BTreeMap<String, String> {
     }
 
     response_header_map
+}
+
+fn redirect_policy(attempt: Attempt) -> Action {
+    let attempts = attempt.previous().len();
+
+    if attempts > 5 {
+        return attempt.error("exceeded max redirect depth of 5");
+    }
+
+    attempt.follow()
 }
