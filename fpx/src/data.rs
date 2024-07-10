@@ -287,6 +287,10 @@ impl Timestamp {
     pub fn unix_nanos(&self) -> u64 {
         self.0
     }
+
+    pub fn now() -> Self {
+        Self(time::OffsetDateTime::now_utc().unix_timestamp_nanos() as u64)
+    }
 }
 
 impl From<Timestamp> for time::OffsetDateTime {

@@ -1,5 +1,6 @@
-use crate::data::models::{Json, Span};
+use crate::data::models::Span;
 use crate::data::{migrations, RowsExt, Store};
+use crate::data::{Json, Timestamp};
 use crate::models::SpanKind;
 use libsql::params;
 use serde::Deserialize;
@@ -98,6 +99,8 @@ async fn test_create_span() {
         kind: SpanKind::Server,
         scope_name: None,
         scope_version: None,
+        start_time: Timestamp::now(),
+        end_time: Timestamp::now(),
     };
 
     let span = store.span_create(&tx, span).await.unwrap();
