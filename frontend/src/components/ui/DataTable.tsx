@@ -139,7 +139,7 @@ export function DataTable<TData, TValue>({
 
   useHotkeys(["j"], handleNextRow);
   useHotkeys(["k"], handlePrevRow);
-  useHotkeys(["Enter"], handleRowSelect);
+  useHotkeys(["Enter"], handleRowSelect, { preventDefault: true });
 
   return (
     <div>
