@@ -1,5 +1,5 @@
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
-use crate::data::{self, DbError};
+use crate::data::{self, models::AttributeMap, DbError, Json};
 use opentelemetry_proto::tonic::trace::v1::span;
 use rand::Rng;
 use schemars::JsonSchema;
@@ -305,6 +305,10 @@ pub struct Span {
 
     #[serde(with = "time::serde::rfc3339")]
     pub end_time: time::OffsetDateTime,
+
+    pub attributes: AttributeMap,
+    pub scope_attributes: Option<AttributeMap>,
+    pub resource_attributes: Option<AttributeMap>,
 }
 
 impl From<data::models::Span> for Span {
@@ -321,6 +325,9 @@ impl From<data::models::Span> for Span {
             kind: span.kind,
             start_time: span.start_time.into(),
             end_time: span.end_time.into(),
+            attributes: span.attributes.into_inner(),
+            scope_attributes: span.scope_attributes.map(Json::into_inner),
+            resource_attributes: span.resource_attributes.map(Json::into_inner),
         }
     }
 }

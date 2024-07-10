@@ -2,7 +2,7 @@ use crate::models::Request;
 use anyhow::{Context, Result};
 use libsql::{de, params, Builder, Connection, Rows};
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
@@ -149,10 +149,13 @@ impl Store {
                         scope_name,
                         scope_version,
                         start_time,
-                        end_time
+                        end_time,
+                        attributes,
+                        resource_attributes,
+                        scope_attributes
                     )
                     VALUES
-                        ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                     RETURNING *",
                 (
                     span.trace_id,
@@ -162,8 +165,11 @@ impl Store {
                     span.kind.as_ref(),
                     span.scope_name,
                     span.scope_version,
-                    span.start_time.unix_nanos(),
-                    span.end_time.unix_nanos(),
+                    span.start_time,
+                    span.end_time,
+                    span.attributes,
+                    span.resource_attributes,
+                    span.scope_attributes,
                 ),
             )
             .await?
@@ -241,9 +247,25 @@ impl RowsExt for Rows {
 }
 
 #[derive(Debug)]
-pub struct Json<T: DeserializeOwned>(T);
+pub struct Json<T>(T);
 
-impl<T: DeserializeOwned> Deref for Json<T> {
+impl<T> Json<T> {
+    pub fn into_inner(self) -> T {
+        self.0
+    }
+}
+
+impl<T> From<Json<T>> for libsql::Value
+where
+    T: Serialize,
+{
+    fn from(value: Json<T>) -> Self {
+        let value = serde_json::to_string(&value.0).expect("failed to serialize Json<T>");
+        libsql::Value::Text(value)
+    }
+}
+
+impl<T> Deref for Json<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -251,25 +273,28 @@ impl<T: DeserializeOwned> Deref for Json<T> {
     }
 }
 
-impl<T: DeserializeOwned> DerefMut for Json<T> {
+impl<T> DerefMut for Json<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<T: DeserializeOwned> AsRef<T> for Json<T> {
+impl<T> AsRef<T> for Json<T> {
     fn as_ref(&self) -> &T {
         &self.0
     }
 }
 
-impl<T: DeserializeOwned> AsMut<T> for Json<T> {
+impl<T> AsMut<T> for Json<T> {
     fn as_mut(&mut self) -> &mut T {
         &mut self.0
     }
 }
 
-impl<'de, T: DeserializeOwned> Deserialize<'de> for Json<T> {
+impl<'de, T> Deserialize<'de> for Json<T>
+where
+    T: DeserializeOwned,
+{
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -290,6 +315,12 @@ impl Timestamp {
 
     pub fn now() -> Self {
         Self(time::OffsetDateTime::now_utc().unix_timestamp_nanos() as u64)
+    }
+}
+
+impl From<Timestamp> for libsql::Value {
+    fn from(timestamp: Timestamp) -> Self {
+        libsql::Value::Integer(timestamp.0 as i64)
     }
 }
 

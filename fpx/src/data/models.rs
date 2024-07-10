@@ -1,8 +1,8 @@
 use super::{Json, Timestamp};
 use crate::models::{self, SpanKind};
-use bytes::Bytes;
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
-use serde::Deserialize;
+use opentelemetry_proto::tonic::common::v1::{any_value, AnyValue, KeyValue};
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 #[derive(Debug, Deserialize)]
@@ -41,9 +41,10 @@ pub struct Span {
     // pub status: Json<SpanStatus>,
     // pub links: Json<Vec<SpanLink>>,
     // pub events: Json<Vec<SpanEvent>>,
-    // pub attributes: Json<AttributeMap>,
-    // pub resources_attributes: Json<AttributeMap>,
-    // pub scope_attributes: Json<AttributeMap>,
+    pub attributes: Json<AttributeMap>,
+    pub resource_attributes: Option<Json<AttributeMap>>,
+    pub scope_attributes: Option<Json<AttributeMap>>,
+
     pub start_time: Timestamp,
     pub end_time: Timestamp,
 }
@@ -53,17 +54,26 @@ impl Span {
         let mut result = vec![];
 
         for resource_span in traces_data.resource_spans {
+            let resource_attributes = resource_span
+                .resource
+                .map(|resource| AttributeMap::from_otel(resource.attributes));
+
             for scope_span in resource_span.scope_spans {
                 let mut scope_name = None;
                 let mut scope_version = None;
 
-                if let Some(scope) = scope_span.scope {
-                    scope_name = Some(scope.name);
-                    scope_version = Some(scope.version);
+                if let Some(ref scope) = scope_span.scope {
+                    scope_name = Some(scope.name.clone());
+                    scope_version = Some(scope.version.clone());
                 }
+
+                let scope_attributes = scope_span
+                    .scope
+                    .map(|scope| AttributeMap::from_otel(scope.attributes));
 
                 for span in scope_span.spans {
                     let kind = span.kind().into();
+                    let attributes = Json(AttributeMap::from_otel(span.attributes));
                     let start_time = Timestamp(span.start_time_unix_nano);
                     let end_time = Timestamp(span.end_time_unix_nano);
                     let parent_span_id = if span.parent_span_id.is_empty() {
@@ -81,6 +91,9 @@ impl Span {
                         kind,
                         scope_name: scope_name.clone(),
                         scope_version: scope_version.clone(),
+                        attributes,
+                        scope_attributes: scope_attributes.clone().map(Json),
+                        resource_attributes: resource_attributes.clone().map(Json),
                         start_time,
                         end_time,
                     };
@@ -113,15 +126,59 @@ pub struct SpanEvent {
     pub timestamp: u64,                 // TODO
 }
 
-pub type AttributeMap = BTreeMap<String, AttributeValue>;
+#[derive(Serialize, Deserialize, Clone, Default)]
+pub struct AttributeMap(BTreeMap<String, Option<AttributeValue>>);
 
-#[derive(Deserialize)]
+impl AttributeMap {
+    pub fn from_otel(attributes: Vec<KeyValue>) -> Self {
+        let mut result = BTreeMap::new();
+
+        for kv in attributes {
+            let key = kv.key.clone();
+            let value = AttributeValue::from_key_value(kv);
+            result.entry(key).or_insert_with(|| value);
+        }
+
+        AttributeMap(result)
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub enum AttributeValue {
     String(String),
     Bool(bool),
-    Int64(i64),
+    Int(i64),
     Double(f64),
-    Array(Vec<AttributeValue>),
+    Array(Vec<Option<AttributeValue>>),
     KeyValueList(AttributeMap),
-    Bytes(Bytes),
+    Bytes(Vec<u8>),
+}
+
+impl AttributeValue {
+    pub fn from_key_value(value: KeyValue) -> Option<Self> {
+        let value = value.value?;
+        Self::from_any_value(value)
+    }
+
+    pub fn from_any_value(value: AnyValue) -> Option<Self> {
+        match value.value? {
+            any_value::Value::StringValue(val) => Some(AttributeValue::String(val)),
+            any_value::Value::BoolValue(val) => Some(AttributeValue::Bool(val)),
+            any_value::Value::IntValue(val) => Some(AttributeValue::Int(val)),
+            any_value::Value::DoubleValue(val) => Some(AttributeValue::Double(val)),
+            any_value::Value::BytesValue(val) => Some(AttributeValue::Bytes(val)),
+            any_value::Value::ArrayValue(val) => {
+                let val: Vec<_> = val
+                    .values
+                    .into_iter()
+                    .map(AttributeValue::from_any_value)
+                    .collect();
+                Some(AttributeValue::Array(val))
+            }
+            any_value::Value::KvlistValue(val) => {
+                let val = AttributeMap::from_otel(val.values);
+                Some(AttributeValue::KeyValueList(val))
+            }
+        }
+    }
 }
