@@ -16,6 +16,8 @@ const PersistedUiStateSchema = z.object({
   pathParams: z.array(KeyValueParameterSchema).optional(),
   queryParams: z.array(KeyValueParameterSchema),
   requestHeaders: z.array(KeyValueParameterSchema),
+  // Keep the service name to allow us to NOT load the ui state when the service name changes
+  serviceName: z.string().optional(),
 });
 
 export type PersistedUiState = z.infer<typeof PersistedUiStateSchema>;
@@ -55,6 +57,7 @@ export function useSaveUiState({
   pathParams,
   queryParams,
   requestHeaders,
+  serviceName,
 }: PersistedUiState) {
   const saveUiState = useCallback(() => {
     const historyState: PersistedUiState = {
@@ -65,6 +68,7 @@ export function useSaveUiState({
       pathParams,
       queryParams,
       requestHeaders,
+      serviceName,
     };
 
     try {
@@ -72,7 +76,16 @@ export function useSaveUiState({
     } catch {
       // Ignore
     }
-  }, [route, path, method, body, pathParams, queryParams, requestHeaders]);
+  }, [
+    route,
+    path,
+    method,
+    body,
+    pathParams,
+    queryParams,
+    requestHeaders,
+    serviceName,
+  ]);
 
   // When this component unloads, save the UI state to local storage
   useEffect(() => {

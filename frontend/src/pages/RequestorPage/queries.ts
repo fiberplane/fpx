@@ -56,6 +56,7 @@ export type Requestornator = {
 const REQUESTOR_REQUESTS_KEY = "requestorRequests";
 
 type ProbedRoutesResponse = {
+  serviceName?: string;
   baseUrl: string;
   routes: ProbedRoute[];
 };

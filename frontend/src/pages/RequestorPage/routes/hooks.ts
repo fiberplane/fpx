@@ -33,16 +33,22 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
   );
 
   // Select the home route if it exists, otherwise fall back to the first route in the list
+  const preferredRoute =
+    browserHistoryState?.serviceName === routesAndMiddleware?.serviceName
+      ? browserHistoryState?.route
+      : undefined;
   const { selectedRoute, setSelectedRoute } = useAutoselectInitialRoute({
     isLoading,
     routes,
-    preferRoute: browserHistoryState?.route ?? undefined,
+    preferRoute: browserHistoryState?.route ?? undefined
+    // preferRoute: preferredRoute ?? undefined,
   });
 
   return {
     isError,
     isLoading,
     routes,
+    serviceName: routesAndMiddleware?.serviceName,
     addBaseUrl,
     selectedRoute,
     setSelectedRoute,

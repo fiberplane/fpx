@@ -27,7 +27,7 @@ import { BACKGROUND_LAYER } from "./styles";
 export const RequestorPage = () => {
   const browserHistoryState = usePersistedUiState();
 
-  const { routes, addBaseUrl, selectedRoute, setSelectedRoute } =
+  const { routes, serviceName, addBaseUrl, selectedRoute, setSelectedRoute } =
     useRoutes(browserHistoryState);
 
   const {
@@ -61,8 +61,8 @@ export const RequestorPage = () => {
     setPathParams,
   });
 
-  // When we unmount, save the current state of UI to the browser history
-  // This allows us to reload the page when you press "Back" in the browser
+  // When we unmount, save the current state of UI to local storage
+  // This allows us to reload ui state when you press "Back" in the browser, for example
   useSaveUiState({
     route: selectedRoute,
     path,
@@ -71,6 +71,7 @@ export const RequestorPage = () => {
     pathParams,
     queryParams,
     requestHeaders,
+    serviceName,
   });
 
   const {

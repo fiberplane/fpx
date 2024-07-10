@@ -31,6 +31,7 @@ app.get("/v0/app-routes", async (ctx) => {
     "http://localhost:8787",
   );
   return ctx.json({
+    serviceName: env(ctx).FPX_SERVICE_NAME || undefined,
     baseUrl,
     routes,
   });
