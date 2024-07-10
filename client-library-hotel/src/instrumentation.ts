@@ -74,16 +74,19 @@ export function instrument(
       if (prop === "fetch" && typeof value === "function") {
         return async function fetch(
           request: Request,
-          env: Record<string, string>,
-          executionCtx: ExecutionContext,
+          env: unknown,
+          executionCtx: ExecutionContext | undefined,
         ) {
-          const config = createConfig(env);
+          const config = createConfig(
+            typeof env === "object" ? (env as Record<string, string>) : {},
+          );
 
           const provider = setupTracerProvider(config);
 
           // Enable tracing for waitUntil
-          const { proxyContext: proxyExecutionCtx, promises } =
-            enableWaitUntilTracing(executionCtx);
+          const patched = executionCtx && enableWaitUntilTracing(executionCtx);
+          const promises = patched?.promises ?? [];
+          const proxyExecutionCtx = patched?.proxyContext ?? executionCtx;
 
           const next = measure("route", async () => {
             trace.getActiveSpan()?.setAttributes({
@@ -96,20 +99,14 @@ export function instrument(
           const result = await next();
 
           // Make sure all promises are resolved before sending data to the server
-          executionCtx.waitUntil(
+          proxyExecutionCtx?.waitUntil(
             Promise.all(promises).finally(() => {
-              console.log("force flush");
               return provider.forceFlush();
             }),
           );
-          console.log("returning result");
           return result;
         };
       }
-
-      if (prop === "mizu") {
-      }
-      return Reflect.get(target, prop, receiver);
     },
   });
 }

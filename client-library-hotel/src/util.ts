@@ -45,7 +45,6 @@ export function measure<T, A extends unknown[]>(
           shouldEndSpan = false;
           return returnValue
             .then((result) => {
-              console.log("...result", result, ...args);
               span.setStatus({ code: SpanStatusCode.OK });
               return result;
             })
@@ -69,9 +68,7 @@ export function measure<T, A extends unknown[]>(
         });
         throw error;
       } finally {
-        // console.log('calling end', ...args)
         if (shouldEndSpan) {
-          console.log("ending span via return");
           span.end();
         }
       }
