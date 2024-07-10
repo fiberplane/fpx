@@ -112,13 +112,17 @@ export const RequestorPage = () => {
 
   const formRef = useRef<HTMLFormElement>(null);
 
-  useHotkeys("mod+enter", () => {
-    if (formRef.current) {
-      formRef.current.requestSubmit();
-    }
-  }, {
-    enableOnFormTags: ["input"],
-  });
+  useHotkeys(
+    "mod+enter",
+    () => {
+      if (formRef.current) {
+        formRef.current.requestSubmit();
+      }
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
+  );
 
   const {
     enabled: aiEnabled,
