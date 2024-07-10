@@ -1,13 +1,9 @@
-import fs from "node:fs";
 import { createServer } from "node:http";
-import path from "node:path";
 import { serve } from "@hono/node-server";
 import { config } from "dotenv";
-import { minimatch } from "minimatch";
 import { type WebSocket, WebSocketServer } from "ws";
 import { createApp } from "./app.js";
-import { getIgnoredPaths } from "./lib/utils.js";
-import { debouncedProbeRoutesWithExponentialBackoff } from "./probe-routes.js";
+import { startRouteProbeWatcher } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
@@ -41,54 +37,16 @@ const server = serve({
 
 console.log(`FPX Server is running: http://localhost:${port}`);
 
-// Fire off an async probe to the service we want to monitor
-// This will collect information on all routes that the service exposes
-// Which powers a postman-like UI to ping routes and see responses
-const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
-const probeMaxRetries = 10;
-const probeDelay = 1000;
+// First, fire off an async probe to the service we want to monitor
+//   - This will collect information on all routes that the service exposes
+//   - This powers a postman-like UI to ping routes and see responses
+//
+// Additionally, this will watch for changes to files in the project directory,
+//   - If a file changes, send a new probe to the service
 const watchDir = process.env.FPX_WATCH_DIR ?? process.cwd();
+startRouteProbeWatcher(watchDir);
 
-const ignoredPaths = getIgnoredPaths();
-
-debouncedProbeRoutesWithExponentialBackoff(
-  serviceTargetArgument,
-  probeMaxRetries,
-  probeDelay,
-);
-
-fs.watch(watchDir, { recursive: true }, async (eventType, filename) => {
-  if (!filename) {
-    return;
-  }
-  if (ignoredPaths.includes(filename)) {
-    return;
-  }
-  // E.g., ignore everything inside the `.wrangler` directory
-  if (
-    ignoredPaths.some((pattern) => filename.startsWith(`${pattern}${path.sep}`))
-  ) {
-    return;
-  }
-  // E.g., ignore all files with the given name (e.g., `fpx.db`, `fpx.db-journal`)
-  if (ignoredPaths.some((pattern) => path.basename(filename) === pattern)) {
-    return;
-  }
-  // Use minimatch to see if the filename matches any of the ignored patterns
-  // This is because gitignore can have glob patterns, etc
-  if (ignoredPaths.some((pattern) => minimatch(filename, pattern))) {
-    return;
-  }
-
-  console.debug(`File ${filename} ${eventType}, sending a new probe`);
-
-  debouncedProbeRoutesWithExponentialBackoff(
-    serviceTargetArgument,
-    probeMaxRetries,
-    probeDelay,
-  );
-});
-
+// Set up websocket server
 const wss = new WebSocketServer({ server, path: "/ws" });
 wss.on("connection", (ws) => {
   console.log("WebSocket connection established", ws.OPEN);

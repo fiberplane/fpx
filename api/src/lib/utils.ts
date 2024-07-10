@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { minimatch } from "minimatch";
 
 /**
  * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value
@@ -31,6 +32,24 @@ export function errorToJson(error: Error) {
     stack: error.stack ?? "", // Stack trace of where the error occurred (useful for debugging)
     // Optionally add more properties here if needed
   };
+}
+
+export function shouldIgnoreFile(
+  filename: string | null,
+  ignoredPaths: string[],
+): boolean {
+  return (
+    !filename ||
+    ignoredPaths.some(
+      (pattern) =>
+        // E.g., ignore everything inside the `.wrangler` directory
+        filename.startsWith(`${pattern}${path.sep}`) ||
+        // E.g., ignore all files with the given name (e.g., `fpx.db`, `.fpxconfig/fpx.db`)
+        path.basename(filename) === pattern ||
+        // E.g., ignore all files that match the given pattern (e.g., *.db`, `*.db-journal`)
+        minimatch(filename, pattern),
+    )
+  );
 }
 
 export function getIgnoredPaths() {
