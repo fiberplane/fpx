@@ -297,7 +297,9 @@ pub struct Span {
     pub trace_id: String,
     pub span_id: String,
     pub parent_span_id: Option<String>,
+
     pub name: String,
+    pub state: String,
     pub kind: SpanKind,
 
     #[serde(with = "time::serde::rfc3339")]
@@ -322,6 +324,7 @@ impl From<data::models::Span> for Span {
             span_id,
             parent_span_id,
             name: span.name,
+            state: span.state,
             kind: span.kind,
             start_time: span.start_time.into(),
             end_time: span.end_time.into(),

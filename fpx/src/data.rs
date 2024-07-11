@@ -145,6 +145,7 @@ impl Store {
                         span_id,
                         parent_span_id,
                         name,
+                        state,
                         kind,
                         scope_name,
                         scope_version,
@@ -155,13 +156,14 @@ impl Store {
                         scope_attributes
                     )
                     VALUES
-                        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                     RETURNING *",
                 (
                     span.trace_id,
                     span.span_id,
                     span.parent_span_id,
                     span.name,
+                    span.state,
                     span.kind.as_ref(),
                     span.scope_name,
                     span.scope_version,

@@ -32,6 +32,7 @@ pub struct Span {
     pub parent_span_id: Option<Vec<u8>>,
 
     pub name: String,
+    pub state: String,
 
     pub kind: SpanKind,
 
@@ -88,6 +89,7 @@ impl Span {
                         span_id: span.span_id,
                         parent_span_id,
                         name: span.name,
+                        state: span.trace_state,
                         kind,
                         scope_name: scope_name.clone(),
                         scope_version: scope_version.clone(),
