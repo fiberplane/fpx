@@ -2,6 +2,8 @@ use super::{Json, Timestamp};
 use crate::models::{self, SpanKind};
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use opentelemetry_proto::tonic::common::v1::{any_value, AnyValue, KeyValue};
+use opentelemetry_proto::tonic::trace::v1::span::{Event, Link};
+use opentelemetry_proto::tonic::trace::v1::status;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -20,12 +22,8 @@ impl From<Request> for models::Request {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct Span {
-    /// The internal ID of the span. Should probably not be exposed at all.
-    /// Probably better to use a composite key of trace_id and span_id.
-    pub id: i64,
-
     pub trace_id: Vec<u8>,
     pub span_id: Vec<u8>,
 
@@ -33,21 +31,22 @@ pub struct Span {
 
     pub name: String,
     pub state: String,
-
+    pub flags: u32,
     pub kind: SpanKind,
 
     pub scope_name: Option<String>,
     pub scope_version: Option<String>,
-    // TODOs:
-    // pub status: Json<SpanStatus>,
-    // pub links: Json<Vec<SpanLink>>,
-    // pub events: Json<Vec<SpanEvent>>,
+
     pub attributes: Json<AttributeMap>,
     pub resource_attributes: Option<Json<AttributeMap>>,
     pub scope_attributes: Option<Json<AttributeMap>>,
 
     pub start_time: Timestamp,
     pub end_time: Timestamp,
+
+    pub status: Option<Json<SpanStatus>>,
+    pub events: Json<Vec<SpanEvent>>,
+    pub links: Json<Vec<SpanLink>>,
 }
 
 impl Span {
@@ -75,21 +74,29 @@ impl Span {
                 for span in scope_span.spans {
                     let kind = span.kind().into();
                     let attributes = Json(AttributeMap::from_otel(span.attributes));
+
                     let start_time = Timestamp(span.start_time_unix_nano);
                     let end_time = Timestamp(span.end_time_unix_nano);
+
                     let parent_span_id = if span.parent_span_id.is_empty() {
                         None
                     } else {
                         Some(span.parent_span_id)
                     };
 
+                    let events: Vec<_> = span.events.into_iter().map(Into::into).collect();
+                    let events = Json(events);
+
+                    let links: Vec<_> = span.links.into_iter().map(Into::into).collect();
+                    let links = Json(links);
+
                     let span = Span {
-                        id: 0,
                         trace_id: span.trace_id,
                         span_id: span.span_id,
                         parent_span_id,
                         name: span.name,
                         state: span.trace_state,
+                        flags: span.flags,
                         kind,
                         scope_name: scope_name.clone(),
                         scope_version: scope_version.clone(),
@@ -98,6 +105,14 @@ impl Span {
                         resource_attributes: resource_attributes.clone().map(Json),
                         start_time,
                         end_time,
+                        status: span.status.map(|status| {
+                            Json(SpanStatus {
+                                code: status.code().into(),
+                                message: status.message,
+                            })
+                        }),
+                        events,
+                        links,
                     };
                     result.push(span);
                 }
@@ -108,24 +123,65 @@ impl Span {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct SpanStatus {
     pub message: String,
     pub code: SpanStatusCode,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub enum SpanStatusCode {
     Unset,
     Ok,
     Error,
 }
 
-#[derive(Deserialize)]
+impl From<status::StatusCode> for SpanStatusCode {
+    fn from(status_code: status::StatusCode) -> Self {
+        match status_code {
+            status::StatusCode::Unset => SpanStatusCode::Unset,
+            status::StatusCode::Ok => SpanStatusCode::Ok,
+            status::StatusCode::Error => SpanStatusCode::Error,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SpanLink {
+    pub trace_id: Vec<u8>,
+    pub span_id: Vec<u8>,
+    pub trace_state: String,
+    pub attributes: AttributeMap,
+    pub flags: u32,
+}
+
+impl From<Link> for SpanLink {
+    fn from(link: Link) -> Self {
+        Self {
+            trace_id: link.trace_id,
+            span_id: link.span_id,
+            trace_state: link.trace_state,
+            attributes: AttributeMap::from_otel(link.attributes),
+            flags: link.flags,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct SpanEvent {
     pub name: String,
-    pub attributes: Json<AttributeMap>, // TODO
-    pub timestamp: u64,                 // TODO
+    pub attributes: AttributeMap,
+    pub timestamp: Timestamp,
+}
+
+impl From<Event> for SpanEvent {
+    fn from(event: Event) -> Self {
+        Self {
+            name: event.name,
+            attributes: AttributeMap::from_otel(event.attributes),
+            timestamp: Timestamp(event.time_unix_nano),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Default)]

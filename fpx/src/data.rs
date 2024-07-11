@@ -146,6 +146,7 @@ impl Store {
                         parent_span_id,
                         name,
                         state,
+                        flags,
                         kind,
                         scope_name,
                         scope_version,
@@ -153,17 +154,21 @@ impl Store {
                         end_time,
                         attributes,
                         resource_attributes,
-                        scope_attributes
+                        scope_attributes,
+                        status,
+                        events,
+                        links
                     )
                     VALUES
-                        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
                     RETURNING *",
-                (
+                params!(
                     span.trace_id,
                     span.span_id,
                     span.parent_span_id,
                     span.name,
                     span.state,
+                    span.flags,
                     span.kind.as_ref(),
                     span.scope_name,
                     span.scope_version,
@@ -172,6 +177,9 @@ impl Store {
                     span.attributes,
                     span.resource_attributes,
                     span.scope_attributes,
+                    span.status,
+                    span.events,
+                    span.links,
                 ),
             )
             .await?
@@ -317,6 +325,7 @@ where
     }
 }
 
+#[derive(Default)]
 pub struct Timestamp(u64);
 
 impl Timestamp {
@@ -367,6 +376,15 @@ impl AsRef<u64> for Timestamp {
 impl AsMut<u64> for Timestamp {
     fn as_mut(&mut self) -> &mut u64 {
         &mut self.0
+    }
+}
+
+impl Serialize for Timestamp {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_i64(self.0 as i64)
     }
 }
 

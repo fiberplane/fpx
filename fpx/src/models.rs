@@ -1,5 +1,6 @@
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
-use crate::data::{self, models::AttributeMap, DbError, Json};
+use crate::data::models::{AttributeMap, SpanEvent, SpanLink, SpanStatusCode};
+use crate::data::{self, DbError, Json};
 use opentelemetry_proto::tonic::trace::v1::span;
 use rand::Rng;
 use schemars::JsonSchema;
@@ -300,6 +301,7 @@ pub struct Span {
 
     pub name: String,
     pub state: String,
+    pub flags: u32,
     pub kind: SpanKind,
 
     #[serde(with = "time::serde::rfc3339")]
@@ -311,6 +313,10 @@ pub struct Span {
     pub attributes: AttributeMap,
     pub scope_attributes: Option<AttributeMap>,
     pub resource_attributes: Option<AttributeMap>,
+
+    pub status: Option<Status>,
+    pub events: Vec<Event>,
+    pub links: Vec<Link>,
 }
 
 impl From<data::models::Span> for Span {
@@ -319,18 +325,41 @@ impl From<data::models::Span> for Span {
         let span_id = hex::encode(span.span_id);
         let parent_span_id = span.parent_span_id.map(hex::encode);
 
+        let events = span
+            .events
+            .into_inner()
+            .into_iter()
+            .map(Into::into)
+            .collect();
+        let links = span
+            .links
+            .into_inner()
+            .into_iter()
+            .map(Into::into)
+            .collect();
+
         Self {
             trace_id,
             span_id,
             parent_span_id,
             name: span.name,
             state: span.state,
+            flags: span.flags,
             kind: span.kind,
             start_time: span.start_time.into(),
             end_time: span.end_time.into(),
             attributes: span.attributes.into_inner(),
             scope_attributes: span.scope_attributes.map(Json::into_inner),
             resource_attributes: span.resource_attributes.map(Json::into_inner),
+            status: span.status.map(|status| {
+                let status = status.into_inner();
+                Status {
+                    code: status.code.into(),
+                    message: status.message,
+                }
+            }),
+            events,
+            links,
         }
     }
 }
@@ -343,6 +372,12 @@ pub enum SpanKind {
     Producer,
     Consumer,
     Unspecified,
+}
+
+impl Default for SpanKind {
+    fn default() -> Self {
+        SpanKind::Unspecified
+    }
 }
 
 impl From<span::SpanKind> for SpanKind {
@@ -358,29 +393,66 @@ impl From<span::SpanKind> for SpanKind {
     }
 }
 
+#[derive(Deserialize, Serialize)]
 pub struct Event {
-    pub time_unix_nano: u64,
     pub name: String,
-    pub attributes: BTreeMap<String, String>,
-    pub dropped_attributes_count: u32,
+
+    #[serde(with = "time::serde::rfc3339")]
+    pub timestamp: time::OffsetDateTime,
+
+    pub attributes: AttributeMap,
 }
 
+impl From<SpanEvent> for Event {
+    fn from(event: SpanEvent) -> Self {
+        Self {
+            timestamp: event.timestamp.into(),
+            name: event.name,
+            attributes: event.attributes,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize)]
 pub struct Link {
     pub trace_id: Vec<u8>,
     pub span_id: Vec<u8>,
-    pub trace_state: Option<String>,
-    pub attributes: BTreeMap<String, String>,
-    pub dropped_attributes_count: u32,
-    pub flags: u16,
+    pub trace_state: String,
+    pub attributes: AttributeMap,
+    pub flags: u32,
 }
 
+impl From<SpanLink> for Link {
+    fn from(link: SpanLink) -> Self {
+        Self {
+            trace_id: link.trace_id,
+            span_id: link.span_id,
+            trace_state: link.trace_state,
+            attributes: link.attributes,
+            flags: link.flags,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize)]
 pub struct Status {
     pub code: StatusCode,
     pub message: String,
 }
 
+#[derive(Deserialize, Serialize)]
 pub enum StatusCode {
     Unset,
     Ok,
     Error,
+}
+
+impl From<SpanStatusCode> for StatusCode {
+    fn from(status_code: SpanStatusCode) -> Self {
+        match status_code {
+            SpanStatusCode::Unset => StatusCode::Unset,
+            SpanStatusCode::Ok => StatusCode::Ok,
+            SpanStatusCode::Error => StatusCode::Error,
+        }
+    }
 }

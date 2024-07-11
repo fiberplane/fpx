@@ -6,6 +6,7 @@ use libsql::params;
 use serde::Deserialize;
 use std::collections::BTreeMap;
 use test_log::test;
+use tracing::info;
 
 /// Initialize a in memory database, and run the migrations on it.
 async fn create_test_database() -> Store {
@@ -91,23 +92,12 @@ async fn test_create_span() {
 
     let tx = store.start_transaction().await.unwrap();
     let span = Span {
-        id: 0,
-        trace_id: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
-        span_id: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
-        parent_span_id: None,
         name: "test name".to_string(),
         kind: SpanKind::Server,
-        scope_name: None,
-        scope_version: None,
-        start_time: Timestamp::now(),
-        end_time: Timestamp::now(),
-        attributes: Default::default(),
-        scope_attributes: Default::default(),
-        resource_attributes: Default::default(),
+        trace_id: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
+        span_id: vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
+        ..Default::default()
     };
-
     let span = store.span_create(&tx, span).await.unwrap();
-
     assert_eq!(span.kind, SpanKind::Server);
-    assert_ne!(span.id, 0)
 }
