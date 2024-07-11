@@ -364,20 +364,16 @@ impl From<data::models::Span> for Span {
     }
 }
 
-#[derive(AsRefStr, Serialize, Deserialize, PartialEq, Debug)]
+#[derive(AsRefStr, Default, Serialize, Deserialize, PartialEq, Debug)]
 pub enum SpanKind {
     Internal,
     Server,
     Client,
     Producer,
     Consumer,
-    Unspecified,
-}
 
-impl Default for SpanKind {
-    fn default() -> Self {
-        SpanKind::Unspecified
-    }
+    #[default]
+    Unspecified,
 }
 
 impl From<span::SpanKind> for SpanKind {

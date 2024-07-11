@@ -1,12 +1,10 @@
 use crate::data::models::Span;
-use crate::data::{migrations, RowsExt, Store};
-use crate::data::{Json, Timestamp};
+use crate::data::{migrations, Json, RowsExt, Store};
 use crate::models::SpanKind;
 use libsql::params;
 use serde::Deserialize;
 use std::collections::BTreeMap;
 use test_log::test;
-use tracing::info;
 
 /// Initialize a in memory database, and run the migrations on it.
 async fn create_test_database() -> Store {

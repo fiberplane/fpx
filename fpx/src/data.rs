@@ -8,7 +8,7 @@ use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use tracing::{error, info, instrument};
+use tracing::{error, instrument};
 
 pub mod migrations;
 pub mod models;
