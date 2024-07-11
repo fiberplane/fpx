@@ -24,9 +24,12 @@ app.get("/", async (c) => {
   console.log("Hello Hono!");
   console.error("This is an error");
   // This should execute beyond the requests time
-  c.executionCtx.waitUntil(sleep(10));
+  c.executionCtx.waitUntil(sleep(30));
   loop(15);
-  return c.text("Hello Hono!");
+  const response = await fetch("https://api.chucknorris.io/jokes/random");
+  const result = await response.json();
+
+  return c.text(`Hello Hono! - ${result.value}`);
 });
 
 export default instrument(app);

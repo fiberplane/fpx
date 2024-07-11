@@ -14,7 +14,6 @@ export function patchConsole() {
   patchMethod("error", "error");
 }
 
-
 function patchMethod(methodName: LEVELS, level: string) {
   wrap(console, methodName, (original) => {
     return (message: string, ...args: unknown[]) => {
@@ -29,5 +28,4 @@ function patchMethod(methodName: LEVELS, level: string) {
       return original(message, ...args);
     };
   });
-
 }

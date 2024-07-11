@@ -49,11 +49,14 @@ export function measure<T, A extends unknown[]>(
               return result;
             })
             .catch((error) => {
-              span.setStatus({
-                code: SpanStatusCode.ERROR,
-                message:
-                  error instanceof Error ? error.message : "Unknown error",
-              });
+              // recordException only accepts Error objects or strings
+              const sendError =
+                error instanceof Error || typeof error === "string"
+                  ? error
+                  : "Unknown error occurred";
+              span.recordException(sendError);
+
+              // Rethrow the error
               throw error;
             })
             .finally(() => span.end()) as T;

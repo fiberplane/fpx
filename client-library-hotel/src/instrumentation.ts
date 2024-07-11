@@ -14,8 +14,9 @@ import {
   SEMATTRS_HTTP_URL,
   SEMRESATTRS_SERVICE_NAME,
 } from "@opentelemetry/semantic-conventions";
+import { patchFetch } from "./fetch";
+import { patchConsole } from "./log";
 import { measure } from "./util";
-import {patchConsole} from "./log"
 type Config = {
   endpoint: string;
   /** Name of service (not in use, but will be helpful later) */
@@ -54,6 +55,7 @@ export function instrument(
   const createConfig = options?.createConfig ?? defaultCreateConfig;
 
   patchConsole();
+  patchFetch();
   return new Proxy(app, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
@@ -79,6 +81,7 @@ export function instrument(
               [SEMATTRS_HTTP_URL]: request.url,
               [SEMATTRS_HTTP_METHOD]: request.method,
             });
+            // trace.
             return await value(request, env, proxyExecutionCtx);
           });
 
