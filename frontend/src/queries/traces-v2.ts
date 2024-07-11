@@ -7,17 +7,17 @@ import {
   MizuFetchEndSchema,
   MizuFetchErrorSchema,
   MizuFetchLoggingErrorSchema,
+  MizuFetchMessageSchema,
   MizuFetchStartSchema,
   type MizuLog,
   MizuLogSchema,
+  MizuReqResMessageSchema,
   MizuRequestEndSchema,
   MizuRequestStartSchema,
   type MizuTrace,
   isMizuFetchEndMessage,
   isMizuFetchErrorMessage,
   isMizuFetchLoggingErrorMessage,
-  MizuReqResMessageSchema,
-  MizuFetchMessageSchema,
 } from "./types";
 
 const MizuRequestStartLogSchema = MizuLogSchema.omit({ message: true }).extend({
@@ -144,19 +144,18 @@ const MizuSpannableMessageSchema = z.union([
   MizuFetchMessageSchema,
 ]);
 
-const MizuOrphanLogMessageSchema = z.union([
-  MizuErrorMessageSchema,
-  z.string(),
-  z.null(),
-  z
-    .object({})
-    .passthrough(), // HACK - catch all other messages
-]).refine(
-  (data) => !MizuSpannableMessageSchema.safeParse(data).success,
-  {
+const MizuOrphanLogMessageSchema = z
+  .union([
+    MizuErrorMessageSchema,
+    z.string(),
+    z.null(),
+    z
+      .object({})
+      .passthrough(), // HACK - catch all other messages
+  ])
+  .refine((data) => !MizuSpannableMessageSchema.safeParse(data).success, {
     message: "Log entry should not be spannable",
-  }
-);
+  });
 
 const MizuOrphanLogSchema = MizuLogSchema.omit({ message: true }).extend({
   message: MizuOrphanLogMessageSchema,

@@ -1,5 +1,10 @@
 import { Status } from "@/components/ui/status";
-import { MizuTraceV2, isMizuFetchSpan, isMizuLog, isMizuRootRequestSpan } from "@/queries";
+import {
+  MizuTraceV2,
+  isMizuFetchSpan,
+  isMizuLog,
+  isMizuRootRequestSpan,
+} from "@/queries";
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RequestMethod } from "../shared";
@@ -150,5 +155,7 @@ function truncateMessage(message: string | null, maxLength = 30) {
   if (message === null) {
     return null;
   }
-  return message.length > maxLength ? `${message.slice(0, maxLength)}...` : message;
+  return message.length > maxLength
+    ? `${message.slice(0, maxLength)}...`
+    : message;
 }
