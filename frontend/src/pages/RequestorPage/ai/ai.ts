@@ -1,6 +1,6 @@
 import { toast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { z } from "zod";
 import { KeyValueParameter, createKeyValueParameters } from "../KeyValueForm";
 import { ProbedRoute, Requestornator } from "../queries";
@@ -18,12 +18,50 @@ type FormSetters = {
   setPathParams: React.Dispatch<React.SetStateAction<KeyValueParameter[]>>;
 };
 
+
+/**
+ * This is a local storage flag to hide the banner that shows up when AI generated inputs are being used.
+ * This is used to prevent the banner from showing up after the user hits "Ignore" once.
+ * 
+ * - Default value: false, don't ignore the banner
+ * - Value if the localStorage contents are not json parseable: true, ignore the banner
+ * 
+ * TODO - Persist this in the API instead
+ */
+export function useIgnoreAiGeneratedInputsBanner() {
+  const LOCAL_STORAGE_KEY = "ignoreAiGeneratedInputsBanner";
+
+  const [ignoreAiInputsBanner, setIgnoreAiInputsBanner] = useState<boolean>(() => {
+    const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
+    try {
+      return storedValue ? JSON.parse(storedValue) : false;
+    } catch (e) {
+      console.error("Failed to parse stored value:", e);
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ignoreAiInputsBanner));
+  }, [ignoreAiInputsBanner]);
+
+  return {
+    ignoreAiInputsBanner,
+    setIgnoreAiInputsBanner,
+  };
+}
+
+
 export function useAi(
   selectedRoute: ProbedRoute | null,
   requestHistory: Array<Requestornator>,
   formSetters: FormSetters,
 ) {
   const isAiEnabled = useAiEnabled();
+
+  const { ignoreAiInputsBanner, setIgnoreAiInputsBanner } = useIgnoreAiGeneratedInputsBanner();
+
+  const [showAiGeneratedInputsBanner, setShowAiGeneratedInputsBanner] = useState(false);
 
   const { setBody, setQueryParams, setPath, setPathParams } = formSetters;
 
@@ -86,10 +124,16 @@ export function useAi(
       } else {
         // TODO - Clear path params if they are not present in the response
       }
+
+      setShowAiGeneratedInputsBanner(true);
     });
   };
 
   return {
+    showAiGeneratedInputsBanner: !ignoreAiInputsBanner && !!showAiGeneratedInputsBanner,
+    setShowAiGeneratedInputsBanner,
+    ignoreAiInputsBanner,
+    setIgnoreAiInputsBanner,
     enabled: isAiEnabled,
     isLoadingParameters,
     fillInRequest,

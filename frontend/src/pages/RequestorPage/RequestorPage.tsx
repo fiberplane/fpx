@@ -128,6 +128,9 @@ export const RequestorPage = () => {
     fillInRequest,
     testingPersona,
     setTestingPersona,
+    showAiGeneratedInputsBanner,
+    setShowAiGeneratedInputsBanner,
+    setIgnoreAiInputsBanner,
   } = useAi(selectedRoute, history, {
     setBody,
     setQueryParams,
@@ -229,6 +232,9 @@ export const RequestorPage = () => {
             fillInRequest={fillInRequest}
             testingPersona={testingPersona}
             setTestingPersona={setTestingPersona}
+            showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
+            setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
+            setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
           />
 
           <ResponsePanel
