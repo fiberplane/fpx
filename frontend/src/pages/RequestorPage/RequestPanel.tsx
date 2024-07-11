@@ -65,11 +65,7 @@ function AiDropDownMenu({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleTriggerClick}
-        >
+        <Button variant="ghost" size="sm" onClick={handleTriggerClick}>
           <MagicWandIcon className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>

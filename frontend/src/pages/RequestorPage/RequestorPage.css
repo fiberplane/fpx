@@ -3,7 +3,3 @@
 .fpx-requestor-grid-rows {
   grid-template-rows: auto minmax(0, 1fr);
 }
-
-.fpx-requestor-grid-rows--ai-enabled {
-  grid-template-rows: auto auto minmax(0, 1fr);
-}

@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
 import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
-import { MagicWandIcon } from "@radix-ui/react-icons";
 import { useCallback, useMemo, useRef } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
@@ -9,7 +7,7 @@ import { useSessionHistory } from "./RequestorSessionHistoryContext";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
-import { TestingPersonaMenu, useAi } from "./ai";
+import { useAi } from "./ai";
 import { useRequestorFormData } from "./data";
 import { usePersistedUiState, useSaveUiState } from "./persistUiState";
 import {
@@ -180,9 +178,7 @@ export const RequestorPage = () => {
       <div
         className={cn(
           "grid",
-          aiEnabled
-            ? "fpx-requestor-grid-rows--ai-enabled"
-            : "fpx-requestor-grid-rows",
+          "fpx-requestor-grid-rows",
           "gap-2",
           // HACK - This is a workaround to prevent the grid from overflowing on smaller screens
           "h-[calc(100%-0.6rem)]",
@@ -192,23 +188,6 @@ export const RequestorPage = () => {
           "sm:overflow-hidden",
         )}
       >
-        {aiEnabled && (
-          <div className="flex items-center justify-start space-x-0 h-9 pt-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={fillInRequest}
-              disabled={isLoadingParameters}
-            >
-              <MagicWandIcon className="w-4 h-4" />
-            </Button>
-            <TestingPersonaMenu
-              persona={testingPersona}
-              onPersonaChange={setTestingPersona}
-            />
-          </div>
-        )}
-
         <RequestorInput
           addBaseUrl={addBaseUrl}
           method={method}
