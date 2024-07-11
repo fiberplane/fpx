@@ -41,7 +41,7 @@ import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 import { FpxCard, RequestMethod, SectionHeading } from "./shared";
-import { SummaryV2, TraceDetailsV2 } from "./v2";
+import { MinimapV2, SummaryV2, TraceDetailsV2 } from "./v2";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -191,7 +191,11 @@ export function RequestDetailsPage() {
             "md:w-[280px]",
           )}
         >
-          <Minimap trace={trace} />
+          {shouldRenderV2 ? (
+            <MinimapV2 trace={traceV2} />
+          ) : (
+            <Minimap trace={trace} />
+          )}
         </div>
         <div
           className={cn(

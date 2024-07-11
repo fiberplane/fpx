@@ -4,7 +4,7 @@ import { z } from "zod";
 export const KeyValueSchema = z.record(z.string());
 
 // TODO - tie to level: error
-const MizuErrorMessageSchema = z.object({
+export const MizuErrorMessageSchema = z.object({
   message: z.string(),
   stack: z.string().optional(),
   name: z.string(),
@@ -135,12 +135,12 @@ export const MizuFetchLoggingErrorSchema = z
   })
   .passthrough();
 
-const MizuReqResMessageSchema = z.discriminatedUnion("lifecycle", [
+export const MizuReqResMessageSchema = z.discriminatedUnion("lifecycle", [
   MizuRequestStartSchema,
   MizuRequestEndSchema,
 ]);
 
-const MizuFetchMessageSchema = z.discriminatedUnion("lifecycle", [
+export const MizuFetchMessageSchema = z.discriminatedUnion("lifecycle", [
   MizuFetchStartSchema,
   MizuFetchEndSchema,
   MizuFetchErrorSchema,
