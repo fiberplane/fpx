@@ -37,3 +37,4 @@ export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
 export { useFetchSettings, useUpdateSettings } from "./settings";
 
 export { PROBED_ROUTES_KEY } from "./app-routes";
+export { useMizuTracesV2, type MizuTraceV2 } from "./traces-v2";

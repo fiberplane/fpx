@@ -130,7 +130,7 @@ const MizuSpanSchema = z.discriminatedUnion("type", [
 
 type MizuSpan = z.infer<typeof MizuSpanSchema>;
 
-type MizuTraceV2 = MizuTrace & {
+export type MizuTraceV2 = MizuTrace & {
   spans: MizuSpan[];
 };
 

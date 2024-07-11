@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useRequestDetails } from "@/hooks";
 import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
@@ -41,10 +41,11 @@ import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 import { FpxCard, RequestMethod, SectionHeading } from "./shared";
+import { SummaryV2, TraceDetailsV2 } from "./v2";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
-  const { trace } = useRequestDetails(traceId);
+  const { trace, traceV2 } = useRequestDetails(traceId);
   const navigate = useNavigate();
 
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -111,6 +112,8 @@ export function RequestDetailsPage() {
   useHotkeys(["K"], () => {
     handlePrevTrace();
   });
+  const [searchParams] = useSearchParams();
+  const shouldRenderV2 = !!traceV2 && !!searchParams.get("v2");
 
   return (
     <div
@@ -196,12 +199,16 @@ export function RequestDetailsPage() {
             "sm:grid-rows-[auto_1fr]",
           )}
         >
-          {trace ? (
+          {shouldRenderV2 ? (
+            <SummaryV2 trace={traceV2} />
+          ) : trace ? (
             <Summary trace={trace} />
           ) : (
             <div className="w-full relative" />
           )}
-          {trace ? (
+          {shouldRenderV2 ? (
+            <TraceDetailsV2 trace={traceV2} />
+          ) : trace ? (
             <TraceDetails trace={trace} />
           ) : (
             <div className="w-full relative" />
