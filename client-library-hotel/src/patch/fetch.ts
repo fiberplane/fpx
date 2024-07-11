@@ -30,7 +30,6 @@ export function patchFetch() {
       }
 
       const response = await original(input, init);
-
       if (span) {
         const clonedResponse = response.clone();
         const attributes = await getResponseAttributes(clonedResponse);

@@ -56,6 +56,7 @@ export function instrument(
 
   patchConsole();
   patchFetch();
+
   return new Proxy(app, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
@@ -81,7 +82,6 @@ export function instrument(
               [SEMATTRS_HTTP_URL]: request.url,
               [SEMATTRS_HTTP_METHOD]: request.method,
             });
-            // trace.
             return await value(request, env, proxyExecutionCtx);
           });
 
