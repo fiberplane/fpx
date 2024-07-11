@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Context, ROOT_CONTEXT } from '@opentelemetry/api';
-import { AsyncLocalStorage } from 'node:async_hooks';
-import { AbstractAsyncHooksContextManager } from './AbstractAsyncHooksContextManager';
+import { AsyncLocalStorage } from "node:async_hooks";
+import { type Context, ROOT_CONTEXT } from "@opentelemetry/api";
+import { AbstractAsyncHooksContextManager } from "./AbstractAsyncHooksContextManager";
 
 export class AsyncLocalStorageContextManager extends AbstractAsyncHooksContextManager {
   private _asyncLocalStorage: AsyncLocalStorage<Context>;

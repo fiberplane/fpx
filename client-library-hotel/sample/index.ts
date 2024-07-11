@@ -28,12 +28,11 @@ app.get("/", async (c) => {
 
   loop(15);
 
-  c.executionCtx.waitUntil(sleep(30));
   const response = await fetch("https://api.chucknorris.io/jokes/random");
   const result = await response.json();
 
   // This should execute beyond the requests time
-
+  c.executionCtx.waitUntil(sleep(30));
 
   return c.text(`Hello Hono! - ${result.value}`);
 });

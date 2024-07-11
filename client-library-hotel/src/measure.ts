@@ -3,7 +3,7 @@ import { type Span, SpanStatusCode, trace } from "@opentelemetry/api";
 /**
  * Wraps a function in a span, measuring the time it takes to execute
  * the function.
- * 
+ *
  * @param name (string) The name of the span that will be created
  * @param fn (function) The function to be measured
  * @returns (function) The wrapped function, with the same signature as the original function

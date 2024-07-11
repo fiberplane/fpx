@@ -1,20 +1,20 @@
 import { context, trace } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
+import { Resource } from "@opentelemetry/resources";
 import {
   BasicTracerProvider,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
-import type { ExecutionContext, Hono } from "hono";
-// TODO figure out we can use somet
-import { AsyncLocalStorageContextManager } from "./async-hooks";
-import { Resource } from "@opentelemetry/resources";
 import {
   SEMATTRS_HTTP_METHOD,
   SEMATTRS_HTTP_URL,
   SEMRESATTRS_SERVICE_NAME,
 } from "@opentelemetry/semantic-conventions";
+import type { ExecutionContext, Hono } from "hono";
+// TODO figure out we can use somet
+import { AsyncLocalStorageContextManager } from "./async-hooks";
 
-import { patchWaitUntil,  patchFetch, patchConsole } from "./patch";
+import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { measure } from "./util";
 
 type Config = {

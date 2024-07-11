@@ -1,2 +1,2 @@
 export { instrument } from "./instrumentation";
-export { measure } from "./util";
+export { measure } from "./measure";

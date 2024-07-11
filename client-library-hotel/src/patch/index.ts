@@ -1,3 +1,3 @@
-export { patchFetch} from "./fetch"
-export { patchConsole } from "./log"
-export { patchWaitUntil } from "./waitUntil"
+export { patchFetch } from "./fetch";
+export { patchConsole } from "./log";
+export { patchWaitUntil } from "./waitUntil";
