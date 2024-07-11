@@ -6,17 +6,16 @@ import {
 } from "@opentelemetry/sdk-trace-base";
 import type { ExecutionContext, Hono } from "hono";
 import { AsyncLocalStorageContextManager } from "./context";
-import { enableWaitUntilTracing } from "./waitUntil";
-
 import { Resource } from "@opentelemetry/resources";
 import {
   SEMATTRS_HTTP_METHOD,
   SEMATTRS_HTTP_URL,
   SEMRESATTRS_SERVICE_NAME,
 } from "@opentelemetry/semantic-conventions";
-import { patchFetch } from "./fetch";
-import { patchConsole } from "./log";
+
+import { patchWaitUntil,  patchFetch, patchConsole } from "./patch";
 import { measure } from "./util";
+
 type Config = {
   endpoint: string;
   /** Name of service (not in use, but will be helpful later) */
@@ -72,7 +71,7 @@ export function instrument(
           const provider = setupTracerProvider(config);
 
           // Enable tracing for waitUntil
-          const patched = executionCtx && enableWaitUntilTracing(executionCtx);
+          const patched = executionCtx && patchWaitUntil(executionCtx);
           const promises = patched?.promises ?? [];
           const proxyExecutionCtx = patched?.proxyContext ?? executionCtx;
 

@@ -7,7 +7,7 @@ import {
   SEMATTRS_HTTP_URL,
 } from "@opentelemetry/semantic-conventions";
 import { wrap } from "shimmer";
-import { measure } from "./util";
+import { measure } from "../util";
 
 type Fetch = typeof globalThis.fetch;
 type FetchArgs = Parameters<Fetch>;
