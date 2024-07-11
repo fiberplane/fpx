@@ -245,6 +245,11 @@ export const RequestorPage = () => {
             setPathParams={setPathParams}
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
+            aiEnabled={aiEnabled}
+            isLoadingParameters={isLoadingParameters}
+            fillInRequest={fillInRequest}
+            testingPersona={testingPersona}
+            setTestingPersona={setTestingPersona}
           />
 
           <ResponsePanel

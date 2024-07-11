@@ -1,14 +1,128 @@
+import SparkleWand from "@/assets/wand-2.svg";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { EraserIcon } from "@radix-ui/react-icons";
+import { EraserIcon, MagicWandIcon } from "@radix-ui/react-icons";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { PathParamForm } from "./PathParamForm/PathParamForm";
 import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
+import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai/ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
+
+type AiDropDownMenuProps = {
+  isLoadingParameters: boolean;
+  persona: string;
+  onPersonaChange: (persona: AiTestingPersona) => void;
+  fillInRequest: () => void;
+};
+
+function AiDropDownMenu({
+  isLoadingParameters,
+  persona,
+  onPersonaChange,
+  fillInRequest,
+}: AiDropDownMenuProps) {
+  const [open, setOpen] = useState(false);
+
+  const handleValueChange = useCallback(
+    (value: string) => {
+      onPersonaChange(value === HOSTILE ? HOSTILE : FRIENDLY);
+    },
+    [onPersonaChange],
+  );
+
+  // FIXME - This isn't working to support meta + click as a shortcut
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      fillInRequest();
+    } else {
+      setOpen((prev) => !prev);
+    }
+  };
+
+  const handleGenerateRequest = useCallback(() => {
+    fillInRequest();
+    setOpen(false);
+  }, [fillInRequest, setOpen]);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleTriggerClick}
+        >
+          <MagicWandIcon className="w-4 h-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>Generate Inputs</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="font-normal">
+          Testing Persona
+        </DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={persona}
+          onValueChange={handleValueChange}
+        >
+          <DropdownMenuRadioItem
+            value="Friendly"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPersonaChange(FRIENDLY);
+            }}
+          >
+            Friendly
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem
+            value="QA"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPersonaChange(HOSTILE);
+            }}
+          >
+            Hostile
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1">
+          <Button
+            style={{
+              background: "linear-gradient(90deg, #3B82F6 0%, #C53BF6 100%)",
+            }}
+            className="w-full text-white flex gap-2 items-center"
+            // FIXME - While it's loading... show a spinner? And implement a timeout / cancel
+            disabled={isLoadingParameters}
+            onClick={handleGenerateRequest}
+          >
+            <SparkleWand className="w-4 h-4" />
+            <span>{isLoadingParameters ? "Generating..." : "Generate"}</span>
+          </Button>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 type RequestPanelProps = {
   currentRoute?: string;
@@ -22,6 +136,11 @@ type RequestPanelProps = {
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   requestHeaders: KeyValueParameter[];
+  aiEnabled: boolean;
+  isLoadingParameters: boolean;
+  fillInRequest: () => void;
+  testingPersona: string;
+  setTestingPersona: Dispatch<SetStateAction<AiTestingPersona>>;
 };
 
 export function RequestPanel(props: RequestPanelProps) {
@@ -70,6 +189,11 @@ function RequestMeta(props: RequestPanelProps) {
     setPathParams,
     setQueryParams,
     setRequestHeaders,
+    aiEnabled,
+    isLoadingParameters,
+    fillInRequest,
+    testingPersona,
+    setTestingPersona,
   } = props;
   const shouldShowBody = method !== "GET" && method !== "HEAD";
   return (
@@ -105,6 +229,29 @@ function RequestMeta(props: RequestPanelProps) {
               <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
             )}
           </CustomTabTrigger>
+        )}
+
+        {aiEnabled && (
+          <div className="flex-grow ml-auto flex items-center justify-end text-white">
+            <AiDropDownMenu
+              persona={testingPersona}
+              onPersonaChange={setTestingPersona}
+              isLoadingParameters={isLoadingParameters}
+              fillInRequest={fillInRequest}
+            />
+            {/* <Button
+              variant="ghost"
+              size="sm"
+              onClick={fillInRequest}
+              disabled={isLoadingParameters}
+            >
+              <MagicWandIcon className="w-4 h-4" />
+            </Button>
+            <TestingPersonaMenu
+              persona={testingPersona}
+              onPersonaChange={setTestingPersona}
+            /> */}
+          </div>
         )}
       </CustomTabsList>
 
