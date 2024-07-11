@@ -90,4 +90,13 @@ impl ApiClient {
 
         self.do_req(Method::GET, path).await
     }
+
+    pub async fn span_list(
+        &self,
+        trace_id: impl AsRef<str>,
+    ) -> Result<Vec<crate::models::Span>, ApiClientError<SpanGetError>> {
+        let path = format!("api/traces/{}/spans", trace_id.as_ref());
+
+        self.do_req(Method::GET, path).await
+    }
 }

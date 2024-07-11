@@ -59,3 +59,47 @@ impl From<DbError> for ApiServerError<SpanGetError> {
         }
     }
 }
+
+#[tracing::instrument(skip_all)]
+pub async fn span_list_handler(
+    State(store): State<Store>,
+    Path(trace_id): Path<String>,
+) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
+    let tx = store.start_transaction().await?;
+
+    let trace_id = hex::decode(trace_id)
+        .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
+
+    let spans = store.span_list_by_trace(&tx, trace_id).await?;
+    let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
+
+    Ok(Json(spans))
+}
+
+#[derive(Debug, Serialize, Deserialize, Error)]
+#[serde(tag = "error", content = "details", rename_all = "camelCase")]
+#[non_exhaustive]
+pub enum SpanListError {
+    #[error("Trace ID is invalid")]
+    InvalidTraceId,
+}
+
+impl IntoResponse for SpanListError {
+    fn into_response(self) -> axum::response::Response {
+        let body = serde_json::to_vec(&self)
+            .expect("Failed to serialize SpanListError, should not happen");
+
+        let status_code = match self {
+            SpanListError::InvalidTraceId => StatusCode::BAD_REQUEST,
+        };
+
+        (status_code, body).into_response()
+    }
+}
+
+impl From<DbError> for ApiServerError<SpanListError> {
+    fn from(err: DbError) -> Self {
+        error!(?err, "Failed to list spans from database");
+        ApiServerError::CommonError(CommonError::InternalServerError)
+    }
+}

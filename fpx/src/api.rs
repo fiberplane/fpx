@@ -85,6 +85,10 @@ fn api_router(
             "/traces/:trace_id/spans/:span_id",
             get(handlers::spans::span_get_handler),
         )
+        .route(
+            "/traces/:trace_id/spans",
+            get(handlers::spans::span_list_handler),
+        )
         .fallback(StatusCode::NOT_FOUND)
         .with_state(api_state)
 }

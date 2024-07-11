@@ -8,7 +8,7 @@ use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use tracing::error;
+use tracing::{error, info, instrument};
 
 pub mod migrations;
 pub mod models;
@@ -132,6 +132,7 @@ impl Store {
 
     /// Create a new span in the database. This will return a new span with any
     /// fields potentially updated.
+    #[instrument(skip(self, tx, span))]
     pub async fn span_create(
         &self,
         tx: &Transaction,
@@ -190,6 +191,7 @@ impl Store {
     }
 
     /// Retrieve a single span from the database.
+    #[instrument(skip(self, tx))]
     pub async fn span_get(
         &self,
         tx: &Transaction,
@@ -203,6 +205,22 @@ impl Store {
             )
             .await?
             .fetch_one()
+            .await?;
+
+        Ok(span)
+    }
+
+    /// Retrieve all spans for a single trace from the database.
+    #[instrument(skip(self, tx))]
+    pub async fn span_list_by_trace(
+        &self,
+        tx: &Transaction,
+        trace_id: Vec<u8>,
+    ) -> Result<Vec<models::Span>, DbError> {
+        let span = tx
+            .query("SELECT * FROM spans WHERE trace_id=$1", params!(trace_id))
+            .await?
+            .fetch_all()
             .await?;
 
         Ok(span)
