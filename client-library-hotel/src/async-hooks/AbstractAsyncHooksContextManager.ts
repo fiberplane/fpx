@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-//@ts-ignore
-import { AsyncLocalStorage } from "node:async_hooks";
-//@ts-ignore
-import { EventEmitter } from "node:events";
-import {
-  type Context,
-  type ContextManager,
-  ROOT_CONTEXT,
-} from "@opentelemetry/api";
+import { ContextManager, Context } from '@opentelemetry/api';
+import { EventEmitter } from 'node:events';
 
 type Func<T> = (...args: unknown[]) => T;
 
@@ -36,14 +29,16 @@ interface PatchMap {
 }
 
 const ADD_LISTENER_METHODS = [
-  "addListener" as const,
-  "on" as const,
-  "once" as const,
-  "prependListener" as const,
-  "prependOnceListener" as const,
+  'addListener' as const,
+  'on' as const,
+  'once' as const,
+  'prependListener' as const,
+  'prependOnceListener' as const,
 ];
 
-abstract class AbstractAsyncHooksContextManager implements ContextManager {
+export abstract class AbstractAsyncHooksContextManager
+  implements ContextManager
+{
   abstract active(): Context;
 
   abstract with<A extends unknown[], F extends (...args: A) => ReturnType<F>>(
@@ -68,19 +63,18 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
       return this._bindEventEmitter(context, target);
     }
 
-    if (typeof target === "function") {
+    if (typeof target === 'function') {
       return this._bindFunction(context, target);
     }
     return target;
   }
 
-  // biome-ignore lint/complexity/noBannedTypes: This comes from the open-telemetry library
   private _bindFunction<T extends Function>(context: Context, target: T): T {
     const manager = this;
     const contextWrapper = function (this: never, ...args: unknown[]) {
       return manager.with(context, () => target.apply(this, args));
     };
-    Object.defineProperty(contextWrapper, "length", {
+    Object.defineProperty(contextWrapper, 'length', {
       enumerable: false,
       configurable: true,
       writable: false,
@@ -90,7 +84,7 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
      * It isn't possible to tell Typescript that contextWrapper is the same as T
      * so we forced to cast as any here.
      */
-    // biome-ignore lint/suspicious/noExplicitAny: this comes from the open-telemetry library
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return contextWrapper as any;
   }
 
@@ -103,30 +97,29 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
    */
   private _bindEventEmitter<T extends EventEmitter>(
     context: Context,
-    ee: T,
+    ee: T
   ): T {
     const map = this._getPatchMap(ee);
     if (map !== undefined) return ee;
     this._createPatchMap(ee);
 
     // patch methods that add a listener to propagate context
-    // biome-ignore lint/complexity/noForEach: This comes from the open-telemetry library
-    ADD_LISTENER_METHODS.forEach((methodName) => {
+    ADD_LISTENER_METHODS.forEach(methodName => {
       if (ee[methodName] === undefined) return;
       ee[methodName] = this._patchAddListener(ee, ee[methodName], context);
     });
     // patch methods that remove a listener
-    if (typeof ee.removeListener === "function") {
+    if (typeof ee.removeListener === 'function') {
       ee.removeListener = this._patchRemoveListener(ee, ee.removeListener);
     }
-    if (typeof ee.off === "function") {
+    if (typeof ee.off === 'function') {
       ee.off = this._patchRemoveListener(ee, ee.off);
     }
     // patch method that remove all listeners
-    if (typeof ee.removeAllListeners === "function") {
+    if (typeof ee.removeAllListeners === 'function') {
       ee.removeAllListeners = this._patchRemoveAllListeners(
         ee,
-        ee.removeAllListeners,
+        ee.removeAllListeners
       );
     }
     return ee;
@@ -138,7 +131,6 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
    * @param ee EventEmitter instance
    * @param original reference to the patched method
    */
-  // biome-ignore lint/complexity/noBannedTypes: This comes from the open-telemetry library
   private _patchRemoveListener(ee: EventEmitter, original: Function) {
     const contextManager = this;
     return function (this: never, event: string, listener: Func<void>) {
@@ -157,20 +149,17 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
    * @param ee EventEmitter instance
    * @param original reference to the patched method
    */
-  // biome-ignore lint/complexity/noBannedTypes: This comes from the open-telemetry library
   private _patchRemoveAllListeners(ee: EventEmitter, original: Function) {
     const contextManager = this;
     return function (this: never, event: string) {
       const map = contextManager._getPatchMap(ee);
       if (map !== undefined) {
-        // biome-ignore lint/style/noArguments: this comes from the open-telemetry library
         if (arguments.length === 0) {
           contextManager._createPatchMap(ee);
         } else if (map[event] !== undefined) {
           delete map[event];
         }
       }
-      // biome-ignore lint/style/noArguments: this comes from the open-telemetry library
       return original.apply(this, arguments);
     };
   }
@@ -184,9 +173,8 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
    */
   private _patchAddListener(
     ee: EventEmitter,
-    // biome-ignore lint/complexity/noBannedTypes: This comes from the open-telemetry library
     original: Function,
-    context: Context,
+    context: Context
   ) {
     const contextManager = this;
     return function (this: never, event: string, listener: Func<void>) {
@@ -228,7 +216,7 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
 
   private _createPatchMap(ee: EventEmitter): PatchMap {
     const map = Object.create(null);
-    // biome-ignore lint/suspicious/noExplicitAny: this comes from the open-telemetry library
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ee as any)[this._kOtListeners] = map;
     return map;
   }
@@ -236,38 +224,6 @@ abstract class AbstractAsyncHooksContextManager implements ContextManager {
     return (ee as never)[this._kOtListeners];
   }
 
-  private readonly _kOtListeners = Symbol("OtListeners");
+  private readonly _kOtListeners = Symbol('OtListeners');
   private _wrapped = false;
-}
-
-export class AsyncLocalStorageContextManager extends AbstractAsyncHooksContextManager {
-  private _asyncLocalStorage: AsyncLocalStorage<Context>;
-
-  constructor() {
-    super();
-    this._asyncLocalStorage = new AsyncLocalStorage();
-  }
-
-  active(): Context {
-    return this._asyncLocalStorage.getStore() ?? ROOT_CONTEXT;
-  }
-
-  with<A extends unknown[], F extends (...args: A) => ReturnType<F>>(
-    context: Context,
-    fn: F,
-    thisArg?: ThisParameterType<F>,
-    ...args: A
-  ): ReturnType<F> {
-    const cb = thisArg == null ? fn : fn.bind(thisArg);
-    return this._asyncLocalStorage.run(context, cb as never, ...args);
-  }
-
-  enable(): this {
-    return this;
-  }
-
-  disable(): this {
-    this._asyncLocalStorage.disable();
-    return this;
-  }
 }

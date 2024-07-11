@@ -5,7 +5,8 @@ import {
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
 import type { ExecutionContext, Hono } from "hono";
-import { AsyncLocalStorageContextManager } from "./context";
+// TODO figure out we can use somet
+import { AsyncLocalStorageContextManager } from "./async-hooks";
 import { Resource } from "@opentelemetry/resources";
 import {
   SEMATTRS_HTTP_METHOD,
