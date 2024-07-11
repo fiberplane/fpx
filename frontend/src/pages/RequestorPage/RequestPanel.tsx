@@ -13,7 +13,12 @@ import {
 import { Tabs } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { Cross2Icon, EraserIcon, InfoCircledIcon, MagicWandIcon } from "@radix-ui/react-icons";
+import {
+  Cross2Icon,
+  EraserIcon,
+  InfoCircledIcon,
+  MagicWandIcon,
+} from "@radix-ui/react-icons";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
@@ -429,7 +434,12 @@ function AIGeneratedInputsBanner({
         </button>
       </div>
       <div>
-        <Button className="p-0 h-auto" variant="ghost" size="sm" onClick={onClose}>
+        <Button
+          className="p-0 h-auto"
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+        >
           <Cross2Icon className="w-3.5 h-3.5 text-gray-400" />
         </Button>
       </div>
