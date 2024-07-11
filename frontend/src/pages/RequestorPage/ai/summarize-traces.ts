@@ -49,7 +49,7 @@ async function summarizeError(trace?: MizuTrace) {
  * - Fetch-related events
  * - Error logs
  */
-function serializeTraceForLLM(trace: MizuTrace) {
+export function serializeTraceForLLM(trace: MizuTrace) {
   return trace.logs.reduce(
     (result, log) => {
       if (isMizuRequestStartMessage(log?.message)) {

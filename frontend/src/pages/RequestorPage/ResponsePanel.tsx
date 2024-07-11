@@ -15,6 +15,7 @@ import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
 import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
+import { AiTestGeneration } from "./ai";
 import { Requestornator } from "./queries";
 
 // TODO - Create skeleton loading components for each tab content
@@ -63,7 +64,8 @@ export function ResponsePanel({
               <ResponseSummary response={response} />
               <ResponseBody response={response} />
               {response?.app_responses?.traceId && (
-                <div className="flex justify-end pt-2 pb-3 absolute bottom-0 right-3">
+                <div className="flex justify-end gap-2 pt-2 pb-3 absolute bottom-0 right-3">
+                  <AiTestGeneration history={[response]} />
                   <Link to={`/requests/${response?.app_responses?.traceId}`}>
                     <Button variant="secondary">
                       Go to Trace Details

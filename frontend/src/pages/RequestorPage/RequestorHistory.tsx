@@ -43,7 +43,7 @@ export function RequestorHistory({
 type HistoryEntryProps = {
   traceId: string;
   response: Requestornator;
-  loadHistoricalRequest: (traceId: string) => void;
+  loadHistoricalRequest?: (traceId: string) => void;
 };
 
 export function HistoryEntry({
@@ -110,19 +110,21 @@ export function HistoryEntry({
                   : fallbackUrl || "Details missing"}
             </span>
           </div>
-          <div className="flex items-center ml-auto mr-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="px-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                loadHistoricalRequest(traceId);
-              }}
-            >
-              <SymbolIcon className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
+          {loadHistoricalRequest && (
+            <div className="flex items-center ml-auto mr-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  loadHistoricalRequest(traceId);
+                }}
+              >
+                <SymbolIcon className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
 
         {isOpen && (

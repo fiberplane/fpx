@@ -270,6 +270,7 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
 
 export default app;
 
+// TODO - Just use a prompt helper library sigh
 function cleanPrompt(prompt: string) {
   return prompt
     .trim()
