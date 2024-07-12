@@ -42,6 +42,9 @@ type TraceDetailsProps = {
 
 function TraceDetails({ response }: TraceDetailsProps) {
   const aiEnabled = useAiEnabled();
+  // HACK - Hide summaries for now because they're obtuse
+  const isAiSummaryEnabled = aiEnabled && false;
+
   const traceId = response.app_responses.traceId;
   const { trace, isNotFound } = useTrace(traceId);
 
@@ -59,7 +62,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
     if (
       trace &&
       trace.id !== lastFetchedTraceId &&
-      aiEnabled &&
+      isAiSummaryEnabled &&
       !isFetchingAiSummary
     ) {
       fetchAiSummary();
@@ -68,7 +71,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
     trace,
     lastFetchedTraceId,
     fetchAiSummary,
-    aiEnabled,
+    isAiSummaryEnabled,
     isFetchingAiSummary,
   ]);
 
@@ -82,7 +85,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
 
   return (
     <div className="mt-2">
-      {aiEnabled && (
+      {isAiSummaryEnabled && (
         <div className="">
           <h3 className="pt-1 pb-2 text-sm">Summary</h3>
           <div className="font-light">
@@ -290,3 +293,5 @@ function NoTrace() {
     </div>
   );
 }
+
+function useAiSummary() {}
