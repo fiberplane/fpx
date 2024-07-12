@@ -124,11 +124,16 @@ async function getFpxPort() {
       nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
     }
 
-    if (hasConfiguredFpxPort) {
+    // HACK - If the nextFallback exceeds 65535, we're out of port range.
+    //        So, we'll just default to 8787.
+    if (hasConfiguredFpxPort || nextFallback > 65535) {
       FPX_PORT = await askUser(
         `  ⚠️ ${portAlreadyInUse}\n  Please choose a different port for FPX.`,
-        nextFallback,
+        nextFallback > 65535 ? "8787" : nextFallback,
       );
+      if (nextFallback > 65535) {
+        break;
+      }
     } else {
       FPX_PORT = nextFallback;
     }

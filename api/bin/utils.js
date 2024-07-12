@@ -100,9 +100,14 @@ export function cliAnswerToBool(answer, fallback = false) {
  * This is a hacky way to check if a port is taken, because the `net` module
  * doesn't have a built-in way to do this.
  *
- * We check on both IPv4 and IPv6, and look on:
+ * We check on both IPv4 and IPv6, assuming the end user's OS uses a dual stack.
+ * We might be able to remove the IPv6 checks...
+ *
+ * On macOS we look on:
  * - `127.0.0.1` and `::1`, the loopback interfaces
  * - also on `0.0.0.0` and `::`, since only looking at localhost didn't detect FPX studio!
+ *
+ * On Linux, we should only check on the loopback interfaces. `0.0.0.0` is interpreted differently.
  *
  * @param {number} port - The port to check
  * @returns {Promise<boolean>} - Resolves to true if the port is taken, false otherwise
@@ -114,17 +119,25 @@ export async function isPortTaken(port) {
     );
     return false;
   };
-  const isTakenOnAnyInterface = await isPortTakenOnHosts(
-    port,
-    "0.0.0.0",
-    "::",
-  ).catch(handlePortSearchError);
+
   const isTakenOnLoopbackInterface = await isPortTakenOnHosts(
     port,
     "127.0.0.1",
     "::1",
   ).catch(handlePortSearchError);
-  return isTakenOnAnyInterface || isTakenOnLoopbackInterface;
+
+  // HACK - Checking `0.0.0.0` on Ubuntu is a trap!
+  // TODO - Also test on Windows whether we should skip 0.0.0.0. (To be safe for now, only run this check on macOS.)
+  if (isMacOS()) {
+    const isTakenOnAnyInterface = await isPortTakenOnHosts(
+      port,
+      "0.0.0.0",
+      "::",
+    ).catch(handlePortSearchError);
+    return isTakenOnAnyInterface || isTakenOnLoopbackInterface;
+  }
+
+  return isTakenOnLoopbackInterface;
 }
 
 /**
@@ -136,40 +149,73 @@ export async function isPortTaken(port) {
  * @returns {Promise<boolean>} - Resolves to true if the port is taken on either host, false otherwise
  */
 async function isPortTakenOnHosts(port, ipv4Host, ipv6Host) {
-  logger.debug(`Checking if port ${port} is taken...`);
   return new Promise((resolve, reject) => {
     let successCount = 0;
 
-    const testIPv4 = net
-      .createServer()
-      .once("error", (err) => {
-        if (err.code !== "EADDRINUSE") return reject(err);
-        resolve(true);
+    isPortTakenOnHost(port, ipv4Host)
+      .then((isTaken) => {
+        if (isTaken) {
+          logger.debug(`Port ${port} is taken on ${ipv4Host}`);
+          resolve(true);
+        } else {
+          successCount++;
+          if (successCount === 2) {
+            resolve(false);
+          }
+        }
       })
-      .once("listening", () => {
-        testIPv4
-          .once("close", () => {
-            successCount++;
-            if (successCount === 2) resolve(false);
-          })
-          .close();
-      })
-      .listen(port, ipv4Host);
+      .catch(reject);
 
-    const testIPv6 = net
+    isPortTakenOnHost(port, ipv6Host)
+      .then((isTaken) => {
+        if (isTaken) {
+          resolve(true);
+        } else {
+          successCount++;
+          if (successCount === 2) {
+            resolve(false);
+          }
+        }
+      })
+      .catch(reject);
+  });
+}
+
+/**
+ * Check if a port is taken on a specific host
+ *
+ * @param {number} port - The port to check
+ * @param {string} host - The host to check
+ * @returns {Promise<boolean>} - Resolves to true if the port is taken on either host, false otherwise
+ */
+async function isPortTakenOnHost(port, host) {
+  logger.debug(`Checking if port ${port} is taken on ${host}...`);
+  return new Promise((resolve, reject) => {
+    const test = net
       .createServer()
       .once("error", (err) => {
-        if (err.code !== "EADDRINUSE") return reject(err);
+        if (err.code !== "EADDRINUSE") {
+          logger.debug(`Error binding to ${port} on ${host}:`, err);
+          return reject(err);
+        }
         resolve(true);
       })
       .once("listening", () => {
-        testIPv6
+        test
           .once("close", () => {
-            successCount++;
-            if (successCount === 2) resolve(false);
+            resolve(false);
           })
           .close();
       })
-      .listen(port, ipv6Host);
+      .listen(port, host);
   });
+}
+
+/**
+ * Check if the current operating system is macOS
+ *
+ * @returns {boolean} - Returns true if the current OS is macOS, false otherwise
+ */
+export function isMacOS() {
+  return process.platform === "darwin";
 }
