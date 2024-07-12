@@ -12,12 +12,14 @@ import {
 import { Tabs } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
+import { Cross2Icon, EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import {
-  Cross2Icon,
-  EraserIcon,
-  InfoCircledIcon,
-} from "@radix-ui/react-icons";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
@@ -27,7 +29,7 @@ import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai/ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 
-import "./RequestPanel.css"
+import "./RequestPanel.css";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;
@@ -66,25 +68,28 @@ function AiDropDownMenu({
     setOpen(false);
   }, [fillInRequest, setOpen]);
 
-  const {
-    isMetaOrShiftPressed
-  } = useIsMetaOrShiftPressed();
+  const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
 
   // When the user shift+clicks of meta+clicks on the trigger, we don't want to open the menu
   // Instead, we will go ahead and generate the request data!
-  const handleOpenChange = useCallback((newOpen: boolean) => {
-    if (newOpen && isMetaOrShiftPressed) {
-      fillInRequest();
-      return;
-    }
-    setOpen(newOpen);
-  }, [isMetaOrShiftPressed, setOpen, fillInRequest]);
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (newOpen && isMetaOrShiftPressed) {
+        fillInRequest();
+        return;
+      }
+      setOpen(newOpen);
+    },
+    [isMetaOrShiftPressed, setOpen, fillInRequest],
+  );
 
   return (
     <DropdownMenu open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm">
-          <SparkleWand className={cn("w-4 h-4", { "fpx-pulse": isLoadingParameters })} />
+          <SparkleWand
+            className={cn("w-4 h-4", { "fpx-pulse": isLoadingParameters })}
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
@@ -476,12 +481,12 @@ function useIsMetaOrShiftPressed() {
   }, []);
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [handleKeyDown, handleKeyUp]);
 

@@ -4,6 +4,13 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Form,
   FormControl,
   FormDescription,
@@ -13,19 +20,28 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/components/ui/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 import { useUpdateSettings } from "@/queries";
 import { cn, errorHasMessage } from "@/utils";
+import {
+  CaretDownIcon,
+  EyeClosedIcon,
+  EyeOpenIcon,
+  InfoCircledIcon,
+} from "@radix-ui/react-icons";
 import { useState } from "react";
-import { EyeOpenIcon, EyeClosedIcon, CaretDownIcon } from '@radix-ui/react-icons';
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-const OpenAiModelSchema = z.union([z.literal('gpt-4o'), z.literal('gpt-3.5')]);
+const OpenAiModelSchema = z.union([z.literal("gpt-4o"), z.literal("gpt-3.5")]);
 
 type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
 
-const isValidOpenaiModel = (value: string): value is OpenAiModel => OpenAiModelSchema.safeParse(value).success;
+const isValidOpenaiModel = (value: string): value is OpenAiModel =>
+  OpenAiModelSchema.safeParse(value).success;
 
 const FormSchema = z.object({
   ai_features: z.boolean(),
@@ -37,6 +53,8 @@ const FormSchema = z.object({
 export function SettingsForm({
   settings,
 }: { settings: Record<string, string> }) {
+  const { toast } = useToast();
+
   const { mutate: updateSettings } = useUpdateSettings();
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -45,7 +63,9 @@ export function SettingsForm({
       ai_features: !!settings?.aiEnabled,
       openai_api_key: settings.openaiApiKey ?? "",
       custom_routes: !!settings?.customRoutesEnabled,
-      openai_model: isValidOpenaiModel(settings.openaiModel) ? settings.openaiModel : 'gpt-4o',
+      openai_model: isValidOpenaiModel(settings.openaiModel)
+        ? settings.openaiModel
+        : "gpt-4o",
     },
   });
 
@@ -65,6 +85,7 @@ export function SettingsForm({
           toast({
             title: "Settings updated!",
           });
+          form.reset(data); // Reset the form state, so dirty fields are no longer dirty
         },
         onError(error) {
           toast({
@@ -82,7 +103,10 @@ export function SettingsForm({
     );
   }
 
-  const isAiDirty = form.formState.dirtyFields.ai_features || form.formState.dirtyFields.openai_api_key || form.formState.dirtyFields.openaiModel;
+  const isAiDirty =
+    form.formState.dirtyFields.ai_features ||
+    form.formState.dirtyFields.openai_api_key ||
+    form.formState.dirtyFields.openai_model;
   const isCustomRoutesDirty = form.formState.dirtyFields.custom_routes;
 
   return (
@@ -95,7 +119,11 @@ export function SettingsForm({
               control={form.control}
               name="ai_features"
               render={({ field }) => (
-                <FormItem className={cn("rounded-lg border p-4", { "border-yellow-100/50": isAiDirty })}>
+                <FormItem
+                  className={cn("rounded-lg border p-4 space-y-6", {
+                    "border-yellow-100/50": isAiDirty,
+                  })}
+                >
                   <div className="flex flex-row items-center justify-between gap-2">
                     <div className="space-y-1">
                       <FormLabel className="text-base">AI Sprinkles</FormLabel>
@@ -116,67 +144,75 @@ export function SettingsForm({
                       control={form.control}
                       name="openai_api_key"
                       render={({ field }) => (
-                        <>
-                          <FormItem className="flex flex-col justify-between rounded-lg mt-1 text-sm">
-                            <div className="space-y-1">
-                              <FormLabel className="text-sm text-gray-300">
-                                OpenAI API Key
+                        <div className="space-y-2">
+                          <FormItem className="flex flex-col justify-between rounded-lg text-sm gap-2">
+                            <div className="space-y-2">
+                              <FormLabel className="text-base text-gray-300">
+                                OpenAI Conifguration
+                              </FormLabel>
+                              <AnthropicSupportCallout />
+                              <FormLabel className="block font-normal text-sm text-gray-300">
+                                API Key
                               </FormLabel>
                               <FormDescription>
-                                This is stored locally to make requests to the
-                                OpenAI API
+                                Your api key is stored locally to make requests
+                                to the OpenAI API.
                               </FormDescription>
+                              <FormControl>
+                                <ApiKeyInput
+                                  value={field.value ?? ""}
+                                  onChange={field.onChange}
+                                />
+                              </FormControl>
                             </div>
-                            <FormControl>
-                              <PasswordInput
-                                value={field.value ?? ""}
-                                onChange={field.onChange}
-                              />
-                            </FormControl>
                           </FormItem>
                           <FormField
                             control={form.control}
                             name="openai_model"
                             render={({ field }) => (
-                              <FormItem className="flex flex-col justify-between rounded-lg mt-1 text-sm">
-                                <div className="space-y-1">
-                                  <FormLabel className="text-sm text-gray-300">
-                                    OpenAI Model
-                                  </FormLabel>
-                                  <FormDescription>
-                                    Select the model to use for AI features.
-                                  </FormDescription>
-                                </div>
+                              <FormItem className="flex flex-col justify-between rounded-lg text-sm">
+                                <FormLabel className="text-sm text-gray-300 font-normal sr-only">
+                                  Model
+                                </FormLabel>
                                 <FormControl>
-                                  <div>
+                                  <div className="flex gap-2 items-center">
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
-                                        <Button type="button" variant="outline" className="w-auto inline-flex items-center">
-                                          <CaretDownIcon className="h-4 w-4 mr-2 text-white" />
-                                          {field.value ?? 'gpt-4o'}
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="outline"
+                                          className="w-auto px-2 inline-flex items-center"
+                                        >
+                                          <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
+                                          {field.value ?? "gpt-4o"}
                                         </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent className="w-full max-w-lg">
-                                        <DropdownMenuItem onSelect={() => field.onChange('gpt-4o')}>
-                                          gpt-4o
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onSelect={() => field.onChange('gpt-3.5')}>
-                                          gpt-3.5
-                                        </DropdownMenuItem>
+                                        <DropdownMenuRadioGroup
+                                          value={field.value}
+                                          onValueChange={(value) =>
+                                            field.onChange(value)
+                                          }
+                                        >
+                                          <DropdownMenuRadioItem value="gpt-4o">
+                                            gpt-4o
+                                          </DropdownMenuRadioItem>
+                                          <DropdownMenuRadioItem value="gpt-3.5">
+                                            gpt-3.5
+                                          </DropdownMenuRadioItem>
+                                        </DropdownMenuRadioGroup>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
+                                    <FormDescription>
+                                      Select the OpenAI model you want to use
+                                    </FormDescription>
                                   </div>
                                 </FormControl>
                               </FormItem>
                             )}
                           ></FormField>
-                         
-                          <FormLabel className="text-sm text-gray-300 italic">
-                            <div className="pt-4 pb-1 font-light w-full">
-                              *Support for Anthropic coming soon!*
-                            </div>
-                          </FormLabel>
-                        </>
+                        </div>
                       )}
                     />
                   ) : null}
@@ -187,12 +223,19 @@ export function SettingsForm({
               control={form.control}
               name="custom_routes"
               render={({ field }) => (
-                <FormItem className={cn("rounded-lg border p-4", { "border-yellow-100/50": isCustomRoutesDirty })}>
+                <FormItem
+                  className={cn("rounded-lg border p-4", {
+                    "border-yellow-100/50": isCustomRoutesDirty,
+                  })}
+                >
                   <div className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
-                      <FormLabel className="text-base">Custom Routes (Alpha)</FormLabel>
+                      <FormLabel className="text-base">
+                        Custom Routes (Alpha)
+                      </FormLabel>
                       <FormDescription>
-                        Make requests against routes that are not detected from your application code.
+                        Make requests against routes that are not detected from
+                        your application code.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -208,15 +251,26 @@ export function SettingsForm({
           </div>
         </div>
         <div className="flex justify-end">
-          <Button className="text-white" type="submit" disabled={form.formState.isSubmitting}>Save</Button>
+          <Button
+            className="text-white"
+            type="submit"
+            disabled={form.formState.isSubmitting}
+          >
+            Save
+          </Button>
         </div>
       </form>
     </Form>
   );
 }
 
-
-const PasswordInput = ({ value, onChange }: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => {
+const ApiKeyInput = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => {
   const [passwordShown, setPasswordShown] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -226,21 +280,39 @@ const PasswordInput = ({ value, onChange }: { value: string; onChange: (e: React
   return (
     <div className="flex items-center space-x-2">
       <Input
-        type={passwordShown ? 'text' : 'password'}
+        type={passwordShown ? "text" : "password"}
         className="w-full max-w-lg"
         value={value}
         onChange={onChange}
+        autoComplete="off"
       />
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button type="button" variant="ghost" onClick={togglePasswordVisibility}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={togglePasswordVisibility}
+          >
             {passwordShown ? <EyeClosedIcon /> : <EyeOpenIcon />}
           </Button>
         </TooltipTrigger>
         <TooltipContent className="bg-slate-950 text-white" align="start">
-          {passwordShown ? 'Hide' : 'Show'}
+          {passwordShown ? "Hide" : "Show"}
         </TooltipContent>
       </Tooltip>
     </div>
   );
 };
+
+function AnthropicSupportCallout() {
+  return (
+    <div className="w-full pt-1 pb-2">
+      <div className="flex items-center gap-2 text-gray-500">
+        <InfoCircledIcon className="h-3.5 w-3.5" />
+        <span className="text-xs  italic">
+          Support for Anthropic coming soon!
+        </span>
+      </div>
+    </div>
+  );
+}

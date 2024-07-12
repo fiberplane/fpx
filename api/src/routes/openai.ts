@@ -162,7 +162,7 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
     return ctx.json({
       request: parsedArgs,
     });
-  } catch (e) {
+  } catch (_e) {
     return ctx.json({
       error: "Invalid JSON",
       toolArgs,
