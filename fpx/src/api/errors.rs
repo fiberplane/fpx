@@ -56,7 +56,7 @@ where
 }
 
 /// Implementation for any anyhow::Error to be converted to a
-/// `ApiServerError::InternalServerError`.
+/// `CommonError::InternalServerError`.
 impl<E> From<anyhow::Error> for ApiServerError<E> {
     fn from(err: anyhow::Error) -> Self {
         warn!(?err, "An anyhow error was converted to a ApiServerError");
