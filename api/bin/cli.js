@@ -21,7 +21,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const args = process.argv.slice(2);
-const script = args[0];
+// NOTE - Handle emptystring script
+const script = (args[0] ?? "").trim();
 
 // HACK - If no script is specified, migrate the db then start running studio
 //        This is a quick way to get started!
