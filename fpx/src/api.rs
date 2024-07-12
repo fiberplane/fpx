@@ -49,25 +49,22 @@ pub fn create_api(
     store: Store,
     inspector_service: InspectorService,
 ) -> axum::Router {
-    let api_router = api_router(base_url, events.clone(), store.clone(), inspector_service);
-
-    axum::Router::new()
-        .nest("/api/", api_router)
-        .fallback(studio::default_handler)
-}
-
-fn api_router(
-    base_url: url::Url,
-    events: ServerEvents,
-    store: Store,
-    inspector_service: InspectorService,
-) -> axum::Router {
     let api_state = ApiState {
         base_url,
         events,
         store,
         inspector_service,
     };
+    let api_router = api_router();
+
+    axum::Router::new()
+        .route("/v1/traces", post(handlers::otel::trace_collector_handler))
+        .nest("/api/", api_router)
+        .with_state(api_state)
+        .fallback(studio::default_handler)
+}
+
+fn api_router() -> axum::Router<ApiState> {
     axum::Router::new()
         .route(
             "/requests/:id",
@@ -90,5 +87,4 @@ fn api_router(
             get(handlers::spans::span_list_handler),
         )
         .fallback(StatusCode::NOT_FOUND)
-        .with_state(api_state)
 }

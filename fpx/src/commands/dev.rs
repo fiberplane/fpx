@@ -90,7 +90,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
         .into_future();
     let task2 = tonic::transport::Server::builder()
         .add_service(TraceServiceServer::new(grpc_service))
-        .serve("127.0.0.1:4317".parse()?);
+        .serve("127.0.0.1:4567".parse()?);
 
     select! {
         _ = task1 => {},

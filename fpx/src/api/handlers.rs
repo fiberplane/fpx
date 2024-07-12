@@ -1,5 +1,6 @@
 mod inspect;
 mod inspectors;
+pub mod otel;
 mod requestor;
 mod requests;
 pub mod spans;
