@@ -220,6 +220,8 @@ pub enum RequestorError {}
 
 impl ApiError for RequestorError {
     fn status_code(&self) -> StatusCode {
+        // NOTE: RequestorError doesn't have any explicit errors, so just
+        // return a NOT_IMPLEMENTED status code for now.
         StatusCode::NOT_IMPLEMENTED
     }
 }
