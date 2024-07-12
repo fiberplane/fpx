@@ -61,9 +61,11 @@ export async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
   return createdRecord[0];
 }
 
-const ApiKeySettingSchema = z.object({
-  openai_api_key: z.string(),
-});
+const ApiKeySettingSchema = z
+  .object({
+    openaiApiKey: z.string(),
+  })
+  .passthrough();
 
 type ApiKeySetting = z.infer<typeof ApiKeySettingSchema>;
 
@@ -85,10 +87,10 @@ export async function getOpenAiConfig(db: LibSQLDatabase<typeof schema>) {
   if (settingsRecords.length > 0) {
     const content = settingsRecords[0]?.content;
     if (hasOpenAiApiKey(content)) {
-      const model = "openai_model" in content ? content.openai_model : "gpt-4o";
+      const model = "openaiModel" in content ? content.openaiModel : "gpt-4o";
       return {
-        openai_api_key: content.openai_api_key,
-        openai_model: isOpenAiModel(model) ? model : "gpt-4o",
+        openaiApiKey: content.openaiApiKey,
+        openaiModel: isOpenAiModel(model) ? model : "gpt-4o",
       };
     }
   }

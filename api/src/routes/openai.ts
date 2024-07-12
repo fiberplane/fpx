@@ -65,13 +65,13 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
       403,
     );
   }
-  const { openai_api_key, openai_model } = openaiConfig;
+  const { openaiApiKey, openaiModel } = openaiConfig;
   const openaiClient = new OpenAI({
-    apiKey: openai_api_key,
+    apiKey: openaiApiKey,
   });
   const response = await openaiClient.chat.completions.create({
     // NOTE - This model should guarantee function calling to have json output
-    model: openai_model,
+    model: openaiModel,
     // NOTE - We can restrict the response to be from this single tool call
     tool_choice: { type: "function", function: { name: "make_request" } },
     // Define the make_request tool
@@ -201,12 +201,12 @@ app.post(
         403,
       );
     }
-    const { openai_api_key, openai_model } = openaiConfig;
+    const { openaiApiKey, openaiModel } = openaiConfig;
     const openaiClient = new OpenAI({
-      apiKey: openai_api_key,
+      apiKey: openaiApiKey,
     });
     const response = await openaiClient.chat.completions.create({
-      model: openai_model,
+      model: openaiModel,
       messages: [
         {
           role: "system",
@@ -259,13 +259,13 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
       403,
     );
   }
-  const { openai_api_key, openai_model } = openaiConfig;
+  const { openaiApiKey, openaiModel } = openaiConfig;
   const openaiClient = new OpenAI({
-    apiKey: openai_api_key,
+    apiKey: openaiApiKey,
   });
 
   const response = await openaiClient.chat.completions.create({
-    model: openai_model,
+    model: openaiModel,
     messages: [
       {
         role: "system",
