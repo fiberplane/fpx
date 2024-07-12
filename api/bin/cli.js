@@ -297,7 +297,8 @@ function readUserConfig() {
   const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
   const configPath = path.join(configDir, CONFIG_FILE_NAME);
   const gitignorePath = path.join(configDir, ".gitignore");
-  const gitignoreEntry = "\n# fpx local database\nfpx.db\n";
+  const gitignoreEntry =
+    "\n# fpx local database\nfpx.db\n# fpx local env vars\nfpx.v0.config.json\n";
 
   // Create the .fpxconfig directory if it doesn't exist
   if (!fs.existsSync(configDir)) {
