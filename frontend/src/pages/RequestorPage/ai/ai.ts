@@ -1,4 +1,4 @@
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -60,6 +60,7 @@ export function useAi(
   requestHistory: Array<Requestornator>,
   formSetters: FormSetters,
 ) {
+  const { toast } = useToast();
   const isAiEnabled = useAiEnabled();
 
   const { ignoreAiInputsBanner, setIgnoreAiInputsBanner } =
@@ -86,6 +87,7 @@ export function useAi(
     generateRequestData().then(({ data, isError }) => {
       if (isError) {
         console.error(data);
+        // TODO - Use toast to show the error message
         toast({ title: "Failed to generate request data" });
         return;
       }

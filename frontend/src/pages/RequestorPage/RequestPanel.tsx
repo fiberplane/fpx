@@ -53,25 +53,15 @@ function AiDropDownMenu({
     [onPersonaChange],
   );
 
-  const handleTriggerClick = (e: React.MouseEvent) => {
-    if (e.metaKey || e.ctrlKey) {
-      e.preventDefault();
-      e.stopPropagation();
-      fillInRequest();
-    } else {
-      setOpen((prev) => !prev);
-    }
-  };
-
   const handleGenerateRequest = useCallback(() => {
     fillInRequest();
     setOpen(false);
   }, [fillInRequest, setOpen]);
 
-  const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
 
   // When the user shift+clicks of meta+clicks on the trigger, we don't want to open the menu
   // Instead, we will go ahead and generate the request data!
+  const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
       if (newOpen && isMetaOrShiftPressed) {
