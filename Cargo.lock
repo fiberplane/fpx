@@ -1542,6 +1542,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry_sdk",
  "prost",
+ "schemars",
  "serde",
  "tonic",
 ]
