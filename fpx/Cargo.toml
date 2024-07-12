@@ -35,7 +35,7 @@ opentelemetry-otlp = { version = "0.16", features = [
     "reqwest-client",
     "reqwest-rustls-webkpi-roots",
 ] }
-opentelemetry-proto = { version = "0.6", features = ["gen-tonic-messages"] }
+opentelemetry-proto = { version = "0.6", features = ["gen-tonic-messages", "with-serde"] }
 rand = { version = "0.8.5" }
 reqwest = { version = "0.12", default-features = false, features = [
     "charset",
