@@ -40,21 +40,18 @@ where
     E: Serialize,
 {
     fn into_response(self) -> axum::response::Response {
-        let body = match &self {
-            ApiServerError::ServiceError(err) => {
-                serde_json::to_vec(err).expect("Failed to serialize ServiceError")
-            }
-            ApiServerError::CommonError(err) => {
-                serde_json::to_vec(err).expect("Failed to serialize CommonError")
-            }
+        let result = match &self {
+            ApiServerError::ServiceError(err) => (
+                err.status_code(),
+                serde_json::to_vec(err).expect("Failed to serialize ServiceError"),
+            ),
+            ApiServerError::CommonError(err) => (
+                err.status_code(),
+                serde_json::to_vec(err).expect("Failed to serialize CommonError"),
+            ),
         };
 
-        let status_code = match &self {
-            ApiServerError::ServiceError(err) => err.status_code(),
-            ApiServerError::CommonError(err) => err.status_code(),
-        };
-
-        (status_code, body).into_response()
+        result.into_response()
     }
 }
 
