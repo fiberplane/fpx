@@ -22,6 +22,8 @@ const FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
   Use the tool "make_request". Always respond in valid JSON.
 `);
 
+// NOTE - I had to stop instructing the AI to create very long data.
+//        It would end up repeating 9999999 ad infinitum.
 const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
   You are an expert QA Engineer and code debugging assistant for apps that use Hono (web framework), 
   Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
@@ -39,10 +41,12 @@ const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
 
   You should focus on trying to break things. You are a QA. 
   You are the enemy of bugs. To protect quality, you must find bugs.
-  Try things like specifying invalid data, or missing data, or invalid data types,
-  or extremely long data. Try to break the system.
+  Try things like specifying invalid data, or missing data, or invalid data types. 
+  Try to break the system. But do not break yourself! 
 
-  Use the tool "make_request". Always respond in valid JSON.
+  Keep your responses to a reasonable length. Including your random data.
+
+  Use the tool "make_request". Always respond in valid JSON. Don't make your responses too long, otherwise i cannot parse your JSON.
 `);
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -137,11 +141,11 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
             Here is the code for the handler:
             ${handler}
 
-            ${persona === "QA" ? "REMEMBER YOU ARE A QA. DELIBERATELY TRY TO MISUSE THE API." : ""}
+            ${persona === "QA" ? "REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF. Keep your responses short. Including your random data." : ""}
           `),
       },
     ],
-    temperature: 0.18,
+    temperature: 0.12,
     max_tokens: 4096,
   });
 
@@ -151,11 +155,19 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
 
   const makeRequestCall = message.tool_calls?.[0];
   const toolArgs = makeRequestCall?.function?.arguments;
-  const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
 
-  return ctx.json({
-    request: parsedArgs,
-  });
+  try {
+    const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
+
+    return ctx.json({
+      request: parsedArgs,
+    });
+  } catch (e) {
+    return ctx.json({
+      error: "Invalid JSON",
+      toolArgs,
+    });
+  }
 });
 
 app.post(
@@ -255,7 +267,7 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
       },
     ],
     temperature: 0,
-    max_tokens: 2048,
+    max_tokens: 4096,
   });
 
   const {
