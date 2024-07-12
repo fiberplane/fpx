@@ -15,7 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { useUpdateSettings } from "@/queries";
-import { errorHasMessage } from "@/utils";
+import { cn, errorHasMessage } from "@/utils";
+import { useState } from "react";
+import { EyeOpenIcon, EyeClosedIcon } from '@radix-ui/react-icons';
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 const FormSchema = z.object({
   ai_features: z.boolean(),
@@ -32,7 +35,7 @@ export function SettingsForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       ai_features: !!settings?.aiEnabled,
-      openai_api_key: settings.openaiApiKey,
+      openai_api_key: settings.openaiApiKey ?? "",
       custom_routes: !!settings?.customRoutesEnabled,
     },
   });
@@ -69,6 +72,9 @@ export function SettingsForm({
     );
   }
 
+  const isAiDirty = form.formState.dirtyFields.ai_features || form.formState.dirtyFields.openai_api_key;
+  const isCustomRoutesDirty = form.formState.dirtyFields.custom_routes;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
@@ -79,13 +85,12 @@ export function SettingsForm({
               control={form.control}
               name="ai_features"
               render={({ field }) => (
-                <FormItem className="rounded-lg border p-4">
-                  <div className="flex flex-row items-center justify-between">
-                    <div className="space-y-0.5">
+                <FormItem className={cn("rounded-lg border p-4", { "border-yellow-100/50": isAiDirty })}>
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <div className="space-y-1">
                       <FormLabel className="text-base">AI Sprinkles</FormLabel>
                       <FormDescription>
-                        Use AI to help generate sample request data and analyze
-                        errors.
+                        Use AI to help generate sample request data.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -101,23 +106,30 @@ export function SettingsForm({
                       control={form.control}
                       name="openai_api_key"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col justify-between rounded-lg mt-1 text-sm">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-sm text-gray-300">
-                              OpenAI API Key
-                            </FormLabel>
-                            <FormDescription>
-                              This is stored locally to make requests to the
-                              OpenAI API
-                            </FormDescription>
-                          </div>
-                          <FormControl>
-                            <Input
-                              value={field.value}
-                              onChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
+                        <>
+                          <FormItem className="flex flex-col justify-between rounded-lg mt-1 text-sm">
+                            <div className="space-y-1">
+                              <FormLabel className="text-sm text-gray-300">
+                                OpenAI API Key
+                              </FormLabel>
+                              <FormDescription>
+                                This is stored locally to make requests to the
+                                OpenAI API
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <PasswordInput
+                                value={field.value ?? ""}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                          <FormLabel className="text-sm text-gray-300 italic">
+                            <div className="pt-4 pb-1 font-light w-full">
+                              *Support for Anthropic coming soon!*
+                            </div>
+                          </FormLabel>
+                        </>
                       )}
                     />
                   ) : null}
@@ -128,12 +140,12 @@ export function SettingsForm({
               control={form.control}
               name="custom_routes"
               render={({ field }) => (
-                <FormItem className="rounded-lg border p-4">
+                <FormItem className={cn("rounded-lg border p-4", { "border-yellow-100/50": isCustomRoutesDirty })}>
                   <div className="flex flex-row items-center justify-between">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Custom Routes</FormLabel>
+                    <div className="space-y-1">
+                      <FormLabel className="text-base">Custom Routes (Alpha)</FormLabel>
                       <FormDescription>
-                        Enable or disable custom routes
+                        Make requests against routes that are not detected from your application code.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -148,8 +160,40 @@ export function SettingsForm({
             />
           </div>
         </div>
-        <Button type="submit">Submit</Button>
+        <div className="flex justify-end">
+          <Button className="text-white" type="submit" disabled={form.formState.isSubmitting}>Save</Button>
+        </div>
       </form>
     </Form>
   );
 }
+
+
+const PasswordInput = ({ value, onChange }: { value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => {
+  const [passwordShown, setPasswordShown] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setPasswordShown(!passwordShown);
+  };
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Input
+        type={passwordShown ? 'text' : 'password'}
+        className="w-full max-w-lg"
+        value={value}
+        onChange={onChange}
+      />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button type="button" variant="ghost" onClick={togglePasswordVisibility}>
+            {passwordShown ? <EyeClosedIcon /> : <EyeOpenIcon />}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="bg-slate-950 text-white" align="start">
+          {passwordShown ? 'Hide' : 'Show'}
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+};
