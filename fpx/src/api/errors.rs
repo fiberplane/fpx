@@ -22,7 +22,7 @@ pub enum ApiServerError<E> {
 
 /// An Implementation for `()` which always returns a 500 status code. This is
 /// useful if an endpoint does not have any errors, but we still require it for
-/// ApiServerError.
+/// our blanket IntoResponse impl for ApiServerError<E>.
 impl ApiError for () {
     fn status_code(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
