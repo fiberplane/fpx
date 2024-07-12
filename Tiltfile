@@ -20,12 +20,19 @@ local_resource(
 
 # Build & serve the frontend
 local_resource(
-    "frontend",
+    "frontend-build",
     cmd="npm run clean:frontend && npm run build:frontend",
+    deps=["frontend/src"],
+    resource_deps=["frontend-node-modules", "api-dist"],
+)
+
+local_resource(
+    "frontend-serve",
     deps=["frontend/src"],
     resource_deps=["frontend-node-modules", "api-dist"],
     serve_cmd="npm run dev",
     serve_dir="frontend",
+    trigger_mode=TRIGGER_MODE_MANUAL,
 )
 
 # Generate & migrate the database
