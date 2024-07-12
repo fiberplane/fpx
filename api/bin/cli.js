@@ -21,7 +21,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const args = process.argv.slice(2);
-const script = args[0];
+// Handle emptystring script (I don't think this happens in practice but let's be defensive)
+const script = (args[0] ?? "").trim();
 
 // HACK - If no script is specified, migrate the db then start running studio
 //        This is a quick way to get started!
@@ -124,11 +125,16 @@ async function getFpxPort() {
       nextFallback = (Number.parseInt(nextFallback, 10) + 1).toString();
     }
 
-    if (hasConfiguredFpxPort) {
+    // HACK - If the nextFallback exceeds 65535, we're out of port range.
+    //        So, we'll just default to 8787.
+    if (hasConfiguredFpxPort || nextFallback > 65535) {
       FPX_PORT = await askUser(
         `  ⚠️ ${portAlreadyInUse}\n  Please choose a different port for FPX.`,
-        nextFallback,
+        nextFallback > 65535 ? "8787" : nextFallback,
       );
+      if (nextFallback > 65535) {
+        break;
+      }
     } else {
       FPX_PORT = nextFallback;
     }
@@ -291,7 +297,8 @@ function readUserConfig() {
   const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
   const configPath = path.join(configDir, CONFIG_FILE_NAME);
   const gitignorePath = path.join(configDir, ".gitignore");
-  const gitignoreEntry = "\n# fpx local database\nfpx.db\n";
+  const gitignoreEntry =
+    "\n# fpx local database\nfpx.db\n# fpx local env vars\nfpx.v0.config.json\n";
 
   // Create the .fpxconfig directory if it doesn't exist
   if (!fs.existsSync(configDir)) {
