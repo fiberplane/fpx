@@ -84,16 +84,11 @@ pub enum SpanListError {
     InvalidTraceId,
 }
 
-impl IntoResponse for SpanListError {
-    fn into_response(self) -> axum::response::Response {
-        let body = serde_json::to_vec(&self)
-            .expect("Failed to serialize SpanListError, should not happen");
-
-        let status_code = match self {
+impl ApiError for SpanListError {
+    fn status_code(&self) -> StatusCode {
+        match self {
             SpanListError::InvalidTraceId => StatusCode::BAD_REQUEST,
-        };
-
-        (status_code, body).into_response()
+        }
     }
 }
 
