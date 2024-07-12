@@ -17,13 +17,21 @@ import { toast } from "@/components/ui/use-toast";
 import { useUpdateSettings } from "@/queries";
 import { cn, errorHasMessage } from "@/utils";
 import { useState } from "react";
-import { EyeOpenIcon, EyeClosedIcon } from '@radix-ui/react-icons';
+import { EyeOpenIcon, EyeClosedIcon, CaretDownIcon } from '@radix-ui/react-icons';
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+
+const OpenAiModelSchema = z.union([z.literal('gpt-4o'), z.literal('gpt-3.5')]);
+
+type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
+
+const isValidOpenaiModel = (value: string): value is OpenAiModel => OpenAiModelSchema.safeParse(value).success;
 
 const FormSchema = z.object({
   ai_features: z.boolean(),
   openai_api_key: z.string().optional(),
   custom_routes: z.boolean(),
+  openai_model: OpenAiModelSchema,
 });
 
 export function SettingsForm({
@@ -37,6 +45,7 @@ export function SettingsForm({
       ai_features: !!settings?.aiEnabled,
       openai_api_key: settings.openaiApiKey ?? "",
       custom_routes: !!settings?.customRoutesEnabled,
+      openai_model: isValidOpenaiModel(settings.openaiModel) ? settings.openaiModel : 'gpt-4o',
     },
   });
 
@@ -47,6 +56,7 @@ export function SettingsForm({
           aiEnabled: data.ai_features,
           // Remove the stored api key if the feature is disabled
           openaiApiKey: data.ai_features ? data.openai_api_key : undefined,
+          openaiModel: data.openai_model,
           customRoutesEnabled: data.custom_routes,
         },
       },
@@ -72,7 +82,7 @@ export function SettingsForm({
     );
   }
 
-  const isAiDirty = form.formState.dirtyFields.ai_features || form.formState.dirtyFields.openai_api_key;
+  const isAiDirty = form.formState.dirtyFields.ai_features || form.formState.dirtyFields.openai_api_key || form.formState.dirtyFields.openaiModel;
   const isCustomRoutesDirty = form.formState.dirtyFields.custom_routes;
 
   return (
@@ -124,6 +134,43 @@ export function SettingsForm({
                               />
                             </FormControl>
                           </FormItem>
+                          <FormField
+                            control={form.control}
+                            name="openai_model"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-col justify-between rounded-lg mt-1 text-sm">
+                                <div className="space-y-1">
+                                  <FormLabel className="text-sm text-gray-300">
+                                    OpenAI Model
+                                  </FormLabel>
+                                  <FormDescription>
+                                    Select the model to use for AI features.
+                                  </FormDescription>
+                                </div>
+                                <FormControl>
+                                  <div>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button type="button" variant="outline" className="w-auto inline-flex items-center">
+                                          <CaretDownIcon className="h-4 w-4 mr-2 text-white" />
+                                          {field.value ?? 'gpt-4o'}
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent className="w-full max-w-lg">
+                                        <DropdownMenuItem onSelect={() => field.onChange('gpt-4o')}>
+                                          gpt-4o
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => field.onChange('gpt-3.5')}>
+                                          gpt-3.5
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          ></FormField>
+                         
                           <FormLabel className="text-sm text-gray-300 italic">
                             <div className="pt-4 pb-1 font-light w-full">
                               *Support for Anthropic coming soon!*
