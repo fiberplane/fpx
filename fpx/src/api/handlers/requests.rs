@@ -1,4 +1,4 @@
-use crate::api::errors::{ApiServerError, CommonError};
+use crate::api::errors::{ApiError, ApiServerError, CommonError};
 use crate::data::{DbError, Store};
 use crate::models::Request;
 use axum::extract::{Path, State};
@@ -28,12 +28,10 @@ pub enum RequestGetError {
     RequestNotFound,
 }
 
-impl IntoResponse for RequestGetError {
-    fn into_response(self) -> axum::response::Response {
-        let body = serde_json::to_vec(&self)
-            .expect("Failed to serialize RequestGetError, should not happen");
+impl ApiError for RequestGetError {
+    fn status_code(&self) -> StatusCode {
         match self {
-            RequestGetError::RequestNotFound => (StatusCode::NOT_FOUND, body).into_response(),
+            RequestGetError::RequestNotFound => StatusCode::NOT_FOUND,
         }
     }
 }
