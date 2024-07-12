@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import z from "zod";
 import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 
@@ -45,7 +46,7 @@ async function updateSettings(
     .returning();
 }
 
-async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
+export async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
   const settingsRecords = await db.select().from(settings);
 
   if (settingsRecords.length > 0) {
@@ -58,4 +59,39 @@ async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
     .returning();
 
   return createdRecord[0];
+}
+
+const ApiKeySettingSchema = z.object({
+  openai_api_key: z.string(),
+});
+
+type ApiKeySetting = z.infer<typeof ApiKeySettingSchema>;
+
+const OpenAiModelSchema = z.union([z.literal("gpt-4o"), z.literal("gpt-3.5")]);
+
+type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
+
+const isOpenAiModel = (model: unknown): model is OpenAiModel => {
+  return OpenAiModelSchema.safeParse(model).success;
+};
+
+const hasOpenAiApiKey = (content: unknown): content is ApiKeySetting => {
+  return ApiKeySettingSchema.safeParse(content).success;
+};
+
+export async function getOpenAiConfig(db: LibSQLDatabase<typeof schema>) {
+  const settingsRecords = await db.select().from(settings);
+
+  if (settingsRecords.length > 0) {
+    const content = settingsRecords[0]?.content;
+    if (hasOpenAiApiKey(content)) {
+      const model = "openai_model" in content ? content.openai_model : "gpt-4o";
+      return {
+        openai_api_key: content.openai_api_key,
+        openai_model: isOpenAiModel(model) ? model : "gpt-4o",
+      };
+    }
+  }
+
+  return null;
 }

@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
 import type { Bindings, Variables } from "../lib/types.js";
+import { getOpenAiConfig } from "./settings.js";
 
 const FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
   You are a code debugging assistant for apps that use Hono (web framework), 
@@ -54,13 +55,23 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.post("/v0/generate-request", cors(), async (ctx) => {
   const { handler, method, path, history, persona } = await ctx.req.json();
 
+  const db = ctx.get("db");
+  const openaiConfig = await getOpenAiConfig(db);
+  if (!openaiConfig) {
+    return ctx.json(
+      {
+        error: "No OpenAI configuration found",
+      },
+      403,
+    );
+  }
+  const { openai_api_key, openai_model } = openaiConfig;
   const openaiClient = new OpenAI({
-    apiKey: ctx.env.OPENAI_API_KEY,
+    apiKey: openai_api_key,
   });
-
   const response = await openaiClient.chat.completions.create({
     // NOTE - This model should guarantee function calling to have json output
-    model: "gpt-4o",
+    model: openai_model,
     // NOTE - We can restrict the response to be from this single tool call
     tool_choice: { type: "function", function: { name: "make_request" } },
     // Define the make_request tool
@@ -180,12 +191,22 @@ app.post(
   async (ctx) => {
     const { handlerSourceCode, errorMessage } = ctx.req.valid("json");
 
+    const db = ctx.get("db");
+    const openaiConfig = await getOpenAiConfig(db);
+    if (!openaiConfig) {
+      return ctx.json(
+        {
+          error: "No OpenAI configuration found",
+        },
+        403,
+      );
+    }
+    const { openai_api_key, openai_model } = openaiConfig;
     const openaiClient = new OpenAI({
-      apiKey: ctx.env.OPENAI_API_KEY,
+      apiKey: openai_api_key,
     });
-
     const response = await openaiClient.chat.completions.create({
-      model: "gpt-4o",
+      model: openai_model,
       messages: [
         {
           role: "system",
@@ -228,13 +249,23 @@ app.post(
 app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
   const { handlerSourceCode, trace } = await ctx.req.json();
   const traceId = ctx.req.param("traceId");
-
+  const db = ctx.get("db");
+  const openaiConfig = await getOpenAiConfig(db);
+  if (!openaiConfig) {
+    return ctx.json(
+      {
+        error: "No OpenAI configuration found",
+      },
+      403,
+    );
+  }
+  const { openai_api_key, openai_model } = openaiConfig;
   const openaiClient = new OpenAI({
-    apiKey: ctx.env.OPENAI_API_KEY,
+    apiKey: openai_api_key,
   });
 
   const response = await openaiClient.chat.completions.create({
-    model: "gpt-4o",
+    model: openai_model,
     messages: [
       {
         role: "system",
