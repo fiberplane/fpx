@@ -17,7 +17,7 @@ import {
   EraserIcon,
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
-import { Dispatch, SetStateAction, useCallback, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
@@ -26,6 +26,8 @@ import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai/ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
+
+import "./RequestPanel.css"
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;
@@ -49,7 +51,6 @@ function AiDropDownMenu({
     [onPersonaChange],
   );
 
-  // FIXME - This isn't working to support meta + click as a shortcut
   const handleTriggerClick = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey) {
       e.preventDefault();
@@ -65,11 +66,25 @@ function AiDropDownMenu({
     setOpen(false);
   }, [fillInRequest, setOpen]);
 
+  const {
+    isMetaOrShiftPressed
+  } = useIsMetaOrShiftPressed();
+
+  // When the user shift+clicks of meta+clicks on the trigger, we don't want to open the menu
+  // Instead, we will go ahead and generate the request data!
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (newOpen && isMetaOrShiftPressed) {
+      fillInRequest();
+      return;
+    }
+    setOpen(newOpen);
+  }, [isMetaOrShiftPressed, setOpen, fillInRequest]);
+
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" onClick={handleTriggerClick}>
-          <SparkleWand className="w-4 h-4" />
+        <Button variant="ghost" size="sm">
+          <SparkleWand className={cn("w-4 h-4", { "fpx-pulse": isLoadingParameters })} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
@@ -443,4 +458,34 @@ function AIGeneratedInputsBanner({
       </div>
     </div>
   );
+}
+
+function useIsMetaOrShiftPressed() {
+  const [isMetaOrShiftPressed, setIsMetaOrShiftPressed] = useState(false);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.metaKey || e.shiftKey) {
+      setIsMetaOrShiftPressed(true);
+    }
+  }, []);
+
+  const handleKeyUp = useCallback((e: KeyboardEvent) => {
+    if (!e.metaKey && !e.shiftKey) {
+      setIsMetaOrShiftPressed(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [handleKeyDown, handleKeyUp]);
+
+  return {
+    isMetaOrShiftPressed,
+  };
 }

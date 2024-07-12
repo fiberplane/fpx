@@ -79,7 +79,7 @@ export function useAi(
     return requestHistory.slice(0, 5);
   }, [requestHistory]);
 
-  const { isLoading: isLoadingParameters, refetch: generateRequestData } =
+  const { isFetching: isLoadingParameters, refetch: generateRequestData } =
     useAiRequestData(selectedRoute, recentHistory, testingPersona);
 
   const fillInRequest = () => {
