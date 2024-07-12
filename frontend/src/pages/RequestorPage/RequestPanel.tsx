@@ -58,7 +58,6 @@ function AiDropDownMenu({
     setOpen(false);
   }, [fillInRequest, setOpen]);
 
-
   // When the user shift+clicks of meta+clicks on the trigger, we don't want to open the menu
   // Instead, we will go ahead and generate the request data!
   const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
