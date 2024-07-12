@@ -1,4 +1,4 @@
-import SparkleWand from "@/assets/wand-2.svg";
+import SparkleWand from "@/assets/SparkleWand.svg";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,7 +17,6 @@ import {
   Cross2Icon,
   EraserIcon,
   InfoCircledIcon,
-  MagicWandIcon,
 } from "@radix-ui/react-icons";
 import { Dispatch, SetStateAction, useCallback, useState } from "react";
 import { Resizable } from "react-resizable";
@@ -71,7 +70,7 @@ function AiDropDownMenu({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" onClick={handleTriggerClick}>
-          <MagicWandIcon className="w-4 h-4" />
+          <SparkleWand className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
