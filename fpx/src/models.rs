@@ -1,13 +1,11 @@
-use axum::response::IntoResponse;
+use crate::api::errors::{ApiError, ApiServerError, CommonError};
+use crate::data::DbError;
 use http::StatusCode;
+use rand::Rng;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
-
-use rand::Rng;
 use std::collections::BTreeMap;
-
-use crate::{api::errors::ApiServerError, data::DbError};
+use thiserror::Error;
 
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
@@ -218,34 +216,30 @@ pub struct RequestorRequestPayload {
 #[derive(JsonSchema, Debug, Serialize, Error)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[allow(dead_code)]
-pub enum RequestorError {
-    #[error("Internal server error")]
-    Internal,
-}
+pub enum RequestorError {}
 
-impl IntoResponse for RequestorError {
-    fn into_response(self) -> axum::response::Response {
-        let status = StatusCode::INTERNAL_SERVER_ERROR;
-        let body = serde_json::to_vec(&self).expect("test");
-
-        (status, body).into_response()
+impl ApiError for RequestorError {
+    fn status_code(&self) -> StatusCode {
+        // NOTE: RequestorError doesn't have any explicit errors, so just
+        // return a NOT_IMPLEMENTED status code for now.
+        StatusCode::NOT_IMPLEMENTED
     }
 }
 
 impl From<DbError> for ApiServerError<RequestorError> {
     fn from(_err: DbError) -> Self {
-        ApiServerError::ServiceError(RequestorError::Internal)
+        ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
 
 impl From<libsql::Error> for ApiServerError<RequestorError> {
     fn from(_err: libsql::Error) -> Self {
-        ApiServerError::ServiceError(RequestorError::Internal)
+        ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
 
 impl From<reqwest::Error> for ApiServerError<RequestorError> {
     fn from(_err: reqwest::Error) -> Self {
-        ApiServerError::ServiceError(RequestorError::Internal)
+        ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
