@@ -155,8 +155,12 @@ export function SettingsForm({
                                 API Key
                               </FormLabel>
                               <FormDescription>
-                                Your api key is stored locally to make requests
-                                to the OpenAI API.
+                                Your api key is stored locally in{" "}
+                                <code className="text-red-200/80 text-xs">
+                                  .fpxconfig/fpx.db
+                                </code>{" "}
+                                to make requests to the OpenAI API. It should be
+                                ignored by version control by default.
                               </FormDescription>
                               <FormControl>
                                 <ApiKeyInput
@@ -171,7 +175,7 @@ export function SettingsForm({
                             name="openai_model"
                             render={({ field }) => (
                               <FormItem className="flex flex-col justify-between rounded-lg text-sm">
-                                <FormLabel className="text-sm text-gray-300 font-normal sr-only">
+                                <FormLabel className="text-sm text-gray-300 font-normal">
                                   Model
                                 </FormLabel>
                                 <FormControl>
@@ -330,10 +334,13 @@ function CodeSentToAiBanner() {
         <InfoCircledIcon className="w-3.5 h-3.5" />
       </div>
       <div className="flex flex-col items-start justify-start gap-2">
-        <span className="font-semibold">Information will be sent to OpenAI</span>
+        <span className="font-semibold">
+          Information will be sent to OpenAI
+        </span>
         <span className="font-light">
-          To generate inputs for HTTP requests, we must send route handler source code to OpenAI,
-          as well as a short history of any recent requests you made through FPX.
+          To generate inputs for HTTP requests, we must send route handler
+          source code to OpenAI, as well as a short history of any recent
+          requests you made through FPX.
         </span>
       </div>
     </div>
