@@ -34,7 +34,7 @@ function createRequestDescription(request: Requestornator) {
   const route = appRequest?.requestRoute;
   const method = appRequest?.requestMethod;
   const body = appRequest?.requestBody;
-  const headers = appRequest?.requestHeaders;
+  const headers = redactSensitiveHeaders(appRequest?.requestHeaders);
   const queryParams = appRequest?.requestQueryParams;
 
   return `
@@ -207,7 +207,7 @@ function serializeTraceForLLM(trace: MizuTrace) {
         <FetchError>
         ${log?.message?.status} ${log?.message?.url}
         <headers>
-          ${JSON.stringify(log?.message?.headers)}
+          ${JSON.stringify(redactSensitiveHeaders(log?.message?.headers))}
         </headers>
         <body>
           ${JSON.stringify(log?.message?.body)}
@@ -229,4 +229,23 @@ function trimLines(input: string) {
     .split("\n")
     .map((l) => l.trim())
     .join("\n");
+}
+
+function redactSensitiveHeaders(headers?: null | Record<string, string>) {
+  if (!headers) {
+    return headers;
+  }
+
+  const sensitiveHeaders = ['authorization', 'cookie', 'set-cookie'];
+  const redactedHeaders: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (sensitiveHeaders.includes(key.toLowerCase())) {
+      redactedHeaders[key] = 'REDACTED';
+    } else {
+      redactedHeaders[key] = value;
+    }
+  }
+
+  return redactedHeaders;
 }
