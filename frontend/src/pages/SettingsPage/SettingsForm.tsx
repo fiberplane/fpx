@@ -211,7 +211,10 @@ export function SettingsForm({
                                 </FormControl>
                               </FormItem>
                             )}
-                          ></FormField>
+                          />
+                          <div>
+                            <CodeSentToAiBanner />
+                          </div>
                         </div>
                       )}
                     />
@@ -311,6 +314,26 @@ function AnthropicSupportCallout() {
         <InfoCircledIcon className="h-3.5 w-3.5" />
         <span className="text-xs  italic">
           Support for Anthropic coming soon!
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Banner component to inform the end user their code is sent to an ai provider
+ */
+function CodeSentToAiBanner() {
+  return (
+    <div className="bg-primary/20 text-blue-300 text-sm px-2.5 py-4 mt-4 rounded-md grid grid-cols-[auto_1fr] gap-2.5 mb-2">
+      <div className="py-0.5">
+        <InfoCircledIcon className="w-3.5 h-3.5" />
+      </div>
+      <div className="flex flex-col items-start justify-start gap-2">
+        <span className="font-semibold">Information will be sent to OpenAI</span>
+        <span className="font-light">
+          To generate inputs for HTTP requests, we must send route handler source code to OpenAI,
+          as well as a short history of any recent requests you made through FPX.
         </span>
       </div>
     </div>
