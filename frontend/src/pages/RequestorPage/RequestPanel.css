@@ -8,6 +8,10 @@
     transform: scale(1.08);
     opacity: 0.7;
   }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.5;
+  }
   60% {
     transform: scale(1.08);
     opacity: 0.7;
