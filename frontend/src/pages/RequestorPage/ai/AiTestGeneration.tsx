@@ -15,12 +15,13 @@ import {
   isMizuErrorMessage,
   isMizuFetchErrorMessage,
 } from "@/queries";
+import { redactSensitiveHeaders } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
 import * as React from "react";
 import { useMemo, useState } from "react";
 import { HistoryEntry } from "../RequestorHistory";
 import { Requestornator, useTrace } from "../queries";
-import { redactSensitiveHeaders } from "./generate-request-data";
+import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
 
 function formatHeaders(headers: Record<string, string>): string {
   return Object.entries(headers)
@@ -28,65 +29,66 @@ function formatHeaders(headers: Record<string, string>): string {
     .join("\n");
 }
 
-function createRequestDescription(request: Requestornator) {
+function createRequestDescription(request: Requestornator): string {
   const appRequest = request?.app_requests;
-
-  const url = appRequest?.requestUrl;
   const route = appRequest?.requestRoute;
-  const method = appRequest?.requestMethod;
-  const body = appRequest?.requestBody;
-  const headers = redactSensitiveHeaders(appRequest?.requestHeaders);
-  const queryParams = appRequest?.requestQueryParams;
 
-  return `
-${method} ${url}${route}
-===QUERY PARAMS===
-${JSON.stringify(queryParams)}
-===BODY===
-${JSON.stringify(body)}
-===HEADERS===
-${headers ? formatHeaders(headers) : "<no headers>"}
-`.trim();
+  return [
+    `<matched-route>${route}</matched-route>`,
+    appRequestToHttpRequest(request),
+  ].join("\n");
 }
 
 function createResponseDescription(response: Requestornator) {
-  const status = response?.app_responses?.responseStatusCode;
-  const body = response?.app_responses?.responseBody;
-  const headers = response?.app_responses?.responseHeaders;
-
-  return `
-Status: ${status}
-===BODY===
-${JSON.stringify(body)}
-===HEADERS===
-${headers ? formatHeaders(headers) : "<no headers>"}
-`.trim();
+  return appResponseToHttpRequest(response);
 }
 
 function usePrompt(latestRequest: Requestornator, userInput: string) {
   const traceId = latestRequest?.app_responses?.traceId;
   const { trace } = useTrace(traceId);
 
+  const requestDescription = createRequestDescription(latestRequest);
+  const responseDescription = createResponseDescription(latestRequest);
+  const appLogs = trace ? serializeTraceForLLM(trace) : "NO_LOGS_FOUND";
+
   const prompt = useMemo(() => {
-    const basePrompt = cleanPrompt(`
-I have been testing my API with the following request:
-${createRequestDescription(latestRequest)}
-
-And I got the following response:
-${createResponseDescription(latestRequest)}
-
-My app produced the following logs:
-${trace ? serializeTraceForLLM(trace) : "<no logs found>"}
-
-====
-
-Please write one or several tests for this route based off of my description below.
-If possible, follow conventions used in my test files.
-`);
-    return `${basePrompt}\n\n${userInput}`;
-  }, [userInput, latestRequest, trace]);
+    return createTestPrompt(
+      requestDescription,
+      responseDescription,
+      appLogs,
+      userInput,
+    );
+  }, [requestDescription, responseDescription, appLogs, userInput]);
 
   return prompt;
+}
+
+function createTestPrompt(
+  requestDescription: string,
+  responseDescription: string,
+  appLogs: string,
+  userInput: string,
+) {
+  return cleanPrompt(`
+I tested my API with the following request
+
+${requestDescription}
+
+And I got the following response:
+
+${responseDescription}
+
+My app produced these logs:
+
+<app-logs>
+${appLogs}
+</app-logs>
+
+Please write one or several tests for my api route based off of what I say below.
+When possible, follow conventions used in my codebase's test files.
+
+${userInput}
+`);
 }
 
 export function AiTestGeneration({
@@ -112,8 +114,9 @@ export function AiTestGeneration({
           <DrawerHeader className="mt-2 p-2">
             <DrawerTitle>Close the Loop</DrawerTitle>
             <DrawerDescription>
-              Describe the type of test test you want to generate, and
-              copy-paste the prompt into your favorite Copilot or LLM.
+              Describe the problem you encountered or test test you wish to
+              generate, and copy-paste a context-rich prompt into your favorite
+              Copilot or LLM.
             </DrawerDescription>
           </DrawerHeader>
           <div className="p-2 pb-0">
@@ -122,6 +125,9 @@ export function AiTestGeneration({
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 className="w-full"
+                placeholder={
+                  'For example: "I expected to get a 404, but the api returned a 500"'
+                }
               />
             </div>
             <div className="mt-2">
@@ -187,41 +193,43 @@ function cleanPrompt(prompt: string) {
 // This only focuses on errors!!
 // Will need to improve it in the future
 function serializeTraceForLLM(trace: MizuTrace) {
-  return trace.logs.reduce(
-    (result, log) => {
-      // Error logs
-      if (isMizuErrorMessage(log?.message)) {
-        // TODO - Format better? What
-        result.push(
-          trimLines(`
+  return trace.logs
+    .reduce(
+      (result, log) => {
+        // Error logs
+        if (isMizuErrorMessage(log?.message)) {
+          // TODO - Format better? What
+          result.push(
+            trimLines(`
         <ErrorLog>
         Message: ${log?.message?.message}
         Stack: ${log?.message?.stack}
         </ErrorLog>
       `),
-        );
-      }
+          );
+        }
 
-      if (isMizuFetchErrorMessage(log?.message)) {
-        result.push(
-          trimLines(`
+        if (isMizuFetchErrorMessage(log?.message)) {
+          result.push(
+            trimLines(`
         <FetchError>
         ${log?.message?.status} ${log?.message?.url}
         <headers>
-          ${JSON.stringify(redactSensitiveHeaders(log?.message?.headers))}
+          ${formatHeaders(redactSensitiveHeaders(log?.message?.headers) ?? {})}
         </headers>
         <body>
-          ${JSON.stringify(log?.message?.body)}
+          ${log?.message?.body}
         </body>
         </FetchError>
       `),
-        );
-      }
+          );
+        }
 
-      return result;
-    },
-    [] as Array<string>,
-  );
+        return result;
+      },
+      [] as Array<string>,
+    )
+    .join("\n");
 }
 
 function trimLines(input: string) {
