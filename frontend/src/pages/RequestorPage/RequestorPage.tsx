@@ -19,10 +19,12 @@ import {
 import { findMatchedRoute, useReselectRouteHack, useRoutes } from "./routes";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./RequestorPage.css";
+import { useToast } from "@/components/ui/use-toast";
 import { useHotkeys } from "react-hotkeys-hook";
 import { BACKGROUND_LAYER } from "./styles";
 
 export const RequestorPage = () => {
+  const { toast } = useToast();
   const browserHistoryState = usePersistedUiState();
 
   const { routes, addBaseUrl, selectedRoute, setSelectedRoute } =
@@ -137,6 +139,23 @@ export const RequestorPage = () => {
     setPath,
     setPathParams,
   });
+
+  useHotkeys(
+    "mod+g",
+    (e) => {
+      if (aiEnabled && !isLoadingParameters) {
+        e.preventDefault();
+        fillInRequest();
+        toast({
+          duration: 3000,
+          description: "Generating request parameters with AI",
+        });
+      }
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
+  );
 
   return (
     <div

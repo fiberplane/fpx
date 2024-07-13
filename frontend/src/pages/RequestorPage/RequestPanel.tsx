@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
-import { cn } from "@/utils";
+import { cn, isMac } from "@/utils";
 import {
   CaretDownIcon,
   Cross2Icon,
@@ -35,6 +35,11 @@ import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai/ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 
 import "./RequestPanel.css";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;
@@ -63,20 +68,53 @@ function AiDropDownMenu({
     setOpen(false);
   }, [fillInRequest, setOpen]);
 
+  // When the user shift+clicks of meta+clicks on the trigger,
+  // automatically open the menu
+  // I'm doing this because the caret is kinda hard to press...
+  const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
+  const handleMagicWandButtonClick = useCallback(() => {
+    if (!open && isMetaOrShiftPressed) {
+      setOpen(true);
+      return;
+    }
+    fillInRequest();
+  }, [isMetaOrShiftPressed, setOpen, open, fillInRequest]);
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <div className="flex items-center">
-        <Button variant="ghost" className="p-2 h-auto" size="sm">
-          <SparkleWand
-            className={cn("w-4 h-4", { "fpx-pulse": isLoadingParameters })}
-          />
-        </Button>
-        <DropdownMenuTrigger asChild>
-          <button>
-            <CaretDownIcon className="w-4 h-4" />
-          </button>
-        </DropdownMenuTrigger>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              className="p-2 h-auto"
+              size="sm"
+              onClick={handleMagicWandButtonClick}
+            >
+              <SparkleWand
+                className={cn("w-4 h-4", { "fpx-pulse": isLoadingParameters })}
+              />
+            </Button>
+            <DropdownMenuTrigger asChild>
+              <button>
+                <CaretDownIcon className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
+          align="start"
+        >
+          {/* TODO - Support other than macos */}
+          Generate
+          <div className="flex gap-0.5">
+            <KeyboardShortcutKey>{isMac ? "⌘" : "Ctrl"}</KeyboardShortcutKey>{" "}
+            <KeyboardShortcutKey>G</KeyboardShortcutKey>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+
       <DropdownMenuContent className="min-w-60">
         <DropdownMenuLabel>Generate Inputs</DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -479,3 +517,11 @@ function useIsMetaOrShiftPressed() {
     isMetaOrShiftPressed,
   };
 }
+
+const KeyboardShortcutKey = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <span className="flex items-center text-xs justify-center font-mono text-white bg-accent/90 p-0.5 rounded opacity-60 h-4 min-w-4">
+      {children}
+    </span>
+  );
+};
