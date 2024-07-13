@@ -143,13 +143,15 @@ export const RequestorPage = () => {
   useHotkeys(
     "mod+g",
     (e) => {
-      if (aiEnabled && !isLoadingParameters) {
+      if (aiEnabled) {
+        // Prevent the "find in document" from opening in browser
         e.preventDefault();
-        fillInRequest();
-        toast({
-          duration: 3000,
-          description: "Generating request parameters with AI",
-        });
+        if (isLoadingParameters) {
+          toast({
+            duration: 3000,
+            description: "Generating request parameters with AI",
+          });
+        }
       }
     },
     {
