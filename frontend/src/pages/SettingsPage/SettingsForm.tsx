@@ -120,15 +120,21 @@ export function SettingsForm({
               name="ai_features"
               render={({ field }) => (
                 <FormItem
-                  className={cn("rounded-lg border p-4 space-y-6", {
+                  className={cn("rounded-lg border p-4 space-y-4", {
                     "border-yellow-100/50": isAiDirty,
                   })}
                 >
                   <div className="flex flex-row items-center justify-between gap-2">
                     <div className="space-y-1">
-                      <FormLabel className="text-base">AI Sprinkles</FormLabel>
+                      <FormLabel className="text-base">
+                        AI Sprinkles
+                        <span className="font-light text-gray-400 ml-2">
+                          (Beta)
+                        </span>
+                      </FormLabel>
                       <FormDescription>
-                        Use AI to help generate sample request data.
+                        Generate sample request data with AI. Requires an OpenAI
+                        API key.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -144,78 +150,82 @@ export function SettingsForm({
                       control={form.control}
                       name="openai_api_key"
                       render={({ field }) => (
-                        <div className="space-y-2">
-                          <FormItem className="flex flex-col justify-between rounded-lg text-sm gap-2">
-                            <div className="space-y-2">
-                              <FormLabel className="text-base text-gray-300">
-                                OpenAI Conifguration
-                              </FormLabel>
-                              <AnthropicSupportCallout />
-                              <FormLabel className="block font-normal text-sm text-gray-300">
-                                API Key
-                              </FormLabel>
-                              <FormDescription>
-                                Your api key is stored locally in{" "}
-                                <code className="text-red-200/80 text-xs">
-                                  .fpxconfig/fpx.db
-                                </code>{" "}
-                                to make requests to the OpenAI API. It should be
-                                ignored by version control by default.
-                              </FormDescription>
-                              <FormControl>
-                                <ApiKeyInput
-                                  value={field.value ?? ""}
-                                  onChange={field.onChange}
-                                />
-                              </FormControl>
-                            </div>
-                          </FormItem>
-                          <FormField
-                            control={form.control}
-                            name="openai_model"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-col justify-between rounded-lg text-sm">
-                                <FormLabel className="text-sm text-gray-300 font-normal">
-                                  Model
+                        <div className="border-t pt-4">
+                          <FormItem className="flex flex-col gap-2 justify-between rounded-lg text-sm">
+                            <div className="flex flex-col gap-2">
+                              <div className="flex flex-col gap-2">
+                                <FormLabel className="text-base text-gray-300">
+                                  OpenAI Conifguration
                                 </FormLabel>
+                                <AnthropicSupportCallout />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <FormLabel className="block font-normal text-sm text-gray-300">
+                                  API Key
+                                </FormLabel>
+                                <FormDescription className="mb-1">
+                                  Your api key is stored locally in{" "}
+                                  <code className="text-red-200/80 text-xs">
+                                    .fpxconfig/fpx.db
+                                  </code>{" "}
+                                  to make requests to the OpenAI API. It should
+                                  be ignored by version control by default.
+                                </FormDescription>
                                 <FormControl>
-                                  <div className="flex gap-2 items-center">
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          type="button"
-                                          size="sm"
-                                          variant="outline"
-                                          className="w-auto px-2 inline-flex items-center"
-                                        >
-                                          <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
-                                          {field.value ?? "gpt-4o"}
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent className="w-full max-w-lg">
-                                        <DropdownMenuRadioGroup
-                                          value={field.value}
-                                          onValueChange={(value) =>
-                                            field.onChange(value)
-                                          }
-                                        >
-                                          <DropdownMenuRadioItem value="gpt-4o">
-                                            gpt-4o
-                                          </DropdownMenuRadioItem>
-                                          <DropdownMenuRadioItem value="gpt-3.5">
-                                            gpt-3.5
-                                          </DropdownMenuRadioItem>
-                                        </DropdownMenuRadioGroup>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                    <FormDescription>
-                                      Select the OpenAI model you want to use
-                                    </FormDescription>
-                                  </div>
+                                  <ApiKeyInput
+                                    value={field.value ?? ""}
+                                    onChange={field.onChange}
+                                  />
                                 </FormControl>
-                              </FormItem>
-                            )}
-                          />
+                              </div>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name="openai_model"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-col justify-between rounded-lg text-sm">
+                                  <FormLabel className="text-sm text-gray-300 font-normal">
+                                    Model
+                                  </FormLabel>
+                                  <FormControl>
+                                    <div className="flex gap-2 items-center">
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            className="w-auto px-2 inline-flex items-center"
+                                          >
+                                            <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
+                                            {field.value ?? "gpt-4o"}
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-full max-w-lg">
+                                          <DropdownMenuRadioGroup
+                                            value={field.value}
+                                            onValueChange={(value) =>
+                                              field.onChange(value)
+                                            }
+                                          >
+                                            <DropdownMenuRadioItem value="gpt-4o">
+                                              gpt-4o
+                                            </DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="gpt-3.5">
+                                              gpt-3.5
+                                            </DropdownMenuRadioItem>
+                                          </DropdownMenuRadioGroup>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                      <FormDescription>
+                                        Select the OpenAI model you want to use
+                                      </FormDescription>
+                                    </div>
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </FormItem>
                           <div>
                             <CodeSentToAiBanner />
                           </div>
@@ -238,7 +248,10 @@ export function SettingsForm({
                   <div className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
                       <FormLabel className="text-base">
-                        Custom Routes (Alpha)
+                        Custom Routes
+                        <span className="font-light text-gray-400 ml-2">
+                          (Alpha)
+                        </span>
                       </FormLabel>
                       <FormDescription>
                         Make requests against routes that are not detected from
@@ -333,14 +346,12 @@ function CodeSentToAiBanner() {
       <div className="py-0.5">
         <InfoCircledIcon className="w-3.5 h-3.5" />
       </div>
-      <div className="flex flex-col items-start justify-start gap-2">
-        <span className="font-semibold">
-          Information will be sent to OpenAI
-        </span>
-        <span className="font-light">
-          To generate inputs for HTTP requests, we must send route handler
-          source code to OpenAI, as well as a short history of any recent
-          requests you made through FPX.
+      <div className="flex flex-col items-start justify-start gap-1.5">
+        <span className="font-semibold">What is sent to OpenAI</span>
+        <span className="">
+          To generate inputs for HTTP requests, FPX sends route handler source
+          code to OpenAI, as well as a short history of any recent requests you
+          made through FPX Studio.
         </span>
       </div>
     </div>
