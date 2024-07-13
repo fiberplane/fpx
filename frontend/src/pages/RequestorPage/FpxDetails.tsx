@@ -293,5 +293,3 @@ function NoTrace() {
     </div>
   );
 }
-
-function useAiSummary() {}
