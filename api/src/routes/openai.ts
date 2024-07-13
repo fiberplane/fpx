@@ -3,14 +3,14 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
+import {
+  FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
+  QA_PARAMETER_GENERATION_SYSTEM_PROMPT,
+  cleanPrompt,
+} from "../lib/ai.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 import { getOpenAiConfig } from "./settings.js";
-import {
-  cleanPrompt,
-  FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
-  QA_PARAMETER_GENERATION_SYSTEM_PROMPT,
-} from "../lib/prompts.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -55,20 +55,10 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
     history,
   }).catch((error) => {
     if (error instanceof Error) {
-      return ctx.json(
-        {
-          message: error.message,
-        },
-        500,
-      );
+      return ctx.json({ message: error.message }, 500);
     }
 
-    return ctx.json(
-      {
-        message: "Unknown error",
-      },
-      500,
-    );
+    return ctx.json({ message: "Unknown error" }, 500);
   });
 
   return ctx.json({
@@ -137,7 +127,7 @@ app.post(
 );
 
 /**
- * Used in AI Builders Demo
+ * NOT YET IN USE IN THE UI. Originally developed for the AI builders demo.
  *
  * Takes in an fpx trace and tries to make sense of what happened when a route was invoked.
  */
@@ -218,6 +208,13 @@ type GenerateRequestOptions = {
   history?: Array<string>;
 };
 
+/**
+ * Generates request data for a route handler
+ * - uses OpenAI's tool-calling feature.
+ * - returns the request data as JSON.
+ *
+ * See the JSON Schema definition for the request data in the `make_request` tool.
+ */
 async function generateRequestWithOpenAI({
   apiKey,
   model,
@@ -231,7 +228,7 @@ async function generateRequestWithOpenAI({
     apiKey,
   });
   const response = await openaiClient.chat.completions.create({
-    // NOTE - This model should guarantee function calling to have json output
+    // NOTE - Later models (gpt-4o, gpt-4-turbo) should guarantee function calling to have json output
     model,
     // NOTE - We can restrict the response to be from this single tool call
     tool_choice: { type: "function", function: { name: "make_request" } },
