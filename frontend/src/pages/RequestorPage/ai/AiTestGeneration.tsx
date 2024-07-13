@@ -20,6 +20,7 @@ import * as React from "react";
 import { useMemo, useState } from "react";
 import { HistoryEntry } from "../RequestorHistory";
 import { Requestornator, useTrace } from "../queries";
+import { redactSensitiveHeaders } from "./generate-request-data";
 
 function formatHeaders(headers: Record<string, string>): string {
   return Object.entries(headers)
@@ -229,23 +230,4 @@ function trimLines(input: string) {
     .split("\n")
     .map((l) => l.trim())
     .join("\n");
-}
-
-function redactSensitiveHeaders(headers?: null | Record<string, string>) {
-  if (!headers) {
-    return headers;
-  }
-
-  const sensitiveHeaders = ["authorization", "cookie", "set-cookie"];
-  const redactedHeaders: Record<string, string> = {};
-
-  for (const [key, value] of Object.entries(headers)) {
-    if (sensitiveHeaders.includes(key.toLowerCase())) {
-      redactedHeaders[key] = "REDACTED";
-    } else {
-      redactedHeaders[key] = value;
-    }
-  }
-
-  return redactedHeaders;
 }

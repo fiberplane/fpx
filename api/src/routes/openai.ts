@@ -7,6 +7,8 @@ import {
   FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
   QA_PARAMETER_GENERATION_SYSTEM_PROMPT,
   cleanPrompt,
+  friendlyTesterPrompt,
+  qaTesterPrompt,
 } from "../lib/ai.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
@@ -224,9 +226,17 @@ async function generateRequestWithOpenAI({
   handler,
   history,
 }: GenerateRequestOptions) {
-  const openaiClient = new OpenAI({
-    apiKey,
+  const openaiClient = new OpenAI({ apiKey });
+  const promptTemplate =
+    persona === "QA" ? qaTesterPrompt : friendlyTesterPrompt;
+  const userPromptInterface = await promptTemplate.invoke({
+    method,
+    path,
+    handler,
+    history: history?.join("\n") ?? "NO HISTORY",
   });
+  const userPrompt = userPromptInterface.value;
+
   const response = await openaiClient.chat.completions.create({
     // NOTE - Later models (gpt-4o, gpt-4-turbo) should guarantee function calling to have json output
     model,
@@ -295,23 +305,7 @@ async function generateRequestWithOpenAI({
       },
       {
         role: "user",
-        content: cleanPrompt(`
-            I need to make a request to one of my Hono api handlers.
-
-            Here are some recent requests/responses, which you can use as inspiration for future requests.
-            ${persona !== "QA" ? "E.g., if we recently created a resource, you can look that resource up." : ""}
-
-            <history>
-            ${history?.join("\n") ?? "NO HISTORY"}
-            </history>
-
-            The request you make should be a ${method} request to route: ${path}
-
-            Here is the code for the handler:
-            ${handler}
-
-            ${persona === "QA" ? "REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF. Keep your responses short. Including your random data." : ""}
-          `),
+        content: userPrompt,
       },
     ],
     temperature: 0.12,
