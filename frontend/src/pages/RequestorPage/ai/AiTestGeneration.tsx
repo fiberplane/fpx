@@ -113,7 +113,7 @@ export function AiTestGeneration({
             <DrawerTitle>Close the Loop</DrawerTitle>
             <DrawerDescription>
               Describe the type of test test you want to generate, and
-              copy-paste the prompt into your favorite IDE Copilot or LLM.
+              copy-paste the prompt into your favorite Copilot or LLM.
             </DrawerDescription>
           </DrawerHeader>
           <div className="p-2 pb-0">
