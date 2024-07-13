@@ -236,12 +236,12 @@ function redactSensitiveHeaders(headers?: null | Record<string, string>) {
     return headers;
   }
 
-  const sensitiveHeaders = ['authorization', 'cookie', 'set-cookie'];
+  const sensitiveHeaders = ["authorization", "cookie", "set-cookie"];
   const redactedHeaders: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(headers)) {
     if (sensitiveHeaders.includes(key.toLowerCase())) {
-      redactedHeaders[key] = 'REDACTED';
+      redactedHeaders[key] = "REDACTED";
     } else {
       redactedHeaders[key] = value;
     }

@@ -1,5 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
+import { errorHasMessage } from "@/utils";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { KeyValueParameter, createKeyValueParameters } from "../KeyValueForm";
@@ -84,13 +85,14 @@ export function useAi(
     useAiRequestData(selectedRoute, recentHistory, testingPersona);
 
   const fillInRequest = () => {
-    generateRequestData().then(({ data, isError }) => {
+    generateRequestData().then(({ data, isError, error }) => {
       if (isError) {
         toast({
           variant: "destructive",
           title: "Uh oh! Failed to generate request data",
-          description:
-            data?.message || "There was a problem with your request.",
+          description: errorHasMessage(error)
+            ? error?.message
+            : "There was a problem with your request.",
           // action: <ToastAction altText="Try again"> Try again</ ToastAction >,
         });
         return;
