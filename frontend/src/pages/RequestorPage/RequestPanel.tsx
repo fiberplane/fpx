@@ -12,7 +12,12 @@ import {
 import { Tabs } from "@/components/ui/tabs";
 import { useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { Cross2Icon, EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
+import {
+  CaretDownIcon,
+  Cross2Icon,
+  EraserIcon,
+  InfoCircledIcon,
+} from "@radix-ui/react-icons";
 import {
   Dispatch,
   SetStateAction,
@@ -58,30 +63,21 @@ function AiDropDownMenu({
     setOpen(false);
   }, [fillInRequest, setOpen]);
 
-  // When the user shift+clicks of meta+clicks on the trigger, we don't want to open the menu
-  // Instead, we will go ahead and generate the request data!
-  const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
-  const handleOpenChange = useCallback(
-    (newOpen: boolean) => {
-      if (newOpen && isMetaOrShiftPressed) {
-        fillInRequest();
-        return;
-      }
-      setOpen(newOpen);
-    },
-    [isMetaOrShiftPressed, setOpen, fillInRequest],
-  );
-
   return (
-    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm">
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <div className="flex items-center">
+        <Button variant="ghost" className="p-2 h-auto" size="sm">
           <SparkleWand
             className={cn("w-4 h-4", { "fpx-pulse": isLoadingParameters })}
           />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
+        <DropdownMenuTrigger asChild>
+          <button>
+            <CaretDownIcon className="w-4 h-4" />
+          </button>
+        </DropdownMenuTrigger>
+      </div>
+      <DropdownMenuContent className="min-w-60">
         <DropdownMenuLabel>Generate Inputs</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="font-normal">

@@ -41,7 +41,7 @@ Keep your responses short-ish. Including your random data.
 );
 
 export const FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
-You are a friendly expert full-stack engineer and an API testing assistant for apps that use Hono,
+You are a friendly, expert full-stack engineer and an API testing assistant for apps that use Hono,
 a typescript web framework similar to express.
 
 You need to help craft requests to route handlers.
