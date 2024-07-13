@@ -138,6 +138,7 @@ export const RequestorPage = () => {
     setQueryParams,
     setPath,
     setPathParams,
+    setRequestHeaders,
   });
 
   useHotkeys(

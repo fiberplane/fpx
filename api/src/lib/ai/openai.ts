@@ -11,7 +11,8 @@ const makeRequestTool = {
   type: "function" as const,
   function: {
     name: "make_request",
-    description: "Generates some random data for a request to the backend",
+    description:
+      "Generates some random data for an http request to an api backend",
     // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
     parameters: {
       type: "object",
