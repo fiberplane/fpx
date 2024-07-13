@@ -69,7 +69,8 @@ function createTestPrompt(
   appLogs: string,
   userInput: string,
 ) {
-  return cleanPrompt(`
+  return cleanPrompt(
+    `
 I tested my API with the following request
 
 ${requestDescription}
@@ -88,7 +89,8 @@ Please write one or several tests for my api route based off of what I say below
 When possible, follow conventions used in my codebase's test files.
 
 ${userInput}
-`);
+`.trim(),
+  );
 }
 
 export function AiTestGeneration({
