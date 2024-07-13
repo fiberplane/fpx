@@ -1,5 +1,11 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
+/**
+ * A friendly tester prompt.
+ *
+ * This prompt is used to generate requests for the API.
+ * It is a friendly tester, who tries to help you succeed.
+ */
 export const friendlyTesterPrompt = PromptTemplate.fromTemplate(
   `
 I need to make a request to one of my Hono api handlers.
@@ -59,8 +65,15 @@ For example, if you get a route like \`/users/:id\`, you should return a URL lik
 Use the tool "make_request". Always respond in valid JSON. Help the user test the happy path.
 `);
 
-// NOTE - I had to stop instructing the AI to create very long data in this prompt.
-//        It would end up repeating 9999999 ad infinitum and break JSON responses.
+/**
+ * A QA (hostile) tester prompt.
+ *
+ * This prompt is used to generate requests for the API.
+ * It is a QA tester, who tries to break your api.
+ *
+ * NOTE - I had to stop instructing the AI to create very long data in this prompt.
+ *        It would end up repeating 9999999 ad infinitum and break JSON responses.
+ */
 export const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
 You are an expert QA Engineer and API tester code debugging assistant for web APIs that use Hono,
 a typescript web framework similar to express. You have a generally hostile disposition.
