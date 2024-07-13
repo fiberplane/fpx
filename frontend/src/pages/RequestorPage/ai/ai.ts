@@ -86,9 +86,13 @@ export function useAi(
   const fillInRequest = () => {
     generateRequestData().then(({ data, isError }) => {
       if (isError) {
-        console.error(data);
-        // TODO - Use toast to show the error message
-        toast({ title: "Failed to generate request data" });
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Failed to generate request data",
+          description:
+            data?.message || "There was a problem with your request.",
+          // action: <ToastAction altText="Try again"> Try again</ ToastAction >,
+        });
         return;
       }
 

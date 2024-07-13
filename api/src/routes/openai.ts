@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
 import type { Bindings, Variables } from "../lib/types.js";
+import logger from "../logger.js";
 import { getOpenAiConfig } from "./settings.js";
 
 const FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
@@ -57,128 +58,61 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
 
   const db = ctx.get("db");
   const openaiConfig = await getOpenAiConfig(db);
+
   if (!openaiConfig) {
     return ctx.json(
       {
-        error: "No OpenAI configuration found",
+        message: "No OpenAI configuration found",
       },
       403,
     );
   }
-  const { openaiApiKey, openaiModel } = openaiConfig;
-  const openaiClient = new OpenAI({
-    apiKey: openaiApiKey,
-  });
-  const response = await openaiClient.chat.completions.create({
-    // NOTE - This model should guarantee function calling to have json output
-    model: openaiModel,
-    // NOTE - We can restrict the response to be from this single tool call
-    tool_choice: { type: "function", function: { name: "make_request" } },
-    // Define the make_request tool
-    tools: [
+  if (!openaiConfig.openaiApiKey) {
+    return ctx.json(
       {
-        type: "function" as const,
-        function: {
-          name: "make_request",
-          description:
-            "Generates some random data for a request to the backend",
-          // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
-          parameters: {
-            type: "object",
-            properties: {
-              path: {
-                type: "string",
-              },
-              pathParams: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    key: {
-                      type: "string",
-                    },
-                    value: {
-                      type: "string",
-                    },
-                  },
-                },
-              },
-              queryParams: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    key: {
-                      type: "string",
-                    },
-                    value: {
-                      type: "string",
-                    },
-                  },
-                },
-              },
-              body: {
-                type: "string",
-              },
-            },
-            // TODO - Mark fields like `pathParams` as required based on the route definition?
-            required: ["path"],
-          },
-        },
+        message: "OpenAI API key required",
       },
-    ],
-    messages: [
-      {
-        role: "system",
-        content:
-          persona === "QA"
-            ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
-            : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
-      },
-      {
-        role: "user",
-        content: cleanPrompt(`
-            I need to make a request to one of my Hono api handlers.
-
-            Here are some recent requests/responses, which you can use as inspiration for future requests.
-            ${persona !== "QA" ? "E.g., if we recently created a resource, you can look that resource up." : ""}
-
-            <history>
-            ${history?.join("\n") ?? "NO HISTORY"}
-            </history>
-
-            The request you make should be a ${method} request to route: ${path}
-
-            Here is the code for the handler:
-            ${handler}
-
-            ${persona === "QA" ? "REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF. Keep your responses short. Including your random data." : ""}
-          `),
-      },
-    ],
-    temperature: 0.12,
-    max_tokens: 4096,
-  });
-
-  const {
-    choices: [{ message }],
-  } = response;
-
-  const makeRequestCall = message.tool_calls?.[0];
-  const toolArgs = makeRequestCall?.function?.arguments;
-
-  try {
-    const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
-
-    return ctx.json({
-      request: parsedArgs,
-    });
-  } catch (_e) {
-    return ctx.json({
-      error: "Invalid JSON",
-      toolArgs,
-    });
+      403,
+    );
   }
+  if (!openaiConfig.openaiModel) {
+    return ctx.json(
+      {
+        message: "OpenAI model not specified",
+      },
+      422,
+    );
+  }
+  const { openaiApiKey, openaiModel } = openaiConfig;
+  const parsedArgs = await generateRequestWithOpenAI({
+    apiKey: openaiApiKey,
+    model: openaiModel,
+    persona,
+    method,
+    path,
+    handler,
+    history,
+  }).catch((error) => {
+    if (error instanceof Error) {
+      return ctx.json(
+        {
+          message: error.message,
+        },
+        500,
+      );
+    }
+
+    return ctx.json(
+      {
+        message: "Unknown error",
+      },
+      500,
+    );
+  });
+
+  return ctx.json({
+    request: parsedArgs,
+  });
 });
 
 app.post(
@@ -312,6 +246,135 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
 });
 
 export default app;
+
+type GenerateRequestOptions = {
+  apiKey: string;
+  model: string;
+  persona: string;
+  method: string;
+  path: string;
+  handler: string;
+  history?: Array<string>;
+};
+
+async function generateRequestWithOpenAI({
+  apiKey,
+  model,
+  persona,
+  method,
+  path,
+  handler,
+  history,
+}: GenerateRequestOptions) {
+  const openaiClient = new OpenAI({
+    apiKey,
+  });
+  const response = await openaiClient.chat.completions.create({
+    // NOTE - This model should guarantee function calling to have json output
+    model,
+    // NOTE - We can restrict the response to be from this single tool call
+    tool_choice: { type: "function", function: { name: "make_request" } },
+    // Define the make_request tool
+    tools: [
+      {
+        type: "function" as const,
+        function: {
+          name: "make_request",
+          description:
+            "Generates some random data for a request to the backend",
+          // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
+          parameters: {
+            type: "object",
+            properties: {
+              path: {
+                type: "string",
+              },
+              pathParams: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    key: {
+                      type: "string",
+                    },
+                    value: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              queryParams: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    key: {
+                      type: "string",
+                    },
+                    value: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              body: {
+                type: "string",
+              },
+            },
+            // TODO - Mark fields like `pathParams` as required based on the route definition?
+            required: ["path"],
+          },
+        },
+      },
+    ],
+    messages: [
+      {
+        role: "system",
+        content:
+          persona === "QA"
+            ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
+            : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
+      },
+      {
+        role: "user",
+        content: cleanPrompt(`
+            I need to make a request to one of my Hono api handlers.
+
+            Here are some recent requests/responses, which you can use as inspiration for future requests.
+            ${persona !== "QA" ? "E.g., if we recently created a resource, you can look that resource up." : ""}
+
+            <history>
+            ${history?.join("\n") ?? "NO HISTORY"}
+            </history>
+
+            The request you make should be a ${method} request to route: ${path}
+
+            Here is the code for the handler:
+            ${handler}
+
+            ${persona === "QA" ? "REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF. Keep your responses short. Including your random data." : ""}
+          `),
+      },
+    ],
+    temperature: 0.12,
+    max_tokens: 4096,
+  });
+
+  const {
+    choices: [{ message }],
+  } = response;
+
+  const makeRequestCall = message.tool_calls?.[0];
+  const toolArgs = makeRequestCall?.function?.arguments;
+
+  try {
+    const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
+    return parsedArgs;
+  } catch (error) {
+    logger.error("Parsing tool-call response from OpenAI failed:", error);
+    throw new Error("Could not parse response from OpenAI");
+  }
+}
 
 // TODO - Just use a prompt helper library sigh
 function cleanPrompt(prompt: string) {

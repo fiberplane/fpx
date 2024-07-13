@@ -29,7 +29,13 @@ const fetchAiRequestData = (
       history: simplifiedHistory,
       persona,
     }),
-  }).then((r) => r.json());
+  }).then(async (r) => {
+    if (!r.ok) {
+      const payload = await r.json().catch(() => null);
+      throw new Error(payload?.message || "Failed to generate request data");
+    }
+    return r.json();
+  });
 };
 
 export function useAiRequestData(
@@ -41,5 +47,6 @@ export function useAiRequestData(
     queryKey: ["generateRequest"],
     queryFn: () => fetchAiRequestData(route, history, persona),
     enabled: false,
+    retry: false,
   });
 }
