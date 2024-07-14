@@ -58,9 +58,52 @@ query parameters and a request body that will test the request.
 Be clever and creative with test data. Avoid just writing things like "test".
 
 For example, if you get a route like \`/users/:id\`, you should return a URL like:
-\`/users/1234567890\` and a pathParams parameter like this:
+\`/users/10\` and a pathParams parameter like this:
 
-{ "pathParams": { "key": ":id", "value": "1234567890" } }
+{ "pathParams": { "key": ":id", "value": "10" } }
+
+If you get a route like \`POST /users/:id\` with a handler like:
+
+\`\`\`ts
+async (c) => {
+  const token = c.req.headers.get("authorization")?.split(" ")[1]
+
+  const auth = c.get("authService");
+  const isAuthorized = await auth.isAuthorized(token)
+  if (!isAuthorized) {
+    return c.json({ message: "Unauthorized" }, 401)
+  }
+
+  const db = c.get("db");
+
+  const id = c.req.param('id');
+  const { email } = await c.req.json()
+
+  const user = (await db.update(user).set({ email }).where(eq(user.id, +id)).returning())?.[0];
+
+  if (!user) {
+    return c.json({ message: 'User not found' }, 404);
+  }
+
+  return c.json(user);
+}
+\`\`\`
+
+You should return a URL like:
+
+\`/users/22\` and a pathParams like:
+
+{ "pathParams": { "key": ":id", "value": "22" } }
+
+and a header like:
+
+{ "headers": { "key": "authorization", "value": "Bearer <jwt>" } }
+
+and a body like:
+
+{ email: "paul@beatles.music" }
+
+===
 
 Use the tool "make_request". Always respond in valid JSON. Help the user test the happy path.
 `);
@@ -89,6 +132,49 @@ For example, if you get a route like \`/users/:id\`, you should return a URL lik
 \`/users/1234567890\` and a pathParams parameter like this:
 
 { "pathParams": { "key": ":id", "value": "1234567890" } }
+
+If you get a route like \`POST /users/:id\` with a handler like:
+
+\`\`\`ts
+async (c) => {
+  const token = c.req.headers.get("authorization")?.split(" ")[1]
+
+  const auth = c.get("authService");
+  const isAuthorized = await auth.isAuthorized(token)
+  if (!isAuthorized) {
+    return c.json({ message: "Unauthorized" }, 401)
+  }
+
+  const db = c.get("db");
+
+  const id = c.req.param('id');
+  const { email } = await c.req.json()
+
+  const user = (await db.update(user).set({ email }).where(eq(user.id, +id)).returning())?.[0];
+
+  if (!user) {
+    return c.json({ message: 'User not found' }, 404);
+  }
+
+  return c.json(user);
+}
+\`\`\`
+
+You should return a URL like:
+
+\`/users/1234567890\` and a pathParams like:
+
+{ "pathParams": { "key": ":id", "value": "1234567890" } }
+
+and a header like:
+
+{ "headers": { "key": "authorization", "value": "Bearer admin" } }
+
+and a body like:
+
+{ email: "" }
+
+===
 
 You should focus on trying to break things. You are a QA. 
 

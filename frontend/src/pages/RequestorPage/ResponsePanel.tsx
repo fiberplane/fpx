@@ -84,7 +84,7 @@ export function ResponsePanel({
           >
             <>
               <HeaderTable
-                // HACK - To support absolutely positioned bottom toolbar 
+                // HACK - To support absolutely positioned bottom toolbar
                 className="pb-16"
                 headers={response?.app_responses?.responseHeaders ?? {}}
               />

@@ -1,6 +1,9 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
-export function HeaderTable({ headers, className }: { headers: Record<string, string>, className?: string }) {
+export function HeaderTable({
+  headers,
+  className,
+}: { headers: Record<string, string>; className?: string }) {
   return (
     <div className={className}>
       <Table>

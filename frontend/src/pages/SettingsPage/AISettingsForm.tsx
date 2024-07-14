@@ -203,7 +203,7 @@ const ApiKeyInput = ({
     <div className="flex items-center space-x-2">
       <Input
         type={passwordShown ? "text" : "password"}
-        className="w-full max-w-lg"
+        className="w-full font-mono text-gray-300 max-w-[680px]"
         value={value}
         onChange={onChange}
         autoComplete="off"
