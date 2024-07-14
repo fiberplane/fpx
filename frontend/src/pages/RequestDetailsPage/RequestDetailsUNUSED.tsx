@@ -414,7 +414,7 @@ const DefaultLogCard = ({ log }: { log: MizuLog }) => {
   const args =
     typeof log.message === "string" ? log.args : [log.message, ...log.args];
 
-  console.log('hi', log)
+  console.log("hi", log);
 
   return (
     <LogCard>

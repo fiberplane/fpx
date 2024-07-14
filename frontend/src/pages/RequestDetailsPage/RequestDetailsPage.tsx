@@ -288,12 +288,11 @@ const LifecycleSchema = z
 
 const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
 
-
 export type LogLevel = z.infer<typeof LogLevelSchema>;
 
 const isLogLevel = (level: unknown): level is LogLevel => {
-  return LogLevelSchema.safeParse(level).success
-}
+  return LogLevelSchema.safeParse(level).success;
+};
 
 function LogDetails({ log }: { log: MizuLog }) {
   const { message } = log;
@@ -358,5 +357,5 @@ function LogDetails({ log }: { log: MizuLog }) {
     }
   }
 
-  return <LogLog message={message} level={level} />;
+  return <LogLog message={message} level={level} args={log.args} />;
 }

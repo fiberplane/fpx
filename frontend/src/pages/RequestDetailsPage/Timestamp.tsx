@@ -1,5 +1,5 @@
-import { format } from "date-fns/format";
 import { differenceInMilliseconds as calculateDifferenceInMilliseconds } from "date-fns/differenceInMilliseconds";
+import { format } from "date-fns/format";
 
 const HOUR = 3_600_000; /* 60 * 60 * 1000ms */
 const DAY = HOUR * 24;
@@ -14,7 +14,7 @@ type Props = {
 export function Timestamp(props: Props) {
   const parsedDate = new Date(props.date);
 
-  const diffInMs = calculateDifferenceInMilliseconds(new Date(), parsedDate)
+  const diffInMs = calculateDifferenceInMilliseconds(new Date(), parsedDate);
   const showTime = diffInMs < DAY;
 
   // If it's more than 24 hrs ago, render date
