@@ -34,6 +34,7 @@ export function ResponsePanel({
   loadHistoricalRequest,
 }: Props) {
   const isFailure = !!response?.app_responses?.isFailure;
+  const showBottomToolbar = !!response?.app_responses?.traceId;
   return (
     <div className="overflow-hidden h-full relative">
       <Tabs
@@ -60,20 +61,15 @@ export function ResponsePanel({
             FailState={<FailedRequest response={response} />}
             EmptyState={<NoResponse />}
           >
-            <div className="h-full grid grid-rows-[auto_1fr]">
+            <div
+              className={cn(
+                "h-full grid grid-rows-[auto_1fr]",
+                showBottomToolbar && "pb-16",
+              )}
+            >
               <ResponseSummary response={response} />
               <ResponseBody response={response} />
-              {response?.app_responses?.traceId && (
-                <div className="flex justify-end gap-2 pt-2 pb-3 absolute bottom-0 right-3">
-                  <AiTestGeneration history={[response]} />
-                  <Link to={`/requests/${response?.app_responses?.traceId}`}>
-                    <Button variant="secondary">
-                      Go to Trace Details
-                      <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
-                    </Button>
-                  </Link>
-                </div>
-              )}
+              {showBottomToolbar && <BottomToolbar response={response} />}
             </div>
           </TabContentInner>
         </CustomTabsContent>
@@ -86,9 +82,14 @@ export function ResponsePanel({
             FailState={<FailedRequest response={response} />}
             EmptyState={<NoResponse />}
           >
-            <HeaderTable
-              headers={response?.app_responses?.responseHeaders ?? {}}
-            />
+            <>
+              <HeaderTable
+                // HACK - To support absolutely positioned bottom toolbar 
+                className="pb-16"
+                headers={response?.app_responses?.responseHeaders ?? {}}
+              />
+              {showBottomToolbar && <BottomToolbar response={response} />}
+            </>
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="debug">
@@ -99,17 +100,14 @@ export function ResponsePanel({
             FailState={<FailedRequest response={response} />}
             EmptyState={<NoResponse />}
           >
-            <FpxDetails response={response} />
-            {response?.app_responses?.traceId && (
-              <div className="flex justify-end pt-2 pb-3 absolute bottom-0 right-3">
-                <Link to={`/requests/${response?.app_responses?.traceId}`}>
-                  <Button variant="secondary">
-                    Go to Trace Details
-                    <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
-                  </Button>
-                </Link>
-              </div>
-            )}
+            <div className={cn("h-full")}>
+              <FpxDetails
+                response={response}
+                // HACK - Allows for absolute positioned toolbar
+                className={cn("pb-16")}
+              />
+              {showBottomToolbar && <BottomToolbar response={response} />}
+            </div>
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="history">
@@ -126,6 +124,20 @@ export function ResponsePanel({
     </div>
   );
 }
+
+const BottomToolbar = ({ response }: { response: Requestornator }) => {
+  return (
+    <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3">
+      <AiTestGeneration history={[response]} />
+      <Link to={`/requests/${response?.app_responses?.traceId}`}>
+        <Button variant="secondary">
+          Go to Trace Details
+          <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+        </Button>
+      </Link>
+    </div>
+  );
+};
 
 /**
  * Helper component for handling loading/failure/empty states in tab content

@@ -116,9 +116,9 @@ export function AiTestGeneration({
           <DrawerHeader className="mt-2 p-2">
             <DrawerTitle>Close the Loop</DrawerTitle>
             <DrawerDescription>
-              Describe the problem you encountered or test test you wish to
-              generate, and copy-paste a context-rich prompt into your favorite
-              Copilot or LLM.
+              Describe the problem you encountered or a test you wish to write.
+              FPX will create a context-rich prompt that you can copy-paste into
+              your favorite Copilot or LLM.
             </DrawerDescription>
           </DrawerHeader>
           <div className="p-2 pb-0">

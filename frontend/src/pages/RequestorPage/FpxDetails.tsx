@@ -29,18 +29,24 @@ import { Requestornator, useTrace } from "./queries";
 
 type FpxDetailsProps = {
   response?: Requestornator;
+  className?: string;
 };
 
-export function FpxDetails({ response }: FpxDetailsProps) {
+export function FpxDetails({ response, className }: FpxDetailsProps) {
   const hasTrace = !!response?.app_responses?.traceId;
-  return hasTrace ? <TraceDetails response={response} /> : <NoTrace />;
+  return hasTrace ? (
+    <TraceDetails response={response} className={className} />
+  ) : (
+    <NoTrace />
+  );
 }
 
 type TraceDetailsProps = {
   response: Requestornator;
+  className?: string;
 };
 
-function TraceDetails({ response }: TraceDetailsProps) {
+function TraceDetails({ response, className }: TraceDetailsProps) {
   const aiEnabled = useAiEnabled();
   // HACK - Hide summaries for now because they're obtuse
   const isAiSummaryEnabled = aiEnabled && false;
@@ -84,7 +90,7 @@ function TraceDetails({ response }: TraceDetailsProps) {
   const shouldShowSourceFunction = fpxRequestMessage && fpxResponseMessage;
 
   return (
-    <div className="mt-2">
+    <div className={cn("mt-2", className)}>
       {isAiSummaryEnabled && (
         <div className="">
           <h3 className="pt-1 pb-2 text-sm">Summary</h3>
