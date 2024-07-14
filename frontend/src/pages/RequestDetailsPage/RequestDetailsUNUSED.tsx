@@ -21,7 +21,6 @@ import {
   getVSCodeLinkFromError,
   isMizuFetchErrorMessage,
   isMizuFetchLoggingErrorMessage,
-  useHandlerSourceCode,
 } from "@/queries";
 import {
   type CallerLocation,
@@ -29,8 +28,6 @@ import {
   type MizuErrorMessage,
   type MizuLog,
   type MizuMessage,
-  type MizuRequestEnd,
-  type MizuRequestStart,
   type MizuTrace,
   isKnownMizuMessage,
   isMizuErrorMessage,

@@ -20,10 +20,14 @@ import { findMatchedRoute, useReselectRouteHack, useRoutes } from "./routes";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./RequestorPage.css";
 import { useToast } from "@/components/ui/use-toast";
+import { useWebsocketQueryInvalidation } from "@/hooks";
 import { useHotkeys } from "react-hotkeys-hook";
 import { BACKGROUND_LAYER } from "./styles";
 
 export const RequestorPage = () => {
+  // Refresh routes in response to filesystem updates
+  useWebsocketQueryInvalidation();
+
   const { toast } = useToast();
   const browserHistoryState = usePersistedUiState();
 

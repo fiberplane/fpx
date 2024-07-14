@@ -76,6 +76,21 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
             set: { handler: route.handler, currentlyRegistered: true },
           });
       }
+      // TODO - detect if anything actually changed before invalidating the query on the frontend...
+      if (routeInspectorHeader) {
+        const wsConnections = ctx.get("wsConnections");
+
+        if (wsConnections) {
+          for (const ws of wsConnections) {
+            ws.send(
+              JSON.stringify({
+                type: "invalidateQueries",
+                payload: ["appRoutes"],
+              }),
+            );
+          }
+        }
+      }
     }
 
     if (routeInspectorHeader) {
@@ -99,8 +114,12 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
 
     if (wsConnections) {
       for (const ws of wsConnections) {
-        const message = ["mizuTraces"];
-        ws.send(JSON.stringify(message));
+        ws.send(
+          JSON.stringify({
+            type: "invalidateQueries",
+            payload: ["mizuTraces"],
+          }),
+        );
       }
     }
 

@@ -8,17 +8,6 @@ import { Requestornator } from "../queries";
  * The request and response themselves are formatted closely to how a server would render them as text.
  */
 export function simplifyHistoryEntry(entry: Requestornator) {
-  const requestHeaders =
-    redactSensitiveHeaders(entry.app_requests.requestHeaders) ?? {};
-
-  const queryParams = new URLSearchParams(
-    entry.app_requests.requestQueryParams || {},
-  ).toString();
-  const requestUrl = entry.app_requests.requestUrl;
-  const requestUrlWithParams = queryParams
-    ? `${requestUrl}?${queryParams}`
-    : requestUrl;
-
   // NOTE - Can we glean the http version somehow, somewhere?
   return [appRequestToHttpRequest(entry), appResponseToHttpRequest(entry)].join(
     "\n",

@@ -1,12 +1,12 @@
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useWebsocketQueryInvalidation } from "@/hooks";
 import { type MizuTrace, useMizuTraces } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
-import { useCallback, useEffect, useMemo } from "react";
-import { useQueryClient } from "react-query";
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { columns } from "./columns";
 
@@ -45,30 +45,11 @@ const RequestsTable = ({
 };
 
 export function RequestsPage() {
-  const queryClient = useQueryClient();
   const query = useMizuTraces();
 
-  useEffect(() => {
-    const socket = new WebSocket("/ws");
-
-    socket.onopen = () => {
-      console.log("Connected to update server");
-    };
-
-    socket.onmessage = (ev) => {
-      console.log("Received message", ev.data);
-      const data: string[] = JSON.parse(ev.data);
-      queryClient.invalidateQueries(...data);
-    };
-
-    socket.onclose = (ev) => {
-      console.log("Disconnected from update server", ev);
-    };
-
-    return () => {
-      socket.close();
-    };
-  }, [queryClient]);
+  // Will add new requests as they come in by refetching
+  // In the future, we'll want to build a better ux around this (not auto refresh the table)
+  useWebsocketQueryInvalidation();
 
   return (
     <Tabs
