@@ -91,9 +91,9 @@ async (c) => {
 
 You should return a URL like:
 
-\`/users/22\` and a pathParams like:
+\`/users/64\` and a pathParams like:
 
-{ "pathParams": { "key": ":id", "value": "22" } }
+{ "pathParams": { "key": ":id", "value": "64" } }
 
 and a header like:
 
