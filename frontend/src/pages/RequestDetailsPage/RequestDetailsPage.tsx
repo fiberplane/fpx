@@ -287,12 +287,18 @@ const LifecycleSchema = z
   .optional();
 
 const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
+
+
 export type LogLevel = z.infer<typeof LogLevelSchema>;
+
+const isLogLevel = (level: unknown): level is LogLevel => {
+  return LogLevelSchema.safeParse(level).success
+}
 
 function LogDetails({ log }: { log: MizuLog }) {
   const { message } = log;
 
-  const level = log?.level ?? LogLevelSchema.parse(log.level);
+  const level = isLogLevel(log.level) ? log.level : "info";
 
   const lifecycle =
     message &&
@@ -352,5 +358,5 @@ function LogDetails({ log }: { log: MizuLog }) {
     }
   }
 
-  return <LogLog message={message} level={level as LogLevel} />; // TODO: figure out why Zod doesn't parse this into a string tagged union
+  return <LogLog message={message} level={level} />;
 }
