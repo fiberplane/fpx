@@ -128,7 +128,7 @@ export function AiTestGeneration({
                 onChange={(e) => setUserInput(e.target.value)}
                 className="w-full"
                 placeholder={
-                  'For example: "I expected to get a 404, but the api returned a 500"'
+                  'Example: "I expected to get a 404, but the api returned a 500"'
                 }
               />
             </div>

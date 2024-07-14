@@ -1,7 +1,3 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,9 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useToast } from "@/components/ui/use-toast";
-import { useUpdateSettings } from "@/queries";
-import { cn, errorHasMessage } from "@/utils";
+import { cn } from "@/utils";
 import {
   CaretDownIcon,
   EyeClosedIcon,
@@ -35,85 +29,25 @@ import {
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
 import { useState } from "react";
+import { useSettingsForm } from "./form";
 
-const OpenAiModelSchema = z.union([z.literal("gpt-4o"), z.literal("gpt-3.5")]);
-
-type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
-
-const isValidOpenaiModel = (value: string): value is OpenAiModel =>
-  OpenAiModelSchema.safeParse(value).success;
-
-const FormSchema = z.object({
-  ai_features: z.boolean(),
-  openai_api_key: z.string().optional(),
-  custom_routes: z.boolean(),
-  openai_model: OpenAiModelSchema,
-});
-
-export function SettingsForm({
+export function AISettingsForm({
   settings,
 }: { settings: Record<string, string> }) {
-  const { toast } = useToast();
-
-  const { mutate: updateSettings } = useUpdateSettings();
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      ai_features: !!settings?.aiEnabled,
-      openai_api_key: settings.openaiApiKey ?? "",
-      custom_routes: !!settings?.customRoutesEnabled,
-      openai_model: isValidOpenaiModel(settings.openaiModel)
-        ? settings.openaiModel
-        : "gpt-4o",
-    },
-  });
-
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    updateSettings(
-      {
-        content: {
-          aiEnabled: data.ai_features,
-          // Remove the stored api key if the feature is disabled
-          openaiApiKey: data.ai_features ? data.openai_api_key : undefined,
-          openaiModel: data.openai_model,
-          customRoutesEnabled: data.custom_routes,
-        },
-      },
-      {
-        onSuccess() {
-          toast({
-            title: "Settings updated!",
-          });
-          form.reset(data); // Reset the form state, so dirty fields are no longer dirty
-        },
-        onError(error) {
-          toast({
-            title: "Settings failed to update!",
-            description: (
-              <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                <code className="text-red-400">
-                  {errorHasMessage(error) ? error.message : "Unknown error"}
-                </code>
-              </pre>
-            ),
-          });
-        },
-      },
-    );
-  }
+  const { form, onSubmit } = useSettingsForm(settings);
 
   const isAiDirty =
     form.formState.dirtyFields.ai_features ||
     form.formState.dirtyFields.openai_api_key ||
     form.formState.dirtyFields.openai_model;
-  const isCustomRoutesDirty = form.formState.dirtyFields.custom_routes;
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
         <div>
-          <h3 className="mb-4 text-lg font-medium">Features</h3>
+          <h3 className="hidden md:block md:mb-4 text-lg font-medium">
+            AI Settings
+          </h3>
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -233,38 +167,6 @@ export function SettingsForm({
                       )}
                     />
                   ) : null}
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="custom_routes"
-              render={({ field }) => (
-                <FormItem
-                  className={cn("rounded-lg border p-4", {
-                    "border-yellow-100/50": isCustomRoutesDirty,
-                  })}
-                >
-                  <div className="flex flex-row items-center justify-between">
-                    <div className="space-y-1">
-                      <FormLabel className="text-base">
-                        Custom Routes
-                        <span className="font-light text-gray-400 ml-2">
-                          (Alpha)
-                        </span>
-                      </FormLabel>
-                      <FormDescription>
-                        Make requests against routes that are not detected from
-                        your application code.
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </div>
                 </FormItem>
               )}
             />
