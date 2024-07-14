@@ -96,10 +96,10 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
         </TabsTrigger>
       </TabsList>
       <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll">
-        <TabsContent className="m-0" value={AI_TAB} asChild>
+        <TabsContent className="m-0" value={AI_TAB}>
           <AISettingsForm settings={settings} />
         </TabsContent>
-        <TabsContent className="m-0" value={CUSTOM_ROUTES_TAB} asChild>
+        <TabsContent className="m-0" value={CUSTOM_ROUTES_TAB}>
           <RoutesSettingsForm settings={settings} />
         </TabsContent>
       </div>
