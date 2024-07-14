@@ -244,7 +244,7 @@ function AnthropicSupportCallout() {
  */
 function CodeSentToAiBanner() {
   return (
-    <div className="bg-primary/20 text-blue-300 text-sm px-2.5 py-4 mt-4 rounded-md grid grid-cols-[auto_1fr] gap-2.5 mb-2">
+    <div className="bg-primary/10 text-blue-300/90 text-sm px-2.5 py-4 mt-4 rounded-md grid grid-cols-[auto_1fr] gap-2.5 mb-2">
       <div className="py-0.5">
         <InfoCircledIcon className="w-3.5 h-3.5" />
       </div>
