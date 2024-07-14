@@ -1,5 +1,10 @@
 import { MizuMessage } from "@/queries";
-import { hasStringMessage, objectHasName, objectHasStack } from "@/utils";
+import {
+  hasStringMessage,
+  objectHasName,
+  objectHasStack,
+  renderFullLogMessage,
+} from "@/utils";
 import { LogLevel } from "./RequestDetailsPage";
 import { StackTrace } from "./StackTrace";
 import { SectionHeading } from "./shared";
@@ -93,15 +98,7 @@ function getLogContents(message: string | MizuMessage, args?: Array<unknown>) {
 const LogContents = ({ fullLogArgs }: { fullLogArgs: Array<unknown> }) => {
   return (
     <code className="p-2 rounded bg-slate-950/10 text-mono whitespace-pre">
-      {
-        fullLogArgs.reduce((result, curr) => {
-          if (Array.isArray(curr) || (result && typeof result === "object")) {
-            return `${result} ${JSON.stringify(curr)}`;
-          }
-
-          return `${result} ${curr}`;
-        }, "" as string) as string
-      }
+      {renderFullLogMessage(fullLogArgs)}
     </code>
   );
 };

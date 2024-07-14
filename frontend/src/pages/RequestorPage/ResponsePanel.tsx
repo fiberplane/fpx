@@ -61,14 +61,12 @@ export function ResponsePanel({
             FailState={<FailedRequest response={response} />}
             EmptyState={<NoResponse />}
           >
-            <div
-              className={cn(
-                "h-full grid grid-rows-[auto_1fr]",
-                showBottomToolbar && "pb-16",
-              )}
-            >
+            <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
               <ResponseSummary response={response} />
-              <ResponseBody response={response} />
+              <ResponseBody
+                response={response}
+                className={cn(showBottomToolbar && "pb-16")}
+              />
               {showBottomToolbar && <BottomToolbar response={response} />}
             </div>
           </TabContentInner>
@@ -127,7 +125,7 @@ export function ResponsePanel({
 
 const BottomToolbar = ({ response }: { response: Requestornator }) => {
   return (
-    <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3">
+    <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
       <AiTestGeneration history={[response]} />
       <Link to={`/requests/${response?.app_responses?.traceId}`}>
         <Button variant="secondary">
@@ -199,7 +197,10 @@ function ResponseSummary({ response }: { response?: Requestornator }) {
   );
 }
 
-function ResponseBody({ response }: { response?: Requestornator }) {
+function ResponseBody({
+  response,
+  className,
+}: { response?: Requestornator; className?: string }) {
   const isFailure = response?.app_responses?.isFailure;
   const body = response?.app_responses?.responseBody;
 
@@ -213,7 +214,9 @@ function ResponseBody({ response }: { response?: Requestornator }) {
     const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
 
     return (
-      <div className="overflow-hidden overflow-y-scroll w-full">
+      <div
+        className={cn("overflow-hidden overflow-y-scroll w-full", className)}
+      >
         <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
       </div>
     );
@@ -233,7 +236,7 @@ function ResponseBody({ response }: { response?: Requestornator }) {
   // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
   return (
-    <div className="overflow-hidden overflow-y-scroll w-full">
+    <div className={cn("overflow-hidden overflow-y-scroll w-full", className)}>
       <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>

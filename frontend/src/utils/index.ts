@@ -2,6 +2,9 @@ import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
+export { renderFullLogMessage } from "./render-log-message";
+export { truncateWithEllipsis } from "./truncate";
+
 export function formatDate(d: Date | string) {
   return format(new Date(d), "HH:mm:ss.SSS");
 }
