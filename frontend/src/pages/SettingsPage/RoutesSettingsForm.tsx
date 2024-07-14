@@ -35,7 +35,7 @@ export function RoutesSettingsForm({
                   <div className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
                       <FormLabel className="text-base">
-                        Custom Routes
+                        Enable Custom Routes
                         <span className="font-light text-gray-400 ml-2">
                           (Alpha)
                         </span>

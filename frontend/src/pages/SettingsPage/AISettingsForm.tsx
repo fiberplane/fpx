@@ -249,12 +249,17 @@ function CodeSentToAiBanner() {
         <InfoCircledIcon className="w-3.5 h-3.5" />
       </div>
       <div className="flex flex-col items-start justify-start gap-1.5">
-        <span className="font-semibold">What is sent to OpenAI</span>
-        <span className="">
-          To generate inputs for HTTP requests, FPX sends route handler source
-          code to OpenAI, as well as a short history of any recent requests you
-          made through FPX Studio.
-        </span>
+        <span className="font-semibold">What FPX sends to OpenAI</span>
+        <div className="flex flex-col gap-1">
+          <span className="">
+            To generate inputs for HTTP requests, FPX sends the source code of
+            route handlers to OpenAI.
+          </span>
+          <span>
+            FPX also sends a short history of recent requests. Common sensitive
+            headers are redacted by default.
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -41,21 +41,31 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
     );
   }
   const { openaiApiKey, openaiModel } = openaiConfig;
-  const parsedArgs = await generateRequestWithOpenAI({
-    apiKey: openaiApiKey,
-    model: openaiModel,
-    persona,
-    method,
-    path,
-    handler,
-    history,
-  }).catch((error) => {
-    if (error instanceof Error) {
-      return ctx.json({ message: error.message }, 500);
-    }
 
-    return ctx.json({ message: "Unknown error" }, 500);
-  });
+  const { data: parsedArgs, error: generateError } =
+    await generateRequestWithOpenAI({
+      apiKey: openaiApiKey,
+      model: openaiModel,
+      persona,
+      method,
+      path,
+      handler,
+      history,
+    }).then(
+      (parsedArgs) => {
+        return { data: parsedArgs, error: null };
+      },
+      (error) => {
+        if (error instanceof Error) {
+          return { data: null, error: { message: error.message } };
+        }
+        return { data: null, error: { message: "Unknown error" } };
+      },
+    );
+
+  if (generateError) {
+    return ctx.json({ message: generateError.message }, 500);
+  }
 
   return ctx.json({
     request: parsedArgs,

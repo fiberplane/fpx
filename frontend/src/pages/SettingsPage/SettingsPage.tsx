@@ -17,7 +17,7 @@ import { RoutesSettingsForm } from "./RoutesSettingsForm";
 export function SettingsPage() {
   const { data, isLoading, isError } = useFetchSettings();
   return (
-    <div className={cn("mt-4 px-4 overflow-y-scroll", "lg:px-6")}>
+    <div className={cn("mt-4 px-4 overflow-hidden h-full", "lg:px-6")}>
       {isLoading ? (
         <SettingsSkeleton />
       ) : isError ? (
@@ -40,11 +40,11 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
       defaultValue={AI_TAB}
       value={activeTab}
       onValueChange={setActiveTab}
-      className="grid md:grid-cols-[auto_1fr] md:gap-2 lg:gap-4"
+      className="grid max-md:grid-rows-[auto_1fr] h-full gap-4 overflow-hidden md:grid-cols-[auto_1fr] md:gap-2 lg:gap-4"
     >
       <TabsList
         className={cn(
-          "w-full h-auto",
+          "w-full md:h-auto",
           "border",
           "p-0",
           "md:p-2 md:border-0",
@@ -73,8 +73,12 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
             className="w-[calc(100vw-2rem)] min-w-[360px] sm:min-w-[400px] md:hidden"
             align="start"
           >
-            <DropdownMenuItem>{AI_TAB}</DropdownMenuItem>
-            <DropdownMenuItem>{CUSTOM_ROUTES_TAB}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveTab(AI_TAB)}>
+              {AI_TAB}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveTab(CUSTOM_ROUTES_TAB)}>
+              {CUSTOM_ROUTES_TAB}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         {/* For md breakpoint, show tab triggers */}
@@ -91,11 +95,11 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
           Custom Routes
         </TabsTrigger>
       </TabsList>
-      <div className="w-full max-w-[900px]">
-        <TabsContent value={AI_TAB}>
+      <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll">
+        <TabsContent className="m-0" value={AI_TAB} asChild>
           <AISettingsForm settings={settings} />
         </TabsContent>
-        <TabsContent value={CUSTOM_ROUTES_TAB}>
+        <TabsContent className="m-0" value={CUSTOM_ROUTES_TAB} asChild>
           <RoutesSettingsForm settings={settings} />
         </TabsContent>
       </div>

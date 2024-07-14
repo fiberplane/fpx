@@ -147,11 +147,12 @@ export const RequestorPage = () => {
       if (aiEnabled) {
         // Prevent the "find in document" from opening in browser
         e.preventDefault();
-        if (isLoadingParameters) {
+        if (!isLoadingParameters) {
           toast({
             duration: 3000,
             description: "Generating request parameters with AI",
           });
+          fillInRequest();
         }
       }
     },
