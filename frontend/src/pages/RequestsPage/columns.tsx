@@ -4,7 +4,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Status } from "@/components/ui/status";
 import type { MizuTrace } from "@/queries";
 import { Link } from "react-router-dom";
-import { TimeAgo } from "../RequestDetailsPage/TimeAgo";
+import { Timestamp } from "../RequestDetailsPage/Timestamp";
 import { RequestMethod } from "../RequestDetailsPage/shared";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
@@ -85,11 +85,7 @@ export const columns: ColumnDef<MizuTrace>[] = [
     id: "timestamp",
     header: "Timestamp",
     cell: (props) => (
-      <TimeAgo
-        date={props.row.original.logs?.[0]?.timestamp}
-        fallbackWithTime
-        fallbackWithDate={false}
-      />
+      <Timestamp date={props.row.original.logs?.[0]?.timestamp} />
     ),
     meta: {
       // NOTE - This is how to hide a cell depending on breakpoint!

@@ -8,6 +8,11 @@ import {
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "@/queries";
+import {
+  hasStringMessage,
+  renderFullLogMessage,
+  truncateWithEllipsis,
+} from "@/utils";
 import { useMemo } from "react";
 
 export function EventsTable({ logs }: { logs?: MizuLog[] }) {
@@ -32,17 +37,26 @@ export function EventsTable({ logs }: { logs?: MizuLog[] }) {
     <Table>
       <TableBody>
         {filteredLogs.map((log) => (
-          <TableRow key={log.id}>
-            <TableCell className="w-[100px] text-gray-400">
-              {getEventName(log)}
-            </TableCell>
-            <TableCell>{getEventDescription(log)}</TableCell>
-          </TableRow>
+          <EventTableRow key={log.id} log={log} />
         ))}
       </TableBody>
     </Table>
   );
 }
+
+const EventTableRow = ({ log }: { log: MizuLog }) => {
+  const description = useMemo(
+    () => truncateWithEllipsis(getEventDescription(log), 55),
+    [log],
+  );
+  const eventName = useMemo(() => getEventName(log), [log]);
+  return (
+    <TableRow key={log.id}>
+      <TableCell className="w-[100px] text-gray-400">{eventName}</TableCell>
+      <TableCell>{description}</TableCell>
+    </TableRow>
+  );
+};
 
 function getEventName(log: MizuLog) {
   if (isMizuFetchStartMessage(log?.message)) {
@@ -73,6 +87,14 @@ function getEventDescription(log: MizuLog) {
   if (isMizuErrorMessage(log?.message)) {
     return log.message.message;
   }
-  // @ts-expect-error - trust me i am a dolphin
-  return String(log?.message?.message ?? log?.message);
+  if (log.args?.length > 0) {
+    return renderFullLogMessage([log?.message, ...log.args]);
+  }
+  if (hasStringMessage(log.message)) {
+    return log.message.message;
+  }
+  if (typeof log?.message === "string") {
+    return log.message;
+  }
+  return JSON.stringify(log.message);
 }

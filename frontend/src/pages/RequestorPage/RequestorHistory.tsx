@@ -1,4 +1,9 @@
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { isMizuRequestEndMessage, isMizuRequestStartMessage } from "@/queries";
 import { cn, parsePathFromRequestUrl } from "@/utils";
 import { CaretSortIcon, SymbolIcon } from "@radix-ui/react-icons";
@@ -43,7 +48,7 @@ export function RequestorHistory({
 type HistoryEntryProps = {
   traceId: string;
   response: Requestornator;
-  loadHistoricalRequest: (traceId: string) => void;
+  loadHistoricalRequest?: (traceId: string) => void;
 };
 
 export function HistoryEntry({
@@ -110,19 +115,32 @@ export function HistoryEntry({
                   : fallbackUrl || "Details missing"}
             </span>
           </div>
-          <div className="flex items-center ml-auto mr-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="px-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                loadHistoricalRequest(traceId);
-              }}
-            >
-              <SymbolIcon className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
+          {loadHistoricalRequest && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center ml-auto mr-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="px-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      loadHistoricalRequest(traceId);
+                    }}
+                  >
+                    <SymbolIcon className="ml-1 h-4 w-4" />
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                className="bg-slate-950 text-white"
+                align="center"
+                side="left"
+              >
+                Load into Studio
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
 
         {isOpen && (

@@ -1,5 +1,12 @@
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { isMac } from "@/utils";
 import { TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
@@ -64,15 +71,30 @@ export function RequestorInput({
         />
       </div>
       <div className="flex items-center space-x-2 p-2">
-        <Button
-          size="sm"
-          type="submit"
-          disabled={isRequestorRequesting}
-          className="p-2 md:p-2.5"
-        >
-          <span className="hidden md:inline">Send</span>
-          <TriangleRightIcon className="md:hidden w-6 h-6" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              type="submit"
+              disabled={isRequestorRequesting}
+              className="p-2 md:p-2.5"
+            >
+              <span className="hidden md:inline">Send</span>
+              <TriangleRightIcon className="md:hidden w-6 h-6" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
+            align="center"
+            side="left"
+            sideOffset={16}
+          >
+            <div className="flex gap-0.5">
+              <KeyboardShortcutKey>{isMac ? "⌘" : "Ctrl"}</KeyboardShortcutKey>{" "}
+              <KeyboardShortcutKey>Enter</KeyboardShortcutKey>
+            </div>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </form>
   );

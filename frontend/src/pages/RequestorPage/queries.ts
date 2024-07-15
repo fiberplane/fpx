@@ -1,4 +1,4 @@
-import { useMizuTraces } from "@/queries";
+import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { z } from "zod";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
@@ -63,8 +63,6 @@ type ProbedRoutesResponse = {
 function getProbedRoutes(): Promise<ProbedRoutesResponse> {
   return fetch("/v0/app-routes").then((r) => r.json());
 }
-
-const PROBED_ROUTES_KEY = "appRoutes";
 
 export function useProbedRoutes() {
   return useQuery({

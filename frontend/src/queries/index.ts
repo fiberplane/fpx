@@ -24,6 +24,7 @@ export {
   getTraceDescription,
   queryClient,
   useMizuTraces,
+  MIZU_TRACES_KEY,
 } from "./queries";
 
 export {
@@ -34,3 +35,5 @@ export {
 export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
 
 export { useFetchSettings, useUpdateSettings } from "./settings";
+
+export { PROBED_ROUTES_KEY } from "./app-routes";
