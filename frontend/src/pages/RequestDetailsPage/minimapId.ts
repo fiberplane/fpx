@@ -13,7 +13,7 @@ type FpxLogIdArg = Pick<MizuLog, "level" | "message"> & {
   id: string | number;
 };
 
-export function fpxLogId(log: FpxLogIdArg) {
+export function minimapId(log: FpxLogIdArg) {
   const { message } = log;
 
   if (isMizuRequestStartMessage(message)) {

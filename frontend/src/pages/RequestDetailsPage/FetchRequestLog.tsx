@@ -1,7 +1,7 @@
 import { MizuFetchStart } from "@/queries/types";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
-import { fpxLogId } from "./minimapIdUtils"; 
+import { minimapId } from "./minimapId"; 
 import { RequestMethod } from "./shared";
 import { RequestPath, SectionHeading } from "./shared";
 
@@ -10,7 +10,7 @@ export function FetchRequestLog({
   logId,
 }: { message: MizuFetchStart; logId: string }) {
   const { headers, body, method, url } = message;
-  const id = fpxLogId({ message, id: logId, level: "" }); 
+  const id = minimapId({ message, id: logId, level: "" }); 
   return (
     <section className="flex flex-col gap-4" id={id}>
       <div className="flex flex-col md:flex-row gap-4 max-md:justify-content md:items-center">
