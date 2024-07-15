@@ -4,7 +4,11 @@ use crate::models::SpanKind;
 use libsql::params;
 use serde::Deserialize;
 use std::collections::BTreeMap;
+use std::time::Duration;
 use test_log::test;
+use tokio::join;
+use tokio::time::sleep;
+use tracing::info;
 
 /// Initialize a in memory database, and run the migrations on it.
 async fn create_test_database() -> Store {
@@ -98,4 +102,41 @@ async fn test_create_span() {
     };
     let span = store.span_create(&tx, span).await.unwrap();
     assert_eq!(span.kind, SpanKind::Server);
+}
+
+#[test(tokio::test(flavor = "multi_thread"))]
+async fn test_concurrent_transactions() {
+    let store = create_test_database().await;
+
+    let store1 = store.clone();
+    let tx1_task = tokio::spawn(async move {
+        info!("Starting tx1");
+        let tx1 = store1
+            .start_transaction()
+            .await
+            .expect("Failed to start tx1");
+        // sleep(Duration::from_secs(1)).await;
+        store1
+            .commit_transaction(tx1)
+            .await
+            .expect("Failed to commit tx1");
+    });
+
+    let store2 = store.clone();
+    let tx2_task = tokio::spawn(async move {
+        info!("Starting tx2");
+        let tx2 = store2
+            .start_transaction()
+            .await
+            .expect("Failed to start tx2");
+        // sleep(Duration::from_secs(1)).await;
+        store2
+            .commit_transaction(tx2)
+            .await
+            .expect("Failed to commit tx2");
+    });
+
+    let (result1, result2) = join!(tx1_task, tx2_task);
+    assert!(result1.is_ok());
+    assert!(result2.is_ok());
 }

@@ -25,7 +25,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [debug, otlphttp]
+      exporters: [debug, otlphttp, otlp]
 
   telemetry:
     logs:

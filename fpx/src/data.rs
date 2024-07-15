@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use thiserror::Error;
+use tokio::sync::{Mutex, MutexGuard};
 use tracing::{error, instrument};
 
 pub mod migrations;
@@ -15,13 +17,22 @@ pub mod models;
 #[cfg(test)]
 mod tests;
 
-pub struct Transaction(libsql::Transaction);
+pub struct Transaction<'a> {
+    tx: libsql::Transaction,
+    guard: MutexGuard<'a, ()>,
+}
 
-impl Deref for Transaction {
+impl<'a> Transaction<'a> {
+    pub fn new(tx: libsql::Transaction, guard: MutexGuard<'a, ()>) -> Self {
+        Self { tx, guard }
+    }
+}
+
+impl<'a> Deref for Transaction<'a> {
     type Target = libsql::Transaction;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.tx
     }
 }
 
@@ -32,6 +43,7 @@ impl Deref for Transaction {
 /// not have to do do anything there.
 #[derive(Clone)]
 pub struct Store {
+    lock: Arc<Mutex<()>>,
     connection: Connection,
 }
 
@@ -72,7 +84,10 @@ impl Store {
             .connect()
             .with_context(|| format!("failed to connect to libSQL database: {}", path))?;
 
-        Ok(Store { connection })
+        Ok(Store {
+            connection,
+            lock: Arc::new(Mutex::new(())),
+        })
     }
 
     pub async fn in_memory() -> Result<Self> {
@@ -80,20 +95,28 @@ impl Store {
     }
 
     pub async fn start_transaction(&self) -> Result<Transaction, DbError> {
-        self.connection
+        let guard = self.lock.lock().await;
+
+        let tx = self
+            .connection
             .transaction()
             .await
-            .map(Transaction)
-            .map_err(DbError::InternalError)
+            .map_err(DbError::InternalError)?;
+
+        Ok(Transaction::new(tx, guard))
     }
 
-    pub async fn commit_transaction(&self, tx: Transaction) -> Result<(), DbError> {
-        tx.0.commit().await.map_err(DbError::InternalError)
+    pub async fn commit_transaction(&self, tx: Transaction<'_>) -> Result<(), DbError> {
+        let result = tx.tx.commit().await.map_err(DbError::InternalError);
+
+        drop(tx.guard);
+
+        result
     }
 
     #[tracing::instrument(skip_all)]
     pub async fn request_create(
-        tx: &Transaction,
+        tx: &Transaction<'_>,
         method: &str,
         url: &str,
         body: &str,
@@ -115,12 +138,12 @@ impl Store {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn request_list(_tx: &Transaction) -> Result<Vec<Request>> {
+    pub async fn request_list(_tx: &Transaction<'_>) -> Result<Vec<Request>> {
         todo!()
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<Request, DbError> {
+    pub async fn request_get(&self, tx: &Transaction<'_>, id: i64) -> Result<Request, DbError> {
         let request: models::Request = tx
             .query("SELECT * FROM requests WHERE id = ?", params!(id))
             .await?
@@ -135,7 +158,7 @@ impl Store {
     #[instrument(skip(self, tx, span))]
     pub async fn span_create(
         &self,
-        tx: &Transaction,
+        tx: &Transaction<'_>,
         span: models::Span,
     ) -> Result<models::Span, DbError> {
         let span = tx
@@ -194,7 +217,7 @@ impl Store {
     #[instrument(skip(self, tx))]
     pub async fn span_get(
         &self,
-        tx: &Transaction,
+        tx: &Transaction<'_>,
         trace_id: Vec<u8>,
         span_id: Vec<u8>,
     ) -> Result<models::Span, DbError> {
@@ -214,7 +237,7 @@ impl Store {
     #[instrument(skip(self, tx))]
     pub async fn span_list_by_trace(
         &self,
-        tx: &Transaction,
+        tx: &Transaction<'_>,
         trace_id: Vec<u8>,
     ) -> Result<Vec<models::Span>, DbError> {
         let span = tx

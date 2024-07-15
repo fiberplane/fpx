@@ -74,7 +74,7 @@ pub async fn migrate(store: &Store) -> Result<()> {
 }
 
 /// Create the new migrations table if it does not exist.
-async fn migrations_bootstrap(tx: &Transaction) -> Result<()> {
+async fn migrations_bootstrap(tx: &Transaction<'_>) -> Result<()> {
     // First check if the migrations table exist
     let sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='_fpx_migrations'";
     let mut results = tx
@@ -109,7 +109,7 @@ async fn migrations_bootstrap(tx: &Transaction) -> Result<()> {
 }
 
 /// List already applied migrations.
-async fn migrations_list(tx: &Transaction) -> Result<Vec<String>> {
+async fn migrations_list(tx: &Transaction<'_>) -> Result<Vec<String>> {
     let mut results = vec![];
 
     let sql = "SELECT name, created_at FROM _fpx_migrations ORDER BY name ASC";
