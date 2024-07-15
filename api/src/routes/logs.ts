@@ -76,7 +76,8 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
             set: { handler: route.handler, currentlyRegistered: true },
           });
       }
-      // TODO - detect if anything actually changed before invalidating the query on the frontend...
+      // TODO - Detect if anything actually changed before invalidating the query on the frontend
+      //        This is more of an optimization, but is friendlier to the frontend
       if (routeInspectorHeader) {
         const wsConnections = ctx.get("wsConnections");
 

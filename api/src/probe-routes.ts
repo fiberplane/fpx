@@ -39,7 +39,7 @@ export function startRouteProbeWatcher(watchDir: string) {
   const probeMaxRetries = 10;
   // Send the initial probe 500ms after startup
   const initialProbeDelay = 500;
-  // Add 2s delay for all successive probes (e.g., after filesystem change of watched project)
+  // Add 1.5s delay for all successive probes (e.g., after filesystem change of watched project)
   const probeDelay = 1500;
 
   debouncedProbeRoutesWithExponentialBackoff(
