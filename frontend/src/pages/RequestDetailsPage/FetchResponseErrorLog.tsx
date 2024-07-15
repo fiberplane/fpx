@@ -2,14 +2,14 @@ import { Status } from "@/components/ui/status";
 import { MizuFetchError } from "@/queries/types";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
-import { minimapId } from "./minimapId"; 
+import { minimapId } from "./minimapId";
 import { SectionHeading } from "./shared";
 
 export function FetchResponseErrorLog({
   message,
   logId,
 }: { message: MizuFetchError; logId: string }) {
-  const id = minimapId({ message, id: logId, level: "" }); 
+  const id = minimapId({ message, id: logId, level: "" });
   const { status, headers, body, url } = message;
 
   return (

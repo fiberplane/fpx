@@ -31,7 +31,7 @@ export function LogLog({
   const consoleMethod = levelWithDefensiveFallback === "info" ? "log" : level;
 
   const heading = `console.${consoleMethod}${name ? `:  ${name}` : ""}`;
-  const id = minimapId({ message, id: logId, level: level }); 
+  const id = minimapId({ message, id: logId, level: level });
 
   return (
     <section className="flex flex-col gap-4" id={id}>

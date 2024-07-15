@@ -1,14 +1,14 @@
 import { isMizuErrorMessage } from "@/queries";
 import { MizuFetchLoggingError } from "@/queries/types";
 import { StackTrace } from "./StackTrace";
-import { minimapId } from "./minimapId"; 
+import { minimapId } from "./minimapId";
 import { SectionHeading } from "./shared";
 
 export function FetchRequestErrorLog({
   message,
   logId,
 }: { message: MizuFetchLoggingError; logId: string }) {
-  const id = minimapId({ message, id: logId, level: "" }); 
+  const id = minimapId({ message, id: logId, level: "" });
   const { url, error } = message;
 
   const stack = isMizuErrorMessage(error) && error.stack;

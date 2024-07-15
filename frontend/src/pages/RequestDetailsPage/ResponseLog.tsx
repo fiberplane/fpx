@@ -3,7 +3,7 @@ import { Status } from "@/components/ui/status";
 import { MizuRequestEnd } from "@/queries";
 import { KeyValueTable } from "./KeyValueTable";
 import { TextOrJsonViewer } from "./TextJsonViewer";
-import { minimapId } from "./minimapId"; 
+import { minimapId } from "./minimapId";
 import { SectionHeading } from "./shared";
 
 export function ResponseLog({
@@ -11,7 +11,7 @@ export function ResponseLog({
   logId,
 }: { message: MizuRequestEnd; logId: string }) {
   const { status, headers, body } = message;
-  const id = minimapId({ message, id: logId, level: "" }); 
+  const id = minimapId({ message, id: logId, level: "" });
 
   return (
     <section className="flex flex-col gap-4" id={id}>
