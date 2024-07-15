@@ -97,7 +97,7 @@ export const RequestorPage = () => {
     sessionHistory,
   );
 
-  const { mutate: makeRequest, isLoading: isRequestorRequesting } =
+  const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeRequest();
 
   // Send a request when we submit the form
