@@ -98,7 +98,11 @@ export async function generateRequestWithOpenAI({
   handler,
   history,
 }: GenerateRequestOptions) {
-  const openaiClient = new OpenAI({ apiKey });
+  const openaiClient = new OpenAI({
+    // NOTE - The client doesn't check the api key, and neither does our Supabase function
+    apiKey,
+    baseURL: "https://xlkarzuhgbiwmmvkjnwa.supabase.co/functions/v1"
+  });
   const promptTemplate =
     persona === "QA" ? qaTesterPrompt : friendlyTesterPrompt;
   const userPromptInterface = await promptTemplate.invoke({
