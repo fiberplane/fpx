@@ -80,6 +80,12 @@ export function useAi(
       } else {
         // TODO - Should we clear the query params if they are not present in the response?
       }
+
+      // TODO - We should compute the new path from the path params
+      //
+      //        Setting the path directly here requires the LLM to be consistent in its responses,
+      //        meaning it needs to synchronize path params with the path.
+      //        We tell it to do so, but if it makes a mistake, then things get confusing.
       if (path) {
         setPath(path);
       }
@@ -95,6 +101,7 @@ export function useAi(
               return {
                 ...pathParam,
                 value: replacement.value,
+                enabled: true,
               };
             }
             return pathParam;

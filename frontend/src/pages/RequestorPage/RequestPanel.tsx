@@ -40,6 +40,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;
@@ -106,7 +107,6 @@ function AiDropDownMenu({
           className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
           align="start"
         >
-          {/* TODO - Support other than macos */}
           Generate
           <div className="flex gap-0.5">
             <KeyboardShortcutKey>{isMac ? "⌘" : "Ctrl"}</KeyboardShortcutKey>{" "}
@@ -199,7 +199,9 @@ export function RequestPanel(props: RequestPanelProps) {
 }
 
 function ResizableRequestMeta(props: RequestPanelProps) {
-  const { width, handleResize } = useResizableWidth(300);
+  // TODO - I tried setting the width based off of result of `useMedia` but I think something is wrong with that fiberplane hook,
+  //        since it was matching (min-width: 1024px) even on small screens, and setting the panel too wide by default for smaller devices...
+  const { width, handleResize } = useResizableWidth(320);
   const styleWidth = useStyleWidth(width);
   return (
     <Resizable
@@ -517,11 +519,3 @@ function useIsMetaOrShiftPressed() {
     isMetaOrShiftPressed,
   };
 }
-
-const KeyboardShortcutKey = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <span className="flex items-center text-xs justify-center font-mono text-white bg-accent/90 p-0.5 rounded opacity-60 h-4 min-w-4">
-      {children}
-    </span>
-  );
-};

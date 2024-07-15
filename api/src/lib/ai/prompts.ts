@@ -60,7 +60,9 @@ Be clever and creative with test data. Avoid just writing things like "test".
 For example, if you get a route like \`/users/:id\`, you should return a URL like:
 \`/users/10\` and a pathParams parameter like this:
 
-{ "pathParams": { "key": ":id", "value": "10" } }
+{ "path": "/users/10", "pathParams": { "key": ":id", "value": "10" } }
+
+*Remember to keep the colon in the pathParam key!*
 
 If you get a route like \`POST /users/:id\` with a handler like:
 
@@ -93,7 +95,7 @@ You should return a URL like:
 
 \`/users/64\` and a pathParams like:
 
-{ "pathParams": { "key": ":id", "value": "64" } }
+{ "path": "/users/64", "pathParams": { "key": ":id", "value": "64" } }
 
 and a header like:
 
@@ -128,10 +130,12 @@ query parameters and a request body that will test the request.
 
 Be clever and creative with test data. Avoid just writing things like "test".
 
-For example, if you get a route like \`/users/:id\`, you should return a URL like:
-\`/users/1234567890\` and a pathParams parameter like this:
+For example, if you get a route like \`/users/:id\`, you should return a filled-in "path" field,
+like \`/users/1234567890\` and a "pathParams" field like:
 
-{ "pathParams": { "key": ":id", "value": "1234567890" } }
+{ "path": "/users/1234567890", "pathParams": { "key": ":id", "value": "1234567890" } }
+
+*Remember to keep the colon in the pathParam key!*
 
 If you get a route like \`POST /users/:id\` with a handler like:
 
@@ -160,11 +164,9 @@ async (c) => {
 }
 \`\`\`
 
-You should return a URL like:
+You should return a filled-in "path" field like \`/users/1234567890\` and a "pathParams" field like:
 
-\`/users/1234567890\` and a pathParams like:
-
-{ "pathParams": { "key": ":id", "value": "1234567890" } }
+{ "path": "/users/1234567890", "pathParams": { "key": ":id", "value": "1234567890" } }
 
 and a header like:
 
