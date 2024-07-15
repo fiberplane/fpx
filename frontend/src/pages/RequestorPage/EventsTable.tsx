@@ -96,5 +96,5 @@ function getEventDescription(log: MizuLog) {
   if (typeof log?.message === "string") {
     return log.message;
   }
-  return JSON.stringify(log.message).slice(0, 33);
+  return JSON.stringify(log.message);
 }
