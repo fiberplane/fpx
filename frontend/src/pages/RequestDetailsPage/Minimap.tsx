@@ -11,7 +11,7 @@ import {
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TocItem } from "./RequestDetailsPage";
-import { fpxLogId } from "./minimapIdUtils"; // Import the utility function
+import { fpxLogId } from "./minimapIdUtils"; 
 import { RequestMethod } from "./shared";
 
 export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
@@ -24,7 +24,7 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
     }
     return trace.logs
       .map((log) => {
-        const id = fpxLogId(log); // Use the utility function to generate the ID
+        const id = fpxLogId(log); 
         const { message } = log;
 
         if (isMizuRequestStartMessage(message)) {

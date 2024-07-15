@@ -31,7 +31,7 @@ export function LogLog({
   const consoleMethod = levelWithDefensiveFallback === "info" ? "log" : level;
 
   const heading = `console.${consoleMethod}${name ? `:  ${name}` : ""}`;
-  const id = fpxLogId({ message, id: logId, level: level }); // Use the utility function to generate the ID
+  const id = fpxLogId({ message, id: logId, level: level }); 
 
   return (
     <section className="flex flex-col gap-4" id={id}>
