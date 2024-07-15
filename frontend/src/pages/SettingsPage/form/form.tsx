@@ -4,9 +4,9 @@ import { errorHasMessage } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { FormSchema, isValidOpenaiModel } from "./types";
+import { FormSchema, isValidOpenaiModel, GPT_4o } from "./types";
 
-const DEFAULT_OPENAI_MODEL = "gpt-4o";
+const DEFAULT_OPENAI_MODEL = GPT_4o;
 
 export function useSettingsForm(settings: Record<string, string>) {
   const { toast } = useToast();

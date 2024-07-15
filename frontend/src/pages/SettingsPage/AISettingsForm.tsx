@@ -30,6 +30,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
+import { GPT_4o, GPT_4_TURBO, GPT_3_5_TURBO } from "./form/types";
 
 export function AISettingsForm({
   settings,
@@ -132,7 +133,7 @@ export function AISettingsForm({
                                             className="w-auto px-2 inline-flex items-center"
                                           >
                                             <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
-                                            {field.value ?? "gpt-4o"}
+                                            {field.value ?? GPT_4o}
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-full max-w-lg">
@@ -142,10 +143,13 @@ export function AISettingsForm({
                                               field.onChange(value)
                                             }
                                           >
-                                            <DropdownMenuRadioItem value="gpt-4o">
+                                            <DropdownMenuRadioItem value={GPT_4o}>
                                               gpt-4o
                                             </DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="gpt-3.5">
+                                            <DropdownMenuRadioItem value={GPT_4_TURBO}>
+                                              gpt-4-turbo
+                                            </DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value={GPT_3_5_TURBO}>
                                               gpt-3.5
                                             </DropdownMenuRadioItem>
                                           </DropdownMenuRadioGroup>

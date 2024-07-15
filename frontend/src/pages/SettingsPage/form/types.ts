@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-const OpenAiModelSchema = z.union([z.literal("gpt-4o"), z.literal("gpt-3.5")]);
+export const GPT_4o = "gpt-4o";
+export const GPT_4_TURBO = "gpt-4-turbo";
+export const GPT_3_5_TURBO = "gpt-3.5-turbo";
+
+const OpenAiModelSchema = z.union([z.literal(GPT_4o), z.literal(GPT_4_TURBO), z.literal(GPT_3_5_TURBO)]);
 
 type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
 
