@@ -95,7 +95,7 @@ export function redactSensitiveHeaders(
     return headers;
   }
 
-  const sensitiveHeaders = ["authorization", "cookie", "set-cookie"];
+  const sensitiveHeaders = ["authorization", "cookie", "set-cookie", "neon-connection-string"];
   const redactedHeaders: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(headers)) {
