@@ -1,5 +1,7 @@
 /**
- * Try to render a string the way that the console.* methods would...
+ * Try to render a string the way that the console.* methods would.
+ *
+ * I.e., render all arguments as a string.
  *
  * This needs improvement
  */
