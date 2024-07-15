@@ -31,7 +31,7 @@ import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { PathParamForm } from "./PathParamForm/PathParamForm";
 import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
-import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai/ai";
+import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 
 import "./RequestPanel.css";
