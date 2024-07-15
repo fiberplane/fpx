@@ -63,6 +63,7 @@ tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.24" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = { version = "2.5" }
+prost = { version = "0.12" }
 
 
 [dev-dependencies]
