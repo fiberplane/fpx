@@ -35,12 +35,12 @@ import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai/ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 
 import "./RequestPanel.css";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;

@@ -1,11 +1,15 @@
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { isMac } from "@/utils";
 import { TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import { isMac } from "@/utils";
 
 type RequestInputProps = {
   method: string;
@@ -91,7 +95,6 @@ export function RequestorInput({
             </div>
           </TooltipContent>
         </Tooltip>
-
       </div>
     </form>
   );
