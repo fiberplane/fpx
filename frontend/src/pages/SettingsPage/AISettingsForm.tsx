@@ -30,7 +30,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
-import { GPT_4o, GPT_4_TURBO, GPT_3_5_TURBO } from "./form/types";
+import { GPT_4o, GPT_4_TURBO } from "./form/types";
 
 export function AISettingsForm({
   settings,
@@ -149,9 +149,10 @@ export function AISettingsForm({
                                             <DropdownMenuRadioItem value={GPT_4_TURBO}>
                                               gpt-4-turbo
                                             </DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value={GPT_3_5_TURBO}>
-                                              gpt-3.5
-                                            </DropdownMenuRadioItem>
+                                            {/* NOTE - gpt-3.5-turbo is not working with tool calling api for some reason? */}
+                                            {/* <DropdownMenuRadioItem value={GPT_3_5_TURBO}>
+                                              gpt-3.5-turbo
+                                            </DropdownMenuRadioItem> */}
                                           </DropdownMenuRadioGroup>
                                         </DropdownMenuContent>
                                       </DropdownMenu>
