@@ -61,6 +61,7 @@ export async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
   return createdRecord[0];
 }
 
+// NOTE - These types and constants are duplicated between here and the frontend form
 const ApiKeySettingSchema = z
   .object({
     openaiApiKey: z.string(),

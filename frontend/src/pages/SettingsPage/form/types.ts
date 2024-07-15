@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// NOTE - These  types and constants are duplicated between here and api/src/routes/settings.ts
 export const GPT_4o = "gpt-4o";
 export const GPT_4_TURBO = "gpt-4-turbo";
 // NOTE - This was not working with our current prompting logic
