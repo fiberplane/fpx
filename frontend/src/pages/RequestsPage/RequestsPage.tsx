@@ -47,7 +47,7 @@ const RequestsTable = ({
 export function RequestsPage() {
   const query = useMizuTraces();
 
-  // Will add new requests as they come in by refetching
+  // Will add new fpx-requests as they come in by refetching
   // In the future, we'll want to build a better ux around this (not auto refresh the table)
   useWebsocketQueryInvalidation();
 

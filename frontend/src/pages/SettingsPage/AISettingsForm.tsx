@@ -183,11 +183,13 @@ export function AISettingsForm({
         </div>
         <div className="flex justify-end">
           <Button
-            className="text-white"
+            className={cn("text-white", {
+              "opacity-50": !isAiDirty,
+            })}
             type="submit"
             disabled={form.formState.isSubmitting}
           >
-            Save
+            {isAiDirty ? "Update AI Settings" : "Save"}
           </Button>
         </div>
       </form>
