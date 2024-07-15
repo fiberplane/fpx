@@ -8,6 +8,7 @@ import {
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "@/queries";
+import { truncateWithEllipsis } from "@/utils";
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TocItem } from "./RequestDetailsPage";
@@ -73,9 +74,22 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
           typeof message === "object" &&
           ("level" in log || "name" in message)
         ) {
+          const levelForTitle = log.level === "info" ? "log" : log.level;
+          const messageForTitle =
+            typeof message.message === "string"
+              ? message.message
+              : JSON.stringify(message.message);
           return {
             id,
-            title: `console.${log.level ? log.level : "error"}: ${message.message}`,
+            title: `console.${levelForTitle || "log"}: ${truncateWithEllipsis(messageForTitle, 30)}`,
+          };
+        }
+        if (message && typeof message === "string" && "level" in log) {
+          const levelForTitle = log.level === "info" ? "log" : log.level;
+
+          return {
+            id,
+            title: `console.${levelForTitle || "log"}: ${truncateWithEllipsis(message, 30)}`,
           };
         }
       })
