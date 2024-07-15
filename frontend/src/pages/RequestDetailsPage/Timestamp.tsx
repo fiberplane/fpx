@@ -9,7 +9,9 @@ type Props = {
 };
 
 /**
- * Just render hh:mm:ss
+ * Just render hh:mm:ss for anything in past 24hrs
+ *
+ * Anything over 24hrs ago, render date
  */
 export function Timestamp(props: Props) {
   const parsedDate = new Date(props.date);
