@@ -3,6 +3,7 @@ import { Status } from "@/components/ui/status";
 import { MizuRequestEnd } from "@/queries";
 import { KeyValueTable } from "./KeyValueTable";
 import { TextOrJsonViewer } from "./TextJsonViewer";
+import { fpxLogId } from "./minimapIdUtils"; // Import the utility function
 import { SectionHeading } from "./shared";
 
 export function ResponseLog({
@@ -10,7 +11,7 @@ export function ResponseLog({
   logId,
 }: { message: MizuRequestEnd; logId: string }) {
   const { status, headers, body } = message;
-  const id = `response-${status}-${message.path}-${logId}`;
+  const id = fpxLogId({ message, id: logId, level: "" }); // Use the utility function to generate the ID
 
   return (
     <section className="flex flex-col gap-4" id={id}>

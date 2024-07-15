@@ -7,13 +7,20 @@ import {
 } from "@/utils";
 import { LogLevel } from "./RequestDetailsPage";
 import { StackTrace } from "./StackTrace";
+import { fpxLogId } from "./minimapIdUtils";
 import { SectionHeading } from "./shared";
 
 export function LogLog({
   message,
   level,
   args,
-}: { message: string | MizuMessage; level: LogLevel; args?: Array<unknown> }) {
+  logId,
+}: {
+  message: string | MizuMessage;
+  level: LogLevel;
+  args?: Array<unknown>;
+  logId: string;
+}) {
   const description = getDescription(message, args);
   const { type: contentsType, value: contents } = getLogContents(message, args);
   const stack = objectHasStack(message) ? message.stack : null;
@@ -24,7 +31,7 @@ export function LogLog({
   const consoleMethod = levelWithDefensiveFallback === "info" ? "log" : level;
 
   const heading = `console.${consoleMethod}${name ? `:  ${name}` : ""}`;
-  const id = `log-${levelWithDefensiveFallback}-${name}`;
+  const id = fpxLogId({ message, id: logId, level: level }); // Use the utility function to generate the ID
 
   return (
     <section className="flex flex-col gap-4" id={id}>

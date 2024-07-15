@@ -357,5 +357,12 @@ function LogDetails({ log }: { log: MizuLog }) {
     }
   }
 
-  return <LogLog message={message} level={level} args={log.args} />;
+  return (
+    <LogLog
+      message={message}
+      level={level}
+      args={log.args}
+      logId={String(log.id)}
+    />
+  );
 }

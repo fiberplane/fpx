@@ -1,6 +1,7 @@
 import { MizuRequestStart } from "@/queries";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
+import { fpxLogId } from "./minimapIdUtils"; // Import the utility function
 import { RequestMethod } from "./shared";
 import { RequestPath, SectionHeading } from "./shared";
 
@@ -9,7 +10,7 @@ export function RequestLog({
   logId,
 }: { message: MizuRequestStart; logId: string }) {
   const { method, path, headers, query, params, body } = message;
-  const id = `request-${method}-${path}-${logId}`;
+  const id = fpxLogId({ message, id: logId, level: "" }); // Use the utility function to generate the ID
 
   return (
     <section className="flex flex-col gap-4" id={id}>
