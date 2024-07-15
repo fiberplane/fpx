@@ -70,7 +70,8 @@ export function useAi(
       const headers = data.request?.headers;
 
       if (body) {
-        setBody(body);
+        const prettyBody = tryPrettify(body);
+        setBody(prettyBody);
       }
 
       // NOTE - We need to be clear on the types here, otherwise this could wreak havoc on our form data
@@ -204,4 +205,13 @@ export function useIgnoreAiGeneratedInputsBanner() {
     ignoreAiInputsBanner,
     setIgnoreAiInputsBanner,
   };
+}
+function tryPrettify(body: string) {
+  try {
+    const parsedBody = JSON.parse(body);
+    const prettyBody = JSON.stringify(parsedBody, null, 2);
+    return prettyBody;
+  } catch {
+    return body;
+  }
 }
