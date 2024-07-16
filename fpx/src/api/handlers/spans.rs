@@ -1,6 +1,6 @@
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
+use crate::api::models::Span;
 use crate::data::{DbError, Store};
-use crate::models::Span;
 use axum::extract::{Path, State};
 use axum::Json;
 use http::StatusCode;

@@ -1,6 +1,5 @@
-use crate::api::ApiState;
+use crate::api::{models, ApiState};
 use crate::data::Store;
-use crate::models;
 use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;

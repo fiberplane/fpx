@@ -1,8 +1,8 @@
 use crate::api::grpc::extract_trace_ids;
+use crate::api::models::SpanAdded;
 use crate::data::models::Span;
 use crate::data::Store;
 use crate::events::ServerEvents;
-use crate::models::SpanAdded;
 use async_trait::async_trait;
 use axum::extract::State;
 use axum::extract::{FromRequest, Request};
@@ -45,7 +45,7 @@ pub async fn trace_collector_handler(
     let content_type = headers
         .get(CONTENT_TYPE)
         .and_then(|value| value.to_str().ok())
-        .unwrap_or_else(|| "");
+        .unwrap_or("");
 
     match content_type {
         "application/json" => Json(message).into_response(),

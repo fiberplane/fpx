@@ -1,4 +1,4 @@
-use crate::models::Request;
+use crate::api::models::Request;
 use anyhow::{Context, Result};
 use libsql::{de, params, Builder, Connection, Rows};
 use serde::de::DeserializeOwned;

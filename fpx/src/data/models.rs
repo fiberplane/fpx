@@ -1,5 +1,5 @@
 use super::{Json, Timestamp};
-use crate::models::{self, SpanKind};
+use crate::api::models::{self, SpanKind};
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use opentelemetry_proto::tonic::common::v1::{any_value, AnyValue, KeyValue};
 use opentelemetry_proto::tonic::trace::v1::span::{Event, Link};

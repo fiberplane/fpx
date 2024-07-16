@@ -1,7 +1,7 @@
+use crate::api::models::SpanAdded;
 use crate::data::models::Span;
 use crate::data::{DbError, Store};
 use crate::events::ServerEvents;
-use crate::models::SpanAdded;
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceService;
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,

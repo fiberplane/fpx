@@ -211,6 +211,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[allow(dead_code)]
     pub fn new(
         id: u32,
         status: u16,
@@ -267,30 +268,6 @@ impl From<reqwest::Error> for ApiServerError<RequestorError> {
     fn from(_err: reqwest::Error) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
-}
-
-pub struct ResourceSpans {
-    pub resource: Resource,
-    pub scope_spans: Vec<ScopeSpans>,
-    pub schema_url: Option<String>,
-}
-
-pub struct Resource {
-    pub attributes: BTreeMap<String, String>,
-    pub dropped_attributes_count: u32,
-}
-
-pub struct ScopeSpans {
-    pub instrumentation_scope: InstrumentationScope,
-    pub spans: Vec<Span>,
-    pub schema_url: Option<String>,
-}
-
-pub struct InstrumentationScope {
-    pub name: Option<String>,
-    pub version: Option<String>,
-    pub attributes: BTreeMap<String, String>,
-    pub dropped_attributes_count: u32,
 }
 
 #[derive(Deserialize, Serialize)]

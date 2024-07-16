@@ -10,6 +10,7 @@ pub mod client;
 pub mod errors;
 pub mod grpc;
 pub mod handlers;
+pub mod models;
 mod studio;
 mod ws;
 

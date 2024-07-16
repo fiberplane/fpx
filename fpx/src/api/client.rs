@@ -3,7 +3,7 @@
 use super::errors::ApiClientError;
 use super::handlers::spans::SpanGetError;
 use super::handlers::RequestGetError;
-use crate::models::Request;
+use crate::api::models::Request;
 use anyhow::Result;
 use http::Method;
 use tracing::trace;
@@ -81,7 +81,7 @@ impl ApiClient {
         &self,
         trace_id: impl AsRef<str>,
         span_id: impl AsRef<str>,
-    ) -> Result<crate::models::Span, ApiClientError<SpanGetError>> {
+    ) -> Result<crate::api::models::Span, ApiClientError<SpanGetError>> {
         let path = format!(
             "api/traces/{}/spans/{}",
             trace_id.as_ref(),
@@ -94,7 +94,7 @@ impl ApiClient {
     pub async fn span_list(
         &self,
         trace_id: impl AsRef<str>,
-    ) -> Result<Vec<crate::models::Span>, ApiClientError<SpanGetError>> {
+    ) -> Result<Vec<crate::api::models::Span>, ApiClientError<SpanGetError>> {
         let path = format!("api/traces/{}/spans", trace_id.as_ref());
 
         self.do_req(Method::GET, path).await

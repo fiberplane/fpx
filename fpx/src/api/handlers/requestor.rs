@@ -1,11 +1,14 @@
 use crate::api::errors::ApiServerError;
+use crate::api::models::{RequestorError, RequestorRequestPayload, Response};
 use crate::data::Store;
-use crate::models::{self, RequestorError};
-use axum::{extract::State, Json};
+use axum::extract::State;
+use axum::Json;
 use http::{HeaderMap, HeaderName, HeaderValue, Method};
 use once_cell::sync::Lazy;
 use reqwest::Client;
-use std::{collections::BTreeMap, str::FromStr, time::Duration};
+use std::collections::BTreeMap;
+use std::str::FromStr;
+use std::time::Duration;
 
 static REQUESTOR_CLIENT: Lazy<Client> = Lazy::new(|| {
     Client::builder()
@@ -18,8 +21,8 @@ static REQUESTOR_CLIENT: Lazy<Client> = Lazy::new(|| {
 #[tracing::instrument(skip_all)]
 pub async fn execute_requestor(
     State(store): State<Store>,
-    Json(payload): Json<models::RequestorRequestPayload>,
-) -> Result<Json<models::Response>, ApiServerError<RequestorError>> {
+    Json(payload): Json<RequestorRequestPayload>,
+) -> Result<Json<Response>, ApiServerError<RequestorError>> {
     let tx = store.start_transaction().await?;
 
     let request_body = payload.body.unwrap_or_default();
@@ -49,7 +52,7 @@ pub async fn execute_requestor(
     let response_status = response.status().as_u16();
     let response_body = &response.text().await?;
 
-    Ok(Json(models::Response {
+    Ok(Json(Response {
         id: request_id,
         status: response_status,
         headers: response_headers,
