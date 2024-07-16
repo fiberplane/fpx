@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
 
-import { Status } from "@/components/ui/status";
+// import { Status } from "@/components/ui/status";
 import {
   MizuLog,
   MizuRequestEnd,
