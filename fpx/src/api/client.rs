@@ -1,9 +1,13 @@
 //! API client for the FPX API.
+//!
+//! Eventually this should be moved into its own crate and not be part of the
+//! api module. But for now this is only used within our own code, so it is
+//! fine.
 
 use super::errors::ApiClientError;
 use super::handlers::spans::SpanGetError;
 use super::handlers::RequestGetError;
-use crate::api::models::Request;
+use crate::api::models;
 use anyhow::Result;
 use http::Method;
 use tracing::trace;
@@ -71,7 +75,7 @@ impl ApiClient {
     pub async fn request_get(
         &self,
         request_id: i64,
-    ) -> Result<Request, ApiClientError<RequestGetError>> {
+    ) -> Result<models::Request, ApiClientError<RequestGetError>> {
         let path = format!("api/requests/{}", request_id);
 
         self.do_req(Method::GET, path).await
@@ -81,7 +85,7 @@ impl ApiClient {
         &self,
         trace_id: impl AsRef<str>,
         span_id: impl AsRef<str>,
-    ) -> Result<crate::api::models::Span, ApiClientError<SpanGetError>> {
+    ) -> Result<models::Span, ApiClientError<SpanGetError>> {
         let path = format!(
             "api/traces/{}/spans/{}",
             trace_id.as_ref(),
@@ -94,7 +98,7 @@ impl ApiClient {
     pub async fn span_list(
         &self,
         trace_id: impl AsRef<str>,
-    ) -> Result<Vec<crate::api::models::Span>, ApiClientError<SpanGetError>> {
+    ) -> Result<Vec<models::Span>, ApiClientError<SpanGetError>> {
         let path = format!("api/traces/{}/spans", trace_id.as_ref());
 
         self.do_req(Method::GET, path).await
