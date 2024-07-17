@@ -21,6 +21,7 @@ impl GrpcService {
 
 #[tonic::async_trait]
 impl TraceService for GrpcService {
+    #[tracing::instrument(skip_all, err)]
     async fn export(
         &self,
         request: tonic::Request<ExportTraceServiceRequest>,
