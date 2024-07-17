@@ -15,10 +15,9 @@ pub async fn span_get_handler(
 ) -> Result<Json<Span>, ApiServerError<SpanGetError>> {
     let tx = store.start_transaction().await?;
 
-    let trace_id = hex::decode(trace_id)
+    hex::decode(&trace_id)
         .map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidTraceId))?;
-    let span_id = hex::decode(span_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidSpanId))?;
+    hex::decode(&span_id).map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidSpanId))?;
 
     let span = store.span_get(&tx, trace_id, span_id).await?;
 
@@ -67,7 +66,7 @@ pub async fn span_list_handler(
 ) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
     let tx = store.start_transaction().await?;
 
-    let trace_id = hex::decode(trace_id)
+    hex::decode(&trace_id)
         .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
 
     let spans = store.span_list_by_trace(&tx, trace_id).await?;

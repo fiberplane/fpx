@@ -1,5 +1,4 @@
-use crate::api::models::SpanAdded;
-use crate::data::models::Span;
+use crate::api::models::{Span, SpanAdded};
 use crate::data::{DbError, Store};
 use crate::events::ServerEvents;
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceService;
@@ -35,7 +34,7 @@ impl TraceService for GrpcService {
         let spans = Span::from_collector_request(export_trace_service_request);
 
         for span in spans {
-            self.store.span_create(&tx, span).await?;
+            self.store.span_create(&tx, span.into()).await?;
         }
 
         self.store.commit_transaction(tx).await?;

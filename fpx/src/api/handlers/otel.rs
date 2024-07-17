@@ -1,11 +1,9 @@
 use crate::api::grpc::extract_trace_ids;
-use crate::api::models::SpanAdded;
-use crate::data::models::Span;
+use crate::api::models::{Span, SpanAdded};
 use crate::data::Store;
 use crate::events::ServerEvents;
 use async_trait::async_trait;
-use axum::extract::State;
-use axum::extract::{FromRequest, Request};
+use axum::extract::{FromRequest, Request, State};
 use axum::response::{IntoResponse, Response};
 use axum::{Json, RequestExt};
 use bytes::Bytes;
@@ -31,7 +29,7 @@ pub async fn trace_collector_handler(
 
     let spans = Span::from_collector_request(payload);
     for span in spans {
-        store.span_create(&tx, span).await.expect("TODO");
+        store.span_create(&tx, span.into()).await.expect("TODO");
     }
 
     store.commit_transaction(tx).await.expect("TODO");

@@ -1,13 +1,14 @@
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
-use crate::data::models::{AttributeMap, SpanEvent, SpanLink, SpanStatusCode};
-use crate::data::{self, DbError, Json};
-use opentelemetry_proto::tonic::trace::v1::span;
+use crate::data::DbError;
 use rand::Rng;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use strum::AsRefStr;
 use thiserror::Error;
+
+mod otel;
+
+pub use otel::*;
 
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
@@ -267,165 +268,5 @@ impl From<libsql::Error> for ApiServerError<RequestorError> {
 impl From<reqwest::Error> for ApiServerError<RequestorError> {
     fn from(_err: reqwest::Error) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
-    }
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct Span {
-    pub trace_id: String,
-    pub span_id: String,
-    pub parent_span_id: Option<String>,
-
-    pub name: String,
-    pub state: String,
-    pub flags: u32,
-    pub kind: SpanKind,
-
-    #[serde(with = "time::serde::rfc3339")]
-    pub start_time: time::OffsetDateTime,
-
-    #[serde(with = "time::serde::rfc3339")]
-    pub end_time: time::OffsetDateTime,
-
-    pub attributes: AttributeMap,
-    pub scope_attributes: Option<AttributeMap>,
-    pub resource_attributes: Option<AttributeMap>,
-
-    pub status: Option<Status>,
-    pub events: Vec<Event>,
-    pub links: Vec<Link>,
-}
-
-impl From<data::models::Span> for Span {
-    fn from(span: data::models::Span) -> Self {
-        let trace_id = hex::encode(span.trace_id);
-        let span_id = hex::encode(span.span_id);
-        let parent_span_id = span.parent_span_id.map(hex::encode);
-
-        let events = span
-            .events
-            .into_inner()
-            .into_iter()
-            .map(Into::into)
-            .collect();
-        let links = span
-            .links
-            .into_inner()
-            .into_iter()
-            .map(Into::into)
-            .collect();
-
-        Self {
-            trace_id,
-            span_id,
-            parent_span_id,
-            name: span.name,
-            state: span.state,
-            flags: span.flags,
-            kind: span.kind,
-            start_time: span.start_time.into(),
-            end_time: span.end_time.into(),
-            attributes: span.attributes.into_inner(),
-            scope_attributes: span.scope_attributes.map(Json::into_inner),
-            resource_attributes: span.resource_attributes.map(Json::into_inner),
-            status: span.status.map(|status| {
-                let status = status.into_inner();
-                Status {
-                    code: status.code.into(),
-                    message: status.message,
-                }
-            }),
-            events,
-            links,
-        }
-    }
-}
-
-#[derive(AsRefStr, Default, Serialize, Deserialize, PartialEq, Debug)]
-pub enum SpanKind {
-    Internal,
-    Server,
-    Client,
-    Producer,
-    Consumer,
-
-    #[default]
-    Unspecified,
-}
-
-impl From<span::SpanKind> for SpanKind {
-    fn from(value: span::SpanKind) -> Self {
-        match value {
-            span::SpanKind::Unspecified => SpanKind::Unspecified,
-            span::SpanKind::Internal => SpanKind::Internal,
-            span::SpanKind::Server => SpanKind::Server,
-            span::SpanKind::Client => SpanKind::Client,
-            span::SpanKind::Producer => SpanKind::Producer,
-            span::SpanKind::Consumer => SpanKind::Consumer,
-        }
-    }
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct Event {
-    pub name: String,
-
-    #[serde(with = "time::serde::rfc3339")]
-    pub timestamp: time::OffsetDateTime,
-
-    pub attributes: AttributeMap,
-}
-
-impl From<SpanEvent> for Event {
-    fn from(event: SpanEvent) -> Self {
-        Self {
-            timestamp: event.timestamp.into(),
-            name: event.name,
-            attributes: event.attributes,
-        }
-    }
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct Link {
-    pub trace_id: Vec<u8>,
-    pub span_id: Vec<u8>,
-    pub trace_state: String,
-    pub attributes: AttributeMap,
-    pub flags: u32,
-}
-
-impl From<SpanLink> for Link {
-    fn from(link: SpanLink) -> Self {
-        Self {
-            trace_id: link.trace_id,
-            span_id: link.span_id,
-            trace_state: link.trace_state,
-            attributes: link.attributes,
-            flags: link.flags,
-        }
-    }
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct Status {
-    pub code: StatusCode,
-    pub message: String,
-}
-
-#[derive(Deserialize, Serialize)]
-pub enum StatusCode {
-    Unset,
-    Ok,
-    Error,
-}
-
-impl From<SpanStatusCode> for StatusCode {
-    fn from(status_code: SpanStatusCode) -> Self {
-        match status_code {
-            SpanStatusCode::Unset => StatusCode::Unset,
-            SpanStatusCode::Ok => StatusCode::Ok,
-            SpanStatusCode::Error => StatusCode::Error,
-        }
     }
 }

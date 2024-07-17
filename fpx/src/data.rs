@@ -155,7 +155,7 @@ impl Store {
 
     /// Create a new span in the database. This will return a new span with any
     /// fields potentially updated.
-    #[instrument(skip(self, tx, span))]
+    #[instrument(err, skip_all)]
     pub async fn span_create(
         &self,
         tx: &Transaction<'_>,
@@ -169,41 +169,23 @@ impl Store {
                         span_id,
                         parent_span_id,
                         name,
-                        state,
-                        flags,
                         kind,
-                        scope_name,
-                        scope_version,
                         start_time,
                         end_time,
-                        attributes,
-                        resource_attributes,
-                        scope_attributes,
-                        status,
-                        events,
-                        links
+                        inner
                     )
                     VALUES
-                        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                        ($1, $2, $3, $4, $5, $6, $7, $8)
                     RETURNING *",
                 params!(
                     span.trace_id,
                     span.span_id,
                     span.parent_span_id,
                     span.name,
-                    span.state,
-                    span.flags,
-                    span.kind.as_ref(),
-                    span.scope_name,
-                    span.scope_version,
+                    span.kind,
                     span.start_time,
                     span.end_time,
-                    span.attributes,
-                    span.resource_attributes,
-                    span.scope_attributes,
-                    span.status,
-                    span.events,
-                    span.links,
+                    span.inner,
                 ),
             )
             .await?
@@ -214,17 +196,17 @@ impl Store {
     }
 
     /// Retrieve a single span from the database.
-    #[instrument(skip(self, tx))]
+    #[instrument(err, skip_all, fields(trace_id = ?trace_id.as_ref(), span_id = ?span_id.as_ref()))]
     pub async fn span_get(
         &self,
         tx: &Transaction<'_>,
-        trace_id: Vec<u8>,
-        span_id: Vec<u8>,
+        trace_id: impl AsRef<str>,
+        span_id: impl AsRef<str>,
     ) -> Result<models::Span, DbError> {
         let span = tx
             .query(
                 "SELECT * FROM spans WHERE trace_id=$1 AND span_id=$2",
-                (trace_id, span_id),
+                (trace_id.as_ref(), span_id.as_ref()),
             )
             .await?
             .fetch_one()
@@ -234,11 +216,11 @@ impl Store {
     }
 
     /// Retrieve all spans for a single trace from the database.
-    #[instrument(skip(self, tx))]
+    #[instrument(err, skip(self, tx))]
     pub async fn span_list_by_trace(
         &self,
         tx: &Transaction<'_>,
-        trace_id: Vec<u8>,
+        trace_id: String,
     ) -> Result<Vec<models::Span>, DbError> {
         let span = tx
             .query("SELECT * FROM spans WHERE trace_id=$1", params!(trace_id))
@@ -391,6 +373,13 @@ impl From<Timestamp> for time::OffsetDateTime {
         //       get away with this for now.
         time::OffsetDateTime::from_unix_timestamp_nanos(timestamp.unix_nanos() as i128)
             .expect("timestamp is too large for OffsetDateTime")
+    }
+}
+
+impl From<time::OffsetDateTime> for Timestamp {
+    fn from(timestamp: time::OffsetDateTime) -> Self {
+        let nanos = timestamp.unix_timestamp_nanos();
+        Self(nanos as u64)
     }
 }
 
