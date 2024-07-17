@@ -1,6 +1,7 @@
 use crate::data::Store;
 use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
+use crate::service::Service;
 use axum::extract::FromRef;
 use axum::routing::{any, get, post};
 use http::StatusCode;
@@ -8,7 +9,6 @@ use url::Url;
 
 pub mod client;
 pub mod errors;
-pub mod grpc;
 pub mod handlers;
 pub mod models;
 mod studio;
@@ -21,14 +21,9 @@ pub struct ApiState {
     base_url: Url,
 
     events: ServerEvents,
-    store: Store,
     inspector_service: InspectorService,
-}
-
-impl FromRef<ApiState> for Store {
-    fn from_ref(api_state: &ApiState) -> Store {
-        api_state.store.clone()
-    }
+    service: Service,
+    store: Store,
 }
 
 impl FromRef<ApiState> for ServerEvents {
@@ -43,18 +38,32 @@ impl FromRef<ApiState> for InspectorService {
     }
 }
 
+impl FromRef<ApiState> for Service {
+    fn from_ref(api_state: &ApiState) -> Service {
+        api_state.service.clone()
+    }
+}
+
+impl FromRef<ApiState> for Store {
+    fn from_ref(api_state: &ApiState) -> Store {
+        api_state.store.clone()
+    }
+}
+
 /// Create a API and expose it through a axum router.
 pub fn create_api(
     base_url: url::Url,
     events: ServerEvents,
-    store: Store,
     inspector_service: InspectorService,
+    service: Service,
+    store: Store,
 ) -> axum::Router {
     let api_state = ApiState {
         base_url,
         events,
-        store,
         inspector_service,
+        service,
+        store,
     };
     let api_router = api_router();
 

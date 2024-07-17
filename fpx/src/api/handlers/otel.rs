@@ -1,7 +1,4 @@
-use crate::api::grpc::extract_trace_ids;
-use crate::api::models::{Span, SpanAdded};
-use crate::data::Store;
-use crate::events::ServerEvents;
+use crate::service::Service;
 use async_trait::async_trait;
 use axum::extract::{FromRequest, Request, State};
 use axum::response::{IntoResponse, Response};
@@ -10,34 +7,20 @@ use bytes::Bytes;
 use http::header::CONTENT_TYPE;
 use http::HeaderMap;
 use http::StatusCode;
-use opentelemetry_proto::tonic::collector::trace::v1::{
-    ExportTraceServiceRequest, ExportTraceServiceResponse,
-};
+use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use prost::Message;
 use tracing::error;
 
 #[tracing::instrument(skip_all)]
 pub async fn trace_collector_handler(
-    State(store): State<Store>,
-    State(events): State<ServerEvents>,
+    State(service): State<Service>,
     headers: HeaderMap,
     JsonOrProtobuf(payload): JsonOrProtobuf<ExportTraceServiceRequest>,
 ) -> impl IntoResponse {
-    let trace_ids = extract_trace_ids(&payload);
+    let response = service.ingest_export(payload).await;
 
-    let tx = store.start_transaction().await.expect("TODO");
-
-    let spans = Span::from_collector_request(payload);
-    for span in spans {
-        store.span_create(&tx, span.into()).await.expect("TODO");
-    }
-
-    store.commit_transaction(tx).await.expect("TODO");
-
-    events.broadcast(SpanAdded::new(trace_ids).into());
-
-    let message = ExportTraceServiceResponse {
-        partial_success: None,
+    let Ok(response) = response else {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
 
     let content_type = headers
@@ -46,10 +29,10 @@ pub async fn trace_collector_handler(
         .unwrap_or("");
 
     match content_type {
-        "application/json" => Json(message).into_response(),
+        "application/json" => Json(response).into_response(),
         "application/x-protobuf" => {
             let mut buf = bytes::BytesMut::new();
-            message.encode(&mut buf).expect("TODO");
+            response.encode(&mut buf).expect("TODO");
             buf.into_response()
         }
         content_type => {

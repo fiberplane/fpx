@@ -1,9 +1,9 @@
-use crate::api::grpc::GrpcService;
 use crate::api::{self};
 use crate::data::migrations::migrate;
 use crate::data::{DataPath, Store};
 use crate::events::Events;
-use crate::initialize_fpx_dir;
+use crate::grpc::GrpcService;
+use crate::{initialize_fpx_dir, service};
 use anyhow::{Context, Result};
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceServiceServer;
 use std::future::IntoFuture;
@@ -49,13 +49,16 @@ pub async fn handle_command(args: Args) -> Result<()> {
     )
     .await?;
 
+    let service = service::Service::new(store.clone(), events.clone());
+
     let app = api::create_api(
         args.base_url.clone(),
         events.clone(),
-        store.clone(),
         inspector_service,
+        service.clone(),
+        store.clone(),
     );
-    let grpc_service = GrpcService::new(store, events);
+    let grpc_service = GrpcService::new(service);
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)
         .await

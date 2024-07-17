@@ -1,0 +1,67 @@
+use crate::api::models::{Span, SpanAdded};
+use crate::data::{DbError, Store};
+use crate::events::ServerEvents;
+use anyhow::Result;
+use opentelemetry_proto::tonic::collector::trace::v1::{
+    ExportTraceServiceRequest, ExportTraceServiceResponse,
+};
+use thiserror::Error;
+
+#[derive(Clone)]
+pub struct Service {
+    store: Store,
+    events: ServerEvents,
+}
+
+impl Service {
+    pub fn new(store: Store, events: ServerEvents) -> Self {
+        Self { store, events }
+    }
+
+    /// Ingest the given export message and store it in the database. On success
+    /// also broadcast the new trace/spans to ServerEvents.
+    pub async fn ingest_export(
+        &self,
+        request: ExportTraceServiceRequest,
+    ) -> Result<ExportTraceServiceResponse, IngestExportError> {
+        let trace_ids = Self::extract_trace_ids(&request);
+
+        let tx = self.store.start_transaction().await?;
+
+        let spans = Span::from_collector_request(request);
+        for span in spans {
+            self.store.span_create(&tx, span.into()).await?;
+        }
+
+        self.store.commit_transaction(tx).await?;
+
+        self.events.broadcast(SpanAdded::new(trace_ids).into());
+
+        Ok(ExportTraceServiceResponse {
+            partial_success: None,
+        })
+    }
+
+    fn extract_trace_ids(message: &ExportTraceServiceRequest) -> Vec<(String, String)> {
+        message
+            .resource_spans
+            .iter()
+            .flat_map(|span| {
+                span.scope_spans.iter().flat_map(|scope_span| {
+                    scope_span.spans.iter().map(|inner| {
+                        let trace_id = hex::encode(&inner.trace_id);
+                        let span_id = hex::encode(&inner.span_id);
+                        (trace_id, span_id)
+                    })
+                })
+            })
+            .collect()
+    }
+}
+
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum IngestExportError {
+    #[error("Database error: {0}")]
+    DbError(#[from] DbError),
+}
