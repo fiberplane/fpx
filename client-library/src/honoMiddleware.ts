@@ -4,7 +4,7 @@ import { createMiddleware } from "hono/factory";
 import { replaceFetch } from "./replace-fetch.js";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger.js";
 import {
-  ExtendedExecutionContext,
+  type ExtendedExecutionContext,
   errorToJson,
   extractCallerLocation,
   generateUUID,
@@ -96,12 +96,15 @@ export function createHonoMiddleware<App extends HonoApp>(
 
     const service = env<FpxEnv>(c).FPX_SERVICE_NAME || "unknown";
 
-    const ctx = getRuntimeKey() === 'workerd' ? c.executionCtx : {
-      // HACK - Untested
-      waitUntil: async (p: Promise<unknown>) => {
-       await p
-      }
-    };
+    const ctx =
+      getRuntimeKey() === "workerd"
+        ? c.executionCtx
+        : {
+            // HACK - Untested
+            waitUntil: async (p: Promise<unknown>) => {
+              await p;
+            },
+          };
 
     if (!app) {
       // Logging here before we patch the console.* methods so we don't cause trouble
@@ -114,7 +117,7 @@ export function createHonoMiddleware<App extends HonoApp>(
     //         https://github.com/highlight/highlight/pull/6480
     // NOTE - This "getRuntimeKey" check is necessary to not throw errors on long-running envs that do not have an executionCtx
     //        I actually still need to look up when "workerd" is the runtime key!!!
-    if (getRuntimeKey() === 'workerd') {
+    if (getRuntimeKey() === "workerd") {
       // Type coercion is valid here because we know we're in workerd
       polyfillWaitUntil(ctx as ExtendedExecutionContext);
     }
@@ -187,7 +190,6 @@ export function createHonoMiddleware<App extends HonoApp>(
           headers.append("x-Fpx-Route-Inspector", "enabled");
         }
 
-        
         ctx.waitUntil(
           // Use `originalFetch` to avoid an infinite loop of logging to FPX
           // If we use our monkeyPatched version, then each fetch logs to FPX,
