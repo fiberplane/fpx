@@ -10,7 +10,7 @@ export const RECORDED_CONSOLE_METHODS = [
   "warn",
 ] as const;
 
-import { PRETTIFY_FPX_LOGGER_LOG, type PrintFunc } from "./utils";
+import { PRETTIFY_FPX_LOGGER_LOG, type PrintFunc } from "./utils.js";
 
 // === LOGGER FUNCTION === //
 function logReq(
