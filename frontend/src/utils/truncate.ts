@@ -1,4 +1,7 @@
-export function truncateWithEllipsis(path: string | null | undefined, maxLength = 50) {
+export function truncateWithEllipsis(
+  path: string | null | undefined,
+  maxLength = 50,
+) {
   if (path === null || path === undefined) {
     return null;
   }
