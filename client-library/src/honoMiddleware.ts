@@ -4,6 +4,7 @@ import { createMiddleware } from "hono/factory";
 import { replaceFetch } from "./replace-fetch.js";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger.js";
 import {
+  ExtendedExecutionContext,
   errorToJson,
   extractCallerLocation,
   generateUUID,
@@ -114,7 +115,8 @@ export function createHonoMiddleware<App extends HonoApp>(
     // NOTE - This "getRuntimeKey" check is necessary to not throw errors on long-running envs that do not have an executionCtx
     //        I actually still need to look up when "workerd" is the runtime key!!!
     if (getRuntimeKey() === 'workerd') {
-      polyfillWaitUntil(ctx);
+      // Type coercion is valid here because we know we're in workerd
+      polyfillWaitUntil(ctx as ExtendedExecutionContext);
     }
 
     const teardownFunctions: Array<() => void> = [];
