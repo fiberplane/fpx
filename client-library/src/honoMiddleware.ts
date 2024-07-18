@@ -100,9 +100,15 @@ export function createHonoMiddleware<App extends HonoApp>(
       getRuntimeKey() === "workerd"
         ? c.executionCtx
         : {
-            // HACK - Untested
+            // HACK - In non-Cloudflare environments we need to provide some sort of "waitUntil" implementation
+            //        In the future we may want to have different middleware for different runtimes
             waitUntil: async (p: Promise<unknown>) => {
-              await p;
+              // NOTE - We need to handle this error so we don't crash the server (like in Deno or Node)
+              try {
+                await p;
+              } catch (_e) {
+                // TODO - Should we log even? Or just fail siliently
+              }
             },
           };
 
