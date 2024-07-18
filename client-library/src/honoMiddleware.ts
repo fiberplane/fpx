@@ -1,4 +1,4 @@
-import { env } from "hono/adapter";
+import { env, getRuntimeKey } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
 
 import { replaceFetch } from "./replace-fetch.js";
@@ -95,7 +95,12 @@ export function createHonoMiddleware<App extends HonoApp>(
 
     const service = env<FpxEnv>(c).FPX_SERVICE_NAME || "unknown";
 
-    const ctx = c.executionCtx;
+    const ctx = getRuntimeKey() === 'workerd' ? c.executionCtx : {
+      // HACK - Untested
+      waitUntil: async (p: Promise<unknown>) => {
+       await p
+      }
+    };
 
     if (!app) {
       // Logging here before we patch the console.* methods so we don't cause trouble
@@ -106,7 +111,11 @@ export function createHonoMiddleware<App extends HonoApp>(
 
     // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs
     //         https://github.com/highlight/highlight/pull/6480
-    polyfillWaitUntil(ctx);
+    // NOTE - This "getRuntimeKey" check is necessary to not throw errors on long-running envs that do not have an executionCtx
+    //        I actually still need to look up when "workerd" is the runtime key!!!
+    if (getRuntimeKey() === 'workerd') {
+      polyfillWaitUntil(ctx);
+    }
 
     const teardownFunctions: Array<() => void> = [];
 
@@ -176,6 +185,7 @@ export function createHonoMiddleware<App extends HonoApp>(
           headers.append("x-Fpx-Route-Inspector", "enabled");
         }
 
+        
         ctx.waitUntil(
           // Use `originalFetch` to avoid an infinite loop of logging to FPX
           // If we use our monkeyPatched version, then each fetch logs to FPX,
