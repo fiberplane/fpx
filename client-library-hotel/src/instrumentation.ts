@@ -15,7 +15,7 @@ import type { ExecutionContext, Hono } from "hono";
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
-import { measure } from "./util";
+import { measure } from "./measure";
 
 type Config = {
   endpoint: string;
