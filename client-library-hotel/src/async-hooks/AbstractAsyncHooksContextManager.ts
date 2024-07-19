@@ -69,6 +69,7 @@ export abstract class AbstractAsyncHooksContextManager
     return target;
   }
 
+  // biome-ignore lint/complexity/noBannedTypes: this is from the original code
   private _bindFunction<T extends Function>(context: Context, target: T): T {
     const manager = this;
     const contextWrapper = function (this: never, ...args: unknown[]) {
@@ -84,7 +85,7 @@ export abstract class AbstractAsyncHooksContextManager
      * It isn't possible to tell Typescript that contextWrapper is the same as T
      * so we forced to cast as any here.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: this is from the original code
     return contextWrapper as any;
   }
 
@@ -104,6 +105,7 @@ export abstract class AbstractAsyncHooksContextManager
     this._createPatchMap(ee);
 
     // patch methods that add a listener to propagate context
+    // biome-ignore lint/complexity/noForEach: this is from the original code
     ADD_LISTENER_METHODS.forEach((methodName) => {
       if (ee[methodName] === undefined) return;
       ee[methodName] = this._patchAddListener(ee, ee[methodName], context);
@@ -131,6 +133,7 @@ export abstract class AbstractAsyncHooksContextManager
    * @param ee EventEmitter instance
    * @param original reference to the patched method
    */
+  // biome-ignore lint/complexity/noBannedTypes: this is from the original code
   private _patchRemoveListener(ee: EventEmitter, original: Function) {
     const contextManager = this;
     return function (this: never, event: string, listener: Func<void>) {
@@ -149,17 +152,20 @@ export abstract class AbstractAsyncHooksContextManager
    * @param ee EventEmitter instance
    * @param original reference to the patched method
    */
+// biome-ignore lint/complexity/noBannedTypes: this is from the original code
   private _patchRemoveAllListeners(ee: EventEmitter, original: Function) {
     const contextManager = this;
     return function (this: never, event: string) {
       const map = contextManager._getPatchMap(ee);
       if (map !== undefined) {
+        // biome-ignore lint/style/noArguments: this is from the original code
         if (arguments.length === 0) {
           contextManager._createPatchMap(ee);
         } else if (map[event] !== undefined) {
           delete map[event];
         }
       }
+      // biome-ignore lint/style/noArguments: this is from the original code
       return original.apply(this, arguments);
     };
   }
@@ -173,6 +179,7 @@ export abstract class AbstractAsyncHooksContextManager
    */
   private _patchAddListener(
     ee: EventEmitter,
+    // biome-ignore lint/complexity/noBannedTypes: this is from the original code
     original: Function,
     context: Context,
   ) {
@@ -216,7 +223,7 @@ export abstract class AbstractAsyncHooksContextManager
 
   private _createPatchMap(ee: EventEmitter): PatchMap {
     const map = Object.create(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: this is from the original code
     (ee as any)[this._kOtListeners] = map;
     return map;
   }
