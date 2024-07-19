@@ -408,6 +408,14 @@ function getFallbackServiceTarget() {
  */
 function findEnvVarFile() {
   const envFiles = [".dev.vars", ".env.local", ".env.dev", ".env"];
+  // To support monorepos, first look in current working directory for one of the common env files
+  for (const file of envFiles) {
+    const filePath = path.join(process.cwd(), file);
+    if (fs.existsSync(filePath)) {
+      return filePath;
+    }
+  }
+  // Then, check the project root!
   for (const file of envFiles) {
     const filePath = path.join(PROJECT_ROOT_DIR, file);
     if (fs.existsSync(filePath)) {
