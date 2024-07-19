@@ -1,3 +1,4 @@
+use crate::api::errors::ApiServerError;
 use crate::api::handlers::canned_requests::CannedRequestListError;
 use anyhow::{anyhow, bail, Context, Result};
 use http::Method;
@@ -63,7 +64,9 @@ impl Display for SaveLocation {
 }
 
 impl CannedRequest {
-    pub async fn load_all(location: SaveLocation) -> Result<Vec<Self>, CannedRequestListError> {
+    pub async fn load_all(
+        location: SaveLocation,
+    ) -> Result<Vec<Self>, ApiServerError<CannedRequestListError>> {
         match &location {
             SaveLocation::Ephemeral => Ok(EPHEMERAL_REQUESTS
                 .read()
@@ -76,24 +79,14 @@ impl CannedRequest {
                 })
                 .collect()),
             SaveLocation::Personal(path) | SaveLocation::Shared(path) => {
-                let mut dir = fs::read_dir(path)
-                    .await
-                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err).into()))?;
+                let mut dir = fs::read_dir(path).await.map_err(|err| anyhow!(err))?;
                 let mut results = vec![];
 
-                while let Some(entry) = dir
-                    .next_entry()
-                    .await
-                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err).into()))?
-                {
+                while let Some(entry) = dir.next_entry().await.map_err(|err| anyhow!(err))? {
                     let file_name = entry
                         .file_name()
                         .to_str()
-                        .ok_or_else(|| {
-                            CannedRequestListError::Internal(
-                                anyhow!("conversion into os string failed").into(),
-                            )
-                        })?
+                        .ok_or_else(|| anyhow!("conversion into os string failed"))?
                         .to_string();
 
                     let Some((file_name, extension)) = file_name.rsplit_once('.') else {
@@ -112,7 +105,10 @@ impl CannedRequest {
         }
     }
 
-    pub async fn load(name: &str, location: &SaveLocation) -> Result<Self, CannedRequestListError> {
+    pub async fn load(
+        name: &str,
+        location: &SaveLocation,
+    ) -> Result<Self, ApiServerError<CannedRequestListError>> {
         match location {
             SaveLocation::Ephemeral => {
                 let mut request = EPHEMERAL_REQUESTS
@@ -128,12 +124,9 @@ impl CannedRequest {
             SaveLocation::Personal(path) | SaveLocation::Shared(path) => {
                 let path = path.join(format!("{name}.toml"));
 
-                let data = fs::read_to_string(path)
-                    .await
-                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err).into()))?;
+                let data = fs::read_to_string(path).await.map_err(|err| anyhow!(err))?;
 
-                let mut data: Self = toml::from_str(&data)
-                    .map_err(|err| CannedRequestListError::Internal(anyhow!(err).into()))?;
+                let mut data: Self = toml::from_str(&data).map_err(|err| anyhow!(err))?;
                 data.name = name.to_string();
 
                 Ok(data)

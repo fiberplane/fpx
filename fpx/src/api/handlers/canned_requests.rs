@@ -1,8 +1,7 @@
-use crate::api::errors::{AnyhowError, ApiServerError};
+use crate::api::errors::{ApiError, ApiServerError};
 use crate::api::Config;
 use crate::canned_requests::{CannedRequest, SaveLocation};
 use axum::extract::State;
-use axum::response::{IntoResponse, Response};
 use axum::Json;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -19,11 +18,7 @@ pub async fn canned_request_create(
         .map_err(|_| CannedRequestCreateError::InvalidType)?;
 
     canned_request.request.name = canned_request.name;
-    canned_request
-        .request
-        .save(save_location)
-        .await
-        .map_err(|err| CannedRequestCreateError::Internal(err.into()))?;
+    canned_request.request.save(save_location).await?;
 
     Ok(StatusCode::CREATED)
 }
@@ -44,35 +39,20 @@ struct NewCannedRequest {
 pub enum CannedRequestCreateError {
     #[error("unknown type, expected `ephemeral`, `personal` or `shared`")]
     InvalidType,
-
-    #[error("failed to handle request: {0:?}")]
-    Internal(
-        #[serde(skip, default)]
-        #[from]
-        AnyhowError,
-    ),
 }
 
-impl IntoResponse for CannedRequestCreateError {
-    fn into_response(self) -> Response {
-        error!(error = ?self, "error occurred while creating canned request");
-
-        let body = serde_json::to_vec(&self)
-            .expect("Failed to serialize CannedRequestCreateError, should not happen");
-
-        let status_code = match self {
+impl ApiError for CannedRequestCreateError {
+    fn status_code(&self) -> StatusCode {
+        match self {
             CannedRequestCreateError::InvalidType => StatusCode::BAD_REQUEST,
-            CannedRequestCreateError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        };
-
-        (status_code, body).into_response()
+        }
     }
 }
 
 #[instrument(skip(config))]
 pub async fn canned_request_list(
     State(config): State<Config>,
-) -> Result<Json<BTreeMap<String, Vec<CannedRequest>>>, CannedRequestListError> {
+) -> Result<Json<BTreeMap<String, Vec<CannedRequest>>>, ApiServerError<CannedRequestListError>> {
     let map = BTreeMap::from([
         (
             "ephemeral".to_string(),
@@ -94,27 +74,12 @@ pub async fn canned_request_list(
 pub enum CannedRequestListError {
     #[error("canned request not found")]
     NotFound,
-
-    #[error("failed to handle request: {0:?}")]
-    Internal(
-        #[serde(skip, default)]
-        #[from]
-        AnyhowError,
-    ),
 }
 
-impl IntoResponse for CannedRequestListError {
-    fn into_response(self) -> Response {
-        error!(error = ?self, "error occurred while listing canned requests");
-
-        let body = serde_json::to_vec(&self)
-            .expect("Failed to serialize CannedRequestListError, should not happen");
-
-        let status_code = match self {
-            CannedRequestListError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
+impl ApiError for CannedRequestListError {
+    fn status_code(&self) -> StatusCode {
+        match self {
             CannedRequestListError::NotFound => StatusCode::NOT_FOUND,
-        };
-
-        (status_code, body).into_response()
+        }
     }
 }
