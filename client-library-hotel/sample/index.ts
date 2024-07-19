@@ -26,7 +26,7 @@ app.get("/", async (c) => {
   console.log("Hello Hono!");
   console.error("This message is logged as an error");
 
-  loop(1);
+  loop(128);
 
   const response = await fetch("https://api.chucknorris.io/jokes/random");
   const result = await response.json();
