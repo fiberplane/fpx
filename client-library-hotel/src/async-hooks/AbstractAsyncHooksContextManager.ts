@@ -152,7 +152,7 @@ export abstract class AbstractAsyncHooksContextManager
    * @param ee EventEmitter instance
    * @param original reference to the patched method
    */
-// biome-ignore lint/complexity/noBannedTypes: this is from the original code
+  // biome-ignore lint/complexity/noBannedTypes: this is from the original code
   private _patchRemoveAllListeners(ee: EventEmitter, original: Function) {
     const contextManager = this;
     return function (this: never, event: string) {
