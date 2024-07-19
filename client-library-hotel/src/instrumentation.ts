@@ -5,22 +5,20 @@ import {
   BasicTracerProvider,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
-import {
-  SEMATTRS_HTTP_METHOD,
-  SEMATTRS_HTTP_URL,
-  SEMRESATTRS_SERVICE_NAME,
-} from "@opentelemetry/semantic-conventions";
+import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext, Hono } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
+import type { GlobalResponse } from "./types";
+import { getRequestAttributes, getResponseAttributes } from "./utils";
 
-type FpxEnv = {
-  FPX_ENDPOINT: string;
-  FPX_SERVICE_NAME?: string;
-};
+// type FpxEnv = {
+//   FPX_ENDPOINT: string;
+//   FPX_SERVICE_NAME?: string;
+// };
 
 type FpxConfig = {
   monitor: {
@@ -62,6 +60,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (prop === "fetch" && typeof value === "function") {
+        const originalFetch = value as Hono["fetch"];
         return async function fetch(
           request: Request,
           env: unknown,
@@ -74,8 +73,13 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const isEnabled = !!endpoint;
 
           if (!isEnabled) {
-            return await value(request, env, executionCtx);
+            console.log("not enabled");
+            return await originalFetch(request, env, executionCtx);
           }
+
+          const serviceName =
+            (env as Record<string, string | null>).FPX_SERVICE_NAME ??
+            "unknown";
 
           // Patch the related functions to monitor
           const {
@@ -84,9 +88,6 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           monitorLogging && patchConsole();
           monitorFetch && patchFetch();
 
-          const serviceName =
-            (env as Record<string, string | null>).FPX_SERVICE_NAME ??
-            "unknown";
           const provider = setupTracerProvider({
             serviceName,
             endpoint,
@@ -98,11 +99,27 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const proxyExecutionCtx = patched?.proxyContext ?? executionCtx;
 
           const next = measure("route", async () => {
-            trace.getActiveSpan()?.setAttributes({
-              [SEMATTRS_HTTP_URL]: request.url,
-              [SEMATTRS_HTTP_METHOD]: request.method,
-            });
-            return await value(request, env, proxyExecutionCtx);
+            // trace.getActiveSpan()?.setAttributes({
+            //   [SEMATTRS_HTTP_URL]: request.url,
+            //   [SEMATTRS_HTTP_METHOD]: request.method,
+            //     [FPX_REQUEST_HEADERS_FULL]: serializeHeaders(
+            //       new Headers(request.headers),
+            //     ),
+            // });
+            trace
+              .getActiveSpan()
+              ?.setAttributes(getRequestAttributes(request, undefined));
+            const result = await originalFetch(request, env, proxyExecutionCtx);
+            const activeSpan = trace.getActiveSpan();
+            if (activeSpan) {
+              // Ssh TypeScript! It's confusing to have so many Response types from so many
+              // different places/packages
+              const attributes = await getResponseAttributes(
+                (result as unknown as GlobalResponse).clone(),
+              );
+              activeSpan.setAttributes(attributes);
+            }
+            return result;
           });
 
           const result = await next();
