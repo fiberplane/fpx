@@ -20,7 +20,7 @@ Install middleware
 npm i @fiberplane/hono
 ```
 
-Add middleware
+Add middleware to your project
 
 ```ts
 import { Hono } from "hono";
@@ -37,7 +37,7 @@ app.get("/", (c) => {
 export default app;
 ```
 
-Launch UI
+Launch the FPX Studio UI
 
 ```sh
 npx @fiberplane/studio
@@ -76,25 +76,22 @@ Add the `@fiberplane/hono` import, and then add middleware definitions **AT THE 
 If you only just started your project, you can copy paste the entire contents below into your `src/index.ts`:
 
 ```ts
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 import { createHonoMiddleware } from "@fiberplane/hono";
 
 const app = new Hono();
 
-const createConfig = (c: Context) => {
- return {
-  endpoint: c.env?.FPX_ENDPOINT,
-  service: c.env?.FPX_SERVICE_NAME || "unknown",
-  libraryDebugMode: c.env?.LIBRARY_DEBUG_MODE,
+const fpxConfig = {
+  libraryDebugMode: false, // By default, do not print noisy debug logs
   monitor: {
-   fetch: true, // set to false if you do not want to monkey-path fetch and send data about external network requests to FPX
-   logging: true, // not yet implemented!
-   requests: true, // set to false if you do not want to log data about each request and response to FPX
+    // This example would turn off auto-logging of fetch requests to FPX
+    fetch: false,
+    // This example keeps the default behavior of logging all requests to FPX
+    requests: true,
   },
- };
 }
 
-app.use(createHonoMiddleware(app, { createConfig }))
+app.use(createHonoMiddleware(app, fpxConfig))
 app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
@@ -102,31 +99,42 @@ app.get("/", (c) => {
 export default app;
 ```
 
-### Add `FPX_ENDPOINT` environment variable
 
-Add `FPX_ENDPOINT=http://localhost:8788/v0/logs` to your `.dev.vars` file. E.g.,
+### Launch the FPX UI
+
+You only need one command:
+
+```sh
+npx @fiberplane/studio
+```
+
+When you first run `npx @fiberplane/studio`, you'll be taken through a few initalization steps.
+
+Visit the link to studio that's printed in your UI, and that's it! You should see your logs in the FPX UI.
+
+Your configuration will be saved for the future.
+
+If you ever want to change your configuration, you can do so by running `npx @fiberplane/studio` again, with the appropriate environment variables set:
+
+```sh
+# Launch the FPX Studio UI on a different port
+FPX_PORT=8789 npx @fiberplane/studio
+
+# Point the FPX Studio UI to your service, in order to autodetect its routes
+FPX_SERVICE_TARGET=http://localhost:1234 npx @fiberplane/studio
+```
+
+### The `FPX_ENDPOINT` environment variable
+
+The `FPX_ENDPOINT` environment variable controls where the FPX client library sends telemetry data.
+
+If it is not defined, the middleware will do nothing. This means you can safely deploy your Hono app to any cloud environment, and by default, it will not send telemetry data.
+
+The cli should help you initialize your project correctly, but if you want to connect your api to FPX Studio manually, you can add or modify this variable with, e.g., `FPX_ENDPOINT=http://localhost:8788/v0/logs` in your environment variable file.
 
 ```sh
 echo -e '\nFPX_ENDPOINT=http://localhost:8788/v0/logs\n' >> .dev.vars
 ```
-
-You should be good to go! Just execute `npm run dev` to kick off your new Hono project..
-
-Make requests to your Hono app, and the logs should show up in the FPX UI!
-
-### Launch the FPX UI
-
-```sh
-npx @fiberplane/studio
-
-# Launch the UI on a different port
-FPX_PORT=8789 npx @fiberplane/studio
-
-# Point the UI to your service, to autodetect its routes
-FPX_SERVICE_TARGET=http://localhost:1234 npx @fiberplane/studio
-```
-
-That's it! You should see your logs in the FPX UI.
 
 ## Local Development
 

@@ -1,3 +1,3 @@
-export { useAi } from "./ai";
-export { TestingPersonaMenu } from "./TestingPersonaMenu";
+export { useAi, FRIENDLY, HOSTILE, type AiTestingPersona } from "./ai";
 export { useSummarizeError } from "./summarize-traces";
+export { AiTestGeneration } from "./AiTestGeneration";

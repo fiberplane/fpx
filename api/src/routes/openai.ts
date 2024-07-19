@@ -3,155 +3,69 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
+import { generateRequestWithOpenAI } from "../lib/ai/openai.js";
+import { cleanPrompt } from "../lib/ai/prompts.js";
 import type { Bindings, Variables } from "../lib/types.js";
-
-const FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
-  You are a code debugging assistant for apps that use Hono (web framework), 
-  Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
-  You need to help craft a request to route handlers. 
-  You will be provided the source code for handlers, and you should generate
-  query parameters and a request body that will test the request.
-
-  Be clever and creative with test data. Avoid just writing things like "test".
-
-  For example, if you get a route like \`/users/:id\`, you should return a URL like:
-  \`/users/1234567890\` and a pathParams parameter like this:
-
-  { "pathParams": { "key": ":id", "value": "1234567890" } }
-
-  Use the tool "make_request". Always respond in valid JSON.
-`);
-
-const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
-  You are an expert QA Engineer and code debugging assistant for apps that use Hono (web framework), 
-  Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
-
-  You need to help craft a request to route handlers. 
-  You will be provided the source code for handlers, and you should generate
-  query parameters and a request body that will test the request.
-
-  Be clever and creative with test data. Avoid just writing things like "test".
-
-  For example, if you get a route like \`/users/:id\`, you should return a URL like:
-  \`/users/1234567890\` and a pathParams parameter like this:
-
-  { "pathParams": { "key": ":id", "value": "1234567890" } }
-
-  You should focus on trying to break things. You are a QA. 
-  You are the enemy of bugs. To protect quality, you must find bugs.
-  Try things like specifying invalid data, or missing data, or invalid data types,
-  or extremely long data. Try to break the system.
-
-  Use the tool "make_request". Always respond in valid JSON.
-`);
+import { getOpenAiConfig } from "./settings.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.post("/v0/generate-request", cors(), async (ctx) => {
   const { handler, method, path, history, persona } = await ctx.req.json();
 
-  const openaiClient = new OpenAI({
-    apiKey: ctx.env.OPENAI_API_KEY,
-  });
+  const db = ctx.get("db");
+  const openaiConfig = await getOpenAiConfig(db);
 
-  const response = await openaiClient.chat.completions.create({
-    // NOTE - This model should guarantee function calling to have json output
-    model: "gpt-4o",
-    // NOTE - We can restrict the response to be from this single tool call
-    tool_choice: { type: "function", function: { name: "make_request" } },
-    // Define the make_request tool
-    tools: [
+  if (!openaiConfig) {
+    return ctx.json(
       {
-        type: "function" as const,
-        function: {
-          name: "make_request",
-          description:
-            "Generates some random data for a request to the backend",
-          // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
-          parameters: {
-            type: "object",
-            properties: {
-              path: {
-                type: "string",
-              },
-              pathParams: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    key: {
-                      type: "string",
-                    },
-                    value: {
-                      type: "string",
-                    },
-                  },
-                },
-              },
-              queryParams: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    key: {
-                      type: "string",
-                    },
-                    value: {
-                      type: "string",
-                    },
-                  },
-                },
-              },
-              body: {
-                type: "string",
-              },
-            },
-            // TODO - Mark fields like `pathParams` as required based on the route definition?
-            required: ["path"],
-          },
-        },
+        message: "No OpenAI configuration found",
       },
-    ],
-    messages: [
+      403,
+    );
+  }
+  if (!openaiConfig.openaiApiKey) {
+    return ctx.json(
       {
-        role: "system",
-        content:
-          persona === "QA"
-            ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
-            : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
+        message: "OpenAI API key required",
       },
+      403,
+    );
+  }
+  if (!openaiConfig.openaiModel) {
+    return ctx.json(
       {
-        role: "user",
-        content: cleanPrompt(`
-            I need to make a request to one of my Hono api handlers.
-
-            Here are some recent requests/responses, which you can use as inspiration for future requests.
-            ${persona !== "QA" ? "E.g., if we recently created a resource, you can look that resource up." : ""}
-
-            <history>
-            ${history?.join("\n") ?? "NO HISTORY"}
-            </history>
-
-            The request you make should be a ${method} request to route: ${path}
-
-            Here is the code for the handler:
-            ${handler}
-
-            ${persona === "QA" ? "REMEMBER YOU ARE A QA. DELIBERATELY TRY TO MISUSE THE API." : ""}
-          `),
+        message: "OpenAI model not specified",
       },
-    ],
-    temperature: 0.18,
-    max_tokens: 4096,
-  });
+      422,
+    );
+  }
+  const { openaiApiKey, openaiModel } = openaiConfig;
 
-  const {
-    choices: [{ message }],
-  } = response;
+  const { data: parsedArgs, error: generateError } =
+    await generateRequestWithOpenAI({
+      apiKey: openaiApiKey,
+      model: openaiModel,
+      persona,
+      method,
+      path,
+      handler,
+      history,
+    }).then(
+      (parsedArgs) => {
+        return { data: parsedArgs, error: null };
+      },
+      (error) => {
+        if (error instanceof Error) {
+          return { data: null, error: { message: error.message } };
+        }
+        return { data: null, error: { message: "Unknown error" } };
+      },
+    );
 
-  const makeRequestCall = message.tool_calls?.[0];
-  const toolArgs = makeRequestCall?.function?.arguments;
-  const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
+  if (generateError) {
+    return ctx.json({ message: generateError.message }, 500);
+  }
 
   return ctx.json({
     request: parsedArgs,
@@ -168,12 +82,22 @@ app.post(
   async (ctx) => {
     const { handlerSourceCode, errorMessage } = ctx.req.valid("json");
 
+    const db = ctx.get("db");
+    const openaiConfig = await getOpenAiConfig(db);
+    if (!openaiConfig) {
+      return ctx.json(
+        {
+          error: "No OpenAI configuration found",
+        },
+        403,
+      );
+    }
+    const { openaiApiKey, openaiModel } = openaiConfig;
     const openaiClient = new OpenAI({
-      apiKey: ctx.env.OPENAI_API_KEY,
+      apiKey: openaiApiKey,
     });
-
     const response = await openaiClient.chat.completions.create({
-      model: "gpt-4o",
+      model: openaiModel,
       messages: [
         {
           role: "system",
@@ -209,20 +133,30 @@ app.post(
 );
 
 /**
- * Used in AI Builders Demo
+ * NOT YET IN USE IN THE UI. Originally developed for the AI builders demo.
  *
  * Takes in an fpx trace and tries to make sense of what happened when a route was invoked.
  */
 app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
   const { handlerSourceCode, trace } = await ctx.req.json();
   const traceId = ctx.req.param("traceId");
-
+  const db = ctx.get("db");
+  const openaiConfig = await getOpenAiConfig(db);
+  if (!openaiConfig) {
+    return ctx.json(
+      {
+        error: "No OpenAI configuration found",
+      },
+      403,
+    );
+  }
+  const { openaiApiKey, openaiModel } = openaiConfig;
   const openaiClient = new OpenAI({
-    apiKey: ctx.env.OPENAI_API_KEY,
+    apiKey: openaiApiKey,
   });
 
   const response = await openaiClient.chat.completions.create({
-    model: "gpt-4o",
+    model: openaiModel,
     messages: [
       {
         role: "system",
@@ -255,7 +189,7 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
       },
     ],
     temperature: 0,
-    max_tokens: 2048,
+    max_tokens: 4096,
   });
 
   const {
@@ -269,11 +203,3 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
 });
 
 export default app;
-
-function cleanPrompt(prompt: string) {
-  return prompt
-    .trim()
-    .split("\n")
-    .map((l) => l.trim())
-    .join("\n");
-}

@@ -1,5 +1,7 @@
 ## Running fpx
 
+To run this project locally, follow these commands:
+
 ```sh
 npm install
 npm run db:generate
@@ -8,8 +10,11 @@ npm run db:migrate
 # NOTE - This app runs Hono in a Node.js execution context by default,
 #        Since we need access to the filesystem to do fun stuff
 npm run dev 
-```
 
+# If you want more granular logging locally, you can set the FPX_LOG_LEVEL env var
+# (This will also be read from .dev.vars)
+FPX_LOG_LEVEL=debug npm run dev
+```
 
 ### Adding some AI
 
@@ -19,7 +24,7 @@ npm run dev
 
 ## Publishing
 
-### Testing npx command locally
+### Testing the npx command locally
 
 ```sh
 # From the fpx PROJECT ROOT!

@@ -2,13 +2,13 @@ use crate::data::Store;
 use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
 use axum::extract::FromRef;
-use axum::routing::{any, get};
+use axum::routing::{any, get, post};
 use http::StatusCode;
 use std::path::PathBuf;
 use url::Url;
 
 pub mod client;
-mod errors;
+pub mod errors;
 pub mod handlers;
 mod studio;
 mod ws;
@@ -91,6 +91,7 @@ fn api_router(
             "/requests/:id",
             get(handlers::request_get_handler).delete(handlers::request_delete_handler),
         )
+        .route("/requestor", post(handlers::execute_requestor))
         .route(
             "/inspectors",
             get(handlers::inspector_list_handler).post(handlers::inspector_create_handler),

@@ -8,9 +8,11 @@ import {
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
 } from "@/queries";
+import { truncateWithEllipsis } from "@/utils";
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TocItem } from "./RequestDetailsPage";
+import { minimapId } from "./minimapId";
 import { RequestMethod } from "./shared";
 
 export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
@@ -23,45 +25,47 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
     }
     return trace.logs
       .map((log) => {
+        const id = minimapId(log);
         const { message } = log;
+
         if (isMizuRequestStartMessage(message)) {
           return {
-            id: `request-${message.method}-${message.path}-${log.id}`,
+            id,
             title: "Request",
             method: message.method,
           };
         }
         if (isMizuRequestEndMessage(message)) {
           return {
-            id: `response-${message.status}-${message.path}-${log.id}`,
+            id,
             title: "Response",
             status: message.status,
           };
         }
         if (isMizuFetchStartMessage(message)) {
           return {
-            id: `fetch-request-${message.method}-${message.url}-${log.id}`,
+            id,
             title: "Fetch Request",
             method: message.method,
           };
         }
         if (isMizuFetchEndMessage(message)) {
           return {
-            id: `fetch-response-${message.status}-${message.url}-${log.id}`,
+            id,
             title: "Fetch Response",
             status: message.status,
           };
         }
         if (isMizuFetchErrorMessage(message)) {
           return {
-            id: `fetch-response-error-${message.status}-${message.url}-${log.id}`,
+            id,
             title: "Fetch Response Error",
             status: message.status,
           };
         }
         if (isMizuFetchLoggingErrorMessage(message)) {
           return {
-            id: `fetch-request-error-${message.url}-${log.id}`,
+            id,
             title: "Fetch Request Failed",
           };
         }
@@ -70,9 +74,22 @@ export function Minimap({ trace }: { trace: MizuTrace | undefined }) {
           typeof message === "object" &&
           ("level" in log || "name" in message)
         ) {
+          const levelForTitle = log.level === "info" ? "log" : log.level;
+          const messageForTitle =
+            typeof message.message === "string"
+              ? message.message
+              : JSON.stringify(message.message);
           return {
-            id: `log-${log.level}-${message.name}-${log.id}`,
-            title: `console.${log.level ? log.level : "error"}: ${message.message}`,
+            id,
+            title: `console.${levelForTitle || "log"}: ${truncateWithEllipsis(messageForTitle, 30)}`,
+          };
+        }
+        if (message && typeof message === "string" && "level" in log) {
+          const levelForTitle = log.level === "info" ? "log" : log.level;
+
+          return {
+            id,
+            title: `console.${levelForTitle || "log"}: ${truncateWithEllipsis(message, 30)}`,
           };
         }
       })

@@ -3,9 +3,14 @@ import { useRequestDetails } from "@/hooks";
 import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Status } from "@/components/ui/status";
-import { useKeySequence } from "@/hooks";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   MizuLog,
   MizuRequestEnd,
@@ -24,6 +29,7 @@ import {
 } from "@/queries/types";
 import { cn } from "@/utils";
 import { useEffect, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { z } from "zod";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 import { FetchRequestLog } from "./FetchRequestLog";
@@ -84,7 +90,7 @@ export function RequestDetailsPage() {
     };
   }, []);
 
-  useKeySequence(["Escape"], () => {
+  useHotkeys(["Escape"], () => {
     // catch all the cases where the user is in the input field
     // and we don't want to exit the page
     if (isInputFocused) {
@@ -96,6 +102,14 @@ export function RequestDetailsPage() {
     }
 
     navigate("/requests");
+  });
+
+  useHotkeys(["J"], () => {
+    handleNextTrace();
+  });
+
+  useHotkeys(["K"], () => {
+    handlePrevTrace();
   });
 
   return (
@@ -120,22 +134,44 @@ export function RequestDetailsPage() {
       >
         <h2 className="text-2xl font-semibold">Request Details</h2>
         <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="icon"
-            disabled={currIdx === 0}
-            onClick={handlePrevTrace}
-          >
-            <ChevronUpIcon className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="icon"
-            disabled={!traces || currIdx === traces?.length - 1}
-            onClick={handleNextTrace}
-          >
-            <ChevronDownIcon className="w-4 h-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                disabled={currIdx === 0}
+                onClick={handlePrevTrace}
+              >
+                <ChevronUpIcon className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="left"
+              className="bg-slate-950 text-white"
+              align="center"
+            >
+              Prev <KeyboardShortcutKey>K</KeyboardShortcutKey>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                disabled={!traces || currIdx === traces?.length - 1}
+                onClick={handleNextTrace}
+              >
+                <ChevronDownIcon className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="bg-slate-950 text-white"
+              align="center"
+            >
+              Next <KeyboardShortcutKey>J</KeyboardShortcutKey>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
       <div
@@ -287,12 +323,17 @@ const LifecycleSchema = z
   .optional();
 
 const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
+
 export type LogLevel = z.infer<typeof LogLevelSchema>;
+
+const isLogLevel = (level: unknown): level is LogLevel => {
+  return LogLevelSchema.safeParse(level).success;
+};
 
 function LogDetails({ log }: { log: MizuLog }) {
   const { message } = log;
 
-  const level = log?.level ?? LogLevelSchema.parse(log.level);
+  const level = isLogLevel(log.level) ? log.level : "info";
 
   const lifecycle =
     message &&
@@ -352,5 +393,12 @@ function LogDetails({ log }: { log: MizuLog }) {
     }
   }
 
-  return <LogLog message={message} level={level as LogLevel} />; // TODO: figure out why Zod doesn't parse this into a string tagged union
+  return (
+    <LogLog
+      message={message}
+      level={level}
+      args={log.args}
+      logId={String(log.id)}
+    />
+  );
 }

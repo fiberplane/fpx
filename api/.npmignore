@@ -27,11 +27,17 @@ bun.lockb
 # mac
 .DS_Store
 
-# db
+# dbs
 mizu.db
-
-# old neon config - can remove after merging https://github.com/fiberplane/fpx/pull/9
-.neon
+mizu.db*
+mizu*.db
+fpx.db
+fpx.db*
+fpx*.db
+.fpxconfig
+.fpxconfig/*
+.fpx
+.fpx/*
 
 # Rust targets
 **/target
@@ -62,6 +68,8 @@ yarn-error.log
 .parcel-cache*
 .nx/cache
 *.tsbuildinfo
+
+.git/*
 
 # Personal files
 mizu.boots.code-workspace

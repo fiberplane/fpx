@@ -34,3 +34,12 @@ where
         self.sender.subscribe()
     }
 }
+
+impl<M> Default for Events<M>
+where
+    M: Clone,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}

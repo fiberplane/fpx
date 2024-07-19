@@ -1,7 +1,9 @@
 use std::{fs::File, io::Write, path::Path};
 
 use anyhow::Result;
-use fpx::models::{ClientMessage, Request, RequestAdded, ServerMessage};
+use fpx::models::{
+    ClientMessage, Request, RequestAdded, RequestorError, RequestorRequestPayload, ServerMessage,
+};
 use schemars::{schema::RootSchema, schema_for};
 use serde_json::Value;
 
@@ -19,6 +21,8 @@ pub async fn handle_command(args: Args) -> Result<()> {
         schema_for!(ClientMessage),
         schema_for!(Request),
         schema_for!(RequestAdded),
+        schema_for!(RequestorError),
+        schema_for!(RequestorRequestPayload),
         schema_for!(ServerMessage),
     ]);
 
@@ -56,7 +60,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
     Ok(())
 }
 
-fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Result<Vec<u8>> {
+fn generate_zod_schemas(npx_directory: &str, schemas: &[RootSchema]) -> Result<Vec<u8>> {
     println!("Generating types & schemas:");
     let mut zod_schemas: Vec<String> = Vec::from([String::from(
         "// ================================================= //
@@ -67,7 +71,7 @@ fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Re
 
     for (index, schema) in schemas.iter().enumerate() {
         // Parse the json schema as JSON and get the schema title
-        let schema_json = serde_json::to_value(&schema)?;
+        let schema_json = serde_json::to_value(schema)?;
 
         if let Some(title) = schema_json.get("title").and_then(Value::as_str) {
             let schema_name = format!("{}Schema", title);
@@ -83,7 +87,7 @@ fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Re
                     "-i",
                     &schema_string,
                 ])
-                .current_dir(npx_directory.clone())
+                .current_dir(npx_directory)
                 .output()?;
 
             if output.status.success() {
@@ -95,7 +99,7 @@ fn generate_zod_schemas(npx_directory: &String, schemas: &Vec<RootSchema>) -> Re
                     // strip the zod imports for every schema after the first one, so we have a
                     // single zod import
                     output
-                        .splitn(3, "\n")
+                        .splitn(3, '\n')
                         .skip(2)
                         .map(|s| s.trim())
                         .collect::<Vec<&str>>()

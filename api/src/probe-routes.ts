@@ -1,11 +1,79 @@
+import fs from "node:fs";
+import { getIgnoredPaths, shouldIgnoreFile } from "./lib/utils.js";
+import logger from "./logger.js";
+
+let debounceTimeout: NodeJS.Timeout | null = null;
+
+// biome-ignore lint/suspicious/noExplicitAny: Trust me, this is easier
+function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
+  // biome-ignore lint/suspicious/noExplicitAny: Trust me, this is easier
+  return (...args: any[]) => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    debounceTimeout = setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
+}
+
+/**
+ * Since we are calling the route probe inside a file watcher, we should implement
+ * debouncing to avoid spamming the service with requests.
+ *
+ * HACK - Since we are monitoring ts files, we need a short delay to let the code
+ *        for the service recompile.
+ */
+const debouncedProbeRoutesWithExponentialBackoff = debounce(
+  probeRoutesWithExponentialBackoff,
+  1500,
+);
+
+export function startRouteProbeWatcher(watchDir: string) {
+  logger.debug("Starting watcher on directory:", watchDir);
+
+  // Fire off an async probe to the service we want to monitor
+  // This will collect information on all routes that the service exposes
+  // Which powers a postman-like UI to ping routes and see responses
+  const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
+  const probeMaxRetries = 10;
+  // Send the initial probe 500ms after startup
+  const initialProbeDelay = 500;
+  // Add 1.5s delay for all successive probes (e.g., after filesystem change of watched project)
+  const probeDelay = 1500;
+
+  debouncedProbeRoutesWithExponentialBackoff(
+    serviceTargetArgument,
+    probeMaxRetries,
+    initialProbeDelay,
+  );
+
+  const ignoredPaths = getIgnoredPaths();
+
+  fs.watch(watchDir, { recursive: true }, async (eventType, filename) => {
+    if (shouldIgnoreFile(filename, ignoredPaths)) {
+      return;
+    }
+
+    logger.debug(`File ${filename} ${eventType}, sending a new probe`);
+
+    debouncedProbeRoutesWithExponentialBackoff(
+      serviceTargetArgument,
+      probeMaxRetries,
+      probeDelay,
+    );
+  });
+}
+
 /**
  * Asynchronously probe the routes of a service with exponential backoff.
  * Makes a request to the service root route with the `X-Fpx-Route-Inspector` header set to `enabled`.
  */
-export async function probeRoutesWithExponentialBackoff(
+async function probeRoutesWithExponentialBackoff(
   serviceArg: string | number | undefined,
   maxRetries: number,
   delay = 1000,
+  maxDelay = 16000,
 ) {
   const serviceUrl = resolveServiceArg(serviceArg);
   let attempt = 0;
@@ -13,23 +81,23 @@ export async function probeRoutesWithExponentialBackoff(
   while (attempt < maxRetries) {
     try {
       await routerProbe(serviceUrl);
-      console.log(`Detected routes for ${serviceUrl} successfully!`);
+      logger.debug(`Detected routes for ${serviceUrl} successfully!`);
       return;
     } catch (error) {
       attempt++;
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      console.error(
-        `Router probe for service ${serviceUrl} failed (attempt ${attempt}):`,
+      logger.debug(
+        `⚠️ Failed to detect routes for api ${serviceUrl}:`,
         errorMessage,
       );
       if (attempt < maxRetries) {
-        const backoffDelay = delay * 2 ** attempt;
-        console.log(`Retrying in ${backoffDelay}ms...`);
+        const backoffDelay = Math.min(delay * 2 ** attempt, maxDelay);
+        logger.debug(`  Retrying in ${backoffDelay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, backoffDelay));
       } else {
-        console.log(
-          "Router probe max retries reached. Giving up. Restart the service to try again.",
+        logger.error(
+          "⚠️ Failed to detect api routes. Giving up! Restart fpx to try again.",
         );
       }
     }
@@ -71,7 +139,7 @@ export function resolveServiceArg(
   }
   const targetPort = Number.parseInt(serviceArg, 10);
   if (!targetPort) {
-    console.error(
+    logger.error(
       `Invalid service argument ${serviceArg}. Using default ${fallback}.`,
     );
     return fallback;
