@@ -17,38 +17,47 @@ import { AsyncLocalStorageContextManager } from "./async-hooks";
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 
-type Config = {
-  endpoint: string;
-  /** Name of service */
-  service: string;
+type FpxEnv = {
+  FPX_ENDPOINT: string;
+  FPX_SERVICE_NAME?: string;
+};
+
+type FpxConfig = {
   monitor: {
-    /** Send data to fpx about each fetch call made during a handler's lifetime */
+    /** Send data to FPX about each fetch call made during a handler's lifetime */
     fetch: boolean;
     // TODO - implement this control/feature
     logging: boolean;
   };
 };
 
-type CreateConfig = (env: Record<string, string>) => Config;
+// TODO - Create helper type for making deeply partial types
+type FpxConfigOptions = Partial<
+  FpxConfig & {
+    monitor: Partial<FpxConfig["monitor"]>;
+  }
+>;
 
-const defaultCreateConfig = (env?: Record<string, string>) => {
-  return {
-    endpoint: env?.FPX_ENDPOINT ?? "http://localhost:4318/v1/traces",
-    service: env?.SERVICE_NAME || "unknown",
-    libraryDebugMode: env?.LIBRARY_DEBUG_MODE,
-    monitor: {
-      fetch: true,
-      logging: true,
-    },
-  } as Config;
+const defaultConfig = {
+  // libraryDebugMode: false,
+  monitor: {
+    fetch: true,
+    logging: true,
+  },
 };
 
-export function instrument(
-  app: Hono,
-  options?: { createConfig?: CreateConfig },
-) {
-  const createConfig = options?.createConfig ?? defaultCreateConfig;
+// // Type hack that makes our middleware types play nicely with Hono types
+// type RouterRoute = {
+//   method: string;
+//   path: string;
+//   // We can't use the type of a handler that's exported by Hono for some reason.
+//   // When we do that, our types end up mismatching with the user's app!
+//   //
+//   // biome-ignore lint/complexity/noBannedTypes:
+//   handler: Function;
+// };
 
+export function instrument(app: Hono, config?: FpxConfigOptions) {
   return new Proxy(app, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
@@ -58,20 +67,30 @@ export function instrument(
           env: unknown,
           executionCtx: ExecutionContext | undefined,
         ) {
-          const config = createConfig(
-            typeof env === "object" ? (env as Record<string, string>) : {},
-          );
+          // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,
+          //        so that people won't accidentally deploy to production with our middleware and
+          //        start sending data to the default url.
+          const endpoint = (env as Record<string, string | null>).FPX_ENDPOINT;
+          const isEnabled = !!endpoint;
 
-          const { fetch, logging } = config.monitor;
-          if (logging) {
-            patchConsole();
+          if (!isEnabled) {
+            return await value(request, env, executionCtx);
           }
 
-          if (fetch) {
-            patchFetch();
-          }
+          // Patch the related functions to monitor
+          const {
+            monitor: { fetch: monitorFetch, logging: monitorLogging },
+          } = mergeConfigs(defaultConfig, config);
+          monitorLogging && patchConsole();
+          monitorFetch && patchFetch();
 
-          const provider = setupTracerProvider(config);
+          const serviceName =
+            (env as Record<string, string | null>).FPX_SERVICE_NAME ??
+            "unknown";
+          const provider = setupTracerProvider({
+            serviceName,
+            endpoint,
+          });
 
           // Enable tracing for waitUntil
           const patched = executionCtx && patchWaitUntil(executionCtx);
@@ -101,20 +120,35 @@ export function instrument(
   });
 }
 
-function setupTracerProvider(config: Config) {
+function setupTracerProvider(options: {
+  serviceName: string;
+  endpoint: string;
+}) {
   const asyncHooksContextManager = new AsyncLocalStorageContextManager();
   asyncHooksContextManager.enable();
   context.setGlobalContextManager(asyncHooksContextManager);
   const provider = new BasicTracerProvider({
     resource: new Resource({
-      [SEMRESATTRS_SERVICE_NAME]: config.service,
+      [SEMRESATTRS_SERVICE_NAME]: options.serviceName,
     }),
   });
 
   const exporter = new OTLPTraceExporter({
-    url: config.endpoint,
+    url: options.endpoint,
   });
   provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
   provider.register();
   return provider;
+}
+
+/**
+ * Last-in-wins deep merge for FpxConfig
+ */
+function mergeConfigs(
+  fallbackConfig: FpxConfig,
+  userConfig?: FpxConfigOptions,
+): FpxConfig {
+  return {
+    monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
+  };
 }
