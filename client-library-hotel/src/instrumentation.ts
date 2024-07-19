@@ -11,7 +11,7 @@ import {
   SEMRESATTRS_SERVICE_NAME,
 } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext, Hono } from "hono";
-// TODO figure out we can use somet
+// TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 
 import { measure } from "./measure";
@@ -19,17 +19,13 @@ import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 
 type Config = {
   endpoint: string;
-  /** Name of service (not in use, but will be helpful later) */
+  /** Name of service */
   service: string;
-  /** Use `libraryDebugMode` to log into the terminal what we are sending to the Mizu server on each request/response */
-  libraryDebugMode?: boolean;
   monitor: {
-    /** Send data to mizu about each fetch call made during a handler's lifetime */
+    /** Send data to fpx about each fetch call made during a handler's lifetime */
     fetch: boolean;
     // TODO - implement this control/feature
     logging: boolean;
-    /** Send data to mizu about each incoming request and outgoing response */
-    requests: boolean;
   };
 };
 
@@ -43,7 +39,6 @@ const defaultCreateConfig = (env?: Record<string, string>) => {
     monitor: {
       fetch: true,
       logging: true,
-      requests: true,
     },
   } as Config;
 };
@@ -53,9 +48,6 @@ export function instrument(
   options?: { createConfig?: CreateConfig },
 ) {
   const createConfig = options?.createConfig ?? defaultCreateConfig;
-
-  patchConsole();
-  patchFetch();
 
   return new Proxy(app, {
     get(target, prop, receiver) {
@@ -69,6 +61,15 @@ export function instrument(
           const config = createConfig(
             typeof env === "object" ? (env as Record<string, string>) : {},
           );
+
+          const { fetch, logging } = config.monitor;
+          if (logging) {
+            patchConsole();
+          }
+
+          if (fetch) {
+            patchFetch();
+          }
 
           const provider = setupTracerProvider(config);
 
