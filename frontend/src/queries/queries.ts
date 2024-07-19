@@ -21,9 +21,11 @@ import {
 export const queryClient = new QueryClient();
 export { QueryClientProvider };
 
+export const MIZU_TRACES_KEY = "mizuTraces";
+
 export function useMizuTraces() {
   return useQuery({
-    queryKey: ["mizuTraces"],
+    queryKey: [MIZU_TRACES_KEY],
     queryFn: fetchMizuTraces,
   });
 }

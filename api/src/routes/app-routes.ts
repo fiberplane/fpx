@@ -15,6 +15,8 @@ import {
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import { errorToJson, generateUUID } from "../lib/utils.js";
+import logger from "../logger.js";
+import { resolveServiceArg } from "../probe-routes.js";
 
 type RequestIdType = schema.AppResponse["requestId"];
 type DbType = LibSQLDatabase<typeof schema>;
@@ -24,7 +26,10 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v0/app-routes", async (ctx) => {
   const db = ctx.get("db");
   const routes = await db.select().from(appRoutes);
-  const baseUrl = env(ctx).FPX_SERVICE_TARGET ?? "http://localhost:8787";
+  const baseUrl = resolveServiceArg(
+    env(ctx).FPX_SERVICE_TARGET as string,
+    "http://localhost:8787",
+  );
   return ctx.json({
     baseUrl,
     routes,
@@ -145,7 +150,7 @@ app.post(
       } = await handleSuccessfulRequest(db, requestId, duration, response);
 
       if (responseTraceId !== traceId) {
-        console.warn(
+        logger.warn(
           `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
         );
       }
@@ -244,7 +249,7 @@ async function handleSuccessfulRequest(
 
 function safeReadTextBody(response: Response) {
   return response.text().catch((error) => {
-    console.error("Failed to parse response body", error);
+    logger.error("Failed to parse response body", error);
     return null;
   });
 }

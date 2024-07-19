@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useKeySequence } from "@/hooks";
 import { isModifierKeyPressed } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import {
@@ -22,6 +21,7 @@ import {
 } from "@tanstack/react-table";
 import { clsx } from "clsx";
 import { useMemo, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import {
   Pagination,
   PaginationContent,
@@ -87,7 +87,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0, //initial page index
-    pageSize: 10, //default page size
+    pageSize: 20, //default page size
   });
 
   const table = useReactTable({
@@ -137,9 +137,9 @@ export function DataTable<TData, TValue>({
     }
   });
 
-  useKeySequence(["j"], handleNextRow);
-  useKeySequence(["k"], handlePrevRow);
-  useKeySequence(["Enter"], handleRowSelect);
+  useHotkeys(["j"], handleNextRow);
+  useHotkeys(["k"], handlePrevRow);
+  useHotkeys(["Enter"], handleRowSelect, { preventDefault: true });
 
   return (
     <div>

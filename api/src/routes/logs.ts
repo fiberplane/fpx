@@ -57,7 +57,6 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
   } = ctx.req.valid("json");
 
   const db = ctx.get("db");
-  const dbErrors = ctx.get("dbErrors");
   const parsedMessage = tryParseJsonObjectMessage(message);
 
   try {
@@ -76,6 +75,22 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
             target: [appRoutes.path, appRoutes.method, appRoutes.handlerType],
             set: { handler: route.handler, currentlyRegistered: true },
           });
+      }
+      // TODO - Detect if anything actually changed before invalidating the query on the frontend
+      //        This is more of an optimization, but is friendlier to the frontend
+      if (routeInspectorHeader) {
+        const wsConnections = ctx.get("wsConnections");
+
+        if (wsConnections) {
+          for (const ws of wsConnections) {
+            ws.send(
+              JSON.stringify({
+                type: "invalidateQueries",
+                payload: ["appRoutes"],
+              }),
+            );
+          }
+        }
       }
     }
 
@@ -100,8 +115,12 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
 
     if (wsConnections) {
       for (const ws of wsConnections) {
-        const message = ["mizuTraces"];
-        ws.send(JSON.stringify(message));
+        ws.send(
+          JSON.stringify({
+            type: "invalidateQueries",
+            payload: ["mizuTraces"],
+          }),
+        );
       }
     }
 
@@ -110,7 +129,6 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
     if (err instanceof Error) {
       console.log("DB ERROR FOR:", { message, parsedMessage });
       console.error(err);
-      dbErrors.push(err);
     }
     return ctx.json({ error: "Error processing log data" }, 500);
   }

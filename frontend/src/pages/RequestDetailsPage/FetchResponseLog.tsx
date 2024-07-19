@@ -2,14 +2,15 @@ import { Status } from "@/components/ui/status";
 import { MizuFetchEnd } from "@/queries/types";
 import { BodyViewer } from "./BodyViewer";
 import { KeyValueTable } from "./KeyValueTable";
+import { minimapId } from "./minimapId";
 import { RequestPath, SectionHeading } from "./shared";
 
 export function FetchResponseLog({
   message,
   logId,
 }: { message: MizuFetchEnd; logId: string }) {
+  const id = minimapId({ message, id: logId, level: "" });
   const { status, headers, body, url } = message;
-  const id = `fetch-response-${status}-${url}-${logId}`;
 
   return (
     <section className="flex flex-col gap-4" id={id}>

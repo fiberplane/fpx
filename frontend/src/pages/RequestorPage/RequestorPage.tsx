@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
-import { MagicWandIcon } from "@radix-ui/react-icons";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -9,7 +7,7 @@ import { useSessionHistory } from "./RequestorSessionHistoryContext";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
-import { TestingPersonaMenu, useAi } from "./ai";
+import { useAi } from "./ai";
 import { useRequestorFormData } from "./data";
 import { usePersistedUiState, useSaveUiState } from "./persistUiState";
 import {
@@ -21,9 +19,16 @@ import {
 import { findMatchedRoute, useReselectRouteHack, useRoutes } from "./routes";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./RequestorPage.css";
+import { useToast } from "@/components/ui/use-toast";
+import { useWebsocketQueryInvalidation } from "@/hooks";
+import { useHotkeys } from "react-hotkeys-hook";
 import { BACKGROUND_LAYER } from "./styles";
 
 export const RequestorPage = () => {
+  // Refresh routes in response to filesystem updates
+  useWebsocketQueryInvalidation();
+
+  const { toast } = useToast();
   const browserHistoryState = usePersistedUiState();
 
   const { routes, addBaseUrl, selectedRoute, setSelectedRoute } =
@@ -109,18 +114,56 @@ export const RequestorPage = () => {
     selectedRoute,
   });
 
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useHotkeys(
+    "mod+enter",
+    () => {
+      if (formRef.current) {
+        formRef.current.requestSubmit();
+      }
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
+  );
+
   const {
     enabled: aiEnabled,
     isLoadingParameters,
     fillInRequest,
     testingPersona,
     setTestingPersona,
+    showAiGeneratedInputsBanner,
+    setShowAiGeneratedInputsBanner,
+    setIgnoreAiInputsBanner,
   } = useAi(selectedRoute, history, {
     setBody,
     setQueryParams,
     setPath,
     setPathParams,
+    setRequestHeaders,
   });
+
+  useHotkeys(
+    "mod+g",
+    (e) => {
+      if (aiEnabled) {
+        // Prevent the "find in document" from opening in browser
+        e.preventDefault();
+        if (!isLoadingParameters) {
+          toast({
+            duration: 3000,
+            description: "Generating request parameters with AI",
+          });
+          fillInRequest();
+        }
+      }
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
+  );
 
   return (
     <div
@@ -165,9 +208,7 @@ export const RequestorPage = () => {
       <div
         className={cn(
           "grid",
-          aiEnabled
-            ? "fpx-requestor-grid-rows--ai-enabled"
-            : "fpx-requestor-grid-rows",
+          "fpx-requestor-grid-rows",
           "gap-2",
           // HACK - This is a workaround to prevent the grid from overflowing on smaller screens
           "h-[calc(100%-0.6rem)]",
@@ -177,23 +218,6 @@ export const RequestorPage = () => {
           "sm:overflow-hidden",
         )}
       >
-        {aiEnabled && (
-          <div className="flex items-center justify-start space-x-0 h-9 pt-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={fillInRequest}
-              disabled={isLoadingParameters}
-            >
-              <MagicWandIcon className="w-4 h-4" />
-            </Button>
-            <TestingPersonaMenu
-              persona={testingPersona}
-              onPersonaChange={setTestingPersona}
-            />
-          </div>
-        )}
-
         <RequestorInput
           addBaseUrl={addBaseUrl}
           method={method}
@@ -202,6 +226,7 @@ export const RequestorPage = () => {
           handlePathInputChange={handlePathInputChange}
           onSubmit={onSubmit}
           isRequestorRequesting={isRequestorRequesting}
+          formRef={formRef}
         />
 
         <div
@@ -229,6 +254,14 @@ export const RequestorPage = () => {
             setPathParams={setPathParams}
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
+            aiEnabled={aiEnabled}
+            isLoadingParameters={isLoadingParameters}
+            fillInRequest={fillInRequest}
+            testingPersona={testingPersona}
+            setTestingPersona={setTestingPersona}
+            showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
+            setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
+            setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
           />
 
           <ResponsePanel

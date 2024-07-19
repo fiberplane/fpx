@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
 import { ProbedRoute, Requestornator } from "../queries";
+import { simplifyHistoryEntry } from "./utils";
 
 const fetchAiRequestData = (
   route: ProbedRoute | null,
@@ -8,15 +9,7 @@ const fetchAiRequestData = (
 ) => {
   // FIXME - type wonkiness
   const { handler, method, path } = route ?? {};
-  const simplifiedHistory = history.map((h) =>
-    [
-      `[Request]`,
-      `${h.app_requests.requestMethod} ${h.app_requests.requestUrl}`,
-      `[Response]`,
-      `Status: ${h.app_responses.responseStatusCode}`,
-      `Body: ${h.app_responses.responseBody}`,
-    ].join("\n***\n"),
-  );
+  const simplifiedHistory = history.map(simplifyHistoryEntry);
   return fetch("/v0/generate-request", {
     headers: {
       "Content-Type": "application/json",
@@ -29,7 +22,13 @@ const fetchAiRequestData = (
       history: simplifiedHistory,
       persona,
     }),
-  }).then((r) => r.json());
+  }).then(async (r) => {
+    if (!r.ok) {
+      const payload = await r.json().catch(() => null);
+      throw new Error(payload?.message || "Failed to generate request data");
+    }
+    return r.json();
+  });
 };
 
 export function useAiRequestData(
@@ -41,5 +40,6 @@ export function useAiRequestData(
     queryKey: ["generateRequest"],
     queryFn: () => fetchAiRequestData(route, history, persona),
     enabled: false,
+    retry: false,
   });
 }

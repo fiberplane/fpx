@@ -1,7 +1,7 @@
 import type React from "react";
 import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
-import FpxIcon from "./fpx.svg";
+import FpxIcon from "./assets/fpx.svg";
 import { cn } from "./utils";
 
 const Branding = () => {
@@ -24,7 +24,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             <div className="flex items-center gap-2 text-sm">
               <HeaderNavLink to="/requestor">Routes</HeaderNavLink>
               <HeaderNavLink to="/requests">Requests</HeaderNavLink>
-              {/* <HeaderNavLink to="/settings">Settings</HeaderNavLink> */}
+              <HeaderNavLink to="/settings">Settings</HeaderNavLink>
               {/* <HeaderNavLink to="/issues">Issues</HeaderNavLink> */}
             </div>
           </div>

@@ -1,5 +1,12 @@
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { isMac } from "@/utils";
 import { TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
@@ -12,6 +19,7 @@ type RequestInputProps = {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
   addBaseUrl: (path: string) => string;
+  formRef: React.RefObject<HTMLFormElement>;
 };
 
 export function RequestorInput({
@@ -22,6 +30,7 @@ export function RequestorInput({
   onSubmit,
   isRequestorRequesting,
   addBaseUrl,
+  formRef,
 }: RequestInputProps) {
   const [value, setValue] = useState("");
 
@@ -35,6 +44,7 @@ export function RequestorInput({
 
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
       className="flex items-center justify-between rounded-md bg-muted border"
     >
@@ -61,15 +71,30 @@ export function RequestorInput({
         />
       </div>
       <div className="flex items-center space-x-2 p-2">
-        <Button
-          size="sm"
-          type="submit"
-          disabled={isRequestorRequesting}
-          className="p-2 md:p-2.5"
-        >
-          <span className="hidden md:inline">Send</span>
-          <TriangleRightIcon className="md:hidden w-6 h-6" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              type="submit"
+              disabled={isRequestorRequesting}
+              className="p-2 md:p-2.5"
+            >
+              <span className="hidden md:inline">Send</span>
+              <TriangleRightIcon className="md:hidden w-6 h-6" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
+            align="center"
+            side="left"
+            sideOffset={16}
+          >
+            <div className="flex gap-0.5">
+              <KeyboardShortcutKey>{isMac ? "⌘" : "Ctrl"}</KeyboardShortcutKey>{" "}
+              <KeyboardShortcutKey>Enter</KeyboardShortcutKey>
+            </div>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </form>
   );

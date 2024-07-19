@@ -21,7 +21,6 @@ import {
   getVSCodeLinkFromError,
   isMizuFetchErrorMessage,
   isMizuFetchLoggingErrorMessage,
-  useHandlerSourceCode,
 } from "@/queries";
 import {
   type CallerLocation,
@@ -29,8 +28,6 @@ import {
   type MizuErrorMessage,
   type MizuLog,
   type MizuMessage,
-  type MizuRequestEnd,
-  type MizuRequestStart,
   type MizuTrace,
   isKnownMizuMessage,
   isMizuErrorMessage,
@@ -83,30 +80,6 @@ function useAiAnalysis(handlerSourceCode: string, errorMessage: string) {
 
   return { response, loading, query };
 }
-
-export const TraceDetails = ({ trace }: { trace: MizuTrace }) => {
-  const request = trace.logs.find((log) =>
-    isMizuRequestStartMessage(log.message),
-  );
-  const response = trace.logs.find((log) =>
-    isMizuRequestEndMessage(log.message),
-  );
-  const source = (request?.message as MizuRequestStart)?.file;
-  const handler = (response?.message as MizuRequestEnd)?.handler;
-  const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
-
-  return (
-    <>
-      {trace.logs.map((log) => (
-        <LogDetails
-          log={log}
-          key={log.id}
-          handlerSourceCode={handlerSourceCode}
-        />
-      ))}
-    </>
-  );
-};
 
 const LogCard = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -437,6 +410,9 @@ const DefaultLogCard = ({ log }: { log: MizuLog }) => {
   const vsCodeLink = useCallerLocation(log.callerLocation ?? null);
   const args =
     typeof log.message === "string" ? log.args : [log.message, ...log.args];
+
+  console.log("hi", log);
+
   return (
     <LogCard>
       <LogDetailsHeader

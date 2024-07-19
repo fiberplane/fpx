@@ -2,6 +2,9 @@ import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
+export { renderFullLogMessage } from "./render-log-message";
+export { truncateWithEllipsis } from "./truncate";
+
 export function formatDate(d: Date | string) {
   return format(new Date(d), "HH:mm:ss.SSS");
 }
@@ -83,4 +86,30 @@ export function isModifierKeyPressed(
     return event.metaKey;
   }
   return event.ctrlKey;
+}
+
+export function redactSensitiveHeaders(
+  headers?: null | Record<string, string>,
+) {
+  if (!headers) {
+    return headers;
+  }
+
+  const sensitiveHeaders = [
+    "authorization",
+    "cookie",
+    "set-cookie",
+    "neon-connection-string",
+  ];
+  const redactedHeaders: Record<string, string> = {};
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (sensitiveHeaders.includes(key.toLowerCase())) {
+      redactedHeaders[key] = "REDACTED";
+    } else {
+      redactedHeaders[key] = value;
+    }
+  }
+
+  return redactedHeaders;
 }
