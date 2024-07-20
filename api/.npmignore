@@ -5,6 +5,12 @@ node_modules
 # do not publish src
 src/*
 
+# do not publish .neon if it exists
+.neon
+
+# do not publish test config
+vitest.config.ts
+
 # do not publish playground scripts that are just useful for testing things
 test-content/*
 scripts/*
