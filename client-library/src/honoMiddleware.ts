@@ -4,16 +4,15 @@ import { createMiddleware } from "hono/factory";
 import { replaceFetch } from "./replace-fetch.js";
 import { RECORDED_CONSOLE_METHODS, log } from "./request-logger.js";
 import {
-  type ExtendedExecutionContext,
   errorToJson,
   extractCallerLocation,
   generateUUID,
-  polyfillWaitUntil,
   shouldIgnoreFpxLog,
   shouldPrettifyFpxLog,
   specialFormatMessage,
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
+  getRuntimeContext,
 } from "./utils.js";
 
 // Type hack that makes our middleware types play nicely with Hono types
@@ -96,36 +95,13 @@ export function createHonoMiddleware<App extends HonoApp>(
 
     const service = env<FpxEnv>(c).FPX_SERVICE_NAME || "unknown";
 
-    const ctx =
-      getRuntimeKey() === "workerd"
-        ? c.executionCtx
-        : {
-            // HACK - In non-Cloudflare environments we need to provide some sort of "waitUntil" implementation
-            //        In the future we may want to have different middleware for different runtimes
-            waitUntil: async (p: Promise<unknown>) => {
-              // NOTE - We need to handle this error so we don't crash the server (like in Deno or Node)
-              try {
-                await p;
-              } catch (_e) {
-                // TODO - Should we log even? Or just fail siliently
-              }
-            },
-          };
+    const executionCtx = getRuntimeContext(c);
 
     if (!app) {
       // Logging here before we patch the console.* methods so we don't cause trouble
       console.log(
         "Hono app was not passed to createHonoMiddleware. Skipping automatic route detection.",
       );
-    }
-
-    // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs
-    //         https://github.com/highlight/highlight/pull/6480
-    // NOTE - This "getRuntimeKey" check is necessary to not throw errors on long-running envs that do not have an executionCtx
-    //        I actually still need to look up when "workerd" is the runtime key!!!
-    if (getRuntimeKey() === "workerd") {
-      // Type coercion is valid here because we know we're in workerd
-      polyfillWaitUntil(ctx as ExtendedExecutionContext);
     }
 
     const teardownFunctions: Array<() => void> = [];
@@ -196,7 +172,7 @@ export function createHonoMiddleware<App extends HonoApp>(
           headers.append("x-Fpx-Route-Inspector", "enabled");
         }
 
-        ctx.waitUntil(
+        executionCtx.waitUntil(
           // Use `originalFetch` to avoid an infinite loop of logging to FPX
           // If we use our monkeyPatched version, then each fetch logs to FPX,
           // which triggers another fetch to log to FPX, etc.
