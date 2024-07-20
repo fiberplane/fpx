@@ -11,6 +11,7 @@ import {
   askUser,
   cliAnswerToBool,
   findInParentDirs,
+  selectClosestPath,
   isPortTaken,
   safeParseJSONFile,
   safeParseTomlFile,
@@ -40,6 +41,10 @@ const CONFIG_FILE_NAME = "fpx.v0.config.json";
 // Paths to relevant project directories and files
 const WRANGLER_TOML_PATH = findInParentDirs("wrangler.toml");
 const PACKAGE_JSON_PATH = findInParentDirs("package.json");
+const DENO_CONFIG_PATH = findInParentDirs([
+  "deno.json",
+  "deno.jsonc",
+]);
 const PROJECT_ROOT_DIR = findProjectRoot();
 
 // Loading some possible configuration from the environment
@@ -260,11 +265,18 @@ function runScript(scriptName) {
 }
 
 /**
- * Looks for the project root by looking first for a `wrangler.toml` file, then a `package.json` file
+ * Looks for the project root by looking first for a `wrangler.toml` file, then a `package.json` file,
+ * then a `deno.json` file or a `deno.jsonc` file.
  * Searches all parent directories up to the root of the filesystem
  */
 function findProjectRoot() {
-  const projectRoot = WRANGLER_TOML_PATH || PACKAGE_JSON_PATH;
+  // HACK - If the user has a rogue package.json way up the filesystem,
+  //        we want to ignore it in favor of, e.g., a closer Wrangler.toml or Deno.json file
+  const projectRoot = selectClosestPath([
+    WRANGLER_TOML_PATH,
+    PACKAGE_JSON_PATH,
+    DENO_CONFIG_PATH,
+  ]);
   if (!projectRoot) {
     return null;
   }
