@@ -150,7 +150,12 @@ async function getFpxPort() {
  * if we can determine the env file to update.
  */
 async function updateEnvFileWithFpxEndpoint(fpxPort) {
-  const expectedFpxEndpoint = `http://localhost:${fpxPort}/v0/logs`;
+  const LOCALHOST_ENDPOINT = `http://localhost:${fpxPort}/v0/logs`;
+  const DOCKER_ENDPOINT = `http://host.docker.internal:${fpxPort}/v0/logs`;
+  const expectedFpxEndpoints = [
+    LOCALHOST_ENDPOINT,
+    DOCKER_ENDPOINT,
+  ];
 
   if (shouldCreateDevVarsFile()) {
     touchDevVarsFile();
@@ -159,7 +164,7 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
   const envFilePath = findEnvVarFile();
   const envFileName = envFilePath && path.basename(envFilePath);
   const fpxEndpoint = envFilePath && getFpxEndpointFromEnvFile(envFilePath);
-  const isDifferent = fpxEndpoint !== expectedFpxEndpoint;
+  const isDifferent = !expectedFpxEndpoints.includes(fpxEndpoint);
 
   // Ask the user if we should update the env file
   // - if an env file exists and the fpx endpoint is missing
@@ -170,7 +175,8 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
     return;
   }
 
-  const envVarLine = `FPX_ENDPOINT=${expectedFpxEndpoint}`;
+  // NOTE - Default to adding a localhost endpoint instead of a docker one
+  const envVarLine = `FPX_ENDPOINT=${LOCALHOST_ENDPOINT}`;
   const lede = !fpxEndpoint
     ? `  ⚠️ ${envFileName} needs to point to a local FPX Studio to work properly`
     : `  ⚠️ ${envFileName} points to a different FPX Studio endpoint`;
