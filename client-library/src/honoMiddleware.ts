@@ -1,4 +1,4 @@
-import { env, getRuntimeKey } from "hono/adapter";
+import { env } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
 
 import { replaceFetch } from "./replace-fetch.js";
@@ -7,12 +7,12 @@ import {
   errorToJson,
   extractCallerLocation,
   generateUUID,
+  getRuntimeContext,
   shouldIgnoreFpxLog,
   shouldPrettifyFpxLog,
   specialFormatMessage,
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
-  getRuntimeContext,
 } from "./utils.js";
 
 // Type hack that makes our middleware types play nicely with Hono types
@@ -185,10 +185,7 @@ export function createHonoMiddleware<App extends HonoApp>(
           }).catch((error) => {
             // NOTE - We handle errors here to avoid crashing the client runtime
             if (libraryDebugMode) {
-              originalConsoleError(
-                "Failed to send telemetry data:",
-                error,
-              );
+              originalConsoleError("Failed to send telemetry data:", error);
             }
           }),
         );

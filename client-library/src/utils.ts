@@ -1,5 +1,5 @@
 import type { NeonDbError } from "@neondatabase/serverless";
-import { Context } from "hono";
+import type { Context } from "hono";
 import { getRuntimeKey } from "hono/adapter";
 
 // HACK - We inject this symbol in our request/response logger in order to skip logging massive payloads
@@ -7,7 +7,7 @@ export const PRETTIFY_FPX_LOGGER_LOG = Symbol("PRETTIFY_FPX_LOGGER_LOG");
 // HACK - We inject this symbol in our request/response logger to avoid infintie loop of logging on fetches
 export const IGNORE_FPX_LOGGER_LOG = Symbol("IGNORE_FPX_LOGGER_LOG");
 
-type WaitUntilable = Pick<ExecutionContext, 'waitUntil'>;
+type WaitUntilable = Pick<ExecutionContext, "waitUntil">;
 
 export type ExtendedExecutionContext = WaitUntilable & {
   __waitUntilTimer?: ReturnType<typeof setInterval>;
@@ -107,7 +107,7 @@ export function neonDbErrorToJson(error: NeonDbError) {
 
 /**
  * Polyfill for `waitUntil` in non-Cloudflare environments
- * 
+ *
  * This will be more important when we support OTEL.
  * See: https://github.com/highlight/highlight/pull/6480
  */
@@ -144,19 +144,19 @@ function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
 }
 
 function isCloudflareRuntime() {
-  return getRuntimeKey() === 'workerd';
+  return getRuntimeKey() === "workerd";
 }
 
 /**
  * Runtime-safe way of accessing `executionCtx`
- * 
+ *
  * At the time of writing, `executionCtx` is not available in all runtimes,
  * and we need to provide a polyfill for non-Cloudflare environments.
  * Otherwise, we get a runtime error in Node, Deno, etc.
- * 
+ *
  * In the future, we should use different middleware for different runtimes.
  */
-export function getRuntimeContext(c: Context, printFn?: PrintFunc): ExtendedExecutionContext {
+export function getRuntimeContext(c: Context): ExtendedExecutionContext {
   if (isCloudflareRuntime()) {
     return c.executionCtx as ExtendedExecutionContext;
   }
