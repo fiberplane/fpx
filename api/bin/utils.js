@@ -82,7 +82,7 @@ export function selectClosestPath(filePaths) {
   paths.sort((a, b) => {
     const aDepth = a.split(path.sep).length;
     const bDepth = b.split(path.sep).length;
-    return aDepth - bDepth;
+    return bDepth - aDepth;
   });
 
   return paths[0];

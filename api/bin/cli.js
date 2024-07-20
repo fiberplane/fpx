@@ -275,8 +275,10 @@ function findProjectRoot() {
     DENO_CONFIG_PATH,
   ]);
   if (!projectRoot) {
+    logger.debug("No project root detected");
     return null;
   }
+  logger.debug("Project root detected:", projectRoot);
   return path.dirname(projectRoot);
 }
 
