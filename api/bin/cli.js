@@ -11,10 +11,10 @@ import {
   askUser,
   cliAnswerToBool,
   findInParentDirs,
-  selectClosestPath,
   isPortTaken,
   safeParseJSONFile,
   safeParseTomlFile,
+  selectClosestPath,
 } from "./utils.js";
 
 // Shim __filename and __dirname since we're using esm
@@ -41,10 +41,7 @@ const CONFIG_FILE_NAME = "fpx.v0.config.json";
 // Paths to relevant project directories and files
 const WRANGLER_TOML_PATH = findInParentDirs("wrangler.toml");
 const PACKAGE_JSON_PATH = findInParentDirs("package.json");
-const DENO_CONFIG_PATH = findInParentDirs([
-  "deno.json",
-  "deno.jsonc",
-]);
+const DENO_CONFIG_PATH = findInParentDirs(["deno.json", "deno.jsonc"]);
 const PROJECT_ROOT_DIR = findProjectRoot();
 
 // Loading some possible configuration from the environment

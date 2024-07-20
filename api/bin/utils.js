@@ -73,7 +73,7 @@ export function findInParentDirs(fileNames) {
  * @returns {string|null} - The closest file path, or null if none found
  */
 export function selectClosestPath(filePaths) {
- const paths = filePaths.filter(Boolean);
+  const paths = filePaths.filter(Boolean);
 
   if (paths.length === 0) {
     return null;
@@ -85,7 +85,7 @@ export function selectClosestPath(filePaths) {
     return aDepth - bDepth;
   });
 
-  return paths[0]
+  return paths[0];
 }
 
 /**
