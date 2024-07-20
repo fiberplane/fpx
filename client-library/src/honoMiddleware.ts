@@ -116,6 +116,8 @@ export function createHonoMiddleware<App extends HonoApp>(
     // NOTE - Take the traceId from headers but then fall back to uuid here
     const traceId = c.req.header("x-fpx-trace-id") || generateUUID();
 
+    const originalConsoleError = console.error;
+
     // We monkeypatch `console.*` methods because it's the only way to send consumable logs locally without setting up an otel colletor
     for (const level of RECORDED_CONSOLE_METHODS) {
       const originalConsoleMethod = console[level];
@@ -180,6 +182,14 @@ export function createHonoMiddleware<App extends HonoApp>(
             method: "POST",
             headers,
             body: JSON.stringify(payload),
+          }).catch((error) => {
+            // NOTE - We handle errors here to avoid crashing the client runtime
+            if (libraryDebugMode) {
+              originalConsoleError(
+                "Failed to send telemetry data:",
+                error,
+              );
+            }
           }),
         );
 

@@ -131,6 +131,11 @@ function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
     };
   }
 
+  // NOTE - We do not make use of this here, but it could be helpful for OTEL
+  //        Highlight uses this in `consumeAndFlush` for errors
+  //        See: sdk/highlight-next/src/util/with-highlight-edge.ts
+  //             In the following PR:
+  //             https://github.com/highlight/highlight/pull/6480/files#diff-5a425baa46cb0362f4f233565c28ad4b43c8fa8274ef38f14f2c56d526b35b23R39
   ctx.waitUntilFinished = async function waitUntilFinished() {
     if (ctx.__waitUntilPromises) {
       await Promise.allSettled(ctx.__waitUntilPromises);
