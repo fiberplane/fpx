@@ -41,6 +41,7 @@ export { PROBED_ROUTES_KEY } from "./app-routes";
 export {
   useMizuTracesV2,
   type MizuTraceV2,
+  type MizuSpan,
   isMizuRootRequestSpan,
   isMizuFetchSpan,
   isMizuOrphanLog,

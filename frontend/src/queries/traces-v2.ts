@@ -129,7 +129,7 @@ const MizuSpanSchema = z.discriminatedUnion("type", [
   MizuFetchSpanSchema,
 ]);
 
-type MizuSpan = z.infer<typeof MizuSpanSchema>;
+export type MizuSpan = z.infer<typeof MizuSpanSchema>;
 
 export const isMizuSpan = (s: unknown): s is MizuSpan => {
   return MizuSpanSchema.safeParse(s).success;

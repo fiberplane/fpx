@@ -1,43 +1,40 @@
-import { formatDistanceToNow } from "date-fns";
-import React from "react";
+import { MizuSpan, MizuTraceV2 } from "@/queries";
+import { formatDistanceStrict } from "date-fns";
+import React, { useMemo } from "react";
 
-interface Span {
-  trace_id: string;
-  span_id: string;
-  parent_span_id?: string;
-  name: string;
-  trace_state: string;
-  flags: number;
-  kind: string;
-  start_time: string; // ISO 8601 format
-  end_time: string; // ISO 8601 format
-  attributes: Record<string, any>;
-  status?: {
-    code: string;
-    message: string;
-  };
-  events: Array<{
-    name: string;
-    timestamp: string; // ISO 8601 format
-    attributes: Record<string, any>;
-  }>;
-  links: Array<{
-    trace_id: string;
-    span_id: string;
-    trace_state: string;
-    attributes: Record<string, any>;
-    flags: number;
-  }>;
-}
+const formatDuration = (start: string, end: string) => {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const durationMs = endDate.getTime() - startDate.getTime();
+  if (durationMs < 1000) {
+    return `${durationMs}ms`;
+  }
 
-interface TraceDetailsTimelineProps {
-  trace: Span[];
-}
+  if (durationMs < 60 * 1000) {
+    return `${(durationMs / 1000).toFixed(1)}s`;
+  }
+
+  const duration = formatDistanceStrict(startDate, endDate, {
+    unit: "minute",
+  });
+
+  return duration
+    .replace(" seconds", "s")
+    .replace(" second", "s")
+    .replace(" minutes", "m")
+    .replace(" minute", "m");
+};
+
+type TraceDetailsTimelineProps = {
+  trace: MizuTraceV2;
+};
 
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "request":
+    case "SERVER":
       return "🔵";
+    case "CLIENT":
     case "fetch":
       return "🔶";
     case "log":
@@ -53,54 +50,80 @@ const getTypeIcon = (type: string) => {
   }
 };
 
-// type NormalizedSpan = Span & {
-//   duration: number;
-// };
+type NormalizedSpan = MizuSpan & {
+  normalized_start_time: number;
+  normalized_end_time: number;
+  normalized_duration: number;
+}
 
-// const normalizeTraceDurations = (trace: Span[]) => {
-//   const maxDuration = Math.max(...trace.map((span) => span.end_time));
-//   return trace.map((span) => ({
-//     ...span,
-//     duration: Math.abs(new Date(span.end_time).getTime() - new Date(span.start_time).getTime()),
-//   }));
-// };
+
+type MizuTraceV2Normalized = MizuTraceV2 & {
+  normalizedSpans: Array<NormalizedSpan>;
+};
+
+const normalizeSpanDurations = (trace: MizuTraceV2): MizuTraceV2Normalized => {
+  const minStart = Math.min(
+    ...trace.spans.map((span) => new Date(span.start_time).getTime()),
+  );
+  const maxEnd = Math.max(
+    ...trace.spans.map((span) => new Date(span.end_time).getTime()),
+  );
+  const normalizedSpans = trace.spans.map((span) => {
+    const startTime = new Date(span.start_time).getTime();
+    const endTime = new Date(span.end_time).getTime();
+    return {
+      ...span,
+      normalized_start_time:
+        (startTime - minStart) / (maxEnd - minStart),
+      normalized_end_time:
+        (endTime - minStart) / (maxEnd - minStart),
+      normalized_duration: (endTime - startTime) / (maxEnd - minStart),
+    };
+  });
+
+  return {
+    ...trace,
+    normalizedSpans,
+  };
+};
 
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   trace,
 }) => {
+  const normalizedTrace = useMemo(() => normalizeSpanDurations(trace), [trace]);
   return (
     <div className="p-4 bg-gray-900 text-white rounded-lg">
       <h3 className="text-lg mb-4">TIMELINE</h3>
       <div className="flex flex-col">
-        {fakeData.map((span) => (
-          <div key={span.span_id} className="flex items-center py-2">
-            <div className="mr-2">{getTypeIcon(span.kind)}</div>
-            <div className="flex flex-col">
-              <div className="font-bold">{span.name}</div>
-              <div className="text-gray-400 flex items-center">
-                <div className="w-32 h-1 bg-blue-500 mx-2"></div>
-                <span>
-                  {formatDistanceToNow(new Date(span.start_time))} -{" "}
-                  {formatDistanceToNow(new Date(span.end_time))}
-                </span>
-              </div>
-            </div>
-            <div className="ml-auto text-gray-400">
-              {Math.abs(
-                new Date(span.end_time).getTime() -
-                  new Date(span.start_time).getTime(),
-              )}{" "}
-              ms
-            </div>
-          </div>
+        {normalizedTrace.normalizedSpans.map((span) => (
+          <NormalizedSpanRow key={span.span_id} span={span} />
         ))}
       </div>
     </div>
   );
 };
 
+const NormalizedSpanRow: React.FC<{ span: NormalizedSpan }> = ({ span }) => {
+  const lineWidth = `${span.normalized_duration * 100}%`;
+  const lineOffset = `${span.normalized_start_time * 100}%`;
+  return (
+    <div key={span.span_id} className="flex items-center py-2">
+      <div className="mr-2">{getTypeIcon(span.kind)}</div>
+      <div className="flex flex-col w-[115px]">
+        <div className="font-bold truncate">{span.name}</div>
+      </div>
+      <div className="text-gray-400 flex flex-grow items-center mx-2">
+        <div className="h-1 min-w-1 bg-blue-500" style={{ width: lineWidth, marginLeft: lineOffset }}></div>
+      </div>
+      <div className="ml-auto text-gray-400 text-xs w-[25px]">
+        {formatDuration(span.start_time, span.end_time)}
+      </div>
+    </div>
+  );
+};
+
 // Fake data for testing
-const fakeData: Span[] = [
+const fakeData: MizuTraceV2[] = [
   {
     trace_id: "1",
     span_id: "1",
