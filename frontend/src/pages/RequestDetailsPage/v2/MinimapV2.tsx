@@ -18,7 +18,6 @@ export function MinimapV2({ trace }: { trace?: MizuTraceV2 }) {
     if (!trace) {
       return [];
     }
-    console.log("waterfallllll", trace.waterfall);
     return trace.waterfall
       .map((log) => {
         const { message } = log;

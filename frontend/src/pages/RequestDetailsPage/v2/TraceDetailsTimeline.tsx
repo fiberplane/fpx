@@ -4,9 +4,15 @@ import {
   MizuOrphanLog,
   MizuSpan,
   MizuTraceV2,
+  isMizuFetchEndMessage,
+  isMizuFetchErrorMessage,
+  isMizuFetchLoggingErrorMessage,
+  isMizuFetchStartMessage,
   isMizuOrphanLog,
+  isMizuRequestEndMessage,
+  isMizuRequestStartMessage,
 } from "@/queries";
-import { cn } from "@/utils";
+import { cn, objectHasName } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, { useMemo } from "react";
 
@@ -103,7 +109,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     [trace],
   );
   return (
-    <div className="p-4 bg-gray-900 text-white rounded-lg">
+    <div className="p-2 text-white rounded-lg lg:h-[calc(100vh-80px)] overflow-y-auto">
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
       <div className="flex flex-col">
         {normalizedTrace.normalizedWaterfall.map((spanOrLog) => (
@@ -133,7 +139,14 @@ const NormalizedWaterfallRow: React.FC<{
   const isRootRequest =
     !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "SERVER";
   return (
-    <div className="flex items-center py-2">
+    <a
+      className={cn(
+        "flex items-center p-2",
+        "border-l border-transparent hover:bg-primary/10 hover:border-blue-400 transition-all",
+        "cursor-pointer",
+      )}
+      href={`#${timelineId(spanOrLog)}`}
+    >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-[115px]">
         {isFetch ? (
@@ -185,9 +198,41 @@ const NormalizedWaterfallRow: React.FC<{
           ? ""
           : formatDuration(spanOrLog.start_time, spanOrLog.end_time)}
       </div>
-    </div>
+    </a>
   );
 };
+
+export function timelineId(logOrSpan: MizuOrphanLog | MizuSpan) {
+  const log = isMizuOrphanLog(logOrSpan) ? logOrSpan : logOrSpan.logs[0];
+  const { message } = log;
+
+  if (isMizuRequestStartMessage(message)) {
+    return `request-${message.method}-${message.path}-${log.id}`;
+  }
+  if (isMizuRequestEndMessage(message)) {
+    return `response-${message.status}-${message.path}-${log.id}`;
+  }
+  if (isMizuFetchStartMessage(message)) {
+    return `fetch-request-${message.method}-${message.url}-${log.id}`;
+  }
+  if (isMizuFetchEndMessage(message)) {
+    return `fetch-response-${message.status}-${message.url}-${log.id}`;
+  }
+  if (isMizuFetchErrorMessage(message)) {
+    return `fetch-response-error-${message.status}-${message.url}-${log.id}`;
+  }
+  if (isMizuFetchLoggingErrorMessage(message)) {
+    return `fetch-request-error-${message.url}-${log.id}`;
+  }
+
+  const name = objectHasName(message) ? message.name : null;
+
+  const levelWithDefensiveFallback = log.level || "info";
+
+  const id = `log-${levelWithDefensiveFallback}-${name}-${log.id}`;
+
+  return id;
+}
 
 const formatDuration = (start: string, end: string) => {
   const startDate = new Date(start);

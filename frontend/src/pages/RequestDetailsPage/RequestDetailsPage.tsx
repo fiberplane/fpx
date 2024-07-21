@@ -197,7 +197,7 @@ export function RequestDetailsPage() {
                   "min-w-[300px]",
                   "xl:min-w-[360px]",
                   "2xl:min-w-[420px]",
-                  "lg:block",
+                  "lg:block lg:sticky lg:top-4 self-start",
                 )
               : cn(
                   "hidden sm:block sm:sticky sm:top-4 self-start",
@@ -427,6 +427,7 @@ function LogDetails({ log }: { log: MizuLog }) {
     }
   }
 
+  console.log("rendering log log", log.id, log);
   return (
     <LogLog
       message={message}
