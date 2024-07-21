@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-const OtelAttributesSchema = z.record(z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]));
+const OtelAttributesSchema = z.record(
+  z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]),
+);
+
+export type OtelAttributes = z.infer<typeof OtelAttributesSchema>;
 
 const OtelStatusSchema = z.object({
   code: z.string(),
@@ -28,7 +32,7 @@ export const OtelSpanSchema = z.object({
       name: z.string(),
       timestamp: z.string(), // ISO 8601 format
       attributes: OtelAttributesSchema,
-    })
+    }),
   ),
 
   // Links to related traces, etc
@@ -39,6 +43,6 @@ export const OtelSpanSchema = z.object({
       trace_state: z.string(),
       attributes: OtelAttributesSchema,
       flags: z.number(),
-    })
+    }),
   ),
-})
+});

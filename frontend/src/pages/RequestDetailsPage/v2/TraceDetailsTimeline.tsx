@@ -1,5 +1,5 @@
-import React from "react";
 import { formatDistanceToNow } from "date-fns";
+import React from "react";
 
 interface Span {
   trace_id: string;
@@ -65,7 +65,9 @@ const getTypeIcon = (type: string) => {
 //   }));
 // };
 
-const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({ trace }) => {
+export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
+  trace,
+}) => {
   return (
     <div className="p-4 bg-gray-900 text-white rounded-lg">
       <h3 className="text-lg mb-4">TIMELINE</h3>
@@ -77,11 +79,18 @@ const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({ trace }) =>
               <div className="font-bold">{span.name}</div>
               <div className="text-gray-400 flex items-center">
                 <div className="w-32 h-1 bg-blue-500 mx-2"></div>
-                <span>{formatDistanceToNow(new Date(span.start_time))} - {formatDistanceToNow(new Date(span.end_time))}</span>
+                <span>
+                  {formatDistanceToNow(new Date(span.start_time))} -{" "}
+                  {formatDistanceToNow(new Date(span.end_time))}
+                </span>
               </div>
             </div>
             <div className="ml-auto text-gray-400">
-              {Math.abs(new Date(span.end_time).getTime() - new Date(span.start_time).getTime())} ms
+              {Math.abs(
+                new Date(span.end_time).getTime() -
+                  new Date(span.start_time).getTime(),
+              )}{" "}
+              ms
             </div>
           </div>
         ))}

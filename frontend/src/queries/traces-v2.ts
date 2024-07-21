@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { z } from "zod";
 
 import { useMizuTraces } from "./queries";
+import { OtelAttributes, OtelSpanSchema, OtelStatus } from "./traces-otel";
 import {
   MizuErrorMessageSchema,
   MizuFetchEndSchema,
@@ -19,7 +20,6 @@ import {
   isMizuFetchErrorMessage,
   isMizuFetchLoggingErrorMessage,
 } from "./types";
-import { OtelSpanSchema, OtelStatus } from "./traces-otel";
 
 const MizuRequestStartLogSchema = MizuLogSchema.omit({ message: true }).extend({
   message: MizuRequestStartSchema,
@@ -82,13 +82,12 @@ const MizuRootRequestSpanLogsSchema = z.union([
 ]);
 
 const MizuRootRequestSpanSchema = OtelSpanSchema.extend({
-    // FIRST PASS: This can go away
-    type: z.literal("root-request"),
-    start: z.string(),
-    end: z.string().optional(),
-    logs: MizuRootRequestSpanLogsSchema,
-  })
-  .passthrough();
+  // FIRST PASS: This can go away
+  type: z.literal("root-request"),
+  start: z.string(),
+  end: z.string().optional(),
+  logs: MizuRootRequestSpanLogsSchema,
+}).passthrough();
 
 const MizuFetchSpanLogsSchema = z.union([
   z.tuple([MizuFetchStartLogSchema]),
@@ -103,12 +102,11 @@ const MizuFetchSpanLogsSchema = z.union([
 ]);
 
 const MizuFetchSpanSchema = OtelSpanSchema.extend({
-    type: z.literal("fetch"),
-    start: z.string(),
-    end: z.string().optional(),
-    logs: MizuFetchSpanLogsSchema,
-  })
-  .passthrough();
+  type: z.literal("fetch"),
+  start: z.string(),
+  end: z.string().optional(),
+  logs: MizuFetchSpanLogsSchema,
+}).passthrough();
 
 type MizuFetchSpanLogs = z.infer<typeof MizuFetchSpanLogsSchema>;
 type MizuFetchSpan = z.infer<typeof MizuFetchSpanSchema>;
@@ -230,24 +228,25 @@ function createRootRequestSpan(log: MizuRequestStartLog, logs: MizuLog[]) {
   }
 
   // TODO - Factor this out into a helper
-  const status: OtelStatus = mizuRootResponseLogToOtelStatus(response);
+  const status: OtelStatus = fpxRootResponseLogToOtelStatus(response);
+  const attributes = fpxRootResponseToHttpAttributes(log, response);
 
   const spanLogs: MizuRootRequestSpanLogs = response ? [log, response] : [log];
 
   return {
     trace_id: log.traceId,
     span_id: `${log.traceId}-${log.id}`,
-    parent_span_id: undefined, // TODO
+    parent_span_id: undefined,
     name: "Incoming Request",
-    trace_state: "", // This is for Cross-Vendor Interoperability, allowing vendors to add their own context id
+    trace_state: "", // This is for cross-vendor interop, allowing vendors to add their own context id
     flags: 1, // This means "sample this trace"
     kind: "SERVER", // This means we're tracking a request that came from the outside
     start_time: log.timestamp,
     // HACK - The current data model might not have an outgoing (rare), so just adding this to be thorough
     end_time: response?.timestamp ?? new Date("2029-01-01").toISOString(),
-    // TODO - Add http status codes when we know the right attr names to add
-    attributes: {},
-    // TODO - make it an error if the response is an error!!!
+    // NOTE - Still massaging the attributes, but these should have all the data we need to power the UI
+    attributes,
+    // NOTE - This is the otel status, not an http status
     status,
     // TODO - append any console.logs
     events: [],
@@ -289,9 +288,14 @@ function createFetchSpan(
 
   let spanLogs: MizuFetchSpanLogs;
   let status: OtelStatus;
+  let attributes: OtelAttributes;
   if (responseFatalErrorLog) {
     spanLogs = [fetchStartLog, responseFatalErrorLog];
-    status = mizuFetchResponseLogToOtelStatus(responseFatalErrorLog);
+    status = fpxFetchResponseLogToOtelStatus(responseFatalErrorLog);
+    attributes = fpxFetchResponseToHttpAttributes(
+      fetchStartLog,
+      responseFatalErrorLog,
+    );
   } else if (responseSuccessLog && reponseErrorLog) {
     spanLogs = [
       // HACK - Deals with error on the api side that double logs the error and the success
@@ -299,13 +303,26 @@ function createFetchSpan(
       reponseErrorLog,
       responseSuccessLog,
     ];
-    status = mizuFetchResponseLogToOtelStatus(reponseErrorLog);
+    status = fpxFetchResponseLogToOtelStatus(reponseErrorLog);
+    // HACK - Check if this actually works... should really fix the middleware huh
+    attributes = {
+      ...fpxFetchResponseToHttpAttributes(fetchStartLog, reponseErrorLog),
+      ...fpxFetchResponseToHttpAttributes(fetchStartLog, responseSuccessLog),
+    };
   } else if (responseSuccessLog) {
     spanLogs = [fetchStartLog, responseSuccessLog];
-    status = mizuFetchResponseLogToOtelStatus(responseSuccessLog);
+    status = fpxFetchResponseLogToOtelStatus(responseSuccessLog);
+    attributes = fpxFetchResponseToHttpAttributes(
+      fetchStartLog,
+      responseSuccessLog,
+    );
   } else if (reponseErrorLog) {
     spanLogs = [fetchStartLog, reponseErrorLog];
-    status = mizuFetchResponseLogToOtelStatus(reponseErrorLog);
+    status = fpxFetchResponseLogToOtelStatus(reponseErrorLog);
+    attributes = fpxFetchResponseToHttpAttributes(
+      fetchStartLog,
+      reponseErrorLog,
+    );
   } else {
     console.debug("Something was wrong with the fetch span...", {
       fetchStartLog,
@@ -337,10 +354,10 @@ function createFetchSpan(
     // HACK - The current data model might not have an outgoing, just adding this as a temporary hack
     end_time: end ?? new Date("2029-01-01").toISOString(),
     // TODO - Add http status codes when we know the right attr names to add
-    attributes: {},
+    attributes,
     // TODO - make it an error if the response is an error!!!
     status,
-    // TODO - append any console.logs that happened along the way
+    // TODO - append any errors, etc
     events: [],
     // TODO - not sure how we'll use this
     links: [],
@@ -352,7 +369,7 @@ function createFetchSpan(
   };
 }
 
-function mizuRootResponseLogToOtelStatus(log?: MizuRequestEndLog) {
+function fpxRootResponseLogToOtelStatus(log?: MizuRequestEndLog) {
   if (isMizuRequestEndLog(log)) {
     const statusCode = parseInt(log.message.status);
     if (statusCode && statusCode < 400) {
@@ -365,9 +382,70 @@ function mizuRootResponseLogToOtelStatus(log?: MizuRequestEndLog) {
   return { code: "ERROR", message: "Unknown response status (data not found)" };
 }
 
-function mizuFetchResponseLogToOtelStatus(log?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog) {
+/**
+ * TODO - We need to align with rust collector and fpx middleware on how we will store http request data
+ */
+function fpxRootResponseToHttpAttributes(
+  request: MizuRequestStartLog,
+  response?: MizuRequestEndLog,
+) {
+  const host =
+    request.message.headers.host || request.message.headers["x-forwarded-host"];
+  const scheme = request.message.headers["x-forwarded-proto"] || "http";
+  const path = request.message.path;
+  const queryParams = request.message.query;
+  const url = constructHttpUrlForRootRequest(host, scheme, path, queryParams);
+  let pathWithQueryParams = path;
+  if (queryParams) {
+    pathWithQueryParams += `?${new URLSearchParams(queryParams).toString()}`;
+  }
+  return {
+    "http.method": request.message.method,
+    "http.url": url,
+    // NOTE - This is conventional, to include the query params
+    "http.target": pathWithQueryParams,
+    "http.host": host,
+    "http.scheme": request.message.headers["x-forwarded-proto"] || "http",
+    "http.user_agent": request.message.headers["user-agent"],
+    "http.status_code": response?.message?.status,
+    "http.response_content_length": response?.message?.body?.length ?? 0,
+
+    "fpx.matched_route": response?.message?.route,
+    // HACK - We can't have nested dictionaries, so json stringify here?
+    "fpx.params": JSON.stringify(request.message.params),
+    // HACK - We can't have nested dictionaries, so json stringify here?
+    "fpx.query": JSON.stringify(request.message.query),
+    "fpx.body": request.message.body,
+  };
+}
+
+function constructHttpUrlForRootRequest(
+  host: string,
+  scheme: string,
+  path: string,
+  queryParams?: Record<string, string> | null,
+): string {
+  let url = path;
+  if (host && scheme) {
+    url = `${scheme}://${host}${path}`;
+  }
+  if (queryParams) {
+    const queryString = new URLSearchParams(queryParams).toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+  }
+  return url;
+}
+
+function fpxFetchResponseLogToOtelStatus(
+  log?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog,
+) {
   if (isMizuFetchEndLog(log)) {
-    const statusCode = typeof log.message.status === "number" ? log.message.status : parseInt(log.message.status);
+    const statusCode =
+      typeof log.message.status === "number"
+        ? log.message.status
+        : parseInt(log.message.status);
     if (statusCode >= 400) {
       return { code: "ERROR", message: `HTTP ${statusCode}` };
     }
@@ -380,4 +458,84 @@ function mizuFetchResponseLogToOtelStatus(log?: MizuFetchEndLog | MizuFetchError
     return { code: "ERROR", message: "Fetch logging error" };
   }
   return { code: "ERROR", message: "Unknown response status (data not found)" };
+}
+
+/**
+ * TODO - We need to align with rust collector and fpx middleware on how we will store http request data
+ */
+/**
+ * TODO - We need to align with rust collector and fpx middleware on how we will store http request data
+ */
+function fpxFetchResponseToHttpAttributes(
+  request: MizuFetchStartLog,
+  response?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog,
+) {
+  const parsedUrl = safeParseUrl(request.message.url);
+  const commonAttributes = {
+    "http.method": request.message.method,
+    "http.url": request.message.url,
+    // TODO - (optional) We could also record the request path and query string without the protocol and domain
+    "http.target": request.message.url,
+    "http.host": parsedUrl.host || request.message.headers.host,
+    "http.scheme":
+      parsedUrl.scheme ||
+      request.message.headers["x-forwarded-proto"] ||
+      "http",
+    "http.user_agent": request.message.headers["user-agent"],
+    "net.peer.name": request.message.headers.host,
+    "net.peer.ip":
+      request.message.headers["x-forwarded-for"] ||
+      request.message.headers["remote-addr"],
+    "net.peer.port":
+      request.message.headers["x-forwarded-port"] ||
+      request.message.headers["remote-port"],
+  };
+
+  if (isMizuFetchEndLog(response)) {
+    return {
+      ...commonAttributes,
+      "http.status_code": String(response.message.status),
+      "http.response_content_length": response.message.body?.length ?? 0,
+      // TODO
+      // 'http.flavor': response.message.httpVersion,
+    };
+  }
+
+  if (isMizuFetchErrorLog(response)) {
+    return {
+      ...commonAttributes,
+      "http.status_code": String(response.message.status),
+      "http.response_content_length": response.message.body?.length ?? 0,
+      // TODO
+      // 'http.flavor': response.message.httpVersion,
+    };
+  }
+
+  // NOTE - This is the case where FPX middleware itself had an error somewhere
+  //        It's bad news
+  if (isMizuFetchLoggingErrorLog(response)) {
+    return {
+      ...commonAttributes,
+      // TODO
+      // 'http.flavor': response.message.httpVersion,
+    };
+  }
+
+  return commonAttributes;
+}
+
+function safeParseUrl(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    return {
+      host: parsedUrl.host,
+      scheme: parsedUrl.protocol.replace(":", ""),
+    };
+  } catch (error) {
+    console.error("Invalid URL:", url, error);
+    return {
+      host: "",
+      scheme: "",
+    };
+  }
 }

@@ -41,7 +41,12 @@ import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 import { FpxCard, RequestMethod, SectionHeading } from "./shared";
-import { MinimapV2, SummaryV2, TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
+import {
+  MinimapV2,
+  SummaryV2,
+  TraceDetailsTimeline,
+  TraceDetailsV2,
+} from "./v2";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -212,11 +217,7 @@ export function RequestDetailsPage() {
             <div className="w-full relative" />
           )}
 
-          {
-            shouldRenderV2 ? (
-              <TraceDetailsTimeline trace={traceV2} />
-            ) : null
-          }
+          {shouldRenderV2 ? <TraceDetailsTimeline trace={traceV2} /> : null}
 
           {shouldRenderV2 ? (
             <TraceDetailsV2 trace={traceV2} />
