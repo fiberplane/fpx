@@ -159,7 +159,7 @@ const MizuOrphanLogSchema = MizuLogSchema.omit({ message: true }).extend({
   message: MizuOrphanLogMessageSchema,
 });
 
-type MizuOrphanLog = z.infer<typeof MizuOrphanLogSchema>;
+export type MizuOrphanLog = z.infer<typeof MizuOrphanLogSchema>;
 
 export const isMizuOrphanLog = (log: unknown): log is MizuOrphanLog => {
   return MizuOrphanLogSchema.safeParse(log).success;

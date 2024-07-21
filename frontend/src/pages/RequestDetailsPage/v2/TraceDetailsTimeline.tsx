@@ -1,6 +1,193 @@
-import { MizuSpan, MizuTraceV2 } from "@/queries";
+import Diamond from "@/assets/Diamond.svg";
+import { Badge } from "@/components/ui/badge";
+import {
+  MizuOrphanLog,
+  MizuSpan,
+  MizuTraceV2,
+  isMizuOrphanLog,
+} from "@/queries";
+import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, { useMemo } from "react";
+
+type TraceDetailsTimelineProps = {
+  trace: MizuTraceV2;
+};
+
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case "request":
+    case "SERVER":
+      return "";
+    case "CLIENT":
+    case "fetch":
+      return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
+    case "log":
+      return <Diamond className="w-3.5 h-3.5 text-orange-400" />;
+    case "event":
+      return "🔹";
+    case "db":
+      return "🗄️";
+    case "response":
+      return "🔵";
+    default:
+      return "🔸";
+  }
+};
+
+type NormalizedSpan = MizuSpan & {
+  normalizedStartTime: number;
+  normalizedEndTime: number;
+  normalizedDuration: number;
+};
+
+type NormalizedOrphanLog = MizuOrphanLog & {
+  normalizedTimestamp: number;
+};
+
+type MizuTraceV2Normalized = MizuTraceV2 & {
+  normalizedWaterfall: NormalizedMizuWaterfall;
+};
+
+type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
+
+const normalizeWaterfallTimestamps = (
+  trace: MizuTraceV2,
+): MizuTraceV2Normalized => {
+  const minStart = Math.min(
+    ...trace.spans.map((span) => new Date(span.start_time).getTime()),
+  );
+  const maxEnd = Math.max(
+    ...trace.spans.map((span) => new Date(span.end_time).getTime()),
+  );
+
+  const normalizeSpan = (span: MizuSpan): NormalizedSpan => {
+    const startTime = new Date(span.start_time).getTime();
+    const endTime = new Date(span.end_time).getTime();
+    return {
+      ...span,
+      normalizedStartTime: (startTime - minStart) / (maxEnd - minStart),
+      normalizedEndTime: (endTime - minStart) / (maxEnd - minStart),
+      normalizedDuration: (endTime - startTime) / (maxEnd - minStart),
+    };
+  };
+
+  const normalizeLog = (log: MizuOrphanLog): NormalizedOrphanLog => {
+    const timestamp = new Date(log.timestamp).getTime();
+    return {
+      ...log,
+      normalizedTimestamp: (timestamp - minStart) / (maxEnd - minStart),
+    };
+  };
+
+  const normalizedWaterfall: NormalizedMizuWaterfall = trace.waterfall.map(
+    (spanOrLog) => {
+      if (isMizuOrphanLog(spanOrLog)) {
+        return normalizeLog(spanOrLog);
+      }
+      return normalizeSpan(spanOrLog);
+    },
+  );
+
+  return {
+    ...trace,
+    normalizedWaterfall,
+  };
+};
+
+export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
+  trace,
+}) => {
+  const normalizedTrace = useMemo(
+    () => normalizeWaterfallTimestamps(trace),
+    [trace],
+  );
+  return (
+    <div className="p-4 bg-gray-900 text-white rounded-lg">
+      <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
+      <div className="flex flex-col">
+        {normalizedTrace.normalizedWaterfall.map((spanOrLog) => (
+          <NormalizedWaterfallRow
+            key={isMizuOrphanLog(spanOrLog) ? spanOrLog.id : spanOrLog.span_id}
+            spanOrLog={spanOrLog}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const NormalizedWaterfallRow: React.FC<{
+  spanOrLog: NormalizedSpan | NormalizedOrphanLog;
+}> = ({ spanOrLog }) => {
+  const lineWidth = isMizuOrphanLog(spanOrLog)
+    ? ""
+    : `${spanOrLog.normalizedDuration * 100}%`;
+  const lineOffset = isMizuOrphanLog(spanOrLog)
+    ? `${spanOrLog.normalizedTimestamp * 100}%`
+    : `${spanOrLog.normalizedStartTime * 100}%`;
+  const icon = isMizuOrphanLog(spanOrLog)
+    ? getTypeIcon("log")
+    : getTypeIcon(spanOrLog.kind);
+  const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
+  const isRootRequest =
+    !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "SERVER";
+  return (
+    <div className="flex items-center py-2">
+      <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
+      <div className="flex flex-col w-[115px]">
+        {isFetch ? (
+          <div>
+            <Badge
+              variant="outline"
+              className={cn(
+                "lowercase",
+                "font-normal",
+                "font-mono",
+                "rounded",
+                "px-1.5",
+                "text-xs",
+                "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
+              )}
+            >
+              {spanOrLog.name}
+            </Badge>
+          </div>
+        ) : isRootRequest ? (
+          <div className="font-mono text-sm truncate">{spanOrLog.name}</div>
+        ) : (
+          <div className="font-mono font-normal text-xs truncate text-gray-200">
+            {/* TODO! */}
+            log
+            {/* {spanOrLog.name} */}
+          </div>
+        )}
+      </div>
+      <div className="text-gray-400 flex flex-grow items-center mx-4">
+        {isMizuOrphanLog(spanOrLog) ? (
+          <div
+            className="h-2.5 border-l-2flex items-center min-w-1"
+            style={{ marginLeft: lineOffset }}
+          >
+            <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
+          </div>
+        ) : (
+          <div
+            className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
+            style={{ width: lineWidth, marginLeft: lineOffset }}
+          >
+            <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
+          </div>
+        )}
+      </div>
+      <div className="ml-auto text-gray-400 text-xs w-[25px]">
+        {isMizuOrphanLog(spanOrLog)
+          ? ""
+          : formatDuration(spanOrLog.start_time, spanOrLog.end_time)}
+      </div>
+    </div>
+  );
+};
 
 const formatDuration = (start: string, end: string) => {
   const startDate = new Date(start);
@@ -24,189 +211,3 @@ const formatDuration = (start: string, end: string) => {
     .replace(" minutes", "m")
     .replace(" minute", "m");
 };
-
-type TraceDetailsTimelineProps = {
-  trace: MizuTraceV2;
-};
-
-const getTypeIcon = (type: string) => {
-  switch (type) {
-    case "request":
-    case "SERVER":
-      return "🔵";
-    case "CLIENT":
-    case "fetch":
-      return "🔶";
-    case "log":
-      return "🔸";
-    case "event":
-      return "🔹";
-    case "db":
-      return "🗄️";
-    case "response":
-      return "🔵";
-    default:
-      return "🔸";
-  }
-};
-
-type NormalizedSpan = MizuSpan & {
-  normalized_start_time: number;
-  normalized_end_time: number;
-  normalized_duration: number;
-}
-
-
-type MizuTraceV2Normalized = MizuTraceV2 & {
-  normalizedSpans: Array<NormalizedSpan>;
-};
-
-const normalizeSpanDurations = (trace: MizuTraceV2): MizuTraceV2Normalized => {
-  const minStart = Math.min(
-    ...trace.spans.map((span) => new Date(span.start_time).getTime()),
-  );
-  const maxEnd = Math.max(
-    ...trace.spans.map((span) => new Date(span.end_time).getTime()),
-  );
-  const normalizedSpans = trace.spans.map((span) => {
-    const startTime = new Date(span.start_time).getTime();
-    const endTime = new Date(span.end_time).getTime();
-    return {
-      ...span,
-      normalized_start_time:
-        (startTime - minStart) / (maxEnd - minStart),
-      normalized_end_time:
-        (endTime - minStart) / (maxEnd - minStart),
-      normalized_duration: (endTime - startTime) / (maxEnd - minStart),
-    };
-  });
-
-  return {
-    ...trace,
-    normalizedSpans,
-  };
-};
-
-export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
-  trace,
-}) => {
-  const normalizedTrace = useMemo(() => normalizeSpanDurations(trace), [trace]);
-  return (
-    <div className="p-4 bg-gray-900 text-white rounded-lg">
-      <h3 className="text-lg mb-4">TIMELINE</h3>
-      <div className="flex flex-col">
-        {normalizedTrace.normalizedSpans.map((span) => (
-          <NormalizedSpanRow key={span.span_id} span={span} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const NormalizedSpanRow: React.FC<{ span: NormalizedSpan }> = ({ span }) => {
-  const lineWidth = `${span.normalized_duration * 100}%`;
-  const lineOffset = `${span.normalized_start_time * 100}%`;
-  return (
-    <div key={span.span_id} className="flex items-center py-2">
-      <div className="mr-2">{getTypeIcon(span.kind)}</div>
-      <div className="flex flex-col w-[115px]">
-        <div className="font-bold truncate">{span.name}</div>
-      </div>
-      <div className="text-gray-400 flex flex-grow items-center mx-2">
-        <div className="h-1 min-w-1 bg-blue-500" style={{ width: lineWidth, marginLeft: lineOffset }}></div>
-      </div>
-      <div className="ml-auto text-gray-400 text-xs w-[25px]">
-        {formatDuration(span.start_time, span.end_time)}
-      </div>
-    </div>
-  );
-};
-
-// Fake data for testing
-const fakeData: MizuTraceV2[] = [
-  {
-    trace_id: "1",
-    span_id: "1",
-    name: "Incoming request",
-    trace_state: "",
-    flags: 0,
-    kind: "request",
-    start_time: new Date(Date.now() - 432000).toISOString(),
-    end_time: new Date(Date.now() - 431000).toISOString(),
-    attributes: {},
-    events: [],
-    links: [],
-  },
-  {
-    trace_id: "1",
-    span_id: "2",
-    name: "fetch",
-    trace_state: "",
-    flags: 0,
-    kind: "fetch",
-    start_time: new Date(Date.now() - 184000).toISOString(),
-    end_time: new Date(Date.now() - 183000).toISOString(),
-    attributes: {},
-    events: [],
-    links: [],
-  },
-  {
-    trace_id: "1",
-    span_id: "3",
-    name: "Log",
-    trace_state: "",
-    flags: 0,
-    kind: "log",
-    start_time: new Date(Date.now() - 1000).toISOString(),
-    end_time: new Date(Date.now() - 900).toISOString(),
-    attributes: {},
-    events: [],
-    links: [],
-  },
-  {
-    trace_id: "1",
-    span_id: "4",
-    name: "Event",
-    trace_state: "",
-    flags: 0,
-    kind: "event",
-    start_time: new Date(Date.now() - 84000).toISOString(),
-    end_time: new Date(Date.now() - 83000).toISOString(),
-    attributes: {},
-    events: [],
-    links: [],
-  },
-  {
-    trace_id: "1",
-    span_id: "5",
-    name: "INSERT",
-    trace_state: "",
-    flags: 0,
-    kind: "db",
-    start_time: new Date(Date.now() - 37000).toISOString(),
-    end_time: new Date(Date.now() - 36000).toISOString(),
-    attributes: {},
-    events: [],
-    links: [],
-  },
-  {
-    trace_id: "1",
-    span_id: "6",
-    name: "Outgoing response",
-    trace_state: "",
-    flags: 0,
-    kind: "response",
-    start_time: new Date(Date.now() - 92000).toISOString(),
-    end_time: new Date(Date.now() - 91000).toISOString(),
-    attributes: {},
-    events: [],
-    links: [],
-  },
-];
-
-// Render the component with fake data for testing
-const App: React.FC = () => {
-  return <TraceDetailsTimeline trace={fakeData} />;
-};
-
-export default App;
