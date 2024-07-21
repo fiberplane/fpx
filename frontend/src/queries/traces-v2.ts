@@ -463,9 +463,6 @@ function fpxFetchResponseLogToOtelStatus(
 /**
  * TODO - We need to align with rust collector and fpx middleware on how we will store http request data
  */
-/**
- * TODO - We need to align with rust collector and fpx middleware on how we will store http request data
- */
 function fpxFetchResponseToHttpAttributes(
   request: MizuFetchStartLog,
   response?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog,
@@ -473,8 +470,9 @@ function fpxFetchResponseToHttpAttributes(
   const parsedUrl = safeParseUrl(request.message.url);
   const commonAttributes = {
     "http.method": request.message.method,
+    // TODO - Add query params
     "http.url": request.message.url,
-    // TODO - (optional) We could also record the request path and query string without the protocol and domain
+    // TODO - (optional) We could also parse this to only record the request path and query string without the protocol and domain
     "http.target": request.message.url,
     "http.host": parsedUrl.host || request.message.headers.host,
     "http.scheme":
