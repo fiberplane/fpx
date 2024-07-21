@@ -19,6 +19,7 @@ import {
   isMizuFetchErrorMessage,
   isMizuFetchLoggingErrorMessage,
 } from "./types";
+import { OtelSpanSchema, OtelStatus } from "./traces-otel";
 
 const MizuRequestStartLogSchema = MizuLogSchema.omit({ message: true }).extend({
   message: MizuRequestStartSchema,
@@ -79,43 +80,6 @@ const MizuRootRequestSpanLogsSchema = z.union([
   z.tuple([MizuRequestStartLogSchema]),
   z.tuple([MizuRequestStartLogSchema, MizuRequestEndLogSchema]),
 ]);
-
-const AttributesSchema = z.record(z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]));
-
-const OtelSpanSchema = z.object({
-  trace_id: z.string(),
-  span_id: z.string(),
-  parent_span_id: z.string().optional(),
-  name: z.string(),
-  trace_state: z.string(),
-  flags: z.number(),
-  kind: z.string(),
-  start_time: z.string(), // ISO 8601 format
-  end_time: z.string(), // ISO 8601 format
-  attributes: AttributesSchema,
-  status: z
-    .object({
-      code: z.string(),
-      message: z.string(),
-    })
-    .optional(),
-  events: z.array(
-    z.object({
-      name: z.string(),
-      timestamp: z.string(), // ISO 8601 format
-      attributes: AttributesSchema,
-    })
-  ),
-  links: z.array(
-    z.object({
-      trace_id: z.string(),
-      span_id: z.string(),
-      trace_state: z.string(),
-      attributes: AttributesSchema,
-      flags: z.number(),
-    })
-  ),
-})
 
 const MizuRootRequestSpanSchema = OtelSpanSchema.extend({
     // FIRST PASS: This can go away
@@ -264,7 +228,12 @@ function createRootRequestSpan(log: MizuRequestStartLog, logs: MizuLog[]) {
       break;
     }
   }
+
+  // TODO - Factor this out into a helper
+  const status: OtelStatus = mizuRootResponseLogToOtelStatus(response);
+
   const spanLogs: MizuRootRequestSpanLogs = response ? [log, response] : [log];
+
   return {
     trace_id: log.traceId,
     span_id: `${log.traceId}-${log.id}`,
@@ -279,7 +248,7 @@ function createRootRequestSpan(log: MizuRequestStartLog, logs: MizuLog[]) {
     // TODO - Add http status codes when we know the right attr names to add
     attributes: {},
     // TODO - make it an error if the response is an error!!!
-    status: { code: "OK", message: "" },
+    status,
     // TODO - append any console.logs
     events: [],
     // TODO - not sure how we'll use this
@@ -319,9 +288,10 @@ function createFetchSpan(
   }
 
   let spanLogs: MizuFetchSpanLogs;
-
+  let status: OtelStatus;
   if (responseFatalErrorLog) {
     spanLogs = [fetchStartLog, responseFatalErrorLog];
+    status = mizuFetchResponseLogToOtelStatus(responseFatalErrorLog);
   } else if (responseSuccessLog && reponseErrorLog) {
     spanLogs = [
       // HACK - Deals with error on the api side that double logs the error and the success
@@ -329,10 +299,13 @@ function createFetchSpan(
       reponseErrorLog,
       responseSuccessLog,
     ];
+    status = mizuFetchResponseLogToOtelStatus(reponseErrorLog);
   } else if (responseSuccessLog) {
     spanLogs = [fetchStartLog, responseSuccessLog];
+    status = mizuFetchResponseLogToOtelStatus(responseSuccessLog);
   } else if (reponseErrorLog) {
     spanLogs = [fetchStartLog, reponseErrorLog];
+    status = mizuFetchResponseLogToOtelStatus(reponseErrorLog);
   } else {
     console.debug("Something was wrong with the fetch span...", {
       fetchStartLog,
@@ -366,7 +339,7 @@ function createFetchSpan(
     // TODO - Add http status codes when we know the right attr names to add
     attributes: {},
     // TODO - make it an error if the response is an error!!!
-    status: { code: "OK", message: "" },
+    status,
     // TODO - append any console.logs that happened along the way
     events: [],
     // TODO - not sure how we'll use this
@@ -377,4 +350,34 @@ function createFetchSpan(
     end,
     logs: spanLogs,
   };
+}
+
+function mizuRootResponseLogToOtelStatus(log?: MizuRequestEndLog) {
+  if (isMizuRequestEndLog(log)) {
+    const statusCode = parseInt(log.message.status);
+    if (statusCode && statusCode < 400) {
+      return { code: "OK", message: `HTTP ${statusCode}` };
+    } else if (statusCode && statusCode >= 400) {
+      return { code: "ERROR", message: `HTTP ${statusCode}` };
+    }
+  }
+
+  return { code: "ERROR", message: "Unknown response status (data not found)" };
+}
+
+function mizuFetchResponseLogToOtelStatus(log?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog) {
+  if (isMizuFetchEndLog(log)) {
+    const statusCode = typeof log.message.status === "number" ? log.message.status : parseInt(log.message.status);
+    if (statusCode >= 400) {
+      return { code: "ERROR", message: `HTTP ${statusCode}` };
+    }
+    return { code: "OK", message: "" };
+  }
+  if (isMizuFetchErrorLog(log)) {
+    return { code: "ERROR", message: "Fetch error" };
+  }
+  if (isMizuFetchLoggingErrorLog(log)) {
+    return { code: "ERROR", message: "Fetch logging error" };
+  }
+  return { code: "ERROR", message: "Unknown response status (data not found)" };
 }
