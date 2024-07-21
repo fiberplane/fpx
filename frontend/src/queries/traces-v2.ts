@@ -80,8 +80,45 @@ const MizuRootRequestSpanLogsSchema = z.union([
   z.tuple([MizuRequestStartLogSchema, MizuRequestEndLogSchema]),
 ]);
 
-const MizuRootRequestSpanSchema = z
-  .object({
+const AttributesSchema = z.record(z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]));
+
+const OtelSpanSchema = z.object({
+  trace_id: z.string(),
+  span_id: z.string(),
+  parent_span_id: z.string().optional(),
+  name: z.string(),
+  trace_state: z.string(),
+  flags: z.number(),
+  kind: z.string(),
+  start_time: z.string(), // ISO 8601 format
+  end_time: z.string(), // ISO 8601 format
+  attributes: AttributesSchema,
+  status: z
+    .object({
+      code: z.string(),
+      message: z.string(),
+    })
+    .optional(),
+  events: z.array(
+    z.object({
+      name: z.string(),
+      timestamp: z.string(), // ISO 8601 format
+      attributes: AttributesSchema,
+    })
+  ),
+  links: z.array(
+    z.object({
+      trace_id: z.string(),
+      span_id: z.string(),
+      trace_state: z.string(),
+      attributes: AttributesSchema,
+      flags: z.number(),
+    })
+  ),
+})
+
+const MizuRootRequestSpanSchema = OtelSpanSchema.extend({
+    // FIRST PASS: This can go away
     type: z.literal("root-request"),
     start: z.string(),
     end: z.string().optional(),
@@ -101,8 +138,7 @@ const MizuFetchSpanLogsSchema = z.union([
   z.tuple([MizuFetchStartLogSchema, MizuFetchLoggingErrorLogSchema]),
 ]);
 
-const MizuFetchSpanSchema = z
-  .object({
+const MizuFetchSpanSchema = OtelSpanSchema.extend({
     type: z.literal("fetch"),
     start: z.string(),
     end: z.string().optional(),
@@ -230,6 +266,25 @@ function createRootRequestSpan(log: MizuRequestStartLog, logs: MizuLog[]) {
   }
   const spanLogs: MizuRootRequestSpanLogs = response ? [log, response] : [log];
   return {
+    trace_id: log.traceId,
+    span_id: `${log.traceId}-${log.id}`,
+    parent_span_id: undefined, // TODO
+    name: "Incoming Request",
+    trace_state: "", // This is for Cross-Vendor Interoperability, allowing vendors to add their own context id
+    flags: 1, // This means "sample this trace"
+    kind: "SERVER", // This means we're tracking a request that came from the outside
+    start_time: log.timestamp,
+    // HACK - The current data model might not have an outgoing (rare), so just adding this to be thorough
+    end_time: response?.timestamp ?? new Date("2029-01-01").toISOString(),
+    // TODO - Add http status codes when we know the right attr names to add
+    attributes: {},
+    // TODO - make it an error if the response is an error!!!
+    status: { code: "OK", message: "" },
+    // TODO - append any console.logs
+    events: [],
+    // TODO - not sure how we'll use this
+    links: [],
+
     type: "root-request" as const,
     start: log.timestamp,
     end: response?.timestamp,
@@ -296,6 +351,27 @@ function createFetchSpan(
   )?.timestamp;
 
   return {
+    trace_id: fetchStartLog.traceId,
+    span_id: `${fetchStartLog.traceId}-${requestId}`,
+    // TODO - Assign to the root request
+    parent_span_id: undefined,
+    // TODO - Make this dynamic based on type of request
+    name: "Fetch",
+    trace_state: "", // NOTE - This is for Cross-Vendor Interoperability, allowing vendors to add their own context id
+    flags: 1, // This means "sample this trace"
+    kind: "CLIENT", // This means we're making a request to an external service
+    start_time: fetchStartLog.timestamp,
+    // HACK - The current data model might not have an outgoing, just adding this as a temporary hack
+    end_time: end ?? new Date("2029-01-01").toISOString(),
+    // TODO - Add http status codes when we know the right attr names to add
+    attributes: {},
+    // TODO - make it an error if the response is an error!!!
+    status: { code: "OK", message: "" },
+    // TODO - append any console.logs that happened along the way
+    events: [],
+    // TODO - not sure how we'll use this
+    links: [],
+
     type: "fetch" as const,
     start: fetchStartLog.timestamp,
     end,
