@@ -190,14 +190,24 @@ export function RequestDetailsPage() {
         )}
       >
         <div
-          className={cn(
-            "hidden sm:block sm:sticky sm:top-4 self-start",
-            "sm:w-[220px]",
-            "md:w-[280px]",
-          )}
+          className={
+            shouldRenderV2
+              ? cn(
+                  "hidden",
+                  "min-w-[300px]",
+                  "xl:min-w-[360px]",
+                  "2xl:min-w-[420px]",
+                  "lg:block",
+                )
+              : cn(
+                  "hidden sm:block sm:sticky sm:top-4 self-start",
+                  "sm:w-[220px]",
+                  "md:w-[280px]",
+                )
+          }
         >
           {shouldRenderV2 ? (
-            <MinimapV2 trace={traceV2} />
+            <TraceDetailsTimeline trace={traceV2} />
           ) : (
             <Minimap trace={trace} />
           )}
@@ -206,7 +216,7 @@ export function RequestDetailsPage() {
           className={cn(
             "grid items-center gap-4 overflow-x-auto relative",
             "sm:grid-rows-[auto_1fr]",
-            shouldRenderV2 ? "sm:grid-rows-[auto_auto_1fr]" : "",
+            shouldRenderV2 ? "max-lg:grid-rows-[auto_auto_1fr]" : "",
           )}
         >
           {shouldRenderV2 ? (
@@ -217,7 +227,11 @@ export function RequestDetailsPage() {
             <div className="w-full relative" />
           )}
 
-          {shouldRenderV2 ? <TraceDetailsTimeline trace={traceV2} /> : null}
+          {shouldRenderV2 ? (
+            <div className="w-full lg:hidden">
+              <TraceDetailsTimeline trace={traceV2} />
+            </div>
+          ) : null}
 
           {shouldRenderV2 ? (
             <TraceDetailsV2 trace={traceV2} />
