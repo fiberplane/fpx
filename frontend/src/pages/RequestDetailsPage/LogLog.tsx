@@ -32,7 +32,7 @@ export function LogLog({
 
   const heading = `console.${consoleMethod}${name ? `:  ${name}` : ""}`;
   const id = minimapId({ message, id: logId, level: level });
-  console.log("loglog id", id);
+
   return (
     <section className="flex flex-col gap-4" id={id}>
       <div className="flex items-center gap-4">
