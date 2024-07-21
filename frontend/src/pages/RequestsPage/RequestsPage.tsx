@@ -6,7 +6,7 @@ import { type MizuTrace, useMizuTraces, useMizuTracesV2 } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { columns } from "./columns";
 
