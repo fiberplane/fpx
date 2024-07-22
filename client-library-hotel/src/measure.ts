@@ -6,10 +6,36 @@ import {
   trace,
 } from "@opentelemetry/api";
 
-export type MeasureOptions = {
+export type MeasureOptions<A, R> = {
   name: string;
+  /**
+   * The kind of the span
+   */
   spanKind?: SpanKind;
+  /**
+   * Attributes to be added to the span
+   */
   attributes?: Attributes;
+
+  onStart?: (span: Span, args: A) => void;
+  /**
+   * Allows you to specify a function that will be called when the span ends
+   * and will be passed the span & result of the function being measured.
+   *
+   * This way you can do things like add additional attributes to the span
+   */
+  onEnd?: (
+    span: Span,
+    result: R extends Promise<Awaited<R>> ? Awaited<R> : R,
+  ) => R extends Promise<Awaited<R>> ? Promise<void> : void;
+
+  /**
+   * Allows you to specify a function that will be called when the span ends
+   * with an error and will be passed the (current) span & error that occurred.
+   *
+   * This way you can do things like add additional attributes to the span
+   */
+  onError?: (span: Span, error: unknown) => void;
 };
 
 /**
@@ -32,39 +58,70 @@ export function measure<T, A extends unknown[]>(
  * @param options param name and spanKind
  * @param fn
  */
-export function measure<T, A extends unknown[]>(
-  options: MeasureOptions,
-  fn: (...args: A) => T,
-): (...args: A) => T;
+export function measure<R, A extends unknown[]>(
+  options: MeasureOptions<A, R>,
+  fn: (...args: A) => R,
+): (...args: A) => R;
 
-export function measure<T, A extends unknown[]>(
-  nameOrOptions: string | MeasureOptions,
-  fn: (...args: A) => T,
-): (...args: A) => T {
-  const name: string =
-    typeof nameOrOptions === "string" ? nameOrOptions : nameOrOptions.name;
-  const spanKind: SpanKind | undefined =
-    typeof nameOrOptions === "object" ? nameOrOptions.spanKind : undefined;
-  const attributes: Attributes | undefined =
-    typeof nameOrOptions === "object" ? nameOrOptions.attributes : undefined;
+export function measure<R, A extends unknown[]>(
+  nameOrOptions: string | MeasureOptions<A, R>,
+  fn: (...args: A) => R,
+): (...args: A) => R {
+  const isOptions = typeof nameOrOptions === "object";
+  const name: string = isOptions ? nameOrOptions.name : nameOrOptions;
+  const spanKind: SpanKind | undefined = isOptions
+    ? nameOrOptions.spanKind
+    : undefined;
+  const attributes: Attributes | undefined = isOptions
+    ? nameOrOptions.attributes
+    : undefined;
+  const onStart = isOptions ? nameOrOptions.onStart : undefined;
+  const onEnd = isOptions ? nameOrOptions.onEnd : undefined;
+  const onError = isOptions ? nameOrOptions.onError : undefined;
 
-  return (...args: A): T => {
-    function handleActiveSpan(span: Span): T {
+  return (...args: A): R => {
+    function handleActiveSpan(span: Span): R {
       let shouldEndSpan = true;
+      if (onStart) {
+        try {
+          onStart(span, args);
+        } catch {
+          // swallow error
+        }
+      }
       try {
         const returnValue = fn(...args);
         if (returnValue instanceof Promise) {
           shouldEndSpan = false;
-          return handlePromise(span, returnValue) as T;
+          return handlePromise(span, returnValue, {
+            onEnd,
+            onError,
+          }) as R;
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
+        if (onEnd) {
+          try {
+            onEnd(span, returnValue);
+          } catch {
+            // swallow error
+          }
+        }
         return returnValue;
       } catch (error) {
         span.setStatus({
           code: SpanStatusCode.ERROR,
           message: error instanceof Error ? error.message : "Unknown error",
         });
+
+        if (onError) {
+          try {
+            onError(span, error);
+          } catch {
+            // swallow error
+          }
+        }
+
         throw error;
       } finally {
         if (shouldEndSpan) {
@@ -90,10 +147,19 @@ export function measure<T, A extends unknown[]>(
 function handlePromise<V, T extends Promise<V>>(
   span: Span,
   promise: T,
+  options: Pick<MeasureOptions<unknown[], V>, "onEnd" | "onError">,
 ): Promise<V> {
+  const { onEnd, onError } = options;
   return promise
-    .then((result: V) => {
+    .then(async (result: V) => {
       span.setStatus({ code: SpanStatusCode.OK });
+      if (onEnd) {
+        try {
+          await onEnd(span, result);
+        } catch {
+          // swallow error
+        }
+      }
       return result;
     })
     .catch((error) => {
@@ -103,6 +169,14 @@ function handlePromise<V, T extends Promise<V>>(
           ? error
           : "Unknown error occurred";
       span.recordException(sendError);
+
+      if (onError) {
+        try {
+          onError(span, error);
+        } catch {
+          // swallow error
+        }
+      }
 
       // Rethrow the error
       throw error;

@@ -7,6 +7,7 @@ import {
   SEMATTRS_HTTP_STATUS_CODE,
   SEMATTRS_HTTP_URL,
 } from "@opentelemetry/semantic-conventions";
+import type { Hono } from "hono";
 import {
   FPX_REQUEST_BODY,
   FPX_REQUEST_HEADERS_FULL,
@@ -26,7 +27,7 @@ export function serializeHeaders(headers: Headers) {
   return JSON.stringify(returnObject);
 }
 
-export function getRequestAttributes(input: InputParam, init: InitParam) {
+export function getRequestAttributes(input: InputParam, init?: InitParam) {
   const requestMethod =
     typeof input === "string" || input instanceof URL ? "GET" : input.method;
   const requestUrl = input instanceof Request ? input.url : input;
@@ -112,7 +113,9 @@ async function tryGetResponseBodyAsText(
   }
 }
 
-export async function getResponseAttributes(response: GlobalResponse) {
+export async function getResponseAttributes(
+  response: GlobalResponse | Awaited<ReturnType<Hono["fetch"]>>,
+) {
   const attributes: Attributes = {
     [SEMATTRS_HTTP_STATUS_CODE]: response.status,
     [SEMATTRS_HTTP_SCHEME]: response.url.split(":")[0],

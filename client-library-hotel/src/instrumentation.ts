@@ -68,7 +68,6 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const isEnabled = !!endpoint;
 
           if (!isEnabled) {
-            console.log("not enabled");
             return await originalFetch(request, env, executionCtx);
           }
 
@@ -93,22 +92,19 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const promises = patched?.promises ?? [];
           const proxyExecutionCtx = patched?.proxyContext ?? executionCtx;
 
-          const next = measure("route", async () => {
-            trace
-              .getActiveSpan()
-              ?.setAttributes(getRequestAttributes(request, undefined));
-            const result = await originalFetch(request, env, proxyExecutionCtx);
-            const activeSpan = trace.getActiveSpan();
-            if (activeSpan) {
-              // Ssh TypeScript! It's confusing to have so many Response types from so many
-              // different places/packages
-              const attributes = await getResponseAttributes(
-                (result as unknown as GlobalResponse).clone(),
-              );
-              activeSpan.setAttributes(attributes);
-            }
-            return result;
-          });
+          const next = measure<ReturnType<Hono["fetch"]>, unknown[]>(
+            {
+              name: "route",
+              onStart: (span) => {
+                span.setAttributes(getRequestAttributes(request));
+              },
+              onEnd: async (span, result) => {
+                const attributes = await getResponseAttributes(result);
+                span.setAttributes(attributes);
+              },
+            },
+            () => originalFetch(request, env, proxyExecutionCtx),
+          );
 
           const result = await next();
 

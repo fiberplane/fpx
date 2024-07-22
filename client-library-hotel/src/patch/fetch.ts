@@ -42,6 +42,14 @@ export function patchFetch() {
       {
         name: "fetch",
         spanKind: SpanKind.CLIENT,
+        onStart: (span, [input, init]) => {
+          span.setAttributes(getRequestAttributes(input, init));
+        },
+        onEnd: async (span, response) => {
+          const clonedResponse = response.clone();
+          const attributes = await getResponseAttributes(clonedResponse);
+          span.setAttributes(attributes);
+        },
       },
       customFetch,
     ) as typeof original;
