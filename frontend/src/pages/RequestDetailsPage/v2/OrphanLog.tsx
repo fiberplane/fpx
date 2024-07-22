@@ -30,8 +30,8 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const stack = objectHasStack(message) ? message.stack : null;
 
   return (
-    <div id={id}>
-      <div className={cn("flex flex-col gap-2 border-t py-4")}>
+    <div id={id} className="overflow-x-auto overflow-y-hidden">
+      <div className={cn("grid gap-2 border-t py-4")}>
         <SectionHeading className="font-mono">{heading}</SectionHeading>
       </div>
 
