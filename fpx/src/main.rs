@@ -1,9 +1,11 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::runtime;
-use opentelemetry_sdk::{trace, Resource};
+use opentelemetry_sdk::trace::Config;
+use opentelemetry_sdk::Resource;
 use std::env;
 use std::path::Path;
 use tracing_opentelemetry::OpenTelemetryLayer;
@@ -51,11 +53,12 @@ fn setup_tracing(args: &commands::Args) -> Result<()> {
                     .with_endpoint(args.otlp_endpoint.to_string()),
             )
             .with_trace_config(
-                trace::config()
+                Config::default()
                     .with_resource(Resource::new(vec![KeyValue::new("service.name", "fpx")])),
             )
             .install_batch(runtime::Tokio)
-            .context("unable to install tracer")?;
+            .context("unable to install tracer")?
+            .tracer("fpx");
 
         // This layer will take the traces from the `tracing` crate and send
         // them to the tracer specified above.

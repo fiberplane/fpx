@@ -17,5 +17,3 @@ tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 tracing = { workspace = true }
 typeshare-core = { version = "1.9" }
 url = { workspace = true }
-
-tonic-build = { version = "0.11", features = ["cleanup-markdown"] }
