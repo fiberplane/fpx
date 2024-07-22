@@ -1,5 +1,4 @@
 import { useMizuTraces, useMizuTracesV2 } from "@/queries";
-import { useEffect } from "react";
 
 export function useRequestDetails(traceId?: string) {
   const { isPending, isError, data } = useMizuTraces();
@@ -9,11 +8,7 @@ export function useRequestDetails(traceId?: string) {
   const traceV2 = traceId
     ? queryV2.data?.find((t) => t.id === traceId)
     : undefined;
-  useEffect(() => {
-    if (traceV2) {
-      console.log("traceV2", traceV2);
-    }
-  }, [traceV2]);
+
   return {
     isPending,
     isError,

@@ -421,7 +421,6 @@ function LogDetails({ log }: { log: MizuLog }) {
     }
   }
 
-  console.log("rendering log log", log.id, log);
   return (
     <LogLog
       message={message}
