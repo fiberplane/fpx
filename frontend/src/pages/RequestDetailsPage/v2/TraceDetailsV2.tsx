@@ -5,6 +5,7 @@ import {
   MizuLog,
   MizuRequestEnd,
   MizuRequestStart,
+  MizuSpan,
   MizuTraceV2,
 } from "@/queries";
 import {
@@ -22,6 +23,7 @@ import { LogLog } from "../LogLog";
 import { RequestLog } from "../RequestLog";
 import { ResponseLog } from "../ResponseLog";
 import { FpxCard } from "../shared";
+import { isMizuSpan } from "@/queries/traces-v2";
 
 export type TocItem = {
   id: string;
@@ -31,16 +33,16 @@ export type TocItem = {
 };
 
 export function TraceDetailsV2({ trace }: { trace: MizuTraceV2 }) {
+  
   return (
     <div className="grid gap-4" id="trace-details">
       {trace?.logs &&
-        trace?.logs.map((log) => (
-          <FpxCard key={log.id} className="overflow-hidden">
-            <CardContent className="p-4 bg-muted/40">
-              <LogDetails key={log.id} log={log} />
-            </CardContent>
-          </FpxCard>
-        ))}
+        trace?.waterfall.map((span) => {
+          if (isMizuSpan(span)) {
+            return <SpanDetails key={span.span_id} span={span} />;
+          }
+          return "Log"
+        })}
     </div>
   );
 }
@@ -58,6 +60,10 @@ const LifecycleSchema = z
 
 const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
 export type LogLevel = z.infer<typeof LogLevelSchema>;
+
+function SpanDetails({ span }: { span: MizuSpan }) {
+  return <div>Span</div>;
+}
 
 function LogDetails({ log }: { log: MizuLog }) {
   const { message } = log;

@@ -152,7 +152,14 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   }, [timelineEntryIds, handleObserve]);
 
   return (
-    <div className="p-2 text-white rounded-lg lg:h-[calc(100vh-80px)] overflow-y-auto">
+    <div className={cn(
+      "text-white rounded-lg overflow-y-auto",
+      "lg:p-2",
+      // NOTE - Likely need explicit height on this to allow for overflow to be scrollable :thinking_face:
+      //        I ran into issues because of the stickiness + grid
+      //        Problem now is that the portion above is now variable height.
+      // "lg:h-[calc(100vh-80px)]"
+    )}>
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
       <div className="flex flex-col">
         {normalizedTrace.normalizedWaterfall.map((spanOrLog) => (
