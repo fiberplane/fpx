@@ -14,12 +14,18 @@ import {
 } from "@/queries";
 import { cn, objectHasName } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { minimapId } from "../minimapId";
 
 type TraceDetailsTimelineProps = {
   trace: MizuTraceV2;
 };
-
 
 type NormalizedSpan = MizuSpan & {
   normalizedStartTime: number;
@@ -252,36 +258,16 @@ const NormalizedWaterfallRow: React.FC<{
   );
 };
 
+/**
+ * Helper to correlate entries in the timeline with elements on the page
+ *
+ * Note that the timeline only correlates from its _first_ log.
+ * E.g., an "Incoming Request" will link to the Card containing request details,
+ * but not the response details (for now, until the UI is updated to show req/res details together)
+ */
 function timelineId(logOrSpan: MizuOrphanLog | MizuSpan) {
   const log = isMizuOrphanLog(logOrSpan) ? logOrSpan : logOrSpan.logs[0];
-  const { message } = log;
-
-  if (isMizuRequestStartMessage(message)) {
-    return `request-${message.method}-${message.path}-${log.id}`;
-  }
-  if (isMizuRequestEndMessage(message)) {
-    return `response-${message.status}-${message.path}-${log.id}`;
-  }
-  if (isMizuFetchStartMessage(message)) {
-    return `fetch-request-${message.method}-${message.url}-${log.id}`;
-  }
-  if (isMizuFetchEndMessage(message)) {
-    return `fetch-response-${message.status}-${message.url}-${log.id}`;
-  }
-  if (isMizuFetchErrorMessage(message)) {
-    return `fetch-response-error-${message.status}-${message.url}-${log.id}`;
-  }
-  if (isMizuFetchLoggingErrorMessage(message)) {
-    return `fetch-request-error-${message.url}-${log.id}`;
-  }
-
-  const name = objectHasName(message) ? message.name : null;
-
-  const levelWithDefensiveFallback = log.level || "info";
-
-  const id = `log-${levelWithDefensiveFallback}-${name}-${log.id}`;
-
-  return id;
+  return minimapId(log);
 }
 
 const getTypeIcon = (type: string) => {
