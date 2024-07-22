@@ -99,13 +99,6 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const proxyExecutionCtx = patched?.proxyContext ?? executionCtx;
 
           const next = measure("route", async () => {
-            // trace.getActiveSpan()?.setAttributes({
-            //   [SEMATTRS_HTTP_URL]: request.url,
-            //   [SEMATTRS_HTTP_METHOD]: request.method,
-            //     [FPX_REQUEST_HEADERS_FULL]: serializeHeaders(
-            //       new Headers(request.headers),
-            //     ),
-            // });
             trace
               .getActiveSpan()
               ?.setAttributes(getRequestAttributes(request, undefined));
