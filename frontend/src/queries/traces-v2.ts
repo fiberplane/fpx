@@ -394,29 +394,58 @@ function fpxRootResponseToHttpAttributes(
   const scheme = request.message.headers["x-forwarded-proto"] || "http";
   const path = request.message.path;
   const queryParams = request.message.query;
+  const searchParams = safeToQueryComponent(queryParams);
   const url = constructHttpUrlForRootRequest(host, scheme, path, queryParams);
   let pathWithQueryParams = path;
-  if (queryParams) {
-    pathWithQueryParams += `?${new URLSearchParams(queryParams).toString()}`;
+  if (searchParams) {
+    pathWithQueryParams += `?${searchParams}`;
   }
-  return {
-    "http.method": request.message.method,
+  const attributes: OtelAttributes = {
+    "http.request.method": request.message.method,
+    "http.route": response?.message?.route,
+
     "http.url": url,
+
     // NOTE - This is conventional, to include the query params
     "http.target": pathWithQueryParams,
     "http.host": host,
     "http.scheme": request.message.headers["x-forwarded-proto"] || "http",
     "http.user_agent": request.message.headers["user-agent"],
-    "http.status_code": response?.message?.status,
+    "http.response.status_code": parseInt(`${response?.message?.status}`),
     "http.response_content_length": response?.message?.body?.length ?? 0,
 
-    "fpx.matched_route": response?.message?.route,
+    "url.path": path,
+    "url.scheme": scheme,
+    "url.query": searchParams,
+
+    // TODO
+    "error.type": "",
+
+    // Experimental
+    "http.request.body.size": "",
+    "http.request.size": "",
+    "http.response.body.size": "",
+    "http.response.size": "",
+
     // HACK - We can't have nested dictionaries, so json stringify here?
     "fpx.params": JSON.stringify(request.message.params),
     // HACK - We can't have nested dictionaries, so json stringify here?
     "fpx.query": JSON.stringify(request.message.query),
-    "fpx.body": request.message.body,
+    "fpx.request.body": request.message.body,
+    "fpx.response.body": response?.message?.body,
   };
+
+  for (const [header, value] of Object.entries(request.message.headers)) {
+    attributes[`http.request.header.${header}`] = value;
+  }
+
+  for (const [responseHeader, value] of Object.entries(
+    response?.message?.headers ?? {},
+  )) {
+    attributes[`http.response.header.${responseHeader}`] = value;
+  }
+
+  return attributes;
 }
 
 function constructHttpUrlForRootRequest(
@@ -468,44 +497,73 @@ function fpxFetchResponseToHttpAttributes(
   response?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog,
 ) {
   const parsedUrl = safeParseUrl(request.message.url);
-  const commonAttributes = {
-    "http.method": request.message.method,
-    // TODO - Add query params
-    "http.url": request.message.url,
+  // https://opentelemetry.io/docs/specs/semconv/http/http-spans/
+  const commonAttributes: OtelAttributes = {
+    "http.request.method": request.message.method,
     // TODO - (optional) We could also parse this to only record the request path and query string without the protocol and domain
-    "http.target": request.message.url,
-    "http.host": parsedUrl.host || request.message.headers.host,
+    "http.target": request.message.url, // <-- VERIFY THIS KEYNAME
+    "server.address": parsedUrl.host || request.message.headers.host,
+    // TODO
+    "server.port": "",
+    // TODO - Add query params
+    "url.full": request.message.url,
+    "http.url": request.message.url, // <-- VERIFY THIS KEYNAME
+    // TODO - class of error the operation ended with
+    "error.type": "",
+    // TODO - original http method sent by the client in the request line
+    "http.request.method_original": "",
+    // TODO
+    "network.protocol.name": "",
+
+    "http.host": parsedUrl.host || request.message.headers.host, // <-- VERIFY THIS KEYNAME
     "http.scheme":
       parsedUrl.scheme ||
       request.message.headers["x-forwarded-proto"] ||
-      "http",
-    "http.user_agent": request.message.headers["user-agent"],
-    "net.peer.name": request.message.headers.host,
-    "net.peer.ip":
+      "http", // <-- VERIFY THIS KEYNAME
+
+    "user_agent.original": request.message.headers["user-agent"],
+
+    "network.peer.name": request.message.headers.host, // <-- VERIFY THIS KEYNAME
+    "network.peer.address":
       request.message.headers["x-forwarded-for"] ||
       request.message.headers["remote-addr"],
-    "net.peer.port":
+    "network.peer.port":
       request.message.headers["x-forwarded-port"] ||
       request.message.headers["remote-port"],
+
+    // TODO - Actual version of protocol used for communication
+    "network.protocol.version": "",
   };
 
+  for (const [header, value] of Object.entries(request.message.headers)) {
+    if (header.startsWith("http")) {
+      commonAttributes[`http.request.header.${header}`] = value;
+    }
+  }
+
   if (isMizuFetchEndLog(response)) {
+    const responseHeaderAttributes: OtelAttributes = {};
+    for (const [header, value] of Object.entries(response.message.headers)) {
+      responseHeaderAttributes[`http.response.header.${header}`] = value;
+    }
     return {
       ...commonAttributes,
+      ...responseHeaderAttributes,
       "http.status_code": String(response.message.status),
       "http.response_content_length": response.message.body?.length ?? 0,
-      // TODO
-      // 'http.flavor': response.message.httpVersion,
+      "http.response.status_code": parseInt(`${response.message.status}`),
     };
   }
 
   if (isMizuFetchErrorLog(response)) {
+    const responseHeaderAttributes: OtelAttributes = {};
+    for (const [header, value] of Object.entries(response.message.headers)) {
+      responseHeaderAttributes[`http.response.header.${header}`] = value;
+    }
     return {
       ...commonAttributes,
-      "http.status_code": String(response.message.status),
-      "http.response_content_length": response.message.body?.length ?? 0,
-      // TODO
-      // 'http.flavor': response.message.httpVersion,
+      ...responseHeaderAttributes,
+      "http.response.status_code": parseInt(`${response.message.status}`),
     };
   }
 
@@ -514,8 +572,6 @@ function fpxFetchResponseToHttpAttributes(
   if (isMizuFetchLoggingErrorLog(response)) {
     return {
       ...commonAttributes,
-      // TODO
-      // 'http.flavor': response.message.httpVersion,
     };
   }
 
@@ -537,3 +593,17 @@ function safeParseUrl(url: string) {
     };
   }
 }
+
+const safeToQueryComponent = (
+  queryParams: Record<string, string> | null | undefined,
+) => {
+  if (!queryParams) {
+    return "";
+  }
+  try {
+    return new URLSearchParams(queryParams).toString();
+  } catch (error) {
+    console.error("Invalid query params:", queryParams, error);
+    return "";
+  }
+};
