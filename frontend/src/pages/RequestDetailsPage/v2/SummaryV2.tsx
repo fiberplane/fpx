@@ -51,7 +51,6 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
 
   return (
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
-      <SectionHeading>Summary V2</SectionHeading>
       <FpxCard className="bg-muted/20">
         <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
           <div className="flex gap-2 items-center">

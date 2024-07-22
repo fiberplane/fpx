@@ -177,23 +177,17 @@ export function RequestDetailsPage() {
             </Tooltip>
           </div>
         </div>
-        <div
-          className={cn(
-            "grid grid-rows-[auto_1fr] gap-4",
-          )}
-        >
+        <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
           <SummaryV2 trace={traceV2} />
           <div className="grid lg:grid-cols-[auto_1fr]">
             <div
-              className={
-                cn(
-                  "hidden",
-                  "lg:block lg:sticky lg:top-4 self-start",
-                  "min-w-[300px]",
-                  "xl:min-w-[360px]",
-                  "2xl:min-w-[420px]",
-                )
-              }
+              className={cn(
+                "hidden",
+                "lg:block lg:sticky lg:top-4 self-start",
+                "min-w-[300px]",
+                "xl:min-w-[360px]",
+                "2xl:min-w-[420px]",
+              )}
             >
               <TraceDetailsTimeline trace={traceV2} />
             </div>
@@ -201,6 +195,7 @@ export function RequestDetailsPage() {
               className={cn(
                 "grid items-center gap-4 overflow-x-auto relative",
                 "max-lg:grid-rows-[auto_1fr]",
+                "lg:items-start",
               )}
             >
               <div className="w-full lg:hidden">
@@ -209,7 +204,6 @@ export function RequestDetailsPage() {
               <TraceDetailsV2 trace={traceV2} />
             </div>
           </div>
-
         </div>
       </div>
     );
