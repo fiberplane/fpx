@@ -18,7 +18,7 @@ const sleep = measure("sleep", (ms: number) => {
 // Simple for testing synchronous javascript execution
 const loop = measure("loop", (n: number) => {
   for (let i = 0; i < n; i++) {
-    console.log(`Loop iteration ${i}`);
+    console.log(`Loop iteration`, i);
   }
 });
 

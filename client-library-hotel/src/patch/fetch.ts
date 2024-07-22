@@ -4,7 +4,14 @@ import { measure } from "../measure";
 import type { InitParam, InputParam } from "../types";
 import { getRequestAttributes, getResponseAttributes } from "../utils";
 
+let patched = false;
 export function patchFetch() {
+  if (patched) {
+    return;
+  }
+
+  patched = true;
+
   wrap(globalThis, "fetch", (original) => {
     async function customFetch(
       // Funky type definition to please the typescript
