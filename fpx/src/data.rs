@@ -155,7 +155,7 @@ impl Store {
 
         let tx = self
             .connection
-            .transaction_with_behavior(libsql::TransactionBehavior::ReadOnly)
+            .transaction()
             .await
             .map_err(DbError::InternalError)?;
 
@@ -167,7 +167,7 @@ impl Store {
 
         let tx = self
             .connection
-            .transaction_with_behavior(libsql::TransactionBehavior::ReadOnly)
+            .transaction()
             .await
             .map_err(DbError::InternalError)?;
 
