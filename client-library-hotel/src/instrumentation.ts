@@ -15,11 +15,6 @@ import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import type { GlobalResponse } from "./types";
 import { getRequestAttributes, getResponseAttributes } from "./utils";
 
-// type FpxEnv = {
-//   FPX_ENDPOINT: string;
-//   FPX_SERVICE_NAME?: string;
-// };
-
 type FpxConfig = {
   monitor: {
     /** Send data to FPX about each fetch call made during a handler's lifetime */
