@@ -14,32 +14,12 @@ import {
 } from "@/queries";
 import { cn, objectHasName } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
-import React, { useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type TraceDetailsTimelineProps = {
   trace: MizuTraceV2;
 };
 
-const getTypeIcon = (type: string) => {
-  switch (type) {
-    case "request":
-    case "SERVER":
-      return "";
-    case "CLIENT":
-    case "fetch":
-      return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
-    case "log":
-      return <Diamond className="w-3.5 h-3.5 text-orange-400" />;
-    case "event":
-      return "🔹";
-    case "db":
-      return "🗄️";
-    case "response":
-      return "🔵";
-    default:
-      return "🔸";
-  }
-};
 
 type NormalizedSpan = MizuSpan & {
   normalizedStartTime: number;
@@ -104,10 +84,73 @@ const normalizeWaterfallTimestamps = (
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   trace,
 }) => {
+  const [activeId, setActiveId] = useState<string>("");
+  const observer = useRef<IntersectionObserver>();
+
   const normalizedTrace = useMemo(
     () => normalizeWaterfallTimestamps(trace),
     [trace],
   );
+
+  const timelineEntryIds = useMemo(() => {
+    return normalizedTrace.normalizedWaterfall.map((spanOrLog) =>
+      timelineId(spanOrLog),
+    );
+  }, [normalizedTrace]);
+
+  // Scroll timeline entry item into view if it is out of viewport
+  // TODO - Check if this breaks on smaller screens?
+  useEffect(() => {
+    const element = document.querySelector(`[data-toc-id="${activeId}"]`);
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    if (element) {
+      timeoutId = setTimeout(() => {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "nearest",
+        });
+      }, 300);
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [activeId]);
+
+  const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        setActiveId(entry.target.id);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    observer.current = new IntersectionObserver(handleObserve, {
+      // TODO - This might need more tweaking
+      rootMargin: "0px 0px -33% 0px",
+    });
+
+    const { current: currentObserver } = observer;
+
+    for (const id of timelineEntryIds) {
+      const element = document.getElementById(id);
+      if (element) {
+        currentObserver.observe(element);
+      }
+    }
+
+    return () => {
+      if (currentObserver) {
+        currentObserver.disconnect();
+      }
+    };
+  }, [timelineEntryIds, handleObserve]);
+
   return (
     <div className="p-2 text-white rounded-lg lg:h-[calc(100vh-80px)] overflow-y-auto">
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
@@ -116,6 +159,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
           <NormalizedWaterfallRow
             key={isMizuOrphanLog(spanOrLog) ? spanOrLog.id : spanOrLog.span_id}
             spanOrLog={spanOrLog}
+            activeId={activeId}
           />
         ))}
       </div>
@@ -125,7 +169,9 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
 
 const NormalizedWaterfallRow: React.FC<{
   spanOrLog: NormalizedSpan | NormalizedOrphanLog;
-}> = ({ spanOrLog }) => {
+  activeId: string | null;
+}> = ({ spanOrLog, activeId }) => {
+  const id = timelineId(spanOrLog);
   const lineWidth = isMizuOrphanLog(spanOrLog)
     ? ""
     : `${spanOrLog.normalizedDuration * 100}%`;
@@ -140,9 +186,13 @@ const NormalizedWaterfallRow: React.FC<{
     !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "SERVER";
   return (
     <a
+      data-toc-id={id}
       className={cn(
         "flex items-center p-2",
-        "border-l border-transparent hover:bg-primary/10 hover:border-blue-400 transition-all",
+        "border-l border-transparent",
+        "hover:bg-primary/10 hover:border-blue-400",
+        activeId === id && "bg-primary/10 border-blue-400",
+        "transition-all",
         "cursor-pointer",
       )}
       href={`#${timelineId(spanOrLog)}`}
@@ -233,6 +283,27 @@ function timelineId(logOrSpan: MizuOrphanLog | MizuSpan) {
 
   return id;
 }
+
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case "request":
+    case "SERVER":
+      return "";
+    case "CLIENT":
+    case "fetch":
+      return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
+    case "log":
+      return <Diamond className="w-3.5 h-3.5 text-orange-400" />;
+    case "event":
+      return "🔹";
+    case "db":
+      return "🗄️";
+    case "response":
+      return "🔵";
+    default:
+      return "🔸";
+  }
+};
 
 const formatDuration = (start: string, end: string) => {
   const startDate = new Date(start);
