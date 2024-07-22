@@ -7,28 +7,19 @@ import { useMemo } from "react";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
-import { getRequestHeaders, getResponseHeaders } from "./otel-helpers";
-import { SubSection, SubSectionHeading } from "./shared";
+import {
+  getMethod,
+  getRequestBody,
+  getRequestHeaders,
+  getResponseBody,
+  getResponseHeaders,
+  getStatusCode,
+} from "./otel-helpers";
+import { Divider, SubSection, SubSectionHeading } from "./shared";
 import { timelineId } from "./timelineId";
-
-function getMethod(span: MizuRootRequestSpan) {
-  return `${span.attributes["http.request.method"]}`;
-}
-
-function getStatusCode(span: MizuRootRequestSpan) {
-  return parseInt(`${span.attributes["http.response.status_code"]}`);
-}
 
 function getMatchedRoute(span: MizuRootRequestSpan) {
   return `${span.attributes["http.route"]}`;
-}
-
-function getRequestBody(span: MizuRootRequestSpan) {
-  return `${span.attributes["fpx.request.body"]}`;
-}
-
-function getResponseBody(span: MizuRootRequestSpan) {
-  return `${span.attributes["fpx.response.body"]}`;
 }
 
 export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
@@ -75,7 +66,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
             </div>
             <div className="inline-flex gap-2 font-mono text-gray-400 py-1 px-2 text-xs bg-accent/80 rounded">
               <ClockIcon className="w-4 h-4" />
-              <span className=" font-light">{duration}ms</span>
+              <span className="font-light">{duration}ms</span>
             </div>
             <Status statusCode={getStatusCode(span)} />
           </div>
@@ -116,7 +107,3 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     </div>
   );
 }
-
-const Divider = () => {
-  return <div className="h-[1px] w-full bg-muted/80" />;
-};

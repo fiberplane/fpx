@@ -507,38 +507,16 @@ function fpxFetchResponseToHttpAttributes(
     "server.port": "",
     // TODO - Add query params
     "url.full": request.message.url,
-    "http.url": request.message.url, // <-- VERIFY THIS KEYNAME
+
     // TODO - class of error the operation ended with
     "error.type": "",
-    // TODO - original http method sent by the client in the request line
-    "http.request.method_original": "",
-    // TODO
-    "network.protocol.name": "",
 
-    "http.host": parsedUrl.host || request.message.headers.host, // <-- VERIFY THIS KEYNAME
-    "http.scheme":
-      parsedUrl.scheme ||
-      request.message.headers["x-forwarded-proto"] ||
-      "http", // <-- VERIFY THIS KEYNAME
-
-    "user_agent.original": request.message.headers["user-agent"],
-
-    "network.peer.name": request.message.headers.host, // <-- VERIFY THIS KEYNAME
-    "network.peer.address":
-      request.message.headers["x-forwarded-for"] ||
-      request.message.headers["remote-addr"],
-    "network.peer.port":
-      request.message.headers["x-forwarded-port"] ||
-      request.message.headers["remote-port"],
-
-    // TODO - Actual version of protocol used for communication
-    "network.protocol.version": "",
+    // FPX
+    "fpx.request.body": request.message.body,
   };
 
   for (const [header, value] of Object.entries(request.message.headers)) {
-    if (header.startsWith("http")) {
-      commonAttributes[`http.request.header.${header}`] = value;
-    }
+    commonAttributes[`http.request.header.${header}`] = value;
   }
 
   if (isMizuFetchEndLog(response)) {
@@ -549,9 +527,9 @@ function fpxFetchResponseToHttpAttributes(
     return {
       ...commonAttributes,
       ...responseHeaderAttributes,
-      "http.status_code": String(response.message.status),
-      "http.response_content_length": response.message.body?.length ?? 0,
       "http.response.status_code": parseInt(`${response.message.status}`),
+
+      "fpx.response.body": response.message.body,
     };
   }
 
@@ -564,6 +542,8 @@ function fpxFetchResponseToHttpAttributes(
       ...commonAttributes,
       ...responseHeaderAttributes,
       "http.response.status_code": parseInt(`${response.message.status}`),
+
+      "fpx.response.body": response.message.body,
     };
   }
 

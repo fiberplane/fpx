@@ -179,7 +179,7 @@ export function RequestDetailsPage() {
         </div>
         <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
           <SummaryV2 trace={traceV2} />
-          <div className="grid lg:grid-cols-[auto_1fr]">
+          <div className="grid lg:grid-cols-[auto_1fr] lg:gap-2 xl:gap-3">
             <div
               className={cn(
                 "hidden",
