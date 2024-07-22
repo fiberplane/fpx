@@ -46,8 +46,7 @@ export function patchFetch() {
           span.setAttributes(getRequestAttributes(input, init));
         },
         onEnd: async (span, response) => {
-          const clonedResponse = response.clone();
-          const attributes = await getResponseAttributes(clonedResponse);
+          const attributes = await getResponseAttributes(response.clone());
           span.setAttributes(attributes);
         },
       },

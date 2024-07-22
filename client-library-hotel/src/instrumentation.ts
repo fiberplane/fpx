@@ -92,21 +92,23 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const promises = patched?.promises ?? [];
           const proxyExecutionCtx = patched?.proxyContext ?? executionCtx;
 
-          const next = measure<ReturnType<Hono["fetch"]>, unknown[]>(
+          const measuredFetch = measure(
             {
               name: "route",
-              onStart: (span) => {
+              onStart: (span, [request]) => {
                 span.setAttributes(getRequestAttributes(request));
               },
-              onEnd: async (span, result) => {
-                const attributes = await getResponseAttributes(result);
+              onEnd: async (span, response) => {
+                const attributes = await getResponseAttributes(
+                  response.clone(),
+                );
                 span.setAttributes(attributes);
               },
             },
-            () => originalFetch(request, env, proxyExecutionCtx),
+            originalFetch,
           );
 
-          const result = await next();
+          const result = await measuredFetch(request, env, proxyExecutionCtx);
 
           // Make sure all promises are resolved before sending data to the server
           proxyExecutionCtx?.waitUntil(
