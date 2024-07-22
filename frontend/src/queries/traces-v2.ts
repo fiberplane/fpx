@@ -109,10 +109,10 @@ const MizuFetchSpanSchema = OtelSpanSchema.extend({
 }).passthrough();
 
 type MizuFetchSpanLogs = z.infer<typeof MizuFetchSpanLogsSchema>;
-type MizuFetchSpan = z.infer<typeof MizuFetchSpanSchema>;
+export type MizuFetchSpan = z.infer<typeof MizuFetchSpanSchema>;
 
 type MizuRootRequestSpanLogs = z.infer<typeof MizuRootRequestSpanLogsSchema>;
-type MizuRootRequestSpan = z.infer<typeof MizuRootRequestSpanSchema>;
+export type MizuRootRequestSpan = z.infer<typeof MizuRootRequestSpanSchema>;
 
 export const isMizuRootRequestSpan = (
   span: unknown,

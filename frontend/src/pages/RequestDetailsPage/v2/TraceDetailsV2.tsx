@@ -23,7 +23,7 @@ import { LogLog } from "../LogLog";
 import { RequestLog } from "../RequestLog";
 import { ResponseLog } from "../ResponseLog";
 import { FpxCard } from "../shared";
-import { isMizuSpan } from "@/queries/traces-v2";
+import { MizuFetchSpan, MizuOrphanLog, MizuRootRequestSpan, isMizuFetchSpan, isMizuRootRequestSpan, isMizuSpan } from "@/queries/traces-v2";
 
 export type TocItem = {
   id: string;
@@ -41,7 +41,8 @@ export function TraceDetailsV2({ trace }: { trace: MizuTraceV2 }) {
           if (isMizuSpan(span)) {
             return <SpanDetails key={span.span_id} span={span} />;
           }
-          return "Log"
+          const log = span;
+          return <OrphanLog key={log.id} log={log} />;
         })}
     </div>
   );
@@ -62,7 +63,25 @@ const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
 export type LogLevel = z.infer<typeof LogLevelSchema>;
 
 function SpanDetails({ span }: { span: MizuSpan }) {
-  return <div>Span</div>;
+  if (isMizuRootRequestSpan(span)) {
+    return <RootRequestSpan span={span} />;
+  }
+  if (isMizuFetchSpan(span)) {
+    return <FetchSpan span={span} />;
+  }
+  return <div>Unknown Span</div>;
+}
+
+function RootRequestSpan({ span }: { span: MizuRootRequestSpan }) {
+  return <div>Root Request Span</div>;
+}
+
+function FetchSpan({ span }: { span: MizuFetchSpan }) {
+  return <div>Fetch Span</div>;
+}
+
+function OrphanLog({ log }: { log: MizuOrphanLog }) {
+  return <div>Orphan Log</div>;
 }
 
 function LogDetails({ log }: { log: MizuLog }) {
