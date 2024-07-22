@@ -26,7 +26,7 @@ impl Service {
     ) -> Result<ExportTraceServiceResponse, IngestExportError> {
         let trace_ids = Self::extract_trace_ids(&request);
 
-        let tx = self.store.start_transaction().await?;
+        let tx = self.store.start_readwrite_transaction().await?;
 
         let spans = Span::from_collector_request(request);
         for span in spans {

@@ -240,7 +240,7 @@ async fn handle_request(
     path: Option<Path<String>>,
     req: Request,
 ) -> impl IntoResponse {
-    let tx = store.start_transaction().await.unwrap(); // TODO
+    let tx = store.start_readwrite_transaction().await.unwrap(); // TODO
 
     let headers: BTreeMap<String, String> = req
         .headers()

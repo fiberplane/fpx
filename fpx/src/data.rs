@@ -5,6 +5,7 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::BTreeMap;
 use std::fmt::Display;
+use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -17,24 +18,51 @@ pub mod models;
 #[cfg(test)]
 mod tests;
 
-pub struct Transaction<'a> {
+pub struct Transaction<'a, T>
+where
+    T: TransactionType,
+{
     tx: libsql::Transaction,
     guard: MutexGuard<'a, ()>,
+    marker: PhantomData<T>,
 }
 
-impl<'a> Transaction<'a> {
+impl<'a, T> Transaction<'a, T>
+where
+    T: TransactionType,
+{
     pub fn new(tx: libsql::Transaction, guard: MutexGuard<'a, ()>) -> Self {
-        Self { tx, guard }
+        Self {
+            tx,
+            guard,
+            marker: PhantomData,
+        }
     }
 }
 
-impl<'a> Deref for Transaction<'a> {
+impl<'a, T> Deref for Transaction<'a, T>
+where
+    T: TransactionType,
+{
     type Target = libsql::Transaction;
 
     fn deref(&self) -> &Self::Target {
         &self.tx
     }
 }
+
+pub trait TransactionType {}
+pub trait ReadTransaction: TransactionType {}
+pub trait WriteTransaction: TransactionType {}
+
+pub struct ReadOnly;
+impl TransactionType for ReadOnly {}
+impl ReadTransaction for ReadOnly {}
+
+pub struct ReadWrite;
+impl TransactionType for ReadWrite {}
+impl ReadTransaction for ReadWrite {}
+impl WriteTransaction for ReadWrite {}
 
 /// Store is a abstraction around data access.
 ///
@@ -78,15 +106,24 @@ impl Store {
         let database = Builder::new_local(path.as_path())
             .build()
             .await
-            .with_context(|| format!("failed to build libSQL database object: {}", path))?;
+            .with_context(|| {
+                format!(
+                    "failed to build libSQL database object: {:?}",
+                    path.as_path()
+                )
+            })?;
 
-        let connection = database
-            .connect()
-            .with_context(|| format!("failed to connect to libSQL database: {}", path))?;
+        let mut connection = database.connect().with_context(|| {
+            format!("failed to connect to libSQL database: {:?}", path.as_path())
+        })?;
+
+        Self::initialize_connection(&mut connection)
+            .await
+            .context("failed to initialize connection")?;
 
         Ok(Store {
-            connection,
             lock: Arc::new(Mutex::new(())),
+            connection,
         })
     }
 
@@ -94,19 +131,53 @@ impl Store {
         Self::open(DataPath::InMemory).await
     }
 
-    pub async fn start_transaction(&self) -> Result<Transaction, DbError> {
+    async fn initialize_connection(connection: &mut Connection) -> Result<(), DbError> {
+        connection
+            .query(
+                "PRAGMA journal_mode = WAL;
+                PRAGMA busy_timeout = 5000;
+                PRAGMA cache_size = 2000;
+                PRAGMA foreign_keys = ON;
+                PRAGMA journal_size_limit = 27103364;
+                PRAGMA mmap_size = 134217728;
+                PRAGMA synchronous = NORMAL;
+                PRAGMA temp_store = memory;",
+                (),
+            )
+            .await
+            .map_err(DbError::InternalError)?;
+
+        Ok(())
+    }
+
+    pub async fn start_readonly_transaction(&self) -> Result<Transaction<ReadOnly>, DbError> {
         let guard = self.lock.lock().await;
 
         let tx = self
             .connection
-            .transaction()
+            .transaction_with_behavior(libsql::TransactionBehavior::ReadOnly)
             .await
             .map_err(DbError::InternalError)?;
 
         Ok(Transaction::new(tx, guard))
     }
 
-    pub async fn commit_transaction(&self, tx: Transaction<'_>) -> Result<(), DbError> {
+    pub async fn start_readwrite_transaction(&self) -> Result<Transaction<ReadWrite>, DbError> {
+        let guard = self.lock.lock().await;
+
+        let tx = self
+            .connection
+            .transaction_with_behavior(libsql::TransactionBehavior::ReadOnly)
+            .await
+            .map_err(DbError::InternalError)?;
+
+        Ok(Transaction::new(tx, guard))
+    }
+
+    pub async fn commit_transaction<T>(&self, tx: Transaction<'_, T>) -> Result<(), DbError>
+    where
+        T: TransactionType,
+    {
         let result = tx.tx.commit().await.map_err(DbError::InternalError);
 
         drop(tx.guard);
@@ -115,8 +186,8 @@ impl Store {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn request_create(
-        tx: &Transaction<'_>,
+    pub async fn request_create<T: WriteTransaction>(
+        tx: &Transaction<'_, T>,
         method: &str,
         url: &str,
         body: &str,
@@ -138,12 +209,11 @@ impl Store {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn request_list(_tx: &Transaction<'_>) -> Result<Vec<Request>> {
-        todo!()
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub async fn request_get(&self, tx: &Transaction<'_>, id: i64) -> Result<Request, DbError> {
+    pub async fn request_get<T: ReadTransaction>(
+        &self,
+        tx: &Transaction<'_, T>,
+        id: i64,
+    ) -> Result<Request, DbError> {
         let request: models::Request = tx
             .query("SELECT * FROM requests WHERE id = ?", params!(id))
             .await?
@@ -156,9 +226,9 @@ impl Store {
     /// Create a new span in the database. This will return a new span with any
     /// fields potentially updated.
     #[instrument(err, skip_all)]
-    pub async fn span_create(
+    pub async fn span_create<T: WriteTransaction>(
         &self,
-        tx: &Transaction<'_>,
+        tx: &Transaction<'_, T>,
         span: models::Span,
     ) -> Result<models::Span, DbError> {
         let span = tx
@@ -197,9 +267,9 @@ impl Store {
 
     /// Retrieve a single span from the database.
     #[instrument(err, skip_all, fields(trace_id = ?trace_id.as_ref(), span_id = ?span_id.as_ref()))]
-    pub async fn span_get(
+    pub async fn span_get<T: ReadTransaction>(
         &self,
-        tx: &Transaction<'_>,
+        tx: &Transaction<'_, T>,
         trace_id: impl AsRef<str>,
         span_id: impl AsRef<str>,
     ) -> Result<models::Span, DbError> {
@@ -217,9 +287,9 @@ impl Store {
 
     /// Retrieve all spans for a single trace from the database.
     #[instrument(err, skip(self, tx))]
-    pub async fn span_list_by_trace(
+    pub async fn span_list_by_trace<T: ReadTransaction>(
         &self,
-        tx: &Transaction<'_>,
+        tx: &Transaction<'_, T>,
         trace_id: String,
     ) -> Result<Vec<models::Span>, DbError> {
         let span = tx

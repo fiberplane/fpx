@@ -33,7 +33,7 @@ pub async fn inspect_request_handler(
     eprintln!("{:?}", body);
     eprintln!();
 
-    let tx = store.start_transaction().await.unwrap(); // TODO
+    let tx = store.start_readwrite_transaction().await.unwrap(); // TODO
 
     let headers: BTreeMap<String, String> = parts
         .headers

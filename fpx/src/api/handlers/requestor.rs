@@ -23,7 +23,7 @@ pub async fn execute_requestor(
     State(store): State<Store>,
     Json(payload): Json<RequestorRequestPayload>,
 ) -> Result<Json<Response>, ApiServerError<RequestorError>> {
-    let tx = store.start_transaction().await?;
+    let tx = store.start_readwrite_transaction().await?;
 
     let request_body = payload.body.unwrap_or_default();
     let request_headers = payload.headers.unwrap_or_default();

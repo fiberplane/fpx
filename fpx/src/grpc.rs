@@ -19,6 +19,7 @@ impl GrpcService {
 
 #[tonic::async_trait]
 impl TraceService for GrpcService {
+    #[allow(clippy::blocks_in_conditions)] // The generated code contains a clippy issue, so just ignore that
     #[tracing::instrument(skip_all, err)]
     async fn export(
         &self,

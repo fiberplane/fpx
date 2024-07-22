@@ -25,7 +25,7 @@ async fn test_extensions() {
     let store = Store::in_memory().await.unwrap();
 
     {
-        let tx = store.start_transaction().await.unwrap();
+        let tx = store.start_readwrite_transaction().await.unwrap();
 
         #[derive(Deserialize)]
         struct Test {
@@ -88,11 +88,12 @@ async fn test_extensions() {
     }
 }
 
+#[tracing::instrument]
 #[test(tokio::test)]
 async fn test_create_span() {
     let store = create_test_database().await;
 
-    let tx = store.start_transaction().await.unwrap();
+    let tx = store.start_readwrite_transaction().await.unwrap();
 
     let api_span = api::models::Span {
         trace_id: "254ee84a02aa402b95d1b77ee60393b1".to_string(),
@@ -119,7 +120,7 @@ async fn test_create_span() {
 
     store.commit_transaction(tx).await.unwrap();
 
-    let tx = store.start_transaction().await.unwrap();
+    let tx = store.start_readonly_transaction().await.unwrap();
     let span = store
         .span_get(
             &tx,
@@ -140,10 +141,10 @@ async fn test_concurrent_transactions() {
     let tx1_task = tokio::spawn(async move {
         info!("Starting tx1");
         let tx1 = store1
-            .start_transaction()
+            .start_readonly_transaction()
             .await
             .expect("Failed to start tx1");
-        // sleep(Duration::from_secs(1)).await;
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         store1
             .commit_transaction(tx1)
             .await
@@ -154,10 +155,10 @@ async fn test_concurrent_transactions() {
     let tx2_task = tokio::spawn(async move {
         info!("Starting tx2");
         let tx2 = store2
-            .start_transaction()
+            .start_readwrite_transaction()
             .await
             .expect("Failed to start tx2");
-        // sleep(Duration::from_secs(1)).await;
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         store2
             .commit_transaction(tx2)
             .await
