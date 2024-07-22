@@ -1,10 +1,16 @@
-import { Attributes, type Span, SpanKind, SpanStatusCode, trace } from "@opentelemetry/api";
+import {
+  Attributes,
+  type Span,
+  SpanKind,
+  SpanStatusCode,
+  trace,
+} from "@opentelemetry/api";
 
 export type MeasureOptions = {
   name: string;
   spanKind?: SpanKind;
   attributes?: Attributes;
-}
+};
 
 /**
  * Wraps a function in a span, measuring the time it takes to execute
@@ -16,28 +22,31 @@ export type MeasureOptions = {
  */
 export function measure<T, A extends unknown[]>(
   name: string,
-  fn: (...args: A) => T
+  fn: (...args: A) => T,
 ): (...args: A) => T;
 
 /**
  * Wraps a function in a span, measuring the time it takes to execute
  * the function.
- * 
+ *
  * @param options param name and spanKind
- * @param fn 
+ * @param fn
  */
 export function measure<T, A extends unknown[]>(
   options: MeasureOptions,
-  fn: (...args: A) => T
+  fn: (...args: A) => T,
 ): (...args: A) => T;
 
 export function measure<T, A extends unknown[]>(
   nameOrOptions: string | MeasureOptions,
-  fn: (...args: A) => T
+  fn: (...args: A) => T,
 ): (...args: A) => T {
-  const name: string = typeof nameOrOptions === 'string' ? nameOrOptions : nameOrOptions.name;
-  const spanKind: SpanKind | undefined = typeof nameOrOptions === 'object' ? nameOrOptions.spanKind : undefined;
-  const attributes: Attributes | undefined = typeof nameOrOptions === 'object' ? nameOrOptions.attributes : undefined;
+  const name: string =
+    typeof nameOrOptions === "string" ? nameOrOptions : nameOrOptions.name;
+  const spanKind: SpanKind | undefined =
+    typeof nameOrOptions === "object" ? nameOrOptions.spanKind : undefined;
+  const attributes: Attributes | undefined =
+    typeof nameOrOptions === "object" ? nameOrOptions.attributes : undefined;
 
   return (...args: A): T => {
     const tracer = trace.getTracer("fpx-tracer");
@@ -46,9 +55,6 @@ export function measure<T, A extends unknown[]>(
       let shouldEndSpan = true;
       try {
         const returnValue = fn(...args);
-        span.setAttribute("test", {
-          "key": "value",
-        })
         if (returnValue instanceof Promise) {
           shouldEndSpan = false;
           return returnValue
@@ -85,8 +91,10 @@ export function measure<T, A extends unknown[]>(
       }
     }
 
-    return tracer.startActiveSpan(name, { kind: spanKind, 
-      attributes,
-     }, handleActiveSpan);
+    return tracer.startActiveSpan(
+      name,
+      { kind: spanKind, attributes },
+      handleActiveSpan,
+    );
   };
 }

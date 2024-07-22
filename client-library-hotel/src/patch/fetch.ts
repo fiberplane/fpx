@@ -1,4 +1,4 @@
-import { trace } from "@opentelemetry/api";
+import { SpanKind, trace } from "@opentelemetry/api";
 import { wrap } from "shimmer";
 import { measure } from "../measure";
 import type { InitParam, InputParam } from "../types";
@@ -38,6 +38,12 @@ export function patchFetch() {
       return response;
     }
 
-    return measure("fetch", customFetch) as typeof original;
+    return measure(
+      {
+        name: "fetch",
+        spanKind: SpanKind.CLIENT,
+      },
+      customFetch,
+    ) as typeof original;
   });
 }

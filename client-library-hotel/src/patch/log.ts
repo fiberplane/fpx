@@ -13,14 +13,14 @@ export function patchConsole() {
   patchMethod("log", "info");
   patchMethod("warn", "warn");
   patchMethod("error", "error");
-  console.log('patched log', console.log.__wrapped);
+  console.log("patched log", console.log.__wrapped);
 }
 
 function patchMethod(methodName: LEVELS, level: string) {
   // Check if the function is already patched
   // If it is, we don't want to patch it again
   if (isWrapped(console[methodName])) {
-    console.log('already patched fetch')
+    console.log("already patched fetch");
     return;
   }
 
