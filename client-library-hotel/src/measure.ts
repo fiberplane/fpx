@@ -49,31 +49,13 @@ export function measure<T, A extends unknown[]>(
     typeof nameOrOptions === "object" ? nameOrOptions.attributes : undefined;
 
   return (...args: A): T => {
-    const tracer = trace.getTracer("fpx-tracer");
-
     function handleActiveSpan(span: Span): T {
       let shouldEndSpan = true;
       try {
         const returnValue = fn(...args);
         if (returnValue instanceof Promise) {
           shouldEndSpan = false;
-          return returnValue
-            .then((result) => {
-              span.setStatus({ code: SpanStatusCode.OK });
-              return result;
-            })
-            .catch((error) => {
-              // recordException only accepts Error objects or strings
-              const sendError =
-                error instanceof Error || typeof error === "string"
-                  ? error
-                  : "Unknown error occurred";
-              span.recordException(sendError);
-
-              // Rethrow the error
-              throw error;
-            })
-            .finally(() => span.end()) as T;
+          return handlePromise(span, returnValue) as T;
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
@@ -91,10 +73,39 @@ export function measure<T, A extends unknown[]>(
       }
     }
 
+    const tracer = trace.getTracer("fpx-tracer");
     return tracer.startActiveSpan(
       name,
       { kind: spanKind, attributes },
       handleActiveSpan,
     );
   };
+}
+
+/**
+ * Handle complete flow of a promise (including ending the span)
+ *
+ * @returns the promise
+ */
+function handlePromise<V, T extends Promise<V>>(
+  span: Span,
+  promise: T,
+): Promise<V> {
+  return promise
+    .then((result: V) => {
+      span.setStatus({ code: SpanStatusCode.OK });
+      return result;
+    })
+    .catch((error) => {
+      // recordException only accepts Error objects or strings
+      const sendError =
+        error instanceof Error || typeof error === "string"
+          ? error
+          : "Unknown error occurred";
+      span.recordException(sendError);
+
+      // Rethrow the error
+      throw error;
+    })
+    .finally(() => span.end());
 }
