@@ -27,7 +27,6 @@ import { FetchResponseLog } from "../FetchResponseLog";
 import { LogLog } from "../LogLog";
 import { RequestLog } from "../RequestLog";
 import { ResponseLog } from "../ResponseLog";
-import { FpxCard } from "../shared";
 import { FetchSpan } from "./FetchSpan";
 import { IncomingRequest } from "./IncomingRequest";
 import { OrphanLog } from "./OrphanLog";

@@ -15,7 +15,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { minimapId } from "../minimapId";
+import { timelineId } from "./timelineId";
 
 type TraceDetailsTimelineProps = {
   trace: MizuTraceV2;
@@ -260,18 +260,6 @@ const NormalizedWaterfallRow: React.FC<{
     </a>
   );
 };
-
-/**
- * Helper to correlate entries in the timeline with elements on the page
- *
- * Note that the timeline only correlates from its _first_ log.
- * E.g., an "Incoming Request" will link to the Card containing request details,
- * but not the response details (for now, until the UI is updated to show req/res details together)
- */
-function timelineId(logOrSpan: MizuOrphanLog | MizuSpan) {
-  const log = isMizuOrphanLog(logOrSpan) ? logOrSpan : logOrSpan.logs[0];
-  return minimapId(log);
-}
 
 const getTypeIcon = (type: string) => {
   switch (type) {

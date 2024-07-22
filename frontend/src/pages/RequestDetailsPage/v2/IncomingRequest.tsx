@@ -4,12 +4,11 @@ import { cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { SectionHeading } from "../shared";
-
-const SubSectionHeading = ({ children }: { children: React.ReactNode }) => {
-  return <div className="font-semibold text-sm">{children}</div>;
-};
+import { SubSectionHeading } from "./shared";
+import { timelineId } from "./timelineId";
 
 export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
+  const id = timelineId(span);
   const method = span.attributes["http.method"] as string;
   const matchedRoute = span.attributes["fpx.matched_route"] as string;
   const duration = useMemo(() => {
@@ -22,7 +21,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     }
   }, [span]);
   return (
-    <div>
+    <div id={id}>
       <div className="flex flex-col gap-2">
         <SectionHeading>Incoming Request</SectionHeading>
         <div className="flex gap-2">
