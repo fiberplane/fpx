@@ -2,15 +2,18 @@ import { trace } from "@opentelemetry/api";
 import { wrap } from "shimmer";
 import { measure } from "../measure";
 import type { InitParam, InputParam } from "../types";
-import { getRequestAttributes, getResponseAttributes } from "../utils";
+import {
+  getRequestAttributes,
+  getResponseAttributes,
+  isWrapped,
+} from "../utils";
 
-let patched = false;
 export function patchFetch() {
-  if (patched) {
+  // Check if the function is already patched
+  // If it is, we don't want to patch it again
+  if (isWrapped(globalThis.fetch)) {
     return;
   }
-
-  patched = true;
 
   wrap(globalThis, "fetch", (original) => {
     async function customFetch(

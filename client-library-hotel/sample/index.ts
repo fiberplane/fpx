@@ -18,7 +18,7 @@ const sleep = measure("sleep", (ms: number) => {
 // Simple for testing synchronous javascript execution
 const loop = measure("loop", (n: number) => {
   for (let i = 0; i < n; i++) {
-    console.log(`Loop iteration`, i);
+    console.log(`Loop iteration: ${i}`);
   }
 });
 
@@ -26,7 +26,7 @@ app.get("/", async (c) => {
   console.log("Hello Hono!");
   console.error("This message is logged as an error");
 
-  loop(128);
+  loop(1);
 
   const response = await fetch("https://api.chucknorris.io/jokes/random");
   const result = await response.json();
