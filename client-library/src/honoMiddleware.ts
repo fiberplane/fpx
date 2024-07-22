@@ -1,7 +1,8 @@
 import { env } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
-import { replaceFetch } from "./replace-fetch";
-import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
+
+import { replaceFetch } from "./replace-fetch.js";
+import { RECORDED_CONSOLE_METHODS, log } from "./request-logger.js";
 import {
   errorToJson,
   extractCallerLocation,
@@ -12,7 +13,7 @@ import {
   specialFormatMessage,
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
-} from "./utils";
+} from "./utils.js";
 
 // Type hack that makes our middleware types play nicely with Hono types
 type RouterRoute = {
