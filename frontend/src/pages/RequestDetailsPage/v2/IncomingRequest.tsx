@@ -79,7 +79,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2 my-4">
+        <div className="flex flex-col gap-2 my-2">
           <SectionHeading>
             Incoming Request{" "}
             {/* <span className="text-gray-400 font-mono text-sm italic inline-block ml-2">
@@ -88,6 +88,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
           </SectionHeading>
 
           <div className="flex gap-2">
+            <Status statusCode={getStatusCode(span)} />
             <div className="inline-flex gap-2 font-mono py-1 px-2 text-xs bg-accent/80 rounded">
               <span className={cn(getHttpMethodTextColor(method))}>
                 {method}
@@ -98,7 +99,6 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
               <ClockIcon className="w-4 h-4" />
               <span className="font-light">{duration}ms</span>
             </div>
-            <Status statusCode={getStatusCode(span)} />
           </div>
         </div>
 
