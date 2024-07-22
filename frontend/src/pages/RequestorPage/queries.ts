@@ -1,5 +1,5 @@
 import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
 
