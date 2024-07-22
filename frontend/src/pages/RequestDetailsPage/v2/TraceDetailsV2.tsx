@@ -122,5 +122,11 @@ function LogDetails({ log }: { log: MizuLog }) {
     }
   }
 
-  return <LogLog message={message} level={level as LogLevel} logId={String(log.id)} />; // TODO: figure out why Zod doesn't parse this into a string tagged union
+  return (
+    <LogLog
+      message={message}
+      level={level as LogLevel}
+      logId={String(log.id)}
+    />
+  );
 }

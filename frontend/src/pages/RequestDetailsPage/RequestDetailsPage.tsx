@@ -1,16 +1,13 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { useRequestDetails } from "@/hooks";
-import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Status } from "@/components/ui/status";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useRequestDetails } from "@/hooks";
 import {
   MizuLog,
   MizuRequestEnd,
@@ -28,8 +25,10 @@ import {
   isMizuRequestEndMessage,
 } from "@/queries/types";
 import { cn } from "@/utils";
+import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 import { FetchRequestLog } from "./FetchRequestLog";
@@ -41,12 +40,7 @@ import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 import { FpxCard, RequestMethod, SectionHeading } from "./shared";
-import {
-  MinimapV2,
-  SummaryV2,
-  TraceDetailsTimeline,
-  TraceDetailsV2,
-} from "./v2";
+import { SummaryV2, TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();

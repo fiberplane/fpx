@@ -5,8 +5,10 @@ import {
   isMizuLog,
   isMizuRootRequestSpan,
 } from "@/queries";
+import { hasStringMessage } from "@/utils";
 import clsx from "clsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { minimapId } from "../minimapId";
 import { RequestMethod } from "../shared";
 import { TocItemV2 } from "./TocItemV2";
 
@@ -56,9 +58,16 @@ export function MinimapV2({ trace }: { trace?: MizuTraceV2 }) {
           typeof message === "object" &&
           ("level" in log || "name" in message)
         ) {
+          const id = minimapId(log);
+          const titleMessage = hasStringMessage(message)
+            ? message.message
+            : typeof message === "string"
+              ? message
+              : "";
+          const title = `console.${log.level ? log.level : "error"}: ${titleMessage}`;
           return {
-            id: `log-${log.level}-${message.name}-${log.id}`,
-            title: `console.${log.level ? log.level : "error"}: ${message.message}`,
+            id,
+            title,
             indent: 1,
           };
         }

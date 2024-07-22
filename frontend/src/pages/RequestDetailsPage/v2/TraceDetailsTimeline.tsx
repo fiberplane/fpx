@@ -202,7 +202,7 @@ const NormalizedWaterfallRow: React.FC<{
   );
 };
 
-export function timelineId(logOrSpan: MizuOrphanLog | MizuSpan) {
+function timelineId(logOrSpan: MizuOrphanLog | MizuSpan) {
   const log = isMizuOrphanLog(logOrSpan) ? logOrSpan : logOrSpan.logs[0];
   const { message } = log;
 
