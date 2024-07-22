@@ -1,14 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 import { Status } from "@/components/ui/status";
-import { MizuTraceV2 } from "@/queries";
-import {
-  isMizuErrorMessage,
-  isMizuFetchErrorMessage,
-  isMizuRequestEndMessage,
-} from "@/queries/types";
+import { MizuTraceV2, isMizuRootRequestSpan } from "@/queries";
+import { isMizuErrorMessage, isMizuFetchErrorMessage } from "@/queries/types";
+import { useMemo } from "react";
 import { TextOrJsonViewer } from "../TextJsonViewer";
-import { FpxCard, RequestMethod, SectionHeading } from "../shared";
+import { FpxCard, RequestMethod } from "../shared";
+import { getResponseBody } from "./otel-helpers";
 
 export type TocItem = {
   id: string;
@@ -18,36 +16,9 @@ export type TocItem = {
 };
 
 export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
-  const errors = trace?.logs
-    .filter((log) => {
-      return (
-        isMizuErrorMessage(log.message) || isMizuFetchErrorMessage(log.message)
-      );
-    })
-    .map((error) => {
-      if (isMizuErrorMessage(error.message)) {
-        return {
-          name: error.message.name,
-          message: error.message.message,
-        };
-      }
-
-      if (isMizuFetchErrorMessage(error.message)) {
-        return {
-          name: error.message.statusText,
-          message: error.message.body,
-        };
-      }
-    });
+  const errors = useMemo(() => selectErrors(trace), [trace]);
   const hasErrors = errors.length > 0;
-
-  const response = trace?.logs.find((log) =>
-    isMizuRequestEndMessage(log.message),
-  );
-
-  const body = isMizuRequestEndMessage(response?.message)
-    ? response?.message.body
-    : undefined;
+  const body = useMemo(() => selectResponseBody(trace), [trace]);
 
   return (
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
@@ -91,4 +62,37 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
       </FpxCard>
     </div>
   );
+}
+
+function selectErrors(trace: MizuTraceV2) {
+  return trace?.logs
+    .filter((log) => {
+      return (
+        isMizuErrorMessage(log.message) || isMizuFetchErrorMessage(log.message)
+      );
+    })
+    .map((error) => {
+      if (isMizuErrorMessage(error.message)) {
+        return {
+          name: error.message.name,
+          message: error.message.message,
+        };
+      }
+
+      if (isMizuFetchErrorMessage(error.message)) {
+        return {
+          name: error.message.statusText,
+          message: error.message.body,
+        };
+      }
+    });
+}
+
+function selectResponseBody(trace: MizuTraceV2) {
+  for (const span of trace.waterfall) {
+    if (isMizuRootRequestSpan(span)) {
+      return getResponseBody(span);
+    }
+  }
+  return null;
 }

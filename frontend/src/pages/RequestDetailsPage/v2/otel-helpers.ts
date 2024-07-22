@@ -37,3 +37,16 @@ export function getMethod(span: MizuSpan) {
 export function getStatusCode(span: MizuSpan) {
   return parseInt(`${span.attributes["http.response.status_code"]}`);
 }
+
+// NOTE - Meant for SERVER spans
+export function getFullUrl(span: MizuSpan) {
+  const scheme = span.attributes["url.scheme"];
+  const host = span.attributes["server.address"];
+  const port = span.attributes["server.port"]
+    ? `:${span.attributes["server.port"]}`
+    : "";
+  const path = span.attributes["url.path"];
+  const queryParams = span.attributes["url.query"];
+  const queryParamsString = queryParams ? `?${queryParams}` : "";
+  return `${scheme}://${host}${port}${path}${queryParamsString}`;
+}

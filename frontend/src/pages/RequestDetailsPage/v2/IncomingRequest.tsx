@@ -22,6 +22,13 @@ function getMatchedRoute(span: MizuRootRequestSpan) {
   return `${span.attributes["http.route"]}`;
 }
 
+function getPathWithSearch(span: MizuRootRequestSpan) {
+  const path = span.attributes["url.path"];
+  const queryParams = span.attributes["url.query"];
+  const queryParamsString = queryParams ? `?${queryParams}` : "";
+  return `${path}${queryParamsString}`;
+}
+
 export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   const id = timelineId(span);
   const method = getMethod(span);
@@ -36,9 +43,17 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     }
   }, [span]);
 
+  const pathWithSearch = useMemo<string>(() => {
+    return getPathWithSearch(span);
+  }, [span]);
+
   const requestHeaders = useMemo<Record<string, string>>(() => {
     return getRequestHeaders(span);
   }, [span]);
+
+  const requestHeadersCount = useMemo<number>(() => {
+    return Object.keys(requestHeaders).length;
+  }, [requestHeaders]);
 
   const requestBody = useMemo<string>(() => {
     return getRequestBody(span);
@@ -48,21 +63,36 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     return getResponseHeaders(span);
   }, [span]);
 
+  const responseHeadersCount = useMemo<number>(() => {
+    return Object.keys(responseHeaders).length;
+  }, [responseHeaders]);
+
   const responseBody = useMemo<string>(() => {
     return getResponseBody(span);
   }, [span]);
+
+  const canHaveRequestBody = useMemo<boolean>(() => {
+    const ucMethod = method.toUpperCase();
+    return ucMethod !== "GET" && ucMethod !== "HEAD";
+  }, [method]);
 
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 my-4">
-          <SectionHeading>Incoming Request</SectionHeading>
+          <SectionHeading>
+            Incoming Request{" "}
+            {/* <span className="text-gray-400 font-mono text-sm italic inline-block ml-2">
+              {matchedRoute}
+            </span> */}
+          </SectionHeading>
+
           <div className="flex gap-2">
             <div className="inline-flex gap-2 font-mono py-1 px-2 text-xs bg-accent/80 rounded">
               <span className={cn(getHttpMethodTextColor(method))}>
                 {method}
               </span>
-              <span className="text-gray-400 font-light">{matchedRoute}</span>
+              <span className="text-gray-400 font-light">{pathWithSearch}</span>
             </div>
             <div className="inline-flex gap-2 font-mono text-gray-400 py-1 px-2 text-xs bg-accent/80 rounded">
               <ClockIcon className="w-4 h-4" />
@@ -73,11 +103,13 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
         </div>
 
         <SubSection>
-          <SubSectionHeading>Request Headers</SubSectionHeading>
+          <SubSectionHeading>
+            Request Headers <CountBadge count={requestHeadersCount} />
+          </SubSectionHeading>
           <KeyValueTableV2 keyValue={requestHeaders} />
         </SubSection>
 
-        {requestBody && (
+        {canHaveRequestBody && requestBody && (
           <>
             <Divider />
             <SubSection>
@@ -90,7 +122,9 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
         <Divider />
 
         <SubSection>
-          <SubSectionHeading>Response Headers</SubSectionHeading>
+          <SubSectionHeading>
+            Response Headers <CountBadge count={responseHeadersCount} />
+          </SubSectionHeading>
           <KeyValueTableV2 keyValue={responseHeaders} />
         </SubSection>
 
@@ -107,3 +141,11 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     </div>
   );
 }
+
+const CountBadge = ({ count }: { count: number }) => {
+  return (
+    <span className="text-gray-400 font-normal bg-muted-foreground/20 rounded px-1.5 inline-block ml-2">
+      {count}
+    </span>
+  );
+};

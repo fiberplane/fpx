@@ -389,8 +389,9 @@ function fpxRootResponseToHttpAttributes(
   request: MizuRequestStartLog,
   response?: MizuRequestEndLog,
 ) {
-  const host =
+  const hostHeader =
     request.message.headers.host || request.message.headers["x-forwarded-host"];
+  const [host, port] = hostHeader.split(":");
   const scheme = request.message.headers["x-forwarded-proto"] || "http";
   const path = request.message.path;
   const queryParams = request.message.query;
@@ -408,15 +409,14 @@ function fpxRootResponseToHttpAttributes(
 
     // NOTE - This is conventional, to include the query params
     "http.target": pathWithQueryParams,
-    "http.host": host,
-    "http.scheme": request.message.headers["x-forwarded-proto"] || "http",
-    "http.user_agent": request.message.headers["user-agent"],
     "http.response.status_code": parseInt(`${response?.message?.status}`),
     "http.response_content_length": response?.message?.body?.length ?? 0,
 
     "url.path": path,
     "url.scheme": scheme,
     "url.query": searchParams,
+    "server.address": host,
+    "server.port": port,
 
     // TODO
     "error.type": "",
@@ -501,7 +501,6 @@ function fpxFetchResponseToHttpAttributes(
   const commonAttributes: OtelAttributes = {
     "http.request.method": request.message.method,
     // TODO - (optional) We could also parse this to only record the request path and query string without the protocol and domain
-    "http.target": request.message.url, // <-- VERIFY THIS KEYNAME
     "server.address": parsedUrl.host || request.message.headers.host,
     // TODO
     "server.port": "",
@@ -528,7 +527,6 @@ function fpxFetchResponseToHttpAttributes(
       ...commonAttributes,
       ...responseHeaderAttributes,
       "http.response.status_code": parseInt(`${response.message.status}`),
-
       "fpx.response.body": response.message.body,
     };
   }
@@ -542,7 +540,6 @@ function fpxFetchResponseToHttpAttributes(
       ...commonAttributes,
       ...responseHeaderAttributes,
       "http.response.status_code": parseInt(`${response.message.status}`),
-
       "fpx.response.body": response.message.body,
     };
   }
