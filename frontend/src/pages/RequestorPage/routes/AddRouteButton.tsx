@@ -20,7 +20,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useMutation } from "react-query";
 import { RequestMethodCombobox } from "../RequestMethodCombobox";
-import { Route, useAddRoutes } from "../queries";
+import { Route, useAddRoutes, useOpenApiParse } from "../queries";
 
 export function AddRouteButton() {
   useHotkeys("c", (e) => {
@@ -82,25 +82,13 @@ function OpenApiForm({
     setValue,
   } = useForm<OpenAPIFormData>();
 
-  const openApiSpec = watch("openApiSpec");
 
   const { mutate: addRoutes } = useAddRoutes();
+  const { mutateAsync: parseAndValidate, isPending } = useOpenApiParse(watch("openApiSpec"));
 
-  const parseMutation = useMutation({
-    mutationFn: async (openApiSpec: string) => {
-      const { valid, schema } = await validate(openApiSpec);
-      if (!valid) {
-        throw new Error("Invalid OpenAPI spec");
-      }
-      console.log("schema", schema);
-      return schema;
-    },
-    mutationKey: [openApiSpec],
-  });
-
-  const parseAndValidateOpenApi = async (openApiSpec: string) => {
+  const validateOpenApi = async (openApiSpec: string) => {
     try {
-      await parseMutation.mutateAsync(openApiSpec);
+      await parseAndValidate(openApiSpec);
       return true;
     } catch (error) {
       return false;
@@ -110,7 +98,7 @@ function OpenApiForm({
   const onSubmit = async (data: OpenAPIFormData) => {
     try {
       // Because we're passing the same stringified spec it should return the cached version
-      const schema = await parseMutation.mutateAsync(data.openApiSpec);
+      const schema = await parseAndValidate(data.openApiSpec);
 
       if (!schema) {
         throw new Error("Invalid OpenAPI spec");
@@ -125,12 +113,19 @@ function OpenApiForm({
           const { parameters, ...pathObjWithoutParams } = pathObj;
           return Object.entries(pathObjWithoutParams).map(
             ([method, operation]: [string, OperationObject]) => {
+              const seen = new WeakSet();
               return {
                 path: path.replace(/{(.*?)}/g, ":$1"),
                 method: method.toUpperCase(),
                 handlerType: "route" as const,
                 routeOrigin: "open_api" as const,
-                openapiSpec: JSON.stringify(operation),
+                openapiSpec: JSON.stringify(operation, (_key, value) => {
+                  if (typeof value === "object" && value !== null) {
+                    if (seen.has(value)) return "[Circular]";
+                    seen.add(value);
+                  }
+                  return value;
+                }),
               };
             },
           );
@@ -163,13 +158,13 @@ function OpenApiForm({
       <div>
         <div className="grid gap-4">
           <Textarea
-            {...register("openApiSpec", { validate: parseAndValidateOpenApi })}
+            {...register("openApiSpec", { validate: validateOpenApi })}
             className="w-full h-8 font-mono"
             placeholder="Paste your OpenAPI spec here"
             onPaste={onPaste}
             autoFocus
           ></Textarea>
-          {parseMutation.isLoading && (
+          {isPending && (
             <p className="text-sm">Validating OpenAPI spec...</p>
           )}
           {errors.openApiSpec && (

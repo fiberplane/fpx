@@ -2,6 +2,7 @@ import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
+import { validate } from "@scalar/openapi-parser";
 
 export type ProbedRoute = {
   path: string;
@@ -196,4 +197,18 @@ export function useTrace(traceId: string) {
     isLoading,
     error,
   };
+}
+
+export function useOpenApiParse(openApiSpec: string) {
+  const mutation = useMutation({
+    mutationFn: async (openApiSpec: string) => {
+      const { valid, schema } = await validate(openApiSpec);
+      if (!valid) {
+        throw new Error("Invalid OpenAPI spec");
+      }
+      return schema;
+    },
+    mutationKey: [openApiSpec],
+  });
+  return mutation;
 }
