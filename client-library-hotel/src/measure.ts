@@ -6,7 +6,7 @@ import {
   trace,
 } from "@opentelemetry/api";
 
-export type MeasureOptions<A, R> = {
+export type MeasureOptions<A, R, RAW> = {
   name: string;
   /**
    * The kind of the span
@@ -26,8 +26,8 @@ export type MeasureOptions<A, R> = {
    */
   onEnd?: (
     span: Span,
-    result: R extends Promise<Awaited<R>> ? Awaited<R> : R,
-  ) => R extends Promise<Awaited<R>> ? Promise<void> : void;
+    result: R,
+  ) => RAW extends Promise<unknown> ? Promise<void> | void : void;
 
   /**
    * Allows you to specify a function that will be called when the span ends
@@ -59,12 +59,12 @@ export function measure<T, A extends unknown[]>(
  * @param fn
  */
 export function measure<R, A extends unknown[]>(
-  options: MeasureOptions<A, R>,
+  options: MeasureOptions<A, R, R>,
   fn: (...args: A) => R,
 ): (...args: A) => R;
 
 export function measure<R, A extends unknown[]>(
-  nameOrOptions: string | MeasureOptions<A, R>,
+  nameOrOptions: string | MeasureOptions<A, R, R>,
   fn: (...args: A) => R,
 ): (...args: A) => R {
   const isOptions = typeof nameOrOptions === "object";
@@ -91,9 +91,9 @@ export function measure<R, A extends unknown[]>(
       }
       try {
         const returnValue = fn(...args);
-        if (returnValue instanceof Promise) {
+        if (isPromise<Awaited<R>>(returnValue)) {
           shouldEndSpan = false;
-          return handlePromise(span, returnValue, {
+          return handlePromise<R>(span, returnValue, {
             onEnd,
             onError,
           }) as R;
@@ -144,14 +144,14 @@ export function measure<R, A extends unknown[]>(
  *
  * @returns the promise
  */
-function handlePromise<V, T extends Promise<V>>(
+function handlePromise<T>(
   span: Span,
-  promise: T,
-  options: Pick<MeasureOptions<unknown[], V>, "onEnd" | "onError">,
-): Promise<V> {
+  promise: Promise<T>,
+  options: Pick<MeasureOptions<unknown[], T, Promise<T>>, "onEnd" | "onError">,
+): Promise<T> {
   const { onEnd, onError } = options;
   return promise
-    .then(async (result: V) => {
+    .then(async (result: T) => {
       span.setStatus({ code: SpanStatusCode.OK });
       if (onEnd) {
         try {
@@ -162,7 +162,7 @@ function handlePromise<V, T extends Promise<V>>(
       }
       return result;
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       // recordException only accepts Error objects or strings
       const sendError =
         error instanceof Error || typeof error === "string"
@@ -182,4 +182,8 @@ function handlePromise<V, T extends Promise<V>>(
       throw error;
     })
     .finally(() => span.end());
+}
+
+function isPromise<T>(value: unknown): value is Promise<T> {
+  return value instanceof Promise;
 }

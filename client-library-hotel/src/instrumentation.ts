@@ -99,7 +99,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
               },
               onEnd: async (span, response) => {
                 const attributes = await getResponseAttributes(
-                  response.clone(),
+                  (await response).clone(),
                 );
                 span.setAttributes(attributes);
               },

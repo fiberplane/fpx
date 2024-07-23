@@ -1,7 +1,6 @@
-import { SpanKind, trace } from "@opentelemetry/api";
+import { SpanKind } from "@opentelemetry/api";
 import { wrap } from "shimmer";
 import { measure } from "../measure";
-import type { InitParam, InputParam } from "../types";
 import {
   getRequestAttributes,
   getResponseAttributes,
@@ -16,28 +15,6 @@ export function patchFetch() {
   }
 
   wrap(globalThis, "fetch", (original) => {
-    async function customFetch(
-      // Funky type definition to please the typescript
-      // lord
-      input: InputParam,
-      init: InitParam,
-    ) {
-      const span = trace.getActiveSpan();
-
-      if (span) {
-        span.setAttributes(getRequestAttributes(input, init));
-      }
-
-      const response = await original(input, init);
-      if (span) {
-        const clonedResponse = response.clone();
-        const attributes = await getResponseAttributes(clonedResponse);
-        span.setAttributes(attributes);
-      }
-
-      return response;
-    }
-
     return measure(
       {
         name: "fetch",
@@ -46,11 +23,13 @@ export function patchFetch() {
           span.setAttributes(getRequestAttributes(input, init));
         },
         onEnd: async (span, response) => {
-          const attributes = await getResponseAttributes(response.clone());
+          const attributes = await getResponseAttributes(
+            (await response).clone(),
+          );
           span.setAttributes(attributes);
         },
       },
-      customFetch,
+      original,
     ) as typeof original;
   });
 }
