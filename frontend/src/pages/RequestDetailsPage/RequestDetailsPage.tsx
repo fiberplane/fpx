@@ -184,7 +184,7 @@ export function RequestDetailsPage() {
         </div>
         <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
           <SummaryV2 trace={traceV2} />
-          <div className="grid lg:grid-cols-[auto_1fr] lg:gap-2 xl:gap-3">
+          <div className="grid lg:grid-cols-[auto_1fr] border-t">
             <div
               className={cn(
                 "hidden",
@@ -200,7 +200,9 @@ export function RequestDetailsPage() {
               className={cn(
                 "grid items-center gap-4 overflow-x-auto relative",
                 "max-lg:grid-rows-[auto_1fr]",
+                "lg:border-l",
                 "lg:items-start",
+                "lg:p-4",
               )}
             >
               <div className="w-full lg:hidden">

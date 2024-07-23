@@ -237,7 +237,7 @@ function createRootRequestSpan(log: MizuRequestStartLog, logs: MizuLog[]) {
     trace_id: log.traceId,
     span_id: `${log.traceId}-${log.id}`,
     parent_span_id: undefined,
-    name: "Incoming Request",
+    name: "Request",
     trace_state: "", // This is for cross-vendor interop, allowing vendors to add their own context id
     flags: 1, // This means "sample this trace"
     kind: "SERVER", // This means we're tracking a request that came from the outside

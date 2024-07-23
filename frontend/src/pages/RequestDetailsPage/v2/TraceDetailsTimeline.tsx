@@ -155,7 +155,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     <div
       className={cn(
         "text-white rounded-lg overflow-y-auto",
-        "lg:p-2",
+        "py-4",
         // NOTE - Likely need explicit height on this to allow for overflow to be scrollable :thinking_face:
         //        I ran into issues because of the stickiness + grid
         //        Problem now is that the portion above is now variable height.
@@ -198,16 +198,16 @@ const NormalizedWaterfallRow: React.FC<{
       data-toc-id={id}
       className={cn(
         "flex items-center p-2",
-        "border-l border-transparent",
-        "hover:bg-primary/10 hover:border-blue-400",
-        activeId === id && "bg-primary/10 border-blue-400",
+        "border-l-2 border-transparent",
+        "hover:bg-primary/10 hover:border-blue-500",
+        activeId === id && "bg-primary/10 border-blue-500",
         "transition-all",
         "cursor-pointer",
       )}
       href={`#${timelineId(spanOrLog)}`}
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
-      <div className="flex flex-col w-[115px]">
+      <div className="flex flex-col w-20">
         {isFetch ? (
           <div>
             <Badge
@@ -252,7 +252,7 @@ const NormalizedWaterfallRow: React.FC<{
           </div>
         )}
       </div>
-      <div className="ml-auto text-gray-400 text-xs w-[25px]">
+      <div className="ml-auto text-gray-400 text-xs w-12 px-2">
         {isMizuOrphanLog(spanOrLog)
           ? ""
           : formatDuration(spanOrLog.start_time, spanOrLog.end_time)}

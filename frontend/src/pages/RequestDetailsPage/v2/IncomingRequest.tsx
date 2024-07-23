@@ -79,7 +79,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2 my-2">
+        <div className="flex flex-col gap-2">
           <SectionHeading>
             Incoming Request{" "}
             {/* <span className="text-gray-400 font-mono text-sm italic inline-block ml-2">
