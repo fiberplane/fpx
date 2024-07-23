@@ -141,7 +141,6 @@ export function mapPathKey(key: string) {
   return { key, value: "", id: key, enabled: false };
 }
 
-
 export function extractPathParams(path: string) {
   const regex = /\/(:[a-zA-Z0-9_-]+)/g;
 
@@ -158,4 +157,3 @@ export function extractPathParams(path: string) {
   }
   return result;
 }
-

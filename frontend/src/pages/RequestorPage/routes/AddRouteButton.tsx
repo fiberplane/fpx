@@ -9,13 +9,18 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { PlusIcon } from "@radix-ui/react-icons";
-import { OpenAPIV2, OpenAPIV3, OpenAPIV3_1, validate } from "@scalar/openapi-parser";
+import {
+  OpenAPIV2,
+  OpenAPIV3,
+  OpenAPIV3_1,
+  validate,
+} from "@scalar/openapi-parser";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useMutation } from "react-query";
 import { RequestMethodCombobox } from "../RequestMethodCombobox";
 import { Route, useAddRoutes } from "../queries";
-import { useMutation } from "react-query";
 
 export function AddRouteButton() {
   useHotkeys("c", (e) => {
@@ -56,8 +61,14 @@ type OpenAPIFormData = {
 };
 
 // catch all types for versioned OpenAPI spec
-type PathObject = OpenAPIV3.PathItemObject | OpenAPIV3_1.PathItemObject | OpenAPIV2.PathItemObject;
-type OperationObject = OpenAPIV3.OperationObject | OpenAPIV3_1.OperationObject | OpenAPIV2.OperationObject;
+type PathObject =
+  | OpenAPIV3.PathItemObject
+  | OpenAPIV3_1.PathItemObject
+  | OpenAPIV2.PathItemObject;
+type OperationObject =
+  | OpenAPIV3.OperationObject
+  | OpenAPIV3_1.OperationObject
+  | OpenAPIV2.OperationObject;
 
 function OpenApiForm({
   setOpen,
@@ -84,18 +95,17 @@ function OpenApiForm({
       console.log("schema", schema);
       return schema;
     },
-    mutationKey: [openApiSpec]
-  })
+    mutationKey: [openApiSpec],
+  });
 
   const parseAndValidateOpenApi = async (openApiSpec: string) => {
     try {
       await parseMutation.mutateAsync(openApiSpec);
-      return true
+      return true;
     } catch (error) {
-      return false
+      return false;
     }
-  }
-
+  };
 
   const onSubmit = async (data: OpenAPIFormData) => {
     try {
@@ -108,23 +118,26 @@ function OpenApiForm({
 
       setOpen(false);
 
-      const submissionRoutes: Route[] = Object.entries(schema.paths!).map(([path, pathObj]: [string, PathObject]) => {
-        // destructure the params
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { parameters, ...pathObjWithoutParams } = pathObj;
-        return Object.entries(pathObjWithoutParams).map(([method, operation]: [string, OperationObject]) => {
-          return {
-            path: path.replace(/{(.*?)}/g, ":$1"),
-            method: method.toUpperCase(),
-            handlerType: "route" as const,
-            routeOrigin: "open_api" as const,
-            openapiSpec: JSON.stringify(operation)
-          }
+      const submissionRoutes: Route[] = Object.entries(schema.paths!)
+        .map(([path, pathObj]: [string, PathObject]) => {
+          // destructure the params
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { parameters, ...pathObjWithoutParams } = pathObj;
+          return Object.entries(pathObjWithoutParams).map(
+            ([method, operation]: [string, OperationObject]) => {
+              return {
+                path: path.replace(/{(.*?)}/g, ":$1"),
+                method: method.toUpperCase(),
+                handlerType: "route" as const,
+                routeOrigin: "open_api" as const,
+                openapiSpec: JSON.stringify(operation),
+              };
+            },
+          );
         })
-      }).flat()
+        .flat();
 
       addRoutes(submissionRoutes);
-
     } catch (error) {
       console.error("Error parsing OpenAPI spec:", error);
     }
@@ -156,7 +169,9 @@ function OpenApiForm({
             onPaste={onPaste}
             autoFocus
           ></Textarea>
-          {parseMutation.isLoading && <p className="text-sm">Validating OpenAPI spec...</p>}
+          {parseMutation.isLoading && (
+            <p className="text-sm">Validating OpenAPI spec...</p>
+          )}
           {errors.openApiSpec && (
             <p className="text-sm text-red-500">Invalid OpenAPI spec</p>
           )}

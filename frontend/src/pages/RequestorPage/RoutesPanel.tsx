@@ -60,15 +60,17 @@ export function RoutesPanel({
 
   const prevDetectedRoutes = useMemo(() => {
     return (
-      filteredRoutes?.filter((r) => r.routeOrigin === "discovered" && !r.currentlyRegistered) ??
-      []
+      filteredRoutes?.filter(
+        (r) => r.routeOrigin === "discovered" && !r.currentlyRegistered,
+      ) ?? []
     );
   }, [filteredRoutes]);
 
   const detectedRoutes = useMemo(() => {
     return (
-      filteredRoutes?.filter((r) => r.routeOrigin === "discovered" && r.currentlyRegistered) ??
-      []
+      filteredRoutes?.filter(
+        (r) => r.routeOrigin === "discovered" && r.currentlyRegistered,
+      ) ?? []
     );
   }, [filteredRoutes]);
 
@@ -141,7 +143,6 @@ export function RoutesPanel({
               handleRouteClick={handleRouteClick}
             />
           )}
-
 
           {hasAnyUserAddedRoutes && (
             <RoutesSection

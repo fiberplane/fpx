@@ -79,7 +79,7 @@ export type Route = {
   handlerType?: "route" | "middleware";
   routeOrigin?: "discovered" | "custom" | "open_api";
   openapiSpec?: string;
-}
+};
 
 async function addRoutes(routes: Route | Route[]) {
   return fetch("/v0/app-routes", {
@@ -197,4 +197,3 @@ export function useTrace(traceId: string) {
     error,
   };
 }
-
