@@ -77,22 +77,22 @@ impl Store {
         tx: &Transaction,
         method: &str,
         url: &str,
-        body: &str,
+        body: Option<String>,
         headers: BTreeMap<String, String>,
-    ) -> Result<u32> {
+    ) -> Result<models::Request> {
         let headers = serde_json::to_string(&headers)?;
 
         let request: models::Request = tx
             .query(
                 "INSERT INTO requests (method, url, body, headers) VALUES (?, ?, ?, ?) RETURNING *",
-                (method, url, body, headers),
+                params!(method, url, body, headers),
             )
             .await
             .context("Unable to create request")?
             .fetch_one()
             .await?;
 
-        Ok(request.id)
+        Ok(request)
     }
 
     #[tracing::instrument(skip_all)]
@@ -115,6 +115,28 @@ impl Store {
             .await?;
 
         Ok(request.into())
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub async fn response_create(
+        tx: &Transaction,
+        request_id: u32,
+        status: u16,
+        headers: BTreeMap<String, String>,
+        body: Option<String>,
+    ) -> Result<models::Response> {
+        let headers_json = serde_json::to_string(&headers).unwrap_or_default();
+
+        let response: models::Response = tx
+            .query(
+                "INSERT INTO responses (request_id, status, headers, body) VALUES (?, ?, ?, ?) RETURNING *",
+                params!(request_id, status, headers_json, body),
+            )
+            .await?
+            .fetch_one()
+            .await?;
+
+        Ok(response)
     }
 }
 

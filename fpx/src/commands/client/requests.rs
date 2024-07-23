@@ -76,7 +76,7 @@ pub struct PostArgs {
     #[arg(from_global)]
     pub base_url: Url,
     /// HTTP method to use (e.g., GET, POST, PUT, DELETE).
-    #[arg(long, default_value = "POST")]
+    #[arg(long, default_value = "GET")]
     pub method: String,
     /// Target URL for the request.
     #[arg(long)]

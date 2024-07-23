@@ -161,7 +161,7 @@ impl Request {
         id: u32,
         method: String,
         url: String,
-        body: String,
+        body: Option<String>,
         headers: BTreeMap<String, String>,
     ) -> Self {
         Self {
@@ -169,7 +169,7 @@ impl Request {
             method,
             url,
             headers,
-            body: Some(body),
+            body,
         }
     }
 }
@@ -193,8 +193,8 @@ impl RequestSummary {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: u32,
+    pub request_id: u32,
     pub status: u16,
-    pub url: String,
     pub body: Option<String>,
     pub headers: BTreeMap<String, String>,
 }
@@ -202,17 +202,17 @@ pub struct Response {
 impl Response {
     pub fn new(
         id: u32,
+        request_id: u32,
         status: u16,
-        url: String,
-        body: String,
+        body: Option<String>,
         headers: BTreeMap<String, String>,
     ) -> Self {
         Self {
             id,
+            request_id,
             status,
-            url,
             headers,
-            body: Some(body),
+            body,
         }
     }
 }

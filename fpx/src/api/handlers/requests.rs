@@ -28,47 +28,55 @@ pub async fn requests_post_handler(
 ) -> Result<Json<models::Response>, ApiServerError<NewRequestError>> {
     let tx = store.start_transaction().await?;
 
-    let request_body = payload.body.unwrap_or_default();
+    let request_body = payload.body;
     let request_headers = payload.headers.unwrap_or_default();
 
     let request = execute_request(
         &payload.method,
         &payload.url,
-        &request_headers,
         request_body.clone(),
+        &request_headers,
     );
 
-    let request_id = Store::request_create(
+    let request_model = Store::request_create(
         &tx,
         payload.method.as_str(),
         &payload.url,
-        &request_body,
+        request_body,
         request_headers.clone(),
     )
     .await?;
-
-    tx.commit().await?;
 
     let response = request.await?;
 
     let response_headers = prepare_headers(response.headers());
     let response_status = response.status().as_u16();
     let response_body = &response.text().await?;
+    let response_body = if response_body.is_empty() {
+        None
+    } else {
+        Some(response_body.clone())
+    };
 
-    Ok(Json(models::Response {
-        id: request_id,
-        status: response_status,
-        headers: response_headers,
-        body: Some(response_body.to_owned()),
-        url: payload.url,
-    }))
+    let response_model = Store::response_create(
+        &tx,
+        request_model.id,
+        response_status,
+        response_headers,
+        response_body,
+    )
+    .await?;
+
+    tx.commit().await?;
+
+    Ok(Json(response_model.into()))
 }
 
 async fn execute_request(
     request_method: &String,
     url: &String,
+    body: Option<String>,
     headers: &BTreeMap<String, String>,
-    body: String,
 ) -> Result<reqwest::Response, reqwest::Error> {
     let request_method: Method = Method::from_bytes(request_method.as_bytes()).unwrap(); // TODO
 
@@ -85,7 +93,7 @@ async fn execute_request(
     REQUESTOR_CLIENT
         .request(request_method, url)
         .headers(header_map)
-        .body(body)
+        .body(body.unwrap_or_default())
         .send()
         .await
 }

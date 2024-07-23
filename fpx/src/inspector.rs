@@ -253,17 +253,17 @@ async fn handle_request(
         })
         .collect();
 
-    let request_id = Store::request_create(
+    let request = Store::request_create(
         &tx,
         req.method().as_ref(),
         &req.uri().to_string(),
-        "body",
+        Some("body".to_string()),
         headers,
     )
     .await
     .unwrap();
 
-    info!("Store request: {}", request_id);
+    info!("Store request: {}", request.id);
 
     match path {
         Some(path) => info!("Received request: /{}", *path),
@@ -272,7 +272,7 @@ async fn handle_request(
 
     tx.commit().await.unwrap();
 
-    events.broadcast(RequestAdded::new(request_id, None).into());
+    events.broadcast(RequestAdded::new(request.id, None).into());
 
     "Ok"
 }
