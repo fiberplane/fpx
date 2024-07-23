@@ -49,7 +49,6 @@
     "hono": "^4.4.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
     "react-highlight-words": "^0.20.0",
     "react-hook-form": "^7.52.0",
     "react-hotkeys-hook": "^4.5.0",
