@@ -14,10 +14,10 @@ anyhow = { workspace = true }
 async-trait = { version = "0.1" }
 axum = { version = "0.7", features = [
     "http1",
-    "ws",
-    "tracing",
-    "tokio",
     "query",
+    "tokio",
+    "tracing",
+    "ws",
 ] }
 clap = { workspace = true, features = ["derive", "env"] }
 bytes = { version = "1.6" }
