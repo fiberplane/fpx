@@ -8,6 +8,7 @@ import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
 import {
+  getMatchedRoute,
   getMethod,
   getRequestBody,
   getRequestHeaders,
@@ -40,6 +41,10 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
 
   const pathWithSearch = useMemo<string>(() => {
     return getPathWithSearch(span);
+  }, [span]);
+
+  const matchedRoute = useMemo<string>(() => {
+    return getMatchedRoute(span);
   }, [span]);
 
   const requestHeaders = useMemo<Record<string, string>>(() => {
@@ -75,12 +80,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     <div id={id}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <SectionHeading>
-            Incoming Request{" "}
-            {/* <span className="text-gray-200 font-mono italic inline-block ml-2">
-              {matchedRoute}
-            </span> */}
-          </SectionHeading>
+          <SectionHeading>Incoming Request</SectionHeading>
 
           <div className="flex gap-2">
             <Status statusCode={getStatusCode(span)} />
@@ -90,6 +90,14 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
               </span>
               <span className="text-gray-400 font-light">{pathWithSearch}</span>
             </div>
+            {matchedRoute && (
+              <div className="flex gap-2 p-1 text-xs bg-accent/80 rounded">
+                <span className="text-gray-200 text-xs">Route:</span>
+                <span className="text-gray-400 font-mono inline-block text-xs">
+                  {matchedRoute}
+                </span>
+              </div>
+            )}
             <div className="inline-flex gap-2 font-mono text-gray-400 py-1 px-2 text-xs bg-accent/80 rounded">
               <ClockIcon className="w-4 h-4" />
               <span className="font-light">{duration}ms</span>
