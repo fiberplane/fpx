@@ -114,7 +114,6 @@ export function RequestDetailsPage() {
   const shouldRenderV2 = useTracingLiteEnabled();
 
   if (shouldRenderV2) {
-    // TODO - Skeleton
     if (isPending) {
       return <SkeletonLoader />;
     }
