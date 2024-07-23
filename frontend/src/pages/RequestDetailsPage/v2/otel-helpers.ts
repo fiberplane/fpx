@@ -1,4 +1,4 @@
-import { MizuSpan } from "@/queries";
+import { MizuSpan, isMizuRootRequestSpan } from "@/queries";
 
 export function getMatchedRoute(span: MizuSpan) {
   return `${span.attributes["http.route"]}`;
@@ -32,6 +32,23 @@ export function getRequestHeaders(span: MizuSpan) {
         `${value}`,
       ]),
   );
+}
+
+export function getRequestQueryParams(span: MizuSpan) {
+  if (isMizuRootRequestSpan(span)) {
+    const query = `${span.attributes["url.query"]}`;
+    if (!query) {
+      return null;
+    }
+    return Object.fromEntries(new URLSearchParams(query).entries());
+  }
+
+  try {
+    const url = new URL(`${span.attributes["url.full"]}`);
+    return Object.fromEntries(url.searchParams.entries());
+  } catch (e) {
+    return null;
+  }
 }
 
 export function getResponseHeaders(span: MizuSpan) {

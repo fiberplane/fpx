@@ -12,6 +12,7 @@ import {
   getMethod,
   getRequestBody,
   getRequestHeaders,
+  getRequestQueryParams,
   getResponseBody,
   getResponseHeaders,
   getStatusCode,
@@ -76,6 +77,10 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     return ucMethod !== "GET" && ucMethod !== "HEAD";
   }, [method]);
 
+  const requestQueryParams = useMemo<Record<string, string> | null>(() => {
+    return getRequestQueryParams(span);
+  }, [span]);
+
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
@@ -111,6 +116,16 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
           </SubSectionHeading>
           <KeyValueTableV2 keyValue={requestHeaders} />
         </SubSection>
+
+        {requestQueryParams && (
+          <SubSection>
+            <SubSectionHeading>
+              Query Parameters{" "}
+              <CountBadge count={Object.keys(requestQueryParams).length} />
+            </SubSectionHeading>
+            <KeyValueTableV2 keyValue={requestQueryParams} />
+          </SubSection>
+        )}
 
         {canHaveRequestBody && requestBody && (
           <>
