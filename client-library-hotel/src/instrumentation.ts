@@ -14,6 +14,7 @@ import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import type { GlobalResponse } from "./types";
 import { getRequestAttributes, getResponseAttributes } from "./utils";
+import { getRuntimeContext } from "./executionContext";
 
 type FpxConfig = {
   monitor: {
@@ -59,7 +60,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
         return async function fetch(
           request: Request,
           env: unknown,
-          executionCtx: ExecutionContext | undefined,
+          executionContext: ExecutionContext | undefined,
         ) {
           // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,
           //        so that people won't accidentally deploy to production with our middleware and
@@ -68,7 +69,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const isEnabled = !!endpoint;
 
           if (!isEnabled) {
-            return await originalFetch(request, env, executionCtx);
+            return await originalFetch(request, env, executionContext);
           }
 
           const serviceName =
@@ -88,9 +89,9 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           });
 
           // Enable tracing for waitUntil
-          const patched = executionCtx && patchWaitUntil(executionCtx);
+          const patched = executionContext && patchWaitUntil(executionContext);
           const promises = patched?.promises ?? [];
-          const proxyExecutionCtx = patched?.proxyContext ?? executionCtx;
+          const proxyExecutionCtx = patched?.proxyContext ?? executionContext;
 
           const measuredFetch = measure(
             {
@@ -111,11 +112,17 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const result = await measuredFetch(request, env, proxyExecutionCtx);
 
           // Make sure all promises are resolved before sending data to the server
-          proxyExecutionCtx?.waitUntil(
-            Promise.all(promises).finally(() => {
-              return provider.forceFlush();
-            }),
-          );
+          if (proxyExecutionCtx) {
+            proxyExecutionCtx.waitUntil(
+              Promise.all(promises).finally(() => {
+                return provider.forceFlush();
+              }),
+            );
+          } else {
+            // Otherwise just await flushing the provider
+            await provider.forceFlush();
+          }
+
           return result;
         };
       }
