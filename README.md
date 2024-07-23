@@ -1,6 +1,10 @@
 # fpx studio
 
-fpx studio is a local-first tool for building and debugging Hono apis. It enables you to quickly make requests against your api, inspect relevant runtime information when things go wrong, and build on the fly with confidence.
+![FPX](fpx.svg)
+
+fpx studio is a local-first tool for building and debugging Hono apis. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
+
+## Get Started
 
 Launch the studio via `npx` in the root directory of your Hono project:
 
