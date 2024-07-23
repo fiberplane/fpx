@@ -1,5 +1,5 @@
 {
-  "name": "@mizu-dev/hono-otel",
+  "name": "@fiberplane/hono-otel",
   "description": "Hono middleware to forward data to a local instance of @mizu-dev/studio",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
