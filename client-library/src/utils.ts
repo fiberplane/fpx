@@ -1,11 +1,15 @@
 import type { NeonDbError } from "@neondatabase/serverless";
+import type { Context } from "hono";
+import { getRuntimeKey } from "hono/adapter";
 
 // HACK - We inject this symbol in our request/response logger in order to skip logging massive payloads
 export const PRETTIFY_FPX_LOGGER_LOG = Symbol("PRETTIFY_FPX_LOGGER_LOG");
 // HACK - We inject this symbol in our request/response logger to avoid infintie loop of logging on fetches
 export const IGNORE_FPX_LOGGER_LOG = Symbol("IGNORE_FPX_LOGGER_LOG");
 
-export type ExtendedExecutionContext = ExecutionContext & {
+type WaitUntilable = Pick<ExecutionContext, "waitUntil">;
+
+export type ExtendedExecutionContext = WaitUntilable & {
   __waitUntilTimer?: ReturnType<typeof setInterval>;
   __waitUntilPromises?: Promise<void>[];
   waitUntilFinished?: () => Promise<void>;
@@ -100,7 +104,14 @@ export function neonDbErrorToJson(error: NeonDbError) {
     // internalQuery: error?.sourceError?.internalQuery,
   };
 }
-export function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
+
+/**
+ * Polyfill for `waitUntil` in non-Cloudflare environments
+ *
+ * This will be more important when we support OTEL.
+ * See: https://github.com/highlight/highlight/pull/6480
+ */
+function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
   if (typeof ctx.waitUntil !== "function") {
     if (!Array.isArray(ctx.__waitUntilPromises)) {
       ctx.__waitUntilPromises = [];
@@ -120,11 +131,43 @@ export function polyfillWaitUntil(ctx: ExtendedExecutionContext) {
     };
   }
 
+  // NOTE - We do not make use of this here, but it could be helpful for OTEL
+  //        Highlight uses this in `consumeAndFlush` for errors
+  //        See: sdk/highlight-next/src/util/with-highlight-edge.ts
+  //             In the following PR:
+  //             https://github.com/highlight/highlight/pull/6480/files#diff-5a425baa46cb0362f4f233565c28ad4b43c8fa8274ef38f14f2c56d526b35b23R39
   ctx.waitUntilFinished = async function waitUntilFinished() {
     if (ctx.__waitUntilPromises) {
       await Promise.allSettled(ctx.__waitUntilPromises);
     }
   };
+}
+
+function isCloudflareRuntime() {
+  return getRuntimeKey() === "workerd";
+}
+
+/**
+ * Runtime-safe way of accessing `executionCtx`
+ *
+ * At the time of writing, `executionCtx` is not available in all runtimes,
+ * and we need to provide a polyfill for non-Cloudflare environments.
+ * Otherwise, we get a runtime error in Node, Deno, etc.
+ *
+ * In the future, we should use different middleware for different runtimes.
+ */
+export function getRuntimeContext(c: Context): ExtendedExecutionContext {
+  if (isCloudflareRuntime()) {
+    return c.executionCtx as ExtendedExecutionContext;
+  }
+
+  // HACK - This is the polyfill for waitUntil
+  //        I'm not entirely sure if this will lead to a memory leak in certain runtimes,
+  //        since each request will get its own execution context,
+  //        and it's not clear to me that this object will be garbage collected after all of its promises resolve
+  const fakeCtx = {} as WaitUntilable;
+  polyfillWaitUntil(fakeCtx);
+  return fakeCtx;
 }
 
 /**

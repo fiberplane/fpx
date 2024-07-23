@@ -3,7 +3,7 @@ import {
   QueryClientProvider,
   QueryFunctionContext,
   useQuery,
-} from "react-query";
+} from "@tanstack/react-query";
 
 import { objectWithKeyAndValue } from "@/utils";
 import {

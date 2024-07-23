@@ -1,4 +1,4 @@
-import { IGNORE_FPX_LOGGER_LOG, errorToJson, generateUUID } from "./utils";
+import { IGNORE_FPX_LOGGER_LOG, errorToJson, generateUUID } from "./utils.js";
 
 /**
  * Hacky function that monkey-patches fetch to send data about network requests to fpx.
