@@ -96,8 +96,14 @@ impl Store {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn request_list(_tx: &Transaction) -> Result<Vec<Request>> {
-        todo!()
+    pub async fn request_list(&self, tx: &Transaction) -> Result<Vec<models::Request>> {
+        let requests: Vec<models::Request> = tx
+            .query("SELECT * FROM requests", params!())
+            .await?
+            .fetch_all()
+            .await?;
+
+        Ok(requests)
     }
 
     #[tracing::instrument(skip_all)]

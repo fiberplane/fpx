@@ -3,7 +3,7 @@ use serde::{Deserialize, Deserializer};
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 
-use crate::models;
+use crate::models::{self, RequestSummary};
 
 #[derive(Debug)]
 pub(crate) struct Json<T: DeserializeOwned>(T);
@@ -58,5 +58,11 @@ pub(crate) struct Request {
 impl From<Request> for models::Request {
     fn from(req: Request) -> Self {
         models::Request::new(req.id, req.method, req.url, req.body, req.headers.0)
+    }
+}
+
+impl From<Request> for RequestSummary {
+    fn from(request: Request) -> Self {
+        RequestSummary::new(request.id, request.method, request.url)
     }
 }

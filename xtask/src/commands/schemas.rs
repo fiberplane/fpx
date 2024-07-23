@@ -2,7 +2,8 @@ use std::{fs::File, io::Write, path::Path};
 
 use anyhow::Result;
 use fpx::models::{
-    ClientMessage, Request, RequestAdded, RequestorError, RequestorRequestPayload, ServerMessage,
+    ClientMessage, Request, RequestAdded, RequestSummary, RequestorError, RequestorRequestPayload,
+    ServerMessage,
 };
 use schemars::{schema::RootSchema, schema_for};
 use serde_json::Value;
@@ -20,6 +21,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
     let schemas = Vec::from([
         schema_for!(ClientMessage),
         schema_for!(Request),
+        schema_for!(RequestSummary),
         schema_for!(RequestAdded),
         schema_for!(RequestorError),
         schema_for!(RequestorRequestPayload),

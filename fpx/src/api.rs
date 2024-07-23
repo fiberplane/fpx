@@ -67,9 +67,10 @@ fn api_router(
         inspector_service,
     };
     axum::Router::new()
+        .route("/requests", get(handlers::requests_list_handler))
         .route(
             "/requests/:id",
-            get(handlers::request_get_handler).delete(handlers::request_delete_handler),
+            get(handlers::requests_get_handler).delete(handlers::request_delete_handler),
         )
         .route("/requestor", post(handlers::execute_requestor))
         .route(

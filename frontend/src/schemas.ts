@@ -30,6 +30,14 @@ export const RequestSchema = z
 
 export type Request = z.infer<typeof RequestSchema>;
 
+export const RequestSummarySchema = z.object({
+  id: z.number().int().gte(0),
+  method: z.string(),
+  url: z.string(),
+});
+
+export type RequestSummary = z.infer<typeof RequestSummarySchema>;
+
 export const RequestAddedSchema = z.object({
   inspectorId: z
     .union([
@@ -58,7 +66,7 @@ export const RequestAddedSchema = z.object({
 
 export type RequestAdded = z.infer<typeof RequestAddedSchema>;
 
-export const RequestorErrorSchema = z.object({ error: z.literal("internal") });
+export const RequestorErrorSchema = z.any();
 
 export type RequestorError = z.infer<typeof RequestorErrorSchema>;
 

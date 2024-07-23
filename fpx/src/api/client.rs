@@ -1,9 +1,9 @@
 //! API client for the FPX API.
 
-use crate::models::Request;
+use crate::models::{Request, RequestSummary};
 
 use super::errors::ApiClientError;
-use super::handlers::RequestGetError;
+use super::handlers::{RequestGetError, RequestListError};
 use anyhow::Result;
 use http::Method;
 use tracing::trace;
@@ -73,6 +73,14 @@ impl ApiClient {
         request_id: i64,
     ) -> Result<Request, ApiClientError<RequestGetError>> {
         let path = format!("api/requests/{}", request_id);
+
+        self.do_req(Method::GET, path).await
+    }
+
+    pub async fn request_list(
+        &self,
+    ) -> Result<Vec<RequestSummary>, ApiClientError<RequestListError>> {
+        let path = "api/requests";
 
         self.do_req(Method::GET, path).await
     }

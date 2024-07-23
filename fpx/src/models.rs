@@ -174,6 +174,20 @@ impl Request {
     }
 }
 
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestSummary {
+    pub id: u32,
+    pub method: String,
+    pub url: String,
+}
+
+impl RequestSummary {
+    pub fn new(id: u32, method: String, url: String) -> Self {
+        Self { id, method, url }
+    }
+}
+
 /// A response that has been captured by fpx.
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
