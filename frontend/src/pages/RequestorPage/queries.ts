@@ -1,8 +1,8 @@
 import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
+import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
-import { validate } from "@scalar/openapi-parser";
 
 export type ProbedRoute = {
   path: string;

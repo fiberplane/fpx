@@ -82,9 +82,10 @@ function OpenApiForm({
     setValue,
   } = useForm<OpenAPIFormData>();
 
-
   const { mutate: addRoutes } = useAddRoutes();
-  const { mutateAsync: parseAndValidate, isPending } = useOpenApiParse(watch("openApiSpec"));
+  const { mutateAsync: parseAndValidate, isPending } = useOpenApiParse(
+    watch("openApiSpec"),
+  );
 
   const validateOpenApi = async (openApiSpec: string) => {
     try {
@@ -164,9 +165,7 @@ function OpenApiForm({
             onPaste={onPaste}
             autoFocus
           ></Textarea>
-          {isPending && (
-            <p className="text-sm">Validating OpenAPI spec...</p>
-          )}
+          {isPending && <p className="text-sm">Validating OpenAPI spec...</p>}
           {errors.openApiSpec && (
             <p className="text-sm text-red-500">Invalid OpenAPI spec</p>
           )}
