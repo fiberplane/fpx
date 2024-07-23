@@ -1,4 +1,3 @@
-
 /**
  * This returns a proxy-ed ExecutionContext which has a waitUntil method that
  * collects promises passed to it. It also returns an array of promises that

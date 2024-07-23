@@ -1,4 +1,4 @@
-import { context, trace } from "@opentelemetry/api";
+import { context } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { Resource } from "@opentelemetry/resources";
 import {
@@ -12,9 +12,7 @@ import { AsyncLocalStorageContextManager } from "./async-hooks";
 
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
-import type { GlobalResponse } from "./types";
 import { getRequestAttributes, getResponseAttributes } from "./utils";
-import { getRuntimeContext } from "./executionContext";
 
 type FpxConfig = {
   monitor: {
