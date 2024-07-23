@@ -11,6 +11,7 @@ import {
   appResponseInsertSchema,
   appResponses,
   appRoutes,
+  appRoutesInsertSchema,
 } from "../db/schema.js";
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
@@ -36,23 +37,31 @@ app.get("/v0/app-routes", async (ctx) => {
   });
 });
 
-app.post("/v0/app-routes", async (ctx) => {
-  const db = ctx.get("db");
-  const { path, method } = await ctx.req.json();
-  // TODO - Handle `SQLITE_CONSTRAINT_PRIMARYKEY` error
-  const createdRoute = await db
-    .insert(appRoutes)
-    .values({
-      path,
-      method,
-      handlerType: "route",
-      // TODO
-      handler: "CODE NOT AVAILABLE",
-      addedByUser: true,
-    })
-    .returning();
-  return ctx.json(createdRoute?.[0]);
-});
+app.post(
+  "/v0/app-routes",
+  zValidator(
+    "json",
+    z.union([appRoutesInsertSchema, z.array(appRoutesInsertSchema)]),
+  ),
+  async (ctx) => {
+    const db = ctx.get("db");
+    const submitted = ctx.req.valid("json");
+    // NOTE: drizzle should handle this for us, but it doesn't seem to be working...
+    if (Array.isArray(submitted)) {
+      const createdRoutes = await db
+        .insert(appRoutes)
+        .values(submitted)
+        .returning();
+      return ctx.json(createdRoutes);
+    } else {
+      const createdRoute = await db
+        .insert(appRoutes)
+        .values(submitted)
+        .returning();
+      return ctx.json(createdRoute?.[0]);
+    }
+  },
+);
 
 app.delete("/v0/app-routes/:method/:path", async (ctx) => {
   const db = ctx.get("db");

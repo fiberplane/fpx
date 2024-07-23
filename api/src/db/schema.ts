@@ -30,10 +30,13 @@ export const appRoutes = sqliteTable(
     currentlyRegistered: integer("currentlyRegistered", {
       mode: "boolean",
     }).default(false),
-    // A flag for routes that get added manually by user
-    addedByUser: integer("addedByUser", {
-      mode: "boolean",
-    }).default(false),
+    // A flag for route type that indicated if the route was added manually by user or by probe
+    routeOrigin: text("route_origin", {
+      mode: "text",
+      enum: ["discovered", "custom", "open_api"],
+    }).default("discovered"),
+    // serialized OpenAPI spec for AI prompting
+    openapiSpec: text("openapi_spec", { mode: "text" }),
   },
   (table) => {
     return {
