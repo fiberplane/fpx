@@ -6,7 +6,7 @@ import { z } from "zod";
 import { generateRequestWithOpenAI } from "../lib/ai/openai.js";
 import { cleanPrompt } from "../lib/ai/prompts.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { getOpenAiConfig } from "./settings.js";
+import { getInferenceConfig } from "./settings.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -14,33 +14,17 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
   const { handler, method, path, history, persona } = await ctx.req.json();
 
   const db = ctx.get("db");
-  const openaiConfig = await getOpenAiConfig(db);
+  const inferenceConfig = await getInferenceConfig(db);
 
-  if (!openaiConfig) {
+  if (!inferenceConfig) {
     return ctx.json(
       {
-        message: "No OpenAI configuration found",
+        message: "No inference configuration found",
       },
       403,
     );
   }
-  if (!openaiConfig.openaiApiKey) {
-    return ctx.json(
-      {
-        message: "OpenAI API key required",
-      },
-      403,
-    );
-  }
-  if (!openaiConfig.openaiModel) {
-    return ctx.json(
-      {
-        message: "OpenAI model not specified",
-      },
-      422,
-    );
-  }
-  const { openaiApiKey, openaiModel } = openaiConfig;
+  const { openaiApiKey, openaiModel } = inferenceConfig;
 
   const { data: parsedArgs, error: generateError } =
     await generateRequestWithOpenAI({

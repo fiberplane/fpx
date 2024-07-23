@@ -13,7 +13,7 @@ import appRoutes from "./routes/app-routes.js";
 import dependencies from "./routes/dependencies.js";
 import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
-import openai from "./routes/openai.js";
+import inference from "./routes/inference.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
 
@@ -56,7 +56,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
 
   // All routes are modularized in the ./routes folder
   app.route("/", logs);
-  app.route("/", openai);
+  app.route("/", inference);
   app.route("/", source);
   app.route("/", dependencies);
   app.route("/", issues);

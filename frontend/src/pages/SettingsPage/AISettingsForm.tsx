@@ -30,29 +30,35 @@ import {
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
-import { GPT_4_TURBO, GPT_4o } from "./form/types";
+import {
+  AnthropicModelOptions,
+  OpenAiModelOptions,
+  ProviderOptions,
+} from "./form/types";
 
 export function AISettingsForm({
   settings,
-}: { settings: Record<string, string> }) {
+}: {
+  settings: Record<string, string>;
+}) {
   const { form, onSubmit } = useSettingsForm(settings);
 
   const isAiDirty =
-    form.formState.dirtyFields.ai_features ||
-    form.formState.dirtyFields.openai_api_key ||
-    form.formState.dirtyFields.openai_model;
+    Object.keys(form.formState.dirtyFields).filter(
+      (key) => !["customRoutes"].includes(key),
+    ).length > 0;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
         <div>
           <h3 className="hidden md:block md:mb-4 text-lg font-medium">
-            AI Settings
+            Inference Settings
           </h3>
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="ai_features"
+              name="aiEnabled"
               render={({ field }) => (
                 <FormItem
                   className={cn("rounded-lg border p-4 space-y-4", {
@@ -68,8 +74,7 @@ export function AISettingsForm({
                         </span>
                       </FormLabel>
                       <FormDescription>
-                        Generate sample request data with AI. Requires an OpenAI
-                        API key.
+                        Generate sample request data with AI.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -79,51 +84,74 @@ export function AISettingsForm({
                       />
                     </FormControl>
                   </div>
-
                   {field.value ? (
                     <FormField
                       control={form.control}
-                      name="openai_api_key"
-                      render={({ field }) => (
+                      name="providerType"
+                      render={({ field: providerField }) => (
                         <div className="border-t pt-4">
                           <FormItem className="flex flex-col gap-2 justify-between rounded-lg text-sm">
                             <div className="flex flex-col gap-2">
                               <div className="flex flex-col gap-2">
                                 <FormLabel className="text-base text-gray-300">
-                                  OpenAI Conifguration
+                                  Provider Configuration
                                 </FormLabel>
-                                <AnthropicSupportCallout />
-                              </div>
-                              <div className="flex flex-col gap-1">
-                                <FormLabel className="block font-normal text-sm text-gray-300">
-                                  API Key
-                                </FormLabel>
-                                <FormDescription className="mb-1">
-                                  Your api key is stored locally in{" "}
-                                  <code className="text-red-200/80 text-xs">
-                                    .fpxconfig/fpx.db
-                                  </code>{" "}
-                                  to make requests to the OpenAI API. It should
-                                  be ignored by version control by default.
-                                </FormDescription>
-                                <FormControl>
-                                  <ApiKeyInput
-                                    value={field.value ?? ""}
-                                    onChange={field.onChange}
-                                  />
-                                </FormControl>
                               </div>
                             </div>
-                            <FormField
-                              control={form.control}
-                              name="openai_model"
-                              render={({ field }) => (
-                                <FormItem className="flex flex-col justify-between rounded-lg text-sm">
-                                  <FormLabel className="text-sm text-gray-300 font-normal">
-                                    Model
-                                  </FormLabel>
-                                  <FormControl>
-                                    <div className="flex gap-2 items-center">
+                            <div className="flex flex-col gap-1">
+                              <FormDescription className="mb-1">
+                                Select the AI provider and model you want to
+                                use.
+                              </FormDescription>
+                              <FormControl>
+                                <div className="flex gap-2 items-center">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        className="w-auto px-2 inline-flex items-center"
+                                      >
+                                        <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
+                                        {
+                                          ProviderOptions[
+                                            providerField.value ?? "openai"
+                                          ]
+                                        }
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-full max-w-lg">
+                                      <DropdownMenuRadioGroup
+                                        value={providerField.value}
+                                        onValueChange={(value) =>
+                                          providerField.onChange(value)
+                                        }
+                                      >
+                                        {Object.entries(ProviderOptions).map(
+                                          ([option, label]) => (
+                                            <DropdownMenuRadioItem
+                                              key={option}
+                                              value={option}
+                                            >
+                                              {label}
+                                            </DropdownMenuRadioItem>
+                                          ),
+                                        )}
+                                      </DropdownMenuRadioGroup>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                  {"⫸"}
+                                  <FormField
+                                    control={form.control}
+                                    name={
+                                      providerField.value === "openai"
+                                        ? "openaiModel"
+                                        : "anthropicModel"
+                                    }
+                                    // key is used to force re-render when provider changes
+                                    key={`${providerField.value}-model`}
+                                    render={({ field }) => (
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                           <Button
@@ -133,7 +161,13 @@ export function AISettingsForm({
                                             className="w-auto px-2 inline-flex items-center"
                                           >
                                             <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
-                                            {field.value ?? GPT_4o}
+                                            {providerField.value === "openai"
+                                              ? OpenAiModelOptions[
+                                                  field.value as keyof typeof OpenAiModelOptions
+                                                ]
+                                              : AnthropicModelOptions[
+                                                  field.value as keyof typeof AnthropicModelOptions
+                                                ]}
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-full max-w-lg">
@@ -143,29 +177,91 @@ export function AISettingsForm({
                                               field.onChange(value)
                                             }
                                           >
-                                            <DropdownMenuRadioItem
-                                              value={GPT_4o}
-                                            >
-                                              gpt-4o
-                                            </DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem
-                                              value={GPT_4_TURBO}
-                                            >
-                                              gpt-4-turbo
-                                            </DropdownMenuRadioItem>
-                                            {/* NOTE - gpt-3.5-turbo is not working with tool calling api for some reason? */}
-                                            {/* <DropdownMenuRadioItem value={GPT_3_5_TURBO}>
-                                              gpt-3.5-turbo
-                                            </DropdownMenuRadioItem> */}
+                                            {Object.entries(
+                                              providerField.value === "openai"
+                                                ? OpenAiModelOptions
+                                                : AnthropicModelOptions,
+                                            ).map(([option, label]) => (
+                                              <DropdownMenuRadioItem
+                                                key={option}
+                                                value={option}
+                                              >
+                                                {label}
+                                              </DropdownMenuRadioItem>
+                                            ))}
                                           </DropdownMenuRadioGroup>
                                         </DropdownMenuContent>
                                       </DropdownMenu>
-                                      <FormDescription>
-                                        Select the OpenAI model you want to use
-                                      </FormDescription>
-                                    </div>
+                                    )}
+                                  />
+                                </div>
+                              </FormControl>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name={
+                                providerField.value === "openai"
+                                  ? "openaiApiKey"
+                                  : "anthropicApiKey"
+                              }
+                              key={`${providerField.value}-api-key`}
+                              render={({ field }) => (
+                                <div className="flex flex-col gap-1">
+                                  <FormLabel className="block font-normal text-sm text-gray-300">
+                                    API Key
+                                  </FormLabel>
+                                  <FormDescription className="mb-1">
+                                    Your api key is stored locally in{" "}
+                                    <code className="text-red-200/80 text-xs">
+                                      .fpxconfig/fpx.db
+                                    </code>{" "}
+                                    to make requests to the{" "}
+                                    {
+                                      ProviderOptions[
+                                        providerField.value ?? "openai"
+                                      ]
+                                    }{" "}
+                                    API. It should be ignored by version control
+                                    by default.
+                                  </FormDescription>
+                                  <FormControl>
+                                    <ApiKeyInput
+                                      value={field.value ?? ""}
+                                      onChange={field.onChange}
+                                    />
                                   </FormControl>
-                                </FormItem>
+                                </div>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={
+                                providerField.value === "openai"
+                                  ? "openaiBaseUrl"
+                                  : "anthropicBaseUrl"
+                              }
+                              key={`${providerField.value}-base-url`}
+                              render={({ field }) => (
+                                <div className="flex flex-col gap-1">
+                                  <FormLabel className="block font-normal text-sm text-gray-300">
+                                    Base URL
+                                  </FormLabel>
+                                  <FormDescription className="mb-1">
+                                    You can configure base URL used by{" "}
+                                    {
+                                      ProviderOptions[
+                                        providerField.value ?? "openai"
+                                      ]
+                                    }{" "}
+                                    API client to use any compatible endpoint.
+                                  </FormDescription>
+                                  <FormControl>
+                                    <Input
+                                      value={field.value ?? ""}
+                                      onChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                </div>
                               )}
                             />
                           </FormItem>
@@ -214,7 +310,7 @@ const ApiKeyInput = ({
     <div className="flex items-center space-x-2">
       <Input
         type={passwordShown ? "text" : "password"}
-        className="w-full font-mono text-gray-300 max-w-[680px]"
+        className="w-full font-mono text-gray-300"
         value={value}
         onChange={onChange}
         autoComplete="off"
@@ -237,19 +333,6 @@ const ApiKeyInput = ({
   );
 };
 
-function AnthropicSupportCallout() {
-  return (
-    <div className="w-full pt-1 pb-2">
-      <div className="flex items-center gap-2 text-gray-500">
-        <InfoCircledIcon className="h-3.5 w-3.5" />
-        <span className="text-xs  italic">
-          Support for Anthropic coming soon!
-        </span>
-      </div>
-    </div>
-  );
-}
-
 /**
  * Banner component to inform the end user their code is sent to an ai provider
  */
@@ -260,15 +343,12 @@ function CodeSentToAiBanner() {
         <InfoCircledIcon className="w-3.5 h-3.5" />
       </div>
       <div className="flex flex-col items-start justify-start gap-1.5">
-        <span className="font-semibold">What FPX sends to OpenAI</span>
+        <span className="font-semibold">What FPX sends to AI providers</span>
         <div className="flex flex-col gap-1">
           <span className="">
             To generate inputs for HTTP requests, FPX sends the source code of
-            route handlers to OpenAI.
-          </span>
-          <span>
-            FPX also sends a short history of recent requests. Common sensitive
-            headers are redacted by default.
+            route handlers along with short history of recent requests. Common
+            sensitive headers are redacted by default.
           </span>
         </div>
       </div>
