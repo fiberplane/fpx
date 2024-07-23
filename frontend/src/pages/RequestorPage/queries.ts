@@ -9,7 +9,8 @@ export type ProbedRoute = {
   handler: string;
   handlerType: "route" | "middleware";
   currentlyRegistered: boolean;
-  addedByUser: boolean;
+  routeOrigin: "discovered" | "custom" | "open_api";
+  openapiSpec?: string;
   // TODO - Implement
   isDraft?: boolean;
 };
@@ -71,29 +72,29 @@ export function useProbedRoutes() {
   });
 }
 
-function addRoute({
-  path,
-  method,
-}: {
+export type Route = {
   path: string;
   method: string;
-}) {
+  handler?: string;
+  handlerType?: "route" | "middleware";
+  routeOrigin?: "discovered" | "custom" | "open_api";
+  openapiSpec?: string;
+}
+
+async function addRoutes(routes: Route | Route[]) {
   return fetch("/v0/app-routes", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      path,
-      method,
-    }),
+    body: JSON.stringify(routes),
   }).then((r) => r.json());
 }
 
-export function useAddRoute() {
+export function useAddRoutes() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: addRoute,
+    mutationFn: addRoutes,
     onSuccess: () => {
       // Invalidate and refetch app routes... not sure if this will mess with the currently selected route,
       // or if we want to autoselect the new route, or what
@@ -196,3 +197,4 @@ export function useTrace(traceId: string) {
     error,
   };
 }
+
