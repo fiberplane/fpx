@@ -1,3 +1,4 @@
+import { ResponseBodyText } from "@/pages/RequestorPage";
 import JsonView from "@uiw/react-json-view";
 import { nordTheme } from "@uiw/react-json-view/nord";
 
@@ -22,6 +23,6 @@ export function TextOrJsonViewer({
       />
     );
   } catch (error) {
-    return <pre>{text}</pre>;
+    return <ResponseBodyText body={text} />;
   }
 }

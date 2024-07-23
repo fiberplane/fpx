@@ -42,7 +42,7 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
                 >
                   <Card
                     key={idx}
-                    className="relative rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
+                    className="relative rounded-sm bg-secondary hover:bg-secondary/75 text-sm font-mono"
                   >
                     <CardContent className="p-2 whitespace-pre-wrap">
                       {error?.name}: {error?.message}
@@ -51,7 +51,7 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
                 </a>
               ))
             ) : (
-              <FpxCard>
+              <FpxCard className="rounded-sm">
                 <CardContent className="p-2 bg-secondary rounded-sm">
                   {body && <TextOrJsonViewer text={body} collapsed />}
                 </CardContent>
