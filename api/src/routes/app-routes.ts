@@ -60,7 +60,6 @@ app.post(
       .values(submitted)
       .returning();
     return ctx.json(createdRoute?.[0]);
-
   },
 );
 
