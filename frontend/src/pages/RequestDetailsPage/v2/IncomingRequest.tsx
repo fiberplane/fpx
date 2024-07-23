@@ -18,10 +18,6 @@ import {
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 import { timelineId } from "./timelineId";
 
-function getMatchedRoute(span: MizuRootRequestSpan) {
-  return `${span.attributes["http.route"]}`;
-}
-
 function getPathWithSearch(span: MizuRootRequestSpan) {
   const path = span.attributes["url.path"];
   const queryParams = span.attributes["url.query"];
@@ -32,7 +28,6 @@ function getPathWithSearch(span: MizuRootRequestSpan) {
 export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   const id = timelineId(span);
   const method = getMethod(span);
-  const matchedRoute = getMatchedRoute(span);
   const duration = useMemo(() => {
     try {
       const duration =
@@ -82,7 +77,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
         <div className="flex flex-col gap-2">
           <SectionHeading>
             Incoming Request{" "}
-            {/* <span className="text-gray-400 font-mono text-sm italic inline-block ml-2">
+            {/* <span className="text-gray-200 font-mono italic inline-block ml-2">
               {matchedRoute}
             </span> */}
           </SectionHeading>

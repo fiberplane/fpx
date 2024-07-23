@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 import { FpxCard, RequestMethod } from "../shared";
 import {
+  getMatchedRoute,
   getMethod,
   getPathWithSearch,
   getResponseBody,
@@ -17,6 +18,7 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
   const errors = useMemo(() => selectErrors(trace), [trace]);
   const hasErrors = errors.length > 0;
   const body = useMemo(() => selectResponseBody(trace), [trace]);
+  const matchedRoute = useMemo(() => selectMatchedRoute(trace), [trace]);
 
   return (
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
@@ -26,6 +28,14 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
             <HttpSummary trace={trace} />
           </div>
           <div className="grid gap-2 overflow-x-auto">
+            {matchedRoute && (
+              <>
+                <h4 className="uppercase text-xs text-muted-foreground">
+                  Matched Route
+                </h4>
+                <p className="text-sm font-mono">{matchedRoute}</p>
+              </>
+            )}
             <h4 className="uppercase text-xs text-muted-foreground">
               {hasErrors ? "ERRORS" : "RESPONSE"}
             </h4>
@@ -129,6 +139,15 @@ function selectResponseBody(trace: MizuTraceV2) {
   for (const span of trace.waterfall) {
     if (isMizuRootRequestSpan(span)) {
       return getResponseBody(span);
+    }
+  }
+  return null;
+}
+
+function selectMatchedRoute(trace: MizuTraceV2) {
+  for (const span of trace.spans) {
+    if (isMizuRootRequestSpan(span)) {
+      return getMatchedRoute(span);
     }
   }
   return null;

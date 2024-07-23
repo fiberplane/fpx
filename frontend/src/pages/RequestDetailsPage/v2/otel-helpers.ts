@@ -1,5 +1,9 @@
 import { MizuSpan } from "@/queries";
 
+export function getMatchedRoute(span: MizuSpan) {
+  return `${span.attributes["http.route"]}`;
+}
+
 export function getPath(span: MizuSpan) {
   return `${span.attributes["url.path"]}`;
 }
