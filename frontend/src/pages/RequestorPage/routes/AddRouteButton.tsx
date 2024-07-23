@@ -13,12 +13,10 @@ import {
   OpenAPIV2,
   OpenAPIV3,
   OpenAPIV3_1,
-  validate,
 } from "@scalar/openapi-parser";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useMutation } from "react-query";
 import { RequestMethodCombobox } from "../RequestMethodCombobox";
 import { Route, useAddRoutes, useOpenApiParse } from "../queries";
 
