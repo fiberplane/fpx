@@ -6,14 +6,12 @@ import { isMizuErrorMessage, isMizuFetchErrorMessage } from "@/queries/types";
 import { useMemo } from "react";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 import { FpxCard, RequestMethod } from "../shared";
-import { getResponseBody } from "./otel-helpers";
-
-export type TocItem = {
-  id: string;
-  title: string;
-  status?: string | number;
-  method?: string;
-};
+import {
+  getMethod,
+  getPathWithSearch,
+  getResponseBody,
+  getStatusCode,
+} from "./otel-helpers";
 
 export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
   const errors = useMemo(() => selectErrors(trace), [trace]);
@@ -24,10 +22,8 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
       <FpxCard className="bg-muted/20">
         <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
-          <div className="flex gap-2 items-center">
-            <Status statusCode={Number(trace?.status)} />
-            <RequestMethod method={trace?.method} />
-            <p className="text-sm font-mono">{trace?.path}</p>
+          <div className="md:hidden">
+            <HttpSummary trace={trace} />
           </div>
           <div className="grid gap-2 overflow-x-auto">
             <h4 className="uppercase text-xs text-muted-foreground">
@@ -62,6 +58,47 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
       </FpxCard>
     </div>
   );
+}
+
+export function HttpSummary({ trace }: { trace: MizuTraceV2 }) {
+  const statusCode = useMemo(() => selectStatusCode(trace), [trace]);
+  const path = useMemo(() => selectPath(trace), [trace]);
+  const method = useMemo(() => selectMethod(trace), [trace]);
+
+  return (
+    <div className="flex gap-2 items-center">
+      <Status className="md:text-base" statusCode={Number(statusCode)} />
+      <RequestMethod method={method} />
+      <p className="text-sm md:text-base font-mono">{path}</p>
+    </div>
+  );
+}
+
+function selectStatusCode(trace: MizuTraceV2) {
+  for (const span of trace.spans) {
+    if (isMizuRootRequestSpan(span)) {
+      return getStatusCode(span);
+    }
+  }
+  return "—";
+}
+
+function selectPath(trace: MizuTraceV2) {
+  for (const span of trace.spans) {
+    if (isMizuRootRequestSpan(span)) {
+      return getPathWithSearch(span);
+    }
+  }
+  return "—";
+}
+
+function selectMethod(trace: MizuTraceV2) {
+  for (const span of trace.spans) {
+    if (isMizuRootRequestSpan(span)) {
+      return getMethod(span);
+    }
+  }
+  return "—";
 }
 
 function selectErrors(trace: MizuTraceV2) {

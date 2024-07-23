@@ -1,5 +1,16 @@
 import { MizuSpan } from "@/queries";
 
+export function getPath(span: MizuSpan) {
+  return `${span.attributes["url.path"]}`;
+}
+
+export function getPathWithSearch(span: MizuSpan) {
+  const path = span.attributes["url.path"];
+  const queryParams = span.attributes["url.query"];
+  const queryParamsString = queryParams ? `?${queryParams}` : "";
+  return `${path}${queryParamsString}`;
+}
+
 export function getRequestBody(span: MizuSpan) {
   return `${span.attributes["fpx.request.body"]}`;
 }

@@ -43,9 +43,6 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
     return getResponseBody(span);
   }, [span]);
 
-  console.log("responseBody", responseBody, typeof responseBody);
-  console.log("requestBody", requestBody, typeof requestBody);
-
   const duration = useMemo(() => {
     try {
       const duration =

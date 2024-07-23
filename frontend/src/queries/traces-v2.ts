@@ -306,8 +306,8 @@ function createFetchSpan(
     status = fpxFetchResponseLogToOtelStatus(reponseErrorLog);
     // HACK - Check if this actually works... should really fix the middleware huh
     attributes = {
-      ...fpxFetchResponseToHttpAttributes(fetchStartLog, reponseErrorLog),
       ...fpxFetchResponseToHttpAttributes(fetchStartLog, responseSuccessLog),
+      ...fpxFetchResponseToHttpAttributes(fetchStartLog, reponseErrorLog),
     };
   } else if (responseSuccessLog) {
     spanLogs = [fetchStartLog, responseSuccessLog];
@@ -495,6 +495,7 @@ function fpxFetchResponseLogToOtelStatus(
 function fpxFetchResponseToHttpAttributes(
   request: MizuFetchStartLog,
   response?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog,
+  response2?: MizuFetchEndLog | MizuFetchErrorLog,
 ) {
   const parsedUrl = safeParseUrl(request.message.url);
   // https://opentelemetry.io/docs/specs/semconv/http/http-spans/
@@ -536,11 +537,15 @@ function fpxFetchResponseToHttpAttributes(
     for (const [header, value] of Object.entries(response.message.headers)) {
       responseHeaderAttributes[`http.response.header.${header}`] = value;
     }
+    const responseBody = isMizuFetchEndLog(response2)
+      ? response2?.message?.body
+      : response.message.body;
+
     return {
       ...commonAttributes,
       ...responseHeaderAttributes,
       "http.response.status_code": parseInt(`${response.message.status}`),
-      "fpx.response.body": response.message.body,
+      "fpx.response.body": responseBody,
     };
   }
 

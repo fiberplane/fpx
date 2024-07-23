@@ -41,6 +41,7 @@ import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 import { FpxCard, RequestMethod, SectionHeading } from "./shared";
 import { SummaryV2, TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
+import { HttpSummary } from "./v2/SummaryV2";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -140,7 +141,12 @@ export function RequestDetailsPage() {
             "sm:gap-6 sm:py-8",
           )}
         >
-          <h2 className="text-2xl font-semibold">Request Details</h2>
+          <div className="flex items-center gap-6">
+            <h2 className="text-2xl font-semibold">Request Details</h2>
+            <div className="hidden md:block">
+              <HttpSummary trace={traceV2} />
+            </div>
+          </div>
           <div className="flex gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
