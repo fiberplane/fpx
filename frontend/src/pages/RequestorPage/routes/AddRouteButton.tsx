@@ -9,11 +9,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { PlusIcon } from "@radix-ui/react-icons";
-import {
-  OpenAPIV2,
-  OpenAPIV3,
-  OpenAPIV3_1,
-} from "@scalar/openapi-parser";
+import { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "@scalar/openapi-parser";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
