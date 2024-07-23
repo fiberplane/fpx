@@ -495,7 +495,6 @@ function fpxFetchResponseLogToOtelStatus(
 function fpxFetchResponseToHttpAttributes(
   request: MizuFetchStartLog,
   response?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog,
-  response2?: MizuFetchEndLog | MizuFetchErrorLog,
 ) {
   const parsedUrl = safeParseUrl(request.message.url);
   // https://opentelemetry.io/docs/specs/semconv/http/http-spans/
@@ -537,9 +536,7 @@ function fpxFetchResponseToHttpAttributes(
     for (const [header, value] of Object.entries(response.message.headers)) {
       responseHeaderAttributes[`http.response.header.${header}`] = value;
     }
-    const responseBody = isMizuFetchEndLog(response2)
-      ? response2?.message?.body
-      : response.message.body;
+    const responseBody = response.message.body;
 
     return {
       ...commonAttributes,
