@@ -7,6 +7,10 @@ export function TextOrJsonViewer({
 }: { text: string; collapsed?: boolean | undefined }) {
   try {
     const json = JSON.parse(text);
+    // HACK - JsonView freaks out if the value isn't an object
+    if (typeof json === "string" || typeof json === "number" || json === null) {
+      return <pre>{text}</pre>;
+    }
     // @ts-expect-error hacky way to just quickly change the background color
     nordTheme["--w-rjv-background-color"] = "transparent";
     return (
