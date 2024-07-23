@@ -20,11 +20,11 @@ pub async fn handle_command(args: Args) -> Result<()> {
     // Define which types should be used to generate schemas
     let schemas = Vec::from([
         schema_for!(ClientMessage),
-        schema_for!(Request),
-        schema_for!(RequestSummary),
-        schema_for!(RequestAdded),
-        schema_for!(NewRequestError),
         schema_for!(NewRequest),
+        schema_for!(NewRequestError),
+        schema_for!(Request),
+        schema_for!(RequestAdded),
+        schema_for!(RequestSummary),
         schema_for!(ServerMessage),
     ]);
 

@@ -227,7 +227,7 @@ pub struct NewRequest {
 }
 
 // TODO: Improve later to get more specific error handling
-#[derive(JsonSchema, Debug, Serialize, Error)]
+#[derive(JsonSchema, Debug, Serialize, Error, Deserialize)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[allow(dead_code)]
 pub enum NewRequestError {}
