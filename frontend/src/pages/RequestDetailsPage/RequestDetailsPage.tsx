@@ -28,7 +28,7 @@ import { cn } from "@/utils";
 import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 import { FetchRequestLog } from "./FetchRequestLog";
@@ -116,7 +116,10 @@ export function RequestDetailsPage() {
   if (shouldRenderV2) {
     // TODO - Skeleton
     if (isPending) {
-      return null;
+      return <SkeletonLoader />;
+    }
+    if (!traceV2) {
+      return <EmptyState />;
     }
     return (
       <div
@@ -282,52 +285,27 @@ export function RequestDetailsPage() {
         )}
       >
         <div
-          className={
-            shouldRenderV2
-              ? cn(
-                  "hidden",
-                  "min-w-[300px]",
-                  "xl:min-w-[360px]",
-                  "2xl:min-w-[420px]",
-                  "lg:block lg:sticky lg:top-4 self-start",
-                )
-              : cn(
-                  "hidden sm:block sm:sticky sm:top-4 self-start",
-                  "sm:w-[220px]",
-                  "md:w-[280px]",
-                )
-          }
-        >
-          {shouldRenderV2 ? (
-            <TraceDetailsTimeline trace={traceV2} />
-          ) : (
-            <Minimap trace={trace} />
+          className={cn(
+            "hidden sm:block sm:sticky sm:top-4 self-start",
+            "sm:w-[220px]",
+            "md:w-[280px]",
           )}
+        >
+          <Minimap trace={trace} />
         </div>
         <div
           className={cn(
             "grid items-center gap-4 overflow-x-auto relative",
             "sm:grid-rows-[auto_1fr]",
-            shouldRenderV2 ? "max-lg:grid-rows-[auto_auto_1fr]" : "",
           )}
         >
-          {shouldRenderV2 ? (
-            <SummaryV2 trace={traceV2} />
-          ) : trace ? (
+          {trace ? (
             <Summary trace={trace} />
           ) : (
             <div className="w-full relative" />
           )}
 
-          {shouldRenderV2 ? (
-            <div className="w-full lg:hidden">
-              <TraceDetailsTimeline trace={traceV2} />
-            </div>
-          ) : null}
-
-          {shouldRenderV2 ? (
-            <TraceDetailsV2 trace={traceV2} />
-          ) : trace ? (
+          {trace ? (
             <TraceDetails trace={trace} />
           ) : (
             <div className="w-full relative" />
@@ -526,5 +504,86 @@ function LogDetails({ log }: { log: MizuLog }) {
       args={log.args}
       logId={String(log.id)}
     />
+  );
+}
+
+function SkeletonLoader() {
+  return (
+    <div
+      className={cn(
+        "h-full",
+        "relative",
+        "overflow-hidden",
+        "overflow-y-scroll",
+        "grid grid-rows-[auto_1fr]",
+        "px-2 pb-4",
+        "sm:px-4 sm:pb-8",
+        "md:px-6",
+      )}
+    >
+      <div
+        className={cn(
+          "flex gap-4 items-center justify-between",
+          "py-8",
+          "sm:gap-6 sm:py-8",
+        )}
+      >
+        <div className="h-8 w-48 bg-gray-800 animate-pulse rounded"></div>
+        <div className="flex gap-2">
+          <div className="h-8 w-8 bg-gray-800 animate-pulse rounded"></div>
+          <div className="h-8 w-8 bg-gray-800 animate-pulse rounded"></div>
+        </div>
+      </div>
+      <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
+        <div className="h-6 w-32 bg-gray-800 animate-pulse rounded"></div>
+        <div className="grid lg:grid-cols-[auto_1fr] lg:gap-2 xl:gap-3">
+          <div
+            className={cn(
+              "hidden",
+              "lg:block lg:sticky lg:top-4 self-start",
+              "min-w-[300px]",
+              "xl:min-w-[360px]",
+              "2xl:min-w-[420px]",
+            )}
+          >
+            <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+          </div>
+          <div
+            className={cn(
+              "grid items-center gap-4 overflow-x-auto relative",
+              "max-lg:grid-rows-[auto_1fr]",
+              "lg:items-start",
+            )}
+          >
+            <div className="w-full lg:hidden">
+              <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+            </div>
+            <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+export function EmptyState() {
+  return (
+    <div
+      className={cn(
+        "h-full",
+        "flex flex-col items-center justify-center",
+        "text-center",
+        "px-4 py-8",
+        "sm:px-6 sm:py-12",
+        "md:px-8",
+      )}
+    >
+      <h2 className="text-2xl font-semibold mb-4">Trace Not Found</h2>
+      <p className="text-muted-foreground mb-6">
+        The trace you are looking for does not exist.
+      </p>
+      <Button asChild variant="ghost">
+        <Link to="/requests">Go Back to Requests</Link>
+      </Button>
+    </div>
   );
 }
