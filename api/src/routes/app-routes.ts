@@ -53,13 +53,14 @@ app.post(
         .values(submitted)
         .returning();
       return ctx.json(createdRoutes);
-    } else {
-      const createdRoute = await db
-        .insert(appRoutes)
-        .values(submitted)
-        .returning();
-      return ctx.json(createdRoute?.[0]);
     }
+
+    const createdRoute = await db
+      .insert(appRoutes)
+      .values(submitted)
+      .returning();
+    return ctx.json(createdRoute?.[0]);
+
   },
 );
 
