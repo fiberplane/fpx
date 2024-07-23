@@ -2,7 +2,7 @@ use crate::data::Store;
 use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
 use axum::extract::FromRef;
-use axum::routing::{any, get, post};
+use axum::routing::{any, get};
 use http::StatusCode;
 use url::Url;
 
@@ -67,12 +67,14 @@ fn api_router(
         inspector_service,
     };
     axum::Router::new()
-        .route("/requests", get(handlers::requests_list_handler))
+        .route(
+            "/requests",
+            get(handlers::requests_list_handler).post(handlers::requests_post_handler),
+        )
         .route(
             "/requests/:id",
             get(handlers::requests_get_handler).delete(handlers::request_delete_handler),
         )
-        .route("/requestor", post(handlers::execute_requestor))
         .route(
             "/inspectors",
             get(handlers::inspector_list_handler).post(handlers::inspector_create_handler),

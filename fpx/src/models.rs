@@ -217,9 +217,9 @@ impl Response {
     }
 }
 
-/// The payload that describes the request that Requestor has to execute
+/// The payload that describes the request that has to be executed
 #[derive(JsonSchema, Deserialize, Serialize)]
-pub struct RequestorRequestPayload {
+pub struct NewRequest {
     pub method: String,
     pub url: String,
     pub body: Option<String>,
@@ -230,29 +230,29 @@ pub struct RequestorRequestPayload {
 #[derive(JsonSchema, Debug, Serialize, Error)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[allow(dead_code)]
-pub enum RequestorError {}
+pub enum NewRequestError {}
 
-impl ApiError for RequestorError {
+impl ApiError for NewRequestError {
     fn status_code(&self) -> StatusCode {
-        // NOTE: RequestorError doesn't have any explicit errors, so just
+        // NOTE: NewRequestError doesn't have any explicit errors, so just
         // return a NOT_IMPLEMENTED status code for now.
         StatusCode::NOT_IMPLEMENTED
     }
 }
 
-impl From<DbError> for ApiServerError<RequestorError> {
+impl From<DbError> for ApiServerError<NewRequestError> {
     fn from(_err: DbError) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
 
-impl From<libsql::Error> for ApiServerError<RequestorError> {
+impl From<libsql::Error> for ApiServerError<NewRequestError> {
     fn from(_err: libsql::Error) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
 
-impl From<reqwest::Error> for ApiServerError<RequestorError> {
+impl From<reqwest::Error> for ApiServerError<NewRequestError> {
     fn from(_err: reqwest::Error) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }

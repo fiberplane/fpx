@@ -2,7 +2,7 @@ use std::{fs::File, io::Write, path::Path};
 
 use anyhow::Result;
 use fpx::models::{
-    ClientMessage, Request, RequestAdded, RequestSummary, RequestorError, RequestorRequestPayload,
+    ClientMessage, NewRequest, NewRequestError, Request, RequestAdded, RequestSummary,
     ServerMessage,
 };
 use schemars::{schema::RootSchema, schema_for};
@@ -23,8 +23,8 @@ pub async fn handle_command(args: Args) -> Result<()> {
         schema_for!(Request),
         schema_for!(RequestSummary),
         schema_for!(RequestAdded),
-        schema_for!(RequestorError),
-        schema_for!(RequestorRequestPayload),
+        schema_for!(NewRequestError),
+        schema_for!(NewRequest),
         schema_for!(ServerMessage),
     ]);
 
