@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useRequestDetails } from "@/hooks";
+import { useRequestDetails, useTracingLiteEnabled } from "@/hooks";
 import {
   MizuLog,
   MizuRequestEnd,
@@ -44,7 +44,7 @@ import { SummaryV2, TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
-  const { trace, traceV2 } = useRequestDetails(traceId);
+  const { trace, traceV2, isPending } = useRequestDetails(traceId);
   const navigate = useNavigate();
 
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -111,10 +111,13 @@ export function RequestDetailsPage() {
   useHotkeys(["K"], () => {
     handlePrevTrace();
   });
-  const [searchParams] = useSearchParams();
-  const shouldRenderV2 = !!traceV2 && !!searchParams.get("v2");
+  const shouldRenderV2 = useTracingLiteEnabled();
 
   if (shouldRenderV2) {
+    // TODO - Skeleton
+    if (isPending) {
+      return null;
+    }
     return (
       <div
         className={cn(
