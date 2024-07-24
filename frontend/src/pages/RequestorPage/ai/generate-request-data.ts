@@ -8,7 +8,7 @@ const fetchAiRequestData = (
   persona: string,
 ) => {
   // FIXME - type wonkiness
-  const { handler, method, path } = route ?? {};
+  const { handler, method, path, openApiSpec } = route ?? {};
   const simplifiedHistory = history.map(simplifyHistoryEntry);
   return fetch("/v0/generate-request", {
     headers: {
@@ -21,6 +21,7 @@ const fetchAiRequestData = (
       path,
       history: simplifiedHistory,
       persona,
+      openApiSpec,
     }),
   }).then(async (r) => {
     if (!r.ok) {
