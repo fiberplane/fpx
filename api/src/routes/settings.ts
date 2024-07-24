@@ -125,15 +125,15 @@ export const ProviderOptions = {
 } as const;
 
 export const FormSchema = z.object({
-  customRoutes: z.boolean(),
-  aiEnabled: z.boolean(),
-  providerType: ProviderTypeSchema,
+  customRoutesEnabled: z.boolean().optional(),
+  aiEnabled: z.boolean().optional(),
+  aiProviderType: ProviderTypeSchema.optional(),
   openaiApiKey: z.string().optional(),
   openaiBaseUrl: z.string().optional(),
-  openaiModel: OpenAiModelSchema,
+  openaiModel: OpenAiModelSchema.optional(),
   anthropicApiKey: z.string().optional(),
   anthropicBaseUrl: z.string().optional(),
-  anthropicModel: AnthropicModelSchema,
+  anthropicModel: AnthropicModelSchema.optional(),
 });
 
 export async function getInferenceConfig(db: LibSQLDatabase<typeof schema>) {

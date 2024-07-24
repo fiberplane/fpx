@@ -87,7 +87,7 @@ export function AISettingsForm({
                   {field.value ? (
                     <FormField
                       control={form.control}
-                      name="providerType"
+                      name="aiProviderType"
                       render={({ field: providerField }) => (
                         <div className="border-t pt-4">
                           <FormItem className="flex flex-col gap-2 justify-between rounded-lg text-sm">

@@ -4,73 +4,11 @@ import {
   FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
   QA_PARAMETER_GENERATION_SYSTEM_PROMPT,
   friendlyTesterPrompt,
+  getSystemPrompt,
+  invokeRequestGenerationPrompt,
   qaTesterPrompt,
 } from "./prompts.js";
-
-const makeRequestTool = {
-  type: "function" as const,
-  function: {
-    name: "make_request",
-    description:
-      "Generates some random data for an http request to an api backend",
-    // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
-    parameters: {
-      type: "object",
-      properties: {
-        path: {
-          type: "string",
-        },
-        pathParams: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              key: {
-                type: "string",
-              },
-              value: {
-                type: "string",
-              },
-            },
-          },
-        },
-        queryParams: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              key: {
-                type: "string",
-              },
-              value: {
-                type: "string",
-              },
-            },
-          },
-        },
-        body: {
-          type: "string",
-        },
-        headers: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              key: {
-                type: "string",
-              },
-              value: {
-                type: "string",
-              },
-            },
-          },
-        },
-      },
-      // TODO - Mark fields like `pathParams` as required based on the route definition?
-      required: ["path"],
-    },
-  },
-};
+import { makeRequestTool } from "./tools.js";
 
 type GenerateRequestOptions = {
   apiKey: string;
@@ -99,15 +37,13 @@ export async function generateRequestWithOpenAI({
   history,
 }: GenerateRequestOptions) {
   const openaiClient = new OpenAI({ apiKey });
-  const promptTemplate =
-    persona === "QA" ? qaTesterPrompt : friendlyTesterPrompt;
-  const userPromptInterface = await promptTemplate.invoke({
+  const userPrompt = await invokeRequestGenerationPrompt({
+    persona,
     method,
     path,
     handler,
-    history: history?.join("\n") ?? "NO HISTORY",
+    history,
   });
-  const userPrompt = userPromptInterface.value;
 
   const response = await openaiClient.chat.completions.create({
     // NOTE - Later models (gpt-4o, gpt-4-turbo) should guarantee function calling to have json output
@@ -122,10 +58,7 @@ export async function generateRequestWithOpenAI({
     messages: [
       {
         role: "system",
-        content:
-          persona === "QA"
-            ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
-            : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
+        content: getSystemPrompt(persona),
       },
       {
         role: "user",
@@ -133,7 +66,7 @@ export async function generateRequestWithOpenAI({
       },
     ],
     temperature: 0.12,
-    max_tokens: 4096,
+    max_tokens: 2048,
   });
 
   const {

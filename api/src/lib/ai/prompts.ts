@@ -1,5 +1,34 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
+export const getSystemPrompt = (persona: string) => {
+  return persona === "QA" ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT;
+};
+
+export const invokeRequestGenerationPrompt = async ({
+  persona,
+  method,
+  path,
+  handler,
+  history,
+}: {
+  persona: string;
+  method: string;
+  path: string;
+  handler: string;
+  history?: Array<string>;
+}) => {
+  const promptTemplate =
+    persona === "QA" ? qaTesterPrompt : friendlyTesterPrompt;
+  const userPromptInterface = await promptTemplate.invoke({
+    method,
+    path,
+    handler,
+    history: history?.join("\n") ?? "NO HISTORY",
+  });
+  const userPrompt = userPromptInterface.value;
+  return userPrompt;
+};
+
 /**
  * A friendly tester prompt.
  *

@@ -13,7 +13,7 @@ import {
 
 const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   aiEnabled: false,
-  providerType: "openai",
+  aiProviderType: "openai",
   openaiModel: GPT_4o,
   anthropicModel: CLAUDE_3_5_SONNET,
   customRoutes: false,
@@ -38,7 +38,7 @@ export function useSettingsForm(settings: Record<string, string>) {
         content: {
           customRoutesEnabled: data.customRoutes,
           aiEnabled: data.aiEnabled,
-          providerType: data.providerType,
+          aiProviderType: data.aiProviderType,
           // Remove the stored api key if the feature is disabled
           ...(data.aiEnabled
             ? {
