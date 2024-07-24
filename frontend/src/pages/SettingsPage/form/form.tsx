@@ -4,11 +4,7 @@ import { errorHasMessage } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  CLAUDE_3_5_SONNET,
-  FormSchema,
-  GPT_4o,
-} from "./types";
+import { CLAUDE_3_5_SONNET, FormSchema, GPT_4o } from "./types";
 
 const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   aiEnabled: false,
