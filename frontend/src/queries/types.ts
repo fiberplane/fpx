@@ -4,13 +4,13 @@ import { z } from "zod";
 export const KeyValueSchema = z.record(z.string());
 
 // TODO - tie to level: error
-const MizuErrorMessageSchema = z.object({
+export const MizuErrorMessageSchema = z.object({
   message: z.string(),
   stack: z.string().optional(),
   name: z.string(),
 });
 
-const MizuRequestStartSchema = z
+export const MizuRequestStartSchema = z
   .object({
     lifecycle: z.literal("request"),
     method: z.string(),
@@ -24,7 +24,7 @@ const MizuRequestStartSchema = z
   })
   .passthrough();
 
-const MizuRequestEndSchema = z
+export const MizuRequestEndSchema = z
   .object({
     lifecycle: z.literal("response"),
     status: z.string(),
@@ -86,7 +86,7 @@ const FetchArgumentsSchema = z.union([
   z.tuple([z.union([z.string(), z.instanceof(URL), z.instanceof(Request)])]),
 ]);
 
-const MizuFetchStartSchema = z
+export const MizuFetchStartSchema = z
   .object({
     lifecycle: z.literal("fetch_start"),
     requestId: z.string(),
@@ -99,7 +99,7 @@ const MizuFetchStartSchema = z
   })
   .passthrough();
 
-const MizuFetchEndSchema = z
+export const MizuFetchEndSchema = z
   .object({
     lifecycle: z.literal("fetch_end"),
     requestId: z.string(),
@@ -113,7 +113,7 @@ const MizuFetchEndSchema = z
   })
   .passthrough();
 
-const MizuFetchErrorSchema = z
+export const MizuFetchErrorSchema = z
   .object({
     lifecycle: z.literal("fetch_error"),
     requestId: z.string(),
@@ -126,7 +126,7 @@ const MizuFetchErrorSchema = z
   .passthrough();
 
 // NOTE - This happens if there was an error in mizu iteslf when trying to collect response info
-const MizuFetchLoggingErrorSchema = z
+export const MizuFetchLoggingErrorSchema = z
   .object({
     lifecycle: z.literal("fetch_logging_error"),
     requestId: z.string(),
@@ -135,12 +135,12 @@ const MizuFetchLoggingErrorSchema = z
   })
   .passthrough();
 
-const MizuReqResMessageSchema = z.discriminatedUnion("lifecycle", [
+export const MizuReqResMessageSchema = z.discriminatedUnion("lifecycle", [
   MizuRequestStartSchema,
   MizuRequestEndSchema,
 ]);
 
-const MizuFetchMessageSchema = z.discriminatedUnion("lifecycle", [
+export const MizuFetchMessageSchema = z.discriminatedUnion("lifecycle", [
   MizuFetchStartSchema,
   MizuFetchEndSchema,
   MizuFetchErrorSchema,
@@ -257,6 +257,10 @@ export const isKnownMizuMessage = (
   message: unknown,
 ): message is z.infer<typeof MizuKnownMessageSchema> => {
   return MizuKnownMessageSchema.safeParse(message).success;
+};
+
+export const isMizuLog = (log: unknown): log is MizuLog => {
+  return MizuLogSchema.safeParse(log).success;
 };
 
 export const MizuApiLogResponseSchema = z.object({

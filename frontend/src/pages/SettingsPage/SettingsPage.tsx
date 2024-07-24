@@ -1,3 +1,4 @@
+import SparkleWand from "@/assets/SparkleWand.svg";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,12 +14,13 @@ import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
 import { RoutesSettingsForm } from "./RoutesSettingsForm";
+import { TracingLiteSettingsForm } from "./TracingLiteSettingsForm";
 
 export function SettingsPage() {
-  const { data, isLoading, isError } = useFetchSettings();
+  const { data, isPending, isError } = useFetchSettings();
   return (
     <div className={cn("mt-4 px-4 overflow-hidden h-full", "lg:px-6")}>
-      {isLoading ? (
+      {isPending ? (
         <SettingsSkeleton />
       ) : isError ? (
         <div>Error Loading Settings</div>
@@ -31,6 +33,7 @@ export function SettingsPage() {
 
 const AI_TAB = "AI";
 const CUSTOM_ROUTES_TAB = "Custom Routes";
+const TRACING_LITE_TAB = "Tracing Lite";
 
 function SettingsLayout({ settings }: { settings: Record<string, string> }) {
   const [activeTab, setActiveTab] = useState(AI_TAB);
@@ -79,6 +82,9 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
             <DropdownMenuItem onClick={() => setActiveTab(CUSTOM_ROUTES_TAB)}>
               {CUSTOM_ROUTES_TAB}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveTab(TRACING_LITE_TAB)}>
+              {TRACING_LITE_TAB}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         {/* For md breakpoint, show tab triggers */}
@@ -86,13 +92,20 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
           className="hidden md:block w-full justify-start text-left py-2 px-4"
           value={AI_TAB}
         >
-          AI
+          <SparkleWand className="inline w-3.5 h-3.5 mr-1.5" />
+          Request Autofill
         </TabsTrigger>
         <TabsTrigger
           className="hidden md:block w-full justify-start text-left py-2 px-4"
           value={CUSTOM_ROUTES_TAB}
         >
           Custom Routes
+        </TabsTrigger>
+        <TabsTrigger
+          className="hidden md:block w-full justify-start text-left py-2 px-4"
+          value={TRACING_LITE_TAB}
+        >
+          Tracing Lite
         </TabsTrigger>
       </TabsList>
       <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll">
@@ -101,6 +114,9 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
         </TabsContent>
         <TabsContent className="m-0" value={CUSTOM_ROUTES_TAB}>
           <RoutesSettingsForm settings={settings} />
+        </TabsContent>
+        <TabsContent className="m-0" value={TRACING_LITE_TAB}>
+          <TracingLiteSettingsForm settings={settings} />
         </TabsContent>
       </div>
     </Tabs>

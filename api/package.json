@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
+  "version": "0.4.0-beta.4",
   "name": "@fiberplane/studio",
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
@@ -12,6 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "db:studio": "drizzle-kit studio",
     "build": "npm run db:generate && tsc",
     "format": "biome check . --write",
     "lint": "biome lint . && tsc --noEmit",
@@ -27,6 +28,7 @@
     "fpx": "bin/cli.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
     "@hono/node-server": "^1.11.1",
     "@hono/zod-validator": "^0.2.2",
     "@langchain/core": "^0.2.15",
@@ -56,7 +58,6 @@
     "@types/ws": "^8.5.10",
     "ts-to-zod": "^3.8.5",
     "tsx": "^4.10.5",
-    "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   }
 }

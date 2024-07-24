@@ -20,12 +20,13 @@
     "url": "https://github.com/fiberplane/fpx/issues"
   },
   "homepage": "https://github.com/fiberplane/fpx#readme",
-  "workspaces": ["client-library", "client-library-otel", "frontend", "api"],
+  "workspaces": ["client-library", "client-library-otel", "frontend", "api", "shared"],
   "dependencies": {
     "@biomejs/biome": "^1.8.0",
     "wrangler": "^3.62.0"
   },
   "devDependencies": {
-    "rimraf": "^5.0.7"
+    "rimraf": "^5.0.7",
+    "typescript": "^5.5.3"
   }
 }
