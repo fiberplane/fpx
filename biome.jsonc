@@ -21,7 +21,7 @@
   },
   "overrides": [
     {
-      "include": ["client-library", "api", "frontend"],
+      "include": ["client-library", "api"],
       "linter": {
         "enabled": true,
         "rules": {
