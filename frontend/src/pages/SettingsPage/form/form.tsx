@@ -15,7 +15,7 @@ const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   tracingLiteEnabled: false,
 };
 
-export function useSettingsForm(settings: Record<string, string>) {
+export function useSettingsForm(settings: Record<string, string | boolean>) {
   const { toast } = useToast();
 
   const { mutate: updateSettings } = useUpdateSettings();
