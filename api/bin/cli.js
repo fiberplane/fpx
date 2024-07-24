@@ -14,6 +14,7 @@ import {
   isPortTaken,
   safeParseJSONFile,
   safeParseTomlFile,
+  selectClosestPath,
 } from "./utils.js";
 
 // Shim __filename and __dirname since we're using esm
@@ -40,6 +41,8 @@ const CONFIG_FILE_NAME = "fpx.v0.config.json";
 // Paths to relevant project directories and files
 const WRANGLER_TOML_PATH = findInParentDirs("wrangler.toml");
 const PACKAGE_JSON_PATH = findInParentDirs("package.json");
+// NOTE - Deno projects might also not necessarily have a deno.json
+const DENO_CONFIG_PATH = findInParentDirs(["deno.json", "deno.jsonc"]);
 const PROJECT_ROOT_DIR = findProjectRoot();
 
 // Loading some possible configuration from the environment
@@ -148,7 +151,9 @@ async function getFpxPort() {
  * if we can determine the env file to update.
  */
 async function updateEnvFileWithFpxEndpoint(fpxPort) {
-  const expectedFpxEndpoint = `http://localhost:${fpxPort}/v0/logs`;
+  const LOCALHOST_ENDPOINT = `http://localhost:${fpxPort}/v0/logs`;
+  const DOCKER_ENDPOINT = `http://host.docker.internal:${fpxPort}/v0/logs`;
+  const expectedFpxEndpoints = [LOCALHOST_ENDPOINT, DOCKER_ENDPOINT];
 
   if (shouldCreateDevVarsFile()) {
     touchDevVarsFile();
@@ -157,7 +162,7 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
   const envFilePath = findEnvVarFile();
   const envFileName = envFilePath && path.basename(envFilePath);
   const fpxEndpoint = envFilePath && getFpxEndpointFromEnvFile(envFilePath);
-  const isDifferent = fpxEndpoint !== expectedFpxEndpoint;
+  const isDifferent = !expectedFpxEndpoints.includes(fpxEndpoint);
 
   // Ask the user if we should update the env file
   // - if an env file exists and the fpx endpoint is missing
@@ -168,7 +173,8 @@ async function updateEnvFileWithFpxEndpoint(fpxPort) {
     return;
   }
 
-  const envVarLine = `FPX_ENDPOINT=${expectedFpxEndpoint}`;
+  // NOTE - Default to adding a localhost endpoint instead of a docker one
+  const envVarLine = `FPX_ENDPOINT=${LOCALHOST_ENDPOINT}`;
   const lede = !fpxEndpoint
     ? `  ⚠️ ${envFileName} needs to point to a local FPX Studio to work properly`
     : `  ⚠️ ${envFileName} points to a different FPX Studio endpoint`;
@@ -260,14 +266,23 @@ function runScript(scriptName) {
 }
 
 /**
- * Looks for the project root by looking first for a `wrangler.toml` file, then a `package.json` file
+ * Looks for the project root by looking first for a `wrangler.toml` file, then a `package.json` file,
+ * then a `deno.json` file or a `deno.jsonc` file.
  * Searches all parent directories up to the root of the filesystem
  */
 function findProjectRoot() {
-  const projectRoot = WRANGLER_TOML_PATH || PACKAGE_JSON_PATH;
+  // HACK - If the user has a rogue package.json way up the filesystem,
+  //        we want to ignore it in favor of, e.g., a closer Wrangler.toml or Deno.json file
+  const projectRoot = selectClosestPath([
+    WRANGLER_TOML_PATH,
+    PACKAGE_JSON_PATH,
+    DENO_CONFIG_PATH,
+  ]);
   if (!projectRoot) {
+    logger.debug("No project root detected");
     return null;
   }
+  logger.debug("Project root detected:", projectRoot);
   return path.dirname(projectRoot);
 }
 

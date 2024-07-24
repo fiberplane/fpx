@@ -1,16 +1,13 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { useRequestDetails } from "@/hooks";
-import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
-import { useNavigate, useParams } from "react-router-dom";
-
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Status } from "@/components/ui/status";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useRequestDetails, useTracingLiteEnabled } from "@/hooks";
 import {
   MizuLog,
   MizuRequestEnd,
@@ -28,8 +25,10 @@ import {
   isMizuRequestEndMessage,
 } from "@/queries/types";
 import { cn } from "@/utils";
+import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 import { FetchRequestLog } from "./FetchRequestLog";
@@ -41,10 +40,12 @@ import { RequestLog } from "./RequestLog";
 import { ResponseLog } from "./ResponseLog";
 import { TextOrJsonViewer } from "./TextJsonViewer";
 import { FpxCard, RequestMethod, SectionHeading } from "./shared";
+import { SummaryV2, TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
+import { HttpSummary } from "./v2/SummaryV2";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
-  const { trace } = useRequestDetails(traceId);
+  const { trace, traceV2, isPending } = useRequestDetails(traceId);
   const navigate = useNavigate();
 
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -111,6 +112,115 @@ export function RequestDetailsPage() {
   useHotkeys(["K"], () => {
     handlePrevTrace();
   });
+  const shouldRenderV2 = useTracingLiteEnabled();
+
+  if (shouldRenderV2) {
+    if (isPending) {
+      return <SkeletonLoader />;
+    }
+    if (!traceV2) {
+      return <EmptyState />;
+    }
+    return (
+      <div
+        className={cn(
+          "h-full",
+          "relative",
+          "overflow-hidden",
+          "overflow-y-auto",
+          "grid grid-rows-[auto_1fr]",
+          "px-2 pb-4",
+          "sm:px-4 sm:pb-8",
+          "md:px-6",
+        )}
+      >
+        <div
+          className={cn(
+            "flex gap-4 items-center justify-between",
+            "py-8",
+            "sm:gap-6 sm:py-8",
+          )}
+        >
+          <div className="flex items-center gap-6">
+            <h2 className="text-2xl font-semibold">Request Details</h2>
+            <div className="hidden md:block">
+              <HttpSummary trace={traceV2} />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  disabled={currIdx === 0}
+                  onClick={handlePrevTrace}
+                >
+                  <ChevronUpIcon className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="left"
+                className="bg-slate-950 text-white"
+                align="center"
+              >
+                Prev <KeyboardShortcutKey>K</KeyboardShortcutKey>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  disabled={!traces || currIdx === traces?.length - 1}
+                  onClick={handleNextTrace}
+                >
+                  <ChevronDownIcon className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-slate-950 text-white"
+                align="center"
+              >
+                Next <KeyboardShortcutKey>J</KeyboardShortcutKey>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+        <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
+          <SummaryV2 trace={traceV2} />
+          <div className="grid lg:grid-cols-[auto_1fr] border-t">
+            <div
+              className={cn(
+                "hidden",
+                "lg:block lg:sticky lg:top-4 self-start",
+                "min-w-[300px]",
+                "xl:min-w-[360px]",
+                "2xl:min-w-[420px]",
+              )}
+            >
+              <TraceDetailsTimeline trace={traceV2} />
+            </div>
+            <div
+              className={cn(
+                "grid items-center gap-4 overflow-x-auto relative",
+                "max-lg:grid-rows-[auto_1fr]",
+                "lg:border-l",
+                "lg:items-start",
+                "lg:p-4",
+              )}
+            >
+              <div className="w-full lg:hidden">
+                <TraceDetailsTimeline trace={traceV2} />
+              </div>
+              <TraceDetailsV2 trace={traceV2} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -118,7 +228,7 @@ export function RequestDetailsPage() {
         "h-full",
         "relative",
         "overflow-hidden",
-        "overflow-y-scroll",
+        "overflow-y-auto",
         "grid grid-rows-[auto_1fr]",
         "px-2 pb-4",
         "sm:px-4 sm:pb-8",
@@ -201,6 +311,7 @@ export function RequestDetailsPage() {
           ) : (
             <div className="w-full relative" />
           )}
+
           {trace ? (
             <TraceDetails trace={trace} />
           ) : (
@@ -400,5 +511,86 @@ function LogDetails({ log }: { log: MizuLog }) {
       args={log.args}
       logId={String(log.id)}
     />
+  );
+}
+
+function SkeletonLoader() {
+  return (
+    <div
+      className={cn(
+        "h-full",
+        "relative",
+        "overflow-hidden",
+        "overflow-y-auto",
+        "grid grid-rows-[auto_1fr]",
+        "px-2 pb-4",
+        "sm:px-4 sm:pb-8",
+        "md:px-6",
+      )}
+    >
+      <div
+        className={cn(
+          "flex gap-4 items-center justify-between",
+          "py-8",
+          "sm:gap-6 sm:py-8",
+        )}
+      >
+        <div className="h-8 w-48 bg-gray-800 animate-pulse rounded"></div>
+        <div className="flex gap-2">
+          <div className="h-8 w-8 bg-gray-800 animate-pulse rounded"></div>
+          <div className="h-8 w-8 bg-gray-800 animate-pulse rounded"></div>
+        </div>
+      </div>
+      <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
+        <div className="h-6 w-32 bg-gray-800 animate-pulse rounded"></div>
+        <div className="grid lg:grid-cols-[auto_1fr] lg:gap-2 xl:gap-3">
+          <div
+            className={cn(
+              "hidden",
+              "lg:block lg:sticky lg:top-4 self-start",
+              "min-w-[300px]",
+              "xl:min-w-[360px]",
+              "2xl:min-w-[420px]",
+            )}
+          >
+            <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+          </div>
+          <div
+            className={cn(
+              "grid items-center gap-4 overflow-x-auto relative",
+              "max-lg:grid-rows-[auto_1fr]",
+              "lg:items-start",
+            )}
+          >
+            <div className="w-full lg:hidden">
+              <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+            </div>
+            <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+export function EmptyState() {
+  return (
+    <div
+      className={cn(
+        "h-full",
+        "flex flex-col items-center justify-center",
+        "text-center",
+        "px-4 py-8",
+        "sm:px-6 sm:py-12",
+        "md:px-8",
+      )}
+    >
+      <h2 className="text-2xl font-semibold mb-4">Trace Not Found</h2>
+      <p className="text-muted-foreground mb-6">
+        The trace you are looking for does not exist.
+      </p>
+      <Button asChild variant="ghost">
+        <Link to="/requests">Go Back to Requests</Link>
+      </Button>
+    </div>
   );
 }

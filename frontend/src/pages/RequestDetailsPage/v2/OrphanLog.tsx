@@ -1,45 +1,41 @@
-import { MizuMessage } from "@/queries";
+import { MizuMessage, MizuOrphanLog } from "@/queries";
 import {
+  cn,
   hasStringMessage,
   objectHasName,
   objectHasStack,
   renderFullLogMessage,
 } from "@/utils";
-import { LogLevel } from "./RequestDetailsPage";
-import { StackTrace } from "./StackTrace";
-import { minimapId } from "./minimapId";
-import { SectionHeading } from "./shared";
+import { StackTrace } from "../StackTrace";
+import { SectionHeading } from "../shared";
+import { timelineId } from "./timelineId";
+// import { SubSectionHeading } from "./shared";
 
-export function LogLog({
-  message,
-  level,
-  args,
-  logId,
-}: {
-  message: string | MizuMessage;
-  level: LogLevel;
-  args?: Array<unknown>;
-  logId: string;
-}) {
-  const description = getDescription(message, args);
-  const { type: contentsType, value: contents } = getLogContents(message, args);
-  const stack = objectHasStack(message) ? message.stack : null;
+export function OrphanLog({ log }: { log: MizuOrphanLog }) {
+  const id = timelineId(log);
 
+  const { level, message } = log;
   const name = objectHasName(message) ? message.name : null;
 
   const levelWithDefensiveFallback = level || "info";
   const consoleMethod = levelWithDefensiveFallback === "info" ? "log" : level;
 
   const heading = `console.${consoleMethod}${name ? `:  ${name}` : ""}`;
-  const id = minimapId({ message, id: logId, level: level });
+
+  const { type: contentsType, value: contents } = getLogContents(
+    message,
+    log.args,
+  );
+  const description = getDescription(message, log.args);
+  const stack = objectHasStack(message) ? message.stack : null;
 
   return (
-    <section className="flex flex-col gap-4" id={id}>
-      <div className="flex items-center gap-4">
+    <div id={id} className="overflow-x-auto overflow-y-hidden">
+      <div className={cn("grid gap-2 border-t py-4")}>
         <SectionHeading className="font-mono">{heading}</SectionHeading>
       </div>
 
-      {description && <p>{description}</p>}
+      {description && <p className="p-2 font-mono">{description}</p>}
 
       {contentsType === "multi-arg-log" && (
         <LogContents fullLogArgs={contents} />
@@ -51,7 +47,7 @@ export function LogLog({
           <StackTrace stackTrace={stack} />
         </div>
       )}
-    </section>
+    </div>
   );
 }
 
