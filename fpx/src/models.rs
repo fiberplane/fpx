@@ -257,3 +257,15 @@ impl From<reqwest::Error> for ApiServerError<NewRequestError> {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
+
+#[derive(JsonSchema, Deserialize, Serialize)]
+pub struct RequestWithResponse {
+    request: Request,
+    response: Option<Response>,
+}
+
+impl RequestWithResponse {
+    pub fn new(request: Request, response: Option<Response>) -> RequestWithResponse {
+        RequestWithResponse { request, response }
+    }
+}

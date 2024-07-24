@@ -81,6 +81,13 @@ export const RequestSummarySchema = z.object({
 
 export type RequestSummary = z.infer<typeof RequestSummarySchema>;
 
+export const RequestWithResponseSchema = z.object({
+  request: z.any(),
+  response: z.union([z.any(), z.null()]).optional(),
+});
+
+export type RequestWithResponse = z.infer<typeof RequestWithResponseSchema>;
+
 export const ResponseSchema = z
   .object({
     body: z.union([z.string(), z.null()]).optional(),

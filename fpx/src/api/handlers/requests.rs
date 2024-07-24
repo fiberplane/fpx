@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
 use crate::data::{DbError, Store};
-use crate::models::{self, NewRequestError, Request, RequestSummary};
+use crate::models;
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::Json;
@@ -25,7 +25,7 @@ static REQUESTOR_CLIENT: Lazy<Client> = Lazy::new(|| {
 pub async fn requests_post_handler(
     State(store): State<Store>,
     Json(payload): Json<models::NewRequest>,
-) -> Result<Json<models::Response>, ApiServerError<NewRequestError>> {
+) -> Result<Json<models::RequestWithResponse>, ApiServerError<models::NewRequestError>> {
     let tx = store.start_transaction().await?;
 
     let request_body = payload.body;
@@ -69,7 +69,10 @@ pub async fn requests_post_handler(
 
     tx.commit().await?;
 
-    Ok(Json(response_model.into()))
+    Ok(Json(models::RequestWithResponse::new(
+        request_model.into(),
+        Some(response_model.into()),
+    )))
 }
 
 async fn execute_request(
@@ -111,7 +114,7 @@ fn prepare_headers(header_map: &HeaderMap) -> BTreeMap<String, String> {
 #[tracing::instrument(skip_all)]
 pub async fn requests_list_handler(
     State(store): State<Store>,
-) -> Result<Json<Vec<RequestSummary>>, ApiServerError<RequestListError>> {
+) -> Result<Json<Vec<models::RequestSummary>>, ApiServerError<RequestListError>> {
     let tx = store.start_transaction().await?;
 
     let requests = store.request_list(&tx).await?;
@@ -125,12 +128,18 @@ pub async fn requests_list_handler(
 pub async fn requests_get_handler(
     State(store): State<Store>,
     Path(id): Path<i64>,
-) -> Result<Json<Request>, ApiServerError<RequestGetError>> {
+) -> Result<Json<models::RequestWithResponse>, ApiServerError<RequestGetError>> {
     let tx = store.start_transaction().await?;
 
     let request = store.request_get(&tx, id).await?;
 
-    Ok(Json(request))
+    let response = store.response_get_by_request_id(&tx, request.id).await?;
+    let response: Option<models::Response> = response.map(|response| response.into());
+
+    Ok(Json(models::RequestWithResponse::new(
+        request.into(),
+        response,
+    )))
 }
 
 #[derive(Debug, Serialize, Deserialize, Error)]

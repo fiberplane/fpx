@@ -6,8 +6,6 @@ use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::models::Request;
-
 pub mod migrations;
 mod models;
 
@@ -107,14 +105,14 @@ impl Store {
     }
 
     #[tracing::instrument(skip_all)]
-    pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<Request, DbError> {
+    pub async fn request_get(&self, tx: &Transaction, id: i64) -> Result<models::Request, DbError> {
         let request: models::Request = tx
             .query("SELECT * FROM requests WHERE id = ?", params!(id))
             .await?
             .fetch_one()
             .await?;
 
-        Ok(request.into())
+        Ok(request)
     }
 
     #[tracing::instrument(skip_all)]
@@ -134,6 +132,24 @@ impl Store {
             )
             .await?
             .fetch_one()
+            .await?;
+
+        Ok(response)
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub async fn response_get_by_request_id(
+        &self,
+        tx: &Transaction,
+        request_id: u32,
+    ) -> Result<Option<models::Response>> {
+        let response: Option<models::Response> = tx
+            .query(
+                "SELECT * FROM responses WHERE request_id = ?",
+                params!(request_id),
+            )
+            .await?
+            .fetch_optional()
             .await?;
 
         Ok(response)
