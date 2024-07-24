@@ -8,7 +8,6 @@ import {
   CLAUDE_3_5_SONNET,
   FormSchema,
   GPT_4o,
-  isValidOpenaiModel,
 } from "./types";
 
 const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
