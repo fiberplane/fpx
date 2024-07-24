@@ -1,3 +1,4 @@
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +9,11 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { PlusIcon } from "@radix-ui/react-icons";
 import { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "@scalar/openapi-parser";
 import { useState } from "react";
@@ -23,17 +29,34 @@ export function AddRouteButton() {
   });
 
   const [open, setOpen] = useState(false);
+  const [openApi, setOpenApi] = useState(false);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="secondary" className="p-2.5">
-          <PlusIcon className="h-4 w-4" />
-        </Button>
-      </PopoverTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <Button variant="secondary" className="p-2.5">
+              <PlusIcon className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent
+          className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
+          align="end"
+        >
+          Add a custom route or OpenAPI spec
+          <div className="flex gap-0.5">
+            <KeyboardShortcutKey>C</KeyboardShortcutKey>
+          </div>
+        </TooltipContent>
+      </Tooltip>
       <PopoverContent className="w-96">
-        {/* TODO - default value should be openapi if there is no openapi spec added already */}
-        <Tabs className="w-full" defaultValue="openapi">
+        {/* default tab opens on openapi if there is no openapi spec added already */}
+        <Tabs
+          className="w-full"
+          defaultValue={openApi ? "openapi" : "custom-route"}
+        >
           <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="custom-route">Custom Route</TabsTrigger>
             <TabsTrigger value="openapi">OpenAPI</TabsTrigger>
@@ -42,7 +65,7 @@ export function AddRouteButton() {
             <CustomRouteForm setOpen={setOpen} />
           </TabsContent>
           <TabsContent value="openapi">
-            <OpenApiForm setOpen={setOpen} />
+            <OpenApiForm setOpen={setOpen} setOpenApi={setOpenApi} />
           </TabsContent>
         </Tabs>
       </PopoverContent>
@@ -66,7 +89,11 @@ type OperationObject =
 
 function OpenApiForm({
   setOpen,
-}: { setOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
+  setOpenApi,
+}: {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpenApi: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const {
     register,
     watch,
@@ -103,7 +130,7 @@ function OpenApiForm({
 
       const submissionRoutes: Route[] = Object.entries(schema.paths!)
         .map(([path, pathObj]: [string, PathObject]) => {
-          // destructure the params
+          // destructure the params so we don't include them
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { parameters, ...pathObjWithoutParams } = pathObj;
           return Object.entries(pathObjWithoutParams).map(
@@ -139,6 +166,7 @@ function OpenApiForm({
     setValue("openApiSpec", pastedText, { shouldValidate: true });
     const isValid = await trigger("openApiSpec");
     if (isValid) {
+      setOpenApi(true);
       handleSubmit(onSubmit)();
     }
   };

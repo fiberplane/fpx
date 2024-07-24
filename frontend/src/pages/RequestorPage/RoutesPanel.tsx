@@ -135,15 +135,6 @@ export function RoutesPanel({
             />
           )}
 
-          {hasAnyOpenApiRoutes && (
-            <RoutesSection
-              title="OpenAPI"
-              routes={openApiRoutes ?? []}
-              selectedRoute={selectedRoute}
-              handleRouteClick={handleRouteClick}
-            />
-          )}
-
           {hasAnyUserAddedRoutes && (
             <RoutesSection
               title="Custom routes"
@@ -164,6 +155,15 @@ export function RoutesPanel({
             <RoutesSection
               title="Previously detected routes"
               routes={prevDetectedRoutes}
+              selectedRoute={selectedRoute}
+              handleRouteClick={handleRouteClick}
+            />
+          )}
+
+          {hasAnyOpenApiRoutes && (
+            <RoutesSection
+              title="OpenAPI"
+              routes={openApiRoutes ?? []}
               selectedRoute={selectedRoute}
               handleRouteClick={handleRouteClick}
             />
