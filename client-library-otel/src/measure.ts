@@ -6,7 +6,22 @@ import {
   trace,
 } from "@opentelemetry/api";
 
-export type MeasureOptions<A, R, RAW> = {
+export type MeasureOptions<
+  /**
+   * Arguments for the function being measured
+   */
+  ARGS,
+  /**
+   * The return type of the function being measured
+   * (awaited result if the return value is a promise)
+   */
+  RESULT,
+  /**
+   * The raw return type of the function being measured
+   * (it is used to determine if the onEnd function can be async)
+   */
+  RAW_RESULT,
+> = {
   name: string;
   /**
    * The kind of the span
@@ -17,7 +32,7 @@ export type MeasureOptions<A, R, RAW> = {
    */
   attributes?: Attributes;
 
-  onStart?: (span: Span, args: A) => void;
+  onStart?: (span: Span, args: ARGS) => void;
   /**
    * Allows you to specify a function that will be called when the span ends
    * and will be passed the span & result of the function being measured.
@@ -26,8 +41,8 @@ export type MeasureOptions<A, R, RAW> = {
    */
   onEnd?: (
     span: Span,
-    result: R,
-  ) => RAW extends Promise<unknown> ? Promise<void> | void : void;
+    result: RESULT,
+  ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
 
   /**
    * Allows you to specify a function that will be called when the span ends
@@ -91,7 +106,7 @@ export function measure<R, A extends unknown[]>(
       }
       try {
         const returnValue = fn(...args);
-        if (isPromise<Awaited<R>>(returnValue)) {
+        if (isPromise<R>(returnValue)) {
           shouldEndSpan = false;
           return handlePromise<R>(span, returnValue, {
             onEnd,
