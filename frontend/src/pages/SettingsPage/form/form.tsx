@@ -4,7 +4,12 @@ import { errorHasMessage } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CLAUDE_3_5_SONNET, FormSchema, GPT_4o, isValidOpenaiModel } from "./types";
+import {
+  CLAUDE_3_5_SONNET,
+  FormSchema,
+  GPT_4o,
+  isValidOpenaiModel,
+} from "./types";
 
 const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   aiEnabled: false,
@@ -12,7 +17,7 @@ const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   openaiModel: GPT_4o,
   anthropicModel: CLAUDE_3_5_SONNET,
   customRoutes: false,
-}
+};
 
 export function useSettingsForm(settings: Record<string, string>) {
   const { toast } = useToast();
@@ -23,7 +28,7 @@ export function useSettingsForm(settings: Record<string, string>) {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       ...DEFAULT_VALUES,
-      ...settings
+      ...settings,
     },
   });
 
@@ -35,7 +40,12 @@ export function useSettingsForm(settings: Record<string, string>) {
           aiEnabled: data.aiEnabled,
           providerType: data.providerType,
           // Remove the stored api key if the feature is disabled
-          ...(data.aiEnabled ? { openaiApiKey: data.openaiApiKey, anthropicApiKey: data.anthropicApiKey } : { }),
+          ...(data.aiEnabled
+            ? {
+                openaiApiKey: data.openaiApiKey,
+                anthropicApiKey: data.anthropicApiKey,
+              }
+            : {}),
           openaiBaseUrl: data.openaiBaseUrl ?? "",
           openaiModel: data.openaiModel,
           anthropicBaseUrl: data.anthropicBaseUrl ?? "",

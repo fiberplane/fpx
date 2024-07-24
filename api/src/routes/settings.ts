@@ -109,7 +109,10 @@ export const AnthropicModelOptions = {
   [CLAUDE_3_HAIKU]: "Claude 3 Haiku",
 } as const;
 
-const ProviderTypeSchema = z.union([z.literal("openai"), z.literal("anthropic")]);
+const ProviderTypeSchema = z.union([
+  z.literal("openai"),
+  z.literal("anthropic"),
+]);
 
 type Provider = z.infer<typeof ProviderTypeSchema>;
 
@@ -138,7 +141,7 @@ export async function getInferenceConfig(db: LibSQLDatabase<typeof schema>) {
 
   if (settingsRecords.length > 0) {
     const content = settingsRecords[0]?.content;
-    const {success, data: settings} = FormSchema.safeParse(content);
+    const { success, data: settings } = FormSchema.safeParse(content);
     if (success) {
       return settings;
     }

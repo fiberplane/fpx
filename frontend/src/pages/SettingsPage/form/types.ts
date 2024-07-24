@@ -48,8 +48,10 @@ export const AnthropicModelOptions = {
   [CLAUDE_3_HAIKU]: "Claude 3 Haiku",
 } as const;
 
-
-const ProviderTypeSchema = z.union([z.literal("openai"), z.literal("anthropic")]);
+const ProviderTypeSchema = z.union([
+  z.literal("openai"),
+  z.literal("anthropic"),
+]);
 
 type Provider = z.infer<typeof ProviderTypeSchema>;
 

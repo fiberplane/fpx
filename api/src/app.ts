@@ -11,9 +11,9 @@ import type { Bindings, Variables } from "./lib/types.js";
 import logger from "./logger.js";
 import appRoutes from "./routes/app-routes.js";
 import dependencies from "./routes/dependencies.js";
+import inference from "./routes/inference.js";
 import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
-import inference from "./routes/inference.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
 
