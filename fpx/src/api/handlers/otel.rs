@@ -5,8 +5,8 @@ use axum::response::{IntoResponse, Response};
 use axum::{Json, RequestExt};
 use bytes::Bytes;
 use http::header::CONTENT_TYPE;
-use http::HeaderMap;
 use http::StatusCode;
+use http::{HeaderMap, HeaderValue};
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use prost::Message;
 use tracing::error;
@@ -32,8 +32,9 @@ pub async fn trace_collector_handler(
         .and_then(|value| value.to_str().ok())
         .unwrap_or("");
 
-    // Return the response in the same format as the request. We might want to
-    // look at the `Accept` header. But this is fine for now.
+    // Return the response in the same format as the request. The otlp spec
+    // specifies that the response needs to be the same content type as the
+    // request.
     match content_type {
         "application/json" => Ok(Json(response).into_response()),
         "application/x-protobuf" => {
@@ -42,7 +43,14 @@ pub async fn trace_collector_handler(
                 error!(?err, "unable to encode protobuf message");
                 StatusCode::INTERNAL_SERVER_ERROR.into_response()
             })?;
-            Ok(buf.into_response())
+            Ok((
+                [(
+                    CONTENT_TYPE,
+                    HeaderValue::from_static("application/x-protobuf"),
+                )],
+                buf,
+            )
+                .into_response())
         }
         // In theory this cannot happen since [`JsonOrProtobuf`] only works if
         // the request is either of the above.
