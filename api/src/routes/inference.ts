@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
-import { generateRequestWithAiProvider } from "src/lib/ai/index.js";
+import { generateRequestWithAiProvider } from "../lib/ai/index.js";
 import { z } from "zod";
 import { cleanPrompt } from "../lib/ai/prompts.js";
 import type { Bindings, Variables } from "../lib/types.js";
