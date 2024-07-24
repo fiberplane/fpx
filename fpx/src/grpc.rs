@@ -1,4 +1,3 @@
-use crate::data::DbError;
 use crate::service::{IngestExportError, Service};
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceService;
 use opentelemetry_proto::tonic::collector::trace::v1::{
@@ -26,23 +25,16 @@ impl TraceService for GrpcService {
         request: tonic::Request<ExportTraceServiceRequest>,
     ) -> Result<tonic::Response<ExportTraceServiceResponse>, tonic::Status> {
         let request = request.into_inner();
+
         let response = self.service.ingest_export(request).await?;
-        let response = tonic::Response::new(response);
-        Ok(response)
+
+        Ok(tonic::Response::new(response))
     }
 }
 
 impl From<IngestExportError> for tonic::Status {
     fn from(err: IngestExportError) -> Self {
-        error!("Database error: {:?}", err);
-        match err {
-            IngestExportError::DbError(DbError::NotFound) => tonic::Status::not_found("message"),
-            IngestExportError::DbError(DbError::FailedDeserialize { .. }) => {
-                tonic::Status::internal("internal database error")
-            }
-            IngestExportError::DbError(DbError::InternalError(_)) => {
-                tonic::Status::internal("internal error")
-            }
-        }
+        error!(?err, "Failed to ingest export data");
+        tonic::Status::internal("Failed to ingest export data")
     }
 }
