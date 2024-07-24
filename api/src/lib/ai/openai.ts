@@ -31,6 +31,15 @@ export async function generateRequestWithOpenAI({
   handler,
   history,
 }: GenerateRequestOptions) {
+  logger.debug(
+    `Generating request data with OpenAI`,
+    `model: ${model}`,
+    `baseUrl: ${baseUrl}`,
+    `persona: ${persona}`,
+    `method: ${method}`,
+    `path: ${path}`,
+    `handler: ${handler}`,
+  );
   const openaiClient = new OpenAI({ apiKey, baseURL: baseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
     persona,

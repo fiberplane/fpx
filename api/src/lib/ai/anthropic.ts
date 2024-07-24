@@ -38,6 +38,15 @@ export async function generateRequestWithAnthropic({
   handler,
   history,
 }: GenerateRequestOptions) {
+  logger.debug(
+    `Generating request data with Anthropic`,
+    `model: ${model}`,
+    `baseUrl: ${baseUrl}`,
+    `persona: ${persona}`,
+    `method: ${method}`,
+    `path: ${path}`,
+    `handler: ${handler}`,
+  );
   const anthropicClient = new Anthropic({ apiKey, baseURL: baseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
     persona,
