@@ -61,17 +61,18 @@ export async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
   return createdRecord;
 }
 
-export const GPT_4o = "gpt-4o";
-export const GPT_4_TURBO = "gpt-4-turbo";
-// NOTE - This was not working with our current prompting logic
-//        We get this error: https://community.openai.com/t/error-code-400-for-repetitive-prompt-patterns/627157/7
+// NOTE - gpt-3.5-turbo was not working with our current prompting logic
+//        We would get this error: https://community.openai.com/t/error-code-400-for-repetitive-prompt-patterns/627157/7
 //        It seems to have to do with the prompt data we inject? IDK.
-export const GPT_3_5_TURBO = "gpt-3.5-turbo";
+
+export const GPT_4o = "gpt-4o";
+export const GPT_4o_MINI = "gpt-4o-mini";
+export const GPT_4_TURBO = "gpt-4-turbo";
 
 const OpenAiModelSchema = z.union([
   z.literal(GPT_4o),
+  z.literal(GPT_4o_MINI),
   z.literal(GPT_4_TURBO),
-  // z.literal(GPT_3_5_TURBO),
 ]);
 
 type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
@@ -81,8 +82,8 @@ export const isValidOpenaiModel = (value: string): value is OpenAiModel =>
 
 export const OpenAiModelOptions = {
   [GPT_4o]: "GPT-4o",
+  [GPT_4o_MINI]: "GPT-4o Mini",
   [GPT_4_TURBO]: "GPT-4 Turbo",
-  // [GPT_3_5_TURBO]: "GPT-3.5 Turbo",
 } as const;
 
 export const CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20240620";
