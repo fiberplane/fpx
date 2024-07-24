@@ -56,7 +56,7 @@ export const CustomTabsContent = React.forwardRef<
     {...props}
     className={cn(
       "px-3 py-2 data-[state=active]:h-full data-[state=inactive]:hidden",
-      "overflow-hidden overflow-y-scroll max-h-full",
+      "overflow-hidden overflow-y-auto max-h-full",
       className,
     )}
   />

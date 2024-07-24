@@ -216,7 +216,7 @@ function ResponseBody({
 
     return (
       <div
-        className={cn("overflow-hidden overflow-y-scroll w-full", className)}
+        className={cn("overflow-hidden overflow-y-auto w-full", className)}
       >
         <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
       </div>
@@ -248,7 +248,7 @@ export function ResponseBodyText({
   // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
   return (
-    <div className={cn("overflow-hidden overflow-y-scroll w-full", className)}>
+    <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
       <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>
