@@ -18,7 +18,6 @@ type FpxConfig = {
   monitor: {
     /** Send data to FPX about each fetch call made during a handler's lifetime */
     fetch: boolean;
-    // TODO - implement this control/feature
     logging: boolean;
   };
 };
@@ -63,8 +62,8 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
-          const endpoint = (env as Record<string, string | null>).FPX_ENDPOINT;
-          const isEnabled = !!endpoint;
+          const endpoint = typeof env === "object" && env !== null ? (env as Record<string, string | null>).FPX_ENDPOINT : null;
+          const isEnabled = !!endpoint && typeof endpoint === "string";
 
           if (!isEnabled) {
             return await originalFetch(request, env, executionContext);
@@ -78,8 +77,12 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const {
             monitor: { fetch: monitorFetch, logging: monitorLogging },
           } = mergeConfigs(defaultConfig, config);
-          monitorLogging && patchConsole();
-          monitorFetch && patchFetch();
+          if (monitorLogging) {
+            patchConsole();
+          }
+          if (monitorFetch) {
+            patchFetch();
+          }
 
           const provider = setupTracerProvider({
             serviceName,
@@ -112,7 +115,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           // Make sure all promises are resolved before sending data to the server
           if (proxyExecutionCtx) {
             proxyExecutionCtx.waitUntil(
-              Promise.all(promises).finally(() => {
+              Promise.allSettled(promises).finally(() => {
                 return provider.forceFlush();
               }),
             );
