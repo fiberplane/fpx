@@ -72,8 +72,11 @@ export async function generateRequestWithAnthropic({
   let toolArgs: Anthropic.Messages.ToolUseBlock["input"];
   for (const message of content) {
     if (message.type === "tool_use") {
+      logger.debug(
+        "Anthropic tool use response:",
+        JSON.stringify(message, null, 2),
+      );
       toolArgs = message.input;
-      logger.info("Tool use input:", JSON.stringify(toolArgs, null, 2));
       return toolArgs;
     }
   }
