@@ -39,7 +39,7 @@ export async function generateRequestWithAnthropic({
   history,
 }: GenerateRequestOptions) {
   logger.debug(
-    `Generating request data with Anthropic`,
+    "Generating request data with Anthropic",
     `model: ${model}`,
     `baseUrl: ${baseUrl}`,
     `persona: ${persona}`,
