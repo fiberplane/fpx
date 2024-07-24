@@ -124,6 +124,9 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           return result;
         };
       }
+
+      // Keep all the other things accessible
+      return value;
     },
   });
 }
