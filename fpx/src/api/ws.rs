@@ -5,17 +5,21 @@ use axum::extract::{State, WebSocketUpgrade};
 use axum::response::Response;
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::{SinkExt, StreamExt};
+
 use rand::Rng;
 use tokio::sync::broadcast::Receiver;
 use tokio::sync::mpsc;
-use tracing::{debug, error, trace, warn};
+use tracing::{debug, error, info_span, trace, warn, Instrument, Span};
 
 pub async fn ws_handler(ws: WebSocketUpgrade, State(events): State<ServerEvents>) -> Response {
     let ws_id = generate_ws_id();
 
     let mut result = ws
         .on_failed_upgrade(ws_failed_callback)
-        .on_upgrade(move |socket| ws_socket(socket, events, ws_id));
+        .on_upgrade(move |socket| {
+            let span = info_span!("websocket connection", ws_id = ws_id);
+            ws_socket(socket, events, ws_id).instrument(span)
+        });
 
     // Add the ws-id as a header in the response.
     result
@@ -50,7 +54,8 @@ async fn ws_socket(socket: WebSocket, events: ServerEvents, _ws_id: u32) {
     let (write, read) = socket.split();
 
     // Spawn the write task into its own background task.
-    let write_task = tokio::spawn(ws_socket_write(write, broadcast, reply_read));
+    let write_task =
+        tokio::spawn(ws_socket_write(write, broadcast, reply_read).instrument(Span::current()));
 
     // Wait until the read task completes. This will happen when the WebSocket
     // connection is closed.
@@ -137,6 +142,8 @@ async fn ws_socket_write(
         };
 
         let message = serde_json::to_string(&message).expect("serialization cannot fail");
+
+        trace!("Sending message to websocket connection");
 
         // Send the serialized message to the WebSocket connection as a text
         // Message.

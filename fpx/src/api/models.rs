@@ -10,6 +10,8 @@ mod otel;
 
 pub use otel::*;
 
+/// The header that will be returned on the initial websocket connection. This
+/// could be useful for debugging purposes.
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
 /// Messages that are send from the server to the client.
@@ -73,6 +75,9 @@ pub enum ServerMessageDetails {
     /// and optionally a reference to the inspector id.
     RequestAdded(Box<RequestAdded>),
 
+    /// When a Span has been ingested via the export interface (either gRPC or
+    /// http), its TraceID and SpanID will be sent through this message. Both
+    /// ID's will be hex encoded.
     SpanAdded(Box<SpanAdded>),
 }
 
