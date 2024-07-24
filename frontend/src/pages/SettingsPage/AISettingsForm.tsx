@@ -46,7 +46,7 @@ export function AISettingsForm({
 
   const isAiDirty =
     Object.keys(form.formState.dirtyFields).filter(
-      (key) => !["customRoutes"].includes(key),
+      (key) => !["customRoutesEnabled", "tracingLiteEnabled"].includes(key),
     ).length > 0;
 
   return (

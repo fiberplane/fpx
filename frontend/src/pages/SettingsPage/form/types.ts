@@ -65,7 +65,7 @@ export const ProviderOptions = {
 } as const;
 
 export const FormSchema = z.object({
-  customRoutes: z.boolean().optional(),
+  customRoutesEnabled: z.boolean().optional(),
   aiEnabled: z.boolean().optional(),
   aiProviderType: ProviderTypeSchema.optional(),
   openaiApiKey: z.string().optional(),
@@ -74,4 +74,5 @@ export const FormSchema = z.object({
   anthropicApiKey: z.string().optional(),
   anthropicBaseUrl: z.string().optional(),
   anthropicModel: AnthropicModelSchema.optional(),
+  tracingLiteEnabled: z.boolean().optional(),
 });
