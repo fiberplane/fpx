@@ -32,7 +32,7 @@ export async function generateRequestWithOpenAI({
   history,
 }: GenerateRequestOptions) {
   logger.debug(
-    `Generating request data with OpenAI`,
+    "Generating request data with OpenAI",
     `model: ${model}`,
     `baseUrl: ${baseUrl}`,
     `persona: ${persona}`,

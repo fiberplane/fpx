@@ -6,3 +6,4 @@ export { useIsLgScreen } from "./useIsLgScreen.ts";
 export { useAiEnabled } from "./useAiEnabled.ts";
 export { useCustomRoutesEnabled } from "./useCustomRoutesEnabled.ts";
 export { useWebsocketQueryInvalidation } from "./useWebsocketQueryInvalidation";
+export { useTracingLiteEnabled } from "./useTracingLiteEnabled.ts";

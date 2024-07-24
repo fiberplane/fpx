@@ -89,7 +89,7 @@ export function RoutesPanel({
         style={styleWidth}
         className={cn(
           BACKGROUND_LAYER,
-          "px-4 overflow-hidden overflow-y-scroll border rounded-md",
+          "px-4 overflow-hidden overflow-y-auto border rounded-md",
           "lg:h-full",
         )}
       >
@@ -115,7 +115,7 @@ export function RoutesPanel({
             {customRoutesEnabled && <AddRouteButton />}
           </div>
         </div>
-        <div className="overflow-y-scroll relative">
+        <div className="overflow-y-auto relative">
           {hasAnyDraftRoutes && (
             <RoutesSection
               title="Draft routes"
@@ -182,7 +182,7 @@ function RoutesSection(props: RoutesSectionProps) {
         {title}
       </div>
       {showRoutesSection && (
-        <div className="space-y-0.5 overflow-y-scroll">
+        <div className="space-y-0.5 overflow-y-auto">
           {routes?.map?.((route, index) => (
             <div
               key={index}
