@@ -27,7 +27,7 @@
     "lint": "biome lint .",
     "lint:ci": "biome ci .",
     "build": "npm run clean && npm run build:types && npm run build:swc",
-    "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
+    "build:types": "tsc --project tsconfig.json",
     "build:swc": "swc src -d dist --source-maps",
     "prepublishOnly": "npm run build",
     "clean": "rimraf dist"
