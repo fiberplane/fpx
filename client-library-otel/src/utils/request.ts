@@ -7,7 +7,6 @@ import {
   SEMATTRS_HTTP_STATUS_CODE,
   SEMATTRS_HTTP_URL,
 } from "@opentelemetry/semantic-conventions";
-import type { Hono } from "hono";
 import {
   FPX_REQUEST_BODY,
   FPX_REQUEST_HEADERS_FULL,
@@ -17,14 +16,28 @@ import {
   FPX_RESPONSE_BODY,
   FPX_RESPONSE_HEADERS_FULL,
 } from "../constants";
-import type { GlobalResponse, InitParam, InputParam } from "../types";
+import type {
+  GlobalResponse,
+  HonoResponse,
+  InitParam,
+  InputParam,
+} from "../types";
 
-export function serializeHeaders(headers: Headers) {
+// There are so many different types of headers
+// and we want to support all of them so we can 
+// use a single function to do it all
+type PossibleHeaders =
+  | Headers
+  | HonoResponse["headers"]
+  | GlobalResponse["headers"];
+  
+export function headersToObject(headers: PossibleHeaders) {
   const returnObject: Record<string, string> = {};
   headers.forEach((value, key) => {
     returnObject[key] = value;
   });
-  return JSON.stringify(returnObject);
+
+  return returnObject;
 }
 
 export function getRequestAttributes(input: InputParam, init?: InitParam) {
@@ -55,9 +68,11 @@ export function getRequestAttributes(input: InputParam, init?: InitParam) {
     }
 
     if (init.headers) {
-      attributes[FPX_REQUEST_HEADERS_FULL] = serializeHeaders(
-        new Headers(init.headers),
-      );
+      const headers = headersToObject(new Headers(init.headers));
+      attributes[FPX_REQUEST_HEADERS_FULL] = JSON.stringify(headers);
+      for (const [key, value] of Object.entries(headers)) {
+        attributes[`http.request.header.${key}`] = value;
+      }
     }
   }
 
@@ -114,7 +129,7 @@ async function tryGetResponseBodyAsText(
 }
 
 export async function getResponseAttributes(
-  response: GlobalResponse | Awaited<ReturnType<Hono["fetch"]>>,
+  response: GlobalResponse | HonoResponse,
 ) {
   const attributes: Attributes = {
     [SEMATTRS_HTTP_STATUS_CODE]: response.status,
@@ -139,11 +154,11 @@ export async function getResponseAttributes(
   }
 
   const headers = response.headers;
-  const responseHeaders: Record<string, string> = {};
-  headers.forEach((value, key) => {
-    responseHeaders[key] = value;
-  });
+  const responseHeaders = headersToObject(headers);
   attributes[FPX_RESPONSE_HEADERS_FULL] = JSON.stringify(responseHeaders);
+  for (const [key, value] of Object.entries(responseHeaders)) {
+    attributes[`http.response.header.${key}`] = value;
+  }
 
   return attributes;
 }
