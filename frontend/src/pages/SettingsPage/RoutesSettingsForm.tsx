@@ -15,7 +15,7 @@ export function RoutesSettingsForm({
   settings,
 }: { settings: Record<string, string> }) {
   const { form, onSubmit } = useSettingsForm(settings);
-  const isCustomRoutesDirty = form.formState.dirtyFields.customRoutes;
+  const isCustomRoutesDirty = form.formState.dirtyFields.customRoutesEnabled;
 
   return (
     <Form {...form}>
@@ -25,7 +25,7 @@ export function RoutesSettingsForm({
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="customRoutes"
+              name="customRoutesEnabled"
               render={({ field }) => (
                 <FormItem
                   className={cn("rounded-lg border p-4", {

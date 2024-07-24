@@ -15,7 +15,7 @@ export function TracingLiteSettingsForm({
   settings,
 }: { settings: Record<string, string> }) {
   const { form, onSubmit } = useSettingsForm(settings);
-  const isTracingLiteDirty = form.formState.dirtyFields.tracingLite;
+  const isTracingLiteDirty = form.formState.dirtyFields.tracingLiteEnabled;
 
   return (
     <Form {...form}>
@@ -25,7 +25,7 @@ export function TracingLiteSettingsForm({
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="tracingLite"
+              name="tracingLiteEnabled"
               render={({ field }) => (
                 <FormItem
                   className={cn("rounded-lg border p-4", {

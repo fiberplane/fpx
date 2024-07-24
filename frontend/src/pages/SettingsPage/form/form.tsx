@@ -11,8 +11,8 @@ const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   aiProviderType: "openai",
   openaiModel: GPT_4o,
   anthropicModel: CLAUDE_3_5_SONNET,
-  customRoutes: false,
-  tracingLite: false,
+  customRoutesEnabled: false,
+  tracingLiteEnabled: false,
 };
 
 export function useSettingsForm(settings: Record<string, string>) {
@@ -32,7 +32,7 @@ export function useSettingsForm(settings: Record<string, string>) {
     updateSettings(
       {
         content: {
-          customRoutesEnabled: data.customRoutes,
+          customRoutesEnabled: data.customRoutesEnabled,
           aiEnabled: data.aiEnabled,
           aiProviderType: data.aiProviderType,
           // Remove the stored api key if the feature is disabled
@@ -46,7 +46,7 @@ export function useSettingsForm(settings: Record<string, string>) {
           openaiModel: data.openaiModel,
           anthropicBaseUrl: data.anthropicBaseUrl ?? "",
           anthropicModel: data.anthropicModel,
-          tracingLiteEnabled: data.tracingLite,
+          tracingLiteEnabled: data.tracingLiteEnabled,
         },
       },
       {
