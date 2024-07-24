@@ -7,6 +7,12 @@ use opentelemetry_proto::tonic::collector::trace::v1::{
 };
 use thiserror::Error;
 
+/// Service implements shared logic for both the gRPC and HTTP API, and possibly
+/// any future API interactions.
+///
+/// An example of its functionality is the ingestion of traces, this is both
+/// used by the gRPC and HTTP API. Luckily the models used by both APIs are the
+/// same, so we don't have to define an extra model for the Service API.
 #[derive(Clone)]
 pub struct Service {
     store: Store,
@@ -18,8 +24,12 @@ impl Service {
         Self { store, events }
     }
 
-    /// Ingest the given export message and store it in the database. On success
-    /// also broadcast the new trace/spans to ServerEvents.
+    /// Ingest the given export message and store it in the [`Store`]. On success
+    /// this also broadcast the new trace/spans combinations to
+    /// [`ServerEvents`].
+    ///
+    /// Note that we currently do not support partial success, so it will either
+    /// succeed or fail.
     pub async fn ingest_export(
         &self,
         request: ExportTraceServiceRequest,
@@ -42,6 +52,10 @@ impl Service {
         })
     }
 
+    /// Go through the message and extract all trace and span IDs and return
+    /// this as a vec of tuples.
+    ///
+    /// Both the trace and span IDs will be hex encoded.
     fn extract_trace_ids(message: &ExportTraceServiceRequest) -> Vec<(String, String)> {
         message
             .resource_spans

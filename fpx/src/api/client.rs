@@ -19,7 +19,10 @@ pub struct ApiClient {
 }
 
 impl ApiClient {
-    /// Create a new ApiClient with a default reqwest::Client.
+    /// Create a new ApiClient with a default [`reqwest::Client`].
+    ///
+    /// [`base_url`] should be the host of the fpx API, with optionally a port
+    /// and a path (in case you are doing path based routing).
     pub fn new(base_url: Url) -> Self {
         let version = env!("CARGO_PKG_VERSION");
         let client = reqwest::Client::builder()
@@ -30,10 +33,17 @@ impl ApiClient {
         Self::with_client(client, base_url)
     }
 
+    /// Create a new ApiClient with a custom [`reqwest::Client`].
     pub fn with_client(client: reqwest::Client, base_url: Url) -> Self {
         Self { client, base_url }
     }
 
+    /// Perform a request using fpx API's convention.
+    ///
+    /// This means that it will try to parse the response as [`T`]. If that
+    /// fails it will consider the call as failed and will try to parse the body
+    /// as [`E`]. Any other error will use the relevant variant in
+    /// [`ApiClientError`].
     async fn do_req<T, E>(
         &self,
         method: Method,
@@ -81,6 +91,7 @@ impl ApiClient {
         self.do_req(Method::GET, path).await
     }
 
+    /// Retrieve the details of a single span.
     pub async fn span_get(
         &self,
         trace_id: impl AsRef<str>,
@@ -95,6 +106,7 @@ impl ApiClient {
         self.do_req(Method::GET, path).await
     }
 
+    /// Retrieve all the spans associated with a single trace.
     pub async fn span_list(
         &self,
         trace_id: impl AsRef<str>,
