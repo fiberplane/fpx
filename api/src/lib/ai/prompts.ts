@@ -1,7 +1,9 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
 export const getSystemPrompt = (persona: string) => {
-  return persona === "QA" ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT;
+  return persona === "QA"
+    ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
+    : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT;
 };
 
 export const invokeRequestGenerationPrompt = async ({

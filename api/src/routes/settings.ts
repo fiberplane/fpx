@@ -136,6 +136,8 @@ export const FormSchema = z.object({
   anthropicModel: AnthropicModelSchema.optional(),
 });
 
+export type UserSettings = z.infer<typeof FormSchema>;
+
 export async function getInferenceConfig(db: LibSQLDatabase<typeof schema>) {
   const settingsRecords = await db.select().from(settings);
 

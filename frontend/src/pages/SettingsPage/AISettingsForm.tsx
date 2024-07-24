@@ -247,7 +247,7 @@ export function AISettingsForm({
                                     Base URL
                                   </FormLabel>
                                   <FormDescription className="mb-1">
-                                    You can configure base URL used by{" "}
+                                    You can configure the base URL used by{" "}
                                     {
                                       ProviderOptions[
                                         providerField.value ?? "openai"

@@ -1,4 +1,3 @@
-
 export const makeRequestTool = {
   type: "function" as const,
   function: {

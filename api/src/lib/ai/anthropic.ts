@@ -1,9 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
+import Anthropic from "@anthropic-ai/sdk";
 import logger from "../../logger.js";
-import {
-  getSystemPrompt,
-  invokeRequestGenerationPrompt,
-} from "./prompts.js";
+import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool as makeRequestToolBase } from "./tools.js";
 
 // Convert the tool call into the format that Anthropic suggests (different than openai's api)
@@ -20,20 +17,20 @@ type GenerateRequestOptions = {
   method: string;
   path: string;
   handler: string;
-  baseURL: string;
+  baseUrl?: string;
   history?: Array<string>;
 };
 
 /**
  * Generates request data for a route handler
- * - uses OpenAI's tool-calling feature.
+ * - uses Anthropic's tool-calling feature.
  * - returns the request data as JSON.
  *
  * See the JSON Schema definition for the request data in the `make_request` tool.
  */
-export async function generateRequestWithOpenAI({
+export async function generateRequestWithAnthropic({
   apiKey,
-  baseURL,
+  baseUrl,
   model,
   persona,
   method,
@@ -41,7 +38,7 @@ export async function generateRequestWithOpenAI({
   handler,
   history,
 }: GenerateRequestOptions) {
-  const anthropicClient = new Anthropic({ apiKey, baseURL });
+  const anthropicClient = new Anthropic({ apiKey, baseURL: baseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
     persona,
     method,
@@ -70,13 +67,9 @@ export async function generateRequestWithOpenAI({
     max_tokens: 2048,
   });
 
+  const { content } = response;
 
-
-  const {
-    content,
-  } = response;
-
-  let toolArgs;
+  let toolArgs: Anthropic.Messages.ToolUseBlock["input"];
   for (const message of content) {
     if (message.type === "tool_use") {
       toolArgs = message.input;
@@ -85,6 +78,9 @@ export async function generateRequestWithOpenAI({
     }
   }
 
-  logger.error("Parsing tool-call response from Anthropic failed. Response content:", JSON.stringify(content, null, 2));
+  logger.error(
+    "Parsing tool-call response from Anthropic failed. Response content:",
+    JSON.stringify(content, null, 2),
+  );
   throw new Error("Could not parse response from Anthropic");
 }

@@ -1,17 +1,11 @@
 import OpenAI from "openai";
 import logger from "../../logger.js";
-import {
-  FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT,
-  QA_PARAMETER_GENERATION_SYSTEM_PROMPT,
-  friendlyTesterPrompt,
-  getSystemPrompt,
-  invokeRequestGenerationPrompt,
-  qaTesterPrompt,
-} from "./prompts.js";
+import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool } from "./tools.js";
 
 type GenerateRequestOptions = {
   apiKey: string;
+  baseUrl?: string;
   model: string;
   persona: string;
   method: string;
@@ -29,6 +23,7 @@ type GenerateRequestOptions = {
  */
 export async function generateRequestWithOpenAI({
   apiKey,
+  baseUrl,
   model,
   persona,
   method,
@@ -36,7 +31,7 @@ export async function generateRequestWithOpenAI({
   handler,
   history,
 }: GenerateRequestOptions) {
-  const openaiClient = new OpenAI({ apiKey });
+  const openaiClient = new OpenAI({ apiKey, baseURL: baseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
     persona,
     method,
