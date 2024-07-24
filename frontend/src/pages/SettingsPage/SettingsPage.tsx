@@ -1,3 +1,4 @@
+import SparkleWand from "@/assets/SparkleWand.svg";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,10 +16,10 @@ import { AISettingsForm } from "./AISettingsForm";
 import { RoutesSettingsForm } from "./RoutesSettingsForm";
 
 export function SettingsPage() {
-  const { data, isLoading, isError } = useFetchSettings();
+  const { data, isPending, isError } = useFetchSettings();
   return (
     <div className={cn("mt-4 px-4 overflow-hidden h-full", "lg:px-6")}>
-      {isLoading ? (
+      {isPending ? (
         <SettingsSkeleton />
       ) : isError ? (
         <div>Error Loading Settings</div>
@@ -86,7 +87,8 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
           className="hidden md:block w-full justify-start text-left py-2 px-4"
           value={AI_TAB}
         >
-          AI
+          <SparkleWand className="inline w-3.5 h-3.5 mr-1.5" />
+          Request Autofill
         </TabsTrigger>
         <TabsTrigger
           className="hidden md:block w-full justify-start text-left py-2 px-4"

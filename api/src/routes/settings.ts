@@ -53,54 +53,100 @@ export async function findOrCreateSettings(db: LibSQLDatabase<typeof schema>) {
     return settingsRecords[0];
   }
 
-  const createdRecord = await db
+  const [createdRecord] = await db
     .insert(settings)
     .values({ content: {} })
     .returning();
 
-  return createdRecord[0];
+  return createdRecord;
 }
 
-// NOTE - These types and constants are duplicated between here and the frontend form
-const ApiKeySettingSchema = z
-  .object({
-    openaiApiKey: z.string(),
-  })
-  .passthrough();
+// NOTE - gpt-3.5-turbo was not working with our current prompting logic
+//        We would get this error: https://community.openai.com/t/error-code-400-for-repetitive-prompt-patterns/627157/7
+//        It seems to have to do with the prompt data we inject? IDK.
 
-type ApiKeySetting = z.infer<typeof ApiKeySettingSchema>;
-
-const GPT_4o = "gpt-4o";
-const GPT_4_TURBO = "gpt-4-turbo";
-const GPT_3_5_TURBO = "gpt-3.5-turbo";
+export const GPT_4o = "gpt-4o";
+export const GPT_4o_MINI = "gpt-4o-mini";
+export const GPT_4_TURBO = "gpt-4-turbo";
 
 const OpenAiModelSchema = z.union([
   z.literal(GPT_4o),
+  z.literal(GPT_4o_MINI),
   z.literal(GPT_4_TURBO),
-  z.literal(GPT_3_5_TURBO),
 ]);
 
 type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
 
-const isOpenAiModel = (model: unknown): model is OpenAiModel => {
-  return OpenAiModelSchema.safeParse(model).success;
-};
+export const isValidOpenaiModel = (value: string): value is OpenAiModel =>
+  OpenAiModelSchema.safeParse(value).success;
 
-const hasOpenAiApiKey = (content: unknown): content is ApiKeySetting => {
-  return ApiKeySettingSchema.safeParse(content).success;
-};
+export const OpenAiModelOptions = {
+  [GPT_4o]: "GPT-4o",
+  [GPT_4o_MINI]: "GPT-4o Mini",
+  [GPT_4_TURBO]: "GPT-4 Turbo",
+} as const;
 
-export async function getOpenAiConfig(db: LibSQLDatabase<typeof schema>) {
+export const CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20240620";
+export const CLAUDE_3_OPUS = "claude-3-opus-20240229";
+export const CLAUDE_3_SONNET = "claude-3-sonnet-20240229";
+export const CLAUDE_3_HAIKU = "claude-3-haiku-20240307";
+
+const AnthropicModelSchema = z.union([
+  z.literal(CLAUDE_3_5_SONNET),
+  z.literal(CLAUDE_3_OPUS),
+  z.literal(CLAUDE_3_SONNET),
+  z.literal(CLAUDE_3_HAIKU),
+]);
+
+type AnthropicModel = z.infer<typeof AnthropicModelSchema>;
+
+export const isValidAnthropicModel = (value: string): value is AnthropicModel =>
+  AnthropicModelSchema.safeParse(value).success;
+
+export const AnthropicModelOptions = {
+  [CLAUDE_3_5_SONNET]: "Claude 3.5 Sonnet",
+  [CLAUDE_3_OPUS]: "Claude 3 Opus",
+  [CLAUDE_3_SONNET]: "Claude 3 Sonnet",
+  [CLAUDE_3_HAIKU]: "Claude 3 Haiku",
+} as const;
+
+const ProviderTypeSchema = z.union([
+  z.literal("openai"),
+  z.literal("anthropic"),
+]);
+
+type Provider = z.infer<typeof ProviderTypeSchema>;
+
+export const isValidProvider = (value?: string): value is Provider =>
+  ProviderTypeSchema.safeParse(value).success;
+
+export const ProviderOptions = {
+  openai: "OpenAI",
+  anthropic: "Anthropic",
+} as const;
+
+export const FormSchema = z.object({
+  customRoutesEnabled: z.boolean().optional(),
+  aiEnabled: z.boolean().optional(),
+  aiProviderType: ProviderTypeSchema.optional(),
+  openaiApiKey: z.string().optional(),
+  openaiBaseUrl: z.string().optional(),
+  openaiModel: OpenAiModelSchema.optional(),
+  anthropicApiKey: z.string().optional(),
+  anthropicBaseUrl: z.string().optional(),
+  anthropicModel: AnthropicModelSchema.optional(),
+});
+
+export type UserSettings = z.infer<typeof FormSchema>;
+
+export async function getInferenceConfig(db: LibSQLDatabase<typeof schema>) {
   const settingsRecords = await db.select().from(settings);
 
   if (settingsRecords.length > 0) {
     const content = settingsRecords[0]?.content;
-    if (hasOpenAiApiKey(content)) {
-      const model = "openaiModel" in content ? content.openaiModel : "gpt-4o";
-      return {
-        openaiApiKey: content.openaiApiKey,
-        openaiModel: isOpenAiModel(model) ? model : "gpt-4o",
-      };
+    const { success, data: settings } = FormSchema.safeParse(content);
+    if (success) {
+      return settings;
     }
   }
 
