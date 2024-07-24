@@ -187,7 +187,7 @@ export const RequestorPage = () => {
         className={cn(
           "max-h-full",
           "relative",
-          "overflow-y-scroll",
+          "overflow-y-auto",
           "lg:overflow-x-hidden",
         )}
       >

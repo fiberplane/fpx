@@ -3,10 +3,10 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
-import { generateRequestWithOpenAI } from "../lib/ai/openai.js";
+import { generateRequestWithAiProvider } from "../lib/ai/index.js";
 import { cleanPrompt } from "../lib/ai/prompts.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { getOpenAiConfig } from "./settings.js";
+import { getInferenceConfig } from "./settings.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -14,54 +14,26 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
   const { handler, method, path, history, persona } = await ctx.req.json();
 
   const db = ctx.get("db");
-  const openaiConfig = await getOpenAiConfig(db);
+  const inferenceConfig = await getInferenceConfig(db);
 
-  if (!openaiConfig) {
+  if (!inferenceConfig) {
     return ctx.json(
       {
-        message: "No OpenAI configuration found",
+        message: "No inference configuration found",
       },
       403,
     );
   }
-  if (!openaiConfig.openaiApiKey) {
-    return ctx.json(
-      {
-        message: "OpenAI API key required",
-      },
-      403,
-    );
-  }
-  if (!openaiConfig.openaiModel) {
-    return ctx.json(
-      {
-        message: "OpenAI model not specified",
-      },
-      422,
-    );
-  }
-  const { openaiApiKey, openaiModel } = openaiConfig;
 
   const { data: parsedArgs, error: generateError } =
-    await generateRequestWithOpenAI({
-      apiKey: openaiApiKey,
-      model: openaiModel,
+    await generateRequestWithAiProvider({
+      inferenceConfig,
       persona,
       method,
       path,
       handler,
       history,
-    }).then(
-      (parsedArgs) => {
-        return { data: parsedArgs, error: null };
-      },
-      (error) => {
-        if (error instanceof Error) {
-          return { data: null, error: { message: error.message } };
-        }
-        return { data: null, error: { message: "Unknown error" } };
-      },
-    );
+    });
 
   if (generateError) {
     return ctx.json({ message: generateError.message }, 500);
@@ -83,8 +55,8 @@ app.post(
     const { handlerSourceCode, errorMessage } = ctx.req.valid("json");
 
     const db = ctx.get("db");
-    const openaiConfig = await getOpenAiConfig(db);
-    if (!openaiConfig) {
+    const inferenceConfig = await getInferenceConfig(db);
+    if (!inferenceConfig) {
       return ctx.json(
         {
           error: "No OpenAI configuration found",
@@ -92,12 +64,12 @@ app.post(
         403,
       );
     }
-    const { openaiApiKey, openaiModel } = openaiConfig;
+    const { openaiApiKey, openaiModel } = inferenceConfig;
     const openaiClient = new OpenAI({
       apiKey: openaiApiKey,
     });
     const response = await openaiClient.chat.completions.create({
-      model: openaiModel,
+      model: openaiModel ?? "gpt-4o", // TODO - Update this to use correct model and provider (later problem)
       messages: [
         {
           role: "system",
@@ -141,22 +113,22 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
   const { handlerSourceCode, trace } = await ctx.req.json();
   const traceId = ctx.req.param("traceId");
   const db = ctx.get("db");
-  const openaiConfig = await getOpenAiConfig(db);
-  if (!openaiConfig) {
+  const inferenceConfig = await getInferenceConfig(db);
+  if (!inferenceConfig) {
     return ctx.json(
       {
-        error: "No OpenAI configuration found",
+        error: "No inference configuration found",
       },
       403,
     );
   }
-  const { openaiApiKey, openaiModel } = openaiConfig;
+  const { openaiApiKey, openaiModel } = inferenceConfig;
   const openaiClient = new OpenAI({
     apiKey: openaiApiKey,
   });
 
   const response = await openaiClient.chat.completions.create({
-    model: openaiModel,
+    model: openaiModel ?? "gpt-4o", // TODO - Update this to use correct model and provider (later problem)
     messages: [
       {
         role: "system",
