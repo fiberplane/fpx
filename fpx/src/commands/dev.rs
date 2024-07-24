@@ -1,4 +1,4 @@
-use crate::api::{self};
+use crate::api;
 use crate::data::migrations::migrate;
 use crate::data::{DataPath, Store};
 use crate::events::Events;

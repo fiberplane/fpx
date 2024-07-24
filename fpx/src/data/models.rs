@@ -1,6 +1,6 @@
-use super::{Json, Timestamp};
 use crate::api;
 use crate::api::models::SpanKind;
+use crate::data::util::{Json, Timestamp};
 use serde::Deserialize;
 use std::collections::BTreeMap;
 
