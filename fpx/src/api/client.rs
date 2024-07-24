@@ -1,6 +1,6 @@
 //! API client for the FPX API.
 
-use crate::models::{NewRequest, NewRequestError, Request, RequestSummary, Response};
+use crate::models;
 
 use super::errors::ApiClientError;
 use super::handlers::{RequestGetError, RequestListError};
@@ -76,7 +76,7 @@ impl ApiClient {
     pub async fn request_get(
         &self,
         request_id: i64,
-    ) -> Result<Request, ApiClientError<RequestGetError>> {
+    ) -> Result<models::Request, ApiClientError<RequestGetError>> {
         let path = format!("api/requests/{}", request_id);
 
         self.do_req(Method::GET, path, None).await
@@ -85,7 +85,7 @@ impl ApiClient {
     /// Retrieve a list of requests
     pub async fn request_list(
         &self,
-    ) -> Result<Vec<RequestSummary>, ApiClientError<RequestListError>> {
+    ) -> Result<Vec<models::RequestSummary>, ApiClientError<RequestListError>> {
         let path = "api/requests";
 
         self.do_req(Method::GET, path, None).await
@@ -94,8 +94,8 @@ impl ApiClient {
     /// Create and execute a new request
     pub async fn request_post(
         &self,
-        new_request: NewRequest,
-    ) -> Result<Response, ApiClientError<NewRequestError>> {
+        new_request: models::NewRequest,
+    ) -> Result<models::Response, ApiClientError<models::NewRequestError>> {
         let path = "/api/requests";
 
         let json = serde_json::to_string(&new_request).unwrap();
