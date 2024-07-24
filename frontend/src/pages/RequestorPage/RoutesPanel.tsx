@@ -226,7 +226,9 @@ function RoutesSection(props: RoutesSectionProps) {
 export function RouteItem({ route }: { route: ProbedRoute }) {
   const { mutate: deleteRoute } = useDeleteRoute();
   const canDeleteRoute =
-    route.routeOrigin === "custom" || !route.currentlyRegistered;
+    route.routeOrigin === "custom" ||
+    !route.currentlyRegistered ||
+    route.routeOrigin === "open_api";
   return (
     <>
       <span
