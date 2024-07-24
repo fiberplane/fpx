@@ -141,7 +141,7 @@ function OpenApiForm({
                 method: method.toUpperCase(),
                 handlerType: "route" as const,
                 routeOrigin: "open_api" as const,
-                openapiSpec: JSON.stringify(operation, (_key, value) => {
+                openApiSpec: JSON.stringify(operation, (_key, value) => {
                   if (typeof value === "object" && value !== null) {
                     if (seen.has(value)) return "[Circular]";
                     seen.add(value);

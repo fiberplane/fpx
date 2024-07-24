@@ -11,7 +11,7 @@ export type ProbedRoute = {
   handlerType: "route" | "middleware";
   currentlyRegistered: boolean;
   routeOrigin: "discovered" | "custom" | "open_api";
-  openapiSpec?: string;
+  openApiSpec?: string;
   // TODO - Implement
   isDraft?: boolean;
 };
@@ -79,7 +79,7 @@ export type Route = {
   handler?: string;
   handlerType?: "route" | "middleware";
   routeOrigin?: "discovered" | "custom" | "open_api";
-  openapiSpec?: string;
+  openApiSpec?: string;
 };
 
 async function addRoutes(routes: Route | Route[]) {

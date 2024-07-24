@@ -36,7 +36,7 @@ export const appRoutes = sqliteTable(
       enum: ["discovered", "custom", "open_api"],
     }).default("discovered"),
     // serialized OpenAPI spec for AI prompting
-    openapiSpec: text("openapi_spec", { mode: "text" }),
+    openApiSpec: text("openapi_spec", { mode: "text" }),
   },
   (table) => {
     return {

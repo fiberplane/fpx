@@ -11,7 +11,7 @@ import { getInferenceConfig } from "./settings.js";
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.post("/v0/generate-request", cors(), async (ctx) => {
-  const { handler, method, path, history, persona, openapiSpec } =
+  const { handler, method, path, history, persona, openApiSpec } =
     await ctx.req.json();
 
   const db = ctx.get("db");
@@ -34,6 +34,7 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
       path,
       handler,
       history,
+      openApiSpec,
     });
 
   if (generateError) {
