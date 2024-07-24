@@ -27,6 +27,7 @@ import {
   EyeClosedIcon,
   EyeOpenIcon,
   InfoCircledIcon,
+  SlashIcon,
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
@@ -141,7 +142,7 @@ export function AISettingsForm({
                                       </DropdownMenuRadioGroup>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
-                                  {"⫸"}
+                                  <SlashIcon className="w-3.5 h-3.5" />
                                   <FormField
                                     control={form.control}
                                     name={
