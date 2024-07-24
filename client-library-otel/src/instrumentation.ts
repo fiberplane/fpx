@@ -62,7 +62,10 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
-          const endpoint = typeof env === "object" && env !== null ? (env as Record<string, string | null>).FPX_ENDPOINT : null;
+          const endpoint =
+            typeof env === "object" && env !== null
+              ? (env as Record<string, string | null>).FPX_ENDPOINT
+              : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
           if (!isEnabled) {
