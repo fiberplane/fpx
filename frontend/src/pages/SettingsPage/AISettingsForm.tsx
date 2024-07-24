@@ -53,7 +53,7 @@ export function AISettingsForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
         <div>
           <h3 className="hidden md:block md:mb-4 text-lg font-medium">
-            Inference Settings
+            Request Autofill Settings
           </h3>
           <div className="space-y-4">
             <FormField
@@ -68,7 +68,7 @@ export function AISettingsForm({
                   <div className="flex flex-row items-center justify-between gap-2">
                     <div className="space-y-1">
                       <FormLabel className="text-base">
-                        AI Sprinkles
+                        Enable Request Autofill
                         <span className="font-light text-gray-400 ml-2">
                           (Beta)
                         </span>
