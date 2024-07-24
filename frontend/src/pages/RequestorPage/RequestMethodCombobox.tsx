@@ -1,5 +1,6 @@
 import { CheckIcon } from "@radix-ui/react-icons";
 import * as React from "react";
+import { forwardRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -47,86 +48,89 @@ const methods = [
   },
 ];
 
-export function RequestMethodCombobox({
-  method,
-  handleMethodChange,
-  allowUserToChange,
-  className,
-}: {
+export const RequestMethodCombobox = forwardRef<HTMLButtonElement, {
   method: string;
   handleMethodChange: (method: string) => void;
   allowUserToChange?: boolean;
   className?: string;
-}) {
-  const [open, setOpen] = React.useState(false);
+}>(
+  (
+    { method, handleMethodChange, allowUserToChange, className },
+    ref
+  ) => {
+    const [open, setOpen] = React.useState(false);
 
-  const matchedMethod = method
-    ? methods.find((m) => m.value === method)?.label
-    : "GET";
+    const matchedMethod = method
+      ? methods.find((m) => m.value === method)?.label
+      : "GET";
 
-  return (
-    <Popover open={allowUserToChange ? open : false} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          role="combobox"
-          aria-expanded={open}
-          className={cn(
-            "text-left",
-            {
-              "pointer-events-none": !allowUserToChange,
-            },
-            className,
-          )}
-          onClick={(e) => {
-            if (!allowUserToChange) {
-              e.stopPropagation();
-            }
-          }}
-        >
-          <span
+    return (
+      <Popover open={allowUserToChange ? open : false} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            ref={ref}
+            variant="ghost"
+            role="combobox"
+            aria-expanded={open}
             className={cn(
-              "font-mono min-w-4",
-              getHttpMethodTextColor(matchedMethod ?? ""),
+              "text-left",
+              {
+                "pointer-events-none": !allowUserToChange,
+              },
+              className,
             )}
+            onClick={(e) => {
+              if (!allowUserToChange) {
+                e.stopPropagation();
+              }
+            }}
           >
-            {matchedMethod}
-          </span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[120px] p-0" align="start">
-        <Command>
-          <CommandList>
-            <CommandGroup>
-              {methods.map((framework) => (
-                <CommandItem
-                  key={framework.value}
-                  value={framework.value}
-                  onSelect={(currentValue) => {
-                    handleMethodChange(currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  <span
-                    className={cn(
-                      "text-whitefont-mono",
-                      getHttpMethodTextColor(framework.label ?? ""),
-                    )}
+            <span
+              className={cn(
+                "font-mono min-w-4",
+                getHttpMethodTextColor(matchedMethod ?? ""),
+              )}
+            >
+              {matchedMethod}
+            </span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[120px] p-0" align="start">
+          <Command>
+            <CommandList>
+              <CommandGroup>
+                {methods.map((framework) => (
+                  <CommandItem
+                    key={framework.value}
+                    value={framework.value}
+                    onSelect={(currentValue) => {
+                      handleMethodChange(currentValue);
+                      setOpen(false);
+                    }}
                   >
-                    {framework.label}
-                  </span>
-                  <CheckIcon
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      method === framework.value ? "opacity-100" : "opacity-0",
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
+                    <span
+                      className={cn(
+                        "text-whitefont-mono",
+                        getHttpMethodTextColor(framework.label ?? ""),
+                      )}
+                    >
+                      {framework.label}
+                    </span>
+                    <CheckIcon
+                      className={cn(
+                        "ml-auto h-4 w-4",
+                        method === framework.value ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+);
+
+RequestMethodCombobox.displayName = "RequestMethodCombobox";
