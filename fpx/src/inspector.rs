@@ -257,7 +257,7 @@ async fn handle_request(
         &tx,
         req.method().as_ref(),
         &req.uri().to_string(),
-        Some("body".to_string()),
+        Some("body"),
         headers,
     )
     .await

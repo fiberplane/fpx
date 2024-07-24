@@ -51,7 +51,7 @@ pub async fn inspect_request_handler(
         &tx,
         parts.method.as_ref(),
         &parts.uri.to_string(),
-        Some(String::from_utf8(body.to_vec()).unwrap()),
+        Some(String::from_utf8(body.to_vec()).unwrap().as_str()),
         headers,
     )
     .await

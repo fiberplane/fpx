@@ -75,7 +75,7 @@ impl Store {
         tx: &Transaction,
         method: &str,
         url: &str,
-        body: Option<String>,
+        body: Option<&str>,
         headers: BTreeMap<String, String>,
     ) -> Result<models::Request> {
         let headers = serde_json::to_string(&headers)?;

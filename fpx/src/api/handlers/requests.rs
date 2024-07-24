@@ -28,13 +28,14 @@ pub async fn requests_post_handler(
 ) -> Result<Json<models::RequestWithResponse>, ApiServerError<models::NewRequestError>> {
     let tx = store.start_transaction().await?;
 
-    let request_body = payload.body;
+    let request_body: Option<&str> = payload.body.as_deref();
+
     let request_headers = payload.headers.unwrap_or_default();
 
     let request = execute_request(
         &payload.method,
         &payload.url,
-        request_body.clone(),
+        request_body,
         &request_headers,
     );
 
@@ -78,7 +79,7 @@ pub async fn requests_post_handler(
 async fn execute_request(
     request_method: &String,
     url: &String,
-    body: Option<String>,
+    body: Option<&str>,
     headers: &BTreeMap<String, String>,
 ) -> Result<reqwest::Response, reqwest::Error> {
     let request_method: Method = Method::from_bytes(request_method.as_bytes()).unwrap(); // TODO
@@ -96,7 +97,7 @@ async fn execute_request(
     REQUESTOR_CLIENT
         .request(request_method, url)
         .headers(header_map)
-        .body(body.unwrap_or_default())
+        .body(body.unwrap_or_default().to_string())
         .send()
         .await
 }
