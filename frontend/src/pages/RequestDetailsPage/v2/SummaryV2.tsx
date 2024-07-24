@@ -48,7 +48,7 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
               ))
             ) : (
               <FpxCard className="rounded-sm">
-                <CardContent className="p-2 bg-secondary rounded-sm">
+                <CardContent className="p-2 bg-secondary rounded-sm overflow-y-auto max-h-[200px]">
                   {body && <TextOrJsonViewer text={body} collapsed />}
                 </CardContent>
               </FpxCard>
