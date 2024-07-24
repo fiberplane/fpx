@@ -55,7 +55,7 @@ export function AddRouteButton() {
         {/* default tab opens on openapi if there is no openapi spec added already */}
         <Tabs
           className="w-full"
-          defaultValue={openApi ? "openapi" : "custom-route"}
+          defaultValue={openApi ? "custom-route" : "openapi"}
         >
           <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="custom-route">Custom Route</TabsTrigger>
