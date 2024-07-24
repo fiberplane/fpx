@@ -11,37 +11,55 @@ use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use prost::Message;
 use tracing::error;
 
+/// Collect trace data using the http as the transport and either json or
+/// protobuf as the payload.
+///
+/// Note: this returns a [`Result`] with both of them being a
+/// [`impl IntoResponse`] since this way we can support the [`?`] operator. We
 #[tracing::instrument(skip_all)]
 pub async fn trace_collector_handler(
     State(service): State<Service>,
     headers: HeaderMap,
     JsonOrProtobuf(payload): JsonOrProtobuf<ExportTraceServiceRequest>,
-) -> impl IntoResponse {
-    let response = service.ingest_export(payload).await;
-
-    let Ok(response) = response else {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-    };
+) -> Result<impl IntoResponse, impl IntoResponse> {
+    let response = service.ingest_export(payload).await.map_err(|err| {
+        error!(?err, "failed to ingest export");
+        StatusCode::INTERNAL_SERVER_ERROR.into_response()
+    })?;
 
     let content_type = headers
         .get(CONTENT_TYPE)
         .and_then(|value| value.to_str().ok())
         .unwrap_or("");
 
+    // Return the response in the same format as the request. We might want to
+    // look at the `Accept` header. But this is fine for now.
     match content_type {
-        "application/json" => Json(response).into_response(),
+        "application/json" => Ok(Json(response).into_response()),
         "application/x-protobuf" => {
             let mut buf = bytes::BytesMut::new();
-            response.encode(&mut buf).expect("TODO");
-            buf.into_response()
+            response.encode(&mut buf).map_err(|err| {
+                error!(?err, "unable to encode protobuf message");
+                StatusCode::INTERNAL_SERVER_ERROR.into_response()
+            })?;
+            Ok(buf.into_response())
         }
+        // In theory this cannot happen since [`JsonOrProtobuf`] only works if
+        // the request is either of the above.
         content_type => {
-            error!("unsupported content type: {}", content_type);
-            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+            error!(
+                ?content_type,
+                "Unsupported content type in response during ingestion"
+            );
+            Err(StatusCode::UNSUPPORTED_MEDIA_TYPE.into_response())
         }
     }
 }
 
+/// Either deserialize the body as a JSON or Protobuf encoded payload.
+/// Currently this does a simple check of either the "application/json" or
+/// "application/x-protobuf" content type. If neither matches, it will return a
+/// [`StatusCode::UNSUPPORTED_MEDIA_TYPE`] error.
 pub struct JsonOrProtobuf<T>(T);
 
 #[async_trait]
@@ -59,6 +77,10 @@ where
         let content_type = content_type_header.and_then(|value| value.to_str().ok());
 
         if let Some(content_type) = content_type {
+            // NOTE: there are other types that also are encoded as JSON but
+            // have different content-types (see the Json extractor in axum),
+            // but we do not have to support them at this time since the otel
+            // spec used the "application/json" content type.
             if content_type.starts_with("application/json") {
                 let Json(payload) = req.extract().await.map_err(IntoResponse::into_response)?;
                 return Ok(Self(payload));
@@ -68,7 +90,10 @@ where
                 let bytes = Bytes::from_request(req, state)
                     .await
                     .map_err(IntoResponse::into_response)?;
-                let payload: T = T::decode(bytes).expect("TODO");
+                let payload: T = T::decode(bytes).map_err(|err| {
+                    error!(?err, "unable to decode protobuf message");
+                    StatusCode::BAD_REQUEST.into_response()
+                })?;
                 return Ok(Self(payload));
             }
         }
