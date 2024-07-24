@@ -215,9 +215,7 @@ function ResponseBody({
     const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
 
     return (
-      <div
-        className={cn("overflow-hidden overflow-y-auto w-full", className)}
-      >
+      <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
         <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
       </div>
     );
