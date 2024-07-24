@@ -11,7 +11,7 @@ pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
 /// Messages that are send from the server to the client.
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ServerMessage {
     /// If this is a response to a client message, then this field contains the
     /// same message id. Otherwise it will be [`None`].
@@ -54,7 +54,12 @@ impl ServerMessage {
 }
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", content = "details", rename_all = "camelCase")]
+#[serde(
+    tag = "type",
+    content = "details",
+    rename_all = "camelCase",
+    deny_unknown_fields
+)]
 #[non_exhaustive]
 pub enum ServerMessageDetails {
     /// A message was received and processed successfully. See the outer message
@@ -78,7 +83,12 @@ impl From<ServerMessageDetails> for ServerMessage {
 }
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(tag = "error", content = "details", rename_all = "camelCase")]
+#[serde(
+    tag = "error",
+    content = "details",
+    rename_all = "camelCase",
+    deny_unknown_fields
+)]
 #[non_exhaustive]
 pub enum ServerError {
     /// A message was received that could not be parsed.
@@ -87,7 +97,7 @@ pub enum ServerError {
 
 /// Messages that are send from the client to the server.
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ClientMessage {
     /// A unique identifier for this message. This will be used by certain
     /// server messages to refer back to this message, such as Ack or Error.
@@ -112,14 +122,19 @@ impl ClientMessage {
 }
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", content = "details", rename_all = "camelCase")]
+#[serde(
+    tag = "type",
+    content = "details",
+    rename_all = "camelCase",
+    deny_unknown_fields
+)]
 #[non_exhaustive]
 pub enum ClientMessageDetails {
     Debug,
 }
 
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RequestAdded {
     /// The id of the request that has been captured.
     request_id: u32,
@@ -147,7 +162,7 @@ impl From<RequestAdded> for ServerMessage {
 
 /// A request that has been captured by fpx.
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Request {
     pub id: u32,
     pub method: String,
@@ -176,7 +191,7 @@ impl Request {
 
 /// A response that has been captured by fpx.
 #[derive(JsonSchema, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Response {
     pub id: u32,
     pub status: u16,
@@ -205,6 +220,7 @@ impl Response {
 
 /// The payload that describes the request that Requestor has to execute
 #[derive(JsonSchema, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct RequestorRequestPayload {
     pub method: String,
     pub url: String,
@@ -213,8 +229,13 @@ pub struct RequestorRequestPayload {
 }
 
 // TODO: Improve later to get more specific error handling
-#[derive(JsonSchema, Debug, Serialize, Error)]
-#[serde(tag = "error", content = "details", rename_all = "camelCase")]
+#[derive(JsonSchema, Debug, Serialize, Error, Deserialize)]
+#[serde(
+    tag = "error",
+    content = "details",
+    rename_all = "camelCase",
+    deny_unknown_fields
+)]
 #[allow(dead_code)]
 pub enum RequestorError {}
 

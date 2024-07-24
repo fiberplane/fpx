@@ -26,11 +26,11 @@ pub async fn handle_command(args: Args) -> Result<()> {
         schema_for!(ServerMessage),
     ]);
 
-    let zod_schema = generate_zod_schemas(&args.project_directory, &schemas)?;
+    let schema_content = generate_schemas(&schemas)?;
 
     let file_path = Path::new(&args.project_directory).join(args.output_path.clone());
     let mut file = File::create(file_path.clone())?;
-    file.write_all(&zod_schema)?;
+    file.write_all(&schema_content)?;
 
     // Run formatter
     let output = std::process::Command::new("npx")
@@ -60,70 +60,49 @@ pub async fn handle_command(args: Args) -> Result<()> {
     Ok(())
 }
 
-fn generate_zod_schemas(npx_directory: &str, schemas: &[RootSchema]) -> Result<Vec<u8>> {
+fn generate_schemas(schemas: &[RootSchema]) -> Result<Vec<u8>> {
     println!("Generating types & schemas:");
-    let mut zod_schemas: Vec<String> = Vec::from([String::from(
+
+    let mut output: Vec<String> = Vec::from([String::from(
         "// ================================================= //
         // This file is generated. PLEASE DO NOT MODIFY.     //
         // Run `cargo xtask generate-schemas` to regenerate. //
-        // ================================================= //",
+        // ================================================= //
+       
+        import { Ajv } from \"ajv\";
+        import { FromSchema } from \"json-schema-to-ts\";
+
+        const ajv = new Ajv();
+        ",
     )]);
 
-    for (index, schema) in schemas.iter().enumerate() {
+    for schema in schemas.iter() {
         // Parse the json schema as JSON and get the schema title
         let schema_json = serde_json::to_value(schema)?;
 
         if let Some(title) = schema_json.get("title").and_then(Value::as_str) {
-            let schema_name = format!("{}Schema", title);
-            // Convert the schema to a pretty string
-            let schema_string = serde_json::to_string_pretty(&schema)?;
+            let schema_name = format!("{}JsonSchema", title);
 
-            // Execute npx CLI tool json-schema-to-zod and capture its output
-            let output = std::process::Command::new("npx")
-                .args([
-                    "json-schema-to-zod",
-                    "-n",
-                    &schema_name,
-                    "-i",
-                    &schema_string,
-                ])
-                .current_dir(npx_directory)
-                .output()?;
+            let json_schema = serde_json::to_string_pretty(&schema)?;
 
-            if output.status.success() {
-                let output = String::from_utf8_lossy(&output.stdout);
+            output.push(format!(
+                "export const {} = {} as const;",
+                schema_name, json_schema
+            ));
 
-                let zod_schema = if index == 0 {
-                    output.trim().to_string()
-                } else {
-                    // strip the zod imports for every schema after the first one, so we have a
-                    // single zod import
-                    output
-                        .splitn(3, '\n')
-                        .skip(2)
-                        .map(|s| s.trim())
-                        .collect::<Vec<&str>>()
-                        .join("\n")
-                };
+            output.push(format!(
+                "export const validate{} = ajv.compile({});",
+                title, schema_name
+            ));
 
-                zod_schemas.push(zod_schema.to_string());
-                // add inferred type export to the schema
-                zod_schemas.push(format!(
-                    "export type {} = z.infer<typeof {}>",
-                    title, schema_name
-                ));
-                println!("✓ {}", title);
-            } else {
-                eprintln!(
-                    "Generating {} failed: {}",
-                    title,
-                    String::from_utf8_lossy(&output.stderr)
-                );
+            output.push(format!(
+                "export type {} = FromSchema<typeof {}>;",
+                title, schema_name
+            ));
 
-                anyhow::bail!("Command failed")
-            }
+            println!("✓ {}", title);
         }
     }
 
-    Ok(zod_schemas.join("\n\n").as_bytes().to_owned())
+    Ok(output.join("\n\n").as_bytes().to_owned())
 }

@@ -3,136 +3,249 @@
 // Run `cargo xtask generate-schemas` to regenerate. //
 // ================================================= //
 
-import { z } from "zod";
+import { Ajv } from "ajv";
+import { FromSchema } from "json-schema-to-ts";
 
-export const ClientMessageSchema = z
-  .object({
-    messageId: z
-      .string()
-      .describe(
+const ajv = new Ajv();
+
+export const ClientMessageJsonSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "ClientMessage",
+  description: "Messages that are send from the client to the server.",
+  type: "object",
+  oneOf: [
+    {
+      type: "object",
+      required: ["type"],
+      properties: {
+        type: {
+          type: "string",
+          enum: ["debug"],
+        },
+      },
+      additionalProperties: false,
+    },
+  ],
+  required: ["messageId"],
+  properties: {
+    messageId: {
+      description:
         "A unique identifier for this message. This will be used by certain server messages to refer back to this message, such as Ack or Error.",
-      ),
-  })
-  .and(z.object({ type: z.literal("debug") }))
-  .describe("Messages that are send from the client to the server.");
+      type: "string",
+    },
+  },
+  additionalProperties: false,
+} as const;
 
-export type ClientMessage = z.infer<typeof ClientMessageSchema>;
+export const validateClientMessage = ajv.compile(ClientMessageJsonSchema);
 
-export const RequestSchema = z
-  .object({
-    body: z.union([z.string(), z.null()]).optional(),
-    headers: z.record(z.string()),
-    id: z.number().int().gte(0),
-    method: z.string(),
-    url: z.string(),
-  })
-  .describe("A request that has been captured by fpx.");
+export type ClientMessage = FromSchema<typeof ClientMessageJsonSchema>;
 
-export type Request = z.infer<typeof RequestSchema>;
+export const RequestJsonSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "Request",
+  description: "A request that has been captured by fpx.",
+  type: "object",
+  required: ["headers", "id", "method", "url"],
+  properties: {
+    body: {
+      type: ["string", "null"],
+    },
+    headers: {
+      type: "object",
+      additionalProperties: {
+        type: "string",
+      },
+    },
+    id: {
+      type: "integer",
+      format: "uint32",
+      minimum: 0.0,
+    },
+    method: {
+      type: "string",
+    },
+    url: {
+      type: "string",
+    },
+  },
+  additionalProperties: false,
+} as const;
 
-export const RequestAddedSchema = z.object({
-  inspectorId: z
-    .union([
-      z
-        .number()
-        .int()
-        .describe(
-          "The id of the inspector that was associated with the request. This is null in the case where the request was send to `/api/inspect`.",
-        ),
-      z
-        .null()
-        .describe(
-          "The id of the inspector that was associated with the request. This is null in the case where the request was send to `/api/inspect`.",
-        ),
-    ])
-    .describe(
-      "The id of the inspector that was associated with the request. This is null in the case where the request was send to `/api/inspect`.",
-    )
-    .optional(),
-  requestId: z
-    .number()
-    .int()
-    .gte(0)
-    .describe("The id of the request that has been captured."),
-});
+export const validateRequest = ajv.compile(RequestJsonSchema);
 
-export type RequestAdded = z.infer<typeof RequestAddedSchema>;
+export type Request = FromSchema<typeof RequestJsonSchema>;
 
-export const RequestorErrorSchema = z.object({ error: z.literal("internal") });
+export const RequestAddedJsonSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "RequestAdded",
+  type: "object",
+  required: ["requestId"],
+  properties: {
+    inspectorId: {
+      description:
+        "The id of the inspector that was associated with the request. This is null in the case where the request was send to `/api/inspect`.",
+      type: ["integer", "null"],
+      format: "int64",
+    },
+    requestId: {
+      description: "The id of the request that has been captured.",
+      type: "integer",
+      format: "uint32",
+      minimum: 0.0,
+    },
+  },
+  additionalProperties: false,
+} as const;
 
-export type RequestorError = z.infer<typeof RequestorErrorSchema>;
+export const validateRequestAdded = ajv.compile(RequestAddedJsonSchema);
 
-export const RequestorRequestPayloadSchema = z
-  .object({
-    body: z.union([z.string(), z.null()]).optional(),
-    headers: z.union([z.record(z.string()), z.null()]).optional(),
-    method: z.string(),
-    url: z.string(),
-  })
-  .describe(
+export type RequestAdded = FromSchema<typeof RequestAddedJsonSchema>;
+
+export const RequestorErrorJsonSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "RequestorError",
+  oneOf: [],
+} as const;
+
+export const validateRequestorError = ajv.compile(RequestorErrorJsonSchema);
+
+export type RequestorError = FromSchema<typeof RequestorErrorJsonSchema>;
+
+export const RequestorRequestPayloadJsonSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "RequestorRequestPayload",
+  description:
     "The payload that describes the request that Requestor has to execute",
-  );
+  type: "object",
+  required: ["method", "url"],
+  properties: {
+    body: {
+      type: ["string", "null"],
+    },
+    headers: {
+      type: ["object", "null"],
+      additionalProperties: {
+        type: "string",
+      },
+    },
+    method: {
+      type: "string",
+    },
+    url: {
+      type: "string",
+    },
+  },
+  additionalProperties: false,
+} as const;
 
-export type RequestorRequestPayload = z.infer<
-  typeof RequestorRequestPayloadSchema
+export const validateRequestorRequestPayload = ajv.compile(
+  RequestorRequestPayloadJsonSchema,
+);
+
+export type RequestorRequestPayload = FromSchema<
+  typeof RequestorRequestPayloadJsonSchema
 >;
 
-export const ServerMessageSchema = z
-  .object({
-    messageId: z
-      .union([
-        z
-          .string()
-          .describe(
-            "If this is a response to a client message, then this field contains the same message id. Otherwise it will be [`None`].",
-          ),
-        z
-          .null()
-          .describe(
-            "If this is a response to a client message, then this field contains the same message id. Otherwise it will be [`None`].",
-          ),
-      ])
-      .describe(
+export const ServerMessageJsonSchema = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "ServerMessage",
+  description: "Messages that are send from the server to the client.",
+  type: "object",
+  oneOf: [
+    {
+      description:
+        "A message was received and processed successfully. See the outer message for the message id.",
+      type: "object",
+      required: ["type"],
+      properties: {
+        type: {
+          type: "string",
+          enum: ["ack"],
+        },
+      },
+      additionalProperties: false,
+    },
+    {
+      description:
+        "An error occurred on the server. This could be caused by a message or could be caused by something else. See the outer message for the message id.",
+      type: "object",
+      required: ["details", "type"],
+      properties: {
+        details: {
+          $ref: "#/definitions/ServerError",
+        },
+        type: {
+          type: "string",
+          enum: ["error"],
+        },
+      },
+      additionalProperties: false,
+    },
+    {
+      description:
+        "A request has been captured. It contains a reference to the request id and optionally a reference to the inspector id.",
+      type: "object",
+      required: ["details", "type"],
+      properties: {
+        details: {
+          $ref: "#/definitions/RequestAdded",
+        },
+        type: {
+          type: "string",
+          enum: ["requestAdded"],
+        },
+      },
+      additionalProperties: false,
+    },
+  ],
+  properties: {
+    messageId: {
+      description:
         "If this is a response to a client message, then this field contains the same message id. Otherwise it will be [`None`].",
-      )
-      .optional(),
-  })
-  .and(
-    z.any().superRefine((x, ctx) => {
-      const schemas = [
-        z
-          .object({ type: z.literal("ack") })
-          .describe(
-            "A message was received and processed successfully. See the outer message for the message id.",
-          ),
-        z
-          .object({ details: z.any(), type: z.literal("error") })
-          .describe(
-            "An error occurred on the server. This could be caused by a message or could be caused by something else. See the outer message for the message id.",
-          ),
-        z
-          .object({ details: z.any(), type: z.literal("requestAdded") })
-          .describe(
-            "A request has been captured. It contains a reference to the request id and optionally a reference to the inspector id.",
-          ),
-      ];
-      const errors = schemas.reduce<z.ZodError[]>(
-        (errors, schema) =>
-          ((result) => (result.error ? [...errors, result.error] : errors))(
-            schema.safeParse(x),
-          ),
-        [],
-      );
-      if (schemas.length - errors.length !== 1) {
-        ctx.addIssue({
-          path: ctx.path,
-          code: "invalid_union",
-          unionErrors: errors,
-          message: "Invalid input: Should pass single schema",
-        });
-      }
-    }),
-  )
-  .describe("Messages that are send from the server to the client.");
+      type: ["string", "null"],
+    },
+  },
+  additionalProperties: false,
+  definitions: {
+    RequestAdded: {
+      type: "object",
+      required: ["requestId"],
+      properties: {
+        inspectorId: {
+          description:
+            "The id of the inspector that was associated with the request. This is null in the case where the request was send to `/api/inspect`.",
+          type: ["integer", "null"],
+          format: "int64",
+        },
+        requestId: {
+          description: "The id of the request that has been captured.",
+          type: "integer",
+          format: "uint32",
+          minimum: 0.0,
+        },
+      },
+      additionalProperties: false,
+    },
+    ServerError: {
+      oneOf: [
+        {
+          description: "A message was received that could not be parsed.",
+          type: "object",
+          required: ["error"],
+          properties: {
+            error: {
+              type: "string",
+              enum: ["invalidMessage"],
+            },
+          },
+          additionalProperties: false,
+        },
+      ],
+    },
+  },
+} as const;
 
-export type ServerMessage = z.infer<typeof ServerMessageSchema>;
+export const validateServerMessage = ajv.compile(ServerMessageJsonSchema);
+
+export type ServerMessage = FromSchema<typeof ServerMessageJsonSchema>;
