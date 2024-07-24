@@ -81,6 +81,18 @@ export const RequestSummarySchema = z.object({
 
 export type RequestSummary = z.infer<typeof RequestSummarySchema>;
 
+export const ResponseSchema = z
+  .object({
+    body: z.union([z.string(), z.null()]).optional(),
+    headers: z.record(z.string()),
+    id: z.number().int().gte(0),
+    requestId: z.number().int().gte(0),
+    status: z.number().int().gte(0),
+  })
+  .describe("A response that has been captured by fpx.");
+
+export type Response = z.infer<typeof ResponseSchema>;
+
 export const ServerMessageSchema = z
   .object({
     messageId: z
