@@ -20,7 +20,6 @@ function patchMethod(methodName: LEVELS, level: string) {
   // Check if the function is already patched
   // If it is, we don't want to patch it again
   if (isWrapped(console[methodName])) {
-    console.log("already patched fetch");
     return;
   }
 
