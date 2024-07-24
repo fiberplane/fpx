@@ -40,6 +40,13 @@ impl RowsExt for Rows {
     }
 }
 
+/// This is a wrapper around `T` that will deserialize from JSON.
+///
+/// This is intended to be used with properties of a struct that will be
+/// deserialized from a libsql [`Row`]. Since there is a limited number of
+/// values available we need to serialize the data in a Database column as JSON
+/// so that we can still use complicated data structures, such as arrays and
+/// maps.
 #[derive(Debug)]
 pub struct Json<T>(pub T);
 
@@ -109,6 +116,9 @@ where
     }
 }
 
+/// This is a wrapper that makes it a bit easier to work with a timestamp that
+/// is serialized as a `u64` in the database (since libsql doesn't have a native
+/// timestamp/datetime type).
 #[derive(Default)]
 pub struct Timestamp(u64);
 
