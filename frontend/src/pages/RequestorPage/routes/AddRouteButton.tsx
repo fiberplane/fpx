@@ -214,7 +214,12 @@ function CustomRouteForm({
     setMethod(method);
   };
   const onSubmit: SubmitHandler<CustomRouteFormData> = ({ path }) => {
-    addRoutes({ path, method });
+    addRoutes({
+      path,
+      method,
+      routeOrigin: "custom",
+      handlerType: "route",
+    });
     setOpen(false);
   };
 
