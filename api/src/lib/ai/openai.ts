@@ -50,7 +50,7 @@ export async function generateRequestWithOpenAI({
     path,
     handler,
     history,
-    openApiSpec
+    openApiSpec,
   });
 
   const response = await openaiClient.chat.completions.create({

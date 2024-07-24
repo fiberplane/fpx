@@ -57,7 +57,7 @@ export async function generateRequestWithAnthropic({
     path,
     handler,
     history,
-    openApiSpec
+    openApiSpec,
   });
 
   const toolChoice: Anthropic.Messages.MessageCreateParams.ToolChoiceTool = {

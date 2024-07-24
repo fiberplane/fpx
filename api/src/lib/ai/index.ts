@@ -61,7 +61,7 @@ export async function generateRequestWithAiProvider({
       path,
       handler,
       history,
-      openApiSpec
+      openApiSpec,
     }).then(
       (parsedArgs) => {
         return { data: parsedArgs, error: null };
