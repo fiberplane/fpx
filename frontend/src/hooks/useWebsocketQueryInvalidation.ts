@@ -1,7 +1,8 @@
 import { MIZU_TRACES_KEY, PROBED_ROUTES_KEY } from "@/queries";
+import { useHandler } from "@fiberplane/hooks";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
 import z from "zod";
+import { useWebSocket } from "./useWebSocket"
 
 /**
  * Right now only one specific action!
@@ -20,44 +21,25 @@ const isFPXWebsocketMessage = (m: unknown): m is FPXWebsocketMessage =>
 
 export function useWebsocketQueryInvalidation() {
   const queryClient = useQueryClient();
+  const onmessage = useHandler((ev: MessageEvent) => {
+    console.debug("Received websocket message", ev?.data);
+    let action: unknown;
+    try {
+      action = JSON.parse(ev?.data);
+    } catch {
+      // Silent - we log stuff below
+    }
+    const decodedAction =
+      action && isFPXWebsocketMessage(action) ? action : null;
+    if (!decodedAction) {
+      console.warn(
+        "Received websocket message that we cannot react to",
+        action,
+      );
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: decodedAction.payload });
+  })
 
-  useEffect(() => {
-    const socket = new WebSocket("/ws");
-
-    socket.onopen = () => {
-      console.debug("Connected to websocket server");
-    };
-
-    socket.onmessage = (ev) => {
-      console.debug("Received websocket message", ev?.data);
-      let action: unknown;
-      try {
-        action = JSON.parse(ev?.data);
-      } catch {
-        // Silent - we log stuff below
-      }
-      const decodedAction =
-        action && isFPXWebsocketMessage(action) ? action : null;
-      if (!decodedAction) {
-        console.warn(
-          "Received websocket message that we cannot react to",
-          action,
-        );
-        return;
-      }
-      queryClient.invalidateQueries({ queryKey: decodedAction.payload });
-    };
-
-    socket.onclose = (ev) => {
-      console.debug("Disconnected from websocket server", ev);
-    };
-
-    socket.onerror = (error) => {
-      console.error("Error with websocket server", error);
-    };
-
-    return () => {
-      socket.close();
-    };
-  }, [queryClient]);
+  useWebSocket("/ws", onmessage);
 }
