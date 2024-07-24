@@ -41,7 +41,7 @@
     "lint:ci": "biome ci .",
     "build": "npm run clean && npm run build:types && npm run build:swc",
     "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
-    "build:swc": "swc src -d dist --source-maps",
+    "build:swc": "cd src && swc . -d ../dist --source-maps",
     "dev": "wrangler dev sample/index.ts",
     "prepublishOnly": "npm run build",
     "clean": "rimraf dist"
