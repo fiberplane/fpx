@@ -13,7 +13,6 @@ export function patchConsole() {
   patchMethod("log", "info");
   patchMethod("warn", "warn");
   patchMethod("error", "error");
-  console.log("patched log", console.log.__wrapped);
 }
 
 function patchMethod(methodName: LEVELS, level: string) {
