@@ -1,4 +1,5 @@
 import { Status } from "@/components/ui/status";
+import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { MizuFetchSpan, MizuSpan } from "@/queries/traces-v2";
 import { cn, noop } from "@/utils";
@@ -18,7 +19,6 @@ import {
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 import { timelineId } from "./timelineId";
 import { isNeonSpan, isVendorifiedSpan } from "./vendorify-traces";
-import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 
 function getRequestUrl(span: MizuSpan) {
   return `${span.attributes["url.full"]}`;
@@ -57,10 +57,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
 
   const url = getRequestUrl(span);
 
-  const {
-    component, 
-    title,
-  } = useVendorSpecificSection(span) ?? {};
+  const { component, title } = useVendorSpecificSection(span) ?? {};
 
   return (
     <GenericFetchSpan
@@ -168,24 +165,28 @@ function GenericFetchSpan({
 const DEFAULT_VENDOR_RESULT = {
   component: undefined,
   title: undefined,
-}
+};
 
 function useVendorSpecificSection(span: MizuSpan) {
   return useMemo(() => {
-    if (!isVendorifiedSpan(span)){
+    if (!isVendorifiedSpan(span)) {
       return DEFAULT_VENDOR_RESULT;
     }
     if (isNeonSpan(span)) {
       return {
         component: (
-        <SubSection>
-          <SubSectionHeading>SQL Query</SubSectionHeading>
-          <CodeMirrorSqlEditor value={span.vendorInfo.sql} onChange={noop} readOnly={true} />
-        </SubSection>
-      ),
+          <SubSection>
+            <SubSectionHeading>SQL Query</SubSectionHeading>
+            <CodeMirrorSqlEditor
+              value={span.vendorInfo.sql}
+              onChange={noop}
+              readOnly={true}
+            />
+          </SubSection>
+        ),
         title: "Neon Database Call",
       };
     }
     return DEFAULT_VENDOR_RESULT;
-  }, [span])
+  }, [span]);
 }

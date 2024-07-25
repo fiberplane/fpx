@@ -1,8 +1,8 @@
 import "./CodeMirrorEditorCssOverrides.css";
 
 import { javascript } from "@codemirror/lang-javascript";
-import { sql } from "@codemirror/lang-sql";
 import { json } from "@codemirror/lang-json";
+import { sql } from "@codemirror/lang-sql";
 import { duotoneDark } from "@uiw/codemirror-theme-duotone";
 
 import CodeMirror, { EditorView } from "@uiw/react-codemirror";
@@ -72,14 +72,10 @@ export function CodeMirrorTypescriptEditor(
   );
 }
 
-
 type CodeMirrorSqlEditorProps = CodeMirrorEditorProps;
 
-export function CodeMirrorSqlEditor(
-  props: CodeMirrorSqlEditorProps,
-) {
-  const { height, value, onChange, minHeight, maxHeight, readOnly } =
-    props;
+export function CodeMirrorSqlEditor(props: CodeMirrorSqlEditorProps) {
+  const { height, value, onChange, minHeight, maxHeight, readOnly } = props;
   return (
     <CodeMirror
       value={value}
