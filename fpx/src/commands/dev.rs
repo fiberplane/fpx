@@ -10,7 +10,7 @@ use std::future::IntoFuture;
 use std::{path::PathBuf, process::exit};
 use tokio::select;
 use tracing::info;
-use tracing::warn;
+use tracing::{error, warn};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -69,12 +69,12 @@ pub async fn handle_command(args: Args) -> Result<()> {
         .with_context(|| format!("Failed to bind to address: {}", args.listen_address))?;
 
     // This future will resolve once `ctrl-c` is pressed.
-    let shutdown = async {
+    let api_shutdown = async {
         tokio::signal::ctrl_c()
             .await
             .expect("Failed to listen for ctrl-c");
 
-        info!("Received SIGINT, shutting down server");
+        info!("Received SIGINT, shutting down api server");
 
         // Monitor for another SIGINT, and force shutdown if received.
         tokio::spawn(async {
@@ -86,6 +86,11 @@ pub async fn handle_command(args: Args) -> Result<()> {
             exit(1);
         });
     };
+    let grpc_shutdown = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("Failed to listen for ctrl-c");
+    };
 
     info!(
         api_listen_address = ?listener.local_addr().context("Failed to get local address")?,
@@ -94,18 +99,26 @@ pub async fn handle_command(args: Args) -> Result<()> {
     );
 
     let task1 = axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown)
+        .with_graceful_shutdown(api_shutdown)
         .into_future();
     let task2 = tonic::transport::Server::builder()
         .add_service(TraceServiceServer::new(grpc_service))
-        .serve(args.grpc_listen_address.parse()?);
+        .serve_with_shutdown(args.grpc_listen_address.parse()?, grpc_shutdown);
 
-    select! {
-        _ = task1 => {},
-        _ = task2 => {},
-    };
-
-    info!("Server shutdown gracefully");
+    select!(
+        result = task1 => {
+            match result {
+                Ok(_) => info!("API server shutdown gracefully"),
+                Err(err) => error!(?err, "API server failed"),
+            };
+        },
+        result = task2 => {
+            match result {
+                Ok(_) => info!("gRPC server shutdown gracefully"),
+                Err(err) => error!(?err, "gRPC server failed"),
+            };
+        }
+    );
 
     Ok(())
 }

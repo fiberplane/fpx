@@ -1,13 +1,13 @@
 CREATE TABLE spans (
-    trace_id TEXT,
-    span_id TEXT,
-    parent_span_id TEXT NULL,
+    trace_id TEXT NOT NULL,
+    span_id TEXT NOT NULL,
+    parent_span_id TEXT,
 
-    name TEXT,
-    kind TEXT,
+    name TEXT NOT NULL,
+    kind TEXT NOT NULL,
 
-    start_time INTEGER,
-    end_time INTEGER,
+    start_time INTEGER NOT NULL,
+    end_time INTEGER NOT NULL,
 
     inner TEXT
 ) STRICT;
