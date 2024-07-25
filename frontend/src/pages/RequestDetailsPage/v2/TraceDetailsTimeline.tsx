@@ -25,6 +25,7 @@ import {
 import { timelineId } from "./timelineId";
 import {
   canRenderVendorInfo,
+  isAnthropicSpan,
   isNeonSpan,
   isOpenAISpan,
 } from "./vendorify-traces";
@@ -215,6 +216,15 @@ const useTimelineTitle = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
       return (
         <div className={cn("font-normal", "font-mono", "text-xs", "truncate")}>
           OpenAI Call
+        </div>
+      );
+    }
+
+    const isAnthropicCall = isAnthropicSpan(spanOrLog);
+    if (isAnthropicCall) {
+      return (
+        <div className={cn("font-normal", "font-mono", "text-xs", "truncate")}>
+          Anthropic Call
         </div>
       );
     }
