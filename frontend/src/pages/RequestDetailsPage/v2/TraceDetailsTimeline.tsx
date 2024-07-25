@@ -1,6 +1,7 @@
 import AnthropicLogo from "@/assets/AnthropicLogo.svg";
 import Database from "@/assets/Database.svg";
 import Diamond from "@/assets/Diamond.svg";
+import HonoLogo from "@/assets/HonoLogo.svg";
 import NeonLogo from "@/assets/NeonLogo.svg";
 import OpenAiLogo from "@/assets/OpenAILogo.svg";
 
@@ -274,7 +275,7 @@ const getTypeIcon = (type: string) => {
   switch (type) {
     case "request":
     case "SERVER":
-      return "🔥";
+      return <HonoLogo className="w-3.5 h-3.5" />;
     case "CLIENT":
     case "fetch":
       return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
