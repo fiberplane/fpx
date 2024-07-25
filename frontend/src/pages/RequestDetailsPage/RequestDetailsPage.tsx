@@ -26,7 +26,7 @@ import {
 } from "@/queries/types";
 import { cn } from "@/utils";
 import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
@@ -42,6 +42,7 @@ import { TextOrJsonViewer } from "./TextJsonViewer";
 import { FpxCard, RequestMethod, SectionHeading } from "./shared";
 import { SummaryV2, TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
 import { HttpSummary } from "./v2/SummaryV2";
+import { vendorifyTrace } from "./v2/vendorify-traces";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -112,13 +113,18 @@ export function RequestDetailsPage() {
   useHotkeys(["K"], () => {
     handlePrevTrace();
   });
+
+  const vendorifiedTraceV2 = useMemo(
+    () => (traceV2 ? vendorifyTrace(traceV2) : undefined),
+    [traceV2],
+  );
   const shouldRenderV2 = useTracingLiteEnabled();
 
   if (shouldRenderV2) {
     if (isPending) {
       return <SkeletonLoader />;
     }
-    if (!traceV2) {
+    if (!vendorifiedTraceV2) {
       return <EmptyState />;
     }
     return (
@@ -144,7 +150,7 @@ export function RequestDetailsPage() {
           <div className="flex items-center gap-6">
             <h2 className="text-2xl font-semibold">Request Details</h2>
             <div className="hidden md:block">
-              <HttpSummary trace={traceV2} />
+              <HttpSummary trace={vendorifiedTraceV2} />
             </div>
           </div>
           <div className="flex gap-2">
@@ -189,7 +195,7 @@ export function RequestDetailsPage() {
           </div>
         </div>
         <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
-          <SummaryV2 trace={traceV2} />
+          <SummaryV2 trace={vendorifiedTraceV2} />
           <div className="grid lg:grid-cols-[auto_1fr] border-t">
             <div
               className={cn(
@@ -200,7 +206,7 @@ export function RequestDetailsPage() {
                 "2xl:min-w-[420px]",
               )}
             >
-              <TraceDetailsTimeline trace={traceV2} />
+              <TraceDetailsTimeline trace={vendorifiedTraceV2} />
             </div>
             <div
               className={cn(
@@ -212,9 +218,9 @@ export function RequestDetailsPage() {
               )}
             >
               <div className="w-full lg:hidden">
-                <TraceDetailsTimeline trace={traceV2} />
+                <TraceDetailsTimeline trace={vendorifiedTraceV2} />
               </div>
-              <TraceDetailsV2 trace={traceV2} />
+              <TraceDetailsV2 trace={vendorifiedTraceV2} />
             </div>
           </div>
         </div>
