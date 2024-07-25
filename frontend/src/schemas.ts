@@ -138,6 +138,11 @@ export const ServerMessageSchema = z
           .describe(
             "A request has been captured. It contains a reference to the request id and optionally a reference to the inspector id.",
           ),
+        z
+          .object({ details: z.any(), type: z.literal("spanAdded") })
+          .describe(
+            "When a Span has been ingested via the export interface (either gRPC or http), its TraceID and SpanID will be sent through this message. Both ID's will be hex encoded.",
+          ),
       ];
       const errors = schemas.reduce<z.ZodError[]>(
         (errors, schema) =>
