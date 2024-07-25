@@ -45,6 +45,8 @@ const AnthropicVendorInfoSchema = z.object({
   vendor: z.literal("anthropic"),
 });
 
+type AnthropicVendorInfo = z.infer<typeof AnthropicVendorInfoSchema>;
+
 const VendorInfoSchema = z.union([
   NeonVendorInfoSchema,
   OpenAIVendorInfoSchema,
@@ -58,12 +60,16 @@ type VendorifiedSpan = MizuFetchSpan & {
   vendorInfo: VendorInfo;
 };
 
-type NeonSpan = Omit<VendorifiedSpan, "vendorInfo"> & {
+export type NeonSpan = Omit<VendorifiedSpan, "vendorInfo"> & {
   vendorInfo: NeonVendorInfo;
 };
 
 type OpenAISpan = Omit<VendorifiedSpan, "vendorInfo"> & {
   vendorInfo: OpenAIVendorInfo;
+};
+
+type AnthropicSpan = Omit<VendorifiedSpan, "vendorInfo"> & {
+  vendorInfo: AnthropicVendorInfo;
 };
 
 const hasVendorInfo = (span: MizuSpan): span is VendorifiedSpan => {
@@ -89,6 +95,10 @@ export const isNeonSpan = (span: unknown): span is NeonSpan => {
 
 export const isOpenAISpan = (span: unknown): span is OpenAISpan => {
   return isVendorifiedSpan(span) && span.vendorInfo.vendor === "openai";
+};
+
+export const isAnthropicSpan = (span: unknown): span is AnthropicSpan => {
+  return isVendorifiedSpan(span) && span.vendorInfo.vendor === "anthropic";
 };
 
 export const vendorifySpan = (span: MizuFetchSpan): VendorifiedSpan => {
@@ -125,7 +135,11 @@ const isNeonFetch = (span: MizuFetchSpan) => {
 };
 
 const isAnthropicFetch = (span: MizuFetchSpan) => {
-  return false;
+  const requestUrl = span.attributes["server.address"];
+  if (typeof requestUrl !== "string") {
+    return false;
+  }
+  return requestUrl.includes("api.anthropic.com");
 };
 
 function getNeonSqlQuery(span: MizuFetchSpan) {

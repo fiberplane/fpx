@@ -18,7 +18,7 @@ import {
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 import { timelineId } from "./timelineId";
-import { isNeonSpan, isVendorifiedSpan } from "./vendorify-traces";
+import { NeonSpan, isNeonSpan, isVendorifiedSpan } from "./vendorify-traces";
 
 function getRequestUrl(span: MizuSpan) {
   return `${span.attributes["url.full"]}`;
@@ -167,6 +167,11 @@ const DEFAULT_VENDOR_RESULT = {
   title: undefined,
 };
 
+/**
+ * Returns a component and title for a vendor-specific span.
+ * @param span The span to render.
+ * @returns A component and title for a vendor-specific section of the span.
+ */
 function useVendorSpecificSection(span: MizuSpan) {
   return useMemo(() => {
     if (!isVendorifiedSpan(span)) {
@@ -174,19 +179,23 @@ function useVendorSpecificSection(span: MizuSpan) {
     }
     if (isNeonSpan(span)) {
       return {
-        component: (
-          <SubSection>
-            <SubSectionHeading>SQL Query</SubSectionHeading>
-            <CodeMirrorSqlEditor
-              value={span.vendorInfo.sql}
-              onChange={noop}
-              readOnly={true}
-            />
-          </SubSection>
-        ),
+        component: <NeonSection span={span} />,
         title: "Neon Database Call",
       };
     }
     return DEFAULT_VENDOR_RESULT;
   }, [span]);
+}
+
+function NeonSection({ span }: { span: NeonSpan }) {
+  return (
+    <SubSection>
+      <SubSectionHeading>SQL Query</SubSectionHeading>
+      <CodeMirrorSqlEditor
+        value={span.vendorInfo.sql}
+        onChange={noop}
+        readOnly={true}
+      />
+    </SubSection>
+  );
 }
