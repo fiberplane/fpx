@@ -10,8 +10,8 @@ repository = "https://github.com/fiberplane/fpx"
 
 [workspace.dependencies]
 anyhow = { version = "1.0" }
-clap = { version = "4.0", features = ["derive", "env"] }
-tokio = { version = "1.37", features = ["rt-multi-thread", "signal"] }
+clap = { version = "4.5", features = ["derive", "env"] }
+tokio = { version = "1.39", features = ["rt-multi-thread", "signal"] }
 tracing = { version = "0.1" }
 url = { version = "2.5" }
 schemars = "0.8.21"
