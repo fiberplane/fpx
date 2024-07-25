@@ -18,7 +18,13 @@ import {
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 import { timelineId } from "./timelineId";
-import { NeonSpan, isNeonSpan, isVendorifiedSpan } from "./vendorify-traces";
+import {
+  NeonSpan,
+  isAnthropicSpan,
+  isNeonSpan,
+  isOpenAISpan,
+  isVendorifiedSpan,
+} from "./vendorify-traces";
 
 function getRequestUrl(span: MizuSpan) {
   return `${span.attributes["url.full"]}`;
@@ -174,13 +180,22 @@ const DEFAULT_VENDOR_RESULT = {
  */
 function useVendorSpecificSection(span: MizuSpan) {
   return useMemo(() => {
-    if (!isVendorifiedSpan(span)) {
-      return DEFAULT_VENDOR_RESULT;
-    }
     if (isNeonSpan(span)) {
       return {
         component: <NeonSection span={span} />,
         title: "Neon Database Call",
+      };
+    }
+    if (isOpenAISpan(span)) {
+      return {
+        component: undefined,
+        title: "OpenAI API Call",
+      };
+    }
+    if (isAnthropicSpan(span)) {
+      return {
+        component: undefined,
+        title: "Anthropic API Call",
       };
     }
     return DEFAULT_VENDOR_RESULT;
