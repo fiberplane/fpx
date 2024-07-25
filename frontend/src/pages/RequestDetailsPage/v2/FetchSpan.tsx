@@ -56,6 +56,44 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
   const url = getRequestUrl(span);
 
   return (
+    <GenericFetchSpan
+      id={id}
+      statusCode={getStatusCode(span)}
+      duration={duration}
+      method={method}
+      url={url}
+      requestHeaders={requestHeaders}
+      requestBody={requestBody}
+      responseHeaders={responseHeaders}
+      responseBody={responseBody}
+    />
+  );
+}
+
+type GenericFetchSpanProps = {
+  id: string;
+  statusCode: number;
+  duration: number | null;
+  method: string;
+  url: string;
+  requestHeaders: Record<string, string>;
+  requestBody?: string;
+  responseHeaders: Record<string, string>;
+  responseBody?: string;
+};
+
+function GenericFetchSpan({
+  id,
+  statusCode,
+  duration,
+  method,
+  url,
+  requestHeaders,
+  requestBody,
+  responseHeaders,
+  responseBody,
+}: GenericFetchSpanProps) {
+  return (
     <div id={id}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 my-4">
@@ -71,7 +109,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
               <ClockIcon className="w-4 h-4" />
               <span className=" font-light">{duration}ms</span>
             </div>
-            <Status statusCode={getStatusCode(span)} />
+            <Status statusCode={statusCode} />
           </div>
         </div>
 
