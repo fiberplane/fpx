@@ -18,6 +18,12 @@ export type NormalizedOrphanLog = MizuOrphanLog & {
 
 type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
 
+/**
+ * Modifies a trace waterfall (Logs and Spans) to have normalized timestamps
+ * between 0 and 1.
+ *
+ * This allows us to visualize the timeline of the trace on a normalized scale.
+ */
 export const normalizeWaterfallTimestamps = (
   waterfall: MizuTraceV2["waterfall"],
 ): NormalizedMizuWaterfall => {
