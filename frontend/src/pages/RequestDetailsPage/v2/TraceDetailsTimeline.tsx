@@ -1,7 +1,8 @@
+import Database from "@/assets/Database.svg";
 import Diamond from "@/assets/Diamond.svg";
 import { Badge } from "@/components/ui/badge";
 import { MizuTraceV2, isMizuOrphanLog } from "@/queries";
-import { isMizuFetchSpan, isMizuSpan } from "@/queries/traces-v2";
+import { isMizuFetchSpan } from "@/queries/traces-v2";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, {
@@ -150,6 +151,10 @@ const NormalizedWaterfallRow: React.FC<{
   const id = timelineId(spanOrLog);
   const { lineWidth, lineOffset } = useTimelineDimensions(spanOrLog);
   const icon = useTimelineIcon(spanOrLog);
+  const isDbCall =
+    isMizuFetchSpan(spanOrLog) &&
+    canRenderVendorInfo(spanOrLog) &&
+    spanOrLog.vendorInfo.vendor === "neon";
   const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
   const isRootRequest =
     !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "SERVER";
@@ -167,8 +172,20 @@ const NormalizedWaterfallRow: React.FC<{
       href={`#${timelineId(spanOrLog)}`}
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
-      <div className="flex flex-col w-20">
-        {isFetch ? (
+      <div className="flex flex-col w-20 overflow-hidden">
+        {isDbCall ? (
+          <div
+            className={cn(
+              "uppercase",
+              "font-normal",
+              "font-mono",
+              "text-xs",
+              "truncate",
+            )}
+          >
+            {spanOrLog.vendorInfo.sql?.slice(0, 30)}
+          </div>
+        ) : isFetch ? (
           <div>
             <Badge
               variant="outline"
@@ -186,7 +203,9 @@ const NormalizedWaterfallRow: React.FC<{
             </Badge>
           </div>
         ) : isRootRequest ? (
-          <div className="font-mono text-sm truncate">{spanOrLog.name}</div>
+          <div className={cn("font-mono text-sm truncate", "text-gray-200")}>
+            {spanOrLog.name}
+          </div>
         ) : (
           <div className="font-mono font-normal text-xs truncate text-gray-200">
             {/* TODO! */}
@@ -225,7 +244,7 @@ const getTypeIcon = (type: string) => {
   switch (type) {
     case "request":
     case "SERVER":
-      return "";
+      return "🔥";
     case "CLIENT":
     case "fetch":
       return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
@@ -235,7 +254,7 @@ const getTypeIcon = (type: string) => {
       return "🔹";
     case "db":
     case "neon":
-      return "🗄️";
+      return <Database className="w-3.5 h-3.5 text-blue-600" />;
     case "response":
       return "🔵";
     default:

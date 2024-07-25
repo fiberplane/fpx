@@ -24,24 +24,13 @@ export const vendorifyTrace = (trace: MizuTraceV2): VendorifiedTrace => {
   };
 };
 
-export const NEON_EXAMPLE = {
-  vendorInfo: {
-    vendor: "neon",
-  },
-} as const;
-
-export const OPENAI_EXAMPLE = {
-  vendorInfo: {
-    vendor: "openai",
-  },
-} as const;
-
 const NoVendorInfoSchema = z.object({
   vendor: z.literal("none"),
 });
 
 const NeonVendorInfoSchema = z.object({
   vendor: z.literal("neon"),
+  sql: z.string(),
 });
 
 const OpenAIVendorInfoSchema = z.object({
@@ -87,7 +76,13 @@ export const vendorifySpan = (span: MizuFetchSpan): VendorifiedSpan => {
     return { ...span, vendorInfo: { vendor: "openai" } };
   }
   if (isNeonFetch(span)) {
-    return { ...span, vendorInfo: { vendor: "neon" } };
+    return {
+      ...span,
+      vendorInfo: {
+        vendor: "neon",
+        sql: getNeonSqlQuery(span),
+      },
+    };
   }
   if (isAnthropicFetch(span)) {
     return { ...span, vendorInfo: { vendor: "anthropic" } };
@@ -102,10 +97,22 @@ const isOpenAIFetch = (span: MizuFetchSpan) => {
 
 // TODO - Make this a bit more robust?
 const isNeonFetch = (span: MizuFetchSpan) => {
-  console.log("spannnn", span.attributes);
   return !!span.attributes["http.request.header.neon-connection-string"];
 };
 
 const isAnthropicFetch = (span: MizuFetchSpan) => {
   return false;
 };
+
+function getNeonSqlQuery(span: MizuFetchSpan) {
+  const body = span.attributes["fpx.request.body"] as string;
+  if (!body) {
+    return "DB QUERY";
+  }
+  try {
+    const json = JSON.parse(body);
+    return json.query.trim().slice(0, 100).toUpperCase();
+  } catch (e) {
+    return "DB QUERY";
+  }
+}
