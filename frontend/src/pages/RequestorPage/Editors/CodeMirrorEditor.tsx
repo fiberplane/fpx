@@ -1,6 +1,7 @@
 import "./CodeMirrorEditorCssOverrides.css";
 
 import { javascript } from "@codemirror/lang-javascript";
+import { sql } from "@codemirror/lang-sql";
 import { json } from "@codemirror/lang-json";
 import { duotoneDark } from "@uiw/codemirror-theme-duotone";
 
@@ -65,6 +66,28 @@ export function CodeMirrorTypescriptEditor(
       maxHeight={maxHeight}
       readOnly={readOnly}
       extensions={[javascript({ jsx, typescript: true })]}
+      onChange={onChange}
+      theme={[duotoneDark, customTheme]}
+    />
+  );
+}
+
+
+type CodeMirrorSqlEditorProps = CodeMirrorEditorProps;
+
+export function CodeMirrorSqlEditor(
+  props: CodeMirrorSqlEditorProps,
+) {
+  const { height, value, onChange, minHeight, maxHeight, readOnly } =
+    props;
+  return (
+    <CodeMirror
+      value={value}
+      height={height}
+      minHeight={minHeight}
+      maxHeight={maxHeight}
+      readOnly={readOnly}
+      extensions={[sql()]}
       onChange={onChange}
       theme={[duotoneDark, customTheme]}
     />

@@ -1,7 +1,7 @@
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { MizuFetchSpan, MizuSpan } from "@/queries/traces-v2";
-import { cn } from "@/utils";
+import { cn, noop } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { TextOrJsonViewer } from "../TextJsonViewer";
@@ -17,6 +17,8 @@ import {
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 import { timelineId } from "./timelineId";
+import { isNeonSpan, isVendorifiedSpan } from "./vendorify-traces";
+import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 
 function getRequestUrl(span: MizuSpan) {
   return `${span.attributes["url.full"]}`;
@@ -55,9 +57,15 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
 
   const url = getRequestUrl(span);
 
+  const {
+    component, 
+    title,
+  } = useVendorSpecificSection(span) ?? {};
+
   return (
     <GenericFetchSpan
       id={id}
+      title={title}
       statusCode={getStatusCode(span)}
       duration={duration}
       method={method}
@@ -66,12 +74,15 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
       requestBody={requestBody}
       responseHeaders={responseHeaders}
       responseBody={responseBody}
-    />
+    >
+      {component}
+    </GenericFetchSpan>
   );
 }
 
 type GenericFetchSpanProps = {
   id: string;
+  title?: string;
   statusCode: number;
   duration: number | null;
   method: string;
@@ -80,10 +91,12 @@ type GenericFetchSpanProps = {
   requestBody?: string;
   responseHeaders: Record<string, string>;
   responseBody?: string;
+  children?: React.ReactNode;
 };
 
 function GenericFetchSpan({
   id,
+  title,
   statusCode,
   duration,
   method,
@@ -92,12 +105,13 @@ function GenericFetchSpan({
   requestBody,
   responseHeaders,
   responseBody,
+  children,
 }: GenericFetchSpanProps) {
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 my-4">
-          <SectionHeading>Fetch</SectionHeading>
+          <SectionHeading>{title || "Fetch"}</SectionHeading>
           <div className="flex gap-2">
             <div className="inline-flex gap-2 font-mono py-1 px-2 text-xs bg-accent/80 rounded">
               <span className={cn("uppercase", getHttpMethodTextColor(method))}>
@@ -112,6 +126,8 @@ function GenericFetchSpan({
             <Status statusCode={statusCode} />
           </div>
         </div>
+
+        {children}
 
         <SubSection>
           <SubSectionHeading>Request Headers</SubSectionHeading>
@@ -147,4 +163,29 @@ function GenericFetchSpan({
       </div>
     </div>
   );
+}
+
+const DEFAULT_VENDOR_RESULT = {
+  component: undefined,
+  title: undefined,
+}
+
+function useVendorSpecificSection(span: MizuSpan) {
+  return useMemo(() => {
+    if (!isVendorifiedSpan(span)){
+      return DEFAULT_VENDOR_RESULT;
+    }
+    if (isNeonSpan(span)) {
+      return {
+        component: (
+        <SubSection>
+          <SubSectionHeading>SQL Query</SubSectionHeading>
+          <CodeMirrorSqlEditor value={span.vendorInfo.sql} onChange={noop} readOnly={true} />
+        </SubSection>
+      ),
+        title: "Neon Database Call",
+      };
+    }
+    return DEFAULT_VENDOR_RESULT;
+  }, [span])
 }

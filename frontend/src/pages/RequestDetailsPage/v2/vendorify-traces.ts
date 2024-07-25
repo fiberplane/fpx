@@ -33,6 +33,8 @@ const NeonVendorInfoSchema = z.object({
   sql: z.string(),
 });
 
+type NeonVendorInfo = z.infer<typeof NeonVendorInfoSchema>;
+
 const OpenAIVendorInfoSchema = z.object({
   vendor: z.literal("openai"),
 });
@@ -50,8 +52,12 @@ const VendorInfoSchema = z.union([
 
 type VendorInfo = z.infer<typeof VendorInfoSchema>;
 
-export type VendorifiedSpan = MizuFetchSpan & {
+type VendorifiedSpan = MizuFetchSpan & {
   vendorInfo: VendorInfo;
+};
+
+type NeonSpan = Omit<VendorifiedSpan, "vendorInfo"> & {
+  vendorInfo: NeonVendorInfo;
 };
 
 const hasVendorInfo = (span: MizuSpan): span is VendorifiedSpan => {
@@ -69,6 +75,10 @@ export const isVendorifiedSpan = (span: unknown): span is VendorifiedSpan => {
     return false;
   }
   return hasVendorInfo(span);
+};
+
+export const isNeonSpan = (span: unknown): span is NeonSpan => {
+  return isVendorifiedSpan(span) && span.vendorInfo.vendor === "neon";
 };
 
 export const vendorifySpan = (span: MizuFetchSpan): VendorifiedSpan => {
@@ -110,8 +120,9 @@ function getNeonSqlQuery(span: MizuFetchSpan) {
     return "DB QUERY";
   }
   try {
+    // TODO - Merge query with the params somehow
     const json = JSON.parse(body);
-    return json.query.trim().slice(0, 100).toUpperCase();
+    return json.query;
   } catch (e) {
     return "DB QUERY";
   }
