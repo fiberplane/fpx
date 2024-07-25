@@ -1,11 +1,13 @@
+import AnthropicLogo from "@/assets/AnthropicLogo.svg";
+import Database from "@/assets/Database.svg";
 import Diamond from "@/assets/Diamond.svg";
+import HonoLogo from "@/assets/HonoLogo.svg";
+import NeonLogo from "@/assets/NeonLogo.svg";
+import OpenAiLogo from "@/assets/OpenAILogo.svg";
+
 import { Badge } from "@/components/ui/badge";
-import {
-  MizuOrphanLog,
-  MizuSpan,
-  MizuTraceV2,
-  isMizuOrphanLog,
-} from "@/queries";
+import { MizuTraceV2, isMizuOrphanLog } from "@/queries";
+import { isMizuFetchSpan, isMizuRootRequestSpan } from "@/queries/traces-v2";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, {
@@ -15,70 +17,21 @@ import React, {
   useRef,
   useState,
 } from "react";
+import {
+  NormalizedOrphanLog,
+  NormalizedSpan,
+  normalizeWaterfallTimestamps,
+} from "./normalize-traces";
 import { timelineId } from "./timelineId";
+import {
+  canRenderVendorInfo,
+  isAnthropicSpan,
+  isNeonSpan,
+  isOpenAISpan,
+} from "./vendorify-traces";
 
 type TraceDetailsTimelineProps = {
   trace: MizuTraceV2;
-};
-
-type NormalizedSpan = MizuSpan & {
-  normalizedStartTime: number;
-  normalizedEndTime: number;
-  normalizedDuration: number;
-};
-
-type NormalizedOrphanLog = MizuOrphanLog & {
-  normalizedTimestamp: number;
-};
-
-type MizuTraceV2Normalized = MizuTraceV2 & {
-  normalizedWaterfall: NormalizedMizuWaterfall;
-};
-
-type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
-
-const normalizeWaterfallTimestamps = (
-  trace: MizuTraceV2,
-): MizuTraceV2Normalized => {
-  const minStart = Math.min(
-    ...trace.spans.map((span) => new Date(span.start_time).getTime()),
-  );
-  const maxEnd = Math.max(
-    ...trace.spans.map((span) => new Date(span.end_time).getTime()),
-  );
-
-  const normalizeSpan = (span: MizuSpan): NormalizedSpan => {
-    const startTime = new Date(span.start_time).getTime();
-    const endTime = new Date(span.end_time).getTime();
-    return {
-      ...span,
-      normalizedStartTime: (startTime - minStart) / (maxEnd - minStart),
-      normalizedEndTime: (endTime - minStart) / (maxEnd - minStart),
-      normalizedDuration: (endTime - startTime) / (maxEnd - minStart),
-    };
-  };
-
-  const normalizeLog = (log: MizuOrphanLog): NormalizedOrphanLog => {
-    const timestamp = new Date(log.timestamp).getTime();
-    return {
-      ...log,
-      normalizedTimestamp: (timestamp - minStart) / (maxEnd - minStart),
-    };
-  };
-
-  const normalizedWaterfall: NormalizedMizuWaterfall = trace.waterfall.map(
-    (spanOrLog) => {
-      if (isMizuOrphanLog(spanOrLog)) {
-        return normalizeLog(spanOrLog);
-      }
-      return normalizeSpan(spanOrLog);
-    },
-  );
-
-  return {
-    ...trace,
-    normalizedWaterfall,
-  };
 };
 
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
@@ -87,16 +40,14 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   const [activeId, setActiveId] = useState<string>("");
   const observer = useRef<IntersectionObserver>();
 
-  const normalizedTrace = useMemo(
-    () => normalizeWaterfallTimestamps(trace),
+  const normalizedWaterfall = useMemo(
+    () => normalizeWaterfallTimestamps(trace.waterfall),
     [trace],
   );
 
   const timelineEntryIds = useMemo(() => {
-    return normalizedTrace.normalizedWaterfall.map((spanOrLog) =>
-      timelineId(spanOrLog),
-    );
-  }, [normalizedTrace]);
+    return normalizedWaterfall.map((spanOrLog) => timelineId(spanOrLog));
+  }, [normalizedWaterfall]);
 
   // Scroll timeline entry item into view if it is out of viewport
   // TODO - Check if this breaks on smaller screens?
@@ -164,7 +115,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     >
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
       <div className="flex flex-col">
-        {normalizedTrace.normalizedWaterfall.map((spanOrLog) => (
+        {normalizedWaterfall.map((spanOrLog) => (
           <NormalizedWaterfallRow
             key={isMizuOrphanLog(spanOrLog) ? spanOrLog.id : spanOrLog.span_id}
             spanOrLog={spanOrLog}
@@ -181,23 +132,14 @@ const NormalizedWaterfallRow: React.FC<{
   activeId: string | null;
 }> = ({ spanOrLog, activeId }) => {
   const id = timelineId(spanOrLog);
-  const lineWidth = isMizuOrphanLog(spanOrLog)
-    ? ""
-    : `${spanOrLog.normalizedDuration * 100}%`;
-  const lineOffset = isMizuOrphanLog(spanOrLog)
-    ? `${spanOrLog.normalizedTimestamp * 100}%`
-    : `${spanOrLog.normalizedStartTime * 100}%`;
-  const icon = isMizuOrphanLog(spanOrLog)
-    ? getTypeIcon("log")
-    : getTypeIcon(spanOrLog.kind);
-  const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
-  const isRootRequest =
-    !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "SERVER";
+  const { lineWidth, lineOffset } = useTimelineDimensions(spanOrLog);
+  const title = useTimelineTitle(spanOrLog);
+  const icon = useTimelineIcon(spanOrLog);
   return (
     <a
       data-toc-id={id}
       className={cn(
-        "flex items-center p-2",
+        "flex items-center px-2 py-3",
         "border-l-2 border-transparent",
         "hover:bg-primary/10 hover:border-blue-500",
         activeId === id && "bg-primary/10 border-blue-500",
@@ -207,34 +149,7 @@ const NormalizedWaterfallRow: React.FC<{
       href={`#${timelineId(spanOrLog)}`}
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
-      <div className="flex flex-col w-20">
-        {isFetch ? (
-          <div>
-            <Badge
-              variant="outline"
-              className={cn(
-                "lowercase",
-                "font-normal",
-                "font-mono",
-                "rounded",
-                "px-1.5",
-                "text-xs",
-                "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
-              )}
-            >
-              {spanOrLog.name}
-            </Badge>
-          </div>
-        ) : isRootRequest ? (
-          <div className="font-mono text-sm truncate">{spanOrLog.name}</div>
-        ) : (
-          <div className="font-mono font-normal text-xs truncate text-gray-200">
-            {/* TODO! */}
-            log
-            {/* {spanOrLog.name} */}
-          </div>
-        )}
-      </div>
+      <div className="flex flex-col w-20 overflow-hidden">{title}</div>
       <div className="text-gray-400 flex flex-grow items-center mx-4">
         {isMizuOrphanLog(spanOrLog) ? (
           <div
@@ -261,22 +176,130 @@ const NormalizedWaterfallRow: React.FC<{
   );
 };
 
+const useTimelineDimensions = (
+  spanOrLog: NormalizedSpan | NormalizedOrphanLog,
+) => {
+  return useMemo(() => {
+    const lineWidth = isMizuOrphanLog(spanOrLog)
+      ? ""
+      : `${spanOrLog.normalizedDuration * 100}%`;
+
+    const lineOffset = isMizuOrphanLog(spanOrLog)
+      ? `${spanOrLog.normalizedTimestamp * 100}%`
+      : `${spanOrLog.normalizedStartTime * 100}%`;
+
+    return { lineWidth, lineOffset };
+  }, [spanOrLog]);
+};
+
+const useTimelineTitle = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
+  return useMemo(() => {
+    const isNeonCall = isNeonSpan(spanOrLog);
+    if (isNeonCall) {
+      return (
+        <div
+          className={cn(
+            "uppercase",
+            "font-normal",
+            "font-mono",
+            "text-xs",
+            "truncate",
+          )}
+        >
+          {spanOrLog.vendorInfo.sql?.query?.slice(0, 30)}
+        </div>
+      );
+    }
+
+    const isOpenAICall = isOpenAISpan(spanOrLog);
+    if (isOpenAICall) {
+      return (
+        <div className={cn("font-normal", "font-mono", "text-xs", "truncate")}>
+          OpenAI Call
+        </div>
+      );
+    }
+
+    const isAnthropicCall = isAnthropicSpan(spanOrLog);
+    if (isAnthropicCall) {
+      return (
+        <div className={cn("font-normal", "font-mono", "text-xs", "truncate")}>
+          Anthropic Call
+        </div>
+      );
+    }
+
+    const isRootRequest = isMizuRootRequestSpan(spanOrLog);
+    if (isRootRequest) {
+      return (
+        <div className={cn("font-mono text-sm truncate", "text-gray-200")}>
+          {spanOrLog.name}
+        </div>
+      );
+    }
+
+    const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
+    if (isFetch) {
+      return (
+        <div>
+          <Badge
+            variant="outline"
+            className={cn(
+              "lowercase",
+              "font-normal",
+              "font-mono",
+              "rounded",
+              "px-1.5",
+              "text-xs",
+              "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
+            )}
+          >
+            {spanOrLog.name}
+          </Badge>
+        </div>
+      );
+    }
+
+    return (
+      <div className="font-mono font-normal text-xs truncate text-gray-200">
+        {/* TODO! */}
+        log
+        {/* {spanOrLog.name} */}
+      </div>
+    );
+  }, [spanOrLog]);
+};
+
+const useTimelineIcon = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
+  return useMemo(() => {
+    let iconType = isMizuOrphanLog(spanOrLog) ? "log" : spanOrLog.kind;
+    if (isMizuFetchSpan(spanOrLog) && canRenderVendorInfo(spanOrLog)) {
+      iconType = spanOrLog.vendorInfo.vendor;
+    }
+
+    return getTypeIcon(iconType);
+  }, [spanOrLog]);
+};
+
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "request":
     case "SERVER":
-      return "";
+      return <HonoLogo className="w-3.5 h-3.5" />;
     case "CLIENT":
     case "fetch":
       return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
     case "log":
       return <Diamond className="w-3.5 h-3.5 text-orange-400" />;
-    case "event":
-      return "🔹";
+    // NOT IN USE
     case "db":
-      return "🗄️";
-    case "response":
-      return "🔵";
+      return <Database className="w-3.5 h-3.5 text-blue-600" />;
+    case "neon":
+      return <NeonLogo className="w-3.5 h-3.5 text-blue-600" />;
+    case "openai":
+      return <OpenAiLogo className="w-3.5 h-3.5 text-blue-600" />;
+    case "anthropic":
+      return <AnthropicLogo className="w-3.5 h-3.5 text-blue-600" />;
     default:
       return "🔸";
   }

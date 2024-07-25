@@ -42,6 +42,7 @@ export {
   useMizuTracesV2,
   type MizuTraceV2,
   type MizuSpan,
+  type MizuFetchSpan,
   type MizuOrphanLog,
   isMizuRootRequestSpan,
   isMizuFetchSpan,
