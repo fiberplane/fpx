@@ -32,13 +32,8 @@ async fn main() -> Result<()> {
 
 fn setup_tracing(args: &commands::Args) -> Result<()> {
     let filter_layer = {
-        if let Ok(rust_log) = env::var("RUST_LOG") {
-            // User specified a custom $RUST_LOG, so use that
-            EnvFilter::builder().parse(rust_log)?
-        } else {
-            // No $RUST_LOG or invalid content, so use a custom default
-            EnvFilter::builder().parse("fpx=info,error")?
-        }
+        let directives = env::var("RUST_LOG").unwrap_or_else(|_| "fpx=info,error".to_string());
+        EnvFilter::builder().parse(directives)?
     };
 
     let log_layer = tracing_subscriber::fmt::layer();
