@@ -18,6 +18,10 @@ pub struct Args {
     #[arg(short, long, env, default_value = "127.0.0.1:6767")]
     pub listen_address: String,
 
+    /// The address for the OTEL ingestion gRPC service to listen on.
+    #[arg(long, env, default_value = "127.0.0.1:4567")]
+    pub grpc_listen_address: String,
+
     /// The base URL of the server.
     #[arg(short, long, env, default_value = "http://localhost:6767")]
     pub base_url: url::Url,
@@ -84,7 +88,8 @@ pub async fn handle_command(args: Args) -> Result<()> {
     };
 
     info!(
-        listen_address = ?listener.local_addr().context("Failed to get local address")?,
+        api_listen_address = ?listener.local_addr().context("Failed to get local address")?,
+        grpc_listen_address = ?args.grpc_listen_address,
         "Starting server",
     );
 
@@ -93,7 +98,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
         .into_future();
     let task2 = tonic::transport::Server::builder()
         .add_service(TraceServiceServer::new(grpc_service))
-        .serve("127.0.0.1:4567".parse()?);
+        .serve(args.grpc_listen_address.parse()?);
 
     select! {
         _ = task1 => {},
