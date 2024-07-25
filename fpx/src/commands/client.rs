@@ -4,6 +4,7 @@ use url::Url;
 
 mod inspectors;
 mod requests;
+mod spans;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -29,11 +30,15 @@ pub enum Command {
 
     /// List, retrieve, and delete RequestResponses
     Requests(requests::Args),
+
+    /// Interact with stored spans
+    Spans(spans::Args),
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
     match args.command {
         Command::Inspectors(args) => inspectors::handle_command(args).await,
         Command::Requests(args) => requests::handle_command(args).await,
+        Command::Spans(args) => spans::handle_command(args).await,
     }
 }

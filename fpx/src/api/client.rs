@@ -1,9 +1,13 @@
 //! API client for the FPX API.
-
-use crate::models::Request;
+//!
+//! Eventually this should be moved into its own crate and not be part of the
+//! api module. But for now this is only used within our own code, so it is
+//! fine.
 
 use super::errors::ApiClientError;
+use super::handlers::spans::SpanGetError;
 use super::handlers::RequestGetError;
+use crate::api::models;
 use anyhow::Result;
 use http::Method;
 use tracing::trace;
@@ -15,7 +19,10 @@ pub struct ApiClient {
 }
 
 impl ApiClient {
-    /// Create a new ApiClient with a default reqwest::Client.
+    /// Create a new ApiClient with a default [`reqwest::Client`].
+    ///
+    /// [`base_url`] should be the host of the fpx API, with optionally a port
+    /// and a path (in case you are doing path based routing).
     pub fn new(base_url: Url) -> Self {
         let version = env!("CARGO_PKG_VERSION");
         let client = reqwest::Client::builder()
@@ -26,10 +33,17 @@ impl ApiClient {
         Self::with_client(client, base_url)
     }
 
+    /// Create a new ApiClient with a custom [`reqwest::Client`].
     pub fn with_client(client: reqwest::Client, base_url: Url) -> Self {
         Self { client, base_url }
     }
 
+    /// Perform a request using fpx API's convention.
+    ///
+    /// This means that it will try to parse the response as [`T`]. If that
+    /// fails it will consider the call as failed and will try to parse the body
+    /// as [`E`]. Any other error will use the relevant variant in
+    /// [`ApiClientError`].
     async fn do_req<T, E>(
         &self,
         method: Method,
@@ -71,8 +85,33 @@ impl ApiClient {
     pub async fn request_get(
         &self,
         request_id: i64,
-    ) -> Result<Request, ApiClientError<RequestGetError>> {
+    ) -> Result<models::Request, ApiClientError<RequestGetError>> {
         let path = format!("api/requests/{}", request_id);
+
+        self.do_req(Method::GET, path).await
+    }
+
+    /// Retrieve the details of a single span.
+    pub async fn span_get(
+        &self,
+        trace_id: impl AsRef<str>,
+        span_id: impl AsRef<str>,
+    ) -> Result<models::Span, ApiClientError<SpanGetError>> {
+        let path = format!(
+            "api/traces/{}/spans/{}",
+            trace_id.as_ref(),
+            span_id.as_ref()
+        );
+
+        self.do_req(Method::GET, path).await
+    }
+
+    /// Retrieve all the spans associated with a single trace.
+    pub async fn span_list(
+        &self,
+        trace_id: impl AsRef<str>,
+    ) -> Result<Vec<models::Span>, ApiClientError<SpanGetError>> {
+        let path = format!("api/traces/{}/spans", trace_id.as_ref());
 
         self.do_req(Method::GET, path).await
     }

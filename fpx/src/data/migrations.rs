@@ -1,9 +1,8 @@
+use super::{ReadTransaction, Store, Transaction, WriteTransaction};
 use anyhow::{Context, Result};
 use include_dir::Dir;
-use libsql::{params, Transaction};
+use libsql::params;
 use tracing::{debug, trace};
-
-use super::Store;
 
 // NOTE: We should probably create our own include, which will store it sorted,
 //       as an array, and with just the name and sql as the expected types.
@@ -26,7 +25,7 @@ CREATE TABLE _fpx_migrations  (
 pub async fn migrate(store: &Store) -> Result<()> {
     debug!("Running migrations");
 
-    let tx = store.start_transaction().await?;
+    let tx = store.start_readwrite_transaction().await?;
     migrations_bootstrap(&tx).await?;
 
     let already_applied_migrations = migrations_list(&tx).await?;
@@ -69,13 +68,16 @@ pub async fn migrate(store: &Store) -> Result<()> {
 
     debug!(applied_migrations, "Migration complete");
 
-    tx.commit().await.unwrap(); // TODO
+    store.commit_transaction(tx).await?;
 
     Ok(())
 }
 
 /// Create the new migrations table if it does not exist.
-async fn migrations_bootstrap(tx: &Transaction) -> Result<()> {
+async fn migrations_bootstrap<T>(tx: &Transaction<'_, T>) -> Result<()>
+where
+    T: WriteTransaction,
+{
     // First check if the migrations table exist
     let sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='_fpx_migrations'";
     let mut results = tx
@@ -110,7 +112,10 @@ async fn migrations_bootstrap(tx: &Transaction) -> Result<()> {
 }
 
 /// List already applied migrations.
-async fn migrations_list(tx: &Transaction) -> Result<Vec<String>> {
+async fn migrations_list<T>(tx: &Transaction<'_, T>) -> Result<Vec<String>>
+where
+    T: ReadTransaction,
+{
     let mut results = vec![];
 
     let sql = "SELECT name, created_at FROM _fpx_migrations ORDER BY name ASC";

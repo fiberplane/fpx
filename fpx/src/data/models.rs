@@ -1,50 +1,8 @@
-use serde::de::DeserializeOwned;
-use serde::{Deserialize, Deserializer};
+use crate::api;
+use crate::api::models::SpanKind;
+use crate::data::util::{Json, Timestamp};
+use serde::Deserialize;
 use std::collections::BTreeMap;
-use std::ops::{Deref, DerefMut};
-
-use crate::models;
-
-#[derive(Debug)]
-pub(crate) struct Json<T: DeserializeOwned>(T);
-
-impl<T: DeserializeOwned> Deref for Json<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<T: DeserializeOwned> DerefMut for Json<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<T: DeserializeOwned> AsRef<T> for Json<T> {
-    fn as_ref(&self) -> &T {
-        &self.0
-    }
-}
-
-impl<T: DeserializeOwned> AsMut<T> for Json<T> {
-    fn as_mut(&mut self) -> &mut T {
-        &mut self.0
-    }
-}
-
-impl<'de, T: DeserializeOwned> Deserialize<'de> for Json<T> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let string: String = Deserialize::deserialize(deserializer)?;
-        let json: T = serde_json::from_str(&string).map_err(serde::de::Error::custom)?;
-
-        Ok(Json(json))
-    }
-}
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct Request {
@@ -55,8 +13,59 @@ pub(crate) struct Request {
     pub(crate) headers: Json<BTreeMap<String, String>>,
 }
 
-impl From<Request> for models::Request {
+impl From<Request> for api::models::Request {
     fn from(req: Request) -> Self {
-        models::Request::new(req.id, req.method, req.url, req.body, req.headers.0)
+        api::models::Request::new(req.id, req.method, req.url, req.body, req.headers.0)
+    }
+}
+
+#[derive(Deserialize)]
+pub struct Span {
+    pub trace_id: String,
+    pub span_id: String,
+    pub parent_span_id: Option<String>,
+
+    pub name: String,
+    pub kind: SpanKind,
+
+    pub start_time: Timestamp,
+    pub end_time: Timestamp,
+
+    pub inner: Json<api::models::Span>,
+}
+
+impl Span {
+    pub fn into_inner(self) -> api::models::Span {
+        self.inner.into_inner()
+    }
+}
+
+impl From<Span> for api::models::Span {
+    fn from(value: Span) -> Self {
+        value.into_inner()
+    }
+}
+
+impl From<api::models::Span> for Span {
+    fn from(span: api::models::Span) -> Self {
+        let trace_id = span.trace_id.clone();
+        let span_id = span.span_id.clone();
+        let parent_span_id = span.parent_span_id.clone();
+        let name = span.name.clone();
+        let kind = span.kind.clone();
+        let start_time = span.start_time.into();
+        let end_time = span.end_time.into();
+        let inner = Json(span);
+
+        Self {
+            trace_id,
+            span_id,
+            parent_span_id,
+            name,
+            kind,
+            start_time,
+            end_time,
+            inner,
+        }
     }
 }
