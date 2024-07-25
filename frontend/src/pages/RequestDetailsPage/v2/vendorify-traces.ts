@@ -39,6 +39,8 @@ const OpenAIVendorInfoSchema = z.object({
   vendor: z.literal("openai"),
 });
 
+type OpenAIVendorInfo = z.infer<typeof OpenAIVendorInfoSchema>;
+
 const AnthropicVendorInfoSchema = z.object({
   vendor: z.literal("anthropic"),
 });
@@ -58,6 +60,10 @@ type VendorifiedSpan = MizuFetchSpan & {
 
 type NeonSpan = Omit<VendorifiedSpan, "vendorInfo"> & {
   vendorInfo: NeonVendorInfo;
+};
+
+type OpenAISpan = Omit<VendorifiedSpan, "vendorInfo"> & {
+  vendorInfo: OpenAIVendorInfo;
 };
 
 const hasVendorInfo = (span: MizuSpan): span is VendorifiedSpan => {
@@ -81,6 +87,10 @@ export const isNeonSpan = (span: unknown): span is NeonSpan => {
   return isVendorifiedSpan(span) && span.vendorInfo.vendor === "neon";
 };
 
+export const isOpenAISpan = (span: unknown): span is OpenAISpan => {
+  return isVendorifiedSpan(span) && span.vendorInfo.vendor === "openai";
+};
+
 export const vendorifySpan = (span: MizuFetchSpan): VendorifiedSpan => {
   if (isOpenAIFetch(span)) {
     return { ...span, vendorInfo: { vendor: "openai" } };
@@ -102,7 +112,11 @@ export const vendorifySpan = (span: MizuFetchSpan): VendorifiedSpan => {
 };
 
 const isOpenAIFetch = (span: MizuFetchSpan) => {
-  return false;
+  const requestUrl = span.attributes["server.address"];
+  if (typeof requestUrl !== "string") {
+    return false;
+  }
+  return requestUrl.includes("api.openai.com");
 };
 
 // TODO - Make this a bit more robust?

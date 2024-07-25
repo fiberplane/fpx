@@ -1,8 +1,12 @@
+import NeonLogo from "@/assets/NeonLogo.svg";
 import Database from "@/assets/Database.svg";
 import Diamond from "@/assets/Diamond.svg";
+import OpenAiLogo from "@/assets/OpenAILogo.svg";
+import AnthropicLogo from "@/assets/AnthropicLogo.svg";
+
 import { Badge } from "@/components/ui/badge";
 import { MizuTraceV2, isMizuOrphanLog } from "@/queries";
-import { isMizuFetchSpan } from "@/queries/traces-v2";
+import { isMizuFetchSpan, isMizuRootRequestSpan } from "@/queries/traces-v2";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, {
@@ -18,7 +22,7 @@ import {
   normalizeWaterfallTimestamps,
 } from "./normalize-traces";
 import { timelineId } from "./timelineId";
-import { canRenderVendorInfo } from "./vendorify-traces";
+import { canRenderVendorInfo, isNeonSpan, isOpenAISpan } from "./vendorify-traces";
 
 type TraceDetailsTimelineProps = {
   trace: MizuTraceV2;
@@ -117,32 +121,6 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   );
 };
 
-const useTimelineIcon = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
-  return useMemo(() => {
-    let iconType = isMizuOrphanLog(spanOrLog) ? "log" : spanOrLog.kind;
-    if (isMizuFetchSpan(spanOrLog) && canRenderVendorInfo(spanOrLog)) {
-      iconType = spanOrLog.vendorInfo.vendor;
-    }
-
-    return getTypeIcon(iconType);
-  }, [spanOrLog]);
-};
-
-const useTimelineDimensions = (
-  spanOrLog: NormalizedSpan | NormalizedOrphanLog,
-) => {
-  return useMemo(() => {
-    const lineWidth = isMizuOrphanLog(spanOrLog)
-      ? ""
-      : `${spanOrLog.normalizedDuration * 100}%`;
-
-    const lineOffset = isMizuOrphanLog(spanOrLog)
-      ? `${spanOrLog.normalizedTimestamp * 100}%`
-      : `${spanOrLog.normalizedStartTime * 100}%`;
-
-    return { lineWidth, lineOffset };
-  }, [spanOrLog]);
-};
 
 const NormalizedWaterfallRow: React.FC<{
   spanOrLog: NormalizedSpan | NormalizedOrphanLog;
@@ -150,14 +128,8 @@ const NormalizedWaterfallRow: React.FC<{
 }> = ({ spanOrLog, activeId }) => {
   const id = timelineId(spanOrLog);
   const { lineWidth, lineOffset } = useTimelineDimensions(spanOrLog);
+  const title = useTimelineTitle(spanOrLog);
   const icon = useTimelineIcon(spanOrLog);
-  const isDbCall =
-    isMizuFetchSpan(spanOrLog) &&
-    canRenderVendorInfo(spanOrLog) &&
-    spanOrLog.vendorInfo.vendor === "neon";
-  const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
-  const isRootRequest =
-    !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "SERVER";
   return (
     <a
       data-toc-id={id}
@@ -173,46 +145,7 @@ const NormalizedWaterfallRow: React.FC<{
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-20 overflow-hidden">
-        {isDbCall ? (
-          <div
-            className={cn(
-              "uppercase",
-              "font-normal",
-              "font-mono",
-              "text-xs",
-              "truncate",
-            )}
-          >
-            {spanOrLog.vendorInfo.sql?.slice(0, 30)}
-          </div>
-        ) : isFetch ? (
-          <div>
-            <Badge
-              variant="outline"
-              className={cn(
-                "lowercase",
-                "font-normal",
-                "font-mono",
-                "rounded",
-                "px-1.5",
-                "text-xs",
-                "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
-              )}
-            >
-              {spanOrLog.name}
-            </Badge>
-          </div>
-        ) : isRootRequest ? (
-          <div className={cn("font-mono text-sm truncate", "text-gray-200")}>
-            {spanOrLog.name}
-          </div>
-        ) : (
-          <div className="font-mono font-normal text-xs truncate text-gray-200">
-            {/* TODO! */}
-            log
-            {/* {spanOrLog.name} */}
-          </div>
-        )}
+        {title}
       </div>
       <div className="text-gray-400 flex flex-grow items-center mx-4">
         {isMizuOrphanLog(spanOrLog) ? (
@@ -240,6 +173,112 @@ const NormalizedWaterfallRow: React.FC<{
   );
 };
 
+
+const useTimelineDimensions = (
+  spanOrLog: NormalizedSpan | NormalizedOrphanLog,
+) => {
+  return useMemo(() => {
+    const lineWidth = isMizuOrphanLog(spanOrLog)
+      ? ""
+      : `${spanOrLog.normalizedDuration * 100}%`;
+
+    const lineOffset = isMizuOrphanLog(spanOrLog)
+      ? `${spanOrLog.normalizedTimestamp * 100}%`
+      : `${spanOrLog.normalizedStartTime * 100}%`;
+
+    return { lineWidth, lineOffset };
+  }, [spanOrLog]);
+};
+
+
+const useTimelineTitle = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
+  return useMemo(() => {
+    const isNeonCall = isNeonSpan(spanOrLog);
+    if (isNeonCall) {
+      return (
+        <div
+          className={cn(
+            "uppercase",
+            "font-normal",
+            "font-mono",
+            "text-xs",
+            "truncate",
+          )}
+        >
+          {spanOrLog.vendorInfo.sql?.slice(0, 30)}
+        </div>
+      )
+    }
+
+    const isOpenAICall = isOpenAISpan(spanOrLog);
+    if (isOpenAICall) {
+      return (
+        <div
+          className={cn(
+            "font-normal",
+            "font-mono",
+            "text-xs",
+            "truncate",
+          )}
+        >
+          OpenAI Call
+        </div>
+      )
+    }
+
+    const isRootRequest = isMizuRootRequestSpan(spanOrLog);
+    if (isRootRequest) {
+      return (
+        <div className={cn("font-mono text-sm truncate", "text-gray-200")}>
+          {spanOrLog.name}
+        </div>
+      )
+    }
+
+    const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
+    if (isFetch) {
+      return (
+        <div>
+          <Badge
+            variant="outline"
+            className={cn(
+              "lowercase",
+              "font-normal",
+              "font-mono",
+              "rounded",
+              "px-1.5",
+              "text-xs",
+              "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
+            )}
+          >
+            {spanOrLog.name}
+          </Badge>
+        </div>
+      )
+    }
+
+    return (
+      <div className="font-mono font-normal text-xs truncate text-gray-200">
+        {/* TODO! */}
+        log
+        {/* {spanOrLog.name} */}
+      </div>
+    );
+  }, [spanOrLog]);
+};
+
+const useTimelineIcon = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
+  return useMemo(() => {
+    let iconType = isMizuOrphanLog(spanOrLog) ? "log" : spanOrLog.kind;
+    if (isMizuFetchSpan(spanOrLog) && canRenderVendorInfo(spanOrLog)) {
+      iconType = spanOrLog.vendorInfo.vendor;
+    }
+
+    return getTypeIcon(iconType);
+  }, [spanOrLog]);
+};
+
+
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "request":
@@ -250,13 +289,15 @@ const getTypeIcon = (type: string) => {
       return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
     case "log":
       return <Diamond className="w-3.5 h-3.5 text-orange-400" />;
-    case "event":
-      return "🔹";
+    // NOT IN USE
     case "db":
-    case "neon":
       return <Database className="w-3.5 h-3.5 text-blue-600" />;
-    case "response":
-      return "🔵";
+    case "neon":
+      return <NeonLogo className="w-3.5 h-3.5 text-blue-600" />;
+    case "openai":
+      return <OpenAiLogo className="w-3.5 h-3.5 text-blue-600" />;
+    case "anthropic":
+      return <AnthropicLogo className="w-3.5 h-3.5 text-blue-600" />;
     default:
       return "🔸";
   }
