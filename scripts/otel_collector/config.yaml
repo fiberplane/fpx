@@ -1,0 +1,32 @@
+---
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  otlphttp:
+    endpoint: http://localhost:6767
+    encoding: json
+    compression: none
+
+  otlp:
+    endpoint: http://localhost:4567
+    tls:
+      insecure: true
+    compression: none
+
+  debug:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [debug, otlphttp, otlp]
+
+  telemetry:
+    logs:
+      level: "debug"

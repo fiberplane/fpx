@@ -6,9 +6,9 @@
 //! Note that this is a work in progress implementation. Currently some features
 //! do not work as expected or are implemented at all.
 
+use crate::api::models::RequestAdded;
 use crate::data::Store;
 use crate::events::ServerEvents;
-use crate::models::RequestAdded;
 use anyhow::{Context, Result};
 use axum::extract::{Path, Request, State};
 use axum::response::IntoResponse;
@@ -240,7 +240,7 @@ async fn handle_request(
     path: Option<Path<String>>,
     req: Request,
 ) -> impl IntoResponse {
-    let tx = store.start_transaction().await.unwrap();
+    let tx = store.start_readwrite_transaction().await.unwrap(); // TODO
 
     let headers: BTreeMap<String, String> = req
         .headers()
@@ -270,7 +270,7 @@ async fn handle_request(
         None => info!("Received request: /"),
     }
 
-    tx.commit().await.unwrap();
+    store.commit_transaction(tx).await.unwrap(); // TODO
 
     events.broadcast(RequestAdded::new(request_id, None).into());
 
