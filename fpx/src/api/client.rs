@@ -6,7 +6,7 @@
 
 use super::errors::ApiClientError;
 use super::handlers::spans::SpanGetError;
-use super::handlers::RequestGetError;
+use super::handlers::{RequestGetError, RequestListError};
 use crate::api::models;
 use anyhow::Result;
 use http::Method;
@@ -48,6 +48,7 @@ impl ApiClient {
         &self,
         method: Method,
         path: impl AsRef<str>,
+        body: Option<String>,
     ) -> Result<T, ApiClientError<E>>
     where
         T: serde::de::DeserializeOwned,
@@ -55,7 +56,11 @@ impl ApiClient {
     {
         let u = self.base_url.join(path.as_ref())?;
 
-        let req = self.client.request(method, u);
+        let req = self
+            .client
+            .request(method, u)
+            .header("Content-Type", "application/json")
+            .body(body.unwrap_or_default());
 
         // Make request
         let response = req.send().await?;
@@ -88,7 +93,28 @@ impl ApiClient {
     ) -> Result<models::Request, ApiClientError<RequestGetError>> {
         let path = format!("api/requests/{}", request_id);
 
-        self.do_req(Method::GET, path).await
+        self.do_req(Method::GET, path, None).await
+    }
+
+    /// Retrieve a list of requests
+    pub async fn request_list(
+        &self,
+    ) -> Result<Vec<models::RequestSummary>, ApiClientError<RequestListError>> {
+        let path = "api/requests";
+
+        self.do_req(Method::GET, path, None).await
+    }
+
+    /// Create and execute a new request
+    pub async fn request_post(
+        &self,
+        new_request: models::NewRequest,
+    ) -> Result<models::Response, ApiClientError<models::NewRequestError>> {
+        let path = "/api/requests";
+
+        let json = serde_json::to_string(&new_request).unwrap();
+
+        self.do_req(Method::POST, path, Some(json)).await
     }
 
     /// Retrieve the details of a single span.
@@ -103,7 +129,7 @@ impl ApiClient {
             span_id.as_ref()
         );
 
-        self.do_req(Method::GET, path).await
+        self.do_req(Method::GET, path, None).await
     }
 
     /// Retrieve all the spans associated with a single trace.
@@ -113,6 +139,6 @@ impl ApiClient {
     ) -> Result<Vec<models::Span>, ApiClientError<SpanGetError>> {
         let path = format!("api/traces/{}/spans", trace_id.as_ref());
 
-        self.do_req(Method::GET, path).await
+        self.do_req(Method::GET, path, None).await
     }
 }

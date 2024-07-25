@@ -1,5 +1,5 @@
 use crate::api;
-use crate::api::models::SpanKind;
+use crate::api::models::{RequestSummary, SpanKind};
 use crate::data::util::{Json, Timestamp};
 use serde::Deserialize;
 use std::collections::BTreeMap;
@@ -9,7 +9,7 @@ pub(crate) struct Request {
     pub(crate) id: u32,
     pub(crate) method: String,
     pub(crate) url: String,
-    pub(crate) body: String,
+    pub(crate) body: Option<String>,
     pub(crate) headers: Json<BTreeMap<String, String>>,
 }
 
@@ -67,5 +67,26 @@ impl From<api::models::Span> for Span {
             end_time,
             inner,
         }
+    }
+}
+
+impl From<Request> for RequestSummary {
+    fn from(request: Request) -> Self {
+        RequestSummary::new(request.id, request.method, request.url)
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct Response {
+    pub(crate) id: u32,
+    pub(crate) request_id: u32,
+    pub(crate) status: u16,
+    pub(crate) body: Option<String>,
+    pub(crate) headers: Json<BTreeMap<String, String>>,
+}
+
+impl From<Response> for api::models::Response {
+    fn from(res: Response) -> Self {
+        api::models::Response::new(res.id, res.request_id, res.status, res.body, res.headers.0)
     }
 }
