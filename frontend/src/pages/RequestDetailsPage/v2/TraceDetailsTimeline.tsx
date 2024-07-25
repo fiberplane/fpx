@@ -139,7 +139,7 @@ const NormalizedWaterfallRow: React.FC<{
     <a
       data-toc-id={id}
       className={cn(
-        "flex items-center p-2",
+        "flex items-center px-2 py-3",
         "border-l-2 border-transparent",
         "hover:bg-primary/10 hover:border-blue-500",
         activeId === id && "bg-primary/10 border-blue-500",
