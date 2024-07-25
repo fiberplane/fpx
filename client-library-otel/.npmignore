@@ -2,6 +2,10 @@ node_modules
 .dev.vars
 .dev.vars.example
 
+# Ignore sample related content
+wrangler.toml
+sample
+
 # do not publish packed files (from local testing)
 mizu-dev-hono-*.tgz
 
