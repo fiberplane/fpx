@@ -114,6 +114,7 @@ export function RequestDetailsPage() {
     handlePrevTrace();
   });
 
+  // Modifies the "waterfall" of the trace to include vendor info associated with a fetch request
   const vendorifiedTraceV2 = useMemo(
     () => (traceV2 ? vendorifyTrace(traceV2) : undefined),
     [traceV2],
