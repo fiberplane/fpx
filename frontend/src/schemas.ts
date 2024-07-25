@@ -18,6 +18,21 @@ export const ClientMessageSchema = z
 
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 
+export const NewRequestSchema = z
+  .object({
+    body: z.union([z.string(), z.null()]).optional(),
+    headers: z.union([z.record(z.string()), z.null()]).optional(),
+    method: z.string(),
+    url: z.string(),
+  })
+  .describe("The payload that describes the request that has to be executed");
+
+export type NewRequest = z.infer<typeof NewRequestSchema>;
+
+export const NewRequestErrorSchema = z.any();
+
+export type NewRequestError = z.infer<typeof NewRequestErrorSchema>;
+
 export const RequestSchema = z
   .object({
     body: z.union([z.string(), z.null()]).optional(),
@@ -58,24 +73,32 @@ export const RequestAddedSchema = z.object({
 
 export type RequestAdded = z.infer<typeof RequestAddedSchema>;
 
-export const RequestorErrorSchema = z.object({ error: z.literal("internal") });
+export const RequestSummarySchema = z.object({
+  id: z.number().int().gte(0),
+  method: z.string(),
+  url: z.string(),
+});
 
-export type RequestorError = z.infer<typeof RequestorErrorSchema>;
+export type RequestSummary = z.infer<typeof RequestSummarySchema>;
 
-export const RequestorRequestPayloadSchema = z
+export const RequestWithResponseSchema = z.object({
+  request: z.any(),
+  response: z.union([z.any(), z.null()]).optional(),
+});
+
+export type RequestWithResponse = z.infer<typeof RequestWithResponseSchema>;
+
+export const ResponseSchema = z
   .object({
     body: z.union([z.string(), z.null()]).optional(),
-    headers: z.union([z.record(z.string()), z.null()]).optional(),
-    method: z.string(),
-    url: z.string(),
+    headers: z.record(z.string()),
+    id: z.number().int().gte(0),
+    requestId: z.number().int().gte(0),
+    status: z.number().int().gte(0),
   })
-  .describe(
-    "The payload that describes the request that Requestor has to execute",
-  );
+  .describe("A response that has been captured by fpx.");
 
-export type RequestorRequestPayload = z.infer<
-  typeof RequestorRequestPayloadSchema
->;
+export type Response = z.infer<typeof ResponseSchema>;
 
 export const ServerMessageSchema = z
   .object({

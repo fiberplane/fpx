@@ -192,7 +192,7 @@ impl Request {
         id: u32,
         method: String,
         url: String,
-        body: String,
+        body: Option<String>,
         headers: BTreeMap<String, String>,
     ) -> Self {
         Self {
@@ -200,8 +200,22 @@ impl Request {
             method,
             url,
             headers,
-            body: Some(body),
+            body,
         }
+    }
+}
+
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestSummary {
+    pub id: u32,
+    pub method: String,
+    pub url: String,
+}
+
+impl RequestSummary {
+    pub fn new(id: u32, method: String, url: String) -> Self {
+        Self { id, method, url }
     }
 }
 
@@ -210,8 +224,8 @@ impl Request {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub id: u32,
+    pub request_id: u32,
     pub status: u16,
-    pub url: String,
     pub body: Option<String>,
     pub headers: BTreeMap<String, String>,
 }
@@ -220,24 +234,24 @@ impl Response {
     #[allow(dead_code)]
     pub fn new(
         id: u32,
+        request_id: u32,
         status: u16,
-        url: String,
-        body: String,
+        body: Option<String>,
         headers: BTreeMap<String, String>,
     ) -> Self {
         Self {
             id,
+            request_id,
             status,
-            url,
             headers,
-            body: Some(body),
+            body,
         }
     }
 }
 
-/// The payload that describes the request that Requestor has to execute
+/// The payload that describes the request that has to be executed
 #[derive(JsonSchema, Deserialize, Serialize)]
-pub struct RequestorRequestPayload {
+pub struct NewRequest {
     pub method: String,
     pub url: String,
     pub body: Option<String>,
@@ -245,12 +259,12 @@ pub struct RequestorRequestPayload {
 }
 
 // TODO: Improve later to get more specific error handling
-#[derive(JsonSchema, Debug, Serialize, Error)]
+#[derive(JsonSchema, Debug, Serialize, Error, Deserialize)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[allow(dead_code)]
-pub enum RequestorError {}
+pub enum NewRequestError {}
 
-impl ApiError for RequestorError {
+impl ApiError for NewRequestError {
     fn status_code(&self) -> http::StatusCode {
         // NOTE: RequestorError doesn't have any explicit errors, so just
         // return a NOT_IMPLEMENTED status code for now.
@@ -258,20 +272,32 @@ impl ApiError for RequestorError {
     }
 }
 
-impl From<DbError> for ApiServerError<RequestorError> {
+impl From<DbError> for ApiServerError<NewRequestError> {
     fn from(_err: DbError) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
 
-impl From<libsql::Error> for ApiServerError<RequestorError> {
+impl From<libsql::Error> for ApiServerError<NewRequestError> {
     fn from(_err: libsql::Error) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
 
-impl From<reqwest::Error> for ApiServerError<RequestorError> {
+impl From<reqwest::Error> for ApiServerError<NewRequestError> {
     fn from(_err: reqwest::Error) -> Self {
         ApiServerError::CommonError(CommonError::InternalServerError)
+    }
+}
+
+#[derive(JsonSchema, Deserialize, Serialize)]
+pub struct RequestWithResponse {
+    request: Request,
+    response: Option<Response>,
+}
+
+impl RequestWithResponse {
+    pub fn new(request: Request, response: Option<Response>) -> RequestWithResponse {
+        RequestWithResponse { request, response }
     }
 }
