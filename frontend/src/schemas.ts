@@ -198,6 +198,22 @@ export const ServerMessageJsonSchema = {
       },
       additionalProperties: false,
     },
+    {
+      description:
+        "When a Span has been ingested via the export interface (either gRPC or http), its TraceID and SpanID will be sent through this message. Both ID's will be hex encoded.",
+      type: "object",
+      required: ["details", "type"],
+      properties: {
+        details: {
+          $ref: "#/definitions/SpanAdded",
+        },
+        type: {
+          type: "string",
+          enum: ["spanAdded"],
+        },
+      },
+      additionalProperties: false,
+    },
   ],
   properties: {
     messageId: {
@@ -242,6 +258,30 @@ export const ServerMessageJsonSchema = {
           additionalProperties: false,
         },
       ],
+    },
+    SpanAdded: {
+      type: "object",
+      required: ["newSpans"],
+      properties: {
+        newSpans: {
+          description:
+            "New spans that have been added. The key is the trace ID and the values are the spans ID's for that specific trace. Both trace and span ID are hex encoded.",
+          type: "array",
+          items: {
+            type: "array",
+            items: [
+              {
+                type: "string",
+              },
+              {
+                type: "string",
+              },
+            ],
+            maxItems: 2,
+            minItems: 2,
+          },
+        },
+      },
     },
   },
 } as const;
