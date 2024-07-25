@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
-pub mod schemas;
+mod schemas;
 
 /// FPX - Super-charge your local development.
 #[derive(Parser, Debug)]

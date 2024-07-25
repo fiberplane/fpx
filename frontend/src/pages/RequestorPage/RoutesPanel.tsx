@@ -42,7 +42,11 @@ export function RoutesPanel({
   }, [routes]);
 
   const hasAnyUserAddedRoutes = useMemo(() => {
-    return routes?.some((r) => r.addedByUser) ?? false;
+    return routes?.some((r) => r.routeOrigin === "custom") ?? false;
+  }, [routes]);
+
+  const hasAnyOpenApiRoutes = useMemo(() => {
+    return routes?.some((r) => r.routeOrigin === "open_api") ?? false;
   }, [routes]);
 
   const [filterValue, setFilterValue] = useState("");
@@ -56,20 +60,26 @@ export function RoutesPanel({
 
   const prevDetectedRoutes = useMemo(() => {
     return (
-      filteredRoutes?.filter((r) => !r.addedByUser && !r.currentlyRegistered) ??
-      []
+      filteredRoutes?.filter(
+        (r) => r.routeOrigin === "discovered" && !r.currentlyRegistered,
+      ) ?? []
     );
   }, [filteredRoutes]);
 
   const detectedRoutes = useMemo(() => {
     return (
-      filteredRoutes?.filter((r) => !r.addedByUser && r.currentlyRegistered) ??
-      []
+      filteredRoutes?.filter(
+        (r) => r.routeOrigin === "discovered" && r.currentlyRegistered,
+      ) ?? []
     );
   }, [filteredRoutes]);
 
+  const openApiRoutes = useMemo(() => {
+    return filteredRoutes?.filter((r) => r.routeOrigin === "open_api") ?? [];
+  }, [filteredRoutes]);
+
   const userAddedRoutes = useMemo(() => {
-    return filteredRoutes?.filter((r) => r.addedByUser) ?? [];
+    return filteredRoutes?.filter((r) => r.routeOrigin === "custom") ?? [];
   }, [filteredRoutes]);
 
   return (
@@ -149,6 +159,15 @@ export function RoutesPanel({
               handleRouteClick={handleRouteClick}
             />
           )}
+
+          {hasAnyOpenApiRoutes && (
+            <RoutesSection
+              title="OpenAPI"
+              routes={openApiRoutes ?? []}
+              selectedRoute={selectedRoute}
+              handleRouteClick={handleRouteClick}
+            />
+          )}
         </div>
       </div>
     </Resizable>
@@ -206,7 +225,10 @@ function RoutesSection(props: RoutesSectionProps) {
 
 export function RouteItem({ route }: { route: ProbedRoute }) {
   const { mutate: deleteRoute } = useDeleteRoute();
-  const canDeleteRoute = route.addedByUser || !route.currentlyRegistered;
+  const canDeleteRoute =
+    route.routeOrigin === "custom" ||
+    !route.currentlyRegistered ||
+    route.routeOrigin === "open_api";
   return (
     <>
       <span

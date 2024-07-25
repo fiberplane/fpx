@@ -1,5 +1,6 @@
 import { CheckIcon } from "@radix-ui/react-icons";
 import * as React from "react";
+import { forwardRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -47,17 +48,15 @@ const methods = [
   },
 ];
 
-export function RequestMethodCombobox({
-  method,
-  handleMethodChange,
-  allowUserToChange,
-  className,
-}: {
-  method: string;
-  handleMethodChange: (method: string) => void;
-  allowUserToChange?: boolean;
-  className?: string;
-}) {
+export const RequestMethodCombobox = forwardRef<
+  HTMLButtonElement,
+  {
+    method: string;
+    handleMethodChange: (method: string) => void;
+    allowUserToChange?: boolean;
+    className?: string;
+  }
+>(({ method, handleMethodChange, allowUserToChange, className }, ref) => {
   const [open, setOpen] = React.useState(false);
 
   const matchedMethod = method
@@ -68,6 +67,7 @@ export function RequestMethodCombobox({
     <Popover open={allowUserToChange ? open : false} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={ref}
           variant="ghost"
           role="combobox"
           aria-expanded={open}
@@ -129,4 +129,6 @@ export function RequestMethodCombobox({
       </PopoverContent>
     </Popover>
   );
-}
+});
+
+RequestMethodCombobox.displayName = "RequestMethodCombobox";

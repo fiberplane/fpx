@@ -1,12 +1,17 @@
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
 use crate::data::DbError;
-use http::StatusCode;
 use rand::Rng;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use thiserror::Error;
 
+mod otel;
+
+pub use otel::*;
+
+/// The header that will be returned on the initial websocket connection. This
+/// could be useful for debugging purposes.
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
 /// Messages that are send from the server to the client.
@@ -74,6 +79,11 @@ pub enum ServerMessageDetails {
     /// A request has been captured. It contains a reference to the request id
     /// and optionally a reference to the inspector id.
     RequestAdded(Box<RequestAdded>),
+
+    /// When a Span has been ingested via the export interface (either gRPC or
+    /// http), its TraceID and SpanID will be sent through this message. Both
+    /// ID's will be hex encoded.
+    SpanAdded(Box<SpanAdded>),
 }
 
 impl From<ServerMessageDetails> for ServerMessage {
@@ -155,8 +165,29 @@ impl RequestAdded {
 }
 
 impl From<RequestAdded> for ServerMessage {
-    fn from(request_added: RequestAdded) -> Self {
-        ServerMessageDetails::RequestAdded(Box::new(request_added)).into()
+    fn from(val: RequestAdded) -> Self {
+        ServerMessageDetails::RequestAdded(Box::new(val)).into()
+    }
+}
+
+#[derive(JsonSchema, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpanAdded {
+    /// New spans that have been added. The key is the trace ID and the values
+    /// are the spans ID's for that specific trace. Both trace and span ID are
+    /// hex encoded.
+    new_spans: Vec<(String, String)>,
+}
+
+impl SpanAdded {
+    pub fn new(new_spans: Vec<(String, String)>) -> Self {
+        Self { new_spans }
+    }
+}
+
+impl From<SpanAdded> for ServerMessage {
+    fn from(val: SpanAdded) -> Self {
+        ServerMessageDetails::SpanAdded(Box::new(val)).into()
     }
 }
 
@@ -201,6 +232,7 @@ pub struct Response {
 }
 
 impl Response {
+    #[allow(dead_code)]
     pub fn new(
         id: u32,
         status: u16,
@@ -240,10 +272,10 @@ pub struct RequestorRequestPayload {
 pub enum RequestorError {}
 
 impl ApiError for RequestorError {
-    fn status_code(&self) -> StatusCode {
+    fn status_code(&self) -> http::StatusCode {
         // NOTE: RequestorError doesn't have any explicit errors, so just
         // return a NOT_IMPLEMENTED status code for now.
-        StatusCode::NOT_IMPLEMENTED
+        http::StatusCode::NOT_IMPLEMENTED
     }
 }
 

@@ -1,7 +1,7 @@
 use std::{fs::File, io::Write, path::Path};
 
 use anyhow::Result;
-use fpx::models::{
+use fpx::api::models::{
     ClientMessage, Request, RequestAdded, RequestorError, RequestorRequestPayload, ServerMessage,
 };
 use schemars::{schema::RootSchema, schema_for};

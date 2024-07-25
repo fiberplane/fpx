@@ -2,17 +2,25 @@ use crate::api;
 use crate::data::migrations::migrate;
 use crate::data::{DataPath, Store};
 use crate::events::Events;
-use crate::initialize_fpx_dir;
+use crate::grpc::GrpcService;
+use crate::{initialize_fpx_dir, service};
 use anyhow::{Context, Result};
+use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceServiceServer;
+use std::future::IntoFuture;
 use std::{path::PathBuf, process::exit};
+use tokio::select;
 use tracing::info;
-use tracing::warn;
+use tracing::{error, warn};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
     /// The address to listen on.
     #[arg(short, long, env, default_value = "127.0.0.1:6767")]
     pub listen_address: String,
+
+    /// The address for the OTEL ingestion gRPC service to listen on.
+    #[arg(long, env, default_value = "127.0.0.1:4567")]
+    pub grpc_listen_address: String,
 
     /// The base URL of the server.
     #[arg(short, long, env, default_value = "http://localhost:6767")]
@@ -45,19 +53,28 @@ pub async fn handle_command(args: Args) -> Result<()> {
     )
     .await?;
 
-    let app = api::create_api(args.base_url.clone(), events, store, inspector_service);
+    let service = service::Service::new(store.clone(), events.clone());
+
+    let app = api::create_api(
+        args.base_url.clone(),
+        events.clone(),
+        inspector_service,
+        service.clone(),
+        store.clone(),
+    );
+    let grpc_service = GrpcService::new(service);
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)
         .await
         .with_context(|| format!("Failed to bind to address: {}", args.listen_address))?;
 
     // This future will resolve once `ctrl-c` is pressed.
-    let shutdown = async {
+    let api_shutdown = async {
         tokio::signal::ctrl_c()
             .await
             .expect("Failed to listen for ctrl-c");
 
-        info!("Received SIGINT, shutting down server");
+        info!("Received SIGINT, shutting down api server");
 
         // Monitor for another SIGINT, and force shutdown if received.
         tokio::spawn(async {
@@ -69,18 +86,39 @@ pub async fn handle_command(args: Args) -> Result<()> {
             exit(1);
         });
     };
+    let grpc_shutdown = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("Failed to listen for ctrl-c");
+    };
 
     info!(
-        listen_address = ?listener.local_addr().context("Failed to get local address")?,
+        api_listen_address = ?listener.local_addr().context("Failed to get local address")?,
+        grpc_listen_address = ?args.grpc_listen_address,
         "Starting server",
     );
 
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown)
-        .await
-        .context("Failed to start the HTTP server")?;
+    let task1 = axum::serve(listener, app)
+        .with_graceful_shutdown(api_shutdown)
+        .into_future();
+    let task2 = tonic::transport::Server::builder()
+        .add_service(TraceServiceServer::new(grpc_service))
+        .serve_with_shutdown(args.grpc_listen_address.parse()?, grpc_shutdown);
 
-    info!("Server shutdown gracefully");
+    select!(
+        result = task1 => {
+            match result {
+                Ok(_) => info!("API server shutdown gracefully"),
+                Err(err) => error!(?err, "API server failed"),
+            };
+        },
+        result = task2 => {
+            match result {
+                Ok(_) => info!("gRPC server shutdown gracefully"),
+                Err(err) => error!(?err, "gRPC server failed"),
+            };
+        }
+    );
 
     Ok(())
 }

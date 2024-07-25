@@ -140,8 +140,27 @@ impl ApiError for CommonError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::handlers::RequestGetError;
     use http_body_util::BodyExt;
+
+    #[derive(Debug, Serialize, Deserialize, Error)]
+    #[serde(tag = "error", content = "details", rename_all = "camelCase")]
+    #[non_exhaustive]
+    pub enum RequestGetError {
+        #[error("Request not found")]
+        RequestNotFound,
+
+        #[error("Provided ID is invalid")]
+        InvalidId,
+    }
+
+    impl ApiError for RequestGetError {
+        fn status_code(&self) -> StatusCode {
+            match self {
+                RequestGetError::RequestNotFound => StatusCode::NOT_FOUND,
+                RequestGetError::InvalidId => StatusCode::BAD_REQUEST,
+            }
+        }
+    }
 
     /// Test to convert Service Error in a ApiServerError to a ApiClientError.
     #[tokio::test]
@@ -185,10 +204,7 @@ mod tests {
             ApiClientError::from_response(parts.status, body);
 
         match api_client_error {
-            ApiClientError::CommonError(err) => match err {
-                CommonError::InternalServerError => (),
-                err => panic!("Unexpected common error: {:?}", err),
-            },
+            ApiClientError::CommonError(CommonError::InternalServerError) => (),
             err => panic!("Unexpected error: {:?}", err),
         }
     }
@@ -198,13 +214,10 @@ mod tests {
     #[tokio::test]
     async fn anyhow_error_into_api_server_error() {
         let anyhow_error = anyhow::Error::msg("some random anyhow error");
-        let api_server_error: ApiServerError<()> = anyhow_error.into();
+        let api_server_error: ApiServerError<RequestGetError> = anyhow_error.into();
 
         match api_server_error {
-            ApiServerError::CommonError(err) => match err {
-                CommonError::InternalServerError => (),
-                err => panic!("Unexpected common error: {:?}", err),
-            },
+            ApiServerError::CommonError(CommonError::InternalServerError) => (),
             err => panic!("Unexpected error: {:?}", err),
         };
     }
