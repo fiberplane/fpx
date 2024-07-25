@@ -14,7 +14,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-static REQUESTOR_CLIENT: Lazy<Client> = Lazy::new(|| {
+static REQUEST_CLIENT: Lazy<Client> = Lazy::new(|| {
     Client::builder()
         .connect_timeout(Duration::from_secs(30))
         .user_agent("FPX Requestor")
@@ -94,7 +94,7 @@ async fn execute_request(
         }
     }
 
-    REQUESTOR_CLIENT
+    REQUEST_CLIENT
         .request(request_method, url)
         .headers(header_map)
         .body(body.unwrap_or_default().to_string())

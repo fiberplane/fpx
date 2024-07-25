@@ -266,7 +266,7 @@ pub enum NewRequestError {}
 
 impl ApiError for NewRequestError {
     fn status_code(&self) -> http::StatusCode {
-        // NOTE: RequestorError doesn't have any explicit errors, so just
+        // NOTE: RequestGetError doesn't have any explicit errors, so just
         // return a NOT_IMPLEMENTED status code for now.
         http::StatusCode::NOT_IMPLEMENTED
     }
