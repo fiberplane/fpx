@@ -30,7 +30,10 @@ const NoVendorInfoSchema = z.object({
 
 const NeonVendorInfoSchema = z.object({
   vendor: z.literal("neon"),
-  sql: z.string(),
+  sql: z.object({
+    query: z.string(),
+    params: z.array(z.string()),
+  }),
 });
 
 type NeonVendorInfo = z.infer<typeof NeonVendorInfoSchema>;
@@ -145,13 +148,16 @@ const isAnthropicFetch = (span: MizuFetchSpan) => {
 function getNeonSqlQuery(span: MizuFetchSpan) {
   const body = span.attributes["fpx.request.body"] as string;
   if (!body) {
-    return "DB QUERY";
+    return { query: "DB QUERY", params: [] };
   }
   try {
     // TODO - Merge query with the params somehow
     const json = JSON.parse(body);
-    return json.query;
+    return {
+      query: json.query as string,
+      params: json.params as Array<string>,
+    };
   } catch (e) {
-    return "DB QUERY";
+    return { query: "DB QUERY", params: [] };
   }
 }

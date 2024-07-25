@@ -204,7 +204,7 @@ const useTimelineTitle = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
             "truncate",
           )}
         >
-          {spanOrLog.vendorInfo.sql?.slice(0, 30)}
+          {spanOrLog.vendorInfo.sql?.query?.slice(0, 30)}
         </div>
       );
     }

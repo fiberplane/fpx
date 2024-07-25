@@ -5,6 +5,7 @@ import { MizuFetchSpan, MizuSpan } from "@/queries/traces-v2";
 import { cn, noop } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
+import { format } from "sql-formatter";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
@@ -23,7 +24,6 @@ import {
   isAnthropicSpan,
   isNeonSpan,
   isOpenAISpan,
-  isVendorifiedSpan,
 } from "./vendorify-traces";
 
 function getRequestUrl(span: MizuSpan) {
@@ -203,14 +203,16 @@ function useVendorSpecificSection(span: MizuSpan) {
 }
 
 function NeonSection({ span }: { span: NeonSpan }) {
+  const queryValue = useMemo(() => {
+    return format(span.vendorInfo.sql.query, {
+      language: "postgresql",
+      params: span.vendorInfo.sql.params,
+    });
+  }, [span]);
   return (
     <SubSection>
       <SubSectionHeading>SQL Query</SubSectionHeading>
-      <CodeMirrorSqlEditor
-        value={span.vendorInfo.sql}
-        onChange={noop}
-        readOnly={true}
-      />
+      <CodeMirrorSqlEditor value={queryValue} onChange={noop} readOnly={true} />
     </SubSection>
   );
 }
