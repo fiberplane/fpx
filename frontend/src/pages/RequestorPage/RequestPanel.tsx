@@ -33,6 +33,7 @@ import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
+import { WebSocketState } from "./useMakeWebsocketRequest";
 
 import "./RequestPanel.css";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
@@ -41,6 +42,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;
@@ -186,6 +188,8 @@ type RequestPanelProps = {
   showAiGeneratedInputsBanner: boolean;
   setShowAiGeneratedInputsBanner: Dispatch<SetStateAction<boolean>>;
   setIgnoreAiInputsBanner: Dispatch<SetStateAction<boolean>>;
+  websocketState: WebSocketState;
+  sendWebsocketMessage: (message: string) => void;
 };
 
 export function RequestPanel(props: RequestPanelProps) {
@@ -244,8 +248,15 @@ function RequestMeta(props: RequestPanelProps) {
     showAiGeneratedInputsBanner,
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
+    websocketState,
+    sendWebsocketMessage,
   } = props;
+
+  const { toast } = useToast();
+
   const shouldShowBody = method !== "GET" && method !== "HEAD";
+  const shouldShowMessages = websocketState.isConnected;
+
   return (
     <Tabs
       defaultValue="params"
@@ -275,6 +286,14 @@ function RequestMeta(props: RequestPanelProps) {
         {shouldShowBody && (
           <CustomTabTrigger value="body">
             Body
+            {(body?.length ?? 0) > 0 && (
+              <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
+            )}
+          </CustomTabTrigger>
+        )}
+        {shouldShowMessages && (
+          <CustomTabTrigger value="messages">
+            Message
             {(body?.length ?? 0) > 0 && (
               <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
             )}
@@ -395,6 +414,36 @@ function RequestMeta(props: RequestPanelProps) {
             value={body}
             maxHeight="800px"
           />
+        </CustomTabsContent>
+      )}
+      {shouldShowMessages && (
+        <CustomTabsContent value="messages">
+          <PanelSectionHeader
+            title="Websocket Messages"
+            handleClearData={() => {
+              setBody(undefined);
+            }}
+          />
+          <CodeMirrorJsonEditor
+            onChange={setBody}
+            value={body}
+            maxHeight="800px"
+          />
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (typeof body !== "string") {
+                return;
+              }
+              sendWebsocketMessage(body);
+              toast({
+                description: "WS Message sent",
+              });
+            }}
+          >
+            Send
+          </Button>
         </CustomTabsContent>
       )}
     </Tabs>

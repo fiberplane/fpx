@@ -6,10 +6,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { isMac } from "@/utils";
+import { useToast } from "@/components/ui/use-toast";
+import { cn, isMac } from "@/utils";
 import { CommitIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
+import { WebSocketState } from "./useMakeWebsocketRequest";
 
 type RequestInputProps = {
   method: string;
@@ -21,6 +23,8 @@ type RequestInputProps = {
   addBaseUrl: (path: string, { isWs }: { isWs?: boolean }) => string;
   formRef: React.RefObject<HTMLFormElement>;
   isWs?: boolean;
+  websocketState: WebSocketState;
+  disconnectWebsocket: () => void;
 };
 
 export function RequestorInput({
@@ -33,7 +37,10 @@ export function RequestorInput({
   addBaseUrl,
   isWs,
   formRef,
+  websocketState,
+  disconnectWebsocket,
 }: RequestInputProps) {
+  const isWsConnected = websocketState.isConnected;
   const [value, setValue] = useState("");
 
   // HACK - If path changes externally, update the value here
@@ -43,6 +50,8 @@ export function RequestorInput({
     const url = addBaseUrl(path ?? "", { isWs });
     setValue(url);
   }, [path, addBaseUrl, isWs]);
+
+  const { toast } = useToast();
 
   return (
     <form
@@ -84,11 +93,22 @@ export function RequestorInput({
             <Button
               size="sm"
               type="submit"
+              onClick={(e) => {
+                if (isWsConnected) {
+                  e.preventDefault();
+                  disconnectWebsocket();
+                  toast({
+                    description: "Websocket connection closed",
+                    variant: "destructive",
+                  });
+                }
+              }}
               disabled={isRequestorRequesting}
-              className="p-2 md:p-2.5"
+              variant={isWsConnected ? "destructive" : "default"}
+              className={cn("p-2 md:p-2.5")}
             >
               <span className="hidden md:inline">
-                {isWs ? "Connect" : "Send"}
+                {isWs ? (isWsConnected ? "Disconnect" : "Connect") : "Send"}
               </span>
               {isWs ? (
                 <TriangleRightIcon className="md:hidden w-6 h-6" />

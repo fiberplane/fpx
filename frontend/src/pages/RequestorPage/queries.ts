@@ -12,6 +12,7 @@ export type ProbedRoute = {
   currentlyRegistered: boolean;
   routeOrigin: "discovered" | "custom" | "open_api";
   openApiSpec?: string;
+  // NOTE - Computed on the frontend, not stored in DB
   isWs?: boolean;
   // TODO - Implement
   isDraft?: boolean;

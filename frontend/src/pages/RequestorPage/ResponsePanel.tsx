@@ -2,6 +2,7 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs } from "@/components/ui/tabs";
 import { cn, isJson, noop, parsePathFromRequestUrl } from "@/utils";
 import {
@@ -11,6 +12,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { Timestamp } from "../RequestDetailsPage/Timestamp";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
@@ -18,6 +20,7 @@ import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestGeneration } from "./ai";
 import { Requestornator } from "./queries";
+import { WebSocketState } from "./useMakeWebsocketRequest";
 
 // TODO - Create skeleton loading components for each tab content
 
@@ -26,6 +29,7 @@ type Props = {
   isLoading: boolean;
   history: Array<Requestornator>;
   loadHistoricalRequest: (traceId: string) => void;
+  websocketState: WebSocketState;
 };
 
 export function ResponsePanel({
@@ -33,9 +37,13 @@ export function ResponsePanel({
   isLoading,
   history,
   loadHistoricalRequest,
+  websocketState,
 }: Props) {
   const isFailure = !!response?.app_responses?.isFailure;
   const showBottomToolbar = !!response?.app_responses?.traceId;
+
+  const isWebsocketConnected = websocketState.isConnected;
+
   return (
     <div className="overflow-hidden h-full relative">
       <Tabs
@@ -43,6 +51,9 @@ export function ResponsePanel({
         className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
       >
         <CustomTabsList>
+          {isWebsocketConnected && (
+            <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
+          )}
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
@@ -53,6 +64,44 @@ export function ResponsePanel({
             </CustomTabTrigger>
           </div>
         </CustomTabsList>
+        <CustomTabsContent value="messages">
+          <TabContentInner
+            isLoading={websocketState.isConnecting}
+            isEmpty={
+              !websocketState.isConnected && !websocketState.isConnecting
+            }
+            isFailure={websocketState.hasError}
+            LoadingState={<LoadingResponseBody />}
+            FailState={<FailedWebsocket />}
+            EmptyState={<NoWebsocketConnection />}
+          >
+            <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
+              <div className="text-sm uppercase text-gray-400">Messages</div>
+              <div>
+                <Table>
+                  <TableBody>
+                    {websocketState.messages.map((message, index) => (
+                      <TableRow key={message?.timestamp ?? index}>
+                        <TableCell className="truncate max-w-[120px] overflow-hidden text-ellipsis text-sm font-mono">
+                          {message?.data}
+                        </TableCell>
+                        <TableCell className="w-12 text-right text-gray-400 text-xs">
+                          {message?.timestamp ? (
+                            <div className="p-1 border rounded bg-slate-800/90">
+                              <Timestamp date={message?.timestamp} />
+                            </div>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </TabContentInner>
+        </CustomTabsContent>
         <CustomTabsContent value="body">
           <TabContentInner
             isLoading={isLoading}
@@ -280,6 +329,16 @@ function NoResponse() {
   );
 }
 
+function NoWebsocketConnection() {
+  return (
+    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
+      <div className="text-md text-white text-center">
+        Enter a WS URL and hit connect to start receiving messages
+      </div>
+    </div>
+  );
+}
+
 function Loading() {
   return (
     <>
@@ -347,6 +406,22 @@ function FailedRequest({ response }: { response?: Requestornator }) {
         </div>
         <div className="mt-2 text-ms text-gray-400 text-center font-light">
           Make sure your api is up and has FPX Middleware enabled!
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FailedWebsocket() {
+  return (
+    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
+      <div className="flex flex-col items-center justify-center p-4">
+        <LinkBreak2Icon className="h-10 w-10 text-red-200" />
+        <div className="mt-4 text-md text-white text-center">
+          Websocket connection failed
+        </div>
+        <div className="mt-2 text-ms text-gray-4000 text-center font-light">
+          Make sure your api is up and running
         </div>
       </div>
     </div>

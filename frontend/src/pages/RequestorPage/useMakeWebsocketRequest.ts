@@ -15,7 +15,7 @@ type WebSocketMessage = {
 };
 
 // Define the state type
-type WebSocketState = {
+export type WebSocketState = {
   isConnecting: boolean;
   isConnected: boolean;
   hasError: boolean;
@@ -106,6 +106,14 @@ export function useMakeWebsocketRequest() {
     [state],
   );
 
+  // NOTE - Unsure if we should manually dispatch the disconnect event here or if the WebSocket API will handle it
+  //        I had a case in the UI where the reducer state wasn't in sync with the actual state of the socket for some reason...
+  const disconnect = useCallback(() => {
+    if (socket.current) {
+      socket.current.close();
+    }
+  }, [socket]);
+
   const sendMessage = useCallback(
     (message: string) => {
       if (socket.current) {
@@ -127,6 +135,7 @@ export function useMakeWebsocketRequest() {
 
   return {
     connect,
+    disconnect,
     sendMessage,
     state,
   };

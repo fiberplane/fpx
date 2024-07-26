@@ -23,7 +23,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useWebsocketQueryInvalidation } from "@/hooks";
 import { useHotkeys } from "react-hotkeys-hook";
 import { BACKGROUND_LAYER } from "./styles";
-import { useMakeWebsocketRequest } from "./websocket";
+import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 
 export const RequestorPage = () => {
   // Refresh routes in response to filesystem updates
@@ -104,6 +104,7 @@ export const RequestorPage = () => {
   // TODO - Allows us to connect to a websocket and send messages through it
   const {
     connect: connectWebsocket,
+    disconnect: disconnectWebsocket,
     sendMessage: sendWebsocketMessage,
     state: websocketState,
   } = useMakeWebsocketRequest();
@@ -118,6 +119,7 @@ export const RequestorPage = () => {
     queryParams,
     requestHeaders,
     makeRequest,
+    connectWebsocket,
     recordRequestInSessionHistory,
     selectedRoute,
   });
@@ -234,8 +236,10 @@ export const RequestorPage = () => {
           path={path}
           handlePathInputChange={handlePathInputChange}
           onSubmit={onSubmit}
+          disconnectWebsocket={disconnectWebsocket}
           isRequestorRequesting={isRequestorRequesting}
           formRef={formRef}
+          websocketState={websocketState}
         />
 
         <div
@@ -271,6 +275,8 @@ export const RequestorPage = () => {
             showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
             setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
             setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
+            websocketState={websocketState}
+            sendWebsocketMessage={sendWebsocketMessage}
           />
 
           <ResponsePanel
@@ -278,6 +284,7 @@ export const RequestorPage = () => {
             isLoading={isRequestorRequesting}
             history={history}
             loadHistoricalRequest={loadHistoricalRequest}
+            websocketState={websocketState}
           />
         </div>
       </div>
@@ -412,9 +419,10 @@ function useRequestorSubmitHandler({
   queryParams,
   requestHeaders,
   makeRequest,
+  connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addBaseUrl: (path: string) => string;
+  addBaseUrl: (path: string, options?: { isWs?: boolean }) => string;
   selectedRoute: ProbedRoute | null;
   body: string | undefined;
   path: string;
@@ -423,8 +431,10 @@ function useRequestorSubmitHandler({
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
   makeRequest: ReturnType<typeof useMakeRequest>["mutate"];
+  connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
 }) {
+  const { toast } = useToast();
   return useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -435,7 +445,11 @@ function useRequestorSubmitHandler({
       }
 
       if (selectedRoute.isWs) {
-        // TODO - We need to handle websockets differently
+        const url = addBaseUrl(selectedRoute.path, { isWs: true });
+        connectWebsocket(url);
+        toast({
+          description: "Connecting to websocket",
+        });
         return;
       }
 
