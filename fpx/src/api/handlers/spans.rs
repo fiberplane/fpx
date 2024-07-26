@@ -24,27 +24,21 @@ pub async fn span_get_handler(
     Ok(Json(span.into()))
 }
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+#[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum SpanGetError {
+    #[api_error(status_code = StatusCode::NOT_FOUND)]
     #[error("Span not found")]
     SpanNotFound,
 
+    #[api_error(status_code = StatusCode::BAD_REQUEST)]
     #[error("Trace ID is invalid")]
     InvalidTraceId,
 
+    #[api_error(status_code = StatusCode::BAD_REQUEST)]
     #[error("Span ID is invalid")]
     InvalidSpanId,
-}
-
-impl ApiError for SpanGetError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            SpanGetError::InvalidSpanId | SpanGetError::InvalidTraceId => StatusCode::BAD_REQUEST,
-            SpanGetError::SpanNotFound => StatusCode::NOT_FOUND,
-        }
-    }
 }
 
 impl From<DbError> for ApiServerError<SpanGetError> {
@@ -75,20 +69,13 @@ pub async fn span_list_handler(
     Ok(Json(spans))
 }
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+#[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum SpanListError {
+    #[api_error(status_code = StatusCode::BAD_REQUEST)]
     #[error("Trace ID is invalid")]
     InvalidTraceId,
-}
-
-impl ApiError for SpanListError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            SpanListError::InvalidTraceId => StatusCode::BAD_REQUEST,
-        }
-    }
 }
 
 impl From<DbError> for ApiServerError<SpanListError> {

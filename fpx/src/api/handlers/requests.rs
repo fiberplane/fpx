@@ -7,6 +7,7 @@ use axum::Json;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use fpx_macros::ApiError;
 
 #[tracing::instrument(skip_all)]
 pub async fn request_get_handler(
@@ -20,20 +21,13 @@ pub async fn request_get_handler(
     Ok(Json(request))
 }
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+#[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum RequestGetError {
+    #[api_error(status_code = StatusCode::NOT_FOUND)]
     #[error("Request not found")]
     RequestNotFound,
-}
-
-impl ApiError for RequestGetError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            RequestGetError::RequestNotFound => StatusCode::NOT_FOUND,
-        }
-    }
 }
 
 impl From<DbError> for ApiServerError<RequestGetError> {
