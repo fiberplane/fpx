@@ -8,27 +8,28 @@ export class WebHonc extends DurableObject<Bindings> {
 		super(ctx, env);
 		this.ctx = ctx;
 		this.env = env;
-    this.sessions = new Map();
+		this.sessions = new Map();
 
-    for (const ws of this.ctx.getWebSockets()) {
-      const { connectionId } = ws.deserializeAttachment();
-      this.sessions.set(connectionId, ws);
-    }
-
+		for (const ws of this.ctx.getWebSockets()) {
+			const { connectionId } = ws.deserializeAttachment();
+			this.sessions.set(connectionId, ws);
+		}
 	}
 
 	async fetch(_req: Request) {
 		const webSocketPair = new WebSocketPair();
 		const [client, server] = Object.values(webSocketPair);
 
-    const connectionId = this.ctx.id.toString()
+		const connectionId = this.ctx.id.toString();
 
 		this.ctx.acceptWebSocket(server);
 
 		// we send the connectionId down to the client
-		server.send(JSON.stringify({ connectionId }));
+		server.send(
+			JSON.stringify({ event: "connection_open", payload: { connectionId } }),
+		);
 		this.sessions.set(connectionId, server);
-    server.serializeAttachment({ connectionId });
+		server.serializeAttachment({ connectionId });
 
 		return new Response(null, {
 			status: 101,

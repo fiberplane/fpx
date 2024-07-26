@@ -1,9 +1,5 @@
-import { createHonoMiddleware } from "@fiberplane/hono";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { upgradeWebSocket } from "hono/cloudflare-workers";
-import { HTTPException } from "hono/http-exception";
-import type { WSContext } from "hono/ws";
 import { z } from "zod";
 import type { Bindings, Variables } from "./types";
 import { WebHonc } from "./webhonc";
@@ -51,19 +47,23 @@ app.all(
 		const webhonc = c.env.WEBHONC.get(doId) as DurableObjectStub<WebHonc>;
 
 		const headers = c.req.raw.headers;
-    console.log("headers", headers);
 		const headersJson: { [key: string]: string } = {};
 		for (const [key, value] of headers.entries()) {
-      console.log("key", key);
-      console.log("value", value);
+			console.log("key", key);
+			console.log("value", value);
 			headersJson[key] = value;
 		}
 
-    console.log("headersJson", headersJson);
-
 		await webhonc.pushWebhookData(
 			id,
-			JSON.stringify({ headers: headersJson, query, body }),
+			JSON.stringify({
+				event: "request_incoming",
+				payload: {
+					headers: headersJson,
+					query,
+					body,
+				},
+			}),
 		);
 
 		return c.text("OK");
