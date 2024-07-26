@@ -43,7 +43,7 @@ export const appRoutes = sqliteTable(
     return {
       id: primaryKey({
         name: "id",
-        columns: [table.method, table.path, table.handlerType],
+        columns: [table.method, table.path, table.handlerType, table.routeOrigin],
       }),
     };
   },
