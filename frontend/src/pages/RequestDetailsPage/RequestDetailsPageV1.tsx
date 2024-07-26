@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTracingLiteEnabled } from "@/hooks";
+import { useRequestDetails, useTracingLiteEnabled } from "@/hooks";
 import {
   MizuLog,
   MizuRequestEnd,
@@ -45,191 +45,185 @@ import { FpxCard, RequestMethod, SectionHeading } from "./shared";
 // import { useOtelTrace } from "@/queries/traces-otel";
 import { RequestDetailsPageV2 } from "./RequestDetailsPageV2";
 import { EmptyState } from "./EmptyState";
-import { RequestDetailsPageV1 } from "./RequestDetailsPageV1";
+import { SkeletonLoader } from "./SkeletonLoader";
 
-export function RequestDetailsPage() {
-  const { traceId } = useParams<{ traceId: string }>();
+export function RequestDetailsPageV1({ traceId }: { traceId: string }) {
+  const navigate = useNavigate();
 
-  // const navigate = useNavigate();
+  const { trace, isPending } = useRequestDetails(traceId);
 
-  // const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
-  // const handleFocus = (event: FocusEvent) => {
-  //   if (event.target instanceof HTMLInputElement) {
-  //     setIsInputFocused(true);
-  //   }
-  // };
-  // const handleBlur = (event: FocusEvent) => {
-  //   if (event.target instanceof HTMLInputElement) {
-  //     setIsInputFocused(false);
-  //   }
-  // };
+  const handleFocus = (event: FocusEvent) => {
+    if (event.target instanceof HTMLInputElement) {
+      setIsInputFocused(true);
+    }
+  };
+  const handleBlur = (event: FocusEvent) => {
+    if (event.target instanceof HTMLInputElement) {
+      setIsInputFocused(false);
+    }
+  };
 
-  // const { data: traces } = useMizuTraces();
-  // const currIdx = traces?.findIndex((t) => t.id === traceId);
+  const { data: traces } = useMizuTraces();
+  const currIdx = traces?.findIndex((t) => t.id === traceId);
 
-  // const handleNextTrace = () => {
-  //   if (!traces || currIdx === undefined) return;
+  const handleNextTrace = () => {
+    if (!traces || currIdx === undefined) return;
 
-  //   if (currIdx === traces?.length - 1) {
-  //     return;
-  //   }
+    if (currIdx === traces?.length - 1) {
+      return;
+    }
 
-  //   navigate(`/requests/${traces[currIdx + 1].id}`);
-  // };
+    navigate(`/requests/${traces[currIdx + 1].id}`);
+  };
 
-  // const handlePrevTrace = () => {
-  //   if (!traces || currIdx === undefined) return;
-  //   if (currIdx === 0) {
-  //     return;
-  //   }
-  //   navigate(`/requests/${traces[currIdx - 1].id}`);
-  // };
+  const handlePrevTrace = () => {
+    if (!traces || currIdx === undefined) return;
+    if (currIdx === 0) {
+      return;
+    }
+    navigate(`/requests/${traces[currIdx - 1].id}`);
+  };
 
-  // useEffect(() => {
-  //   document.addEventListener("focus", handleFocus, true);
-  //   document.addEventListener("blur", handleBlur, true);
-  //   return () => {
-  //     document.removeEventListener("focus", handleFocus, true);
-  //     document.removeEventListener("blur", handleBlur, true);
-  //   };
-  // }, []);
+  useEffect(() => {
+    document.addEventListener("focus", handleFocus, true);
+    document.addEventListener("blur", handleBlur, true);
+    return () => {
+      document.removeEventListener("focus", handleFocus, true);
+      document.removeEventListener("blur", handleBlur, true);
+    };
+  }, []);
 
-  // useHotkeys(["Escape"], () => {
-  //   // catch all the cases where the user is in the input field
-  //   // and we don't want to exit the page
-  //   if (isInputFocused) {
-  //     const activeElement = document.activeElement;
-  //     if (activeElement instanceof HTMLInputElement) {
-  //       activeElement.blur();
-  //     }
-  //     return;
-  //   }
+  useHotkeys(["Escape"], () => {
+    // catch all the cases where the user is in the input field
+    // and we don't want to exit the page
+    if (isInputFocused) {
+      const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLInputElement) {
+        activeElement.blur();
+      }
+      return;
+    }
 
-  //   navigate("/requests");
-  // });
+    navigate("/requests");
+  });
 
-  // useHotkeys(["J"], () => {
-  //   handleNextTrace();
-  // });
+  useHotkeys(["J"], () => {
+    handleNextTrace();
+  });
 
-  // useHotkeys(["K"], () => {
-  //   handlePrevTrace();
-  // });
-  const shouldRenderV2 = useTracingLiteEnabled();
+  useHotkeys(["K"], () => {
+    handlePrevTrace();
+  });
 
-  if (!traceId) {
-    return <EmptyState />;
+  if (isPending) {
+    return <SkeletonLoader />;
   }
 
-  if (shouldRenderV2) {
-    return <RequestDetailsPageV2 traceId={traceId} traces={[]} />
+  if (!traces) {
+    return <EmptyState />
   }
 
-  return <RequestDetailsPageV1 traceId={traceId} />
-  // if (!traces) {
-  //   return <EmptyState />
-  // }
+  return (
+    <div
+      className={cn(
+        "h-full",
+        "relative",
+        "overflow-hidden",
+        "overflow-y-auto",
+        "grid grid-rows-[auto_1fr]",
+        "px-2 pb-4",
+        "sm:px-4 sm:pb-8",
+        "md:px-6",
+      )}
+    >
+      <div
+        className={cn(
+          "flex gap-4 items-center justify-between",
+          "py-8",
+          "sm:gap-6 sm:py-8",
+        )}
+      >
+        <h2 className="text-2xl font-semibold">Request Details</h2>
+        <div className="flex gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                disabled={currIdx === 0}
+                onClick={handlePrevTrace}
+              >
+                <ChevronUpIcon className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="left"
+              className="bg-slate-950 text-white"
+              align="center"
+            >
+              Prev <KeyboardShortcutKey>K</KeyboardShortcutKey>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                disabled={!traces || currIdx === traces?.length - 1}
+                onClick={handleNextTrace}
+              >
+                <ChevronDownIcon className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="bg-slate-950 text-white"
+              align="center"
+            >
+              Next <KeyboardShortcutKey>J</KeyboardShortcutKey>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+      <div
+        className={cn(
+          "grid gap-4",
+          "sm:grid-cols-[auto_1fr] sm:gap-4",
+          "md:gap-6",
+        )}
+      >
+        <div
+          className={cn(
+            "hidden sm:block sm:sticky sm:top-4 self-start",
+            "sm:w-[220px]",
+            "md:w-[280px]",
+          )}
+        >
+          <Minimap trace={trace} />
+        </div>
+        <div
+          className={cn(
+            "grid items-center gap-4 overflow-x-auto relative",
+            "sm:grid-rows-[auto_1fr]",
+          )}
+        >
+          {trace ? (
+            <Summary trace={trace} />
+          ) : (
+            <div className="w-full relative" />
+          )}
 
-  // return (
-  //   <div
-  //     className={cn(
-  //       "h-full",
-  //       "relative",
-  //       "overflow-hidden",
-  //       "overflow-y-auto",
-  //       "grid grid-rows-[auto_1fr]",
-  //       "px-2 pb-4",
-  //       "sm:px-4 sm:pb-8",
-  //       "md:px-6",
-  //     )}
-  //   >
-  //     <div
-  //       className={cn(
-  //         "flex gap-4 items-center justify-between",
-  //         "py-8",
-  //         "sm:gap-6 sm:py-8",
-  //       )}
-  //     >
-  //       <h2 className="text-2xl font-semibold">Request Details</h2>
-  //       <div className="flex gap-2">
-  //         <Tooltip>
-  //           <TooltipTrigger asChild>
-  //             <Button
-  //               variant="secondary"
-  //               size="icon"
-  //               disabled={currIdx === 0}
-  //               onClick={handlePrevTrace}
-  //             >
-  //               <ChevronUpIcon className="w-4 h-4" />
-  //             </Button>
-  //           </TooltipTrigger>
-  //           <TooltipContent
-  //             side="left"
-  //             className="bg-slate-950 text-white"
-  //             align="center"
-  //           >
-  //             Prev <KeyboardShortcutKey>K</KeyboardShortcutKey>
-  //           </TooltipContent>
-  //         </Tooltip>
-  //         <Tooltip>
-  //           <TooltipTrigger asChild>
-  //             <Button
-  //               variant="secondary"
-  //               size="icon"
-  //               disabled={!traces || currIdx === traces?.length - 1}
-  //               onClick={handleNextTrace}
-  //             >
-  //               <ChevronDownIcon className="w-4 h-4" />
-  //             </Button>
-  //           </TooltipTrigger>
-  //           <TooltipContent
-  //             side="bottom"
-  //             className="bg-slate-950 text-white"
-  //             align="center"
-  //           >
-  //             Next <KeyboardShortcutKey>J</KeyboardShortcutKey>
-  //           </TooltipContent>
-  //         </Tooltip>
-  //       </div>
-  //     </div>
-  //     <div
-  //       className={cn(
-  //         "grid gap-4",
-  //         "sm:grid-cols-[auto_1fr] sm:gap-4",
-  //         "md:gap-6",
-  //       )}
-  //     >
-  //       <div
-  //         className={cn(
-  //           "hidden sm:block sm:sticky sm:top-4 self-start",
-  //           "sm:w-[220px]",
-  //           "md:w-[280px]",
-  //         )}
-  //       >
-  //         <Minimap trace={trace} />
-  //       </div>
-  //       <div
-  //         className={cn(
-  //           "grid items-center gap-4 overflow-x-auto relative",
-  //           "sm:grid-rows-[auto_1fr]",
-  //         )}
-  //       >
-  //         {trace ? (
-  //           <Summary trace={trace} />
-  //         ) : (
-  //           <div className="w-full relative" />
-  //         )}
-
-  //         {trace ? (
-  //           <TraceDetails trace={trace} />
-  //         ) : (
-  //           <div className="w-full relative" />
-  //         )}
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
+          {trace ? (
+            <TraceDetails trace={trace} />
+          ) : (
+            <div className="w-full relative" />
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export type TocItem = {

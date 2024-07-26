@@ -11,13 +11,21 @@ import {
   getPathWithSearch,
   getResponseBody,
   getStatusCode,
+  getString,
 } from "./otel-helpers";
+import { OtelSpan } from "@/queries/traces-otel";
+import { SEMATTRS_EXCEPTION_MESSAGE, SEMATTRS_EXCEPTION_TYPE } from "@opentelemetry/semantic-conventions";
 
-export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
-  const errors = useMemo(() => selectErrors(trace), [trace]);
+export function SummaryV2({ trace }: { trace: OtelSpan }) {
+  const errors = useMemo(() => trace.events.filter((event) => event.name === "exception").map(event => (
+    {
+      name: getString(event.attributes[SEMATTRS_EXCEPTION_TYPE]),
+      message: getString(event.attributes[SEMATTRS_EXCEPTION_MESSAGE]),
+    }
+  )), [trace]);
+  // const errors = useMemo(() => selectErrors(trace), [trace]);
   const hasErrors = errors.length > 0;
-  const body = useMemo(() => selectResponseBody(trace), [trace]);
-
+  const body = useMemo(() => getResponseBody(trace) ?? "", [trace]);
   return (
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
       <FpxCard className="bg-muted/20">
@@ -60,14 +68,14 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
   );
 }
 
-export function HttpSummary({ trace }: { trace: MizuTraceV2 }) {
-  const statusCode = useMemo(() => selectStatusCode(trace), [trace]);
-  const path = useMemo(() => selectPath(trace), [trace]);
-  const method = useMemo(() => selectMethod(trace), [trace]);
+export function HttpSummary({ trace }: { trace: OtelSpan }) {
+  const statusCode = useMemo(() => getStatusCode(trace), [trace]);
+  const path = useMemo(() => getPathWithSearch(trace), [trace]);
+  const method = useMemo(() => getMethod(trace), [trace]);
 
   return (
     <div className="flex gap-2 items-center">
-      <Status className="md:text-base" statusCode={Number(statusCode)} />
+      {statusCode !== undefined && <Status className="md:text-base" statusCode={statusCode} />}
       <RequestMethod method={method} />
       <p className="text-sm md:text-base font-mono">{path}</p>
     </div>

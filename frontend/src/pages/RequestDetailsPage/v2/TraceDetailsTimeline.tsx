@@ -4,6 +4,7 @@ import {
   MizuOrphanLog,
   MizuSpan,
   MizuTraceV2,
+  OtelSpan,
   isMizuOrphanLog,
 } from "@/queries";
 import { cn } from "@/utils";
@@ -18,7 +19,10 @@ import React, {
 import { timelineId } from "./timelineId";
 
 type TraceDetailsTimelineProps = {
-  trace: MizuTraceV2;
+  // trace: MizuTraceV2;
+  root: OtelSpan;
+  spans: Array<OtelSpan>;
+  orphanLogs: MizuTraceV2["orphanLogs"];
 };
 
 type NormalizedSpan = MizuSpan & {
@@ -38,119 +42,140 @@ type MizuTraceV2Normalized = MizuTraceV2 & {
 type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
 
 const normalizeWaterfallTimestamps = (
-  trace: MizuTraceV2,
-): MizuTraceV2Normalized => {
+  spans: Array<OtelSpan>,
+  orphanLogs: MizuTraceV2["orphanLogs"],
+) => {
+  const logTimestamps = orphanLogs.map((log) => new Date(log.timestamp).getTime());
+
   const minStart = Math.min(
-    ...trace.spans.map((span) => new Date(span.start_time).getTime()),
+    ...spans.map((span) => new Date(span.start_time).getTime()),
+    ...logTimestamps,
   );
   const maxEnd = Math.max(
-    ...trace.spans.map((span) => new Date(span.end_time).getTime()),
+    ...spans.map((span) => new Date(span.end_time).getTime()),
+    ...logTimestamps,
   );
 
-  const normalizeSpan = (span: MizuSpan): NormalizedSpan => {
-    const startTime = new Date(span.start_time).getTime();
-    const endTime = new Date(span.end_time).getTime();
-    return {
-      ...span,
-      normalizedStartTime: (startTime - minStart) / (maxEnd - minStart),
-      normalizedEndTime: (endTime - minStart) / (maxEnd - minStart),
-      normalizedDuration: (endTime - startTime) / (maxEnd - minStart),
-    };
-  };
+  // const normalizeSpan = (span: MizuSpan): NormalizedSpan => {
+  //   const startTime = new Date(span.start_time).getTime();
+  //   const endTime = new Date(span.end_time).getTime();
+  //   return {
+  //     ...span,
+  //     normalizedStartTime: (startTime - minStart) / (maxEnd - minStart),
+  //     normalizedEndTime: (endTime - minStart) / (maxEnd - minStart),
+  //     normalizedDuration: (endTime - startTime) / (maxEnd - minStart),
+  //   };
+  // };
 
-  const normalizeLog = (log: MizuOrphanLog): NormalizedOrphanLog => {
-    const timestamp = new Date(log.timestamp).getTime();
-    return {
-      ...log,
-      normalizedTimestamp: (timestamp - minStart) / (maxEnd - minStart),
-    };
-  };
+  // const normalizeLog = (log: MizuOrphanLog): NormalizedOrphanLog => {
+  //   const timestamp = new Date(log.timestamp).getTime();
+  //   return {
+  //     ...log,
+  //     normalizedTimestamp: (timestamp - minStart) / (maxEnd - minStart),
+  //   };
+  // };
 
-  const normalizedWaterfall: NormalizedMizuWaterfall = trace.waterfall.map(
-    (spanOrLog) => {
-      if (isMizuOrphanLog(spanOrLog)) {
-        return normalizeLog(spanOrLog);
-      }
-      return normalizeSpan(spanOrLog);
-    },
-  );
+  // const normalizedWaterfall: NormalizedMizuWaterfall = trace.waterfall.map(
+  //   (spanOrLog) => {
+  //     if (isMizuOrphanLog(spanOrLog)) {
+  //       return normalizeLog(spanOrLog);
+  //     }
+  //     return normalizeSpan(spanOrLog);
+  //   },
+  // );
 
   return {
-    ...trace,
-    normalizedWaterfall,
-  };
+    minStart,
+    maxEnd,
+    duration: maxEnd - minStart,
+  }
+  // return {
+    // ...trace,
+    // normalizedWaterfall,
+  // };
 };
 
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
-  trace,
+  spans, orphanLogs,
 }) => {
-  const [activeId, setActiveId] = useState<string>("");
-  const observer = useRef<IntersectionObserver>();
+  // const [activeId, setActiveId] = useState<string>("");
+  // const observer = useRef<IntersectionObserver>();
 
-  const normalizedTrace = useMemo(
-    () => normalizeWaterfallTimestamps(trace),
-    [trace],
-  );
+  const {maxEnd, minStart,
+    duration
+  } = normalizeWaterfallTimestamps(spans, orphanLogs);
+  // const normalizedTrace = useMemo(
+  //   () => normalizeWaterfallTimestamps(trace),
+  //   [trace],
+  // );
 
-  const timelineEntryIds = useMemo(() => {
-    return normalizedTrace.normalizedWaterfall.map((spanOrLog) =>
-      timelineId(spanOrLog),
-    );
-  }, [normalizedTrace]);
+  const sortedSpans = useMemo(() => {
+    return spans.sort((a, b) => {
+      return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
+    });
+  },[spans]);
+
+  // const 
+
+  // const timelineEntryIds = useMemo(() => {
+  //   return normalizedTrace.normalizedWaterfall.map((spanOrLog) =>
+  //     timelineId(spanOrLog),
+  //   );
+  // }, [normalizedTrace]);
 
   // Scroll timeline entry item into view if it is out of viewport
   // TODO - Check if this breaks on smaller screens?
-  useEffect(() => {
-    const element = document.querySelector(`[data-toc-id="${activeId}"]`);
-    let timeoutId: ReturnType<typeof setTimeout>;
+  // useEffect(() => {
+  //   const element = document.querySelector(`[data-toc-id="${activeId}"]`);
+  //   let timeoutId: ReturnType<typeof setTimeout>;
 
-    if (element) {
-      timeoutId = setTimeout(() => {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "nearest",
-        });
-      }, 300);
-    }
+  //   if (element) {
+  //     timeoutId = setTimeout(() => {
+  //       element.scrollIntoView({
+  //         behavior: "smooth",
+  //         block: "nearest",
+  //         inline: "nearest",
+  //       });
+  //     }, 300);
+  //   }
 
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [activeId]);
+  //   return () => {
+  //     if (timeoutId) {
+  //       clearTimeout(timeoutId);
+  //     }
+  //   };
+  // }, [activeId]);
 
-  const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        setActiveId(entry.target.id);
-      }
-    }
-  }, []);
+  // const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {
+  //   for (const entry of entries) {
+  //     if (entry.isIntersecting) {
+  //       setActiveId(entry.target.id);
+  //     }
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    observer.current = new IntersectionObserver(handleObserve, {
-      // TODO - This might need more tweaking
-      rootMargin: "0px 0px -33% 0px",
-    });
+  // useEffect(() => {
+  //   observer.current = new IntersectionObserver(handleObserve, {
+  //     // TODO - This might need more tweaking
+  //     rootMargin: "0px 0px -33% 0px",
+  //   });
 
-    const { current: currentObserver } = observer;
+  //   const { current: currentObserver } = observer;
 
-    for (const id of timelineEntryIds) {
-      const element = document.getElementById(id);
-      if (element) {
-        currentObserver.observe(element);
-      }
-    }
+  //   for (const id of timelineEntryIds) {
+  //     const element = document.getElementById(id);
+  //     if (element) {
+  //       currentObserver.observe(element);
+  //     }
+  //   }
 
-    return () => {
-      if (currentObserver) {
-        currentObserver.disconnect();
-      }
-    };
-  }, [timelineEntryIds, handleObserve]);
-
+  //   return () => {
+  //     if (currentObserver) {
+  //       currentObserver.disconnect();
+  //     }
+  //   };
+  // }, [timelineEntryIds, handleObserve]);
+  console.log('sortedSpans', sortedSpans);
   return (
     <div
       className={cn(
@@ -164,16 +189,100 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     >
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
       <div className="flex flex-col">
-        {normalizedTrace.normalizedWaterfall.map((spanOrLog) => (
+        {sortedSpans.map((spans) => (
+          <WaterfallRow
+            key={spans.span_id}
+            span={spans}
+            duration={duration}
+            startTime={minStart}
+          />
+        ))}
+        {/* {normalizedTrace.normalizedWaterfall.map((spanOrLog) => (
           <NormalizedWaterfallRow
             key={isMizuOrphanLog(spanOrLog) ? spanOrLog.id : spanOrLog.span_id}
             spanOrLog={spanOrLog}
             activeId={activeId}
           />
-        ))}
+        ))} */}
       </div>
     </div>
   );
+};
+
+const WaterfallRow: React.FC<{
+  span: OtelSpan;
+  duration: number;
+  startTime: number;
+}> = ({ span, duration, startTime }) => {
+  const id = span.span_id;
+  const spanDuration = new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
+  const lineWidth = `${(spanDuration / duration * 100).toPrecision(2)}%`;
+  console.log('spanDuration', spanDuration, lineWidth);
+  const lineOffset = `${(new Date(span.start_time).getTime() - startTime) / duration * 100}%`;
+  const icon = getTypeIcon(span.kind);
+  const isFetch = span.name === "fetch";
+  const isRootRequest = span.parent_span_id === null;
+  // span.kind === "SERVER";
+  
+  return (    <a
+    data-toc-id={id}
+    className={cn(
+      "flex items-center p-2",
+      "border-l-2 border-transparent",
+      "hover:bg-primary/10 hover:border-blue-500",
+      // activeId === id && "bg-primary/10 border-blue-500",
+      "transition-all",
+      "cursor-pointer",
+    )}
+    href={`#${span.span_id}`}
+  >
+    <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
+    <div className="flex flex-col w-20">
+      {isFetch ? (
+        <div>
+          <Badge
+            variant="outline"
+            className={cn(
+              "lowercase",
+              "font-normal",
+              "font-mono",
+              "rounded",
+              "px-1.5",
+              "text-xs",
+              "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
+            )}
+          >
+            {span.name}
+          </Badge>
+        </div>
+      ) : isRootRequest ? (
+        <div className="font-mono text-sm truncate">{span.name}</div>
+      ) : (
+        <div className="font-mono font-normal text-xs truncate text-gray-200">
+          {/* TODO! */}
+          {/* log */}
+          {span.name}
+          {/* {spanOrLog.name} */}
+        </div>
+      )}
+    </div>
+    <div className="text-gray-400 flex flex-grow items-center mx-4">
+      <div
+        className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
+        style={{ width: lineWidth, marginLeft: lineOffset }}
+      >
+        <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
+      </div>
+    </div>
+    <div className="ml-auto text-gray-400 text-xs w-12 px-2">
+      {
+      // isMizuOrphanLog(spanOrLog)
+        // ? ""
+        // : 
+        formatDuration(span.start_time, span.end_time)}
+    </div>
+  </a>
+  )
 };
 
 const NormalizedWaterfallRow: React.FC<{
@@ -192,7 +301,7 @@ const NormalizedWaterfallRow: React.FC<{
     : getTypeIcon(spanOrLog.kind);
   const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
   const isRootRequest =
-    !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "SERVER";
+    !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "Server";
   return (
     <a
       data-toc-id={id}

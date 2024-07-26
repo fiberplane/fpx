@@ -3,6 +3,7 @@ import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "./assets/fpx.svg";
 import { cn } from "./utils";
+import { useTracesSocket } from "./hooks/useTracesSocket";
 
 const Branding = () => {
   return (
@@ -15,6 +16,8 @@ const Branding = () => {
 export const Layout: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
+  useTracesSocket();
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
       <nav className="flex gap-4 sm:gap-4 py-4 sm:py-0 justify-between items-center h-[64px] border-b">

@@ -21,7 +21,7 @@ const isFPXWebsocketMessage = (m: unknown): m is FPXWebsocketMessage =>
 
 export function useWebsocketQueryInvalidation() {
   const queryClient = useQueryClient();
-  const onmessage = useHandler((ev: MessageEvent) => {
+  const handleMessageEvent = useHandler(function onMessage(this: WebSocket, ev: MessageEvent) {
     console.debug("Received websocket message", ev?.data);
     let action: unknown;
     try {
@@ -39,7 +39,7 @@ export function useWebsocketQueryInvalidation() {
       return;
     }
     queryClient.invalidateQueries({ queryKey: decodedAction.payload });
-  })
+  });
 
-  useWebSocket("/ws", onmessage);
+  useWebSocket("/ws", handleMessageEvent);
 }

@@ -20,6 +20,23 @@ import {
   isMizuFetchErrorMessage,
   isMizuFetchLoggingErrorMessage,
 } from "./types";
+import { 
+  SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH, 
+  SEMATTRS_HTTP_STATUS_CODE, 
+  SEMATTRS_HTTP_URL,
+  SEMATTRS_NET_HOST_NAME, 
+  SEMATTRS_NET_HOST_PORT
+} from "@opentelemetry/semantic-conventions"
+import { 
+  SEMATTRS_HTTP_REQUEST_METHOD, 
+  FPX_REQUEST_BODY, 
+  FPX_REQUEST_HEADERS_FULL,
+  FPX_REQUEST_PATHNAME,
+  FPX_REQUEST_SCHEME,
+  FPX_REQUEST_SEARCH, 
+  FPX_RESPONSE_BODY,
+  FPX_RESPONSE_HEADERS_FULL
+} from "@/constants";
 
 const MizuRequestStartLogSchema = MizuLogSchema.omit({ message: true }).extend({
   message: MizuRequestStartSchema,
@@ -173,6 +190,7 @@ export type MizuTraceV2 = MizuTrace & {
   waterfall: MizuWaterfall;
 };
 
+
 export function useMizuTracesV2() {
   const mizuTracesQuery = useMizuTraces();
   const dataV2 = useMemo(() => {
@@ -236,7 +254,7 @@ function createRootRequestSpan(log: MizuRequestStartLog, logs: MizuLog[]) {
   return {
     trace_id: log.traceId,
     span_id: `${log.traceId}-${log.id}`,
-    parent_span_id: undefined,
+    parent_span_id: null,
     name: "Request",
     trace_state: "", // This is for cross-vendor interop, allowing vendors to add their own context id
     flags: 1, // This means "sample this trace"
@@ -344,7 +362,7 @@ function createFetchSpan(
     trace_id: fetchStartLog.traceId,
     span_id: `${fetchStartLog.traceId}-${requestId}`,
     // TODO - Assign to the root request
-    parent_span_id: undefined,
+    parent_span_id: null,
     // TODO - Make this dynamic based on type of request
     name: "Fetch",
     trace_state: "", // NOTE - This is for Cross-Vendor Interoperability, allowing vendors to add their own context id
@@ -382,6 +400,20 @@ function fpxRootResponseLogToOtelStatus(log?: MizuRequestEndLog) {
   return { code: "ERROR", message: "Unknown response status (data not found)" };
 }
 
+const safeToQueryComponent = (
+  queryParams: Record<string, string> | null | undefined,
+) => {
+  if (!queryParams) {
+    return "";
+  }
+  try {
+    return new URLSearchParams(queryParams).toString();
+  } catch (error) {
+    console.error("Invalid query params:", queryParams, error);
+    return "";
+  }
+};
+
 /**
  * TODO - We need to align with rust collector and fpx middleware on how we will store http request data
  */
@@ -397,53 +429,112 @@ function fpxRootResponseToHttpAttributes(
   const queryParams = request.message.query;
   const searchParams = safeToQueryComponent(queryParams);
   const url = constructHttpUrlForRootRequest(host, scheme, path, queryParams);
-  let pathWithQueryParams = path;
-  if (searchParams) {
-    pathWithQueryParams += `?${searchParams}`;
-  }
+  // let pathWithQueryParams = path;
+  // if (searchParams) {
+  //   pathWithQueryParams += `?${searchParams}`;
+  // }
+
   const attributes: OtelAttributes = {
-    "http.request.method": request.message.method,
-    "http.route": response?.message?.route,
+    [SEMATTRS_HTTP_REQUEST_METHOD]: {
+      String: request.message.method,
+    },
+    [SEMATTRS_HTTP_URL]: {
+      String: url,
+    },
 
-    "http.url": url,
+    [FPX_REQUEST_SEARCH]:  {
+      String: searchParams,
+    },
+    
+    [FPX_REQUEST_PATHNAME]: {
+      String: path,
+    },
+    [FPX_REQUEST_SCHEME]: {
+      String: scheme,
+    },
+    // "url.scheme": scheme,
 
-    // NOTE - This is conventional, to include the query params
-    "http.target": pathWithQueryParams,
-    "http.response.status_code": parseInt(`${response?.message?.status}`),
-    "http.response_content_length": response?.message?.body?.length ?? 0,
-
-    "url.path": path,
-    "url.scheme": scheme,
-    "url.query": searchParams,
-    "server.address": host,
-    "server.port": port,
+    // "url.query": searchParams,
+    // []
+    // "server.address": host,
+    [SEMATTRS_NET_HOST_NAME]: {
+      String: host,
+    },
+    // "server.port": port,
+    [SEMATTRS_NET_HOST_PORT]: {
+      Int: Number.parseInt(port, 10),
+    },
 
     // TODO
-    "error.type": "",
+    // "error.type": "",
 
     // Experimental
-    "http.request.body.size": "",
-    "http.request.size": "",
-    "http.response.body.size": "",
-    "http.response.size": "",
+    // "http.request.body.size": "",
+    // "http.request.size": "",
+    // "http.response.body.size": "",
+    // "http.response.size": "",
 
     // HACK - We can't have nested dictionaries, so json stringify here?
-    "fpx.params": JSON.stringify(request.message.params),
+    "fpx.params": {
+      String: JSON.stringify(request.message.params),
+    },
     // HACK - We can't have nested dictionaries, so json stringify here?
-    "fpx.query": JSON.stringify(request.message.query),
-    "fpx.request.body": request.message.body,
-    "fpx.response.body": response?.message?.body,
+    "fpx.query": {
+      String: JSON.stringify(request.message.query),
+    },
+    // "fpx.request.body": request.message.body,
+    // "fpx.response.body": response?.message?.body,
   };
 
-  for (const [header, value] of Object.entries(request.message.headers)) {
-    attributes[`http.request.header.${header}`] = value;
+  const statusCode = response?.message.status ? Number.parseInt(response?.message?.status):undefined;
+  if (statusCode !== undefined && !Number.isNaN(statusCode)) {
+    attributes[SEMATTRS_HTTP_STATUS_CODE] = {
+      Int: statusCode,
+    };
   }
 
+  const responseContentLength = response?.message?.body?.length;
+  if (responseContentLength !== undefined) {
+    attributes[SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH] = {
+      Int: responseContentLength,
+    };
+  }
+
+  if (request.message.body !== undefined) {
+    attributes[FPX_REQUEST_BODY]=  {
+      String: request.message.body,
+    };
+  }
+
+  if (typeof response?.message?.body === "string") {
+    attributes[FPX_RESPONSE_BODY]= {
+      String: response?.message?.body,
+    };
+  }
+
+  let headerObject: Record<string, string> = {};
+  for (const [header, value] of Object.entries(request.message.headers)) {
+    headerObject[header] = value;
+    attributes[`http.request.header.${header}`] = {
+      String: value
+    };
+  }
+  attributes[FPX_REQUEST_HEADERS_FULL] = {
+    String: JSON.stringify(headerObject)
+  };
+
+  headerObject = {};
   for (const [responseHeader, value] of Object.entries(
     response?.message?.headers ?? {},
   )) {
-    attributes[`http.response.header.${responseHeader}`] = value;
+    headerObject[responseHeader] = value;
+    attributes[`http.response.header.${responseHeader}`] = {
+      String: value
+    };
   }
+  attributes[FPX_REQUEST_HEADERS_FULL] = {
+    String: JSON.stringify(headerObject)
+  };
 
   return attributes;
 }
@@ -495,54 +586,102 @@ function fpxFetchResponseLogToOtelStatus(
 function fpxFetchResponseToHttpAttributes(
   request: MizuFetchStartLog,
   response?: MizuFetchEndLog | MizuFetchErrorLog | MizuFetchLoggingErrorLog,
-) {
+): OtelAttributes {
   const parsedUrl = safeParseUrl(request.message.url);
   // https://opentelemetry.io/docs/specs/semconv/http/http-spans/
   const commonAttributes: OtelAttributes = {
-    "http.request.method": request.message.method,
+    [SEMATTRS_HTTP_REQUEST_METHOD]: {
+      String: request.message.method,
+    },
+    // "http.request.method": ,
     // TODO - (optional) We could also parse this to only record the request path and query string without the protocol and domain
-    "server.address": parsedUrl.host || request.message.headers.host,
+    [SEMATTRS_NET_HOST_NAME]: {
+      String: parsedUrl.host || request.message.headers.host,
+    },
     // TODO
-    "server.port": "",
+    // "server.port": "",
     // TODO - Add query params
-    "url.full": request.message.url,
+    // "url.full": request.message.url,
+    [SEMATTRS_HTTP_URL]: {
+      String: request.message.url,
+    },
 
     // TODO - class of error the operation ended with
-    "error.type": "",
+    // "error.type": "",
 
     // FPX
-    "fpx.request.body": request.message.body,
+    // "fpx.request.body": request.message.body,
   };
-
-  for (const [header, value] of Object.entries(request.message.headers)) {
-    commonAttributes[`http.request.header.${header}`] = value;
+  if (request.message.body !== null) {
+    commonAttributes[FPX_REQUEST_BODY] = {
+      String: request.message.body,
+    }
   }
+
+  let headerObject: Record<string, string> = {};
+  for (const [header, value] of Object.entries(request.message.headers)) {
+    commonAttributes[`http.request.header.${header}`] = {
+      String: value
+    };
+    headerObject[header] = value;
+  }
+  commonAttributes[FPX_REQUEST_HEADERS_FULL] = {
+    String: JSON.stringify(headerObject)
+  };
 
   if (isMizuFetchEndLog(response)) {
     const responseHeaderAttributes: OtelAttributes = {};
+    headerObject = {};
     for (const [header, value] of Object.entries(response.message.headers)) {
-      responseHeaderAttributes[`http.response.header.${header}`] = value;
+      headerObject[header] = value;
+      responseHeaderAttributes[`http.response.header.${header}`] = {
+        String: value
+      };
     }
+    responseHeaderAttributes[FPX_RESPONSE_HEADERS_FULL] = {
+      String: JSON.stringify(headerObject),
+    };
+
+    if (response.message.body !== null) {
+      responseHeaderAttributes[FPX_RESPONSE_BODY] = {
+        String: response.message.body,
+      }
+    }
+
     return {
       ...commonAttributes,
       ...responseHeaderAttributes,
-      "http.response.status_code": parseInt(`${response.message.status}`),
-      "fpx.response.body": response.message.body,
+      [SEMATTRS_HTTP_STATUS_CODE]: {
+        Int: response.message.status
+      },
     };
   }
 
   if (isMizuFetchErrorLog(response)) {
     const responseHeaderAttributes: OtelAttributes = {};
+    headerObject = {};
     for (const [header, value] of Object.entries(response.message.headers)) {
-      responseHeaderAttributes[`http.response.header.${header}`] = value;
+      responseHeaderAttributes[`http.response.header.${header}`] = {
+        String: value
+      };
+      headerObject[header] = value;
     }
+    responseHeaderAttributes[FPX_RESPONSE_HEADERS_FULL] 
     const responseBody = response.message.body;
+    if (responseBody !== null) {
+      commonAttributes[FPX_RESPONSE_BODY] = {
+        String: responseBody,
+      };
+    }
 
     return {
       ...commonAttributes,
       ...responseHeaderAttributes,
-      "http.response.status_code": parseInt(`${response.message.status}`),
-      "fpx.response.body": responseBody,
+      [SEMATTRS_HTTP_STATUS_CODE]: {
+        Int: response.message.status
+      },
+      // "http.response.status_code": parseInt(`${response.message.status}`),
+      // "fpx.response.body": responseBody,
     };
   }
 
@@ -572,17 +711,3 @@ function safeParseUrl(url: string) {
     };
   }
 }
-
-const safeToQueryComponent = (
-  queryParams: Record<string, string> | null | undefined,
-) => {
-  if (!queryParams) {
-    return "";
-  }
-  try {
-    return new URLSearchParams(queryParams).toString();
-  } catch (error) {
-    console.error("Invalid query params:", queryParams, error);
-    return "";
-  }
-};

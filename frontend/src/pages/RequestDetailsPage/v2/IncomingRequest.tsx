@@ -28,7 +28,8 @@ function getPathWithSearch(span: MizuRootRequestSpan) {
 }
 
 export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
-  const id = timelineId(span);
+  // const id = timelineId(span);
+  const id = span.span_id;
   const method = getMethod(span);
   const duration = useMemo(() => {
     try {
@@ -57,7 +58,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   }, [requestHeaders]);
 
   const requestBody = useMemo<string>(() => {
-    return getRequestBody(span);
+    return getRequestBody(span) ?? "";
   }, [span]);
 
   const responseHeaders = useMemo<Record<string, string>>(() => {
@@ -69,7 +70,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   }, [responseHeaders]);
 
   const responseBody = useMemo<string>(() => {
-    return getResponseBody(span);
+    return getResponseBody(span) ?? "";
   }, [span]);
 
   const canHaveRequestBody = useMemo<boolean>(() => {

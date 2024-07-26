@@ -23,7 +23,8 @@ function getRequestUrl(span: MizuSpan) {
 }
 
 export function FetchSpan({ span }: { span: MizuFetchSpan }) {
-  const id = timelineId(span);
+  // const id = timelineId(span);
+  const id = span.span_id;
 
   const method = getMethod(span);
 
@@ -32,7 +33,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
   }, [span]);
 
   const requestBody = useMemo<string>(() => {
-    return getRequestBody(span);
+    return getRequestBody(span)??"";
   }, [span]);
 
   const responseHeaders = useMemo<Record<string, string>>(() => {
@@ -40,7 +41,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
   }, [span]);
 
   const responseBody = useMemo<string>(() => {
-    return getResponseBody(span);
+    return getResponseBody(span) ?? "";
   }, [span]);
 
   const duration = useMemo(() => {
@@ -54,7 +55,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
   }, [span]);
 
   const url = getRequestUrl(span);
-
+  const statusCode = getStatusCode(span);
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
@@ -71,7 +72,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
               <ClockIcon className="w-4 h-4" />
               <span className=" font-light">{duration}ms</span>
             </div>
-            <Status statusCode={getStatusCode(span)} />
+            {statusCode !== undefined && <Status statusCode={statusCode} />}
           </div>
         </div>
 
