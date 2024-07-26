@@ -2,33 +2,33 @@ import { DurableObject } from "cloudflare:workers";
 import type { Bindings } from "./types";
 
 export class WebHonc extends DurableObject<Bindings> {
-	wsConnections: Map<string, WebSocket> = new Map();
+	sessions: Map<string, WebSocket> = new Map();
 
 	constructor(ctx: DurableObjectState, env: Bindings) {
 		super(ctx, env);
 		this.ctx = ctx;
-		this.wsConnections = new Map();
+		this.env = env;
+    this.sessions = new Map();
+
+    for (const ws of this.ctx.getWebSockets()) {
+      const { connectionId } = ws.deserializeAttachment();
+      this.sessions.set(connectionId, ws);
+    }
+
 	}
 
-	async fetch(req: Request) {
+	async fetch(_req: Request) {
 		const webSocketPair = new WebSocketPair();
 		const [client, server] = Object.values(webSocketPair);
-		const clientId = crypto.randomUUID();
 
-		// this.ctx.acceptWebSocket(server);
-		// this.ctx.setWebSocketAutoResponse(
-		// 	new WebSocketRequestResponsePair("ping", "pong"),
-		// );
+    const connectionId = this.ctx.id.toString()
 
-		server.accept();
-		server.serializeAttachment({ clientId });
-		server.send(JSON.stringify({ clientId }));
+		this.ctx.acceptWebSocket(server);
 
-		this.wsConnections.set(clientId, server);
-
-		server.addEventListener("close", (cls) => {
-			server.close(cls.code, "Durable Object is closing WebSocket");
-		});
+		// we send the connectionId down to the client
+		server.send(JSON.stringify({ connectionId }));
+		this.sessions.set(connectionId, server);
+    server.serializeAttachment({ connectionId });
 
 		return new Response(null, {
 			status: 101,
@@ -36,21 +36,24 @@ export class WebHonc extends DurableObject<Bindings> {
 		});
 	}
 
+	webSocketMessage(_ws: WebSocket, message: string | ArrayBuffer) {
+		console.log("message", message);
+	}
+
 	async webSocketClose(
 		ws: WebSocket,
 		code: number,
-		reason: string,
-		wasClean: boolean,
+		_reason: string,
+		_wasClean: boolean,
 	) {
 		ws.close(code);
 	}
 
-	public async pushWebhookData(id: string, data: string) {
-		console.log("wsConnections", this.wsConnections);
-		const ws = this.wsConnections.get(id);
-
+	public async pushWebhookData(connectionId: string, data: string) {
+		const ws = this.sessions.get(connectionId);
+		console.log(this.sessions.keys());
 		if (ws) {
-			console.log("pushing data to ws", ws);
+			console.log("pushing data to ws", connectionId, ws);
 			ws.send(data);
 		}
 	}

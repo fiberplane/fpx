@@ -1,43 +1,22 @@
+import { createHonoMiddleware } from "@fiberplane/hono";
+import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { upgradeWebSocket } from "hono/cloudflare-workers";
-import type { Bindings, Variables } from "./types";
-import { z } from "zod";
-import { zValidator } from "@hono/zod-validator";
-import { createHonoMiddleware } from "@fiberplane/hono";
-import type { WSContext } from "hono/ws";
-import { WebHonc } from "./webhonc";
 import { HTTPException } from "hono/http-exception";
+import type { WSContext } from "hono/ws";
+import { z } from "zod";
+import type { Bindings, Variables } from "./types";
+import { WebHonc } from "./webhonc";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-// we need the second map for the reverse lookup
-const wsIds = new Map<WSContext, string>();
-
-app.use(createHonoMiddleware(app));
-// app.use(async (c, next) => {
-// 	if (wsConnections) {
-// 		c.set("WS_CONNECTIONS", wsConnections);
-// 	}
-// 	if (wsIds) {
-// 		c.set("WS_IDS", wsIds);
-// 	}
-// 	await next();
-// });
-
-app.use(async (c, next) => {
-	const id = c.env.WEBHONC.idFromName("webhonc");
-	const webhonc = c.env.WEBHONC.get(id);
-	// TODO: revisit this: maybe have a durable object session per client
-	c.set("WEBHONC", webhonc);
-	await next();
-});
-
-app.get("/", async (c) => {
+app.get("/ws", async (c) => {
 	if (c.req.header("upgrade") !== "websocket") {
-		throw new HTTPException(402);
+		return new Response("Not a websocket request", { status: 426 });
 	}
 
-	const webhonc = c.get("WEBHONC");
+	const id = c.env.WEBHONC.newUniqueId();
+	const webhonc = c.env.WEBHONC.get(id) as DurableObjectStub<WebHonc>;
 
 	return webhonc.fetch(c.req.raw);
 });
@@ -66,15 +45,21 @@ app.all(
 				break;
 		}
 
-		const headers = c.req.raw.headers;
 		const query = c.req.query();
 
-		const webhonc = c.get("WEBHONC");
+		const doId = c.env.WEBHONC.idFromString(id);
+		const webhonc = c.env.WEBHONC.get(doId) as DurableObjectStub<WebHonc>;
 
-		const headersJson = {};
+		const headers = c.req.raw.headers;
+    console.log("headers", headers);
+		const headersJson: { [key: string]: string } = {};
 		for (const [key, value] of headers.entries()) {
+      console.log("key", key);
+      console.log("value", value);
 			headersJson[key] = value;
 		}
+
+    console.log("headersJson", headersJson);
 
 		await webhonc.pushWebhookData(
 			id,
