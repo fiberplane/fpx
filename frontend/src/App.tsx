@@ -15,6 +15,7 @@ import {
 } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { WebhooksPage } from "./pages/WebhooksPage/WebhooksPage";
 
 export function App() {
   return (
@@ -31,6 +32,7 @@ export function App() {
               />
               <Route path="/requestor" element={<RequestorPage />} />
               <Route path="/issues" element={<IssuesPage />} />
+              <Route path="/webhooks" element={<WebhooksPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </Layout>

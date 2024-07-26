@@ -25,6 +25,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
               <HeaderNavLink to="/requestor">Routes</HeaderNavLink>
               <HeaderNavLink to="/requests">Requests</HeaderNavLink>
               <HeaderNavLink to="/settings">Settings</HeaderNavLink>
+              <HeaderNavLink to="/webhooks">Webhooks</HeaderNavLink>
               {/* <HeaderNavLink to="/issues">Issues</HeaderNavLink> */}
             </div>
           </div>

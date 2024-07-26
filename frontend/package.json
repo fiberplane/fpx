@@ -57,6 +57,7 @@
     "react-resizable": "^3.0.5",
     "react-router-dom": "^6.23.1",
     "sql-formatter": "^15.3.2",
+    "react-use-websocket": "^4.8.1",
     "stopword": "^3.0.1",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
