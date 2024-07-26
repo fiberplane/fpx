@@ -15,7 +15,17 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
       routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
       [];
 
-    const routesWithDrafts = draftRoute ? [draftRoute, ...routes] : routes;
+    // HACK - Only detects a ws route if its path starts with `/ws`
+    const wsroutes =
+      routesAndMiddleware?.routes?.filter((r) => r.path.startsWith("/ws"))
+        ?.map((r) => ({ ...r, isWs: true })) ?? [];
+
+    const routesWithWs = [...routes, ...wsroutes];
+
+    const routesWithDrafts = draftRoute
+      ? [draftRoute, ...routesWithWs]
+      : routesWithWs;
+
     return routesWithDrafts;
   }, [routesAndMiddleware, draftRoute]);
 

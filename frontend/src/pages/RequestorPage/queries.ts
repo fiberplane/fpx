@@ -12,6 +12,7 @@ export type ProbedRoute = {
   currentlyRegistered: boolean;
   routeOrigin: "discovered" | "custom" | "open_api";
   openApiSpec?: string;
+  isWs?: boolean;
   // TODO - Implement
   isDraft?: boolean;
 };
