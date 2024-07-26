@@ -7,6 +7,7 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::error;
+use fpx_macros::ApiError;
 
 #[tracing::instrument(skip_all)]
 pub async fn span_get_handler(
