@@ -429,21 +429,24 @@ function RequestMeta(props: RequestPanelProps) {
             value={body}
             maxHeight="800px"
           />
-          <Button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (typeof body !== "string") {
-                return;
-              }
-              sendWebsocketMessage(body);
-              toast({
-                description: "WS Message sent",
-              });
-            }}
-          >
-            Send
-          </Button>
+          <div className="flex justify-end">
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof body !== "string") {
+                  return;
+                }
+                sendWebsocketMessage(body);
+                toast({
+                  description: "WS Message sent",
+                });
+              }}
+            >
+              Send Message
+            </Button>
+          </div>
         </CustomTabsContent>
       )}
     </Tabs>
