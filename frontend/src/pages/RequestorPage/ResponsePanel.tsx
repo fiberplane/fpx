@@ -16,7 +16,6 @@ import {
   ArrowTopRightIcon,
   ArrowUpIcon,
   ClockIcon,
-  EyeOpenIcon,
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
 import { useMemo } from "react";
