@@ -4,10 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs } from "@/components/ui/tabs";
-import { cn, isJson, noop, parsePathFromRequestUrl } from "@/utils";
 import {
+  cn,
+  isJson,
+  noop,
+  parsePathFromRequestUrl,
+  truncateWithEllipsis,
+} from "@/utils";
+import {
+  ArrowDownIcon,
   ArrowTopRightIcon,
+  ArrowUpIcon,
   ClockIcon,
+  EyeOpenIcon,
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -82,8 +91,15 @@ export function ResponsePanel({
                   <TableBody>
                     {websocketState.messages.map((message, index) => (
                       <TableRow key={message?.timestamp ?? index}>
-                        <TableCell className="truncate max-w-[120px] overflow-hidden text-ellipsis text-sm font-mono">
-                          {message?.data}
+                        <TableCell className="w-5">
+                          {message.type === "received" ? (
+                            <ArrowDownIcon className="h-3.5 w-3.5 text-green-400" />
+                          ) : (
+                            <ArrowUpIcon className="h-3.5 w-3.5 text-blue-400" />
+                          )}
+                        </TableCell>
+                        <TableCell className="truncate max-w-[120px] overflow-hidden text-ellipsis text-xs font-mono">
+                          {truncateWithEllipsis(message?.data, 100)}
                         </TableCell>
                         <TableCell className="w-12 text-right text-gray-400 text-xs">
                           {message?.timestamp ? (

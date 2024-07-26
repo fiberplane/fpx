@@ -46,7 +46,7 @@ function websocketReducer(
       return { ...state, isConnecting: false, isConnected: true };
     case WEBSOCKET_MESSAGE_RECEIVED:
       if (action.payload) {
-        return { ...state, messages: [...state.messages, action.payload] };
+        return { ...state, messages: [action.payload, ...state.messages] };
       }
       return state;
     case WEBSOCKET_DISCONNECTED:
@@ -55,7 +55,7 @@ function websocketReducer(
       return { ...state, hasError: true, isConnecting: false };
     case WEBSOCKET_MESSAGE_SENT:
       if (action.payload) {
-        return { ...state, messages: [...state.messages, action.payload] };
+        return { ...state, messages: [action.payload, ...state.messages] };
       }
       return state;
     default:
