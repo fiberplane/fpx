@@ -191,7 +191,15 @@ async function handlePromise<T>(
   
         if (onError) {
           try {
-            onError(span, sendError);
+            await onError(span, sendError);
+          } catch {
+            // swallow error
+          }
+        }
+
+        if (onSuccess) {
+          try {
+            await onSuccess(span, result);
           } catch {
             // swallow error
           }
@@ -246,31 +254,10 @@ function errorToEventAttributes(error: unknown) {
   }
   const message = typeof error === "string" ? error : "Unknown error";
   return {
-    // "exception.type": "unknown",
     "exception.message": message,
-    // "exception.stacktrace": error.stack,
   };
 
-  // return {
-  //   "error.message": String(error),
-  // };
 }
-// function transformError(error: Error): Exception {
-// return error.message;
-// return {
-//   message: error.message,
-//   stack: error.stack,
-//   name: error.name,
-// };
-// }
-// }
-
-// interface ExceptionWithMessage {
-//   code?: string | number;
-//   message: string;
-//   name?: string;
-//   stack?: string;
-// }
 
 function isPromise<T>(value: unknown): value is Promise<T> {
   return value instanceof Promise;

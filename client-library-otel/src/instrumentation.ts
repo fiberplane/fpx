@@ -101,7 +101,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
 
           const measuredFetch = measure(
             {
-              name: "route",
+              name: "request",
               spanKind: SpanKind.SERVER,
               onStart: (span, [request]) => {
                 span.setAttributes(getRequestAttributes(request));
