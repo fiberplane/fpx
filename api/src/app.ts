@@ -8,6 +8,7 @@ import type { WebSocket } from "ws";
 import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
+import { getWebHoncConnectionId } from "./lib/webhonc/store.js";
 import logger from "./logger.js";
 import appRoutes from "./routes/app-routes.js";
 import dependencies from "./routes/dependencies.js";
@@ -16,7 +17,6 @@ import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
-import { getWebHoncConnectionId } from "./lib/webhonc/store.js";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -55,7 +55,6 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     }),
   );
 
-
   // All routes are modularized in the ./routes folder
   app.route("/", logs);
   app.route("/", inference);
@@ -68,7 +67,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   app.get("/v0/webhonc", (c) => {
     console.log("webhonc endpoint hit");
     return c.json({ webhonc: getWebHoncConnectionId() });
-  })
+  });
 
   return app;
 }

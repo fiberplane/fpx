@@ -26,16 +26,15 @@ const FpxWebsocketMessageSchema = z.discriminatedUnion("event", [
 
 type FpxWebsocketMessage = z.infer<typeof FpxWebsocketMessageSchema>;
 
-const isFPXWebsocketMessage = (m: unknown): m is FpxWebsocketMessage =>
-{
+const isFPXWebsocketMessage = (m: unknown): m is FpxWebsocketMessage => {
   const parseResult = FpxWebsocketMessageSchema.safeParse(m);
-  console.log("parseResult", parseResult.error)
+  console.log("parseResult", parseResult.error);
   return parseResult.success;
-}
-
+};
 
 export function useRealtimeService() {
-  const [parsedMessage, setParsedMessage] = useState<FpxWebsocketMessage | null>(null);
+  const [parsedMessage, setParsedMessage] =
+    useState<FpxWebsocketMessage | null>(null);
 
   const { lastJsonMessage } = useWebSocket("/ws", {
     heartbeat: true,
@@ -47,7 +46,7 @@ export function useRealtimeService() {
     },
     onError: (err) => {
       console.error("Websocket error:", err);
-    }
+    },
   });
 
   useEffect(() => {
@@ -68,6 +67,3 @@ export function useRealtimeService() {
 
   return parsedMessage;
 }
-
-
-

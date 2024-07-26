@@ -6,13 +6,13 @@ import figlet from "figlet";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
+import { connectToWebhonc } from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
-import { connectToWebhonc } from "./lib/webhonc/index.js";
 
 config({ path: ".dev.vars" });
 
@@ -26,13 +26,11 @@ const app = createApp(wsConnections);
  */
 app.use("/*", staticServerMiddleware);
 
-
 /**
  * Fallback route that just serves the frontend index.html file,
  * This is necessary to support frontend routing!
  */
 app.get("*", frontendRoutesHandler);
-
 
 // Serve the API
 const port = +(process.env.FPX_PORT ?? 8788);
@@ -74,4 +72,3 @@ startRouteProbeWatcher(watchDir);
 setupRealtimeService({ server, path: "/ws", wsConnections });
 
 connectToWebhonc("wss://webhonc.laulau.workers.dev/ws", wsConnections);
-

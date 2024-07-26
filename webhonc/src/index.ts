@@ -7,67 +7,67 @@ import { WebHonc } from "./webhonc";
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.get("/ws", async (c) => {
-	if (c.req.header("upgrade") !== "websocket") {
-		return new Response("Not a websocket request", { status: 426 });
-	}
+  if (c.req.header("upgrade") !== "websocket") {
+    return new Response("Not a websocket request", { status: 426 });
+  }
 
-	const id = c.env.WEBHONC.newUniqueId();
-	const webhonc = c.env.WEBHONC.get(id) as DurableObjectStub<WebHonc>;
+  const id = c.env.WEBHONC.newUniqueId();
+  const webhonc = c.env.WEBHONC.get(id) as DurableObjectStub<WebHonc>;
 
-	return webhonc.fetch(c.req.raw);
+  return webhonc.fetch(c.req.raw);
 });
 
 app.all(
-	"/h/:id",
-	zValidator("param", z.object({ id: z.string() })),
-	async (c) => {
-		const { id } = c.req.valid("param");
+  "/h/:id",
+  zValidator("param", z.object({ id: z.string() })),
+  async (c) => {
+    const { id } = c.req.valid("param");
 
-		const contentType = c.req.header("content-type");
+    const contentType = c.req.header("content-type");
 
-		let body: string | FormData | undefined;
-		switch (contentType) {
-			case "application/json":
-				body = await c.req.json();
-				break;
-			case "application/x-www-form-urlencoded":
-				body = await c.req.formData();
-				break;
-			case "text/plain":
-				body = await c.req.text();
-				break;
-			default:
-				body = await c.req.text();
-				break;
-		}
+    let body: string | FormData | undefined;
+    switch (contentType) {
+      case "application/json":
+        body = await c.req.json();
+        break;
+      case "application/x-www-form-urlencoded":
+        body = await c.req.formData();
+        break;
+      case "text/plain":
+        body = await c.req.text();
+        break;
+      default:
+        body = await c.req.text();
+        break;
+    }
 
-		const query = c.req.query();
+    const query = c.req.query();
 
-		const doId = c.env.WEBHONC.idFromString(id);
-		const webhonc = c.env.WEBHONC.get(doId) as DurableObjectStub<WebHonc>;
+    const doId = c.env.WEBHONC.idFromString(id);
+    const webhonc = c.env.WEBHONC.get(doId) as DurableObjectStub<WebHonc>;
 
-		const headers = c.req.raw.headers;
-		const headersJson: { [key: string]: string } = {};
-		for (const [key, value] of headers.entries()) {
-			console.log("key", key);
-			console.log("value", value);
-			headersJson[key] = value;
-		}
+    const headers = c.req.raw.headers;
+    const headersJson: { [key: string]: string } = {};
+    for (const [key, value] of headers.entries()) {
+      console.log("key", key);
+      console.log("value", value);
+      headersJson[key] = value;
+    }
 
-		await webhonc.pushWebhookData(
-			id,
-			JSON.stringify({
-				event: "request_incoming",
-				payload: {
-					headers: headersJson,
-					query,
-					body,
-				},
-			}),
-		);
+    await webhonc.pushWebhookData(
+      id,
+      JSON.stringify({
+        event: "request_incoming",
+        payload: {
+          headers: headersJson,
+          query,
+          body,
+        },
+      }),
+    );
 
-		return c.text("OK");
-	},
+    return c.text("OK");
+  },
 );
 
 export { WebHonc };

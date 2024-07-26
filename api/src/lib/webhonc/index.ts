@@ -1,7 +1,7 @@
-import WebSocket from 'ws';
-import logger from "../../logger.js";
+import WebSocket from "ws";
 import { z } from "zod";
-import { setWebHoncConnectionId } from './store.js';
+import logger from "../../logger.js";
+import { setWebHoncConnectionId } from "./store.js";
 
 /*
 const WebhoncMessageSchema = z.object({
@@ -27,7 +27,7 @@ const WsMessageSchema = z.discriminatedUnion("event", [
       body: z.any(),
     }),
   }),
-])
+]);
 
 export function connectToWebhonc(url: string, wsConnections: Set<WebSocket>) {
   const socket = new WebSocket(url);
@@ -56,7 +56,7 @@ export function connectToWebhonc(url: string, wsConnections: Set<WebSocket>) {
       case "request_incoming":
         const { headers, query, body } = message.payload;
         console.log("sending request_incoming to websockets");
-        console.log("wsConnections",wsConnections.size);
+        console.log("wsConnections", wsConnections.size);
         for (const ws of wsConnections) {
           ws.send(
             JSON.stringify({
@@ -70,7 +70,12 @@ export function connectToWebhonc(url: string, wsConnections: Set<WebSocket>) {
   };
 
   socket.onclose = (event) => {
-    logger.debug("Webhonc connection closed", event.reason, event.code, event.wasClean);
+    logger.debug(
+      "Webhonc connection closed",
+      event.reason,
+      event.code,
+      event.wasClean,
+    );
   };
 
   socket.onerror = (event) => {
@@ -79,5 +84,3 @@ export function connectToWebhonc(url: string, wsConnections: Set<WebSocket>) {
 
   return socket;
 }
-
-

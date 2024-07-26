@@ -1,8 +1,8 @@
+import { useRealtimeService } from "@/hooks";
 import { cn } from "@/utils";
 import { useEffect, useState } from "react";
 import { BodyViewer } from "../RequestDetailsPage/BodyViewer";
 import { HeaderTable } from "../RequestorPage/HeaderTable";
-import { useRealtimeService } from "@/hooks";
 import { useWebhoncId } from "./queries";
 
 export function WebhooksPage() {
@@ -18,7 +18,7 @@ export function WebhooksPage() {
   useEffect(() => {
     console.log("message", message);
     if (message?.event === "connection_open") {
-      setConnectionId(message.payload.connectionId)
+      setConnectionId(message.payload.connectionId);
     }
 
     if (message?.event === "request_incoming") {
@@ -43,7 +43,10 @@ export function WebhooksPage() {
       <div className="flex flex-col gap-4 items-center justify-center p-4">
         <h2 className="text-2xl font-semibold">Webhooks</h2>
         <p>This be the url:</p>
-        <p>https://webhonc.laulau.workers.dev/h/{connectionId ? connectionId :  isSuccess ? data?.webhonc : ""}</p>
+        <p>
+          https://webhonc.laulau.workers.dev/h/
+          {connectionId ? connectionId : isSuccess ? data?.webhonc : ""}
+        </p>
         {headers && <HeaderTable headers={headers} />}
         {body && <BodyViewer body={body} />}
       </div>
