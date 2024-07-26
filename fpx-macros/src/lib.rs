@@ -11,7 +11,7 @@ struct ApiErrorAttribute {
     status_code: Expr
 }
 
-#[proc_macro_derive(ApiError, attributes(status_code))]
+#[proc_macro_derive(ApiError, attributes(api_error))]
 #[proc_macro_error]
 pub fn derive_api_error(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
