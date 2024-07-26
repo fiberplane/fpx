@@ -23,6 +23,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useWebsocketQueryInvalidation } from "@/hooks";
 import { useHotkeys } from "react-hotkeys-hook";
 import { BACKGROUND_LAYER } from "./styles";
+import { useMakeWebsocketRequest } from "./websocket";
 
 export const RequestorPage = () => {
   // Refresh routes in response to filesystem updates
@@ -99,6 +100,13 @@ export const RequestorPage = () => {
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeRequest();
+
+  // TODO - Allows us to connect to a websocket and send messages through it
+  const {
+    connect: connectWebsocket,
+    sendMessage: sendWebsocketMessage,
+    state: websocketState,
+  } = useMakeWebsocketRequest();
 
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
@@ -423,6 +431,11 @@ function useRequestorSubmitHandler({
 
       // FIXME - This blocks user from making requests when no routes have been detected
       if (!selectedRoute) {
+        return;
+      }
+
+      if (selectedRoute.isWs) {
+        // TODO - We need to handle websockets differently
         return;
       }
 
