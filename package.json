@@ -25,7 +25,8 @@
     "client-library-otel",
     "frontend",
     "api",
-    "shared"
+    "shared",
+    "webhonc"
   ],
   "dependencies": {
     "@biomejs/biome": "^1.8.0",
