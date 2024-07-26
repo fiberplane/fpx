@@ -122,7 +122,7 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
       for (const ws of wsConnections) {
         ws.send(
           JSON.stringify({
-            type: "invalidateQueries",
+            event: "trace_created",
             payload: ["mizuTraces"],
           }),
         );

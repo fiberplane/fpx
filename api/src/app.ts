@@ -16,6 +16,7 @@ import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
+import { getWebHoncConnectionId } from "./lib/webhonc/store.js";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -54,6 +55,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
     }),
   );
 
+
   // All routes are modularized in the ./routes folder
   app.route("/", logs);
   app.route("/", inference);
@@ -62,6 +64,11 @@ export function createApp(wsConnections?: Set<WebSocket>) {
   app.route("/", issues);
   app.route("/", appRoutes);
   app.route("/", settings);
+
+  app.get("/v0/webhonc", (c) => {
+    console.log("webhonc endpoint hit");
+    return c.json({ webhonc: getWebHoncConnectionId() });
+  })
 
   return app;
 }

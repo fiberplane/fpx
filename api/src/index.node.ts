@@ -3,14 +3,16 @@ import { serve } from "@hono/node-server";
 import chalk from "chalk";
 import { config } from "dotenv";
 import figlet from "figlet";
-import { type WebSocket, WebSocketServer } from "ws";
+import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
+import { setupRealtimeService } from "./lib/realtime/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
+import { connectToWebhonc } from "./lib/webhonc/index.js";
 
 config({ path: ".dev.vars" });
 
@@ -24,11 +26,13 @@ const app = createApp(wsConnections);
  */
 app.use("/*", staticServerMiddleware);
 
+
 /**
  * Fallback route that just serves the frontend index.html file,
  * This is necessary to support frontend routing!
  */
 app.get("*", frontendRoutesHandler);
+
 
 // Serve the API
 const port = +(process.env.FPX_PORT ?? 8788);
@@ -67,26 +71,7 @@ const watchDir = process.env.FPX_WATCH_DIR ?? process.cwd();
 startRouteProbeWatcher(watchDir);
 
 // Set up websocket server
-const wss = new WebSocketServer({ server, path: "/ws" });
-wss.on("connection", (ws) => {
-  logger.debug("WebSocket connection established", ws.OPEN);
-  wsConnections.add(ws);
+setupRealtimeService({ server, path: "/ws", wsConnections });
 
-  ws.on("ping", () => {
-    logger.debug("ping");
-    ws.send("pong");
-  });
-  ws.on("error", (err) => {
-    if ("code" in err && err.code === "EADDRINUSE") {
-      logger.error(
-        "WebSocket error: Address in use. Please choose a different port.",
-      );
-    } else {
-      logger.error("WebSocket error:", err);
-    }
-  });
-  ws.on("close", (code) => {
-    wsConnections.delete(ws);
-    logger.debug("WebSocket connection closed", code);
-  });
-});
+connectToWebhonc("wss://webhonc.laulau.workers.dev/ws", wsConnections);
+
