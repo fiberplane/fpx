@@ -1,0 +1,1 @@
+ALTER TABLE `app_routes` ADD `is_ws` integer DEFAULT false;

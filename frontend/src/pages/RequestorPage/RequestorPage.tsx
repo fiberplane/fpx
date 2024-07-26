@@ -285,6 +285,7 @@ export const RequestorPage = () => {
             history={history}
             loadHistoricalRequest={loadHistoricalRequest}
             websocketState={websocketState}
+            isWs={selectedRoute?.isWs ?? false}
           />
         </div>
       </div>

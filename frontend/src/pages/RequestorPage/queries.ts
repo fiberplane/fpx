@@ -82,6 +82,7 @@ export type Route = {
   handlerType?: "route" | "middleware";
   routeOrigin?: "discovered" | "custom" | "open_api";
   openApiSpec?: string;
+  isWs?: boolean;
 };
 
 async function addRoutes(routes: Route | Route[]) {

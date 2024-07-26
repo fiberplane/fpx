@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -209,6 +210,8 @@ function CustomRouteForm({
 
   const { mutate: addRoutes } = useAddRoutes();
 
+  const [isWs, setIsWs] = useState(false);
+
   const [method, setMethod] = useState("GET");
   const handleMethodChange = (method: string) => {
     setMethod(method);
@@ -219,6 +222,7 @@ function CustomRouteForm({
       method,
       routeOrigin: "custom",
       handlerType: "route",
+      isWs,
     });
     setOpen(false);
   };
@@ -259,6 +263,18 @@ function CustomRouteForm({
             autoFocus
           />
         </div>
+      </div>
+      <div className="flex items-center w-full gap-4">
+        <Switch id="isWs" checked={isWs} onCheckedChange={setIsWs} />
+
+        <Label htmlFor="isWs" className="text-gray-300">
+          Upgrade to Websocket
+        </Label>
+      </div>
+      <div className="flex justify-end">
+        <Button size="sm" className="h-7">
+          Add
+        </Button>
       </div>
     </form>
   );

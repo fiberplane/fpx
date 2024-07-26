@@ -38,6 +38,7 @@ type Props = {
   isLoading: boolean;
   history: Array<Requestornator>;
   loadHistoricalRequest: (traceId: string) => void;
+  isWs: boolean;
   websocketState: WebSocketState;
 };
 
@@ -46,12 +47,11 @@ export function ResponsePanel({
   isLoading,
   history,
   loadHistoricalRequest,
+  isWs,
   websocketState,
 }: Props) {
   const isFailure = !!response?.app_responses?.isFailure;
   const showBottomToolbar = !!response?.app_responses?.traceId;
-
-  const isWebsocketConnected = websocketState.isConnected;
 
   return (
     <div className="overflow-hidden h-full relative">
@@ -60,7 +60,7 @@ export function ResponsePanel({
         className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
       >
         <CustomTabsList>
-          {isWebsocketConnected && (
+          {isWs && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
@@ -84,48 +84,19 @@ export function ResponsePanel({
             FailState={<FailedWebsocket />}
             EmptyState={<NoWebsocketConnection />}
           >
-            <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
-              <div className="text-sm uppercase text-gray-400">Messages</div>
-              <div>
-                <Table>
-                  <TableBody>
-                    {websocketState.messages.map((message, index) => (
-                      <TableRow key={message?.timestamp ?? index}>
-                        <TableCell className="w-5">
-                          {message.type === "received" ? (
-                            <ArrowDownIcon className="h-3.5 w-3.5 text-green-400" />
-                          ) : (
-                            <ArrowUpIcon className="h-3.5 w-3.5 text-blue-400" />
-                          )}
-                        </TableCell>
-                        <TableCell className="truncate max-w-[120px] overflow-hidden text-ellipsis text-xs font-mono">
-                          {truncateWithEllipsis(message?.data, 100)}
-                        </TableCell>
-                        <TableCell className="w-12 text-right text-gray-400 text-xs">
-                          {message?.timestamp ? (
-                            <div className="p-1 border rounded bg-slate-800/90">
-                              <Timestamp date={message?.timestamp} />
-                            </div>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
+            <WebsocketMessages websocketState={websocketState} />
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="body">
           <TabContentInner
             isLoading={isLoading}
             isEmpty={!response}
-            isFailure={isFailure}
+            isFailure={isWs ? websocketState.hasError : isFailure}
             LoadingState={<LoadingResponseBody />}
-            FailState={<FailedRequest response={response} />}
-            EmptyState={<NoResponse />}
+            FailState={
+              isWs ? <FailedWebsocket /> : <FailedRequest response={response} />
+            }
+            EmptyState={isWs ? <NoWebsocketConnection /> : <NoResponse />}
           >
             <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
               <ResponseSummary response={response} />
@@ -202,6 +173,45 @@ const BottomToolbar = ({ response }: { response: Requestornator }) => {
     </div>
   );
 };
+
+function WebsocketMessages({
+  websocketState,
+}: { websocketState: WebSocketState }) {
+  return (
+    <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
+      <div className="text-sm uppercase text-gray-400">Messages</div>
+      <div>
+        <Table>
+          <TableBody>
+            {websocketState.messages.map((message, index) => (
+              <TableRow key={message?.timestamp ?? index}>
+                <TableCell className="w-5">
+                  {message.type === "received" ? (
+                    <ArrowDownIcon className="h-3.5 w-3.5 text-green-400" />
+                  ) : (
+                    <ArrowUpIcon className="h-3.5 w-3.5 text-blue-400" />
+                  )}
+                </TableCell>
+                <TableCell className="truncate max-w-[120px] overflow-hidden text-ellipsis text-xs font-mono">
+                  {truncateWithEllipsis(message?.data, 100)}
+                </TableCell>
+                <TableCell className="w-12 text-right text-gray-400 text-xs">
+                  {message?.timestamp ? (
+                    <div className="p-1 border rounded bg-slate-800/90">
+                      <Timestamp date={message?.timestamp} />
+                    </div>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
 
 /**
  * Helper component for handling loading/failure/empty states in tab content
