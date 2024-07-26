@@ -1,4 +1,4 @@
-use crate::api::errors::{ApiError, ApiServerError, CommonError};
+use crate::api::errors::{ApiServerError, CommonError};
 use crate::api::models::Request;
 use crate::data::{DbError, Store};
 use axum::extract::{Path, State};
