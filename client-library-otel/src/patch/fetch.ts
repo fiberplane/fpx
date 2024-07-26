@@ -22,7 +22,7 @@ export function patchFetch() {
         onStart: (span, [input, init]) => {
           span.setAttributes(getRequestAttributes(input, init));
         },
-        onEnd: async (span, response) => {
+        onSuccess: async (span, response) => {
           const attributes = await getResponseAttributes(
             (await response).clone(),
           );

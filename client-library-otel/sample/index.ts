@@ -37,4 +37,10 @@ app.get("/", async (c) => {
   return c.text(`Hello Hono! - ${result.value}`);
 });
 
+app.get("/error", async () => {
+  // await new Promise(resolve => setTimeout(resolve, 5));
+  // await sleep(5);
+  throw new Error("This is an error");
+});
+
 export default instrument(app);

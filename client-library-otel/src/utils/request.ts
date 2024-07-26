@@ -1,10 +1,8 @@
 import type { Response as WorkerResponse } from "@cloudflare/workers-types";
 import type { Attributes } from "@opentelemetry/api";
 import {
-  SEMATTRS_HTTP_METHOD,
   SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH,
   SEMATTRS_HTTP_SCHEME,
-  SEMATTRS_HTTP_STATUS_CODE,
   SEMATTRS_HTTP_URL,
 } from "@opentelemetry/semantic-conventions";
 import {
@@ -15,6 +13,8 @@ import {
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
   FPX_RESPONSE_HEADERS_FULL,
+  SEMATTRS_HTTP_REQUEST_METHOD,
+  SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
 } from "../constants";
 import type {
   GlobalResponse,
@@ -47,7 +47,7 @@ export function getRequestAttributes(input: InputParam, init?: InitParam) {
   const url = new URL(requestUrl);
   const urlScheme = url.protocol.replace(":", "");
   const attributes: Attributes = {
-    [SEMATTRS_HTTP_METHOD]: requestMethod,
+    [SEMATTRS_HTTP_REQUEST_METHOD]: requestMethod,
     // [HTTP_REQUEST_METHOD_ORIGINAL]: request.method,
     // TODO: remove login/password from URL (if we want to follow
     // the otel spec for this attribute)
@@ -132,7 +132,7 @@ export async function getResponseAttributes(
   response: GlobalResponse | HonoResponse,
 ) {
   const attributes: Attributes = {
-    [SEMATTRS_HTTP_STATUS_CODE]: response.status,
+    [SEMATTRS_HTTP_RESPONSE_STATUS_CODE]: response.status,
     [SEMATTRS_HTTP_SCHEME]: response.url.split(":")[0],
   };
 
