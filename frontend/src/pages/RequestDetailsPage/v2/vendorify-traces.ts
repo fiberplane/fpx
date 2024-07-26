@@ -6,6 +6,7 @@ import {
   isMizuFetchSpan,
 } from "@/queries";
 import { z } from "zod";
+import { getString } from "./otel-helpers";
 
 export type VendorifiedTrace = MizuTraceV2 & {
   waterfall: (VendorifiedSpan | MizuSpan | MizuOrphanLog)[];
@@ -125,7 +126,7 @@ export const vendorifySpan = (span: MizuFetchSpan): VendorifiedSpan => {
 };
 
 const isOpenAIFetch = (span: MizuFetchSpan) => {
-  const requestUrl = span.attributes["server.address"];
+  const requestUrl = getString(span.attributes["server.address"]);
   if (typeof requestUrl !== "string") {
     return false;
   }
@@ -138,7 +139,7 @@ const isNeonFetch = (span: MizuFetchSpan) => {
 };
 
 const isAnthropicFetch = (span: MizuFetchSpan) => {
-  const requestUrl = span.attributes["server.address"];
+  const requestUrl = getString(span.attributes["server.address"]);
   if (typeof requestUrl !== "string") {
     return false;
   }
@@ -146,7 +147,7 @@ const isAnthropicFetch = (span: MizuFetchSpan) => {
 };
 
 function getNeonSqlQuery(span: MizuFetchSpan) {
-  const body = span.attributes["fpx.request.body"] as string;
+  const body = getString(span.attributes["fpx.request.body"]);
   if (!body) {
     return { query: "DB QUERY", params: [] };
   }

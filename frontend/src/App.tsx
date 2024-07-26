@@ -1,4 +1,5 @@
 import { QueryClientProvider, queryClient } from "@/queries";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { ReactNode, useEffect } from "react";
 import {
   Route,
@@ -7,6 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import Layout from "./Layout";
+import { Toaster } from "./components/ui/toaster";
 import { IssuesPage } from "./pages/IssuesPage/IssuesPage";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import {
@@ -21,19 +23,26 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <RequestorSessionHistoryProvider>
         <Router>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Redirect />} />
-              <Route path="/requests" element={<RequestsPage />} />
-              <Route
-                path="/requests/:traceId"
-                element={<RequestDetailsPage />}
-              />
-              <Route path="/requestor" element={<RequestorPage />} />
-              <Route path="/issues" element={<IssuesPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
-          </Layout>
+          <TooltipProvider>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Redirect />} />
+                <Route path="/requests" element={<RequestsPage />} />
+                <Route
+                  path="/requests/otel/:traceId"
+                  element={<RequestDetailsPage otel />}
+                />
+                <Route
+                  path="/requests/:traceId"
+                  element={<RequestDetailsPage />}
+                />
+                <Route path="/requestor" element={<RequestorPage />} />
+                <Route path="/issues" element={<IssuesPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Routes>
+            </Layout>
+            <Toaster />
+          </TooltipProvider>
         </Router>
       </RequestorSessionHistoryProvider>
     </QueryClientProvider>

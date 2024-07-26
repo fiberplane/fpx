@@ -28,7 +28,7 @@ export default defineConfig({
       "/api/ws": "ws://127.0.0.1:6767",
       "/api": "http://127.0.0.1:6767",
       "/ws": "ws://localhost:8788", // shorthand to get websocket working in dev
-// 
+      //
     },
   },
 });

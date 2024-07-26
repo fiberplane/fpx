@@ -26,7 +26,7 @@ app.get("/", async (c) => {
   console.log("Hello Hono!");
   console.error("This message is logged as an error");
 
-  loop(1);
+  loop(100);
 
   const response = await fetch("https://api.chucknorris.io/jokes/random");
   const result = await response.json();
@@ -35,6 +35,11 @@ app.get("/", async (c) => {
   c.executionCtx.waitUntil(sleep(30));
 
   return c.text(`Hello Hono! - ${result.value}`);
+});
+
+app.get("/error", async () => {
+  await sleep(5);
+  throw new Error("This is an error");
 });
 
 export default instrument(app);

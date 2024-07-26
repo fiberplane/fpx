@@ -48,3 +48,9 @@ export {
   isMizuFetchSpan,
   isMizuOrphanLog,
 } from "./traces-v2";
+
+export {
+  type OtelSpan,
+  type OtelSpans,
+  useOtelTrace,
+} from "./traces-otel";

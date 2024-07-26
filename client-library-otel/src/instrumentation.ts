@@ -1,9 +1,10 @@
-import { context } from "@opentelemetry/api";
+import { SpanKind, context } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { Resource } from "@opentelemetry/resources";
 import {
   BasicTracerProvider,
   SimpleSpanProcessor,
+  type TimedEvent,
 } from "@opentelemetry/sdk-trace-base";
 import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext, Hono } from "hono";
@@ -68,6 +69,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
               : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
+          console.log("isEnabled", isEnabled);
           if (!isEnabled) {
             return await originalFetch(request, env, executionContext);
           }
@@ -99,35 +101,44 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
 
           const measuredFetch = measure(
             {
-              name: "route",
+              name: "request",
+              spanKind: SpanKind.SERVER,
               onStart: (span, [request]) => {
                 span.setAttributes(getRequestAttributes(request));
               },
-              onEnd: async (span, response) => {
+              onSuccess: async (span, response) => {
                 const attributes = await getResponseAttributes(
                   (await response).clone(),
                 );
                 span.setAttributes(attributes);
               },
+              checkResult: async (result) => {
+                const r = await result;
+                if (r.status >= 500) {
+                  throw new Error(r.statusText);
+                }
+              }
             },
             originalFetch,
           );
 
-          const result = await measuredFetch(request, env, proxyExecutionCtx);
-
-          // Make sure all promises are resolved before sending data to the server
-          if (proxyExecutionCtx) {
-            proxyExecutionCtx.waitUntil(
-              Promise.allSettled(promises).finally(() => {
-                return provider.forceFlush();
-              }),
-            );
-          } else {
-            // Otherwise just await flushing the provider
-            await provider.forceFlush();
+          try {
+            return await measuredFetch(request, env, proxyExecutionCtx);
+          } finally {
+            console.log("finally sending data to the server");
+            // Make sure all promises are resolved before sending data to the server
+            if (proxyExecutionCtx) {
+              proxyExecutionCtx.waitUntil(
+                Promise.allSettled(promises).finally(() => {
+                  return provider.forceFlush().then(() => console.log("done"));
+                }),
+              );
+            } else {
+              // Otherwise just await flushing the provider
+              await provider.forceFlush();
+            }
+            console.log("maybe done?");
           }
-
-          return result;
         };
       }
 

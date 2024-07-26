@@ -1,20 +1,21 @@
 import type { Response as WorkerResponse } from "@cloudflare/workers-types";
 import type { Attributes } from "@opentelemetry/api";
 import {
-  SEMATTRS_HTTP_METHOD,
   SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH,
   SEMATTRS_HTTP_SCHEME,
-  SEMATTRS_HTTP_STATUS_CODE,
   SEMATTRS_HTTP_URL,
 } from "@opentelemetry/semantic-conventions";
 import {
   FPX_REQUEST_BODY,
-  FPX_REQUEST_HEADERS_FULL,
+  // FPX_REQUEST_HEADERS_FULL,
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SCHEME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
-  FPX_RESPONSE_HEADERS_FULL,
+  // FPX_RESPONSE_HEADERS_FULL,
+  EXTRA_SEMATTRS_HTTP_REQUEST_METHOD,
+  EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
+  EXTRA_SEMATTRS_URL_FULL,
 } from "../constants";
 import type {
   GlobalResponse,
@@ -47,16 +48,18 @@ export function getRequestAttributes(input: InputParam, init?: InitParam) {
   const url = new URL(requestUrl);
   const urlScheme = url.protocol.replace(":", "");
   const attributes: Attributes = {
-    [SEMATTRS_HTTP_METHOD]: requestMethod,
+    [EXTRA_SEMATTRS_HTTP_REQUEST_METHOD]: requestMethod,
     // [HTTP_REQUEST_METHOD_ORIGINAL]: request.method,
     // TODO: remove login/password from URL (if we want to follow
     // the otel spec for this attribute)
     // TODO: think about how to handle a redirect
-    [SEMATTRS_HTTP_URL]: url.toString(),
+    [EXTRA_SEMATTRS_URL_FULL]: url.toString(),
     // Bunch of custom attributes even though some experimental
     // packages from otel already have similar attributes
     [FPX_REQUEST_PATHNAME]: url.pathname,
     [FPX_REQUEST_SEARCH]: url.search,
+    // TODO: Add path 
+    // [SEMATTRS_]
     [FPX_REQUEST_SCHEME]: urlScheme,
   };
 
@@ -69,7 +72,7 @@ export function getRequestAttributes(input: InputParam, init?: InitParam) {
 
     if (init.headers) {
       const headers = headersToObject(new Headers(init.headers));
-      attributes[FPX_REQUEST_HEADERS_FULL] = JSON.stringify(headers);
+      // attributes[FPX_REQUEST_HEADERS_FULL] = JSON.stringify(headers);
       for (const [key, value] of Object.entries(headers)) {
         attributes[`http.request.header.${key}`] = value;
       }
@@ -132,7 +135,7 @@ export async function getResponseAttributes(
   response: GlobalResponse | HonoResponse,
 ) {
   const attributes: Attributes = {
-    [SEMATTRS_HTTP_STATUS_CODE]: response.status,
+    [EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]: response.status,
     [SEMATTRS_HTTP_SCHEME]: response.url.split(":")[0],
   };
 
@@ -155,7 +158,7 @@ export async function getResponseAttributes(
 
   const headers = response.headers;
   const responseHeaders = headersToObject(headers);
-  attributes[FPX_RESPONSE_HEADERS_FULL] = JSON.stringify(responseHeaders);
+  // attributes[FPX_RESPONSE_HEADERS_FULL] = JSON.stringify(responseHeaders);
   for (const [key, value] of Object.entries(responseHeaders)) {
     attributes[`http.response.header.${key}`] = value;
   }

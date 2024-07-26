@@ -1,23 +1,38 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 import { Status } from "@/components/ui/status";
-import { MizuTraceV2, isMizuRootRequestSpan } from "@/queries";
-import { isMizuErrorMessage, isMizuFetchErrorMessage } from "@/queries/types";
+// import { MizuTraceV2, isMizuRootRequestSpan } from "@/queries";
+import { OtelSpan } from "@/queries/traces-otel";
+// import { isMizuErrorMessage, isMizuFetchErrorMessage } from "@/queries/types";
+import {
+  SEMATTRS_EXCEPTION_MESSAGE,
+  SEMATTRS_EXCEPTION_TYPE,
+} from "@opentelemetry/semantic-conventions";
 import { useMemo } from "react";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 import { FpxCard, RequestMethod } from "../shared";
 import {
-  getMethod,
   getPathWithSearch,
+  getRequestMethod,
   getResponseBody,
   getStatusCode,
+  getString,
 } from "./otel-helpers";
 
-export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
-  const errors = useMemo(() => selectErrors(trace), [trace]);
+export function SummaryV2({ trace }: { trace: OtelSpan }) {
+  const errors = useMemo(
+    () =>
+      trace.events
+        .filter((event) => event.name === "exception")
+        .map((event) => ({
+          name: getString(event.attributes[SEMATTRS_EXCEPTION_TYPE]),
+          message: getString(event.attributes[SEMATTRS_EXCEPTION_MESSAGE]),
+        })),
+    [trace],
+  );
+  // const errors = useMemo(() => selectErrors(trace), [trace]);
   const hasErrors = errors.length > 0;
-  const body = useMemo(() => selectResponseBody(trace), [trace]);
-
+  const body = useMemo(() => getResponseBody(trace) ?? "", [trace]);
   return (
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
       <FpxCard className="bg-muted/20">
@@ -60,76 +75,78 @@ export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
   );
 }
 
-export function HttpSummary({ trace }: { trace: MizuTraceV2 }) {
-  const statusCode = useMemo(() => selectStatusCode(trace), [trace]);
-  const path = useMemo(() => selectPath(trace), [trace]);
-  const method = useMemo(() => selectMethod(trace), [trace]);
+export function HttpSummary({ trace }: { trace: OtelSpan }) {
+  const statusCode = useMemo(() => getStatusCode(trace), [trace]);
+  const path = useMemo(() => getPathWithSearch(trace), [trace]);
+  const method = useMemo(() => getRequestMethod(trace), [trace]);
 
   return (
     <div className="flex gap-2 items-center">
-      <Status className="md:text-base" statusCode={Number(statusCode)} />
+      {statusCode !== undefined && (
+        <Status className="md:text-base" statusCode={statusCode} />
+      )}
       <RequestMethod method={method} />
       <p className="text-sm md:text-base font-mono">{path}</p>
     </div>
   );
 }
 
-function selectStatusCode(trace: MizuTraceV2) {
-  for (const span of trace.spans) {
-    if (isMizuRootRequestSpan(span)) {
-      return getStatusCode(span);
-    }
-  }
-  return "—";
-}
+// function selectStatusCode(trace: MizuTraceV2) {
+//   for (const span of trace.spans) {
+//     if (isMizuRootRequestSpan(span)) {
+//       return getStatusCode(span);
+//     }
+//   }
+//   return "—";
+// }
 
-function selectPath(trace: MizuTraceV2) {
-  for (const span of trace.spans) {
-    if (isMizuRootRequestSpan(span)) {
-      return getPathWithSearch(span);
-    }
-  }
-  return "—";
-}
+// function selectPath(trace: MizuTraceV2) {
+//   for (const span of trace.spans) {
+//     if (isMizuRootRequestSpan(span)) {
+//       return getPathWithSearch(span);
+//     }
+//   }
+//   return "—";
+// }
 
-function selectMethod(trace: MizuTraceV2) {
-  for (const span of trace.spans) {
-    if (isMizuRootRequestSpan(span)) {
-      return getMethod(span);
-    }
-  }
-  return "—";
-}
+// function selectMethod(trace: MizuTraceV2) {
+//   for (const span of trace.spans) {
+//     if (isMizuRootRequestSpan(span)) {
+//       return getRequestMethod(span);
+//     }
+//   }
+//   return "—";
+// }
 
-function selectErrors(trace: MizuTraceV2) {
-  return trace?.logs
-    .filter((log) => {
-      return (
-        isMizuErrorMessage(log.message) || isMizuFetchErrorMessage(log.message)
-      );
-    })
-    .map((error) => {
-      if (isMizuErrorMessage(error.message)) {
-        return {
-          name: error.message.name,
-          message: error.message.message,
-        };
-      }
+// function selectErrors(trace: MizuTraceV2) {
+//   return trace?.logs
+//     .filter((log) => {
+//       return (
+//         isMizuErrorMessage(log.message) || isMizuFetchErrorMessage(log.message)
+//       );
+//     })
+//     .map((error) => {
+//       if (isMizuErrorMessage(error.message)) {
+//         return {
+//           name: error.message.name,
+//           message: error.message.message,
+//         };
+//       }
 
-      if (isMizuFetchErrorMessage(error.message)) {
-        return {
-          name: error.message.statusText,
-          message: error.message.body,
-        };
-      }
-    });
-}
+//       if (isMizuFetchErrorMessage(error.message)) {
+//         return {
+//           name: error.message.statusText,
+//           message: error.message.body,
+//         };
+//       }
+//     });
+// }
 
-function selectResponseBody(trace: MizuTraceV2) {
-  for (const span of trace.waterfall) {
-    if (isMizuRootRequestSpan(span)) {
-      return getResponseBody(span);
-    }
-  }
-  return null;
-}
+// function selectResponseBody(trace: MizuTraceV2) {
+//   for (const span of trace.waterfall) {
+//     if (isMizuRootRequestSpan(span)) {
+//       return getResponseBody(span);
+//     }
+//   }
+//   return null;
+// }

@@ -9,7 +9,6 @@ import { Row, getPaginationRowModel } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { columns } from "./columns";
-import { useTracesSocket } from "@/hooks/useTracesSocket";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
@@ -18,8 +17,6 @@ const RequestsTable = ({
   filter,
 }: { traces: MizuTrace[]; filter: LevelFilter }) => {
   const navigate = useNavigate();
-  useTracesSocket();
-
 
   const filteredTraces = useMemo(() => {
     if (filter === "all") {

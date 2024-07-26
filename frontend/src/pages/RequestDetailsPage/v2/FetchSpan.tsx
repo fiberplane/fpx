@@ -1,8 +1,9 @@
 import { Status } from "@/components/ui/status";
 import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import { MizuFetchSpan, MizuSpan } from "@/queries/traces-v2";
+import {  MizuSpan } from "@/queries/traces-v2";
 import { cn, noop } from "@/utils";
+import { OtelSpan } from "@/queries";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
@@ -10,15 +11,16 @@ import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
 import {
-  getMethod,
   getRequestBody,
   getRequestHeaders,
+  getRequestMethod,
+  getRequestUrl,
   getResponseBody,
   getResponseHeaders,
   getStatusCode,
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
-import { timelineId } from "./timelineId";
+// import { timelineId } from "./timelineId";
 import {
   NeonSpan,
   isAnthropicSpan,
@@ -26,21 +28,22 @@ import {
   isOpenAISpan,
 } from "./vendorify-traces";
 
-function getRequestUrl(span: MizuSpan) {
-  return `${span.attributes["url.full"]}`;
-}
+// function getRequestUrl(span: OtelSpan) {
+// return `${span.attributes["url.full"]}`;
+// }
 
-export function FetchSpan({ span }: { span: MizuFetchSpan }) {
-  const id = timelineId(span);
+export function FetchSpan({ span }: { span: OtelSpan }) {
+  // const id = timelineId(span);
+  const id = span.span_id;
 
-  const method = getMethod(span);
+  const method = getRequestMethod(span);
 
   const requestHeaders = useMemo<Record<string, string>>(() => {
     return getRequestHeaders(span);
   }, [span]);
 
   const requestBody = useMemo<string>(() => {
-    return getRequestBody(span);
+    return getRequestBody(span) ?? "";
   }, [span]);
 
   const responseHeaders = useMemo<Record<string, string>>(() => {
@@ -48,7 +51,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
   }, [span]);
 
   const responseBody = useMemo<string>(() => {
-    return getResponseBody(span);
+    return getResponseBody(span) ?? "";
   }, [span]);
 
   const duration = useMemo(() => {
@@ -110,6 +113,7 @@ function GenericFetchSpan({
   responseBody,
   children,
 }: GenericFetchSpanProps) {
+  // const statusCode = getStatusCode(span);
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
@@ -126,7 +130,7 @@ function GenericFetchSpan({
               <ClockIcon className="w-4 h-4" />
               <span className=" font-light">{duration}ms</span>
             </div>
-            <Status statusCode={statusCode} />
+            {statusCode !== undefined && <Status statusCode={statusCode} />}
           </div>
         </div>
 
