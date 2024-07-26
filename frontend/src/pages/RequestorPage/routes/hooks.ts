@@ -17,7 +17,8 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
 
     // HACK - Only detects a ws route if its path starts with `/ws`
     const wsroutes =
-      routesAndMiddleware?.routes?.filter((r) => r.path.startsWith("/ws"))
+      routesAndMiddleware?.routes
+        ?.filter((r) => r.path.startsWith("/ws"))
         ?.map((r) => ({ ...r, isWs: true })) ?? [];
 
     const routesWithWs = [...routes, ...wsroutes];
@@ -32,12 +33,20 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
   // TODO - Support swapping out base url in UI,
   //        right now you can only change it by modifying FPX_SERVICE_TARGET in the API
   const addBaseUrl = useCallback(
-    (path: string) => {
+    (path: string, { isWs }: { isWs?: boolean } = {}) => {
       const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
-      if (path?.startsWith(baseUrl)) {
+      const parsedBaseUrl = new URL(baseUrl);
+      if (isWs) {
+        parsedBaseUrl.protocol = "ws";
+      }
+      let updatedBaseUrl = parsedBaseUrl.toString();
+      if (updatedBaseUrl.endsWith("/")) {
+        updatedBaseUrl = updatedBaseUrl.slice(0, -1);
+      }
+      if (path?.startsWith(updatedBaseUrl)) {
         return path;
       }
-      return `${baseUrl}${path}`;
+      return `${updatedBaseUrl}${path}`;
     },
     [routesAndMiddleware],
   );

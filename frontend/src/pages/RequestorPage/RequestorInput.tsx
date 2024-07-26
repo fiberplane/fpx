@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { isMac } from "@/utils";
-import { TriangleRightIcon } from "@radix-ui/react-icons";
+import { CommitIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 
@@ -18,8 +18,9 @@ type RequestInputProps = {
   handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
-  addBaseUrl: (path: string) => string;
+  addBaseUrl: (path: string, { isWs }: { isWs?: boolean }) => string;
   formRef: React.RefObject<HTMLFormElement>;
+  isWs?: boolean;
 };
 
 export function RequestorInput({
@@ -30,6 +31,7 @@ export function RequestorInput({
   onSubmit,
   isRequestorRequesting,
   addBaseUrl,
+  isWs,
   formRef,
 }: RequestInputProps) {
   const [value, setValue] = useState("");
@@ -38,9 +40,9 @@ export function RequestorInput({
   // This happens if the user clicks a route in the sidebar, for example,
   // or when they load a request from history
   useEffect(() => {
-    const url = addBaseUrl(path ?? "");
+    const url = addBaseUrl(path ?? "", { isWs });
     setValue(url);
-  }, [path, addBaseUrl]);
+  }, [path, addBaseUrl, isWs]);
 
   return (
     <form
@@ -49,11 +51,17 @@ export function RequestorInput({
       className="flex items-center justify-between rounded-md bg-muted border"
     >
       <div className="flex flex-grow items-center space-x-0">
-        <RequestMethodCombobox
-          method={method}
-          handleMethodChange={handleMethodChange}
-          allowUserToChange
-        />
+        {isWs ? (
+          <div className="flex items-center py-2 px-1 ml-2 border text-sm text-muted-foreground font-mono">
+            websocket
+          </div>
+        ) : (
+          <RequestMethodCombobox
+            method={method}
+            handleMethodChange={handleMethodChange}
+            allowUserToChange
+          />
+        )}
         <Input
           type="text"
           value={value}
@@ -79,8 +87,14 @@ export function RequestorInput({
               disabled={isRequestorRequesting}
               className="p-2 md:p-2.5"
             >
-              <span className="hidden md:inline">Send</span>
-              <TriangleRightIcon className="md:hidden w-6 h-6" />
+              <span className="hidden md:inline">
+                {isWs ? "Connect" : "Send"}
+              </span>
+              {isWs ? (
+                <TriangleRightIcon className="md:hidden w-6 h-6" />
+              ) : (
+                <CommitIcon className="md:hidden w-6 h-6" />
+              )}
             </Button>
           </TooltipTrigger>
           <TooltipContent

@@ -220,6 +220,7 @@ export const RequestorPage = () => {
       >
         <RequestorInput
           addBaseUrl={addBaseUrl}
+          isWs={selectedRoute?.isWs}
           method={method}
           handleMethodChange={handleMethodChange}
           path={path}
