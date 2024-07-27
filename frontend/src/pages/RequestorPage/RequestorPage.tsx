@@ -22,9 +22,9 @@ import "./RequestorPage.css";
 import { useToast } from "@/components/ui/use-toast";
 import { useWebsocketQueryInvalidation } from "@/hooks";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useRefactoredRequestorState } from "./reducer";
 import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
-import { useRefactoredRequestorState } from "./reducer";
 
 export const RequestorPage = () => {
   const { toast } = useToast();
@@ -35,7 +35,6 @@ export const RequestorPage = () => {
   // TODO - Bring back persisted state once reducer is fully integrated
   // const browserHistoryState = usePersistedUiState();
   const browserHistoryState = undefined;
-
 
   // ========================//
   // === Refactored state ===//
@@ -48,25 +47,21 @@ export const RequestorPage = () => {
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+    setPathParams,
+    updatePathParamValues,
+    clearPathParams,
+
     getActiveRoute,
-    state: {
-      routes,
-      path,
-      method,
-    }
+
+    state: { routes, path, method, pathParams },
   } = refactoredState;
 
   const selectedRoute = getActiveRoute();
 
-  const {
-    // routes,
-    addBaseUrl,
-    // selectedRoute,
-    // setSelectedRoute,
-  } = useRoutes({
+  const { addBaseUrl } = useRoutes({
     addRouteIfNotPresent,
     // TODO - Bring back persisted state once reducer is integrated
-    browserHistoryState
+    browserHistoryState,
   });
 
   const {
@@ -76,18 +71,12 @@ export const RequestorPage = () => {
     // handleMethodChange,
     body,
     setBody,
-    pathParams,
-    setPathParams,
     requestHeaders,
     setRequestHeaders,
     queryParams,
     setQueryParams,
     // handleSelectRoute,
-  } = useRequestorFormData(
-    routes,
-    selectedRoute,
-    browserHistoryState,
-  );
+  } = useRequestorFormData(routes, selectedRoute, browserHistoryState);
 
   // When we unmount, save the current state of UI to the browser history
   // This allows us to reload the page when you press "Back" in the browser
@@ -173,8 +162,8 @@ export const RequestorPage = () => {
     setBody,
     setQueryParams,
     setPath: handlePathInputChange,
-    setPathParams,
     setRequestHeaders,
+    updatePathParamValues,
   });
 
   useHotkeys(
@@ -254,7 +243,6 @@ export const RequestorPage = () => {
           addBaseUrl={addBaseUrl}
           isWs={selectedRoute?.isWs}
           method={method}
-          // FIXME
           handleMethodChange={handleMethodChange}
           path={path}
           handlePathInputChange={handlePathInputChange}
@@ -288,6 +276,7 @@ export const RequestorPage = () => {
             setPath={handlePathInputChange}
             currentRoute={selectedRoute?.path}
             setPathParams={setPathParams}
+            clearPathParams={clearPathParams}
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
             aiEnabled={aiEnabled}

@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { KeyValueParameter } from "../KeyValueForm";
-import { extractPathParams, mapPathKey } from "../data";
 import { PersistedUiState } from "../persistUiState";
 import { ProbedRoute, useProbedRoutes } from "../queries";
 import { findMatchedRoute } from "./match";
@@ -10,7 +8,10 @@ type UseRoutesOptions = {
   browserHistoryState?: PersistedUiState;
 };
 
-export function useRoutes({ addRouteIfNotPresent, browserHistoryState }: UseRoutesOptions) {
+export function useRoutes({
+  addRouteIfNotPresent,
+  browserHistoryState,
+}: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes =
@@ -106,4 +107,3 @@ function useAutoselectInitialRoute({
 
   return { selectedRoute, setSelectedRoute };
 }
-

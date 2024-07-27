@@ -7,15 +7,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
-import { cn, isMac, noop } from "@/utils";
+import { cn, isMac } from "@/utils";
 import { MixerHorizontalIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
+import { RequestMethod, RequestMethodInputValue } from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
 type RequestInputProps = {
-  method: string;
-  handleMethodChange: (method: string) => void;
+  method: RequestMethod;
+  handleMethodChange: (method: RequestMethodInputValue) => void;
   path?: string;
   handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;

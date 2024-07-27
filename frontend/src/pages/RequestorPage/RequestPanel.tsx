@@ -176,7 +176,8 @@ type RequestPanelProps = {
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   setPath: (path: string) => void;
-  setPathParams: React.Dispatch<React.SetStateAction<KeyValueParameter[]>>;
+  setPathParams: (params: KeyValueParameter[]) => void;
+  clearPathParams: () => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   requestHeaders: KeyValueParameter[];
@@ -238,6 +239,7 @@ function RequestMeta(props: RequestPanelProps) {
     requestHeaders,
     setPath,
     setPathParams,
+    clearPathParams,
     setQueryParams,
     setRequestHeaders,
     aiEnabled,
@@ -340,17 +342,7 @@ function RequestMeta(props: RequestPanelProps) {
           <>
             <PanelSectionHeader
               title="Path parameters"
-              handleClearData={() => {
-                setPathParams((currentPathParams) => {
-                  return currentPathParams.map((param) => {
-                    return {
-                      ...param,
-                      value: "",
-                      enabled: false,
-                    };
-                  });
-                });
-              }}
+              handleClearData={clearPathParams}
               className="mt-4"
             />
             <PathParamForm
