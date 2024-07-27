@@ -39,7 +39,9 @@ export function RoutesPanel({
   }, [routes]);
 
   const hasAnyUserAddedRoutes = useMemo(() => {
-    return routes?.some((r) => r.routeOrigin === "custom") ?? false;
+    return (
+      routes?.some((r) => r.routeOrigin === "custom" && !r.isDraft) ?? false
+    );
   }, [routes]);
 
   const hasAnyOpenApiRoutes = useMemo(() => {
@@ -76,7 +78,10 @@ export function RoutesPanel({
   }, [filteredRoutes]);
 
   const userAddedRoutes = useMemo(() => {
-    return filteredRoutes?.filter((r) => r.routeOrigin === "custom") ?? [];
+    return (
+      filteredRoutes?.filter((r) => r.routeOrigin === "custom" && !r.isDraft) ??
+      []
+    );
   }, [filteredRoutes]);
 
   const draftRoutes = useMemo(() => {

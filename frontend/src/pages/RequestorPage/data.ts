@@ -67,12 +67,29 @@ export function useRequestorFormData(
 
       setPath(newPath);
       if (shouldDeselect) {
-        // TODO - Create draft route in side panel or something crazy like that?
-        setRoute(null);
+        // Create draft route in side panel or something crazy like that?
+        setDraftRoute((currentDraftRoute) =>
+          currentDraftRoute
+            ? {
+                ...currentDraftRoute,
+                path: newPath,
+                pathParams: extractPathParams(newPath).map(mapPathKey),
+              }
+            : {
+                ...selectedRoute,
+                isDraft: true,
+                routeOrigin: "custom",
+                handler: "",
+                handlerType: "route",
+                currentlyRegistered: false,
+                path: newPath,
+                method,
+              },
+        );
         setPathParams(extractPathParams(newPath).map(mapPathKey));
       }
     },
-    [selectedRoute, setRoute],
+    [selectedRoute, setDraftRoute, method],
   );
 
   const handleMethodChange = useCallback(
