@@ -5,6 +5,9 @@ import { ProbedRoute } from "../queries";
 
 type MatchedRouteResult = {
   route: ProbedRoute;
+  pathParamValues?:
+    | Record<string, string | string[]>
+    | Record<string, string | number>;
 } | null;
 
 export function findMatchedRoute(
@@ -15,9 +18,10 @@ export function findMatchedRoute(
 ): MatchedRouteResult {
   if (pathname && method) {
     const smartMatch = findSmartRouterMatches(routes, pathname, method);
-    if (smartMatch) {
+    if (smartMatch?.route) {
       return {
-        route: smartMatch,
+        route: smartMatch.route,
+        pathParamValues: smartMatch.pathParams,
       };
     }
   }
@@ -80,13 +84,16 @@ export function findSmartRouterMatches(
 
     const routeMatches = matches.map((match) => {
       const handler = match[0];
-      return functionHandlerLookupTable.get(handler as () => void);
+      return {
+        route: functionHandlerLookupTable.get(handler as () => void),
+        pathParams: match[1],
+      };
     });
 
     // Sort draft routes after non-draft routes
     routeMatches.sort((a, b) => {
-      const aIsDraft = !!a?.isDraft;
-      const bIsDraft = !!b?.isDraft;
+      const aIsDraft = !!a?.route?.isDraft;
+      const bIsDraft = !!b?.route?.isDraft;
       if (aIsDraft && bIsDraft) {
         return 0;
       }

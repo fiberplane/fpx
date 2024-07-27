@@ -113,10 +113,23 @@ function requestorReducer(
         isWs,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
+      // TODO - Refactor
+      // This logic will reconcile the path param values with what the user is typing
+      let nextPathParams = state.pathParams;
+      if (matchedRoute?.pathParamValues) {
+        nextPathParams = Object.entries(matchedRoute.pathParamValues).map(
+          ([key, value]) => ({
+            ...mapPathParamKey(key),
+            value,
+            enabled: !!value,
+          }),
+        );
+      }
       return {
         ...state,
         path: action.payload,
         selectedRoute: nextSelectedRoute,
+        pathParams: nextPathParams,
       };
     }
     case METHOD_UPDATE: {
