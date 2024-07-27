@@ -1,4 +1,7 @@
 export { useRoutes, useReselectRouteHack } from "./hooks";
 export { shouldDeselectRoute } from "./path-change-heuristic";
-export { findMatchedRoute, findSmartRouterMatch } from "./match";
+export {
+  findMatchedRoute,
+  findSmartRouterMatches as findSmartRouterMatch,
+} from "./match";
 export { AddRouteButton } from "./AddRouteButton";
