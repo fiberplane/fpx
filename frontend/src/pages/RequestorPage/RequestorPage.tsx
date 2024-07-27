@@ -45,18 +45,25 @@ export const RequestorPage = () => {
   // @ts-expect-error - testing
   globalThis.refactoredState = refactoredState;
   const {
+    // Routes panel
+    state: { routes },
     addRouteIfNotPresent,
     removeRoutesIfNotPresent,
+    selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+    getActiveRoute,
+
+    // Requestor input
+    state: { path, method },
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
-    selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+
+    // Request panel
+    state: { pathParams, queryParams, requestHeaders },
     setPathParams,
     updatePathParamValues,
     clearPathParams,
-
-    getActiveRoute,
-
-    state: { routes, path, method, pathParams },
+    setQueryParams,
+    setRequestHeaders,
   } = refactoredState;
 
   const selectedRoute = getActiveRoute();
@@ -66,14 +73,16 @@ export const RequestorPage = () => {
     removeRoutesIfNotPresent,
   });
 
-  const {
-    body,
-    setBody,
-    requestHeaders,
-    setRequestHeaders,
-    queryParams,
-    setQueryParams,
-  } = useRequestorFormData(browserHistoryState);
+  const { body, setBody } = useRequestorFormData(browserHistoryState);
+
+  // NOTE - Use this to test overflow
+  // useEffect(() => {
+  //   setQueryParams(
+  //     createKeyValueParameters(
+  //       Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
+  //     ),
+  //   );
+  // }, []);
 
   // When we unmount, save the current state of UI to the browser history
   // This allows us to reload the page when you press "Back" in the browser

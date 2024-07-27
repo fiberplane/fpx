@@ -23,6 +23,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestMethodCombobox } from "../RequestMethodCombobox";
 import { Route, useAddRoutes, useOpenApiParse } from "../queries";
+import { RequestMethodInputValue } from "../types";
 
 export function AddRouteButton() {
   useHotkeys("c", (e) => {
@@ -71,12 +72,9 @@ type AddRoutesTabsProps = {
   setOpenApi: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-function AddRoutesTabs({ setOpen, openApi, setOpenApi }: AddRoutesTabsProps) {
+function AddRoutesTabs({ setOpen, setOpenApi }: AddRoutesTabsProps) {
   return (
-    <Tabs
-      className="w-full"
-      defaultValue={openApi ? "custom-route" : "openapi"}
-    >
+    <Tabs className="w-full" defaultValue="custom-route">
       <TabsList className="w-full grid grid-cols-2">
         <TabsTrigger value="custom-route">Custom Route</TabsTrigger>
         <TabsTrigger value="openapi">OpenAPI</TabsTrigger>
@@ -248,17 +246,16 @@ type CustomRouteFormData = {
 function CustomRouteForm({
   setOpen,
 }: { setOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
-  const { register, handleSubmit } = useForm<CustomRouteFormData>();
+  const { register, handleSubmit, getValues } = useForm<CustomRouteFormData>();
 
   const { mutate: addRoutes } = useAddRoutes();
-
-  const [isWs, setIsWs] = useState(false);
 
   const [method, setMethod] = useState("GET");
   const handleMethodChange = (method: string) => {
     setMethod(method);
   };
   const onSubmit: SubmitHandler<CustomRouteFormData> = ({ path }) => {
+    const isWs = method === "WS";
     addRoutes({
       path,
       method: isWs ? "GET" : method,
@@ -287,7 +284,7 @@ function CustomRouteForm({
           </Label>
           <RequestMethodCombobox
             {...register("method")}
-            method={method}
+            method={method as RequestMethodInputValue}
             handleMethodChange={handleMethodChange}
             allowUserToChange
             className="px-2 mr-2"
@@ -306,15 +303,8 @@ function CustomRouteForm({
           />
         </div>
       </div>
-      <div className="flex items-center w-full gap-4">
-        <Switch id="isWs" checked={isWs} onCheckedChange={setIsWs} />
-
-        <Label htmlFor="isWs" className="text-gray-300">
-          Upgrade to Websocket
-        </Label>
-      </div>
       <div className="flex justify-end">
-        <Button size="sm" className="h-7">
+        <Button size="sm" className="h-7" disabled={!getValues("path")}>
           Add
         </Button>
       </div>

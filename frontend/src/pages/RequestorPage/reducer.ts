@@ -1,5 +1,6 @@
 import { useReducer } from "react";
 import { KeyValueParameter } from "./KeyValueForm";
+import { enforceTerminalDraftParameter } from "./KeyValueForm/hooks";
 import { ProbedRoute } from "./queries";
 import { findMatchedRoute } from "./routes";
 import { RequestMethod, RequestMethodInputValue } from "./types";
@@ -32,8 +33,13 @@ export type RequestorState = {
   method: RequestMethod;
   /** Request type input */
   requestType: RequestType;
-  /** Path parameters */
+
+  /** Query parameters to be sent with the request */
+  queryParams: KeyValueParameter[];
+  /** Path parameters and their corresponding values */
   pathParams: KeyValueParameter[];
+  /** Headers to be sent with the request */
+  requestHeaders: KeyValueParameter[];
 };
 
 const SET_ROUTES = "SET_ROUTES" as const;
@@ -45,6 +51,8 @@ const SELECT_ROUTE = "SELECT_ROUTE" as const;
 const SET_PATH_PARAMS = "SET_PATH_PARAMS" as const;
 const REPLACE_PATH_PARAM_VALUES = "REPLACE_PATH_PARAM_VALUES" as const;
 const CLEAR_PATH_PARAMS = "CLEAR_PATH_PARAMS" as const;
+const SET_QUERY_PARAMS = "SET_QUERY_PARAMS" as const;
+const SET_HEADERS = "SET_HEADERS" as const;
 
 type RequestorAction =
   | {
@@ -85,6 +93,14 @@ type RequestorAction =
     }
   | {
       type: typeof CLEAR_PATH_PARAMS;
+    }
+  | {
+      type: typeof SET_QUERY_PARAMS;
+      payload: KeyValueParameter[];
+    }
+  | {
+      type: typeof SET_HEADERS;
+      payload: KeyValueParameter[];
     };
 
 const initialState: RequestorState = {
@@ -95,6 +111,8 @@ const initialState: RequestorState = {
   requestType: "http",
 
   pathParams: [],
+  queryParams: enforceTerminalDraftParameter([]),
+  requestHeaders: enforceTerminalDraftParameter([]),
 };
 
 function requestorReducer(
@@ -200,6 +218,12 @@ function requestorReducer(
       }));
       return { ...state, pathParams: nextPathParams };
     }
+    case SET_QUERY_PARAMS: {
+      return { ...state, queryParams: action.payload };
+    }
+    case SET_HEADERS: {
+      return { ...state, requestHeaders: action.payload };
+    }
     default:
       return state;
   }
@@ -262,6 +286,16 @@ export function useRefactoredRequestorState() {
     dispatch({ type: CLEAR_PATH_PARAMS });
   };
 
+  const setQueryParams = (queryParams: KeyValueParameter[]) => {
+    const parametersWithDraft = enforceTerminalDraftParameter(queryParams);
+    dispatch({ type: SET_QUERY_PARAMS, payload: parametersWithDraft });
+  };
+
+  const setRequestHeaders = (headers: KeyValueParameter[]) => {
+    const parametersWithDraft = enforceTerminalDraftParameter(headers);
+    dispatch({ type: SET_HEADERS, payload: parametersWithDraft });
+  };
+
   /**
    * NOTE - When there's no selected route, we return a "draft" route
    */
@@ -286,6 +320,8 @@ export function useRefactoredRequestorState() {
     setPathParams,
     updatePathParamValues,
     clearPathParams,
+    setQueryParams,
+    setRequestHeaders,
 
     // Selectors
     getActiveRoute,

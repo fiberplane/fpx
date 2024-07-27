@@ -1,7 +1,3 @@
-import { CheckIcon } from "@radix-ui/react-icons";
-import * as React from "react";
-import { forwardRef } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -15,8 +11,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/utils";
+import { CheckIcon } from "@radix-ui/react-icons";
+import * as React from "react";
+import { forwardRef } from "react";
 import { getHttpMethodTextColor } from "./method";
-import { RequestMethod, type RequestMethodInputValue } from "./types";
+import { type RequestMethodInputValue } from "./types";
 
 type InputOption = {
   value: RequestMethodInputValue;
