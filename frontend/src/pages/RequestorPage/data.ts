@@ -56,6 +56,11 @@ export function useRequestorFormData(
    */
   const handlePathInputChange = useCallback(
     (newPath: string) => {
+      const matchingRoute = findMatchedRoute(routes, newPath, method);
+      if (matchingRoute) {
+        console.log("matchingRoute", matchingRoute);
+      }
+
       if (!selectedRoute) {
         setPath(newPath);
         setPathParams(extractPathParams(newPath).map(mapPathKey));

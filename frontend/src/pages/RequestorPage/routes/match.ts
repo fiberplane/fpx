@@ -10,6 +10,13 @@ export function findMatchedRoute(
   method?: string,
   isWs?: boolean,
 ): ProbedRoute | undefined {
+  if (pathname && method) {
+    const smartMatch = findSmartRouterMatch(routes, pathname, method);
+    if (smartMatch) {
+      console.log(`smartMatch ${method} ${pathname}`, smartMatch);
+    }
+  }
+
   for (const route of routes) {
     if (
       route.path === pathname &&
