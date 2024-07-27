@@ -72,6 +72,7 @@ export function useRequestorFormData(
           currentDraftRoute
             ? {
                 ...currentDraftRoute,
+                method,
                 path: newPath,
                 pathParams: extractPathParams(newPath).map(mapPathKey),
               }
@@ -83,6 +84,7 @@ export function useRequestorFormData(
                 handlerType: "route",
                 currentlyRegistered: false,
                 path: newPath,
+                pathParams: extractPathParams(newPath).map(mapPathKey),
                 method,
               },
         );
