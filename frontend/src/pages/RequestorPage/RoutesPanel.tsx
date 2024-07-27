@@ -17,15 +17,12 @@ import { BACKGROUND_LAYER } from "./styles";
 
 type RoutesPanelProps = {
   routes?: ProbedRoute[];
-  draftRoutes?: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
 };
 
 export function RoutesPanel({
   routes,
-  // NOTE - Draft routes not yet implemented, waiting for future PR
-  draftRoutes,
   selectedRoute,
   handleRouteClick,
 }: RoutesPanelProps) {
@@ -80,6 +77,10 @@ export function RoutesPanel({
 
   const userAddedRoutes = useMemo(() => {
     return filteredRoutes?.filter((r) => r.routeOrigin === "custom") ?? [];
+  }, [filteredRoutes]);
+
+  const draftRoutes = useMemo(() => {
+    return filteredRoutes?.filter((r) => r.isDraft) ?? [];
   }, [filteredRoutes]);
 
   return (
@@ -229,16 +230,14 @@ export function RouteItem({ route }: { route: ProbedRoute }) {
     route.routeOrigin === "custom" ||
     !route.currentlyRegistered ||
     route.routeOrigin === "open_api";
+
+  const method = route.isWs ? "WS" : route.method;
   return (
     <>
       <span
-        className={cn(
-          "text-xs",
-          "min-w-12",
-          getHttpMethodTextColor(route.method),
-        )}
+        className={cn("text-xs", "min-w-12", getHttpMethodTextColor(method))}
       >
-        {route.method}
+        {method}
       </span>
       <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">
         {route.path}

@@ -7,7 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
-import { cn, isMac } from "@/utils";
+import { cn, isMac, noop } from "@/utils";
 import { MixerHorizontalIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
@@ -61,9 +61,11 @@ export function RequestorInput({
     >
       <div className="flex flex-grow items-center space-x-0">
         {isWs ? (
-          <div className="flex items-center py-2 px-1 ml-2 border text-sm text-muted-foreground font-mono">
-            websocket
-          </div>
+          <RequestMethodCombobox
+            method="WS"
+            handleMethodChange={noop}
+            allowUserToChange={false}
+          />
         ) : (
           <RequestMethodCombobox
             method={method}

@@ -8,6 +8,7 @@ export function useRequestorFormData(
   routes: ProbedRoute[],
   selectedRoute: ProbedRoute | null,
   setRoute: (route: ProbedRoute | null) => void,
+  setDraftRoute: React.Dispatch<React.SetStateAction<ProbedRoute | null>>,
   initialBrowserHistoryState?: PersistedUiState,
 ) {
   const [method, setMethod] = useState<string>(
@@ -76,14 +77,31 @@ export function useRequestorFormData(
 
   const handleMethodChange = useCallback(
     (newMethod: string) => {
-      setMethod(newMethod);
+      const isWs = newMethod === "WS";
+      const implicitMethod = isWs ? "GET" : newMethod;
+      setMethod(implicitMethod);
 
-      const matchingRoute = findMatchedRoute(routes, path, newMethod);
+      const matchingRoute = findMatchedRoute(
+        routes,
+        path,
+        implicitMethod,
+        isWs,
+      );
+      console.log("matchingRoute", matchingRoute);
 
       if (matchingRoute) {
         setRoute(matchingRoute);
       } else {
-        setRoute(null);
+        setDraftRoute({
+          path,
+          method: implicitMethod,
+          isWs,
+          handler: "",
+          handlerType: "route",
+          currentlyRegistered: false,
+          routeOrigin: "custom",
+          isDraft: true,
+        });
       }
     },
     [routes, path, setRoute],

@@ -32,7 +32,7 @@ export const RequestorPage = () => {
   const { toast } = useToast();
   const browserHistoryState = usePersistedUiState();
 
-  const { routes, addBaseUrl, selectedRoute, setSelectedRoute } =
+  const { routes, setDraftRoute, addBaseUrl, selectedRoute, setSelectedRoute } =
     useRoutes(browserHistoryState);
 
   const {
@@ -54,6 +54,7 @@ export const RequestorPage = () => {
     routes,
     selectedRoute,
     setSelectedRoute,
+    setDraftRoute,
     browserHistoryState,
   );
 

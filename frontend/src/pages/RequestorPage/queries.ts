@@ -14,7 +14,7 @@ export type ProbedRoute = {
   openApiSpec?: string;
   // NOTE - Computed on the frontend, not stored in DB
   isWs?: boolean;
-  // TODO - Implement
+  // NOTE - Computed on the frontend as well, not stored in DB
   isDraft?: boolean;
 };
 

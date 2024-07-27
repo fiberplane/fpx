@@ -46,6 +46,10 @@ const methods = [
     value: "HEAD",
     label: "HEAD",
   },
+  {
+    value: "WS",
+    label: "WS",
+  },
 ];
 
 export const RequestMethodCombobox = forwardRef<
