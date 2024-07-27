@@ -60,19 +60,11 @@ export function RequestorInput({
       className="flex items-center justify-between rounded-md bg-muted border"
     >
       <div className="flex flex-grow items-center space-x-0">
-        {isWs ? (
-          <RequestMethodCombobox
-            method="WS"
-            handleMethodChange={noop}
-            allowUserToChange={false}
-          />
-        ) : (
-          <RequestMethodCombobox
-            method={method}
-            handleMethodChange={handleMethodChange}
-            allowUserToChange
-          />
-        )}
+        <RequestMethodCombobox
+          method={isWs ? "WS" : method}
+          handleMethodChange={handleMethodChange}
+          allowUserToChange
+        />
         <Input
           type="text"
           value={value}

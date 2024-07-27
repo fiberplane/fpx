@@ -2,13 +2,11 @@ import { useCallback, useState } from "react";
 import { KeyValueParameter, useKeyValueForm } from "./KeyValueForm";
 import { PersistedUiState } from "./persistUiState";
 import { ProbedRoute } from "./queries";
-import { findMatchedRoute, shouldDeselectRoute } from "./routes";
+import { findMatchedRoute } from "./routes";
 
 export function useRequestorFormData(
   routes: ProbedRoute[],
   selectedRoute: ProbedRoute | null,
-  setRoute: (route: ProbedRoute | null) => void,
-  setDraftRoute: React.Dispatch<React.SetStateAction<ProbedRoute | null>>,
   initialBrowserHistoryState?: PersistedUiState,
 ) {
   const [method, setMethod] = useState<string>(
@@ -50,87 +48,6 @@ export function useRequestorFormData(
       extractPathParams(selectedRoutePath ?? "").map(mapPathKey),
   );
 
-  /**
-   * Some additional logic for possibly deselecting the currently selected route from the sidebar,
-   * whenever the user updates the url input.
-   */
-  const handlePathInputChange = useCallback(
-    (newPath: string) => {
-      if (!selectedRoute) {
-        setPath(newPath);
-        setPathParams(extractPathParams(newPath).map(mapPathKey));
-        return;
-      }
-
-      const shouldDeselect =
-        selectedRoute && shouldDeselectRoute(selectedRoute.path, newPath);
-
-      setPath(newPath);
-
-      if (shouldDeselect) {
-        setDraftRoute((currentDraftRoute) =>
-          currentDraftRoute
-            ? {
-                ...currentDraftRoute,
-                method,
-                path: newPath,
-                pathParams: extractPathParams(newPath).map(mapPathKey),
-              }
-            : {
-                ...selectedRoute,
-                isDraft: true,
-                routeOrigin: "custom",
-                handler: "",
-                handlerType: "route",
-                currentlyRegistered: false,
-                path: newPath,
-                pathParams: extractPathParams(newPath).map(mapPathKey),
-                method,
-              },
-        );
-        setPathParams(extractPathParams(newPath).map(mapPathKey));
-      }
-    },
-    [method, selectedRoute, setDraftRoute],
-  );
-
-  const handleMethodChange = useCallback(
-    (newMethod: string) => {
-      const isWs = newMethod === "WS";
-      const implicitMethod = isWs ? "GET" : newMethod;
-      setMethod(implicitMethod);
-
-      const matchingRoute = findMatchedRoute(
-        routes,
-        path,
-        implicitMethod,
-        isWs,
-      );
-
-      if (matchingRoute) {
-        if (matchingRoute.isDraft) {
-          // Update the draft route
-          setDraftRoute(matchingRoute);
-        }
-        setRoute(matchingRoute);
-      } else {
-        const draft = {
-          path,
-          method: implicitMethod,
-          isWs,
-          handler: "",
-          handlerType: "route" as const,
-          currentlyRegistered: false,
-          routeOrigin: "custom" as const,
-          isDraft: true,
-        };
-        setDraftRoute(draft);
-        setRoute(draft);
-      }
-    },
-    [routes, path, setRoute, setDraftRoute],
-  );
-
   // We want to update form data whenever the user selects a new route from the sidebar
   // It's better to wrap up this "new route selected" behavior in a handler,
   // instead of reacting to changes in the selected route via useEffect
@@ -138,7 +55,7 @@ export function useRequestorFormData(
   const handleSelectRoute = useCallback(
     (newRoute: ProbedRoute, pathParams?: KeyValueParameter[]) => {
       if (newRoute) {
-        setRoute(newRoute);
+        // setRoute(newRoute);
         setMethod(newRoute.method);
         // Reset the body for GET and HEAD requests
         if (newRoute.method === "GET" || newRoute.method === "HEAD") {
@@ -157,16 +74,15 @@ export function useRequestorFormData(
         }
       }
     },
-    [setRoute],
+    [],
   );
 
   return {
     path,
     setPath,
-    handlePathInputChange,
     method,
     setMethod,
-    handleMethodChange,
+    // handleMethodChange,
     body,
     setBody,
     queryParams,
@@ -175,7 +91,7 @@ export function useRequestorFormData(
     setPathParams,
     requestHeaders,
     setRequestHeaders,
-    handleSelectRoute,
+    // handleSelectRoute,
   };
 }
 

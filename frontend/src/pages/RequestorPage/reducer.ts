@@ -81,16 +81,15 @@ function requestorReducer(
       const nextPath = action.payload;
       const isWs = state.requestType === "websocket"; 
       const matchedRoute = findMatchedRoute(state.routes, nextPath, state.method, isWs);
-      const shouldSelectMatch = matchedRoute && matchedRoute !== state.selectedRoute;
-      // TODO - Test if this properly handles `/users/:` still matching route definition `/users/:id`
-      const nextSelectedRoute = shouldSelectMatch ? matchedRoute : null;
-      // TODO - Derive path parameters
-      //      - Or is this a selector... that knows if `selectedRoute` is null we compute?
+      const nextSelectedRoute = matchedRoute ? matchedRoute : null;
       return { ...state, path: action.payload, selectedRoute: nextSelectedRoute };
     }
     case METHOD_UPDATE: {
       const { method, requestType } = action.payload;
-      return { ...state, method, requestType };
+      const isWs = requestType === "websocket";
+      const matchedRoute = findMatchedRoute(state.routes, state.path, method, isWs);
+      const nextSelectedRoute = matchedRoute ? matchedRoute : null;
+      return { ...state, method, requestType, selectedRoute: nextSelectedRoute };
     }
     case SELECT_ROUTE:
       return {
@@ -105,15 +104,23 @@ function requestorReducer(
   }
 }
 
+const routeEquality = (a: ProbedRoute, b: ProbedRoute): boolean => {
+  return (
+    a.path === b.path &&
+    a.method === b.method &&
+    a.routeOrigin === b.routeOrigin &&
+    !!a.isWs === !!b.isWs
+  );
+};
+
 export function useRefactoredRequestorState() {
   const [state, dispatch] = useReducer(requestorReducer, initialState);
 
-  const setRoutes = (routes: ProbedRoute[]) => {
-    dispatch({ type: SET_ROUTES, payload: routes });
-  };
-
-  const addRoute = (route: ProbedRoute) => {
-    dispatch({ type: ADD_ROUTE, payload: route });
+  const addRouteIfNotPresent = (route: ProbedRoute) => {
+    const shouldInsert = state.routes.every(r => !routeEquality(r, route));
+    if (shouldInsert) {
+      dispatch({ type: ADD_ROUTE, payload: route });
+    }
   };
 
   const updatePath = (path: string) => {
@@ -150,8 +157,7 @@ export function useRefactoredRequestorState() {
     dispatch,
 
     // Api
-    setRoutes,
-    addRoute,
+    addRouteIfNotPresent,
     selectRoute,
 
     // Form fields

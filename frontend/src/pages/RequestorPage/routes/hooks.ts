@@ -5,32 +5,28 @@ import { PersistedUiState } from "../persistUiState";
 import { ProbedRoute, useProbedRoutes } from "../queries";
 import { findMatchedRoute } from "./match";
 
-export function useRoutes(browserHistoryState?: PersistedUiState) {
-  // NOTE - Not yet in use
-  const [draftRoute, setDraftRoute] = useState<ProbedRoute | null>(null);
-  const deleteDraftRoute = useCallback(() => {
-    setDraftRoute(null);
-  }, [setDraftRoute]);
+type UseRoutesOptions = {
+  addRouteIfNotPresent: (route: ProbedRoute) => void;
+  browserHistoryState?: PersistedUiState;
+};
+
+export function useRoutes({ addRouteIfNotPresent, browserHistoryState }: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes =
       routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
       [];
 
-    // HACK - Only detects a ws route if its path starts with `/ws`
-    const wsroutes =
-      routesAndMiddleware?.routes
-        ?.filter((r) => r.path.startsWith("/ws"))
-        ?.map((r) => ({ ...r, isWs: true })) ?? [];
+    return routes;
+  }, [routesAndMiddleware]);
 
-    const routesWithWs = [...routes, ...wsroutes];
-
-    const routesWithDrafts = draftRoute
-      ? [draftRoute, ...routesWithWs]
-      : routesWithWs;
-
-    return routesWithDrafts;
-  }, [routesAndMiddleware, draftRoute]);
+  // HACK - Antipattern, add routes to the reducer based off of external changes
+  // NOTE - This will only add routes if they don't exist
+  useEffect(() => {
+    for (const route of routes) {
+      addRouteIfNotPresent(route);
+    }
+  }, [routes, addRouteIfNotPresent]);
 
   // TODO - Support swapping out base url in UI,
   //        right now you can only change it by modifying FPX_SERVICE_TARGET in the API
@@ -67,8 +63,6 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
     addBaseUrl,
     selectedRoute,
     setSelectedRoute,
-    setDraftRoute,
-    deleteDraftRoute,
   };
 }
 
@@ -113,55 +107,3 @@ function useAutoselectInitialRoute({
   return { selectedRoute, setSelectedRoute };
 }
 
-/**
- * Hacky workaround to re-select a route from the routes list when:
- * - The `selectedRoute` is currently empty (null)
- * - There is an exact match in the routes list for the current path and method from the form
- */
-export function useReselectRouteHack({
-  routes,
-  selectedRoute,
-  setSelectedRoute,
-  setPathParams,
-  path,
-  method,
-}: {
-  routes: ProbedRoute[];
-  selectedRoute: ProbedRoute | null;
-  setSelectedRoute: (route: ProbedRoute | null) => void;
-  setPathParams: (pathParams: KeyValueParameter[]) => void;
-  path: string;
-  method: string;
-}) {
-  useEffect(() => {
-    const match = findMatchedRoute(routes, path, method);
-
-    // If there's a match, and it's not the same as the selected route, select it
-    if (match && match !== selectedRoute) {
-      setSelectedRoute(match);
-      setPathParams(extractPathParams(path).map(mapPathKey));
-      return;
-    }
-
-    // Short circuit the rest of the logic if there's already a selected route
-    if (selectedRoute) {
-      return;
-    }
-
-    // This might all be useless in light of the above, need to re-evaluate...
-    if (match) {
-      setSelectedRoute(match);
-      setPathParams(extractPathParams(path).map(mapPathKey));
-      return;
-    }
-
-    const newSelectedRoute = routes.find(
-      (r) => r.path === path && r.method === method,
-    );
-
-    if (newSelectedRoute) {
-      setSelectedRoute(newSelectedRoute);
-      setPathParams(extractPathParams(path).map(mapPathKey));
-    }
-  }, [routes, selectedRoute, setSelectedRoute, path, method, setPathParams]);
-}

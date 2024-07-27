@@ -8,15 +8,15 @@ export function findMatchedRoute(
   pathname?: string,
   method?: string,
   isWs?: boolean,
-): ProbedRoute | undefined {
+): ProbedRoute | null {
   if (pathname && method) {
     const smartMatch = findSmartRouterMatches(routes, pathname, method);
     if (smartMatch) {
-      console.debug(`smartMatch ${method} ${pathname}`, smartMatch);
       return smartMatch;
     }
   }
 
+  // HACK - This is a backup in case the smart router throws an error
   for (const route of routes) {
     if (
       route.path === pathname &&
@@ -26,7 +26,8 @@ export function findMatchedRoute(
       return route;
     }
   }
-  return undefined;
+
+  return null;
 }
 
 /**
@@ -75,11 +76,6 @@ export function findSmartRouterMatches(
       const handler = match[0];
       return functionHandlerLookupTable.get(handler as () => void);
     });
-
-    console.debug(
-      "ROUTE MATCHES - what if there is more than one?",
-      routeMatches,
-    );
 
     // Sort draft routes after non-draft routes
     routeMatches.sort((a, b) => {

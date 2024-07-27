@@ -16,7 +16,7 @@ import {
   useFetchRequestorRequests,
   useMakeRequest,
 } from "./queries";
-import { findMatchedRoute, useReselectRouteHack, useRoutes } from "./routes";
+import { findMatchedRoute, useRoutes } from "./routes";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./RequestorPage.css";
 import { useToast } from "@/components/ui/use-toast";
@@ -24,29 +24,56 @@ import { useWebsocketQueryInvalidation } from "@/hooks";
 import { useHotkeys } from "react-hotkeys-hook";
 import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
+import { useRefactoredRequestorState } from "./reducer";
 
 export const RequestorPage = () => {
+  const { toast } = useToast();
+
   // Refresh routes in response to filesystem updates
   useWebsocketQueryInvalidation();
 
-  const { toast } = useToast();
-  const browserHistoryState = usePersistedUiState();
+  // TODO - Bring back persisted state once reducer is fully integrated
+  // const browserHistoryState = usePersistedUiState();
+  const browserHistoryState = undefined;
+
+
+  // ========================//
+  // === Refactored state ===//
+  // ========================//
+  const refactoredState = useRefactoredRequestorState();
+  // @ts-expect-error - testing
+  globalThis.refactoredState = refactoredState;
+  const {
+    addRouteIfNotPresent,
+    updatePath: handlePathInputChange,
+    updateMethod: handleMethodChange,
+    selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+    getActiveRoute,
+    state: {
+      routes,
+      path,
+      method,
+    }
+  } = refactoredState;
+
+  const selectedRoute = getActiveRoute();
 
   const {
-    routes,
-    setDraftRoute,
-    deleteDraftRoute,
+    // routes,
     addBaseUrl,
-    selectedRoute,
-    setSelectedRoute,
-  } = useRoutes(browserHistoryState);
+    // selectedRoute,
+    // setSelectedRoute,
+  } = useRoutes({
+    addRouteIfNotPresent,
+    // TODO - Bring back persisted state once reducer is integrated
+    browserHistoryState
+  });
 
   const {
-    path,
-    setPath,
-    handlePathInputChange,
-    method,
-    handleMethodChange,
+    // path,
+    // setPath,
+    // method,
+    // handleMethodChange,
     body,
     setBody,
     pathParams,
@@ -55,30 +82,18 @@ export const RequestorPage = () => {
     setRequestHeaders,
     queryParams,
     setQueryParams,
-    handleSelectRoute,
+    // handleSelectRoute,
   } = useRequestorFormData(
     routes,
     selectedRoute,
-    setSelectedRoute,
-    setDraftRoute,
     browserHistoryState,
   );
-
-  useReselectRouteHack({
-    selectedRoute,
-    setSelectedRoute,
-    routes,
-    path,
-    method,
-    setPathParams,
-  });
 
   // When we unmount, save the current state of UI to the browser history
   // This allows us to reload the page when you press "Back" in the browser
   useSaveUiState({
-    route: selectedRoute,
-    path,
-    method,
+    ...refactoredState.state,
+    route: getActiveRoute(),
     body,
     pathParams,
     queryParams,
@@ -93,7 +108,7 @@ export const RequestorPage = () => {
   } = useRequestorHistory({
     routes,
     handleSelectRoute,
-    setPath,
+    setPath: handlePathInputChange,
     setPathParams,
     setBody,
     setQueryParams,
@@ -157,7 +172,7 @@ export const RequestorPage = () => {
   } = useAi(selectedRoute, history, {
     setBody,
     setQueryParams,
-    setPath,
+    setPath: handlePathInputChange,
     setPathParams,
     setRequestHeaders,
   });
@@ -219,7 +234,6 @@ export const RequestorPage = () => {
           routes={routes}
           selectedRoute={selectedRoute}
           handleRouteClick={handleSelectRoute}
-          deleteDraftRoute={deleteDraftRoute}
         />
       </div>
 
@@ -240,6 +254,7 @@ export const RequestorPage = () => {
           addBaseUrl={addBaseUrl}
           isWs={selectedRoute?.isWs}
           method={method}
+          // FIXME
           handleMethodChange={handleMethodChange}
           path={path}
           handlePathInputChange={handlePathInputChange}
@@ -270,7 +285,7 @@ export const RequestorPage = () => {
             pathParams={pathParams}
             queryParams={queryParams}
             requestHeaders={requestHeaders}
-            setPath={setPath}
+            setPath={handlePathInputChange}
             currentRoute={selectedRoute?.path}
             setPathParams={setPathParams}
             setQueryParams={setQueryParams}
