@@ -37,7 +37,10 @@ export const appRoutes = sqliteTable(
     }).default("discovered"),
     // serialized OpenAPI spec for AI prompting
     openApiSpec: text("openapi_spec", { mode: "text" }),
-    isWs: integer("is_ws", { mode: "boolean" }).default(false),
+    requestType: text("request_type", {
+      mode: "text",
+      enum: ["http", "websocket"],
+    }).default("http"),
   },
   (table) => {
     return {

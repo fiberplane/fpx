@@ -12,12 +12,17 @@ type MatchedRouteResult = {
 
 export function findMatchedRoute(
   routes: ProbedRoute[],
-  pathname?: string,
-  method?: string,
-  isWs?: boolean,
+  pathname: string | undefined,
+  method: string | undefined,
+  requestType: "http" | "websocket",
 ): MatchedRouteResult {
   if (pathname && method) {
-    const smartMatch = findSmartRouterMatches(routes, pathname, method);
+    const smartMatch = findSmartRouterMatches(
+      routes,
+      pathname,
+      method,
+      requestType,
+    );
     if (smartMatch?.route) {
       return {
         route: smartMatch.route,
@@ -31,7 +36,7 @@ export function findMatchedRoute(
     if (
       route.path === pathname &&
       route.method === method &&
-      !!route.isWs === !!isWs
+      route.requestType === requestType
     ) {
       return { route };
     }
@@ -47,7 +52,7 @@ export function findSmartRouterMatches(
   routes: ProbedRoute[],
   pathname: string,
   method: string,
-  isWs?: boolean,
+  requestType: "http" | "websocket",
 ) {
   // HACK - We need to be able to associate route handlers back to the ProbedRoute definition
   const functionHandlerLookupTable: Map<() => void, ProbedRoute> = new Map();
@@ -55,7 +60,7 @@ export function findSmartRouterMatches(
   const routers = [new RegExpRouter(), new TrieRouter()];
   const router = new SmartRouter({ routers });
   for (const route of routes) {
-    if (!!route.isWs === !!isWs) {
+    if (route.requestType === requestType) {
       if (route.method && route.path) {
         const handler = () => {};
         router.add(route.method, route.path, handler);

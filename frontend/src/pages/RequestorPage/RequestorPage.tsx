@@ -25,6 +25,7 @@ import { useWebsocketQueryInvalidation } from "@/hooks";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useRefactoredRequestorState } from "./reducer";
 import { BACKGROUND_LAYER } from "./styles";
+import { isWsRequest } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 
 export const RequestorPage = () => {
@@ -45,6 +46,7 @@ export const RequestorPage = () => {
   globalThis.refactoredState = refactoredState;
   const {
     addRouteIfNotPresent,
+    removeRoutesIfNotPresent,
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
@@ -61,6 +63,7 @@ export const RequestorPage = () => {
 
   const { addBaseUrl } = useRoutes({
     addRouteIfNotPresent,
+    removeRoutesIfNotPresent,
   });
 
   const {
@@ -235,7 +238,7 @@ export const RequestorPage = () => {
       >
         <RequestorInput
           addBaseUrl={addBaseUrl}
-          isWs={selectedRoute?.isWs}
+          requestType={selectedRoute?.requestType}
           method={method}
           handleMethodChange={handleMethodChange}
           path={path}
@@ -291,7 +294,7 @@ export const RequestorPage = () => {
             history={history}
             loadHistoricalRequest={loadHistoricalRequest}
             websocketState={websocketState}
-            isWs={selectedRoute?.isWs ?? false}
+            requestType={selectedRoute?.requestType}
           />
         </div>
       </div>
@@ -342,7 +345,15 @@ function useRequestorHistory({
     if (match) {
       const method = match.app_requests.requestMethod;
       const routePattern = match.app_requests.requestRoute;
-      const matchedRoute = findMatchedRoute(routes, routePattern, method);
+      const requestType = match.app_requests.requestUrl.startsWith("ws")
+        ? "websocket"
+        : "http";
+      const matchedRoute = findMatchedRoute(
+        routes,
+        routePattern,
+        method,
+        requestType,
+      );
 
       if (matchedRoute) {
         const pathParamsObject = match.app_requests.requestPathParams ?? {};
@@ -429,7 +440,7 @@ function useRequestorSubmitHandler({
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addBaseUrl: (path: string, options?: { isWs?: boolean }) => string;
+  addBaseUrl: ReturnType<typeof useRoutes>["addBaseUrl"];
   selectedRoute: ProbedRoute | null;
   body: string | undefined;
   path: string;
@@ -451,8 +462,10 @@ function useRequestorSubmitHandler({
         return;
       }
 
-      if (selectedRoute.isWs) {
-        const url = addBaseUrl(selectedRoute.path, { isWs: true });
+      if (isWsRequest(selectedRoute.requestType)) {
+        const url = addBaseUrl(selectedRoute.path, {
+          requestType: selectedRoute.requestType,
+        });
         connectWebsocket(url);
         toast({
           description: "Connecting to websocket",

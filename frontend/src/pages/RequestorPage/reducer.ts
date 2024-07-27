@@ -11,7 +11,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
     state.selectedRoute ?? {
       path: state.path,
       method: state.method,
-      isWs: state.requestType === "websocket",
+      requestType: state.requestType,
       handler: "",
       handlerType: "route",
       currentlyRegistered: false,
@@ -38,6 +38,7 @@ export type RequestorState = {
 
 const SET_ROUTES = "SET_ROUTES" as const;
 const ADD_ROUTE = "ADD_ROUTE" as const;
+const ROUTE_INTERSECT = "ROUTE_INTERSECT" as const;
 const PATH_UPDATE = "PATH_UPDATE" as const;
 const METHOD_UPDATE = "METHOD_UPDATE" as const;
 const SELECT_ROUTE = "SELECT_ROUTE" as const;
@@ -53,6 +54,10 @@ type RequestorAction =
   | {
       type: typeof ADD_ROUTE;
       payload: ProbedRoute;
+    }
+  | {
+      type: typeof ROUTE_INTERSECT;
+      payload: ProbedRoute[];
     }
   | {
       type: typeof PATH_UPDATE;
@@ -103,14 +108,19 @@ function requestorReducer(
     case ADD_ROUTE: {
       return { ...state, routes: [...state.routes, action.payload] };
     }
+    case ROUTE_INTERSECT: {
+      const nextRoutes = state.routes.filter((r) =>
+        action.payload.some((ar) => routeEquality(r, ar)),
+      );
+      return { ...state, routes: nextRoutes };
+    }
     case PATH_UPDATE: {
       const nextPath = action.payload;
-      const isWs = state.requestType === "websocket";
       const matchedRoute = findMatchedRoute(
         state.routes,
         nextPath,
         state.method,
-        isWs,
+        state.requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       // TODO - Refactor
@@ -134,12 +144,11 @@ function requestorReducer(
     }
     case METHOD_UPDATE: {
       const { method, requestType } = action.payload;
-      const isWs = requestType === "websocket";
       const matchedRoute = findMatchedRoute(
         state.routes,
         state.path,
         method,
-        isWs,
+        requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       return {
@@ -155,7 +164,7 @@ function requestorReducer(
         selectedRoute: action.payload,
         path: action.payload.path,
         method: probedRouteToInputMethod(action.payload),
-        requestType: action.payload.isWs ? "websocket" : "http",
+        requestType: action.payload.requestType,
 
         // TODO - We could merge these with existing path params to re-use existing values
         //        But maybe that'd be annoying?
@@ -201,7 +210,7 @@ const routeEquality = (a: ProbedRoute, b: ProbedRoute): boolean => {
     a.path === b.path &&
     a.method === b.method &&
     a.routeOrigin === b.routeOrigin &&
-    !!a.isWs === !!b.isWs
+    a.requestType === b.requestType
   );
 };
 
@@ -213,6 +222,10 @@ export function useRefactoredRequestorState() {
     if (shouldInsert) {
       dispatch({ type: ADD_ROUTE, payload: route });
     }
+  };
+
+  const removeRoutesIfNotPresent = (routes: ProbedRoute[]) => {
+    dispatch({ type: ROUTE_INTERSECT, payload: routes });
   };
 
   const updatePath = (path: string) => {
@@ -264,6 +277,7 @@ export function useRefactoredRequestorState() {
 
     // Api
     addRouteIfNotPresent,
+    removeRoutesIfNotPresent,
     selectRoute,
 
     // Form fields

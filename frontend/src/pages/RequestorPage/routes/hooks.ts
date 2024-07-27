@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { ProbedRoute, useProbedRoutes } from "../queries";
+import { RequestType, isWsRequest } from "../types";
 
 type UseRoutesOptions = {
   addRouteIfNotPresent: (route: ProbedRoute) => void;
+  removeRoutesIfNotPresent: (routes: ProbedRoute[]) => void;
 };
 
-export function useRoutes({ addRouteIfNotPresent }: UseRoutesOptions) {
+export function useRoutes({
+  addRouteIfNotPresent,
+  removeRoutesIfNotPresent,
+}: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes =
@@ -21,15 +26,19 @@ export function useRoutes({ addRouteIfNotPresent }: UseRoutesOptions) {
     for (const route of routes) {
       addRouteIfNotPresent(route);
     }
-  }, [routes, addRouteIfNotPresent]);
+    removeRoutesIfNotPresent(routes);
+  }, [routes, addRouteIfNotPresent, removeRoutesIfNotPresent]);
 
   // TODO - Support swapping out base url in UI,
   //        right now you can only change it by modifying FPX_SERVICE_TARGET in the API
   const addBaseUrl = useCallback(
-    (path: string, { isWs }: { isWs?: boolean } = {}) => {
+    (
+      path: string,
+      { requestType }: { requestType: RequestType } = { requestType: "http" },
+    ) => {
       const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
       const parsedBaseUrl = new URL(baseUrl);
-      if (isWs) {
+      if (isWsRequest(requestType)) {
         parsedBaseUrl.protocol = "ws";
       }
       let updatedBaseUrl = parsedBaseUrl.toString();

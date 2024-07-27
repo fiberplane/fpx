@@ -1,10 +1,11 @@
 import { ProbedRoute } from "../queries";
+import { RequestType } from "../types";
 import { findSmartRouterMatches } from "./match";
 
-const toRoute = (path: string, method: string, isWs: boolean) => ({
+const toRoute = (path: string, method: string, requestType: RequestType) => ({
   path,
   method,
-  isWs,
+  requestType,
   handler: "",
   handlerType: "route" as const,
   currentlyRegistered: false,
@@ -14,34 +15,34 @@ const toRoute = (path: string, method: string, isWs: boolean) => ({
 
 describe("findSmartRouterMatch", () => {
   const routes: ProbedRoute[] = [
-    toRoute("/test", "GET", false),
-    toRoute("/test", "POST", false),
-    toRoute("/users/:userId", "GET", false),
-    toRoute("/users/:userId", "PATCH", false),
-    toRoute("/users/:userId/comments/:commentId", "GET", false),
-    toRoute("/users/:userId/comments/:commentId", "PATCH", false),
-    toRoute("/ws", "GET", true),
+    toRoute("/test", "GET", "http"),
+    toRoute("/test", "POST", "http"),
+    toRoute("/users/:userId", "GET", "http"),
+    toRoute("/users/:userId", "PATCH", "http"),
+    toRoute("/users/:userId/comments/:commentId", "GET", "http"),
+    toRoute("/users/:userId/comments/:commentId", "PATCH", "http"),
+    toRoute("/ws", "GET", "websocket"),
   ];
 
   it("should return a match for the given pathname and method", () => {
-    const match = findSmartRouterMatches(routes, "/test", "GET");
+    const match = findSmartRouterMatches(routes, "/test", "GET", "http");
     console.log("/test match", match);
     expect(match).toBeTruthy();
   });
 
   it("should return a match for the given pathname and method", () => {
-    const match = findSmartRouterMatches(routes, "/test", "POST");
+    const match = findSmartRouterMatches(routes, "/test", "POST", "http");
     expect(match).toBeTruthy();
   });
 
   // NOTE - Basically just testing router behavior but this is a sanity check for me
   it("should return null if no match is found (params in route)", () => {
-    const match = findSmartRouterMatches(routes, "/users", "GET");
+    const match = findSmartRouterMatches(routes, "/users", "GET", "http");
     expect(match).toBeNull();
   });
 
   it("should return a match for the given pathname and method", () => {
-    const match = findSmartRouterMatches(routes, "/users/1", "GET");
+    const match = findSmartRouterMatches(routes, "/users/1", "GET", "http");
     expect(match).toMatchObject({
       path: "/users/:userId",
       method: "GET",

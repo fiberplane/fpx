@@ -14,6 +14,7 @@ import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute, useDeleteRoute } from "./queries";
 import { AddRouteButton } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
+import { isWsRequest } from "./types";
 
 type RoutesPanelProps = {
   routes?: ProbedRoute[];
@@ -244,7 +245,7 @@ export function RouteItem({
     !route.currentlyRegistered ||
     route.routeOrigin === "open_api";
 
-  const method = route.isWs ? "WS" : route.method;
+  const method = isWsRequest(route.requestType) ? "WS" : route.method;
   return (
     <>
       <span

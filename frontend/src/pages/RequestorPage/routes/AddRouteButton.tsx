@@ -261,10 +261,10 @@ function CustomRouteForm({
   const onSubmit: SubmitHandler<CustomRouteFormData> = ({ path }) => {
     addRoutes({
       path,
-      method,
+      method: isWs ? "GET" : method,
       routeOrigin: "custom",
       handlerType: "route",
-      isWs,
+      requestType: isWs ? "websocket" : "http",
     });
     setOpen(false);
   };

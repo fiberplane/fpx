@@ -28,6 +28,7 @@ import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestGeneration } from "./ai";
 import { Requestornator } from "./queries";
+import { RequestType, isWsRequest } from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
 // TODO - Create skeleton loading components for each tab content
@@ -37,7 +38,7 @@ type Props = {
   isLoading: boolean;
   history: Array<Requestornator>;
   loadHistoricalRequest: (traceId: string) => void;
-  isWs: boolean;
+  requestType: RequestType;
   websocketState: WebSocketState;
 };
 
@@ -46,7 +47,7 @@ export function ResponsePanel({
   isLoading,
   history,
   loadHistoricalRequest,
-  isWs,
+  requestType,
   websocketState,
 }: Props) {
   const isFailure = !!response?.app_responses?.isFailure;
@@ -59,7 +60,7 @@ export function ResponsePanel({
         className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
       >
         <CustomTabsList>
-          {isWs && (
+          {isWsRequest(requestType) && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
@@ -90,12 +91,24 @@ export function ResponsePanel({
           <TabContentInner
             isLoading={isLoading}
             isEmpty={!response}
-            isFailure={isWs ? websocketState.hasError : isFailure}
+            isFailure={
+              isWsRequest(requestType) ? websocketState.hasError : isFailure
+            }
             LoadingState={<LoadingResponseBody />}
             FailState={
-              isWs ? <FailedWebsocket /> : <FailedRequest response={response} />
+              isWsRequest(requestType) ? (
+                <FailedWebsocket />
+              ) : (
+                <FailedRequest response={response} />
+              )
             }
-            EmptyState={isWs ? <NoWebsocketConnection /> : <NoResponse />}
+            EmptyState={
+              isWsRequest(requestType) ? (
+                <NoWebsocketConnection />
+              ) : (
+                <NoResponse />
+              )
+            }
           >
             <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
               <ResponseSummary response={response} />

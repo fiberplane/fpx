@@ -12,9 +12,8 @@ export type ProbedRoute = {
   currentlyRegistered: boolean;
   routeOrigin: "discovered" | "custom" | "open_api";
   openApiSpec?: string;
-  // NOTE - Computed on the frontend, not stored in DB
-  isWs?: boolean;
-  // NOTE - Computed on the frontend as well, not stored in DB
+  requestType: "http" | "websocket";
+  // NOTE - Added on the frontend, not stored in DB
   isDraft?: boolean;
 };
 
@@ -82,7 +81,9 @@ export type Route = {
   handlerType?: "route" | "middleware";
   routeOrigin?: "discovered" | "custom" | "open_api";
   openApiSpec?: string;
-  isWs?: boolean;
+  requestType?: "http" | "websocket";
+  // NOTE - Added on the frontend, not stored in DB
+  isDraft?: boolean;
 };
 
 async function addRoutes(routes: Route | Route[]) {

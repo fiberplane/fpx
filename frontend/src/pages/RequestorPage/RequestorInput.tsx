@@ -11,7 +11,12 @@ import { cn, isMac } from "@/utils";
 import { MixerHorizontalIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
-import { RequestMethod, RequestMethodInputValue } from "./types";
+import {
+  RequestMethod,
+  RequestMethodInputValue,
+  RequestType,
+  isWsRequest,
+} from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
 type RequestInputProps = {
@@ -21,9 +26,12 @@ type RequestInputProps = {
   handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
-  addBaseUrl: (path: string, { isWs }: { isWs?: boolean }) => string;
+  addBaseUrl: (
+    path: string,
+    { requestType }: { requestType: RequestType },
+  ) => string;
   formRef: React.RefObject<HTMLFormElement>;
-  isWs?: boolean;
+  requestType: RequestType;
   websocketState: WebSocketState;
   disconnectWebsocket: () => void;
 };
@@ -36,7 +44,7 @@ export function RequestorInput({
   onSubmit,
   isRequestorRequesting,
   addBaseUrl,
-  isWs,
+  requestType,
   formRef,
   websocketState,
   disconnectWebsocket,
@@ -48,9 +56,9 @@ export function RequestorInput({
   // This happens if the user clicks a route in the sidebar, for example,
   // or when they load a request from history
   useEffect(() => {
-    const url = addBaseUrl(path ?? "", { isWs });
+    const url = addBaseUrl(path ?? "", { requestType });
     setValue(url);
-  }, [path, addBaseUrl, isWs]);
+  }, [path, addBaseUrl, requestType]);
 
   const { toast } = useToast();
 
@@ -62,7 +70,7 @@ export function RequestorInput({
     >
       <div className="flex flex-grow items-center space-x-0">
         <RequestMethodCombobox
-          method={isWs ? "WS" : method}
+          method={isWsRequest(requestType) ? "WS" : method}
           handleMethodChange={handleMethodChange}
           allowUserToChange
         />
@@ -103,9 +111,13 @@ export function RequestorInput({
               className={cn("p-2 md:p-2.5")}
             >
               <span className="hidden md:inline">
-                {isWs ? (isWsConnected ? "Disconnect" : "Connect") : "Send"}
+                {isWsRequest(requestType)
+                  ? isWsConnected
+                    ? "Disconnect"
+                    : "Connect"
+                  : "Send"}
               </span>
-              {isWs ? (
+              {isWsRequest(requestType) ? (
                 <MixerHorizontalIcon className="md:hidden w-6 h-6" />
               ) : (
                 <TriangleRightIcon className="md:hidden w-6 h-6" />
