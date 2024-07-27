@@ -502,6 +502,8 @@ function useRequestorSubmitHandler({
       requestHeaders,
       selectedRoute,
       addBaseUrl,
+      connectWebsocket,
+      toast,
     ],
   );
 }
