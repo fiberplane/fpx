@@ -45,38 +45,63 @@ export function findSmartRouterMatches(
   const router = new SmartRouter({ routers });
   for (const route of routes) {
     if (!!route.isWs === !!isWs) {
-      const handler = () => {};
-      router.add(route.method, route.path, handler);
-      // Add the noop handler to the lookup table,
-      // so if there's a match, we can use the handler to look up the OG route definition
-      functionHandlerLookupTable.set(handler, route);
+      if (route.method && route.path) {
+        const handler = () => {};
+        router.add(route.method, route.path, handler);
+        // Add the noop handler to the lookup table,
+        // so if there's a match, we can use the handler to look up the OG route definition
+        functionHandlerLookupTable.set(handler, route);
+      }
     }
   }
-  const match = router.match(method, pathname);
 
-  const allAreEmpty = isMatchResultEmpty(match);
+  // Matching against a pathname like `/users/:` will throw,
+  // so we need to be defensive
+  try {
+    const match = router.match(method, pathname);
+    const allAreEmpty = isMatchResultEmpty(match);
 
-  if (allAreEmpty) {
+    if (allAreEmpty) {
+      return null;
+    }
+
+    const matches = unpackMatches(match);
+
+    if (matches.length === 0) {
+      return null;
+    }
+
+    const routeMatches = matches.map((match) => {
+      const handler = match[0];
+      return functionHandlerLookupTable.get(handler as () => void);
+    });
+
+    console.debug(
+      "ROUTE MATCHES - what if there is more than one?",
+      routeMatches,
+    );
+
+    // Sort draft routes after non-draft routes
+    routeMatches.sort((a, b) => {
+      const aIsDraft = !!a?.isDraft;
+      const bIsDraft = !!b?.isDraft;
+      if (aIsDraft && bIsDraft) {
+        return 0;
+      }
+      if (aIsDraft) {
+        return 1;
+      }
+      if (bIsDraft) {
+        return -1;
+      }
+      return 0;
+    });
+
+    return routeMatches[0];
+  } catch (e) {
+    console.error("Error matching routes", e);
     return null;
   }
-
-  const matches = unpackMatches(match);
-
-  if (matches.length === 0) {
-    return null;
-  }
-
-  const routeMatches = matches.map((match) => {
-    const handler = match[0];
-    return functionHandlerLookupTable.get(handler as () => void);
-  });
-
-  console.debug(
-    "ROUTE MATCHES - what if there is more than one?",
-    routeMatches,
-  );
-
-  return routeMatches[0];
 }
 
 // type Result<T> = [[T, ParamIndexMap][], ParamStash] | [[T, Params][]]

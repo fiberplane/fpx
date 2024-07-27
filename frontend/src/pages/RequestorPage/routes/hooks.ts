@@ -131,8 +131,24 @@ export function useReselectRouteHack({
   method: string;
 }) {
   useEffect(() => {
-    // Short circuit if there's already a selected route
+    const match = findMatchedRoute(routes, path, method);
+
+    // If there's a match, and it's not the same as the selected route, select it
+    if (match && match !== selectedRoute) {
+      setSelectedRoute(match);
+      setPathParams(extractPathParams(path).map(mapPathKey));
+      return;
+    }
+
+    // Short circuit the rest of the logic if there's already a selected route
     if (selectedRoute) {
+      return;
+    }
+
+    // This might all be useless in light of the above, need to re-evaluate...
+    if (match) {
+      setSelectedRoute(match);
+      setPathParams(extractPathParams(path).map(mapPathKey));
       return;
     }
 

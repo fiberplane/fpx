@@ -56,11 +56,6 @@ export function useRequestorFormData(
    */
   const handlePathInputChange = useCallback(
     (newPath: string) => {
-      const matchingRoute = findMatchedRoute(routes, newPath, method);
-      if (matchingRoute) {
-        console.log("matchingRoute", matchingRoute);
-      }
-
       if (!selectedRoute) {
         setPath(newPath);
         setPathParams(extractPathParams(newPath).map(mapPathKey));
@@ -71,6 +66,7 @@ export function useRequestorFormData(
         selectedRoute && shouldDeselectRoute(selectedRoute.path, newPath);
 
       setPath(newPath);
+
       if (shouldDeselect) {
         setDraftRoute((currentDraftRoute) =>
           currentDraftRoute
@@ -93,7 +89,7 @@ export function useRequestorFormData(
         setPathParams(extractPathParams(newPath).map(mapPathKey));
       }
     },
-    [selectedRoute, setDraftRoute, method],
+    [method, selectedRoute, setDraftRoute],
   );
 
   const handleMethodChange = useCallback(

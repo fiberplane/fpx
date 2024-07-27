@@ -1,3 +1,4 @@
+import { ProbedRoute } from "../queries";
 import { diffPaths, hasChangedPathParam } from "./diff-paths";
 
 /**
