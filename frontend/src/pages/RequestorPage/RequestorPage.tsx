@@ -9,6 +9,7 @@ import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { useAi } from "./ai";
 import { useRequestorFormData } from "./data";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { usePersistedUiState, useSaveUiState } from "./persistUiState";
 import {
   type ProbedRoute,
@@ -60,23 +61,16 @@ export const RequestorPage = () => {
 
   const { addBaseUrl } = useRoutes({
     addRouteIfNotPresent,
-    // TODO - Bring back persisted state once reducer is integrated
-    browserHistoryState,
   });
 
   const {
-    // path,
-    // setPath,
-    // method,
-    // handleMethodChange,
     body,
     setBody,
     requestHeaders,
     setRequestHeaders,
     queryParams,
     setQueryParams,
-    // handleSelectRoute,
-  } = useRequestorFormData(routes, selectedRoute, browserHistoryState);
+  } = useRequestorFormData(browserHistoryState);
 
   // When we unmount, save the current state of UI to the browser history
   // This allows us to reload the page when you press "Back" in the browser
@@ -112,7 +106,7 @@ export const RequestorPage = () => {
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeRequest();
 
-  // TODO - Allows us to connect to a websocket and send messages through it
+  // WIP - Allows us to connect to a websocket and send messages through it
   const {
     connect: connectWebsocket,
     disconnect: disconnectWebsocket,
@@ -360,7 +354,7 @@ function useRequestorHistory({
         );
 
         // NOTE - Helps us set path parameters correctly
-        handleSelectRoute(matchedRoute, pathParams);
+        handleSelectRoute(matchedRoute.route, pathParams);
 
         // Reset the path to the *exact* path of the request, instead of the route pattern
         const path =

@@ -1,17 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { PersistedUiState } from "../persistUiState";
+import { useCallback, useEffect, useMemo } from "react";
 import { ProbedRoute, useProbedRoutes } from "../queries";
-import { findMatchedRoute } from "./match";
 
 type UseRoutesOptions = {
   addRouteIfNotPresent: (route: ProbedRoute) => void;
-  browserHistoryState?: PersistedUiState;
 };
 
-export function useRoutes({
-  addRouteIfNotPresent,
-  browserHistoryState,
-}: UseRoutesOptions) {
+export function useRoutes({ addRouteIfNotPresent }: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes =
@@ -50,60 +44,10 @@ export function useRoutes({
     [routesAndMiddleware],
   );
 
-  // Select the home route if it exists, otherwise fall back to the first route in the list
-  const { selectedRoute, setSelectedRoute } = useAutoselectInitialRoute({
-    isLoading,
-    routes,
-    preferRoute: browserHistoryState?.route ?? undefined,
-  });
-
   return {
     isError,
     isLoading,
     routes,
     addBaseUrl,
-    selectedRoute,
-    setSelectedRoute,
   };
-}
-
-function useAutoselectInitialRoute({
-  isLoading,
-  routes,
-  preferRoute,
-}: {
-  isLoading: boolean;
-  routes: ProbedRoute[];
-  preferRoute?: { path: string; method: string; isWs?: boolean };
-}) {
-  const preferredAutoselected = findMatchedRoute(
-    routes,
-    preferRoute?.path,
-    preferRoute?.method,
-    preferRoute?.isWs,
-  );
-
-  const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(
-    preferredAutoselected ?? null,
-  );
-
-  const [hasAlreadyAutoSelected, setHasAlreadyAutoSelected] = useState(false);
-
-  useEffect(() => {
-    // NOTE - We do not do autoselection if there was a selected route previously, and we just transitioned to having a selected route...
-    const shouldAutoselectInitialRoute =
-      !isLoading &&
-      routes?.length &&
-      selectedRoute === null &&
-      !hasAlreadyAutoSelected;
-
-    if (shouldAutoselectInitialRoute) {
-      const autoselectedRoute = routes.find((r) => r.path === "/") ?? routes[0];
-      setSelectedRoute(autoselectedRoute);
-      // HACK - Only autoselect with this logic once for initializaiton. There's a better way to do this, just need to refactor things a bit
-      setHasAlreadyAutoSelected(true);
-    }
-  }, [routes, isLoading, selectedRoute, hasAlreadyAutoSelected]);
-
-  return { selectedRoute, setSelectedRoute };
 }

@@ -3,16 +3,22 @@ import { SmartRouter } from "hono/router/smart-router";
 import { TrieRouter } from "hono/router/trie-router";
 import { ProbedRoute } from "../queries";
 
+type MatchedRouteResult = {
+  route: ProbedRoute;
+} | null;
+
 export function findMatchedRoute(
   routes: ProbedRoute[],
   pathname?: string,
   method?: string,
   isWs?: boolean,
-): ProbedRoute | null {
+): MatchedRouteResult {
   if (pathname && method) {
     const smartMatch = findSmartRouterMatches(routes, pathname, method);
     if (smartMatch) {
-      return smartMatch;
+      return {
+        route: smartMatch,
+      };
     }
   }
 
@@ -23,7 +29,7 @@ export function findMatchedRoute(
       route.method === method &&
       !!route.isWs === !!isWs
     ) {
-      return route;
+      return { route };
     }
   }
 

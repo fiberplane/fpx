@@ -61,7 +61,7 @@ type RequestorAction =
   | {
       type: typeof METHOD_UPDATE;
       payload: {
-        method: RequestMethodInputValue;
+        method: RequestMethod;
         requestType: RequestType;
       };
     }
@@ -112,7 +112,7 @@ function requestorReducer(
         state.method,
         isWs,
       );
-      const nextSelectedRoute = matchedRoute ? matchedRoute : null;
+      const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       return {
         ...state,
         path: action.payload,
@@ -128,7 +128,7 @@ function requestorReducer(
         method,
         isWs,
       );
-      const nextSelectedRoute = matchedRoute ? matchedRoute : null;
+      const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       return {
         ...state,
         method,
