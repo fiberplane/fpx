@@ -9,7 +9,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { cn, isMac, noop } from "@/utils";
 import { MixerHorizontalIcon, TriangleRightIcon } from "@radix-ui/react-icons";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
@@ -53,24 +53,6 @@ export function RequestorInput({
 
   const { toast } = useToast();
 
-  const baseUrl = "http://localhost:8787"; // Define your base URL here
-  const inputRef = useRef<HTMLInputElement>(null);
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    if (!inputValue.startsWith(baseUrl)) {
-      setValue(baseUrl);
-    } else {
-      setValue(inputValue);
-      try {
-        const url = new URL(inputValue);
-        handlePathInputChange(url.pathname);
-      } catch {
-        // TODO - Error state? Toast?
-        console.error("Invalid URL", inputValue);
-      }
-    }
-  };
-
   return (
     <form
       ref={formRef}
@@ -91,20 +73,7 @@ export function RequestorInput({
             allowUserToChange
           />
         )}
-
-        <div className="relative flex-grow w-full">
-          <span className="absolute left-0 top-0 h-9 flex items-center py-1 pl-3 text-gray-400 font-mono text-sm border border-none shadow-none font-normal">
-            {baseUrl}
-          </span>
-          <Input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={handleInputChange}
-            className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
-          />
-        </div>
-        {/* <Input
+        <Input
           type="text"
           value={value}
           onChange={(e) => {
@@ -118,7 +87,7 @@ export function RequestorInput({
             }
           }}
           className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
-        /> */}
+        />
       </div>
       <div className="flex items-center space-x-2 p-2">
         <Tooltip>
