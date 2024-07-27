@@ -148,7 +148,12 @@ function requestorReducer(
       return { ...state, routes: action.payload };
     }
     case ADD_ROUTE: {
-      return { ...state, routes: [...state.routes, action.payload] };
+      const route = action.payload;
+      const shouldInsert = state.routes.every((r) => !routeEquality(r, route));
+      if (shouldInsert) {
+        return { ...state, routes: [...state.routes, route] };
+      }
+      return state;
     }
     case ROUTE_INTERSECT: {
       const nextRoutes = state.routes.filter((r) =>
@@ -269,10 +274,7 @@ export function useRefactoredRequestorState() {
   const [state, dispatch] = useReducer(requestorReducer, initialState);
 
   const addRouteIfNotPresent = (route: ProbedRoute) => {
-    const shouldInsert = state.routes.every((r) => !routeEquality(r, route));
-    if (shouldInsert) {
-      dispatch({ type: ADD_ROUTE, payload: route });
-    }
+    dispatch({ type: ADD_ROUTE, payload: route });
   };
 
   const removeRoutesIfNotPresent = (routes: ProbedRoute[]) => {
