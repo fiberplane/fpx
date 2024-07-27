@@ -1,5 +1,8 @@
+import { useToast } from "@/components/ui/use-toast";
+import { useWebsocketQueryInvalidation } from "@/hooks";
 import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
 import { useCallback, useMemo, useRef } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -16,16 +19,13 @@ import {
   useFetchRequestorRequests,
   useMakeRequest,
 } from "./queries";
-import { findMatchedRoute, useRoutes } from "./routes";
-// We need some special CSS for grid layout that tailwind cannot handle
-import "./RequestorPage.css";
-import { useToast } from "@/components/ui/use-toast";
-import { useWebsocketQueryInvalidation } from "@/hooks";
-import { useHotkeys } from "react-hotkeys-hook";
 import { useRefactoredRequestorState } from "./reducer";
+import { findMatchedRoute, useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { isWsRequest } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
+// We need some special CSS for grid layout that tailwind cannot handle
+import "./styles.css";
 
 export const RequestorPage = () => {
   const { toast } = useToast();
