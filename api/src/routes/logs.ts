@@ -72,7 +72,12 @@ app.post("/v0/logs", zValidator("json", schemaPostLogs), async (ctx) => {
             currentlyRegistered: true,
           })
           .onConflictDoUpdate({
-            target: [appRoutes.path, appRoutes.method, appRoutes.handlerType, appRoutes.routeOrigin],
+            target: [
+              appRoutes.path,
+              appRoutes.method,
+              appRoutes.handlerType,
+              appRoutes.routeOrigin,
+            ],
             set: { handler: route.handler, currentlyRegistered: true },
           });
       }

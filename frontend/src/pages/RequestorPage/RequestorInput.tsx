@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { cn, isMac } from "@/utils";
-import { CommitIcon, TriangleRightIcon } from "@radix-ui/react-icons";
+import { MixerHorizontalIcon, TriangleRightIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { WebSocketState } from "./useMakeWebsocketRequest";
@@ -111,9 +111,9 @@ export function RequestorInput({
                 {isWs ? (isWsConnected ? "Disconnect" : "Connect") : "Send"}
               </span>
               {isWs ? (
-                <TriangleRightIcon className="md:hidden w-6 h-6" />
+                <MixerHorizontalIcon className="md:hidden w-6 h-6" />
               ) : (
-                <CommitIcon className="md:hidden w-6 h-6" />
+                <TriangleRightIcon className="md:hidden w-6 h-6" />
               )}
             </Button>
           </TooltipTrigger>
