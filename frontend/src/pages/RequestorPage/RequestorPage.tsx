@@ -32,8 +32,14 @@ export const RequestorPage = () => {
   const { toast } = useToast();
   const browserHistoryState = usePersistedUiState();
 
-  const { routes, setDraftRoute, addBaseUrl, selectedRoute, setSelectedRoute } =
-    useRoutes(browserHistoryState);
+  const {
+    routes,
+    setDraftRoute,
+    deleteDraftRoute,
+    addBaseUrl,
+    selectedRoute,
+    setSelectedRoute,
+  } = useRoutes(browserHistoryState);
 
   const {
     path,
@@ -213,6 +219,7 @@ export const RequestorPage = () => {
           routes={routes}
           selectedRoute={selectedRoute}
           handleRouteClick={handleSelectRoute}
+          deleteDraftRoute={deleteDraftRoute}
         />
       </div>
 

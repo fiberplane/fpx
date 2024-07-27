@@ -19,12 +19,14 @@ type RoutesPanelProps = {
   routes?: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
+  deleteDraftRoute?: () => void;
 };
 
 export function RoutesPanel({
   routes,
   selectedRoute,
   handleRouteClick,
+  deleteDraftRoute,
 }: RoutesPanelProps) {
   const customRoutesEnabled = useCustomRoutesEnabled();
   const { width, handleResize } = useResizableWidth(320);
@@ -138,6 +140,7 @@ export function RoutesPanel({
               routes={draftRoutes ?? []}
               selectedRoute={selectedRoute}
               handleRouteClick={handleRouteClick}
+              deleteDraftRoute={deleteDraftRoute}
             />
           )}
 
@@ -185,10 +188,12 @@ type RoutesSectionProps = {
   routes: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
+  deleteDraftRoute?: () => void;
 };
 
 function RoutesSection(props: RoutesSectionProps) {
-  const { title, routes, selectedRoute, handleRouteClick } = props;
+  const { title, routes, selectedRoute, handleRouteClick, deleteDraftRoute } =
+    props;
 
   const [showRoutesSection, setShowRoutesSection] = useState(true);
   const ShowRoutesSectionIcon = showRoutesSection
@@ -220,7 +225,7 @@ function RoutesSection(props: RoutesSectionProps) {
                 },
               )}
             >
-              <RouteItem route={route} />
+              <RouteItem route={route} deleteDraftRoute={deleteDraftRoute} />
             </div>
           ))}
         </div>
@@ -229,7 +234,10 @@ function RoutesSection(props: RoutesSectionProps) {
   );
 }
 
-export function RouteItem({ route }: { route: ProbedRoute }) {
+export function RouteItem({
+  route,
+  deleteDraftRoute,
+}: { route: ProbedRoute; deleteDraftRoute?: () => void }) {
   const { mutate: deleteRoute } = useDeleteRoute();
   const canDeleteRoute =
     route.routeOrigin === "custom" ||
@@ -255,7 +263,11 @@ export function RouteItem({ route }: { route: ProbedRoute }) {
               className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hover:pointer-events-auto invisible group-hover:visible"
               onClick={(e) => {
                 e.stopPropagation();
-                deleteRoute({ path: route.path, method: route.method });
+                if (route.isDraft) {
+                  deleteDraftRoute?.();
+                } else {
+                  deleteRoute({ path: route.path, method: route.method });
+                }
               }}
             />
           </div>

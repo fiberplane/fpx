@@ -8,7 +8,9 @@ import { findMatchedRoute } from "./match";
 export function useRoutes(browserHistoryState?: PersistedUiState) {
   // NOTE - Not yet in use
   const [draftRoute, setDraftRoute] = useState<ProbedRoute | null>(null);
-
+  const deleteDraftRoute = useCallback(() => {
+    setDraftRoute(null);
+  }, [setDraftRoute]);
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes =
@@ -66,6 +68,7 @@ export function useRoutes(browserHistoryState?: PersistedUiState) {
     selectedRoute,
     setSelectedRoute,
     setDraftRoute,
+    deleteDraftRoute,
   };
 }
 
