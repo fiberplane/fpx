@@ -40,6 +40,21 @@ export type RequestorState = {
   pathParams: KeyValueParameter[];
   /** Headers to be sent with the request */
   requestHeaders: KeyValueParameter[];
+
+  /** Body */
+  body:
+    | {
+        type: "text";
+        value: string | undefined;
+      }
+    | {
+        type: "json";
+        value: string | undefined;
+      }
+    | {
+        type: "form-data";
+        value: KeyValueParameter[];
+      };
 };
 
 const SET_ROUTES = "SET_ROUTES" as const;
@@ -53,6 +68,7 @@ const REPLACE_PATH_PARAM_VALUES = "REPLACE_PATH_PARAM_VALUES" as const;
 const CLEAR_PATH_PARAMS = "CLEAR_PATH_PARAMS" as const;
 const SET_QUERY_PARAMS = "SET_QUERY_PARAMS" as const;
 const SET_HEADERS = "SET_HEADERS" as const;
+const SET_BODY = "SET_BODY" as const;
 
 type RequestorAction =
   | {
@@ -101,6 +117,10 @@ type RequestorAction =
   | {
       type: typeof SET_HEADERS;
       payload: KeyValueParameter[];
+    }
+  | {
+      type: typeof SET_BODY;
+      payload: RequestorState["body"];
     };
 
 const initialState: RequestorState = {
@@ -113,6 +133,10 @@ const initialState: RequestorState = {
   pathParams: [],
   queryParams: enforceTerminalDraftParameter([]),
   requestHeaders: enforceTerminalDraftParameter([]),
+  body: {
+    type: "json",
+    value: "",
+  },
 };
 
 function requestorReducer(
@@ -224,6 +248,9 @@ function requestorReducer(
     case SET_HEADERS: {
       return { ...state, requestHeaders: action.payload };
     }
+    case SET_BODY: {
+      return { ...state, body: action.payload };
+    }
     default:
       return state;
   }
@@ -296,6 +323,16 @@ export function useRefactoredRequestorState() {
     dispatch({ type: SET_HEADERS, payload: parametersWithDraft });
   };
 
+  const setBody = (body: undefined | string | RequestorState["body"]) => {
+    if (body === undefined) {
+      dispatch({ type: SET_BODY, payload: { type: "text", value: undefined } });
+    } else if (typeof body === "string") {
+      dispatch({ type: SET_BODY, payload: { type: "text", value: body } });
+    } else {
+      dispatch({ type: SET_BODY, payload: body });
+    }
+  };
+
   /**
    * NOTE - When there's no selected route, we return a "draft" route
    */
@@ -322,6 +359,7 @@ export function useRefactoredRequestorState() {
     clearPathParams,
     setQueryParams,
     setRequestHeaders,
+    setBody,
 
     // Selectors
     getActiveRoute,

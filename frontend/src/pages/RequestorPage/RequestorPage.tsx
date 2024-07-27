@@ -8,7 +8,6 @@ import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { useAi } from "./ai";
-import { useRequestorFormData } from "./data";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { usePersistedUiState, useSaveUiState } from "./persistUiState";
 import {
@@ -36,7 +35,6 @@ export const RequestorPage = () => {
 
   // TODO - Bring back persisted state once reducer is fully integrated
   // const browserHistoryState = usePersistedUiState();
-  const browserHistoryState = undefined;
 
   // ========================//
   // === Refactored state ===//
@@ -58,12 +56,13 @@ export const RequestorPage = () => {
     updateMethod: handleMethodChange,
 
     // Request panel
-    state: { pathParams, queryParams, requestHeaders },
+    state: { pathParams, queryParams, requestHeaders, body },
     setPathParams,
     updatePathParamValues,
     clearPathParams,
     setQueryParams,
     setRequestHeaders,
+    setBody,
   } = refactoredState;
 
   const selectedRoute = getActiveRoute();
@@ -72,8 +71,6 @@ export const RequestorPage = () => {
     addRouteIfNotPresent,
     removeRoutesIfNotPresent,
   });
-
-  const { body, setBody } = useRequestorFormData(browserHistoryState);
 
   // NOTE - Use this to test overflow
   // useEffect(() => {
@@ -89,7 +86,8 @@ export const RequestorPage = () => {
   useSaveUiState({
     ...refactoredState.state,
     route: getActiveRoute(),
-    body,
+    // HACK - Need to modify this when we support form-data
+    body: body.type !== "form-data" ? body.value : undefined,
     pathParams,
     queryParams,
     requestHeaders,
@@ -128,7 +126,8 @@ export const RequestorPage = () => {
 
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
-    body,
+    // HACK - Need to modify this when we support form-data
+    body: body.type !== "form-data" ? body.value : undefined,
     addBaseUrl,
     path,
     method,
@@ -274,7 +273,8 @@ export const RequestorPage = () => {
         >
           <RequestPanel
             method={method}
-            body={body}
+            // HACK - Need to modify this when we support form-data
+            body={body.type !== "form-data" ? body.value : undefined}
             setBody={setBody}
             pathParams={pathParams}
             queryParams={queryParams}
@@ -317,7 +317,7 @@ type RequestorHistoryHookArgs = {
   routes: ProbedRoute[];
   handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
   setPath: (path: string) => void;
-  setBody: (body?: string) => void;
+  setBody: (body: string | undefined) => void;
   setPathParams: (headers: KeyValueParameter[]) => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
