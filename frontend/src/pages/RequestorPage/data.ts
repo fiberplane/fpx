@@ -67,7 +67,6 @@ export function useRequestorFormData(
 
       setPath(newPath);
       if (shouldDeselect) {
-        // Create draft route in side panel or something crazy like that?
         setDraftRoute((currentDraftRoute) =>
           currentDraftRoute
             ? {
@@ -104,24 +103,29 @@ export function useRequestorFormData(
         implicitMethod,
         isWs,
       );
-      console.log("matchingRoute", matchingRoute);
 
       if (matchingRoute) {
+        if (matchingRoute.isDraft) {
+          // Update the draft route
+          setDraftRoute(matchingRoute);
+        }
         setRoute(matchingRoute);
       } else {
-        setDraftRoute({
+        const draft = {
           path,
           method: implicitMethod,
           isWs,
           handler: "",
-          handlerType: "route",
+          handlerType: "route" as const,
           currentlyRegistered: false,
-          routeOrigin: "custom",
+          routeOrigin: "custom" as const,
           isDraft: true,
-        });
+        };
+        setDraftRoute(draft);
+        setRoute(draft);
       }
     },
-    [routes, path, setRoute],
+    [routes, path, setRoute, setDraftRoute],
   );
 
   // We want to update form data whenever the user selects a new route from the sidebar

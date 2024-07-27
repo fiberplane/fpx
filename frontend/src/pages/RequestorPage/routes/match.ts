@@ -10,7 +10,6 @@ export function findMatchedRoute(
   method?: string,
   isWs?: boolean,
 ): ProbedRoute | undefined {
-  console.log("findMatchedRoute", pathname, method, isWs, routes);
   for (const route of routes) {
     if (
       route.path === pathname &&

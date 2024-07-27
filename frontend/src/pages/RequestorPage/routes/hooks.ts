@@ -76,12 +76,13 @@ function useAutoselectInitialRoute({
 }: {
   isLoading: boolean;
   routes: ProbedRoute[];
-  preferRoute?: { path: string; method: string };
+  preferRoute?: { path: string; method: string; isWs?: boolean };
 }) {
   const preferredAutoselected = findMatchedRoute(
     routes,
     preferRoute?.path,
     preferRoute?.method,
+    preferRoute?.isWs,
   );
 
   const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(
