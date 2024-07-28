@@ -3,14 +3,10 @@ import { ProbedRoute, useProbedRoutes } from "../queries";
 import { RequestType, isWsRequest } from "../types";
 
 type UseRoutesOptions = {
-  addRouteIfNotPresent: (route: ProbedRoute) => void;
-  removeRoutesIfNotPresent: (routes: ProbedRoute[]) => void;
+  setRoutes: (routes: ProbedRoute[]) => void;
 };
 
-export function useRoutes({
-  addRouteIfNotPresent,
-  removeRoutesIfNotPresent,
-}: UseRoutesOptions) {
+export function useRoutes({ setRoutes }: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes =
@@ -23,11 +19,8 @@ export function useRoutes({
   // HACK - Antipattern, add routes to the reducer based off of external changes
   // NOTE - This will only add routes if they don't exist
   useEffect(() => {
-    for (const route of routes) {
-      addRouteIfNotPresent(route);
-    }
-    removeRoutesIfNotPresent(routes);
-  }, [routes, addRouteIfNotPresent, removeRoutesIfNotPresent]);
+    setRoutes(routes);
+  }, [routes, setRoutes]);
 
   // TODO - Support swapping out base url in UI,
   //        right now you can only change it by modifying FPX_SERVICE_TARGET in the API

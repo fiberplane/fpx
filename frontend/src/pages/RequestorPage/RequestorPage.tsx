@@ -11,15 +11,13 @@ import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { useAi } from "./ai";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { usePersistedUiState, useSaveUiState } from "./persistUiState";
 import {
   type ProbedRoute,
   Requestornator,
   useFetchRequestorRequests,
   useMakeRequest,
 } from "./queries";
-import { useRefactoredRequestorState } from "./reducer";
+import { useRequestor } from "./reducer";
 import { findMatchedRoute, useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { isWsRequest } from "./types";
@@ -39,14 +37,13 @@ export const RequestorPage = () => {
   // ========================//
   // === Refactored state ===//
   // ========================//
-  const refactoredState = useRefactoredRequestorState();
+  const refactoredState = useRequestor();
   // @ts-expect-error - testing
   globalThis.refactoredState = refactoredState;
   const {
     // Routes panel
     state: { routes },
-    addRouteIfNotPresent,
-    removeRoutesIfNotPresent,
+    setRoutes,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     getActiveRoute,
 
@@ -68,8 +65,7 @@ export const RequestorPage = () => {
   const selectedRoute = getActiveRoute();
 
   const { addBaseUrl } = useRoutes({
-    addRouteIfNotPresent,
-    removeRoutesIfNotPresent,
+    setRoutes,
   });
 
   // NOTE - Use this to test overflow
@@ -80,18 +76,6 @@ export const RequestorPage = () => {
   //     ),
   //   );
   // }, []);
-
-  // When we unmount, save the current state of UI to the browser history
-  // This allows us to reload the page when you press "Back" in the browser
-  useSaveUiState({
-    ...refactoredState.state,
-    route: getActiveRoute(),
-    // HACK - Need to modify this when we support form-data
-    body: body.type !== "form-data" ? body.value : undefined,
-    pathParams,
-    queryParams,
-    requestHeaders,
-  });
 
   const {
     history,

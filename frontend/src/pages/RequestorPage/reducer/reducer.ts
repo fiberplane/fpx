@@ -1,11 +1,11 @@
-import { useReducer } from "react";
-import { KeyValueParameter } from "./KeyValueForm";
-import { enforceTerminalDraftParameter } from "./KeyValueForm/hooks";
-import { ProbedRoute } from "./queries";
-import { findMatchedRoute } from "./routes";
-import { RequestMethod, RequestMethodInputValue } from "./types";
-
-type RequestType = "http" | "websocket";
+import { useCallback, useReducer } from "react";
+import { KeyValueParameter } from "../KeyValueForm";
+import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
+import { ProbedRoute } from "../queries";
+import { findMatchedRoute } from "../routes";
+import { RequestMethod, RequestMethodInputValue, RequestType } from "../types";
+import { useSaveUiState } from "./persistence";
+import { type RequestorState, createInitialState, initialState } from "./state";
 
 const _getActiveRoute = (state: RequestorState): ProbedRoute => {
   return (
@@ -22,44 +22,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
   );
 };
 
-export type RequestorState = {
-  /** All routes */
-  routes: ProbedRoute[];
-  /** Indicates which route to highlight in the routes panel */
-  selectedRoute: ProbedRoute | null;
-  /** Path input */
-  path: string;
-  /** Method input */
-  method: RequestMethod;
-  /** Request type input */
-  requestType: RequestType;
-
-  /** Query parameters to be sent with the request */
-  queryParams: KeyValueParameter[];
-  /** Path parameters and their corresponding values */
-  pathParams: KeyValueParameter[];
-  /** Headers to be sent with the request */
-  requestHeaders: KeyValueParameter[];
-
-  /** Body */
-  body:
-    | {
-        type: "text";
-        value: string | undefined;
-      }
-    | {
-        type: "json";
-        value: string | undefined;
-      }
-    | {
-        type: "form-data";
-        value: KeyValueParameter[];
-      };
-};
-
 const SET_ROUTES = "SET_ROUTES" as const;
-const ADD_ROUTE = "ADD_ROUTE" as const;
-const ROUTE_INTERSECT = "ROUTE_INTERSECT" as const;
 const PATH_UPDATE = "PATH_UPDATE" as const;
 const METHOD_UPDATE = "METHOD_UPDATE" as const;
 const SELECT_ROUTE = "SELECT_ROUTE" as const;
@@ -73,14 +36,6 @@ const SET_BODY = "SET_BODY" as const;
 type RequestorAction =
   | {
       type: typeof SET_ROUTES;
-      payload: ProbedRoute[];
-    }
-  | {
-      type: typeof ADD_ROUTE;
-      payload: ProbedRoute;
-    }
-  | {
-      type: typeof ROUTE_INTERSECT;
       payload: ProbedRoute[];
     }
   | {
@@ -123,43 +78,21 @@ type RequestorAction =
       payload: RequestorState["body"];
     };
 
-const initialState: RequestorState = {
-  routes: [],
-  selectedRoute: null,
-  path: "",
-  method: "GET",
-  requestType: "http",
-
-  pathParams: [],
-  queryParams: enforceTerminalDraftParameter([]),
-  requestHeaders: enforceTerminalDraftParameter([]),
-  body: {
-    type: "json",
-    value: "",
-  },
-};
-
 function requestorReducer(
   state: RequestorState,
   action: RequestorAction,
 ): RequestorState {
   switch (action.type) {
     case SET_ROUTES: {
-      return { ...state, routes: action.payload };
-    }
-    case ADD_ROUTE: {
-      const route = action.payload;
-      const shouldInsert = state.routes.every((r) => !routeEquality(r, route));
-      if (shouldInsert) {
-        return { ...state, routes: [...state.routes, route] };
-      }
-      return state;
-    }
-    case ROUTE_INTERSECT: {
-      const nextRoutes = state.routes.filter((r) =>
-        action.payload.some((ar) => routeEquality(r, ar)),
+      const nextRoutes = action.payload;
+      const matchedRoute = findMatchedRoute(
+        state.routes,
+        state.path,
+        state.method,
+        state.requestType,
       );
-      return { ...state, routes: nextRoutes };
+      const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
+      return { ...state, routes: nextRoutes, selectedRoute: nextSelectedRoute };
     }
     case PATH_UPDATE: {
       const nextPath = action.payload;
@@ -261,7 +194,8 @@ function requestorReducer(
   }
 }
 
-const routeEquality = (a: ProbedRoute, b: ProbedRoute): boolean => {
+// Not in use
+export const routeEquality = (a: ProbedRoute, b: ProbedRoute): boolean => {
   return (
     a.path === b.path &&
     a.method === b.method &&
@@ -270,20 +204,40 @@ const routeEquality = (a: ProbedRoute, b: ProbedRoute): boolean => {
   );
 };
 
-export function useRefactoredRequestorState() {
-  const [state, dispatch] = useReducer(requestorReducer, initialState);
+/**
+ * State management api for the RequestorPage
+ *
+ * Uses `useReducer` under the hood
+ */
+export function useRequestor() {
+  const [state, originalDispatch] = useReducer(
+    requestorReducer,
+    initialState,
+    createInitialState,
+  );
 
-  const addRouteIfNotPresent = (route: ProbedRoute) => {
-    dispatch({ type: ADD_ROUTE, payload: route });
-  };
+  // Create a custom dispatch in case we wanna do some debugging
+  const dispatch = useCallback((action: RequestorAction) => {
+    // NOTE - Useful for debugging!
+    // console.log("Dispatching action:", action);
+    originalDispatch(action);
+  }, []);
 
-  const removeRoutesIfNotPresent = (routes: ProbedRoute[]) => {
-    dispatch({ type: ROUTE_INTERSECT, payload: routes });
-  };
+  useSaveUiState(state);
 
-  const updatePath = (path: string) => {
-    dispatch({ type: PATH_UPDATE, payload: path });
-  };
+  const setRoutes = useCallback(
+    (routes: ProbedRoute[]) => {
+      dispatch({ type: SET_ROUTES, payload: routes });
+    },
+    [dispatch],
+  );
+
+  const updatePath = useCallback(
+    (path: string) => {
+      dispatch({ type: PATH_UPDATE, payload: path });
+    },
+    [dispatch],
+  );
 
   /**
    * Updates the method and request type based on the input value from a RequestMethodComboBox
@@ -291,52 +245,75 @@ export function useRefactoredRequestorState() {
    *
    * @param methodInputValue - Assumed to come from a RequestMethodComboBox, which could include the value "WS"
    */
-  const updateMethod = (methodInputValue: RequestMethodInputValue) => {
-    const requestType = methodInputValue === "WS" ? "websocket" : "http";
-    const method = methodInputValue === "WS" ? "GET" : methodInputValue;
-    dispatch({ type: METHOD_UPDATE, payload: { method, requestType } });
-  };
+  const updateMethod = useCallback(
+    (methodInputValue: RequestMethodInputValue) => {
+      const requestType = methodInputValue === "WS" ? "websocket" : "http";
+      const method = methodInputValue === "WS" ? "GET" : methodInputValue;
+      dispatch({ type: METHOD_UPDATE, payload: { method, requestType } });
+    },
+    [dispatch],
+  );
 
-  const selectRoute = (route: ProbedRoute) => {
-    dispatch({ type: SELECT_ROUTE, payload: route });
-  };
+  const selectRoute = useCallback(
+    (route: ProbedRoute) => {
+      dispatch({ type: SELECT_ROUTE, payload: route });
+    },
+    [dispatch],
+  );
 
-  const setPathParams = (pathParams: KeyValueParameter[]) => {
-    dispatch({ type: SET_PATH_PARAMS, payload: pathParams });
-  };
+  const setPathParams = useCallback(
+    (pathParams: KeyValueParameter[]) => {
+      dispatch({ type: SET_PATH_PARAMS, payload: pathParams });
+    },
+    [dispatch],
+  );
 
-  const updatePathParamValues = (
-    pathParams: { key: string; value: string }[],
-  ) => {
-    dispatch({ type: REPLACE_PATH_PARAM_VALUES, payload: pathParams });
-  };
+  const updatePathParamValues = useCallback(
+    (pathParams: { key: string; value: string }[]) => {
+      dispatch({ type: REPLACE_PATH_PARAM_VALUES, payload: pathParams });
+    },
+    [dispatch],
+  );
 
-  const clearPathParams = () => {
+  const clearPathParams = useCallback(() => {
     dispatch({ type: CLEAR_PATH_PARAMS });
-  };
+  }, [dispatch]);
 
-  const setQueryParams = (queryParams: KeyValueParameter[]) => {
-    const parametersWithDraft = enforceTerminalDraftParameter(queryParams);
-    dispatch({ type: SET_QUERY_PARAMS, payload: parametersWithDraft });
-  };
+  const setQueryParams = useCallback(
+    (queryParams: KeyValueParameter[]) => {
+      const parametersWithDraft = enforceTerminalDraftParameter(queryParams);
+      dispatch({ type: SET_QUERY_PARAMS, payload: parametersWithDraft });
+    },
+    [dispatch],
+  );
 
-  const setRequestHeaders = (headers: KeyValueParameter[]) => {
-    const parametersWithDraft = enforceTerminalDraftParameter(headers);
-    dispatch({ type: SET_HEADERS, payload: parametersWithDraft });
-  };
+  const setRequestHeaders = useCallback(
+    (headers: KeyValueParameter[]) => {
+      const parametersWithDraft = enforceTerminalDraftParameter(headers);
+      dispatch({ type: SET_HEADERS, payload: parametersWithDraft });
+    },
+    [dispatch],
+  );
 
-  const setBody = (body: undefined | string | RequestorState["body"]) => {
-    if (body === undefined) {
-      dispatch({ type: SET_BODY, payload: { type: "text", value: undefined } });
-    } else if (typeof body === "string") {
-      dispatch({ type: SET_BODY, payload: { type: "text", value: body } });
-    } else {
-      dispatch({ type: SET_BODY, payload: body });
-    }
-  };
+  const setBody = useCallback(
+    (body: undefined | string | RequestorState["body"]) => {
+      if (body === undefined) {
+        dispatch({
+          type: SET_BODY,
+          payload: { type: "text", value: undefined },
+        });
+      } else if (typeof body === "string") {
+        dispatch({ type: SET_BODY, payload: { type: "text", value: body } });
+      } else {
+        dispatch({ type: SET_BODY, payload: body });
+      }
+    },
+    [dispatch],
+  );
 
   /**
-   * NOTE - When there's no selected route, we return a "draft" route
+   * When there's no selected route, we return a "draft" route,
+   * which will not appear in the sidebar
    */
   const getActiveRoute = (): ProbedRoute => _getActiveRoute(state);
 
@@ -349,8 +326,7 @@ export function useRefactoredRequestorState() {
     dispatch,
 
     // Api
-    addRouteIfNotPresent,
-    removeRoutesIfNotPresent,
+    setRoutes,
     selectRoute,
 
     // Form fields
@@ -368,7 +344,6 @@ export function useRefactoredRequestorState() {
     getIsInDraftMode,
   };
 }
-
 function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {
   const method = route.method.toUpperCase();
   switch (method) {

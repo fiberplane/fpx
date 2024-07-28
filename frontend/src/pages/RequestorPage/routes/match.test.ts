@@ -1,8 +1,12 @@
 import { ProbedRoute } from "../queries";
-import { RequestType } from "../types";
+import { RequestMethod, RequestType } from "../types";
 import { findSmartRouterMatches } from "./match";
 
-const toRoute = (path: string, method: string, requestType: RequestType) => ({
+const toRoute = (
+  path: string,
+  method: RequestMethod,
+  requestType: RequestType,
+) => ({
   path,
   method,
   requestType,
