@@ -169,13 +169,11 @@ function AiDropDownMenu({
 }
 
 type RequestPanelProps = {
-  currentRoute?: string;
   method: string;
   body?: string;
   setBody: (body?: string) => void;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
-  setPath: (path: string) => void;
   setPathParams: (params: KeyValueParameter[]) => void;
   clearPathParams: () => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
@@ -230,14 +228,12 @@ function ResizableRequestMeta(props: RequestPanelProps) {
 
 function RequestMeta(props: RequestPanelProps) {
   const {
-    currentRoute,
     method,
     body,
     setBody,
     pathParams,
     queryParams,
     requestHeaders,
-    setPath,
     setPathParams,
     clearPathParams,
     setQueryParams,
@@ -349,21 +345,6 @@ function RequestMeta(props: RequestPanelProps) {
               keyValueParameters={pathParams}
               onChange={(params) => {
                 setPathParams(params);
-                // NOTE - This breaks the ability to ...
-                if (!currentRoute) {
-                  return;
-                }
-                let nextPath = currentRoute;
-                for (const param of params) {
-                  if (!param.enabled) {
-                    continue;
-                  }
-                  nextPath = nextPath.replace(
-                    param.key,
-                    param.value || param.key,
-                  );
-                }
-                setPath(nextPath);
               }}
             />
           </>

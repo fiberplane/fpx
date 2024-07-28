@@ -113,10 +113,10 @@ function requestorReducer(
         state.requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
-      // TODO - Refactor
       // This logic will reconcile the path param values with what the user is typing
       // When the route is in a draft state, something kinda funky happens, where a path param will appear
-      // but if you fill it in, then the path params disappear... Ask Brett to explain it more if that's confusing
+      // but if you fill it in and save it, then the path params disappear...
+      // Ask Brett to explain it more if that's confusing
       const nextPathParams = matchedRoute
         ? extractMatchedPathParams(matchedRoute)
         : extractPathParams(nextPath).map(mapPathParamKey);
@@ -160,7 +160,21 @@ function requestorReducer(
         pathParams: extractPathParams(action.payload.path).map(mapPathParamKey),
       };
     case SET_PATH_PARAMS: {
-      return { ...state, pathParams: action.payload };
+      // FIXME - This will be buggy in the case where there is a route like
+      //         `/users/:id/otheruser/:idOtherUser`
+      //         An edge case but... would be annoying
+      const nextPath = action.payload.reduce((accPath, param) => {
+        if (param.enabled) {
+          return accPath.replace(`:${param.key}`, param.value || param.key);
+        } else {
+          return accPath;
+        }
+      }, state.selectedRoute?.path ?? state.path);
+      return {
+        ...state,
+        path: nextPath,
+        pathParams: action.payload,
+      };
     }
     case REPLACE_PATH_PARAM_VALUES: {
       const replacements = action.payload;
@@ -391,7 +405,10 @@ function extractPathParams(path: string) {
       break;
     }
     lastIndex = regex.lastIndex;
-    result.push(match[1]);
+
+    // HACK - Remove the `:` at the beginning of the match, to make things consistent with Hono router path param matching
+    const keyWithoutColon = match[1].slice(1);
+    result.push(keyWithoutColon);
   }
   return result;
 }
@@ -404,10 +421,13 @@ function extractMatchedPathParams(
   matchedRoute: ReturnType<typeof findMatchedRoute>,
 ) {
   return Object.entries(matchedRoute?.pathParamValues ?? {}).map(
-    ([key, value]) => ({
-      ...mapPathParamKey(key),
-      value,
-      enabled: !!value,
-    }),
+    ([key, value]) => {
+      const nextValue = value === `:${key}` ? "" : value;
+      return {
+        ...mapPathParamKey(key),
+        value: nextValue,
+        enabled: !!nextValue,
+      };
+    },
   );
 }
