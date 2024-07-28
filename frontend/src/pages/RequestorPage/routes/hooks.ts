@@ -12,10 +12,14 @@ type UseRoutesOptions = {
  */
 const isUpgradeWebSocketMiddleware = (route: ProbedRoute) => {
   const isMiddleware = route?.handlerType === "middleware";
+  const isGet = route?.method === "GET";
+  const isWsPath = route?.path?.includes("ws");
   const hasUpgrade = route?.handler?.includes("upgrade");
   const hasWebsocket = route?.handler?.includes("websocket");
   const has101 = route?.handler?.includes("101");
-  return isMiddleware && hasUpgrade && hasWebsocket && has101;
+  return (
+    isMiddleware && isGet && isWsPath && hasUpgrade && hasWebsocket && has101
+  );
 };
 
 /**
