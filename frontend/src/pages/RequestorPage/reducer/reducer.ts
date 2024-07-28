@@ -6,6 +6,11 @@ import { findMatchedRoute } from "../routes";
 import { RequestMethod, RequestMethodInputValue, RequestType } from "../types";
 import { useSaveUiState } from "./persistence";
 import { type RequestorState, createInitialState, initialState } from "./state";
+import {
+  RequestsPanelTab,
+  getVisibleTabsForRoute,
+  isRequestsPanelTab,
+} from "./tabs";
 
 const _getActiveRoute = (state: RequestorState): ProbedRoute => {
   return (
@@ -33,6 +38,7 @@ const SET_QUERY_PARAMS = "SET_QUERY_PARAMS" as const;
 const SET_HEADERS = "SET_HEADERS" as const;
 const SET_BODY = "SET_BODY" as const;
 const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
+const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
 
 type RequestorAction =
   | {
@@ -83,6 +89,10 @@ type RequestorAction =
       payload: {
         // TODO
       };
+    }
+  | {
+      type: typeof SET_ACTIVE_REQUESTS_PANEL_TAB;
+      payload: RequestsPanelTab;
     };
 
 function requestorReducer(
@@ -143,20 +153,48 @@ function requestorReducer(
         requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
+      // See comment below for why we want to do this dance
+      const nextVisibleRequestsPanelTabs = getVisibleTabsForRoute(
+        action.payload,
+      );
+      const nextActiveRequestsPanelTab = nextVisibleRequestsPanelTabs.includes(
+        state.activeRequestsPanelTab,
+      )
+        ? state.activeRequestsPanelTab
+        : nextVisibleRequestsPanelTabs[0];
       return {
         ...state,
         method,
         requestType,
         selectedRoute: nextSelectedRoute,
+
+        // Fixes the case where we had "body" tab selected, but then switch to a GET route
+        // and the "body" tab isn't visible for GET routes
+        visibleRequestsPanelTabs: nextVisibleRequestsPanelTabs,
+        activeRequestsPanelTab: nextActiveRequestsPanelTab,
       };
     }
-    case SELECT_ROUTE:
+    case SELECT_ROUTE: {
+      // See comment below for why we want to do this dance
+      const nextMethod = probedRouteToInputMethod(action.payload);
+      const nextRequestType = action.payload.requestType;
+      const nextVisibleRequestsPanelTabs = getVisibleTabsForRoute({
+        requestType: nextRequestType,
+        method: nextMethod,
+      });
+      const nextActiveRequestsPanelTab = nextVisibleRequestsPanelTabs.includes(
+        state.activeRequestsPanelTab,
+      )
+        ? state.activeRequestsPanelTab
+        : nextVisibleRequestsPanelTabs[0];
       return {
         ...state,
         selectedRoute: action.payload,
+
+        // Reset form values, but preserve things like path params, query params, headers, etc
         path: action.payload.path,
-        method: probedRouteToInputMethod(action.payload),
-        requestType: action.payload.requestType,
+        method: nextMethod,
+        requestType: nextRequestType,
 
         // TODO - We could merge these with existing path params to re-use existing values
         //        But maybe that'd be annoying?
@@ -165,7 +203,13 @@ function requestorReducer(
         //        have it re-use the existing `userId` param, not create a new blank one.
         //
         pathParams: extractPathParams(action.payload.path).map(mapPathParamKey),
+
+        // Fixes the case where we had "body" tab selected, but then switch to a GET route
+        // and the "body" tab isn't visible for GET routes
+        visibleRequestsPanelTabs: nextVisibleRequestsPanelTabs,
+        activeRequestsPanelTab: nextActiveRequestsPanelTab,
       };
+    }
     case SET_PATH_PARAMS: {
       // FIXME - This will be buggy in the case where there is a route like
       //         `/users/:id/otheruser/:idOtherUser`
@@ -214,6 +258,9 @@ function requestorReducer(
     }
     case SET_BODY: {
       return { ...state, body: action.payload };
+    }
+    case SET_ACTIVE_REQUESTS_PANEL_TAB: {
+      return { ...state, activeRequestsPanelTab: action.payload };
     }
     default:
       return state;
@@ -337,15 +384,37 @@ export function useRequestor() {
     [dispatch],
   );
 
+  const setActiveRequestsPanelTab = useCallback(
+    (tab: string) => {
+      if (isRequestsPanelTab(tab)) {
+        dispatch({ type: SET_ACTIVE_REQUESTS_PANEL_TAB, payload: tab });
+      }
+    },
+    [dispatch],
+  );
+
   /**
    * When there's no selected route, we return a "draft" route,
    * which will not appear in the sidebar
    */
   const getActiveRoute = (): ProbedRoute => _getActiveRoute(state);
 
+  /**
+   * We consider the inputs in "draft" mode when there's no matching route in the side bar
+   */
   const getIsInDraftMode = useCallback((): boolean => {
     return !state.selectedRoute;
   }, [state.selectedRoute]);
+
+  /**
+   * Helper to determine whether or not to show a tab in the requests panel
+   */
+  const shouldShowRequestTab = useCallback(
+    (tab: RequestsPanelTab): boolean => {
+      return state.visibleRequestsPanelTabs.includes(tab);
+    },
+    [state.visibleRequestsPanelTabs],
+  );
 
   return {
     state,
@@ -364,6 +433,10 @@ export function useRequestor() {
     setQueryParams,
     setRequestHeaders,
     setBody,
+
+    // Requests Panel tabs
+    setActiveRequestsPanelTab,
+    shouldShowRequestTab,
 
     // Selectors
     getActiveRoute,

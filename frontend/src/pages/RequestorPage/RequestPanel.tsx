@@ -43,6 +43,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
+import { RequestsPanelTab } from "./reducer/state";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;
@@ -169,7 +170,9 @@ function AiDropDownMenu({
 }
 
 type RequestPanelProps = {
-  method: string;
+  activeRequestsPanelTab: RequestsPanelTab;
+  setActiveRequestsPanelTab: (tab: string) => void;
+  shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
   body?: string;
   setBody: (body?: string) => void;
   pathParams: KeyValueParameter[];
@@ -228,7 +231,9 @@ function ResizableRequestMeta(props: RequestPanelProps) {
 
 function RequestMeta(props: RequestPanelProps) {
   const {
-    method,
+    activeRequestsPanelTab,
+    setActiveRequestsPanelTab,
+    shouldShowRequestTab,
     body,
     setBody,
     pathParams,
@@ -252,12 +257,13 @@ function RequestMeta(props: RequestPanelProps) {
 
   const { toast } = useToast();
 
-  const shouldShowBody = method !== "GET" && method !== "HEAD";
-  const shouldShowMessages = websocketState.isConnected;
+  const shouldShowBody = shouldShowRequestTab("body");
+  const shouldShowMessages = shouldShowRequestTab("messages");
 
   return (
     <Tabs
-      defaultValue="params"
+      value={activeRequestsPanelTab}
+      onValueChange={setActiveRequestsPanelTab}
       className={cn(
         "min-w-[200px] border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
@@ -397,29 +403,35 @@ function RequestMeta(props: RequestPanelProps) {
               setBody(undefined);
             }}
           />
-          <CodeMirrorJsonEditor
-            onChange={setBody}
-            value={body}
-            maxHeight="800px"
-          />
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (typeof body !== "string") {
-                  return;
-                }
-                sendWebsocketMessage(body);
-                toast({
-                  description: "WS Message sent",
-                });
-              }}
-            >
-              Send Message
-            </Button>
-          </div>
+          {websocketState.isConnected ? (
+            <>
+              <CodeMirrorJsonEditor
+                onChange={setBody}
+                value={body}
+                maxHeight="800px"
+              />
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof body !== "string") {
+                      return;
+                    }
+                    sendWebsocketMessage(body);
+                    toast({
+                      description: "WS Message sent",
+                    });
+                  }}
+                >
+                  Send Message
+                </Button>
+              </div>
+            </>
+          ) : (
+            <WebSocketNotConnectedBanner />
+          )}
         </CustomTabsContent>
       )}
     </Tabs>
@@ -510,6 +522,20 @@ function AIGeneratedInputsBanner({
         >
           <Cross2Icon className="w-3.5 h-3.5 text-gray-400" />
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function WebSocketNotConnectedBanner() {
+  return (
+    <div className="bg-primary/20 text-blue-300 text-sm px-2.5 py-4 rounded-md grid grid-cols-[auto_1fr] gap-2 mb-4">
+      <div className="py-0.5">
+        <InfoCircledIcon className="w-3.5 h-3.5" />
+      </div>
+      <div className="flex flex-col items-start justify-start gap-1">
+        <span className="font-semibold">WebSocket not connected</span>
+        <span className="font-light">Connect to start sending messages</span>
       </div>
     </div>
   );

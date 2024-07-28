@@ -60,11 +60,11 @@ export function ResponsePanel({
         className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
       >
         <CustomTabsList>
+          <CustomTabTrigger value="body">Response</CustomTabTrigger>
+          <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
           {isWsRequest(requestType) && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
-          <CustomTabTrigger value="body">Response</CustomTabTrigger>
-          <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
           <div className="flex-grow flex justify-end">
             <CustomTabTrigger value="history" className="mr-2">

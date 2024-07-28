@@ -61,6 +61,11 @@ export const RequestorPage = () => {
     setQueryParams,
     setRequestHeaders,
     setBody,
+
+    // Requests Panel tabs
+    state: { activeRequestsPanelTab },
+    setActiveRequestsPanelTab,
+    shouldShowRequestTab,
   } = refactoredState;
 
   const selectedRoute = getActiveRoute();
@@ -259,7 +264,9 @@ export const RequestorPage = () => {
           )}
         >
           <RequestPanel
-            method={method}
+            activeRequestsPanelTab={activeRequestsPanelTab}
+            setActiveRequestsPanelTab={setActiveRequestsPanelTab}
+            shouldShowRequestTab={shouldShowRequestTab}
             // HACK - Need to modify this when we support form-data
             body={body.type !== "form-data" ? body.value : undefined}
             setBody={setBody}

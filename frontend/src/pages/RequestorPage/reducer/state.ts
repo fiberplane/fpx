@@ -6,6 +6,7 @@ import {
 import { ProbedRouteSchema } from "../queries";
 import { RequestMethodSchema, RequestTypeSchema } from "../types";
 import { loadUiStateFromLocalStorage } from "./persistence";
+import { RequestsPanelTabSchema } from "./tabs";
 
 const RequestorBodySchema = z.union([
   z.object({
@@ -40,6 +41,13 @@ export const RequestorStateSchema = z.object({
   requestHeaders: z
     .array(KeyValueParameterSchema)
     .describe("Headers to be sent with the request"),
+
+  activeRequestsPanelTab: RequestsPanelTabSchema.describe(
+    "The tab to show in the requests panel",
+  ),
+  visibleRequestsPanelTabs: z
+    .array(RequestsPanelTabSchema)
+    .describe("The tabs to show in the requests panel"),
 });
 
 export type RequestorState = z.infer<typeof RequestorStateSchema>;
@@ -58,6 +66,9 @@ export const initialState: RequestorState = {
     type: "json",
     value: "",
   },
+
+  activeRequestsPanelTab: "params",
+  visibleRequestsPanelTabs: ["params", "headers"],
 };
 
 /**
