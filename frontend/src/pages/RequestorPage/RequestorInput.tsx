@@ -57,6 +57,8 @@ export function RequestorInput({
   websocketState,
   disconnectWebsocket,
 }: RequestInputProps) {
+  const { toast } = useToast();
+
   const isWsConnected = websocketState.isConnected;
   const [value, setValue] = useState("");
 
@@ -80,7 +82,7 @@ export function RequestorInput({
         description: "Added new route",
       });
     }
-  }, [addRoutes, canSaveDraftRoute, method, path, requestType]);
+  }, [addRoutes, canSaveDraftRoute, method, path, requestType, toast]);
 
   useHotkeys("mod+s", handleAddRoute, {
     enableOnFormTags: ["INPUT"],
@@ -94,8 +96,6 @@ export function RequestorInput({
     const url = addBaseUrl(path ?? "", { requestType });
     setValue(url);
   }, [path, addBaseUrl, requestType]);
-
-  const { toast } = useToast();
 
   return (
     <form
@@ -147,6 +147,9 @@ export function RequestorInput({
               sideOffset={16}
             >
               <div className="flex gap-0.5">
+                <span className="mr-1.5 inline-flex items-center">
+                  Add Route
+                </span>
                 <KeyboardShortcutKey>
                   {isMac ? "⌘" : "Ctrl"}
                 </KeyboardShortcutKey>{" "}
