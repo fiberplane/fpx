@@ -371,7 +371,10 @@ function NoWebsocketConnection() {
   return (
     <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
       <div className="text-md text-white text-center">
-        Enter a WS URL and hit connect to start receiving messages
+        Enter a WebSocket URL and click Connect to start receiving messages
+      </div>
+      <div className="mt-1 sm:mt-2 text-ms text-gray-400 text-center font-light">
+        You can send and view messages in the Messages tabs
       </div>
     </div>
   );
