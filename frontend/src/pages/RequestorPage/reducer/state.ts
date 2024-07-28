@@ -47,7 +47,7 @@ export type RequestorState = z.infer<typeof RequestorStateSchema>;
 export const initialState: RequestorState = {
   routes: [],
   selectedRoute: null,
-  path: "",
+  path: "/",
   method: "GET",
   requestType: "http",
 
