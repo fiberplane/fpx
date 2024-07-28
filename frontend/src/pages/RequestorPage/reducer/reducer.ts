@@ -86,13 +86,23 @@ function requestorReducer(
     case SET_ROUTES: {
       const nextRoutes = action.payload;
       const matchedRoute = findMatchedRoute(
-        state.routes,
+        nextRoutes,
         state.path,
         state.method,
         state.requestType,
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
-      return { ...state, routes: nextRoutes, selectedRoute: nextSelectedRoute };
+
+      const nextPathParams = matchedRoute
+        ? extractMatchedPathParams(matchedRoute)
+        : extractPathParams(state.path).map(mapPathParamKey);
+
+      return {
+        ...state,
+        routes: nextRoutes,
+        selectedRoute: nextSelectedRoute,
+        pathParams: nextPathParams,
+      };
     }
     case PATH_UPDATE: {
       const nextPath = action.payload;
@@ -105,18 +115,11 @@ function requestorReducer(
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       // TODO - Refactor
       // This logic will reconcile the path param values with what the user is typing
-      let nextPathParams = state.pathParams;
-      if (matchedRoute?.pathParamValues) {
-        nextPathParams = Object.entries(matchedRoute.pathParamValues).map(
-          ([key, value]) => ({
-            ...mapPathParamKey(key),
-            value,
-            enabled: !!value,
-          }),
-        );
-      } else {
-        nextPathParams = [];
-      }
+      // When the route is in a draft state, something kinda funky happens, where a path param will appear
+      // but if you fill it in, then the path params disappear... Ask Brett to explain it more if that's confusing
+      const nextPathParams = matchedRoute
+        ? extractMatchedPathParams(matchedRoute)
+        : extractPathParams(nextPath).map(mapPathParamKey);
       return {
         ...state,
         path: action.payload,
@@ -319,9 +322,9 @@ export function useRequestor() {
    */
   const getActiveRoute = (): ProbedRoute => _getActiveRoute(state);
 
-  const getIsInDraftMode = (): boolean => {
+  const getIsInDraftMode = useCallback((): boolean => {
     return !state.selectedRoute;
-  };
+  }, [state.selectedRoute]);
 
   return {
     state,
@@ -395,4 +398,16 @@ function extractPathParams(path: string) {
 
 function mapPathParamKey(key: string) {
   return { key, value: "", id: key, enabled: false };
+}
+
+function extractMatchedPathParams(
+  matchedRoute: ReturnType<typeof findMatchedRoute>,
+) {
+  return Object.entries(matchedRoute?.pathParamValues ?? {}).map(
+    ([key, value]) => ({
+      ...mapPathParamKey(key),
+      value,
+      enabled: !!value,
+    }),
+  );
 }

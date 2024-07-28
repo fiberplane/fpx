@@ -51,6 +51,7 @@ export const RequestorPage = () => {
     state: { path, method },
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
+    getIsInDraftMode,
 
     // Request panel
     state: { pathParams, queryParams, requestHeaders, body },
@@ -240,6 +241,7 @@ export const RequestorPage = () => {
           isRequestorRequesting={isRequestorRequesting}
           formRef={formRef}
           websocketState={websocketState}
+          getIsInDraftMode={getIsInDraftMode}
         />
 
         <div
