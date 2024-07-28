@@ -43,7 +43,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
-import { RequestsPanelTab } from "./reducer/state";
+import type { RequestsPanelTab } from "./reducer";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;

@@ -28,8 +28,8 @@ import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestGeneration } from "./ai";
 import { Requestornator } from "./queries";
-import { ResponsePanelTab } from "./reducer/tabs";
-import { RequestType, isWsRequest } from "./types";
+import type { ResponsePanelTab } from "./reducer";
+import { type RequestType, isWsRequest } from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
 // TODO - Create skeleton loading components for each tab content

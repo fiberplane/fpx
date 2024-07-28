@@ -50,7 +50,7 @@ export function useRoutes({ setRoutes }: UseRoutesOptions) {
       isUpgradeWebSocketMiddleware(r)
         ? {
             ...r,
-            requestType: "websocket",
+            requestType: "websocket" as const,
           }
         : r,
     );
