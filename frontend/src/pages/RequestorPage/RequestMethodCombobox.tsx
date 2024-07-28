@@ -16,6 +16,7 @@ import * as React from "react";
 import { forwardRef } from "react";
 import { getHttpMethodTextColor } from "./method";
 import { type RequestMethodInputValue } from "./types";
+import { WEBSOCKETS_ENABLED } from "./webSocketFeatureFlag";
 
 type InputOption = {
   value: RequestMethodInputValue;
@@ -61,6 +62,14 @@ const methods: InputOption[] = [
     label: "WS",
   },
 ];
+
+// HACK - Mutably splice out the "WS" entry if websockets feature is disabled
+if (!WEBSOCKETS_ENABLED) {
+  const wsIndex = methods.findIndex((method) => method.value === "WS");
+  if (wsIndex !== -1) {
+    methods.splice(wsIndex, 1);
+  }
+}
 
 export const RequestMethodCombobox = forwardRef<
   HTMLButtonElement,

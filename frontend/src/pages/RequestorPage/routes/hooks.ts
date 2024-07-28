@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { ProbedRoute, useProbedRoutes } from "../queries";
 import { RequestType, isWsRequest } from "../types";
+import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
 type UseRoutesOptions = {
   setRoutes: (routes: ProbedRoute[]) => void;
@@ -33,7 +34,7 @@ const filterRoutes = (routes: ProbedRoute[]) => {
     if (r.handlerType === "route") {
       return true;
     }
-    if (isUpgradeWebSocketMiddleware(r)) {
+    if (WEBSOCKETS_ENABLED && isUpgradeWebSocketMiddleware(r)) {
       return true;
     }
     return false;

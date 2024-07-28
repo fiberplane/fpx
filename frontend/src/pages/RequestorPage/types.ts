@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { WEBSOCKETS_ENABLED } from "./webSocketFeatureFlag";
 
 export const RequestMethodSchema = z.enum([
   "GET",
@@ -28,4 +29,4 @@ export const RequestTypeSchema = z.enum(["http", "websocket"]);
 export type RequestType = z.infer<typeof RequestTypeSchema>;
 
 export const isWsRequest = (requestType: RequestType) =>
-  requestType === "websocket";
+  WEBSOCKETS_ENABLED && requestType === "websocket";

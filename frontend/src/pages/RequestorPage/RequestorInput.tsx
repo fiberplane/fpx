@@ -71,7 +71,7 @@ export function RequestorInput({
   const handleAddRoute = useCallback(() => {
     if (canSaveDraftRoute) {
       addRoutes({
-        method: requestType === "websocket" ? "WS" : method,
+        method: requestType === "websocket" ? "GET" : method,
         path: path ?? "",
         requestType: requestType,
         routeOrigin: "custom",
