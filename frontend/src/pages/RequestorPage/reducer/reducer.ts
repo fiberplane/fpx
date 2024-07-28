@@ -32,6 +32,7 @@ const CLEAR_PATH_PARAMS = "CLEAR_PATH_PARAMS" as const;
 const SET_QUERY_PARAMS = "SET_QUERY_PARAMS" as const;
 const SET_HEADERS = "SET_HEADERS" as const;
 const SET_BODY = "SET_BODY" as const;
+const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
 
 type RequestorAction =
   | {
@@ -76,6 +77,12 @@ type RequestorAction =
   | {
       type: typeof SET_BODY;
       payload: RequestorState["body"];
+    }
+  | {
+      type: typeof LOAD_HISTORICAL_REQUEST;
+      payload: {
+        // TODO
+      };
     };
 
 function requestorReducer(

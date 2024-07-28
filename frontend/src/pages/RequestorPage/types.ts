@@ -12,6 +12,10 @@ export const RequestMethodSchema = z.enum([
 
 export type RequestMethod = z.infer<typeof RequestMethodSchema>;
 
+export const isRequestMethod = (method: unknown): method is RequestMethod => {
+  return RequestMethodSchema.safeParse(method).success;
+};
+
 export const RequestMethodInputValueSchema = z.union([
   RequestMethodSchema,
   z.literal("WS"),

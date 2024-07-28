@@ -20,7 +20,7 @@ import {
 import { useRequestor } from "./reducer";
 import { findMatchedRoute, useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
-import { isWsRequest } from "./types";
+import { RequestMethodInputValue, isRequestMethod, isWsRequest } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./styles.css";
@@ -87,6 +87,7 @@ export const RequestorPage = () => {
     routes,
     handleSelectRoute,
     setPath: handlePathInputChange,
+    setMethod: handleMethodChange,
     setPathParams,
     setBody,
     setQueryParams,
@@ -301,6 +302,7 @@ type RequestorHistoryHookArgs = {
   routes: ProbedRoute[];
   handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
   setPath: (path: string) => void;
+  setMethod: (method: RequestMethodInputValue) => void;
   setBody: (body: string | undefined) => void;
   setPathParams: (headers: KeyValueParameter[]) => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
@@ -311,6 +313,7 @@ function useRequestorHistory({
   routes,
   handleSelectRoute,
   setPath,
+  setMethod,
   setRequestHeaders,
   setBody,
   setQueryParams,
@@ -337,7 +340,11 @@ function useRequestorHistory({
     const match = history.find((r) => r.app_responses?.traceId === traceId);
     if (match) {
       const method = match.app_requests.requestMethod;
-      const routePattern = match.app_requests.requestRoute;
+      let routePattern = match.app_requests.requestRoute;
+      // HACK - In case it's an unqualified route
+      if (routePattern === "") {
+        routePattern = "/";
+      }
       const requestType = match.app_requests.requestUrl.startsWith("ws")
         ? "websocket"
         : "http";
@@ -392,6 +399,41 @@ function useRequestorHistory({
             typeof body !== "string" ? JSON.stringify(body) : body;
           setBody(safeBody);
         }
+      } else {
+        // HACK - move this logic into the reducer
+        // Reset the path to the *exact* path of the request, instead of the route pattern
+        const path =
+          parsePathFromRequestUrl(match.app_requests.requestUrl) ?? "";
+        setPath(path);
+
+        const requestType = match.app_requests.requestUrl.startsWith("ws")
+          ? "websocket"
+          : "http";
+
+        setMethod(
+          isWsRequest(requestType)
+            ? "WS"
+            : isRequestMethod(method)
+              ? method
+              : "GET",
+        );
+
+        const headers = match.app_requests.requestHeaders ?? {};
+        setRequestHeaders(
+          createKeyValueParameters(
+            Object.entries(headers).map(([key, value]) => ({ key, value })),
+          ),
+        );
+
+        const queryParams = match.app_requests.requestQueryParams ?? {};
+        setQueryParams(
+          createKeyValueParameters(
+            Object.entries(queryParams).map(([key, value]) => ({
+              key,
+              value,
+            })),
+          ),
+        );
       }
     }
   };
