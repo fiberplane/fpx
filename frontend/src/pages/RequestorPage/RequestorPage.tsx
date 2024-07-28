@@ -66,6 +66,11 @@ export const RequestorPage = () => {
     state: { activeRequestsPanelTab },
     setActiveRequestsPanelTab,
     shouldShowRequestTab,
+
+    // Response Panel tabs
+    state: { activeResponsePanelTab },
+    setActiveResponsePanelTab,
+    shouldShowResponseTab,
   } = refactoredState;
 
   const selectedRoute = getActiveRoute();
@@ -290,6 +295,9 @@ export const RequestorPage = () => {
           />
 
           <ResponsePanel
+            activeResponsePanelTab={activeResponsePanelTab}
+            setActiveResponsePanelTab={setActiveResponsePanelTab}
+            shouldShowResponseTab={shouldShowResponseTab}
             response={mostRecentRequestornatorForRoute}
             isLoading={isRequestorRequesting}
             history={history}

@@ -28,12 +28,16 @@ import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestGeneration } from "./ai";
 import { Requestornator } from "./queries";
+import { ResponsePanelTab } from "./reducer/tabs";
 import { RequestType, isWsRequest } from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
 // TODO - Create skeleton loading components for each tab content
 
 type Props = {
+  activeResponsePanelTab: ResponsePanelTab;
+  setActiveResponsePanelTab: (tab: string) => void;
+  shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   response?: Requestornator;
   isLoading: boolean;
   history: Array<Requestornator>;
@@ -43,6 +47,9 @@ type Props = {
 };
 
 export function ResponsePanel({
+  activeResponsePanelTab,
+  setActiveResponsePanelTab,
+  shouldShowResponseTab,
   response,
   isLoading,
   history,
@@ -53,16 +60,19 @@ export function ResponsePanel({
   const isFailure = !!response?.app_responses?.isFailure;
   const showBottomToolbar = !!response?.app_responses?.traceId;
 
+  const shouldShowMessages = shouldShowResponseTab("messages");
+
   return (
     <div className="overflow-hidden h-full relative">
       <Tabs
-        defaultValue="body"
+        value={activeResponsePanelTab}
+        onValueChange={setActiveResponsePanelTab}
         className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
       >
         <CustomTabsList>
           <CustomTabTrigger value="body">Response</CustomTabTrigger>
           <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
-          {isWsRequest(requestType) && (
+          {shouldShowMessages && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>

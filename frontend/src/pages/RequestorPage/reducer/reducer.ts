@@ -8,8 +8,11 @@ import { useSaveUiState } from "./persistence";
 import { type RequestorState, createInitialState, initialState } from "./state";
 import {
   RequestsPanelTab,
-  getVisibleTabsForRoute,
+  ResponsePanelTab,
+  getVisibleRequestPanelTabs,
+  getVisibleResponsePanelTabs,
   isRequestsPanelTab,
+  isResponsePanelTab,
 } from "./tabs";
 
 const _getActiveRoute = (state: RequestorState): ProbedRoute => {
@@ -39,6 +42,7 @@ const SET_HEADERS = "SET_HEADERS" as const;
 const SET_BODY = "SET_BODY" as const;
 const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
 const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
+const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
 
 type RequestorAction =
   | {
@@ -93,6 +97,10 @@ type RequestorAction =
   | {
       type: typeof SET_ACTIVE_REQUESTS_PANEL_TAB;
       payload: RequestsPanelTab;
+    }
+  | {
+      type: typeof SET_ACTIVE_RESPONSE_PANEL_TAB;
+      payload: ResponsePanelTab;
     };
 
 function requestorReducer(
@@ -154,7 +162,7 @@ function requestorReducer(
       );
       const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
       // See comment below for why we want to do this dance
-      const nextVisibleRequestsPanelTabs = getVisibleTabsForRoute(
+      const nextVisibleRequestsPanelTabs = getVisibleRequestPanelTabs(
         action.payload,
       );
       const nextActiveRequestsPanelTab = nextVisibleRequestsPanelTabs.includes(
@@ -162,6 +170,15 @@ function requestorReducer(
       )
         ? state.activeRequestsPanelTab
         : nextVisibleRequestsPanelTabs[0];
+
+      const nextVisibleResponsePanelTabs = getVisibleResponsePanelTabs(
+        action.payload,
+      );
+      const nextActiveResponsePanelTab = nextVisibleResponsePanelTabs.includes(
+        state.activeResponsePanelTab,
+      )
+        ? state.activeResponsePanelTab
+        : nextVisibleResponsePanelTabs[0];
       return {
         ...state,
         method,
@@ -172,13 +189,19 @@ function requestorReducer(
         // and the "body" tab isn't visible for GET routes
         visibleRequestsPanelTabs: nextVisibleRequestsPanelTabs,
         activeRequestsPanelTab: nextActiveRequestsPanelTab,
+
+        // Fixes the case where the "messages" tab is selected for a websocket route,
+        // but then we switch to a non-websocket route and the "messages" tab contents remain visible
+        visibleResponsePanelTabs: nextVisibleResponsePanelTabs,
+        activeResponsePanelTab: nextActiveResponsePanelTab,
       };
     }
     case SELECT_ROUTE: {
       // See comment below for why we want to do this dance
       const nextMethod = probedRouteToInputMethod(action.payload);
       const nextRequestType = action.payload.requestType;
-      const nextVisibleRequestsPanelTabs = getVisibleTabsForRoute({
+
+      const nextVisibleRequestsPanelTabs = getVisibleRequestPanelTabs({
         requestType: nextRequestType,
         method: nextMethod,
       });
@@ -187,6 +210,15 @@ function requestorReducer(
       )
         ? state.activeRequestsPanelTab
         : nextVisibleRequestsPanelTabs[0];
+
+      const nextVisibleResponsePanelTabs = getVisibleResponsePanelTabs({
+        requestType: nextRequestType,
+      });
+      const nextActiveResponsePanelTab = nextVisibleResponsePanelTabs.includes(
+        state.activeResponsePanelTab,
+      )
+        ? state.activeResponsePanelTab
+        : nextVisibleResponsePanelTabs[0];
       return {
         ...state,
         selectedRoute: action.payload,
@@ -208,6 +240,11 @@ function requestorReducer(
         // and the "body" tab isn't visible for GET routes
         visibleRequestsPanelTabs: nextVisibleRequestsPanelTabs,
         activeRequestsPanelTab: nextActiveRequestsPanelTab,
+
+        // Fixes the case where the "messages" tab is selected for a websocket route,
+        // but then we switch to a non-websocket route and the "messages" tab contents remain visible
+        visibleResponsePanelTabs: nextVisibleResponsePanelTabs,
+        activeResponsePanelTab: nextActiveResponsePanelTab,
       };
     }
     case SET_PATH_PARAMS: {
@@ -261,6 +298,9 @@ function requestorReducer(
     }
     case SET_ACTIVE_REQUESTS_PANEL_TAB: {
       return { ...state, activeRequestsPanelTab: action.payload };
+    }
+    case SET_ACTIVE_RESPONSE_PANEL_TAB: {
+      return { ...state, activeResponsePanelTab: action.payload };
     }
     default:
       return state;
@@ -393,6 +433,15 @@ export function useRequestor() {
     [dispatch],
   );
 
+  const setActiveResponsePanelTab = useCallback(
+    (tab: string) => {
+      if (isResponsePanelTab(tab)) {
+        dispatch({ type: SET_ACTIVE_RESPONSE_PANEL_TAB, payload: tab });
+      }
+    },
+    [dispatch],
+  );
+
   /**
    * When there's no selected route, we return a "draft" route,
    * which will not appear in the sidebar
@@ -416,6 +465,16 @@ export function useRequestor() {
     [state.visibleRequestsPanelTabs],
   );
 
+  /**
+   * Helper to determine whether or not to show a tab in the response panel
+   */
+  const shouldShowResponseTab = useCallback(
+    (tab: ResponsePanelTab): boolean => {
+      return state.visibleResponsePanelTabs.includes(tab);
+    },
+    [state.visibleResponsePanelTabs],
+  );
+
   return {
     state,
     dispatch,
@@ -437,6 +496,10 @@ export function useRequestor() {
     // Requests Panel tabs
     setActiveRequestsPanelTab,
     shouldShowRequestTab,
+
+    // Response Panel tabs
+    setActiveResponsePanelTab,
+    shouldShowResponseTab,
 
     // Selectors
     getActiveRoute,
