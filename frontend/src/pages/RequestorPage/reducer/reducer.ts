@@ -114,6 +114,8 @@ function requestorReducer(
             enabled: !!value,
           }),
         );
+      } else {
+        nextPathParams = [];
       }
       return {
         ...state,
