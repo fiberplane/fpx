@@ -6,11 +6,11 @@ use std::collections::BTreeMap;
 
 #[derive(Debug, Deserialize)]
 pub struct Request {
-    pub(crate) id: u32,
-    pub(crate) method: String,
-    pub(crate) url: String,
-    pub(crate) body: Option<String>,
-    pub(crate) headers: Json<BTreeMap<String, String>>,
+    pub id: u32,
+    pub method: String,
+    pub url: String,
+    pub body: Option<String>,
+    pub headers: Json<BTreeMap<String, String>>,
 }
 
 impl From<Request> for api::models::Request {
@@ -77,12 +77,12 @@ impl From<Request> for RequestSummary {
 }
 
 #[derive(Debug, Deserialize)]
-pub(crate) struct Response {
-    pub(crate) id: u32,
-    pub(crate) request_id: u32,
-    pub(crate) status: u16,
-    pub(crate) body: Option<String>,
-    pub(crate) headers: Json<BTreeMap<String, String>>,
+pub struct Response {
+    pub id: u32,
+    pub request_id: u32,
+    pub status: u16,
+    pub body: Option<String>,
+    pub headers: Json<BTreeMap<String, String>>,
 }
 
 impl From<Response> for api::models::Response {
