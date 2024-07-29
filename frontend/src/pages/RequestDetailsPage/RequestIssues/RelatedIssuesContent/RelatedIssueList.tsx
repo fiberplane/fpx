@@ -17,7 +17,7 @@ export function RelatedIssueList(props: { traceId: string }) {
   const {
     trace: details,
     isError: isDetailsError,
-    isLoading: isDetailsLoading,
+    isPending: isDetailsPending,
   } = useRequestDetails(traceId);
 
   const relatedError = details?.logs.find((log) => log.callerLocation);
@@ -31,7 +31,7 @@ export function RelatedIssueList(props: { traceId: string }) {
     return getSignificantWords(query);
   }, [query]);
 
-  if (issuesLoading && isDetailsLoading) {
+  if (issuesLoading && isDetailsPending) {
     return <div>Loading...</div>;
   }
 

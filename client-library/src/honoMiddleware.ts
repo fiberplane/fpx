@@ -1,18 +1,19 @@
 import { env } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
-import { replaceFetch } from "./replace-fetch";
-import { RECORDED_CONSOLE_METHODS, log } from "./request-logger";
+
+import { replaceFetch } from "./replace-fetch.js";
+import { RECORDED_CONSOLE_METHODS, log } from "./request-logger.js";
 import {
   errorToJson,
   extractCallerLocation,
   generateUUID,
-  polyfillWaitUntil,
+  getRuntimeContext,
   shouldIgnoreFpxLog,
   shouldPrettifyFpxLog,
   specialFormatMessage,
   tryCreateFriendlyLink,
   tryPrettyPrintLoggerLog,
-} from "./utils";
+} from "./utils.js";
 
 // Type hack that makes our middleware types play nicely with Hono types
 type RouterRoute = {
@@ -94,7 +95,7 @@ export function createHonoMiddleware<App extends HonoApp>(
 
     const service = env<FpxEnv>(c).FPX_SERVICE_NAME || "unknown";
 
-    const ctx = c.executionCtx;
+    const executionCtx = getRuntimeContext(c);
 
     if (!app) {
       // Logging here before we patch the console.* methods so we don't cause trouble
@@ -102,10 +103,6 @@ export function createHonoMiddleware<App extends HonoApp>(
         "Hono app was not passed to createHonoMiddleware. Skipping automatic route detection.",
       );
     }
-
-    // NOTE - Polyfilling `waitUntil` is probably not necessary for Cloudflare workers, but could be good for vercel envs
-    //         https://github.com/highlight/highlight/pull/6480
-    polyfillWaitUntil(ctx);
 
     const teardownFunctions: Array<() => void> = [];
 
@@ -118,6 +115,8 @@ export function createHonoMiddleware<App extends HonoApp>(
 
     // NOTE - Take the traceId from headers but then fall back to uuid here
     const traceId = c.req.header("x-fpx-trace-id") || generateUUID();
+
+    const originalConsoleError = console.error;
 
     // We monkeypatch `console.*` methods because it's the only way to send consumable logs locally without setting up an otel colletor
     for (const level of RECORDED_CONSOLE_METHODS) {
@@ -175,7 +174,7 @@ export function createHonoMiddleware<App extends HonoApp>(
           headers.append("x-Fpx-Route-Inspector", "enabled");
         }
 
-        ctx.waitUntil(
+        executionCtx.waitUntil(
           // Use `originalFetch` to avoid an infinite loop of logging to FPX
           // If we use our monkeyPatched version, then each fetch logs to FPX,
           // which triggers another fetch to log to FPX, etc.
@@ -183,6 +182,11 @@ export function createHonoMiddleware<App extends HonoApp>(
             method: "POST",
             headers,
             body: JSON.stringify(payload),
+          }).catch((error) => {
+            // NOTE - We handle errors here to avoid crashing the client runtime
+            if (libraryDebugMode) {
+              originalConsoleError("Failed to send telemetry data:", error);
+            }
           }),
         );
 

@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directories:
+      - "/"
+      - "/fpx"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      cargo-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 1
+    groups:
+      actions-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - major
+          - minor
+          - patch

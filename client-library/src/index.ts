@@ -1,1 +1,1 @@
-export { createHonoMiddleware } from "./honoMiddleware";
+export { createHonoMiddleware } from "./honoMiddleware.js";

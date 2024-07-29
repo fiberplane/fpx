@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const FPX_USER_SETTINGS_QUERY_KEY = "FPX_USER_SETTINGS";
 

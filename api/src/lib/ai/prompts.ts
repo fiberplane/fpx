@@ -1,5 +1,39 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
+export const getSystemPrompt = (persona: string) => {
+  return persona === "QA"
+    ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
+    : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT;
+};
+
+export const invokeRequestGenerationPrompt = async ({
+  persona,
+  method,
+  path,
+  handler,
+  history,
+  openApiSpec,
+}: {
+  persona: string;
+  method: string;
+  path: string;
+  handler: string;
+  history?: Array<string>;
+  openApiSpec?: string;
+}) => {
+  const promptTemplate =
+    persona === "QA" ? qaTesterPrompt : friendlyTesterPrompt;
+  const userPromptInterface = await promptTemplate.invoke({
+    method,
+    path,
+    handler,
+    history: history?.join("\n") ?? "NO HISTORY",
+    openApiSpec: openApiSpec ?? "NO OPENAPI SPEC",
+  });
+  const userPrompt = userPromptInterface.value;
+  return userPrompt;
+};
+
 /**
  * A friendly tester prompt.
  *
@@ -19,6 +53,9 @@ E.g., if we recently created a resource, you can look that resource up.
 
 The request you make should be a {method} request to route: {path}
 
+Here is the OpenAPI spec for the handler:
+{openApiSpec}
+
 Here is the code for the handler:
 {handler}
 `.trim(),
@@ -37,6 +74,9 @@ Here are some recent requests and responses, which you can use as inspiration fo
 </history>
 
 The request you make should be a {method} request to route: {path}
+
+Here is the OpenAPI spec for the handler:
+{openApiSpec}
 
 Here is the code for the handler:
 {handler}

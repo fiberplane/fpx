@@ -15,6 +15,13 @@
       "when": 1719677532629,
       "tag": "0001_sturdy_wildside",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1721725329894,
+      "tag": "0002_marvelous_eternity",
+      "breakpoints": true
     }
   ]
 }

@@ -33,9 +33,68 @@ export async function askUser(prompt, defaultValue) {
 }
 
 /**
- * Find the path to a file, recurisvely searching the parent directories
+ * Find the closest matching full path to a file or list of files, searching parent directories
+ *
+ * @param {string | string[]} fileNames - A single filename, or a list of file names to search for
+ * @returns {string|null} - The closest file path, or null if none found
  */
-export function findInParentDirs(fileName) {
+export function findInParentDirs(fileNames) {
+  const results = Array.isArray(fileNames)
+    ? fileNames.map(findSingleFileInParentDirs)
+    : [findSingleFileInParentDirs(fileNames)];
+
+  // Filter out null results
+  /** @type {string[]} */
+  const paths = [];
+  for (const result of results) {
+    if (result) {
+      paths.push(result);
+    }
+  }
+
+  if (paths.length === 0) {
+    return null;
+  }
+
+  paths.sort((a, b) => {
+    const aDepth = a.split(path.sep).length;
+    const bDepth = b.split(path.sep).length;
+    return aDepth - bDepth;
+  });
+
+  return paths[0];
+}
+
+/**
+ * Select the closest path from a list of paths
+ * @NOTE - Assumes that all paths are either in current directory or in parent directory!!!
+ *
+ * @param {Array<string|null>} filePaths - The list of file paths to search for
+ * @returns {string|null} - The closest file path, or null if none found
+ */
+export function selectClosestPath(filePaths) {
+  const paths = filePaths.filter(Boolean);
+
+  if (paths.length === 0) {
+    return null;
+  }
+
+  paths.sort((a, b) => {
+    const aDepth = a.split(path.sep).length;
+    const bDepth = b.split(path.sep).length;
+    return bDepth - aDepth;
+  });
+
+  return paths[0];
+}
+
+/**
+ * Find the path to a file, recurisvely searching the parent directories
+ *
+ * @param {string} fileName - The name of the file to search for
+ * @returns {string|null} - The full path to the file, or null if not found
+ */
+function findSingleFileInParentDirs(fileName) {
   let currentDir = process.cwd();
   const visitedDirs = new Set();
   while (currentDir !== path.parse(currentDir).root) {

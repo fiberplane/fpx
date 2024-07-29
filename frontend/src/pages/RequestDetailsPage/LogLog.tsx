@@ -47,7 +47,7 @@ export function LogLog({
       {contentsType === "json" && <LogContents fullLogArgs={contents} />}
 
       {stack && (
-        <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-400">
+        <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400">
           <StackTrace stackTrace={stack} />
         </div>
       )}

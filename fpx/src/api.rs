@@ -1,6 +1,7 @@
 use crate::data::Store;
 use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
+use crate::service::Service;
 use axum::extract::FromRef;
 use axum::routing::{any, get, post};
 use http::StatusCode;
@@ -10,6 +11,7 @@ use url::Url;
 pub mod client;
 pub mod errors;
 pub mod handlers;
+pub mod models;
 mod studio;
 mod ws;
 
@@ -28,14 +30,9 @@ pub struct Config {
 pub struct ApiState {
     config: Config,
     events: ServerEvents,
-    store: Store,
     inspector_service: InspectorService,
-}
-
-impl FromRef<ApiState> for Store {
-    fn from_ref(api_state: &ApiState) -> Self {
-        api_state.store.clone()
-    }
+    service: Service,
+    store: Store,
 }
 
 impl FromRef<ApiState> for ServerEvents {
@@ -56,26 +53,26 @@ impl FromRef<ApiState> for Config {
     }
 }
 
+impl FromRef<ApiState> for Service {
+    fn from_ref(api_state: &ApiState) -> Service {
+        api_state.service.clone()
+    }
+}
+
+impl FromRef<ApiState> for Store {
+    fn from_ref(api_state: &ApiState) -> Store {
+        api_state.store.clone()
+    }
+}
+
 /// Create a API and expose it through a axum router.
 pub fn create_api(
     base_url: url::Url,
     fpx_directory: PathBuf,
     events: ServerEvents,
-    store: Store,
     inspector_service: InspectorService,
-) -> axum::Router {
-    let api_router = api_router(base_url, fpx_directory, events, store, inspector_service);
-    axum::Router::new()
-        .nest("/api/", api_router)
-        .fallback(studio::default_handler)
-}
-
-fn api_router(
-    base_url: Url,
-    fpx_directory: PathBuf,
-    events: ServerEvents,
+    service: Service,
     store: Store,
-    inspector_service: InspectorService,
 ) -> axum::Router {
     let api_state = ApiState {
         config: Config {
@@ -83,9 +80,20 @@ fn api_router(
             fpx_directory,
         },
         events,
-        store,
         inspector_service,
+        service,
+        store,
     };
+    let api_router = api_router();
+
+    axum::Router::new()
+        .route("/v1/traces", post(handlers::otel::trace_collector_handler))
+        .nest("/api/", api_router)
+        .with_state(api_state)
+        .fallback(studio::default_handler)
+}
+
+fn api_router() -> axum::Router<ApiState> {
     axum::Router::new()
         .route(
             "/requests/:id",
@@ -98,8 +106,14 @@ fn api_router(
         )
         .route("/inspect", any(handlers::inspect_request_handler))
         .route("/inspect/:id", any(handlers::inspect_request_handler))
-        .route("/v1/logs", get(handlers::logs_handler))
         .route("/ws", get(ws::ws_handler))
+        .route(
+            "/traces/:trace_id/spans/:span_id",
+            get(handlers::spans::span_get_handler),
+        )
+        .route(
+            "/traces/:trace_id/spans",
+            get(handlers::spans::span_list_handler),
+        )
         .fallback(StatusCode::NOT_FOUND)
-        .with_state(api_state)
 }

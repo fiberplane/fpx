@@ -17,6 +17,7 @@ export {
   isMizuFetchLoggingErrorMessage,
   isMizuRequestEndMessage,
   isMizuRequestStartMessage,
+  isMizuLog,
 } from "./types";
 
 export {
@@ -37,3 +38,13 @@ export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
 export { useFetchSettings, useUpdateSettings } from "./settings";
 
 export { PROBED_ROUTES_KEY } from "./app-routes";
+export {
+  useMizuTracesV2,
+  type MizuTraceV2,
+  type MizuSpan,
+  type MizuFetchSpan,
+  type MizuOrphanLog,
+  isMizuRootRequestSpan,
+  isMizuFetchSpan,
+  isMizuOrphanLog,
+} from "./traces-v2";

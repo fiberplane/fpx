@@ -142,16 +142,18 @@ export function mapPathKey(key: string) {
 }
 
 export function extractPathParams(path: string) {
-  const regex = /.*\/(:[a-zA-Z]+).*/;
+  const regex = /\/(:[a-zA-Z0-9_-]+)/g;
 
   const result: Array<string> = [];
-
-  const match = regex.exec(path);
-
-  // TODO - Continue matching
-  if (match) {
+  let match;
+  let lastIndex = -1;
+  while ((match = regex.exec(path)) !== null) {
+    // Check if the regex is stuck in an infinite loop
+    if (regex.lastIndex === lastIndex) {
+      break;
+    }
+    lastIndex = regex.lastIndex;
     result.push(match[1]);
   }
-
   return result;
 }

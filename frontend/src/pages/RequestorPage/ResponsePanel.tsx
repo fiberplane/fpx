@@ -9,6 +9,7 @@ import {
   ClockIcon,
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
@@ -214,29 +215,38 @@ function ResponseBody({
     const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
 
     return (
-      <div
-        className={cn("overflow-hidden overflow-y-scroll w-full", className)}
-      >
+      <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
         <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
       </div>
     );
   }
 
   // For text responses, just split into lines and render with rudimentary line numbers
-  const lines =
-    body?.split("\n")?.map((line, index) => (
+  // TODO - if response is empty, show that in a ux friendly way, with 204 for example
+
+  return <ResponseBodyText body={body ?? ""} className={className} />;
+}
+
+export function ResponseBodyText({
+  body,
+  className,
+}: { body: string; className?: string }) {
+  // For text responses, just split into lines and render with rudimentary line numbers
+  const lines = useMemo(() => {
+    return body?.split("\n")?.map((line, index) => (
       <div key={index} className="flex h-full">
         <span className="w-8 text-right pr-2 text-gray-500 bg-muted mr-1">
           {index + 1}
         </span>
         <span>{line}</span>
       </div>
-    )) ?? [];
+    ));
+  }, [body]);
 
   // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
   return (
-    <div className={cn("overflow-hidden overflow-y-scroll w-full", className)}>
+    <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
       <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>

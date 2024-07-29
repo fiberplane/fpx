@@ -1,12 +1,18 @@
-import { useMizuTraces } from "@/queries";
-import { isError } from "react-query";
+import { useMizuTraces, useMizuTracesV2 } from "@/queries";
 
 export function useRequestDetails(traceId?: string) {
-  const query = useMizuTraces();
-  const trace = traceId ? query.data?.find((t) => t.id === traceId) : undefined;
+  const { isPending, isError, data } = useMizuTraces();
+
+  const queryV2 = useMizuTracesV2();
+  const trace = traceId ? data?.find((t) => t.id === traceId) : undefined;
+  const traceV2 = traceId
+    ? queryV2.data?.find((t) => t.id === traceId)
+    : undefined;
+
   return {
-    isLoading: query.isLoading,
-    isError: isError(query),
+    isPending,
+    isError,
     trace,
+    traceV2,
   };
 }

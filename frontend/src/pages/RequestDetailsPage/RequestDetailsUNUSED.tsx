@@ -395,7 +395,7 @@ const ErrorLog = ({
           </div>
           <CollapsibleContent className="space-y-2">
             <Separator className="my-1" />
-            <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-400">
+            <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400">
               <StackTrace stackTrace={stack ?? ""} />
             </div>
           </CollapsibleContent>
@@ -425,7 +425,7 @@ const DefaultLogCard = ({ log }: { log: MizuLog }) => {
         <>
           <div className="mt-2">Args:</div>
 
-          <div className="mt-2 max-h-[200px] overflow-y-scroll text-gray-500 hover:text-gray-700 ">
+          <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-500 hover:text-gray-700 ">
             {args.map((arg, index) => {
               if (isMizuErrorMessage(arg) && arg.stack) {
                 return <StackTrace key={index} stackTrace={arg.stack} />;

@@ -8,7 +8,7 @@ import {
   isMizuRequestStartMessage,
 } from "@/queries";
 import { fetchSourceLocation } from "@/queries";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 async function summarizeError(trace?: MizuTrace) {
   if (!trace) {

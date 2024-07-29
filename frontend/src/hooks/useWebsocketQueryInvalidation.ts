@@ -1,6 +1,6 @@
 import { MIZU_TRACES_KEY, PROBED_ROUTES_KEY } from "@/queries";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { useQueryClient } from "react-query";
 import z from "zod";
 
 /**
@@ -45,7 +45,7 @@ export function useWebsocketQueryInvalidation() {
         );
         return;
       }
-      queryClient.invalidateQueries(...decodedAction.payload);
+      queryClient.invalidateQueries({ queryKey: decodedAction.payload });
     };
 
     socket.onclose = (ev) => {

@@ -1,5 +1,6 @@
 import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { validate } from "@scalar/openapi-parser";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
 
@@ -9,7 +10,8 @@ export type ProbedRoute = {
   handler: string;
   handlerType: "route" | "middleware";
   currentlyRegistered: boolean;
-  addedByUser: boolean;
+  routeOrigin: "discovered" | "custom" | "open_api";
+  openApiSpec?: string;
   // TODO - Implement
   isDraft?: boolean;
 };
@@ -71,29 +73,29 @@ export function useProbedRoutes() {
   });
 }
 
-function addRoute({
-  path,
-  method,
-}: {
+export type Route = {
   path: string;
   method: string;
-}) {
+  handler?: string;
+  handlerType?: "route" | "middleware";
+  routeOrigin?: "discovered" | "custom" | "open_api";
+  openApiSpec?: string;
+};
+
+async function addRoutes(routes: Route | Route[]) {
   return fetch("/v0/app-routes", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      path,
-      method,
-    }),
+    body: JSON.stringify(routes),
   }).then((r) => r.json());
 }
 
-export function useAddRoute() {
+export function useAddRoutes() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: addRoute,
+    mutationFn: addRoutes,
     onSuccess: () => {
       // Invalidate and refetch app routes... not sure if this will mess with the currently selected route,
       // or if we want to autoselect the new route, or what
@@ -195,4 +197,18 @@ export function useTrace(traceId: string) {
     isLoading,
     error,
   };
+}
+
+export function useOpenApiParse(openApiSpec: string) {
+  const mutation = useMutation({
+    mutationFn: async (openApiSpec: string) => {
+      const { valid, schema } = await validate(openApiSpec);
+      if (!valid) {
+        throw new Error("Invalid OpenAPI spec");
+      }
+      return schema;
+    },
+    mutationKey: [openApiSpec],
+  });
+  return mutation;
 }

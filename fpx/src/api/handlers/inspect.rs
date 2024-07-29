@@ -1,6 +1,5 @@
 use crate::api::{ApiState, Config};
 use crate::data::Store;
-use crate::models;
 use axum::extract::Request;
 use axum::extract::State;
 use axum::response::IntoResponse;
@@ -30,7 +29,7 @@ pub async fn inspect_request_handler(
     eprintln!("{:?}", body);
     eprintln!();
 
-    let tx = store.start_transaction().await.unwrap(); // TODO
+    let tx = store.start_readwrite_transaction().await.unwrap(); // TODO
 
     let headers: BTreeMap<String, String> = parts
         .headers
@@ -52,7 +51,7 @@ pub async fn inspect_request_handler(
     .await
     .unwrap(); // TODO
 
-    tx.commit().await.unwrap(); // TODO
+    store.commit_transaction(tx).await.unwrap(); // TODO
 
     events.broadcast(models::RequestAdded::new(request_id, None).into());
 

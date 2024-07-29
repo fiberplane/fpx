@@ -1,49 +1,25 @@
-# fpx
+# fpx studio
 
-## Description
+![FPX](fpx.svg)
 
-This has an api and a frontend that can consume telemetry data from a Hono app.
+fpx studio is a local-first tool for building and debugging Hono apis. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
 
-To connect your Hono app to the api, you'll need to add the code in the [`client-library`](./client-library). You can do this via NPM, or linking to the local codebase. Please read [client-library/README.md](./client-library/README.md) for instructions.
+## Get Started
 
-Worth noting is that the api connects to a local libsql (sqlite) database. Setup steps for this are simple (just need to run migrations), and are in [api/README.md](./api/README.md).
+Launch the studio via `npx` in the root directory of your Hono project:
 
-The frontend is a React + Typescript + Tailwind app that uses [shadcn/ui](https://ui.shadcn.com/) components. For more info on the frontend, see: [frontend/README.md](./frontend/README.md).
+```sh
+cd my-hono-project
+npx @fiberplane/studio
+```
 
-## Setup
+If it's your first time running the cli, it will ask you for some configuration details. After that, a local web app will open on `http://localhost:8788`.
 
-You'll want to
+`fpx` is designed to be used in conjunction with the [`@fiberplane/hono` middleware](https://www.npmjs.com/package/@fiberplane/hono). Adding that middleware is a breeze, and you can read more about it in the project's README.
 
-1. Run the code in this repo, and then
-2. Add some client code to a Hono app
+## Contributing
 
-The next two sections take you through how to do this.
-
-### Spinning up the database, api, and dashboard
-
-1. Clone this repo
-1. `cd api` and spin up the api (follow instructions in [api/README](./api/README.md))
-1. Check the api is running on `http://localhost:8788`
-1. `cd frontend` in a separate shell, and spin up the frontend (follow instructions in in [frontend/README](./frontend/README.md))
-1. Check the frontend is running on `http://localhost:5173`
-
-### Adding FPX to your Hono project
-
-Follow the instructions in the [`client-library` README](./client-library/README.md) to add FPX telemetry to your Hono project.
-
-## Developing
-
-This project uses typescript, biome and npm workspaces. The frontend package also uses eslint for linting purposes, all other packages use biome for linting (formatting is always done with biome).
-
-In the project root you can format all typescript codebases with `npm run format`.
-
-You will also want to use the project root to prepare the npx command for the distributable API. See the root's `package.json` scripts, as well as the api's README for more details on testing the npx command.
-
-### Generating Schemas / Types
-
-The Rust types that will be used to generate the schemas are defined in `xtask/src/commands/schemas.rs`.
-
-To generate the `frontend/src/schemas.ts` file, simply run `cargo xtask generate-schemas` in the project root directory.
+See the [`DEVELOPMENT.md`](./DEVELOPMENT.md) file for more details on how to _develop_ the studio locally. Please get in touch via GitHub issues, or on the [Fiberplane Discord](https://discord.com/invite/cqdY6SpfVR), if you have any feedback or suggestions!
 
 ## License
 

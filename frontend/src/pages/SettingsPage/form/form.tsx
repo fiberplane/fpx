@@ -4,11 +4,18 @@ import { errorHasMessage } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { FormSchema, GPT_4o, isValidOpenaiModel } from "./types";
+import { CLAUDE_3_5_SONNET, FormSchema, GPT_4o } from "./types";
 
-const DEFAULT_OPENAI_MODEL = GPT_4o;
+const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
+  aiEnabled: false,
+  aiProviderType: "openai",
+  openaiModel: GPT_4o,
+  anthropicModel: CLAUDE_3_5_SONNET,
+  customRoutesEnabled: false,
+  tracingLiteEnabled: false,
+};
 
-export function useSettingsForm(settings: Record<string, string>) {
+export function useSettingsForm(settings: Record<string, string | boolean>) {
   const { toast } = useToast();
 
   const { mutate: updateSettings } = useUpdateSettings();
@@ -16,12 +23,8 @@ export function useSettingsForm(settings: Record<string, string>) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      ai_features: !!settings?.aiEnabled,
-      openai_api_key: settings.openaiApiKey ?? "",
-      custom_routes: !!settings?.customRoutesEnabled,
-      openai_model: isValidOpenaiModel(settings.openaiModel)
-        ? settings.openaiModel
-        : DEFAULT_OPENAI_MODEL,
+      ...DEFAULT_VALUES,
+      ...settings,
     },
   });
 
@@ -29,11 +32,21 @@ export function useSettingsForm(settings: Record<string, string>) {
     updateSettings(
       {
         content: {
-          aiEnabled: data.ai_features,
+          customRoutesEnabled: data.customRoutesEnabled,
+          aiEnabled: data.aiEnabled,
+          aiProviderType: data.aiProviderType,
           // Remove the stored api key if the feature is disabled
-          openaiApiKey: data.ai_features ? data.openai_api_key : undefined,
-          openaiModel: data.openai_model,
-          customRoutesEnabled: data.custom_routes,
+          ...(data.aiEnabled
+            ? {
+                openaiApiKey: data.openaiApiKey,
+                anthropicApiKey: data.anthropicApiKey,
+              }
+            : {}),
+          openaiBaseUrl: data.openaiBaseUrl ?? "",
+          openaiModel: data.openaiModel,
+          anthropicBaseUrl: data.anthropicBaseUrl ?? "",
+          anthropicModel: data.anthropicModel,
+          tracingLiteEnabled: data.tracingLiteEnabled,
         },
       },
       {
