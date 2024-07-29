@@ -1,3 +1,4 @@
+pub mod canned_requests;
 mod inspect;
 mod inspectors;
 pub mod otel;

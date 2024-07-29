@@ -5,6 +5,7 @@ use crate::service::Service;
 use axum::extract::FromRef;
 use axum::routing::{any, get, post};
 use http::StatusCode;
+use std::path::PathBuf;
 use url::Url;
 
 pub mod client;
@@ -15,11 +16,19 @@ mod studio;
 mod ws;
 
 #[derive(Clone)]
-pub struct ApiState {
+#[allow(dead_code)]
+pub struct Config {
     /// The base url on which this server is running. Override this when you
     /// are running this behind a reverse proxy.
     base_url: Url,
 
+    /// the location of the fpx directory
+    fpx_directory: PathBuf,
+}
+
+#[derive(Clone)]
+pub struct ApiState {
+    config: Config,
     events: ServerEvents,
     inspector_service: InspectorService,
     service: Service,
@@ -27,14 +36,20 @@ pub struct ApiState {
 }
 
 impl FromRef<ApiState> for ServerEvents {
-    fn from_ref(api_state: &ApiState) -> ServerEvents {
+    fn from_ref(api_state: &ApiState) -> Self {
         api_state.events.clone()
     }
 }
 
 impl FromRef<ApiState> for InspectorService {
-    fn from_ref(api_state: &ApiState) -> InspectorService {
+    fn from_ref(api_state: &ApiState) -> Self {
         api_state.inspector_service.clone()
+    }
+}
+
+impl FromRef<ApiState> for Config {
+    fn from_ref(api_state: &ApiState) -> Self {
+        api_state.config.clone()
     }
 }
 
@@ -53,13 +68,17 @@ impl FromRef<ApiState> for Store {
 /// Create a API and expose it through a axum router.
 pub fn create_api(
     base_url: url::Url,
+    fpx_directory: PathBuf,
     events: ServerEvents,
     inspector_service: InspectorService,
     service: Service,
     store: Store,
 ) -> axum::Router {
     let api_state = ApiState {
-        base_url,
+        config: Config {
+            base_url,
+            fpx_directory,
+        },
         events,
         inspector_service,
         service,

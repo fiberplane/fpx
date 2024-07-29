@@ -1,14 +1,14 @@
-use proc_macro::TokenStream;
 use attribute_derive::FromAttr;
+use proc_macro::TokenStream;
 use proc_macro_error::{abort_call_site, proc_macro_error};
 use quote::quote;
-use syn::{Data, DeriveInput, Expr, parse_macro_input};
+use syn::{parse_macro_input, Data, DeriveInput, Expr};
 
 #[derive(FromAttr)]
 #[attribute(ident = api_error)]
 #[attribute(error(missing_field = "`{field}` was not specified"))]
 struct ApiErrorAttribute {
-    status_code: Expr
+    status_code: Expr,
 }
 
 #[proc_macro_derive(ApiError, attributes(api_error))]
@@ -42,5 +42,6 @@ pub fn derive_api_error(input: TokenStream) -> TokenStream {
                 }
             }
         }
-    }).into()
+    })
+    .into()
 }
