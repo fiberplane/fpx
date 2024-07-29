@@ -75,15 +75,19 @@ pub struct PostArgs {
     /// Base url of the fpx dev server.
     #[arg(from_global)]
     pub base_url: Url,
+
     /// HTTP method to use (e.g., GET, POST, PUT, DELETE).
     #[arg(long, default_value = "GET")]
     pub method: String,
+
     /// Target URL for the request.
     #[arg(long)]
     pub url: String,
+
     /// Request headers in the format `key1:value1,key2:value2`.
     #[arg(long, default_value = "")]
     pub headers: String,
+
     /// Request body.
     #[arg(long, default_value = "")]
     pub body: String,
@@ -117,7 +121,7 @@ async fn post_request(args: PostArgs) -> Result<()> {
 
     let api_client = ApiClient::new(args.base_url.clone());
 
-    let request = api_client.request_post(new_request).await?;
+    let request = api_client.request_create(new_request).await?;
 
     serde_json::to_writer_pretty(stdout(), &request)?;
 

@@ -1,6 +1,4 @@
-use std::collections::BTreeMap;
-use std::str::FromStr;
-use std::time::Duration;
+use std::{collections::BTreeMap, str::FromStr, time::Duration};
 
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
 use crate::api::models::{self, NewRequest, NewRequestError, RequestWithResponse, Response};

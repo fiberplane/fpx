@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::collections::BTreeMap;
 
 #[derive(Debug, Deserialize)]
-pub(crate) struct Request {
+pub struct Request {
     pub(crate) id: u32,
     pub(crate) method: String,
     pub(crate) url: String,
