@@ -29,6 +29,10 @@ export function App() {
                 <Route path="/" element={<Redirect />} />
                 <Route path="/requests" element={<RequestsPage />} />
                 <Route
+                  path="/requests/otel/:traceId"
+                  element={<RequestDetailsPage otel />}
+                />
+                <Route
                   path="/requests/:traceId"
                   element={<RequestDetailsPage />}
                 />

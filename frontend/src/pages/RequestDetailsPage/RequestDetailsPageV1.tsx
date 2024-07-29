@@ -128,6 +128,7 @@ export function RequestDetailsPageV1({ traceId }: { traceId: string }) {
   }
 
   if (!traces) {
+    console.log("no traceid", traces);
     return <EmptyState />;
   }
 

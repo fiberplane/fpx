@@ -1,10 +1,12 @@
 import Diamond from "@/assets/Diamond.svg";
 import { Badge } from "@/components/ui/badge";
 import {
+  MizuOrphanLog,
   // MizuOrphanLog,
   // MizuSpan,
   MizuTraceV2,
   OtelSpan,
+  isMizuOrphanLog,
   // isMizuOrphanLog,
 } from "@/queries";
 import { cn } from "@/utils";
@@ -114,13 +116,17 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   //   [trace],
   // );
 
-  const sortedSpans = useMemo(() => {
-    return spans.sort((a, b) => {
-      return (
-        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-      );
+  const combinedData = useMemo(() => {
+    return [...spans, ...orphanLogs];
+  }, [spans, orphanLogs]);
+
+  const sorted = useMemo(() => {
+    return combinedData.sort((a, b) => {
+      const timeA = "start_time" in a ? a.start_time : a.timestamp;
+      const timeB = "start_time" in b ? b.start_time : b.timestamp;
+      return new Date(timeA).getTime() - new Date(timeB).getTime();
     });
-  }, [spans]);
+  }, [combinedData]);
 
   // const
 
@@ -196,14 +202,27 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     >
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
       <div className="flex flex-col">
-        {sortedSpans.map((spans) => (
-          <WaterfallRow
-            key={spans.span_id}
-            span={spans}
-            duration={duration}
-            startTime={minStart}
-          />
-        ))}
+        {sorted.map((spanOrLog) => {
+          if (isMizuOrphanLog(spanOrLog)) {
+            // return null;
+            return (
+              <WaterfallRowLog
+                key={spanOrLog.id}
+                log={spanOrLog}
+                duration={duration}
+                startTime={minStart}
+              />
+            );
+          }
+          return (
+            <WaterfallRowSpan
+              key={spanOrLog.span_id}
+              span={spanOrLog}
+              duration={duration}
+              startTime={minStart}
+            />
+          );
+        })}
         {/* {normalizedTrace.normalizedWaterfall.map((spanOrLog) => (
           <NormalizedWaterfallRow
             key={isMizuOrphanLog(spanOrLog) ? spanOrLog.id : spanOrLog.span_id}
@@ -216,7 +235,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   );
 };
 
-const WaterfallRow: React.FC<{
+const WaterfallRowSpan: React.FC<{
   span: OtelSpan;
   duration: number;
   startTime: number;
@@ -291,6 +310,51 @@ const WaterfallRow: React.FC<{
           formatDuration(span.start_time, span.end_time)
         }
       </div>
+    </a>
+  );
+};
+
+const WaterfallRowLog: React.FC<{
+  log: MizuOrphanLog;
+  duration: number;
+  startTime: number;
+}> = ({ log, duration, startTime }) => {
+  const id = log.id;
+  // console.log('spanDuration', spanDuration, lineWidth);
+  const lineOffset = `${((new Date(log.timestamp).getTime() - startTime) / duration) * 100}%`;
+  const icon = "log";
+  // const isFetch = span.name === "fetch";
+  // const isRootRequest = span.parent_span_id === null;
+  // span.kind === "SERVER";
+
+  return (
+    <a
+      data-toc-id={id}
+      className={cn(
+        "flex items-center p-2",
+        "border-l-2 border-transparent",
+        "hover:bg-primary/10 hover:border-blue-500",
+        // activeId === id && "bg-primary/10 border-blue-500",
+        "transition-all",
+        "cursor-pointer",
+      )}
+      href={`#${log.id}`}
+    >
+      <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
+      <div className="flex flex-col w-20">
+        <div className="font-mono font-normal text-xs truncate text-gray-200">
+          log
+        </div>
+      </div>
+      <div className="text-gray-400 flex flex-grow items-center mx-4">
+        <div
+          className="h-2.5 border-l-2flex items-center min-w-1"
+          style={{ marginLeft: lineOffset }}
+        >
+          <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
+        </div>
+      </div>
+      <div className="ml-auto text-gray-400 text-xs w-12 px-2" />
     </a>
   );
 };

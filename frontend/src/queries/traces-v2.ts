@@ -20,7 +20,12 @@ import {
   SEMATTRS_NET_HOST_PORT,
 } from "@opentelemetry/semantic-conventions";
 import { useMizuTraces } from "./queries";
-import { OtelAttributes, OtelSpanSchema, OtelStatus } from "./traces-otel";
+import {
+  OtelAttributes,
+  OtelSpan,
+  OtelSpanSchema,
+  OtelStatus,
+} from "./traces-otel";
 import {
   MizuErrorMessageSchema,
   MizuFetchEndSchema,
@@ -199,7 +204,7 @@ export function useMizuTracesV2() {
     }
 
     return mizuTracesQuery.data.map((trace) => {
-      const spans: MizuSpan[] = [];
+      const spans: OtelSpan[] = [];
       const orphanLogs: MizuOrphanLog[] = [];
       const logs: MizuLog[] = trace.logs;
       for (const l of logs) {
@@ -217,19 +222,20 @@ export function useMizuTracesV2() {
         }
       }
 
-      const waterfall: MizuWaterfall = [...spans, ...orphanLogs];
+      // const waterfall: MizuWaterfall = [...spans, ...orphanLogs];
 
-      waterfall.sort((a, b) => {
-        const aStart = isMizuSpan(a) ? a.start : a.timestamp;
-        const bStart = isMizuSpan(b) ? b.start : b.timestamp;
-        return new Date(aStart).getTime() - new Date(bStart).getTime();
-      });
+      // waterfall.sort((a, b) => {
+      //   const aStart = isMizuSpan(a) ? a.start : a.timestamp;
+      //   const bStart = isMizuSpan(b) ? b.start : b.timestamp;
+      //   return new Date(aStart).getTime() - new Date(bStart).getTime();
+      // });
 
       return {
-        ...trace,
+        // ...trace,
+        id: trace.id,
         spans,
         orphanLogs,
-        waterfall,
+        // waterfall,
       };
     }) as MizuTraceV2[];
   }, [mizuTracesQuery.data]);

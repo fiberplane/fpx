@@ -49,10 +49,13 @@ import { RequestDetailsPageV1 } from "./RequestDetailsPageV1";
 // import { HttpSummary } from "./v2/SummaryV2";
 // import { useOtelTrace } from "@/queries/traces-otel";
 import { RequestDetailsPageV2 } from "./RequestDetailsPageV2";
+import { useEscapeToList } from "./hooks";
 
-export function RequestDetailsPage() {
+export function RequestDetailsPage(props: { otel?: boolean }) {
+  const { otel = false } = props;
   const { traceId } = useParams<{ traceId: string }>();
 
+  useEscapeToList();
   // const navigate = useNavigate();
 
   // const [isInputFocused, setIsInputFocused] = useState(false);
@@ -119,14 +122,14 @@ export function RequestDetailsPage() {
   // useHotkeys(["K"], () => {
   //   handlePrevTrace();
   // });
-  const shouldRenderV2 = useTracingLiteEnabled();
+  const shouldRenderV2 = useTracingLiteEnabled() || otel;
 
   if (!traceId) {
     return <EmptyState />;
   }
 
   if (shouldRenderV2) {
-    return <RequestDetailsPageV2 traceId={traceId} traces={[]} />;
+    return <RequestDetailsPageV2 traceId={traceId} otel={otel} />;
   }
 
   return <RequestDetailsPageV1 traceId={traceId} />;

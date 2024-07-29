@@ -44,13 +44,13 @@ export const useTracesSocket = () => {
           if (!spanIds.has(parentId)) {
             spanIds.add(parentId);
             const toastId = toast({
-              title: "New Span Added",
+              title: "New trace Added",
               onClick: () => {
                 // console.log('boom!');
                 toastId.dismiss();
               },
               description: (
-                <Link to={`/requests/${parentId}`}>view details</Link>
+                <Link to={`/requests/otel/${parentId}`}>view details</Link>
               ),
             });
           }

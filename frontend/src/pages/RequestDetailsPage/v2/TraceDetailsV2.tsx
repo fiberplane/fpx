@@ -1,4 +1,5 @@
 import {
+  MizuOrphanLog,
   // MizuSpan,
   // MizuTrace,
   // MizuTraceV2,
@@ -45,11 +46,13 @@ import { SubSection, SubSectionHeading } from "./shared";
 // }
 export function TraceDetailsV2({
   spans,
-  // orphanLogs,
+  orphanLogs,
 }: {
   spans: OtelSpans;
-  // orphanLogs: MizuTraceV2["orphanLogs"];
+  orphanLogs: Array<MizuOrphanLog>;
 }) {
+  // TODO: merge spans and orphanLogs
+  console.log(orphanLogs);
   return (
     <div className="grid gap-4" id="trace-details-v2">
       {spans.map((span) => {
