@@ -57,6 +57,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     let app = api::create_api(
         args.base_url.clone(),
+        args.fpx_directory,
         events.clone(),
         inspector_service,
         service.clone(),

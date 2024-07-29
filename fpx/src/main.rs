@@ -14,6 +14,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Registry};
 
 mod api;
+pub mod canned_requests;
 mod commands;
 pub mod data;
 mod events;
