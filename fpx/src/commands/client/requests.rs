@@ -14,8 +14,10 @@ pub struct Args {
 pub enum Command {
     /// Get a request
     Get(GetArgs),
+
     /// List requests
     List(ListArgs),
+
     /// Create and execute a request
     Post(PostArgs),
 }
