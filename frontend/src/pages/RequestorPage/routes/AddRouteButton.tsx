@@ -245,7 +245,7 @@ type CustomRouteFormData = {
 function CustomRouteForm({
   setOpen,
 }: { setOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
-  const { register, handleSubmit, getValues } = useForm<CustomRouteFormData>();
+  const { register, handleSubmit, watch } = useForm<CustomRouteFormData>();
 
   const { mutate: addRoutes } = useAddRoutes();
 
@@ -303,7 +303,7 @@ function CustomRouteForm({
         </div>
       </div>
       <div className="flex justify-end">
-        <Button size="sm" className="h-7" disabled={!getValues("path")}>
+        <Button size="sm" className="h-7" disabled={!watch("path")}>
           Add
         </Button>
       </div>
