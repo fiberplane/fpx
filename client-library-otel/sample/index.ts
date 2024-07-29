@@ -38,8 +38,7 @@ app.get("/", async (c) => {
 });
 
 app.get("/error", async () => {
-  // await new Promise(resolve => setTimeout(resolve, 5));
-  // await sleep(5);
+  await sleep(5);
   throw new Error("This is an error");
 });
 

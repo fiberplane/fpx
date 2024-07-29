@@ -1,6 +1,24 @@
 import { useMemo } from "react";
 import { z } from "zod";
 
+import {
+  FPX_REQUEST_BODY,
+  FPX_REQUEST_HEADERS_FULL,
+  FPX_REQUEST_PATHNAME,
+  FPX_REQUEST_SCHEME,
+  FPX_REQUEST_SEARCH,
+  FPX_RESPONSE_BODY,
+  FPX_RESPONSE_HEADERS_FULL,
+  SEMATTRS_HTTP_REQUEST_METHOD,
+  SpanStatus,
+} from "@/constants";
+import {
+  SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH,
+  SEMATTRS_HTTP_STATUS_CODE,
+  SEMATTRS_HTTP_URL,
+  SEMATTRS_NET_HOST_NAME,
+  SEMATTRS_NET_HOST_PORT,
+} from "@opentelemetry/semantic-conventions";
 import { useMizuTraces } from "./queries";
 import { OtelAttributes, OtelSpanSchema, OtelStatus } from "./traces-otel";
 import {
@@ -20,23 +38,6 @@ import {
   isMizuFetchErrorMessage,
   isMizuFetchLoggingErrorMessage,
 } from "./types";
-import { 
-  SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH, 
-  SEMATTRS_HTTP_STATUS_CODE, 
-  SEMATTRS_HTTP_URL,
-  SEMATTRS_NET_HOST_NAME, 
-  SEMATTRS_NET_HOST_PORT
-} from "@opentelemetry/semantic-conventions"
-import { 
-  SEMATTRS_HTTP_REQUEST_METHOD, 
-  FPX_REQUEST_BODY, 
-  FPX_REQUEST_HEADERS_FULL,
-  FPX_REQUEST_PATHNAME,
-  FPX_REQUEST_SCHEME,
-  FPX_REQUEST_SEARCH, 
-  FPX_RESPONSE_BODY,
-  FPX_RESPONSE_HEADERS_FULL
-} from "@/constants";
 
 const MizuRequestStartLogSchema = MizuLogSchema.omit({ message: true }).extend({
   message: MizuRequestStartSchema,
@@ -189,7 +190,6 @@ export type MizuTraceV2 = MizuTrace & {
   orphanLogs: MizuOrphanLog[];
   waterfall: MizuWaterfall;
 };
-
 
 export function useMizuTracesV2() {
   const mizuTracesQuery = useMizuTraces();
@@ -391,13 +391,16 @@ function fpxRootResponseLogToOtelStatus(log?: MizuRequestEndLog) {
   if (isMizuRequestEndLog(log)) {
     const statusCode = parseInt(log.message.status);
     if (statusCode && statusCode < 400) {
-      return { code: "OK", message: `HTTP ${statusCode}` };
+      return { code: SpanStatus.OK, message: `HTTP ${statusCode}` };
     } else if (statusCode && statusCode >= 400) {
-      return { code: "ERROR", message: `HTTP ${statusCode}` };
+      return { code: SpanStatus.ERROR, message: `HTTP ${statusCode}` };
     }
   }
 
-  return { code: "ERROR", message: "Unknown response status (data not found)" };
+  return {
+    code: SpanStatus.ERROR,
+    message: "Unknown response status (data not found)",
+  };
 }
 
 const safeToQueryComponent = (
@@ -442,10 +445,10 @@ function fpxRootResponseToHttpAttributes(
       String: url,
     },
 
-    [FPX_REQUEST_SEARCH]:  {
+    [FPX_REQUEST_SEARCH]: {
       String: searchParams,
     },
-    
+
     [FPX_REQUEST_PATHNAME]: {
       String: path,
     },
@@ -486,7 +489,9 @@ function fpxRootResponseToHttpAttributes(
     // "fpx.response.body": response?.message?.body,
   };
 
-  const statusCode = response?.message.status ? Number.parseInt(response?.message?.status):undefined;
+  const statusCode = response?.message.status
+    ? Number.parseInt(response?.message?.status)
+    : undefined;
   if (statusCode !== undefined && !Number.isNaN(statusCode)) {
     attributes[SEMATTRS_HTTP_STATUS_CODE] = {
       Int: statusCode,
@@ -501,13 +506,13 @@ function fpxRootResponseToHttpAttributes(
   }
 
   if (request.message.body !== undefined) {
-    attributes[FPX_REQUEST_BODY]=  {
+    attributes[FPX_REQUEST_BODY] = {
       String: request.message.body,
     };
   }
 
   if (typeof response?.message?.body === "string") {
-    attributes[FPX_RESPONSE_BODY]= {
+    attributes[FPX_RESPONSE_BODY] = {
       String: response?.message?.body,
     };
   }
@@ -516,11 +521,11 @@ function fpxRootResponseToHttpAttributes(
   for (const [header, value] of Object.entries(request.message.headers)) {
     headerObject[header] = value;
     attributes[`http.request.header.${header}`] = {
-      String: value
+      String: value,
     };
   }
   attributes[FPX_REQUEST_HEADERS_FULL] = {
-    String: JSON.stringify(headerObject)
+    String: JSON.stringify(headerObject),
   };
 
   headerObject = {};
@@ -529,11 +534,11 @@ function fpxRootResponseToHttpAttributes(
   )) {
     headerObject[responseHeader] = value;
     attributes[`http.response.header.${responseHeader}`] = {
-      String: value
+      String: value,
     };
   }
   attributes[FPX_REQUEST_HEADERS_FULL] = {
-    String: JSON.stringify(headerObject)
+    String: JSON.stringify(headerObject),
   };
 
   return attributes;
@@ -567,17 +572,20 @@ function fpxFetchResponseLogToOtelStatus(
         ? log.message.status
         : parseInt(log.message.status);
     if (statusCode >= 400) {
-      return { code: "ERROR", message: `HTTP ${statusCode}` };
+      return { code: SpanStatus.ERROR, message: `HTTP ${statusCode}` };
     }
-    return { code: "OK", message: "" };
+    return { code: SpanStatus.OK, message: "" };
   }
   if (isMizuFetchErrorLog(log)) {
-    return { code: "ERROR", message: "Fetch error" };
+    return { code: SpanStatus.ERROR, message: "Fetch error" };
   }
   if (isMizuFetchLoggingErrorLog(log)) {
-    return { code: "ERROR", message: "Fetch logging error" };
+    return { code: SpanStatus.ERROR, message: "Fetch logging error" };
   }
-  return { code: "ERROR", message: "Unknown response status (data not found)" };
+  return {
+    code: SpanStatus.ERROR,
+    message: "Unknown response status (data not found)",
+  };
 }
 
 /**
@@ -615,18 +623,18 @@ function fpxFetchResponseToHttpAttributes(
   if (request.message.body !== null) {
     commonAttributes[FPX_REQUEST_BODY] = {
       String: request.message.body,
-    }
+    };
   }
 
   let headerObject: Record<string, string> = {};
   for (const [header, value] of Object.entries(request.message.headers)) {
     commonAttributes[`http.request.header.${header}`] = {
-      String: value
+      String: value,
     };
     headerObject[header] = value;
   }
   commonAttributes[FPX_REQUEST_HEADERS_FULL] = {
-    String: JSON.stringify(headerObject)
+    String: JSON.stringify(headerObject),
   };
 
   if (isMizuFetchEndLog(response)) {
@@ -635,7 +643,7 @@ function fpxFetchResponseToHttpAttributes(
     for (const [header, value] of Object.entries(response.message.headers)) {
       headerObject[header] = value;
       responseHeaderAttributes[`http.response.header.${header}`] = {
-        String: value
+        String: value,
       };
     }
     responseHeaderAttributes[FPX_RESPONSE_HEADERS_FULL] = {
@@ -645,14 +653,14 @@ function fpxFetchResponseToHttpAttributes(
     if (response.message.body !== null) {
       responseHeaderAttributes[FPX_RESPONSE_BODY] = {
         String: response.message.body,
-      }
+      };
     }
 
     return {
       ...commonAttributes,
       ...responseHeaderAttributes,
       [SEMATTRS_HTTP_STATUS_CODE]: {
-        Int: response.message.status
+        Int: response.message.status,
       },
     };
   }
@@ -662,11 +670,11 @@ function fpxFetchResponseToHttpAttributes(
     headerObject = {};
     for (const [header, value] of Object.entries(response.message.headers)) {
       responseHeaderAttributes[`http.response.header.${header}`] = {
-        String: value
+        String: value,
       };
       headerObject[header] = value;
     }
-    responseHeaderAttributes[FPX_RESPONSE_HEADERS_FULL] 
+    responseHeaderAttributes[FPX_RESPONSE_HEADERS_FULL];
     const responseBody = response.message.body;
     if (responseBody !== null) {
       commonAttributes[FPX_RESPONSE_BODY] = {
@@ -678,7 +686,7 @@ function fpxFetchResponseToHttpAttributes(
       ...commonAttributes,
       ...responseHeaderAttributes,
       [SEMATTRS_HTTP_STATUS_CODE]: {
-        Int: response.message.status
+        Int: response.message.status,
       },
       // "http.response.status_code": parseInt(`${response.message.status}`),
       // "fpx.response.body": responseBody,

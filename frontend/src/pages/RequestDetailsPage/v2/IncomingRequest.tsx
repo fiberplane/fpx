@@ -1,6 +1,7 @@
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import { MizuRootRequestSpan } from "@/queries/traces-v2";
+import { OtelSpan } from "@/queries";
+// import { MizuRootRequestSpan } from "@/queries/traces-v2";
 import { cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -9,28 +10,31 @@ import { SectionHeading } from "../shared";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
 import {
   getMatchedRoute,
-  getMethod,
   getRequestBody,
   getRequestHeaders,
+  getRequestMethod,
+  // getRequestPath,
   getRequestQueryParams,
+  getRequestUrl,
   getResponseBody,
   getResponseHeaders,
   getStatusCode,
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
-import { timelineId } from "./timelineId";
+// import { timelineId } from "./timelineId";
 
-function getPathWithSearch(span: MizuRootRequestSpan) {
-  const path = span.attributes["url.path"];
-  const queryParams = span.attributes["url.query"];
-  const queryParamsString = queryParams ? `?${queryParams}` : "";
-  return `${path}${queryParamsString}`;
-}
+// function getPathWithSearch(span: MizuRootRequestSpan) {
+//   const path = getRequestPath(span)
+//   // const path = span.attributes["url.path"];
+//   const queryParams = span.attributes["url.query"];
+//   const queryParamsString = queryParams ? `?${queryParams}` : "";
+//   return `${path}${queryParamsString}`;
+// }
 
-export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
+export function IncomingRequest({ span }: { span: OtelSpan }) {
   // const id = timelineId(span);
   const id = span.span_id;
-  const method = getMethod(span);
+  const method = getRequestMethod(span);
   const duration = useMemo(() => {
     try {
       const duration =
@@ -42,7 +46,8 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   }, [span]);
 
   const pathWithSearch = useMemo<string>(() => {
-    return getPathWithSearch(span);
+    // return getPathWithSearch(span);
+    return getRequestUrl(span);
   }, [span]);
 
   const matchedRoute = useMemo<string>(() => {
@@ -50,7 +55,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   }, [span]);
 
   const requestHeaders = useMemo<Record<string, string>>(() => {
-    return getRequestHeaders(span);
+    return getRequestHeaders(span) ?? {};
   }, [span]);
 
   const requestHeadersCount = useMemo<number>(() => {
@@ -82,6 +87,8 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     return getRequestQueryParams(span);
   }, [span]);
 
+  const statusCode = getStatusCode(span);
+
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
@@ -89,7 +96,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
           <SectionHeading>Incoming Request</SectionHeading>
 
           <div className="flex gap-2">
-            <Status statusCode={getStatusCode(span)} />
+            {statusCode && <Status statusCode={statusCode} />}
             <div className="inline-flex gap-2 font-mono py-1 px-2 text-xs bg-accent/80 rounded">
               <span className={cn(getHttpMethodTextColor(method))}>
                 {method}

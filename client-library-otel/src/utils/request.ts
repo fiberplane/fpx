@@ -15,6 +15,7 @@ import {
   FPX_RESPONSE_HEADERS_FULL,
   SEMATTRS_HTTP_REQUEST_METHOD,
   SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
+  SEMATTRS_URL_FULL,
 } from "../constants";
 import type {
   GlobalResponse,
@@ -52,7 +53,7 @@ export function getRequestAttributes(input: InputParam, init?: InitParam) {
     // TODO: remove login/password from URL (if we want to follow
     // the otel spec for this attribute)
     // TODO: think about how to handle a redirect
-    [SEMATTRS_HTTP_URL]: url.toString(),
+    [SEMATTRS_URL_FULL]: url.toString(),
     // Bunch of custom attributes even though some experimental
     // packages from otel already have similar attributes
     [FPX_REQUEST_PATHNAME]: url.pathname,

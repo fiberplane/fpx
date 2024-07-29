@@ -1,6 +1,8 @@
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import { MizuFetchSpan, MizuSpan } from "@/queries/traces-v2";
+// import { timelineId } from "./timelineId";
+import { OtelSpan } from "@/queries";
+// import { MizuFetchSpan, MizuSpan } from "@/queries/traces-v2";
 import { cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -8,32 +10,32 @@ import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
 import {
-  getMethod,
   getRequestBody,
   getRequestHeaders,
+  getRequestMethod,
+  getRequestUrl,
   getResponseBody,
   getResponseHeaders,
   getStatusCode,
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
-import { timelineId } from "./timelineId";
 
-function getRequestUrl(span: MizuSpan) {
-  return `${span.attributes["url.full"]}`;
-}
+// function getRequestUrl(span: OtelSpan) {
+// return `${span.attributes["url.full"]}`;
+// }
 
-export function FetchSpan({ span }: { span: MizuFetchSpan }) {
+export function FetchSpan({ span }: { span: OtelSpan }) {
   // const id = timelineId(span);
   const id = span.span_id;
 
-  const method = getMethod(span);
+  const method = getRequestMethod(span);
 
   const requestHeaders = useMemo<Record<string, string>>(() => {
     return getRequestHeaders(span);
   }, [span]);
 
   const requestBody = useMemo<string>(() => {
-    return getRequestBody(span)??"";
+    return getRequestBody(span) ?? "";
   }, [span]);
 
   const responseHeaders = useMemo<Record<string, string>>(() => {

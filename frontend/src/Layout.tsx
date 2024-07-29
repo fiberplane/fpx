@@ -2,8 +2,8 @@ import type React from "react";
 import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "./assets/fpx.svg";
-import { cn } from "./utils";
 import { useTracesSocket } from "./hooks/useTracesSocket";
+import { cn } from "./utils";
 
 const Branding = () => {
   return (

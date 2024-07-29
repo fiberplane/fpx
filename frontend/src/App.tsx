@@ -1,4 +1,5 @@
 import { QueryClientProvider, queryClient } from "@/queries";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { ReactNode, useEffect } from "react";
 import {
   Route,
@@ -7,6 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import Layout from "./Layout";
+import { Toaster } from "./components/ui/toaster";
 import { IssuesPage } from "./pages/IssuesPage/IssuesPage";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import {
@@ -15,8 +17,6 @@ import {
 } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { Toaster } from "./components/ui/toaster";
 
 export function App() {
   return (
@@ -24,7 +24,6 @@ export function App() {
       <RequestorSessionHistoryProvider>
         <Router>
           <TooltipProvider>
-
             <Layout>
               <Routes>
                 <Route path="/" element={<Redirect />} />

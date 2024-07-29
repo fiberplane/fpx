@@ -1,20 +1,23 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
-export function useWebSocket(uri: string, onmessage: (this: WebSocket, ev: MessageEvent) => void) {
+export function useWebSocket(
+  uri: string,
+  onmessage: (this: WebSocket, ev: MessageEvent) => void,
+) {
   useEffect(() => {
-    console.log('uri', uri, onmessage)
+    console.log("uri", uri, onmessage);
 
-    const socket = new WebSocket(uri); 
+    const socket = new WebSocket(uri);
 
     const onOpen = () => {
-      console.log("Connected to websocket server", {uri});
+      console.log("Connected to websocket server", { uri });
     };
 
     // Check if the socket is already open
     if (socket.readyState === WebSocket.OPEN) {
       onOpen();
     } else {
-      socket.addEventListener("open", onOpen)
+      socket.addEventListener("open", onOpen);
     }
 
     socket.addEventListener("message", onmessage);
@@ -23,7 +26,7 @@ export function useWebSocket(uri: string, onmessage: (this: WebSocket, ev: Messa
     });
 
     socket.onerror = (error) => {
-      console.error("Error with websocket server",uri, error);
+      console.error("Error with websocket server", uri, error);
       // console.error('WebSocket Error:', event.message);
       // console.error('Event Type:', event.type);
       // console.error('WebSocket State:', socket.readyState);
@@ -35,7 +38,7 @@ export function useWebSocket(uri: string, onmessage: (this: WebSocket, ev: Messa
     };
 
     return () => {
-      console.log('closing socket', uri, socket.readyState)
+      console.log("closing socket", uri, socket.readyState);
       // if (socket.readyState )
       socket.close();
     };

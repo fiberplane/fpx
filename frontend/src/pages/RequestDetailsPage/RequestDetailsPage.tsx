@@ -1,51 +1,54 @@
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Status } from "@/components/ui/status";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+// import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent } from "@/components/ui/card";
+// import { Status } from "@/components/ui/status";
+// import {
+//   Tooltip,
+//   TooltipContent,
+//   TooltipTrigger,
+// } from "@/components/ui/tooltip";
 import { useTracingLiteEnabled } from "@/hooks";
+// import {
+//   MizuLog,
+//   MizuRequestEnd,
+//   MizuRequestStart,
+//   // MizuTrace,
+//   // useMizuTraces,
+// } from "@/queries";
+// import {
+//   MizuFetchEnd,
+//   MizuFetchError,
+//   MizuFetchLoggingError,
+//   MizuFetchStart,
+//   // isMizuErrorMessage,
+//   // isMizuFetchErrorMessage,
+//   // isMizuRequestEndMessage,
+// } from "@/queries/types";
+// import { cn } from "@/utils";
+// import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
+// import { useEffect, useState } from "react";
+// import { useHotkeys } from "react-hotkeys-hook";
 import {
-  MizuLog,
-  MizuRequestEnd,
-  MizuRequestStart,
-  MizuTrace,
-  useMizuTraces,
-} from "@/queries";
-import {
-  MizuFetchEnd,
-  MizuFetchError,
-  MizuFetchLoggingError,
-  MizuFetchStart,
-  isMizuErrorMessage,
-  isMizuFetchErrorMessage,
-  isMizuRequestEndMessage,
-} from "@/queries/types";
-import { cn } from "@/utils";
-import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
-import { useEffect, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
-import { useNavigate, useParams } from "react-router-dom";
+  //  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { z } from "zod";
-import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
-import { FetchRequestLog } from "./FetchRequestLog";
-import { FetchResponseErrorLog } from "./FetchResponseErrorLog";
-import { FetchResponseLog } from "./FetchResponseLog";
-import { LogLog } from "./LogLog";
-import { Minimap } from "./Minimap";
-import { RequestLog } from "./RequestLog";
-import { ResponseLog } from "./ResponseLog";
-import { TextOrJsonViewer } from "./TextJsonViewer";
-import { FpxCard, RequestMethod, SectionHeading } from "./shared";
+import { EmptyState } from "./EmptyState";
+import { RequestDetailsPageV1 } from "./RequestDetailsPageV1";
+// import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
+// import { FetchRequestLog } from "./FetchRequestLog";
+// import { FetchResponseErrorLog } from "./FetchResponseErrorLog";
+// import { FetchResponseLog } from "./FetchResponseLog";
+// import { LogLog } from "./LogLog";
+// import { Minimap } from "./Minimap";
+// import { RequestLog } from "./RequestLog";
+// import { ResponseLog } from "./ResponseLog";
+// import { TextOrJsonViewer } from "./TextJsonViewer";
+// import { FpxCard, RequestMethod, SectionHeading } from "./shared";
 // import { SummaryV2, TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
 // import { HttpSummary } from "./v2/SummaryV2";
 // import { useOtelTrace } from "@/queries/traces-otel";
 import { RequestDetailsPageV2 } from "./RequestDetailsPageV2";
-import { EmptyState } from "./EmptyState";
-import { RequestDetailsPageV1 } from "./RequestDetailsPageV1";
 
 export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
@@ -123,10 +126,10 @@ export function RequestDetailsPage() {
   }
 
   if (shouldRenderV2) {
-    return <RequestDetailsPageV2 traceId={traceId} traces={[]} />
+    return <RequestDetailsPageV2 traceId={traceId} traces={[]} />;
   }
 
-  return <RequestDetailsPageV1 traceId={traceId} />
+  return <RequestDetailsPageV1 traceId={traceId} />;
   // if (!traces) {
   //   return <EmptyState />
   // }
@@ -239,186 +242,186 @@ export type TocItem = {
   method?: string;
 };
 
-function Summary({ trace }: { trace: MizuTrace }) {
-  const errors = trace?.logs
-    .filter((log) => {
-      return (
-        isMizuErrorMessage(log.message) || isMizuFetchErrorMessage(log.message)
-      );
-    })
-    .map((error) => {
-      if (isMizuErrorMessage(error.message)) {
-        return {
-          name: error.message.name,
-          message: error.message.message,
-        };
-      }
+// function Summary({ trace }: { trace: MizuTrace }) {
+//   const errors = trace?.logs
+//     .filter((log) => {
+//       return (
+//         isMizuErrorMessage(log.message) || isMizuFetchErrorMessage(log.message)
+//       );
+//     })
+//     .map((error) => {
+//       if (isMizuErrorMessage(error.message)) {
+//         return {
+//           name: error.message.name,
+//           message: error.message.message,
+//         };
+//       }
 
-      if (isMizuFetchErrorMessage(error.message)) {
-        return {
-          name: error.message.statusText,
-          message: error.message.body,
-        };
-      }
-    });
-  const hasErrors = errors.length > 0;
+//       if (isMizuFetchErrorMessage(error.message)) {
+//         return {
+//           name: error.message.statusText,
+//           message: error.message.body,
+//         };
+//       }
+//     });
+//   const hasErrors = errors.length > 0;
 
-  const response = trace?.logs.find((log) =>
-    isMizuRequestEndMessage(log.message),
-  );
+//   const response = trace?.logs.find((log) =>
+//     isMizuRequestEndMessage(log.message),
+//   );
 
-  const body = isMizuRequestEndMessage(response?.message)
-    ? response?.message.body
-    : undefined;
+//   const body = isMizuRequestEndMessage(response?.message)
+//     ? response?.message.body
+//     : undefined;
 
-  return (
-    <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
-      <SectionHeading>Summary</SectionHeading>
-      <FpxCard className="bg-muted/20">
-        <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
-          <div className="flex gap-2 items-center">
-            <Status statusCode={Number(trace?.status)} />
-            <RequestMethod method={trace?.method} />
-            <p className="text-sm font-mono">{trace?.path}</p>
-          </div>
-          <div className="grid gap-2 overflow-x-auto">
-            <h4 className="uppercase text-xs text-muted-foreground">
-              {hasErrors ? "ERRORS" : "RESPONSE"}
-            </h4>
-            {hasErrors ? (
-              errors.map((error, idx) => (
-                <a
-                  className="block"
-                  href={`#log-error-${error?.name}`}
-                  key={idx}
-                >
-                  <Card
-                    key={idx}
-                    className="relative rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
-                  >
-                    <CardContent className="p-2 whitespace-pre-wrap">
-                      {error?.name}: {error?.message}
-                    </CardContent>
-                  </Card>
-                </a>
-              ))
-            ) : (
-              <FpxCard>
-                <CardContent className="p-2 bg-secondary rounded-sm">
-                  {body && <TextOrJsonViewer text={body} collapsed />}
-                </CardContent>
-              </FpxCard>
-            )}
-          </div>
-        </CardContent>
-      </FpxCard>
-    </div>
-  );
-}
+//   return (
+//     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
+//       <SectionHeading>Summary</SectionHeading>
+//       <FpxCard className="bg-muted/20">
+//         <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
+//           <div className="flex gap-2 items-center">
+//             <Status statusCode={Number(trace?.status)} />
+//             <RequestMethod method={trace?.method} />
+//             <p className="text-sm font-mono">{trace?.path}</p>
+//           </div>
+//           <div className="grid gap-2 overflow-x-auto">
+//             <h4 className="uppercase text-xs text-muted-foreground">
+//               {hasErrors ? "ERRORS" : "RESPONSE"}
+//             </h4>
+//             {hasErrors ? (
+//               errors.map((error, idx) => (
+//                 <a
+//                   className="block"
+//                   href={`#log-error-${error?.name}`}
+//                   key={idx}
+//                 >
+//                   <Card
+//                     key={idx}
+//                     className="relative rounded bg-secondary hover:bg-secondary/75 text-sm font-mono"
+//                   >
+//                     <CardContent className="p-2 whitespace-pre-wrap">
+//                       {error?.name}: {error?.message}
+//                     </CardContent>
+//                   </Card>
+//                 </a>
+//               ))
+//             ) : (
+//               <FpxCard>
+//                 <CardContent className="p-2 bg-secondary rounded-sm">
+//                   {body && <TextOrJsonViewer text={body} collapsed />}
+//                 </CardContent>
+//               </FpxCard>
+//             )}
+//           </div>
+//         </CardContent>
+//       </FpxCard>
+//     </div>
+//   );
+// }
 
-function TraceDetails({ trace }: { trace: MizuTrace }) {
-  return (
-    <div className="grid gap-4" id="trace-details">
-      {trace?.logs &&
-        trace?.logs.map((log) => (
-          <FpxCard key={log.id} className="overflow-hidden">
-            <CardContent className="p-4 bg-muted/40">
-              <LogDetails key={log.id} log={log} />
-            </CardContent>
-          </FpxCard>
-        ))}
-    </div>
-  );
-}
+// function TraceDetails({ trace }: { trace: MizuTrace }) {
+//   return (
+//     <div className="grid gap-4" id="trace-details">
+//       {trace?.logs &&
+//         trace?.logs.map((log) => (
+//           <FpxCard key={log.id} className="overflow-hidden">
+//             <CardContent className="p-4 bg-muted/40">
+//               <LogDetails key={log.id} log={log} />
+//             </CardContent>
+//           </FpxCard>
+//         ))}
+//     </div>
+//   );
+// }
 
-const LifecycleSchema = z
-  .enum([
-    "request",
-    "response",
-    "fetch_start",
-    "fetch_end",
-    "fetch_error",
-    "fetch_logging_error",
-  ])
-  .optional();
+// const LifecycleSchema = z
+//   .enum([
+//     "request",
+//     "response",
+//     "fetch_start",
+//     "fetch_end",
+//     "fetch_error",
+//     "fetch_logging_error",
+//   ])
+//   .optional();
 
 const LogLevelSchema = z.enum(["debug", "info", "warn", "error"]);
 
 export type LogLevel = z.infer<typeof LogLevelSchema>;
 
-const isLogLevel = (level: unknown): level is LogLevel => {
-  return LogLevelSchema.safeParse(level).success;
-};
+// const isLogLevel = (level: unknown): level is LogLevel => {
+//   return LogLevelSchema.safeParse(level).success;
+// };
 
-function LogDetails({ log }: { log: MizuLog }) {
-  const { message } = log;
+// function LogDetails({ log }: { log: MizuLog }) {
+//   const { message } = log;
 
-  const level = isLogLevel(log.level) ? log.level : "info";
+//   const level = isLogLevel(log.level) ? log.level : "info";
 
-  const lifecycle =
-    message &&
-    typeof message === "object" &&
-    "lifecycle" in message &&
-    LifecycleSchema.parse(message?.lifecycle);
+//   const lifecycle =
+//     message &&
+//     typeof message === "object" &&
+//     "lifecycle" in message &&
+//     LifecycleSchema.parse(message?.lifecycle);
 
-  if (lifecycle) {
-    switch (lifecycle) {
-      case "request":
-        return (
-          <RequestLog
-            message={message as MizuRequestStart}
-            logId={String(log.id)}
-          />
-        );
+//   if (lifecycle) {
+//     switch (lifecycle) {
+//       case "request":
+//         return (
+//           <RequestLog
+//             message={message as MizuRequestStart}
+//             logId={String(log.id)}
+//           />
+//         );
 
-      case "response":
-        return (
-          <ResponseLog
-            message={message as MizuRequestEnd}
-            logId={String(log.id)}
-          />
-        );
+//       case "response":
+//         return (
+//           <ResponseLog
+//             message={message as MizuRequestEnd}
+//             logId={String(log.id)}
+//           />
+//         );
 
-      case "fetch_start":
-        return (
-          <FetchRequestLog
-            message={message as MizuFetchStart}
-            logId={String(log.id)}
-          />
-        );
+//       case "fetch_start":
+//         return (
+//           <FetchRequestLog
+//             message={message as MizuFetchStart}
+//             logId={String(log.id)}
+//           />
+//         );
 
-      case "fetch_end":
-        return (
-          <FetchResponseLog
-            message={message as MizuFetchEnd}
-            logId={String(log.id)}
-          />
-        );
+//       case "fetch_end":
+//         return (
+//           <FetchResponseLog
+//             message={message as MizuFetchEnd}
+//             logId={String(log.id)}
+//           />
+//         );
 
-      case "fetch_error":
-        return (
-          <FetchResponseErrorLog
-            message={message as MizuFetchError}
-            logId={String(log.id)}
-          />
-        );
+//       case "fetch_error":
+//         return (
+//           <FetchResponseErrorLog
+//             message={message as MizuFetchError}
+//             logId={String(log.id)}
+//           />
+//         );
 
-      case "fetch_logging_error":
-        return (
-          <FetchRequestErrorLog
-            message={message as MizuFetchLoggingError}
-            logId={String(log.id)}
-          />
-        );
-    }
-  }
+//       case "fetch_logging_error":
+//         return (
+//           <FetchRequestErrorLog
+//             message={message as MizuFetchLoggingError}
+//             logId={String(log.id)}
+//           />
+//         );
+//     }
+//   }
 
-  return (
-    <LogLog
-      message={message}
-      level={level}
-      args={log.args}
-      logId={String(log.id)}
-    />
-  );
-}
+//   return (
+//     <LogLog
+//       message={message}
+//       level={level}
+//       args={log.args}
+//       logId={String(log.id)}
+//     />
+//   );
+// }

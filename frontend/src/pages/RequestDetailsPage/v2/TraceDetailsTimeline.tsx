@@ -1,22 +1,22 @@
 import Diamond from "@/assets/Diamond.svg";
 import { Badge } from "@/components/ui/badge";
 import {
-  MizuOrphanLog,
-  MizuSpan,
+  // MizuOrphanLog,
+  // MizuSpan,
   MizuTraceV2,
   OtelSpan,
-  isMizuOrphanLog,
+  // isMizuOrphanLog,
 } from "@/queries";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, {
-  useCallback,
-  useEffect,
+  // useCallback,
+  // useEffect,
   useMemo,
-  useRef,
-  useState,
+  // useRef,
+  // useState,
 } from "react";
-import { timelineId } from "./timelineId";
+// import { timelineId } from "./timelineId";
 
 type TraceDetailsTimelineProps = {
   // trace: MizuTraceV2;
@@ -25,27 +25,29 @@ type TraceDetailsTimelineProps = {
   orphanLogs: MizuTraceV2["orphanLogs"];
 };
 
-type NormalizedSpan = MizuSpan & {
-  normalizedStartTime: number;
-  normalizedEndTime: number;
-  normalizedDuration: number;
-};
+// type NormalizedSpan = MizuSpan & {
+//   normalizedStartTime: number;
+//   normalizedEndTime: number;
+//   normalizedDuration: number;
+// };
 
-type NormalizedOrphanLog = MizuOrphanLog & {
-  normalizedTimestamp: number;
-};
+// type NormalizedOrphanLog = MizuOrphanLog & {
+//   normalizedTimestamp: number;
+// };
 
-type MizuTraceV2Normalized = MizuTraceV2 & {
-  normalizedWaterfall: NormalizedMizuWaterfall;
-};
+// type MizuTraceV2Normalized = MizuTraceV2 & {
+//   normalizedWaterfall: NormalizedMizuWaterfall;
+// };
 
-type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
+// type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
 
 const normalizeWaterfallTimestamps = (
   spans: Array<OtelSpan>,
   orphanLogs: MizuTraceV2["orphanLogs"],
 ) => {
-  const logTimestamps = orphanLogs.map((log) => new Date(log.timestamp).getTime());
+  const logTimestamps = orphanLogs.map((log) =>
+    new Date(log.timestamp).getTime(),
+  );
 
   const minStart = Math.min(
     ...spans.map((span) => new Date(span.start_time).getTime()),
@@ -86,23 +88,26 @@ const normalizeWaterfallTimestamps = (
 
   return {
     minStart,
-    maxEnd,
+    // maxEnd,
     duration: maxEnd - minStart,
-  }
+  };
   // return {
-    // ...trace,
-    // normalizedWaterfall,
+  // ...trace,
+  // normalizedWaterfall,
   // };
 };
 
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
-  spans, orphanLogs,
+  spans,
+  orphanLogs,
 }) => {
   // const [activeId, setActiveId] = useState<string>("");
   // const observer = useRef<IntersectionObserver>();
 
-  const {maxEnd, minStart,
-    duration
+  const {
+    // maxEnd,
+    minStart,
+    duration,
   } = normalizeWaterfallTimestamps(spans, orphanLogs);
   // const normalizedTrace = useMemo(
   //   () => normalizeWaterfallTimestamps(trace),
@@ -111,11 +116,13 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
 
   const sortedSpans = useMemo(() => {
     return spans.sort((a, b) => {
-      return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
+      return (
+        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+      );
     });
-  },[spans]);
+  }, [spans]);
 
-  // const 
+  // const
 
   // const timelineEntryIds = useMemo(() => {
   //   return normalizedTrace.normalizedWaterfall.map((spanOrLog) =>
@@ -175,7 +182,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   //     }
   //   };
   // }, [timelineEntryIds, handleObserve]);
-  console.log('sortedSpans', sortedSpans);
+  // console.log('sortedSpans', sortedSpans);
   return (
     <div
       className={cn(
@@ -215,93 +222,16 @@ const WaterfallRow: React.FC<{
   startTime: number;
 }> = ({ span, duration, startTime }) => {
   const id = span.span_id;
-  const spanDuration = new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
-  const lineWidth = `${(spanDuration / duration * 100).toPrecision(2)}%`;
-  console.log('spanDuration', spanDuration, lineWidth);
-  const lineOffset = `${(new Date(span.start_time).getTime() - startTime) / duration * 100}%`;
+  const spanDuration =
+    new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
+  const lineWidth = `${((spanDuration / duration) * 100).toPrecision(2)}%`;
+  // console.log('spanDuration', spanDuration, lineWidth);
+  const lineOffset = `${((new Date(span.start_time).getTime() - startTime) / duration) * 100}%`;
   const icon = getTypeIcon(span.kind);
   const isFetch = span.name === "fetch";
   const isRootRequest = span.parent_span_id === null;
   // span.kind === "SERVER";
-  
-  return (    <a
-    data-toc-id={id}
-    className={cn(
-      "flex items-center p-2",
-      "border-l-2 border-transparent",
-      "hover:bg-primary/10 hover:border-blue-500",
-      // activeId === id && "bg-primary/10 border-blue-500",
-      "transition-all",
-      "cursor-pointer",
-    )}
-    href={`#${span.span_id}`}
-  >
-    <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
-    <div className="flex flex-col w-20">
-      {isFetch ? (
-        <div>
-          <Badge
-            variant="outline"
-            className={cn(
-              "lowercase",
-              "font-normal",
-              "font-mono",
-              "rounded",
-              "px-1.5",
-              "text-xs",
-              "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
-            )}
-          >
-            {span.name}
-          </Badge>
-        </div>
-      ) : isRootRequest ? (
-        <div className="font-mono text-sm truncate">{span.name}</div>
-      ) : (
-        <div className="font-mono font-normal text-xs truncate text-gray-200">
-          {/* TODO! */}
-          {/* log */}
-          {span.name}
-          {/* {spanOrLog.name} */}
-        </div>
-      )}
-    </div>
-    <div className="text-gray-400 flex flex-grow items-center mx-4">
-      <div
-        className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
-        style={{ width: lineWidth, marginLeft: lineOffset }}
-      >
-        <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
-      </div>
-    </div>
-    <div className="ml-auto text-gray-400 text-xs w-12 px-2">
-      {
-      // isMizuOrphanLog(spanOrLog)
-        // ? ""
-        // : 
-        formatDuration(span.start_time, span.end_time)}
-    </div>
-  </a>
-  )
-};
 
-const NormalizedWaterfallRow: React.FC<{
-  spanOrLog: NormalizedSpan | NormalizedOrphanLog;
-  activeId: string | null;
-}> = ({ spanOrLog, activeId }) => {
-  const id = timelineId(spanOrLog);
-  const lineWidth = isMizuOrphanLog(spanOrLog)
-    ? ""
-    : `${spanOrLog.normalizedDuration * 100}%`;
-  const lineOffset = isMizuOrphanLog(spanOrLog)
-    ? `${spanOrLog.normalizedTimestamp * 100}%`
-    : `${spanOrLog.normalizedStartTime * 100}%`;
-  const icon = isMizuOrphanLog(spanOrLog)
-    ? getTypeIcon("log")
-    : getTypeIcon(spanOrLog.kind);
-  const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
-  const isRootRequest =
-    !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "Server";
   return (
     <a
       data-toc-id={id}
@@ -309,11 +239,11 @@ const NormalizedWaterfallRow: React.FC<{
         "flex items-center p-2",
         "border-l-2 border-transparent",
         "hover:bg-primary/10 hover:border-blue-500",
-        activeId === id && "bg-primary/10 border-blue-500",
+        // activeId === id && "bg-primary/10 border-blue-500",
         "transition-all",
         "cursor-pointer",
       )}
-      href={`#${timelineId(spanOrLog)}`}
+      href={`#${span.span_id}`}
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-20">
@@ -331,44 +261,124 @@ const NormalizedWaterfallRow: React.FC<{
                 "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
               )}
             >
-              {spanOrLog.name}
+              {span.name}
             </Badge>
           </div>
         ) : isRootRequest ? (
-          <div className="font-mono text-sm truncate">{spanOrLog.name}</div>
+          <div className="font-mono text-sm truncate">{span.name}</div>
         ) : (
           <div className="font-mono font-normal text-xs truncate text-gray-200">
             {/* TODO! */}
-            log
+            {/* log */}
+            {span.name}
             {/* {spanOrLog.name} */}
           </div>
         )}
       </div>
       <div className="text-gray-400 flex flex-grow items-center mx-4">
-        {isMizuOrphanLog(spanOrLog) ? (
-          <div
-            className="h-2.5 border-l-2flex items-center min-w-1"
-            style={{ marginLeft: lineOffset }}
-          >
-            <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
-          </div>
-        ) : (
-          <div
-            className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
-            style={{ width: lineWidth, marginLeft: lineOffset }}
-          >
-            <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
-          </div>
-        )}
+        <div
+          className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
+          style={{ width: lineWidth, marginLeft: lineOffset }}
+        >
+          <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
+        </div>
       </div>
       <div className="ml-auto text-gray-400 text-xs w-12 px-2">
-        {isMizuOrphanLog(spanOrLog)
-          ? ""
-          : formatDuration(spanOrLog.start_time, spanOrLog.end_time)}
+        {
+          // isMizuOrphanLog(spanOrLog)
+          // ? ""
+          // :
+          formatDuration(span.start_time, span.end_time)
+        }
       </div>
     </a>
   );
 };
+
+// const NormalizedWaterfallRow: React.FC<{
+//   spanOrLog: NormalizedSpan | NormalizedOrphanLog;
+//   activeId: string | null;
+// }> = ({ spanOrLog, activeId }) => {
+//   const id = timelineId(spanOrLog);
+//   const lineWidth = isMizuOrphanLog(spanOrLog)
+//     ? ""
+//     : `${spanOrLog.normalizedDuration * 100}%`;
+//   const lineOffset = isMizuOrphanLog(spanOrLog)
+//     ? `${spanOrLog.normalizedTimestamp * 100}%`
+//     : `${spanOrLog.normalizedStartTime * 100}%`;
+//   const icon = isMizuOrphanLog(spanOrLog)
+//     ? getTypeIcon("log")
+//     : getTypeIcon(spanOrLog.kind);
+//   const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
+//   const isRootRequest =
+//     !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "Server";
+//   return (
+//     <a
+//       data-toc-id={id}
+//       className={cn(
+//         "flex items-center p-2",
+//         "border-l-2 border-transparent",
+//         "hover:bg-primary/10 hover:border-blue-500",
+//         activeId === id && "bg-primary/10 border-blue-500",
+//         "transition-all",
+//         "cursor-pointer",
+//       )}
+//       href={`#${timelineId(spanOrLog)}`}
+//     >
+//       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
+//       <div className="flex flex-col w-20">
+//         {isFetch ? (
+//           <div>
+//             <Badge
+//               variant="outline"
+//               className={cn(
+//                 "lowercase",
+//                 "font-normal",
+//                 "font-mono",
+//                 "rounded",
+//                 "px-1.5",
+//                 "text-xs",
+//                 "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
+//               )}
+//             >
+//               {spanOrLog.name}
+//             </Badge>
+//           </div>
+//         ) : isRootRequest ? (
+//           <div className="font-mono text-sm truncate">{spanOrLog.name}</div>
+//         ) : (
+//           <div className="font-mono font-normal text-xs truncate text-gray-200">
+//             {/* TODO! */}
+//             log
+//             {/* {spanOrLog.name} */}
+//           </div>
+//         )}
+//       </div>
+//       <div className="text-gray-400 flex flex-grow items-center mx-4">
+//         {isMizuOrphanLog(spanOrLog) ? (
+//           <div
+//             className="h-2.5 border-l-2flex items-center min-w-1"
+//             style={{ marginLeft: lineOffset }}
+//           >
+//             <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
+//           </div>
+//         ) : (
+//           <div
+//             className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
+//             style={{ width: lineWidth, marginLeft: lineOffset }}
+//           >
+//             <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
+//           </div>
+//         )}
+//       </div>
+//       <div className="ml-auto text-gray-400 text-xs w-12 px-2">
+//         {isMizuOrphanLog(spanOrLog)
+//           ? ""
+//           : formatDuration(spanOrLog.start_time, spanOrLog.end_time)}
+//       </div>
+//     </a>
+//   );
+// };
 
 const getTypeIcon = (type: string) => {
   switch (type) {

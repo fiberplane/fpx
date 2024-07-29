@@ -1,20 +1,19 @@
+import { Link } from "react-router-dom";
 import { z } from "zod";
-import { Link } from "react-router-dom"
 
+import { useToast } from "@/components/ui/use-toast";
 import { useHandler } from "@fiberplane/hooks";
 import { useWebSocket } from "./useWebSocket";
-import { useToast } from "@/components/ui/use-toast";
 
 // Define the schema for the details object
 const detailsSchema = z.object({
-  newSpans: z.array(
-    z.array(z.string()))
+  newSpans: z.array(z.array(z.string())),
 });
 
 // Define the main schema
 const messageSchema = z.object({
-  type: z.literal('spanAdded'),
-  details: detailsSchema
+  type: z.literal("spanAdded"),
+  details: detailsSchema,
 });
 
 // type MessageSchema = z.infer<typeof messageSchema>;
@@ -23,7 +22,10 @@ export const useTracesSocket = () => {
   const { toast } = useToast();
   const spanIds = new Set<string>();
 
-  const handleMessageEvent = useHandler(function onMessage(this: WebSocket, ev: MessageEvent) {
+  const handleMessageEvent = useHandler(function onMessage(
+    this: WebSocket,
+    ev: MessageEvent,
+  ) {
     console.log("Received websocket message", ev.data);
 
     // let action: MessageSchema | undefined;
@@ -31,20 +33,25 @@ export const useTracesSocket = () => {
       const payload = JSON.parse(ev.data);
       const { data: action, error } = messageSchema.safeParse(payload);
       if (error) {
-        console.error('error', error.message, payload);
+        console.error("error", error.message, payload);
         return;
       }
 
-      if (action.type === 'spanAdded') {
+      if (action.type === "spanAdded") {
         const { newSpans } = action.details;
         for (const spans of newSpans) {
           const parentId = spans[0];
           if (!spanIds.has(parentId)) {
             spanIds.add(parentId);
-            toast({
-              title: 'New Span Added',
-              description:
+            const toastId = toast({
+              title: "New Span Added",
+              onClick: () => {
+                // console.log('boom!');
+                toastId.dismiss();
+              },
+              description: (
                 <Link to={`/requests/${parentId}`}>view details</Link>
+              ),
             });
           }
         }
@@ -84,4 +91,4 @@ export const useTracesSocket = () => {
   });
 
   useWebSocket("/api/ws", handleMessageEvent);
-}
+};

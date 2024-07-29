@@ -1,26 +1,28 @@
-import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
+// import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
+// import { Tooltip, TooltipContent, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 import { OtelSpans, useOtelTrace } from "@/queries/traces-otel";
-import { SkeletonLoader } from "./SkeletonLoader";
-import { EmptyState } from "./EmptyState";
 import { cn } from "@/utils";
-import { HttpSummary, SummaryV2 } from "./v2/SummaryV2";
-import { Button } from "@/components/ui/button";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+import { EmptyState } from "./EmptyState";
+import { SkeletonLoader } from "./SkeletonLoader";
+// import { Button } from "@/components/ui/button";
+// import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
-import { useMemo } from "react";
-import { MizuOrphanLog, MizuTraceV2, type MizuSpan } from "@/queries";
+import { HttpSummary, SummaryV2 } from "./v2/SummaryV2";
+// import { useMemo } from "react";
+// import { MizuOrphanLog, MizuTraceV2, type MizuSpan } from "@/queries";
 
-export function RequestDetailsPageV2({ traceId, currIdx, traces }: { traceId: string, currIdx?: number, traces: Array<OtelSpans> }) {
-
+export function RequestDetailsPageV2({
+  traceId,
+  // currIdx, traces
+}: { traceId: string; currIdx?: number; traces: Array<OtelSpans> }) {
   const { data: spans, isPending, error } = useOtelTrace(traceId);
 
   if (error) {
     console.error("Error!", error);
   }
 
-  const rootSpan = spans?.find(span => span.parent_span_id === null);
+  const rootSpan = spans?.find((span) => span.parent_span_id === null);
   // const tracesV2 = useMemo((): MizuTraceV2 | undefined => {
   //   if (!data) {
   //     return undefined;
@@ -42,8 +44,7 @@ export function RequestDetailsPageV2({ traceId, currIdx, traces }: { traceId: st
   //     duration: `${(endTime.getTime() - startTime.getTime()).toString()}ms`,
   //     id: rootSpan.span_id,
   //     method: rootSpan.attributes["http.method"]?.toString() ?? "",
-  //     // logs: 
-
+  //     // logs:
 
   //   });
   // }, [data, traceId])
@@ -55,7 +56,7 @@ export function RequestDetailsPageV2({ traceId, currIdx, traces }: { traceId: st
   if (!spans || !rootSpan) {
     return <EmptyState />;
   }
-  
+
   return (
     <div
       className={cn(
@@ -136,7 +137,11 @@ export function RequestDetailsPageV2({ traceId, currIdx, traces }: { traceId: st
             )}
           >
             {/* <TraceDetailsTimeline trace={rootSpan} /> */}
-            <TraceDetailsTimeline root={rootSpan} spans={spans} orphanLogs={[]}/>
+            <TraceDetailsTimeline
+              root={rootSpan}
+              spans={spans}
+              orphanLogs={[]}
+            />
           </div>
           <div
             className={cn(
@@ -148,9 +153,16 @@ export function RequestDetailsPageV2({ traceId, currIdx, traces }: { traceId: st
             )}
           >
             <div className="w-full lg:hidden">
-              <TraceDetailsTimeline root={rootSpan} spans={spans} orphanLogs={[]}/>
+              <TraceDetailsTimeline
+                root={rootSpan}
+                spans={spans}
+                orphanLogs={[]}
+              />
             </div>
-            <TraceDetailsV2 spans={spans} orphanLogs={[]} />
+            <TraceDetailsV2
+              spans={spans}
+              // orphanLogs={[]}
+            />
           </div>
         </div>
       </div>

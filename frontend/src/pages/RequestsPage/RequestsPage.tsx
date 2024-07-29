@@ -18,7 +18,6 @@ const RequestsTable = ({
 }: { traces: MizuTrace[]; filter: LevelFilter }) => {
   const navigate = useNavigate();
 
-
   const filteredTraces = useMemo(() => {
     if (filter === "all") {
       return traces;

@@ -19,6 +19,7 @@ npm link @fiberplane/hono
 No need to install the package in your other project, just import it:
 
 ```ts
+import { Hono } from "hono";
 import { createHonoMiddleware } from "@fiberplane/hono";
 ```
 

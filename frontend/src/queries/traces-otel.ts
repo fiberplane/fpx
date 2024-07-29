@@ -5,25 +5,25 @@ const OtelAttributesSchema = z.record(
   z.string(),
   z.union([
     z.object({
-      "String": z.string(),
+      String: z.string(),
     }),
-    // z.string(), 
+    // z.string(),
     z.object({
-      "Int": z.number(),
+      Int: z.number(),
     }),
-    // z.number(), 
-    // z.boolean(), 
-    // z.null(), 
-    // z.undefined(), 
+    // z.number(),
+    // z.boolean(),
+    // z.null(),
+    // z.undefined(),
     // z.record(
-    //   z.string(), 
+    //   z.string(),
     //   z.union([
-    //     z.string(), 
-    //     z.number(), 
+    //     z.string(),
+    //     z.number(),
     //     z.null()
     //   ])
     // ),
-  ])
+  ]),
 );
 
 export type OtelAttributes = z.infer<typeof OtelAttributesSchema>;
@@ -34,6 +34,14 @@ const OtelStatusSchema = z.object({
 });
 
 export type OtelStatus = z.infer<typeof OtelStatusSchema>;
+
+const OtelEventSchema = z.object({
+  name: z.string(),
+  timestamp: z.string(), // ISO 8601 format
+  attributes: OtelAttributesSchema,
+});
+
+export type OtelEvent = z.infer<typeof OtelEventSchema>;
 
 export const OtelSpanSchema = z.object({
   trace_id: z.string(),
@@ -49,13 +57,7 @@ export const OtelSpanSchema = z.object({
   status: OtelStatusSchema.optional(),
 
   // This is where we will store logs that happened along the way
-  events: z.array(
-    z.object({
-      name: z.string(),
-      timestamp: z.string(), // ISO 8601 format
-      attributes: OtelAttributesSchema,
-    }),
-  ),
+  events: z.array(OtelEventSchema),
 
   // Links to related traces, etc
   links: z.array(
@@ -83,7 +85,6 @@ export const OtelSpanSchema = z.object({
 //   }).then((response) => response.json());
 // }
 
-
 export const TRACES_KEY = "otelTrace";
 
 export function useOtelTrace(traceId: string) {
@@ -91,17 +92,18 @@ export function useOtelTrace(traceId: string) {
     queryKey: [TRACES_KEY, traceId],
     queryFn: fetchOtelTrace,
   });
-} 
+}
 
 const SpansSchema = z.array(OtelSpanSchema);
 
 export type OtelSpan = z.infer<typeof OtelSpanSchema>;
 export type OtelSpans = z.infer<typeof SpansSchema>;
 
-async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>,) {
-  const [_key, traceId] = context.queryKey;
+async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
+  const traceId = context.queryKey[1];
   return fetch(`/api/traces/${traceId}/spans`, {
     mode: "cors",
-  }).then((response) => response.json())
+  })
+    .then((response) => response.json())
     .then((data) => SpansSchema.parse(data));
 }
