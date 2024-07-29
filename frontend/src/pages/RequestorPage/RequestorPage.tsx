@@ -61,6 +61,7 @@ export const RequestorPage = () => {
     setQueryParams,
     setRequestHeaders,
     setBody,
+    handleRequestBodyTypeChange,
 
     // Requests Panel tabs
     state: { activeRequestsPanelTab },
@@ -273,8 +274,9 @@ export const RequestorPage = () => {
             setActiveRequestsPanelTab={setActiveRequestsPanelTab}
             shouldShowRequestTab={shouldShowRequestTab}
             // HACK - Need to modify this when we support form-data
-            body={body.type !== "form-data" ? body.value : undefined}
+            body={body}
             setBody={setBody}
+            handleRequestBodyTypeChange={handleRequestBodyTypeChange}
             pathParams={pathParams}
             queryParams={queryParams}
             requestHeaders={requestHeaders}
