@@ -1,8 +1,9 @@
-use crate::api::errors::{ApiError, ApiServerError};
+use crate::api::errors::ApiServerError;
 use crate::api::Config;
 use crate::canned_requests::{CannedRequest, SaveLocation};
 use axum::extract::State;
 use axum::Json;
+use fpx_macros::ApiError;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -32,21 +33,14 @@ struct NewCannedRequest {
     request: CannedRequest,
 }
 
-#[derive(Debug, Error, Serialize, Deserialize)]
+#[derive(Debug, Error, Serialize, Deserialize, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 #[allow(dead_code)]
 pub enum CannedRequestCreateError {
+    #[api_error(status_code = StatusCode::BAD_REQUEST)]
     #[error("unknown type, expected `ephemeral`, `personal` or `shared`")]
     InvalidType,
-}
-
-impl ApiError for CannedRequestCreateError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            CannedRequestCreateError::InvalidType => StatusCode::BAD_REQUEST,
-        }
-    }
 }
 
 #[instrument(skip(config))]
@@ -68,18 +62,11 @@ pub async fn canned_request_list(
     Ok(Json(map))
 }
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+#[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum CannedRequestListError {
+    #[api_error(status_code = StatusCode::NOT_FOUND)]
     #[error("canned request not found")]
     NotFound,
-}
-
-impl ApiError for CannedRequestListError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            CannedRequestListError::NotFound => StatusCode::NOT_FOUND,
-        }
-    }
 }
