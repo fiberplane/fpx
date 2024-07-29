@@ -8,6 +8,7 @@ use crate::data::{DbError, Store};
 use axum::extract::{Path, State};
 use axum::response::IntoResponse;
 use axum::Json;
+use fpx_macros::ApiError;
 use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
 use once_cell::sync::Lazy;
 use reqwest::Client;
@@ -140,20 +141,13 @@ pub async fn requests_get_handler(
     Ok(Json(RequestWithResponse::new(request.into(), response)))
 }
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+#[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum RequestGetError {
+    #[api_error(status_code = StatusCode::NOT_FOUND)]
     #[error("Request not found")]
     RequestNotFound,
-}
-
-impl ApiError for RequestGetError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            RequestGetError::RequestNotFound => StatusCode::NOT_FOUND,
-        }
-    }
 }
 
 impl From<DbError> for ApiServerError<RequestGetError> {

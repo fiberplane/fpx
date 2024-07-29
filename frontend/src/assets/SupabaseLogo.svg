@@ -1,0 +1,10 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="supabase logo monochrome" clip-path="url(#clip0_647_23622)">
+<path id="Union" fill-rule="evenodd" clip-rule="evenodd" d="M7.92392 1.17238C7.91478 0.562014 7.14513 0.300071 6.76555 0.778133L1.03748 7.99227C0.361383 8.84376 0.967772 10.0995 2.05504 10.0995H7.97878L8.04841 14.7475C8.05756 15.3578 8.82719 15.6197 9.20677 15.1417L14.9348 7.92757C15.6109 7.07608 15.0045 5.82031 13.9173 5.82031H7.95444L7.92392 1.17238Z" fill="#3B82F6"/>
+</g>
+<defs>
+<clipPath id="clip0_647_23622">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
