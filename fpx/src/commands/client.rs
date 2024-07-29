@@ -35,6 +35,7 @@ pub enum Command {
     Spans(spans::Args),
 }
 
+#[tracing::instrument(skip_all)]
 pub async fn handle_command(args: Args) -> Result<()> {
     match args.command {
         Command::Inspectors(args) => inspectors::handle_command(args).await,

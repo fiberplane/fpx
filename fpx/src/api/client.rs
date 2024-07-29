@@ -8,9 +8,13 @@ use super::errors::ApiClientError;
 use super::handlers::spans::SpanGetError;
 use super::handlers::RequestGetError;
 use crate::api::models;
+use crate::otel_util::HeaderMapInjector;
 use anyhow::Result;
-use http::Method;
-use tracing::trace;
+use http::{HeaderMap, Method};
+use opentelemetry::propagation::TextMapPropagator;
+use opentelemetry_sdk::propagation::TraceContextPropagator;
+use tracing::{instrument, trace};
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
 
 pub struct ApiClient {
@@ -44,6 +48,7 @@ impl ApiClient {
     /// fails it will consider the call as failed and will try to parse the body
     /// as [`E`]. Any other error will use the relevant variant in
     /// [`ApiClientError`].
+    #[instrument(skip_all)]
     async fn do_req<T, E>(
         &self,
         method: Method,
@@ -56,6 +61,22 @@ impl ApiClient {
         let u = self.base_url.join(path.as_ref())?;
 
         let req = self.client.request(method, u);
+
+        // Take the current OTEL context, and inject those details into the
+        // Request using the W3C TraceContext format.
+        let req = {
+            let mut headers = HeaderMap::new();
+            let propagator = TraceContextPropagator::new();
+
+            let context = tracing::Span::current().context();
+            let mut header_injector = HeaderMapInjector(&mut headers);
+            propagator.inject_context(&context, &mut header_injector);
+
+            req.headers(headers)
+        };
+
+        // TODO: Create new OTEL span (SpanKind::Client) and add relevant client
+        // attributes to it.
 
         // Make request
         let response = req.send().await?;

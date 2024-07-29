@@ -115,7 +115,7 @@ impl CannedRequest {
                     .read()
                     .await
                     .get(name)
-                    .ok_or_else(|| CannedRequestListError::NotFound)?
+                    .ok_or(CannedRequestListError::NotFound)?
                     .clone();
 
                 request.name = name.to_string();

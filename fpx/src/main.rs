@@ -20,15 +20,24 @@ pub mod data;
 mod events;
 mod grpc;
 mod inspector;
+mod otel_util;
 mod service;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = commands::Args::parse();
+    let should_shutdown_tracing = args.enable_tracing;
 
     setup_tracing(&args)?;
 
-    commands::handle_command(args).await
+    let result = commands::handle_command(args).await;
+
+    if should_shutdown_tracing {
+        eprintln!("shutting down?");
+        shutdown_tracing();
+    }
+
+    result
 }
 
 fn setup_tracing(args: &commands::Args) -> Result<()> {
@@ -41,7 +50,7 @@ fn setup_tracing(args: &commands::Args) -> Result<()> {
 
     let trace_layer = if args.enable_tracing {
         // This tracer is responsible for sending the actual traces.
-        let tracer = opentelemetry_otlp::new_pipeline()
+        let tracer_provider = opentelemetry_otlp::new_pipeline()
             .tracing()
             .with_exporter(
                 opentelemetry_otlp::new_exporter()
@@ -53,8 +62,11 @@ fn setup_tracing(args: &commands::Args) -> Result<()> {
                     .with_resource(Resource::new(vec![KeyValue::new("service.name", "fpx")])),
             )
             .install_batch(runtime::Tokio)
-            .context("unable to install tracer")?
-            .tracer("fpx");
+            .context("unable to install tracer")?;
+
+        opentelemetry::global::set_tracer_provider(tracer_provider.clone());
+
+        let tracer = tracer_provider.tracer("fpx");
 
         // This layer will take the traces from the `tracing` crate and send
         // them to the tracer specified above.
@@ -71,6 +83,10 @@ fn setup_tracing(args: &commands::Args) -> Result<()> {
         .context("unable to initialize logger")?;
 
     Ok(())
+}
+
+fn shutdown_tracing() {
+    opentelemetry::global::shutdown_tracer_provider();
 }
 
 /// Ensure that all the necessary directories are created for fpx.
