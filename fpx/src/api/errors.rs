@@ -1,10 +1,10 @@
 use axum::response::IntoResponse;
 use bytes::Bytes;
+use fpx_macros::ApiError;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::{error, warn};
-use fpx_macros::ApiError;
 
 pub trait ApiError {
     fn status_code(&self) -> StatusCode;

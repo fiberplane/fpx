@@ -1,6 +1,4 @@
-use axum::response::IntoResponse;
-
-pub(crate) mod canned_requests;
+pub mod canned_requests;
 mod inspect;
 mod inspectors;
 pub mod otel;

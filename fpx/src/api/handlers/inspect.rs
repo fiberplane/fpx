@@ -1,4 +1,4 @@
-use crate::api::{ApiState, Config};
+use crate::api::{models, ApiState, Config};
 use crate::data::Store;
 use axum::extract::Request;
 use axum::extract::State;
