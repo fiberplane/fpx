@@ -1,3 +1,4 @@
+import { CountBadge } from "@/components/CountBadge";
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { MizuRootRequestSpan } from "@/queries/traces-v2";
@@ -159,11 +160,3 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     </div>
   );
 }
-
-const CountBadge = ({ count }: { count: number }) => {
-  return (
-    <span className="text-gray-400 font-normal bg-muted-foreground/20 rounded px-1.5 inline-block ml-2">
-      {count}
-    </span>
-  );
-};
