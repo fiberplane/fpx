@@ -7,18 +7,18 @@ import {
 
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
-import { MizuLog } from "@/queries";
+import { MizuLog, MizuOrphanLog } from "@/queries";
 import {
   OtelSpan,
   // OtelSpans, useOtelTrace
 } from "@/queries/traces-otel";
 import { cn } from "@/utils";
+import { useMemo } from "react";
 import { EmptyState } from "../EmptyState";
 // import { SkeletonLoader } from "../SkeletonLoader";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import { getVendorInfo } from "../v2/vendorify-traces";
-import { useMemo } from "react";
 // import { useMemo } from "react";
 // import { MizuOrphanLog, MizuTraceV2, type MizuSpan } from "@/queries";
 
@@ -27,12 +27,15 @@ export type SpanWithVendorInfo = {
   vendorInfo: ReturnType<typeof getVendorInfo>;
 };
 
+export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
+
+const EMPTY_LIST: Array<MizuOrphanLog> = [];
 
 export function RequestDetailsPageContentV2({
   // traceId,
   pagination,
   spans,
-  orphanLogs,
+  orphanLogs = EMPTY_LIST,
   // currentIndex, traces
 }: {
   // traceId: string;
@@ -45,15 +48,31 @@ export function RequestDetailsPageContentV2({
     handleNextTrace: () => void;
   };
 }) {
-  console.log("is spans", !!spans);
-  const spansWithVendorInfo: Array<SpanWithVendorInfo> = useMemo(() => 
-    spans.map(
-      span => ({
+  // console.log("is spans", !!spans);
+  const spansWithVendorInfo: Array<SpanWithVendorInfo> = useMemo(
+    () =>
+      spans.map((span) => ({
         span,
         vendorInfo: getVendorInfo(span),
-      })
-    )
-  , [spans]);
+      })),
+    [spans],
+  );
+  console.log("spansWithVendorInfo", spansWithVendorInfo);
+  const rootSpan = spansWithVendorInfo.find(
+    (item) => item.span.parent_span_id === null,
+  );
+
+  const waterfall = useMemo((): Waterfall => {
+    return [...spansWithVendorInfo, ...orphanLogs].sort((a, b) => {
+      const timeA = "span" in a ? a.span.start_time : a.timestamp;
+      const timeB = "span" in b ? b.span.start_time : b.timestamp;
+      return new Date(timeA).getTime() - new Date(timeB).getTime();
+    });
+  }, [spansWithVendorInfo, orphanLogs]);
+
+  // spansAndLogs = useMemo(() => {
+  //   return spansAndLogs
+  // }, [spansAndLogs]);
   // console.log("orphanLogs", orphanLogs);
   // const { data: spans, isPending, error } = useOtelTrace(traceId);
 
@@ -61,7 +80,6 @@ export function RequestDetailsPageContentV2({
   //   console.error("Error!", error);
   // }
 
-  const rootSpan = spansWithVendorInfo.find((item) => item.span.parent_span_id === null);
   // const tracesV2 = useMemo((): MizuTraceV2 | undefined => {
   //   if (!data) {
   //     return undefined;
@@ -177,10 +195,7 @@ export function RequestDetailsPageContentV2({
               "2xl:min-w-[420px]",
             )}
           >
-            <TraceDetailsTimeline
-              items={spansWithVendorInfo}
-              orphanLogs={orphanLogs || []}
-            />
+            <TraceDetailsTimeline waterfall={waterfall} />
           </div>
           <div
             className={cn(
@@ -192,12 +207,9 @@ export function RequestDetailsPageContentV2({
             )}
           >
             <div className="w-full lg:hidden">
-              <TraceDetailsTimeline
-                items={spansWithVendorInfo}
-                orphanLogs={orphanLogs || []}
-              />
+              <TraceDetailsTimeline waterfall={waterfall} />
             </div>
-            <TraceDetailsV2 spans={spans} orphanLogs={orphanLogs || []} />
+            <TraceDetailsV2 waterfall={waterfall} />
           </div>
         </div>
       </div>

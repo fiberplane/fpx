@@ -47,4 +47,4 @@ export const SpanKind = {
    * relationship between producer and consumer spans.
    */
   CONSUMER: "Consumer",
-}
+};

@@ -1,10 +1,12 @@
 import {
-  MizuOrphanLog,
+  // MizuOrphanLog,
   // MizuSpan,
   // MizuTrace,
   // MizuTraceV2,
   OtelSpan,
-  OtelSpans,
+  // isMizuLog,
+  isMizuOrphanLog,
+  // OtelSpans,
 } from "@/queries";
 // import {
 //   isMizuFetchSpan,
@@ -13,6 +15,8 @@ import {
 // } from "@/queries/traces-v2";
 // import { cn } from "@/utils";
 import { useMemo } from "react";
+// import { SpanKind } from "@/constants";
+import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { SectionHeading } from "../shared";
 import { FetchSpan } from "./FetchSpan";
 import { IncomingRequest } from "./IncomingRequest";
@@ -23,9 +27,12 @@ import {
   getNumber,
   //  getStack,
   getString,
+  isFetchSpan,
+  isIncomingRequestSpan,
 } from "./otel-helpers";
 import { SubSection, SubSectionHeading } from "./shared";
-import { SpanKind } from "@/constants";
+// import { LogLog } from "../LogLog";
+import { VendorInfo } from "./vendorify-traces";
 
 // export function TraceDetailsV2({ spans, orphanLogs }: {
 //   spans: OtelSpans,
@@ -46,37 +53,40 @@ import { SpanKind } from "@/constants";
 //   );
 // }
 export function TraceDetailsV2({
-  spans,
-  orphanLogs,
+  waterfall,
 }: {
-  spans: OtelSpans;
-  orphanLogs: Array<MizuOrphanLog>;
+  waterfall: Waterfall;
 }) {
   // TODO: merge spans and orphanLogs
-  console.log(orphanLogs);
+  // console.log(orphanLogs);
   return (
     <div className="grid gap-4" id="trace-details-v2">
-      {spans.map((span) => {
-        return <SpanDetails key={span.span_id} span={span} />;
+      {waterfall.map((item) => {
+        if (isMizuOrphanLog(item)) {
+          return <OrphanLog log={item} key={item.id} />;
+        }
+        return (
+          <SpanDetails
+            key={item.span.span_id}
+            span={item.span}
+            vendorInfo={item.vendorInfo}
+          />
+        );
       })}
     </div>
   );
 }
 
-function SpanDetails({ span }: { span: OtelSpan }) {
-  console.log('span.name', span.name, span.kind);
-  if (span.name.toLowerCase() === "request" && span.kind ===SpanKind.SERVER) {
+function SpanDetails({
+  span,
+  vendorInfo,
+}: { span: OtelSpan; vendorInfo: VendorInfo }) {
+  if (isIncomingRequestSpan(span)) {
     return <IncomingRequest span={span} />;
   }
-  // if (isMizuRootRequestSpan(span)) {
-  // return <IncomingRequest span={span} />;
-  // }
 
-  // if (isMizuFetchSpan(span)) {
-  // return <FetchSpan span={span} />;
-  // }
-  if (span.kind === "Client" && span.name === "fetch") {
-    return <FetchSpan span={span} />;
+  if (isFetchSpan(span)) {
+    return <FetchSpan span={span} vendorInfo={vendorInfo} />;
   }
 
   return <GenericSpan span={span} />;
@@ -85,7 +95,6 @@ function SpanDetails({ span }: { span: OtelSpan }) {
 
 function GenericSpan({ span }: { span: OtelSpan }) {
   const attributes = useMemo(() => {
-    console.log("span.attributes", span.attributes);
     const attr: Record<string, string> = {};
     for (const key of Object.keys(span.attributes)) {
       const value = span.attributes[key];
@@ -96,16 +105,8 @@ function GenericSpan({ span }: { span: OtelSpan }) {
       }
     }
     return attr;
-    // Object.keys(span.attributes);
   }, [span]);
 
-  // const logs = useMemo(() => {
-  //   return span.events.map(event => ({
-  //     name: event.timestamp,
-  //     timestamp: event.timestamp,
-  //     attributes: event.attributes,
-  //   }));
-  // }
   return (
     <div id={span.span_id}>
       <div className="flex flex-col gap-4">

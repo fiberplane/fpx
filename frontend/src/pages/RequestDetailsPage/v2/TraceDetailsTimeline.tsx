@@ -6,8 +6,17 @@ import NeonLogo from "@/assets/NeonLogo.svg";
 import OpenAiLogo from "@/assets/OpenAILogo.svg";
 
 import { Badge } from "@/components/ui/badge";
-import { MizuTraceV2, OtelSpan, isMizuOrphanLog } from "@/queries";
-import { isMizuFetchSpan, isMizuRootRequestSpan, MizuOrphanLog } from "@/queries/traces-v2";
+import { SpanKind } from "@/constants";
+import {
+  //  MizuTraceV2,
+  OtelSpan,
+  isMizuOrphanLog,
+} from "@/queries";
+import {
+  // isMizuFetchSpan,
+  //  isMizuRootRequestSpan,
+  MizuOrphanLog,
+} from "@/queries/traces-v2";
 // import {
 // MizuOrphanLog,
 // MizuOrphanLog,
@@ -26,27 +35,31 @@ import React, {
   // useState,
 } from "react";
 import {
-  NormalizedOrphanLog,
-  NormalizedSpan,
-  // normalizeWaterfallTimestamps,
-} from "./normalize-traces";
+  // SpanWithVendorInfo,
+  Waterfall,
+} from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
+import { isFetchSpan } from "./otel-helpers";
+// import {
+//   NormalizedOrphanLog,
+//   NormalizedSpan,
+//   // normalizeWaterfallTimestamps,
+// } from "./normalize-traces";
 // import { timelineId } from "./timelineId";
 import {
-  canRenderVendorInfo,
-  isAnthropicSpan,
-  isNeonSpan,
-  isOpenAISpan,
   VendorInfo,
+  // canRenderVendorInfo,
+  isAnthropicVendorInfo,
+  isNeonVendorInfo,
+  isOpenAIVendorInfo,
 } from "./vendorify-traces";
-import { SpanKind } from "@/constants";
-import { SpanWithVendorInfo } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 // import { timelineId } from "./timelineId";
 
 type TraceDetailsTimelineProps = {
   // trace: MizuTraceV2;
   // root: OtelSpan;
-  items: Array<SpanWithVendorInfo>;
-  orphanLogs: MizuTraceV2["orphanLogs"];
+  // items: Array<SpanWithVendorInfo>;
+  // orphanLogs: MizuTraceV2["orphanLogs"];
+  waterfall: Waterfall;
 };
 
 // type NormalizedSpan = MizuSpan & {
@@ -65,21 +78,22 @@ type TraceDetailsTimelineProps = {
 
 // type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
 
-const normalizeWaterfallTimestamps = (
-  items: Array<SpanWithVendorInfo>,
-  orphanLogs: MizuTraceV2["orphanLogs"],
-) => {
-  const logTimestamps = orphanLogs.map((log) =>
-    new Date(log.timestamp).getTime(),
-  );
-  console.log('items', items);
+const normalizeWaterfallTimestamps = (waterfall: Waterfall) => {
+  // const logTimestamps = orphanLogs.map((log) =>
+  //   new Date(log.timestamp).getTime(),
+  // );
+  // console.log('items', items);
   const minStart = Math.min(
-    ...items.map((item) => new Date(item.span.start_time).getTime()),
-    ...logTimestamps,
+    ...waterfall.map((item) => {
+      const time = "span" in item ? item.span.start_time : item.timestamp;
+      return new Date(time).getTime();
+    }),
   );
   const maxEnd = Math.max(
-    ...items.map((item) => new Date(item.span.end_time).getTime()),
-    ...logTimestamps,
+    ...waterfall.map((item) => {
+      const time = "span" in item ? item.span.end_time : item.timestamp;
+      return new Date(time).getTime();
+    }),
   );
 
   // const normalizeSpan = (span: MizuSpan): NormalizedSpan => {
@@ -122,8 +136,7 @@ const normalizeWaterfallTimestamps = (
 };
 
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
-  items,
-  orphanLogs,
+  waterfall,
 }) => {
   // const [activeId, setActiveId] = useState<string>("");
   // const observer = useRef<IntersectionObserver>();
@@ -140,23 +153,11 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     // maxEnd,
     minStart,
     duration,
-  } = normalizeWaterfallTimestamps(items, orphanLogs);
+  } = normalizeWaterfallTimestamps(waterfall);
   // const normalizedTrace = useMemo(
   //   () => normalizeWaterfallTimestamps(trace),
   //   [trace],
   // );
-
-  const combinedData = useMemo(() => {
-    return [...items, ...orphanLogs];
-  }, [items, orphanLogs]);
-
-  const sorted = useMemo(() => {
-    return combinedData.sort((a, b) => {
-      const timeA = "span" in a ? a.span.start_time : a.timestamp;
-      const timeB = "span" in b ? b.span.start_time : b.timestamp;
-      return new Date(timeA).getTime() - new Date(timeB).getTime();
-    });
-  }, [combinedData]);
 
   // const
 
@@ -218,7 +219,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   //     }
   //   };
   // }, [timelineEntryIds, handleObserve]);
-  console.log('sortedSpans', sorted);
+  // console.log('sortedSpans', sortedSpansAndLogs);
   return (
     <div
       className={cn(
@@ -232,7 +233,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     >
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
       <div className="flex flex-col">
-        {sorted.map((spanOrLog) => {
+        {waterfall.map((spanOrLog) => {
           if (isMizuOrphanLog(spanOrLog)) {
             // return null;
             return (
@@ -325,72 +326,82 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
 //   }, [spanOrLog]);
 // };
 
-const useTimelineTitle = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
+const useTimelineTitle = (
+  waterfallItem: Waterfall[0],
+  // spanOrLog: NormalizedSpan | NormalizedOrphanLog
+) => {
   return useMemo(() => {
-    const isNeonCall = isNeonSpan(spanOrLog);
-    if (isNeonCall) {
-      return (
-        <div
-          className={cn(
-            "uppercase",
-            "font-normal",
-            "font-mono",
-            "text-xs",
-            "truncate",
-          )}
-        >
-          {spanOrLog.vendorInfo.sql?.query?.slice(0, 30)}
-        </div>
-      );
-    }
-
-    const isOpenAICall = isOpenAISpan(spanOrLog);
-    if (isOpenAICall) {
-      return (
-        <div className={cn("font-normal", "font-mono", "text-xs", "truncate")}>
-          OpenAI Call
-        </div>
-      );
-    }
-
-    const isAnthropicCall = isAnthropicSpan(spanOrLog);
-    if (isAnthropicCall) {
-      return (
-        <div className={cn("font-normal", "font-mono", "text-xs", "truncate")}>
-          Anthropic Call
-        </div>
-      );
-    }
-
-    const isRootRequest = isMizuRootRequestSpan(spanOrLog);
-    if (isRootRequest) {
-      return (
-        <div className={cn("font-mono text-sm truncate", "text-gray-200")}>
-          {spanOrLog.name}
-        </div>
-      );
-    }
-
-    const isFetch = !isMizuOrphanLog(spanOrLog) && spanOrLog.kind === "CLIENT";
-    if (isFetch) {
-      return (
-        <div>
-          <Badge
-            variant="outline"
+    if ("vendorInfo" in waterfallItem) {
+      const { span, vendorInfo } = waterfallItem;
+      const isNeonCall = isNeonVendorInfo(vendorInfo);
+      if (isNeonCall) {
+        return (
+          <div
             className={cn(
-              "lowercase",
+              "uppercase",
               "font-normal",
               "font-mono",
-              "rounded",
-              "px-1.5",
               "text-xs",
-              "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
+              "truncate",
             )}
           >
-            {spanOrLog.name}
-          </Badge>
-        </div>
-      );
+            {vendorInfo.sql?.query?.slice(0, 30)}
+          </div>
+        );
+      }
+
+      const isOpenAICall = isOpenAIVendorInfo(vendorInfo);
+      if (isOpenAICall) {
+        return (
+          <div
+            className={cn("font-normal", "font-mono", "text-xs", "truncate")}
+          >
+            OpenAI Call
+          </div>
+        );
+      }
+
+      const isAnthropicCall = isAnthropicVendorInfo(vendorInfo);
+      if (isAnthropicCall) {
+        return (
+          <div
+            className={cn("font-normal", "font-mono", "text-xs", "truncate")}
+          >
+            Anthropic Call
+          </div>
+        );
+      }
+
+      const isRootRequest = span.parent_span_id === null;
+      if (isRootRequest) {
+        return (
+          <div className={cn("font-mono text-sm truncate", "text-gray-200")}>
+            {span.name}
+          </div>
+        );
+      }
+
+      const isFetch = isFetchSpan(span);
+      if (isFetch) {
+        return (
+          <div>
+            <Badge
+              variant="outline"
+              className={cn(
+                "lowercase",
+                "font-normal",
+                "font-mono",
+                "rounded",
+                "px-1.5",
+                "text-xs",
+                "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
+              )}
+            >
+              {span.name}
+            </Badge>
+          </div>
+        );
+      }
     }
 
     return (
@@ -400,10 +411,13 @@ const useTimelineTitle = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
         {/* {spanOrLog.name} */}
       </div>
     );
-  }, [spanOrLog]);
+  }, [waterfallItem]);
 };
 
-const useTimelineIcon = (spanOrLog: OtelSpan | MizuOrphanLog, vendorInfo?: VendorInfo) => {
+const useTimelineIcon = (
+  spanOrLog: OtelSpan | MizuOrphanLog,
+  vendorInfo?: VendorInfo,
+) => {
   return useMemo(() => {
     let iconType = isMizuOrphanLog(spanOrLog) ? "log" : spanOrLog.kind;
     if (vendorInfo && vendorInfo.vendor !== "none") {
@@ -411,7 +425,7 @@ const useTimelineIcon = (spanOrLog: OtelSpan | MizuOrphanLog, vendorInfo?: Vendo
     }
 
     return getTypeIcon(iconType);
-  }, [spanOrLog, vendorInfo], );
+  }, [spanOrLog, vendorInfo]);
 };
 
 const getTypeIcon = (type: string) => {
@@ -475,8 +489,9 @@ const WaterfallRowSpan: React.FC<{
   const lineWidth = `${((spanDuration / duration) * 100).toPrecision(2)}%`;
   const lineOffset = `${((new Date(span.start_time).getTime() - startTime) / duration) * 100}%`;
   const icon = useTimelineIcon(span, vendorInfo);
-  const isFetch = span.name === "fetch";
-  const isRootRequest = span.parent_span_id === null;
+  // const isFetch = span.name === "fetch";
+  // const isRootRequest = span.parent_span_id === null;
+  const title = useTimelineTitle({ span, vendorInfo });
 
   return (
     <a
@@ -492,35 +507,7 @@ const WaterfallRowSpan: React.FC<{
       href={`#${span.span_id}`}
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
-      <div className="flex flex-col w-20">
-        {isFetch ? (
-          <div>
-            <Badge
-              variant="outline"
-              className={cn(
-                "lowercase",
-                "font-normal",
-                "font-mono",
-                "rounded",
-                "px-1.5",
-                "text-xs",
-                "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
-              )}
-            >
-              {span.name}
-            </Badge>
-          </div>
-        ) : isRootRequest ? (
-          <div className="font-mono text-sm truncate">{span.name}</div>
-        ) : (
-          <div className="font-mono font-normal text-xs truncate text-gray-200">
-            {/* TODO! */}
-            {/* log */}
-            {span.name}
-            {/* {spanOrLog.name} */}
-          </div>
-        )}
-      </div>
+      <div className="flex flex-col w-20 overflow-hidden">{title}</div>
       <div className="text-gray-400 flex flex-grow items-center mx-4">
         <div
           className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
@@ -553,6 +540,7 @@ const WaterfallRowLog: React.FC<{
   // const isFetch = span.name === "fetch";
   // const isRootRequest = span.parent_span_id === null;
   // span.kind === "SERVER";
+  const title = useTimelineTitle(log);
 
   return (
     <a
@@ -568,9 +556,9 @@ const WaterfallRowLog: React.FC<{
       href={`#${log.id}`}
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
-      <div className="flex flex-col w-20">
+      <div className="flex flex-col w-20 overflow-hidden">
         <div className="font-mono font-normal text-xs truncate text-gray-200">
-          log
+          {title}
         </div>
       </div>
       <div className="text-gray-400 flex flex-grow items-center mx-4">

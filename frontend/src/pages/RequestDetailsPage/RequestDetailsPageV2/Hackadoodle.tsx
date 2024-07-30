@@ -33,7 +33,7 @@ export function Hackadoodle({
     isPending,
   } = useRequestDetails(traceId);
 
-  console.log("traceV2", traceV2);
+  // console.log("traceV2", traceV2);
   const { spans, orphanLogs = [] } = traceV2 || {};
   // const { data: traces } = useMizuTraces();
 
@@ -48,7 +48,7 @@ export function Hackadoodle({
       return traces.findIndex((trace) => trace.id === traceId);
     },
     getTraceRoute: (index: number) => {
-      console.log("idx", index, traces);
+      // console.log("idx", index, traces);
       if (!traces) {
         return "";
       }
@@ -99,7 +99,7 @@ export function Hackadoodle({
   }
 
   if (!spans || !rootSpan) {
-    console.log("spans", spans, "or rootspan", rootSpan);
+    // console.log("spans", spans, "or rootspan", rootSpan);
     return <EmptyState />;
   }
 

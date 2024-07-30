@@ -22,18 +22,22 @@ import {
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 // import { timelineId } from "./timelineId";
 import {
-  NeonSpan,
+  // NeonSpan,
+  NeonVendorInfo,
   VendorInfo,
-  isAnthropicSpan,
-  isNeonSpan,
-  isOpenAISpan,
+  isAnthropicVendorInfo,
+  isNeonVendorInfo,
+  isOpenAIVendorInfo,
 } from "./vendorify-traces";
 
 // function getRequestUrl(span: OtelSpan) {
 // return `${span.attributes["url.full"]}`;
 // }
 
-export function FetchSpan({ span }: { span: OtelSpan }) {
+export function FetchSpan({
+  span,
+  vendorInfo,
+}: { span: OtelSpan; vendorInfo: VendorInfo }) {
   // const id = timelineId(span);
   const id = span.span_id;
 
@@ -67,7 +71,7 @@ export function FetchSpan({ span }: { span: OtelSpan }) {
 
   const url = getRequestUrl(span);
 
-  const { component, title } = useVendorSpecificSection(span) ?? {};
+  const { component, title } = useVendorSpecificSection(vendorInfo) ?? {};
 
   return (
     <GenericFetchSpan
@@ -183,47 +187,47 @@ const DEFAULT_VENDOR_RESULT = {
  * @param span The span to render.
  * @returns A component and title for a vendor-specific section of the span.
  */
-function useVendorSpecificSection(span: OtelSpan, vendorInfo: VendorInfo) {
+function useVendorSpecificSection(vendorInfo: VendorInfo) {
   return useMemo(() => {
-    // const vendorInfo = 
-    if (isNeonSpan(span)) {
+    // const vendorInfo =
+    if (isNeonVendorInfo(vendorInfo)) {
       return {
-        component: <NeonSection span={span} />,
+        component: <NeonSection vendorInfo={vendorInfo} />,
         title: "Neon Database Call",
       };
     }
-    if (isOpenAISpan(span)) {
+    if (isOpenAIVendorInfo(vendorInfo)) {
       return {
         component: undefined,
         title: "OpenAI API Call",
       };
     }
-    if (isAnthropicSpan(span)) {
+    if (isAnthropicVendorInfo(vendorInfo)) {
       return {
         component: undefined,
         title: "Anthropic API Call",
       };
     }
     return DEFAULT_VENDOR_RESULT;
-  }, [span]);
+  }, [vendorInfo]);
 }
 
-function NeonSection({ span }: { span: NeonSpan }) {
+function NeonSection({ vendorInfo }: { vendorInfo: NeonVendorInfo }) {
   const queryValue = useMemo(() => {
     try {
-      const paramsFromNeon = span.vendorInfo.sql.params ?? [];
+      const paramsFromNeon = vendorInfo.sql.params ?? [];
       // NOTE - sql-formatter expects the index in the array to match the `$nr` syntax from postgres
       //        this makes the 0th index unused, but it makes the rest of the indices match the `$1`, `$2`, etc.
       const params = ["", ...paramsFromNeon];
-      return format(span.vendorInfo.sql.query, {
+      return format(vendorInfo.sql.query, {
         language: "postgresql",
         params,
       });
     } catch (e) {
       // Being very defensive soz
-      return span?.vendorInfo?.sql?.query ?? "";
+      return vendorInfo?.sql?.query ?? "";
     }
-  }, [span]);
+  }, [vendorInfo]);
   return (
     <SubSection>
       <SubSectionHeading>SQL Query</SubSectionHeading>

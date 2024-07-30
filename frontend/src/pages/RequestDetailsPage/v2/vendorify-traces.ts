@@ -7,7 +7,11 @@ import {
   isMizuFetchSpan,
 } from "@/queries";
 import { z } from "zod";
-import { getRequestBody, getRequestUrl, getString } from "./otel-helpers";
+import {
+  getRequestBody,
+  getRequestUrl,
+  // getString
+} from "./otel-helpers";
 
 export type VendorifiedTrace = MizuTraceV2 & {
   waterfall: (VendorifiedSpan | MizuSpan | MizuOrphanLog)[];
@@ -38,7 +42,7 @@ const NeonVendorInfoSchema = z.object({
   }),
 });
 
-type NeonVendorInfo = z.infer<typeof NeonVendorInfoSchema>;
+export type NeonVendorInfo = z.infer<typeof NeonVendorInfoSchema>;
 
 const OpenAIVendorInfoSchema = z.object({
   vendor: z.literal("openai"),
@@ -69,13 +73,13 @@ export type NeonSpan = Omit<VendorifiedSpan, "vendorInfo"> & {
   vendorInfo: NeonVendorInfo;
 };
 
-type OpenAISpan = Omit<VendorifiedSpan, "vendorInfo"> & {
-  vendorInfo: OpenAIVendorInfo;
-};
+// type OpenAISpan = Omit<VendorifiedSpan, "vendorInfo"> & {
+//   vendorInfo: OpenAIVendorInfo;
+// };
 
-type AnthropicSpan = Omit<VendorifiedSpan, "vendorInfo"> & {
-  vendorInfo: AnthropicVendorInfo;
-};
+// type AnthropicSpan = Omit<VendorifiedSpan, "vendorInfo"> & {
+//   vendorInfo: AnthropicVendorInfo;
+// };
 
 const hasVendorInfo = (span: MizuSpan): span is VendorifiedSpan => {
   return VendorInfoSchema.safeParse(span.vendorInfo).success;
@@ -94,16 +98,22 @@ export const isVendorifiedSpan = (span: unknown): span is VendorifiedSpan => {
   return hasVendorInfo(span);
 };
 
-export const isNeonSpan = (span: unknown): span is NeonSpan => {
-  return isVendorifiedSpan(span) && span.vendorInfo.vendor === "neon";
+export const isNeonVendorInfo = (
+  vendorInfo: VendorInfo,
+): vendorInfo is NeonVendorInfo => {
+  return vendorInfo.vendor === "neon";
 };
 
-export const isOpenAISpan = (span: unknown): span is OpenAISpan => {
-  return isVendorifiedSpan(span) && span.vendorInfo.vendor === "openai";
+export const isOpenAIVendorInfo = (
+  vendorInfo: VendorInfo,
+): vendorInfo is OpenAIVendorInfo => {
+  return vendorInfo.vendor === "openai";
 };
 
-export const isAnthropicSpan = (span: unknown): span is AnthropicSpan => {
-  return isVendorifiedSpan(span) && span.vendorInfo.vendor === "anthropic";
+export const isAnthropicVendorInfo = (
+  vendorInfo: VendorInfo,
+): vendorInfo is AnthropicVendorInfo => {
+  return vendorInfo.vendor === "anthropic";
 };
 
 export function getVendorInfo(span: OtelSpan): VendorInfo {
@@ -122,32 +132,28 @@ export function getVendorInfo(span: OtelSpan): VendorInfo {
     return { vendor: "anthropic" };
   }
 
-  return{ vendor: "none" }
-//   if (span.name === "fetch" && span.kind === "Client") {
-//     // const url = getRequestUrl(span);
-//     if (isNeonFetch(span)) {
-//       return {
-//         vendor: "neon",
-//         sql: getNeonSqlQuery(span),
-//       };
-//     }
+  return { vendor: "none" };
+  //   if (span.name === "fetch" && span.kind === "Client") {
+  //     // const url = getRequestUrl(span);
+  //     if (isNeonFetch(span)) {
+  //       return {
+  //         vendor: "neon",
+  //         sql: getNeonSqlQuery(span),
+  //       };
+  //     }
 
-//   }
+  //   }
 
-//   return { vendor: "none"};
-
+  //   return { vendor: "none"};
 }
-
 
 // export const vendorifySpan = (span: OtelSpan): VendorifiedSpan => {
 //   const vendorInfo = getVendorInfo(span);
 //   return {...span, vendorInfo};
 // };
 
-
-
 const isOpenAIFetch = (span: OtelSpan) => {
-  const requestUrl = getRequestUrl(span)
+  const requestUrl = getRequestUrl(span);
   try {
     const url = new URL(requestUrl);
     return url.hostname.includes("api.openai.com");
@@ -167,7 +173,7 @@ const isNeonFetch = (span: OtelSpan) => {
 };
 
 const isAnthropicFetch = (span: OtelSpan) => {
-  const requestUrl = getRequestUrl(span)
+  const requestUrl = getRequestUrl(span);
   try {
     const url = new URL(requestUrl);
     return url.hostname.includes("api.anthropic.com");

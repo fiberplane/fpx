@@ -8,6 +8,7 @@ import {
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
+  SpanKind,
 } from "@/constants";
 import {
   OtelSpan,
@@ -163,4 +164,12 @@ export function getStatusCode(span: OtelSpan) {
 export function getRequestUrl(span: OtelSpan) {
   return getString(span.attributes[EXTRA_SEMATTRS_URL_FULL]);
   // return `${span.attributes["url.full"]}`;
+}
+
+export function isFetchSpan(span: OtelSpan) {
+  return span.kind === SpanKind.CLIENT && span.name.toLowerCase() === "fetch";
+}
+
+export function isIncomingRequestSpan(span: OtelSpan) {
+  return span.name.toLowerCase() === "request" && span.kind === SpanKind.SERVER;
 }
