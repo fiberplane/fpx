@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useWebsocketQueryInvalidation } from "@/hooks";
-import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
+import { cn, parsePathFromRequestUrl } from "@/utils";
 import { useCallback, useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
@@ -24,6 +24,7 @@ import { RequestMethodInputValue, isRequestMethod, isWsRequest } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./styles.css";
+import { RequestorState } from "./reducer/state";
 
 export const RequestorPage = () => {
   const { toast } = useToast();
@@ -48,7 +49,8 @@ export const RequestorPage = () => {
     getActiveRoute,
 
     // Requestor input
-    state: { path, method },
+    // - note that `requestType` is an internal property used to determine if we're making a websocket request or not
+    state: { path, method, requestType },
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
     getIsInDraftMode,
@@ -123,8 +125,7 @@ export const RequestorPage = () => {
 
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
-    // HACK - Need to modify this when we support form-data
-    body: body.type !== "form-data" ? body.value : undefined,
+    body,
     addBaseUrl,
     path,
     method,
@@ -135,6 +136,7 @@ export const RequestorPage = () => {
     connectWebsocket,
     recordRequestInSessionHistory,
     selectedRoute,
+    requestType,
   });
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -480,6 +482,7 @@ function useRequestorHistory({
 }
 
 function useRequestorSubmitHandler({
+  requestType,
   selectedRoute,
   body,
   path,
@@ -494,7 +497,7 @@ function useRequestorSubmitHandler({
 }: {
   addBaseUrl: ReturnType<typeof useRoutes>["addBaseUrl"];
   selectedRoute: ProbedRoute | null;
-  body: string | undefined;
+  body: RequestorState["body"];
   path: string;
   method: string;
   pathParams: KeyValueParameter[];
@@ -503,20 +506,16 @@ function useRequestorSubmitHandler({
   makeRequest: ReturnType<typeof useMakeRequest>["mutate"];
   connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
+  requestType: RequestorState["requestType"];
 }) {
   const { toast } = useToast();
   return useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
-      // FIXME - This blocks user from making requests when no routes have been detected
-      if (!selectedRoute) {
-        return;
-      }
-
-      if (isWsRequest(selectedRoute.requestType)) {
-        const url = addBaseUrl(selectedRoute.path, {
-          requestType: selectedRoute.requestType,
+      if (isWsRequest(requestType)) {
+        const url = addBaseUrl(path, {
+          requestType,
         });
         connectWebsocket(url);
         toast({
@@ -525,23 +524,38 @@ function useRequestorSubmitHandler({
         return;
       }
 
-      // FIXME - We need to consider if the user is trying to actually send a JSON body
-      //         For now we just assume it's always JSON
-      //         This code will break if, for example, the user passes the string "null" as the body...
-      //         in that case, the body will be converted to null, which is not what they want.
-      const hackyBody =
-        typeof body === "string" && isJson(body) ? JSON.parse(body) : body;
+      // TODO - Support multipart forms as well
+      const bodyType = body.type;
+
+      // TODO - Refactor into its own helper function
+      const contentTypeHeader =
+        bodyType === "json"
+          ? "application/json"
+          : bodyType === "form-data"
+            ? "application/x-www-form-urlencoded"
+            : "text/plain";
+
+      // TODO - Make it clear in the UI that we're auto-adding this header
+      const modifiedHeaders = [
+        {
+          key: "Content-Type",
+          value: contentTypeHeader,
+          enabled: true,
+          id: "fpx-content-type",
+        },
+        ...requestHeaders,
+      ];
 
       makeRequest(
         {
           addBaseUrl,
           path,
           method,
-          body: hackyBody,
-          headers: requestHeaders,
+          body,
+          headers: modifiedHeaders,
           pathParams,
           queryParams,
-          route: selectedRoute.path,
+          route: selectedRoute?.path,
         },
         {
           onSuccess(data) {
@@ -563,18 +577,19 @@ function useRequestorSubmitHandler({
       );
     },
     [
+      requestType,
       body,
+      requestHeaders,
       makeRequest,
-      method,
+      addBaseUrl,
       path,
+      method,
       pathParams,
       queryParams,
-      recordRequestInSessionHistory,
-      requestHeaders,
-      selectedRoute,
-      addBaseUrl,
+      selectedRoute?.path,
       connectWebsocket,
       toast,
+      recordRequestInSessionHistory,
     ],
   );
 }

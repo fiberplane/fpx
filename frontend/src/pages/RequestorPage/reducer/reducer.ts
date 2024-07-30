@@ -311,7 +311,10 @@ function requestorReducer(
         return state;
       }
       if (newBodyType === "form-data") {
-        return { ...state, body: { type: newBodyType, value: enforceTerminalDraftParameter([]) } };
+        return {
+          ...state,
+          body: { type: newBodyType, value: enforceTerminalDraftParameter([]) },
+        };
       }
       if (oldBodyType === "form-data") {
         return { ...state, body: { type: newBodyType, value: "" } };
@@ -450,7 +453,7 @@ export function useRequestor() {
 
   const handleRequestBodyTypeChange = useCallback(
     (requestBodyType: RequestorState["body"]["type"]) => {
-      dispatch({ type: SET_BODY_TYPE, payload: {type: requestBodyType} });
+      dispatch({ type: SET_BODY_TYPE, payload: { type: requestBodyType } });
     },
     [dispatch],
   );

@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -25,6 +24,7 @@ import {
   SetStateAction,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { Resizable } from "react-resizable";
@@ -40,14 +40,25 @@ import { WebSocketState } from "./useMakeWebsocketRequest";
 import "./RequestPanel.css";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
+import { CheckIcon } from "@radix-ui/react-icons";
 import type { RequestsPanelTab } from "./reducer";
 import { RequestorState } from "./reducer/state";
-
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
@@ -260,10 +271,13 @@ function RequestMeta(props: RequestPanelProps) {
         />
       </CustomTabsContent>
       {shouldShowBody && (
-        <CustomTabsContent value="body" className={cn(
-          // HACK - Padding for the bottom toolbar
-          "pb-16"
-        )}>
+        <CustomTabsContent
+          value="body"
+          className={cn(
+            // HACK - Padding for the bottom toolbar
+            "pb-16",
+          )}
+        >
           <AIGeneratedInputsBanner
             showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
             setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
@@ -275,32 +289,31 @@ function RequestMeta(props: RequestPanelProps) {
               setBody(undefined);
             }}
           />
-          {
-            body.type === "json" || body.type === "text" && (
-              <CodeMirrorJsonEditor
-                onChange={setBody}
-                // FIXME - Use type guard
-                value={(body.value) as string | undefined}
-                maxHeight="800px"
-              />
-            )
-          }
-          {
-            body.type === "form-data" && (
-              <KeyValueForm
-                // FIXME - Use type guard
-                keyValueParameters={(body.value ?? []) as KeyValueParameter[]}
-                onChange={(params) => {
-                  setBody({
-                    type: "form-data",
-                    value: params,
-                  });
-                }}
-              />
-            )
-          }
+          {(body.type === "json" || body.type === "text") && (
+            <CodeMirrorJsonEditor
+              onChange={setBody}
+              // FIXME - Use type guard
+              value={body.value as string | undefined}
+              maxHeight="800px"
+            />
+          )}
+          {body.type === "form-data" && (
+            <KeyValueForm
+              // FIXME - Use type guard
+              keyValueParameters={(body.value ?? []) as KeyValueParameter[]}
+              onChange={(params) => {
+                setBody({
+                  type: "form-data",
+                  value: params,
+                });
+              }}
+            />
+          )}
           {/* HACK - This toolbar is absolutely positioned for now */}
-          <BottomToolbar requestBodyType={body.type} handleRequestBodyTypeChange={handleRequestBodyTypeChange} />
+          <BottomToolbar
+            requestBodyType={body.type}
+            handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+          />
         </CustomTabsContent>
       )}
       {shouldShowMessages && (
@@ -317,7 +330,7 @@ function RequestMeta(props: RequestPanelProps) {
               <CodeMirrorJsonEditor
                 // FIXME - Use different form input for WS messages!
                 onChange={setBody}
-                value={(body.value) as string | undefined}
+                value={body.value as string | undefined}
                 maxHeight="800px"
               />
               <div className="flex justify-end">
@@ -348,10 +361,16 @@ function RequestMeta(props: RequestPanelProps) {
   );
 }
 
-const BottomToolbar = ({ requestBodyType, handleRequestBodyTypeChange }: RequestBodyTypeDropdownProps) => {
+const BottomToolbar = ({
+  requestBodyType,
+  handleRequestBodyTypeChange,
+}: RequestBodyTypeDropdownProps) => {
   return (
     <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
-      <RequestBodyTypeDropdown requestBodyType={requestBodyType} handleRequestBodyTypeChange={handleRequestBodyTypeChange} />
+      <RequestBodyTypeDropdown
+        requestBodyType={requestBodyType}
+        handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+      />
     </div>
   );
 };
@@ -363,35 +382,72 @@ type RequestBodyTypeDropdownProps = {
   handleRequestBodyTypeChange: (contentType: RequestBodyType) => void;
 };
 
-function RequestBodyTypeDropdown({ requestBodyType, handleRequestBodyTypeChange }: RequestBodyTypeDropdownProps) {
+type RequestBodyTypeOption = {
+  value: RequestBodyType;
+  label: string;
+};
 
-  const handleContentTypeChange = (contentType: RequestBodyType) => {
-    handleRequestBodyTypeChange(contentType);
-  };
+const bodyTypes: RequestBodyTypeOption[] = [
+  { value: "text", label: "Text" },
+  { value: "json", label: "JSON" },
+  { value: "form-data", label: "Form" },
+  // { value: "file", label: "File" },
+];
 
+function RequestBodyTypeDropdown({
+  requestBodyType,
+  handleRequestBodyTypeChange,
+}: RequestBodyTypeDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const bodyTypeLabel = useMemo(() => {
+    return (
+      bodyTypes.find((type) => type.value === requestBodyType)?.label ?? "Body"
+    );
+  }, [requestBodyType]);
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="secondary" className="pl-3">
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="secondary"
+          role="combobox"
+          aria-expanded={open}
+          className="pl-3"
+        >
           <CaretSortIcon className="w-4 h-4 mr-1" />
-          {requestBodyType}
+          {bodyTypeLabel}
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem onClick={() => handleContentTypeChange("text")}>
-          Text
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleContentTypeChange("json")}>
-          JSON
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleContentTypeChange("form-data")}>
-          Form
-        </DropdownMenuItem>
-        {/* <DropdownMenuItem onClick={() => handleContentTypeChange("file")}>
-          File
-        </DropdownMenuItem> */}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverTrigger>
+      <PopoverContent className="w-[120px] p-0" align="end">
+        <Command>
+          <CommandList>
+            <CommandGroup>
+              {bodyTypes.map((type) => (
+                <CommandItem
+                  key={type.value}
+                  value={type.value}
+                  onSelect={(currentValue) => {
+                    handleRequestBodyTypeChange(
+                      currentValue as RequestBodyType,
+                    );
+                    setOpen(false);
+                  }}
+                >
+                  <span>{type.label}</span>
+                  <CheckIcon
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      requestBodyType === type.value
+                        ? "opacity-100"
+                        : "opacity-0",
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -497,7 +553,6 @@ function WebSocketNotConnectedBanner() {
     </div>
   );
 }
-
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;

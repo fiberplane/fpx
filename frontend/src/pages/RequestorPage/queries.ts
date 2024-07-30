@@ -1,8 +1,10 @@
 import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
+import { isJson } from "@/utils";
 import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
+import { RequestorState } from "./reducer/state";
 import { RequestMethodSchema, RequestTypeSchema } from "./types";
 
 export const ProbedRouteSchema = z.object({
@@ -104,8 +106,6 @@ export function useAddRoutes() {
   const mutation = useMutation({
     mutationFn: addRoutes,
     onSuccess: () => {
-      // Invalidate and refetch app routes... not sure if this will mess with the currently selected route,
-      // or if we want to autoselect the new route, or what
       queryClient.invalidateQueries({ queryKey: [PROBED_ROUTES_KEY] });
     },
   });
@@ -157,6 +157,19 @@ export function useMakeRequest() {
   return mutation;
 }
 
+// function createFormData(body: RequestorState["body"]) {
+//   if (body.type === "form-data") {
+//     const formData = new FormData();
+//     body.value.forEach((item) => {
+//       if (item.enabled) {
+//         formData.append(item.key, item.value);
+//       }
+//     });
+//     return formData;
+//   }
+//   return null;
+// }
+
 export function makeRequest({
   addBaseUrl,
   path,
@@ -170,12 +183,19 @@ export function makeRequest({
   addBaseUrl: (path: string) => string;
   path: string;
   method: string;
-  body?: string;
+  body: RequestorState["body"];
   headers: KeyValueParameter[];
   pathParams?: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   route?: string;
 }) {
+  // FIXME - We should validate JSON in the UI itself
+  const hackyBody =
+    body.type === "json" && body.value && isJson(body.value)
+      ? JSON.parse(body.value)
+      : body.type === "form-data"
+        ? reduceKeyValueParameters(body.value)
+        : body.value;
   return fetch("/v0/send-request", {
     method: "POST",
     headers: {
@@ -185,7 +205,8 @@ export function makeRequest({
       requestUrl: addBaseUrl(path),
       requestMethod: method,
       // NOTE - GET / HEAD requests cannot have a body
-      requestBody: method === "GET" || method === "HEAD" ? undefined : body,
+      requestBody:
+        method === "GET" || method === "HEAD" ? undefined : hackyBody,
       requestHeaders: reduceKeyValueParameters(headers),
       requestPathParams: reduceKeyValueParameters(pathParams ?? []),
       requestQueryParams: reduceKeyValueParameters(queryParams),

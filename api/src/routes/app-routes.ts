@@ -116,12 +116,24 @@ app.post(
       "x-fpx-trace-id": traceId,
     };
 
+    const contentType = Object.entries(requestHeaders ?? {}).find(
+      ([key, _value]) => key.toLowerCase() === "content-type",
+    )?.[1];
+    const contentTypeIsFormData = contentType?.includes(
+      "application/x-www-form-urlencoded",
+    );
+    const contentTypeIsJson = contentType?.includes("application/json");
+
+    // HACK - Just getting urlencoded form data working for now
+    const body = contentTypeIsFormData
+      ? createUrlEncodedBody(requestBody as Record<string, string>) // TYPE HACK
+      : contentTypeIsJson
+        ? JSON.stringify(requestBody)
+        : (requestBody as string | undefined);
+
     const requestObject = {
       method: requestMethod,
-      body:
-        (requestBody ? JSON.stringify(requestBody) : requestBody) ??
-        // biome-ignore lint/suspicious/noExplicitAny: just make it work
-        (undefined as any),
+      body,
       headers: modifiedRequestHeaders,
     };
 
@@ -197,6 +209,126 @@ app.post(
     }
   },
 );
+
+// NOTE - This is for urlencoded (not multipart)
+function createUrlEncodedBody(body: Record<string, string>) {
+  return new URLSearchParams(body).toString();
+}
+
+/**
+ * This route is used to proxy requests to the service we're calling.
+ * It's used to add the trace-id header to the request, and to handle the response.
+ *
+ */
+app.all("/v1/send-request/*", async (ctx) => {
+  const _traceId = ctx.req.header("x-fpx-trace-id") ?? generateUUID();
+
+  // TODO - Record request details
+  // TODO - Add trace-id header
+  // TODO - Proxy the request
+  // TODO - Record response details
+
+  // const {
+  //   requestMethod,
+  //   requestUrl,
+  //   requestHeaders,
+  //   requestQueryParams,
+  //   requestPathParams,
+  //   requestBody,
+  //   requestRoute,
+  // } = ctx.req.valid("json");
+
+  // const db = ctx.get("db");
+
+  // // NOTE - We want to pass the trace-id through to the service we're calling
+  // //        This helps us optionally correlate requests more easily in the frontend
+  // const modifiedRequestHeaders = {
+  //   ...(requestHeaders ?? {}),
+  //   "x-fpx-trace-id": traceId,
+  // };
+
+  // const requestObject = {
+  //   method: requestMethod,
+  //   body:
+  //     (requestBody ? JSON.stringify(requestBody) : requestBody) ??
+  //     // biome-ignore lint/suspicious/noExplicitAny: just make it work
+  //     (undefined as any),
+  //   headers: modifiedRequestHeaders,
+  // };
+
+  // const finalUrl = resolveUrl(requestUrl, requestQueryParams);
+
+  // const newRequest: NewAppRequest = {
+  //   requestMethod,
+  //   requestUrl,
+  //   requestHeaders,
+  //   requestPathParams,
+  //   requestQueryParams,
+  //   requestBody,
+  //   requestRoute,
+  // };
+
+  // const insertResult = await db
+  //   .insert(appRequests)
+  //   .values(newRequest)
+  //   .returning({ requestId: appRequests.id });
+
+  // const requestId = insertResult[0].requestId; // only one insert always happens not sure why drizzle returns an array...
+
+  // const startTime = Date.now();
+  // try {
+  //   const response = await fetch(finalUrl, requestObject);
+  //   const duration = Date.now() - startTime;
+
+  //   const {
+  //     responseStatusCode,
+  //     responseTime,
+  //     responseHeaders,
+  //     responseBody,
+  //     traceId: responseTraceId,
+  //     isFailure,
+  //   } = await handleSuccessfulRequest(db, requestId, duration, response);
+
+  //   if (responseTraceId !== traceId) {
+  //     logger.warn(
+  //       `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
+  //     );
+  //   }
+
+  //   return ctx.json({
+  //     responseStatusCode,
+  //     responseTime,
+  //     responseHeaders,
+  //     responseBody,
+  //     isFailure,
+  //     traceId: responseTraceId,
+  //     requestId,
+  //   });
+  // } catch (fetchError) {
+  //   // NOTE - This will happen when the service is unreachable.
+  //   //        Could be good to parse the error for more information!
+  //   const responseTime = Date.now() - startTime;
+  //   const { failureDetails, failureReason, isFailure } =
+  //     await handleFailedRequest(
+  //       db,
+  //       requestId,
+  //       traceId,
+  //       responseTime,
+  //       fetchError,
+  //     );
+
+  //   return ctx.json({
+  //     isFailure,
+  //     responseTime,
+  //     failureDetails,
+  //     failureReason,
+  //     traceId,
+  //     requestId,
+  //   });
+  // }
+
+  return ctx.text("TODO, world!");
+});
 
 /**
  * Extract useful data from the response when a request succeeds,
