@@ -22,6 +22,27 @@
       "when": 1721725329894,
       "tag": "0002_marvelous_eternity",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1721999618381,
+      "tag": "0003_peaceful_squirrel_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1722002071293,
+      "tag": "0004_cold_living_tribunal",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1722114540100,
+      "tag": "0005_tricky_blacklash",
+      "breakpoints": true
     }
   ]
 }

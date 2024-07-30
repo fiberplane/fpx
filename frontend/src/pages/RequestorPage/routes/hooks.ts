@@ -1,128 +1,96 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { KeyValueParameter } from "../KeyValueForm";
-import { extractPathParams, mapPathKey } from "../data";
-import { PersistedUiState } from "../persistUiState";
+import { useCallback, useEffect, useMemo } from "react";
 import { ProbedRoute, useProbedRoutes } from "../queries";
-import { findMatchedRoute } from "./match";
+import { RequestType, isWsRequest } from "../types";
+import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
-export function useRoutes(browserHistoryState?: PersistedUiState) {
-  // NOTE - Not yet in use
-  const [draftRoute, setDraftRoute] = useState<ProbedRoute | null>(null);
+type UseRoutesOptions = {
+  setRoutes: (routes: ProbedRoute[]) => void;
+};
 
+/**
+ * Suuuuper hacky way to check if a route is using the standard Hono
+ * boilerplate to upgrade to a websocket connection.
+ */
+const isUpgradeWebSocketMiddleware = (route: ProbedRoute) => {
+  const isMiddleware = route?.handlerType === "middleware";
+  const isGet = route?.method === "GET";
+  const isWsPath = route?.path?.includes("ws");
+  const hasUpgrade = route?.handler?.includes("upgrade");
+  const hasWebsocket = route?.handler?.includes("websocket");
+  const has101 = route?.handler?.includes("101");
+  return (
+    isMiddleware && isGet && isWsPath && hasUpgrade && hasWebsocket && has101
+  );
+};
+
+/**
+ * Filter the routes that we want to show in the UI
+ * For now, only keeps the route if it's either
+ * - The upgrade websocket middleware (hacky)
+ * - A route handler (NOT middleware)
+ */
+const filterRoutes = (routes: ProbedRoute[]) => {
+  return routes.filter((r) => {
+    if (r.handlerType === "route") {
+      return true;
+    }
+    if (WEBSOCKETS_ENABLED && isUpgradeWebSocketMiddleware(r)) {
+      return true;
+    }
+    return false;
+  });
+};
+
+export function useRoutes({ setRoutes }: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
-    const routes =
-      routesAndMiddleware?.routes?.filter((r) => r.handlerType === "route") ??
-      [];
+    const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
+    // HACK - We change the requestType of the upgrade websocket middleware
+    //        to websocket so that the UI can show it as such
+    return routes.map((r) =>
+      isUpgradeWebSocketMiddleware(r)
+        ? {
+            ...r,
+            requestType: "websocket" as const,
+          }
+        : r,
+    );
+  }, [routesAndMiddleware]);
 
-    const routesWithDrafts = draftRoute ? [draftRoute, ...routes] : routes;
-    return routesWithDrafts;
-  }, [routesAndMiddleware, draftRoute]);
+  // HACK - Antipattern, add routes to the reducer based off of external changes
+  // NOTE - This will only add routes if they don't exist
+  useEffect(() => {
+    setRoutes(routes);
+  }, [routes, setRoutes]);
 
   // TODO - Support swapping out base url in UI,
   //        right now you can only change it by modifying FPX_SERVICE_TARGET in the API
   const addBaseUrl = useCallback(
-    (path: string) => {
+    (
+      path: string,
+      { requestType }: { requestType: RequestType } = { requestType: "http" },
+    ) => {
       const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
-      if (path?.startsWith(baseUrl)) {
+      const parsedBaseUrl = new URL(baseUrl);
+      if (isWsRequest(requestType)) {
+        parsedBaseUrl.protocol = "ws";
+      }
+      let updatedBaseUrl = parsedBaseUrl.toString();
+      if (updatedBaseUrl.endsWith("/")) {
+        updatedBaseUrl = updatedBaseUrl.slice(0, -1);
+      }
+      if (path?.startsWith(updatedBaseUrl)) {
         return path;
       }
-      return `${baseUrl}${path}`;
+      return `${updatedBaseUrl}${path}`;
     },
     [routesAndMiddleware],
   );
-
-  // Select the home route if it exists, otherwise fall back to the first route in the list
-  const { selectedRoute, setSelectedRoute } = useAutoselectInitialRoute({
-    isLoading,
-    routes,
-    preferRoute: browserHistoryState?.route ?? undefined,
-  });
 
   return {
     isError,
     isLoading,
     routes,
     addBaseUrl,
-    selectedRoute,
-    setSelectedRoute,
-    setDraftRoute,
   };
-}
-
-function useAutoselectInitialRoute({
-  isLoading,
-  routes,
-  preferRoute,
-}: {
-  isLoading: boolean;
-  routes: ProbedRoute[];
-  preferRoute?: { path: string; method: string };
-}) {
-  const preferredAutoselected = findMatchedRoute(
-    routes,
-    preferRoute?.path,
-    preferRoute?.method,
-  );
-
-  const [selectedRoute, setSelectedRoute] = useState<ProbedRoute | null>(
-    preferredAutoselected ?? null,
-  );
-
-  const [hasAlreadyAutoSelected, setHasAlreadyAutoSelected] = useState(false);
-
-  useEffect(() => {
-    // NOTE - We do not do autoselection if there was a selected route previously, and we just transitioned to having a selected route...
-    const shouldAutoselectInitialRoute =
-      !isLoading &&
-      routes?.length &&
-      selectedRoute === null &&
-      !hasAlreadyAutoSelected;
-
-    if (shouldAutoselectInitialRoute) {
-      const autoselectedRoute = routes.find((r) => r.path === "/") ?? routes[0];
-      setSelectedRoute(autoselectedRoute);
-      // HACK - Only autoselect with this logic once for initializaiton. There's a better way to do this, just need to refactor things a bit
-      setHasAlreadyAutoSelected(true);
-    }
-  }, [routes, isLoading, selectedRoute, hasAlreadyAutoSelected]);
-
-  return { selectedRoute, setSelectedRoute };
-}
-
-/**
- * Hacky workaround to re-select a route from the routes list when:
- * - The `selectedRoute` is currently empty (null)
- * - There is an exact match in the routes list for the current path and method from the form
- */
-export function useReselectRouteHack({
-  routes,
-  selectedRoute,
-  setSelectedRoute,
-  setPathParams,
-  path,
-  method,
-}: {
-  routes: ProbedRoute[];
-  selectedRoute: ProbedRoute | null;
-  setSelectedRoute: (route: ProbedRoute | null) => void;
-  setPathParams: (pathParams: KeyValueParameter[]) => void;
-  path: string;
-  method: string;
-}) {
-  useEffect(() => {
-    // Short circuit if there's already a selected route
-    if (selectedRoute) {
-      return;
-    }
-
-    const newSelectedRoute = routes.find(
-      (r) => r.path === path && r.method === method,
-    );
-
-    if (newSelectedRoute) {
-      setSelectedRoute(newSelectedRoute);
-      setPathParams(extractPathParams(path).map(mapPathKey));
-    }
-  }, [routes, selectedRoute, setSelectedRoute, path, method, setPathParams]);
 }

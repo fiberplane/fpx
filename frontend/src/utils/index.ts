@@ -77,7 +77,9 @@ export function objectHasName(error: unknown): error is { name: string } {
   return objectWithKey(error, "name") && typeof error.name === "string";
 }
 
-export const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+export const isMac =
+  typeof navigator !== "undefined" &&
+  navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 
 export function isModifierKeyPressed(
   event: KeyboardEvent | MouseEvent | React.MouseEvent | React.KeyboardEvent,

@@ -1,5 +1,8 @@
+import { useToast } from "@/components/ui/use-toast";
+import { useWebsocketQueryInvalidation } from "@/hooks";
 import { cn, isJson, parsePathFromRequestUrl } from "@/utils";
 import { useCallback, useMemo, useRef } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -8,74 +11,82 @@ import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { useAi } from "./ai";
-import { useRequestorFormData } from "./data";
-import { usePersistedUiState, useSaveUiState } from "./persistUiState";
 import {
   type ProbedRoute,
   Requestornator,
   useFetchRequestorRequests,
   useMakeRequest,
 } from "./queries";
-import { findMatchedRoute, useReselectRouteHack, useRoutes } from "./routes";
-// We need some special CSS for grid layout that tailwind cannot handle
-import "./RequestorPage.css";
-import { useToast } from "@/components/ui/use-toast";
-import { useWebsocketQueryInvalidation } from "@/hooks";
-import { useHotkeys } from "react-hotkeys-hook";
+import { useRequestor } from "./reducer";
+import { findMatchedRoute, useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
+import { RequestMethodInputValue, isRequestMethod, isWsRequest } from "./types";
+import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
+// We need some special CSS for grid layout that tailwind cannot handle
+import "./styles.css";
 
 export const RequestorPage = () => {
+  const { toast } = useToast();
+
   // Refresh routes in response to filesystem updates
   useWebsocketQueryInvalidation();
 
-  const { toast } = useToast();
-  const browserHistoryState = usePersistedUiState();
+  // TODO - Bring back persisted state once reducer is fully integrated
+  // const browserHistoryState = usePersistedUiState();
 
-  const { routes, addBaseUrl, selectedRoute, setSelectedRoute } =
-    useRoutes(browserHistoryState);
-
+  // ========================//
+  // === Refactored state ===//
+  // ========================//
+  const refactoredState = useRequestor();
+  // @ts-expect-error - testing
+  globalThis.refactoredState = refactoredState;
   const {
-    path,
-    setPath,
-    handlePathInputChange,
-    method,
-    handleMethodChange,
-    body,
-    setBody,
-    pathParams,
+    // Routes panel
+    state: { routes },
+    setRoutes,
+    selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+    getActiveRoute,
+
+    // Requestor input
+    state: { path, method },
+    updatePath: handlePathInputChange,
+    updateMethod: handleMethodChange,
+    getIsInDraftMode,
+
+    // Request panel
+    state: { pathParams, queryParams, requestHeaders, body },
     setPathParams,
-    requestHeaders,
-    setRequestHeaders,
-    queryParams,
+    updatePathParamValues,
+    clearPathParams,
     setQueryParams,
-    handleSelectRoute,
-  } = useRequestorFormData(
-    routes,
-    selectedRoute,
-    setSelectedRoute,
-    browserHistoryState,
-  );
+    setRequestHeaders,
+    setBody,
 
-  useReselectRouteHack({
-    selectedRoute,
-    setSelectedRoute,
-    routes,
-    path,
-    method,
-    setPathParams,
+    // Requests Panel tabs
+    state: { activeRequestsPanelTab },
+    setActiveRequestsPanelTab,
+    shouldShowRequestTab,
+
+    // Response Panel tabs
+    state: { activeResponsePanelTab },
+    setActiveResponsePanelTab,
+    shouldShowResponseTab,
+  } = refactoredState;
+
+  const selectedRoute = getActiveRoute();
+
+  const { addBaseUrl } = useRoutes({
+    setRoutes,
   });
 
-  // When we unmount, save the current state of UI to the browser history
-  // This allows us to reload the page when you press "Back" in the browser
-  useSaveUiState({
-    route: selectedRoute,
-    path,
-    method,
-    body,
-    pathParams,
-    queryParams,
-    requestHeaders,
-  });
+  // NOTE - Use this to test overflow
+  // useEffect(() => {
+  //   setQueryParams(
+  //     createKeyValueParameters(
+  //       Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
+  //     ),
+  //   );
+  // }, []);
 
   const {
     history,
@@ -85,7 +96,8 @@ export const RequestorPage = () => {
   } = useRequestorHistory({
     routes,
     handleSelectRoute,
-    setPath,
+    setPath: handlePathInputChange,
+    setMethod: handleMethodChange,
     setPathParams,
     setBody,
     setQueryParams,
@@ -100,9 +112,18 @@ export const RequestorPage = () => {
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeRequest();
 
+  // WIP - Allows us to connect to a websocket and send messages through it
+  const {
+    connect: connectWebsocket,
+    disconnect: disconnectWebsocket,
+    sendMessage: sendWebsocketMessage,
+    state: websocketState,
+  } = useMakeWebsocketRequest();
+
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
-    body,
+    // HACK - Need to modify this when we support form-data
+    body: body.type !== "form-data" ? body.value : undefined,
     addBaseUrl,
     path,
     method,
@@ -110,6 +131,7 @@ export const RequestorPage = () => {
     queryParams,
     requestHeaders,
     makeRequest,
+    connectWebsocket,
     recordRequestInSessionHistory,
     selectedRoute,
   });
@@ -140,9 +162,9 @@ export const RequestorPage = () => {
   } = useAi(selectedRoute, history, {
     setBody,
     setQueryParams,
-    setPath,
-    setPathParams,
+    setPath: handlePathInputChange,
     setRequestHeaders,
+    updatePathParamValues,
   });
 
   useHotkeys(
@@ -220,13 +242,17 @@ export const RequestorPage = () => {
       >
         <RequestorInput
           addBaseUrl={addBaseUrl}
+          requestType={selectedRoute?.requestType}
           method={method}
           handleMethodChange={handleMethodChange}
           path={path}
           handlePathInputChange={handlePathInputChange}
           onSubmit={onSubmit}
+          disconnectWebsocket={disconnectWebsocket}
           isRequestorRequesting={isRequestorRequesting}
           formRef={formRef}
+          websocketState={websocketState}
+          getIsInDraftMode={getIsInDraftMode}
         />
 
         <div
@@ -243,15 +269,17 @@ export const RequestorPage = () => {
           )}
         >
           <RequestPanel
-            method={method}
-            body={body}
+            activeRequestsPanelTab={activeRequestsPanelTab}
+            setActiveRequestsPanelTab={setActiveRequestsPanelTab}
+            shouldShowRequestTab={shouldShowRequestTab}
+            // HACK - Need to modify this when we support form-data
+            body={body.type !== "form-data" ? body.value : undefined}
             setBody={setBody}
             pathParams={pathParams}
             queryParams={queryParams}
             requestHeaders={requestHeaders}
-            setPath={setPath}
-            currentRoute={selectedRoute?.path}
             setPathParams={setPathParams}
+            clearPathParams={clearPathParams}
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
             aiEnabled={aiEnabled}
@@ -262,13 +290,20 @@ export const RequestorPage = () => {
             showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
             setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
             setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
+            websocketState={websocketState}
+            sendWebsocketMessage={sendWebsocketMessage}
           />
 
           <ResponsePanel
+            activeResponsePanelTab={activeResponsePanelTab}
+            setActiveResponsePanelTab={setActiveResponsePanelTab}
+            shouldShowResponseTab={shouldShowResponseTab}
             response={mostRecentRequestornatorForRoute}
             isLoading={isRequestorRequesting}
             history={history}
             loadHistoricalRequest={loadHistoricalRequest}
+            websocketState={websocketState}
+            requestType={selectedRoute?.requestType}
           />
         </div>
       </div>
@@ -282,7 +317,8 @@ type RequestorHistoryHookArgs = {
   routes: ProbedRoute[];
   handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
   setPath: (path: string) => void;
-  setBody: (body?: string) => void;
+  setMethod: (method: RequestMethodInputValue) => void;
+  setBody: (body: string | undefined) => void;
   setPathParams: (headers: KeyValueParameter[]) => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
@@ -292,6 +328,7 @@ function useRequestorHistory({
   routes,
   handleSelectRoute,
   setPath,
+  setMethod,
   setRequestHeaders,
   setBody,
   setQueryParams,
@@ -318,8 +355,20 @@ function useRequestorHistory({
     const match = history.find((r) => r.app_responses?.traceId === traceId);
     if (match) {
       const method = match.app_requests.requestMethod;
-      const routePattern = match.app_requests.requestRoute;
-      const matchedRoute = findMatchedRoute(routes, routePattern, method);
+      let routePattern = match.app_requests.requestRoute;
+      // HACK - In case it's an unqualified route
+      if (routePattern === "") {
+        routePattern = "/";
+      }
+      const requestType = match.app_requests.requestUrl.startsWith("ws")
+        ? "websocket"
+        : "http";
+      const matchedRoute = findMatchedRoute(
+        routes,
+        routePattern,
+        method,
+        requestType,
+      );
 
       if (matchedRoute) {
         const pathParamsObject = match.app_requests.requestPathParams ?? {};
@@ -331,7 +380,7 @@ function useRequestorHistory({
         );
 
         // NOTE - Helps us set path parameters correctly
-        handleSelectRoute(matchedRoute, pathParams);
+        handleSelectRoute(matchedRoute.route, pathParams);
 
         // Reset the path to the *exact* path of the request, instead of the route pattern
         const path =
@@ -365,6 +414,41 @@ function useRequestorHistory({
             typeof body !== "string" ? JSON.stringify(body) : body;
           setBody(safeBody);
         }
+      } else {
+        // HACK - move this logic into the reducer
+        // Reset the path to the *exact* path of the request, instead of the route pattern
+        const path =
+          parsePathFromRequestUrl(match.app_requests.requestUrl) ?? "";
+        setPath(path);
+
+        const requestType = match.app_requests.requestUrl.startsWith("ws")
+          ? "websocket"
+          : "http";
+
+        setMethod(
+          isWsRequest(requestType)
+            ? "WS"
+            : isRequestMethod(method)
+              ? method
+              : "GET",
+        );
+
+        const headers = match.app_requests.requestHeaders ?? {};
+        setRequestHeaders(
+          createKeyValueParameters(
+            Object.entries(headers).map(([key, value]) => ({ key, value })),
+          ),
+        );
+
+        const queryParams = match.app_requests.requestQueryParams ?? {};
+        setQueryParams(
+          createKeyValueParameters(
+            Object.entries(queryParams).map(([key, value]) => ({
+              key,
+              value,
+            })),
+          ),
+        );
       }
     }
   };
@@ -403,9 +487,10 @@ function useRequestorSubmitHandler({
   queryParams,
   requestHeaders,
   makeRequest,
+  connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addBaseUrl: (path: string) => string;
+  addBaseUrl: ReturnType<typeof useRoutes>["addBaseUrl"];
   selectedRoute: ProbedRoute | null;
   body: string | undefined;
   path: string;
@@ -414,14 +499,27 @@ function useRequestorSubmitHandler({
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
   makeRequest: ReturnType<typeof useMakeRequest>["mutate"];
+  connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
 }) {
+  const { toast } = useToast();
   return useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       // FIXME - This blocks user from making requests when no routes have been detected
       if (!selectedRoute) {
+        return;
+      }
+
+      if (isWsRequest(selectedRoute.requestType)) {
+        const url = addBaseUrl(selectedRoute.path, {
+          requestType: selectedRoute.requestType,
+        });
+        connectWebsocket(url);
+        toast({
+          description: "Connecting to websocket",
+        });
         return;
       }
 
@@ -473,6 +571,8 @@ function useRequestorSubmitHandler({
       requestHeaders,
       selectedRoute,
       addBaseUrl,
+      connectWebsocket,
+      toast,
     ],
   );
 }
