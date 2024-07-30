@@ -1,4 +1,3 @@
-use crate::api::models::Request;
 use anyhow::{Context, Result};
 use libsql::{params, Builder, Connection};
 use std::collections::BTreeMap;
@@ -228,22 +227,35 @@ impl Store {
         tx: &Transaction<'_, T>,
         method: &str,
         url: &str,
-        body: &str,
+        body: Option<&str>,
         headers: BTreeMap<String, String>,
-    ) -> Result<u32> {
+    ) -> Result<models::Request> {
         let headers = serde_json::to_string(&headers)?;
 
         let request: models::Request = tx
             .query(
                 "INSERT INTO requests (method, url, body, headers) VALUES (?, ?, ?, ?) RETURNING *",
-                (method, url, body, headers),
+                params!(method, url, body, headers),
             )
             .await
             .context("Unable to create request")?
             .fetch_one()
             .await?;
 
-        Ok(request.id)
+        Ok(request)
+    }
+
+    pub async fn request_list<T: ReadTransaction>(
+        &self,
+        tx: &Transaction<'_, T>,
+    ) -> Result<Vec<models::Request>> {
+        let requests: Vec<models::Request> = tx
+            .query("SELECT * FROM requests", params!())
+            .await?
+            .fetch_all()
+            .await?;
+
+        Ok(requests)
     }
 
     #[tracing::instrument(skip_all)]
@@ -251,14 +263,54 @@ impl Store {
         &self,
         tx: &Transaction<'_, T>,
         id: i64,
-    ) -> Result<Request, DbError> {
+    ) -> Result<models::Request, DbError> {
         let request: models::Request = tx
             .query("SELECT * FROM requests WHERE id = ?", params!(id))
             .await?
             .fetch_one()
             .await?;
 
-        Ok(request.into())
+        Ok(request)
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub async fn response_create<T: WriteTransaction>(
+        tx: &Transaction<'_, T>,
+        request_id: u32,
+        status: u16,
+        headers: BTreeMap<String, String>,
+        body: Option<String>,
+    ) -> Result<models::Response> {
+        let headers_json = serde_json::to_string(&headers).unwrap_or_default();
+
+        let response: models::Response = tx
+            .query(
+                "INSERT INTO responses (request_id, status, headers, body) VALUES (?, ?, ?, ?) RETURNING *",
+                params!(request_id, status, headers_json, body),
+            )
+            .await?
+            .fetch_one()
+            .await?;
+
+        Ok(response)
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub async fn response_get_by_request_id<T: ReadTransaction>(
+        &self,
+        tx: &Transaction<'_, T>,
+        request_id: u32,
+    ) -> Result<Option<models::Response>> {
+        let response: Option<models::Response> = tx
+            .query(
+                "SELECT * FROM responses WHERE request_id = ?",
+                params!(request_id),
+            )
+            .await?
+            .fetch_optional()
+            .await?;
+
+        Ok(response)
     }
 
     /// Create a new span in the database. This will return a new span with any

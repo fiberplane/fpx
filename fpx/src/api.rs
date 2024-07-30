@@ -96,10 +96,13 @@ pub fn create_api(
 fn api_router() -> axum::Router<ApiState> {
     axum::Router::new()
         .route(
-            "/requests/:id",
-            get(handlers::request_get_handler).delete(handlers::request_delete_handler),
+            "/requests",
+            get(handlers::requests_list_handler).post(handlers::requests_post_handler),
         )
-        .route("/requestor", post(handlers::execute_requestor))
+        .route(
+            "/requests/:id",
+            get(handlers::requests_get_handler).delete(handlers::request_delete_handler),
+        )
         .route(
             "/inspectors",
             get(handlers::inspector_list_handler).post(handlers::inspector_create_handler),

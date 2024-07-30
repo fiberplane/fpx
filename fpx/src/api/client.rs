@@ -6,7 +6,7 @@
 
 use super::errors::ApiClientError;
 use super::handlers::spans::SpanGetError;
-use super::handlers::RequestGetError;
+use super::handlers::{RequestGetError, RequestListError};
 use crate::api::models;
 use crate::otel_util::HeaderMapInjector;
 use anyhow::Result;
@@ -48,18 +48,26 @@ impl ApiClient {
     /// fails it will consider the call as failed and will try to parse the body
     /// as [`E`]. Any other error will use the relevant variant in
     /// [`ApiClientError`].
-    async fn do_req<T, E>(
+    async fn do_req<T, E, B>(
         &self,
         method: Method,
         path: impl AsRef<str>,
+        body: Option<B>,
     ) -> Result<T, ApiClientError<E>>
     where
         T: serde::de::DeserializeOwned,
         E: serde::de::DeserializeOwned,
+        B: serde::ser::Serialize,
     {
         let u = self.base_url.join(path.as_ref())?;
 
-        let req = self.client.request(method, u);
+        let mut req = self.client.request(method, u);
+
+        if let Some(body) = body {
+            let json = serde_json::to_string(&body).unwrap();
+
+            req = req.header("Content-Type", "application/json").body(json);
+        }
 
         // Take the current otel context, and inject those details into the
         // Request using the TraceContext format.
@@ -111,7 +119,26 @@ impl ApiClient {
     ) -> Result<models::Request, ApiClientError<RequestGetError>> {
         let path = format!("api/requests/{}", request_id);
 
-        self.do_req(Method::GET, path).await
+        self.do_req(Method::GET, path, None::<()>).await
+    }
+
+    /// Retrieve a list of requests
+    pub async fn request_list(
+        &self,
+    ) -> Result<Vec<models::RequestSummary>, ApiClientError<RequestListError>> {
+        let path = "api/requests";
+
+        self.do_req(Method::GET, path, None::<()>).await
+    }
+
+    /// Create and execute a new request
+    pub async fn request_create(
+        &self,
+        new_request: models::NewRequest,
+    ) -> Result<models::Response, ApiClientError<models::NewRequestError>> {
+        let path = "/api/requests";
+
+        self.do_req(Method::POST, path, Some(&new_request)).await
     }
 
     /// Retrieve the details of a single span.
@@ -126,7 +153,7 @@ impl ApiClient {
             span_id.as_ref()
         );
 
-        self.do_req(Method::GET, path).await
+        self.do_req(Method::GET, path, None::<()>).await
     }
 
     /// Retrieve all the spans associated with a single trace.
@@ -136,6 +163,6 @@ impl ApiClient {
     ) -> Result<Vec<models::Span>, ApiClientError<SpanGetError>> {
         let path = format!("api/traces/{}/spans", trace_id.as_ref());
 
-        self.do_req(Method::GET, path).await
+        self.do_req(Method::GET, path, None::<()>).await
     }
 }
