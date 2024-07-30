@@ -30,6 +30,7 @@ import {
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
+import { FormDataForm } from "./FormDataForm/FormDataForm";
 import { PathParamForm } from "./PathParamForm/PathParamForm";
 import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
@@ -298,7 +299,7 @@ function RequestMeta(props: RequestPanelProps) {
             />
           )}
           {body.type === "form-data" && (
-            <KeyValueForm
+            <FormDataForm
               // FIXME - Use type guard
               keyValueParameters={(body.value ?? []) as KeyValueParameter[]}
               onChange={(params) => {
