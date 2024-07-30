@@ -228,8 +228,11 @@ async function handlePromise<T>(
         error instanceof Error ? error : "Unknown error occured";
       span.recordException(sendError);
 
-      const message = typeof sendError === "string" ? sendError : (sendError.message || "Unknown error occured");
-      span.setStatus({ 
+      const message =
+        typeof sendError === "string"
+          ? sendError
+          : sendError.message || "Unknown error occured";
+      span.setStatus({
         code: SpanStatusCode.ERROR,
         message,
       });
