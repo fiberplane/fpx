@@ -62,8 +62,8 @@ impl ApiClient {
 
         let req = self.client.request(method, u);
 
-        // Take the current OTEL context, and inject those details into the
-        // Request using the W3C TraceContext format.
+        // Take the current otel context, and inject those details into the
+        // Request using the TraceContext format.
         let req = {
             let mut headers = HeaderMap::new();
             let propagator = TraceContextPropagator::new();
@@ -75,7 +75,7 @@ impl ApiClient {
             req.headers(headers)
         };
 
-        // TODO: Create new OTEL span (SpanKind::Client) and add relevant client
+        // TODO: Create new otel span (SpanKind::Client) and add relevant client
         // attributes to it.
 
         // Make request
@@ -87,6 +87,9 @@ impl ApiClient {
 
         // Read the entire response into a local buffer.
         let body = response.bytes().await?;
+
+        // TODO: Mark the span status as Err if we are unable to parse the
+        // response.
 
         // Try to parse the result as T.
         match serde_json::from_slice::<T>(&body) {
