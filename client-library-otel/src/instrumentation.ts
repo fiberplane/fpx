@@ -69,7 +69,6 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
               : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
-          console.log("isEnabled", isEnabled);
           if (!isEnabled) {
             return await originalFetch(request, env, executionContext);
           }
@@ -125,19 +124,17 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           try {
             return await measuredFetch(request, env, proxyExecutionCtx);
           } finally {
-            console.log("finally sending data to the server");
             // Make sure all promises are resolved before sending data to the server
             if (proxyExecutionCtx) {
               proxyExecutionCtx.waitUntil(
                 Promise.allSettled(promises).finally(() => {
-                  return provider.forceFlush().then(() => console.log("done"));
+                  return provider.forceFlush();
                 }),
               );
             } else {
               // Otherwise just await flushing the provider
               await provider.forceFlush();
             }
-            console.log("maybe done?");
           }
         };
       }

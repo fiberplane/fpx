@@ -235,8 +235,8 @@ async function handlePromise<T>(
           // swallow error
         }
       }
-    } catch (otherError) {
-      console.log("got me another error", otherError);
+    } catch {
+      // swallow error
     }
 
     // Rethrow the error
