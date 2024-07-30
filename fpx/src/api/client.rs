@@ -48,7 +48,6 @@ impl ApiClient {
     /// fails it will consider the call as failed and will try to parse the body
     /// as [`E`]. Any other error will use the relevant variant in
     /// [`ApiClientError`].
-    #[instrument(skip_all)]
     async fn do_req<T, E>(
         &self,
         method: Method,

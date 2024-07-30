@@ -8,6 +8,7 @@ use opentelemetry_sdk::trace::Config;
 use opentelemetry_sdk::Resource;
 use std::env;
 use std::path::Path;
+use tracing::trace;
 use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -33,7 +34,7 @@ async fn main() -> Result<()> {
     let result = commands::handle_command(args).await;
 
     if should_shutdown_tracing {
-        eprintln!("shutting down?");
+        trace!("Shutting down tracers");
         shutdown_tracing();
     }
 
