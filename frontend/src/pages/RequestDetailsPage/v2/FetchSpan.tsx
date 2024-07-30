@@ -1,9 +1,9 @@
 import { Status } from "@/components/ui/status";
 import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import {  MizuSpan } from "@/queries/traces-v2";
-import { cn, noop } from "@/utils";
 import { OtelSpan } from "@/queries";
+import { MizuSpan } from "@/queries/traces-v2";
+import { cn, noop } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { format } from "sql-formatter";

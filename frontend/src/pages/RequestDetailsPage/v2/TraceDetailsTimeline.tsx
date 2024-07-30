@@ -6,17 +6,15 @@ import NeonLogo from "@/assets/NeonLogo.svg";
 import OpenAiLogo from "@/assets/OpenAILogo.svg";
 
 import { Badge } from "@/components/ui/badge";
-import { MizuTraceV2, 
-  OtelSpan,
-  isMizuOrphanLog } from "@/queries";
-import { isMizuFetchSpan, isMizuRootRequestSpan } from "@/queries/traces-v2";
+import { MizuTraceV2, OtelSpan, isMizuOrphanLog } from "@/queries";
+import { isMizuFetchSpan, isMizuRootRequestSpan, MizuOrphanLog } from "@/queries/traces-v2";
 // import {
-  // MizuOrphanLog,
-  // MizuOrphanLog,
-  // MizuSpan,
-  // MizuTraceV2,
-  // isMizuOrphanLog,
-  // isMizuOrphanLog,
+// MizuOrphanLog,
+// MizuOrphanLog,
+// MizuSpan,
+// MizuTraceV2,
+// isMizuOrphanLog,
+// isMizuOrphanLog,
 // } from "@/queries";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
@@ -459,7 +457,6 @@ const formatDuration = (start: string, end: string) => {
     .replace(" minute", "m");
 };
 
-
 const WaterfallRowSpan: React.FC<{
   span: OtelSpan;
   duration: number;
@@ -495,41 +492,41 @@ const WaterfallRowSpan: React.FC<{
           <div>
             <Badge
               variant="outline"
-             className={cn(
-               "lowercase",
-               "font-normal",
-               "font-mono",
-               "rounded",
-               "px-1.5",
-               "text-xs",
-               "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
-             )}
-           >
-             {span.name}
-           </Badge>
-         </div>
-       ) : isRootRequest ? (
-         <div className="font-mono text-sm truncate">{span.name}</div>
-       ) : (
-         <div className="font-mono font-normal text-xs truncate text-gray-200">
-           {/* TODO! */}
-           {/* log */}
-           {span.name}
-           {/* {spanOrLog.name} */}
-         </div>
-       )}
-     </div>
-     <div className="text-gray-400 flex flex-grow items-center mx-4">
-       <div
-         className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
-         style={{ width: lineWidth, marginLeft: lineOffset }}
-       >
-         <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
-       </div>
-     </div>
-     <div className="ml-auto text-gray-400 text-xs w-12 px-2">
-       {
-         // isMizuOrphanLog(spanOrLog)              
+              className={cn(
+                "lowercase",
+                "font-normal",
+                "font-mono",
+                "rounded",
+                "px-1.5",
+                "text-xs",
+                "bg-orange-950/60 hover:bg-orange-950/60 text-orange-400",
+              )}
+            >
+              {span.name}
+            </Badge>
+          </div>
+        ) : isRootRequest ? (
+          <div className="font-mono text-sm truncate">{span.name}</div>
+        ) : (
+          <div className="font-mono font-normal text-xs truncate text-gray-200">
+            {/* TODO! */}
+            {/* log */}
+            {span.name}
+            {/* {spanOrLog.name} */}
+          </div>
+        )}
+      </div>
+      <div className="text-gray-400 flex flex-grow items-center mx-4">
+        <div
+          className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
+          style={{ width: lineWidth, marginLeft: lineOffset }}
+        >
+          <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
+        </div>
+      </div>
+      <div className="ml-auto text-gray-400 text-xs w-12 px-2">
+        {
+          // isMizuOrphanLog(spanOrLog)
           // ? ""
           // :
           formatDuration(span.start_time, span.end_time)
@@ -565,22 +562,21 @@ const WaterfallRowLog: React.FC<{
       )}
       href={`#${log.id}`}
     >
-            <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
-          <div className="flex flex-col w-20">
-              <div className="font-mono font-normal text-xs truncate text-gray-200">
-                log
-            </div>
-          </div>
-          <div className="text-gray-400 flex flex-grow items-center mx-4">
-              <div
-              className="h-2.5 border-l-2flex items-center min-w-1"
-              style={{ marginLeft: lineOffset }}
-            >
-                <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
-            </div>
-          </div>
-          <div className="ml-auto text-gray-400 text-xs w-12 px-2" />
-        </a>
-    );
-  };
-    
+      <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
+      <div className="flex flex-col w-20">
+        <div className="font-mono font-normal text-xs truncate text-gray-200">
+          log
+        </div>
+      </div>
+      <div className="text-gray-400 flex flex-grow items-center mx-4">
+        <div
+          className="h-2.5 border-l-2flex items-center min-w-1"
+          style={{ marginLeft: lineOffset }}
+        >
+          <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
+        </div>
+      </div>
+      <div className="ml-auto text-gray-400 text-xs w-12 px-2" />
+    </a>
+  );
+};

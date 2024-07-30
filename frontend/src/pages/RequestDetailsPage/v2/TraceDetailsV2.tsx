@@ -115,45 +115,47 @@ function GenericSpan({ span }: { span: OtelSpan }) {
         <SubSectionHeading>Attributes</SubSectionHeading>
         <KeyValueTableV2 keyValue={attributes} />
       </SubSection>
-      {span.events.length>0 && <SubSection>
-        <SubSectionHeading>Events</SubSectionHeading>
-        <div className="px-4">
-          {span.events.map((event, index) => {
-            if (event.name === "log") {
-              let args: Array<unknown> = [];
-              try {
-                args = JSON.parse(getString(event.attributes["args"]));
-              } catch {
-                // swallow error
+      {span.events.length > 0 && (
+        <SubSection>
+          <SubSectionHeading>Events</SubSectionHeading>
+          <div className="px-4">
+            {span.events.map((event, index) => {
+              if (event.name === "log") {
+                let args: Array<unknown> = [];
+                try {
+                  args = JSON.parse(getString(event.attributes["args"]));
+                } catch {
+                  // swallow error
+                }
+
+                return (
+                  <OrphanLog
+                    key={index}
+                    log={{
+                      args,
+                      id: new Date(event.timestamp).getTime(),
+                      timestamp: event.timestamp,
+                      message: getString(event.attributes["message"]),
+                      // name: "log",
+                      level: getString(event.attributes["level"]),
+                      traceId: span.trace_id,
+                      createdAt: event.timestamp,
+                      updatedAt: event.timestamp,
+                    }}
+                  />
+                );
               }
 
               return (
-                <OrphanLog
-                  key={index}
-                  log={{
-                    args,
-                    id: new Date(event.timestamp).getTime(),
-                    timestamp: event.timestamp,
-                    message: getString(event.attributes["message"]),
-                    // name: "log",
-                    level: getString(event.attributes["level"]),
-                    traceId: span.trace_id,
-                    createdAt: event.timestamp,
-                    updatedAt: event.timestamp,
-                  }}
-                />
+                <div key={event.timestamp}>
+                  <div>{event.name}</div>
+                  <div>{JSON.stringify(event.attributes)}</div>
+                </div>
               );
-            }
-
-            return (
-              <div key={event.timestamp}>
-                <div>{event.name}</div>
-                <div>{JSON.stringify(event.attributes)}</div>
-              </div>
-            );
-          })}
-        </div>
-      </SubSection>}
+            })}
+          </div>
+        </SubSection>
+      )}
     </div>
   );
 }

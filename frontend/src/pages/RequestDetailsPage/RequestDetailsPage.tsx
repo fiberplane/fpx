@@ -33,9 +33,10 @@
 //   TooltipContent,
 //   TooltipTrigger,
 // } from "@/components/ui/tooltip";
-import { 
-  // useRequestDetails, 
-  useTracingLiteEnabled } from "@/hooks";
+import {
+  // useRequestDetails,
+  useTracingLiteEnabled,
+} from "@/hooks";
 // import {
 //   MizuLog,
 //   MizuRequestEnd,
@@ -56,10 +57,11 @@ import {
 // import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 // import { useEffect, useMemo, useState } from "react";
 // import { useHotkeys } from "react-hotkeys-hook";
-import { 
-  // Link, 
-  // useNavigate, 
-  useParams } from "react-router-dom";
+import {
+  // Link,
+  // useNavigate,
+  useParams,
+} from "react-router-dom";
 // import { z } from "zod";
 // import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 // import { FetchRequestLog } from "./FetchRequestLog";
@@ -259,8 +261,8 @@ import {
 //       </div>
 //     );
 // =======
-  //  useNavigate,
-  // useParams,
+//  useNavigate,
+// useParams,
 // } from "react-router-dom";
 import { z } from "zod";
 import { EmptyState } from "./EmptyState";

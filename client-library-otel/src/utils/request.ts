@@ -6,16 +6,16 @@ import {
   SEMATTRS_HTTP_URL,
 } from "@opentelemetry/semantic-conventions";
 import {
+  // FPX_RESPONSE_HEADERS_FULL,
+  EXTRA_SEMATTRS_HTTP_REQUEST_METHOD,
+  EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
+  EXTRA_SEMATTRS_URL_FULL,
   FPX_REQUEST_BODY,
   // FPX_REQUEST_HEADERS_FULL,
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SCHEME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
-  // FPX_RESPONSE_HEADERS_FULL,
-  EXTRA_SEMATTRS_HTTP_REQUEST_METHOD,
-  EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
-  EXTRA_SEMATTRS_URL_FULL,
 } from "../constants";
 import type {
   GlobalResponse,
@@ -58,7 +58,7 @@ export function getRequestAttributes(input: InputParam, init?: InitParam) {
     // packages from otel already have similar attributes
     [FPX_REQUEST_PATHNAME]: url.pathname,
     [FPX_REQUEST_SEARCH]: url.search,
-    // TODO: Add path 
+    // TODO: Add path
     // [SEMATTRS_]
     [FPX_REQUEST_SCHEME]: urlScheme,
   };

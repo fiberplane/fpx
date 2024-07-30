@@ -117,7 +117,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
                 if (r.status >= 500) {
                   throw new Error(r.statusText);
                 }
-              }
+              },
             },
             originalFetch,
           );

@@ -1,13 +1,13 @@
 import {
+  // FPX_RESPONSE_HEADERS_FULL,
+  EXTRA_SEMATTRS_HTTP_REQUEST_METHOD,
+  EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
+  EXTRA_SEMATTRS_URL_FULL,
   FPX_REQUEST_BODY,
   // FPX_REQUEST_HEADERS_FULL,
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
-  // FPX_RESPONSE_HEADERS_FULL,
-  EXTRA_SEMATTRS_HTTP_REQUEST_METHOD,
-  EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
-  EXTRA_SEMATTRS_URL_FULL,
 } from "@/constants";
 import {
   OtelSpan,
@@ -89,7 +89,9 @@ export function getRequestHeaders(span: OtelSpan) {
 
   for (const key in keys) {
     if (key.startsWith("http.request.header.")) {
-      headers[key.replace("http.request.header.", "")] = getString(span.attributes[key]);
+      headers[key.replace("http.request.header.", "")] = getString(
+        span.attributes[key],
+      );
     }
   }
 
@@ -119,7 +121,9 @@ export function getResponseHeaders(span: OtelSpan) {
   const keys = Object.keys(span.attributes);
   for (const key in keys) {
     if (key.startsWith("http.response.header.")) {
-      headers[key.replace("http.response.header.", "")] = getString(span.attributes[key]);
+      headers[key.replace("http.response.header.", "")] = getString(
+        span.attributes[key],
+      );
     }
   }
 

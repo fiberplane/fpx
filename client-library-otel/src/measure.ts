@@ -58,7 +58,9 @@ export type MeasureOptions<
    * result (returned by the measured function). This error will only be used for recording the error
    * in the span and will not be thrown.
    */
-  checkResult?: (result: RESULT) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
+  checkResult?: (
+    result: RESULT,
+  ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
 };
 
 /**
@@ -120,7 +122,7 @@ export function measure<R, A extends unknown[]>(
           return handlePromise<R>(span, returnValue, {
             onSuccess,
             onError,
-            checkResult
+            checkResult,
           }) as R;
         }
 
@@ -172,7 +174,7 @@ async function handlePromise<T>(
   span: Span,
   promise: Promise<T>,
   options: Pick<
-    MeasureOptions<unknown[], T, Promise<T>>, 
+    MeasureOptions<unknown[], T, Promise<T>>,
     "onSuccess" | "onError" | "checkResult"
   >,
 ): Promise<T> {
@@ -183,12 +185,12 @@ async function handlePromise<T>(
     if (checkResult) {
       try {
         await checkResult(result);
-      } catch(error) {
+      } catch (error) {
         // recordException only accepts Error objects or strings
         const sendError: Exception =
-        error instanceof Error ? error : "Unknown error occured";
-          span.recordException(sendError);
-  
+          error instanceof Error ? error : "Unknown error occured";
+        span.recordException(sendError);
+
         if (onError) {
           try {
             await onError(span, sendError);
@@ -204,11 +206,11 @@ async function handlePromise<T>(
             // swallow error
           }
         }
-  
+
         return result;
       }
     }
-  
+
     span.setStatus({ code: SpanStatusCode.OK });
     if (onSuccess) {
       try {
@@ -256,7 +258,6 @@ function errorToEventAttributes(error: unknown) {
   return {
     "exception.message": message,
   };
-
 }
 
 function isPromise<T>(value: unknown): value is Promise<T> {

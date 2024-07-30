@@ -32,7 +32,7 @@ function patchMethod(methodName: LEVELS, level: string) {
           arguments: JSON.stringify(args),
         });
       }
-      
+
       return original(message, ...args);
     };
   });

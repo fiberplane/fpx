@@ -3,7 +3,8 @@
  * but are not. These are the ones that are used in the frontend and the client library.
  */
 export const EXTRA_SEMATTRS_HTTP_REQUEST_METHOD = "http.request.method";
-export const EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE = "http.response.status_code";
+export const EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE =
+  "http.response.status_code";
 export const EXTRA_SEMATTRS_URL_FULL = "url.full";
 
 // export const FPX_REQUEST_HEADERS_FULL = "fpx.http.request.headers_full";
