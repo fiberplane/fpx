@@ -2,7 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import type { Bindings } from "./types";
 
 export class WebHonc extends DurableObject<Bindings> {
-  sessions: Map<string, WebSocket> = new Map();
+  sessions: Map<string, WebSocket>;
 
   constructor(ctx: DurableObjectState, env: Bindings) {
     super(ctx, env);
@@ -38,7 +38,7 @@ export class WebHonc extends DurableObject<Bindings> {
   }
 
   webSocketMessage(_ws: WebSocket, message: string | ArrayBuffer) {
-    console.log("message", message);
+    console.log("Received message from WS connection:", message);
   }
 
   async webSocketClose(
@@ -52,9 +52,7 @@ export class WebHonc extends DurableObject<Bindings> {
 
   public async pushWebhookData(connectionId: string, data: string) {
     const ws = this.sessions.get(connectionId);
-    console.log(this.sessions.keys());
     if (ws) {
-      console.log("pushing data to ws", connectionId, ws);
       ws.send(data);
     }
   }

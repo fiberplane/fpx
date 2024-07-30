@@ -49,8 +49,6 @@ app.all(
     const headers = c.req.raw.headers;
     const headersJson: { [key: string]: string } = {};
     for (const [key, value] of headers.entries()) {
-      console.log("key", key);
-      console.log("value", value);
       headersJson[key] = value;
     }
 
