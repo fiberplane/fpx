@@ -2,11 +2,9 @@ import { useMemo } from "react";
 import { z } from "zod";
 
 import {
-  // FPX_RESPONSE_HEADERS_FULL,
   EXTRA_SEMATTRS_HTTP_REQUEST_METHOD,
   EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
   FPX_REQUEST_BODY,
-  // FPX_REQUEST_HEADERS_FULL,
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SCHEME,
   FPX_REQUEST_SEARCH,
@@ -16,7 +14,6 @@ import {
 } from "@/constants";
 import {
   SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH,
-  // SEMATTRS_HTTP_STATUS_CODE,
   SEMATTRS_HTTP_URL,
   SEMATTRS_NET_HOST_NAME,
   SEMATTRS_NET_HOST_PORT,
@@ -224,20 +221,11 @@ export function useMizuTracesV2() {
         }
       }
 
-      // const waterfall: MizuWaterfall = [...spans, ...orphanLogs];
-
-      // waterfall.sort((a, b) => {
-      //   const aStart = isMizuSpan(a) ? a.start : a.timestamp;
-      //   const bStart = isMizuSpan(b) ? b.start : b.timestamp;
-      //   return new Date(aStart).getTime() - new Date(bStart).getTime();
-      // });
 
       return {
-        // ...trace,
         id: trace.id,
         spans,
         orphanLogs,
-        // waterfall,
       };
     }) as MizuTraceV2[];
   }, [mizuTracesQuery.data]);
@@ -440,10 +428,6 @@ function fpxRootResponseToHttpAttributes(
   const queryParams = request.message.query;
   const searchParams = safeToQueryComponent(queryParams);
   const url = constructHttpUrlForRootRequest(host, scheme, path, queryParams);
-  // let pathWithQueryParams = path;
-  // if (searchParams) {
-  //   pathWithQueryParams += `?${searchParams}`;
-  // }
 
   const attributes: OtelAttributes = {
     [EXTRA_SEMATTRS_HTTP_REQUEST_METHOD]: {
@@ -463,10 +447,7 @@ function fpxRootResponseToHttpAttributes(
     [FPX_REQUEST_SCHEME]: {
       String: scheme,
     },
-    // "url.scheme": scheme,
 
-    // "url.query": searchParams,
-    // []
     // "server.address": host,
     [SEMATTRS_NET_HOST_NAME]: {
       String: host,
@@ -532,9 +513,6 @@ function fpxRootResponseToHttpAttributes(
       String: value,
     };
   }
-  // attributes[FPX_REQUEST_HEADERS_FULL] = {
-  //   String: JSON.stringify(headerObject),
-  // };
 
   headerObject = {};
   for (const [responseHeader, value] of Object.entries(
@@ -545,9 +523,6 @@ function fpxRootResponseToHttpAttributes(
       String: value,
     };
   }
-  // attributes[FPX_REQUEST_HEADERS_FULL] = {
-  //   String: JSON.stringify(headerObject),
-  // };
 
   return attributes;
 }
@@ -641,9 +616,6 @@ function fpxFetchResponseToHttpAttributes(
     };
     headerObject[header] = value;
   }
-  // commonAttributes[FPX_REQUEST_HEADERS_FULL] = {
-  //   String: JSON.stringify(headerObject),
-  // };
 
   if (isMizuFetchEndLog(response)) {
     const responseHeaderAttributes: OtelAttributes = {};
@@ -654,9 +626,6 @@ function fpxFetchResponseToHttpAttributes(
         String: value,
       };
     }
-    // responseHeaderAttributes[FPX_RESPONSE_HEADERS_FULL] = {
-    //   String: JSON.stringify(headerObject),
-    // };
 
     if (response.message.body !== null) {
       responseHeaderAttributes[FPX_RESPONSE_BODY] = {
@@ -682,7 +651,6 @@ function fpxFetchResponseToHttpAttributes(
       };
       headerObject[header] = value;
     }
-    // responseHeaderAttributes[FPX_RESPONSE_HEADERS_FULL];
     const responseBody = response.message.body;
     if (responseBody !== null) {
       commonAttributes[FPX_RESPONSE_BODY] = {
@@ -696,8 +664,6 @@ function fpxFetchResponseToHttpAttributes(
       [EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]: {
         Int: response.message.status,
       },
-      // "http.response.status_code": parseInt(`${response.message.status}`),
-      // "fpx.response.body": responseBody,
     };
   }
 

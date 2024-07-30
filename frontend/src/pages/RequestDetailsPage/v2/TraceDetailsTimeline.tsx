@@ -62,64 +62,6 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     duration,
   } = normalizeWaterfallTimestamps(waterfall);
 
-  // const timelineEntryIds = useMemo(() => {
-  //   return normalizedTrace.normalizedWaterfall.map((spanOrLog) =>
-  //     timelineId(spanOrLog),
-  //   );
-  // }, [normalizedTrace]);
-
-  // Scroll timeline entry item into view if it is out of viewport
-  // TODO - Check if this breaks on smaller screens?
-  // useEffect(() => {
-  //   const element = document.querySelector(`[data-toc-id="${activeId}"]`);
-  //   let timeoutId: ReturnType<typeof setTimeout>;
-
-  //   if (element) {
-  //     timeoutId = setTimeout(() => {
-  //       element.scrollIntoView({
-  //         behavior: "smooth",
-  //         block: "nearest",
-  //         inline: "nearest",
-  //       });
-  //     }, 300);
-  //   }
-
-  //   return () => {
-  //     if (timeoutId) {
-  //       clearTimeout(timeoutId);
-  //     }
-  //   };
-  // }, [activeId]);
-
-  // const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {
-  //   for (const entry of entries) {
-  //     if (entry.isIntersecting) {
-  //       setActiveId(entry.target.id);
-  //     }
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   observer.current = new IntersectionObserver(handleObserve, {
-  //     // TODO - This might need more tweaking
-  //     rootMargin: "0px 0px -33% 0px",
-  //   });
-
-  //   const { current: currentObserver } = observer;
-
-  //   for (const id of timelineEntryIds) {
-  //     const element = document.getElementById(id);
-  //     if (element) {
-  //       currentObserver.observe(element);
-  //     }
-  //   }
-
-  //   return () => {
-  //     if (currentObserver) {
-  //       currentObserver.disconnect();
-  //     }
-  //   };
-  // }, [timelineEntryIds, handleObserve]);
   return (
     <div
       className={cn(
@@ -135,7 +77,6 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
       <div className="flex flex-col">
         {waterfall.map((spanOrLog) => {
           if (isMizuOrphanLog(spanOrLog)) {
-            // return null;
             return (
               <WaterfallRowLog
                 key={spanOrLog.id}
@@ -322,8 +263,6 @@ const WaterfallRowSpan: React.FC<{
   const lineWidth = `${((spanDuration / duration) * 100).toPrecision(2)}%`;
   const lineOffset = `${((new Date(span.start_time).getTime() - startTime) / duration) * 100}%`;
   const icon = useTimelineIcon(span, vendorInfo);
-  // const isFetch = span.name === "fetch";
-  // const isRootRequest = span.parent_span_id === null;
   const title = useTimelineTitle({ span, vendorInfo });
 
   return (

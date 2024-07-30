@@ -16,8 +16,6 @@ const messageSchema = z.object({
   details: detailsSchema,
 });
 
-// type MessageSchema = z.infer<typeof messageSchema>;
-
 export const useTracesSocket = () => {
   const { toast } = useToast();
   const spanIds = new Set<string>();

@@ -49,7 +49,6 @@ export function RequestDetailsPageContentV2({
       })),
     [spans],
   );
-  console.log("spansWithVendorInfo", spansWithVendorInfo);
   const rootSpan = spansWithVendorInfo.find(
     (item) => item.span.parent_span_id === null,
   );

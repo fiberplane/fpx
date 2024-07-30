@@ -1,10 +1,8 @@
 import {
-  // FPX_RESPONSE_HEADERS_FULL,
   EXTRA_SEMATTRS_HTTP_REQUEST_METHOD,
   EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
   EXTRA_SEMATTRS_URL_FULL,
   FPX_REQUEST_BODY,
-  // FPX_REQUEST_HEADERS_FULL,
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
@@ -12,13 +10,10 @@ import {
 } from "@/constants";
 import {
   OtelSpan,
-  //  isMizuRootRequestSpan
 } from "@/queries";
 import {
   OtelAttributes,
-  // OtelEvent
 } from "@/queries/traces-otel";
-// import { SEMATTRS_EXCEPTION_STACKTRACE } from "@opentelemetry/semantic-conventions";
 
 export function getMatchedRoute(span: OtelSpan) {
   // TODO support this in the otel client
@@ -81,7 +76,6 @@ export function getResponseBody(span: OtelSpan) {
   return getString(span.attributes[FPX_RESPONSE_BODY], {
     defaultValue: undefined,
   });
-  // return `${span.attributes[FPX_RESPONSE_BODY]}`;
 }
 
 export function getRequestHeaders(span: OtelSpan) {
@@ -100,14 +94,6 @@ export function getRequestHeaders(span: OtelSpan) {
 }
 
 export function getRequestQueryParams(span: OtelSpan) {
-  // if (isMizuRootRequestSpan(span)) {
-  //   const query = `${getQuery(span)}`;
-  //   if (!query) {
-  //     return null;
-  //   }
-  //   return Object.fromEntries(new URLSearchParams(query).entries());
-  // }
-
   try {
     const urlAttribute = getRequestUrl(span);
     const url = new URL(urlAttribute);
@@ -135,14 +121,6 @@ export function getRequestMethod(span: OtelSpan) {
   return getString(span.attributes[EXTRA_SEMATTRS_HTTP_REQUEST_METHOD]);
 }
 
-// export function getStack(event: OtelEvent) {
-//   return getString(event.attributes[SEMATTRS_EXCEPTION_STACKTRACE]);
-// }
-
-// export function getLevel(event: OtelEvent) {
-//   return getString(event.attributes["level"]);
-// }
-
 export function getStatusCode(span: OtelSpan) {
   return getNumber(span.attributes[EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]);
 }
@@ -163,7 +141,6 @@ export function getStatusCode(span: OtelSpan) {
 
 export function getRequestUrl(span: OtelSpan) {
   return getString(span.attributes[EXTRA_SEMATTRS_URL_FULL]);
-  // return `${span.attributes["url.full"]}`;
 }
 
 export function isFetchSpan(span: OtelSpan) {

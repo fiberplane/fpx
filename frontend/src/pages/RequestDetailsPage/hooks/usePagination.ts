@@ -3,7 +3,6 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 
 export function usePagination({
-  // traces,
   traceId,
   findIndex,
   getTraceRoute,

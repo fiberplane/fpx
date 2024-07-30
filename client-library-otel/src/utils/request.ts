@@ -72,7 +72,6 @@ export function getRequestAttributes(input: InputParam, init?: InitParam) {
 
     if (init.headers) {
       const headers = headersToObject(new Headers(init.headers));
-      // attributes[FPX_REQUEST_HEADERS_FULL] = JSON.stringify(headers);
       for (const [key, value] of Object.entries(headers)) {
         attributes[`http.request.header.${key}`] = value;
       }
@@ -158,7 +157,6 @@ export async function getResponseAttributes(
 
   const headers = response.headers;
   const responseHeaders = headersToObject(headers);
-  // attributes[FPX_RESPONSE_HEADERS_FULL] = JSON.stringify(responseHeaders);
   for (const [key, value] of Object.entries(responseHeaders)) {
     attributes[`http.response.header.${key}`] = value;
   }

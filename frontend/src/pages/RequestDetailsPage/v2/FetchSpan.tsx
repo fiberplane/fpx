@@ -2,7 +2,6 @@ import { Status } from "@/components/ui/status";
 import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { OtelSpan } from "@/queries";
-// import { MizuSpan } from "@/queries/traces-v2";
 import { cn, noop } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -20,9 +19,7 @@ import {
   getStatusCode,
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
-// import { timelineId } from "./timelineId";
 import {
-  // NeonSpan,
   NeonVendorInfo,
   VendorInfo,
   isAnthropicVendorInfo,
@@ -30,15 +27,10 @@ import {
   isOpenAIVendorInfo,
 } from "./vendorify-traces";
 
-// function getRequestUrl(span: OtelSpan) {
-// return `${span.attributes["url.full"]}`;
-// }
-
 export function FetchSpan({
   span,
   vendorInfo,
 }: { span: OtelSpan; vendorInfo: VendorInfo }) {
-  // const id = timelineId(span);
   const id = span.span_id;
 
   const method = getRequestMethod(span);
@@ -118,7 +110,6 @@ function GenericFetchSpan({
   responseBody,
   children,
 }: GenericFetchSpanProps) {
-  // const statusCode = getStatusCode(span);
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">

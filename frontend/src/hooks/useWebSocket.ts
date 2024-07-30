@@ -29,7 +29,6 @@ export function useWebSocket(
 
     return () => {
       console.log("closing socket", uri, socket.readyState);
-      // if (socket.readyState )
       socket.close();
     };
   }, [uri, onmessage]);

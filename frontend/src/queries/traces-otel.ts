@@ -71,20 +71,6 @@ export const OtelSpanSchema = z.object({
   ),
 });
 
-// export const TRACES_LIST_KEY = "otelTraces";
-// export function useOtelTracesList() {
-//   return useQuery({
-//     queryKey: [TRACES_LIST_KEY],
-//     queryFn: fetchOtelTracesList,
-//   });
-// }
-
-// function fetchOtelTracesList() {
-//   return fetch("/api/traces", {
-//     mode: "cors",
-//   }).then((response) => response.json());
-// }
-
 export const TRACES_KEY = "otelTrace";
 
 export function useOtelTrace(traceId: string) {

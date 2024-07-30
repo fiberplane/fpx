@@ -34,7 +34,6 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
   }, [span]);
 
   const pathWithSearch = useMemo<string>(() => {
-    // return getPathWithSearch(span);
     return getRequestUrl(span);
   }, [span]);
 
