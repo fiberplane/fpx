@@ -28,8 +28,7 @@
     "shared"
   ],
   "dependencies": {
-    "@biomejs/biome": "^1.8.0",
-    "wrangler": "^3.62.0"
+    "@biomejs/biome": "^1.8.0"
   },
   "devDependencies": {
     "rimraf": "^5.0.7",

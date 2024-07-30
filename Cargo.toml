@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["fpx", "fpx-macros", "xtask"]
+members = ["fpx", "fpx-workers", "fpx-macros", "xtask"]
 default-members = ["fpx"]
 
 [workspace.package]
