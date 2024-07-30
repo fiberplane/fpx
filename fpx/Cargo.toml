@@ -55,7 +55,7 @@ strum = { version = "0.26", features = ["derive"] }
 serde_with = { version = "3.8.1" }
 thiserror = { version = "1.0" }
 time = { version = "0.3.17", features = ["serde-human-readable"] }
-tokio = { version = "1.37", features = ["rt-multi-thread", "signal", "fs"] }
+tokio = { version = "1.37", features = ["signal", "fs"] }
 tokio-tungstenite = { version = "0.21", features = [
     "rustls-tls-webpki-roots",
 ] } # This should be kept the same as whatever Axum has

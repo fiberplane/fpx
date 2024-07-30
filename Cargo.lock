@@ -762,6 +762,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "fpx-lib"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum 0.7.5",
+ "bytes",
+ "fpx-macros",
+ "hex",
+ "http 1.1.0",
+ "opentelemetry-proto",
+ "prost 0.13.1",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "time",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "fpx-macros"
 version = "0.1.0"
 dependencies = [
@@ -777,6 +798,7 @@ version = "0.1.0"
 dependencies = [
  "axum 0.7.5",
  "console_error_panic_hook",
+ "fpx-lib",
  "tower-service",
  "worker",
  "worker-macros",
@@ -3508,9 +3530,9 @@ dependencies = [
 
 [[package]]
 name = "worker"
-version = "0.2.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa130f6f7e5a0b716e0f5472d412fe97962ded204d76ddaf3eeba7360dfcae93"
+checksum = "76faa841b0c43036d7a0c15e7ea6917ea8edd654c0255f641b6a91ee587fc35d"
 dependencies = [
  "async-trait",
  "axum 0.7.5",
@@ -3555,9 +3577,9 @@ dependencies = [
 
 [[package]]
 name = "worker-macros"
-version = "0.2.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a0f7f15151a77dca96813d0eff10ab9b29114533fae0267d00c466c13081e69"
+checksum = "10720bd9a0f6681445769d7eaa30758cc92b51050943bc615ad70cbcbac45360"
 dependencies = [
  "async-trait",
  "proc-macro2",
@@ -3571,9 +3593,9 @@ dependencies = [
 
 [[package]]
 name = "worker-sys"
-version = "0.2.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14ee9baa2ef3c7dea0e2165ff8aaad15e4c4cedb2d30a7deefd4999cd0ae96a3"
+checksum = "a76ce0f37481733a38c20d6d696f3c365e86ab059a6dfd37dea15c3b500416a4"
 dependencies = [
  "cfg-if",
  "js-sys",
