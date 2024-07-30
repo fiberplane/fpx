@@ -2,7 +2,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { cn, noop } from "@/utils";
 import { FileIcon, TrashIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   createChangeEnabled,
   createChangeKey,
@@ -24,8 +24,8 @@ type KeyValueRowProps = {
   onChangeKey?: (key: string) => void;
   onChangeValue: (value: string) => void;
   removeValue?: () => void;
+  onChangeFile: (file: File) => void;
 };
-
 export const FormDataFormRow = (props: KeyValueRowProps) => {
   const {
     isDraft,
@@ -34,9 +34,19 @@ export const FormDataFormRow = (props: KeyValueRowProps) => {
     onChangeValue,
     removeValue,
     parameter,
+    onChangeFile,
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      onChangeFile(file);
+    }
+  };
+
   return (
     <div
       className="flex items-center space-x-0 rounded p-0"
@@ -68,9 +78,19 @@ export const FormDataFormRow = (props: KeyValueRowProps) => {
         className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none"
       />
       <div>
-        <Button variant="ghost" size="icon">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+        >
           <FileIcon className="w-4 h-4" />
         </Button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleFileChange}
+        />
       </div>
       <div
         className={cn("ml-1 flex invisible", {
@@ -120,6 +140,7 @@ export const FormDataForm = (props: Props) => {
                 keyValueParameters.filter(({ id }) => parameter.id !== id),
               );
             }}
+            onChangeFile={() => {}}
           />
         );
       })}
