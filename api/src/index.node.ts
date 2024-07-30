@@ -6,6 +6,7 @@ import figlet from "figlet";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
+import type { WebhookRequest } from "./lib/types.js";
 import { connectToWebhonc } from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
@@ -16,10 +17,14 @@ import {
 
 config({ path: ".dev.vars" });
 
+// A couple of global in-memory only data structures:
+// - wsConnections for realtime service
+// - webhookRequests for storing incoming webhook requests from webhonc
 const wsConnections = new Set<WebSocket>();
+const webhookRequests = new Map<string, WebhookRequest>();
 
 // Set up the api routes
-const app = createApp(wsConnections);
+const app = createApp(wsConnections, webhookRequests);
 
 /**
  * Serve all the frontend static files
@@ -71,4 +76,8 @@ startRouteProbeWatcher(watchDir);
 // Set up websocket server
 setupRealtimeService({ server, path: "/ws", wsConnections });
 
-connectToWebhonc("wss://webhonc.laulau.workers.dev/ws", wsConnections);
+connectToWebhonc(
+  "wss://webhonc.mies.workers.dev/ws",
+  wsConnections,
+  webhookRequests,
+);

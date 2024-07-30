@@ -2,6 +2,7 @@
 
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { WebSocket } from "ws";
+import { z } from "zod";
 import type * as schema from "../db/schema.js";
 
 export type Bindings = {
@@ -13,4 +14,13 @@ export type Bindings = {
 export type Variables = {
   db: LibSQLDatabase<typeof schema>;
   wsConnections: Set<WebSocket>;
+  webhookRequests: Map<string, WebhookRequest>;
 };
+
+export const WebhookRequestSchema = z.object({
+  headers: z.record(z.string()),
+  query: z.record(z.string()).optional(),
+  body: z.any(),
+});
+
+export type WebhookRequest = z.infer<typeof WebhookRequestSchema>;
