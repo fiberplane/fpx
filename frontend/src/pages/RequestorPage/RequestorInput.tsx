@@ -6,23 +6,45 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { isMac } from "@/utils";
-import { TriangleRightIcon } from "@radix-ui/react-icons";
-import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { cn, isMac } from "@/utils";
+import {
+  FilePlusIcon,
+  MixerHorizontalIcon,
+  TriangleRightIcon,
+} from "@radix-ui/react-icons";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
+import { useAddRoutes } from "./queries";
+import {
+  RequestMethod,
+  RequestMethodInputValue,
+  RequestType,
+  isWsRequest,
+} from "./types";
+import { WebSocketState } from "./useMakeWebsocketRequest";
 
 type RequestInputProps = {
-  method: string;
-  handleMethodChange: (method: string) => void;
+  method: RequestMethod;
+  handleMethodChange: (method: RequestMethodInputValue) => void;
   path?: string;
   handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
-  addBaseUrl: (path: string) => string;
+  addBaseUrl: (
+    path: string,
+    { requestType }: { requestType: RequestType },
+  ) => string;
   formRef: React.RefObject<HTMLFormElement>;
+  requestType: RequestType;
+  websocketState: WebSocketState;
+  disconnectWebsocket: () => void;
+  getIsInDraftMode: () => boolean;
 };
 
 export function RequestorInput({
+  getIsInDraftMode,
   method,
   handleMethodChange,
   path,
@@ -30,17 +52,50 @@ export function RequestorInput({
   onSubmit,
   isRequestorRequesting,
   addBaseUrl,
+  requestType,
   formRef,
+  websocketState,
+  disconnectWebsocket,
 }: RequestInputProps) {
+  const { toast } = useToast();
+
+  const isWsConnected = websocketState.isConnected;
   const [value, setValue] = useState("");
+
+  const { mutate: addRoutes } = useAddRoutes();
+
+  const canSaveDraftRoute = useMemo(() => {
+    return !!path && getIsInDraftMode();
+  }, [path, getIsInDraftMode]);
+
+  const handleAddRoute = useCallback(() => {
+    if (canSaveDraftRoute) {
+      addRoutes({
+        method: requestType === "websocket" ? "GET" : method,
+        path: path ?? "",
+        requestType: requestType,
+        routeOrigin: "custom",
+        handler: "",
+        handlerType: "route",
+      });
+      toast({
+        description: "Added new route",
+      });
+    }
+  }, [addRoutes, canSaveDraftRoute, method, path, requestType, toast]);
+
+  useHotkeys("mod+s", handleAddRoute, {
+    enableOnFormTags: ["INPUT"],
+    preventDefault: getIsInDraftMode(),
+  });
 
   // HACK - If path changes externally, update the value here
   // This happens if the user clicks a route in the sidebar, for example,
   // or when they load a request from history
   useEffect(() => {
-    const url = addBaseUrl(path ?? "");
+    const url = addBaseUrl(path ?? "", { requestType });
     setValue(url);
-  }, [path, addBaseUrl]);
+  }, [path, addBaseUrl, requestType]);
 
   return (
     <form
@@ -50,7 +105,7 @@ export function RequestorInput({
     >
       <div className="flex flex-grow items-center space-x-0">
         <RequestMethodCombobox
-          method={method}
+          method={isWsRequest(requestType) ? "WS" : method}
           handleMethodChange={handleMethodChange}
           allowUserToChange
         />
@@ -71,16 +126,69 @@ export function RequestorInput({
         />
       </div>
       <div className="flex items-center space-x-2 p-2">
+        {canSaveDraftRoute && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                type="button"
+                onClick={handleAddRoute}
+                disabled={isRequestorRequesting}
+                variant="ghost"
+                className={cn("p-1")}
+              >
+                <FilePlusIcon className="w-6 h-6 text-gray-300" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
+              align="center"
+              side="left"
+              sideOffset={16}
+            >
+              <div className="flex gap-0.5">
+                <span className="mr-1.5 inline-flex items-center">
+                  Add Route
+                </span>
+                <KeyboardShortcutKey>
+                  {isMac ? "⌘" : "Ctrl"}
+                </KeyboardShortcutKey>{" "}
+                <KeyboardShortcutKey>S</KeyboardShortcutKey>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        )}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               size="sm"
               type="submit"
+              onClick={(e) => {
+                if (isWsConnected) {
+                  e.preventDefault();
+                  disconnectWebsocket();
+                  toast({
+                    description: "Websocket connection closed",
+                    variant: "destructive",
+                  });
+                }
+              }}
               disabled={isRequestorRequesting}
-              className="p-2 md:p-2.5"
+              variant={isWsConnected ? "destructive" : "default"}
+              className={cn("p-2 md:p-2.5")}
             >
-              <span className="hidden md:inline">Send</span>
-              <TriangleRightIcon className="md:hidden w-6 h-6" />
+              <span className="hidden md:inline">
+                {isWsRequest(requestType)
+                  ? isWsConnected
+                    ? "Disconnect"
+                    : "Connect"
+                  : "Send"}
+              </span>
+              {isWsRequest(requestType) ? (
+                <MixerHorizontalIcon className="md:hidden w-6 h-6" />
+              ) : (
+                <TriangleRightIcon className="md:hidden w-6 h-6" />
+              )}
             </Button>
           </TooltipTrigger>
           <TooltipContent

@@ -37,12 +37,21 @@ export const appRoutes = sqliteTable(
     }).default("discovered"),
     // serialized OpenAPI spec for AI prompting
     openApiSpec: text("openapi_spec", { mode: "text" }),
+    requestType: text("request_type", {
+      mode: "text",
+      enum: ["http", "websocket"],
+    }).default("http"),
   },
   (table) => {
     return {
       id: primaryKey({
         name: "id",
-        columns: [table.method, table.path, table.handlerType],
+        columns: [
+          table.method,
+          table.path,
+          table.handlerType,
+          table.routeOrigin,
+        ],
       }),
     };
   },

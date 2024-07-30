@@ -39,7 +39,7 @@ export const PathParamForm = (props: Props) => {
               keyValueParameters,
               parameter,
             )}
-            // TOOD - Change this to reset the value?
+            // TODO - Change this to reset the value?
             // removeValue={() => {
             //   onChange(
             //     keyValueParameters.filter(({ id }) => parameter.id !== id),

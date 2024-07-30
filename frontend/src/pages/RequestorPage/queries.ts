@@ -3,18 +3,22 @@ import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
+import { RequestMethodSchema, RequestTypeSchema } from "./types";
 
-export type ProbedRoute = {
-  path: string;
-  method: string;
-  handler: string;
-  handlerType: "route" | "middleware";
-  currentlyRegistered: boolean;
-  routeOrigin: "discovered" | "custom" | "open_api";
-  openApiSpec?: string;
-  // TODO - Implement
-  isDraft?: boolean;
-};
+export const ProbedRouteSchema = z.object({
+  path: z.string(),
+  method: RequestMethodSchema,
+  handler: z.string(),
+  handlerType: z.enum(["route", "middleware"]),
+  currentlyRegistered: z.boolean(),
+  routeOrigin: z.enum(["discovered", "custom", "open_api"]),
+  openApiSpec: z.string().optional(),
+  requestType: RequestTypeSchema,
+  // NOTE - Added on the frontend, not stored in DB
+  isDraft: z.boolean().optional(),
+});
+
+export type ProbedRoute = z.infer<typeof ProbedRouteSchema>;
 
 const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
@@ -80,6 +84,9 @@ export type Route = {
   handlerType?: "route" | "middleware";
   routeOrigin?: "discovered" | "custom" | "open_api";
   openApiSpec?: string;
+  requestType?: "http" | "websocket";
+  // NOTE - Added on the frontend, not stored in DB
+  isDraft?: boolean;
 };
 
 async function addRoutes(routes: Route | Route[]) {

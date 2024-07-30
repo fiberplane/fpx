@@ -119,4 +119,5 @@ fn api_router() -> axum::Router<ApiState> {
             get(handlers::spans::span_list_handler),
         )
         .fallback(StatusCode::NOT_FOUND)
+        .layer(crate::otel_util::OtelTraceLayer::default())
 }

@@ -1,5 +1,6 @@
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
+import { CommandDialog } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,6 +22,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestMethodCombobox } from "../RequestMethodCombobox";
 import { Route, useAddRoutes, useOpenApiParse } from "../queries";
+import { RequestMethodInputValue } from "../types";
 
 export function AddRouteButton() {
   useHotkeys("c", (e) => {
@@ -51,25 +53,63 @@ export function AddRouteButton() {
           </div>
         </TooltipContent>
       </Tooltip>
-      <PopoverContent className="w-96">
+      <PopoverContent className="w-96 max-lg:hidden">
         {/* default tab opens on openapi if there is no openapi spec added already */}
-        <Tabs
-          className="w-full"
-          defaultValue={openApi ? "custom-route" : "openapi"}
-        >
-          <TabsList className="w-full grid grid-cols-2">
-            <TabsTrigger value="custom-route">Custom Route</TabsTrigger>
-            <TabsTrigger value="openapi">OpenAPI</TabsTrigger>
-          </TabsList>
-          <TabsContent value="custom-route">
-            <CustomRouteForm setOpen={setOpen} />
-          </TabsContent>
-          <TabsContent value="openapi">
-            <OpenApiForm setOpen={setOpen} setOpenApi={setOpenApi} />
-          </TabsContent>
-        </Tabs>
+        <AddRoutesTabs
+          setOpen={setOpen}
+          openApi={openApi}
+          setOpenApi={setOpenApi}
+        />
       </PopoverContent>
     </Popover>
+  );
+}
+
+type AddRoutesTabsProps = {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  openApi: boolean;
+  setOpenApi: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+function AddRoutesTabs({ setOpen, setOpenApi }: AddRoutesTabsProps) {
+  return (
+    <Tabs className="w-full" defaultValue="custom-route">
+      <TabsList className="w-full grid grid-cols-2">
+        <TabsTrigger value="custom-route">Custom Route</TabsTrigger>
+        <TabsTrigger value="openapi">OpenAPI</TabsTrigger>
+      </TabsList>
+      <TabsContent value="custom-route">
+        <CustomRouteForm setOpen={setOpen} />
+      </TabsContent>
+      <TabsContent value="openapi">
+        <OpenApiForm setOpen={setOpen} setOpenApi={setOpenApi} />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+export function AddRoutesDialog({
+  open,
+  setOpen,
+  openApi,
+  setOpenApi,
+}: {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  openApi: boolean;
+  setOpenApi: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  return (
+    // Use CommandDialog since this will render in a command menu
+    <CommandDialog open={open} onOpenChange={setOpen}>
+      <div className="px-4 pt-12 pb-6">
+        <AddRoutesTabs
+          setOpen={setOpen}
+          openApi={openApi}
+          setOpenApi={setOpenApi}
+        />
+      </div>
+    </CommandDialog>
   );
 }
 
@@ -205,7 +245,7 @@ type CustomRouteFormData = {
 function CustomRouteForm({
   setOpen,
 }: { setOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
-  const { register, handleSubmit } = useForm<CustomRouteFormData>();
+  const { register, handleSubmit, watch } = useForm<CustomRouteFormData>();
 
   const { mutate: addRoutes } = useAddRoutes();
 
@@ -214,11 +254,13 @@ function CustomRouteForm({
     setMethod(method);
   };
   const onSubmit: SubmitHandler<CustomRouteFormData> = ({ path }) => {
+    const isWs = method === "WS";
     addRoutes({
       path,
-      method,
+      method: isWs ? "GET" : method,
       routeOrigin: "custom",
       handlerType: "route",
+      requestType: isWs ? "websocket" : "http",
     });
     setOpen(false);
   };
@@ -241,7 +283,7 @@ function CustomRouteForm({
           </Label>
           <RequestMethodCombobox
             {...register("method")}
-            method={method}
+            method={method as RequestMethodInputValue}
             handleMethodChange={handleMethodChange}
             allowUserToChange
             className="px-2 mr-2"
@@ -259,6 +301,11 @@ function CustomRouteForm({
             autoFocus
           />
         </div>
+      </div>
+      <div className="flex justify-end">
+        <Button size="sm" className="h-7" disabled={!watch("path")}>
+          Add
+        </Button>
       </div>
     </form>
   );

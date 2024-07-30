@@ -33,6 +33,7 @@ import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
+import { WebSocketState } from "./useMakeWebsocketRequest";
 
 import "./RequestPanel.css";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
@@ -41,6 +42,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
+import type { RequestsPanelTab } from "./reducer";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;
@@ -167,14 +170,15 @@ function AiDropDownMenu({
 }
 
 type RequestPanelProps = {
-  currentRoute?: string;
-  method: string;
+  activeRequestsPanelTab: RequestsPanelTab;
+  setActiveRequestsPanelTab: (tab: string) => void;
+  shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
   body?: string;
   setBody: (body?: string) => void;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
-  setPath: (path: string) => void;
-  setPathParams: React.Dispatch<React.SetStateAction<KeyValueParameter[]>>;
+  setPathParams: (params: KeyValueParameter[]) => void;
+  clearPathParams: () => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   requestHeaders: KeyValueParameter[];
@@ -186,6 +190,8 @@ type RequestPanelProps = {
   showAiGeneratedInputsBanner: boolean;
   setShowAiGeneratedInputsBanner: Dispatch<SetStateAction<boolean>>;
   setIgnoreAiInputsBanner: Dispatch<SetStateAction<boolean>>;
+  websocketState: WebSocketState;
+  sendWebsocketMessage: (message: string) => void;
 };
 
 export function RequestPanel(props: RequestPanelProps) {
@@ -225,15 +231,16 @@ function ResizableRequestMeta(props: RequestPanelProps) {
 
 function RequestMeta(props: RequestPanelProps) {
   const {
-    currentRoute,
-    method,
+    activeRequestsPanelTab,
+    setActiveRequestsPanelTab,
+    shouldShowRequestTab,
     body,
     setBody,
     pathParams,
     queryParams,
     requestHeaders,
-    setPath,
     setPathParams,
+    clearPathParams,
     setQueryParams,
     setRequestHeaders,
     aiEnabled,
@@ -244,11 +251,19 @@ function RequestMeta(props: RequestPanelProps) {
     showAiGeneratedInputsBanner,
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
+    websocketState,
+    sendWebsocketMessage,
   } = props;
-  const shouldShowBody = method !== "GET" && method !== "HEAD";
+
+  const { toast } = useToast();
+
+  const shouldShowBody = shouldShowRequestTab("body");
+  const shouldShowMessages = shouldShowRequestTab("messages");
+
   return (
     <Tabs
-      defaultValue="params"
+      value={activeRequestsPanelTab}
+      onValueChange={setActiveRequestsPanelTab}
       className={cn(
         "min-w-[200px] border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
@@ -275,6 +290,14 @@ function RequestMeta(props: RequestPanelProps) {
         {shouldShowBody && (
           <CustomTabTrigger value="body">
             Body
+            {(body?.length ?? 0) > 0 && (
+              <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
+            )}
+          </CustomTabTrigger>
+        )}
+        {shouldShowMessages && (
+          <CustomTabTrigger value="messages">
+            Message
             {(body?.length ?? 0) > 0 && (
               <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
             )}
@@ -321,38 +344,13 @@ function RequestMeta(props: RequestPanelProps) {
           <>
             <PanelSectionHeader
               title="Path parameters"
-              handleClearData={() => {
-                setPathParams((currentPathParams) => {
-                  return currentPathParams.map((param) => {
-                    return {
-                      ...param,
-                      value: "",
-                      enabled: false,
-                    };
-                  });
-                });
-              }}
+              handleClearData={clearPathParams}
               className="mt-4"
             />
             <PathParamForm
               keyValueParameters={pathParams}
               onChange={(params) => {
                 setPathParams(params);
-                // NOTE - This breaks the ability to ...
-                if (!currentRoute) {
-                  return;
-                }
-                let nextPath = currentRoute;
-                for (const param of params) {
-                  if (!param.enabled) {
-                    continue;
-                  }
-                  nextPath = nextPath.replace(
-                    param.key,
-                    param.value || param.key,
-                  );
-                }
-                setPath(nextPath);
               }}
             />
           </>
@@ -395,6 +393,45 @@ function RequestMeta(props: RequestPanelProps) {
             value={body}
             maxHeight="800px"
           />
+        </CustomTabsContent>
+      )}
+      {shouldShowMessages && (
+        <CustomTabsContent value="messages">
+          <PanelSectionHeader
+            title="Websocket Messages"
+            handleClearData={() => {
+              setBody(undefined);
+            }}
+          />
+          {websocketState.isConnected ? (
+            <>
+              <CodeMirrorJsonEditor
+                onChange={setBody}
+                value={body}
+                maxHeight="800px"
+              />
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof body !== "string") {
+                      return;
+                    }
+                    sendWebsocketMessage(body);
+                    toast({
+                      description: "WS Message sent",
+                    });
+                  }}
+                >
+                  Send Message
+                </Button>
+              </div>
+            </>
+          ) : (
+            <WebSocketNotConnectedBanner />
+          )}
         </CustomTabsContent>
       )}
     </Tabs>
@@ -485,6 +522,20 @@ function AIGeneratedInputsBanner({
         >
           <Cross2Icon className="w-3.5 h-3.5 text-gray-400" />
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function WebSocketNotConnectedBanner() {
+  return (
+    <div className="bg-primary/20 text-blue-300 text-sm px-2.5 py-4 rounded-md grid grid-cols-[auto_1fr] gap-2 mb-4">
+      <div className="py-0.5">
+        <InfoCircledIcon className="w-3.5 h-3.5" />
+      </div>
+      <div className="flex flex-col items-start justify-start gap-1">
+        <span className="font-semibold">WebSocket not connected</span>
+        <span className="font-light">Connect to start sending messages</span>
       </div>
     </div>
   );

@@ -65,7 +65,9 @@ const disableBlankParameter = (parameter: KeyValueParameter) => {
  * Otherwise, return the array with a new draft parameter appended.
  *
  */
-const enforceTerminalDraftParameter = (parameters: KeyValueParameter[]) => {
+export const enforceTerminalDraftParameter = (
+  parameters: KeyValueParameter[],
+) => {
   const finalElement = parameters[parameters.length - 1];
   const hasTerminalDraftParameter = finalElement
     ? isDraftParameter(finalElement)

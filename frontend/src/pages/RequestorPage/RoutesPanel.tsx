@@ -14,20 +14,20 @@ import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute, useDeleteRoute } from "./queries";
 import { AddRouteButton } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
+import { isWsRequest } from "./types";
 
 type RoutesPanelProps = {
   routes?: ProbedRoute[];
-  draftRoutes?: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
+  deleteDraftRoute?: () => void;
 };
 
 export function RoutesPanel({
   routes,
-  // NOTE - Draft routes not yet implemented, waiting for future PR
-  draftRoutes,
   selectedRoute,
   handleRouteClick,
+  deleteDraftRoute,
 }: RoutesPanelProps) {
   const customRoutesEnabled = useCustomRoutesEnabled();
   const { width, handleResize } = useResizableWidth(320);
@@ -42,7 +42,9 @@ export function RoutesPanel({
   }, [routes]);
 
   const hasAnyUserAddedRoutes = useMemo(() => {
-    return routes?.some((r) => r.routeOrigin === "custom") ?? false;
+    return (
+      routes?.some((r) => r.routeOrigin === "custom" && !r.isDraft) ?? false
+    );
   }, [routes]);
 
   const hasAnyOpenApiRoutes = useMemo(() => {
@@ -79,7 +81,14 @@ export function RoutesPanel({
   }, [filteredRoutes]);
 
   const userAddedRoutes = useMemo(() => {
-    return filteredRoutes?.filter((r) => r.routeOrigin === "custom") ?? [];
+    return (
+      filteredRoutes?.filter((r) => r.routeOrigin === "custom" && !r.isDraft) ??
+      []
+    );
+  }, [filteredRoutes]);
+
+  const draftRoutes = useMemo(() => {
+    return filteredRoutes?.filter((r) => r.isDraft) ?? [];
   }, [filteredRoutes]);
 
   return (
@@ -132,6 +141,7 @@ export function RoutesPanel({
               routes={draftRoutes ?? []}
               selectedRoute={selectedRoute}
               handleRouteClick={handleRouteClick}
+              deleteDraftRoute={deleteDraftRoute}
             />
           )}
 
@@ -179,10 +189,12 @@ type RoutesSectionProps = {
   routes: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
+  deleteDraftRoute?: () => void;
 };
 
 function RoutesSection(props: RoutesSectionProps) {
-  const { title, routes, selectedRoute, handleRouteClick } = props;
+  const { title, routes, selectedRoute, handleRouteClick, deleteDraftRoute } =
+    props;
 
   const [showRoutesSection, setShowRoutesSection] = useState(true);
   const ShowRoutesSectionIcon = showRoutesSection
@@ -214,7 +226,7 @@ function RoutesSection(props: RoutesSectionProps) {
                 },
               )}
             >
-              <RouteItem route={route} />
+              <RouteItem route={route} deleteDraftRoute={deleteDraftRoute} />
             </div>
           ))}
         </div>
@@ -223,22 +235,23 @@ function RoutesSection(props: RoutesSectionProps) {
   );
 }
 
-export function RouteItem({ route }: { route: ProbedRoute }) {
+export function RouteItem({
+  route,
+  deleteDraftRoute,
+}: { route: ProbedRoute; deleteDraftRoute?: () => void }) {
   const { mutate: deleteRoute } = useDeleteRoute();
   const canDeleteRoute =
     route.routeOrigin === "custom" ||
     !route.currentlyRegistered ||
     route.routeOrigin === "open_api";
+
+  const method = isWsRequest(route.requestType) ? "WS" : route.method;
   return (
     <>
       <span
-        className={cn(
-          "text-xs",
-          "min-w-12",
-          getHttpMethodTextColor(route.method),
-        )}
+        className={cn("text-xs", "min-w-12", getHttpMethodTextColor(method))}
       >
-        {route.method}
+        {method}
       </span>
       <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">
         {route.path}
@@ -251,7 +264,11 @@ export function RouteItem({ route }: { route: ProbedRoute }) {
               className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hover:pointer-events-auto invisible group-hover:visible"
               onClick={(e) => {
                 e.stopPropagation();
-                deleteRoute({ path: route.path, method: route.method });
+                if (route.isDraft) {
+                  deleteDraftRoute?.();
+                } else {
+                  deleteRoute({ path: route.path, method: route.method });
+                }
               }}
             />
           </div>

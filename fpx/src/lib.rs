@@ -4,4 +4,5 @@ pub mod data;
 pub mod events;
 pub mod grpc;
 pub mod inspector;
+mod otel_util;
 mod service;
