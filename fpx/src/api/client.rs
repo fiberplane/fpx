@@ -13,7 +13,7 @@ use anyhow::Result;
 use http::{HeaderMap, Method};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use tracing::{instrument, trace};
+use tracing::trace;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
 
