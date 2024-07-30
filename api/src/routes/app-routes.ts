@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
+import type { StatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import {
   type NewAppRequest,
@@ -221,113 +222,140 @@ function createUrlEncodedBody(body: Record<string, string>) {
  *
  */
 app.all("/v1/send-request/*", async (ctx) => {
-  const _traceId = ctx.req.header("x-fpx-trace-id") ?? generateUUID();
+  const traceId = ctx.req.header("x-fpx-trace-id") ?? generateUUID();
+  const db = ctx.get("db");
 
-  // TODO - Record request details
-  // TODO - Add trace-id header
-  // TODO - Proxy the request
-  // TODO - Record response details
+  const requestMethod = ctx.req.method;
+  const requestUrl = ctx.req.url;
+  const requestHeaders: Record<string, string> = {};
+  ctx.req.raw.headers.forEach((value, key) => {
+    requestHeaders[key] = value;
+  });
+  const requestQueryParams = {
+    ...ctx.req.query(),
+  };
+  const requestPathParams = {
+    ...ctx.req.param(),
+  };
 
-  // const {
-  //   requestMethod,
-  //   requestUrl,
-  //   requestHeaders,
-  //   requestQueryParams,
-  //   requestPathParams,
-  //   requestBody,
-  //   requestRoute,
-  // } = ctx.req.valid("json");
+  // Extract request body based on content type
+  let requestBody: any;
+  const contentType = ctx.req.header("content-type");
+  if (contentType?.includes("application/json")) {
+    requestBody = await ctx.req.json();
+  } else if (contentType?.includes("application/x-www-form-urlencoded")) {
+    const parsedBody = await ctx.req.parseBody();
+    // TODO
+    requestBody = Object.fromEntries(parsedBody);
+  } else if (contentType?.includes("multipart/form-data")) {
+    const formData = await ctx.req.parseBody({ all: true });
+    requestBody = Object.fromEntries(
+      Object.entries(formData).map(([key, value]) => {
+        if (value instanceof File) {
+          return [key, { filename: value.name, type: value.type }];
+        }
+        return [key, value];
+      }),
+    );
+  } else {
+    requestBody = await ctx.req.text();
+  }
 
-  // const db = ctx.get("db");
+  const requestRoute = ctx.req.path;
 
-  // // NOTE - We want to pass the trace-id through to the service we're calling
-  // //        This helps us optionally correlate requests more easily in the frontend
-  // const modifiedRequestHeaders = {
-  //   ...(requestHeaders ?? {}),
-  //   "x-fpx-trace-id": traceId,
-  // };
+  // Record request details
+  const newRequest: NewAppRequest = {
+    // @ts-expect-error - Trust me, the request method is correct
+    requestMethod,
+    requestUrl,
+    requestHeaders,
+    requestPathParams,
+    requestQueryParams,
+    requestBody,
+    requestRoute,
+  };
 
-  // const requestObject = {
-  //   method: requestMethod,
-  //   body:
-  //     (requestBody ? JSON.stringify(requestBody) : requestBody) ??
-  //     // biome-ignore lint/suspicious/noExplicitAny: just make it work
-  //     (undefined as any),
-  //   headers: modifiedRequestHeaders,
-  // };
+  const insertResult = await db
+    .insert(appRequests)
+    .values(newRequest)
+    .returning({ requestId: appRequests.id });
 
-  // const finalUrl = resolveUrl(requestUrl, requestQueryParams);
+  const requestId = insertResult[0].requestId;
 
-  // const newRequest: NewAppRequest = {
-  //   requestMethod,
-  //   requestUrl,
-  //   requestHeaders,
-  //   requestPathParams,
-  //   requestQueryParams,
-  //   requestBody,
-  //   requestRoute,
-  // };
+  // Prepare headers for the proxied request
+  const modifiedRequestHeaders = {
+    ...requestHeaders,
+    "x-fpx-trace-id": traceId,
+  };
 
-  // const insertResult = await db
-  //   .insert(appRequests)
-  //   .values(newRequest)
-  //   .returning({ requestId: appRequests.id });
+  // Prepare the request object for fetch
+  const requestObject: RequestInit = {
+    method: requestMethod,
+    headers: modifiedRequestHeaders,
+  };
 
-  // const requestId = insertResult[0].requestId; // only one insert always happens not sure why drizzle returns an array...
+  // Handle body for the proxied request
+  if (contentType?.includes("multipart/form-data")) {
+    const formData = await ctx.req.parseBody({ all: true });
+    // TODO
+    requestObject.body = formData;
+  } else {
+    requestObject.body = ctx.req.raw.body;
+  }
 
-  // const startTime = Date.now();
-  // try {
-  //   const response = await fetch(finalUrl, requestObject);
-  //   const duration = Date.now() - startTime;
+  const finalUrl = resolveUrl(requestUrl, requestQueryParams);
 
-  //   const {
-  //     responseStatusCode,
-  //     responseTime,
-  //     responseHeaders,
-  //     responseBody,
-  //     traceId: responseTraceId,
-  //     isFailure,
-  //   } = await handleSuccessfulRequest(db, requestId, duration, response);
+  const startTime = Date.now();
+  try {
+    // Proxy the request
+    const response = await fetch(finalUrl, requestObject);
+    const duration = Date.now() - startTime;
 
-  //   if (responseTraceId !== traceId) {
-  //     logger.warn(
-  //       `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
-  //     );
-  //   }
+    const {
+      responseStatusCode,
+      responseTime,
+      responseHeaders,
+      responseBody,
+      traceId: responseTraceId,
+      isFailure,
+    } = await handleSuccessfulRequest(db, requestId, duration, response);
 
-  //   return ctx.json({
-  //     responseStatusCode,
-  //     responseTime,
-  //     responseHeaders,
-  //     responseBody,
-  //     isFailure,
-  //     traceId: responseTraceId,
-  //     requestId,
-  //   });
-  // } catch (fetchError) {
-  //   // NOTE - This will happen when the service is unreachable.
-  //   //        Could be good to parse the error for more information!
-  //   const responseTime = Date.now() - startTime;
-  //   const { failureDetails, failureReason, isFailure } =
-  //     await handleFailedRequest(
-  //       db,
-  //       requestId,
-  //       traceId,
-  //       responseTime,
-  //       fetchError,
-  //     );
+    if (responseTraceId !== traceId) {
+      logger.warn(
+        `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
+      );
+    }
 
-  //   return ctx.json({
-  //     isFailure,
-  //     responseTime,
-  //     failureDetails,
-  //     failureReason,
-  //     traceId,
-  //     requestId,
-  //   });
-  // }
+    // Set response headers and status
+    Object.entries(responseHeaders).forEach(([key, value]) => {
+      ctx.header(key, value);
+    });
+    // HACK - Type coercion
+    ctx.status(responseStatusCode as StatusCode);
 
-  return ctx.text("TODO, world!");
+    // Return the response body
+    return ctx.body(responseBody);
+  } catch (fetchError) {
+    const responseTime = Date.now() - startTime;
+    const { failureDetails, failureReason, isFailure } =
+      await handleFailedRequest(
+        db,
+        requestId,
+        traceId,
+        responseTime,
+        fetchError,
+      );
+
+    ctx.status(500);
+    return ctx.json({
+      isFailure,
+      responseTime,
+      failureDetails,
+      failureReason,
+      traceId,
+      requestId,
+    });
+  }
 });
 
 /**
