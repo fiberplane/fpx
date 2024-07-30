@@ -9,11 +9,7 @@ export function Hackadoodle({
 }: {
   traceId: string;
 }) {
-  const {
-    traces,
-    traceV2,
-    isPending,
-  } = useRequestDetails(traceId);
+  const { traces, traceV2, isPending } = useRequestDetails(traceId);
 
   const { spans, orphanLogs = [] } = traceV2 || {};
   const rootSpan = spans?.find((span) => span.parent_span_id === null);

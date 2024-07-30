@@ -7,21 +7,12 @@ import OpenAiLogo from "@/assets/OpenAILogo.svg";
 
 import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
-import {
-  OtelSpan,
-  isMizuOrphanLog,
-} from "@/queries";
-import {
-  MizuOrphanLog,
-} from "@/queries/traces-v2";
+import { OtelSpan, isMizuOrphanLog } from "@/queries";
+import { MizuOrphanLog } from "@/queries/traces-v2";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
-import React, {
-  useMemo,
-} from "react";
-import {
-  Waterfall,
-} from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
+import React, { useMemo } from "react";
+import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { isFetchSpan } from "./otel-helpers";
 import {
   VendorInfo,
@@ -57,10 +48,7 @@ const normalizeWaterfallTimestamps = (waterfall: Waterfall) => {
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   waterfall,
 }) => {
-  const {
-    minStart,
-    duration,
-  } = normalizeWaterfallTimestamps(waterfall);
+  const { minStart, duration } = normalizeWaterfallTimestamps(waterfall);
 
   return (
     <div
@@ -101,9 +89,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   );
 };
 
-const useTimelineTitle = (
-  waterfallItem: Waterfall[0],
-) => {
+const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
   return useMemo(() => {
     if ("vendorInfo" in waterfallItem) {
       const { span, vendorInfo } = waterfallItem;
@@ -176,6 +162,12 @@ const useTimelineTitle = (
           </div>
         );
       }
+
+      return (
+        <div className="font-mono font-normal text-xs truncate text-gray-200">
+          {span.name}
+        </div>
+      );
     }
 
     return (
@@ -264,7 +256,7 @@ const WaterfallRowSpan: React.FC<{
   const lineOffset = `${((new Date(span.start_time).getTime() - startTime) / duration) * 100}%`;
   const icon = useTimelineIcon(span, vendorInfo);
   const title = useTimelineTitle({ span, vendorInfo });
-
+  console.log(vendorInfo, "title", title);
   return (
     <a
       data-toc-id={id}
@@ -289,9 +281,7 @@ const WaterfallRowSpan: React.FC<{
         </div>
       </div>
       <div className="ml-auto text-gray-400 text-xs w-12 px-2">
-        {
-          formatDuration(span.start_time, span.end_time)
-        }
+        {formatDuration(span.start_time, span.end_time)}
       </div>
     </a>
   );

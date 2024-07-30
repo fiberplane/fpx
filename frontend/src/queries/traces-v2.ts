@@ -221,7 +221,6 @@ export function useMizuTracesV2() {
         }
       }
 
-
       return {
         id: trace.id,
         spans,

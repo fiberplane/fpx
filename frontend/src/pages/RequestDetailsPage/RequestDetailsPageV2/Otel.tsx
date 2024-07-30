@@ -1,6 +1,4 @@
-import {
-  useOtelTrace,
-} from "@/queries/traces-otel";
+import { useOtelTrace } from "@/queries/traces-otel";
 import { EmptyState } from "../EmptyState";
 import { SkeletonLoader } from "../SkeletonLoader";
 import { RequestDetailsPageContentV2 } from "./RequestDetailsPageV2Content";
@@ -10,7 +8,6 @@ export function Otel({
 }: {
   traceId: string;
 }) {
-
   const { data: spans, isPending, error } = useOtelTrace(traceId);
 
   if (error) {
@@ -25,9 +22,5 @@ export function Otel({
     return <EmptyState />;
   }
 
-  return (
-    <RequestDetailsPageContentV2
-      spans={spans}
-    />
-  );
+  return <RequestDetailsPageContentV2 spans={spans} />;
 }

@@ -228,6 +228,12 @@ async function handlePromise<T>(
         error instanceof Error ? error : "Unknown error occured";
       span.recordException(sendError);
 
+      const message = typeof sendError === "string" ? sendError : (sendError.message || "Unknown error occured");
+      span.setStatus({ 
+        code: SpanStatusCode.ERROR,
+        message,
+      });
+
       if (onError) {
         try {
           onError(span, error);
@@ -244,20 +250,6 @@ async function handlePromise<T>(
   } finally {
     span.end();
   }
-}
-
-function errorToEventAttributes(error: unknown) {
-  if (error instanceof Error) {
-    return {
-      "exception.type": error.name,
-      "exception.message": error.message,
-      "exception.stacktrace": error.stack,
-    };
-  }
-  const message = typeof error === "string" ? error : "Unknown error";
-  return {
-    "exception.message": message,
-  };
 }
 
 function isPromise<T>(value: unknown): value is Promise<T> {

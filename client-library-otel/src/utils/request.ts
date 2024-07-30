@@ -1,17 +1,14 @@
 import type { Response as WorkerResponse } from "@cloudflare/workers-types";
-import type { Attributes, SpanKind } from "@opentelemetry/api";
+import type { Attributes } from "@opentelemetry/api";
 import {
   SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH,
   SEMATTRS_HTTP_SCHEME,
-  // SEMATTRS_HTTP_URL,
 } from "@opentelemetry/semantic-conventions";
 import {
-  // FPX_RESPONSE_HEADERS_FULL,
   EXTRA_SEMATTRS_HTTP_REQUEST_METHOD,
   EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
   EXTRA_SEMATTRS_URL_FULL,
   FPX_REQUEST_BODY,
-  // FPX_REQUEST_HEADERS_FULL,
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SCHEME,
   FPX_REQUEST_SEARCH,

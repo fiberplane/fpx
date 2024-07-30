@@ -4,7 +4,6 @@ import { Resource } from "@opentelemetry/resources";
 import {
   BasicTracerProvider,
   SimpleSpanProcessor,
-  type TimedEvent,
 } from "@opentelemetry/sdk-trace-base";
 import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext, Hono } from "hono";

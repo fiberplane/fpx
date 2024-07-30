@@ -8,9 +8,7 @@ import {
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { MizuLog, MizuOrphanLog } from "@/queries";
-import {
-  OtelSpan,
-} from "@/queries/traces-otel";
+import { OtelSpan } from "@/queries/traces-otel";
 import { cn } from "@/utils";
 import { useMemo } from "react";
 import { EmptyState } from "../EmptyState";

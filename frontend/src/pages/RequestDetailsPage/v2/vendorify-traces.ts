@@ -1,15 +1,6 @@
-import {
-  MizuFetchSpan,
-  MizuSpan,
-  OtelSpan,
-  isMizuFetchSpan,
-} from "@/queries";
+import { MizuFetchSpan, MizuSpan, OtelSpan, isMizuFetchSpan } from "@/queries";
 import { z } from "zod";
-import {
-  getRequestBody,
-  getRequestUrl,
-} from "./otel-helpers";
-
+import { getRequestBody, getRequestUrl } from "./otel-helpers";
 
 const NoneVendorInfoSchema = z.object({
   vendor: z.literal("none"),

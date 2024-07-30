@@ -8,12 +8,8 @@ import {
   FPX_RESPONSE_BODY,
   SpanKind,
 } from "@/constants";
-import {
-  OtelSpan,
-} from "@/queries";
-import {
-  OtelAttributes,
-} from "@/queries/traces-otel";
+import { OtelSpan } from "@/queries";
+import { OtelAttributes } from "@/queries/traces-otel";
 
 export function getMatchedRoute(span: OtelSpan) {
   // TODO support this in the otel client

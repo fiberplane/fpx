@@ -37,9 +37,14 @@ app.get("/", async (c) => {
   return c.text(`Hello Hono! - ${result.value}`);
 });
 
+const delayedError = measure("delayedError", async () => {
+  await sleep(2);
+  throw new Error("This is an error");
+});
+
 app.get("/error", async () => {
   await sleep(5);
-  throw new Error("This is an error");
+  await delayedError();
 });
 
 export default instrument(app);
