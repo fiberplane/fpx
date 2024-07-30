@@ -8,9 +8,13 @@ use super::errors::ApiClientError;
 use super::handlers::spans::SpanGetError;
 use super::handlers::RequestGetError;
 use crate::api::models;
+use crate::otel_util::HeaderMapInjector;
 use anyhow::Result;
-use http::Method;
+use http::{HeaderMap, Method};
+use opentelemetry::propagation::TextMapPropagator;
+use opentelemetry_sdk::propagation::TraceContextPropagator;
 use tracing::trace;
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
 
 pub struct ApiClient {
@@ -57,6 +61,22 @@ impl ApiClient {
 
         let req = self.client.request(method, u);
 
+        // Take the current otel context, and inject those details into the
+        // Request using the TraceContext format.
+        let req = {
+            let mut headers = HeaderMap::new();
+            let propagator = TraceContextPropagator::new();
+
+            let context = tracing::Span::current().context();
+            let mut header_injector = HeaderMapInjector(&mut headers);
+            propagator.inject_context(&context, &mut header_injector);
+
+            req.headers(headers)
+        };
+
+        // TODO: Create new otel span (SpanKind::Client) and add relevant client
+        // attributes to it.
+
         // Make request
         let response = req.send().await?;
 
@@ -66,6 +86,9 @@ impl ApiClient {
 
         // Read the entire response into a local buffer.
         let body = response.bytes().await?;
+
+        // TODO: Mark the span status as Err if we are unable to parse the
+        // response.
 
         // Try to parse the result as T.
         match serde_json::from_slice::<T>(&body) {

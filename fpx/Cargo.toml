@@ -61,6 +61,7 @@ tokio-tungstenite = { version = "0.21", features = [
 ] } # This should be kept the same as whatever Axum has
 toml = { version = "0.8" }
 tonic = { version = "0.12" }
+tower = { version = "0.4" }
 tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.25" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
