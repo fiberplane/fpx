@@ -87,7 +87,7 @@ export function getRequestHeaders(span: OtelSpan) {
   const headers: Record<string, string> = {};
   const keys = Object.keys(span.attributes);
 
-  for (const key in keys) {
+  for (const key of keys) {
     if (key.startsWith("http.request.header.")) {
       headers[key.replace("http.request.header.", "")] = getString(
         span.attributes[key],
@@ -119,7 +119,7 @@ export function getRequestQueryParams(span: OtelSpan) {
 export function getResponseHeaders(span: OtelSpan) {
   const headers: Record<string, string> = {};
   const keys = Object.keys(span.attributes);
-  for (const key in keys) {
+  for (const key of keys) {
     if (key.startsWith("http.response.header.")) {
       headers[key.replace("http.response.header.", "")] = getString(
         span.attributes[key],

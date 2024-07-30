@@ -2,7 +2,7 @@ import { Status } from "@/components/ui/status";
 import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { OtelSpan } from "@/queries";
-import { MizuSpan } from "@/queries/traces-v2";
+// import { MizuSpan } from "@/queries/traces-v2";
 import { cn, noop } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -23,6 +23,7 @@ import { Divider, SubSection, SubSectionHeading } from "./shared";
 // import { timelineId } from "./timelineId";
 import {
   NeonSpan,
+  VendorInfo,
   isAnthropicSpan,
   isNeonSpan,
   isOpenAISpan,
@@ -182,8 +183,9 @@ const DEFAULT_VENDOR_RESULT = {
  * @param span The span to render.
  * @returns A component and title for a vendor-specific section of the span.
  */
-function useVendorSpecificSection(span: MizuSpan) {
+function useVendorSpecificSection(span: OtelSpan, vendorInfo: VendorInfo) {
   return useMemo(() => {
+    // const vendorInfo = 
     if (isNeonSpan(span)) {
       return {
         component: <NeonSection span={span} />,

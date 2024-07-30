@@ -1,9 +1,9 @@
 import type { Response as WorkerResponse } from "@cloudflare/workers-types";
-import type { Attributes } from "@opentelemetry/api";
+import type { Attributes, SpanKind } from "@opentelemetry/api";
 import {
   SEMATTRS_HTTP_RESPONSE_CONTENT_LENGTH,
   SEMATTRS_HTTP_SCHEME,
-  SEMATTRS_HTTP_URL,
+  // SEMATTRS_HTTP_URL,
 } from "@opentelemetry/semantic-conventions";
 import {
   // FPX_RESPONSE_HEADERS_FULL,

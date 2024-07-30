@@ -36,13 +36,16 @@ import {
   isAnthropicSpan,
   isNeonSpan,
   isOpenAISpan,
+  VendorInfo,
 } from "./vendorify-traces";
+import { SpanKind } from "@/constants";
+import { SpanWithVendorInfo } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 // import { timelineId } from "./timelineId";
 
 type TraceDetailsTimelineProps = {
   // trace: MizuTraceV2;
-  root: OtelSpan;
-  spans: Array<OtelSpan>;
+  // root: OtelSpan;
+  items: Array<SpanWithVendorInfo>;
   orphanLogs: MizuTraceV2["orphanLogs"];
 };
 
@@ -63,19 +66,19 @@ type TraceDetailsTimelineProps = {
 // type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
 
 const normalizeWaterfallTimestamps = (
-  spans: Array<OtelSpan>,
+  items: Array<SpanWithVendorInfo>,
   orphanLogs: MizuTraceV2["orphanLogs"],
 ) => {
   const logTimestamps = orphanLogs.map((log) =>
     new Date(log.timestamp).getTime(),
   );
-
+  console.log('items', items);
   const minStart = Math.min(
-    ...spans.map((span) => new Date(span.start_time).getTime()),
+    ...items.map((item) => new Date(item.span.start_time).getTime()),
     ...logTimestamps,
   );
   const maxEnd = Math.max(
-    ...spans.map((span) => new Date(span.end_time).getTime()),
+    ...items.map((item) => new Date(item.span.end_time).getTime()),
     ...logTimestamps,
   );
 
@@ -119,7 +122,7 @@ const normalizeWaterfallTimestamps = (
 };
 
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
-  spans,
+  items,
   orphanLogs,
 }) => {
   // const [activeId, setActiveId] = useState<string>("");
@@ -137,20 +140,20 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     // maxEnd,
     minStart,
     duration,
-  } = normalizeWaterfallTimestamps(spans, orphanLogs);
+  } = normalizeWaterfallTimestamps(items, orphanLogs);
   // const normalizedTrace = useMemo(
   //   () => normalizeWaterfallTimestamps(trace),
   //   [trace],
   // );
 
   const combinedData = useMemo(() => {
-    return [...spans, ...orphanLogs];
-  }, [spans, orphanLogs]);
+    return [...items, ...orphanLogs];
+  }, [items, orphanLogs]);
 
   const sorted = useMemo(() => {
     return combinedData.sort((a, b) => {
-      const timeA = "start_time" in a ? a.start_time : a.timestamp;
-      const timeB = "start_time" in b ? b.start_time : b.timestamp;
+      const timeA = "span" in a ? a.span.start_time : a.timestamp;
+      const timeB = "span" in b ? b.span.start_time : b.timestamp;
       return new Date(timeA).getTime() - new Date(timeB).getTime();
     });
   }, [combinedData]);
@@ -215,7 +218,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   //     }
   //   };
   // }, [timelineEntryIds, handleObserve]);
-  // console.log('sortedSpans', sortedSpans);
+  console.log('sortedSpans', sorted);
   return (
     <div
       className={cn(
@@ -243,8 +246,9 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
           }
           return (
             <WaterfallRowSpan
-              key={spanOrLog.span_id}
-              span={spanOrLog}
+              key={spanOrLog.span.span_id}
+              span={spanOrLog.span}
+              vendorInfo={spanOrLog.vendorInfo}
               duration={duration}
               startTime={minStart}
             />
@@ -305,21 +309,21 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
 //   );
 // };
 
-const useTimelineDimensions = (
-  spanOrLog: NormalizedSpan | NormalizedOrphanLog,
-) => {
-  return useMemo(() => {
-    const lineWidth = isMizuOrphanLog(spanOrLog)
-      ? ""
-      : `${spanOrLog.normalizedDuration * 100}%`;
+// const useTimelineDimensions = (
+//   spanOrLog: NormalizedSpan | NormalizedOrphanLog,
+// ) => {
+//   return useMemo(() => {
+//     const lineWidth = isMizuOrphanLog(spanOrLog)
+//       ? ""
+//       : `${spanOrLog.normalizedDuration * 100}%`;
 
-    const lineOffset = isMizuOrphanLog(spanOrLog)
-      ? `${spanOrLog.normalizedTimestamp * 100}%`
-      : `${spanOrLog.normalizedStartTime * 100}%`;
+//     const lineOffset = isMizuOrphanLog(spanOrLog)
+//       ? `${spanOrLog.normalizedTimestamp * 100}%`
+//       : `${spanOrLog.normalizedStartTime * 100}%`;
 
-    return { lineWidth, lineOffset };
-  }, [spanOrLog]);
-};
+//     return { lineWidth, lineOffset };
+//   }, [spanOrLog]);
+// };
 
 const useTimelineTitle = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
   return useMemo(() => {
@@ -399,23 +403,25 @@ const useTimelineTitle = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
   }, [spanOrLog]);
 };
 
-const useTimelineIcon = (spanOrLog: NormalizedSpan | NormalizedOrphanLog) => {
+const useTimelineIcon = (spanOrLog: OtelSpan | MizuOrphanLog, vendorInfo?: VendorInfo) => {
   return useMemo(() => {
     let iconType = isMizuOrphanLog(spanOrLog) ? "log" : spanOrLog.kind;
-    if (isMizuFetchSpan(spanOrLog) && canRenderVendorInfo(spanOrLog)) {
-      iconType = spanOrLog.vendorInfo.vendor;
+    if (vendorInfo && vendorInfo.vendor !== "none") {
+      iconType = vendorInfo.vendor;
     }
 
     return getTypeIcon(iconType);
-  }, [spanOrLog]);
+  }, [spanOrLog, vendorInfo], );
 };
 
 const getTypeIcon = (type: string) => {
   switch (type) {
     case "request":
     case "SERVER":
+    case SpanKind.SERVER:
       return <HonoLogo className="w-3.5 h-3.5" />;
     case "CLIENT":
+    case SpanKind.CLIENT:
     case "fetch":
       return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
     case "log":
@@ -459,19 +465,18 @@ const formatDuration = (start: string, end: string) => {
 
 const WaterfallRowSpan: React.FC<{
   span: OtelSpan;
+  vendorInfo: VendorInfo;
   duration: number;
   startTime: number;
-}> = ({ span, duration, startTime }) => {
+}> = ({ span, duration, vendorInfo, startTime }) => {
   const id = span.span_id;
   const spanDuration =
     new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
   const lineWidth = `${((spanDuration / duration) * 100).toPrecision(2)}%`;
-  // console.log('spanDuration', spanDuration, lineWidth);
   const lineOffset = `${((new Date(span.start_time).getTime() - startTime) / duration) * 100}%`;
-  const icon = getTypeIcon(span.kind);
+  const icon = useTimelineIcon(span, vendorInfo);
   const isFetch = span.name === "fetch";
   const isRootRequest = span.parent_span_id === null;
-  // span.kind === "SERVER";
 
   return (
     <a
@@ -544,7 +549,7 @@ const WaterfallRowLog: React.FC<{
   const id = log.id;
   // console.log('spanDuration', spanDuration, lineWidth);
   const lineOffset = `${((new Date(log.timestamp).getTime() - startTime) / duration) * 100}%`;
-  const icon = "log";
+  const icon = useTimelineIcon(log);
   // const isFetch = span.name === "fetch";
   // const isRootRequest = span.parent_span_id === null;
   // span.kind === "SERVER";

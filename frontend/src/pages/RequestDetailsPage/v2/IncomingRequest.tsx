@@ -34,6 +34,7 @@ import { Divider, SubSection, SubSectionHeading } from "./shared";
 export function IncomingRequest({ span }: { span: OtelSpan }) {
   // const id = timelineId(span);
   const id = span.span_id;
+  console.log('span.attributes', span.attributes)
   const method = getRequestMethod(span);
   const duration = useMemo(() => {
     try {

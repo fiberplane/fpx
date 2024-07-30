@@ -25,6 +25,7 @@ import {
   getString,
 } from "./otel-helpers";
 import { SubSection, SubSectionHeading } from "./shared";
+import { SpanKind } from "@/constants";
 
 // export function TraceDetailsV2({ spans, orphanLogs }: {
 //   spans: OtelSpans,
@@ -63,7 +64,8 @@ export function TraceDetailsV2({
 }
 
 function SpanDetails({ span }: { span: OtelSpan }) {
-  if (span.name === "request" && span.kind === "Server") {
+  console.log('span.name', span.name, span.kind);
+  if (span.name.toLowerCase() === "request" && span.kind ===SpanKind.SERVER) {
     return <IncomingRequest span={span} />;
   }
   // if (isMizuRootRequestSpan(span)) {

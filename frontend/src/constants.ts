@@ -21,3 +21,30 @@ export const SpanStatus = {
   OK: 1,
   ERROR: 2,
 };
+
+export const SpanKind = {
+  /** Default value. Indicates that the span is used internally. */
+  INTERNAL: "Internal",
+  /**
+   * Indicates that the span covers server-side handling of an RPC or other
+   * remote request.
+   */
+  SERVER: "Server",
+  /**
+   * Indicates that the span covers the client-side wrapper around an RPC or
+   * other remote request.
+   */
+  CLIENT: "Client",
+  /**
+   * Indicates that the span describes producer sending a message to a
+   * broker. Unlike client and server, there is no direct critical path latency
+   * relationship between producer and consumer spans.
+   */
+  PRODUCER: "Producer",
+  /**
+   * Indicates that the span describes consumer receiving a message from a
+   * broker. Unlike client and server, there is no direct critical path latency
+   * relationship between producer and consumer spans.
+   */
+  CONSUMER: "Consumer",
+}

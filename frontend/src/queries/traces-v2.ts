@@ -11,6 +11,7 @@ import {
   FPX_REQUEST_SCHEME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
+  SpanKind,
   SpanStatus,
 } from "@/constants";
 import {
@@ -265,7 +266,7 @@ function createRootRequestSpan(log: MizuRequestStartLog, logs: MizuLog[]) {
     name: "Request",
     trace_state: "", // This is for cross-vendor interop, allowing vendors to add their own context id
     flags: 1, // This means "sample this trace"
-    kind: "SERVER", // This means we're tracking a request that came from the outside
+    kind: SpanKind.SERVER, // This means we're tracking a request that came from the outside
     start_time: log.timestamp,
     // HACK - The current data model might not have an outgoing (rare), so just adding this to be thorough
     end_time: response?.timestamp ?? new Date("2029-01-01").toISOString(),
@@ -374,7 +375,7 @@ function createFetchSpan(
     name: "Fetch",
     trace_state: "", // NOTE - This is for Cross-Vendor Interoperability, allowing vendors to add their own context id
     flags: 1, // This means "sample this trace"
-    kind: "CLIENT", // This means we're making a request to an external service
+    kind: SpanKind.CLIENT, // This means we're making a request to an external service
     start_time: fetchStartLog.timestamp,
     // HACK - The current data model might not have an outgoing, just adding this as a temporary hack
     end_time: end ?? new Date("2029-01-01").toISOString(),

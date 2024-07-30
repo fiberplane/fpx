@@ -17,8 +17,16 @@ import { EmptyState } from "../EmptyState";
 // import { SkeletonLoader } from "../SkeletonLoader";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
+import { getVendorInfo } from "../v2/vendorify-traces";
+import { useMemo } from "react";
 // import { useMemo } from "react";
 // import { MizuOrphanLog, MizuTraceV2, type MizuSpan } from "@/queries";
+
+export type SpanWithVendorInfo = {
+  span: OtelSpan;
+  vendorInfo: ReturnType<typeof getVendorInfo>;
+};
+
 
 export function RequestDetailsPageContentV2({
   // traceId,
@@ -37,6 +45,15 @@ export function RequestDetailsPageContentV2({
     handleNextTrace: () => void;
   };
 }) {
+  console.log("is spans", !!spans);
+  const spansWithVendorInfo: Array<SpanWithVendorInfo> = useMemo(() => 
+    spans.map(
+      span => ({
+        span,
+        vendorInfo: getVendorInfo(span),
+      })
+    )
+  , [spans]);
   // console.log("orphanLogs", orphanLogs);
   // const { data: spans, isPending, error } = useOtelTrace(traceId);
 
@@ -44,7 +61,7 @@ export function RequestDetailsPageContentV2({
   //   console.error("Error!", error);
   // }
 
-  const rootSpan = spans.find((span) => span.parent_span_id === null);
+  const rootSpan = spansWithVendorInfo.find((item) => item.span.parent_span_id === null);
   // const tracesV2 = useMemo((): MizuTraceV2 | undefined => {
   //   if (!data) {
   //     return undefined;
@@ -102,7 +119,7 @@ export function RequestDetailsPageContentV2({
         <div className="flex items-center gap-6">
           <h2 className="text-2xl font-semibold">Request Details</h2>
           <div className="hidden md:block">
-            <HttpSummary trace={rootSpan} />
+            <HttpSummary trace={rootSpan.span} />
           </div>
         </div>
         {pagination && (
@@ -149,7 +166,7 @@ export function RequestDetailsPageContentV2({
         )}
       </div>
       <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
-        <SummaryV2 trace={rootSpan} />
+        <SummaryV2 trace={rootSpan.span} />
         <div className="grid lg:grid-cols-[auto_1fr] border-t">
           <div
             className={cn(
@@ -161,8 +178,7 @@ export function RequestDetailsPageContentV2({
             )}
           >
             <TraceDetailsTimeline
-              root={rootSpan}
-              spans={spans}
+              items={spansWithVendorInfo}
               orphanLogs={orphanLogs || []}
             />
           </div>
@@ -177,9 +193,8 @@ export function RequestDetailsPageContentV2({
           >
             <div className="w-full lg:hidden">
               <TraceDetailsTimeline
-                root={rootSpan}
-                spans={spans}
-                orphanLogs={[]}
+                items={spansWithVendorInfo}
+                orphanLogs={orphanLogs || []}
               />
             </div>
             <TraceDetailsV2 spans={spans} orphanLogs={orphanLogs || []} />

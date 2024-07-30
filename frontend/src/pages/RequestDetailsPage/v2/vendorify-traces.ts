@@ -3,27 +3,28 @@ import {
   MizuOrphanLog,
   MizuSpan,
   MizuTraceV2,
+  OtelSpan,
   isMizuFetchSpan,
 } from "@/queries";
 import { z } from "zod";
-import { getString } from "./otel-helpers";
+import { getRequestBody, getRequestUrl, getString } from "./otel-helpers";
 
 export type VendorifiedTrace = MizuTraceV2 & {
   waterfall: (VendorifiedSpan | MizuSpan | MizuOrphanLog)[];
 };
 
-export const vendorifyTrace = (trace: MizuTraceV2): VendorifiedTrace => {
-  const vendorifiedWaterfall = trace.waterfall.map((spanOrLog) => {
-    if (isMizuFetchSpan(spanOrLog)) {
-      return vendorifySpan(spanOrLog);
-    }
-    return spanOrLog;
-  });
-  return {
-    ...trace,
-    waterfall: vendorifiedWaterfall,
-  };
-};
+// export const vendorifyTrace = (trace: MizuTraceV2): VendorifiedTrace => {
+//   const vendorifiedWaterfall = trace.waterfall.map((spanOrLog) => {
+//     if (isMizuFetchSpan(spanOrLog)) {
+//       return vendorifySpan(spanOrLog);
+//     }
+//     return spanOrLog;
+//   });
+//   return {
+//     ...trace,
+//     waterfall: vendorifiedWaterfall,
+//   };
+// };
 
 const NoVendorInfoSchema = z.object({
   vendor: z.literal("none"),
@@ -58,7 +59,7 @@ const VendorInfoSchema = z.union([
   NoVendorInfoSchema,
 ]);
 
-type VendorInfo = z.infer<typeof VendorInfoSchema>;
+export type VendorInfo = z.infer<typeof VendorInfoSchema>;
 
 type VendorifiedSpan = MizuFetchSpan & {
   vendorInfo: VendorInfo;
@@ -105,49 +106,85 @@ export const isAnthropicSpan = (span: unknown): span is AnthropicSpan => {
   return isVendorifiedSpan(span) && span.vendorInfo.vendor === "anthropic";
 };
 
-export const vendorifySpan = (span: MizuFetchSpan): VendorifiedSpan => {
+export function getVendorInfo(span: OtelSpan): VendorInfo {
   if (isOpenAIFetch(span)) {
-    return { ...span, vendorInfo: { vendor: "openai" } };
+    return { vendor: "openai" };
   }
+
   if (isNeonFetch(span)) {
     return {
-      ...span,
-      vendorInfo: {
-        vendor: "neon",
-        sql: getNeonSqlQuery(span),
-      },
+      vendor: "neon",
+      sql: getNeonSqlQuery(span),
     };
   }
+
   if (isAnthropicFetch(span)) {
-    return { ...span, vendorInfo: { vendor: "anthropic" } };
+    return { vendor: "anthropic" };
   }
 
-  return { ...span, vendorInfo: { vendor: "none" } };
-};
+  return{ vendor: "none" }
+//   if (span.name === "fetch" && span.kind === "Client") {
+//     // const url = getRequestUrl(span);
+//     if (isNeonFetch(span)) {
+//       return {
+//         vendor: "neon",
+//         sql: getNeonSqlQuery(span),
+//       };
+//     }
 
-const isOpenAIFetch = (span: MizuFetchSpan) => {
-  const requestUrl = getString(span.attributes["server.address"]);
-  if (typeof requestUrl !== "string") {
+//   }
+
+//   return { vendor: "none"};
+
+}
+
+
+// export const vendorifySpan = (span: OtelSpan): VendorifiedSpan => {
+//   const vendorInfo = getVendorInfo(span);
+//   return {...span, vendorInfo};
+// };
+
+
+
+const isOpenAIFetch = (span: OtelSpan) => {
+  const requestUrl = getRequestUrl(span)
+  try {
+    const url = new URL(requestUrl);
+    return url.hostname.includes("api.openai.com");
+  } catch (e) {
     return false;
   }
-  return requestUrl.includes("api.openai.com");
+  // const requestUrl = getString(span.attributes["server.address"]);
+  // if (typeof requestUrl !== "string") {
+  //   return false;
+  // }
+  // return requestUrl.includes("api.openai.com");
 };
 
 // TODO - Make this a bit more robust?
-const isNeonFetch = (span: MizuFetchSpan) => {
+const isNeonFetch = (span: OtelSpan) => {
   return !!span.attributes["http.request.header.neon-connection-string"];
 };
 
-const isAnthropicFetch = (span: MizuFetchSpan) => {
-  const requestUrl = getString(span.attributes["server.address"]);
-  if (typeof requestUrl !== "string") {
+const isAnthropicFetch = (span: OtelSpan) => {
+  const requestUrl = getRequestUrl(span)
+  try {
+    const url = new URL(requestUrl);
+    return url.hostname.includes("api.anthropic.com");
+  } catch (e) {
     return false;
   }
-  return requestUrl.includes("api.anthropic.com");
+
+  // const requestUrl = getString(span.attributes["server.address"]);
+  // if (typeof requestUrl !== "string") {
+  //   return false;
+  // }
+  // return requestUrl.includes("api.anthropic.com");
 };
 
-function getNeonSqlQuery(span: MizuFetchSpan) {
-  const body = getString(span.attributes["fpx.request.body"]);
+function getNeonSqlQuery(span: OtelSpan) {
+  const body = getRequestBody(span);
+  // const body = getString(span.attributes["fpx.request.body"]);
   if (!body) {
     return { query: "DB QUERY", params: [] };
   }
