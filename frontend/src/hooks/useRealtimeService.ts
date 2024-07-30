@@ -50,15 +50,13 @@ export function useRealtimeService() {
   });
 
   useEffect(() => {
-    console.log("lastJsonMessage", lastJsonMessage);
     if (lastJsonMessage) {
+      console.log("lastJsonMessage", lastJsonMessage);
       try {
         if (isFPXWebsocketMessage(lastJsonMessage)) {
           console.log("isFPXWebsocketMessage", lastJsonMessage);
           setParsedMessage(lastJsonMessage);
         }
-
-        console.log(false);
       } catch (error) {
         console.error("Failed to parse websocket message:", error);
       }
