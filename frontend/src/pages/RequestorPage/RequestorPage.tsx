@@ -12,10 +12,12 @@ import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { useAi } from "./ai";
 import {
+  MakeProxiedRequestQueryFn,
   type ProbedRoute,
   Requestornator,
   useFetchRequestorRequests,
-  useMakeRequest,
+  useMakeProxiedRequest,
+  // useMakeRequest,
 } from "./queries";
 import { useRequestor } from "./reducer";
 import { findMatchedRoute, useRoutes } from "./routes";
@@ -113,7 +115,7 @@ export const RequestorPage = () => {
   );
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
-    useMakeRequest();
+    useMakeProxiedRequest();
 
   // WIP - Allows us to connect to a websocket and send messages through it
   const {
@@ -503,7 +505,7 @@ function useRequestorSubmitHandler({
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   requestHeaders: KeyValueParameter[];
-  makeRequest: ReturnType<typeof useMakeRequest>["mutate"];
+  makeRequest: MakeProxiedRequestQueryFn;
   connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
   requestType: RequestorState["requestType"];

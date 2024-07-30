@@ -144,6 +144,8 @@ export function useFetchRequestorRequests() {
   });
 }
 
+export type MakeRequestQueryFn = ReturnType<typeof useMakeRequest>["mutate"];
+
 export function useMakeRequest() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -213,6 +215,118 @@ export function makeRequest({
       requestRoute: route,
     }),
   }).then((r) => r.json());
+}
+
+export type MakeProxiedRequestQueryFn = ReturnType<
+  typeof useMakeProxiedRequest
+>["mutate"];
+
+export function useMakeProxiedRequest() {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: makeProxiedRequest,
+    onSuccess: () => {
+      // Invalidate and refetch requestor requests
+      queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
+    },
+  });
+
+  return mutation;
+}
+
+export function makeProxiedRequest({
+  addBaseUrl,
+  path,
+  method,
+  body,
+  headers,
+  pathParams,
+  queryParams,
+  route,
+}: {
+  addBaseUrl: (path: string) => string;
+  path: string;
+  method: string;
+  body: RequestorState["body"];
+  headers: KeyValueParameter[];
+  pathParams?: KeyValueParameter[];
+  queryParams: KeyValueParameter[];
+  route?: string;
+}) {
+  const queryParamsForUrl = new URLSearchParams();
+  queryParams.forEach((param) => {
+    if (param.enabled) {
+      queryParamsForUrl.set(param.key, param.value);
+    }
+  });
+
+  // NOTE - we add custom headers to record additional metadata about the request
+  const modHeaders = reduceKeyValueParameters(headers);
+  if (route) {
+    modHeaders["x-fpx-route"] = route;
+  }
+  // HACK - Serialize path params into a header
+  //        This could cause encoding issues if there are funky chars in the path params
+  modHeaders["x-fpx-path-params"] = JSON.stringify(
+    reduceKeyValueParameters(pathParams ?? []),
+  );
+
+  // HACK - This is the most secure code I've ever written
+  modHeaders["x-fpx-proxy-to"] = addBaseUrl(path);
+
+  // We resolve the url with query parameters
+  const searchString = queryParamsForUrl.toString();
+  const resolvedPath = searchString ? `${path}?${searchString}` : path;
+
+  // We create the body
+  // FIXME - We should validate JSON in the UI itself
+  const hackyBody = createBody(body);
+
+  return fetch(`/v0/proxy-request${resolvedPath}`, {
+    method,
+    headers: modHeaders,
+    body: method === "GET" || method === "HEAD" ? undefined : hackyBody,
+  }).then((r) => {
+    console.log("i got a response hereeeee", r);
+    return {
+      traceId: r.headers.get("x-fpx-trace-id"),
+    };
+  });
+}
+
+function createBody(body: RequestorState["body"]) {
+  if (body.type === "json") {
+    if (typeof body.value !== "undefined") {
+      return JSON.stringify(body.value);
+    }
+    return undefined;
+  }
+  if (body.type === "form-data") {
+    return createUrlEncodedBody(reduceKeyValueParameters(body.value));
+  }
+  // if (body.type === "form-data--multipart") {
+  //   return createFormData(body);
+  // }
+  return body.value;
+}
+
+// NOTE - This is for urlencoded (not multipart)
+function createUrlEncodedBody(body: Record<string, string>) {
+  return new URLSearchParams(body).toString();
+}
+
+// NOTE - This is for multipart
+function createFormData(body: RequestorState["body"]) {
+  if (body.type === "form-data") {
+    const formData = new FormData();
+    body.value.forEach((item) => {
+      if (item.enabled) {
+        formData.append(item.key, item.value);
+      }
+    });
+    return formData;
+  }
+  return null;
 }
 
 export function useTrace(traceId: string) {

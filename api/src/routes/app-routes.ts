@@ -3,7 +3,6 @@ import { and, eq } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
-import type { StatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import {
   type NewAppRequest,
@@ -16,7 +15,7 @@ import {
 } from "../db/schema.js";
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { errorToJson, generateUUID } from "../lib/utils.js";
+import { errorToJson, generateUUID, safeParseJson } from "../lib/utils.js";
 import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
 
@@ -221,47 +220,75 @@ function createUrlEncodedBody(body: Record<string, string>) {
  * It's used to add the trace-id header to the request, and to handle the response.
  *
  */
-app.all("/v1/send-request/*", async (ctx) => {
+app.all("/v0/proxy-request/*", async (ctx) => {
   const traceId = ctx.req.header("x-fpx-trace-id") ?? generateUUID();
   const db = ctx.get("db");
 
+  const requestRoute = ctx.req.header("x-fpx-route");
+  const requestPathParams = safeParseJson(ctx.req.header("x-fpx-path-params"));
+
   const requestMethod = ctx.req.method;
-  const requestUrl = ctx.req.url;
+  const requestUrlHeader = ctx.req.header("x-fpx-proxy-to") ?? "";
   const requestHeaders: Record<string, string> = {};
+
+  // If the header is in this list, we don't want to pass it through to the service
+  const ignoreTheseHeaders = [
+    "x-fpx-route",
+    "x-fpx-path-params",
+    "x-fpx-proxy-to",
+  ];
   ctx.req.raw.headers.forEach((value, key) => {
+    if (ignoreTheseHeaders.includes(key)) {
+      return;
+    }
     requestHeaders[key] = value;
   });
+  // Ensure the trace id is present
+  if (!requestHeaders["x-fpx-trace-id"]) {
+    requestHeaders["x-fpx-trace-id"] = traceId;
+  }
+
   const requestQueryParams = {
     ...ctx.req.query(),
   };
-  const requestPathParams = {
-    ...ctx.req.param(),
-  };
+
+  const requestUrl = resolveUrl(requestUrlHeader, requestQueryParams);
 
   // Extract request body based on content type
+  // Provide a `proxiedRequestBody` that can be used with fetch
+
+  // biome-ignore lint/suspicious/noExplicitAny: fix later
   let requestBody: any;
+  // biome-ignore lint/suspicious/noExplicitAny: fix later
+  let proxiedRequestBody: any;
   const contentType = ctx.req.header("content-type");
-  if (contentType?.includes("application/json")) {
-    requestBody = await ctx.req.json();
+  if (requestMethod === "GET" || requestMethod === "HEAD") {
+    requestBody = undefined;
+    proxiedRequestBody = undefined;
+  } else if (contentType?.includes("application/json")) {
+    if (ctx.req.raw.body) {
+      const textBody = await ctx.req.text();
+      requestBody = safeParseJson(textBody);
+      proxiedRequestBody = textBody;
+    } else {
+      requestBody = undefined;
+      proxiedRequestBody = undefined;
+    }
   } else if (contentType?.includes("application/x-www-form-urlencoded")) {
-    const parsedBody = await ctx.req.parseBody();
-    // TODO
-    requestBody = Object.fromEntries(parsedBody);
+    requestBody = await ctx.req.formData();
+    proxiedRequestBody = new URLSearchParams(requestBody).toString();
   } else if (contentType?.includes("multipart/form-data")) {
+    // TODO - Test me
     const formData = await ctx.req.parseBody({ all: true });
-    requestBody = Object.fromEntries(
-      Object.entries(formData).map(([key, value]) => {
-        if (value instanceof File) {
-          return [key, { filename: value.name, type: value.type }];
-        }
-        return [key, value];
-      }),
-    );
+    requestBody = formData;
+    proxiedRequestBody = new FormData();
+    for (const [key, value] of requestBody.entries()) {
+      proxiedRequestBody.append(key, value);
+    }
   } else {
     requestBody = await ctx.req.text();
+    proxiedRequestBody = requestBody;
   }
-
-  const requestRoute = ctx.req.path;
 
   // Record request details
   const newRequest: NewAppRequest = {
@@ -282,42 +309,27 @@ app.all("/v1/send-request/*", async (ctx) => {
 
   const requestId = insertResult[0].requestId;
 
-  // Prepare headers for the proxied request
-  const modifiedRequestHeaders = {
-    ...requestHeaders,
-    "x-fpx-trace-id": traceId,
-  };
-
   // Prepare the request object for fetch
   const requestObject: RequestInit = {
     method: requestMethod,
-    headers: modifiedRequestHeaders,
+    headers: requestHeaders,
+    body: proxiedRequestBody,
   };
-
-  // Handle body for the proxied request
-  if (contentType?.includes("multipart/form-data")) {
-    const formData = await ctx.req.parseBody({ all: true });
-    // TODO
-    requestObject.body = formData;
-  } else {
-    requestObject.body = ctx.req.raw.body;
-  }
-
-  const finalUrl = resolveUrl(requestUrl, requestQueryParams);
 
   const startTime = Date.now();
   try {
     // Proxy the request
-    const response = await fetch(finalUrl, requestObject);
+    const response = await fetch(requestUrl, requestObject);
+
     const duration = Date.now() - startTime;
 
     const {
-      responseStatusCode,
-      responseTime,
-      responseHeaders,
-      responseBody,
+      // responseStatusCode,
+      // responseTime,
+      // responseHeaders,
+      // responseBody,
       traceId: responseTraceId,
-      isFailure,
+      // isFailure,
     } = await handleSuccessfulRequest(db, requestId, duration, response);
 
     if (responseTraceId !== traceId) {
@@ -326,16 +338,19 @@ app.all("/v1/send-request/*", async (ctx) => {
       );
     }
 
-    // Set response headers and status
-    Object.entries(responseHeaders).forEach(([key, value]) => {
-      ctx.header(key, value);
-    });
-    // HACK - Type coercion
-    ctx.status(responseStatusCode as StatusCode);
+    // TODO - There will (in the future) be cases where we want the response headers, body, etc
+    //        to be the same as for the proxied request.
+    //
+    // Object.entries(responseHeaders).forEach(([key, value]) => {
+    //   ctx.header(key, value);
+    // });
 
+    // NOTE -
+    ctx.header("x-fpx-trace-id", traceId);
     // Return the response body
-    return ctx.body(responseBody);
+    return ctx.text("OK");
   } catch (fetchError) {
+    console.log("fetchError", fetchError);
     const responseTime = Date.now() - startTime;
     const { failureDetails, failureReason, isFailure } =
       await handleFailedRequest(
@@ -346,6 +361,7 @@ app.all("/v1/send-request/*", async (ctx) => {
         fetchError,
       );
 
+    ctx.header("x-fpx-trace-id", traceId);
     ctx.status(500);
     return ctx.json({
       isFailure,
@@ -356,6 +372,11 @@ app.all("/v1/send-request/*", async (ctx) => {
       requestId,
     });
   }
+});
+
+app.onError((err, c) => {
+  console.error("Tell me", err);
+  return c.json({ message: "Internal server error" }, 500);
 });
 
 /**
