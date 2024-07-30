@@ -1,18 +1,21 @@
 import { useMemo, useState } from "react";
 
 import { createParameterId, isDraftParameter } from "./data";
-import type { DraftKeyValueParameter, KeyValueParameter } from "./types";
+import type { DraftFormDataParameter, FormDataParameter } from "./types";
 
-const INITIAL_KEY_VALUE_PARAMETER: KeyValueParameter = {
+const INITIAL_KEY_VALUE_PARAMETER: FormDataParameter = {
   id: createParameterId(),
   key: "",
-  value: "",
+  value: {
+    type: "text",
+    value: "",
+  },
   enabled: false,
 };
 
-export const useKeyValueForm = (initial?: KeyValueParameter[]) => {
-  const [_keyValueParameters, setKeyValueParameters] = useState<
-    KeyValueParameter[]
+export const useFormDataForm = (initial?: FormDataParameter[]) => {
+  const [_formDataParameters, setFormDataParameters] = useState<
+    FormDataParameter[]
   >(
     initial ?? [
       {
@@ -21,22 +24,22 @@ export const useKeyValueForm = (initial?: KeyValueParameter[]) => {
     ],
   );
 
-  const { parameters: keyValueParameters } =
-    useKeyValueParameters(_keyValueParameters);
+  const { parameters: formDataParameters } =
+    useFormDataParameters(_formDataParameters);
 
   return {
-    keyValueParameters,
-    setKeyValueParameters,
+    formDataParameters,
+    setFormDataParameters,
   };
 };
 
 /**
  * Hook that manages the state of a key-value form, ensuring that there is always a single
- * {@link DraftKeyValueParameter} at the end of the array of parameters.
+ * {@link DraftFormDataParameter} at the end of the array of parameters.
  *
  * This allows us to treat the terminal parameter like a form element for new parameters.
  */
-export function useKeyValueParameters(parameters: KeyValueParameter[]) {
+export function useFormDataParameters(parameters: FormDataParameter[]) {
   const parametersWithDraft = useMemo(
     () => enforceTerminalDraftParameter(parameters.map(disableBlankParameter)),
     [parameters],
@@ -46,10 +49,14 @@ export function useKeyValueParameters(parameters: KeyValueParameter[]) {
 }
 
 /**
- * Immutably disable a {@link KeyValueParameter} if it has a blank key and value.
+ * Immutably disable a {@link FormDataParameter} if it has a blank key and value.
  */
-const disableBlankParameter = (parameter: KeyValueParameter) => {
-  if (parameter.key === "" && parameter.value === "") {
+const disableBlankParameter = (parameter: FormDataParameter) => {
+  if (
+    parameter.key === "" &&
+    parameter.value.type === "text" &&
+    parameter.value.value === ""
+  ) {
     return { ...parameter, enabled: false };
   }
 
@@ -61,12 +68,12 @@ const disableBlankParameter = (parameter: KeyValueParameter) => {
  *        in order to preserve focus on the last parameter when you delete all of a key.
  *        (Hard to explain, just know this is preferable to `enforceSingleTerminalDraftParameter` for UI behavior.)
  *
- * If the final element of the array is a {@link DraftKeyValueParameter}, return the array
+ * If the final element of the array is a {@link DraftFormDataParameter}, return the array
  * Otherwise, return the array with a new draft parameter appended.
  *
  */
 export const enforceTerminalDraftParameter = (
-  parameters: KeyValueParameter[],
+  parameters: FormDataParameter[],
 ) => {
   const finalElement = parameters[parameters.length - 1];
   const hasTerminalDraftParameter = finalElement
@@ -82,13 +89,13 @@ export const enforceTerminalDraftParameter = (
 /**
  * NOTE - This is the desired behavior, but does not play nicely with focus in the UI.
  *
- * If the final element of the array is a {@link DraftKeyValueParameter}, return the array
+ * If the final element of the array is a {@link DraftFormDataParameter}, return the array
  * Otherwise, return the array with a new draft parameter appended.
  *
  * If there are multiple draft parameters, all will be filtered out, and a new draft parameter will be appended at the end.
  */
 export const enforceSingleTerminalDraftParameter = (
-  parameters: KeyValueParameter[],
+  parameters: FormDataParameter[],
 ) => {
   const firstDraftParameterIndex = parameters.findIndex(isDraftParameter);
 
@@ -108,14 +115,17 @@ export const enforceSingleTerminalDraftParameter = (
 };
 
 /**
- * Helper to immutabily add a {@link DraftKeyValueParameter} to the end of an array.
+ * Helper to immutabily add a {@link DraftFormDataParameter} to the end of an array.
  */
-const concatDraftParameter = (parameters: KeyValueParameter[]) => {
-  const DRAFT_PARAMETER: DraftKeyValueParameter = {
+const concatDraftParameter = (parameters: FormDataParameter[]) => {
+  const DRAFT_PARAMETER: DraftFormDataParameter = {
     id: createParameterId(),
     enabled: false,
     key: "",
-    value: "",
+    value: {
+      type: "text",
+      value: "",
+    },
   };
   return [...parameters, DRAFT_PARAMETER];
 };

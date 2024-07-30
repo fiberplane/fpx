@@ -1,32 +1,33 @@
 import {
-  ChangeKeyValueParametersHandler,
-  DraftKeyValueParameter,
-  KeyValueParameter,
+  ChangeFormDataParametersHandler,
+  DraftFormDataParameter,
+  FormDataParameter,
 } from "./types";
 
 export const createParameterId = () => generateUUID();
 
-export const initializeKeyValueFormData = (): DraftKeyValueParameter[] => {
+export const initializeKeyValueFormData = (): DraftFormDataParameter[] => {
   return [];
 };
 
 /**
- * Type guard to determine if a {@link KeyValueParameter} is a {@link DraftKeyValueParameter}.
+ * Type guard to determine if a {@link FormDataParameter} is a {@link DraftFormDataParameter}.
  */
 export const isDraftParameter = (
-  parameter: KeyValueParameter,
-): parameter is DraftKeyValueParameter => {
+  parameter: FormDataParameter,
+): parameter is DraftFormDataParameter => {
   return (
     parameter.enabled === false &&
     parameter.key === "" &&
-    parameter.value === ""
+    parameter.value.type === "text" &&
+    parameter.value.value === ""
   );
 };
 
 /**
- * Count the number of non-draft parameters in a {@link KeyValueParameter} list.
+ * Count the number of non-draft parameters in a {@link FormDataParameter} list.
  */
-export const countParameters = (parameters: KeyValueParameter[]): number => {
+export const countParameters = (parameters: FormDataParameter[]): number => {
   return parameters.reduce((count, parameter) => {
     if (isDraftParameter(parameter)) {
       return count;
@@ -37,14 +38,14 @@ export const countParameters = (parameters: KeyValueParameter[]): number => {
 };
 
 /**
- * Return a function to immutably update an element of a {@link KeyValueParameter} list with a new `enabled` property.
+ * Return a function to immutably update an element of a {@link FormDataParameter} list with a new `enabled` property.
  */
 export function createChangeEnabled(
-  onChange: ChangeKeyValueParametersHandler,
-  allParameters: KeyValueParameter[],
-  parameter: KeyValueParameter,
+  onChange: ChangeFormDataParametersHandler,
+  allParameters: FormDataParameter[],
+  parameter: FormDataParameter,
 ) {
-  return modifyKeyValueParameter(
+  return modifyFormDataParameter(
     onChange,
     allParameters,
     parameter,
@@ -58,14 +59,14 @@ export function createChangeEnabled(
 }
 
 /**
- * Return a function to immutably update an element of a {@link KeyValueParameter[]} with a new `key` property.
+ * Return a function to immutably update an element of a {@link FormDataParameter[]} with a new `key` property.
  */
 export function createChangeKey(
-  onChange: ChangeKeyValueParametersHandler,
-  allParameters: KeyValueParameter[],
-  parameter: KeyValueParameter,
+  onChange: ChangeFormDataParametersHandler,
+  allParameters: FormDataParameter[],
+  parameter: FormDataParameter,
 ) {
-  return modifyKeyValueParameter(
+  return modifyFormDataParameter(
     onChange,
     allParameters,
     parameter,
@@ -79,18 +80,18 @@ export function createChangeKey(
 }
 
 /**
- * Return a function to immutably update an element of a {@link KeyValueParameter[]} with a new `value` property.
+ * Return a function to immutably update an element of a {@link FormDataParameter[]} with a new `value` property.
  */
 export function createChangeValue(
-  onChange: ChangeKeyValueParametersHandler,
-  allParameters: KeyValueParameter[],
-  parameter: KeyValueParameter,
+  onChange: ChangeFormDataParametersHandler,
+  allParameters: FormDataParameter[],
+  parameter: FormDataParameter,
 ) {
-  return modifyKeyValueParameter(
+  return modifyFormDataParameter(
     onChange,
     allParameters,
     parameter,
-    (parameterToModify, newValue: string) => {
+    (parameterToModify, newValue: FormDataParameter["value"]) => {
       return {
         ...parameterToModify,
         value: newValue,
@@ -102,14 +103,14 @@ export function createChangeValue(
 // Utils
 
 /**
- * Helper to create a function that immutably updates an element of a {@link KeyValueParameter[]} with a new property,
+ * Helper to create a function that immutably updates an element of a {@link FormDataParameter[]} with a new property,
  * then calls a callback with the new array.
  */
-function modifyKeyValueParameter<T>(
-  onChange: ChangeKeyValueParametersHandler,
-  allParameters: KeyValueParameter[],
-  parameter: KeyValueParameter,
-  mapNewValue: (p: KeyValueParameter, newValue: T) => KeyValueParameter,
+function modifyFormDataParameter<T>(
+  onChange: ChangeFormDataParametersHandler,
+  allParameters: FormDataParameter[],
+  parameter: FormDataParameter,
+  mapNewValue: (p: FormDataParameter, newValue: T) => FormDataParameter,
 ) {
   return (newValue: T) => {
     const newQueryParams = allParameters.map((otherParameter) => {
@@ -139,25 +140,26 @@ function generateUUID() {
   return `${timeStamp}-${randomPart()}-${randomPart()}`;
 }
 
-export function reduceKeyValueParameters(parameters: KeyValueParameter[]) {
-  return parameters.reduce(
-    (o, param) => {
-      if (isDraftParameter(param)) {
-        return o;
-      }
-      const { key, value, enabled } = param;
-      if (!enabled) {
-        return o;
-      }
-      o[key] = value;
+export function reduceFormDataParameters(parameters: FormDataParameter[]) {
+  return parameters.reduce((o, param) => {
+    if (isDraftParameter(param)) {
       return o;
-    },
-    {} as Record<string, string>,
-  );
+    }
+    const { key, value, enabled } = param;
+    if (!enabled) {
+      return o;
+    }
+    if (value.type === "text") {
+      o.append(key, value.value);
+    } else {
+      o.append(key, value.value, value.name);
+    }
+    return o;
+  }, new FormData());
 }
 
-export function createKeyValueParameters(
-  replacements: Array<{ key: string; value: string }>,
+export function createFormDataParameters(
+  replacements: Array<{ key: string; value: FormDataParameter["value"] }>,
 ) {
   return replacements.map(({ key, value }) => {
     return {

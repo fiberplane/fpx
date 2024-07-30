@@ -1,4 +1,10 @@
-export { FormDataForm as KeyValueForm, FormDataFormRow } from "./FormDataForm";
-export { reduceKeyValueParameters, createKeyValueParameters } from "./data";
-export { enforceTerminalDraftParameter, useKeyValueForm } from "./hooks";
-export { KeyValueParameterSchema, type KeyValueParameter } from "./types";
+export { FormDataForm, FormDataFormRow } from "./FormDataForm";
+export {
+  reduceFormDataParameters,
+  createFormDataParameters,
+} from "./data";
+export {
+  enforceTerminalDraftParameter as enforceFormDataTerminalDraftParameter,
+  useFormDataForm,
+} from "./hooks";
+export { FormDataParameterSchema, type FormDataParameter } from "./types";

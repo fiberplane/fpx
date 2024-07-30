@@ -1,4 +1,5 @@
 import { useCallback, useReducer } from "react";
+import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
 import { KeyValueParameter } from "../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import { ProbedRoute } from "../queries";
@@ -301,7 +302,17 @@ function requestorReducer(
       return { ...state, requestHeaders: action.payload };
     }
     case SET_BODY: {
-      return { ...state, body: action.payload };
+      const nextBody = action.payload;
+      if (nextBody.type === "form-data") {
+        return {
+          ...state,
+          body: {
+            type: nextBody.type,
+            value: enforceFormDataTerminalDraftParameter(nextBody.value),
+          },
+        };
+      }
+      return { ...state, body: nextBody };
     }
     case SET_BODY_TYPE: {
       const oldBodyValue = state.body.value;
@@ -313,7 +324,10 @@ function requestorReducer(
       if (newBodyType === "form-data") {
         return {
           ...state,
-          body: { type: newBodyType, value: enforceTerminalDraftParameter([]) },
+          body: {
+            type: newBodyType,
+            value: enforceFormDataTerminalDraftParameter([]),
+          },
         };
       }
       if (oldBodyType === "form-data") {

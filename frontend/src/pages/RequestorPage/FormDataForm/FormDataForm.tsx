@@ -1,32 +1,31 @@
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { cn, noop } from "@/utils";
 import { FileIcon, TrashIcon } from "@radix-ui/react-icons";
-import { useState, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   createChangeEnabled,
   createChangeKey,
   createChangeValue,
   isDraftParameter,
 } from "./data";
-import { ChangeKeyValueParametersHandler, KeyValueParameter } from "./types";
-import { Button } from "@/components/ui/button";
+import { ChangeFormDataParametersHandler, FormDataParameter } from "./types";
 
 type Props = {
-  keyValueParameters: KeyValueParameter[];
-  onChange: ChangeKeyValueParametersHandler;
+  keyValueParameters: FormDataParameter[];
+  onChange: ChangeFormDataParametersHandler;
 };
 
-type KeyValueRowProps = {
+type FormDataRowProps = {
   isDraft: boolean;
-  parameter: KeyValueParameter;
+  parameter: FormDataParameter;
   onChangeEnabled: (enabled: boolean) => void;
   onChangeKey?: (key: string) => void;
-  onChangeValue: (value: string) => void;
+  onChangeValue: (value: FormDataParameter["value"]) => void;
   removeValue?: () => void;
-  onChangeFile: (file: File) => void;
 };
-export const FormDataFormRow = (props: KeyValueRowProps) => {
+export const FormDataFormRow = (props: FormDataRowProps) => {
   const {
     isDraft,
     onChangeEnabled,
@@ -34,18 +33,20 @@ export const FormDataFormRow = (props: KeyValueRowProps) => {
     onChangeValue,
     removeValue,
     parameter,
-    onChangeFile,
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      onChangeFile(file);
-    }
-  };
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        onChangeValue({ value: file, type: "file", name: file.name });
+      }
+    },
+    [onChangeValue],
+  );
 
   return (
     <div
@@ -70,28 +71,43 @@ export const FormDataFormRow = (props: KeyValueRowProps) => {
         onChange={(e) => onChangeKey?.(e.target.value)}
         className="w-24 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none"
       />
-      <Input
-        type="text"
-        value={value}
-        placeholder="value"
-        onChange={(e) => onChangeValue(e.target.value)}
-        className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none"
-      />
-      <div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <FileIcon className="w-4 h-4" />
-        </Button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={handleFileChange}
+      {value.type === "text" && (
+        <Input
+          type="text"
+          value={value.value}
+          placeholder="value"
+          onChange={(e) =>
+            onChangeValue({ value: e.target.value, type: "text" })
+          }
+          className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none"
         />
-      </div>
+      )}
+      {value.type === "file" && (
+        <div className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none">
+          <Button variant="secondary" className="h-8">
+            <FileIcon className="w-3 h-3 mr-2" />
+            {value.name}
+          </Button>
+        </div>
+      )}
+      {!(value.type === "file" && !!value.value) && (
+        <div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <FileIcon className="w-4 h-4" />
+          </Button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </div>
+      )}
+
       <div
         className={cn("ml-1 flex invisible", {
           visible: !isDraft && isHovering && !!removeValue,
@@ -140,7 +156,6 @@ export const FormDataForm = (props: Props) => {
                 keyValueParameters.filter(({ id }) => parameter.id !== id),
               );
             }}
-            onChangeFile={() => {}}
           />
         );
       })}

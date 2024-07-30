@@ -29,8 +29,8 @@ import {
 } from "react";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
-import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { FormDataForm } from "./FormDataForm/FormDataForm";
+import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { PathParamForm } from "./PathParamForm/PathParamForm";
 import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
@@ -58,6 +58,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { CheckIcon } from "@radix-ui/react-icons";
+import { FormDataParameter } from "./FormDataForm";
 import type { RequestsPanelTab } from "./reducer";
 import { RequestorState } from "./reducer/state";
 
@@ -286,6 +287,7 @@ function RequestMeta(props: RequestPanelProps) {
           />
           <PanelSectionHeader
             title="Request Body"
+            // FIXME - Change based on body type...
             handleClearData={() => {
               setBody(undefined);
             }}
@@ -300,8 +302,7 @@ function RequestMeta(props: RequestPanelProps) {
           )}
           {body.type === "form-data" && (
             <FormDataForm
-              // FIXME - Use type guard
-              keyValueParameters={(body.value ?? []) as KeyValueParameter[]}
+              keyValueParameters={body.value}
               onChange={(params) => {
                 setBody({
                   type: "form-data",

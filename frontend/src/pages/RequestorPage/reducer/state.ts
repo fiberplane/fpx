@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FormDataParameterSchema } from "../FormDataForm";
 import {
   KeyValueParameterSchema,
   enforceTerminalDraftParameter,
@@ -19,7 +20,7 @@ const RequestorBodySchema = z.union([
   }),
   z.object({
     type: z.literal("form-data"),
-    value: z.array(KeyValueParameterSchema),
+    value: z.array(FormDataParameterSchema),
   }),
 ]);
 
