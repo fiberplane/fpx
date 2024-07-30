@@ -1,19 +1,11 @@
 use crate::data::Store;
 use crate::events::ServerEvents;
 use crate::inspector::InspectorService;
-use crate::otel_util::{HeaderMapExtractor, HeaderMapInjector};
 use crate::service::Service;
-use axum::extract::{FromRef, MatchedPath, Request};
-use axum::response::Response;
+use axum::extract::FromRef;
 use axum::routing::{any, get, post};
-use futures_util::future::BoxFuture;
 use http::StatusCode;
-use opentelemetry::propagation::TextMapPropagator;
 use std::path::PathBuf;
-use tower::Layer;
-use tracing::Instrument;
-use tracing::{field, info_span, Span};
-use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
 
 pub mod client;
@@ -124,85 +116,5 @@ fn api_router() -> axum::Router<ApiState> {
             get(handlers::spans::span_list_handler),
         )
         .fallback(StatusCode::NOT_FOUND)
-        .layer(OtelTraceLayer {})
-}
-
-/// This [`tower_layer::Layer`] will add OTEL specific tracing to the request.
-#[derive(Clone)]
-struct OtelTraceLayer {}
-
-impl<S> Layer<S> for OtelTraceLayer {
-    type Service = OtelTraceService<S>;
-
-    fn layer(&self, inner: S) -> Self::Service {
-        OtelTraceService { inner }
-    }
-}
-
-#[derive(Clone)]
-struct OtelTraceService<S> {
-    inner: S,
-}
-
-impl<S> tower::Service<Request> for OtelTraceService<S>
-where
-    S: tower::Service<Request, Response = Response> + Send + 'static,
-    S::Future: Send + 'static,
-{
-    type Response = S::Response;
-    type Error = S::Error;
-    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
-
-    fn poll_ready(
-        &mut self,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Result<(), Self::Error>> {
-        self.inner.poll_ready(cx)
-    }
-
-    fn call(&mut self, req: Request) -> Self::Future {
-        let span = create_span_from_req(&req);
-        let headers = req.headers();
-        let extractor = HeaderMapExtractor(headers);
-
-        let propagator = opentelemetry_sdk::propagation::TraceContextPropagator::new();
-        let context = propagator.extract(&extractor);
-        span.set_parent(context);
-
-        let future = self.inner.call(req);
-        Box::pin(
-            async move {
-                let mut response: Response = future.await?;
-
-                let headers = response.headers_mut();
-                let propagator = opentelemetry_sdk::propagation::TraceContextPropagator::new();
-
-                let context = tracing::Span::current().context();
-                let mut header_injector = HeaderMapInjector(headers);
-                propagator.inject_context(&context, &mut header_injector);
-
-                Ok(response)
-            }
-            .instrument(span),
-        )
-    }
-}
-
-fn create_span_from_req(req: &Request) -> Span {
-    let path = if let Some(path) = req.extensions().get::<MatchedPath>() {
-        path.as_str()
-    } else {
-        req.uri().path()
-    };
-
-    info_span!(
-        "HTTP request",
-        http.request.method = req.method().as_str(),
-        url.path = req.uri().path(),
-        url.query = req.uri().query(),
-        url.scheme = ?req.uri().scheme(),
-        otel.kind = "Server",
-        otel.name = format!("{} {}", req.method().as_str(), path),
-        otel.status_code = field::Empty, // Should be set on the response
-    )
+        .layer(crate::otel_util::OtelTraceLayer::default())
 }
