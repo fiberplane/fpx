@@ -316,18 +316,18 @@ function createUrlEncodedBody(body: Record<string, string>) {
 }
 
 // NOTE - This is for multipart
-function createFormData(body: RequestorState["body"]) {
-  if (body.type === "form-data") {
-    const formData = new FormData();
-    body.value.forEach((item) => {
-      if (item.enabled) {
-        formData.append(item.key, item.value);
-      }
-    });
-    return formData;
-  }
-  return null;
-}
+// function createFormData(body: RequestorState["body"]) {
+//   if (body.type === "form-data") {
+//     const formData = new FormData();
+//     body.value.forEach((item) => {
+//       if (item.enabled) {
+//         formData.append(item.key, item.value);
+//       }
+//     });
+//     return formData;
+//   }
+//   return null;
+// }
 
 export function useTrace(traceId: string) {
   const { data: traces, isLoading, error } = useMizuTraces();
