@@ -5,7 +5,7 @@ import {
   objectHasStack,
   renderFullLogMessage,
 } from "@/utils";
-import { LogLevel } from "./RequestDetailsPage";
+import { LogLevel } from "./RequestDetailsPageV1";
 import { StackTrace } from "./StackTrace";
 import { minimapId } from "./minimapId";
 import { SectionHeading } from "./shared";

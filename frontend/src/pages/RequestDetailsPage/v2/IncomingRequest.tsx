@@ -1,7 +1,6 @@
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { OtelSpan } from "@/queries";
-// import { MizuRootRequestSpan } from "@/queries/traces-v2";
 import { cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -13,7 +12,6 @@ import {
   getRequestBody,
   getRequestHeaders,
   getRequestMethod,
-  // getRequestPath,
   getRequestQueryParams,
   getRequestUrl,
   getResponseBody,
@@ -21,20 +19,9 @@ import {
   getStatusCode,
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
-// import { timelineId } from "./timelineId";
-
-// function getPathWithSearch(span: MizuRootRequestSpan) {
-//   const path = getRequestPath(span)
-//   // const path = span.attributes["url.path"];
-//   const queryParams = span.attributes["url.query"];
-//   const queryParamsString = queryParams ? `?${queryParams}` : "";
-//   return `${path}${queryParamsString}`;
-// }
 
 export function IncomingRequest({ span }: { span: OtelSpan }) {
-  // const id = timelineId(span);
   const id = span.span_id;
-  // console.log('span.attributes', span.attributes)
   const method = getRequestMethod(span);
   const duration = useMemo(() => {
     try {

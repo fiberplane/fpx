@@ -7,10 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  useRequestDetails,
-  // useTracingLiteEnabled
-} from "@/hooks";
+import { useRequestDetails } from "@/hooks";
 import {
   MizuLog,
   MizuRequestEnd,
@@ -31,15 +28,8 @@ import { cn } from "@/utils";
 import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import {
-  useNavigate,
-  // useParams
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-// import { SummaryV2, TraceDetailsTimeline, TraceDetailsV2 } from "./v2";
-// import { HttpSummary } from "./v2/SummaryV2";
-// import { useOtelTrace } from "@/queries/traces-otel";
-// import { RequestDetailsPageV2 } from "./RequestDetailsPageV2";
 import { EmptyState } from "./EmptyState";
 import { FetchRequestErrorLog } from "./FetchRequestErrorLog";
 import { FetchRequestLog } from "./FetchRequestLog";
@@ -128,7 +118,6 @@ export function RequestDetailsPageV1({ traceId }: { traceId: string }) {
   }
 
   if (!traces) {
-    console.log("no traceid", traces);
     return <EmptyState />;
   }
 
@@ -232,13 +221,6 @@ export function RequestDetailsPageV1({ traceId }: { traceId: string }) {
     </div>
   );
 }
-
-export type TocItem = {
-  id: string;
-  title: string;
-  status?: string | number;
-  method?: string;
-};
 
 function Summary({ trace }: { trace: MizuTrace }) {
   const errors = trace?.logs

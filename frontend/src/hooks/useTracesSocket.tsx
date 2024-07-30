@@ -26,9 +26,7 @@ export const useTracesSocket = () => {
     this: WebSocket,
     ev: MessageEvent,
   ) {
-    console.log("Received websocket message", ev.data);
-
-    // let action: MessageSchema | undefined;
+    console.debug("Received websocket message", ev?.data);
     try {
       const payload = JSON.parse(ev.data);
       const { data: action, error } = messageSchema.safeParse(payload);
@@ -46,7 +44,6 @@ export const useTracesSocket = () => {
             const toastId = toast({
               title: "New trace Added",
               onClick: () => {
-                // console.log('boom!');
                 toastId.dismiss();
               },
               description: (
@@ -55,39 +52,10 @@ export const useTracesSocket = () => {
             });
           }
         }
-        // const parentId = newSpans[0];
-        // console.log('parentId', parentId, newSpans);
-        // action.details.newSpans.forEach((spanId) => {
-        //   if (!spanIds.has(spanId)) {
-        //     spanIds.add(spanId);
-        //     toast({
-        //       title: 'New Span Added',
-        //       description: spanId
-        //     });
-        //   }
-        // });
       }
     } catch (error) {
       console.error(error);
-      // swallow error
     }
-    // let action: unknown;
-    // try {
-    //   action = JSON.parse(ev?.data);
-    // } catch {
-    //   // Silent - we log stuff below
-    // }
-
-    // const decodedAction =
-    //   action && isFPXWebsocketMessage(action) ? action : null;
-    // if (!decodedAction) {
-    //   console.warn(
-    //     "Received websocket message that we cannot react to",
-    //     action,
-    //   );
-    //   return;
-    // }
-    // queryClient.invalidateQueries({ queryKey: decodedAction.payload });
   });
 
   useWebSocket("/api/ws", handleMessageEvent);

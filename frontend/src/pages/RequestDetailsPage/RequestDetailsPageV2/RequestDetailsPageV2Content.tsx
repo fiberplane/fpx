@@ -10,17 +10,13 @@ import { Button } from "@/components/ui/button";
 import { MizuLog, MizuOrphanLog } from "@/queries";
 import {
   OtelSpan,
-  // OtelSpans, useOtelTrace
 } from "@/queries/traces-otel";
 import { cn } from "@/utils";
 import { useMemo } from "react";
 import { EmptyState } from "../EmptyState";
-// import { SkeletonLoader } from "../SkeletonLoader";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import { getVendorInfo } from "../v2/vendorify-traces";
-// import { useMemo } from "react";
-// import { MizuOrphanLog, MizuTraceV2, type MizuSpan } from "@/queries";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;
@@ -32,13 +28,10 @@ export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
 const EMPTY_LIST: Array<MizuOrphanLog> = [];
 
 export function RequestDetailsPageContentV2({
-  // traceId,
   pagination,
   spans,
   orphanLogs = EMPTY_LIST,
-  // currentIndex, traces
 }: {
-  // traceId: string;
   spans: Array<OtelSpan>;
   orphanLogs?: Array<MizuLog>;
   pagination?: {
@@ -48,7 +41,6 @@ export function RequestDetailsPageContentV2({
     handleNextTrace: () => void;
   };
 }) {
-  // console.log("is spans", !!spans);
   const spansWithVendorInfo: Array<SpanWithVendorInfo> = useMemo(
     () =>
       spans.map((span) => ({
@@ -69,46 +61,6 @@ export function RequestDetailsPageContentV2({
       return new Date(timeA).getTime() - new Date(timeB).getTime();
     });
   }, [spansWithVendorInfo, orphanLogs]);
-
-  // spansAndLogs = useMemo(() => {
-  //   return spansAndLogs
-  // }, [spansAndLogs]);
-  // console.log("orphanLogs", orphanLogs);
-  // const { data: spans, isPending, error } = useOtelTrace(traceId);
-
-  // if (error) {
-  //   console.error("Error!", error);
-  // }
-
-  // const tracesV2 = useMemo((): MizuTraceV2 | undefined => {
-  //   if (!data) {
-  //     return undefined;
-  //   }
-
-  //   // const spans = data.filter(span => span.trace_id !== traceId);
-  //   if (!rootSpan) {
-  //     return undefined;
-  //   }
-
-  //   console.log('rootSpan', rootSpan);
-  //   const endTime = new Date(rootSpan.end_time);
-  //   const startTime = new Date(rootSpan.start_time);
-  //   return ({
-  //     ...rootSpan,
-  //     spans: [] as Array<MizuSpan>,
-  //     waterfall: [],
-  //     orphanLogs: [] as Array<MizuOrphanLog>,
-  //     duration: `${(endTime.getTime() - startTime.getTime()).toString()}ms`,
-  //     id: rootSpan.span_id,
-  //     method: rootSpan.attributes["http.method"]?.toString() ?? "",
-  //     // logs:
-
-  //   });
-  // }, [data, traceId])
-
-  // if (isPending) {
-  //   return <SkeletonLoader />;
-  // }
 
   if (!rootSpan) {
     return <EmptyState />;

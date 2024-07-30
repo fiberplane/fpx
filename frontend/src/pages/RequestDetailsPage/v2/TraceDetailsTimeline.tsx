@@ -8,81 +8,33 @@ import OpenAiLogo from "@/assets/OpenAILogo.svg";
 import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
 import {
-  //  MizuTraceV2,
   OtelSpan,
   isMizuOrphanLog,
 } from "@/queries";
 import {
-  // isMizuFetchSpan,
-  //  isMizuRootRequestSpan,
   MizuOrphanLog,
 } from "@/queries/traces-v2";
-// import {
-// MizuOrphanLog,
-// MizuOrphanLog,
-// MizuSpan,
-// MizuTraceV2,
-// isMizuOrphanLog,
-// isMizuOrphanLog,
-// } from "@/queries";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, {
-  // useCallback,
-  // useEffect,
   useMemo,
-  // useRef,
-  // useState,
 } from "react";
 import {
-  // SpanWithVendorInfo,
   Waterfall,
 } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { isFetchSpan } from "./otel-helpers";
-// import {
-//   NormalizedOrphanLog,
-//   NormalizedSpan,
-//   // normalizeWaterfallTimestamps,
-// } from "./normalize-traces";
-// import { timelineId } from "./timelineId";
 import {
   VendorInfo,
-  // canRenderVendorInfo,
   isAnthropicVendorInfo,
   isNeonVendorInfo,
   isOpenAIVendorInfo,
 } from "./vendorify-traces";
-// import { timelineId } from "./timelineId";
 
 type TraceDetailsTimelineProps = {
-  // trace: MizuTraceV2;
-  // root: OtelSpan;
-  // items: Array<SpanWithVendorInfo>;
-  // orphanLogs: MizuTraceV2["orphanLogs"];
   waterfall: Waterfall;
 };
 
-// type NormalizedSpan = MizuSpan & {
-//   normalizedStartTime: number;
-//   normalizedEndTime: number;
-//   normalizedDuration: number;
-// };
-
-// type NormalizedOrphanLog = MizuOrphanLog & {
-//   normalizedTimestamp: number;
-// };
-
-// type MizuTraceV2Normalized = MizuTraceV2 & {
-//   normalizedWaterfall: NormalizedMizuWaterfall;
-// };
-
-// type NormalizedMizuWaterfall = Array<NormalizedSpan | NormalizedOrphanLog>;
-
 const normalizeWaterfallTimestamps = (waterfall: Waterfall) => {
-  // const logTimestamps = orphanLogs.map((log) =>
-  //   new Date(log.timestamp).getTime(),
-  // );
-  // console.log('items', items);
   const minStart = Math.min(
     ...waterfall.map((item) => {
       const time = "span" in item ? item.span.start_time : item.timestamp;
@@ -96,70 +48,19 @@ const normalizeWaterfallTimestamps = (waterfall: Waterfall) => {
     }),
   );
 
-  // const normalizeSpan = (span: MizuSpan): NormalizedSpan => {
-  //   const startTime = new Date(span.start_time).getTime();
-  //   const endTime = new Date(span.end_time).getTime();
-  //   return {
-  //     ...span,
-  //     normalizedStartTime: (startTime - minStart) / (maxEnd - minStart),
-  //     normalizedEndTime: (endTime - minStart) / (maxEnd - minStart),
-  //     normalizedDuration: (endTime - startTime) / (maxEnd - minStart),
-  //   };
-  // };
-
-  // const normalizeLog = (log: MizuOrphanLog): NormalizedOrphanLog => {
-  //   const timestamp = new Date(log.timestamp).getTime();
-  //   return {
-  //     ...log,
-  //     normalizedTimestamp: (timestamp - minStart) / (maxEnd - minStart),
-  //   };
-  // };
-
-  // const normalizedWaterfall: NormalizedMizuWaterfall = trace.waterfall.map(
-  //   (spanOrLog) => {
-  //     if (isMizuOrphanLog(spanOrLog)) {
-  //       return normalizeLog(spanOrLog);
-  //     }
-  //     return normalizeSpan(spanOrLog);
-  //   },
-  // );
-
   return {
     minStart,
-    // maxEnd,
     duration: maxEnd - minStart,
   };
-  // return {
-  // ...trace,
-  // normalizedWaterfall,
-  // };
 };
 
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   waterfall,
 }) => {
-  // const [activeId, setActiveId] = useState<string>("");
-  // const observer = useRef<IntersectionObserver>();
-
-  // const normalizedWaterfall = useMemo(
-  //   () => normalizeWaterfallTimestamps(trace.waterfall),
-  //   [trace],
-  // );
-
-  // const timelineEntryIds = useMemo(() => {
-  //   return normalizedWaterfall.map((spanOrLog) => timelineId(spanOrLog));
-  // }, [normalizedWaterfall]);
   const {
-    // maxEnd,
     minStart,
     duration,
   } = normalizeWaterfallTimestamps(waterfall);
-  // const normalizedTrace = useMemo(
-  //   () => normalizeWaterfallTimestamps(trace),
-  //   [trace],
-  // );
-
-  // const
 
   // const timelineEntryIds = useMemo(() => {
   //   return normalizedTrace.normalizedWaterfall.map((spanOrLog) =>
@@ -219,7 +120,6 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   //     }
   //   };
   // }, [timelineEntryIds, handleObserve]);
-  // console.log('sortedSpans', sortedSpansAndLogs);
   return (
     <div
       className={cn(
@@ -255,80 +155,13 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
             />
           );
         })}
-        {/* {normalizedTrace.normalizedWaterfall.map((spanOrLog) => (
-          <NormalizedWaterfallRow
-            key={isMizuOrphanLog(spanOrLog) ? spanOrLog.id : spanOrLog.span_id}
-            spanOrLog={spanOrLog}
-            activeId={activeId}
-          />
-        ))} */}
       </div>
     </div>
   );
 };
 
-// const NormalizedWaterfallRow: React.FC<{
-//   spanOrLog: NormalizedSpan | NormalizedOrphanLog;
-//   activeId: string | null;
-// }> = ({ spanOrLog }) => {
-//   const id = timelineId(spanOrLog);
-//   const { lineWidth, lineOffset } = useTimelineDimensions(spanOrLog);
-//   const title = useTimelineTitle(spanOrLog);
-//   const icon = useTimelineIcon(spanOrLog);
-//   return (
-//     <a
-//       data-toc-id={id}
-//       className={cn(
-//         "flex items-center px-2 py-3",
-//         "border-l-2 border-transparent",
-//         "hover:bg-primary/10 hover:border-blue-500",
-//         // activeId === id && "bg-primary/10 border-blue-500",
-//         "transition-all",
-//         "cursor-pointer",
-//       )}
-//       href={`#${span.span_id}`}
-//     >
-//       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
-//       <div className="flex flex-col w-20 overflow-hidden">{title}</div>
-//       <div className="text-gray-400 flex flex-grow items-center mx-4">
-//         <div
-//           className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
-//           style={{ width: lineWidth, marginLeft: lineOffset }}
-//         >
-//           <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
-//         </div>
-//       </div>
-//       <div className="ml-auto text-gray-400 text-xs w-12 px-2">
-//         {
-//           // isMizuOrphanLog(spanOrLog)
-//           // ? ""
-//           // :
-//           formatDuration(span.start_time, span.end_time)
-//         }
-//       </div>
-//     </a>
-//   );
-// };
-
-// const useTimelineDimensions = (
-//   spanOrLog: NormalizedSpan | NormalizedOrphanLog,
-// ) => {
-//   return useMemo(() => {
-//     const lineWidth = isMizuOrphanLog(spanOrLog)
-//       ? ""
-//       : `${spanOrLog.normalizedDuration * 100}%`;
-
-//     const lineOffset = isMizuOrphanLog(spanOrLog)
-//       ? `${spanOrLog.normalizedTimestamp * 100}%`
-//       : `${spanOrLog.normalizedStartTime * 100}%`;
-
-//     return { lineWidth, lineOffset };
-//   }, [spanOrLog]);
-// };
-
 const useTimelineTitle = (
   waterfallItem: Waterfall[0],
-  // spanOrLog: NormalizedSpan | NormalizedOrphanLog
 ) => {
   return useMemo(() => {
     if ("vendorInfo" in waterfallItem) {
@@ -518,9 +351,6 @@ const WaterfallRowSpan: React.FC<{
       </div>
       <div className="ml-auto text-gray-400 text-xs w-12 px-2">
         {
-          // isMizuOrphanLog(spanOrLog)
-          // ? ""
-          // :
           formatDuration(span.start_time, span.end_time)
         }
       </div>
@@ -534,12 +364,8 @@ const WaterfallRowLog: React.FC<{
   startTime: number;
 }> = ({ log, duration, startTime }) => {
   const id = log.id;
-  // console.log('spanDuration', spanDuration, lineWidth);
   const lineOffset = `${((new Date(log.timestamp).getTime() - startTime) / duration) * 100}%`;
   const icon = useTimelineIcon(log);
-  // const isFetch = span.name === "fetch";
-  // const isRootRequest = span.parent_span_id === null;
-  // span.kind === "SERVER";
   const title = useTimelineTitle(log);
 
   return (
