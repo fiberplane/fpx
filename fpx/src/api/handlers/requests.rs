@@ -1,5 +1,3 @@
-use std::{collections::BTreeMap, str::FromStr, time::Duration};
-
 use crate::api::errors::{ApiError, ApiServerError, CommonError};
 use crate::api::models::{self, NewRequest, NewRequestError, RequestWithResponse, Response};
 use crate::data::{DbError, Store};
@@ -11,6 +9,9 @@ use http::{HeaderMap, HeaderName, HeaderValue, Method, StatusCode};
 use once_cell::sync::Lazy;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use std::str::FromStr;
+use std::time::Duration;
 use thiserror::Error;
 
 static REQUEST_CLIENT: Lazy<Client> = Lazy::new(|| {

@@ -19,19 +19,17 @@ pub enum Command {
     List(ListArgs),
 
     /// Create and execute a request
-    Post(PostArgs),
+    Call(CallArgs),
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
     match args.command {
         Command::Get(args) => get_request(args).await,
         Command::List(args) => list_requests(args).await,
-        Command::Post(args) => post_request(args).await,
+        Command::Call(args) => call_request(args).await,
     }
 }
 
-/// Temporary inline this code into this module
-///
 #[derive(clap::Args, Debug)]
 pub struct GetArgs {
     pub request_id: i64,
@@ -51,8 +49,6 @@ async fn get_request(args: GetArgs) -> Result<()> {
     Ok(())
 }
 
-/// Temporary inline this code into this module
-///
 #[derive(clap::Args, Debug)]
 pub struct ListArgs {
     /// Base url of the fpx dev server.
@@ -70,10 +66,8 @@ async fn list_requests(args: ListArgs) -> Result<()> {
     Ok(())
 }
 
-/// Temporary inline this code into this module
-///
 #[derive(clap::Args, Debug)]
-pub struct PostArgs {
+pub struct CallArgs {
     /// Base url of the fpx dev server.
     #[arg(from_global)]
     pub base_url: Url,
@@ -95,7 +89,7 @@ pub struct PostArgs {
     pub body: String,
 }
 
-async fn post_request(args: PostArgs) -> Result<()> {
+async fn call_request(args: CallArgs) -> Result<()> {
     let mut headers_map = BTreeMap::new();
     if !args.headers.is_empty() {
         for header in args.headers.split(',') {
