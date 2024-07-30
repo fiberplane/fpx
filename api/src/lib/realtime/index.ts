@@ -1,4 +1,4 @@
-import type { Server } from "http";
+import type { Server } from "node:http";
 import { type WebSocket, WebSocketServer } from "ws";
 import logger from "../../logger.js";
 
