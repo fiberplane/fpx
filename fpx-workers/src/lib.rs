@@ -1,10 +1,6 @@
-use axum::{routing::get, Router};
+use std::sync::Arc;
 use tower_service::Service;
 use worker::*;
-
-fn router() -> Router {
-    Router::new().route("/", get(root))
-}
 
 #[event(fetch)]
 async fn fetch(
@@ -13,9 +9,12 @@ async fn fetch(
     _ctx: Context,
 ) -> Result<axum::http::Response<axum::body::Body>> {
     console_error_panic_hook::set_once();
-    Ok(router().call(req).await?)
-}
 
-pub async fn root() -> &'static str {
-    "Hello Axum!"
+    let events = fpx_lib::events::ServerEvents::new();
+    let service = fpx_lib::service::Service {};
+    let store = fpx_lib::data::FakeStore {};
+
+    let mut router = fpx_lib::api::create_api(events, service, Arc::new(store));
+
+    Ok(router.call(req).await?)
 }

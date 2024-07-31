@@ -37,3 +37,29 @@ pub trait Store: Send + Sync {
         trace_id: String,
     ) -> Result<Vec<models::Span>>;
 }
+
+pub struct FakeStore {}
+
+#[async_trait]
+impl Store for FakeStore {
+    async fn start_readonly_transaction(&self) -> Result<Transaction> {
+        Ok(Transaction {})
+    }
+
+    async fn span_get(
+        &self,
+        _tx: &Transaction,
+        _trace_id: String,
+        _span_id: String,
+    ) -> Result<models::Span> {
+        todo!()
+    }
+
+    async fn span_list_by_trace(
+        &self,
+        _tx: &Transaction,
+        _trace_id: String,
+    ) -> Result<Vec<models::Span>> {
+        todo!()
+    }
+}

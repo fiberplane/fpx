@@ -34,3 +34,5 @@ opentelemetry-proto = { version = "0.7", default-features = false, features = [
     "with-schemars",
 ] }
 tokio = { version = "1.39", default-features = false }
+
+getrandom = { version = "0.2", features = ["js"] }
