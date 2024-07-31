@@ -1,4 +1,4 @@
-use crate::data::{BoxedStore, Store};
+use crate::data::BoxedStore;
 use crate::events::ServerEvents;
 use crate::service::Service;
 use axum::extract::FromRef;
@@ -59,8 +59,8 @@ pub fn create_api(events: ServerEvents, service: Service, store: BoxedStore) -> 
         )
         .route(
             "/traces/:trace_id/spans",
+            get(handlers::spans::span_list_handler),
         )
-        get(handlers::spans::span_list_handler),
         .with_state(api_state)
         .fallback(StatusCode::NOT_FOUND)
 }
