@@ -26,7 +26,7 @@ pub struct Config {
 
 #[derive(Clone)]
 pub struct ApiState {
-    events: ServerEvents,
+    _events: ServerEvents,
     service: Service,
     store: BoxedStore,
 }
@@ -46,7 +46,7 @@ impl FromRef<ApiState> for Service {
 /// Create a API and expose it through a axum router.
 pub fn create_api(events: ServerEvents, service: Service, store: BoxedStore) -> axum::Router {
     let api_state = ApiState {
-        events,
+        _events: events,
         service,
         store,
     };

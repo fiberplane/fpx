@@ -1,6 +1,6 @@
 use crate::api::errors::{ApiServerError, CommonError};
 use crate::api::models::Span;
-use crate::data::{BoxedStore, DbError, Store};
+use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;
 use fpx_macros::ApiError;

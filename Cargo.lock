@@ -773,6 +773,7 @@ dependencies = [
  "getrandom",
  "hex",
  "http 1.1.0",
+ "http-body-util",
  "opentelemetry-proto",
  "prost 0.13.1",
  "serde",

@@ -8,7 +8,7 @@ pub struct Service {}
 impl Service {
     pub async fn ingest_export(
         &self,
-        payload: ExportTraceServiceRequest,
+        _payload: ExportTraceServiceRequest,
     ) -> Result<ExportTraceServiceResponse, anyhow::Error> {
         todo!()
     }
