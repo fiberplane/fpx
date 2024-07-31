@@ -368,7 +368,7 @@ const BottomToolbar = ({
   handleRequestBodyTypeChange,
 }: RequestBodyTypeDropdownProps) => {
   return (
-    <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
+    <div className="flex justify-start gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
       <RequestBodyTypeDropdown
         requestBodyType={requestBodyType}
         handleRequestBodyTypeChange={handleRequestBodyTypeChange}

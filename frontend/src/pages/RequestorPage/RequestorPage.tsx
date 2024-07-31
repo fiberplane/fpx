@@ -526,27 +526,19 @@ function useRequestorSubmitHandler({
         return;
       }
 
-      // TODO - Support multipart forms as well
-      const bodyType = body.type;
-
-      // TODO - Refactor into its own helper function
-      const contentTypeHeader =
-        bodyType === "json"
-          ? "application/json"
-          : bodyType === "form-data"
-            ? "application/x-www-form-urlencoded"
-            : "text/plain";
-
       // TODO - Make it clear in the UI that we're auto-adding this header
+      const contentTypeHeader = getContentTypeHeader(body);
       const modifiedHeaders = [
-        {
-          key: "Content-Type",
-          value: contentTypeHeader,
-          enabled: true,
-          id: "fpx-content-type",
-        },
+        contentTypeHeader
+          ? {
+              key: "Content-Type",
+              value: contentTypeHeader,
+              enabled: true,
+              id: "fpx-content-type",
+            }
+          : null,
         ...requestHeaders,
-      ];
+      ].filter(Boolean) as KeyValueParameter[];
 
       makeRequest(
         {
@@ -594,6 +586,24 @@ function useRequestorSubmitHandler({
       recordRequestInSessionHistory,
     ],
   );
+}
+
+function getContentTypeHeader(body: RequestorState["body"]): string | null {
+  switch (body.type) {
+    case "json":
+      return "application/json";
+    case "form-data": {
+      const hasFile = body.value.some((item) => item.value.type === "file");
+      // NOTE - We want the browser to handle setting this header automatically
+      //        Since, it needs to determine the form boundary for multipart/form-data
+      if (hasFile) {
+        return null;
+      }
+      return "application/x-www-form-urlencoded";
+    }
+    default:
+      return "text/plain";
+  }
 }
 
 /**

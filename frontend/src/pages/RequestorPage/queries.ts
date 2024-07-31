@@ -3,6 +3,7 @@ import { isJson } from "@/utils";
 import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { reduceFormDataParameters } from "./FormDataForm";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
 import { RequestorState } from "./reducer/state";
 import { RequestMethodSchema, RequestTypeSchema } from "./types";
@@ -288,6 +289,7 @@ export function makeProxiedRequest({
     body: method === "GET" || method === "HEAD" ? undefined : hackyBody,
   }).then((r) => {
     console.log("i got a response hereeeee", r);
+    // TODO - If there's a file response... use it? Idk
     return {
       traceId: r.headers.get("x-fpx-trace-id"),
     };
@@ -301,8 +303,23 @@ function createBody(body: RequestorState["body"]) {
     }
     return undefined;
   }
+  // NOTE - We automatically send multipart when there's a file
   if (body.type === "form-data") {
-    return createUrlEncodedBody(reduceKeyValueParameters(body.value));
+    const hasFile = body.value.some((item) => item.value.type === "file");
+    if (hasFile) {
+      return reduceFormDataParameters(body.value);
+    }
+    return createUrlEncodedBody(
+      reduceKeyValueParameters(
+        body.value.map((item) => ({
+          id: item.id,
+          enabled: item.enabled,
+          key: item.key,
+          // HACK - We know these are all non-strings because of the `hasFile` case above
+          value: item.value.value as string,
+        })),
+      ),
+    );
   }
   // if (body.type === "form-data--multipart") {
   //   return createFormData(body);
@@ -314,20 +331,6 @@ function createBody(body: RequestorState["body"]) {
 function createUrlEncodedBody(body: Record<string, string>) {
   return new URLSearchParams(body).toString();
 }
-
-// NOTE - This is for multipart
-// function createFormData(body: RequestorState["body"]) {
-//   if (body.type === "form-data") {
-//     const formData = new FormData();
-//     body.value.forEach((item) => {
-//       if (item.enabled) {
-//         formData.append(item.key, item.value);
-//       }
-//     });
-//     return formData;
-//   }
-//   return null;
-// }
 
 export function useTrace(traceId: string) {
   const { data: traces, isLoading, error } = useMizuTraces();

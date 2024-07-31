@@ -87,7 +87,8 @@ app.get("/v0/all-requests", async (ctx) => {
   const requests = await db
     .select()
     .from(appResponses)
-    .rightJoin(appRequests, eq(appResponses.requestId, appRequests.id));
+    .rightJoin(appRequests, eq(appResponses.requestId, appRequests.id))
+    .limit(1000);
   return ctx.json(requests);
 });
 
@@ -219,6 +220,11 @@ function createUrlEncodedBody(body: Record<string, string>) {
  * This route is used to proxy requests to the service we're calling.
  * It's used to add the trace-id header to the request, and to handle the response.
  *
+ * As of writing it actually tries to proxy the entire response, but this might be harder
+ * to do properly than just, e.g., returning the traceId.
+ *
+ * The reason it'd be nice to do this, however, is to support responses that include binary data.
+ * Or maybe even streams eventually?
  */
 app.all("/v0/proxy-request/*", async (ctx) => {
   const traceId = ctx.req.header("x-fpx-trace-id") ?? generateUUID();
@@ -238,7 +244,7 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     "x-fpx-proxy-to",
   ];
   ctx.req.raw.headers.forEach((value, key) => {
-    if (ignoreTheseHeaders.includes(key)) {
+    if (ignoreTheseHeaders.includes(key.toLowerCase())) {
       return;
     }
     requestHeaders[key] = value;
@@ -248,46 +254,46 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     requestHeaders["x-fpx-trace-id"] = traceId;
   }
 
+  // Construct the url we want to proxy to
   const requestQueryParams = {
     ...ctx.req.query(),
   };
-
   const requestUrl = resolveUrl(requestUrlHeader, requestQueryParams);
 
-  // Extract request body based on content type
-  // Provide a `proxiedRequestBody` that can be used with fetch
+  // Create a new request object
+  // Clone the incoming request, so we can make a proxy Request object
+  const clonedReq = ctx.req.raw.clone();
+  const proxiedReq = new Request(requestUrl, {
+    method: requestMethod,
+    headers: new Headers(requestHeaders),
+    body: clonedReq.body ? clonedReq.body.tee()[0] : null,
+  });
 
+  // Extract the request body based on content type
+  // *The whole point of this is to serialize the request body into the database, for future reference*
+  //
   // biome-ignore lint/suspicious/noExplicitAny: fix later
   let requestBody: any;
-  // biome-ignore lint/suspicious/noExplicitAny: fix later
-  let proxiedRequestBody: any;
   const contentType = ctx.req.header("content-type");
   if (requestMethod === "GET" || requestMethod === "HEAD") {
     requestBody = undefined;
-    proxiedRequestBody = undefined;
   } else if (contentType?.includes("application/json")) {
     if (ctx.req.raw.body) {
       const textBody = await ctx.req.text();
       requestBody = safeParseJson(textBody);
-      proxiedRequestBody = textBody;
     } else {
       requestBody = undefined;
-      proxiedRequestBody = undefined;
     }
   } else if (contentType?.includes("application/x-www-form-urlencoded")) {
     requestBody = await ctx.req.formData();
-    proxiedRequestBody = new URLSearchParams(requestBody).toString();
   } else if (contentType?.includes("multipart/form-data")) {
     // TODO - Test me
+    // NOTE - `File` will just show up as an empty object in sqllite - could be nice to record metadata?
+    //         like the name of the file
     const formData = await ctx.req.parseBody({ all: true });
     requestBody = formData;
-    proxiedRequestBody = new FormData();
-    for (const [key, value] of requestBody.entries()) {
-      proxiedRequestBody.append(key, value);
-    }
   } else {
     requestBody = await ctx.req.text();
-    proxiedRequestBody = requestBody;
   }
 
   // Record request details
@@ -309,28 +315,32 @@ app.all("/v0/proxy-request/*", async (ctx) => {
 
   const requestId = insertResult[0].requestId;
 
-  // Prepare the request object for fetch
-  const requestObject: RequestInit = {
-    method: requestMethod,
-    headers: requestHeaders,
-    body: proxiedRequestBody,
-  };
-
   const startTime = Date.now();
   try {
     // Proxy the request
-    const response = await fetch(requestUrl, requestObject);
+    const response = await fetch(proxiedReq);
+
+    // Clone the response and prepare to return it
+    const clonedResponse = response.clone();
+    const newHeaders = new Headers(clonedResponse.headers);
+
+    // HACK - Frontend often couldn't parse the body because of encoding mismatch
+    newHeaders.delete("content-encoding");
+
+    const proxiedResponse = new Response(clonedResponse.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    });
 
     const duration = Date.now() - startTime;
 
-    const {
-      // responseStatusCode,
-      // responseTime,
-      // responseHeaders,
-      // responseBody,
-      traceId: responseTraceId,
-      // isFailure,
-    } = await handleSuccessfulRequest(db, requestId, duration, response);
+    const { traceId: responseTraceId } = await handleSuccessfulRequest(
+      db,
+      requestId,
+      duration,
+      response,
+    );
 
     if (responseTraceId !== traceId) {
       logger.warn(
@@ -338,17 +348,10 @@ app.all("/v0/proxy-request/*", async (ctx) => {
       );
     }
 
-    // TODO - There will (in the future) be cases where we want the response headers, body, etc
-    //        to be the same as for the proxied request.
-    //
-    // Object.entries(responseHeaders).forEach(([key, value]) => {
-    //   ctx.header(key, value);
-    // });
+    // Guarantee the trace-id is set in response headers
+    proxiedResponse.headers.set("x-fpx-trace-id", traceId);
 
-    // NOTE -
-    ctx.header("x-fpx-trace-id", traceId);
-    // Return the response body
-    return ctx.text("OK");
+    return proxiedResponse;
   } catch (fetchError) {
     console.log("fetchError", fetchError);
     const responseTime = Date.now() - startTime;
