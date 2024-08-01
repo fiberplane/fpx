@@ -23,6 +23,10 @@ const RequestorBodySchema = z.union([
     isMultipart: z.boolean(),
     value: z.array(FormDataParameterSchema),
   }),
+  z.object({
+    type: z.literal("file"),
+    value: z.instanceof(File),
+  }),
 ]);
 
 export const RequestorStateSchema = z.object({

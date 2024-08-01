@@ -33,26 +33,26 @@ import {
   useState,
 } from "react";
 import { Resizable } from "react-resizable";
-import { CodeMirrorJsonEditor } from "./Editors";
-import { FormDataForm } from "./FormDataForm";
-import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
-import { PathParamForm } from "./PathParamForm/PathParamForm";
-import { ResizableHandle } from "./Resizable";
-import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
-import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai";
-import { useResizableWidth, useStyleWidth } from "./hooks";
+import { CodeMirrorJsonEditor } from "../Editors";
+import { FormDataForm } from "../FormDataForm";
+import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
+import { PathParamForm } from "../PathParamForm/PathParamForm";
+import { ResizableHandle } from "../Resizable";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
+import { AiTestingPersona, FRIENDLY, HOSTILE } from "../ai";
+import { useResizableWidth, useStyleWidth } from "../hooks";
 import type {
   RequestBodyType,
   RequestorBody,
   RequestsPanelTab,
-} from "./reducer";
-import { WebSocketState } from "./useMakeWebsocketRequest";
-
-import "./RequestPanel.css";
+} from "../reducer";
+import { WebSocketState } from "../useMakeWebsocketRequest";
 import {
   RequestBodyTypeDropdown,
   RequestBodyTypeDropdownProps,
 } from "./RequestBodyCombobox";
+
+import "./styles.css";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
@@ -185,7 +185,7 @@ function RequestMeta(props: RequestPanelProps) {
         {shouldShowBody && (
           <CustomTabTrigger value="body">
             Body
-            {(body?.value?.length ?? 0) > 0 && (
+            {!isBodyEmpty(body) && (
               <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
             )}
           </CustomTabTrigger>
@@ -458,6 +458,19 @@ function AIGeneratedInputsBanner({
       </div>
     </div>
   );
+}
+
+function isBodyEmpty(body: RequestorBody) {
+  switch (body.type) {
+    case "text":
+      return !body.value || body.value.length === 0;
+    case "json":
+      return !body.value || body.value.length === 0;
+    case "form-data":
+      return !body.value || body.value.length === 0;
+    case "file":
+      return !body.value;
+  }
 }
 
 function WebSocketNotConnectedBanner() {

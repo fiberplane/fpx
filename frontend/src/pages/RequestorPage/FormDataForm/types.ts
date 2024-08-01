@@ -13,7 +13,7 @@ export const FormDataParameterSchema = z.object({
     z.object({
       type: z.literal("file"),
       name: z.string(),
-      value: z.instanceof(Blob),
+      value: z.instanceof(File),
     }),
   ]),
   enabled: z.boolean(),

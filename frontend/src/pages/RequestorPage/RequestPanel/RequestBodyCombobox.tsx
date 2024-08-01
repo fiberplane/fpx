@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import type { RequestBodyType, RequestorBody } from "./reducer";
+import type { RequestBodyType, RequestorBody } from "../reducer";
 
 type RequestBodyTypeOption = {
   value: RequestBodyType;
