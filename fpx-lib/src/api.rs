@@ -54,11 +54,11 @@ pub fn create_api(events: ServerEvents, service: Service, store: BoxedStore) -> 
     axum::Router::new()
         .route("/v1/traces", post(handlers::otel::trace_collector_handler))
         .route(
-            "/traces/:trace_id/spans/:span_id",
+            "/api/traces/:trace_id/spans/:span_id",
             get(handlers::spans::span_get_handler),
         )
         .route(
-            "/traces/:trace_id/spans",
+            "/api/traces/:trace_id/spans",
             get(handlers::spans::span_list_handler),
         )
         .with_state(api_state)

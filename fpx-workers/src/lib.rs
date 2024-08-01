@@ -1,6 +1,34 @@
-use std::sync::Arc;
+use fpx_lib::data::fake_store::FakeStore;
+use fpx_lib::events::ServerEvents;
+use fpx_lib::{api, service};
+use std::sync::{Arc, OnceLock};
 use tower_service::Service;
+use tracing::info;
+use tracing_subscriber::fmt::format::Pretty;
+use tracing_subscriber::fmt::time::UtcTime;
+use tracing_subscriber::prelude::*;
+use tracing_web::{performance_layer, MakeConsoleWriter};
 use worker::*;
+
+static FAKE_STORE: OnceLock<FakeStore> = OnceLock::new();
+
+#[event(start)]
+fn start() {
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .json()
+        .with_ansi(false) // Only partially supported across JavaScript runtimes
+        .with_timer(UtcTime::rfc_3339())
+        .with_writer(MakeConsoleWriter); // write events to the console
+    let perf_layer = performance_layer().with_details_from_fields(Pretty::default());
+    tracing_subscriber::registry()
+        .with(fmt_layer)
+        .with(perf_layer)
+        .init();
+
+    FAKE_STORE
+        .set(FakeStore::new())
+        .expect("failed to set FakeStore");
+}
 
 #[event(fetch)]
 async fn fetch(
@@ -10,11 +38,14 @@ async fn fetch(
 ) -> Result<axum::http::Response<axum::body::Body>> {
     console_error_panic_hook::set_once();
 
-    let events = fpx_lib::events::ServerEvents::new();
-    let service = fpx_lib::service::Service {};
-    let store = fpx_lib::data::FakeStore {};
+    let store = FAKE_STORE.get().unwrap().clone();
+    let boxed_store = Arc::new(store);
+    let events = ServerEvents::new();
 
-    let mut router = fpx_lib::api::create_api(events, service, Arc::new(store));
+    let service = service::Service::new(boxed_store.clone(), events.clone());
+    let mut router = api::create_api(events, service, boxed_store);
+
+    info!("Request: {:?}", req);
 
     Ok(router.call(req).await?)
 }
