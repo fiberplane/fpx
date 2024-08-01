@@ -108,6 +108,7 @@ export function measure<R, A extends unknown[]>(
   return (...args: A): R => {
     function handleActiveSpan(span: Span): R {
       let shouldEndSpan = true;
+      let pendingPromiseChain: Promise<R> | undefined;
       if (onStart) {
         try {
           onStart(span, args);
@@ -127,13 +128,28 @@ export function measure<R, A extends unknown[]>(
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
+
+        // HACK - `onSuccess` can be async, so we need to wait for it to finish before ending the span (in the finally clause)
         if (onSuccess) {
-          try {
-            onSuccess(span, returnValue);
-          } catch {
-            // swallow error
-          }
+          pendingPromiseChain = new Promise((resolve) => {
+            try {
+              console.log("onSuccess", returnValue);
+              const onSuccessResult = onSuccess(span, returnValue);
+              if (onSuccessResult instanceof Promise) {
+                onSuccessResult.then(() => {
+                  resolve(returnValue);
+                });
+              } else {
+                resolve(returnValue);
+              }
+            } catch (error) {
+              // swallow error
+              console.debug("Error in onSuccess", error);
+              resolve(returnValue);
+            }
+          });
         }
+
         return returnValue;
       } catch (error) {
         const sendError: Exception =
@@ -150,7 +166,15 @@ export function measure<R, A extends unknown[]>(
 
         throw error;
       } finally {
-        if (shouldEndSpan) {
+        if (pendingPromiseChain) {
+          pendingPromiseChain.then(() => {
+            if (shouldEndSpan) {
+              console.log("ending span in promise chain");
+              span.end();
+            }
+          });
+        } else if (shouldEndSpan) {
+          console.log("ending span");
           span.end();
         }
       }

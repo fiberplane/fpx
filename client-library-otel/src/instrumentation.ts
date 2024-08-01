@@ -108,6 +108,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
                 const attributes = await getResponseAttributes(
                   (await response).clone(),
                 );
+                console.log("setting response attributes", attributes);
                 span.setAttributes(attributes);
               },
               checkResult: async (result) => {
