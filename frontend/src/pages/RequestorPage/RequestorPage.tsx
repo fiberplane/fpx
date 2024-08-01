@@ -20,11 +20,11 @@ import {
   // useMakeRequest,
 } from "./queries";
 import { useRequestor } from "./reducer";
+import { RequestorState } from "./reducer/state";
 import { findMatchedRoute, useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { RequestMethodInputValue, isRequestMethod, isWsRequest } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
-import { RequestorState } from "./reducer/state";
 
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./styles.css";

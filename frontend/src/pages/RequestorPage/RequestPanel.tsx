@@ -1,5 +1,12 @@
 import SparkleWand from "@/assets/SparkleWand.svg";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +16,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Tabs } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 import { useIsSmScreen } from "@/hooks";
 import { cn, isMac } from "@/utils";
 import {
@@ -19,6 +37,7 @@ import {
   EraserIcon,
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
+import { CheckIcon } from "@radix-ui/react-icons";
 import {
   Dispatch,
   SetStateAction,
@@ -36,31 +55,11 @@ import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
-import { WebSocketState } from "./useMakeWebsocketRequest";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useToast } from "@/components/ui/use-toast";
-import { CheckIcon } from "@radix-ui/react-icons";
 import type { RequestsPanelTab } from "./reducer";
 import { RequestorState } from "./reducer/state";
+import { WebSocketState } from "./useMakeWebsocketRequest";
 
 import "./RequestPanel.css";
-
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
