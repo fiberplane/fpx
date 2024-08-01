@@ -1,5 +1,4 @@
 import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
-import { isJson } from "@/utils";
 import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -143,79 +142,6 @@ export function useFetchRequestorRequests() {
     queryKey: [REQUESTOR_REQUESTS_KEY],
     queryFn: () => fetch("/v0/all-requests").then((r) => r.json()),
   });
-}
-
-export type MakeRequestQueryFn = ReturnType<typeof useMakeRequest>["mutate"];
-
-export function useMakeRequest() {
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: makeRequest,
-    onSuccess: () => {
-      // Invalidate and refetch requestor requests
-      queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
-    },
-  });
-
-  return mutation;
-}
-
-// function createFormData(body: RequestorState["body"]) {
-//   if (body.type === "form-data") {
-//     const formData = new FormData();
-//     body.value.forEach((item) => {
-//       if (item.enabled) {
-//         formData.append(item.key, item.value);
-//       }
-//     });
-//     return formData;
-//   }
-//   return null;
-// }
-
-export function makeRequest({
-  addBaseUrl,
-  path,
-  method,
-  body,
-  headers,
-  pathParams,
-  queryParams,
-  route,
-}: {
-  addBaseUrl: (path: string) => string;
-  path: string;
-  method: string;
-  body: RequestorState["body"];
-  headers: KeyValueParameter[];
-  pathParams?: KeyValueParameter[];
-  queryParams: KeyValueParameter[];
-  route?: string;
-}) {
-  // FIXME - We should validate JSON in the UI itself
-  const hackyBody =
-    body.type === "json" && body.value && isJson(body.value)
-      ? JSON.parse(body.value)
-      : body.type === "form-data"
-        ? reduceFormDataParameters(body.value)
-        : body.value;
-  return fetch("/v0/send-request", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      requestUrl: addBaseUrl(path),
-      requestMethod: method,
-      // NOTE - GET / HEAD requests cannot have a body
-      requestBody:
-        method === "GET" || method === "HEAD" ? undefined : hackyBody,
-      requestHeaders: reduceKeyValueParameters(headers),
-      requestPathParams: reduceKeyValueParameters(pathParams ?? []),
-      requestQueryParams: reduceKeyValueParameters(queryParams),
-      requestRoute: route,
-    }),
-  }).then((r) => r.json());
 }
 
 export type MakeProxiedRequestQueryFn = ReturnType<
