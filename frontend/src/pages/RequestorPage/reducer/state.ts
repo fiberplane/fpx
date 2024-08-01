@@ -25,7 +25,7 @@ const RequestorBodySchema = z.union([
   }),
   z.object({
     type: z.literal("file"),
-    value: z.instanceof(File),
+    value: z.instanceof(File).optional(),
   }),
 ]);
 

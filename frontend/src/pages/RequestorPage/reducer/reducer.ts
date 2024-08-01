@@ -339,7 +339,9 @@ function requestorReducer(
               value: enforceFormDataTerminalDraftParameter([]),
               isMultipart: state.body.isMultipart,
             }
-          : { type: state.body.type, value: "" };
+          : state.body.type === "file"
+            ? { type: state.body.type, value: undefined }
+            : { type: state.body.type, value: "" };
       return { ...state, body: nextBody };
     }
     case SET_BODY_TYPE: {
@@ -370,11 +372,16 @@ function requestorReducer(
           },
         };
       }
+      if (newBodyType === "file") {
+        return { ...state, body: { type: newBodyType, value: undefined } };
+      }
       if (oldBodyType === "form-data") {
         return { ...state, body: { type: newBodyType, value: "" } };
       }
-      // HACK - This line makes things clearer for typescript
-      const newBodyValue = Array.isArray(oldBodyValue) ? "" : oldBodyValue;
+      // HACK - These lines makes things clearer for typescript, but are a nightmare to read, i'm so sorry
+      const isNonTextOldBody =
+        Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
+      const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
       return { ...state, body: { type: newBodyType, value: newBodyValue } };
     }
     case SET_WEBSOCKET_MESSAGE: {
