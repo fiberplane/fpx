@@ -69,6 +69,8 @@ type RequestPanelProps = {
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   requestHeaders: KeyValueParameter[];
+  websocketMessage: string;
+  setWebsocketMessage: (message: string | undefined) => void;
   aiEnabled: boolean;
   isLoadingParameters: boolean;
   fillInRequest: () => void;
@@ -131,6 +133,8 @@ function RequestMeta(props: RequestPanelProps) {
     clearPathParams,
     setQueryParams,
     setRequestHeaders,
+    websocketMessage,
+    setWebsocketMessage,
     aiEnabled,
     isLoadingParameters,
     fillInRequest,
@@ -186,8 +190,7 @@ function RequestMeta(props: RequestPanelProps) {
         {shouldShowMessages && (
           <CustomTabTrigger value="messages">
             Message
-            {/* FIXME - Use messages count instead of body length!!! */}
-            {(body?.value?.length ?? 0) > 0 && (
+            {(websocketMessage?.length ?? 0) > 0 && (
               <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
             )}
           </CustomTabTrigger>
@@ -298,6 +301,7 @@ function RequestMeta(props: RequestPanelProps) {
               onChange={(params) => {
                 setBody({
                   type: "form-data",
+                  isMultipart: body.isMultipart,
                   value: params,
                 });
               }}
@@ -315,16 +319,14 @@ function RequestMeta(props: RequestPanelProps) {
           <PanelSectionHeader
             title="Websocket Messages"
             handleClearData={() => {
-              // FIXME - Use different form input for WS messages
-              setBody(undefined);
+              setWebsocketMessage("");
             }}
           />
           {websocketState.isConnected ? (
             <>
               <CodeMirrorJsonEditor
-                // FIXME - Use different form input for WS messages!
-                onChange={setBody}
-                value={body.value as string | undefined}
+                onChange={setWebsocketMessage}
+                value={websocketMessage}
                 maxHeight="800px"
               />
               <div className="flex justify-end">
@@ -333,10 +335,10 @@ function RequestMeta(props: RequestPanelProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (typeof body !== "string") {
+                    if (typeof websocketMessage !== "string") {
                       return;
                     }
-                    sendWebsocketMessage(body);
+                    sendWebsocketMessage(websocketMessage);
                     toast({
                       description: "WS Message sent",
                     });

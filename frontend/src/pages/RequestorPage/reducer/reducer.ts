@@ -48,6 +48,7 @@ const SET_QUERY_PARAMS = "SET_QUERY_PARAMS" as const;
 const SET_HEADERS = "SET_HEADERS" as const;
 const SET_BODY = "SET_BODY" as const;
 const SET_BODY_TYPE = "SET_BODY_TYPE" as const;
+const SET_WEBSOCKET_MESSAGE = "SET_WEBSOCKET_MESSAGE" as const;
 const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
 const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
 const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
@@ -100,7 +101,12 @@ type RequestorAction =
       type: typeof SET_BODY_TYPE;
       payload: {
         type: RequestBodyType;
+        isMultipart?: boolean;
       };
+    }
+  | {
+      type: typeof SET_WEBSOCKET_MESSAGE;
+      payload: string;
     }
   | {
       type: typeof LOAD_HISTORICAL_REQUEST;
@@ -314,6 +320,7 @@ function requestorReducer(
           ...state,
           body: {
             type: nextBody.type,
+            isMultipart: nextBody.isMultipart,
             value: enforceFormDataTerminalDraftParameter(nextBody.value),
           },
         };
@@ -328,10 +335,12 @@ function requestorReducer(
         return state;
       }
       if (newBodyType === "form-data") {
+        const isMultipart = !!action.payload.isMultipart;
         return {
           ...state,
           body: {
             type: newBodyType,
+            isMultipart,
             value: enforceFormDataTerminalDraftParameter([]),
           },
         };
@@ -342,6 +351,9 @@ function requestorReducer(
       // HACK - This line makes things clearer for typescript
       const newBodyValue = Array.isArray(oldBodyValue) ? "" : oldBodyValue;
       return { ...state, body: { type: newBodyType, value: newBodyValue } };
+    }
+    case SET_WEBSOCKET_MESSAGE: {
+      return { ...state, websocketMessage: action.payload };
     }
     case SET_ACTIVE_REQUESTS_PANEL_TAB: {
       return { ...state, activeRequestsPanelTab: action.payload };
@@ -471,6 +483,16 @@ export function useRequestor() {
     [dispatch],
   );
 
+  const setWebsocketMessage = useCallback(
+    (websocketMessage: string | undefined) => {
+      dispatch({
+        type: SET_WEBSOCKET_MESSAGE,
+        payload: websocketMessage ?? "",
+      });
+    },
+    [dispatch],
+  );
+
   const handleRequestBodyTypeChange = useCallback(
     (requestBodyType: RequestBodyType) => {
       dispatch({ type: SET_BODY_TYPE, payload: { type: requestBodyType } });
@@ -547,6 +569,9 @@ export function useRequestor() {
     setRequestHeaders,
     setBody,
     handleRequestBodyTypeChange,
+
+    // Websocket form
+    setWebsocketMessage,
 
     // Requests Panel tabs
     setActiveRequestsPanelTab,

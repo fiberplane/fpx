@@ -20,6 +20,7 @@ const RequestorBodySchema = z.union([
   }),
   z.object({
     type: z.literal("form-data"),
+    isMultipart: z.boolean(),
     value: z.array(FormDataParameterSchema),
   }),
 ]);
@@ -29,6 +30,8 @@ export const RequestorStateSchema = z.object({
   selectedRoute: ProbedRouteSchema.nullable().describe(
     "Indicates which route to highlight in the routes panel",
   ),
+
+  // Request form
   path: z.string().describe("Path input"),
   method: RequestMethodSchema.describe("Method input"),
   requestType: RequestTypeSchema.describe("Request type input"),
@@ -43,6 +46,10 @@ export const RequestorStateSchema = z.object({
     .array(KeyValueParameterSchema)
     .describe("Headers to be sent with the request"),
 
+  // Websocket messages form
+  websocketMessage: z.string().describe("Websocket message"),
+
+  // Tabs
   activeRequestsPanelTab: RequestsPanelTabSchema.describe(
     "The tab to show in the requests panel",
   ),
@@ -77,6 +84,8 @@ export const initialState: RequestorState = {
     type: "json",
     value: "",
   },
+
+  websocketMessage: "",
 
   activeRequestsPanelTab: "params",
   visibleRequestsPanelTabs: ["params", "headers"],

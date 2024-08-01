@@ -70,6 +70,9 @@ export const RequestorPage = () => {
     setRequestHeaders,
     setBody,
     handleRequestBodyTypeChange,
+    // Request panel - Websocket message form
+    state: { websocketMessage },
+    setWebsocketMessage,
 
     // Requests Panel tabs
     state: { activeRequestsPanelTab },
@@ -292,6 +295,8 @@ export const RequestorPage = () => {
             clearPathParams={clearPathParams}
             setQueryParams={setQueryParams}
             setRequestHeaders={setRequestHeaders}
+            websocketMessage={websocketMessage}
+            setWebsocketMessage={setWebsocketMessage}
             aiEnabled={aiEnabled}
             isLoadingParameters={isLoadingParameters}
             fillInRequest={fillInRequest}
