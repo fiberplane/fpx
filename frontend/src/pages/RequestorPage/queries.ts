@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { reduceFormDataParameters } from "./FormDataForm";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
-import { RequestorState } from "./reducer/state";
+import type { RequestorBody } from "./reducer/state";
 import { RequestMethodSchema, RequestTypeSchema } from "./types";
 
 export const ProbedRouteSchema = z.object({
@@ -174,7 +174,7 @@ export function makeProxiedRequest({
   addBaseUrl: (path: string) => string;
   path: string;
   method: string;
-  body: RequestorState["body"];
+  body: RequestorBody;
   headers: KeyValueParameter[];
   pathParams?: KeyValueParameter[];
   queryParams: KeyValueParameter[];
@@ -222,7 +222,7 @@ export function makeProxiedRequest({
   });
 }
 
-function createBody(body: RequestorState["body"]) {
+function createBody(body: RequestorBody) {
   if (body.type === "json") {
     if (typeof body.value !== "undefined") {
       return JSON.stringify(body.value);

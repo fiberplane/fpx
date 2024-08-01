@@ -60,6 +60,9 @@ export const RequestorStateSchema = z.object({
 
 export type RequestorState = z.infer<typeof RequestorStateSchema>;
 
+export type RequestorBody = RequestorState["body"];
+export type RequestBodyType = RequestorBody["type"];
+
 export const initialState: RequestorState = {
   routes: [],
   selectedRoute: null,

@@ -2,12 +2,6 @@ import SparkleWand from "@/assets/SparkleWand.svg";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
@@ -16,11 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Tabs } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -32,18 +21,15 @@ import { useIsSmScreen } from "@/hooks";
 import { cn, isMac } from "@/utils";
 import {
   CaretDownIcon,
-  CaretSortIcon,
   Cross2Icon,
   EraserIcon,
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
-import { CheckIcon } from "@radix-ui/react-icons";
 import {
   Dispatch,
   SetStateAction,
   useCallback,
   useEffect,
-  useMemo,
   useState,
 } from "react";
 import { Resizable } from "react-resizable";
@@ -55,19 +41,26 @@ import { ResizableHandle } from "./Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
-import type { RequestsPanelTab } from "./reducer";
-import { RequestorState } from "./reducer/state";
+import type {
+  RequestBodyType,
+  RequestorBody,
+  RequestsPanelTab,
+} from "./reducer";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
 import "./RequestPanel.css";
+import {
+  RequestBodyTypeDropdown,
+  RequestBodyTypeDropdownProps,
+} from "./RequestBodyCombobox";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
   setActiveRequestsPanelTab: (tab: string) => void;
   shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
-  body: RequestorState["body"];
+  body: RequestorBody;
   // FIXME
-  setBody: (body: undefined | string | RequestorState["body"]) => void;
+  setBody: (body: undefined | string | RequestorBody) => void;
   handleRequestBodyTypeChange: (contentType: RequestBodyType) => void;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
@@ -375,82 +368,6 @@ const BottomToolbar = ({
     </div>
   );
 };
-
-type RequestBodyType = RequestorState["body"]["type"];
-
-type RequestBodyTypeDropdownProps = {
-  requestBodyType: RequestBodyType;
-  handleRequestBodyTypeChange: (contentType: RequestBodyType) => void;
-};
-
-type RequestBodyTypeOption = {
-  value: RequestBodyType;
-  label: string;
-};
-
-const bodyTypes: RequestBodyTypeOption[] = [
-  { value: "text", label: "Text" },
-  { value: "json", label: "JSON" },
-  { value: "form-data", label: "Form" },
-  // { value: "file", label: "File" },
-];
-
-function RequestBodyTypeDropdown({
-  requestBodyType,
-  handleRequestBodyTypeChange,
-}: RequestBodyTypeDropdownProps) {
-  const [open, setOpen] = useState(false);
-  const bodyTypeLabel = useMemo(() => {
-    return (
-      bodyTypes.find((type) => type.value === requestBodyType)?.label ?? "Body"
-    );
-  }, [requestBodyType]);
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          role="combobox"
-          aria-expanded={open}
-          className="pl-3"
-        >
-          <CaretSortIcon className="w-4 h-4 mr-1" />
-          {bodyTypeLabel}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[120px] p-0" align="end">
-        <Command>
-          <CommandList>
-            <CommandGroup>
-              {bodyTypes.map((type) => (
-                <CommandItem
-                  key={type.value}
-                  value={type.value}
-                  onSelect={(currentValue) => {
-                    handleRequestBodyTypeChange(
-                      currentValue as RequestBodyType,
-                    );
-                    setOpen(false);
-                  }}
-                >
-                  <span>{type.label}</span>
-                  <CheckIcon
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      requestBodyType === type.value
-                        ? "opacity-100"
-                        : "opacity-0",
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 type PanelSectionHeaderProps = {
   title: string;

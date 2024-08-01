@@ -6,7 +6,13 @@ import { ProbedRoute } from "../queries";
 import { findMatchedRoute } from "../routes";
 import { RequestMethod, RequestMethodInputValue, RequestType } from "../types";
 import { useSaveUiState } from "./persistence";
-import { type RequestorState, createInitialState, initialState } from "./state";
+import {
+  RequestBodyType,
+  RequestorBody,
+  type RequestorState,
+  createInitialState,
+  initialState,
+} from "./state";
 import {
   RequestsPanelTab,
   ResponsePanelTab,
@@ -88,12 +94,12 @@ type RequestorAction =
     }
   | {
       type: typeof SET_BODY;
-      payload: RequestorState["body"];
+      payload: RequestorBody;
     }
   | {
       type: typeof SET_BODY_TYPE;
       payload: {
-        type: RequestorState["body"]["type"];
+        type: RequestBodyType;
       };
     }
   | {
@@ -450,7 +456,7 @@ export function useRequestor() {
   );
 
   const setBody = useCallback(
-    (body: undefined | string | RequestorState["body"]) => {
+    (body: undefined | string | RequestorBody) => {
       if (body === undefined) {
         dispatch({
           type: SET_BODY,
@@ -466,7 +472,7 @@ export function useRequestor() {
   );
 
   const handleRequestBodyTypeChange = useCallback(
-    (requestBodyType: RequestorState["body"]["type"]) => {
+    (requestBodyType: RequestBodyType) => {
       dispatch({ type: SET_BODY_TYPE, payload: { type: requestBodyType } });
     },
     [dispatch],

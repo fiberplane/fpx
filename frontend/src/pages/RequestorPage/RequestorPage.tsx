@@ -19,8 +19,11 @@ import {
   useMakeProxiedRequest,
   // useMakeRequest,
 } from "./queries";
-import { useRequestor } from "./reducer";
-import { RequestorState } from "./reducer/state";
+import {
+  type RequestorBody,
+  type RequestorState,
+  useRequestor,
+} from "./reducer";
 import { findMatchedRoute, useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { RequestMethodInputValue, isRequestMethod, isWsRequest } from "./types";
@@ -500,7 +503,7 @@ function useRequestorSubmitHandler({
 }: {
   addBaseUrl: ReturnType<typeof useRoutes>["addBaseUrl"];
   selectedRoute: ProbedRoute | null;
-  body: RequestorState["body"];
+  body: RequestorBody;
   path: string;
   method: string;
   pathParams: KeyValueParameter[];
@@ -601,7 +604,7 @@ function useRequestorSubmitHandler({
   );
 }
 
-function getContentTypeHeader(body: RequestorState["body"]): string | null {
+function getContentTypeHeader(body: RequestorBody): string | null {
   switch (body.type) {
     case "json":
       return "application/json";
