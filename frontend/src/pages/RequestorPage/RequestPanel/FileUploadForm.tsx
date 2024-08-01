@@ -17,11 +17,14 @@ export const FileUploadForm: React.FC<FileUploadFormProps> = ({
     onChange(selectedFile);
   };
 
-  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const droppedFile = event.dataTransfer.files?.[0];
-    onChange(droppedFile);
-  }, [onChange]);
+  const handleDrop = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      const droppedFile = event.dataTransfer.files?.[0];
+      onChange(droppedFile);
+    },
+    [onChange],
+  );
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -36,12 +39,14 @@ export const FileUploadForm: React.FC<FileUploadFormProps> = ({
       {!file ? (
         <div className="flex flex-col items-center justify-center text-center gap-2">
           <FilePlusIcon className="w-12 h-12 text-gray-400" />
-          <p className="mt-2 text-sm text-gray-400">Choose a file or drop it here</p>
+          <p className="mt-2 text-sm text-gray-400">
+            Choose a file or drop it here
+          </p>
           <label
             htmlFor="file-upload"
             className={cn(
               "mt-2 cursor-pointer bg-slate-500 text-white px-3 py-1 rounded text-sm",
-              "hover:bg-slate-600"
+              "hover:bg-slate-600",
             )}
           >
             Choose file

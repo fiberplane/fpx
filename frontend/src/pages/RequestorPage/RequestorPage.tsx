@@ -536,6 +536,7 @@ function useRequestorSubmitHandler({
 
       // TODO - Make it clear in the UI that we're auto-adding this header
       const contentTypeHeader = getContentTypeHeader(body);
+      const contentLength = getContentLength(body);
       const modifiedHeaders = [
         contentTypeHeader
           ? {
@@ -543,6 +544,14 @@ function useRequestorSubmitHandler({
               value: contentTypeHeader,
               enabled: true,
               id: "fpx-content-type",
+            }
+          : null,
+        contentLength !== null
+          ? {
+              key: "Content-Length",
+              value: contentLength,
+              enabled: true,
+              id: "fpx-content-length",
             }
           : null,
         ...requestHeaders,
@@ -623,6 +632,8 @@ function getContentTypeHeader(body: RequestorBody): string | null {
       }
       return "application/x-www-form-urlencoded";
     }
+    case "file":
+      return "application/octet-stream";
     default:
       return "text/plain";
   }
@@ -660,4 +671,13 @@ function sortRequestornatorsDescending(a: Requestornator, b: Requestornator) {
     return 1;
   }
   return 0;
+}
+
+function getContentLength(body: RequestorBody) {
+  switch (body.type) {
+    case "file":
+      return body.value?.size ?? null;
+    default:
+      return null;
+  }
 }

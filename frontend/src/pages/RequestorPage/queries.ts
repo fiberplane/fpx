@@ -249,9 +249,7 @@ function createBody(body: RequestorBody) {
       ),
     );
   }
-  // if (body.type === "form-data--multipart") {
-  //   return createFormData(body);
-  // }
+
   return body.value;
 }
 
