@@ -175,10 +175,7 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     | string
     | {
         [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = await serializeRequestBodyForFpxDb(
-    requestMethod,
-    ctx.req.header("content-type") ?? null,
-  );
+      } = await serializeRequestBodyForFpxDb();
 
   // Record request details
   const newRequest: NewAppRequest = {
@@ -260,10 +257,13 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     });
   }
 
-  async function serializeRequestBodyForFpxDb(
-    requestMethod: string,
-    contentType: string | null,
-  ) {
+  /**
+   * Helper that serializes the request body into a format that can be stored in the database
+   *
+   * This will *not* store binary data, for example, like File objects
+   */
+  async function serializeRequestBodyForFpxDb() {
+    const contentType = ctx.req.header("content-type");
     let requestBody:
       | null
       | string
