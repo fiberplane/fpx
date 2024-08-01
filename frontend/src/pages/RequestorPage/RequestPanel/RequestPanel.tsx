@@ -27,6 +27,7 @@ import {
   RequestBodyTypeDropdownProps,
 } from "./RequestBodyCombobox";
 import "./styles.css";
+import { FileUploadForm } from "./FileUploadForm";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
@@ -279,6 +280,17 @@ function RequestMeta(props: RequestPanelProps) {
                   type: "form-data",
                   isMultipart: body.isMultipart,
                   value: params,
+                });
+              }}
+            />
+          )}
+          {body.type === "file" && (
+            <FileUploadForm
+              file={body.value}
+              onChange={(file) => {
+                setBody({
+                  type: "file",
+                  value: file,
                 });
               }}
             />

@@ -344,6 +344,7 @@ function requestorReducer(
             : { type: state.body.type, value: "" };
       return { ...state, body: nextBody };
     }
+    // NOTE - This needs to be its own reducer function it is so darn hard to read, i'm sorry
     case SET_BODY_TYPE: {
       const oldBodyValue = state.body.value;
       const oldBodyType = state.body.type;

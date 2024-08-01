@@ -25,7 +25,7 @@ const bodyTypes: RequestBodyTypeOption[] = [
   { value: "text", label: "Text" },
   { value: "json", label: "JSON" },
   { value: "form-data", label: "Form" },
-  // { value: "file", label: "File" },
+  { value: "file", label: "File" },
 ];
 
 export type RequestBodyTypeDropdownProps = {
