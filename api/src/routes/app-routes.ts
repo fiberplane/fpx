@@ -105,7 +105,9 @@ function serializeFile(file: File): SerializedFile {
   };
 }
 
-function serializeFormDataValue(value: FormDataEntryValue): string | SerializedFile {
+function serializeFormDataValue(
+  value: FormDataEntryValue,
+): string | SerializedFile {
   if (value instanceof File) {
     return serializeFile(value);
   }
@@ -173,7 +175,10 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     | string
     | {
         [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = await serializeRequestBodyForFpxDb(requestMethod, ctx.req.header("content-type") ?? null);
+      } = await serializeRequestBodyForFpxDb(
+    requestMethod,
+    ctx.req.header("content-type") ?? null,
+  );
 
   // Record request details
   const newRequest: NewAppRequest = {
@@ -255,13 +260,16 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     });
   }
 
-  async function serializeRequestBodyForFpxDb(requestMethod: string, contentType: string | null) {
+  async function serializeRequestBodyForFpxDb(
+    requestMethod: string,
+    contentType: string | null,
+  ) {
     let requestBody:
       | null
       | string
       | {
-        [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = null;
+          [x: string]: string | SerializedFile | (string | SerializedFile)[];
+        } = null;
     if (ctx.req.raw.body) {
       if (requestMethod === "GET" || requestMethod === "HEAD") {
         logger.warn(
@@ -302,8 +310,6 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     return requestBody;
   }
 });
-
-
 
 /**
  * Extract useful data from the response when a request succeeds,
