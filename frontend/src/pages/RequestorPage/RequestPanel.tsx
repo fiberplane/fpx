@@ -398,9 +398,7 @@ export function PanelSectionHeader({
       {handleClearData && (
         <EraserIcon
           className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
-          onClick={() => {
-            handleClearData();
-          }}
+          onClick={handleClearData}
         />
       )}
     </div>
