@@ -9,7 +9,6 @@ import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "../Editors";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
-import { PathParamForm } from "../PathParamForm/PathParamForm";
 import { ResizableHandle } from "../Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestingPersona } from "../ai";
@@ -22,6 +21,7 @@ import type {
 import { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
+import { PathParamForm } from "./PathParamForm";
 import {
   RequestBodyTypeDropdown,
   RequestBodyTypeDropdownProps,
