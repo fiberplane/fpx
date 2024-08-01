@@ -10,10 +10,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import type { RequestBodyType } from "./reducer";
+import type { RequestBodyType, RequestorBody } from "./reducer";
 
 type RequestBodyTypeOption = {
   value: RequestBodyType;
@@ -28,15 +29,19 @@ const bodyTypes: RequestBodyTypeOption[] = [
 ];
 
 export type RequestBodyTypeDropdownProps = {
-  requestBodyType: RequestBodyType;
-  handleRequestBodyTypeChange: (contentType: RequestBodyType) => void;
+  requestBody: RequestorBody;
+  handleRequestBodyTypeChange: (
+    contentType: RequestBodyType,
+    isMultipart?: boolean,
+  ) => void;
 };
 
 export function RequestBodyTypeDropdown({
-  requestBodyType,
+  requestBody,
   handleRequestBodyTypeChange,
 }: RequestBodyTypeDropdownProps) {
   const [open, setOpen] = useState(false);
+  const requestBodyType = requestBody.type;
   const bodyTypeLabel = useMemo(() => {
     return (
       bodyTypes.find((type) => type.value === requestBodyType)?.label ?? "Body"
@@ -44,17 +49,31 @@ export function RequestBodyTypeDropdown({
   }, [requestBodyType]);
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="secondary"
-          role="combobox"
-          aria-expanded={open}
-          className="pl-3"
-        >
-          <CaretSortIcon className="w-4 h-4 mr-1" />
-          {bodyTypeLabel}
-        </Button>
-      </PopoverTrigger>
+      <div className="flex items-center gap-4">
+        <PopoverTrigger asChild>
+          <Button
+            variant="secondary"
+            role="combobox"
+            aria-expanded={open}
+            className="pl-3"
+          >
+            <CaretSortIcon className="w-4 h-4 mr-1" />
+            {bodyTypeLabel}
+          </Button>
+        </PopoverTrigger>
+        {requestBody.type === "form-data" && (
+          <div className="flex items-center gap-1">
+            <Switch
+              checked={requestBody.isMultipart}
+              onCheckedChange={(checked) => {
+                handleRequestBodyTypeChange("form-data", checked);
+              }}
+            />
+            <span className="text-xs text-muted-foreground">Multipart</span>
+          </div>
+        )}
+      </div>
+
       <PopoverContent className="w-[120px] p-0" align="end">
         <Command>
           <CommandList>

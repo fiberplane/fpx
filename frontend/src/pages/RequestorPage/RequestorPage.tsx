@@ -284,7 +284,6 @@ export const RequestorPage = () => {
             activeRequestsPanelTab={activeRequestsPanelTab}
             setActiveRequestsPanelTab={setActiveRequestsPanelTab}
             shouldShowRequestTab={shouldShowRequestTab}
-            // HACK - Need to modify this when we support form-data
             body={body}
             setBody={setBody}
             handleRequestBodyTypeChange={handleRequestBodyTypeChange}
@@ -614,10 +613,12 @@ function getContentTypeHeader(body: RequestorBody): string | null {
     case "json":
       return "application/json";
     case "form-data": {
-      const hasFile = body.value.some((item) => item.value.type === "file");
+      const shouldDeferToFetchItself =
+        body.isMultipart ||
+        body.value.some((item) => item.value.type === "file");
       // NOTE - We want the browser to handle setting this header automatically
       //        Since, it needs to determine the form boundary for multipart/form-data
-      if (hasFile) {
+      if (shouldDeferToFetchItself) {
         return null;
       }
       return "application/x-www-form-urlencoded";

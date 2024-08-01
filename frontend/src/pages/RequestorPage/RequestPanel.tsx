@@ -61,7 +61,10 @@ type RequestPanelProps = {
   body: RequestorBody;
   // FIXME
   setBody: (body: undefined | string | RequestorBody) => void;
-  handleRequestBodyTypeChange: (contentType: RequestBodyType) => void;
+  handleRequestBodyTypeChange: (
+    contentType: RequestBodyType,
+    isMultipart?: boolean,
+  ) => void;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   setPathParams: (params: KeyValueParameter[]) => void;
@@ -282,16 +285,15 @@ function RequestMeta(props: RequestPanelProps) {
           />
           <PanelSectionHeader
             title="Request Body"
-            // FIXME - Change based on body type...
             handleClearData={() => {
+              // HACK - Setting the body to undefined will dispatch a CLEAR_BODY action
               setBody(undefined);
             }}
           />
           {(body.type === "json" || body.type === "text") && (
             <CodeMirrorJsonEditor
               onChange={setBody}
-              // FIXME - Use type guard
-              value={body.value as string | undefined}
+              value={body.value}
               maxHeight="800px"
             />
           )}
@@ -309,7 +311,7 @@ function RequestMeta(props: RequestPanelProps) {
           )}
           {/* HACK - This toolbar is absolutely positioned for now */}
           <BottomToolbar
-            requestBodyType={body.type}
+            requestBody={body}
             handleRequestBodyTypeChange={handleRequestBodyTypeChange}
           />
         </CustomTabsContent>
@@ -358,13 +360,13 @@ function RequestMeta(props: RequestPanelProps) {
 }
 
 const BottomToolbar = ({
-  requestBodyType,
+  requestBody,
   handleRequestBodyTypeChange,
 }: RequestBodyTypeDropdownProps) => {
   return (
     <div className="flex justify-start gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
       <RequestBodyTypeDropdown
-        requestBodyType={requestBodyType}
+        requestBody={requestBody}
         handleRequestBodyTypeChange={handleRequestBodyTypeChange}
       />
     </div>

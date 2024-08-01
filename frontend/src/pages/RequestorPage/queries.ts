@@ -231,8 +231,10 @@ function createBody(body: RequestorBody) {
   }
   // NOTE - We automatically send multipart when there's a file
   if (body.type === "form-data") {
+    const isMultipart = !!body.isMultipart;
+    // FIXME - Remove this eventually and provide a dialogue in the ui when someone adds a non-text file to a urlencoded form (a la httpie)
     const hasFile = body.value.some((item) => item.value.type === "file");
-    if (hasFile) {
+    if (isMultipart || hasFile) {
       return reduceFormDataParameters(body.value);
     }
     return createUrlEncodedBody(
