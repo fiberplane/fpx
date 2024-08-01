@@ -197,7 +197,7 @@ export function makeRequest({
     body.type === "json" && body.value && isJson(body.value)
       ? JSON.parse(body.value)
       : body.type === "form-data"
-        ? reduceKeyValueParameters(body.value)
+        ? reduceFormDataParameters(body.value)
         : body.value;
   return fetch("/v0/send-request", {
     method: "POST",

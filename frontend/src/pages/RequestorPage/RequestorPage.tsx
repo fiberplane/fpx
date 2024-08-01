@@ -24,9 +24,10 @@ import { findMatchedRoute, useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { RequestMethodInputValue, isRequestMethod, isWsRequest } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
+import { RequestorState } from "./reducer/state";
+
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./styles.css";
-import { RequestorState } from "./reducer/state";
 
 export const RequestorPage = () => {
   const { toast } = useToast();
@@ -540,6 +541,18 @@ function useRequestorSubmitHandler({
         ...requestHeaders,
       ].filter(Boolean) as KeyValueParameter[];
 
+      // TODO - Check me
+      if (isWsRequest(requestType)) {
+        const url = addBaseUrl(path, {
+          requestType: requestType,
+        });
+        connectWebsocket(url);
+        toast({
+          description: "Connecting to websocket",
+        });
+        return;
+      }
+
       makeRequest(
         {
           addBaseUrl,
@@ -580,10 +593,10 @@ function useRequestorSubmitHandler({
       method,
       pathParams,
       queryParams,
-      selectedRoute?.path,
       connectWebsocket,
       toast,
       recordRequestInSessionHistory,
+      selectedRoute,
     ],
   );
 }

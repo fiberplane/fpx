@@ -1,9 +1,10 @@
 use axum::response::IntoResponse;
 use bytes::Bytes;
+use fpx_macros::ApiError;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use tracing::warn;
+use tracing::{error, warn};
 
 pub trait ApiError {
     fn status_code(&self) -> StatusCode;
@@ -124,17 +125,12 @@ where
     }
 }
 
-#[derive(Debug, Error, Serialize, Deserialize)]
+#[derive(Debug, Error, Serialize, Deserialize, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 pub enum CommonError {
+    #[api_error(status_code = StatusCode::INTERNAL_SERVER_ERROR)]
     #[error("Internal server error")]
     InternalServerError,
-}
-
-impl ApiError for CommonError {
-    fn status_code(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
-    }
 }
 
 #[cfg(test)]
@@ -142,24 +138,17 @@ mod tests {
     use super::*;
     use http_body_util::BodyExt;
 
-    #[derive(Debug, Serialize, Deserialize, Error)]
+    #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
     #[serde(tag = "error", content = "details", rename_all = "camelCase")]
     #[non_exhaustive]
     pub enum RequestGetError {
+        #[api_error(status_code = StatusCode::NOT_FOUND)]
         #[error("Request not found")]
         RequestNotFound,
 
+        #[api_error(status_code = StatusCode::BAD_REQUEST)]
         #[error("Provided ID is invalid")]
         InvalidId,
-    }
-
-    impl ApiError for RequestGetError {
-        fn status_code(&self) -> StatusCode {
-            match self {
-                RequestGetError::RequestNotFound => StatusCode::NOT_FOUND,
-                RequestGetError::InvalidId => StatusCode::BAD_REQUEST,
-            }
-        }
     }
 
     /// Test to convert Service Error in a ApiServerError to a ApiClientError.

@@ -29,7 +29,7 @@ import {
 } from "react";
 import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "./Editors";
-import { FormDataForm } from "./FormDataForm/FormDataForm";
+import { FormDataForm } from "./FormDataForm";
 import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
 import { PathParamForm } from "./PathParamForm/PathParamForm";
 import { ResizableHandle } from "./Resizable";
@@ -37,8 +37,6 @@ import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 import { WebSocketState } from "./useMakeWebsocketRequest";
-
-import "./RequestPanel.css";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import {
   Command,
@@ -58,9 +56,11 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { CheckIcon } from "@radix-ui/react-icons";
-import { FormDataParameter } from "./FormDataForm";
 import type { RequestsPanelTab } from "./reducer";
 import { RequestorState } from "./reducer/state";
+
+import "./RequestPanel.css";
+
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
