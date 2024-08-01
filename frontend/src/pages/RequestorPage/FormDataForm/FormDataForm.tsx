@@ -25,7 +25,8 @@ type FormDataRowProps = {
   onChangeValue: (value: FormDataParameter["value"]) => void;
   removeValue?: () => void;
 };
-export const FormDataFormRow = (props: FormDataRowProps) => {
+
+const FormDataFormRow = (props: FormDataRowProps) => {
   const {
     isDraft,
     onChangeEnabled,

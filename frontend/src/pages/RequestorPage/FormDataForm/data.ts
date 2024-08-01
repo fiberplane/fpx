@@ -158,15 +158,69 @@ export function reduceFormDataParameters(parameters: FormDataParameter[]) {
   }, new FormData());
 }
 
-export function createFormDataParameters(
-  replacements: Array<{ key: string; value: FormDataParameter["value"] }>,
-) {
-  return replacements.map(({ key, value }) => {
-    return {
-      id: createParameterId(),
-      key,
-      value,
-      enabled: true,
-    };
-  });
-}
+/**
+ * NOTE - We're using this instead of enforceSingleTerminalDraftParameter
+ *        in order to preserve focus on the last parameter when you delete all of a key.
+ *        (Hard to explain, just know this is preferable to `enforceSingleTerminalDraftParameter` for UI behavior.)
+ *
+ * If the final element of the array is a {@link DraftFormDataParameter}, return the array
+ * Otherwise, return the array with a new draft parameter appended.
+ *
+ */
+export const enforceTerminalDraftParameter = (
+  parameters: FormDataParameter[],
+) => {
+  const finalElement = parameters[parameters.length - 1];
+  const hasTerminalDraftParameter = finalElement
+    ? isDraftParameter(finalElement)
+    : false;
+  if (hasTerminalDraftParameter) {
+    return parameters;
+  }
+
+  return concatDraftParameter(parameters);
+};
+
+/**
+ * NOTE - This is the desired behavior, but does not play nicely with focus in the UI.
+ *
+ * If the final element of the array is a {@link DraftFormDataParameter}, return the array
+ * Otherwise, return the array with a new draft parameter appended.
+ *
+ * If there are multiple draft parameters, all will be filtered out, and a new draft parameter will be appended at the end.
+ */
+export const enforceSingleTerminalDraftParameter = (
+  parameters: FormDataParameter[],
+) => {
+  const firstDraftParameterIndex = parameters.findIndex(isDraftParameter);
+
+  const hasSingleTeriminalDraftParameter =
+    firstDraftParameterIndex + 1 === parameters.length;
+
+  if (hasSingleTeriminalDraftParameter) {
+    return parameters;
+  }
+
+  if (firstDraftParameterIndex === -1) {
+    return concatDraftParameter(parameters);
+  }
+
+  const nonDraftParameters = parameters.filter((p) => !isDraftParameter(p));
+  return concatDraftParameter(nonDraftParameters);
+};
+
+/**
+ * Helper to immutabily add a {@link DraftFormDataParameter} to the end of an array.
+ */
+const concatDraftParameter = (parameters: FormDataParameter[]) => {
+  const DRAFT_PARAMETER: DraftFormDataParameter = {
+    id: createParameterId(),
+    enabled: false,
+    key: "",
+    value: {
+      type: "text",
+      value: "",
+    },
+  };
+  return [...parameters, DRAFT_PARAMETER];
+};
