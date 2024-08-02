@@ -1,6 +1,7 @@
 use fpx_lib::data::fake_store::FakeStore;
 use fpx_lib::events::ServerEvents;
 use fpx_lib::{api, service};
+use serde::Serialize;
 use std::sync::{Arc, LazyLock};
 use tower_service::Service;
 use tracing_subscriber::fmt::format::Pretty;
@@ -51,7 +52,7 @@ async fn fetch(
             let stub = ws.id_from_name("ws")?.get_stub()?;
 
             let mut request =
-                worker::Request::new(req.uri().to_string().as_str(), worker::Method::Get)?;
+                worker::Request::new("http://fake-host/connect", worker::Method::Get)?;
 
             request.headers_mut()?.set("Upgrade", "websocket")?;
 
@@ -59,6 +60,17 @@ async fn fetch(
 
             return Ok(response);
         }
+    }
+
+    if req.uri().to_string().ends_with("/api/ws/broadcast") {
+        let ws = env.durable_object("WEBSOCKET_HIBERNATION_SERVER")?;
+        let stub = ws.id_from_name("ws")?.get_stub()?;
+
+        let request = worker::Request::new("http://fake-host/broadcast", worker::Method::Get)?;
+
+        let response: axum::response::Response = stub.fetch_with_request(request).await?.into();
+
+        return Ok(response);
     }
 
     let store = FAKE_STORE.clone();
@@ -76,19 +88,25 @@ async fn fetch(
 pub struct WebSocketHibernationServer {
     env: Env,
     state: State,
+    connections: Vec<WebSocket>,
 }
 
 #[durable_object]
 impl DurableObject for WebSocketHibernationServer {
     fn new(state: State, env: Env) -> Self {
-        Self { env, state }
+        Self {
+            env,
+            state,
+            connections: vec![],
+        }
     }
 
     async fn fetch(&mut self, req: worker::Request) -> Result<Response> {
         let env = self.env.clone();
 
         Router::with_data(self)
-            .get_async("/api/ws", websocket_connect)
+            .get_async("/connect", websocket_connect)
+            .get_async("/broadcast", websocket_broadcast)
             .run(req, env)
             .await
     }
@@ -103,7 +121,25 @@ async fn websocket_connect(
     // Hibernating non standard web socket handler
     ctx.data.state.accept_web_socket(&server);
 
+    ctx.data.connections.push(server);
+
     let resp = Response::from_websocket(client)?;
 
     Ok(resp)
+}
+
+#[derive(Serialize)]
+enum Payload {
+    SomeValue,
+}
+
+async fn websocket_broadcast(
+    _req: Request,
+    ctx: RouteContext<&mut WebSocketHibernationServer>,
+) -> Result<Response> {
+    for client in ctx.data.connections.iter_mut() {
+        client.send(&Payload::SomeValue)?;
+    }
+
+    Response::ok("ok")
 }

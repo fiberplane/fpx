@@ -802,6 +802,7 @@ dependencies = [
  "console_error_panic_hook",
  "fpx-lib",
  "getrandom",
+ "serde",
  "time",
  "tower-service",
  "tracing",

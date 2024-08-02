@@ -9,7 +9,7 @@ use url::Url;
 #[derive(clap::Args, Debug)]
 pub struct Args {
     /// The address to connect to.
-    #[arg(short, long, env, default_value = "ws://127.0.0.1:6767/api/ws")]
+    #[arg(short, long, env, default_value = "ws://127.0.0.1:8787/api/ws")]
     pub endpoint: Url,
 }
 
