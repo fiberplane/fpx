@@ -13,6 +13,15 @@ use std::ops::{Deref, DerefMut};
 #[derive(Debug)]
 pub struct Json<T>(pub T);
 
+impl<T> Clone for Json<T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
 impl<T> Json<T> {
     pub fn into_inner(self) -> T {
         self.0
@@ -72,7 +81,7 @@ where
 /// This is a wrapper that makes it a bit easier to work with a timestamp that
 /// is serialized as a `u64` in the database (since libsql doesn't have a native
 /// timestamp/datetime type).
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Timestamp(u64);
 
 impl Timestamp {
