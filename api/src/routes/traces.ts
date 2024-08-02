@@ -23,6 +23,12 @@ app.get("/v1/traces", async (ctx) => {
   return ctx.json(traces);
 });
 
+app.post("/v1/traces/delete-all-hack", async (ctx) => {
+  const db = ctx.get("db");
+  await db.delete(otelTraces);
+  return ctx.text("OK");
+});
+
 /**
  * Expects a JSON payload from otel middleware
  */

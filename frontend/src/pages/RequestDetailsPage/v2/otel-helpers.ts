@@ -11,6 +11,13 @@ import {
 import { OtelSpan } from "@/queries";
 import { OtelAttributes } from "@/queries/traces-otel";
 
+/**
+ * TODO - Also look for exception events...
+ */
+export function isFpxTraceError(span: OtelSpan) {
+  return getStatusCode(span) >= 400;
+}
+
 export function getMatchedRoute(span: OtelSpan) {
   // TODO support this in the otel client
   return getString(span.attributes["http.route"]);
@@ -28,6 +35,10 @@ export function getString<T = string>(
     defaultValue: T;
   },
 ) {
+  if (typeof value === "string") {
+    return value;
+  }
+
   if (value && "String" in value) {
     return value.String;
   }
@@ -42,6 +53,10 @@ export function getNumber<T = number>(
     defaultValue: T;
   },
 ) {
+  if (typeof value === "number") {
+    return value;
+  }
+
   if (value && "Int" in value) {
     return value.Int;
   }

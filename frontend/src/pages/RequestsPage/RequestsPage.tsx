@@ -2,7 +2,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWebsocketQueryInvalidation } from "@/hooks";
-import { type MizuTrace, useMizuTraces, useMizuTracesV2 } from "@/queries";
+import { type MizuTrace, type OtelSpan, useMizuTracesV2 } from "@/queries";
 import { useOtelTraces } from "@/queries/hotel";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
@@ -16,21 +16,24 @@ type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 const RequestsTable = ({
   traces,
   filter,
-}: { traces: MizuTrace[]; filter: LevelFilter }) => {
+}: { traces: OtelSpan[]; filter: LevelFilter }) => {
   const navigate = useNavigate();
 
   const filteredTraces = useMemo(() => {
     if (filter === "all") {
       return traces;
     }
-    return traces.filter((trace) =>
-      trace.logs.some((log) => log.level === filter),
-    );
+    // FIXME - Look for any exceptions or error logs
+    //
+    // return traces.filter((trace) =>
+    //   trace.logs.some((log) => log.level === filter),
+    // );
+    return traces;
   }, [traces, filter]);
 
   const handleRowClick = useCallback(
-    (row: Row<MizuTrace>) => {
-      navigate(`/requests/${row.id}`);
+    (row: Row<OtelSpan>) => {
+      navigate(`/requests/${row.original.trace_id}`);
     },
     [navigate],
   );
@@ -40,13 +43,13 @@ const RequestsTable = ({
       columns={columns}
       data={filteredTraces ?? []}
       handleRowClick={handleRowClick}
-      getPaginationRowModel={getPaginationRowModel<MizuTrace>}
+      getPaginationRowModel={getPaginationRowModel<OtelSpan>}
     />
   );
 };
 
 export function RequestsPage() {
-  const query = useMizuTraces();
+  // const query = useMizuTraces();
   const queryV2 = useMizuTracesV2();
 
   useEffect(() => {
@@ -89,10 +92,10 @@ export function RequestsPage() {
             size="sm"
             className="h-8 gap-1"
             onClick={() => {
-              fetch("/v0/logs/delete-all-hack", {
+              fetch("/v1/traces/delete-all-hack", {
                 method: "POST",
               }).then(() => {
-                query.refetch();
+                otelTraces.refetch();
                 alert("Successfully deleted all");
               });
             }}
@@ -105,10 +108,10 @@ export function RequestsPage() {
         </div>
       </div>
       <TabsContent value="all">
-        <RequestsTable traces={query.data ?? []} filter="all" />
+        <RequestsTable traces={otelTraces.data ?? []} filter="all" />
       </TabsContent>
       <TabsContent value="error">
-        <RequestsTable traces={query.data ?? []} filter="error" />
+        <RequestsTable traces={otelTraces.data ?? []} filter="error" />
       </TabsContent>
     </Tabs>
   );

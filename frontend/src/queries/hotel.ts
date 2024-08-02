@@ -4,7 +4,7 @@ import { OtelSpan, OtelSpanSchema } from "./traces-otel";
 export function useOtelTraces() {
   return useQuery({
     queryKey: ["otel-traces"],
-    queryFn: () => {
+    queryFn: (): Promise<OtelSpan[]> => {
       return fetch("/v1/traces")
         .then((res) => res.json())
         .then((r) => {

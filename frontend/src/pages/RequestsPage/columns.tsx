@@ -2,17 +2,24 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { Status } from "@/components/ui/status";
-import type { MizuTrace } from "@/queries";
+import type { OtelSpan } from "@/queries";
 import { Link } from "react-router-dom";
 import { Timestamp } from "../RequestDetailsPage/Timestamp";
 import { RequestMethod } from "../RequestDetailsPage/shared";
+import {
+  getRequestMethod,
+  getRequestPath,
+  getStatusCode,
+  isFpxTraceError,
+} from "../RequestDetailsPage/v2/otel-helpers";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
 //         in order to support fast refresh with Vite
-export const columns: ColumnDef<MizuTrace>[] = [
+export const columns: ColumnDef<OtelSpan>[] = [
   {
     id: "isError",
-    accessorFn: (row) => row.logs.some((l) => l.level === "error"),
+    // TODO - Implement isError...
+    accessorFn: (row) => isFpxTraceError(row),
     header: () => <span className="sr-only">Icon</span>,
     cell: (props) => {
       return (
@@ -32,7 +39,7 @@ export const columns: ColumnDef<MizuTrace>[] = [
     accessorKey: "status",
     header: "Status",
     cell: (props) => {
-      return <Status statusCode={props.row.getValue("status")} />;
+      return <Status statusCode={getStatusCode(props.row.original)} />;
     },
     meta: {
       headerClassName: "w-20",
@@ -43,7 +50,7 @@ export const columns: ColumnDef<MizuTrace>[] = [
     accessorKey: "method",
     header: "Method",
     cell: (props) => {
-      return <RequestMethod method={props.row.getValue("method")} />;
+      return <RequestMethod method={getRequestMethod(props.row.original)} />;
     },
     meta: {
       headerClassName: "w-20",
@@ -56,7 +63,7 @@ export const columns: ColumnDef<MizuTrace>[] = [
     cell: (props) => {
       return (
         <Link className="hover:underline" to={`/requests/${props.row.id}`}>
-          {props.row.original.path}
+          {getRequestPath(props.row.original)}
         </Link>
       );
     },
@@ -84,9 +91,7 @@ export const columns: ColumnDef<MizuTrace>[] = [
   {
     id: "timestamp",
     header: "Timestamp",
-    cell: (props) => (
-      <Timestamp date={props.row.original.logs?.[0]?.timestamp} />
-    ),
+    cell: (props) => <Timestamp date={props.row.original.start_time} />,
     meta: {
       // NOTE - This is how to hide a cell depending on breakpoint!
       headerClassName: "hidden md:table-cell w-36",
