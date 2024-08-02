@@ -16,6 +16,7 @@ import issues from "./routes/issues.js";
 import logs from "./routes/logs.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
+import traces from "./routes/traces.js";
 
 export function createApp(wsConnections?: Set<WebSocket>) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -56,6 +57,7 @@ export function createApp(wsConnections?: Set<WebSocket>) {
 
   // All routes are modularized in the ./routes folder
   app.route("/", logs);
+  app.route("/", traces);
   app.route("/", inference);
   app.route("/", source);
   app.route("/", dependencies);

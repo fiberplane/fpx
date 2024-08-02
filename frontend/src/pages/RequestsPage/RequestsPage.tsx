@@ -9,6 +9,7 @@ import { Row, getPaginationRowModel } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { columns } from "./columns";
+import { useOtelTraces } from "@/queries/hotel";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
@@ -53,6 +54,13 @@ export function RequestsPage() {
       console.log("traces with spans:", queryV2.data);
     }
   }, [queryV2.data]);
+
+  const otelTraces = useOtelTraces();
+  useEffect(() => {
+    if (otelTraces.data) {
+      console.log("otel traces:", otelTraces.data);
+    }
+  }, [otelTraces.data]);
 
   // Will add new fpx-requests as they come in by refetching
   // In the future, we'll want to build a better ux around this (not auto refresh the table)

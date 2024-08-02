@@ -23,7 +23,11 @@
     "access": "public"
   },
   "license": "MIT or Apache 2",
-  "keywords": ["hono", "local", "debugging"],
+  "keywords": [
+    "hono",
+    "local",
+    "debugging"
+  ],
   "bin": {
     "fpx": "bin/cli.js"
   },
@@ -53,6 +57,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
     "@octokit/types": "^13.5.0",
+    "@opentelemetry/otlp-transformer": "^0.52.1",
     "@types/figlet": "^1.5.8",
     "@types/node": "^20.11.17",
     "@types/ws": "^8.5.10",

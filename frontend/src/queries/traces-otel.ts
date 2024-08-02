@@ -7,11 +7,11 @@ const OtelAttributesSchema = z.record(
     z.object({
       String: z.string(),
     }),
-    // z.string(),
+    z.string(),
     z.object({
       Int: z.number(),
     }),
-    // z.number(),
+    z.number(),
     // z.boolean(),
     // z.null(),
     // z.undefined(),
@@ -30,7 +30,7 @@ export type OtelAttributes = z.infer<typeof OtelAttributesSchema>;
 
 const OtelStatusSchema = z.object({
   code: z.number(),
-  message: z.string(),
+  message: z.string().nullish(),
 });
 
 export type OtelStatus = z.infer<typeof OtelStatusSchema>;
@@ -48,8 +48,8 @@ export const OtelSpanSchema = z.object({
   span_id: z.string(),
   parent_span_id: z.union([z.string(), z.null()]),
   name: z.string(),
-  trace_state: z.string(),
-  flags: z.number(), // This determines whether or not the trace will be sampled
+  trace_state: z.string().nullish(),
+  flags: z.number().optional(), // This determines whether or not the trace will be sampled
   kind: z.string(),
   start_time: z.string(), // ISO 8601 format
   end_time: z.string(), // ISO 8601 format

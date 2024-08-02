@@ -188,6 +188,14 @@ const CallerLocationSchema = z.object({
   column: z.string(),
 });
 
+export const otelTraces = sqliteTable("otel_traces", {
+  traceId: text("trace_id"),
+  rawPayload: text("raw_payload", { mode: "json" }),
+  parsedPayload: text("parsed_payload", { mode: "json" }),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+});
+
 export const githubIssues = sqliteTable("github_issues", {
   id: integer("id", { mode: "number" }).primaryKey(),
   owner: text("owner", { mode: "text" }).notNull(),
