@@ -1,7 +1,7 @@
 import {
   ChangeKeyValueParametersHandler,
   KeyValueParameter,
-} from "../KeyValueForm/types";
+} from "../../KeyValueForm/types";
 
 /**
  * Return a function to immutably update an element of a {@link KeyValueParameter[]} with a new `value` property.
@@ -19,11 +19,6 @@ export function createChangePathParamValue(
     allParameters,
     parameter,
     (parameterToModify, newValue: string) => {
-      console.log(
-        "hi parameterToModify, newValue",
-        parameterToModify,
-        newValue,
-      );
       return {
         ...parameterToModify,
         value: newValue,
@@ -45,7 +40,6 @@ function modifyKeyValuePathParameter<T>(
   mapNewValue: (p: KeyValueParameter, newValue: T) => KeyValueParameter,
 ) {
   return (newValue: T) => {
-    console.log("hi newValue", newValue);
     const newQueryParams = allParameters.map((otherParameter) => {
       if (parameter.id === otherParameter.id) {
         const newParameter = mapNewValue(parameter, newValue);

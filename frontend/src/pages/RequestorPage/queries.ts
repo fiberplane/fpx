@@ -2,7 +2,9 @@ import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
 import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { reduceFormDataParameters } from "./FormDataForm";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
+import type { RequestorBody } from "./reducer/state";
 import { RequestMethodSchema, RequestTypeSchema } from "./types";
 
 export const ProbedRouteSchema = z.object({
@@ -104,8 +106,6 @@ export function useAddRoutes() {
   const mutation = useMutation({
     mutationFn: addRoutes,
     onSuccess: () => {
-      // Invalidate and refetch app routes... not sure if this will mess with the currently selected route,
-      // or if we want to autoselect the new route, or what
       queryClient.invalidateQueries({ queryKey: [PROBED_ROUTES_KEY] });
     },
   });
@@ -144,10 +144,14 @@ export function useFetchRequestorRequests() {
   });
 }
 
-export function useMakeRequest() {
+export type MakeProxiedRequestQueryFn = ReturnType<
+  typeof useMakeProxiedRequest
+>["mutate"];
+
+export function useMakeProxiedRequest() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: makeRequest,
+    mutationFn: makeProxiedRequest,
     onSuccess: () => {
       // Invalidate and refetch requestor requests
       queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
@@ -157,7 +161,7 @@ export function useMakeRequest() {
   return mutation;
 }
 
-export function makeRequest({
+export function makeProxiedRequest({
   addBaseUrl,
   path,
   method,
@@ -170,28 +174,88 @@ export function makeRequest({
   addBaseUrl: (path: string) => string;
   path: string;
   method: string;
-  body?: string;
+  body: RequestorBody;
   headers: KeyValueParameter[];
   pathParams?: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   route?: string;
 }) {
-  return fetch("/v0/send-request", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      requestUrl: addBaseUrl(path),
-      requestMethod: method,
-      // NOTE - GET / HEAD requests cannot have a body
-      requestBody: method === "GET" || method === "HEAD" ? undefined : body,
-      requestHeaders: reduceKeyValueParameters(headers),
-      requestPathParams: reduceKeyValueParameters(pathParams ?? []),
-      requestQueryParams: reduceKeyValueParameters(queryParams),
-      requestRoute: route,
-    }),
-  }).then((r) => r.json());
+  const queryParamsForUrl = new URLSearchParams();
+  queryParams.forEach((param) => {
+    if (param.enabled) {
+      queryParamsForUrl.set(param.key, param.value);
+    }
+  });
+
+  // NOTE - we add custom headers to record additional metadata about the request
+  const modHeaders = reduceKeyValueParameters(headers);
+  if (route) {
+    modHeaders["x-fpx-route"] = route;
+  }
+  // HACK - Serialize path params into a header
+  //        This could cause encoding issues if there are funky chars in the path params
+  modHeaders["x-fpx-path-params"] = JSON.stringify(
+    reduceKeyValueParameters(pathParams ?? []),
+  );
+
+  // HACK - This is the most secure code I've ever written
+  modHeaders["x-fpx-proxy-to"] = addBaseUrl(path);
+
+  // We resolve the url with query parameters
+  const searchString = queryParamsForUrl.toString();
+  const resolvedPath = searchString ? `${path}?${searchString}` : path;
+
+  // We create the body
+  // FIXME - We should validate JSON in the UI itself
+  const hackyBody = createBody(body);
+
+  return fetch(`/v0/proxy-request${resolvedPath}`, {
+    method,
+    headers: modHeaders,
+    body: method === "GET" || method === "HEAD" ? undefined : hackyBody,
+  }).then((r) => {
+    console.log("i got a response hereeeee", r);
+    // TODO - If there's a file response... use it? Idk
+    return {
+      traceId: r.headers.get("x-fpx-trace-id"),
+    };
+  });
+}
+
+function createBody(body: RequestorBody) {
+  if (body.type === "json") {
+    if (typeof body.value !== "undefined") {
+      return JSON.stringify(body.value);
+    }
+    return undefined;
+  }
+  // NOTE - We automatically send multipart when there's a file
+  if (body.type === "form-data") {
+    const isMultipart = !!body.isMultipart;
+    // FIXME - Remove this eventually and provide a dialogue in the ui when someone adds a non-text file to a urlencoded form (a la httpie)
+    const hasFile = body.value.some((item) => item.value.type === "file");
+    if (isMultipart || hasFile) {
+      return reduceFormDataParameters(body.value);
+    }
+    return createUrlEncodedBody(
+      reduceKeyValueParameters(
+        body.value.map((item) => ({
+          id: item.id,
+          enabled: item.enabled,
+          key: item.key,
+          // HACK - We know these are all non-strings because of the `hasFile` case above
+          value: item.value.value as string,
+        })),
+      ),
+    );
+  }
+
+  return body.value;
+}
+
+// NOTE - This is for urlencoded (not multipart)
+function createUrlEncodedBody(body: Record<string, string>) {
+  return new URLSearchParams(body).toString();
 }
 
 export function useTrace(traceId: string) {

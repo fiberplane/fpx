@@ -1,7 +1,7 @@
 /**
  * Hacky feature flag to disable websockets for now, until we can iron out the UX
  *
- * If you want to use this feature, you'll need to execut the following in the browser console:
+ * If you want to use this feature, you'll need to execute the following in the browser console:
  *
  * `localStorage.setItem("fpx.requestor.webSocketsEnabled", "true")`
  *

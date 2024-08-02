@@ -1,10 +1,11 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { errorHasMessage } from "@/utils";
+import { errorHasMessage, isJson } from "@/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { KeyValueParameter, createKeyValueParameters } from "../KeyValueForm";
 import { ProbedRoute, Requestornator } from "../queries";
+import { RequestorBody } from "../reducer";
 import { useAiRequestData } from "./generate-request-data";
 
 export const FRIENDLY = "Friendly" as const;
@@ -13,7 +14,7 @@ export const HOSTILE = "QA" as const;
 export type AiTestingPersona = "Friendly" | "QA";
 
 type FormSetters = {
-  setBody: (body: string) => void;
+  setBody: (body: string | RequestorBody) => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (params: KeyValueParameter[]) => void;
   setPath: (path: string) => void;
@@ -76,7 +77,10 @@ export function useAi(
 
       if (body) {
         const prettyBody = tryPrettify(body);
-        setBody(prettyBody);
+        const nextBody = isJson(prettyBody)
+          ? { type: "json" as const, value: prettyBody }
+          : { type: "text" as const, value: prettyBody };
+        setBody(nextBody);
       }
 
       // NOTE - We need to be clear on the types here, otherwise this could wreak havoc on our form data
