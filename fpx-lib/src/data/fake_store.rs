@@ -1,26 +1,17 @@
 use super::{models, DbError, Result, Store, Transaction};
 use async_trait::async_trait;
 use std::sync::{Arc, RwLock};
-use tracing::info;
 
 /// A simple in-memory [`Store`] implementation. Currently only intended for
 /// proof of concept.
 ///
 /// This implementation does not provide any Transaction support, nor will it
 /// work concurrently.
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct FakeStore {
     /// Spans are stored in a [`RwLock`] so that we can always mutate the inner
     /// [`Vec`], even with a reference to this [`FakeStore`].
     spans: Arc<RwLock<Vec<models::Span>>>,
-}
-
-impl FakeStore {
-    pub fn new() -> Self {
-        Self {
-            spans: Arc::new(RwLock::new(vec![])),
-        }
-    }
 }
 
 #[async_trait]
