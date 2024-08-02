@@ -225,7 +225,7 @@ export function makeProxiedRequest({
 function createBody(body: RequestorBody) {
   if (body.type === "json") {
     if (typeof body.value !== "undefined") {
-      return JSON.stringify(body.value);
+      return body.value;
     }
     return undefined;
   }
