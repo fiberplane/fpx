@@ -1,0 +1,5 @@
+accelerate==0.33.0
+torch==2.4.0
+transformers==4.43.3
+quart==0.19.6
+quart_cors==0.7.0
