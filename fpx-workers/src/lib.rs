@@ -1,9 +1,8 @@
 use fpx_lib::data::fake_store::FakeStore;
 use fpx_lib::events::ServerEvents;
 use fpx_lib::{api, service};
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, LazyLock};
 use tower_service::Service;
-use tracing::info;
 use tracing_subscriber::fmt::format::Pretty;
 use tracing_subscriber::fmt::time::UtcTime;
 use tracing_subscriber::prelude::*;
@@ -13,7 +12,7 @@ use worker::*;
 // Based on:
 // https://developers.cloudflare.com/durable-objects/examples/websocket-hibernation-server/
 
-static FAKE_STORE: OnceLock<FakeStore> = OnceLock::new();
+static FAKE_STORE: LazyLock<FakeStore> = LazyLock::new(FakeStore::default);
 
 #[event(start)]
 fn start() {
@@ -27,10 +26,6 @@ fn start() {
         .with(fmt_layer)
         .with(perf_layer)
         .init();
-
-    FAKE_STORE
-        .set(FakeStore::new())
-        .expect("failed to set FakeStore");
 }
 
 #[event(fetch)]
@@ -66,14 +61,12 @@ async fn fetch(
         }
     }
 
-    let store = FAKE_STORE.get().unwrap().clone();
+    let store = FAKE_STORE.clone();
     let boxed_store = Arc::new(store);
     let events = ServerEvents::new();
 
     let service = service::Service::new(boxed_store.clone(), events.clone());
     let mut router = api::create_api(events, service, boxed_store);
-
-    info!("Request: {:?}", req);
 
     Ok(router.call(req).await?)
 }

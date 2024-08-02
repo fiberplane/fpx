@@ -10,6 +10,7 @@ type Result<T, E = DbError> = anyhow::Result<T, E>;
 
 pub type BoxedStore = Arc<dyn Store>;
 
+#[derive(Clone, Default, Debug)]
 pub struct Transaction {}
 
 impl Transaction {

@@ -8,19 +8,11 @@ use tracing::info;
 ///
 /// This implementation does not provide any Transaction support, nor will it
 /// work concurrently.
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct FakeStore {
     /// Spans are stored in a [`RwLock`] so that we can always mutate the inner
     /// [`Vec`], even with a reference to this [`FakeStore`].
     spans: Arc<RwLock<Vec<models::Span>>>,
-}
-
-impl FakeStore {
-    pub fn new() -> Self {
-        Self {
-            spans: Arc::new(RwLock::new(vec![])),
-        }
-    }
 }
 
 #[async_trait]
@@ -68,10 +60,7 @@ impl Store for FakeStore {
             .read()
             .unwrap()
             .iter()
-            .filter(|span| {
-                info!(span.trace_id, trace_id, "searching!");
-                span.trace_id == trace_id
-            })
+            .filter(|span| span.trace_id == trace_id)
             .cloned()
             .collect();
 
