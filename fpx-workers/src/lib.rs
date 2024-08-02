@@ -45,7 +45,5 @@ async fn fetch(
     let service = service::Service::new(boxed_store.clone(), events.clone());
     let mut router = api::create_api(events, service, boxed_store);
 
-    info!("Request: {:?}", req);
-
     Ok(router.call(req).await?)
 }

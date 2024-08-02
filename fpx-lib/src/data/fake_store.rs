@@ -68,10 +68,7 @@ impl Store for FakeStore {
             .read()
             .unwrap()
             .iter()
-            .filter(|span| {
-                info!(span.trace_id, trace_id, "searching!");
-                span.trace_id == trace_id
-            })
+            .filter(|span| span.trace_id == trace_id)
             .cloned()
             .collect();
 
