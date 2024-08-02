@@ -10,6 +10,7 @@ use tracing_subscriber::prelude::*;
 use tracing_web::{performance_layer, MakeConsoleWriter};
 use worker::*;
 
+// Based on:
 // https://developers.cloudflare.com/durable-objects/examples/websocket-hibernation-server/
 
 static FAKE_STORE: OnceLock<FakeStore> = OnceLock::new();
@@ -39,14 +40,13 @@ async fn fetch(
     _ctx: Context,
 ) -> Result<axum::http::Response<axum::body::Body>> {
     console_error_panic_hook::set_once();
-
     // Should move into the router
-    if req.uri().to_string().ends_with("/websocket") {
+    if req.uri().to_string().ends_with("/api/ws") {
         let upgrade_header = req.headers().get("Upgrade");
 
         if let Some(value) = upgrade_header {
             if value != "websocket" {
-                // Status 426
+                // Should set status 426
                 return Ok(axum::http::Response::new(
                     "Durable Object expected Upgrade: websocket".into(),
                 ));
@@ -55,8 +55,12 @@ async fn fetch(
             let ws = env.durable_object("WEBSOCKET_HIBERNATION_SERVER")?;
             let stub = ws.id_from_name("ws")?.get_stub()?;
 
-            let response: axum::response::Response =
-                stub.fetch_with_str("http://fake-host/").await?.into();
+            let mut request =
+                worker::Request::new(req.uri().to_string().as_str(), worker::Method::Get)?;
+
+            request.headers_mut()?.set("Upgrade", "websocket")?;
+
+            let response: axum::response::Response = stub.fetch_with_request(request).await?.into();
 
             return Ok(response);
         }
@@ -87,11 +91,11 @@ impl DurableObject for WebSocketHibernationServer {
         Self { env, state }
     }
 
-    async fn fetch(&mut self, mut req: worker::Request) -> Result<Response> {
+    async fn fetch(&mut self, req: worker::Request) -> Result<Response> {
         let env = self.env.clone();
 
         Router::with_data(self)
-            .get_async("/ws", websocket_connect)
+            .get_async("/api/ws", websocket_connect)
             .run(req, env)
             .await
     }
@@ -102,12 +106,11 @@ async fn websocket_connect(
     ctx: RouteContext<&mut WebSocketHibernationServer>,
 ) -> Result<Response> {
     let WebSocketPair { client, server } = WebSocketPair::new()?;
-    // TODO: Support hibernation, should probably be something like .acceptWebsocket(ws);
-    // https://developers.cloudflare.com/durable-objects/examples/websocket-hibernation-server/
-    // server.accept()?;
 
+    // Hibernating non standard web socket handler
     ctx.data.state.accept_web_socket(&server);
 
     let resp = Response::from_websocket(client)?;
+
     Ok(resp)
 }
