@@ -20,7 +20,9 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
   const traces = await db.select().from(otelTraces);
-  return ctx.json(traces);
+  // HACK - Only parent traces...
+  // @ts-expect-error - Just to get things working
+  return ctx.json(traces.filter((t) => !t.parsedPayload?.parent_span_id));
 });
 
 app.post("/v1/traces/delete-all-hack", async (ctx) => {
