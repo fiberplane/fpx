@@ -70,6 +70,7 @@ export const RequestorPage = () => {
     setRequestHeaders,
     setBody,
     handleRequestBodyTypeChange,
+
     // Request panel - Websocket message form
     state: { websocketMessage },
     setWebsocketMessage,

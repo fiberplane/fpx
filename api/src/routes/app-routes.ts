@@ -125,7 +125,8 @@ function serializeFormDataValue(
  * Or maybe even streams eventually?
  */
 app.all("/v0/proxy-request/*", async (ctx) => {
-  const traceId = ctx.req.header("x-fpx-trace-id") ?? generateUUID();
+  const traceId = ctx.req.header("x-fpx-trace-id") || generateUUID();
+  logger.debug("Proxying request with traceId:", traceId);
   const db = ctx.get("db");
 
   const requestRoute = ctx.req.header("x-fpx-route");
@@ -157,7 +158,8 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     ...ctx.req.query(),
   };
   const requestUrl = resolveUrl(requestUrlHeader, requestQueryParams);
-
+  logger.debug("Proxying request to:", requestUrl);
+  logger.debug("Proxying request with headers:", requestHeaders);
   // Create a new request object
   // Clone the incoming request, so we can make a proxy Request object
   const clonedReq = ctx.req.raw.clone();
@@ -170,12 +172,18 @@ app.all("/v0/proxy-request/*", async (ctx) => {
   // Extract the request body based on content type
   // *The whole point of this is to serialize the request body into the database, for future reference*
   //
-  const requestBody:
+  let requestBody:
     | null
     | string
     | {
         [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = await serializeRequestBodyForFpxDb();
+      } = null;
+  try {
+    requestBody = await serializeRequestBodyForFpxDb();
+  } catch (error) {
+    requestBody = "<failed to parse>";
+    logger.error("Failed to serialize request body", error);
+  }
 
   // Record request details
   const newRequest: NewAppRequest = {

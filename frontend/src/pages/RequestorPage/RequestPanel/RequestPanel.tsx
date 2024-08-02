@@ -27,6 +27,7 @@ import {
   RequestBodyTypeDropdownProps,
 } from "./RequestBodyCombobox";
 import "./styles.css";
+import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
 import { FileUploadForm } from "./FileUploadForm";
 
 type RequestPanelProps = {
@@ -296,10 +297,12 @@ function RequestMeta(props: RequestPanelProps) {
             />
           )}
           {/* HACK - This toolbar is absolutely positioned for now */}
-          <BottomToolbar
-            requestBody={body}
-            handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-          />
+          {FORM_BODY_FEATURE_FLAG_ENABLED && (
+            <BottomToolbar
+              requestBody={body}
+              handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+            />
+          )}
         </CustomTabsContent>
       )}
       {shouldShowMessages && (
