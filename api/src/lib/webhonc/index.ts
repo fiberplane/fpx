@@ -17,6 +17,7 @@ const WsMessageSchema = z.discriminatedUnion("event", [
       headers: z.record(z.string()),
       query: z.record(z.string()),
       body: z.any(),
+      path: z.array(z.string()),
     }),
   }),
 ]);

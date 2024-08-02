@@ -18,10 +18,17 @@ app.get("/ws", async (c) => {
 });
 
 app.all(
-  "/h/:id",
+  "/:id/*",
   zValidator("param", z.object({ id: z.string() })),
   async (c) => {
     const { id } = c.req.valid("param");
+
+    // We need to serialize the path components without the id
+    // so we can send it down the wire and replay it locally
+    const pathComponentsWithoutId = c.req.path
+      .split("/")
+      .filter((comp) => comp.length > 0)
+      .slice(1);
 
     const contentType = c.req.header("content-type");
 
@@ -60,6 +67,7 @@ app.all(
           headers: headersJson,
           query,
           body,
+          path: pathComponentsWithoutId,
         },
       }),
     );
