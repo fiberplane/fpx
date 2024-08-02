@@ -1,33 +1,22 @@
+// We need some special CSS for grid layout that tailwind cannot handle
+import "./styles.css";
+
 import { useToast } from "@/components/ui/use-toast";
 import { useWebsocketQueryInvalidation } from "@/hooks";
 import { cn } from "@/utils";
-import { useCallback, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { KeyValueParameter } from "./KeyValueForm";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { useAi } from "./ai";
-import {
-  MakeProxiedRequestQueryFn,
-  type ProbedRoute,
-  Requestornator,
-  useMakeProxiedRequest,
-} from "./queries";
-import {
-  type RequestorBody,
-  type RequestorState,
-  useRequestor,
-} from "./reducer";
+import { Requestornator, useMakeProxiedRequest } from "./queries";
+import { useRequestor } from "./reducer";
 import { useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
-import { isWsRequest } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
-
-// We need some special CSS for grid layout that tailwind cannot handle
-import "./styles.css";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
