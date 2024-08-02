@@ -8,14 +8,10 @@ export const EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE =
 export const EXTRA_SEMATTRS_URL_FULL = "url.full";
 
 // export const FPX_REQUEST_HEADERS_FULL = "fpx.http.request.headers_full";
-// export const FPX_REQUEST_PATHNAME = "fpx.http.request.pathname";
-// export const FPX_REQUEST_SEARCH = "fpx.http.request.search";
-// export const FPX_REQUEST_SCHEME = "fpx.http.request.scheme";
-// export const FPX_REQUEST_BODY = "fpx.http.request.body";
-export const FPX_REQUEST_PATHNAME = "fpx.http.request_pathname";
-export const FPX_REQUEST_SEARCH = "fpx.http.request_search";
-export const FPX_REQUEST_SCHEME = "fpx.http.request_scheme";
-export const FPX_REQUEST_BODY = "fpx.http.request_body";
+export const FPX_REQUEST_PATHNAME = "fpx.http.request.pathname";
+export const FPX_REQUEST_SEARCH = "fpx.http.request.search";
+export const FPX_REQUEST_SCHEME = "fpx.http.request.scheme";
+export const FPX_REQUEST_BODY = "fpx.http.request.body";
 
 // export const FPX_RESPONSE_HEADERS_FULL = "fpx.http.response_headers_full";
 export const FPX_RESPONSE_BODY = "fpx.http.response_body";

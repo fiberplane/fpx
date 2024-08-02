@@ -2,7 +2,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWebsocketQueryInvalidation } from "@/hooks";
-import { type MizuTrace, type OtelSpan, useMizuTracesV2 } from "@/queries";
+import { type OtelSpan, useMizuTracesV2 } from "@/queries";
 import { useOtelTraces } from "@/queries/hotel";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
