@@ -9,7 +9,7 @@ receivers:
 
 exporters:
   otlphttp:
-    endpoint: http://localhost:6767
+    endpoint: http://localhost:8787
     encoding: json
     compression: none
 
@@ -25,7 +25,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [debug, otlphttp, otlp]
+      exporters: [debug, otlphttp]
 
   telemetry:
     logs:

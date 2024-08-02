@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use std::sync::Arc;
 use thiserror::Error;
 
+pub mod fake_store;
 mod models;
 mod util;
 
@@ -9,7 +10,14 @@ type Result<T, E = DbError> = anyhow::Result<T, E>;
 
 pub type BoxedStore = Arc<dyn Store>;
 
+#[derive(Clone, Default, Debug)]
 pub struct Transaction {}
+
+impl Transaction {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 #[derive(Debug, Error)]
 pub enum DbError {
@@ -23,6 +31,10 @@ pub enum DbError {
 #[async_trait]
 pub trait Store: Send + Sync {
     async fn start_readonly_transaction(&self) -> Result<Transaction>;
+    async fn start_readwrite_transaction(&self) -> Result<Transaction>;
+
+    async fn commit_transaction(&self, tx: Transaction) -> Result<(), DbError>;
+    async fn rollback_transaction(&self, tx: Transaction) -> Result<(), DbError>;
 
     async fn span_get(
         &self,
@@ -36,30 +48,10 @@ pub trait Store: Send + Sync {
         tx: &Transaction,
         trace_id: String,
     ) -> Result<Vec<models::Span>>;
-}
 
-pub struct FakeStore {}
-
-#[async_trait]
-impl Store for FakeStore {
-    async fn start_readonly_transaction(&self) -> Result<Transaction> {
-        Ok(Transaction {})
-    }
-
-    async fn span_get(
+    async fn span_create(
         &self,
-        _tx: &Transaction,
-        _trace_id: String,
-        _span_id: String,
-    ) -> Result<models::Span> {
-        todo!()
-    }
-
-    async fn span_list_by_trace(
-        &self,
-        _tx: &Transaction,
-        _trace_id: String,
-    ) -> Result<Vec<models::Span>> {
-        todo!()
-    }
+        tx: &Transaction,
+        span: models::Span,
+    ) -> Result<models::Span, DbError>;
 }

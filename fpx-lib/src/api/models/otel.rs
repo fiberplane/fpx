@@ -15,7 +15,7 @@ fn parse_time_nanos(nanos: u64) -> time::OffsetDateTime {
         .expect("timestamp is too large for OffsetDateTime")
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Span {
     pub trace_id: String,
     pub span_id: String,
@@ -141,7 +141,7 @@ impl From<span::SpanKind> for SpanKind {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SpanEvent {
     pub name: String,
 
@@ -214,7 +214,7 @@ impl From<StatusCode> for SpanStatusCode {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct AttributeMap(BTreeMap<String, Option<AttributeValue>>);
 
 impl From<KeyValueList> for AttributeMap {
@@ -239,7 +239,7 @@ impl From<Vec<KeyValue>> for AttributeMap {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum AttributeValue {
     String(String),
     Bool(bool),

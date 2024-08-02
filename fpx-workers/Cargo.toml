@@ -1,6 +1,6 @@
 [package]
 name = "fpx-workers"
-version = "0.1.0"
+version = { workspace = true }
 edition = "2021"
 authors = { workspace = true }
 license = { workspace = true }
@@ -18,8 +18,17 @@ crate-type = ["cdylib"]
 
 [dependencies]
 axum = { version = "0.7", default-features = false }
-console_error_panic_hook = { version = "0.1.1" }
-fpx-lib = { path = "../fpx-lib" }
+console_error_panic_hook = { version = "0.1" }
+fpx-lib = { version = "0.1.0", path = "../fpx-lib" }
+getrandom = { version = "0.2", features = ["js"] } # Required for its feature
+time = { version = "0.3", features = ['wasm-bindgen'] }
 tower-service = "0.3.2"
+tracing = { version = "0.1", default-features = false }
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+    "json",
+    "time",
+    "ansi",
+] }
+tracing-web = { version = "0.1", default-features = false }
 worker = { version = "0.3", features = ['http', 'axum'] }
 worker-macros = { version = "0.3", features = ['http'] }

@@ -3,7 +3,7 @@ use crate::api::models::SpanKind;
 use crate::data::util::{Json, Timestamp};
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Span {
     pub trace_id: String,
     pub span_id: String,
