@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWebsocketQueryInvalidation } from "@/hooks";
 import { type MizuTrace, useMizuTraces, useMizuTracesV2 } from "@/queries";
+import { useOtelTraces } from "@/queries/hotel";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { columns } from "./columns";
-import { useOtelTraces } from "@/queries/hotel";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 

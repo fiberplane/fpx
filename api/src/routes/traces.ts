@@ -1,4 +1,13 @@
-import type { IAnyValue, IEvent, IExportTraceServiceRequest, IKeyValue, ILink, ESpanKind, IStatus, EStatusCode } from "@opentelemetry/otlp-transformer";
+import type {
+  ESpanKind,
+  EStatusCode,
+  IAnyValue,
+  IEvent,
+  IExportTraceServiceRequest,
+  IKeyValue,
+  ILink,
+  IStatus,
+} from "@opentelemetry/otlp-transformer";
 import { Hono } from "hono";
 import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
@@ -50,10 +59,12 @@ export default app;
 function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
   const result = [];
 
-  tracesData.resourceSpans?.forEach(resourceSpan => {
-    const resourceAttributes = resourceSpan.resource ? mapAttributes(resourceSpan.resource.attributes) : null;
+  tracesData.resourceSpans?.forEach((resourceSpan) => {
+    const resourceAttributes = resourceSpan.resource
+      ? mapAttributes(resourceSpan.resource.attributes)
+      : null;
 
-    resourceSpan.scopeSpans.forEach(scopeSpan => {
+    resourceSpan.scopeSpans.forEach((scopeSpan) => {
       let scopeName = null;
       let scopeVersion = null;
 
@@ -62,9 +73,11 @@ function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
         scopeVersion = scopeSpan.scope.version;
       }
 
-      const scopeAttributes = scopeSpan.scope ? mapAttributes(scopeSpan.scope.attributes) : null;
+      const scopeAttributes = scopeSpan.scope
+        ? mapAttributes(scopeSpan.scope.attributes)
+        : null;
 
-      scopeSpan.spans?.forEach(span => {
+      scopeSpan.spans?.forEach((span) => {
         const kind = convertToSpanKind(span.kind);
 
         const attributes = mapAttributes(span.attributes);
@@ -72,10 +85,12 @@ function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
         const startTime = new Date(Number(span.startTimeUnixNano) / 1e6);
         const endTime = new Date(Number(span.endTimeUnixNano) / 1e6);
 
-        const parentSpanId = span.parentSpanId ? stringOrUintToString(span.parentSpanId) : null;
+        const parentSpanId = span.parentSpanId
+          ? stringOrUintToString(span.parentSpanId)
+          : null;
 
-        const events = span.events.map(event => mapEvent(event));
-        const links = span.links.map(link => mapLink(link));
+        const events = span.events.map((event) => mapEvent(event));
+        const links = span.links.map((link) => mapLink(link));
 
         const traceId = stringOrUintToString(span.traceId);
         const spanId = stringOrUintToString(span.spanId);
@@ -103,7 +118,7 @@ function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
           resource_attributes: resourceAttributes,
           status: span.status ? mapStatus(span.status) : undefined,
           events,
-          links
+          links,
         };
 
         result.push(spanInstance);
@@ -114,10 +129,9 @@ function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
   return result;
 }
 
-
 function mapAttributes(attributes: IKeyValue[]) {
   const result = {};
-  attributes?.forEach(kv => {
+  attributes?.forEach((kv) => {
     result[kv.key] = kv.value ? mapAttributeValue(kv.value) : null;
   });
   return result;
@@ -130,8 +144,10 @@ function mapAttributeValue(value: IAnyValue) {
   if (value.intValue !== undefined) return value.intValue;
   if (value.doubleValue !== undefined) return value.doubleValue;
   if (value.bytesValue !== undefined) return value.bytesValue;
-  if (value.arrayValue !== undefined) return value.arrayValue.values.map(mapAttributeValue);
-  if (value.kvlistValue !== undefined) return mapAttributes(value.kvlistValue.values);
+  if (value.arrayValue !== undefined)
+    return value.arrayValue.values.map(mapAttributeValue);
+  if (value.kvlistValue !== undefined)
+    return mapAttributes(value.kvlistValue.values);
   return null;
 }
 
@@ -139,7 +155,7 @@ function mapEvent(event: IEvent) {
   return {
     name: event.name,
     timestamp: new Date(Number(event.timeUnixNano) / 1e6),
-    attributes: mapAttributes(event.attributes)
+    attributes: mapAttributes(event.attributes),
   };
 }
 
@@ -151,20 +167,20 @@ function mapLink(link: ILink) {
     traceState: link.traceState,
     attributes: mapAttributes(link.attributes),
     // FIXME
-    flags: link.flags
+    flags: link.flags,
   };
 }
 
 function stringOrUintToString(id: string | Uint8Array) {
   return id instanceof Uint8Array
-    ? Buffer.from(id).toString('hex')
-    : Buffer.from(id, 'hex').toString('hex');
+    ? Buffer.from(id).toString("hex")
+    : Buffer.from(id, "hex").toString("hex");
 }
 
 function mapStatus(status: IStatus) {
   return {
     code: status.code,
-    message: status.message ?? statusCodeToString(status.code)
+    message: status.message ?? statusCodeToString(status.code),
   };
 }
 
