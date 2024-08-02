@@ -52,19 +52,52 @@ app.post("/v1/traces", async (ctx) => {
 
 export default app;
 
+type MizuTrace = {
+  trace_id: string;
+  span_id: string;
+  parent_span_id: string | null;
+  name: string;
+  trace_state: string | null | undefined;
+  kind: string;
+  scope_name: string | null;
+  scope_version: string | null | undefined;
+  start_time: Date;
+  end_time: Date;
+  attributes: Record<string, AttributeValue>;
+  scope_attributes: Record<string, AttributeValue> | null;
+  resource_attributes: Record<string, AttributeValue> | null;
+  status:
+    | {
+        code: EStatusCode;
+        message: string;
+      }
+    | undefined;
+  events: {
+    name: string;
+    timestamp: Date;
+    attributes: Record<string, AttributeValue>;
+  }[];
+  links: {
+    traceId: string;
+    spanId: string;
+    traceState: string | undefined;
+    attributes: Record<string, AttributeValue>;
+  }[];
+};
+
 /**
  * TODO
  * - [ ] Check if ISpan.attributes is same as IResource.attributes and IInstrumentationScope.attributes
  */
 function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
-  const result = [];
+  const result: Array<MizuTrace> = [];
 
-  tracesData.resourceSpans?.forEach((resourceSpan) => {
+  for (const resourceSpan of tracesData.resourceSpans ?? []) {
     const resourceAttributes = resourceSpan.resource
       ? mapAttributes(resourceSpan.resource.attributes)
       : null;
 
-    resourceSpan.scopeSpans.forEach((scopeSpan) => {
+    for (const scopeSpan of resourceSpan.scopeSpans ?? []) {
       let scopeName = null;
       let scopeVersion = null;
 
@@ -74,10 +107,10 @@ function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
       }
 
       const scopeAttributes = scopeSpan.scope
-        ? mapAttributes(scopeSpan.scope.attributes)
+        ? mapAttributes(scopeSpan.scope.attributes ?? [])
         : null;
 
-      scopeSpan.spans?.forEach((span) => {
+      for (const span of scopeSpan.spans ?? []) {
         const kind = convertToSpanKind(span.kind);
 
         const attributes = mapAttributes(span.attributes);
@@ -98,16 +131,12 @@ function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
         const name = span.name;
         const traceState = span.traceState;
 
-        // FIXME
-        const flags = span.flags;
-
         const spanInstance = {
           trace_id: traceId,
           span_id: spanId,
           parent_span_id: parentSpanId,
           name,
           trace_state: traceState,
-          flags,
           kind,
           scope_name: scopeName,
           scope_version: scopeVersion,
@@ -122,33 +151,45 @@ function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
         };
 
         result.push(spanInstance);
-      });
-    });
-  });
+      }
+    }
+  }
 
   return result;
 }
 
-function mapAttributes(attributes: IKeyValue[]) {
-  const result = {};
-  attributes?.forEach((kv) => {
-    result[kv.key] = kv.value ? mapAttributeValue(kv.value) : null;
-  });
-  return result;
-}
+type AttributeValuePrimitive = null | boolean | number | string | Uint8Array;
+type AttributeValue =
+  | AttributeValuePrimitive
+  | AttributeValuePrimitive[]
+  | Record<string, AttributeValuePrimitive>;
 
-function mapAttributeValue(value: IAnyValue) {
+function mapAttributeValue(value: IAnyValue): AttributeValue {
   if (!value) return null;
   if (value.stringValue !== undefined) return value.stringValue;
   if (value.boolValue !== undefined) return value.boolValue;
   if (value.intValue !== undefined) return value.intValue;
   if (value.doubleValue !== undefined) return value.doubleValue;
   if (value.bytesValue !== undefined) return value.bytesValue;
-  if (value.arrayValue !== undefined)
+  if (value.arrayValue !== undefined) {
+    // @ts-expect-error - By convention we don't actually nest values so don't need a recursive type
     return value.arrayValue.values.map(mapAttributeValue);
-  if (value.kvlistValue !== undefined)
+  }
+  if (value.kvlistValue !== undefined) {
+    // @ts-expect-error - By convention we don't actually nest values so don't need a recursive type
     return mapAttributes(value.kvlistValue.values);
+  }
   return null;
+}
+
+function mapAttributes(
+  attributes: IKeyValue[],
+): Record<string, AttributeValue> {
+  const result: Record<string, AttributeValue> = {};
+  for (const kv of attributes) {
+    result[kv.key] = kv.value ? mapAttributeValue(kv.value) : null;
+  }
+  return result;
 }
 
 function mapEvent(event: IEvent) {
@@ -166,8 +207,6 @@ function mapLink(link: ILink) {
     spanId: stringOrUintToString(link.spanId),
     traceState: link.traceState,
     attributes: mapAttributes(link.attributes),
-    // FIXME
-    flags: link.flags,
   };
 }
 
