@@ -99,11 +99,6 @@ function formatBody(body: BodyInit) {
 
   return body;
 }
-
-// NOTE - I do not think we want to render form data as JSON per se,
-//        but we can leave it to the UI to render it correctly based on the content type
-//        In actuality it would be correct to render the string version, with the proper
-//        multipart boundary, but with binary data shown as `#fpx.blob`
 function formDataToJson(formData: FormData) {
   const jsonObject: Record<string, string | Array<string>> = {};
 
@@ -135,6 +130,7 @@ async function tryGetResponseBodyAsText(
 export async function getResponseAttributes(
   response: GlobalResponse | HonoResponse,
 ) {
+  console.log("getting response attrs...");
   const attributes: Attributes = {
     [EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]: response.status,
     [SEMATTRS_HTTP_SCHEME]: response.url.split(":")[0],

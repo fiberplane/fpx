@@ -13,7 +13,6 @@ import { AsyncLocalStorageContextManager } from "./async-hooks";
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { getRequestAttributes, getResponseAttributes } from "./utils";
-import { TRACE_ID_SYMBOL } from "./constants";
 
 type FpxConfig = {
   monitor: {
@@ -134,11 +133,6 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const promises = patched?.promises ?? [];
           const proxyExecutionCtx = patched?.proxyContext ?? executionContext;
 
-          // TODO - Use context propagator from opentelemetry instead of this custom header
-          const traceId = request.headers.get("X-Fpx-Trace-Id");
-          console.log("FPX header traceId", traceId);
-          const ctx = context.active().setValue(TRACE_ID_SYMBOL, traceId);
-
           const measuredFetch = measure(
             {
               name: "request",
@@ -150,6 +144,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
                 const attributes = await getResponseAttributes(
                   (await response).clone(),
                 );
+                console.log("setting response attributes", attributes);
                 span.setAttributes(attributes);
               },
               checkResult: async (result) => {
