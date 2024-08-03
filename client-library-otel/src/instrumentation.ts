@@ -49,7 +49,9 @@ const defaultConfig = {
 // };
 
 export function instrument(app: Hono, config?: FpxConfigOptions) {
+  const webStandardFetch = fetch;
   return new Proxy(app, {
+    // Intercept the `fetch` function on the Hono app instance
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (prop === "fetch" && typeof value === "function") {
@@ -70,6 +72,40 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
 
           if (!isEnabled) {
             return await originalFetch(request, env, executionContext);
+          }
+
+          // TODO - In production, we should make sure this request has some sort of repudiation
+          //        We only want to respond like this when we know the request came from the service
+          //        and not from a random user.
+          if (request.headers.get("X-Fpx-Route-Inspector")) {
+            const app = target;
+            const routes = app
+              ? app?.routes?.map((route) => ({
+                  method: route.method,
+                  path: route.path,
+                  handler: route.handler.toString(),
+                  handlerType:
+                    route.handler.length < 2 ? "route" : "middleware",
+                }))
+              : [];
+            try {
+              // HACK - Construct the routes endpoint here
+              //        We could also do what we did before and submit the routes to the same `/v1/traces`
+              //        but that route handler is so chaotic right now I wanted to have this as a separate
+              //        endpoint.
+              const routesEndpoint = new URL(endpoint);
+              routesEndpoint.pathname = "/v0/probed-routes";
+              webStandardFetch(routesEndpoint.toString(), {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ routes }),
+              });
+            } catch (e) {
+              console.error("Error sending routes to FPX", e);
+            }
+            return new Response("OK");
           }
 
           const serviceName =

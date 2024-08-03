@@ -62,6 +62,73 @@ app.post(
   },
 );
 
+const schemaProbedRoutes = z.object({
+  routes: z.array(
+    z.object({
+      method: z.string(),
+      path: z.string(),
+      handler: z.string(),
+      handlerType: z.string(),
+    }),
+  ),
+});
+
+app.post(
+  "/v0/probed-routes",
+  zValidator("json", schemaProbedRoutes),
+  async (ctx) => {
+    const db = ctx.get("db");
+    const { routes } = ctx.req.valid("json");
+
+    try {
+      if (routes.length > 0) {
+        // "Unregister" all app routes (including middleware)
+        await db.update(appRoutes).set({ currentlyRegistered: false });
+        // "Re-register" all current app routes
+        for (const route of routes) {
+          await db
+            .insert(appRoutes)
+            .values({
+              ...route,
+              currentlyRegistered: true,
+            })
+            .onConflictDoUpdate({
+              target: [
+                appRoutes.path,
+                appRoutes.method,
+                appRoutes.handlerType,
+                appRoutes.routeOrigin,
+              ],
+              set: { handler: route.handler, currentlyRegistered: true },
+            });
+        }
+
+        // TODO - Detect if anything actually changed before invalidating the query on the frontend
+        //        This would be more of an optimization, but is friendlier to the frontend
+        const wsConnections = ctx.get("wsConnections");
+
+        if (wsConnections) {
+          for (const ws of wsConnections) {
+            ws.send(
+              JSON.stringify({
+                type: "invalidateQueries",
+                payload: ["appRoutes"],
+              }),
+            );
+          }
+        }
+      }
+
+      return ctx.text("OK");
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error("Error processing probed routes", err);
+      }
+      return ctx.json({ error: "Error processing probed routes" }, 500);
+    }
+  },
+);
+
 app.delete("/v0/app-routes/:method/:path", async (ctx) => {
   const db = ctx.get("db");
   const { method, path } = ctx.req.param();
