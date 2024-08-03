@@ -1,3 +1,5 @@
+export const TRACE_ID_SYMBOL = Symbol.for("traceId");
+
 /**
  * SEMATTRS_* are constants that should actually be exposed by the Samantic Conventions package
  * but are not.

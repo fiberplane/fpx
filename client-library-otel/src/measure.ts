@@ -1,11 +1,13 @@
 import {
   type Attributes,
+  context,
   type Exception,
   type Span,
-  type SpanKind,
+  SpanKind,
   SpanStatusCode,
   trace,
 } from "@opentelemetry/api";
+import { TRACE_ID_SYMBOL } from "./constants";
 
 export type MeasureOptions<
   /**
@@ -133,7 +135,6 @@ export function measure<R, A extends unknown[]>(
         if (onSuccess) {
           pendingPromiseChain = new Promise((resolve) => {
             try {
-              console.log("onSuccess", returnValue);
               const onSuccessResult = onSuccess(span, returnValue);
               if (onSuccessResult instanceof Promise) {
                 onSuccessResult.then(() => {
@@ -181,11 +182,30 @@ export function measure<R, A extends unknown[]>(
     }
 
     const tracer = trace.getTracer("fpx-tracer");
-    return tracer.startActiveSpan(
-      name,
-      { kind: spanKind, attributes },
-      handleActiveSpan,
-    );
+    // HACK - type coercion
+    const traceId = context.active().getValue(TRACE_ID_SYMBOL) as string;
+    if (traceId) {
+      console.log("starting span with traceId", traceId);
+      const spanContext = {
+        traceId,
+        spanId: "0000000000000000", // Placeholder span id
+        traceFlags: 1, // Sampled flag
+      };
+      const ctx = trace.setSpan(context.active(), trace.wrapSpanContext(spanContext));
+      return context.with(ctx, () => {
+        return tracer.startActiveSpan(
+          name,
+          { kind: spanKind, attributes },
+          handleActiveSpan,
+        );
+      });
+    } else {
+      return tracer.startActiveSpan(
+        name,
+        { kind: spanKind, attributes },
+        handleActiveSpan,
+      );
+    }
   };
 }
 
