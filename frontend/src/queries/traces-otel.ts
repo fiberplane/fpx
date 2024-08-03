@@ -87,7 +87,7 @@ export type OtelSpans = z.infer<typeof SpansSchema>;
 
 async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
   const traceId = context.queryKey[1];
-  return fetch(`/api/traces/${traceId}/spans`, {
+  return fetch(`/v1/traces/${traceId}/spans`, {
     mode: "cors",
   })
     .then((response) => response.json())

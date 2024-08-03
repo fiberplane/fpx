@@ -33,7 +33,7 @@ const RequestsTable = ({
 
   const handleRowClick = useCallback(
     (row: Row<OtelSpan>) => {
-      navigate(`/requests/${row.original.trace_id}`);
+      navigate(`/requests/otel/${row.original.trace_id}`);
     },
     [navigate],
   );

@@ -186,7 +186,7 @@ const BottomToolbar = ({ response }: { response: Requestornator }) => {
   return (
     <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
       <AiTestGeneration history={[response]} />
-      <Link to={`/requests/${response?.app_responses?.traceId}`}>
+      <Link to={`/requests/otel/${response?.app_responses?.traceId}`}>
         <Button variant="secondary">
           Go to Trace Details
           <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
