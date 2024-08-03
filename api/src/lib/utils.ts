@@ -1,6 +1,20 @@
 import fs from "node:fs";
 import path from "node:path";
 import { minimatch } from "minimatch";
+import { randomBytes } from "node:crypto";
+
+export function generateTraceId(): string {
+  return randomBytes(16).toString("hex");
+}
+
+// TODO - Test this, and then we can use on the frontend
+export function generateTraceIdWebStandard(): string {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 /**
  * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value

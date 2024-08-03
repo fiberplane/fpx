@@ -133,14 +133,29 @@ export function measure<R, A extends unknown[]>(
         if (onSuccess) {
           pendingPromiseChain = new Promise((resolve) => {
             try {
-              console.log("onSuccess", returnValue);
-              const onSuccessResult = onSuccess(span, returnValue);
+              let proxiedReturnValue: R | Response = returnValue;
+              if (proxiedReturnValue instanceof Response) {
+                const clonedRes = proxiedReturnValue.clone();
+                proxiedReturnValue = new Response(
+                  clonedRes.body ? clonedRes.body.tee()[0] : null,
+                  clonedRes
+                );
+                const traceId = span.spanContext().traceId;
+                console.log("hi", traceId);
+                proxiedReturnValue.headers.set("x-fpx-trace-id", traceId);
+              }
+
+              // HACK
+              const onSuccessResult = onSuccess(span, proxiedReturnValue as R);
+
               if (onSuccessResult instanceof Promise) {
                 onSuccessResult.then(() => {
-                  resolve(returnValue);
+                  // HACK
+                  resolve(proxiedReturnValue as R);
                 });
               } else {
-                resolve(returnValue);
+                // HACK
+                resolve(proxiedReturnValue as R);
               }
             } catch (error) {
               // swallow error
