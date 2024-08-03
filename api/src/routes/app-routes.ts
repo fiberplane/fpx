@@ -1,6 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
-import { randomBytes } from "crypto";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
@@ -15,7 +14,7 @@ import {
 } from "../db/schema.js";
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { errorToJson, generateTraceId, safeParseJson } from "../lib/utils.js";
+import { errorToJson, generateUUID, safeParseJson } from "../lib/utils.js";
 import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
 
@@ -193,6 +192,8 @@ function serializeFormDataValue(
  * Or maybe even streams eventually?
  */
 app.all("/v0/proxy-request/*", async (ctx) => {
+  const traceId = ctx.req.header("x-fpx-trace-id") || generateUUID();
+  logger.debug("Proxying request with traceId:", traceId);
   const db = ctx.get("db");
 
   const requestRoute = ctx.req.header("x-fpx-route");
@@ -214,13 +215,10 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     }
     requestHeaders[key] = value;
   });
-
-  // NOTE - Commented out because otel middleware does not yet support propagating traces
-  //
   // Ensure the trace id is present
-  // if (!requestHeaders["x-fpx-trace-id"]) {
-  //   requestHeaders["x-fpx-trace-id"] = traceId;
-  // }
+  if (!requestHeaders["x-fpx-trace-id"]) {
+    requestHeaders["x-fpx-trace-id"] = traceId;
+  }
 
   // Construct the url we want to proxy to
   const requestQueryParams = {
@@ -300,9 +298,14 @@ app.all("/v0/proxy-request/*", async (ctx) => {
       response,
     );
 
+    if (responseTraceId !== traceId) {
+      logger.warn(
+        `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
+      );
+    }
 
     // Guarantee the trace-id is set in response headers
-    proxiedResponse.headers.set("x-fpx-trace-id", responseTraceId);
+    proxiedResponse.headers.set("x-fpx-trace-id", traceId);
 
     return proxiedResponse;
   } catch (fetchError) {
@@ -312,21 +315,19 @@ app.all("/v0/proxy-request/*", async (ctx) => {
       await handleFailedRequest(
         db,
         requestId,
-        // HACK - We don't propagate traceid yet
-        "",
+        traceId,
         responseTime,
         fetchError,
       );
 
-    // ctx.header("x-fpx-trace-id", traceId);
+    ctx.header("x-fpx-trace-id", traceId);
     ctx.status(500);
     return ctx.json({
       isFailure,
       responseTime,
       failureDetails,
       failureReason,
-      // HACK - We don't propagate traceid yet
-      traceId: "",
+      traceId,
       requestId,
     });
   }
@@ -396,7 +397,7 @@ async function handleSuccessfulRequest(
   response: Awaited<ReturnType<typeof fetch>>,
 ) {
   const traceId = response.headers.get("x-fpx-trace-id") ?? "";
-  console.log("YOOOOO GOT A TRACE ID BACK", traceId)
+
   const { responseBody, responseTime, responseHeaders, responseStatusCode } =
     await appResponseInsertSchema
       .extend({

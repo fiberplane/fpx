@@ -12,7 +12,6 @@ import { Hono } from "hono";
 import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
-import { eq } from "drizzle-orm";
 
 const { otelTraces } = schema;
 
@@ -24,16 +23,6 @@ app.get("/v1/traces", async (ctx) => {
   // HACK - Only parent traces...
   // @ts-expect-error - Just to get things working
   return ctx.json(traces.filter((t) => !t.parsedPayload?.parent_span_id));
-});
-
-app.get("/v1/traces/:traceId/spans", async (ctx) => {
-  const db = ctx.get("db");
-  const traceId = ctx.req.param("traceId");
-  const trace = await db
-    .select()
-    .from(otelTraces)
-    .where(eq(otelTraces.traceId, traceId));
-  return ctx.json(trace);
 });
 
 app.post("/v1/traces/delete-all-hack", async (ctx) => {
