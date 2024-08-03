@@ -87,15 +87,24 @@ export const columns: ColumnDef<OtelSpan>[] = [
       headerClassName: "hidden sm:table-cell w-[80px]",
       cellClassName: "hidden sm:table-cell font-mono",
     },
-  },
-  {
-    accessorKey: "size",
-    header: "Size",
-    meta: {
-      headerClassName: "hidden md:table-cell w-[80px]",
-      cellClassName: "hidden md:table-cell font-mono",
+    cell: (props) => {
+      const duration =
+        new Date(props.row.original.end_time).getTime() -
+        new Date(props.row.original.start_time).getTime();
+      const formattedDuration =
+        duration >= 1000 ? `${(duration / 1000).toFixed(2)}s` : `${duration}ms`;
+      return <span className="font-mono text-xs">{formattedDuration}</span>;
     },
   },
+  // TODO - Add size column
+  // {
+  //   accessorKey: "size",
+  //   header: "Size",
+  //   meta: {
+  //     headerClassName: "hidden md:table-cell w-[80px]",
+  //     cellClassName: "hidden md:table-cell font-mono",
+  //   },
+  // },
   {
     id: "timestamp",
     header: "Timestamp",
