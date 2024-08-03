@@ -62,7 +62,15 @@ export const columns: ColumnDef<OtelSpan>[] = [
     header: "Path",
     cell: (props) => {
       return (
-        <Link className="hover:underline" to={`/requests/${props.row.id}`}>
+        <Link
+          className="hover:underline"
+          to={`/requests/${props.row.original.trace_id}`}
+          onClick={(e) => {
+            // We have a navigation handler for selecting the row anyhow, so we don't want to double-trigger that
+            // Thus, let's stop propagation
+            e.stopPropagation();
+          }}
+        >
           {getRequestPath(props.row.original)}
         </Link>
       );
