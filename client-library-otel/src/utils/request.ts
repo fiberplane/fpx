@@ -130,7 +130,6 @@ async function tryGetResponseBodyAsText(
 export async function getResponseAttributes(
   response: GlobalResponse | HonoResponse,
 ) {
-  console.log("getting response attrs...");
   const attributes: Attributes = {
     [EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]: response.status,
     [SEMATTRS_HTTP_SCHEME]: response.url.split(":")[0],

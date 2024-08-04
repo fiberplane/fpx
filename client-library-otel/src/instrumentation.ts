@@ -1,4 +1,9 @@
-import { SpanKind, context, propagation } from "@opentelemetry/api";
+import {
+  ROOT_CONTEXT,
+  SpanKind,
+  context,
+  propagation,
+} from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { Resource } from "@opentelemetry/resources";
 import {
@@ -133,26 +138,29 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const promises = patched?.promises ?? [];
           const proxyExecutionCtx = patched?.proxyContext ?? executionContext;
 
-          // Extract trace ID from request headers
+          // HACK - We need to extract the traceparent from the request headers
+          //        but we also need to set a dummy traceparent in the case that
+          //        we are receiving an explicit trace-id to use from FPX.
+          //
+          // Extract fpx trace ID from request headers (if it exists)
+          // and set it as a dummy active context
+          //
+          // TODO - Validate the id here using an otel helper, and warn if it is invalid
           const traceId = request.headers.get("x-fpx-trace-id");
-          let extractedContext = context.active();
+          console.log("FPX traceId", traceId);
+
+          let activeContext = context.active();
           if (traceId) {
-            const spanContext = {
-              traceId,
-              spanId: "0000000000000000", // No parent span ID
-              traceFlags: 1, // Sampled
-            };
-            const propagator = propagation.getGlobalPropagator();
-            const carrier = {};
-            propagator.inject(extractedContext, carrier, {
-              set: (carrier, key, value) => {
-                carrier[key] = value;
-              },
+            activeContext = propagation.extract(context.active(), {
+              traceparent: createTraceparentHeader(traceId),
             });
-            extractedContext = propagator.extract(extractedContext, carrier, {
-              get: (carrier, key) => carrier[key],
-            });
+          } else {
+            activeContext = propagation.extract(
+              context.active(),
+              request.headers,
+            );
           }
+
           const measuredFetch = measure(
             {
               name: "request",
@@ -164,7 +172,6 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
                 const attributes = await getResponseAttributes(
                   (await response).clone(),
                 );
-                console.log("setting response attributes", attributes);
                 span.setAttributes(attributes);
               },
               checkResult: async (result) => {
@@ -178,7 +185,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           );
 
           try {
-            return await context.with(extractedContext, async () => {
+            return await context.with(activeContext, async () => {
               return await measuredFetch(request, env, proxyExecutionCtx);
             });
           } finally {
@@ -234,4 +241,30 @@ function mergeConfigs(
   return {
     monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
+}
+
+function createTraceparentHeader(traceId: string): string {
+  const version = "00"; // Version of the traceparent header
+  // NOTE - A dummy span id like the following will be rejected by trace propagation API
+  //        Look in the otel codebase for their regex - it filters out anything that's just 0 repeating
+  //
+  // const spanId = '0000000000000000'; // Dummy span ID
+  //
+  // HACK - Generate a random span id so we can spook a proper trace parent
+  //
+  const spanId = generateSpanId();
+  const traceFlags = "01"; // Trace flags (01 means sampled)
+
+  return `${version}-${traceId}-${spanId}-${traceFlags}`;
+}
+
+function generateSpanId(): string {
+  // Generate a random 16-character hex string that is not all zeros
+  let spanId;
+  do {
+    spanId = [...Array(16)]
+      .map(() => Math.floor(Math.random() * 16).toString(16))
+      .join("");
+  } while (/^[0]{16}$/.test(spanId));
+  return spanId;
 }

@@ -1,10 +1,10 @@
 import {
   type Attributes,
+  Context,
   type Exception,
   type Span,
   type SpanKind,
   SpanStatusCode,
-  context,
   trace,
 } from "@opentelemetry/api";
 
@@ -134,7 +134,6 @@ export function measure<R, A extends unknown[]>(
         if (onSuccess) {
           pendingPromiseChain = new Promise((resolve) => {
             try {
-              console.log("onSuccess", returnValue);
               const onSuccessResult = onSuccess(span, returnValue);
               if (onSuccessResult instanceof Promise) {
                 onSuccessResult.then(() => {
@@ -170,25 +169,21 @@ export function measure<R, A extends unknown[]>(
         if (pendingPromiseChain) {
           pendingPromiseChain.then(() => {
             if (shouldEndSpan) {
-              console.log("ending span in promise chain");
               span.end();
             }
           });
         } else if (shouldEndSpan) {
-          console.log("ending span");
           span.end();
         }
       }
     }
 
     const tracer = trace.getTracer("fpx-tracer");
-    return context.with(context.active(), () => {
-      return tracer.startActiveSpan(
-        name,
-        { kind: spanKind, attributes },
-        handleActiveSpan,
-      );
-    });
+    return tracer.startActiveSpan(
+      name,
+      { kind: spanKind, attributes },
+      handleActiveSpan,
+    );
   };
 }
 
