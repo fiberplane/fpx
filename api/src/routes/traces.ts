@@ -8,7 +8,7 @@ import type {
   ILink,
   IStatus,
 } from "@opentelemetry/otlp-transformer";
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
@@ -25,6 +25,21 @@ app.get("/v1/traces", async (ctx) => {
     .select()
     .from(otelTraces)
     .where(sql`parsed_payload->>'scope_name' = 'fpx-tracer'`);
+  return ctx.json(traces);
+});
+
+app.get("/v1/traces/:traceId/spans", async (ctx) => {
+  const db = ctx.get("db");
+
+  const traces = await db
+    .select()
+    .from(otelTraces)
+    .where(
+      and(
+        sql`parsed_payload->>'scope_name' = 'fpx-tracer'`,
+        eq(otelTraces.traceId, ctx.req.param("traceId")),
+      ),
+    );
   return ctx.json(traces);
 });
 
@@ -46,7 +61,7 @@ app.post("/v1/traces", async (ctx) => {
   const tracesPayload = fromCollectorRequest(body)[0];
   // console.log("PAYLOAD", JSON.stringify(tracesPayload, null, 2));
 
-  const traceId = crypto.randomUUID();
+  const traceId = tracesPayload.trace_id;
 
   try {
     await db.insert(otelTraces).values({

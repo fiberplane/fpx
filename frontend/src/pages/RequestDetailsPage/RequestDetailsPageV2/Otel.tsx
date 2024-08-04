@@ -9,7 +9,7 @@ export function Otel({
   traceId: string;
 }) {
   const { data: spans, isPending, error } = useOtelTrace(traceId);
-
+  console.log("spans", spans);
   if (error) {
     console.error("Error!", error);
   }

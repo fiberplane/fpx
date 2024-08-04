@@ -47,8 +47,12 @@ export function RequestDetailsPageContentV2({
       })),
     [spans],
   );
+
+  // HACK - normally we'd look for the root span by trying to find the span with the parent_span_id === null
+  //        but we set a fake parent_span_id for the root span in the middleware for now
   const rootSpan = spansWithVendorInfo.find(
-    (item) => item.span.parent_span_id === null,
+    // (item) => item.span.parent_span_id === null,
+    (item) => item.span.name === "request",
   );
 
   const waterfall = useMemo((): Waterfall => {

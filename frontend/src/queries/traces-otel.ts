@@ -91,5 +91,12 @@ async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
     mode: "cors",
   })
     .then((response) => response.json())
+    .then((spans: { parsedPayload: unknown }[]) =>
+      spans.map((span) => span.parsedPayload),
+    )
+    .then((spans) => {
+      console.log("spans", spans);
+      return spans;
+    })
     .then((data) => SpansSchema.parse(data));
 }
