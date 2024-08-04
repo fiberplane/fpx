@@ -300,6 +300,7 @@ app.all("/v0/proxy-request/*", async (ctx) => {
       requestId,
       duration,
       response,
+      traceId,
     );
 
     if (responseTraceId !== traceId) {
@@ -399,9 +400,8 @@ async function handleSuccessfulRequest(
   requestId: RequestIdType,
   duration: number,
   response: Awaited<ReturnType<typeof fetch>>,
+  traceId: string,
 ) {
-  const traceId = response.headers.get("x-fpx-trace-id") ?? "";
-
   const { responseBody, responseTime, responseHeaders, responseStatusCode } =
     await appResponseInsertSchema
       .extend({
