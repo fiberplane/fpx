@@ -1,4 +1,4 @@
-import { SpanKind, context } from "@opentelemetry/api";
+import { SpanKind, context, propagation } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { Resource } from "@opentelemetry/resources";
 import {
@@ -133,6 +133,26 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           const promises = patched?.promises ?? [];
           const proxyExecutionCtx = patched?.proxyContext ?? executionContext;
 
+          // Extract trace ID from request headers
+          const traceId = request.headers.get("x-fpx-trace-id");
+          let extractedContext = context.active();
+          if (traceId) {
+            const spanContext = {
+              traceId,
+              spanId: "0000000000000000", // No parent span ID
+              traceFlags: 1, // Sampled
+            };
+            const propagator = propagation.getGlobalPropagator();
+            const carrier = {};
+            propagator.inject(extractedContext, carrier, {
+              set: (carrier, key, value) => {
+                carrier[key] = value;
+              },
+            });
+            extractedContext = propagator.extract(extractedContext, carrier, {
+              get: (carrier, key) => carrier[key],
+            });
+          }
           const measuredFetch = measure(
             {
               name: "request",
@@ -158,7 +178,9 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           );
 
           try {
-            return await measuredFetch(request, env, proxyExecutionCtx);
+            return await context.with(extractedContext, async () => {
+              return await measuredFetch(request, env, proxyExecutionCtx);
+            });
           } finally {
             // Make sure all promises are resolved before sending data to the server
             if (proxyExecutionCtx) {

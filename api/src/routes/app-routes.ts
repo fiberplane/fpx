@@ -14,7 +14,11 @@ import {
 } from "../db/schema.js";
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { errorToJson, generateUUID, safeParseJson } from "../lib/utils.js";
+import {
+  errorToJson,
+  generateOtelTraceId,
+  safeParseJson,
+} from "../lib/utils.js";
 import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
 
@@ -192,7 +196,7 @@ function serializeFormDataValue(
  * Or maybe even streams eventually?
  */
 app.all("/v0/proxy-request/*", async (ctx) => {
-  const traceId = ctx.req.header("x-fpx-trace-id") || generateUUID();
+  const traceId = ctx.req.header("x-fpx-trace-id") || generateOtelTraceId();
   logger.debug("Proxying request with traceId:", traceId);
   const db = ctx.get("db");
 

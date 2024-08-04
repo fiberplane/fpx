@@ -1,6 +1,35 @@
+import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { minimatch } from "minimatch";
+
+/**
+ * Check if a trace ID is a valid otel trace id
+ */
+export function isValidOtelTraceId(traceId: string): boolean {
+  return /^[0-9a-f]{32}$/i.test(traceId);
+}
+
+/**
+ * Generate a trace ID that is compatible with the OpenTelemetry standard
+ * Otel trace ids are 16 bytes long, and can be represented as a hex string
+ */
+export function generateOtelTraceId(): string {
+  return randomBytes(16).toString("hex");
+}
+
+/**
+ * NOT IN USE - TEST ME
+ *
+ * A version of generateOtelTraceId that is compatible with the web standards
+ */
+export function generateOtelTraceIdWebStandard(): string {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 /**
  * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value

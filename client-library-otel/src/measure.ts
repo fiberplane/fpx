@@ -4,6 +4,7 @@ import {
   type Span,
   type SpanKind,
   SpanStatusCode,
+  context,
   trace,
 } from "@opentelemetry/api";
 
@@ -181,11 +182,13 @@ export function measure<R, A extends unknown[]>(
     }
 
     const tracer = trace.getTracer("fpx-tracer");
-    return tracer.startActiveSpan(
-      name,
-      { kind: spanKind, attributes },
-      handleActiveSpan,
-    );
+    return context.with(context.active(), () => {
+      return tracer.startActiveSpan(
+        name,
+        { kind: spanKind, attributes },
+        handleActiveSpan,
+      );
+    });
   };
 }
 
