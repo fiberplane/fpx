@@ -24,7 +24,6 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             <div className="flex items-center gap-2 text-sm">
               <HeaderNavLink to="/requestor">Routes</HeaderNavLink>
               <HeaderNavLink to="/requests">Requests</HeaderNavLink>
-              <HeaderNavLink to="/webhooks">Webhooks</HeaderNavLink>
               <HeaderNavLink to="/settings">Settings</HeaderNavLink>
               {/* <HeaderNavLink to="/issues">Issues</HeaderNavLink> */}
             </div>
