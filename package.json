@@ -5,7 +5,9 @@
   "scripts": {
     "build:fpx-studio": "npm run clean:fpx-studio && npm run build:api && npm run build:frontend",
     "build:api": "npm run --workspace api build",
+    "dev:api": "npm run --workspace api dev",
     "build:frontend": "npm run --workspace frontend build && cp -r frontend/dist/* api/dist",
+    "dev:frontend": "npm run --workspace frontend dev",
     "clean:fpx-studio": "npm run clean:api && npm run clean:frontend",
     "clean:api": "rimraf api/dist",
     "clean:frontend": "rimraf frontend/dist",
