@@ -52,7 +52,7 @@ export class WebHonc extends DurableObject<Bindings> {
 
   public async pushWebhookData(connectionId: string, data: string) {
     const ws = this.sessions.get(connectionId);
-    console.log(data)
+    console.log(data);
     if (ws) {
       ws.send(data);
     }

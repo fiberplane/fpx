@@ -1,6 +1,11 @@
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { z } from "zod";
+import type { z } from "zod";
 
 export const appRoutes = sqliteTable(
   "app_routes",
@@ -41,7 +46,6 @@ export const appRoutes = sqliteTable(
     };
   },
 );
-
 
 export const appRoutesSelectSchema = createSelectSchema(appRoutes);
 export const appRoutesInsertSchema = createInsertSchema(appRoutes);

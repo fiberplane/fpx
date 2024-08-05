@@ -1,14 +1,16 @@
 import type { Endpoints } from "@octokit/types";
 import { relations, sql } from "drizzle-orm";
-import {
-  integer,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export { appRoutes, appRoutesInsertSchema, appRoutesSelectSchema, type AppRoute, type NewAppRoute } from "./app-routes.js";
+export {
+  appRoutes,
+  appRoutesInsertSchema,
+  appRoutesSelectSchema,
+  type AppRoute,
+  type NewAppRoute,
+} from "./app-routes.js";
 
 // TYPES
 // These are helper types from Octokit, which are used in the `githubIssues` table

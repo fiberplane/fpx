@@ -1,7 +1,9 @@
+import path from "node:path";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import WebSocket from "ws";
 import { z } from "zod";
-import logger from "../../logger.js";
 import * as schema from "../../db/schema/index.js";
+import logger from "../../logger.js";
 import { resolveServiceArg } from "../../probe-routes.js";
 import {
   executeProxyRequest,
@@ -10,8 +12,6 @@ import {
 } from "../proxy-request/index.js";
 import { resolveUrl } from "../utils.js";
 import { setWebHoncConnectionId } from "./store.js";
-import path from "node:path";
-import { LibSQLDatabase } from "drizzle-orm/libsql";
 
 const WsMessageSchema = z.discriminatedUnion("event", [
   z.object({
@@ -106,8 +106,8 @@ const messageHandlers: {
     }
   },
   request_incoming: async (message, wsConnections, db) => {
-		// no trace id is coming from the websocket, so we generate one
-		const traceId = crypto.randomUUID();
+    // no trace id is coming from the websocket, so we generate one
+    const traceId = crypto.randomUUID();
     const serviceTarget = resolveServiceArg(process.env.FPX_SERVICE_TARGET);
     const resolvedPath = path.join(serviceTarget, ...message.payload.path);
     const requestUrl = resolveUrl(resolvedPath, message.payload.query);
@@ -124,8 +124,8 @@ const messageHandlers: {
       requestRoute: message.payload.path.join("/"),
     };
 
-		// TODO: assert that the request headers are not null
-		newRequest!.requestHeaders!["x-fpx-trace-id"] = traceId
+    // TODO: assert that the request headers are not null
+    newRequest!.requestHeaders!["x-fpx-trace-id"] = traceId;
 
     const [{ id: requestId }] = await db
       .insert(schema.appRequests)
@@ -148,24 +148,18 @@ const messageHandlers: {
       // Store the request in the database
     } catch (error) {
       logger.error("Error making request", error);
-			const duration = Date.now() - startTime;
-      await handleFailedRequest(
-				db, 
-				requestId,
-				traceId,
-				duration,
-				error
-			);
+      const duration = Date.now() - startTime;
+      await handleFailedRequest(db, requestId, traceId, duration, error);
     }
 
-		for (const ws of wsConnections) {
-			ws.send(
-				JSON.stringify({
-					event: "trace_created",
-					// we should probably collect all query keys inside the schema or something so it's unified
-					payload: ["mizuTraces"]
-				}),
-			);
-		}
+    for (const ws of wsConnections) {
+      ws.send(
+        JSON.stringify({
+          event: "trace_created",
+          // we should probably collect all query keys inside the schema or something so it's unified
+          payload: ["mizuTraces"],
+        }),
+      );
+    }
   },
 };

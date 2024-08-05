@@ -1,22 +1,22 @@
 import { createServer } from "node:http";
 import { serve } from "@hono/node-server";
+import { createClient } from "@libsql/client";
 import chalk from "chalk";
 import { config } from "dotenv";
+import { drizzle } from "drizzle-orm/libsql";
 import figlet from "figlet";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
+import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema/index.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { connectToWebhonc } from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
-import { DEFAULT_DATABASE_URL } from "./constants.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
 
 config({ path: ".dev.vars" });
 
@@ -81,6 +81,6 @@ startRouteProbeWatcher(watchDir);
 // Set up websocket server
 setupRealtimeService({ server, path: "/ws", wsConnections });
 
- const webhoncUrl = "wss://webhonc.mies.workers.dev/ws"
+const webhoncUrl = "wss://webhonc.mies.workers.dev/ws";
 // const webhoncUrl = "ws://localhost:3000/ws"
 connectToWebhonc(webhoncUrl, db, wsConnections);
