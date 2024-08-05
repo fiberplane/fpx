@@ -778,6 +778,7 @@ dependencies = [
  "prost 0.13.1",
  "serde",
  "serde_json",
+ "strum",
  "thiserror",
  "time",
  "tokio",

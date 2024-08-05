@@ -131,7 +131,7 @@ impl Store for D1Store {
                     span.span_id.into(),
                     span.parent_span_id.unwrap_or_default().into(),
                     span.name.into(),
-                    "Internal".into(),
+                    span.kind.into(),
                     span.start_time.into(),
                     span.end_time.into(),
                     span.inner.into(),
