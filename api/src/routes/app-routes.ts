@@ -14,12 +14,11 @@ import {
 } from "../db/schema.js";
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { errorToJson, generateUUID, safeParseJson } from "../lib/utils.js";
+import { errorToJson, generateUUID, resolveUrl, safeParseJson } from "../lib/utils.js";
 import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
+import { executeProxyRequest, handleFailedRequest, handleSuccessfulRequest } from "../lib/proxy-request/index.js";
 
-type RequestIdType = schema.AppResponse["requestId"];
-type DbType = LibSQLDatabase<typeof schema>;
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -125,8 +124,8 @@ function serializeFormDataValue(
  * Or maybe even streams eventually?
  */
 app.all("/v0/proxy-request/*", async (ctx) => {
-  const traceId = ctx.req.header("x-fpx-trace-id") || generateUUID();
-  logger.debug("Proxying request with traceId:", traceId);
+  const parsedTraceId = ctx.req.header("x-fpx-trace-id") || crypto.randomUUID();
+  logger.debug("Proxying request with traceId:", parsedTraceId);
   const db = ctx.get("db");
 
   const requestRoute = ctx.req.header("x-fpx-route");
@@ -150,7 +149,7 @@ app.all("/v0/proxy-request/*", async (ctx) => {
   });
   // Ensure the trace id is present
   if (!requestHeaders["x-fpx-trace-id"]) {
-    requestHeaders["x-fpx-trace-id"] = traceId;
+    requestHeaders["x-fpx-trace-id"] = parsedTraceId;
   }
 
   // Construct the url we want to proxy to
@@ -163,11 +162,6 @@ app.all("/v0/proxy-request/*", async (ctx) => {
   // Create a new request object
   // Clone the incoming request, so we can make a proxy Request object
   const clonedReq = ctx.req.raw.clone();
-  const proxiedReq = new Request(requestUrl, {
-    method: requestMethod,
-    headers: new Headers(requestHeaders),
-    body: clonedReq.body ? clonedReq.body.tee()[0] : null,
-  });
 
   // Extract the request body based on content type
   // *The whole point of this is to serialize the request body into the database, for future reference*
@@ -207,7 +201,8 @@ app.all("/v0/proxy-request/*", async (ctx) => {
   const startTime = Date.now();
   try {
     // Proxy the request
-    const response = await fetch(proxiedReq);
+    newRequest.requestBody = clonedReq.body
+    const response = await executeProxyRequest(newRequest);
 
     // Clone the response and prepare to return it
     const clonedResponse = response.clone();
@@ -231,14 +226,14 @@ app.all("/v0/proxy-request/*", async (ctx) => {
       response,
     );
 
-    if (responseTraceId !== traceId) {
+    if (responseTraceId !== parsedTraceId) {
       logger.warn(
-        `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
+        `Trace-id mismatch! Request: ${parsedTraceId}, Response: ${responseTraceId}`,
       );
     }
 
     // Guarantee the trace-id is set in response headers
-    proxiedResponse.headers.set("x-fpx-trace-id", traceId);
+    proxiedResponse.headers.set("x-fpx-trace-id", parsedTraceId);
 
     return proxiedResponse;
   } catch (fetchError) {
@@ -248,19 +243,19 @@ app.all("/v0/proxy-request/*", async (ctx) => {
       await handleFailedRequest(
         db,
         requestId,
-        traceId,
+        parsedTraceId,
         responseTime,
         fetchError,
       );
 
-    ctx.header("x-fpx-trace-id", traceId);
+    ctx.header("x-fpx-trace-id", parsedTraceId);
     ctx.status(500);
     return ctx.json({
       isFailure,
       responseTime,
       failureDetails,
       failureReason,
-      traceId,
+      traceId: parsedTraceId,
       requestId,
     });
   }
@@ -319,129 +314,5 @@ app.all("/v0/proxy-request/*", async (ctx) => {
   }
 });
 
-/**
- * Extract useful data from the response when a request succeeds,
- * and save that data in the `app_responses` table
- */
-async function handleSuccessfulRequest(
-  db: DbType,
-  requestId: RequestIdType,
-  duration: number,
-  response: Awaited<ReturnType<typeof fetch>>,
-) {
-  const traceId = response.headers.get("x-fpx-trace-id") ?? "";
-
-  const { responseBody, responseTime, responseHeaders, responseStatusCode } =
-    await appResponseInsertSchema
-      .extend({
-        headers: z.instanceof(Headers),
-        status: z.number(),
-        body: z.instanceof(ReadableStream),
-        traceId: z.string().optional(),
-      })
-      .transform(async ({ headers, status }) => {
-        const responseHeaders: Record<string, string> = {};
-        // NOTE - Order of arguments when you do `forEach` on a Headers object is (headerValue, headerName)
-        headers.forEach((headerValue, headerName) => {
-          responseHeaders[headerName] = headerValue;
-        });
-
-        return {
-          responseHeaders,
-          responseStatusCode: status,
-          responseBody: await safeReadTextBody(response),
-          responseTime: duration,
-        };
-      })
-      .parseAsync(response);
-
-  await db.insert(appResponses).values([
-    {
-      isFailure: false,
-      responseStatusCode,
-      responseTime,
-      responseHeaders,
-      responseBody,
-      traceId,
-      requestId,
-    },
-  ]);
-
-  return {
-    isFailure: false,
-    responseStatusCode,
-    responseTime,
-    responseHeaders,
-    responseBody,
-    traceId,
-  };
-}
-
-function safeReadTextBody(response: Response) {
-  return response.text().catch((error) => {
-    logger.error("Failed to parse response body", error);
-    return null;
-  });
-}
-
-function hasMessage(error: unknown): error is { message: string } {
-  return (
-    !!error &&
-    typeof error === "object" &&
-    "message" in error &&
-    typeof error?.message === "string"
-  );
-}
-
-/**
- * Extract useful data from the error when a request fails,
- * and save that data in the `app_responses` table
- */
-async function handleFailedRequest(
-  db: DbType,
-  requestId: RequestIdType,
-  traceId: string,
-  responseTime: number,
-  error: unknown,
-) {
-  let failureReason = "unknown";
-  if (hasMessage(error)) {
-    failureReason = error.message;
-  }
-  let failureDetails: Record<string, string> = {};
-  if (error instanceof Error) {
-    failureDetails = errorToJson(error);
-  }
-
-  await db.insert(appResponses).values([
-    {
-      isFailure: true,
-      responseTime,
-      traceId,
-      requestId,
-      failureReason,
-      failureDetails,
-    },
-  ]);
-
-  return {
-    isFailure: true,
-    responseTime,
-    traceId,
-    requestId,
-    failureReason,
-    failureDetails,
-  };
-}
-
-function resolveUrl(url: string, queryParams?: Record<string, string> | null) {
-  if (!queryParams) return url;
-
-  const urlObject = new URL(url);
-  for (const [key, value] of Object.entries(queryParams)) {
-    urlObject.searchParams.set(key, value);
-  }
-  return urlObject.toString();
-}
 
 export default app;
