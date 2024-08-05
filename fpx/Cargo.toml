@@ -20,7 +20,7 @@ axum = { version = "0.7", features = [
     "ws",
 ] }
 clap = { workspace = true, features = ["derive", "env"] }
-bytes = { version = "1.6" }
+bytes = { version = "1.7" }
 futures-util = { version = "0.3" }
 fpx-macros = { version = "0.1.0", path = "../fpx-macros" }
 hex = { version = "0.4" }
@@ -55,8 +55,8 @@ strum = { version = "0.26", features = ["derive"] }
 serde_with = { version = "3.8.1" }
 thiserror = { version = "1.0" }
 time = { version = "0.3.17", features = ["serde-human-readable"] }
-tokio = { version = "1.37", features = ["rt-multi-thread", "signal", "fs"] }
-tokio-tungstenite = { version = "0.21", features = [
+tokio = { version = "1.39", features = ["rt-multi-thread", "signal", "fs"] }
+tokio-tungstenite = { version = "0.23", features = [
     "rustls-tls-webpki-roots",
 ] } # This should be kept the same as whatever Axum has
 toml = { version = "0.8" }
