@@ -30,6 +30,8 @@ app.all(
       .filter((comp) => comp.length > 0)
       .slice(1);
 
+    const method = c.req.method
+
     const contentType = c.req.header("content-type");
 
     let body: string | FormData | undefined;
@@ -67,6 +69,7 @@ app.all(
           headers: headersJson,
           query,
           body,
+          method,
           path: pathComponentsWithoutId,
         },
       }),
