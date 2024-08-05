@@ -1,8 +1,4 @@
 import { useRealtimeService } from "@/hooks/useRealtimeService";
-import {
-  WEBHONC_ID_KEY,
-  WEBHONC_REQUEST_KEY,
-} from "@/pages/WebhooksPage/types";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function useWebsocketQueryInvalidation() {
@@ -13,23 +9,27 @@ export function useWebsocketQueryInvalidation() {
   if (wsMessage) {
     switch (wsMessage.event) {
       case "trace_created": {
+        console.log("trace_created");
         queryClient.invalidateQueries({ queryKey: wsMessage.payload });
         break;
       }
 
       case "connection_open": {
-        queryClient.invalidateQueries({
-          queryKey: [WEBHONC_ID_KEY, WEBHONC_REQUEST_KEY],
-        });
+        // TODO: rewriting some webhook/websocket stuff tbd if this is needed
+        console.log("connection_open");
+        // queryClient.invalidateQueries({
+        // queryKey: [WEBHONC_ID_KEY, WEBHONC_REQUEST_KEY],
+        // });
         break;
       }
 
       case "request_incoming": {
-        queryClient.invalidateQueries({
-          queryKey: [WEBHONC_REQUEST_KEY],
-          refetchType: "all",
-        });
-        console.log("refetchQueries");
+        // TODO: rewriting some webhook/websocket stuff tbd if this is needed
+        console.log("request_incoming");
+        // queryClient.invalidateQueries({
+        //   queryKey: [WEBHONC_REQUEST_KEY],
+        //   refetchType: "all",
+        // });
         break;
       }
 
