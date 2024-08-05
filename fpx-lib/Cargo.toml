@@ -16,6 +16,7 @@ bytes = { version = "1.0", default-features = false }
 fpx-macros = { version = "0.1.0", path = "../fpx-macros" }
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
 http = { version = "1.1", default-features = false }
+libsql = { version = "0.4", default-features = false, optional = true }
 prost = { version = "0.13", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0", default-features = false }
@@ -34,7 +35,7 @@ opentelemetry-proto = { version = "0.7", default-features = false, features = [
     "with-schemars",
 ] }
 tokio = { version = "1.39", default-features = false }
-
+wasm-bindgen = { version = "0.2", default-features = false, optional = true }
 
 [dev-dependencies]
 http-body-util = { version = "0.1", default-features = false }

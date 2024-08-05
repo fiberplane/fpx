@@ -3,10 +3,10 @@ use std::sync::Arc;
 use thiserror::Error;
 
 pub mod fake_store;
-mod models;
+pub mod models;
 mod util;
 
-type Result<T, E = DbError> = anyhow::Result<T, E>;
+pub type Result<T, E = DbError> = anyhow::Result<T, E>;
 
 pub type BoxedStore = Arc<dyn Store>;
 
@@ -26,6 +26,9 @@ pub enum DbError {
 
     #[error("failed to deserialize into `T`: {0}")]
     FailedDeserialize(#[from] serde::de::value::Error),
+
+    #[error("Internal error: {0}")]
+    InternalError(String),
 }
 
 #[async_trait]

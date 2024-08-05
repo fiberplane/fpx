@@ -46,8 +46,6 @@ impl Service {
 
         self.store.commit_transaction(tx).await?;
 
-        info!(?trace_ids, "something");
-
         self.events.broadcast(SpanAdded::new(trace_ids).into());
 
         Ok(ExportTraceServiceResponse {

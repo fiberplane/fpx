@@ -63,6 +63,18 @@ where
     }
 }
 
+impl<T> Serialize for Json<T>
+where
+    T: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.0.serialize(serializer)
+    }
+}
+
 impl<'de, T> Deserialize<'de> for Json<T>
 where
     T: DeserializeOwned,
@@ -75,6 +87,28 @@ where
         let json: T = serde_json::from_str(&string).map_err(serde::de::Error::custom)?;
 
         Ok(Json(json))
+    }
+}
+
+#[cfg(feature = "wasm-bindgen")]
+impl<T> From<Json<T>> for wasm_bindgen::JsValue
+where
+    T: Serialize,
+{
+    fn from(value: Json<T>) -> Self {
+        let value = serde_json::to_string(&value.0).expect("failed to serialize Json<T>");
+        wasm_bindgen::JsValue::from_str(&value)
+    }
+}
+
+#[cfg(feature = "libsql")]
+impl<T> From<Json<T>> for libsql::Value
+where
+    T: Serialize,
+{
+    fn from(value: Json<T>) -> Self {
+        let value = serde_json::to_string(&value.0).expect("failed to serialize Json<T>");
+        libsql::Value::Text(value)
     }
 }
 
@@ -153,5 +187,19 @@ impl<'de> Deserialize<'de> for Timestamp {
         let timestamp: i64 = Deserialize::deserialize(deserializer)?;
 
         Ok(Timestamp(timestamp as u64))
+    }
+}
+
+#[cfg(feature = "wasm-bindgen")]
+impl From<Timestamp> for wasm_bindgen::JsValue {
+    fn from(value: Timestamp) -> Self {
+        wasm_bindgen::JsValue::from(value.0)
+    }
+}
+
+#[cfg(feature = "libsql")]
+impl From<Timestamp> for libsql::Value {
+    fn from(timestamp: Timestamp) -> Self {
+        libsql::Value::Integer(timestamp.0 as i64)
     }
 }
