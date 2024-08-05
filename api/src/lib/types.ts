@@ -14,7 +14,6 @@ export type Bindings = {
 export type Variables = {
   db: LibSQLDatabase<typeof schema>;
   wsConnections: Set<WebSocket>;
-  webhookRequests: Map<string, WebhookRequest>;
 };
 
 export const WebhookRequestSchema = z.object({

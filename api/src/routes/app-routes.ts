@@ -1,24 +1,24 @@
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { z } from "zod";
 import {
   type NewAppRequest,
   appRequests,
-  appResponseInsertSchema,
   appResponses,
   appRoutes,
   appRoutesInsertSchema,
-} from "../db/schema.js";
-import type * as schema from "../db/schema.js";
+} from "../db/schema/index.js";
+import {
+  executeProxyRequest,
+  handleFailedRequest,
+  handleSuccessfulRequest,
+} from "../lib/proxy-request/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { errorToJson, generateUUID, resolveUrl, safeParseJson } from "../lib/utils.js";
+import { resolveUrl, safeParseJson } from "../lib/utils.js";
 import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
-import { executeProxyRequest, handleFailedRequest, handleSuccessfulRequest } from "../lib/proxy-request/index.js";
-
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -181,7 +181,7 @@ app.all("/v0/proxy-request/*", async (ctx) => {
 
   // Record request details
   const newRequest: NewAppRequest = {
-    // @ts-expect-error - Trust me, the request method is correct
+    // @ts-expect-error - Trust me, the request method is correct, and it's a string
     requestMethod,
     requestUrl,
     requestHeaders,
@@ -201,7 +201,7 @@ app.all("/v0/proxy-request/*", async (ctx) => {
   const startTime = Date.now();
   try {
     // Proxy the request
-    newRequest.requestBody = clonedReq.body
+    newRequest.requestBody = clonedReq.body;
     const response = await executeProxyRequest(newRequest);
 
     // Clone the response and prepare to return it
@@ -313,6 +313,5 @@ app.all("/v0/proxy-request/*", async (ctx) => {
     return requestBody;
   }
 });
-
 
 export default app;

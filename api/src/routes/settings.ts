@@ -3,7 +3,7 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import z from "zod";
-import * as schema from "../db/schema.js";
+import * as schema from "../db/schema/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 
 const { settings } = schema;

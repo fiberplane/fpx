@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { minimatch } from "minimatch";
+import logger from "../logger.js";
 
 /**
  * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value
@@ -104,4 +105,24 @@ export function safeParseJson(str: string | null | undefined) {
   } catch {
     return str;
   }
+}
+
+export function safeReadTextBody(response: Response) {
+  return response.text().catch((error) => {
+    logger.error("Failed to parse response body", error);
+    return null;
+  });
+}
+
+export function resolveUrl(
+  url: string,
+  queryParams?: Record<string, string> | null,
+) {
+  if (!queryParams) return url;
+
+  const urlObject = new URL(url);
+  for (const [key, value] of Object.entries(queryParams)) {
+    urlObject.searchParams.set(key, value);
+  }
+  return urlObject.toString();
 }

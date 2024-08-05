@@ -5,26 +5,31 @@ import { config } from "dotenv";
 import figlet from "figlet";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
+import * as schema from "./db/schema/index.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
-import type { WebhookRequest } from "./lib/types.js";
 import { connectToWebhonc } from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
+import { DEFAULT_DATABASE_URL } from "./constants.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
 
 config({ path: ".dev.vars" });
 
 // A couple of global in-memory only data structures:
 // - wsConnections for realtime service
-// - webhookRequests for storing incoming webhook requests from webhonc
 const wsConnections = new Set<WebSocket>();
-const webhookRequests = new Map<string, WebhookRequest>();
 
+const sql = createClient({
+  url: process.env.FPX_DATABASE_URL ?? DEFAULT_DATABASE_URL,
+});
+const db = drizzle(sql, { schema });
 // Set up the api routes
-const app = createApp(wsConnections, webhookRequests);
+const app = createApp(db, wsConnections);
 
 /**
  * Serve all the frontend static files
@@ -76,8 +81,6 @@ startRouteProbeWatcher(watchDir);
 // Set up websocket server
 setupRealtimeService({ server, path: "/ws", wsConnections });
 
-connectToWebhonc(
-  "wss://webhonc.mies.workers.dev/ws",
-  wsConnections,
-  webhookRequests,
-);
+ const webhoncUrl = "wss://webhonc.mies.workers.dev/ws"
+// const webhoncUrl = "ws://localhost:3000/ws"
+connectToWebhonc(webhoncUrl, db, wsConnections);

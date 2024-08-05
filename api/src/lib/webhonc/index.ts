@@ -1,8 +1,17 @@
 import WebSocket from "ws";
 import { z } from "zod";
 import logger from "../../logger.js";
-import type { WebhookRequest } from "../types.js";
-import { getWebHoncConnectionId, setWebHoncConnectionId } from "./store.js";
+import * as schema from "../../db/schema/index.js";
+import { resolveServiceArg } from "../../probe-routes.js";
+import {
+  executeProxyRequest,
+  handleFailedRequest,
+  handleSuccessfulRequest,
+} from "../proxy-request/index.js";
+import { resolveUrl } from "../utils.js";
+import { setWebHoncConnectionId } from "./store.js";
+import path from "node:path";
+import { LibSQLDatabase } from "drizzle-orm/libsql";
 
 const WsMessageSchema = z.discriminatedUnion("event", [
   z.object({
@@ -16,16 +25,17 @@ const WsMessageSchema = z.discriminatedUnion("event", [
     payload: z.object({
       headers: z.record(z.string()),
       query: z.record(z.string()),
-      body: z.any(),
       path: z.array(z.string()),
+      body: z.any(),
+      method: z.string(),
     }),
   }),
 ]);
 
 export function connectToWebhonc(
   url: string,
+  db: LibSQLDatabase<typeof schema>,
   wsConnections: Set<WebSocket>,
-  webhookRequests: Map<string, WebhookRequest>,
 ) {
   const socket = new WebSocket(url);
 
@@ -33,39 +43,9 @@ export function connectToWebhonc(
     logger.debug("Connected to the webhonc service");
   };
 
-  socket.onmessage = (event) => {
+  socket.onmessage = async (event) => {
     logger.debug("Received message from the webhonc service:", event.data);
-    const message = WsMessageSchema.parse(JSON.parse(event.data.toString()));
-
-    switch (message.event) {
-      case "connection_open": {
-        const { connectionId } = message.payload;
-        setWebHoncConnectionId(connectionId);
-        for (const ws of wsConnections) {
-          ws.send(
-            JSON.stringify({
-              event: "connection_open",
-              payload: { connectionId },
-            }),
-          );
-        }
-        break;
-      }
-      case "request_incoming": {
-        const connectionId = getWebHoncConnectionId();
-        if (!connectionId) {
-          logger.error(
-            "Webhonc connection ID not found, cannot store webhook request",
-          );
-          return;
-        }
-        webhookRequests.set(connectionId, message.payload);
-        for (const ws of wsConnections) {
-          ws.send(JSON.stringify(message));
-        }
-        break;
-      }
-    }
+    await handleMessage(event, wsConnections, db);
   };
 
   socket.onclose = (event) => {
@@ -83,3 +63,109 @@ export function connectToWebhonc(
 
   return socket;
 }
+
+async function handleMessage(
+  event: WebSocket.MessageEvent,
+  wsConnections: Set<WebSocket>,
+  db: LibSQLDatabase<typeof schema>,
+) {
+  const parsedMessage = WsMessageSchema.parse(
+    JSON.parse(event.data.toString()),
+  );
+
+  const handler = messageHandlers[parsedMessage.event] as (
+    message: typeof parsedMessage,
+    wsConnections: Set<WebSocket>,
+    db: LibSQLDatabase<typeof schema>,
+  ) => Promise<void>;
+
+  if (handler) {
+    await handler(parsedMessage, wsConnections, db);
+  } else {
+    logger.error(`Unhandled event type: ${parsedMessage.event}`);
+  }
+}
+
+const messageHandlers: {
+  [K in z.infer<typeof WsMessageSchema>["event"]]: (
+    message: Extract<z.infer<typeof WsMessageSchema>, { event: K }>,
+    wsConnections: Set<WebSocket>,
+    db: LibSQLDatabase<typeof schema>,
+  ) => Promise<void>;
+} = {
+  connection_open: async (message, wsConnections) => {
+    const { connectionId } = message.payload;
+    setWebHoncConnectionId(connectionId);
+    for (const ws of wsConnections) {
+      ws.send(
+        JSON.stringify({
+          event: "connection_open",
+          payload: { connectionId },
+        }),
+      );
+    }
+  },
+  request_incoming: async (message, wsConnections, db) => {
+		// no trace id is coming from the websocket, so we generate one
+		const traceId = crypto.randomUUID();
+    const serviceTarget = resolveServiceArg(process.env.FPX_SERVICE_TARGET);
+    const resolvedPath = path.join(serviceTarget, ...message.payload.path);
+    const requestUrl = resolveUrl(resolvedPath, message.payload.query);
+
+    const startTime = Date.now();
+    const newRequest: schema.NewAppRequest = {
+      requestMethod: message.payload
+        .method as schema.NewAppRequest["requestMethod"],
+      requestUrl,
+      requestHeaders: message.payload.headers,
+      requestPathParams: {},
+      requestQueryParams: message.payload.query,
+      requestBody: message.payload.body,
+      requestRoute: message.payload.path.join("/"),
+    };
+
+		// TODO: assert that the request headers are not null
+		newRequest!.requestHeaders!["x-fpx-trace-id"] = traceId
+
+    const [{ id: requestId }] = await db
+      .insert(schema.appRequests)
+      .values(newRequest)
+      .returning({ id: schema.appRequests.id });
+
+    try {
+      const response = await executeProxyRequest({
+        requestHeaders: message.payload.headers,
+        // @ts-expect-error - Trust me, the request method is correct, and it's a string
+        requestMethod: message.payload.method,
+        requestBody: message.payload.body,
+        requestUrl,
+      });
+
+      const duration = Date.now() - startTime;
+
+      await handleSuccessfulRequest(db, requestId, duration, response);
+
+      // Store the request in the database
+    } catch (error) {
+      logger.error("Error making request", error);
+			const duration = Date.now() - startTime;
+      await handleFailedRequest(
+				db, 
+				requestId,
+				traceId,
+				duration,
+				error
+			);
+    }
+
+		for (const ws of wsConnections) {
+			ws.send(
+				JSON.stringify({
+					event: "trace_created",
+					// we should probably collect all query keys inside the schema or something so it's unified
+					payload: ["mizuTraces"]
+				}),
+			);
+		}
+  },
+};
