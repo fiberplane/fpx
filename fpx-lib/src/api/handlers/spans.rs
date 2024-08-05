@@ -1,6 +1,7 @@
 use crate::api::errors::{ApiServerError, CommonError};
 use crate::api::models::Span;
-use crate::data::{BoxedStore, DbError};
+use crate::api::ApiState;
+use crate::data::{DbError, Store};
 use axum::extract::{Path, State};
 use axum::Json;
 use fpx_macros::ApiError;
@@ -10,10 +11,13 @@ use thiserror::Error;
 use tracing::error;
 
 #[tracing::instrument(skip_all)]
-pub async fn span_get_handler(
-    State(store): State<BoxedStore>,
+pub async fn span_get_handler<S>(
+    State(ApiState { store, .. }): State<ApiState<S>>,
     Path((trace_id, span_id)): Path<(String, String)>,
-) -> Result<Json<Span>, ApiServerError<SpanGetError>> {
+) -> Result<Json<Span>, ApiServerError<SpanGetError>>
+where
+    S: Store + Clone,
+{
     let tx = store.start_readonly_transaction().await?;
 
     hex::decode(&trace_id)
@@ -55,10 +59,13 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn span_list_handler(
-    State(store): State<BoxedStore>,
+pub async fn span_list_handler<S>(
+    State(ApiState { store, .. }): State<ApiState<S>>,
     Path(trace_id): Path<String>,
-) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
+) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>>
+where
+    S: Store + Clone,
+{
     let tx = store.start_readonly_transaction().await?;
 
     hex::decode(&trace_id)
