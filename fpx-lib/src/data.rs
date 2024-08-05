@@ -2,7 +2,6 @@ use async_trait::async_trait;
 use std::sync::Arc;
 use thiserror::Error;
 
-pub mod fake_store;
 pub mod models;
 mod util;
 
