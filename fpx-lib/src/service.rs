@@ -6,7 +6,6 @@ use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
 };
 use thiserror::Error;
-use tracing::info;
 
 /// Service implements shared logic for both the gRPC and HTTP API, and possibly
 /// any future API interactions.

@@ -2,9 +2,9 @@ use axum::async_trait;
 use fpx_lib::data::{models, DbError, Result, Store, Transaction};
 use serde::Deserialize;
 use std::sync::Arc;
-use tracing::info;
 use wasm_bindgen::JsValue;
-use worker::{send::SendFuture, D1Database};
+use worker::send::SendFuture;
+use worker::D1Database;
 
 pub struct D1Store {
     database: Arc<D1Database>,
