@@ -256,7 +256,7 @@ const WaterfallRowSpan: React.FC<{
   const lineOffset = `${((new Date(span.start_time).getTime() - startTime) / duration) * 100}%`;
   const icon = useTimelineIcon(span, vendorInfo);
   const title = useTimelineTitle({ span, vendorInfo });
-  console.log(vendorInfo, "title", title);
+
   return (
     <a
       data-toc-id={id}

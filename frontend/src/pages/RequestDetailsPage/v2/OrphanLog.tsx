@@ -8,12 +8,12 @@ import {
 } from "@/utils";
 import { StackTrace } from "../StackTrace";
 import { SectionHeading } from "../shared";
-import { timelineId } from "./timelineId";
+// import { timelineId } from "./timelineId";
 // import { SubSectionHeading } from "./shared";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
-  const id = timelineId(log);
-
+  // const id = timelineId(log);
+  const id = log.id;
   const { level, message } = log;
   const name = objectHasName(message) ? message.name : null;
 
@@ -30,7 +30,7 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const stack = objectHasStack(message) ? message.stack : null;
 
   return (
-    <div id={id} className="overflow-x-auto overflow-y-hidden">
+    <div id={id?.toString()} className="overflow-x-auto overflow-y-hidden">
       <div className={cn("grid gap-2 border-t py-4")}>
         <SectionHeading className="font-mono">{heading}</SectionHeading>
       </div>

@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/hono-otel",
-  "description": "Hono middleware to forward data to a local instance of @mizu-dev/studio",
+  "description": "Hono middleware to forward OpenTelemetry trace to a local instance of @fiberplane/studio",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
   "main": "dist/index.js",
@@ -24,9 +24,6 @@
     "nodemon": "^3.1.4",
     "rimraf": "^6.0.1",
     "typescript": "^5.4.5"
-  },
-  "publishConfig": {
-    "access": "private"
   },
   "license": "MIT or Apache 2",
   "keywords": [

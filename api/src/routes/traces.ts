@@ -14,7 +14,7 @@ import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
-const { otelTraces } = schema;
+const { otelSpans } = schema;
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -23,14 +23,14 @@ app.get("/v1/traces", async (ctx) => {
 
   const traces = await db
     .select()
-    .from(otelTraces)
+    .from(otelSpans)
     .where(
       and(
         sql`parsed_payload->>'scope_name' = 'fpx-tracer'`,
         sql`parsed_payload->>'name' = 'request'`,
       ),
     )
-    .orderBy(desc(otelTraces.createdAt));
+    .orderBy(desc(otelSpans.createdAt));
   return ctx.json(traces);
 });
 
@@ -39,11 +39,11 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
 
   const traces = await db
     .select()
-    .from(otelTraces)
+    .from(otelSpans)
     .where(
       and(
         sql`parsed_payload->>'scope_name' = 'fpx-tracer'`,
-        eq(otelTraces.traceId, ctx.req.param("traceId")),
+        eq(otelSpans.traceId, ctx.req.param("traceId")),
       ),
     );
   return ctx.json(traces);
@@ -51,7 +51,7 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
 
 app.post("/v1/traces/delete-all-hack", async (ctx) => {
   const db = ctx.get("db");
-  await db.delete(otelTraces);
+  await db.delete(otelSpans);
   return ctx.text("OK");
 });
 
@@ -63,18 +63,16 @@ app.post("/v1/traces", async (ctx) => {
 
   const body: IExportTraceServiceRequest = await ctx.req.json();
   // console.log("RAW TRACE", JSON.stringify(body, null, 2));
-
-  const tracesPayload = fromCollectorRequest(body)[0];
+  const tracesPayload = fromCollectorRequest(body).map((span) => ({
+    rawPayload: body,
+    parsedPayload: span,
+    spanId: span.span_id,
+    traceId: span.trace_id,
+  }));
   // console.log("PAYLOAD", JSON.stringify(tracesPayload, null, 2));
 
-  const traceId = tracesPayload.trace_id;
-
   try {
-    await db.insert(otelTraces).values({
-      traceId,
-      rawPayload: body,
-      parsedPayload: tracesPayload,
-    });
+    await db.insert(otelSpans).values(tracesPayload);
   } catch (error) {
     logger.error("Error inserting trace", error);
   }
