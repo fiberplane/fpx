@@ -1,8 +1,10 @@
 import { MizuOrphanLog } from "@/queries";
+import { useOtelTraces } from "@/queries/hotel";
 import { OtelEvent, useOtelTrace } from "@/queries/traces-otel";
 import { useMemo } from "react";
 import { EmptyState } from "../EmptyState";
 import { SkeletonLoader } from "../SkeletonLoader";
+import { usePagination } from "../hooks";
 import { getString } from "../v2/otel-helpers";
 import { RequestDetailsPageContentV2 } from "./RequestDetailsPageV2Content";
 
@@ -21,11 +23,31 @@ export function Otel({
 }: {
   traceId: string;
 }) {
+  const { data: traces } = useOtelTraces();
   const { data: spans, isPending, error } = useOtelTrace(traceId);
 
+  const pagination = usePagination({
+    maxIndex: traces?.length ?? 0,
+    traceId,
+    findIndex: (traceId) => {
+      if (!traces) {
+        return undefined;
+      }
+
+      return traces.findIndex((trace) => trace.trace_id === traceId);
+    },
+    getTraceRoute: (index: number) => {
+      if (!traces) {
+        return "";
+      }
+
+      return `/requests/otel/${traces[index].trace_id}`;
+    },
+  });
+
+  // NOTE - Flatten out events into orphan logs to allow the UI to render them
   const orphanLogs = useMemo(() => {
     const orphans: MizuOrphanLog[] = [];
-    // TODO - Flatten out events
     for (const span of spans ?? []) {
       if (span.events) {
         for (const event of span.events) {
@@ -35,7 +57,9 @@ export function Otel({
             if (!Array.isArray(args)) {
               args = [args];
             }
-            orphans.push(convertEventsToOrphanLog(traceId, event));
+            // TODO - Use a more deterministic ID - preferably string that includes the trace+span+event_index
+            const logId = Math.floor(Math.random() * 1000000);
+            orphans.push(convertEventsToOrphanLog(traceId, logId, event));
           }
         }
       }
@@ -43,8 +67,6 @@ export function Otel({
     return orphans;
   }, [spans, traceId]);
 
-  console.log("spans", spans);
-  console.log("orphanLogs", orphanLogs);
   if (error) {
     console.error("Error!", error);
   }
@@ -57,12 +79,25 @@ export function Otel({
     return <EmptyState />;
   }
 
-  return <RequestDetailsPageContentV2 spans={spans} orphanLogs={orphanLogs} />;
+  return (
+    <RequestDetailsPageContentV2
+      spans={spans}
+      orphanLogs={orphanLogs}
+      pagination={pagination}
+    />
+  );
 }
 
-function convertEventsToOrphanLog(traceId: string, event: OtelEvent) {
+/**
+ * Converts an Otel event to a so-called Orphan Log to maintain backwards compatibility with the old Mizu data format
+ */
+function convertEventsToOrphanLog(
+  traceId: string,
+  logId: number,
+  event: OtelEvent,
+) {
   return {
-    id: Math.floor(Math.random() * 1000000),
+    id: logId,
     traceId,
     level: getString(event.attributes.level),
     args: safeParseJson(getString(event.attributes.args)) || [],
