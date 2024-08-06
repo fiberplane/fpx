@@ -62,7 +62,7 @@ function GenericSpan({ span }: { span: OtelSpan }) {
     const attr: Record<string, string> = {};
     for (const key of Object.keys(span.attributes)) {
       const value = span.attributes[key];
-      if ("String" in value) {
+      if ("String" in value || typeof value === "string") {
         attr[key] = getString(value);
       } else {
         attr[key] = getNumber(value).toString();
@@ -71,7 +71,7 @@ function GenericSpan({ span }: { span: OtelSpan }) {
     return attr;
   }, [span]);
 
-  console.log("span", span);
+  console.log("Generic span", span);
   return (
     <div id={span.span_id}>
       <div className="flex flex-col gap-4">

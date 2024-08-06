@@ -109,7 +109,9 @@ export function measure<R, A extends unknown[]>(
   return (...args: A): R => {
     function handleActiveSpan(span: Span): R {
       let shouldEndSpan = true;
+
       let pendingPromiseChain: Promise<R> | undefined;
+
       if (onStart) {
         try {
           onStart(span, args);
@@ -117,6 +119,7 @@ export function measure<R, A extends unknown[]>(
           // swallow error
         }
       }
+
       try {
         const returnValue = fn(...args);
         if (isPromise<R>(returnValue)) {

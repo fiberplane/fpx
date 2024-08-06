@@ -38,6 +38,65 @@ export function headersToObject(headers: PossibleHeaders) {
   return returnObject;
 }
 
+/**
+ * HELPER
+ */
+export async function getRootRequestBodyAndHeaders(request: Request) {
+  let attributes: Attributes = {};
+
+  if (request.body) {
+    const bodyAttr = await formatRootRequestBody(request);
+    if (bodyAttr) {
+      attributes = {
+        ...attributes,
+        ...bodyAttr,
+      };
+    }
+
+    if (request.headers) {
+      const headers = headersToObject(new Headers(request.headers));
+      for (const [key, value] of Object.entries(headers)) {
+        attributes[`http.request.header.${key}`] = value;
+      }
+    }
+  }
+
+  return attributes;
+}
+
+async function formatRootRequestBody(request: Request) {
+  if (!request.body) {
+    return null;
+  }
+
+  const contentType = request.headers.get("content-type");
+
+  const shouldParseAsText =
+    contentType?.includes("application/json") ||
+    contentType?.includes("text/") ||
+    contentType?.includes("x-www-form-urlencoded");
+
+  if (shouldParseAsText) {
+    // Return as text
+    return {
+      [FPX_REQUEST_BODY]: await request.text(),
+    };
+  }
+
+  // TODO - Check how files are handled
+  if (contentType?.includes("multipart/form-data")) {
+    const formData = await request.formData();
+    const textifiedFormData = formDataToJson(formData);
+    return {
+      [FPX_REQUEST_BODY]: textifiedFormData,
+    };
+  }
+
+  return {
+    [FPX_REQUEST_BODY]: formatBody(request.body),
+  };
+}
+
 export function getRequestAttributes(input: InputParam, init?: InitParam) {
   const requestMethod =
     typeof input === "string" || input instanceof URL ? "GET" : input.method;
@@ -99,6 +158,7 @@ function formatBody(body: BodyInit) {
 
   return body;
 }
+
 function formDataToJson(formData: FormData) {
   const jsonObject: Record<string, string | Array<string>> = {};
 
@@ -108,13 +168,21 @@ function formDataToJson(formData: FormData) {
       if (!Array.isArray(jsonObject[key])) {
         jsonObject[key] = [jsonObject[key]];
       }
-      jsonObject[key].push(value);
+      jsonObject[key].push(value ? formDataValueToString(value) : value);
     } else {
-      jsonObject[key] = value;
+      jsonObject[key] = value ? formDataValueToString(value) : value;
     }
   }
 
   return JSON.stringify(jsonObject);
+}
+
+function formDataValueToString(value: string | File) {
+  if (value instanceof File) {
+    return value.name ?? `#fpx.file.{${value.name}}.{${value.size}}`;
+  }
+
+  return value;
 }
 
 async function tryGetResponseBodyAsText(

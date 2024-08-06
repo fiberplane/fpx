@@ -6,6 +6,7 @@ import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
+import { BodyViewerV2 } from "./BodyViewerV2";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
 import {
   getMatchedRoute,
@@ -50,7 +51,10 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
   }, [requestHeaders]);
 
   const requestBody = useMemo<string>(() => {
-    return getRequestBody(span) ?? "";
+    const body = getRequestBody(span);
+    console.log("span", span);
+    console.log("requestBody", body);
+    return body ?? "";
   }, [span]);
 
   const responseHeaders = useMemo<Record<string, string>>(() => {
@@ -127,7 +131,10 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
             <Divider />
             <SubSection>
               <SubSectionHeading>Request Body</SubSectionHeading>
-              <TextOrJsonViewer text={requestBody} />
+              <BodyViewerV2
+                body={requestBody}
+                contentType={requestHeaders["content-type"]}
+              />
             </SubSection>
           </>
         )}
@@ -146,7 +153,10 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
             <Divider />
             <SubSection>
               <SubSectionHeading>Response Body</SubSectionHeading>
-              <TextOrJsonViewer text={responseBody} />
+              <BodyViewerV2
+                body={responseBody}
+                contentType={responseHeaders["content-type"]}
+              />
             </SubSection>
           </>
         )}

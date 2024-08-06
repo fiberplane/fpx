@@ -14,7 +14,11 @@ import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
-import { getRequestAttributes, getResponseAttributes } from "./utils";
+import {
+  getRequestAttributes,
+  getResponseAttributes,
+  getRootRequestBodyAndHeaders,
+} from "./utils";
 
 type FpxConfig = {
   monitor: {
@@ -108,12 +112,42 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
 
           const activeContext = propagateFpxTraceId(request);
 
+          // HACK - Duplicate request to be able to read the body and other metadata
+          //        in the middleware without messing up the original request
+          const clonedRequest = request.clone();
+          const [body1, body2] = clonedRequest.body
+            ? clonedRequest.body.tee()
+            : [null, null];
+
+          // In order to keep `onStart` synchronous (below), we construct
+          // some necessary attributes here
+          const requestForAttributes = new Request(clonedRequest.url, {
+            method: request.method,
+            headers: new Headers(request.headers),
+            body: body1,
+          });
+
+          // Replace the original request's body with the second stream
+          const newRequest = new Request(clonedRequest, {
+            body: body2,
+          });
+
+          // Parse the body and headers for the root request
+          // NOTE - This will add some latency, we shouldn't do this in production
+          const rootRequestAttributes =
+            await getRootRequestBodyAndHeaders(requestForAttributes);
+
           const measuredFetch = measure(
             {
               name: "request",
               spanKind: SpanKind.SERVER,
               onStart: (span, [request]) => {
-                span.setAttributes(getRequestAttributes(request));
+                const requestAttributes = {
+                  ...getRequestAttributes(request),
+                  ...rootRequestAttributes,
+                };
+                console.log("Setting request attributes", requestAttributes);
+                span.setAttributes(requestAttributes);
               },
               onSuccess: async (span, response) => {
                 const attributes = await getResponseAttributes(
@@ -133,7 +167,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
 
           try {
             return await context.with(activeContext, async () => {
-              return await measuredFetch(request, env, proxyExecutionCtx);
+              return await measuredFetch(newRequest, env, proxyExecutionCtx);
             });
           } finally {
             // Make sure all promises are resolved before sending data to the server
