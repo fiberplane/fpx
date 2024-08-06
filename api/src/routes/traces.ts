@@ -24,7 +24,12 @@ app.get("/v1/traces", async (ctx) => {
   const traces = await db
     .select()
     .from(otelTraces)
-    .where(sql`parsed_payload->>'scope_name' = 'fpx-tracer'`)
+    .where(
+      and(
+        sql`parsed_payload->>'scope_name' = 'fpx-tracer'`,
+        sql`parsed_payload->>'name' = 'request'`,
+      ),
+    )
     .orderBy(desc(otelTraces.createdAt));
   return ctx.json(traces);
 });

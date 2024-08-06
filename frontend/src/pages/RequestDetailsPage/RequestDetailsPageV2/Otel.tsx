@@ -1,4 +1,4 @@
-import { MizuOrphanLog } from "@/queries";
+import { MizuOrphanLog, isMizuOrphanLog } from "@/queries";
 import { useOtelTraces } from "@/queries/hotel";
 import { OtelEvent, useOtelTrace } from "@/queries/traces-otel";
 import { useMemo } from "react";
@@ -51,6 +51,7 @@ export function Otel({
     for (const span of spans ?? []) {
       if (span.events) {
         for (const event of span.events) {
+          // TODO - Visualize other types of events on the timeline?
           if (event.name === "log") {
             let args =
               safeParseJson(getString(event.attributes.arguments)) || [];
@@ -59,7 +60,13 @@ export function Otel({
             }
             // TODO - Use a more deterministic ID - preferably string that includes the trace+span+event_index
             const logId = Math.floor(Math.random() * 1000000);
-            orphans.push(convertEventsToOrphanLog(traceId, logId, event));
+            const orphanLog = convertEventToOrphanLoc(traceId, logId, event);
+            // HACK - We want to be sure that we construct a valid orphan log, otherwise the UI will break
+            if (isMizuOrphanLog(orphanLog)) {
+              orphans.push(orphanLog);
+            } else {
+              console.error("Constructed invalid orphan log", orphanLog);
+            }
           }
         }
       }
@@ -91,7 +98,7 @@ export function Otel({
 /**
  * Converts an Otel event to a so-called Orphan Log to maintain backwards compatibility with the old Mizu data format
  */
-function convertEventsToOrphanLog(
+function convertEventToOrphanLoc(
   traceId: string,
   logId: number,
   event: OtelEvent,
