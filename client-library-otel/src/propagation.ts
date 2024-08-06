@@ -10,7 +10,6 @@ export function propagateFpxTraceId(request: Request) {
   //
   // TODO - Validate the id here using an otel helper, and warn if it is invalid
   const traceId = request.headers.get("x-fpx-trace-id");
-  console.log("FPX traceId", traceId);
 
   let activeContext = context.active();
   if (traceId) {

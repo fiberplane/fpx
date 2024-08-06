@@ -146,7 +146,6 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
                   ...getRequestAttributes(request),
                   ...rootRequestAttributes,
                 };
-                console.log("Setting request attributes", requestAttributes);
                 span.setAttributes(requestAttributes);
               },
               onSuccess: async (span, response) => {

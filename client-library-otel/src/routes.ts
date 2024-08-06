@@ -39,9 +39,9 @@ export function respondWithRoutes(
       },
       body: JSON.stringify({ routes }),
     });
-  } catch (e) {
+  } catch (_e) {
     // TODO - Use a logger, or only log if library debugging is enabled
-    console.error("Error sending routes to FPX", e);
+    // console.error("Error sending routes to FPX", e);
   }
 
   return new Response("OK");
