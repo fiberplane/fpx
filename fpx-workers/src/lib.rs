@@ -1,6 +1,7 @@
 use data::D1Store;
 use fpx_lib::events::ServerEvents;
 use fpx_lib::{api, service};
+use std::sync::Arc;
 use tower_service::Service;
 use tracing_subscriber::fmt::format::Pretty;
 use tracing_subscriber::fmt::time::UtcTime;
@@ -35,10 +36,11 @@ async fn fetch(
     let d1_database = env.d1("DB").expect("unable to create a database");
 
     let store = D1Store::new(d1_database);
+    let boxed_store = Arc::new(store);
     let events = ServerEvents::new();
 
-    let service = service::Service::new(store.clone(), events.clone());
-    let mut router = api::create_api(events, service, store);
+    let service = service::Service::new(boxed_store.clone(), events.clone());
+    let mut router = api::create_api(events, service, boxed_store);
 
     Ok(router.call(req).await?)
 }

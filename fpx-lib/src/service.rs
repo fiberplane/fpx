@@ -1,5 +1,5 @@
 use crate::api::models::{Span, SpanAdded};
-use crate::data::{DbError, Store};
+use crate::data::{BoxedStore, DbError};
 use crate::events::ServerEvents;
 use anyhow::Result;
 use opentelemetry_proto::tonic::collector::trace::v1::{
@@ -14,19 +14,13 @@ use thiserror::Error;
 /// used by the gRPC and HTTP API. Luckily the models used by both APIs are the
 /// same, so we don't have to define an extra model for the Service API.
 #[derive(Clone)]
-pub struct Service<S>
-where
-    S: Store,
-{
-    store: S,
+pub struct Service {
+    store: BoxedStore,
     events: ServerEvents,
 }
 
-impl<S> Service<S>
-where
-    S: Store,
-{
-    pub fn new(store: S, events: ServerEvents) -> Self {
+impl Service {
+    pub fn new(store: BoxedStore, events: ServerEvents) -> Self {
         Self { store, events }
     }
 

@@ -6,7 +6,6 @@ use wasm_bindgen::JsValue;
 use worker::send::SendFuture;
 use worker::D1Database;
 
-#[derive(Clone)]
 pub struct D1Store {
     database: Arc<D1Database>,
 }

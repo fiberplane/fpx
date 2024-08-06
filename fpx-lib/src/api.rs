@@ -1,4 +1,4 @@
-use crate::data::Store;
+use crate::data::BoxedStore;
 use crate::events::ServerEvents;
 use crate::service::Service;
 use axum::extract::FromRef;
@@ -7,9 +7,12 @@ use http::StatusCode;
 use std::path::PathBuf;
 use url::Url;
 
+// pub mod client;
 pub mod errors;
 pub mod handlers;
 pub mod models;
+// mod studio;
+// mod ws;
 
 #[allow(dead_code)]
 pub struct Config {
@@ -22,38 +25,26 @@ pub struct Config {
 }
 
 #[derive(Clone)]
-pub struct ApiState<S>
-where
-    S: Store + Clone,
-{
+pub struct ApiState {
     _events: ServerEvents,
-    service: Service<S>,
-    store: S,
+    service: Service,
+    store: BoxedStore,
 }
 
-// impl<S> FromRef<ApiState<S>> for S
-// where
-//     S: Store + Clone,
-// {
-//     fn from_ref(state: &ApiState<S>) -> Self {
-//         state.store.clone()
-//     }
-// }
+impl FromRef<ApiState> for BoxedStore {
+    fn from_ref(state: &ApiState) -> Self {
+        state.store.clone()
+    }
+}
 
-impl<S> FromRef<ApiState<S>> for Service<S>
-where
-    S: Store + Clone,
-{
-    fn from_ref(state: &ApiState<S>) -> Self {
+impl FromRef<ApiState> for Service {
+    fn from_ref(state: &ApiState) -> Self {
         state.service.clone()
     }
 }
 
 /// Create a API and expose it through a axum router.
-pub fn create_api<S>(events: ServerEvents, service: Service<S>, store: S) -> axum::Router
-where
-    S: Store + Clone + 'static,
-{
+pub fn create_api(events: ServerEvents, service: Service, store: BoxedStore) -> axum::Router {
     let api_state = ApiState {
         _events: events,
         service,

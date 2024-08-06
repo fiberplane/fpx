@@ -1,4 +1,3 @@
-use crate::data::Store;
 use crate::service::Service;
 use async_trait::async_trait;
 use axum::extract::{FromRequest, Request, State};
@@ -18,14 +17,11 @@ use tracing::error;
 /// Note: this returns a [`Result`] with both of them being a
 /// [`impl IntoResponse`] since this way we can support the [`?`] operator. We
 #[tracing::instrument(skip_all)]
-pub async fn trace_collector_handler<S>(
-    State(service): State<Service<S>>,
+pub async fn trace_collector_handler(
+    State(service): State<Service>,
     headers: HeaderMap,
     JsonOrProtobuf(payload): JsonOrProtobuf<ExportTraceServiceRequest>,
-) -> Result<impl IntoResponse, impl IntoResponse>
-where
-    S: Store + Clone,
-{
+) -> Result<impl IntoResponse, impl IntoResponse> {
     let response = service.ingest_export(payload).await.map_err(|err| {
         error!(?err, "failed to ingest export");
         StatusCode::INTERNAL_SERVER_ERROR.into_response()
