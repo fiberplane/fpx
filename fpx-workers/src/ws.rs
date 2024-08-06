@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use worker::*;
 
 /// Based on:
@@ -26,7 +26,7 @@ impl DurableObject for WebSocketHibernationServer {
 
         Router::with_data(self)
             .get_async("/connect", websocket_connect)
-            .get_async("/broadcast", websocket_broadcast)
+            .post_async("/broadcast", websocket_broadcast)
             .run(req, env)
             .await
     }
@@ -43,22 +43,24 @@ async fn websocket_connect(
 
     ctx.data.connections.push(server);
 
-    let resp = Response::from_websocket(client)?;
+    let res = Response::from_websocket(client)?;
 
-    Ok(resp)
+    Ok(res)
 }
 
-#[derive(Serialize)]
-enum Payload {
-    SomeValue,
+#[derive(Deserialize, Serialize)]
+pub struct BroadcastPayload {
+    pub message: String,
 }
 
 async fn websocket_broadcast(
-    _req: Request,
+    mut req: Request,
     ctx: RouteContext<&mut WebSocketHibernationServer>,
 ) -> Result<Response> {
+    let payload = req.json::<BroadcastPayload>().await?;
+
     for client in ctx.data.connections.iter_mut() {
-        client.send(&Payload::SomeValue)?;
+        client.send(&payload)?;
     }
 
     Response::ok("ok")

@@ -45,27 +45,36 @@ async fn fetch(
                 ));
             }
 
-            let ws = env.durable_object("WEBSOCKET_HIBERNATION_SERVER")?;
-            let stub = ws.id_from_name("ws")?.get_stub()?;
-
             let mut request =
                 worker::Request::new("http://fake-host/connect", worker::Method::Get)?;
 
             request.headers_mut()?.set("Upgrade", "websocket")?;
 
-            let response: axum::response::Response = stub.fetch_with_request(request).await?.into();
+            let response: axum::response::Response = get_ws_server(env)?
+                .fetch_with_request(request)
+                .await?
+                .into();
 
             return Ok(response);
         }
     }
+    // Should move into the router
+    if req.uri().to_string().ends_with("/api/ws/broadcast")
+        && req.method() == axum::http::Method::POST
+    {
+        let body = req.into_body();
 
-    if req.uri().to_string().ends_with("/api/ws/broadcast") {
-        let ws = env.durable_object("WEBSOCKET_HIBERNATION_SERVER")?;
-        let stub = ws.id_from_name("ws")?.get_stub()?;
+        let request = axum::http::Request::builder()
+            .uri("http://fake-host/broadcast")
+            .method("POST")
+            .body(body)?;
 
-        let request = worker::Request::new("http://fake-host/broadcast", worker::Method::Get)?;
+        let request = worker::Request::try_from(request)?;
 
-        let response: axum::response::Response = stub.fetch_with_request(request).await?.into();
+        let response: axum::response::Response = get_ws_server(env)?
+            .fetch_with_request(request)
+            .await?
+            .into();
 
         return Ok(response);
     }
@@ -78,4 +87,11 @@ async fn fetch(
     let mut router = api::create_api(events, service, boxed_store);
 
     Ok(router.call(req).await?)
+}
+
+fn get_ws_server(env: Env) -> Result<Stub> {
+    let ws = env.durable_object("WEBSOCKET_HIBERNATION_SERVER")?;
+    let stub = ws.id_from_name("ws")?.get_stub()?;
+
+    Ok(stub)
 }
