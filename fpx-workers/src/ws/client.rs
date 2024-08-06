@@ -1,5 +1,6 @@
 use super::worker::BroadcastPayload;
 use std::sync::Arc;
+use wasm_bindgen_futures::wasm_bindgen::JsValue;
 use worker::*;
 
 pub struct WebSocketWorkerClient {
@@ -27,13 +28,19 @@ impl WebSocketWorkerClient {
     pub async fn broadcast(&self, payload: BroadcastPayload) -> Response {
         let payload = serde_json::to_string(&payload).unwrap();
 
-        let req = axum::http::Request::builder()
-            .uri("http://fake-host/broadcast")
-            .method("POST")
-            .body(payload)
-            .unwrap();
+        let payload = JsValue::try_from(payload).unwrap();
 
-        let req = Request::try_from(req).unwrap();
+        let req = Request::new_with_init(
+            "http://fake-host/broadcast",
+            &RequestInit {
+                body: Some(payload),
+                headers: Headers::new(),
+                cf: CfProperties::new(),
+                method: Method::Post,
+                redirect: RequestRedirect::Manual,
+            },
+        )
+        .unwrap();
 
         self.stub.fetch_with_request(req).await.unwrap()
     }
