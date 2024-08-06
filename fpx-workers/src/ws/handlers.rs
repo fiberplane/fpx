@@ -13,7 +13,6 @@ pub struct WorkerApiState {
     pub env: Arc<Env>,
 }
 
-#[axum::debug_handler]
 #[worker::send]
 pub async fn ws_connect(
     State(state): State<WorkerApiState>,
@@ -33,7 +32,6 @@ pub async fn ws_connect(
         .unwrap()
 }
 
-#[axum::debug_handler]
 #[worker::send]
 pub async fn ws_broadcast(
     State(state): State<WorkerApiState>,
