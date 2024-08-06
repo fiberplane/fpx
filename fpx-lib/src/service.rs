@@ -5,6 +5,7 @@ use anyhow::Result;
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
 };
+use std::sync::Arc;
 use thiserror::Error;
 use tracing::info;
 
@@ -17,11 +18,11 @@ use tracing::info;
 #[derive(Clone)]
 pub struct Service {
     store: BoxedStore,
-    events: ServerEvents,
+    events: Arc<dyn ServerEvents>,
 }
 
 impl Service {
-    pub fn new(store: BoxedStore, events: ServerEvents) -> Self {
+    pub fn new(store: BoxedStore, events: Arc<dyn ServerEvents>) -> Self {
         Self { store, events }
     }
 
@@ -48,7 +49,9 @@ impl Service {
 
         info!(?trace_ids, "something");
 
-        self.events.broadcast(SpanAdded::new(trace_ids).into());
+        self.events
+            .broadcast(SpanAdded::new(trace_ids).into())
+            .await;
 
         Ok(ExportTraceServiceResponse {
             partial_success: None,

@@ -1,4 +1,4 @@
-use super::worker::BroadcastPayload;
+use fpx_lib::api::models::ServerMessage;
 use std::sync::Arc;
 use wasm_bindgen_futures::wasm_bindgen::JsValue;
 use worker::*;
@@ -8,7 +8,7 @@ pub struct WebSocketWorkerClient {
 }
 
 impl WebSocketWorkerClient {
-    pub fn new(env: Arc<Env>) -> Self {
+    pub fn new(env: &Arc<Env>) -> Self {
         let stub = get_ws_durable_object(env).unwrap();
 
         Self { stub }
@@ -22,7 +22,7 @@ impl WebSocketWorkerClient {
         self.stub.fetch_with_request(req).await
     }
 
-    pub async fn broadcast(&self, payload: BroadcastPayload) -> Result<Response> {
+    pub async fn broadcast(&self, payload: ServerMessage) -> Result<Response> {
         let serialized = serde_json::to_string(&payload)?;
 
         let payload = JsValue::try_from(serialized)?;
@@ -42,7 +42,7 @@ impl WebSocketWorkerClient {
     }
 }
 
-fn get_ws_durable_object(env: Arc<Env>) -> Result<Stub> {
+fn get_ws_durable_object(env: &Arc<Env>) -> Result<Stub> {
     let ws = env.durable_object("WEBSOCKET_HIBERNATION_SERVER")?;
     let stub = ws.id_from_name("ws")?.get_stub()?;
 

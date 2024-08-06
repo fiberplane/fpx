@@ -5,6 +5,7 @@ use axum::extract::FromRef;
 use axum::routing::{get, post};
 use http::StatusCode;
 use std::path::PathBuf;
+use std::sync::Arc;
 use url::Url;
 
 // pub mod client;
@@ -26,7 +27,7 @@ pub struct Config {
 
 #[derive(Clone)]
 pub struct ApiState {
-    _events: ServerEvents,
+    _events: Arc<dyn ServerEvents>,
     service: Service,
     store: BoxedStore,
 }
@@ -44,7 +45,11 @@ impl FromRef<ApiState> for Service {
 }
 
 /// Create a API and expose it through a axum router.
-pub fn create_api(events: ServerEvents, service: Service, store: BoxedStore) -> axum::Router {
+pub fn create_api(
+    events: Arc<dyn ServerEvents>,
+    service: Service,
+    store: BoxedStore,
+) -> axum::Router {
     let api_state = ApiState {
         _events: events,
         service,

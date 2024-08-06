@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use fpx_lib::api::models::ServerMessage;
 use worker::*;
 
 /// Based on:
@@ -48,16 +48,11 @@ async fn ws_connect(
     Ok(res)
 }
 
-#[derive(Deserialize, Serialize)]
-pub struct BroadcastPayload {
-    pub message: String,
-}
-
 async fn ws_broadcast(
     mut req: Request,
     ctx: RouteContext<&mut WebSocketHibernationServer>,
 ) -> Result<Response> {
-    let payload = req.json::<BroadcastPayload>().await?;
+    let payload = req.json::<ServerMessage>().await?;
 
     for client in ctx.data.connections.iter_mut() {
         client.send(&payload)?;

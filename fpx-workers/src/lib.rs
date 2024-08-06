@@ -1,6 +1,6 @@
-mod ws;
-
+use axum::async_trait;
 use axum::routing::{get, post};
+use fpx_lib::api::models::ServerMessage;
 use fpx_lib::data::fake_store::FakeStore;
 use fpx_lib::events::ServerEvents;
 use fpx_lib::{api, service};
@@ -10,8 +10,12 @@ use tracing_subscriber::fmt::format::Pretty;
 use tracing_subscriber::fmt::time::UtcTime;
 use tracing_subscriber::prelude::*;
 use tracing_web::{performance_layer, MakeConsoleWriter};
+use worker::send::SendFuture;
 use worker::*;
+use ws::client::WebSocketWorkerClient;
 use ws::handlers::{ws_broadcast, ws_connect, WorkerApiState};
+
+mod ws;
 
 static FAKE_STORE: LazyLock<FakeStore> = LazyLock::new(FakeStore::default);
 
@@ -37,11 +41,15 @@ async fn fetch(
 ) -> Result<axum::http::Response<axum::body::Body>> {
     console_error_panic_hook::set_once();
 
-    let state = WorkerApiState { env: Arc::new(env) };
+    let env = Arc::new(env);
+
+    let new_events = DurableObjectsEvents::new(env.clone());
+    let events = Arc::new(new_events);
+
+    let state = WorkerApiState { env };
 
     let store = FAKE_STORE.clone();
     let boxed_store = Arc::new(store);
-    let events = ServerEvents::new();
 
     let service = service::Service::new(boxed_store.clone(), events.clone());
     let api_router = api::create_api(events, service, boxed_store);
@@ -53,4 +61,28 @@ async fn fetch(
         .nest_service("/", api_router);
 
     Ok(router.call(req).await?)
+}
+
+#[derive(Clone)]
+struct DurableObjectsEvents {
+    env: Arc<Env>,
+}
+
+impl DurableObjectsEvents {
+    fn new(env: Arc<Env>) -> Self {
+        Self { env }
+    }
+}
+
+#[async_trait]
+impl ServerEvents for DurableObjectsEvents {
+    async fn broadcast(&self, msg: ServerMessage) {
+        SendFuture::new(async {
+            WebSocketWorkerClient::new(&self.env)
+                .broadcast(msg)
+                .await
+                .unwrap();
+        })
+        .await
+    }
 }
