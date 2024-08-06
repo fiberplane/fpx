@@ -1,8 +1,9 @@
+mod ws;
+
 use axum::routing::{get, post};
 use fpx_lib::data::fake_store::FakeStore;
 use fpx_lib::events::ServerEvents;
 use fpx_lib::{api, service};
-use handlers::WorkerApiState;
 use std::sync::{Arc, LazyLock};
 use tower_service::Service;
 use tracing_subscriber::fmt::format::Pretty;
@@ -10,8 +11,7 @@ use tracing_subscriber::fmt::time::UtcTime;
 use tracing_subscriber::prelude::*;
 use tracing_web::{performance_layer, MakeConsoleWriter};
 use worker::*;
-mod handlers;
-mod ws;
+use ws::handlers::{ws_broadcast, ws_connect, WorkerApiState};
 
 static FAKE_STORE: LazyLock<FakeStore> = LazyLock::new(FakeStore::default);
 
@@ -47,8 +47,8 @@ async fn fetch(
     let api_router = api::create_api(events, service, boxed_store);
 
     let mut router: axum::Router = axum::Router::new()
-        .route("/api/ws", get(handlers::ws::ws_connect))
-        .route("/api/ws/broadcast", post(handlers::ws::ws_broadcast))
+        .route("/api/ws", get(ws_connect))
+        .route("/api/ws/broadcast", post(ws_broadcast))
         .with_state(state)
         .nest_service("/", api_router);
 
