@@ -14,21 +14,18 @@ impl WebSocketWorkerClient {
         Self { stub }
     }
 
-    pub async fn connect(&self) -> Response {
-        let mut req = Request::new("http://fake-host/connect", Method::Get).unwrap();
+    pub async fn connect(&self) -> Result<Response> {
+        let mut req = Request::new("http://fake-host/connect", Method::Get)?;
 
-        req.headers_mut()
-            .unwrap()
-            .set("Upgrade", "websocket")
-            .unwrap();
+        req.headers_mut()?.set("Upgrade", "websocket")?;
 
-        self.stub.fetch_with_request(req).await.unwrap()
+        self.stub.fetch_with_request(req).await
     }
 
-    pub async fn broadcast(&self, payload: BroadcastPayload) -> Response {
-        let payload = serde_json::to_string(&payload).unwrap();
+    pub async fn broadcast(&self, payload: BroadcastPayload) -> Result<Response> {
+        let serialized = serde_json::to_string(&payload)?;
 
-        let payload = JsValue::try_from(payload).unwrap();
+        let payload = JsValue::try_from(serialized)?;
 
         let req = Request::new_with_init(
             "http://fake-host/broadcast",
@@ -39,10 +36,9 @@ impl WebSocketWorkerClient {
                 method: Method::Post,
                 redirect: RequestRedirect::Manual,
             },
-        )
-        .unwrap();
+        )?;
 
-        self.stub.fetch_with_request(req).await.unwrap()
+        self.stub.fetch_with_request(req).await
     }
 }
 

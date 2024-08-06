@@ -3,7 +3,7 @@ use crate::ws::worker::BroadcastPayload;
 use axum::body::Body;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
-use axum::response::{IntoResponse, Response};
+use axum::response::Response;
 use axum::Json;
 use std::sync::Arc;
 use worker::Env;
@@ -14,15 +14,14 @@ pub struct WorkerApiState {
 }
 
 #[worker::send]
-pub async fn ws_connect(
-    State(state): State<WorkerApiState>,
-    headers: HeaderMap,
-) -> impl IntoResponse {
+pub async fn ws_connect(State(state): State<WorkerApiState>, headers: HeaderMap) -> Response<Body> {
     if let Some(value) = headers.get("Upgrade") {
         if value == "websocket" {
-            let res: Response<_> = WebSocketWorkerClient::new(state.env).connect().await.into();
-
-            return res;
+            return WebSocketWorkerClient::new(state.env)
+                .connect()
+                .await
+                .unwrap()
+                .into();
         }
     }
 
@@ -36,11 +35,10 @@ pub async fn ws_connect(
 pub async fn ws_broadcast(
     State(state): State<WorkerApiState>,
     Json(payload): Json<BroadcastPayload>,
-) -> impl IntoResponse {
-    let res: Response<_> = WebSocketWorkerClient::new(state.env)
+) -> Response<Body> {
+    WebSocketWorkerClient::new(state.env)
         .broadcast(payload)
         .await
-        .into();
-
-    return res;
+        .unwrap()
+        .into()
 }
