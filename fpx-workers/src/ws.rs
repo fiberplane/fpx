@@ -25,14 +25,14 @@ impl DurableObject for WebSocketHibernationServer {
         let env = self.env.clone();
 
         Router::with_data(self)
-            .get_async("/connect", websocket_connect)
-            .post_async("/broadcast", websocket_broadcast)
+            .get_async("/connect", ws_connect)
+            .post_async("/broadcast", ws_broadcast)
             .run(req, env)
             .await
     }
 }
 
-async fn websocket_connect(
+async fn ws_connect(
     _req: Request,
     ctx: RouteContext<&mut WebSocketHibernationServer>,
 ) -> Result<Response> {
@@ -53,7 +53,7 @@ pub struct BroadcastPayload {
     pub message: String,
 }
 
-async fn websocket_broadcast(
+async fn ws_broadcast(
     mut req: Request,
     ctx: RouteContext<&mut WebSocketHibernationServer>,
 ) -> Result<Response> {
