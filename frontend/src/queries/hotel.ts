@@ -20,7 +20,10 @@ export function useOtelTraces() {
   });
 }
 
-function toOtelSpan(t: unknown, rawPayload: unknown): OtelSpan | null {
+function toOtelSpan(
+  t: unknown,
+  rawPayload: unknown,
+): (OtelSpan & { rawPayload: unknown }) | null {
   const result = OtelSpanSchema.safeParse(t);
   if (!result.success) {
     console.error("OtelSpanSchema parse error:", result.error.format());

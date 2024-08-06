@@ -39,7 +39,7 @@ export function getString<T = string>(
     return value;
   }
 
-  if (value && "String" in value) {
+  if (value && typeof value === "object" && "String" in value) {
     return value.String;
   }
 
@@ -57,7 +57,7 @@ export function getNumber<T = number>(
     return value;
   }
 
-  if (value && "Int" in value) {
+  if (value && typeof value === "object" && "Int" in value) {
     return value.Int;
   }
 

@@ -63,7 +63,9 @@ function GenericSpan({ span }: { span: OtelSpan }) {
     const attr: Record<string, string> = {};
     for (const key of Object.keys(span.attributes)) {
       const value = span.attributes[key];
-      if ("String" in value || typeof value === "string") {
+      const isString = typeof value === "string";
+      const isObject = !!value && typeof value === "object";
+      if (isString || (isObject && "String" in value)) {
         attr[key] = getString(value);
       } else {
         attr[key] = getNumber(value).toString();

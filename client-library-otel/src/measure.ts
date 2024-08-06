@@ -1,6 +1,5 @@
 import {
   type Attributes,
-  Context,
   type Exception,
   type Span,
   type SpanKind,

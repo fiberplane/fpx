@@ -4,7 +4,6 @@ import { OtelSpan } from "@/queries";
 import { cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
-import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
 import { BodyViewerV2 } from "./BodyViewerV2";
 import { KeyValueTableV2 } from "./KeyValueTableV2";

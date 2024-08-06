@@ -1,4 +1,4 @@
-import type { ExecutionContext, Hono } from "hono";
+import type { Hono } from "hono";
 
 type FetchFn = typeof fetch;
 

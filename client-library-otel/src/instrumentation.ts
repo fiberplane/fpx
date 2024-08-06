@@ -1,4 +1,4 @@
-import { SpanKind, context, propagation } from "@opentelemetry/api";
+import { SpanKind, context } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { Resource } from "@opentelemetry/resources";
 import {
