@@ -30,6 +30,9 @@ export function TraceDetailsV2({
         if (isMizuOrphanLog(item)) {
           return <OrphanLog log={item} key={item.id} />;
         }
+        if (!item?.span?.span_id) {
+          debugger;
+        }
         return (
           <SpanDetails
             key={item.span.span_id}
