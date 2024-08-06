@@ -151,8 +151,8 @@ async function getFpxPort() {
  * if we can determine the env file to update.
  */
 async function updateEnvFileWithFpxEndpoint(fpxPort) {
-  const LOCALHOST_ENDPOINT = `http://localhost:${fpxPort}/v0/logs`;
-  const DOCKER_ENDPOINT = `http://host.docker.internal:${fpxPort}/v0/logs`;
+  const LOCALHOST_ENDPOINT = `http://localhost:${fpxPort}/v1/traces`;
+  const DOCKER_ENDPOINT = `http://host.docker.internal:${fpxPort}/v1/traces`;
   const expectedFpxEndpoints = [LOCALHOST_ENDPOINT, DOCKER_ENDPOINT];
 
   if (shouldCreateDevVarsFile()) {
