@@ -2,8 +2,20 @@ import type { Context } from "hono";
 import { safeParseJson } from "../../lib/utils.js";
 import logger from "../../logger.js";
 
-async function serializeRequestBodyForFpxDb(ctx: Context) {
+export type SerializedFile = {
+  name: string;
+  type: string;
+  size: number;
+};
+
+/**
+ * Helper that serializes the request body into a format that can be stored in the database
+ *
+ * This will *not* store binary data, for example, like File objects
+ */
+export async function serializeRequestBodyForFpxDb(ctx: Context) {
   const contentType = ctx.req.header("content-type");
+  const requestMethod = ctx.req.method;
   let requestBody:
     | null
     | string
@@ -48,4 +60,24 @@ async function serializeRequestBodyForFpxDb(ctx: Context) {
   }
 
   return requestBody;
+}
+
+
+
+
+function serializeFile(file: File): SerializedFile {
+  return {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+  };
+}
+
+function serializeFormDataValue(
+  value: FormDataEntryValue,
+): string | SerializedFile {
+  if (value instanceof File) {
+    return serializeFile(value);
+  }
+  return value;
 }
