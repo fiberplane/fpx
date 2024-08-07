@@ -9,11 +9,11 @@ import {
   appResponses,
   appRoutes,
   appRoutesInsertSchema,
-} from "../db/schema/index.js";
+} from "../db/schema.js";
 import {
   type SerializedFile,
   serializeRequestBodyForFpxDb,
-} from "../db/schema/requests-responses.js";
+} from "../lib/utils.js";
 import {
   executeProxyRequest,
   handleFailedRequest,

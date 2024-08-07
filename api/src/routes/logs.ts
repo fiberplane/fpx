@@ -6,8 +6,8 @@ import { cors } from "hono/cors";
 import { SourceMapConsumer } from "source-map";
 import { z } from "zod";
 
-import * as schema from "../db/schema/index.js";
-import { appRoutes } from "../db/schema/index.js";
+import * as schema from "../db/schema.js";
+import { appRoutes } from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import { tryParseJsonObjectMessage } from "../lib/utils.js";
 

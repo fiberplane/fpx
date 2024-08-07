@@ -6,8 +6,8 @@ import { env } from "hono/adapter";
 import { cors } from "hono/cors";
 import { Octokit } from "octokit";
 import { z } from "zod";
-import { githubIssues, newGithubIssueSchema } from "../db/schema/index.js";
-import * as schema from "../db/schema/index.js";
+import { githubIssues, newGithubIssueSchema } from "../db/schema.js";
+import * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();

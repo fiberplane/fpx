@@ -3,11 +3,11 @@ import {
   type NewAppRequest,
   appResponseInsertSchema,
   appResponses,
-} from "../../db/schema/index.js";
+} from "../../db/schema.js";
 import logger from "../../logger.js";
 
 import { z } from "zod";
-import type * as schema from "../../db/schema/index.js";
+import type * as schema from "../../db/schema.js";
 import { errorToJson, safeReadTextBody } from "../utils.js";
 
 type RequestIdType = schema.AppResponse["requestId"];

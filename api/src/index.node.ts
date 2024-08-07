@@ -8,7 +8,7 @@ import figlet from "figlet";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
 import { DEFAULT_DATABASE_URL } from "./constants.js";
-import * as schema from "./db/schema/index.js";
+import * as schema from "./db/schema.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
 import { connectToWebhonc } from "./lib/webhonc/index.js";

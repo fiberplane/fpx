@@ -3,7 +3,7 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { WsMessageSchema } from "fpx-shared";
 import WebSocket from "ws";
 import type { z } from "zod";
-import * as schema from "../../db/schema/index.js";
+import * as schema from "../../db/schema.js";
 import logger from "../../logger.js";
 import { resolveServiceArg } from "../../probe-routes.js";
 import {

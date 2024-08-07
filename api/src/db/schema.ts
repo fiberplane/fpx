@@ -1,16 +1,8 @@
 import type { Endpoints } from "@octokit/types";
 import { relations, sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-
-export {
-  appRoutes,
-  appRoutesInsertSchema,
-  appRoutesSelectSchema,
-  type AppRoute,
-  type NewAppRoute,
-} from "./app-routes.js";
 
 // TYPES
 // These are helper types from Octokit, which are used in the `githubIssues` table
@@ -19,12 +11,54 @@ type OctokitResponseGithubIssues =
 
 type OctokitGithubIssue = OctokitResponseGithubIssues["data"][number];
 
-// 1. get a request from the client: url, method, headers, body
-// 2. construct the request object and persist it
-// 3. we need to forward that request to our app server
-// 4. get a response from the app server including the traceId
-// 5. construct the response object and persist it
-// 6. we need to forward that response to the client
+
+export const appRoutes = sqliteTable(
+  "app_routes",
+  {
+    path: text("path", { mode: "text" }),
+    method: text("method", { mode: "text" }),
+    // The text of the function serving the request
+    handler: text("handler", { mode: "text" }),
+    // In practice, handler_type is either "route" or "middleware" - I didn't feel like defining an enum
+    handlerType: text("handler_type", { mode: "text" }),
+    // A flag that indicates if this route is currently registered or the result of an old probe
+    currentlyRegistered: integer("currentlyRegistered", {
+      mode: "boolean",
+    }).default(false),
+    // A flag for route type that indicated if the route was added manually by user or by probe
+    routeOrigin: text("route_origin", {
+      mode: "text",
+      enum: ["discovered", "custom", "open_api"],
+    }).default("discovered"),
+    // serialized OpenAPI spec for AI prompting
+    openApiSpec: text("openapi_spec", { mode: "text" }),
+    requestType: text("request_type", {
+      mode: "text",
+      enum: ["http", "websocket"],
+    }).default("http"),
+  },
+  (table) => {
+    return {
+      id: primaryKey({
+        name: "id",
+        columns: [
+          table.method,
+          table.path,
+          table.handlerType,
+          table.routeOrigin,
+        ],
+      }),
+    };
+  },
+);
+
+export const appRoutesSelectSchema = createSelectSchema(appRoutes);
+export const appRoutesInsertSchema = createInsertSchema(appRoutes);
+
+export type AppRoute = z.infer<typeof appRoutesSelectSchema>;
+export type NewAppRoute = z.infer<typeof appRoutesInsertSchema>;
+
+
 
 export const appRequests = sqliteTable("app_requests", {
   id: integer("id", { mode: "number" }).primaryKey(),
@@ -117,6 +151,7 @@ export const appResponseInsertSchema = createInsertSchema(appResponses);
 
 export type AppResponse = z.infer<typeof appResponseSelectSchema>;
 export type NewAppResponse = z.infer<typeof appResponseInsertSchema>;
+
 
 // HELPFUL: https://orm.drizzle.team/docs/column-types/sqlite
 export const mizuLogs = sqliteTable("mizu_logs", {

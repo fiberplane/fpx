@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { logger as honoLogger } from "hono/logger";
 import type { WebSocket } from "ws";
 
-import type * as schema from "./db/schema/index.js";
+import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
 import logger from "./logger.js";
 import appRoutes from "./routes/app-routes.js";
