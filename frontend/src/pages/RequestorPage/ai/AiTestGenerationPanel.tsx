@@ -1,29 +1,58 @@
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CopyIcon, Cross1Icon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { parsePathFromRequestUrl } from "@/utils";
+import {
+  CopyIcon,
+  Cross1Icon,
+  ExclamationTriangleIcon,
+} from "@radix-ui/react-icons";
+import { useMemo, useState } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import { Requestornator } from "../queries";
+import { ProbedRoute, Requestornator } from "../queries";
+import { findMatchedRoute } from "../routes";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { useCopyToClipboard, usePrompt } from "./ai-test-generation";
 
 export function AiTestGenerationPanel({
   history,
   toggleAiTestGenerationPanel,
+  getActiveRoute,
 }: {
   history: Array<Requestornator>;
   toggleAiTestGenerationPanel: () => void;
+  getActiveRoute: () => ProbedRoute;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
-  const lastRequest = history[0];
+
+  const lastMatchingRequest = useMemo<Requestornator | null>(() => {
+    const activeRoute = getActiveRoute();
+    const match = history.find((response) => {
+      const path = parsePathFromRequestUrl(response.app_requests?.requestUrl);
+
+      if (path === null) {
+        return false;
+      }
+
+      const match = findMatchedRoute(
+        [activeRoute],
+        path,
+        activeRoute.method,
+        activeRoute.requestType,
+      );
+
+      return !!match;
+    });
+
+    return match ?? null;
+  }, [getActiveRoute, history]);
 
   const [userInput, setUserInput] = useState("");
 
-  const prompt = usePrompt(lastRequest, userInput);
+  const prompt = usePrompt(lastMatchingRequest, userInput);
 
   return (
-    <div className="overflow-hidden h-full relative border-l">
+    <div className="overflow-hidden h-full relative border-l xl:max-w-[380px]">
       <Tabs defaultValue="ai-prompt">
         <CustomTabsList>
           <CustomTabTrigger value="ai-prompt">AI Prompt</CustomTabTrigger>
@@ -34,7 +63,7 @@ export function AiTestGenerationPanel({
               size="icon"
               onClick={toggleAiTestGenerationPanel}
             >
-              <Cross1Icon className="h-4 w-4 cursor-pointer" />
+              <Cross1Icon className="h-3.5 w-3.5 cursor-pointer" />
             </Button>
           </div>
         </CustomTabsList>
@@ -49,7 +78,14 @@ export function AiTestGenerationPanel({
             <div className="mt-2">
               <div className="">
                 <div className="text-sm text-gray-200">Context</div>
-                <ContextEntry response={lastRequest} />
+                {lastMatchingRequest ? (
+                  <ContextEntry response={lastMatchingRequest} />
+                ) : (
+                  <div className="text-sm text-muted-foreground py-2 rounded border px-3 mt-2 flex items-center gap-2">
+                    <ExclamationTriangleIcon className="h-4 w-4 mr-2" /> No
+                    matching request context found
+                  </div>
+                )}
               </div>
               <div className="mt-4">
                 <div className="text-sm text-gray-200">Description</div>

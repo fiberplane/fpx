@@ -267,7 +267,8 @@ export const RequestorPage = () => {
             BACKGROUND_LAYER,
             "grid",
             isAiTestGenerationPanelOpen
-              ? "sm:grid-cols-[auto_1fr_auto]"
+              ? // TODO - auto_auto_auto would be ideal but the resizability of the query panel messes things up
+                "sm:grid-cols-[auto_1fr_auto]"
               : "sm:grid-cols-[auto_1fr]",
             "rounded-md",
             "border",
@@ -320,6 +321,7 @@ export const RequestorPage = () => {
               // TODO - Only use history for recent matching route
               history={history}
               toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
+              getActiveRoute={getActiveRoute}
             />
           )}
         </div>

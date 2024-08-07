@@ -28,7 +28,10 @@ function createResponseDescription(response: Requestornator) {
   return appResponseToHttpRequest(response);
 }
 
-export function usePrompt(latestRequest: Requestornator, userInput: string) {
+export function usePrompt(
+  latestRequest: Requestornator | null,
+  userInput: string,
+) {
   const traceId = latestRequest?.app_responses?.traceId;
   const { trace } = useTrace(traceId);
 
