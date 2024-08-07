@@ -54,6 +54,7 @@ const defaultConfig = {
 // };
 
 export function instrument(app: Hono, config?: FpxConfigOptions) {
+  // Freeze the web standard fetch function so that we can use it below to report registered routes back to fpx studio
   const webStandardFetch = fetch;
   return new Proxy(app, {
     // Intercept the `fetch` function on the Hono app instance
