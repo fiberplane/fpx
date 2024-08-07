@@ -3,6 +3,7 @@ import {
   EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
   EXTRA_SEMATTRS_URL_FULL,
   FPX_REQUEST_BODY,
+  FPX_REQUEST_ENV,
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
@@ -102,6 +103,35 @@ export function getRequestHeaders(span: OtelSpan) {
   }
 
   return headers;
+}
+
+export function getRequestEnv(span: OtelSpan) {
+  const env = getString(span.attributes[FPX_REQUEST_ENV], {
+    defaultValue: null,
+  });
+
+  if (!env) {
+    return {};
+  }
+
+  try {
+    const parsedEnv = JSON.parse(env);
+    if (typeof parsedEnv === "object" && parsedEnv !== null) {
+      return Object.fromEntries(
+        Object.entries(parsedEnv).map(([key, value]) => [
+          key,
+          value && (typeof value === "object" || Array.isArray(value))
+            ? JSON.stringify(value)
+            : value,
+        ]),
+      ) as Record<string, string>;
+    }
+    console.debug("Unexpected request env for span", span);
+    return {};
+  } catch (_e) {
+    console.debug("Failed to parse request env for span", span);
+    return {};
+  }
 }
 
 export function getRequestQueryParams(span: OtelSpan) {

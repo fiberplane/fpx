@@ -25,7 +25,7 @@ export function RequestorHistory({
           const traceId = h.app_responses?.traceId;
           return (
             <HistoryEntry
-              key={traceId || id}
+              key={`${traceId}-${id}`}
               traceId={traceId}
               response={h}
               loadHistoricalRequest={loadHistoricalRequest}

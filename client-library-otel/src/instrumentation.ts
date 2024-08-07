@@ -10,6 +10,7 @@ import type { ExecutionContext, Hono } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 
+import { FPX_REQUEST_ENV } from "./constants";
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { propagateFpxTraceId } from "./propagation";
@@ -120,7 +121,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
             : [null, null];
 
           // In order to keep `onStart` synchronous (below), we construct
-          // some necessary attributes here
+          // some necessary attributes here, using a cloned request
           const requestForAttributes = new Request(clonedRequest.url, {
             method: request.method,
             headers: new Headers(request.headers),
@@ -133,7 +134,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
           });
 
           // Parse the body and headers for the root request
-          // NOTE - This will add some latency, we shouldn't do this in production
+          // NOTE - This will add some latency, we should allow turning this off in production
           const rootRequestAttributes =
             await getRootRequestBodyAndHeaders(requestForAttributes);
 
@@ -145,6 +146,8 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
                 const requestAttributes = {
                   ...getRequestAttributes(request),
                   ...rootRequestAttributes,
+                  // NOTE - We should not do this in production
+                  [FPX_REQUEST_ENV]: JSON.stringify(env),
                 };
                 span.setAttributes(requestAttributes);
               },

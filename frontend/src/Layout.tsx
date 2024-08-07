@@ -2,7 +2,7 @@ import type React from "react";
 import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "./assets/fpx.svg";
-import { useTracesSocket } from "./hooks/useTracesSocket";
+// import { useTracesSocket } from "./hooks/useTracesSocket";
 import { cn } from "./utils";
 
 const Branding = () => {
@@ -16,7 +16,7 @@ const Branding = () => {
 export const Layout: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  useTracesSocket();
+  // useTracesSocket();
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">

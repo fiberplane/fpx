@@ -16,6 +16,9 @@ const messageSchema = z.object({
   details: detailsSchema,
 });
 
+/**
+ * For rust traces notifications
+ */
 export const useTracesSocket = () => {
   const { toast } = useToast();
   const spanIds = new Set<string>();

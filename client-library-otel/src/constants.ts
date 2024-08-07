@@ -12,6 +12,7 @@ export const FPX_REQUEST_PATHNAME = "fpx.http.request.pathname";
 export const FPX_REQUEST_SEARCH = "fpx.http.request.search";
 export const FPX_REQUEST_SCHEME = "fpx.http.request.scheme";
 export const FPX_REQUEST_BODY = "fpx.http.request.body";
+export const FPX_REQUEST_ENV = "fpx.http.request.env";
 
 export const FPX_RESPONSE_HEADERS_FULL = "fpx.http.response_headers_full";
 export const FPX_RESPONSE_BODY = "fpx.http.response_body";
