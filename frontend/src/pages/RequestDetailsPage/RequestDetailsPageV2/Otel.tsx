@@ -1,5 +1,5 @@
 import { MizuOrphanLog, isMizuOrphanLog } from "@/queries";
-import { useOtelTraces } from "@/queries/hotel";
+import { useOtelTraces } from "@/queries";
 import { OtelEvent, useOtelTrace } from "@/queries/traces-otel";
 import { useMemo } from "react";
 import { EmptyState } from "../EmptyState";

@@ -53,4 +53,5 @@ export {
   type OtelSpan,
   type OtelSpans,
   useOtelTrace,
+  useOtelTraces,
 } from "./traces-otel";

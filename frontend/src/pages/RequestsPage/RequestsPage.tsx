@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWebsocketQueryInvalidation } from "@/hooks";
 import { type OtelSpan, useMizuTracesV2 } from "@/queries";
-import { useOtelTraces } from "@/queries/hotel";
+import { useOtelTraces } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
