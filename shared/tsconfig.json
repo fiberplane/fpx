@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noErrorTruncation": true,
+    "skipLibCheck": true,
+    "lib": ["ESNext"],
+    "types": ["vitest/globals", "node"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": false,
+    "composite": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force"
+  },
+  "include": ["src/**/*", "migrate.ts"],
+  "exclude": ["node_modules", "dist", "test-content"]
+}

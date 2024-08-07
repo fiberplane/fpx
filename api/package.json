@@ -41,6 +41,7 @@
     "drizzle-orm": "^0.30.10",
     "drizzle-zod": "^0.5.1",
     "figlet": "^1.7.0",
+    "fpx-shared": "*",
     "hono": "^4.3.7",
     "minimatch": "^10.0.1",
     "octokit": "^4.0.2",

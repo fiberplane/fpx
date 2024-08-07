@@ -1,5 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
 import type { Bindings } from "./types";
+import { type WsMessage } from "fpx-shared";
 
 export class WebHonc extends DurableObject<Bindings> {
   sessions: Map<string, WebSocket>;
@@ -50,11 +51,11 @@ export class WebHonc extends DurableObject<Bindings> {
     ws.close(code);
   }
 
-  public async pushWebhookData(connectionId: string, data: string) {
+  public async pushWebhookData(connectionId: string, data: WsMessage) {
     const ws = this.sessions.get(connectionId);
-    console.log(data);
+    const payload = JSON.stringify(data);
     if (ws) {
-      ws.send(data);
+      ws.send(payload);
     }
   }
 }

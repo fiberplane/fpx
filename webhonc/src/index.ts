@@ -63,7 +63,7 @@ app.all(
 
     await webhonc.pushWebhookData(
       id,
-      JSON.stringify({
+      {
         event: "request_incoming",
         payload: {
           headers: headersJson,
@@ -72,7 +72,7 @@ app.all(
           method,
           path: pathComponentsWithoutId,
         },
-      }),
+      },
     );
 
     return c.text("OK");

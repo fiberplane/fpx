@@ -1,0 +1,28 @@
+{
+  "name": "fpx-shared",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Shared schemas and utilities in the FPX world",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fiberplane/fpx.git"
+  },
+  "author": "Fiberplane <info@fiberplane.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fiberplane/fpx/issues"
+  },
+  "homepage": "https://github.com/fiberplane/fpx#readme",
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
