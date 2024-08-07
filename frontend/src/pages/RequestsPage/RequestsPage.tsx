@@ -10,6 +10,7 @@ import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { getString } from "../RequestDetailsPage/v2/otel-helpers";
 import { columns } from "./columns";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
@@ -53,10 +54,18 @@ export function RequestsPage() {
   const { toast } = useToast();
   const otelTraces = useOtelTraces();
 
-  useEffect(() => {
-    if (otelTraces.data) {
-      console.log("otel traces:", otelTraces.data);
-    }
+  const spansWithErrors = useMemo(() => {
+    return otelTraces.data?.filter((span) =>
+      span.events.some((event) => {
+        if (event.name === "log") {
+          return getString(event.attributes.level) === "error";
+        }
+        if (event.name === "exception") {
+          return true;
+        }
+        return false;
+      }),
+    );
   }, [otelTraces.data]);
 
   // Will add new fpx-requests as they come in by refetching
@@ -108,7 +117,7 @@ export function RequestsPage() {
         <RequestsTable traces={otelTraces.data ?? []} filter="all" />
       </TabsContent>
       <TabsContent value="error">
-        <RequestsTable traces={otelTraces.data ?? []} filter="error" />
+        <RequestsTable traces={spansWithErrors ?? []} filter="error" />
       </TabsContent>
     </Tabs>
   );
