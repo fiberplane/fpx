@@ -1,7 +1,6 @@
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useWebsocketQueryInvalidation } from "@/hooks";
 import { type MizuTrace, useMizuTraces, useMizuTracesV2 } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";

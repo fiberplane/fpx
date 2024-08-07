@@ -16,8 +16,6 @@ export function WebhoncBadge() {
 
   const { data: url, isPending } = useWebhoncConnectionId();
 
-  // const url = "https://webhonc.mies.workers.dev/h/606139dc4314b6120d932a38b447e37538205cb3c1ba82a44776b1bf2cecdb72";
-
   const handleCopy = () => {
     // copy to clipboard
     navigator.clipboard.writeText(url!);

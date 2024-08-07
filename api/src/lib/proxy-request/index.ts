@@ -25,7 +25,7 @@ export async function executeProxyRequest({
   if (!requestHeaders) requestHeaders = {};
 
   let validBody: BodyInit | null = null;
- if (requestBody != null) {
+  if (requestBody != null) {
     if (
       requestBody instanceof Blob ||
       requestBody instanceof ArrayBuffer ||
@@ -41,10 +41,6 @@ export async function executeProxyRequest({
       logger.warn("Invalid requestBody type. Setting to null.");
     }
   }
-
-  // these are calculated dynamically by the fetch client
-  delete requestHeaders["content-length"];
-  delete requestHeaders["content-type"];
 
   const proxiedReq = new Request(requestUrl, {
     method: requestMethod,
