@@ -40,7 +40,7 @@ impl WebSocketWorkerClient {
     pub async fn broadcast(&self, payload: ServerMessage) -> Result<Response> {
         let serialized = serde_json::to_string(&payload)?;
 
-        let payload = JsValue::try_from(serialized)?;
+        let payload = JsValue::from(serialized);
 
         let req = Request::new_with_init(
             "http://fake-host/broadcast",

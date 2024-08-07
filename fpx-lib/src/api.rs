@@ -1,11 +1,9 @@
 use crate::data::{BoxedEvents, BoxedStore};
-use crate::events::ServerEvents;
 use crate::service::Service;
 use axum::extract::FromRef;
 use axum::routing::{get, post};
 use http::StatusCode;
 use std::path::PathBuf;
-use std::sync::Arc;
 use url::Url;
 
 // pub mod client;
