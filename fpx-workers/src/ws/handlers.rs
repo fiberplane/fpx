@@ -3,8 +3,6 @@ use axum::body::Body;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::Response;
-use axum::Json;
-use fpx_lib::api::models::ServerMessage;
 use std::sync::Arc;
 use worker::Env;
 
@@ -17,11 +15,17 @@ pub struct WorkerApiState {
 pub async fn ws_connect(State(state): State<WorkerApiState>, headers: HeaderMap) -> Response<Body> {
     if let Some(value) = headers.get("Upgrade") {
         if value == "websocket" {
-            return WebSocketWorkerClient::new(&state.env)
-                .connect()
-                .await
-                .unwrap()
-                .into();
+            let connection = WebSocketWorkerClient::new(&state.env).connect().await;
+
+            return match connection {
+                Ok(response) => response.into(),
+                Err(_) => Response::builder()
+                    .status(StatusCode::INTERNAL_SERVER_ERROR)
+                    .body(Body::from(
+                        "An unexpected error occured connecting to the Durable Object",
+                    ))
+                    .unwrap(),
+            };
         }
     }
 
@@ -29,16 +33,4 @@ pub async fn ws_connect(State(state): State<WorkerApiState>, headers: HeaderMap)
         .status(StatusCode::UPGRADE_REQUIRED)
         .body(Body::from("Durable Object expected Upgrade: websocket"))
         .unwrap()
-}
-
-#[worker::send]
-pub async fn ws_broadcast(
-    State(state): State<WorkerApiState>,
-    Json(payload): Json<ServerMessage>,
-) -> Response<Body> {
-    WebSocketWorkerClient::new(&state.env)
-        .broadcast(payload)
-        .await
-        .unwrap()
-        .into()
 }

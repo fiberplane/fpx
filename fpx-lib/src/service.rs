@@ -1,11 +1,9 @@
 use crate::api::models::{Span, SpanAdded};
-use crate::data::{BoxedStore, DbError};
-use crate::events::ServerEvents;
+use crate::data::{BoxedEvents, BoxedStore, DbError};
 use anyhow::Result;
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
 };
-use std::sync::Arc;
 use thiserror::Error;
 
 /// Service implements shared logic for both the gRPC and HTTP API, and possibly
@@ -17,11 +15,11 @@ use thiserror::Error;
 #[derive(Clone)]
 pub struct Service {
     store: BoxedStore,
-    events: Arc<dyn ServerEvents>,
+    events: BoxedEvents,
 }
 
 impl Service {
-    pub fn new(store: BoxedStore, events: Arc<dyn ServerEvents>) -> Self {
+    pub fn new(store: BoxedStore, events: BoxedEvents) -> Self {
         Self { store, events }
     }
 

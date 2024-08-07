@@ -1,4 +1,4 @@
-use crate::data::BoxedStore;
+use crate::data::{BoxedEvents, BoxedStore};
 use crate::events::ServerEvents;
 use crate::service::Service;
 use axum::extract::FromRef;
@@ -27,7 +27,7 @@ pub struct Config {
 
 #[derive(Clone)]
 pub struct ApiState {
-    _events: Arc<dyn ServerEvents>,
+    _events: BoxedEvents,
     service: Service,
     store: BoxedStore,
 }
@@ -45,11 +45,7 @@ impl FromRef<ApiState> for Service {
 }
 
 /// Create a API and expose it through a axum router.
-pub fn create_api(
-    events: Arc<dyn ServerEvents>,
-    service: Service,
-    store: BoxedStore,
-) -> axum::Router {
+pub fn create_api(events: BoxedEvents, service: Service, store: BoxedStore) -> axum::Router {
     let api_state = ApiState {
         _events: events,
         service,

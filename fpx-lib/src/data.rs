@@ -1,3 +1,4 @@
+use crate::events::ServerEvents;
 use async_trait::async_trait;
 use std::sync::Arc;
 use thiserror::Error;
@@ -7,6 +8,7 @@ mod util;
 
 pub type Result<T, E = DbError> = anyhow::Result<T, E>;
 
+pub type BoxedEvents = Arc<dyn ServerEvents>;
 pub type BoxedStore = Arc<dyn Store>;
 
 #[derive(Clone, Default, Debug)]

@@ -3,7 +3,6 @@ use worker::*;
 
 /// Based on:
 /// https://developers.cloudflare.com/durable-objects/examples/websocket-hibernation-server/
-#[allow(dead_code)]
 #[durable_object]
 pub struct WebSocketHibernationServer {
     env: Env,

@@ -1,5 +1,5 @@
 use axum::async_trait;
-use axum::routing::{get, post};
+use axum::routing::get;
 use data::D1Store;
 use fpx_lib::api::models::ServerMessage;
 use fpx_lib::events::ServerEvents;
@@ -13,7 +13,7 @@ use tracing_web::{performance_layer, MakeConsoleWriter};
 use worker::send::SendFuture;
 use worker::*;
 use ws::client::WebSocketWorkerClient;
-use ws::handlers::{ws_broadcast, ws_connect, WorkerApiState};
+use ws::handlers::{ws_connect, WorkerApiState};
 
 mod ws;
 
@@ -57,7 +57,6 @@ async fn fetch(
 
     let mut router: axum::Router = axum::Router::new()
         .route("/api/ws", get(ws_connect))
-        .route("/api/ws/broadcast", post(ws_broadcast))
         .with_state(state)
         .nest_service("/", api_router);
 

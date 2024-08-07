@@ -9,15 +9,17 @@ pub struct WebSocketWorkerClient {
 
 impl WebSocketWorkerClient {
     pub fn new(env: &Arc<Env>) -> Self {
-        let stub = get_ws_durable_object(env).unwrap();
+        let stub = get_ws_durable_object(env).expect("Durable Object not found");
 
         Self { stub }
     }
 
     pub async fn connect(&self) -> Result<Response> {
-        let mut req = Request::new("http://fake-host/connect", Method::Get)?;
-
-        req.headers_mut()?.set("Upgrade", "websocket")?;
+        let headers = Headers::from_iter([("Upgrade", "websocket")]);
+        let req = Request::new_with_init(
+            "http://fake-host/connect",
+            RequestInit::new().with_headers(headers),
+        )?;
 
         self.stub.fetch_with_request(req).await
     }
@@ -29,13 +31,10 @@ impl WebSocketWorkerClient {
 
         let req = Request::new_with_init(
             "http://fake-host/broadcast",
-            &RequestInit {
-                body: Some(payload),
-                headers: Headers::new(),
-                cf: CfProperties::new(),
-                method: Method::Post,
-                redirect: RequestRedirect::Manual,
-            },
+            RequestInit::new()
+                .with_body(Some(payload))
+                .with_method(Method::Post)
+                .with_redirect(RequestRedirect::Manual),
         )?;
 
         self.stub.fetch_with_request(req).await
