@@ -51,12 +51,9 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   );
 }
 
-function getDescription(message: string | MizuMessage, args?: Array<unknown>) {
+function getDescription(message: string, args?: Array<unknown>) {
   if (!message) {
     return "";
-  }
-  if (hasStringMessage(message)) {
-    return message.message;
   }
   // TODO - Render a smarter message
   if (argsIsNotEmpty(args)) {
@@ -65,13 +62,10 @@ function getDescription(message: string | MizuMessage, args?: Array<unknown>) {
   if (typeof message === "string") {
     return message;
   }
-  if (hasStringMessage(message)) {
-    return message.message;
-  }
   return "";
 }
 
-function getLogContents(message: string | MizuMessage, args?: Array<unknown>) {
+function getLogContents(message: string, args?: Array<unknown>) {
   if (!message && argsIsEmpty(args)) {
     return { type: "empty" as const, value: null };
   }
@@ -82,13 +76,6 @@ function getLogContents(message: string | MizuMessage, args?: Array<unknown>) {
 
   if (typeof message === "string") {
     return { type: "string" as const, value: message };
-  }
-
-  if (hasStringMessage(message)) {
-    return {
-      type: "string" as const,
-      value: message.message,
-    };
   }
 
   return {

@@ -1,15 +1,23 @@
 import { z } from "zod";
 
-import { MizuErrorMessageSchema, MizuLogSchema } from "./types";
+const CallerLocationSchema = z.object({
+  file: z.string(),
+  line: z.string(),
+  column: z.string(),
+});
 
-const MizuOrphanLogMessageSchema = z.union([
-  MizuErrorMessageSchema,
-  z.string(),
-  z.null(),
-]);
-
-const MizuOrphanLogSchema = MizuLogSchema.omit({ message: true }).extend({
-  message: MizuOrphanLogMessageSchema,
+const MizuOrphanLogSchema = z.object({
+  id: z.number(),
+  traceId: z.string(),
+  timestamp: z.string(),
+  level: z.string(), // TODO - use enum from db schema?
+  message: z.union([z.string(), z.null()]),
+  args: z.array(z.unknown()), // NOTE - arguments passed to console.*
+  callerLocation: CallerLocationSchema.nullish(),
+  ignored: z.boolean().nullish(),
+  service: z.string().nullish(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
 export type MizuOrphanLog = z.infer<typeof MizuOrphanLogSchema>;
