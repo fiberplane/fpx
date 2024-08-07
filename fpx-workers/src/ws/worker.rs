@@ -1,8 +1,13 @@
 use fpx_lib::api::models::ServerMessage;
 use worker::*;
 
+/// An implementation of a hibernating WebSocket Server using [`durable_object`].
+///
+/// This server handles WebSocket connections, allowing them to hibernate when inactive
+/// and providing endpoints for connecting and broadcasting messages to all connected clients.
+///
 /// Based on:
-/// https://developers.cloudflare.com/durable-objects/examples/websocket-hibernation-server/
+/// [WebSocket Hibernation Server Example](https://developers.cloudflare.com/durable-objects/examples/websocket-hibernation-server/)
 #[durable_object]
 pub struct WebSocketHibernationServer {
     env: Env,
@@ -31,6 +36,11 @@ impl DurableObject for WebSocketHibernationServer {
     }
 }
 
+/// Handles creating and storing a new hibernating WebSocket connection.
+///
+/// It creates a new WebSocket pair, accepts the server WebSocket for hibernation,
+/// stores the server WebSocket in the `connections` vector, and returns the client
+/// WebSocket in the response.
 async fn ws_connect(
     _req: Request,
     ctx: RouteContext<&mut WebSocketHibernationServer>,
@@ -40,13 +50,19 @@ async fn ws_connect(
     // Hibernating non standard web socket handler
     ctx.data.state.accept_web_socket(&server);
 
+    // Store the socket connection in the durable object
     ctx.data.connections.push(server);
 
+    // Return the client WebSocket in the response
     let res = Response::from_websocket(client)?;
 
     Ok(res)
 }
 
+/// Handles broadcasting a [`ServerMessage`] to all connected WebSocket clients.
+///
+/// It deserializes the incoming request body as a `ServerMessage` and sends it
+/// to all WebSocket connections stored in the `connections` vector.
 async fn ws_broadcast(
     mut req: Request,
     ctx: RouteContext<&mut WebSocketHibernationServer>,
