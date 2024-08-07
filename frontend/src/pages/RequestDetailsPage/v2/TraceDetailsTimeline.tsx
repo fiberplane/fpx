@@ -7,8 +7,7 @@ import OpenAiLogo from "@/assets/OpenAILogo.svg";
 
 import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
-import { OtelSpan, isMizuOrphanLog } from "@/queries";
-import { MizuOrphanLog } from "@/queries/traces-v2";
+import { MizuOrphanLog, OtelSpan, isMizuOrphanLog } from "@/queries";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, { useMemo } from "react";

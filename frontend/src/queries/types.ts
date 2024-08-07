@@ -247,6 +247,7 @@ export const isMizuFetchLoggingErrorMessage = (
   return MizuFetchLoggingErrorSchema.safeParse(message).success;
 };
 
+// TODO - Remove from summarize traces
 export const isMizuErrorMessage = (
   message: unknown,
 ): message is z.infer<typeof MizuErrorMessageSchema> => {
@@ -257,10 +258,6 @@ export const isKnownMizuMessage = (
   message: unknown,
 ): message is z.infer<typeof MizuKnownMessageSchema> => {
   return MizuKnownMessageSchema.safeParse(message).success;
-};
-
-export const isMizuLog = (log: unknown): log is MizuLog => {
-  return MizuLogSchema.safeParse(log).success;
 };
 
 export const MizuApiLogResponseSchema = z.object({

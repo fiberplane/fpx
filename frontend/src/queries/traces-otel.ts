@@ -43,33 +43,35 @@ const OtelEventSchema = z.object({
 
 export type OtelEvent = z.infer<typeof OtelEventSchema>;
 
-export const OtelSpanSchema = z.object({
-  trace_id: z.string(),
-  span_id: z.string(),
-  parent_span_id: z.union([z.string(), z.null()]),
-  name: z.string(),
-  trace_state: z.string().nullish(),
-  flags: z.number().optional(), // This determines whether or not the trace will be sampled
-  kind: z.string(),
-  start_time: z.string(), // ISO 8601 format
-  end_time: z.string(), // ISO 8601 format
-  attributes: OtelAttributesSchema,
-  status: OtelStatusSchema.optional(),
+export const OtelSpanSchema = z
+  .object({
+    trace_id: z.string(),
+    span_id: z.string(),
+    parent_span_id: z.union([z.string(), z.null()]),
+    name: z.string(),
+    trace_state: z.string().nullish(),
+    flags: z.number().optional(), // This determines whether or not the trace will be sampled
+    kind: z.string(),
+    start_time: z.string(), // ISO 8601 format
+    end_time: z.string(), // ISO 8601 format
+    attributes: OtelAttributesSchema,
+    status: OtelStatusSchema.optional(),
 
-  // This is where we will store logs that happened along the way
-  events: z.array(OtelEventSchema),
+    // This is where we will store logs that happened along the way
+    events: z.array(OtelEventSchema),
 
-  // Links to related traces, etc
-  links: z.array(
-    z.object({
-      trace_id: z.string(),
-      span_id: z.string(),
-      trace_state: z.string(),
-      attributes: OtelAttributesSchema,
-      flags: z.number().optional(),
-    }),
-  ),
-});
+    // Links to related traces, etc
+    links: z.array(
+      z.object({
+        trace_id: z.string(),
+        span_id: z.string(),
+        trace_state: z.string(),
+        attributes: OtelAttributesSchema,
+        flags: z.number().optional(),
+      }),
+    ),
+  })
+  .passthrough(); // HACK - Passthrough to vendorify traces
 
 export const TRACES_KEY = "otelTrace";
 

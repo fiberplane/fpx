@@ -1,4 +1,4 @@
-import { MizuFetchSpan, MizuSpan, OtelSpan, isMizuFetchSpan } from "@/queries";
+import { OtelSpan } from "@/queries";
 import { z } from "zod";
 import { getRequestBody, getRequestUrl } from "./otel-helpers";
 
@@ -36,27 +36,6 @@ const VendorInfoSchema = z.union([
 ]);
 
 export type VendorInfo = z.infer<typeof VendorInfoSchema>;
-
-type VendorifiedSpan = MizuFetchSpan & {
-  vendorInfo: VendorInfo;
-};
-
-const hasVendorInfo = (span: MizuSpan): span is VendorifiedSpan => {
-  return VendorInfoSchema.safeParse(span.vendorInfo).success;
-};
-
-export const canRenderVendorInfo = (
-  span: MizuFetchSpan,
-): span is VendorifiedSpan => {
-  return hasVendorInfo(span) && span.vendorInfo.vendor !== "none";
-};
-
-export const isVendorifiedSpan = (span: unknown): span is VendorifiedSpan => {
-  if (!isMizuFetchSpan(span)) {
-    return false;
-  }
-  return hasVendorInfo(span);
-};
 
 export const isNeonVendorInfo = (
   vendorInfo: VendorInfo,

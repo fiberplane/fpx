@@ -3,8 +3,7 @@ import { EmptyState } from "./EmptyState";
 import { RequestDetailsPageV2 } from "./RequestDetailsPageV2";
 import { useEscapeToList } from "./hooks";
 
-export function RequestDetailsPage(props: { otel?: boolean }) {
-  const { otel = false } = props;
+export function RequestDetailsPage() {
   const { traceId } = useParams<{ traceId: string }>();
 
   useEscapeToList();
@@ -13,7 +12,7 @@ export function RequestDetailsPage(props: { otel?: boolean }) {
     return <EmptyState />;
   }
 
-  return <RequestDetailsPageV2 traceId={traceId} otel={otel} />;
+  return <RequestDetailsPageV2 traceId={traceId} />;
 }
 
 export type TocItem = {

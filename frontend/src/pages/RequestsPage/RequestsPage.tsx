@@ -1,8 +1,9 @@
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 import { useWebsocketQueryInvalidation } from "@/hooks";
-import { type OtelSpan, useMizuTracesV2 } from "@/queries";
+import { type OtelSpan } from "@/queries";
 import { useOtelTraces } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
@@ -49,16 +50,9 @@ const RequestsTable = ({
 };
 
 export function RequestsPage() {
-  // const query = useMizuTraces();
-  const queryV2 = useMizuTracesV2();
-
-  useEffect(() => {
-    if (queryV2.data) {
-      console.log("traces with spans:", queryV2.data);
-    }
-  }, [queryV2.data]);
-
+  const { toast } = useToast();
   const otelTraces = useOtelTraces();
+
   useEffect(() => {
     if (otelTraces.data) {
       console.log("otel traces:", otelTraces.data);
@@ -96,7 +90,10 @@ export function RequestsPage() {
                 method: "POST",
               }).then(() => {
                 otelTraces.refetch();
-                alert("Successfully deleted all");
+                toast({
+                  title: "Successfully deleted all traces",
+                  variant: "destructive",
+                });
               });
             }}
           >

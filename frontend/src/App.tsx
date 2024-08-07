@@ -30,7 +30,7 @@ export function App() {
                 <Route path="/requests" element={<RequestsPage />} />
                 <Route
                   path="/requests/otel/:traceId"
-                  element={<RequestDetailsPage otel />}
+                  element={<RequestDetailsPage />}
                 />
                 <Route
                   path="/requests/:traceId"

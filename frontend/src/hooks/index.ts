@@ -1,5 +1,4 @@
 export { useTimeAgo } from "./useTimeAgo.js";
-export { useRequestDetails } from "./useRequestDetails.js";
 export { useIsSmScreen } from "./useIsSmScreen.ts";
 export { useIsMdScreen } from "./useIsMdScreen.ts";
 export { useIsLgScreen } from "./useIsLgScreen.ts";
