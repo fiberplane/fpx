@@ -7,7 +7,7 @@ import {
 
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
-import { MizuLog, MizuOrphanLog } from "@/queries";
+import { MizuOrphanLog } from "@/queries";
 import { OtelSpan } from "@/queries/traces-otel";
 import { cn } from "@/utils";
 import { useMemo } from "react";
@@ -31,7 +31,7 @@ export function RequestDetailsPageContentV2({
   orphanLogs = EMPTY_LIST,
 }: {
   spans: Array<OtelSpan>;
-  orphanLogs?: Array<MizuLog>;
+  orphanLogs?: Array<MizuOrphanLog>;
   pagination?: {
     currentIndex: number;
     maxIndex: number;
