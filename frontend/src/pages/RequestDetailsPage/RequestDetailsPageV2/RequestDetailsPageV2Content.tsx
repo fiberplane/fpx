@@ -59,6 +59,15 @@ export function RequestDetailsPageContentV2({
     return [...spansWithVendorInfo, ...orphanLogs].sort((a, b) => {
       const timeA = "span" in a ? a.span.start_time : a.timestamp;
       const timeB = "span" in b ? b.span.start_time : b.timestamp;
+      if (timeA === timeB) {
+        // If the times are the same, we need to sort giving the priority to the root span
+        if ("span" in a && a?.span?.name === "request") {
+          return -1;
+        }
+        if ("span" in b && b?.span?.name === "request") {
+          return 1;
+        }
+      }
       return new Date(timeA).getTime() - new Date(timeB).getTime();
     });
   }, [spansWithVendorInfo, orphanLogs]);
