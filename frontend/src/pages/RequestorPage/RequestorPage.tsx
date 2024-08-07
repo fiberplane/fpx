@@ -24,9 +24,6 @@ import { sortRequestornatorsDescending } from "./utils";
 export const RequestorPage = () => {
   const { toast } = useToast();
 
-  // Refresh routes in response to filesystem updates
-  useWebsocketQueryInvalidation();
-
   const requestorState = useRequestor();
   // @ts-expect-error - This is helpful for debugging, soz
   globalThis.requestorState = requestorState;

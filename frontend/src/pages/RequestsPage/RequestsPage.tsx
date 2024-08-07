@@ -44,6 +44,7 @@ const RequestsTable = ({
   );
 };
 
+
 export function RequestsPage() {
   const query = useMizuTraces();
   const queryV2 = useMizuTracesV2();
@@ -53,10 +54,6 @@ export function RequestsPage() {
       console.log("traces with spans:", queryV2.data);
     }
   }, [queryV2.data]);
-
-  // Will add new fpx-requests as they come in by refetching
-  // In the future, we'll want to build a better ux around this (not auto refresh the table)
-  useWebsocketQueryInvalidation();
 
   return (
     <Tabs
