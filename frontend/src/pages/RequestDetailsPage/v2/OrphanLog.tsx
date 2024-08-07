@@ -1,7 +1,6 @@
-import { MizuMessage, MizuOrphanLog } from "@/queries";
+import { MizuOrphanLog } from "@/queries";
 import {
   cn,
-  hasStringMessage,
   objectHasName,
   objectHasStack,
   renderFullLogMessage,
@@ -23,10 +22,11 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const heading = `console.${consoleMethod}${name ? `:  ${name}` : ""}`;
 
   const { type: contentsType, value: contents } = getLogContents(
-    message,
+    message ?? "",
     log.args,
   );
-  const description = getDescription(message, log.args);
+  const description = getDescription(message ?? "", log.args);
+  // TODO - Get stack from the span!
   const stack = objectHasStack(message) ? message.stack : null;
 
   return (
