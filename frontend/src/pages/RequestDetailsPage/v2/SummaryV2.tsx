@@ -14,6 +14,8 @@ import {
   getResponseBody,
   getStatusCode,
 } from "./otel-helpers";
+import { BadgeProps } from "@/components/ui/badge/Badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
   const errors = useMemo(() => selectErrors(trace), [trace]);
@@ -73,9 +75,22 @@ export function HttpSummary({ trace }: { trace: MizuTraceV2 }) {
       <Status className="md:text-base" statusCode={Number(statusCode)} />
       <RequestMethod method={method} />
       <p className="text-sm md:text-base font-mono">{path}</p>
-      {isProxied && <Badge className="rounded-xl">Proxied</Badge>}
+      {isProxied && <ProxiedBadge className="rounded-xl cursor-default">Proxied</ProxiedBadge>}
     </div>
   );
+}
+
+function ProxiedBadge(props: BadgeProps) {
+  return (
+    <Tooltip >
+      <TooltipTrigger>
+        <Badge {...props}>{props.children}</Badge>
+      </TooltipTrigger>
+      <TooltipContent className="bg-slate-950 text-white" align="center" side="bottom">
+        This request was proxied from the webhonc service
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 function selectIsProxied(trace: MizuTraceV2) {
