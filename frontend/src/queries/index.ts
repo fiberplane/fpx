@@ -21,9 +21,7 @@ export {
 
 export {
   QueryClientProvider,
-  getTraceDescription,
   queryClient,
-  useMizuTraces,
   MIZU_TRACES_KEY,
 } from "./queries";
 

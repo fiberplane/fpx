@@ -6,16 +6,8 @@ import {
 } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import {
-  MizuLog,
-  MizuRequestEnd,
-  MizuRequestStart,
-  isMizuRequestEndMessage,
-  isMizuRequestStartMessage,
-  useHandlerSourceCode,
-  useOtelTrace,
-} from "@/queries";
-import { cn, noop } from "@/utils";
+import { useOtelTrace } from "@/queries";
+import { cn } from "@/utils";
 import { CaretSortIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -23,7 +15,6 @@ import {
   getRequestEnv,
   getRequestHeaders,
 } from "../RequestDetailsPage/v2/otel-helpers";
-import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
 import { EventsTable } from "./EventsTable";
 import { HeaderTable } from "./HeaderTable";
 import { useSummarizeError } from "./ai";
@@ -66,7 +57,7 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
     isFetching: isFetchingAiSummary,
     isRefetching: isRefetchingAiSummary,
     refetch: fetchAiSummary,
-  } = useSummarizeError(undefined); // HACK - Passing undefined turns this off
+  } = useSummarizeError(trace);
 
   // TODO - use query key with trace id in fetch call so we can avoid unnecessary requests when other values update...
   const lastFetchedTraceId = aiSummary?.traceId;
@@ -91,16 +82,12 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
     return <div>Trace not found</div>;
   }
 
-  const fpxRequestMessage = getRequestMessage([]);
-  const fpxResponseMessage = getResponseMessage([]);
-
   const requestSpan = trace?.find((span) => span.name === "request");
   const headersReceived = requestSpan ? getRequestHeaders(requestSpan) : {};
   const requestEnv = requestSpan ? getRequestEnv(requestSpan) : {};
 
   // TODO - Implement this in the middleware
-  const shouldShowSourceFunction =
-    false && fpxRequestMessage && fpxResponseMessage;
+  // const shouldShowSourceFunction = false;
 
   const events = trace?.flatMap((span) => span.events) ?? [];
 
@@ -137,7 +124,7 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
       <Section title="Headers Your API Received">
         <HeaderTable headers={headersReceived} />
       </Section>
-      {shouldShowSourceFunction && (
+      {/* {shouldShowSourceFunction && (
         <Section title="Source Function">
           <div>
             {shouldShowSourceFunction ? (
@@ -158,51 +145,35 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
             )}
           </div>
         </Section>
-      )}
+      )} */}
     </div>
   );
 }
 
-type SourceFunctionProps = {
-  fpxRequestMessage: MizuRequestStart;
-  fpxResponseMessage: MizuRequestEnd;
-};
-function SourceFunction({
-  fpxRequestMessage,
-  fpxResponseMessage,
-}: SourceFunctionProps) {
-  const source = fpxRequestMessage?.file;
-  const handler = fpxResponseMessage?.handler;
-  const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
+// type SourceFunctionProps = {
+//   fpxRequestMessage: MizuRequestStart;
+//   fpxResponseMessage: MizuRequestEnd;
+// };
+// function SourceFunction({
+//   fpxRequestMessage,
+//   fpxResponseMessage,
+// }: SourceFunctionProps) {
+//   const source = fpxRequestMessage?.file;
+//   const handler = fpxResponseMessage?.handler;
+//   const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
 
-  return (
-    <div>
-      <CodeMirrorTypescriptEditor
-        jsx
-        value={handlerSourceCode}
-        readOnly
-        onChange={noop}
-        minHeight="100px"
-      />
-    </div>
-  );
-}
-
-function getRequestMessage(logs: MizuLog[]) {
-  for (const log of logs) {
-    if (isMizuRequestStartMessage(log.message)) {
-      return log.message;
-    }
-  }
-}
-
-function getResponseMessage(logs: MizuLog[]) {
-  for (const log of logs) {
-    if (isMizuRequestEndMessage(log.message)) {
-      return log.message;
-    }
-  }
-}
+//   return (
+//     <div>
+//       <CodeMirrorTypescriptEditor
+//         jsx
+//         value={handlerSourceCode}
+//         readOnly
+//         onChange={noop}
+//         minHeight="100px"
+//       />
+//     </div>
+//   );
+// }
 
 function Section({
   title,

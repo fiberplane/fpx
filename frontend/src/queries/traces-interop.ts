@@ -1,29 +1,12 @@
 import { z } from "zod";
 
-import {
+import { MizuErrorMessageSchema, MizuLogSchema } from "./types";
+
+const MizuOrphanLogMessageSchema = z.union([
   MizuErrorMessageSchema,
-  MizuFetchMessageSchema,
-  MizuLogSchema,
-  MizuReqResMessageSchema,
-} from "./types";
-
-const MizuSpannableMessageSchema = z.union([
-  MizuReqResMessageSchema,
-  MizuFetchMessageSchema,
+  z.string(),
+  z.null(),
 ]);
-
-const MizuOrphanLogMessageSchema = z
-  .union([
-    MizuErrorMessageSchema,
-    z.string(),
-    z.null(),
-    z
-      .object({})
-      .passthrough(), // HACK - catch all other messages
-  ])
-  .refine((data) => !MizuSpannableMessageSchema.safeParse(data).success, {
-    message: "Log entry should not be spannable",
-  });
 
 const MizuOrphanLogSchema = MizuLogSchema.omit({ message: true }).extend({
   message: MizuOrphanLogMessageSchema,

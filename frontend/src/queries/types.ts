@@ -241,12 +241,6 @@ export const isMizuFetchErrorMessage = (
   return MizuFetchErrorSchema.safeParse(message).success;
 };
 
-export const isMizuFetchLoggingErrorMessage = (
-  message: unknown,
-): message is z.infer<typeof MizuFetchLoggingErrorSchema> => {
-  return MizuFetchLoggingErrorSchema.safeParse(message).success;
-};
-
 // TODO - Remove from summarize traces
 export const isMizuErrorMessage = (
   message: unknown,
@@ -259,10 +253,6 @@ export const isKnownMizuMessage = (
 ): message is z.infer<typeof MizuKnownMessageSchema> => {
   return MizuKnownMessageSchema.safeParse(message).success;
 };
-
-export const MizuApiLogResponseSchema = z.object({
-  logs: z.array(MizuLogSchema),
-});
 
 export const GitHubLabelSchema = z.union([
   z.string(),

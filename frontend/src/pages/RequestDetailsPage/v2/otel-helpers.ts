@@ -12,6 +12,21 @@ import {
 import { OtelSpan } from "@/queries";
 import { OtelAttributes } from "@/queries/traces-otel";
 
+export const getErrorEvents = (span: OtelSpan) => {
+  return span.events.filter((event) => {
+    if (event.name === "exception") {
+      return true;
+    }
+
+    if (event.name === "log") {
+      const level = getString(event.attributes.level);
+      return level === "error";
+    }
+
+    return false;
+  });
+};
+
 /**
  * TODO - Also look for exception events...
  */

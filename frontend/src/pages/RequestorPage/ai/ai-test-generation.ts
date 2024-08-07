@@ -6,16 +6,10 @@ import {
   getStatusCode,
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
 import { OtelSpans, useOtelTrace } from "@/queries";
-import { redactSensitiveHeaders } from "@/utils";
+import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import { useCallback, useMemo, useState } from "react";
 import { Requestornator } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
-
-function formatHeaders(headers: Record<string, string>): string {
-  return Object.entries(headers)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join("\n");
-}
 
 function createRequestDescription(request: Requestornator | null): string {
   if (!request) {

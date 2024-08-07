@@ -1,4 +1,4 @@
-import { PROBED_ROUTES_KEY, useMizuTraces } from "@/queries";
+import { PROBED_ROUTES_KEY } from "@/queries";
 import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -256,18 +256,6 @@ function createBody(body: RequestorBody) {
 // NOTE - This is for urlencoded (not multipart)
 function createUrlEncodedBody(body: Record<string, string>) {
   return new URLSearchParams(body).toString();
-}
-
-export function useTrace(traceId: string) {
-  const { data: traces, isLoading, error } = useMizuTraces();
-  const trace = traces?.find((t) => t.id === traceId);
-  const isNotFound = !trace && !error && !isLoading;
-  return {
-    trace,
-    isNotFound,
-    isLoading,
-    error,
-  };
 }
 
 export function useOpenApiParse(openApiSpec: string) {

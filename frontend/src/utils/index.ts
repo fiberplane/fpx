@@ -153,3 +153,9 @@ export const safeToQueryComponent = (
     return "";
   }
 };
+
+export function formatHeaders(headers: Record<string, string>): string {
+  return Object.entries(headers)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("\n");
+}

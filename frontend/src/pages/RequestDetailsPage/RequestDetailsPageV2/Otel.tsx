@@ -60,7 +60,7 @@ export function Otel({
             }
             // TODO - Use a more deterministic ID - preferably string that includes the trace+span+event_index
             const logId = Math.floor(Math.random() * 1000000);
-            const orphanLog = convertEventToOrphanLoc(traceId, logId, event);
+            const orphanLog = convertEventToOrphanLog(traceId, logId, event);
             // HACK - We want to be sure that we construct a valid orphan log, otherwise the UI will break
             if (isMizuOrphanLog(orphanLog)) {
               orphans.push(orphanLog);
@@ -98,7 +98,7 @@ export function Otel({
 /**
  * Converts an Otel event to a so-called Orphan Log to maintain backwards compatibility with the old Mizu data format
  */
-function convertEventToOrphanLoc(
+function convertEventToOrphanLog(
   traceId: string,
   logId: number,
   event: OtelEvent,

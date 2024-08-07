@@ -15,6 +15,13 @@ export const FPX_REQUEST_ENV = "fpx.http.request.env";
 
 export const FPX_RESPONSE_BODY = "fpx.http.response.body";
 
+// <note>
+// THESE FPX_* attrs NOT YET IMPLMENTED
+export const FPX_REQUEST_HANDLER_FILE = "fpx.http.request.handler.file";
+export const FPX_REQUEST_HANDLER_SOURCE_CODE =
+  "fpx.http.request.handler.source_code";
+// </note>
+
 export const SpanStatus = {
   UNSET: 0,
   OK: 1,
