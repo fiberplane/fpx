@@ -17,6 +17,7 @@ import type { Bindings, Variables } from "../lib/types.js";
 import {
   errorToJson,
   generateOtelTraceId,
+  isValidOtelTraceId,
   safeParseJson,
 } from "../lib/utils.js";
 import logger from "../logger.js";
@@ -196,8 +197,22 @@ function serializeFormDataValue(
  * Or maybe even streams eventually?
  */
 app.all("/v0/proxy-request/*", async (ctx) => {
-  const traceId = ctx.req.header("x-fpx-trace-id") || generateOtelTraceId();
-  logger.debug("Proxying request with traceId:", traceId);
+  // Try to extract the trace id from the header, otherwise generate a new one
+  const traceIdHeader = ctx.req.header("x-fpx-trace-id");
+  const shouldUseHeaderTraceId = isValidOtelTraceId(traceIdHeader ?? "");
+  const traceId: string =
+    traceIdHeader && shouldUseHeaderTraceId
+      ? traceIdHeader
+      : generateOtelTraceId();
+
+  if (!shouldUseHeaderTraceId) {
+    logger.debug(
+      `Invalid trace id in header: ${traceIdHeader}, generating new trace id: ${traceId}`,
+    );
+  } else {
+    logger.debug("Proxying request with traceId:", traceId);
+  }
+
   const db = ctx.get("db");
 
   const requestRoute = ctx.req.header("x-fpx-route");
