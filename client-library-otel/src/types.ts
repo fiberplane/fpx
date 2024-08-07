@@ -7,7 +7,7 @@
  * so you know that they will not work.
  */
 
-import { Bindings } from "hono/types";
+import type { Bindings } from "hono/types";
 
 // import type { Hono } from "hono";
 type GlobalFetch = typeof globalThis.fetch;
@@ -19,6 +19,7 @@ export type InitParam = GlobalFetchArgs[1];
 /**
  * The type of the `env` parameter in the `fetch` function for a Hono app
  */
+// biome-ignore lint/complexity/noBannedTypes: {} is the type that Hono uses
 export type HonoLikeEnv = {} | Bindings | undefined;
 
 /**

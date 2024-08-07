@@ -144,9 +144,9 @@ export function measure<R, A extends unknown[]>(
               } else {
                 resolve(returnValue);
               }
-            } catch (error) {
+            } catch (_error) {
               // swallow error
-              // console.debug("Error in onSuccess", error);
+              // console.debug("Error in onSuccess", _error);
               resolve(returnValue);
             }
           });

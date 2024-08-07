@@ -51,7 +51,7 @@ function createTraceparentHeader(traceId: string): string {
  * @returns A random 16-character hex string
  */
 function generateSpanId(): string {
-  let spanId;
+  let spanId: string;
   do {
     spanId = [...Array(16)]
       .map(() => Math.floor(Math.random() * 16).toString(16))

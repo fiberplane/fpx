@@ -7,14 +7,13 @@ import {
 } from "@opentelemetry/sdk-trace-base";
 import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
-import { Bindings } from "hono/types";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
-import { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
+import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
 import {
   getRequestAttributes,
   getResponseAttributes,

@@ -1,4 +1,4 @@
-import { HonoLikeApp } from "./types";
+import type { HonoLikeApp } from "./types";
 
 type FetchFn = typeof fetch;
 
