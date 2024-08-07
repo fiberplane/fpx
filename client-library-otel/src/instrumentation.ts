@@ -14,7 +14,7 @@ import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
-import { HonoLikeApp, HonoLikeFetch } from "./types";
+import { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
 import {
   getRequestAttributes,
   getResponseAttributes,
@@ -55,7 +55,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
         const originalFetch = value as HonoLikeFetch;
         return async function fetch(
           request: Request,
-          env: {} | Bindings | undefined,
+          env: HonoLikeEnv,
           executionContext: ExecutionContext | undefined,
         ) {
           // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,

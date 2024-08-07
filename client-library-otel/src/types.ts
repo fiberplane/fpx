@@ -17,6 +17,11 @@ export type InputParam = GlobalFetchArgs[0];
 export type InitParam = GlobalFetchArgs[1];
 
 /**
+ * The type of the `env` parameter in the `fetch` function for a Hono app
+ */
+export type HonoLikeEnv = {} | Bindings | undefined;
+
+/**
  * Hack type to make our library's types play nicely with Hono types.
  */
 export type HonoFetchResult = Response | Promise<Response>;
@@ -33,7 +38,7 @@ export type HonoResponse = Awaited<HonoFetchResult>;
  */
 export type HonoLikeFetch = (
   request: Request,
-  env: {} | Bindings | undefined,
+  env: HonoLikeEnv,
   executionContext: ExecutionContext | undefined,
 ) => HonoFetchResult;
 // type HonoLikeFetch = Hono["fetch"];
