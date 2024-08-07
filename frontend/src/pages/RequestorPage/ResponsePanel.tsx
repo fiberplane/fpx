@@ -15,7 +15,6 @@ import {
   ArrowDownIcon,
   ArrowTopRightIcon,
   ArrowUpIcon,
-  ClockIcon,
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -24,7 +23,7 @@ import { Timestamp } from "../RequestDetailsPage/Timestamp";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
-import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
+import { Method, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestGeneration } from "./ai";
 import { Requestornator } from "./queries";
@@ -40,8 +39,6 @@ type Props = {
   shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   response?: Requestornator;
   isLoading: boolean;
-  history: Array<Requestornator>;
-  loadHistoricalRequest: (traceId: string) => void;
   requestType: RequestType;
   websocketState: WebSocketState;
 };
@@ -52,8 +49,6 @@ export function ResponsePanel({
   shouldShowResponseTab,
   response,
   isLoading,
-  history,
-  loadHistoricalRequest,
   requestType,
   websocketState,
 }: Props) {
@@ -77,10 +72,7 @@ export function ResponsePanel({
           )}
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
           <div className="flex-grow flex justify-end">
-            <CustomTabTrigger value="history" className="mr-2">
-              <ClockIcon className="h-3.5 w-3.5" />
-              <span className="hidden md:inline-block ml-2">History</span>
-            </CustomTabTrigger>
+            {/* TODO - Add test generation icon */}
           </div>
         </CustomTabsList>
         <CustomTabsContent value="messages">
@@ -166,16 +158,6 @@ export function ResponsePanel({
               {showBottomToolbar && <BottomToolbar response={response} />}
             </div>
           </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="history">
-          {history?.length > 0 ? (
-            <RequestorHistory
-              history={history}
-              loadHistoricalRequest={loadHistoricalRequest}
-            />
-          ) : (
-            <NoHistory />
-          )}
         </CustomTabsContent>
       </Tabs>
     </div>
@@ -347,19 +329,6 @@ export function ResponseBodyText({
       <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>
-    </div>
-  );
-}
-
-function NoHistory() {
-  return (
-    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
-      <div className="text-md text-white text-center">
-        You have no requests in your history
-      </div>
-      <div className="mt-1 sm:mt-2 text-ms text-gray-400 text-center font-light">
-        Start making some requests!
-      </div>
     </div>
   );
 }

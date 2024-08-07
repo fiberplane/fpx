@@ -221,6 +221,8 @@ export const RequestorPage = () => {
           routes={routes}
           selectedRoute={selectedRoute}
           handleRouteClick={handleSelectRoute}
+          history={history}
+          loadHistoricalRequest={loadHistoricalRequest}
         />
       </div>
 
@@ -300,8 +302,6 @@ export const RequestorPage = () => {
             shouldShowResponseTab={shouldShowResponseTab}
             response={mostRecentRequestornatorForRoute}
             isLoading={isRequestorRequesting}
-            history={history}
-            loadHistoricalRequest={loadHistoricalRequest}
             websocketState={websocketState}
             requestType={selectedRoute?.requestType}
           />
