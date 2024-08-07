@@ -115,3 +115,11 @@ export function redactSensitiveHeaders(
 
   return redactedHeaders;
 }
+
+export function truncatePathWithEllipsis(path: string | null) {
+  if (path === null) {
+    return null;
+  }
+  const maxLength = 50;
+  return path.length > maxLength ? `${path.slice(0, maxLength)}...` : path;
+}

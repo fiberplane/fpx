@@ -9,7 +9,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { Resizable } from "react-resizable";
-import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
+import { RequestorHistory } from "./RequestorHistory";
 import { ResizableHandle } from "./Resizable";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";

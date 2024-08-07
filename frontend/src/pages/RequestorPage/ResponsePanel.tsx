@@ -15,6 +15,7 @@ import {
   ArrowDownIcon,
   ArrowTopRightIcon,
   ArrowUpIcon,
+  CodeIcon,
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -31,8 +32,6 @@ import type { ResponsePanelTab } from "./reducer";
 import { type RequestType, isWsRequest } from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
-// TODO - Create skeleton loading components for each tab content
-
 type Props = {
   activeResponsePanelTab: ResponsePanelTab;
   setActiveResponsePanelTab: (tab: string) => void;
@@ -41,6 +40,7 @@ type Props = {
   isLoading: boolean;
   requestType: RequestType;
   websocketState: WebSocketState;
+  openAiTestGenerationPanel: () => void;
 };
 
 export function ResponsePanel({
@@ -51,6 +51,7 @@ export function ResponsePanel({
   isLoading,
   requestType,
   websocketState,
+  openAiTestGenerationPanel,
 }: Props) {
   const isFailure = !!response?.app_responses?.isFailure;
   const showBottomToolbar = !!response?.app_responses?.traceId;
@@ -71,8 +72,20 @@ export function ResponsePanel({
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
-          <div className="flex-grow flex justify-end">
-            {/* TODO - Add test generation icon */}
+          <div
+            className={cn(
+              // Hide this button on mobile, and rely on the button + drawer pattern instead
+              "max-sm:hidden",
+              "flex-grow sm:flex justify-end",
+            )}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={openAiTestGenerationPanel}
+            >
+              <CodeIcon className="h-4 w-4 cursor-pointer" />
+            </Button>
           </div>
         </CustomTabsList>
         <CustomTabsContent value="messages">
@@ -167,7 +180,9 @@ export function ResponsePanel({
 const BottomToolbar = ({ response }: { response: Requestornator }) => {
   return (
     <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
-      <AiTestGeneration history={[response]} />
+      <div className="sm:hidden">
+        <AiTestGeneration history={[response]} />
+      </div>
       <Link to={`/requests/otel/${response?.app_responses?.traceId}`}>
         <Button variant="secondary">
           Go to Trace Details

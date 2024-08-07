@@ -1,11 +1,4 @@
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn, parsePathFromRequestUrl } from "@/utils";
-import { SymbolIcon } from "@radix-ui/react-icons";
+import { cn, parsePathFromRequestUrl, truncatePathWithEllipsis } from "@/utils";
 import { getHttpMethodTextColor } from "./method";
 import { Requestornator } from "./queries";
 
@@ -137,12 +130,4 @@ export function StatusCode({
       {isFailure ? "Fail" : strStatus}
     </span>
   );
-}
-
-function truncatePathWithEllipsis(path: string | null) {
-  if (path === null) {
-    return null;
-  }
-  const maxLength = 50;
-  return path.length > maxLength ? `${path.slice(0, maxLength)}...` : path;
 }

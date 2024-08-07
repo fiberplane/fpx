@@ -4,14 +4,14 @@ import "./styles.css";
 import { useToast } from "@/components/ui/use-toast";
 import { useWebsocketQueryInvalidation } from "@/hooks";
 import { cn } from "@/utils";
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
-import { useAi } from "./ai";
+import { AiTestGenerationPanel, useAi } from "./ai";
 import { Requestornator, useMakeProxiedRequest } from "./queries";
 import { useRequestor } from "./reducer";
 import { useRoutes } from "./routes";
@@ -184,6 +184,13 @@ export const RequestorPage = () => {
     },
   );
 
+  const [isAiTestGenerationPanelOpen, setIsAiTestGenerationPanelOpen] =
+    useState(false);
+  const toggleAiTestGenerationPanel = useCallback(
+    () => setIsAiTestGenerationPanelOpen((current) => !current),
+    [],
+  );
+
   return (
     <div
       className={cn(
@@ -259,7 +266,9 @@ export const RequestorPage = () => {
           className={cn(
             BACKGROUND_LAYER,
             "grid",
-            "sm:grid-cols-[auto_1fr]",
+            isAiTestGenerationPanelOpen
+              ? "sm:grid-cols-[auto_1fr_auto]"
+              : "sm:grid-cols-[auto_1fr]",
             "rounded-md",
             "border",
             // HACK - This defensively prevents overflow from getting too excessive,
@@ -304,7 +313,15 @@ export const RequestorPage = () => {
             isLoading={isRequestorRequesting}
             websocketState={websocketState}
             requestType={selectedRoute?.requestType}
+            openAiTestGenerationPanel={toggleAiTestGenerationPanel}
           />
+          {isAiTestGenerationPanelOpen && (
+            <AiTestGenerationPanel
+              // TODO - Only use history for recent matching route
+              history={history}
+              toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
+            />
+          )}
         </div>
       </div>
     </div>
