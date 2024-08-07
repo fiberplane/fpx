@@ -10,7 +10,13 @@ import { SpanKind } from "@/constants";
 import { MizuOrphanLog, OtelSpan, isMizuOrphanLog } from "@/queries";
 import { cn } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
-import React, { useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { isFetchSpan } from "./otel-helpers";
 import {
@@ -44,10 +50,77 @@ const normalizeWaterfallTimestamps = (waterfall: Waterfall) => {
   };
 };
 
+const timelineId = (spanOrLog: Waterfall[0]) => {
+  if ("span" in spanOrLog) {
+    return spanOrLog.span.span_id;
+  }
+  return spanOrLog.id;
+};
+
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   waterfall,
 }) => {
   const { minStart, duration } = normalizeWaterfallTimestamps(waterfall);
+
+  const [activeId, setActiveId] = useState<string>("");
+  const observer = useRef<IntersectionObserver>();
+
+  const timelineEntryIds = useMemo(() => {
+    return waterfall.map((spanOrLog) => timelineId(spanOrLog));
+  }, [waterfall]);
+
+  // Scroll timeline entry item into view if it is out of viewport
+  // TODO - Check if this breaks on smaller screens?
+  useEffect(() => {
+    const element = document.querySelector(`[data-toc-id="${activeId}"]`);
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    if (element) {
+      timeoutId = setTimeout(() => {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "nearest",
+        });
+      }, 300);
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [activeId]);
+
+  const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        setActiveId(entry.target.id);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    observer.current = new IntersectionObserver(handleObserve, {
+      // TODO - This might need more tweaking
+      rootMargin: "0px 0px -33% 0px",
+    });
+
+    const { current: currentObserver } = observer;
+
+    for (const id of timelineEntryIds) {
+      const element = document.getElementById(id?.toString() ?? "");
+      if (element) {
+        currentObserver.observe(element);
+      }
+    }
+
+    return () => {
+      if (currentObserver) {
+        currentObserver.disconnect();
+      }
+    };
+  }, [timelineEntryIds, handleObserve]);
 
   return (
     <div
@@ -70,6 +143,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
                 log={spanOrLog}
                 duration={duration}
                 startTime={minStart}
+                isActive={activeId === `${spanOrLog.id}`}
               />
             );
           }
@@ -80,6 +154,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
               vendorInfo={spanOrLog.vendorInfo}
               duration={duration}
               startTime={minStart}
+              isActive={activeId === `${spanOrLog.span.span_id}`}
             />
           );
         })}
@@ -247,7 +322,8 @@ const WaterfallRowSpan: React.FC<{
   vendorInfo: VendorInfo;
   duration: number;
   startTime: number;
-}> = ({ span, duration, vendorInfo, startTime }) => {
+  isActive: boolean;
+}> = ({ span, duration, vendorInfo, startTime, isActive }) => {
   const id = span.span_id;
   const spanDuration =
     new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
@@ -263,7 +339,7 @@ const WaterfallRowSpan: React.FC<{
         "flex items-center p-2",
         "border-l-2 border-transparent",
         "hover:bg-primary/10 hover:border-blue-500",
-        // activeId === id && "bg-primary/10 border-blue-500",
+        isActive && "bg-primary/10 border-blue-500",
         "transition-all",
         "cursor-pointer",
       )}
@@ -290,7 +366,8 @@ const WaterfallRowLog: React.FC<{
   log: MizuOrphanLog;
   duration: number;
   startTime: number;
-}> = ({ log, duration, startTime }) => {
+  isActive: boolean;
+}> = ({ log, duration, startTime, isActive }) => {
   const id = log.id;
   const lineOffset = `${((new Date(log.timestamp).getTime() - startTime) / duration) * 100}%`;
   const icon = useTimelineIcon(log);
@@ -303,7 +380,7 @@ const WaterfallRowLog: React.FC<{
         "flex items-center p-2",
         "border-l-2 border-transparent",
         "hover:bg-primary/10 hover:border-blue-500",
-        // activeId === id && "bg-primary/10 border-blue-500",
+        isActive && "bg-primary/10 border-blue-500",
         "transition-all",
         "cursor-pointer",
       )}
