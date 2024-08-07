@@ -1,6 +1,6 @@
 {
   "name": "@fiberplane/hono-otel",
-  "description": "Hono middleware to forward OpenTelemetry trace to a local instance of @fiberplane/studio",
+  "description": "Hono middleware to forward OpenTelemetry traces to a local instance of @fiberplane/studio",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
   "main": "dist/index.js",
