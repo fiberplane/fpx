@@ -34,20 +34,26 @@ app.all(
 
     const contentType = c.req.header("content-type");
 
-    let body: string | FormData | undefined;
-    switch (contentType) {
-      case "application/json":
-        body = await c.req.json();
-        break;
-      case "application/x-www-form-urlencoded":
-        body = await c.req.formData();
-        break;
-      case "text/plain":
-        body = await c.req.text();
-        break;
-      default:
-        body = await c.req.text();
-        break;
+    let body: string | FormData | null;
+
+    // if the request is a GET or HEAD, we don't want to send the body
+    if (method === "GET" || method === "HEAD") {
+      body = null;
+    } else {
+      switch (contentType) {
+        case "application/json":
+          body = await c.req.json();
+          break;
+        case "application/x-www-form-urlencoded":
+          body = await c.req.formData();
+          break;
+        case "text/plain":
+          body = await c.req.text();
+          break;
+        default:
+          body = null;
+          break;
+      }
     }
 
     const query = c.req.query();
@@ -58,22 +64,23 @@ app.all(
     const headers = c.req.raw.headers;
     const headersJson: { [key: string]: string } = {};
     for (const [key, value] of headers.entries()) {
+      // these are calculated dynamically by the fetch client so we don't send them down the wire
+      if (key.toLowerCase() === "content-length" || key.toLowerCase() === "content-type") {
+        continue;
+      }
       headersJson[key] = value;
     }
 
-    await webhonc.pushWebhookData(
-      id,
-      {
-        event: "request_incoming",
-        payload: {
-          headers: headersJson,
-          query,
-          body,
-          method,
-          path: pathComponentsWithoutId,
-        },
+    await webhonc.pushWebhookData(id, {
+      event: "request_incoming",
+      payload: {
+        headers: headersJson,
+        query,
+        body,
+        method,
+        path: pathComponentsWithoutId,
       },
-    );
+    });
 
     return c.text("OK");
   },
