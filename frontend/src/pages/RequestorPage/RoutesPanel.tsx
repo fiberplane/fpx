@@ -228,13 +228,13 @@ function HistorySection({
   return (
     <>
       <div className="font-medium text-sm flex items-center mb-2 mt-4">
-        <div className="flex items-center">
-          <ShowHistorySectionIcon
-            className="h-4 w-4 cursor-pointer text-muted-foreground"
-            onClick={() => {
-              setShowHistorySection((current) => !current);
-            }}
-          />
+        <div
+          className="flex items-center w-full cursor-pointer"
+          onClick={() => {
+            setShowHistorySection((current) => !current);
+          }}
+        >
+          <ShowHistorySectionIcon className="h-4 w-4 cursor-pointer text-muted-foreground" />
           <span className="flex items-center text-muted-foreground">
             <ClockIcon className="h-3 w-3 mx-1.5 cursor-pointer" />
             History

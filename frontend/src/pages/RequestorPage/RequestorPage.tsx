@@ -156,13 +156,18 @@ export const RequestorPage = () => {
     showAiGeneratedInputsBanner,
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
-  } = useAi(selectedRoute, history, {
-    setBody,
-    setQueryParams,
-    setPath: handlePathInputChange,
-    setRequestHeaders,
-    updatePathParamValues,
-  });
+  } = useAi(
+    selectedRoute,
+    history,
+    {
+      setBody,
+      setQueryParams,
+      setPath: handlePathInputChange,
+      setRequestHeaders,
+      updatePathParamValues,
+    },
+    body,
+  );
 
   useHotkeys(
     "mod+g",

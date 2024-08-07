@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { ProbedRoute, Requestornator } from "../queries";
+import { RequestBodyType } from "../reducer";
 import { simplifyHistoryEntry } from "./utils";
 
 const fetchAiRequestData = (
   route: ProbedRoute | null,
+  bodyType: RequestBodyType,
   history: Array<Requestornator>,
   persona: string,
 ) => {
@@ -19,6 +21,7 @@ const fetchAiRequestData = (
       handler,
       method,
       path,
+      bodyType,
       history: simplifiedHistory,
       persona,
       openApiSpec,
@@ -34,12 +37,13 @@ const fetchAiRequestData = (
 
 export function useAiRequestData(
   route: ProbedRoute | null,
+  bodyType: RequestBodyType,
   history: Array<Requestornator>,
   persona = "Friendly",
 ) {
   return useQuery({
     queryKey: ["generateRequest"],
-    queryFn: () => fetchAiRequestData(route, history, persona),
+    queryFn: () => fetchAiRequestData(route, bodyType, history, persona),
     enabled: false,
     retry: false,
   });

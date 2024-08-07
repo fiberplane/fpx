@@ -58,6 +58,7 @@ Here is the OpenAPI spec for the handler:
 
 Here is the code for the handler:
 {handler}
+
 `.trim(),
 );
 
@@ -145,6 +146,16 @@ and a body like:
 
 { email: "paul@beatles.music" }
 
+with a body type of "json"
+
+It is, however, possible that the body type is JSON, text, or form data. If the body type is a file stream, return an empty body.
+Only return bodyType "file" for obvious, singular file uploads.
+
+If it appears that more fields are coming alongside a file, return a body type of "form-data" with isMultipart set to true.
+
+For form data, you can return a body type of "form-data". You can still return a JSON object like above,
+I will handle converting it to form data.
+
 ===
 
 Use the tool "make_request". Always respond in valid JSON. Help the user test the happy path.
@@ -215,6 +226,12 @@ and a header like:
 and a body like:
 
 { "body": { "email": "" } }
+
+It is possible that the body type is JSON, text, or form data. You can use the wrong body type to see what happens.
+But if the body type is a file stream, just return an empty body.
+
+For form data, you can return a body type of "form-data". You can still return a JSON object like above,
+I will handle converting it to form data.
 
 You should focus on trying to break things. You are a QA. 
 

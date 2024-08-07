@@ -42,6 +42,18 @@ export const makeRequestTool = {
         body: {
           type: "string" as const,
         },
+        bodyType: {
+          type: "object" as const,
+          properties: {
+            type: {
+              type: "string" as const,
+              enum: ["json", "text", "form-data", "file"],
+            },
+            isMultipart: {
+              type: "boolean" as const,
+            },
+          },
+        },
         headers: {
           type: "array" as const,
           items: {
