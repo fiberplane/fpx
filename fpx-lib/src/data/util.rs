@@ -2,6 +2,7 @@ use anyhow::Result;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::ops::{Deref, DerefMut};
+use time::OffsetDateTime;
 
 /// This is a wrapper around `T` that will deserialize from JSON.
 ///
@@ -71,7 +72,9 @@ where
     where
         S: serde::Serializer,
     {
-        self.0.serialize(serializer)
+        let value = serde_json::to_string(&self.0).map_err(serde::ser::Error::custom)?;
+
+        value.serialize(serializer)
     }
 }
 
@@ -113,60 +116,70 @@ where
 }
 
 /// This is a wrapper that makes it a bit easier to work with a timestamp that
-/// is serialized as a `u64` in the database (since libsql doesn't have a native
-/// timestamp/datetime type).
-#[derive(Clone, Debug, Default)]
-pub struct Timestamp(u64);
+/// is serialized as a `f64`. This should only be used in the database layer.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Timestamp(pub time::OffsetDateTime);
 
 impl Timestamp {
-    pub fn unix_nanos(&self) -> u64 {
-        self.0
+    pub fn now() -> Self {
+        Self(OffsetDateTime::now_utc())
     }
 
-    pub fn now() -> Self {
-        Self(time::OffsetDateTime::now_utc().unix_timestamp_nanos() as u64)
+    pub fn unix_nanos(&self) -> i128 {
+        self.0.unix_timestamp_nanos()
+    }
+
+    pub fn fractional(&self) -> f64 {
+        Self::nanos_to_fractional(self.unix_nanos())
+    }
+
+    fn nanos_to_fractional(t: i128) -> f64 {
+        let t = t as f64;
+        t / 1_000_000_000_f64
+    }
+
+    fn fractional_to_nanos(t: f64) -> i128 {
+        (t * 1_000_000_000_f64) as i128
+    }
+}
+
+impl TryFrom<f64> for Timestamp {
+    type Error = anyhow::Error;
+
+    fn try_from(timestamp: f64) -> std::result::Result<Self, Self::Error> {
+        let nanos = Timestamp::fractional_to_nanos(timestamp);
+        // Note: This will fail if a really big date is passed in. This won't
+        // happen for a while, though it could be used maliciously.
+        let datetime =
+            OffsetDateTime::from_unix_timestamp_nanos(nanos).map_err(|err| anyhow::anyhow!(err))?;
+
+        Ok(Self(datetime))
     }
 }
 
 impl From<Timestamp> for time::OffsetDateTime {
     fn from(timestamp: Timestamp) -> Self {
-        // NOTE: this should not happen any time soon, so we should be able to
-        //       get away with this for now.
-        time::OffsetDateTime::from_unix_timestamp_nanos(timestamp.unix_nanos() as i128)
-            .expect("timestamp is too large for OffsetDateTime")
+        timestamp.0
     }
 }
 
 impl From<time::OffsetDateTime> for Timestamp {
     fn from(timestamp: time::OffsetDateTime) -> Self {
-        let nanos = timestamp.unix_timestamp_nanos();
-        Self(nanos as u64)
+        Self(timestamp)
     }
 }
 
-impl Deref for Timestamp {
-    type Target = u64;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+#[cfg(feature = "wasm-bindgen")]
+impl From<Timestamp> for wasm_bindgen::JsValue {
+    fn from(value: Timestamp) -> Self {
+        wasm_bindgen::JsValue::from_f64(value.fractional())
     }
 }
 
-impl DerefMut for Timestamp {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl AsRef<u64> for Timestamp {
-    fn as_ref(&self) -> &u64 {
-        &self.0
-    }
-}
-
-impl AsMut<u64> for Timestamp {
-    fn as_mut(&mut self) -> &mut u64 {
-        &mut self.0
+#[cfg(feature = "libsql")]
+impl From<Timestamp> for libsql::Value {
+    fn from(timestamp: Timestamp) -> Self {
+        libsql::Value::Real(timestamp.fractional())
     }
 }
 
@@ -175,31 +188,102 @@ impl Serialize for Timestamp {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_i64(self.0 as i64)
+        let timestamp = self.fractional();
+        timestamp.serialize(serializer)
     }
 }
 
 impl<'de> Deserialize<'de> for Timestamp {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let timestamp: i64 = Deserialize::deserialize(deserializer)?;
-
-        Ok(Timestamp(timestamp as u64))
+        let timestamp: f64 = Deserialize::deserialize(deserializer)?;
+        Timestamp::try_from(timestamp).map_err(serde::de::Error::custom)
     }
 }
 
-#[cfg(feature = "wasm-bindgen")]
-impl From<Timestamp> for wasm_bindgen::JsValue {
-    fn from(value: Timestamp) -> Self {
-        wasm_bindgen::JsValue::from(value.0)
-    }
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use time::format_description::well_known::Rfc3339;
 
-#[cfg(feature = "libsql")]
-impl From<Timestamp> for libsql::Value {
-    fn from(timestamp: Timestamp) -> Self {
-        libsql::Value::Integer(timestamp.0 as i64)
+    /// Simple struct that has all the necessary traits to be serialized and
+    /// deserialize.
+    #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+    struct Sample {
+        name: String,
+        age: u32,
+    }
+
+    #[test]
+    fn json_serialize_deserialize() {
+        let sample_1 = Sample {
+            name: "John Doe".to_string(),
+            age: 42,
+        };
+
+        let json = Json(sample_1.clone());
+
+        // Serialize and deserialize the JSON wrapper.
+        let serialized = serde_json::to_string(&json).expect("Unable to serialize");
+        let deserialized: Json<Sample> =
+            serde_json::from_str(&serialized).expect("Unable to deserialize");
+
+        // Get the new sample from the deserialized value.
+        let sample_2 = deserialized.into_inner();
+
+        // Verify that the deserialized value is the same as the original.
+        assert_eq!(sample_1, sample_2);
+    }
+
+    #[test]
+    fn timestamp_serialize_deserialize() {
+        let timestamp_1 =
+            time::OffsetDateTime::parse("2024-08-07T08:39:51+00:00", &Rfc3339).unwrap();
+        let timestamp_1 = Timestamp(timestamp_1);
+
+        // Serialize and deserialize the JSON wrapper.
+        let serialized = serde_json::to_string(&timestamp_1).expect("Unable to serialize");
+        let timestamp_2: Timestamp =
+            serde_json::from_str(&serialized).expect("Unable to deserialize");
+
+        // Note: Given that we're working with floats, we can't really compare
+        // the two timestamps, so we will just ignore the sub-sec precision.
+        assert_eq!(
+            timestamp_1.0.replace_nanosecond(0).unwrap(),
+            timestamp_2.0.replace_nanosecond(0).unwrap()
+        )
+    }
+
+    #[cfg(feature = "wasm-bindgen")]
+    #[test]
+    fn timestamp_serialize_wasm_bindgen() {
+        let timestamp_1 =
+            time::OffsetDateTime::parse("2024-08-07T08:39:51+00:00", &Rfc3339).unwrap();
+        let timestamp_1 = Timestamp(timestamp_1);
+        let timestamp_1_fractional = timestamp_1.fractional();
+
+        let js_value: JsValue = timestamp_1.into();
+        let js_value_fractional = js_value.as_f64().unwrap();
+
+        assert_eq!(timestamp_1_fractional, js_value_fractional)
+    }
+
+    #[cfg(feature = "libsql")]
+    #[test]
+    fn timestamp_serialize_libsql() {
+        let timestamp_1 =
+            time::OffsetDateTime::parse("2024-08-07T08:39:51+00:00", &Rfc3339).unwrap();
+        let timestamp_1 = Timestamp(timestamp_1);
+        let timestamp_1_fractional = timestamp_1.fractional();
+
+        let libsql_value: libsql::Value = timestamp_1.into();
+        match libsql_value {
+            libsql::Value::Real(value) => {
+                assert_eq!(timestamp_1_fractional, value)
+            }
+            _ => panic!("Expected libsql::Value::Real"),
+        }
     }
 }
