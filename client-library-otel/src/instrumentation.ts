@@ -7,6 +7,7 @@ import {
 } from "@opentelemetry/sdk-trace-base";
 import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
+import { Bindings } from "hono/types";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 import { measure } from "./measure";
@@ -54,7 +55,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
         const originalFetch = value as HonoLikeFetch;
         return async function fetch(
           request: Request,
-          env: unknown,
+          env: {} | Bindings | undefined,
           executionContext: ExecutionContext | undefined,
         ) {
           // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,

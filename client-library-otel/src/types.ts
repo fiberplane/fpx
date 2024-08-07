@@ -7,6 +7,8 @@
  * so you know that they will not work.
  */
 
+import { Bindings } from "hono/types";
+
 // import type { Hono } from "hono";
 type GlobalFetch = typeof globalThis.fetch;
 type GlobalFetchArgs = Parameters<GlobalFetch>;
@@ -31,7 +33,7 @@ export type HonoResponse = Awaited<HonoFetchResult>;
  */
 export type HonoLikeFetch = (
   request: Request,
-  env: unknown,
+  env: {} | Bindings | undefined,
   executionContext: ExecutionContext | undefined,
 ) => HonoFetchResult;
 // type HonoLikeFetch = Hono["fetch"];
