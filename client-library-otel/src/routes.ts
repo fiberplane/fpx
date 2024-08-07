@@ -1,4 +1,4 @@
-import type { Hono } from "hono";
+import { HonoLikeApp } from "./types";
 
 type FetchFn = typeof fetch;
 
@@ -22,7 +22,7 @@ export function isRouteInspectorRequest(request: Request) {
 export function respondWithRoutes(
   fetchFn: FetchFn,
   fpxEndpoint: string,
-  app: Hono,
+  app: HonoLikeApp,
 ) {
   const routes = getRoutesFromApp(app) ?? [];
 
@@ -47,7 +47,7 @@ export function respondWithRoutes(
   return new Response("OK");
 }
 
-function getRoutesFromApp(app: Hono) {
+function getRoutesFromApp(app: HonoLikeApp) {
   return app?.routes?.map((route) => ({
     method: route.method,
     path: route.path,

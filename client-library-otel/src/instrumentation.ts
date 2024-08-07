@@ -6,13 +6,14 @@ import {
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
 import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
-import type { ExecutionContext, Hono } from "hono";
+import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
+import { HonoLikeApp, HonoLikeFetch } from "./types";
 import {
   getRequestAttributes,
   getResponseAttributes,
@@ -42,18 +43,7 @@ const defaultConfig = {
   },
 };
 
-// // Type hack that makes our middleware types play nicely with Hono types
-// type RouterRoute = {
-//   method: string;
-//   path: string;
-//   // We can't use the type of a handler that's exported by Hono for some reason.
-//   // When we do that, our types end up mismatching with the user's app!
-//   //
-//   // biome-ignore lint/complexity/noBannedTypes:
-//   handler: Function;
-// };
-
-export function instrument(app: Hono, config?: FpxConfigOptions) {
+export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
   // Freeze the web standard fetch function so that we can use it below to report registered routes back to fpx studio
   const webStandardFetch = fetch;
   return new Proxy(app, {
@@ -61,7 +51,7 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (prop === "fetch" && typeof value === "function") {
-        const originalFetch = value as Hono["fetch"];
+        const originalFetch = value as HonoLikeFetch;
         return async function fetch(
           request: Request,
           env: unknown,
