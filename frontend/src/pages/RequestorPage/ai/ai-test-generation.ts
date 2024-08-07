@@ -1,11 +1,14 @@
 import {
-  MizuTrace,
-  isMizuErrorMessage,
-  isMizuFetchErrorMessage,
-} from "@/queries";
+  getRequestMethod,
+  getRequestUrl,
+  getResponseBody,
+  getResponseHeaders,
+  getStatusCode,
+} from "@/pages/RequestDetailsPage/v2/otel-helpers";
+import { OtelSpans, useOtelTrace } from "@/queries";
 import { redactSensitiveHeaders } from "@/utils";
 import { useCallback, useMemo, useState } from "react";
-import { Requestornator, useTrace } from "../queries";
+import { Requestornator } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
 
 function formatHeaders(headers: Record<string, string>): string {
@@ -14,8 +17,12 @@ function formatHeaders(headers: Record<string, string>): string {
     .join("\n");
 }
 
-function createRequestDescription(request: Requestornator): string {
-  const appRequest = request?.app_requests;
+function createRequestDescription(request: Requestornator | null): string {
+  if (!request) {
+    return "NO_MATCHING_REQUEST_FOUND";
+  }
+
+  const appRequest = request.app_requests;
   const route = appRequest?.requestRoute;
 
   return [
@@ -24,7 +31,10 @@ function createRequestDescription(request: Requestornator): string {
   ].join("\n");
 }
 
-function createResponseDescription(response: Requestornator) {
+function createResponseDescription(response: Requestornator | null) {
+  if (!response) {
+    return "NO_MATCHING_RESPONSE_FOUND";
+  }
   return appResponseToHttpRequest(response);
 }
 
@@ -32,8 +42,8 @@ export function usePrompt(
   latestRequest: Requestornator | null,
   userInput: string,
 ) {
-  const traceId = latestRequest?.app_responses?.traceId;
-  const { trace } = useTrace(traceId);
+  const traceId = latestRequest?.app_responses?.traceId ?? "";
+  const { data: trace } = useOtelTrace(traceId);
 
   const requestDescription = createRequestDescription(latestRequest);
   const responseDescription = createResponseDescription(latestRequest);
@@ -90,47 +100,74 @@ function cleanPrompt(prompt: string) {
     .join("\n");
 }
 
-// Simplified version of serializeTraceForLLM from summarize-traces.ts
-// This only focuses on errors!!
-// Will need to improve it in the future
-function serializeTraceForLLM(trace: MizuTrace) {
-  return trace.logs
-    .reduce(
-      (result, log) => {
-        // Error logs
-        if (isMizuErrorMessage(log?.message)) {
-          // TODO - Format better? What
-          result.push(
-            trimLines(`
-        <ErrorLog>
-        Message: ${log?.message?.message}
-        Stack: ${log?.message?.stack}
-        </ErrorLog>
+// NOTE - This only focuses on exceptions! Will need to improve it in the future
+// TODO - Also add error logs or fetch errors
+function serializeTraceForLLM(trace: OtelSpans) {
+  const events = trace.flatMap((span) => span.events);
+  const exceptions = events.filter((event) => event.name === "exception");
+  const exceptionsContext = exceptions.reduce(
+    (result, exception) => {
+      result.push(
+        trimLines(`
+      <Exception>
+      Message: ${JSON.stringify(exception?.attributes?.message)}
+      Stack: ${JSON.stringify(exception?.attributes?.stacktrace)}
+      </Exception>
       `),
-          );
-        }
+      );
+      return result;
+    },
+    [] as Array<string>,
+  );
 
-        if (isMizuFetchErrorMessage(log?.message)) {
-          result.push(
-            trimLines(`
-        <FetchError>
-        ${log?.message?.status} ${log?.message?.url}
-        <headers>
-          ${formatHeaders(redactSensitiveHeaders(log?.message?.headers) ?? {})}
-        </headers>
-        <body>
-          ${log?.message?.body}
-        </body>
-        </FetchError>
+  // TODO - Find out why error logs are so much less helpful with otel middleware
+  const errorLogs = events.filter(
+    (event) => event.name === "log" && event.attributes?.level === "error",
+  );
+  const errorLogsContext = errorLogs.reduce(
+    (result, log) => {
+      result.push(
+        trimLines(`
+      <ErrorLog>
+      Message: ${log?.attributes?.message}
+      Arguments: ${log?.attributes?.arguments}
+      </ErrorLog>
       `),
-          );
-        }
+      );
+      return result;
+    },
+    [] as Array<string>,
+  );
 
-        return result;
-      },
-      [] as Array<string>,
-    )
-    .join("\n");
+  // TODO - Serialize fetches somehow for context
+  //
+  const fetches = trace.filter((span) => span.name === "fetch");
+  const errorFetches = fetches.filter((span) => {
+    return getStatusCode(span) >= 400;
+  });
+  const fetchContext = errorFetches.reduce(
+    (result, fetchSpan) => {
+      result.push(
+        trimLines(`
+      <FetchError>
+      ${getRequestMethod(fetchSpan)} ${getRequestUrl(fetchSpan)}
+      <headers>
+        ${formatHeaders(redactSensitiveHeaders(getResponseHeaders(fetchSpan)) ?? {})}
+      </headers>
+      <body>
+        ${getResponseBody(fetchSpan)}
+      </body>
+      </FetchError>
+      `),
+      );
+      return result;
+    },
+    [] as Array<string>,
+  );
+
+  return [...exceptionsContext, ...errorLogsContext, ...fetchContext].join(
+    "\n",
+  );
 }
 
 function trimLines(input: string) {
