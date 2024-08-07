@@ -9,8 +9,6 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext, Hono } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
-
-import { FPX_REQUEST_ENV } from "./constants";
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { propagateFpxTraceId } from "./propagation";
@@ -18,7 +16,7 @@ import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
 import {
   getRequestAttributes,
   getResponseAttributes,
-  getRootRequestBodyAndHeaders,
+  getRootRequestAttributes,
 } from "./utils";
 
 type FpxConfig = {
@@ -133,10 +131,14 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
             body: body2,
           });
 
-          // Parse the body and headers for the root request
-          // NOTE - This will add some latency, we should allow turning this off in production
-          const rootRequestAttributes =
-            await getRootRequestBodyAndHeaders(requestForAttributes);
+          // Parse the body and headers for the root request.
+          //
+          // NOTE - This will add some latency, and it will serialize the env object.
+          //        We should not do this in production!
+          const rootRequestAttributes = await getRootRequestAttributes(
+            requestForAttributes,
+            env,
+          );
 
           const measuredFetch = measure(
             {
@@ -146,8 +148,6 @@ export function instrument(app: Hono, config?: FpxConfigOptions) {
                 const requestAttributes = {
                   ...getRequestAttributes(request),
                   ...rootRequestAttributes,
-                  // NOTE - We should not do this in production
-                  [FPX_REQUEST_ENV]: JSON.stringify(env),
                 };
                 span.setAttributes(requestAttributes);
               },

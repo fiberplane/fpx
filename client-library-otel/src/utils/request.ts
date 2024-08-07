@@ -9,6 +9,7 @@ import {
   EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE,
   EXTRA_SEMATTRS_URL_FULL,
   FPX_REQUEST_BODY,
+  FPX_REQUEST_ENV,
   FPX_REQUEST_PATHNAME,
   FPX_REQUEST_SCHEME,
   FPX_REQUEST_SEARCH,
@@ -41,8 +42,11 @@ export function headersToObject(headers: PossibleHeaders) {
 /**
  * HELPER
  */
-export async function getRootRequestBodyAndHeaders(request: Request) {
-  let attributes: Attributes = {};
+export async function getRootRequestAttributes(request: Request, env: unknown) {
+  let attributes: Attributes = {
+    // NOTE - We should not do this in production
+    [FPX_REQUEST_ENV]: JSON.stringify(env),
+  };
 
   if (request.body) {
     const bodyAttr = await formatRootRequestBody(request);
