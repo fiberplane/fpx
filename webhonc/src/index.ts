@@ -65,7 +65,10 @@ app.all(
     const headersJson: { [key: string]: string } = {};
     for (const [key, value] of headers.entries()) {
       // these are calculated dynamically by the fetch client so we don't send them down the wire
-      if (key.toLowerCase() === "content-length" || key.toLowerCase() === "content-type") {
+      if (
+        key.toLowerCase() === "content-length" ||
+        key.toLowerCase() === "content-type"
+      ) {
         continue;
       }
       headersJson[key] = value;

@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 
+import { Badge } from "@/components/ui/badge";
 import { Status } from "@/components/ui/status";
 import { MizuTraceV2, isMizuRootRequestSpan } from "@/queries";
 import { isMizuErrorMessage, isMizuFetchErrorMessage } from "@/queries/types";
@@ -13,7 +14,6 @@ import {
   getResponseBody,
   getStatusCode,
 } from "./otel-helpers";
-import { Badge } from "@/components/ui/badge";
 
 export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
   const errors = useMemo(() => selectErrors(trace), [trace]);
@@ -84,8 +84,8 @@ function selectIsProxied(trace: MizuTraceV2) {
     console.warn("No request span found");
     return false;
   }
-  const headers = getRequestHeaders(requestSpan)
-  return !!headers["x-fpx-webhonc-id"]
+  const headers = getRequestHeaders(requestSpan);
+  return !!headers["x-fpx-webhonc-id"];
 }
 
 function selectStatusCode(trace: MizuTraceV2) {
