@@ -1,7 +1,6 @@
 use super::{models, DbError, Result, Store, Transaction};
 use async_trait::async_trait;
 use std::sync::{Arc, RwLock};
-use tracing::info;
 
 /// A simple in-memory [`Store`] implementation. Currently only intended for
 /// proof of concept.
