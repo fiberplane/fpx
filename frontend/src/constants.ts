@@ -13,7 +13,7 @@ export const FPX_REQUEST_SCHEME = "fpx.http.request.scheme";
 export const FPX_REQUEST_BODY = "fpx.http.request.body";
 export const FPX_REQUEST_ENV = "fpx.http.request.env";
 
-export const FPX_RESPONSE_BODY = "fpx.http.response_body";
+export const FPX_RESPONSE_BODY = "fpx.http.response.body";
 
 export const SpanStatus = {
   UNSET: 0,
