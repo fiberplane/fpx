@@ -2,7 +2,6 @@
 import "./styles.css";
 
 import { useToast } from "@/components/ui/use-toast";
-import { useWebsocketQueryInvalidation } from "@/hooks";
 import { cn } from "@/utils";
 import { useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
