@@ -51,8 +51,6 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
 
   const requestBody = useMemo<string>(() => {
     const body = getRequestBody(span);
-    console.log("span", span);
-    console.log("requestBody", body);
     return body ?? "";
   }, [span]);
 

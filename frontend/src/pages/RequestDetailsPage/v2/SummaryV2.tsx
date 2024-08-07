@@ -9,6 +9,7 @@ import {
 import { useMemo } from "react";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 import { FpxCard, RequestMethod } from "../shared";
+import { BodyViewerV2 } from "./BodyViewerV2";
 import {
   getPathWithSearch,
   getRequestMethod,
@@ -61,7 +62,7 @@ export function SummaryV2({ trace }: { trace: OtelSpan }) {
             ) : (
               <FpxCard className="rounded-sm">
                 <CardContent className="p-2 bg-secondary rounded-sm overflow-y-auto max-h-[200px]">
-                  {body && <TextOrJsonViewer text={body} collapsed />}
+                  {body && <BodyViewerV2 body={body} collapsed />}
                 </CardContent>
               </FpxCard>
             )}

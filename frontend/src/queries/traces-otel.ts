@@ -95,7 +95,8 @@ async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
       spans.map((span) => span.parsedPayload),
     )
     .then((spans) => {
-      console.log("spans", spans);
+      // For inspection, uncomment the following line:
+      // console.log("spans", spans);
       return spans;
     })
     .then((data) => SpansSchema.parse(data));

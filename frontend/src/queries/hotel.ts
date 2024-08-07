@@ -8,7 +8,8 @@ export function useOtelTraces() {
       return fetch("/v1/traces")
         .then((res) => res.json())
         .then((r) => {
-          console.log("Otel Traces before decoding:", r);
+          // Uncomment the following line for inspection:
+          // console.log("Otel Traces before decoding:", r);
           return r;
         })
         .then((r) =>

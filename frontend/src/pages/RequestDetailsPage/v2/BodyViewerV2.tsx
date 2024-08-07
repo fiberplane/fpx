@@ -4,12 +4,13 @@ import { TextOrJsonViewer } from "../TextJsonViewer";
 export function BodyViewerV2({
   body,
   contentType,
-}: { body: string; contentType?: string }) {
+  collapsed,
+}: { body: string; contentType?: string; collapsed?: boolean }) {
   if (contentType?.includes("multipart/form-data")) {
     return <FormDataViewer body={body} />;
   }
 
-  return <TextOrJsonViewer text={body} />;
+  return <TextOrJsonViewer text={body} collapsed={collapsed} />;
 }
 
 function FormDataViewer({ body }: { body: string }) {
