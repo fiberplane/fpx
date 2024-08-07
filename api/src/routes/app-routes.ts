@@ -11,16 +11,23 @@ import {
   appRoutesInsertSchema,
 } from "../db/schema/index.js";
 import {
+  type SerializedFile,
+  serializeRequestBodyForFpxDb,
+} from "../db/schema/requests-responses.js";
+import {
   executeProxyRequest,
   handleFailedRequest,
   handleSuccessfulRequest,
 } from "../lib/proxy-request/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { resolveUrlQueryParams, resolveWebhoncUrl, safeParseJson } from "../lib/utils.js";
+import {
+  resolveUrlQueryParams,
+  resolveWebhoncUrl,
+  safeParseJson,
+} from "../lib/utils.js";
+import { getWebHoncConnectionId } from "../lib/webhonc/store.js";
 import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
-import { SerializedFile, serializeRequestBodyForFpxDb } from "../db/schema/requests-responses.js";
-import { getWebHoncConnectionId } from "../lib/webhonc/store.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -92,7 +99,6 @@ app.get("/v0/all-requests", async (ctx) => {
   return ctx.json(requests);
 });
 
-
 /**
  * This route is used to proxy requests to the service we're calling.
  * It's used to add the trace-id header to the request, and to handle the response.
@@ -136,7 +142,10 @@ app.all("/v0/proxy-request/*", async (ctx) => {
   const requestQueryParams = {
     ...ctx.req.query(),
   };
-  const requestUrl = resolveUrlQueryParams(requestUrlHeader, requestQueryParams);
+  const requestUrl = resolveUrlQueryParams(
+    requestUrlHeader,
+    requestQueryParams,
+  );
   logger.debug("Proxying request to:", requestUrl);
   logger.debug("Proxying request with headers:", requestHeaders);
   // Create a new request object
@@ -241,11 +250,11 @@ app.all("/v0/proxy-request/*", async (ctx) => {
   }
 });
 
-app.get("/v0/webhonc", async (ctx) =>{
+app.get("/v0/webhonc", async (ctx) => {
   const connectionId = getWebHoncConnectionId();
   const baseUrl = resolveWebhoncUrl();
   const protocol = baseUrl.startsWith("localhost") ? "http" : "https";
   return ctx.json({ webhoncUrl: `${protocol}://${baseUrl}/${connectionId}` });
-})
+});
 
 export default app;

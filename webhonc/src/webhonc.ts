@@ -1,6 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
-import type { Bindings } from "./types";
 import { type WsMessage } from "fpx-shared";
+import type { Bindings } from "./types";
 
 export class WebHonc extends DurableObject<Bindings> {
   sessions: Map<string, WebSocket>;

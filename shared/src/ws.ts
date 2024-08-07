@@ -25,4 +25,3 @@ export const WsMessageSchema = z.discriminatedUnion("event", [
     }),
   }),
 ]);
-

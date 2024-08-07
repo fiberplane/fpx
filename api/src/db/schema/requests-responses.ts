@@ -62,9 +62,6 @@ export async function serializeRequestBodyForFpxDb(ctx: Context) {
   return requestBody;
 }
 
-
-
-
 function serializeFile(file: File): SerializedFile {
   return {
     name: file.name,

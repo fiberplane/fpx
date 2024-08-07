@@ -1,7 +1,8 @@
 import path from "node:path";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import { WsMessageSchema } from "fpx-shared";
 import WebSocket from "ws";
-import { z } from "zod";
+import type { z } from "zod";
 import * as schema from "../../db/schema/index.js";
 import logger from "../../logger.js";
 import { resolveServiceArg } from "../../probe-routes.js";
@@ -12,7 +13,6 @@ import {
 } from "../proxy-request/index.js";
 import { resolveUrlQueryParams } from "../utils.js";
 import { setWebHoncConnectionId } from "./store.js";
-import { WsMessageSchema } from "fpx-shared";
 
 export function connectToWebhonc(
   host: string,
@@ -79,8 +79,8 @@ const messageHandlers: {
   ) => Promise<void>;
 } = {
   trace_created: async (message, wsConnections, db) => {
-      logger.info("trace_created message received, no action required")
-    },
+    logger.info("trace_created message received, no action required");
+  },
   connection_open: async (message, wsConnections) => {
     const { connectionId } = message.payload;
     setWebHoncConnectionId(connectionId);
@@ -99,7 +99,10 @@ const messageHandlers: {
 
     const serviceTarget = resolveServiceArg(process.env.FPX_SERVICE_TARGET);
     const resolvedPath = path.join(serviceTarget, ...message.payload.path);
-    const requestUrl = resolveUrlQueryParams(resolvedPath, message.payload.query);
+    const requestUrl = resolveUrlQueryParams(
+      resolvedPath,
+      message.payload.query,
+    );
 
     const startTime = Date.now();
 
@@ -141,6 +144,5 @@ const messageHandlers: {
       const duration = Date.now() - startTime;
       await handleFailedRequest(db, requestId, traceId, duration, error);
     }
-
   },
 };

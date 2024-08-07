@@ -10,6 +10,7 @@ import { createApp } from "./app.js";
 import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema/index.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
+import { resolveWebhoncUrl } from "./lib/utils.js";
 import { connectToWebhonc } from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
@@ -17,7 +18,6 @@ import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
-import { resolveWebhoncUrl } from "./lib/utils.js";
 
 config({ path: ".dev.vars" });
 

@@ -3,8 +3,8 @@ import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "./assets/fpx.svg";
 import { WebhoncBadge } from "./components/WebhoncBadge";
-import { cn } from "./utils";
 import { useWebsocketQueryInvalidation } from "./hooks";
+import { cn } from "./utils";
 
 const Branding = () => {
   return (
@@ -17,7 +17,6 @@ const Branding = () => {
 export const Layout: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-
   // Will add new fpx-requests as they come in by refetching
   // In the future, we'll want to build a better ux around this (not auto refresh the table)
   //

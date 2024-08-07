@@ -44,7 +44,6 @@ const RequestsTable = ({
   );
 };
 
-
 export function RequestsPage() {
   const query = useMizuTraces();
   const queryV2 = useMizuTracesV2();

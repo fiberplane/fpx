@@ -138,5 +138,5 @@ export function resolveWebhoncUrl() {
   const fallbackUrl = "localhost:3000";
   if (!process.env.FPX_WEBHONC_BASE_URL) return fallbackUrl;
   const customUrl = new URL(process.env.FPX_WEBHONC_BASE_URL);
-  return customUrl.host
+  return customUrl.host;
 }
