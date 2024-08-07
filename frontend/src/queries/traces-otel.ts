@@ -66,7 +66,7 @@ export const OtelSpanSchema = z.object({
       span_id: z.string(),
       trace_state: z.string(),
       attributes: OtelAttributesSchema,
-      flags: z.number(),
+      flags: z.number().optional(),
     }),
   ),
 });

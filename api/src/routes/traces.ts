@@ -73,20 +73,28 @@ app.post("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
 
   const body: IExportTraceServiceRequest = await ctx.req.json();
-  const tracesPayload = fromCollectorRequest(body).map((span) => ({
-    rawPayload: body,
-    parsedPayload: span,
-    spanId: span.span_id,
-    traceId: span.trace_id,
-  }));
 
   try {
-    await db.insert(otelSpans).values(tracesPayload);
-  } catch (error) {
-    logger.error("Error inserting trace", error);
-  }
+    const tracesPayload = fromCollectorRequest(body).map((span) => ({
+      rawPayload: body,
+      parsedPayload: span,
+      spanId: span.span_id,
+      traceId: span.trace_id,
+    }));
 
-  return ctx.text("OK");
+    // TODO - Find a way to use a type guard
+    try {
+      await db.insert(otelSpans).values(tracesPayload);
+    } catch (error) {
+      logger.error("Error inserting trace", error);
+      return ctx.text("Error inserting trace", 500);
+    }
+
+    return ctx.text("OK");
+  } catch (error) {
+    logger.error("Error parsing trace data", error);
+    return ctx.text("Error parsing trace data", 400);
+  }
 });
 
 export default app;
@@ -126,12 +134,12 @@ type MizuSpan = {
 
 /**
  * HACK - Port of the rust code that massages traces into the format we use in the UI.
- * 
+ *
  * A few differences:
- * 
+ *
  * - The otel js library does not expose `traceFlags` or `flags` from what I can tell,
  *   so that field is always blank.
- * 
+ *
  * - `mapAttributes` simply returns the value, instead of an object whose key describes the attribute data type.
  *   By convention, we only use string and number values. Complex values are serialized.
  */
