@@ -18,6 +18,12 @@ const { otelSpans } = schema;
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
+/**
+ * As of writing, this endpoint is used to fetch the root span (`span.name === "request"`)
+ * for all spans in the database.
+ *
+ * This powers the table of traces in the UI.
+ */
 app.get("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
 
@@ -34,6 +40,11 @@ app.get("/v1/traces", async (ctx) => {
   return ctx.json(traces);
 });
 
+/**
+ * As of writing, this endpoint is used to fetch all spans for a given trace ID.
+ *
+ * This powers the details page of a trace in the UI.
+ */
 app.get("/v1/traces/:traceId/spans", async (ctx) => {
   const db = ctx.get("db");
 
@@ -62,14 +73,12 @@ app.post("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
 
   const body: IExportTraceServiceRequest = await ctx.req.json();
-  // console.log("RAW TRACE", JSON.stringify(body, null, 2));
   const tracesPayload = fromCollectorRequest(body).map((span) => ({
     rawPayload: body,
     parsedPayload: span,
     spanId: span.span_id,
     traceId: span.trace_id,
   }));
-  // console.log("PAYLOAD", JSON.stringify(tracesPayload, null, 2));
 
   try {
     await db.insert(otelSpans).values(tracesPayload);
@@ -82,7 +91,7 @@ app.post("/v1/traces", async (ctx) => {
 
 export default app;
 
-type MizuTrace = {
+type MizuSpan = {
   trace_id: string;
   span_id: string;
   parent_span_id: string | null;
@@ -108,19 +117,26 @@ type MizuTrace = {
     attributes: Record<string, AttributeValue>;
   }[];
   links: {
-    traceId: string;
-    spanId: string;
-    traceState: string | undefined;
+    trace_id: string;
+    span_id: string;
+    trace_state: string | undefined;
     attributes: Record<string, AttributeValue>;
   }[];
 };
 
 /**
- * TODO
- * - [ ] Check if ISpan.attributes is same as IResource.attributes and IInstrumentationScope.attributes
+ * HACK - Port of the rust code that massages traces into the format we use in the UI.
+ * 
+ * A few differences:
+ * 
+ * - The otel js library does not expose `traceFlags` or `flags` from what I can tell,
+ *   so that field is always blank.
+ * 
+ * - `mapAttributes` simply returns the value, instead of an object whose key describes the attribute data type.
+ *   By convention, we only use string and number values. Complex values are serialized.
  */
 function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
-  const result: Array<MizuTrace> = [];
+  const result: Array<MizuSpan> = [];
 
   for (const resourceSpan of tracesData.resourceSpans ?? []) {
     const resourceAttributes = resourceSpan.resource
@@ -230,12 +246,11 @@ function mapEvent(event: IEvent) {
   };
 }
 
-// TODO - Fix this for camelCasing?
 function mapLink(link: ILink) {
   return {
-    traceId: stringOrUintToString(link.traceId),
-    spanId: stringOrUintToString(link.spanId),
-    traceState: link.traceState,
+    trace_id: stringOrUintToString(link.traceId),
+    span_id: stringOrUintToString(link.spanId),
+    trace_state: link.traceState,
     attributes: mapAttributes(link.attributes),
   };
 }
