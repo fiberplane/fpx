@@ -17,6 +17,7 @@ import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
+import { resolveWebhoncUrl } from "./lib/utils.js";
 
 config({ path: ".dev.vars" });
 
@@ -81,6 +82,5 @@ startRouteProbeWatcher(watchDir);
 // Set up websocket server
 setupRealtimeService({ server, path: "/ws", wsConnections });
 
-const webhoncUrl = "wss://webhonc.mies.workers.dev/ws";
-// const webhoncUrl = "ws://localhost:3000/ws"
+const webhoncUrl = resolveWebhoncUrl();
 connectToWebhonc(webhoncUrl, db, wsConnections);

@@ -10,37 +10,20 @@ import {
   handleFailedRequest,
   handleSuccessfulRequest,
 } from "../proxy-request/index.js";
-import { resolveUrl } from "../utils.js";
+import { resolveUrlQueryParams } from "../utils.js";
 import { setWebHoncConnectionId } from "./store.js";
-
-const WsMessageSchema = z.discriminatedUnion("event", [
-  z.object({
-    event: z.literal("connection_open"),
-    payload: z.object({
-      connectionId: z.string(),
-    }),
-  }),
-  z.object({
-    event: z.literal("request_incoming"),
-    payload: z.object({
-      headers: z.record(z.string()),
-      query: z.record(z.string()),
-      path: z.array(z.string()),
-      body: z.any(),
-      method: z.string(),
-    }),
-  }),
-]);
+import { WsMessageSchema } from "fpx-shared";
 
 export function connectToWebhonc(
-  url: string,
+  host: string,
   db: LibSQLDatabase<typeof schema>,
   wsConnections: Set<WebSocket>,
 ) {
-  const socket = new WebSocket(url);
+  const protocol = host.startsWith("localhost") ? "ws" : "wss";
+  const socket = new WebSocket(`${protocol}://${host}/ws`);
 
   socket.onopen = () => {
-    logger.debug("Connected to the webhonc service");
+    logger.debug(`Connected to the webhonc service at ${host}`);
   };
 
   socket.onmessage = async (event) => {
@@ -70,6 +53,8 @@ async function handleMessage(
   db: LibSQLDatabase<typeof schema>,
 ) {
   const parsedMessage = WsMessageSchema.parse(
+    // it probably doesn't make sense that we're parsing the entire message and then re-serializing it
+    // for the request maker but this is the easiest way to move forward for now
     JSON.parse(event.data.toString()),
   );
 
@@ -93,6 +78,9 @@ const messageHandlers: {
     db: LibSQLDatabase<typeof schema>,
   ) => Promise<void>;
 } = {
+  trace_created: async (message, wsConnections, db) => {
+      logger.info("trace_created message received, no action required")
+    },
   connection_open: async (message, wsConnections) => {
     const { connectionId } = message.payload;
     setWebHoncConnectionId(connectionId);
@@ -108,11 +96,13 @@ const messageHandlers: {
   request_incoming: async (message, wsConnections, db) => {
     // no trace id is coming from the websocket, so we generate one
     const traceId = crypto.randomUUID();
+
     const serviceTarget = resolveServiceArg(process.env.FPX_SERVICE_TARGET);
     const resolvedPath = path.join(serviceTarget, ...message.payload.path);
-    const requestUrl = resolveUrl(resolvedPath, message.payload.query);
+    const requestUrl = resolveUrlQueryParams(resolvedPath, message.payload.query);
 
     const startTime = Date.now();
+
     const newRequest: schema.NewAppRequest = {
       requestMethod: message.payload
         .method as schema.NewAppRequest["requestMethod"],
@@ -152,14 +142,5 @@ const messageHandlers: {
       await handleFailedRequest(db, requestId, traceId, duration, error);
     }
 
-    for (const ws of wsConnections) {
-      ws.send(
-        JSON.stringify({
-          event: "trace_created",
-          // we should probably collect all query keys inside the schema or something so it's unified
-          payload: ["mizuTraces"],
-        }),
-      );
-    }
   },
 };

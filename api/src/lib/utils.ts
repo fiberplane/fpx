@@ -107,14 +107,14 @@ export function safeParseJson(str: string | null | undefined) {
   }
 }
 
-export function safeReadTextBody(response: Response) {
+export async function safeReadTextBody(response: Response) {
   return response.text().catch((error) => {
     logger.error("Failed to parse response body", error);
     return null;
   });
 }
 
-export function resolveUrl(
+export function resolveUrlQueryParams(
   url: string,
   queryParams?: Record<string, string> | null,
 ) {
@@ -125,4 +125,18 @@ export function resolveUrl(
     urlObject.searchParams.set(key, value);
   }
   return urlObject.toString();
+}
+
+/**
+ * Simple utility function to resolve the Webhonc service URL with default values
+ *
+ * Note: it will always return just the host, a string without the protocol, path
+ * or port, e.g. webhonc.mies.workers.dev
+ */
+export function resolveWebhoncUrl() {
+  // const fallbackUrl = "webhonc.mies.workers.dev";
+  const fallbackUrl = "localhost:3000";
+  if (!process.env.FPX_WEBHONC_BASE_URL) return fallbackUrl;
+  const customUrl = new URL(process.env.FPX_WEBHONC_BASE_URL);
+  return customUrl.host
 }
