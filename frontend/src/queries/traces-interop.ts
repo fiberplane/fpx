@@ -1,3 +1,8 @@
+/**
+ * This is a temporary module that supports the MizuOrphanLog type,
+ * which is used to display logs in the RequestDetailsPage.
+ */
+
 import { z } from "zod";
 
 const CallerLocationSchema = z.object({
