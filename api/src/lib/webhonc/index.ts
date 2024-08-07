@@ -12,7 +12,7 @@ import {
   handleSuccessfulRequest,
 } from "../proxy-request/index.js";
 import { resolveUrlQueryParams } from "../utils.js";
-import { setWebHoncConnectionId } from "./store.js";
+import { getWebHoncConnectionId, setWebHoncConnectionId } from "./store.js";
 
 export function connectToWebhonc(
   host: string,
@@ -93,7 +93,7 @@ const messageHandlers: {
       );
     }
   },
-  request_incoming: async (message, wsConnections, db) => {
+  request_incoming: async (message, _wsConnections, db) => {
     // no trace id is coming from the websocket, so we generate one
     const traceId = crypto.randomUUID();
 
@@ -117,8 +117,11 @@ const messageHandlers: {
       requestRoute: message.payload.path.join("/"),
     };
 
+    const webhoncId = getWebHoncConnectionId();
+
     // TODO: assert that the request headers are not null
     newRequest!.requestHeaders!["x-fpx-trace-id"] = traceId;
+    newRequest!.requestHeaders!["x-fpx-webhonc-id"] = webhoncId ?? "";
 
     const [{ id: requestId }] = await db
       .insert(schema.appRequests)
