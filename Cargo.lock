@@ -773,15 +773,18 @@ dependencies = [
  "hex",
  "http 1.1.0",
  "http-body-util",
+ "libsql",
  "opentelemetry-proto",
  "prost 0.13.1",
  "serde",
  "serde_json",
+ "strum",
  "thiserror",
  "time",
  "tokio",
  "tracing",
  "url",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -809,6 +812,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "tracing-web",
+ "wasm-bindgen",
  "worker",
  "worker-macros",
 ]

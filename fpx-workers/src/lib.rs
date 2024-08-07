@@ -1,10 +1,10 @@
 use axum::async_trait;
 use axum::routing::{get, post};
+use data::D1Store;
 use fpx_lib::api::models::ServerMessage;
-use fpx_lib::data::fake_store::FakeStore;
 use fpx_lib::events::ServerEvents;
 use fpx_lib::{api, service};
-use std::sync::{Arc, LazyLock};
+use std::sync::Arc;
 use tower_service::Service;
 use tracing_subscriber::fmt::format::Pretty;
 use tracing_subscriber::fmt::time::UtcTime;
@@ -17,7 +17,7 @@ use ws::handlers::{ws_broadcast, ws_connect, WorkerApiState};
 
 mod ws;
 
-static FAKE_STORE: LazyLock<FakeStore> = LazyLock::new(FakeStore::default);
+mod data;
 
 #[event(start)]
 fn start() {
@@ -42,17 +42,18 @@ async fn fetch(
     console_error_panic_hook::set_once();
 
     let env = Arc::new(env);
+    let state = WorkerApiState { env: env.clone() };
 
-    let new_events = DurableObjectsEvents::new(env.clone());
-    let events = Arc::new(new_events);
+    let events = DurableObjectsEvents::new(env.clone());
+    let boxed_events = Arc::new(events);
 
-    let state = WorkerApiState { env };
+    let d1_database = env.d1("DB").expect("unable to create a database");
 
-    let store = FAKE_STORE.clone();
+    let store = D1Store::new(d1_database);
     let boxed_store = Arc::new(store);
 
-    let service = service::Service::new(boxed_store.clone(), events.clone());
-    let api_router = api::create_api(events, service, boxed_store);
+    let service = service::Service::new(boxed_store.clone(), boxed_events.clone());
+    let api_router = api::create_api(boxed_events, service, boxed_store);
 
     let mut router: axum::Router = axum::Router::new()
         .route("/api/ws", get(ws_connect))

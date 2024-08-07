@@ -7,6 +7,7 @@ use opentelemetry_proto::tonic::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use strum::AsRefStr;
 
 fn parse_time_nanos(nanos: u64) -> time::OffsetDateTime {
     // NOTE: this should not happen any time soon, so we should be able to
@@ -116,7 +117,7 @@ impl Span {
     }
 }
 
-#[derive(Default, Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Default, Serialize, Deserialize, PartialEq, Debug, Clone, AsRefStr)]
 pub enum SpanKind {
     Internal,
     Server,
@@ -138,6 +139,20 @@ impl From<span::SpanKind> for SpanKind {
             span::SpanKind::Producer => SpanKind::Producer,
             span::SpanKind::Consumer => SpanKind::Consumer,
         }
+    }
+}
+
+#[cfg(feature = "libsql")]
+impl From<SpanKind> for libsql::Value {
+    fn from(value: SpanKind) -> Self {
+        value.as_ref().into()
+    }
+}
+
+#[cfg(feature = "wasm-bindgen")]
+impl From<SpanKind> for wasm_bindgen::JsValue {
+    fn from(value: SpanKind) -> Self {
+        wasm_bindgen::JsValue::from_str(value.as_ref())
     }
 }
 

@@ -5,6 +5,11 @@ compatibility_date = "2024-07-30"
 [build]
 command = "cargo install -q worker-build && worker-build --release"
 
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "test-fpx"
+database_id = ""
+
 [[durable_objects.bindings]]
 name = "WEBSOCKET_HIBERNATION_SERVER"
 class_name = "WebSocketHibernationServer"
