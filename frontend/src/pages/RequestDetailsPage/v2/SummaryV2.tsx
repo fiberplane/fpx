@@ -9,9 +9,11 @@ import { FpxCard, RequestMethod } from "../shared";
 import {
   getMethod,
   getPathWithSearch,
+  getRequestHeaders,
   getResponseBody,
   getStatusCode,
 } from "./otel-helpers";
+import { Badge } from "@/components/ui/badge";
 
 export function SummaryV2({ trace }: { trace: MizuTraceV2 }) {
   const errors = useMemo(() => selectErrors(trace), [trace]);
@@ -64,14 +66,26 @@ export function HttpSummary({ trace }: { trace: MizuTraceV2 }) {
   const statusCode = useMemo(() => selectStatusCode(trace), [trace]);
   const path = useMemo(() => selectPath(trace), [trace]);
   const method = useMemo(() => selectMethod(trace), [trace]);
+  const isProxied = useMemo(() => selectIsProxied(trace), [trace]);
 
   return (
     <div className="flex gap-2 items-center">
       <Status className="md:text-base" statusCode={Number(statusCode)} />
       <RequestMethod method={method} />
       <p className="text-sm md:text-base font-mono">{path}</p>
+      {isProxied && <Badge className="rounded-xl">Proxied</Badge>}
     </div>
   );
+}
+
+function selectIsProxied(trace: MizuTraceV2) {
+  const requestSpan = trace.spans.find(isMizuRootRequestSpan);
+  if (!requestSpan) {
+    console.warn("No request span found");
+    return false;
+  }
+  const headers = getRequestHeaders(requestSpan)
+  return !!headers["x-fpx-webhonc-id"]
 }
 
 function selectStatusCode(trace: MizuTraceV2) {
