@@ -127,7 +127,7 @@ app.post(
       return ctx.text("OK");
     } catch (err) {
       if (err instanceof Error) {
-        console.error("Error processing probed routes", err);
+        logger.error("Error processing probed routes", err);
       }
       return ctx.json({ error: "Error processing probed routes" }, 500);
     }
@@ -329,7 +329,7 @@ app.all("/v0/proxy-request/*", async (ctx) => {
 
     return proxiedResponse;
   } catch (fetchError) {
-    console.log("fetchError", fetchError);
+    logger.debug("Error executing proxied request (fetchError):", fetchError);
     const responseTime = Date.now() - startTime;
     const { failureDetails, failureReason, isFailure } =
       await handleFailedRequest(
