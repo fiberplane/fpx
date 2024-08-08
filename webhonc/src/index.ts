@@ -1,10 +1,10 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { logger } from "hono/logger";
 import { z } from "zod";
 import type { Bindings, Variables } from "./types";
 import { resolveBody, resolveWebhoncId } from "./utils";
 import { WebHonc } from "./webhonc";
-import { logger } from "hono/logger";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -49,7 +49,6 @@ app.all(
     const body: string | FormData | null = await resolveBody(c);
 
     const query = c.req.query();
-
 
     const headers = c.req.raw.headers;
     const headersJson: { [key: string]: string } = {};

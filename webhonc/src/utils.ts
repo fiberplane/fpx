@@ -5,7 +5,7 @@ export function resolveWebhoncId(c: Context, id: string) {
   try {
     const doId = c.env.WEBHONC.idFromString(id);
     const webhonc = c.env.WEBHONC.get(doId) as DurableObjectStub<WebHonc>;
-    return webhonc
+    return webhonc;
   } catch (error) {
     // TypeError is thrown when the id is not a valid Durable Object ID
     // we handle those cases but this is in case the error is something else
@@ -40,7 +40,9 @@ export async function resolveBody(c: Context) {
 
     // Form data (URL-encoded)
     if (contentType.includes("application/x-www-form-urlencoded")) {
-      console.debug("Content type is application/x-www-form-urlencoded, returning FormData");
+      console.debug(
+        "Content type is application/x-www-form-urlencoded, returning FormData",
+      );
       return Object.fromEntries(await c.req.formData());
     }
 
@@ -63,7 +65,9 @@ export async function resolveBody(c: Context) {
       contentType === "text/css" ||
       contentType === "text/csv"
     ) {
-      console.debug("Content type is XML, HTML, JavaScript, CSS, or CSV, returning text");
+      console.debug(
+        "Content type is XML, HTML, JavaScript, CSS, or CSV, returning text",
+      );
       return await c.req.text();
     }
 
