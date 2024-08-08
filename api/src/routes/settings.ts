@@ -46,7 +46,10 @@ async function updateSettings(
     .returning();
 }
 
-export async function getSetting(db: LibSQLDatabase<typeof schema>, key: string) {
+export async function getSetting(
+  db: LibSQLDatabase<typeof schema>,
+  key: string,
+) {
   const settingsRecords = await db.select().from(settings);
 
   if (settingsRecords.length == 0) {

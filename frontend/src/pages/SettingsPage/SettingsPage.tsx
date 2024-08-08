@@ -13,9 +13,9 @@ import { cn } from "@/utils";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
+import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 import { RoutesSettingsForm } from "./RoutesSettingsForm";
 import { TracingLiteSettingsForm } from "./TracingLiteSettingsForm";
-import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 
 export function SettingsPage() {
   const { data, isPending, isError } = useFetchSettings();

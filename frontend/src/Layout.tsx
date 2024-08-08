@@ -4,8 +4,8 @@ import { NavLink } from "react-router-dom";
 import FpxIcon from "./assets/fpx.svg";
 import { WebhoncBadge } from "./components/WebhoncBadge";
 import { useWebsocketQueryInvalidation } from "./hooks";
-import { cn } from "./utils";
 import { useProxyRequestsEnabled } from "./hooks/useProxyRequestsEnabled";
+import { cn } from "./utils";
 
 const Branding = () => {
   return (
@@ -40,11 +40,11 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             </div>
           </div>
         </div>
-        {shouldShowProxyRequests &&
+        {shouldShowProxyRequests && (
           <div className="px-4">
             <WebhoncBadge />
           </div>
-        }
+        )}
       </nav>
       <main
         className={cn("md:gap-8", "overflow-hidden", "h-[calc(100vh-64px)]")}

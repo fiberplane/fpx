@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -10,7 +11,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
 import { useSettingsForm } from "./form";
-import { Card, CardContent } from "@/components/ui/card";
 
 // TODO: automatically restart the fpx studio when this is changed
 export function ProxyRequestsSettingsForm({
@@ -43,9 +43,10 @@ export function ProxyRequestsSettingsForm({
                         </span>
                       </FormLabel>
                       <FormDescription className="max-w-3xl">
-                        Enable proxying of requests from a remote service. This feature
-                        is useful for debugging, testing, and developing with services
-                        that are only available on a public internet (like webhooks).
+                        Enable proxying of requests from a remote service. This
+                        feature is useful for debugging, testing, and developing
+                        with services that are only available on a public
+                        internet (like webhooks).
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -59,7 +60,9 @@ export function ProxyRequestsSettingsForm({
                     <Card className="bg-muted/20 rounded-xl">
                       <CardContent className="p-4">
                         <p className="text-sm text-muted-foreground">
-                          <span className="font-bold">Note</span>: You will need to restart the FPX studio for this change to take effect.
+                          <span className="font-bold">Note</span>: You will need
+                          to restart the FPX studio for this change to take
+                          effect.
                         </p>
                       </CardContent>
                     </Card>
