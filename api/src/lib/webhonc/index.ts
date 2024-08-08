@@ -78,7 +78,7 @@ const messageHandlers: {
     db: LibSQLDatabase<typeof schema>,
   ) => Promise<void>;
 } = {
-  trace_created: async (message, wsConnections, db) => {
+  trace_created: async (_message, _wsConnections, _db) => {
     logger.info("trace_created message received, no action required");
   },
   connection_open: async (message, wsConnections) => {
@@ -119,9 +119,19 @@ const messageHandlers: {
 
     const webhoncId = getWebHoncConnectionId();
 
-    // TODO: assert that the request headers are not null
-    newRequest!.requestHeaders!["x-fpx-trace-id"] = traceId;
-    newRequest!.requestHeaders!["x-fpx-webhonc-id"] = webhoncId ?? "";
+    const supplementedHeaders = {
+      "x-fpx-trace-id": traceId,
+      "x-fpx-webhonc-id": webhoncId ?? "",
+    };
+
+    if (newRequest?.requestHeaders) {
+      newRequest.requestHeaders = {
+        ...newRequest?.requestHeaders,
+        ...supplementedHeaders,
+      };
+    } else {
+      newRequest.requestHeaders = supplementedHeaders;
+    }
 
     const [{ id: requestId }] = await db
       .insert(schema.appRequests)
