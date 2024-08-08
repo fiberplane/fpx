@@ -1,5 +1,6 @@
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 
+import RobotIcon from "@/assets/Robot.svg";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -15,7 +16,6 @@ import {
   ArrowDownIcon,
   ArrowTopRightIcon,
   ArrowUpIcon,
-  CodeIcon,
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -41,6 +41,7 @@ type Props = {
   requestType: RequestType;
   websocketState: WebSocketState;
   openAiTestGenerationPanel: () => void;
+  isAiTestGenerationPanelOpen: boolean;
 };
 
 export function ResponsePanel({
@@ -52,6 +53,7 @@ export function ResponsePanel({
   requestType,
   websocketState,
   openAiTestGenerationPanel,
+  isAiTestGenerationPanelOpen,
 }: Props) {
   const isFailure = !!response?.app_responses?.isFailure;
   const showBottomToolbar = !!response?.app_responses?.traceId;
@@ -80,11 +82,14 @@ export function ResponsePanel({
             )}
           >
             <Button
-              variant="ghost"
+              variant={isAiTestGenerationPanelOpen ? "outline" : "ghost"}
               size="icon"
               onClick={openAiTestGenerationPanel}
+              className={cn(
+                isAiTestGenerationPanelOpen && "opacity-50 bg-slate-900",
+              )}
             >
-              <CodeIcon className="h-4 w-4 cursor-pointer" />
+              <RobotIcon className="h-4 w-4 cursor-pointer" />
             </Button>
           </div>
         </CustomTabsList>

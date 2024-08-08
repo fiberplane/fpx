@@ -327,6 +327,7 @@ export const RequestorPage = () => {
             websocketState={websocketState}
             requestType={selectedRoute?.requestType}
             openAiTestGenerationPanel={toggleAiTestGenerationPanel}
+            isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
           />
           {isAiTestGenerationPanelOpen && (
             <AiTestGenerationPanel
