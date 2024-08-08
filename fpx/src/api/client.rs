@@ -5,14 +5,15 @@
 //! fine.
 
 use super::errors::ApiClientError;
-use crate::otel_util::HeaderMapInjector;
 use anyhow::Result;
 use fpx_lib::api::handlers::spans::SpanGetError;
+use fpx_lib::api::handlers::traces::TraceGetError;
 use fpx_lib::api::models;
+use fpx_lib::otel::HeaderMapInjector;
 use http::{HeaderMap, Method};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
-use tracing::trace;
+use tracing::{debug, trace};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
 
@@ -87,6 +88,10 @@ impl ApiClient {
         // Make request
         let response = req.send().await?;
 
+        if let Some(header_value) = response.headers().get("traceparent") {
+            debug!(?header_value, "response contained a traceparent header!")
+        }
+
         // Copy the status code here in case we are unable to parse the response as
         // the Ok or Err variant.
         let status_code = response.status();
@@ -132,6 +137,15 @@ impl ApiClient {
         trace_id: impl AsRef<str>,
     ) -> Result<Vec<models::Span>, ApiClientError<SpanGetError>> {
         let path = format!("api/traces/{}/spans", trace_id.as_ref());
+
+        self.do_req(Method::GET, path, None::<()>).await
+    }
+
+    pub async fn trace_get(
+        &self,
+        trace_id: impl AsRef<str>,
+    ) -> Result<models::TraceSummary, ApiClientError<TraceGetError>> {
+        let path = format!("api/traces/{}", trace_id.as_ref());
 
         self.do_req(Method::GET, path, None::<()>).await
     }

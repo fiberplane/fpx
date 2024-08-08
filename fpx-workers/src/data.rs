@@ -96,7 +96,7 @@ impl Store for D1Store {
     async fn span_list_by_trace(
         &self,
         _tx: &Transaction,
-        trace_id: String,
+        trace_id: &str,
     ) -> Result<Vec<models::Span>> {
         SendFuture::new(async {
             self.fetch_all("SELECT * FROM spans WHERE trace_id=$1", &[trace_id.into()])

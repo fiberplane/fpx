@@ -54,7 +54,7 @@ pub trait Store: Send + Sync {
     async fn span_list_by_trace(
         &self,
         tx: &Transaction,
-        trace_id: String,
+        trace_id: &str,
     ) -> Result<Vec<models::Span>>;
 
     async fn span_create(

@@ -82,7 +82,7 @@ impl Store for LibsqlStore {
         Ok(span)
     }
 
-    async fn span_list_by_trace(&self, _tx: &Transaction, trace_id: String) -> Result<Vec<Span>> {
+    async fn span_list_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<Vec<Span>> {
         let span = self
             .connection
             .query("SELECT * FROM spans WHERE trace_id=$1", params!(trace_id))

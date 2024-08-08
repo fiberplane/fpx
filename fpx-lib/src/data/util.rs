@@ -117,7 +117,7 @@ where
 
 /// This is a wrapper that makes it a bit easier to work with a timestamp that
 /// is serialized as a `f64`. This should only be used in the database layer.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Timestamp(pub time::OffsetDateTime);
 
 impl Timestamp {

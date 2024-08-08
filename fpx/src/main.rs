@@ -19,7 +19,6 @@ mod commands;
 pub mod data;
 pub mod events;
 pub mod grpc;
-mod otel_util;
 
 #[tokio::main]
 async fn main() -> Result<()> {
