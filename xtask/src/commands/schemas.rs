@@ -18,8 +18,9 @@ pub struct Args {
 pub async fn handle_command(args: Args) -> Result<()> {
     // Define which types should be used to generate schemas
     let schemas = Vec::from([
-        // schema_for!(ClientMessage),
-        // schema_for!(ServerMessage),
+        schema_for!(ClientMessage),
+        schema_for!(ServerMessage),
+        // schema_for!(fpx_lib::api::models::Span),
     ]);
 
     let zod_schema = generate_zod_schemas(&args.project_directory, &schemas)?;

@@ -1,3 +1,4 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod otel;
@@ -9,7 +10,7 @@ pub use otel::*;
 pub const FPX_WEBSOCKET_ID_HEADER: &str = "fpx-websocket-id";
 
 /// Messages that are send from the server to the client.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ServerMessage {
     /// If this is a response to a client message, then this field contains the
@@ -52,7 +53,7 @@ impl ServerMessage {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ServerMessageDetails {
@@ -77,7 +78,7 @@ impl From<ServerMessageDetails> for ServerMessage {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ServerError {
@@ -86,7 +87,7 @@ pub enum ServerError {
 }
 
 /// Messages that are send from the client to the server.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ClientMessage {
     /// A unique identifier for this message. This will be used by certain
@@ -112,14 +113,14 @@ impl ClientMessage {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "type", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum ClientMessageDetails {
     Debug,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct SpanAdded {
     /// New spans that have been added. The key is the trace ID and the values
