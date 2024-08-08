@@ -286,3 +286,50 @@ impl From<any_value::Value> for AttributeValue {
         }
     }
 }
+
+/// A trace contains a summary of its traces.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TraceSummary {
+    /// The trace id.
+    pub trace_id: String,
+
+    /// Start of the first span
+    #[serde(with = "time::serde::rfc3339")]
+    pub start_time: time::OffsetDateTime,
+
+    /// End of the last span
+    #[serde(with = "time::serde::rfc3339")]
+    pub end_time: time::OffsetDateTime,
+
+    /// A summary of the root span associated with this trace.
+    ///
+    /// A root span is a span that has no parent span. This can be empty if the
+    /// root span was never collected.
+    pub root_span: Option<SpanSummary>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct SpanSummary {
+    /// The span id.
+    pub span_id: String,
+
+    /// The name of the span.
+    pub name: String,
+
+    /// The kind of span.
+    pub span_kind: SpanKind,
+
+    /// Optional status of the span.
+    pub result: Option<Status>,
+}
+
+impl From<Span> for SpanSummary {
+    fn from(span: Span) -> Self {
+        Self {
+            span_id: span.span_id,
+            name: span.name,
+            span_kind: span.kind,
+            result: span.status,
+        }
+    }
+}

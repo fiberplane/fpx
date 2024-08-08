@@ -3,6 +3,7 @@ use clap::Subcommand;
 use url::Url;
 
 mod spans;
+mod traces;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -24,10 +25,14 @@ pub struct Args {
 pub enum Command {
     /// Interact with stored spans
     Spans(spans::Args),
+
+    /// Interact with stored traces
+    Traces(traces::Args),
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
     match args.command {
         Command::Spans(args) => spans::handle_command(args).await,
+        Command::Traces(args) => traces::handle_command(args).await,
     }
 }

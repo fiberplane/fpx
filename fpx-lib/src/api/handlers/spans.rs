@@ -64,7 +64,7 @@ pub async fn span_list_handler(
     hex::decode(&trace_id)
         .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
 
-    let spans = store.span_list_by_trace(&tx, trace_id).await?;
+    let spans = store.span_list_by_trace(&tx, &trace_id).await?;
     let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
 
     Ok(Json(spans))
