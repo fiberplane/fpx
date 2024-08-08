@@ -27,7 +27,10 @@ export function WebhoncBadge() {
     <HoverCard>
       <HoverCardTrigger>
         <Badge className="rounded-xl bg-green-950/60 hover:bg-green-900/60 text-green-400 flex items-center text-sm gap-2">
-          <span className="text-xs">●</span>Proxy active
+          <span className="text-xs">●</span>
+          <span>
+            Proxy <span className="max-sm:hidden">active</span>
+          </span>
         </Badge>
       </HoverCardTrigger>
       <HoverCardContent
