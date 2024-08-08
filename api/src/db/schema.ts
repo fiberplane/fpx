@@ -1,6 +1,11 @@
 import type { Endpoints } from "@octokit/types";
 import { relations, sql } from "drizzle-orm";
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -10,7 +15,6 @@ type OctokitResponseGithubIssues =
   Endpoints["GET /repos/{owner}/{repo}/issues"]["response"];
 
 type OctokitGithubIssue = OctokitResponseGithubIssues["data"][number];
-
 
 export const appRoutes = sqliteTable(
   "app_routes",
@@ -57,8 +61,6 @@ export const appRoutesInsertSchema = createInsertSchema(appRoutes);
 
 export type AppRoute = z.infer<typeof appRoutesSelectSchema>;
 export type NewAppRoute = z.infer<typeof appRoutesInsertSchema>;
-
-
 
 export const appRequests = sqliteTable("app_requests", {
   id: integer("id", { mode: "number" }).primaryKey(),
@@ -151,7 +153,6 @@ export const appResponseInsertSchema = createInsertSchema(appResponses);
 
 export type AppResponse = z.infer<typeof appResponseSelectSchema>;
 export type NewAppResponse = z.infer<typeof appResponseInsertSchema>;
-
 
 // HELPFUL: https://orm.drizzle.team/docs/column-types/sqlite
 export const mizuLogs = sqliteTable("mizu_logs", {

@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { Context } from "hono";
 import { minimatch } from "minimatch";
 import logger from "../logger.js";
-import { Context } from "hono";
 
 /**
  * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value
@@ -212,10 +212,8 @@ export function resolveUrlQueryParams(
  * or port, e.g. webhonc.mies.workers.dev
  */
 export function resolveWebhoncUrl() {
-   const fallbackUrl = "webhonc.mies.workers.dev";
+  const fallbackUrl = "webhonc.mies.workers.dev";
   if (!process.env.FPX_WEBHONC_BASE_URL) return fallbackUrl;
   const customUrl = new URL(process.env.FPX_WEBHONC_BASE_URL);
   return customUrl.host;
 }
-
-

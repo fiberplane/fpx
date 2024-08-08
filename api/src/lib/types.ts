@@ -1,8 +1,8 @@
 // Only using for global types
 
-import { z } from "zod";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type { WebSocket } from "ws";
+import { z } from "zod";
 import type * as schema from "../db/schema.js";
 
 export type Bindings = {
