@@ -36,7 +36,7 @@ export default app;
 
 async function updateSettings(
   db: LibSQLDatabase<typeof schema>,
-  content: object,
+  content: Record<string, string | number | boolean>,
 ) {
   const currentSettings = await findOrCreateSettings(db);
   return await db
