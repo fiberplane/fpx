@@ -13,19 +13,17 @@ pub struct LibsqlStore {
 }
 
 impl LibsqlStore {
-    pub async fn in_memory() -> Result<Self> {
+    pub async fn in_memory() -> Result<Self, anyhow::Error> {
         // Not sure if we need this database object, but for now we just drop
         // it.
         let database = Builder::new_local(":memory:")
             .build()
             .await
-            .with_context(|| format!("failed to build libSQL database object"))
-            .expect("todo");
+            .context("failed to build libSQL database object")?;
 
         let mut connection = database
             .connect()
-            .with_context(|| format!("failed to connect to libSQL database"))
-            .expect("todo");
+            .context("failed to connect to libSQL database")?;
 
         Self::initialize_connection(&mut connection).await?;
 

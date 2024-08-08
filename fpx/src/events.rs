@@ -4,6 +4,7 @@ use fpx_lib::events::ServerEvents;
 use tokio::sync::broadcast;
 use tracing::trace;
 
+#[derive(Clone)]
 pub struct InMemoryEvents {
     sender: broadcast::Sender<ServerMessage>,
 }
@@ -16,6 +17,12 @@ impl InMemoryEvents {
 
     pub async fn subscribe(&self) -> broadcast::Receiver<ServerMessage> {
         self.sender.subscribe()
+    }
+}
+
+impl Default for InMemoryEvents {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
