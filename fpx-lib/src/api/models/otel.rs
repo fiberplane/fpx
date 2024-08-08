@@ -301,6 +301,9 @@ pub struct TraceSummary {
     #[serde(with = "time::serde::rfc3339")]
     pub end_time: time::OffsetDateTime,
 
+    /// The numbers of spans that we have for this trace.
+    pub num_spans: u32,
+
     /// A summary of the root span associated with this trace.
     ///
     /// A root span is a span that has no parent span. This can be empty if the

@@ -26,6 +26,8 @@ pub async fn traces_get_handler(
         return Err(TraceGetError::NotFound.into());
     }
 
+    let num_spans = spans.len() as u32;
+
     // Find the first start and the last end time. Note: unwrap is safe here
     // since we check that there is at least 1 span present.
     let start_time = spans.iter().map(|span| span.start_time).min().unwrap();
@@ -45,6 +47,7 @@ pub async fn traces_get_handler(
         start_time: start_time.into(),
         end_time: end_time.into(),
         root_span,
+        num_spans,
     };
 
     Ok(Json(trace))
