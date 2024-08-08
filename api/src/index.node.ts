@@ -18,6 +18,7 @@ import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
+import { getSetting } from "./routes/settings.js";
 
 config({ path: ".dev.vars" });
 
@@ -52,7 +53,7 @@ const server = serve({
 }) as ReturnType<typeof createServer>;
 
 server.on("listening", () => {
-  const fpxLogo = chalk.greenBright(figlet.textSync("FPX Studio"));
+const fpxLogo = chalk.greenBright(figlet.textSync("FPX Studio"));
   const runningMessage = "FPX Studio is up!";
   const localhostLink = chalk.blue(`http://localhost:${port}`);
   const visitMessage = `Visit ${localhostLink} to get started`;
@@ -82,5 +83,13 @@ startRouteProbeWatcher(watchDir);
 // Set up websocket server
 setupRealtimeService({ server, path: "/ws", wsConnections });
 
-const webhoncUrl = resolveWebhoncUrl();
-connectToWebhonc(webhoncUrl, db, wsConnections);
+
+// check settings if proxy requests is enabled
+const proxyRequestsEnabled = await getSetting(db, "proxyRequestsEnabled");
+
+if (proxyRequestsEnabled) {
+  logger.info("Proxy requests feature enabled, connecting to webhonc...")
+  const webhoncUrl = resolveWebhoncUrl();
+  connectToWebhonc(webhoncUrl, db, wsConnections);
+}
+
