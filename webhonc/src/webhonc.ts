@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
-import { type WsMessage } from "../../api/src/lib/types";
+import type { WsMessage } from "../../api/src/lib/types";
 import type { Bindings } from "./types";
 
 export class WebHonc extends DurableObject<Bindings> {

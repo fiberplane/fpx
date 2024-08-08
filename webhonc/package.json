@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
+    "lint:ci": "biome ci .",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
