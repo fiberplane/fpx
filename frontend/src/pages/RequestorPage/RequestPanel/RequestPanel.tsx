@@ -1,180 +1,46 @@
-import SparkleWand from "@/assets/SparkleWand.svg";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Tabs } from "@/components/ui/tabs";
-import { useIsSmScreen } from "@/hooks";
-import { cn, isMac } from "@/utils";
-import {
-  CaretDownIcon,
-  Cross2Icon,
-  EraserIcon,
-  InfoCircledIcon,
-} from "@radix-ui/react-icons";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import { Resizable } from "react-resizable";
-import { CodeMirrorJsonEditor } from "./Editors";
-import { KeyValueForm, KeyValueParameter } from "./KeyValueForm";
-import { PathParamForm } from "./PathParamForm/PathParamForm";
-import { ResizableHandle } from "./Resizable";
-import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
-import { AiTestingPersona, FRIENDLY, HOSTILE } from "./ai";
-import { useResizableWidth, useStyleWidth } from "./hooks";
-import { WebSocketState } from "./useMakeWebsocketRequest";
-
-import "./RequestPanel.css";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
-import type { RequestsPanelTab } from "./reducer";
-
-type AiDropDownMenuProps = {
-  isLoadingParameters: boolean;
-  persona: string;
-  onPersonaChange: (persona: AiTestingPersona) => void;
-  fillInRequest: () => void;
-};
-
-function AiDropDownMenu({
-  isLoadingParameters,
-  persona,
-  onPersonaChange,
-  fillInRequest,
-}: AiDropDownMenuProps) {
-  const [open, setOpen] = useState(false);
-
-  const handleValueChange = useCallback(
-    (value: string) => {
-      onPersonaChange(value === HOSTILE ? HOSTILE : FRIENDLY);
-    },
-    [onPersonaChange],
-  );
-
-  const handleGenerateRequest = useCallback(() => {
-    fillInRequest();
-    setOpen(false);
-  }, [fillInRequest, setOpen]);
-
-  // When the user shift+clicks of meta+clicks on the trigger,
-  // automatically open the menu
-  // I'm doing this because the caret is kinda hard to press...
-  const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
-  const handleMagicWandButtonClick = useCallback(() => {
-    if (!open && isMetaOrShiftPressed) {
-      setOpen(true);
-      return;
-    }
-    fillInRequest();
-  }, [isMetaOrShiftPressed, setOpen, open, fillInRequest]);
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              className="p-2 h-auto"
-              size="sm"
-              onClick={handleMagicWandButtonClick}
-            >
-              <SparkleWand
-                className={cn("w-4 h-4", { "fpx-pulse": isLoadingParameters })}
-              />
-            </Button>
-            <DropdownMenuTrigger asChild>
-              <button>
-                <CaretDownIcon className="w-4 h-4" />
-              </button>
-            </DropdownMenuTrigger>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent
-          className="bg-slate-900 px-2 py-1.5 text-white flex gap-1.5"
-          align="start"
-        >
-          Generate
-          <div className="flex gap-0.5">
-            <KeyboardShortcutKey>{isMac ? "⌘" : "Ctrl"}</KeyboardShortcutKey>{" "}
-            <KeyboardShortcutKey>G</KeyboardShortcutKey>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-
-      <DropdownMenuContent className="min-w-60">
-        <DropdownMenuLabel>Generate Inputs</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="font-normal">
-          Testing Persona
-        </DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={persona}
-          onValueChange={handleValueChange}
-        >
-          <DropdownMenuRadioItem
-            value="Friendly"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onPersonaChange(FRIENDLY);
-            }}
-          >
-            Friendly
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            value="QA"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onPersonaChange(HOSTILE);
-            }}
-          >
-            Hostile
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-        <DropdownMenuSeparator />
-        <div className="px-2 py-1">
-          <Button
-            style={{
-              background: "linear-gradient(90deg, #3B82F6 0%, #C53BF6 100%)",
-            }}
-            className="w-full text-white flex gap-2 items-center"
-            // FIXME - While it's loading... show a spinner? And implement a timeout / cancel
-            disabled={isLoadingParameters}
-            onClick={handleGenerateRequest}
-          >
-            <SparkleWand className="w-4 h-4" />
-            <span>{isLoadingParameters ? "Generating..." : "Generate"}</span>
-          </Button>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
+import { useIsSmScreen } from "@/hooks";
+import { cn } from "@/utils";
+import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
+import { Dispatch, SetStateAction } from "react";
+import { Resizable } from "react-resizable";
+import { CodeMirrorJsonEditor } from "../Editors";
+import { FormDataForm } from "../FormDataForm";
+import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
+import { ResizableHandle } from "../Resizable";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
+import { AiTestingPersona } from "../ai";
+import { useResizableWidth, useStyleWidth } from "../hooks";
+import type {
+  RequestBodyType,
+  RequestorBody,
+  RequestsPanelTab,
+} from "../reducer";
+import { WebSocketState } from "../useMakeWebsocketRequest";
+import { AiDropDownMenu } from "./AiDropDownMenu";
+import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
+import { PathParamForm } from "./PathParamForm";
+import {
+  RequestBodyTypeDropdown,
+  RequestBodyTypeDropdownProps,
+} from "./RequestBodyCombobox";
+import "./styles.css";
+import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
+import { FileUploadForm } from "./FileUploadForm";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
   setActiveRequestsPanelTab: (tab: string) => void;
   shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
-  body?: string;
-  setBody: (body?: string) => void;
+  body: RequestorBody;
+  // FIXME
+  setBody: (body: undefined | string | RequestorBody) => void;
+  handleRequestBodyTypeChange: (
+    contentType: RequestBodyType,
+    isMultipart?: boolean,
+  ) => void;
   pathParams: KeyValueParameter[];
   queryParams: KeyValueParameter[];
   setPathParams: (params: KeyValueParameter[]) => void;
@@ -182,6 +48,8 @@ type RequestPanelProps = {
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   requestHeaders: KeyValueParameter[];
+  websocketMessage: string;
+  setWebsocketMessage: (message: string | undefined) => void;
   aiEnabled: boolean;
   isLoadingParameters: boolean;
   fillInRequest: () => void;
@@ -231,6 +99,7 @@ function ResizableRequestMeta(props: RequestPanelProps) {
 
 function RequestMeta(props: RequestPanelProps) {
   const {
+    handleRequestBodyTypeChange,
     activeRequestsPanelTab,
     setActiveRequestsPanelTab,
     shouldShowRequestTab,
@@ -243,6 +112,8 @@ function RequestMeta(props: RequestPanelProps) {
     clearPathParams,
     setQueryParams,
     setRequestHeaders,
+    websocketMessage,
+    setWebsocketMessage,
     aiEnabled,
     isLoadingParameters,
     fillInRequest,
@@ -290,7 +161,7 @@ function RequestMeta(props: RequestPanelProps) {
         {shouldShowBody && (
           <CustomTabTrigger value="body">
             Body
-            {(body?.length ?? 0) > 0 && (
+            {!isBodyEmpty(body) && (
               <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
             )}
           </CustomTabTrigger>
@@ -298,7 +169,7 @@ function RequestMeta(props: RequestPanelProps) {
         {shouldShowMessages && (
           <CustomTabTrigger value="messages">
             Message
-            {(body?.length ?? 0) > 0 && (
+            {(websocketMessage?.length ?? 0) > 0 && (
               <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
             )}
           </CustomTabTrigger>
@@ -376,7 +247,13 @@ function RequestMeta(props: RequestPanelProps) {
         />
       </CustomTabsContent>
       {shouldShowBody && (
-        <CustomTabsContent value="body">
+        <CustomTabsContent
+          value="body"
+          className={cn(
+            // HACK - Padding for the bottom toolbar
+            "pb-16",
+          )}
+        >
           <AIGeneratedInputsBanner
             showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
             setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
@@ -385,14 +262,47 @@ function RequestMeta(props: RequestPanelProps) {
           <PanelSectionHeader
             title="Request Body"
             handleClearData={() => {
+              // HACK - Setting the body to undefined will dispatch a CLEAR_BODY action
               setBody(undefined);
             }}
           />
-          <CodeMirrorJsonEditor
-            onChange={setBody}
-            value={body}
-            maxHeight="800px"
-          />
+          {(body.type === "json" || body.type === "text") && (
+            <CodeMirrorJsonEditor
+              onChange={setBody}
+              value={body.value}
+              maxHeight="800px"
+            />
+          )}
+          {body.type === "form-data" && (
+            <FormDataForm
+              keyValueParameters={body.value}
+              onChange={(params) => {
+                setBody({
+                  type: "form-data",
+                  isMultipart: body.isMultipart,
+                  value: params,
+                });
+              }}
+            />
+          )}
+          {body.type === "file" && (
+            <FileUploadForm
+              file={body.value}
+              onChange={(file) => {
+                setBody({
+                  type: "file",
+                  value: file,
+                });
+              }}
+            />
+          )}
+          {/* HACK - This toolbar is absolutely positioned for now */}
+          {FORM_BODY_FEATURE_FLAG_ENABLED && (
+            <BottomToolbar
+              requestBody={body}
+              handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+            />
+          )}
         </CustomTabsContent>
       )}
       {shouldShowMessages && (
@@ -400,14 +310,14 @@ function RequestMeta(props: RequestPanelProps) {
           <PanelSectionHeader
             title="Websocket Messages"
             handleClearData={() => {
-              setBody(undefined);
+              setWebsocketMessage("");
             }}
           />
           {websocketState.isConnected ? (
             <>
               <CodeMirrorJsonEditor
-                onChange={setBody}
-                value={body}
+                onChange={setWebsocketMessage}
+                value={websocketMessage}
                 maxHeight="800px"
               />
               <div className="flex justify-end">
@@ -416,10 +326,10 @@ function RequestMeta(props: RequestPanelProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (typeof body !== "string") {
+                    if (typeof websocketMessage !== "string") {
                       return;
                     }
-                    sendWebsocketMessage(body);
+                    sendWebsocketMessage(websocketMessage);
                     toast({
                       description: "WS Message sent",
                     });
@@ -437,6 +347,20 @@ function RequestMeta(props: RequestPanelProps) {
     </Tabs>
   );
 }
+
+const BottomToolbar = ({
+  requestBody,
+  handleRequestBodyTypeChange,
+}: RequestBodyTypeDropdownProps) => {
+  return (
+    <div className="flex justify-start gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
+      <RequestBodyTypeDropdown
+        requestBody={requestBody}
+        handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+      />
+    </div>
+  );
+};
 
 type PanelSectionHeaderProps = {
   title: string;
@@ -465,66 +389,24 @@ export function PanelSectionHeader({
       {handleClearData && (
         <EraserIcon
           className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
-          onClick={() => {
-            handleClearData();
-          }}
+          onClick={handleClearData}
         />
       )}
     </div>
   );
 }
 
-type AIGeneratedInputsBannerProps = {
-  showAiGeneratedInputsBanner: boolean;
-  setShowAiGeneratedInputsBanner: Dispatch<SetStateAction<boolean>>;
-  setIgnoreAiInputsBanner: Dispatch<SetStateAction<boolean>>;
-};
-
-function AIGeneratedInputsBanner({
-  showAiGeneratedInputsBanner,
-  setShowAiGeneratedInputsBanner,
-  setIgnoreAiInputsBanner,
-}: AIGeneratedInputsBannerProps) {
-  const onClose = () => {
-    setShowAiGeneratedInputsBanner(false);
-  };
-
-  const onDontShowAgain = () => {
-    setIgnoreAiInputsBanner(true);
-  };
-
-  if (!showAiGeneratedInputsBanner) {
-    return null;
+function isBodyEmpty(body: RequestorBody) {
+  switch (body.type) {
+    case "text":
+      return !body.value || body.value.length === 0;
+    case "json":
+      return !body.value || body.value.length === 0;
+    case "form-data":
+      return !body.value || body.value.length === 0;
+    case "file":
+      return !body.value;
   }
-
-  return (
-    <div className="bg-primary/20 text-blue-300 text-sm px-2.5 py-2 rounded-md grid grid-cols-[auto_1fr_auto] gap-2 mb-4">
-      <div className="py-0.5">
-        <InfoCircledIcon className="w-3.5 h-3.5" />
-      </div>
-      <div className="flex flex-col items-start justify-start">
-        <span className="font-normal">Inputs generated by AI</span>
-        <span className="font-light"> Hit send to view output.</span>
-        <button
-          className="underline mt-2 font-light"
-          onClick={onDontShowAgain}
-          type="button"
-        >
-          Don&rsquo;t show again
-        </button>
-      </div>
-      <div>
-        <Button
-          className="p-0 h-auto"
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-        >
-          <Cross2Icon className="w-3.5 h-3.5 text-gray-400" />
-        </Button>
-      </div>
-    </div>
-  );
 }
 
 function WebSocketNotConnectedBanner() {
@@ -539,40 +421,4 @@ function WebSocketNotConnectedBanner() {
       </div>
     </div>
   );
-}
-
-function useIsMetaOrShiftPressed() {
-  const [isMetaOrShiftPressed, setIsMetaOrShiftPressed] = useState(false);
-
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.metaKey || e.shiftKey) {
-      setIsMetaOrShiftPressed(true);
-    }
-  }, []);
-
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    if (!e.metaKey && !e.shiftKey) {
-      setIsMetaOrShiftPressed(false);
-    }
-  }, []);
-
-  const handleBlur = useCallback(() => {
-    setIsMetaOrShiftPressed(false);
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("blur", handleBlur);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, [handleKeyDown, handleKeyUp, handleBlur]);
-
-  return {
-    isMetaOrShiftPressed,
-  };
 }

@@ -94,3 +94,14 @@ export function getIgnoredPaths() {
     return defaultIgnoredPaths;
   }
 }
+
+export function safeParseJson(str: string | null | undefined) {
+  if (!str) {
+    return null;
+  }
+  try {
+    return JSON.parse(str);
+  } catch {
+    return str;
+  }
+}

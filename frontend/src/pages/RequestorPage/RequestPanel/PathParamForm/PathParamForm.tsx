@@ -1,9 +1,9 @@
-import { KeyValueRow } from "../KeyValueForm";
-import { createChangeEnabled } from "../KeyValueForm/data";
+import { KeyValueRow } from "../../KeyValueForm";
+import { createChangeEnabled } from "../../KeyValueForm/data";
 import {
   ChangeKeyValueParametersHandler,
   KeyValueParameter,
-} from "../KeyValueForm/types";
+} from "../../KeyValueForm/types";
 import { createChangePathParamValue } from "./data";
 
 type Props = {
@@ -39,12 +39,6 @@ export const PathParamForm = (props: Props) => {
               keyValueParameters,
               parameter,
             )}
-            // TODO - Change this to reset the value?
-            // removeValue={() => {
-            //   onChange(
-            //     keyValueParameters.filter(({ id }) => parameter.id !== id),
-            //   );
-            // }}
           />
         );
       })}

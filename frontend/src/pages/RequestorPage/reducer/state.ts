@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FormDataParameterSchema } from "../FormDataForm";
 import {
   KeyValueParameterSchema,
   enforceTerminalDraftParameter,
@@ -19,7 +20,12 @@ const RequestorBodySchema = z.union([
   }),
   z.object({
     type: z.literal("form-data"),
-    value: z.array(KeyValueParameterSchema),
+    isMultipart: z.boolean(),
+    value: z.array(FormDataParameterSchema),
+  }),
+  z.object({
+    type: z.literal("file"),
+    value: z.instanceof(File).optional(),
   }),
 ]);
 
@@ -28,6 +34,8 @@ export const RequestorStateSchema = z.object({
   selectedRoute: ProbedRouteSchema.nullable().describe(
     "Indicates which route to highlight in the routes panel",
   ),
+
+  // Request form
   path: z.string().describe("Path input"),
   method: RequestMethodSchema.describe("Method input"),
   requestType: RequestTypeSchema.describe("Request type input"),
@@ -42,6 +50,10 @@ export const RequestorStateSchema = z.object({
     .array(KeyValueParameterSchema)
     .describe("Headers to be sent with the request"),
 
+  // Websocket messages form
+  websocketMessage: z.string().describe("Websocket message"),
+
+  // Tabs
   activeRequestsPanelTab: RequestsPanelTabSchema.describe(
     "The tab to show in the requests panel",
   ),
@@ -59,6 +71,9 @@ export const RequestorStateSchema = z.object({
 
 export type RequestorState = z.infer<typeof RequestorStateSchema>;
 
+export type RequestorBody = RequestorState["body"];
+export type RequestBodyType = RequestorBody["type"];
+
 export const initialState: RequestorState = {
   routes: [],
   selectedRoute: null,
@@ -73,6 +88,8 @@ export const initialState: RequestorState = {
     type: "json",
     value: "",
   },
+
+  websocketMessage: "",
 
   activeRequestsPanelTab: "params",
   visibleRequestsPanelTabs: ["params", "headers"],
