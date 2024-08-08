@@ -188,6 +188,9 @@ const CallerLocationSchema = z.object({
   column: z.string(),
 });
 
+// TODO: Make a better schema for this
+//       And add a separate schema for the raw spans from the exporter
+//       Inspo: https://github.com/wperron/sqliteexporter/blob/main/migrations/20240120195122_init.up.sql
 export const otelSpans = sqliteTable("otel_spans", {
   spanId: text("span_id"),
   traceId: text("trace_id"),
