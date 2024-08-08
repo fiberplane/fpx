@@ -33,6 +33,8 @@ export function useEscapeToList() {
   });
 
   useEffect(() => {
+    // We can use AbortController to remove both event listeners a bit more cleanly
+    // https://frontendmasters.com/blog/patterns-for-memory-efficient-dom-manipulation/#use-abortcontroller-to-unbind-groups-of-events
     document.addEventListener("focus", handleFocus, true);
     document.addEventListener("blur", handleBlur, true);
     return () => {

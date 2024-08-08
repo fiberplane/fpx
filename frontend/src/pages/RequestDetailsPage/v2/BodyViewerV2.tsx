@@ -22,6 +22,7 @@ function FormDataViewer({ body }: { body: string }) {
           .map(([key, value]) => {
             if (typeof value === "object" && value !== null) {
               // Handle nested objects or arrays
+              // NOTE - This will break on a circular JSON object, but this input should never be circular
               return `${key}=${JSON.stringify(value)}`;
             }
             return `${key}=${value}`;
