@@ -87,7 +87,7 @@ setupRealtimeService({ server, path: "/ws", wsConnections });
 const proxyRequestsEnabled = await getSetting(db, "proxyRequestsEnabled");
 
 if (proxyRequestsEnabled) {
-  logger.info("Proxy requests feature enabled, connecting to webhonc...");
+  logger.debug("Proxy requests feature enabled, connecting to webhonc...");
   const webhoncUrl = resolveWebhoncUrl();
   connectToWebhonc(webhoncUrl, db, wsConnections);
 }

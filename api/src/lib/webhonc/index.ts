@@ -14,6 +14,8 @@ import { WsMessageSchema } from "../types.js";
 import { resolveUrlQueryParams } from "../utils.js";
 import { getWebHoncConnectionId, setWebHoncConnectionId } from "./store.js";
 
+// TODO: maintain and surface the webhonc connection state so that UI
+// can adapt accordingly
 export function connectToWebhonc(
   host: string,
   db: LibSQLDatabase<typeof schema>,
@@ -28,7 +30,11 @@ export function connectToWebhonc(
 
   socket.onmessage = async (event) => {
     logger.debug("Received message from the webhonc service:", event.data);
-    await handleMessage(event, wsConnections, db);
+    try {
+      await handleMessage(event, wsConnections, db);
+    } catch (error) {
+      logger.error("Error handling message from webhonc:", error);
+    }
   };
 
   socket.onclose = (event) => {
@@ -79,7 +85,7 @@ const messageHandlers: {
   ) => Promise<void>;
 } = {
   trace_created: async (_message, _wsConnections, _db) => {
-    logger.info("trace_created message received, no action required");
+    logger.debug("trace_created message received, no action required");
   },
   connection_open: async (message, wsConnections) => {
     const { connectionId } = message.payload;
@@ -95,6 +101,7 @@ const messageHandlers: {
   },
   request_incoming: async (message, _wsConnections, db) => {
     // no trace id is coming from the websocket, so we generate one
+    // TODO: change this to an OTEL trace id after #102 is merged
     const traceId = crypto.randomUUID();
 
     const serviceTarget = resolveServiceArg(process.env.FPX_SERVICE_TARGET);

@@ -16,6 +16,12 @@ export type Variables = {
   wsConnections: Set<WebSocket>;
 };
 
+/**
+ * ==========================================================
+ * TODO: move anything below here to a separate package when pnpm monorepo is ready
+ * ==========================================================
+ */
+
 export type WsMessage = z.infer<typeof WsMessageSchema>;
 
 export const WsMessageSchema = z.discriminatedUnion("event", [
