@@ -5,6 +5,7 @@ import FpxIcon from "./assets/fpx.svg";
 import { WebhoncBadge } from "./components/WebhoncBadge";
 import { useWebsocketQueryInvalidation } from "./hooks";
 import { cn } from "./utils";
+import { useProxyRequestsEnabled } from "./hooks/useProxyRequestsEnabled";
 
 const Branding = () => {
   return (
@@ -22,6 +23,9 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
   //
   // This should be used only at the top level of the app to avoid unnecessary re-renders
   useWebsocketQueryInvalidation();
+
+  const shouldShowProxyRequests = useProxyRequestsEnabled();
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
       <nav className="flex gap-4 sm:gap-4 py-4 sm:py-0 justify-between items-center h-[64px] border-b">
@@ -36,9 +40,11 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             </div>
           </div>
         </div>
-        <div className="px-4">
-          <WebhoncBadge />
-        </div>
+        {shouldShowProxyRequests &&
+          <div className="px-4">
+            <WebhoncBadge />
+          </div>
+        }
       </nav>
       <main
         className={cn("md:gap-8", "overflow-hidden", "h-[calc(100vh-64px)]")}
