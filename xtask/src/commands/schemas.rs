@@ -1,12 +1,11 @@
-use std::{fs::File, io::Write, path::Path};
-
 use anyhow::Result;
-use fpx::api::models::{
-    ClientMessage, NewRequest, NewRequestError, Request, RequestAdded, RequestSummary,
-    RequestWithResponse, Response, ServerMessage,
-};
-use schemars::{schema::RootSchema, schema_for};
+use fpx_lib::api::models::{ClientMessage, ServerMessage};
+use schemars::schema::RootSchema;
+use schemars::schema_for;
 use serde_json::Value;
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -19,15 +18,8 @@ pub struct Args {
 pub async fn handle_command(args: Args) -> Result<()> {
     // Define which types should be used to generate schemas
     let schemas = Vec::from([
-        schema_for!(ClientMessage),
-        schema_for!(NewRequest),
-        schema_for!(NewRequestError),
-        schema_for!(Request),
-        schema_for!(RequestAdded),
-        schema_for!(RequestSummary),
-        schema_for!(RequestWithResponse),
-        schema_for!(Response),
-        schema_for!(ServerMessage),
+        // schema_for!(ClientMessage),
+        // schema_for!(ServerMessage),
     ]);
 
     let zod_schema = generate_zod_schemas(&args.project_directory, &schemas)?;

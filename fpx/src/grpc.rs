@@ -1,4 +1,4 @@
-use crate::service::{IngestExportError, Service};
+use fpx_lib::service::Service;
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceService;
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
@@ -26,15 +26,11 @@ impl TraceService for GrpcService {
     ) -> Result<tonic::Response<ExportTraceServiceResponse>, tonic::Status> {
         let request = request.into_inner();
 
-        let response = self.service.ingest_export(request).await?;
+        let response = self.service.ingest_export(request).await.map_err(|err| {
+            error!(?err, "Failed to ingest export data");
+            tonic::Status::internal("Failed to ingest export data")
+        })?;
 
         Ok(tonic::Response::new(response))
-    }
-}
-
-impl From<IngestExportError> for tonic::Status {
-    fn from(err: IngestExportError) -> Self {
-        error!(?err, "Failed to ingest export data");
-        tonic::Status::internal("Failed to ingest export data")
     }
 }

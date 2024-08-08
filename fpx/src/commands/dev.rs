@@ -1,16 +1,16 @@
-use crate::api;
-use crate::data::migrations::migrate;
-use crate::data::{DataPath, Store};
-use crate::events::Events;
+use crate::data::LibsqlStore;
+use crate::events::InMemoryEvents;
 use crate::grpc::GrpcService;
-use crate::{initialize_fpx_dir, service};
+use crate::initialize_fpx_dir;
 use anyhow::{Context, Result};
+use fpx_lib::{api, service};
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceServiceServer;
 use std::future::IntoFuture;
-use std::{path::PathBuf, process::exit};
+use std::path::PathBuf;
+use std::process::exit;
+use std::sync::Arc;
 use tokio::select;
-use tracing::info;
-use tracing::{error, warn};
+use tracing::{error, info, warn};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -40,29 +40,18 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     let store = open_store(&args).await?;
 
-    migrate(&store).await?;
+    LibsqlStore::migrate(&store).await?;
+
+    let store = Arc::new(store);
 
     // Create a shared events struct, which allows events to be send to
     // WebSocket connections.
-    let events = Events::new();
-
-    let inspector_service = crate::inspector::InspectorService::start(
-        args.fpx_directory.join("inspectors"),
-        store.clone(),
-        events.clone(),
-    )
-    .await?;
+    let events = InMemoryEvents::new();
+    let events = Arc::new(events);
 
     let service = service::Service::new(store.clone(), events.clone());
 
-    let app = api::create_api(
-        args.base_url.clone(),
-        args.fpx_directory,
-        events.clone(),
-        inspector_service,
-        service.clone(),
-        store.clone(),
-    );
+    let app = api::create_api(events.clone(), service.clone(), store.clone());
     let grpc_service = GrpcService::new(service);
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)
@@ -124,14 +113,8 @@ pub async fn handle_command(args: Args) -> Result<()> {
     Ok(())
 }
 
-async fn open_store(args: &Args) -> Result<Store> {
-    let db_path = if args.in_memory_database {
-        DataPath::InMemory
-    } else {
-        DataPath::File(args.fpx_directory.join("fpx.db"))
-    };
-
-    let store = Store::open(db_path).await?;
+async fn open_store(_args: &Args) -> Result<LibsqlStore> {
+    let store = LibsqlStore::in_memory().await?;
 
     Ok(store)
 }
