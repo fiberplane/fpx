@@ -13,6 +13,7 @@ const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   anthropicModel: CLAUDE_3_5_SONNET,
   customRoutesEnabled: false,
   tracingLiteEnabled: false,
+  proxyRequestsEnabled: false,
 };
 
 export function useSettingsForm(settings: Record<string, string | boolean>) {
@@ -47,6 +48,7 @@ export function useSettingsForm(settings: Record<string, string | boolean>) {
           anthropicBaseUrl: data.anthropicBaseUrl ?? "",
           anthropicModel: data.anthropicModel,
           tracingLiteEnabled: data.tracingLiteEnabled,
+          proxyRequestsEnabled: data.proxyRequestsEnabled,
         },
       },
       {
