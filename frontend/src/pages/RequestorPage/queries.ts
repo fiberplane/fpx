@@ -220,8 +220,6 @@ export function makeProxiedRequest({
     headers: modHeaders,
     body: method === "GET" || method === "HEAD" ? undefined : hackyBody,
   }).then((r) => {
-    console.log("i got a response hereeeee", r);
-    // TODO - If there's a file response... use it? Idk
     return {
       traceId: r.headers.get("x-fpx-trace-id"),
     };
