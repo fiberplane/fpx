@@ -173,11 +173,19 @@ function requestorReducer(
       const nextPathParams = matchedRoute
         ? extractMatchedPathParams(matchedRoute)
         : extractPathParams(nextPath).map(mapPathParamKey);
+
+      // If the selected route changed, we want to clear the active history response trace id
+      const nextActiveHistoryResponseTraceId =
+        state.selectedRoute === nextSelectedRoute
+          ? state.activeHistoryResponseTraceId
+          : null;
+
       return {
         ...state,
         path: action.payload,
         selectedRoute: nextSelectedRoute,
         pathParams: nextPathParams,
+        activeHistoryResponseTraceId: nextActiveHistoryResponseTraceId,
       };
     }
     case METHOD_UPDATE: {
