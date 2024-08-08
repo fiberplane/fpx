@@ -225,6 +225,9 @@ function requestorReducer(
       const nextMethod = probedRouteToInputMethod(action.payload);
       const nextRequestType = action.payload.requestType;
 
+      // The visible tabs in the requests panel are based on the request type and method
+      // If we switch to a new route, it's possible that the "Body" or "Websocket Message" tabs
+      // are no longer visible, so we need to update the currently active tab on the requests panel
       const nextVisibleRequestsPanelTabs = getVisibleRequestPanelTabs({
         requestType: nextRequestType,
         method: nextMethod,
@@ -235,14 +238,30 @@ function requestorReducer(
         ? state.activeRequestsPanelTab
         : nextVisibleRequestsPanelTabs[0];
 
+      // The visible tabs in the response panel are based on the request type (http or websocket)
+      // If we switch to a new route, it's possible that the "Websocket Message" tab
+      // is no longer visible, so we need to update the currently active tab on the response panel
       const nextVisibleResponsePanelTabs = getVisibleResponsePanelTabs({
         requestType: nextRequestType,
       });
-      const nextActiveResponsePanelTab = nextVisibleResponsePanelTabs.includes(
+      let nextActiveResponsePanelTab = nextVisibleResponsePanelTabs.includes(
         state.activeResponsePanelTab,
       )
         ? state.activeResponsePanelTab
         : nextVisibleResponsePanelTabs[0];
+
+      // One more thing, if the debug tab is selected but we switch to an http route,
+      // we want to switch to the "body" tab instead of the "debug" tab
+      const didSelectedRouteChange = state.selectedRoute !== action.payload;
+      const isDebugTabCurrentlySelected =
+        state.activeResponsePanelTab === "debug";
+
+      if (didSelectedRouteChange && isDebugTabCurrentlySelected) {
+        // If the selected route changed and the debug tab is selected,
+        // we want to switch to the "body" tab
+        nextActiveResponsePanelTab = "body";
+      }
+
       return {
         ...state,
         selectedRoute: action.payload,
