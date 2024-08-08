@@ -52,7 +52,7 @@ export async function getSetting(
 ) {
   const settingsRecords = await db.select().from(settings);
 
-  if (settingsRecords.length == 0) {
+  if (settingsRecords.length === 0) {
     return null;
   }
 
