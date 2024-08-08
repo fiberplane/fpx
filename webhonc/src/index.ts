@@ -2,9 +2,13 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 import type { Bindings, Variables } from "./types";
+import { resolveBody, resolveWebhoncId } from "./utils";
 import { WebHonc } from "./webhonc";
+import { logger } from "hono/logger";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+app.use(logger());
 
 app.get("/ws", async (c) => {
   if (c.req.header("upgrade") !== "websocket") {
@@ -23,6 +27,16 @@ app.all(
   async (c) => {
     const { id } = c.req.valid("param");
 
+    console.debug("Handling request with id", id);
+    const webhonc = resolveWebhoncId(c, id);
+
+    if (!webhonc) {
+      console.error("No webhonc found for id", id);
+      return new Response("No connection established on this id", {
+        status: 404,
+      });
+    }
+
     // We need to serialize the path components without the id
     // so we can send it down the wire and replay it locally
     const pathComponentsWithoutId = c.req.path
@@ -32,42 +46,18 @@ app.all(
 
     const method = c.req.method;
 
-    const contentType = c.req.header("content-type");
-
-    let body: string | FormData | null;
-
-    // if the request is a GET or HEAD, we don't want to send the body
-    if (method === "GET" || method === "HEAD") {
-      body = null;
-    } else {
-      switch (contentType) {
-        case "application/json":
-          body = await c.req.json();
-          break;
-        case "application/x-www-form-urlencoded":
-          body = await c.req.formData();
-          break;
-        case "text/plain":
-          body = await c.req.text();
-          break;
-        default:
-          body = null;
-          break;
-      }
-    }
+    const body: string | FormData | null = await resolveBody(c);
 
     const query = c.req.query();
 
-    const doId = c.env.WEBHONC.idFromString(id);
-    const webhonc = c.env.WEBHONC.get(doId) as DurableObjectStub<WebHonc>;
 
     const headers = c.req.raw.headers;
     const headersJson: { [key: string]: string } = {};
     for (const [key, value] of headers.entries()) {
-      // these are calculated dynamically by the fetch client so we don't send them down the wire
+      // content-length calculated dynamically by the fetch client so we don't send them down the wire
       if (
         key.toLowerCase() === "content-length" ||
-        key.toLowerCase() === "content-type"
+        key.toLowerCase() === "boundary"
       ) {
         continue;
       }

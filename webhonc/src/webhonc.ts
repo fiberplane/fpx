@@ -39,7 +39,7 @@ export class WebHonc extends DurableObject<Bindings> {
   }
 
   webSocketMessage(_ws: WebSocket, message: string | ArrayBuffer) {
-    console.log("Received message from WS connection:", message);
+    console.debug("Received message from WS connection:", message);
   }
 
   async webSocketClose(
@@ -52,6 +52,7 @@ export class WebHonc extends DurableObject<Bindings> {
   }
 
   public async pushWebhookData(connectionId: string, data: WsMessage) {
+    console.debug("Serializing and sending data to connection:", connectionId);
     const ws = this.sessions.get(connectionId);
     const payload = JSON.stringify(data);
     if (ws) {
