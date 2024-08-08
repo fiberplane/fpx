@@ -148,13 +148,19 @@ export type MakeProxiedRequestQueryFn = ReturnType<
   typeof useMakeProxiedRequest
 >["mutate"];
 
-export function useMakeProxiedRequest() {
+export function useMakeProxiedRequest({
+  clearResponseBodyFromHistory,
+}: { clearResponseBodyFromHistory: () => void }) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: makeProxiedRequest,
     onSuccess: () => {
       // Invalidate and refetch requestor requests
       queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
+      clearResponseBodyFromHistory();
+    },
+    onError: () => {
+      clearResponseBodyFromHistory();
     },
   });
 

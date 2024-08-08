@@ -51,6 +51,7 @@ const CLEAR_BODY = "CLEAR_BODY" as const;
 const SET_BODY_TYPE = "SET_BODY_TYPE" as const;
 const SET_WEBSOCKET_MESSAGE = "SET_WEBSOCKET_MESSAGE" as const;
 const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
+const CLEAR_HISTORICAL_REQUEST = "CLEAR_HISTORICAL_REQUEST" as const;
 const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
 const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
 
@@ -115,8 +116,11 @@ type RequestorAction =
   | {
       type: typeof LOAD_HISTORICAL_REQUEST;
       payload: {
-        // TODO
+        traceId: string;
       };
+    }
+  | {
+      type: typeof CLEAR_HISTORICAL_REQUEST;
     }
   | {
       type: typeof SET_ACTIVE_REQUESTS_PANEL_TAB;
@@ -218,6 +222,9 @@ function requestorReducer(
         // but then we switch to a non-websocket route and the "messages" tab contents remain visible
         visibleResponsePanelTabs: nextVisibleResponsePanelTabs,
         activeResponsePanelTab: nextActiveResponsePanelTab,
+
+        // HACK - This allows us to stop showing the response body for a historical request
+        activeHistoryResponseTraceId: null,
       };
     }
     case SELECT_ROUTE: {
@@ -288,6 +295,9 @@ function requestorReducer(
         // but then we switch to a non-websocket route and the "messages" tab contents remain visible
         visibleResponsePanelTabs: nextVisibleResponsePanelTabs,
         activeResponsePanelTab: nextActiveResponsePanelTab,
+
+        // HACK - This allows us to stop showing the response body for a historical request
+        activeHistoryResponseTraceId: null,
       };
     }
     case SET_PATH_PARAMS: {
@@ -406,6 +416,12 @@ function requestorReducer(
     }
     case SET_WEBSOCKET_MESSAGE: {
       return { ...state, websocketMessage: action.payload };
+    }
+    case LOAD_HISTORICAL_REQUEST: {
+      return { ...state, activeHistoryResponseTraceId: action.payload.traceId };
+    }
+    case CLEAR_HISTORICAL_REQUEST: {
+      return { ...state, activeHistoryResponseTraceId: null };
     }
     case SET_ACTIVE_REQUESTS_PANEL_TAB: {
       return { ...state, activeRequestsPanelTab: action.payload };
@@ -570,6 +586,17 @@ export function useRequestor() {
     [dispatch],
   );
 
+  const showResponseBodyFromHistory = useCallback(
+    (traceId: string) => {
+      dispatch({ type: LOAD_HISTORICAL_REQUEST, payload: { traceId } });
+    },
+    [dispatch],
+  );
+
+  const clearResponseBodyFromHistory = useCallback(() => {
+    dispatch({ type: CLEAR_HISTORICAL_REQUEST });
+  }, [dispatch]);
+
   /**
    * When there's no selected route, we return a "draft" route,
    * which will not appear in the sidebar
@@ -636,6 +663,10 @@ export function useRequestor() {
     // Selectors
     getActiveRoute,
     getIsInDraftMode,
+
+    // History (WIP)
+    showResponseBodyFromHistory,
+    clearResponseBodyFromHistory,
   };
 }
 function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {

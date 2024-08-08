@@ -47,6 +47,12 @@ export const RequestorStateSchema = z.object({
   visibleResponsePanelTabs: z
     .array(ResponsePanelTabSchema)
     .describe("The tabs to show in the response panel"),
+
+  // HACK - This is used to force us to show a response body for a request loaded from history
+  activeHistoryResponseTraceId: z
+    .string()
+    .nullable()
+    .describe("The trace id to show in the response panel"),
 });
 
 export type RequestorState = z.infer<typeof RequestorStateSchema>;
@@ -76,6 +82,9 @@ export const initialState: RequestorState = {
 
   activeResponsePanelTab: "body",
   visibleResponsePanelTabs: ["body", "headers", "debug", "history"],
+
+  // HACK - This is used to force us to show a response body for a request loaded from history
+  activeHistoryResponseTraceId: null,
 };
 
 /**

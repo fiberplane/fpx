@@ -67,6 +67,11 @@ export const RequestorPage = () => {
     state: { activeResponsePanelTab },
     setActiveResponsePanelTab,
     shouldShowResponseTab,
+
+    // History (WIP)
+    state: { activeHistoryResponseTraceId },
+    showResponseBodyFromHistory,
+    clearResponseBodyFromHistory,
   } = requestorState;
 
   const selectedRoute = getActiveRoute();
@@ -98,15 +103,17 @@ export const RequestorPage = () => {
     setBody,
     setQueryParams,
     setRequestHeaders,
+    showResponseBodyFromHistory,
   });
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
     sessionHistory,
+    activeHistoryResponseTraceId,
   );
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
-    useMakeProxiedRequest();
+    useMakeProxiedRequest({ clearResponseBodyFromHistory });
 
   // WIP - Allows us to connect to a websocket and send messages through it
   const {
@@ -344,8 +351,16 @@ export default RequestorPage;
 function useMostRecentRequestornator(
   requestInputs: { path: string; method: string; route?: string },
   all: Requestornator[],
+  activeHistoryResponseTraceId: string | null,
 ) {
   return useMemo<Requestornator | undefined>(() => {
+    if (activeHistoryResponseTraceId) {
+      return all.find(
+        (r: Requestornator) =>
+          r?.app_responses?.traceId === activeHistoryResponseTraceId,
+      );
+    }
+
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
         r?.app_requests?.requestRoute === requestInputs.route &&

@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type {
   ESpanKind,
   EStatusCode,
@@ -8,6 +9,36 @@ import type {
   ILink,
   IStatus,
 } from "@opentelemetry/otlp-transformer";
+
+export const OTEL_TRACE_ID_REGEX = /^[0-9a-f]{32}$/i;
+
+/**
+ * Check if a trace ID is a valid otel trace id
+ */
+export function isValidOtelTraceId(traceId: string): boolean {
+  return OTEL_TRACE_ID_REGEX.test(traceId);
+}
+
+/**
+ * Generate a trace ID that is compatible with the OpenTelemetry standard
+ * Otel trace ids are 16 bytes long, and can be represented as a hex string
+ */
+export function generateOtelTraceId(): string {
+  return randomBytes(16).toString("hex");
+}
+
+/**
+ * NOT IN USE - TEST ME
+ *
+ * A version of generateOtelTraceId that is compatible with the web standards
+ */
+export function generateOtelTraceIdWebStandard(): string {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  return Array.from(array)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 type MizuSpan = {
   trace_id: string;
