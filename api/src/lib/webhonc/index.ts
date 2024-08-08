@@ -16,6 +16,8 @@ import { getWebHoncConnectionId, setWebHoncConnectionId } from "./store.js";
 
 // TODO: maintain and surface the webhonc connection state so that UI
 // can adapt accordingly
+// TODO: handle the case where the webhonc service is down, exponentially try
+// reconnecting etc
 export function connectToWebhonc(
   host: string,
   db: LibSQLDatabase<typeof schema>,
