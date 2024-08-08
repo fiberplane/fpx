@@ -371,5 +371,5 @@ function useMostRecentRequestornator(
     matchingResponses?.sort(sortRequestornatorsDescending);
 
     return matchingResponses?.[0];
-  }, [all, requestInputs]);
+  }, [all, requestInputs, activeHistoryResponseTraceId]);
 }
