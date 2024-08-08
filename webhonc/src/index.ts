@@ -78,6 +78,7 @@ app.all(
   },
 );
 
+// biome-ignore lint/style/useExportType: biome thinks this is just a type export when this is necessary for the workers runtime
 export { WebHonc };
 
 export default app;
