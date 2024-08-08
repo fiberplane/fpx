@@ -4,7 +4,7 @@ import { logger } from "hono/logger";
 import { z } from "zod";
 import type { Bindings, Variables } from "./types";
 import { resolveBody, resolveWebhoncId } from "./utils";
-import { WebHonc } from "./webhonc";
+import type { WebHonc } from "./webhonc";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 

@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { WebHonc } from "./webhonc";
+import type { Context } from "hono";
+import type { WebHonc } from "./webhonc";
 
 export function resolveWebhoncId(c: Context, id: string) {
   try {
