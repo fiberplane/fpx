@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import { WsMessageSchema } from "fpx-shared";
+import { WsMessageSchema } from "../types.js"
 import WebSocket from "ws";
 import type { z } from "zod";
 import * as schema from "../../db/schema.js";

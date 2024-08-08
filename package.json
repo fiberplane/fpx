@@ -27,7 +27,6 @@
     "client-library-otel",
     "frontend",
     "api",
-    "shared",
     "webhonc"
   ],
   "dependencies": {
