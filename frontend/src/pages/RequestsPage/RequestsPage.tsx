@@ -3,14 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useWebsocketQueryInvalidation } from "@/hooks";
-import { type OtelSpan } from "@/queries";
-import { useOtelTraces } from "@/queries";
+import { type OtelTrace, useOtelTraces } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { getString } from "../RequestDetailsPage/v2/otel-helpers";
+import { isFpxTraceError } from "../RequestDetailsPage/v2/otel-helpers";
 import { columns } from "./columns";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
@@ -18,7 +17,7 @@ type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 const RequestsTable = ({
   traces,
   filter,
-}: { traces: OtelSpan[]; filter: LevelFilter }) => {
+}: { traces: OtelTrace[]; filter: LevelFilter }) => {
   const navigate = useNavigate();
 
   const filteredTraces = useMemo(() => {
@@ -34,8 +33,8 @@ const RequestsTable = ({
   }, [traces, filter]);
 
   const handleRowClick = useCallback(
-    (row: Row<OtelSpan>) => {
-      navigate(`/requests/otel/${row.original.trace_id}`);
+    (row: Row<OtelTrace>) => {
+      navigate(`/requests/otel/${row.original.traceId}`);
     },
     [navigate],
   );
@@ -45,7 +44,7 @@ const RequestsTable = ({
       columns={columns}
       data={filteredTraces ?? []}
       handleRowClick={handleRowClick}
-      getPaginationRowModel={getPaginationRowModel<OtelSpan>}
+      getPaginationRowModel={getPaginationRowModel<OtelTrace>}
     />
   );
 };
@@ -54,18 +53,8 @@ export function RequestsPage() {
   const { toast } = useToast();
   const otelTraces = useOtelTraces();
 
-  const spansWithErrors = useMemo(() => {
-    return otelTraces.data?.filter((span) =>
-      span.events.some((event) => {
-        if (event.name === "log") {
-          return getString(event.attributes.level) === "error";
-        }
-        if (event.name === "exception") {
-          return true;
-        }
-        return false;
-      }),
-    );
+  const tracesWithErrors = useMemo(() => {
+    return otelTraces.data?.filter(isFpxTraceError);
   }, [otelTraces.data]);
 
   // Will add new fpx-requests as they come in by refetching
@@ -117,7 +106,7 @@ export function RequestsPage() {
         <RequestsTable traces={otelTraces.data ?? []} filter="all" />
       </TabsContent>
       <TabsContent value="error">
-        <RequestsTable traces={spansWithErrors ?? []} filter="error" />
+        <RequestsTable traces={tracesWithErrors ?? []} filter="error" />
       </TabsContent>
     </Tabs>
   );

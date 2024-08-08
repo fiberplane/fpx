@@ -34,14 +34,14 @@ export function Otel({
         return undefined;
       }
 
-      return traces.findIndex((trace) => trace.trace_id === traceId);
+      return traces.findIndex((trace) => trace.traceId === traceId);
     },
     getTraceRoute: (index: number) => {
       if (!traces) {
         return "";
       }
 
-      return `/requests/otel/${traces[index].trace_id}`;
+      return `/requests/otel/${traces[index].traceId}`;
     },
   });
 

@@ -2,7 +2,7 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { Status } from "@/components/ui/status";
-import type { OtelSpan } from "@/queries";
+import type { OtelTrace } from "@/queries";
 import { Link } from "react-router-dom";
 import { Timestamp } from "../RequestDetailsPage/Timestamp";
 import { RequestMethod } from "../RequestDetailsPage/shared";
@@ -10,12 +10,13 @@ import {
   getRequestMethod,
   getRequestPath,
   getStatusCode,
+  isFpxRequestSpan,
   isFpxTraceError,
 } from "../RequestDetailsPage/v2/otel-helpers";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
 //         in order to support fast refresh with Vite
-export const columns: ColumnDef<OtelSpan>[] = [
+export const columns: ColumnDef<OtelTrace>[] = [
   {
     id: "isError",
     // TODO - Implement isError...
@@ -39,7 +40,12 @@ export const columns: ColumnDef<OtelSpan>[] = [
     accessorKey: "status",
     header: "Status",
     cell: (props) => {
-      return <Status statusCode={getStatusCode(props.row.original)} />;
+      const requestSpan = props.row.original.spans.find(isFpxRequestSpan);
+      const statusCode = requestSpan ? getStatusCode(requestSpan) : 0;
+      if (statusCode) {
+        return <Status statusCode={statusCode} />;
+      }
+      return <Status statusCode={undefined} />;
     },
     meta: {
       headerClassName: "w-20",
@@ -50,7 +56,9 @@ export const columns: ColumnDef<OtelSpan>[] = [
     accessorKey: "method",
     header: "Method",
     cell: (props) => {
-      return <RequestMethod method={getRequestMethod(props.row.original)} />;
+      const requestSpan = props.row.original.spans.find(isFpxRequestSpan);
+      const method = requestSpan ? getRequestMethod(requestSpan) : "—";
+      return <RequestMethod method={method} />;
     },
     meta: {
       headerClassName: "w-20",
@@ -61,17 +69,19 @@ export const columns: ColumnDef<OtelSpan>[] = [
     accessorKey: "path",
     header: "Path",
     cell: (props) => {
+      const requestSpan = props.row.original.spans.find(isFpxRequestSpan);
+      const path = requestSpan ? getRequestPath(requestSpan) : "—";
       return (
         <Link
           className="hover:underline"
-          to={`/requests/otel/${props.row.original.trace_id}`}
+          to={`/requests/otel/${props.row.original.traceId}`}
           onClick={(e) => {
             // We have a navigation handler for selecting the row anyhow, so we don't want to double-trigger that
             // Thus, let's stop propagation
             e.stopPropagation();
           }}
         >
-          {getRequestPath(props.row.original)}
+          {path}
         </Link>
       );
     },
@@ -88,9 +98,14 @@ export const columns: ColumnDef<OtelSpan>[] = [
       cellClassName: "hidden sm:table-cell font-mono",
     },
     cell: (props) => {
+      const requestSpan = props.row.original.spans.find(isFpxRequestSpan);
+      const endTime = requestSpan?.end_time;
+      const startTime = requestSpan?.start_time;
+      if (!endTime || !startTime) {
+        return <span className="font-mono text-xs">—</span>;
+      }
       const duration =
-        new Date(props.row.original.end_time).getTime() -
-        new Date(props.row.original.start_time).getTime();
+        new Date(endTime).getTime() - new Date(startTime).getTime();
       const formattedDuration =
         duration >= 1000 ? `${(duration / 1000).toFixed(2)}s` : `${duration}ms`;
       return <span className="font-mono text-xs">{formattedDuration}</span>;
@@ -108,7 +123,14 @@ export const columns: ColumnDef<OtelSpan>[] = [
   {
     id: "timestamp",
     header: "Timestamp",
-    cell: (props) => <Timestamp date={props.row.original.start_time} />,
+    cell: (props) => {
+      const requestSpan = props.row.original.spans.find(isFpxRequestSpan);
+      const startTime = requestSpan?.start_time;
+      if (!startTime) {
+        return <span>—</span>;
+      }
+      return <Timestamp date={startTime} />;
+    },
     meta: {
       // NOTE - This is how to hide a cell depending on breakpoint!
       headerClassName: "hidden md:table-cell w-36",

@@ -7,11 +7,8 @@ import {
 } from "@/utils";
 import { StackTrace } from "../StackTrace";
 import { SectionHeading } from "../shared";
-// import { timelineId } from "./timelineId";
-// import { SubSectionHeading } from "./shared";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
-  // const id = timelineId(log);
   const id = log.id;
   const { level, message } = log;
   const name = objectHasName(message) ? message.name : null;

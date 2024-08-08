@@ -27,16 +27,30 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
 
-  const traces = await db
+  const spans = await db
     .select()
     .from(otelSpans)
-    .where(
-      and(
-        sql`parsed_payload->>'scope_name' = 'fpx-tracer'`,
-        sql`parsed_payload->>'name' = 'request'`,
-      ),
-    )
+    .where(and(sql`parsed_payload->>'scope_name' = 'fpx-tracer'`))
     .orderBy(desc(otelSpans.createdAt));
+
+  const traceMap = new Map<string, Array<(typeof spans)[0]>>();
+
+  for (const span of spans) {
+    const traceId = span.traceId;
+    if (!traceId) {
+      continue;
+    }
+    if (!traceMap.has(traceId)) {
+      traceMap.set(traceId, []);
+    }
+    traceMap.get(traceId)?.push(span);
+  }
+
+  const traces = Array.from(traceMap.entries()).map(([traceId, spans]) => ({
+    traceId,
+    spans,
+  }));
+
   return ctx.json(traces);
 });
 

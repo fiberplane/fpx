@@ -87,6 +87,13 @@ const SpansSchema = z.array(OtelSpanSchema);
 export type OtelSpan = z.infer<typeof OtelSpanSchema>;
 export type OtelSpans = z.infer<typeof SpansSchema>;
 
+const OtelTraceSchema = z.object({
+  traceId: z.string(),
+  spans: SpansSchema,
+});
+
+export type OtelTrace = z.infer<typeof OtelTraceSchema>;
+
 async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
   const traceId = context.queryKey[1];
   return fetch(`/v1/traces/${traceId}/spans`, {
@@ -107,7 +114,7 @@ async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
 export function useOtelTraces() {
   return useQuery({
     queryKey: ["otel-traces"],
-    queryFn: (): Promise<OtelSpan[]> => {
+    queryFn: (): Promise<OtelTrace[]> => {
       return fetch("/v1/traces")
         .then((res) => res.json())
         .then((r) => {
@@ -115,11 +122,21 @@ export function useOtelTraces() {
           // console.log("Otel Traces before decoding:", r);
           return r;
         })
-        .then((r) =>
-          r.map((r: { parsedPayload: unknown; rawPayload: unknown }) =>
-            toOtelSpan(r?.parsedPayload, r?.rawPayload),
-          ),
-        );
+        .then((r) => {
+          return r.map(
+            (t: {
+              traceId: string;
+              spans: { parsedPayload: unknown; rawPayload: unknown }[];
+            }) => {
+              return {
+                traceId: t.traceId,
+                spans: t.spans.map((span) =>
+                  toOtelSpan(span.parsedPayload, span.rawPayload),
+                ),
+              };
+            },
+          );
+        });
     },
   });
 }

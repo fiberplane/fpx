@@ -10,32 +10,53 @@ import {
   SpanKind,
 } from "@/constants";
 import { OtelSpan } from "@/queries";
-import { OtelAttributes } from "@/queries/traces-otel";
+import { OtelAttributes, OtelEvent, OtelTrace } from "@/queries/traces-otel";
+
+export const isErrorLogEvent = (event: OtelEvent) => {
+  return event.name === "log" && getString(event.attributes.level) === "error";
+};
+
+export const isExceptionEvent = (event: OtelEvent) => {
+  return event.name === "exception";
+};
+
+const isErrorEvent = (event: OtelEvent) => {
+  return isExceptionEvent(event) || isErrorLogEvent(event);
+};
+
+export const hasErrorEvent = (span: OtelSpan) => {
+  return span.events.some(isErrorEvent);
+};
 
 export const getErrorEvents = (span: OtelSpan) => {
-  return span.events.filter((event) => {
-    if (event.name === "exception") {
-      return true;
-    }
+  return span.events.filter(isErrorEvent);
+};
 
-    if (event.name === "log") {
-      const level = getString(event.attributes.level);
-      return level === "error";
-    }
+export function isFpxRequestSpan(span: OtelSpan) {
+  return span.name === "request" && span.kind === SpanKind.SERVER;
+}
 
-    return false;
-  });
+export const hasHttpError = (span: OtelSpan) => {
+  const statusCode = getStatusCode(span);
+  return statusCode && statusCode >= 400;
 };
 
 /**
- * TODO - Also look for exception events...
+ * Returns true if:
+ * - The request span has a status code >= 400
+ * - Any span has an exception event
+ * - Any span has an error log event
  */
-export function isFpxTraceError(span: OtelSpan) {
-  return getStatusCode(span) >= 400;
+export function isFpxTraceError(trace: OtelTrace) {
+  const requestSpan = trace.spans.find(isFpxRequestSpan);
+  if (requestSpan && getStatusCode(requestSpan) > 400) {
+    return true;
+  }
+  return trace.spans.some(hasErrorEvent);
 }
 
+// TODO support this in the otel client
 export function getMatchedRoute(span: OtelSpan) {
-  // TODO support this in the otel client
   return getString(span.attributes["http.route"]);
 }
 

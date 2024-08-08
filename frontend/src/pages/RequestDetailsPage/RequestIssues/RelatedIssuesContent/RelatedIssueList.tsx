@@ -4,7 +4,7 @@ import { useOtelTrace } from "@/queries";
 import { useRelevantIssues } from "@/queries/queries";
 import { OtelEvent } from "@/queries/traces-otel";
 import { useMemo } from "react";
-import { getString } from "../../v2/otel-helpers";
+import { getString, isExceptionEvent } from "../../v2/otel-helpers";
 import { RelatedIssueCard } from "./RelatedIssueCard";
 import { getSignificantWords } from "./utils";
 
@@ -24,7 +24,7 @@ export function RelatedIssueList(props: { traceId: string }) {
   // TODO - Test that this works with Otel traces
   const relatedError = spans
     ?.flatMap((t) => t.events)
-    .find((e) => e.name === "exception" && getString(e.attributes.message));
+    ?.find((e) => isExceptionEvent(e) && getString(e.attributes.message));
   const query = relatedError && getQueryFromEvent(relatedError);
 
   const searchWords = useMemo(() => {

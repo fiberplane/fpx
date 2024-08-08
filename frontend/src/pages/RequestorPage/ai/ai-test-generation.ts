@@ -3,7 +3,9 @@ import {
   getRequestUrl,
   getResponseBody,
   getResponseHeaders,
-  getStatusCode,
+  hasHttpError,
+  isErrorLogEvent,
+  isFetchSpan,
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
 import { OtelSpans, useOtelTrace } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
@@ -115,9 +117,7 @@ function serializeTraceForLLM(trace: OtelSpans) {
   );
 
   // TODO - Find out why error logs are so much less helpful with otel middleware
-  const errorLogs = events.filter(
-    (event) => event.name === "log" && event.attributes?.level === "error",
-  );
+  const errorLogs = events.filter(isErrorLogEvent);
   const errorLogsContext = errorLogs.reduce(
     (result, log) => {
       result.push(
@@ -135,10 +135,8 @@ function serializeTraceForLLM(trace: OtelSpans) {
 
   // TODO - Serialize fetches somehow for context
   //
-  const fetches = trace.filter((span) => span.name === "fetch");
-  const errorFetches = fetches.filter((span) => {
-    return getStatusCode(span) >= 400;
-  });
+  const fetches = trace.filter(isFetchSpan);
+  const errorFetches = fetches.filter(hasHttpError);
   const fetchContext = errorFetches.reduce(
     (result, fetchSpan) => {
       result.push(

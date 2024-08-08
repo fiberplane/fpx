@@ -4,7 +4,10 @@ import clsx from "clsx";
 export function Status({
   className,
   statusCode,
-}: { className?: string; statusCode: number }) {
+}: { className?: string; statusCode: number | undefined }) {
+  if (!statusCode) {
+    return null;
+  }
   return (
     <Badge
       variant="secondary"
@@ -27,7 +30,7 @@ export function Status({
         className,
       )}
     >
-      {statusCode}
+      {statusCode ? statusCode : "NA"}
     </Badge>
   );
 }

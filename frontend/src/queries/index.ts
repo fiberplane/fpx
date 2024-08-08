@@ -22,6 +22,7 @@ export {
 export {
   type OtelSpan,
   type OtelSpans,
+  type OtelTrace,
   useOtelTrace,
   useOtelTraces,
 } from "./traces-otel";
