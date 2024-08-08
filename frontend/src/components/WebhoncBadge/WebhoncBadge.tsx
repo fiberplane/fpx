@@ -1,5 +1,4 @@
 import { cn } from "@/utils";
-// import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   HoverCard,
   HoverCardContent,
@@ -44,7 +43,7 @@ export function WebhoncBadge() {
             <div className="font-normal text-sm w-[400px] flex flex-col gap-2">
               <p className="text-wrap">
                 <span className="font-semibold">Proxy URL:</span> any request
-                received at this URL will be forwarded to the FPX and your API.
+                received at this URL will be forwarded to your API.
               </p>
               {isPending && url === undefined ? (
                 <div className="flex gap-2 items-center">
