@@ -96,6 +96,18 @@ app.post("/v1/traces", async (ctx) => {
       return ctx.text("Error inserting trace", 500);
     }
 
+    const wsConnections = ctx.get("wsConnections");
+    if (wsConnections) {
+      for (const ws of wsConnections) {
+        ws.send(
+          JSON.stringify({
+            event: "trace_created",
+            payload: ["mizuTraces"],
+          }),
+        );
+      }
+    }
+
     return ctx.text("OK");
   } catch (error) {
     logger.error("Error parsing trace data", error);

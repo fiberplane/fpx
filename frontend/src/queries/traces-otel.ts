@@ -1,5 +1,6 @@
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+import { MIZU_TRACES_KEY } from "./queries";
 
 const OtelAttributesSchema = z.record(
   z.string(),
@@ -113,7 +114,7 @@ async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
 
 export function useOtelTraces() {
   return useQuery({
-    queryKey: ["otel-traces"],
+    queryKey: [MIZU_TRACES_KEY],
     queryFn: (): Promise<OtelTrace[]> => {
       return fetch("/v1/traces")
         .then((res) => res.json())

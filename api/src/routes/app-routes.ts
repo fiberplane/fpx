@@ -125,7 +125,7 @@ app.post(
           for (const ws of wsConnections) {
             ws.send(
               JSON.stringify({
-                type: "trace_created",
+                event: "trace_created",
                 payload: ["appRoutes"],
               }),
             );
