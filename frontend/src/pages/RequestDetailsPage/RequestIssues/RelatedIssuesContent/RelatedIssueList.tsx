@@ -1,9 +1,10 @@
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 
-import { useRequestDetails } from "@/hooks";
-import { MizuLog } from "@/queries";
+import { useOtelTrace } from "@/queries";
 import { useRelevantIssues } from "@/queries/queries";
+import { OtelEvent } from "@/queries/traces-otel";
 import { useMemo } from "react";
+import { getString, isExceptionEvent } from "../../v2/otel-helpers";
 import { RelatedIssueCard } from "./RelatedIssueCard";
 import { getSignificantWords } from "./utils";
 
@@ -15,13 +16,16 @@ export function RelatedIssueList(props: { traceId: string }) {
     isError: issuesError,
   } = useRelevantIssues(traceId);
   const {
-    trace: details,
+    data: spans,
     isError: isDetailsError,
     isPending: isDetailsPending,
-  } = useRequestDetails(traceId);
+  } = useOtelTrace(traceId);
 
-  const relatedError = details?.logs.find((log) => log.callerLocation);
-  const query = relatedError && getQueryFromLog(relatedError);
+  // TODO - Test that this works with Otel traces
+  const relatedError = spans
+    ?.flatMap((t) => t.events)
+    ?.find((e) => isExceptionEvent(e) && getString(e.attributes.message));
+  const query = relatedError && getQueryFromEvent(relatedError);
 
   const searchWords = useMemo(() => {
     if (!query) {
@@ -61,14 +65,6 @@ export function RelatedIssueList(props: { traceId: string }) {
   );
 }
 
-function getQueryFromLog(log: MizuLog) {
-  const message =
-    typeof log.message === "string"
-      ? log.message
-      : log.message &&
-        "message" in log.message &&
-        typeof log.message.message === "string" &&
-        log.message.message;
-
-  return typeof message === "string" ? message : undefined;
+function getQueryFromEvent(event: OtelEvent) {
+  return getString(event.attributes.message);
 }

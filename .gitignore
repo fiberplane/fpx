@@ -1,3 +1,8 @@
+.wrangler
+shared/dist
+.env
+.envrc
+
 # Fpx
 .fpx
 .fpxconfig
@@ -5,9 +10,6 @@
 # Rust targets
 **/target
 target
-
-.env
-.envrc
 
 # Mac
 .DS_Store
@@ -36,5 +38,4 @@ yarn-error.log
 
 # Personal files
 start-dev.sh
-.wrangler
-shared/dist
+slam-geese.sh

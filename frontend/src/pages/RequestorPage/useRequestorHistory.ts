@@ -20,6 +20,7 @@ type RequestorHistoryHookArgs = {
   setPathParams: (headers: KeyValueParameter[]) => void;
   setQueryParams: (params: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
+  showResponseBodyFromHistory: (traceId: string) => void;
 };
 
 export function useRequestorHistory({
@@ -30,6 +31,7 @@ export function useRequestorHistory({
   setRequestHeaders,
   setBody,
   setQueryParams,
+  showResponseBodyFromHistory,
 }: RequestorHistoryHookArgs) {
   const {
     sessionHistory: sessionHistoryTraceIds,
@@ -50,6 +52,7 @@ export function useRequestorHistory({
   // This feels wrong... but it's a way to load a past request back into the UI
   const loadHistoricalRequest = (traceId: string) => {
     recordRequestInSessionHistory(traceId);
+    showResponseBodyFromHistory(traceId);
     const match = history.find((r) => r.app_responses?.traceId === traceId);
     if (match) {
       const method = match.app_requests.requestMethod;

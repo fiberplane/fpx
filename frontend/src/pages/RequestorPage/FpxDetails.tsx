@@ -6,23 +6,19 @@ import {
 } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import {
-  MizuLog,
-  MizuRequestEnd,
-  MizuRequestStart,
-  isMizuRequestEndMessage,
-  isMizuRequestStartMessage,
-  useHandlerSourceCode,
-} from "@/queries";
-import { cn, noop } from "@/utils";
+import { useOtelTrace } from "@/queries";
+import { cn } from "@/utils";
 import { CaretSortIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { CodeMirrorTypescriptEditor } from "./Editors/CodeMirrorEditor";
+import {
+  getRequestEnv,
+  getRequestHeaders,
+} from "../RequestDetailsPage/v2/otel-helpers";
 import { EventsTable } from "./EventsTable";
 import { HeaderTable } from "./HeaderTable";
 import { useSummarizeError } from "./ai";
-import { Requestornator, useTrace } from "./queries";
+import { Requestornator } from "./queries";
 
 // NOTE - Useful for testing rendering of ai markdown in the DOM without hitting openai
 // const MOCK_AI_SUMMARY = getMockAiSummary();
@@ -52,7 +48,8 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
   const isAiSummaryEnabled = aiEnabled && false;
 
   const traceId = response.app_responses.traceId;
-  const { trace, isNotFound } = useTrace(traceId);
+  const { data: trace, error, isLoading } = useOtelTrace(traceId);
+  const isNotFound = !trace && !error && !isLoading;
 
   const {
     data: aiSummary,
@@ -67,7 +64,7 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
   useEffect(() => {
     if (
       trace &&
-      trace.id !== lastFetchedTraceId &&
+      trace?.[0]?.trace_id !== lastFetchedTraceId &&
       isAiSummaryEnabled &&
       !isFetchingAiSummary
     ) {
@@ -85,9 +82,14 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
     return <div>Trace not found</div>;
   }
 
-  const fpxRequestMessage = getRequestMessage(trace?.logs || []);
-  const fpxResponseMessage = getResponseMessage(trace?.logs || []);
-  const shouldShowSourceFunction = fpxRequestMessage && fpxResponseMessage;
+  const requestSpan = trace?.find((span) => span.name === "request");
+  const headersReceived = requestSpan ? getRequestHeaders(requestSpan) : {};
+  const requestEnv = requestSpan ? getRequestEnv(requestSpan) : {};
+
+  // TODO - Implement this in the middleware
+  // const shouldShowSourceFunction = false;
+
+  const events = trace?.flatMap((span) => span.events) ?? [];
 
   return (
     <div className={cn("mt-2", className)}>
@@ -114,78 +116,64 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
       )}
 
       <Section title="Events" defaultIsOpen>
-        <EventsTable logs={trace?.logs} />
+        <EventsTable events={events} />
       </Section>
       <Section title="Environment">
-        <HeaderTable headers={fpxRequestMessage?.env ?? {}} />
+        <HeaderTable headers={requestEnv ?? {}} />
       </Section>
       <Section title="Headers Your API Received">
-        <HeaderTable headers={fpxRequestMessage?.headers ?? {}} />
+        <HeaderTable headers={headersReceived} />
       </Section>
-      <Section title="Source Function">
-        <div>
-          {shouldShowSourceFunction ? (
-            <SourceFunction
-              fpxRequestMessage={fpxRequestMessage}
-              fpxResponseMessage={fpxResponseMessage}
-            />
-          ) : (
-            <div>
-              Could not find source code, only compiled code:
-              <CodeMirrorTypescriptEditor
-                jsx
-                value={fpxResponseMessage?.handler}
-                readOnly
-                onChange={noop}
+      {/* {shouldShowSourceFunction && (
+        <Section title="Source Function">
+          <div>
+            {shouldShowSourceFunction ? (
+              <SourceFunction
+                fpxRequestMessage={fpxRequestMessage}
+                fpxResponseMessage={fpxResponseMessage}
               />
-            </div>
-          )}
-        </div>
-      </Section>
+            ) : (
+              <div>
+                Could not find source code, only compiled code:
+                <CodeMirrorTypescriptEditor
+                  jsx
+                  value={fpxResponseMessage?.handler}
+                  readOnly
+                  onChange={noop}
+                />
+              </div>
+            )}
+          </div>
+        </Section>
+      )} */}
     </div>
   );
 }
 
-type SourceFunctionProps = {
-  fpxRequestMessage: MizuRequestStart;
-  fpxResponseMessage: MizuRequestEnd;
-};
-function SourceFunction({
-  fpxRequestMessage,
-  fpxResponseMessage,
-}: SourceFunctionProps) {
-  const source = fpxRequestMessage?.file;
-  const handler = fpxResponseMessage?.handler;
-  const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
+// type SourceFunctionProps = {
+//   fpxRequestMessage: MizuRequestStart;
+//   fpxResponseMessage: MizuRequestEnd;
+// };
+// function SourceFunction({
+//   fpxRequestMessage,
+//   fpxResponseMessage,
+// }: SourceFunctionProps) {
+//   const source = fpxRequestMessage?.file;
+//   const handler = fpxResponseMessage?.handler;
+//   const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
 
-  return (
-    <div>
-      <CodeMirrorTypescriptEditor
-        jsx
-        value={handlerSourceCode}
-        readOnly
-        onChange={noop}
-        minHeight="100px"
-      />
-    </div>
-  );
-}
-
-function getRequestMessage(logs: MizuLog[]) {
-  for (const log of logs) {
-    if (isMizuRequestStartMessage(log.message)) {
-      return log.message;
-    }
-  }
-}
-
-function getResponseMessage(logs: MizuLog[]) {
-  for (const log of logs) {
-    if (isMizuRequestEndMessage(log.message)) {
-      return log.message;
-    }
-  }
-}
+//   return (
+//     <div>
+//       <CodeMirrorTypescriptEditor
+//         jsx
+//         value={handlerSourceCode}
+//         readOnly
+//         onChange={noop}
+//         minHeight="100px"
+//       />
+//     </div>
+//   );
+// }
 
 function Section({
   title,

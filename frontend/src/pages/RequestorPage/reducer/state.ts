@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { FormDataParameterSchema } from "../FormDataForm";
 import {
   KeyValueParameterSchema,
   enforceTerminalDraftParameter,
@@ -7,27 +6,8 @@ import {
 import { ProbedRouteSchema } from "../queries";
 import { RequestMethodSchema, RequestTypeSchema } from "../types";
 import { loadUiStateFromLocalStorage } from "./persistence";
+import { RequestorBodySchema } from "./request-body";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
-
-const RequestorBodySchema = z.union([
-  z.object({
-    type: z.literal("text"),
-    value: z.string().optional(),
-  }),
-  z.object({
-    type: z.literal("json"),
-    value: z.string().optional(),
-  }),
-  z.object({
-    type: z.literal("form-data"),
-    isMultipart: z.boolean(),
-    value: z.array(FormDataParameterSchema),
-  }),
-  z.object({
-    type: z.literal("file"),
-    value: z.instanceof(File).optional(),
-  }),
-]);
 
 export const RequestorStateSchema = z.object({
   routes: z.array(ProbedRouteSchema).describe("All routes"),
@@ -67,6 +47,12 @@ export const RequestorStateSchema = z.object({
   visibleResponsePanelTabs: z
     .array(ResponsePanelTabSchema)
     .describe("The tabs to show in the response panel"),
+
+  // HACK - This is used to force us to show a response body for a request loaded from history
+  activeHistoryResponseTraceId: z
+    .string()
+    .nullable()
+    .describe("The trace id to show in the response panel"),
 });
 
 export type RequestorState = z.infer<typeof RequestorStateSchema>;
@@ -96,6 +82,9 @@ export const initialState: RequestorState = {
 
   activeResponsePanelTab: "body",
   visibleResponsePanelTabs: ["body", "headers", "debug", "history"],
+
+  // HACK - This is used to force us to show a response body for a request loaded from history
+  activeHistoryResponseTraceId: null,
 };
 
 /**

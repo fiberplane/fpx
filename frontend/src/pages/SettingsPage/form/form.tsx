@@ -12,7 +12,6 @@ const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   openaiModel: GPT_4o,
   anthropicModel: CLAUDE_3_5_SONNET,
   customRoutesEnabled: false,
-  tracingLiteEnabled: false,
   proxyRequestsEnabled: false,
 };
 
@@ -47,7 +46,6 @@ export function useSettingsForm(settings: Record<string, string | boolean>) {
           openaiModel: data.openaiModel,
           anthropicBaseUrl: data.anthropicBaseUrl ?? "",
           anthropicModel: data.anthropicModel,
-          tracingLiteEnabled: data.tracingLiteEnabled,
           proxyRequestsEnabled: data.proxyRequestsEnabled,
         },
       },

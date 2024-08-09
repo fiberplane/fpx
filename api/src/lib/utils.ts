@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Context } from "hono";
 import { minimatch } from "minimatch";
+import { type Schema, any } from "zod";
 import logger from "../logger.js";
 
 /**
@@ -106,6 +107,23 @@ export function safeParseJson(str: string | null | undefined) {
   } catch {
     return str;
   }
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: We handle the any case well enough
+export function fallback<T extends Schema<any>, U>(
+  schema: T,
+  valueOrFn: U | (() => U),
+): T | Schema<U> {
+  return any().transform((val) => {
+    const safe = schema.safeParse(val);
+    if (safe.success) {
+      return safe.data;
+    }
+    if (typeof valueOrFn === "function") {
+      return (valueOrFn as () => U)();
+    }
+    return valueOrFn;
+  });
 }
 
 export async function safeReadTextBody(response: Response) {

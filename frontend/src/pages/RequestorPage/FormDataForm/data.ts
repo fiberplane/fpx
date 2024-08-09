@@ -224,3 +224,15 @@ const concatDraftParameter = (parameters: FormDataParameter[]) => {
   };
   return [...parameters, DRAFT_PARAMETER];
 };
+
+export const createFormDataParameter = (key: string, value: string) => {
+  return {
+    id: createParameterId(),
+    enabled: true,
+    key,
+    value: {
+      type: "text" as const,
+      value,
+    },
+  };
+};

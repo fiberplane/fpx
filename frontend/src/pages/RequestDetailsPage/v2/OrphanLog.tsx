@@ -1,19 +1,15 @@
-import { MizuMessage, MizuOrphanLog } from "@/queries";
+import { MizuOrphanLog } from "@/queries";
 import {
   cn,
-  hasStringMessage,
   objectHasName,
   objectHasStack,
   renderFullLogMessage,
 } from "@/utils";
 import { StackTrace } from "../StackTrace";
 import { SectionHeading } from "../shared";
-import { timelineId } from "./timelineId";
-// import { SubSectionHeading } from "./shared";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
-  const id = timelineId(log);
-
+  const id = log.id;
   const { level, message } = log;
   const name = objectHasName(message) ? message.name : null;
 
@@ -23,14 +19,15 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const heading = `console.${consoleMethod}${name ? `:  ${name}` : ""}`;
 
   const { type: contentsType, value: contents } = getLogContents(
-    message,
+    message ?? "",
     log.args,
   );
-  const description = getDescription(message, log.args);
+  const description = getDescription(message ?? "", log.args);
+  // TODO - Get stack from the span!
   const stack = objectHasStack(message) ? message.stack : null;
 
   return (
-    <div id={id} className="overflow-x-auto overflow-y-hidden">
+    <div id={id?.toString()} className="overflow-x-auto overflow-y-hidden">
       <div className={cn("grid gap-2 border-t py-4")}>
         <SectionHeading className="font-mono">{heading}</SectionHeading>
       </div>
@@ -51,12 +48,9 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   );
 }
 
-function getDescription(message: string | MizuMessage, args?: Array<unknown>) {
+function getDescription(message: string, args?: Array<unknown>) {
   if (!message) {
     return "";
-  }
-  if (hasStringMessage(message)) {
-    return message.message;
   }
   // TODO - Render a smarter message
   if (argsIsNotEmpty(args)) {
@@ -65,13 +59,10 @@ function getDescription(message: string | MizuMessage, args?: Array<unknown>) {
   if (typeof message === "string") {
     return message;
   }
-  if (hasStringMessage(message)) {
-    return message.message;
-  }
   return "";
 }
 
-function getLogContents(message: string | MizuMessage, args?: Array<unknown>) {
+function getLogContents(message: string, args?: Array<unknown>) {
   if (!message && argsIsEmpty(args)) {
     return { type: "empty" as const, value: null };
   }
@@ -82,13 +73,6 @@ function getLogContents(message: string | MizuMessage, args?: Array<unknown>) {
 
   if (typeof message === "string") {
     return { type: "string" as const, value: message };
-  }
-
-  if (hasStringMessage(message)) {
-    return {
-      type: "string" as const,
-      value: message.message,
-    };
   }
 
   return {

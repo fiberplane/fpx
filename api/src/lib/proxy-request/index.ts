@@ -16,13 +16,33 @@ type DbType = LibSQLDatabase<typeof schema>;
 /**
  * This function executes a proxy request and returns the response or *throws* an error.
  */
-export async function executeProxyRequest({
-  requestUrl,
-  requestMethod,
-  requestHeaders,
-  requestBody,
-}: NewAppRequest) {
-  if (!requestHeaders) requestHeaders = {};
+export async function executeProxyRequest(
+  reqOrAppReq: NewAppRequest | Request,
+) {
+  const proxiedReq =
+    reqOrAppReq instanceof Request
+      ? reqOrAppReq
+      : createProxyRequestFromNewAppRequest(reqOrAppReq);
+
+  try {
+    const response = await fetch(proxiedReq);
+    return response;
+  } catch (err) {
+    logger.error("executeProxyRequest fetchError:", err);
+    throw err;
+  }
+}
+
+function createProxyRequestFromNewAppRequest(
+  requestDescription: NewAppRequest,
+) {
+  const { requestUrl, requestMethod, requestBody } = requestDescription;
+
+  let { requestHeaders } = requestDescription;
+
+  if (!requestHeaders) {
+    requestHeaders = {};
+  }
 
   let validBody: BodyInit | null = null;
   if (requestBody != null) {
@@ -35,7 +55,10 @@ export async function executeProxyRequest({
       typeof requestBody === "string"
     ) {
       validBody = requestBody;
-    } else if (typeof requestBody === "object") {
+    } else if (requestBody && typeof requestBody === "object") {
+      logger.debug(
+        "executeProxyRequest requestBody is an object, stringifying it",
+      );
       validBody = JSON.stringify(requestBody);
     } else {
       logger.warn("Invalid requestBody type. Setting to null.");
@@ -48,13 +71,7 @@ export async function executeProxyRequest({
     body: validBody,
   });
 
-  try {
-    const response = await fetch(proxiedReq);
-    return response;
-  } catch (err) {
-    logger.error("fetchError:", err);
-    throw err;
-  }
+  return proxiedReq;
 }
 
 /**
@@ -116,9 +133,8 @@ export async function handleSuccessfulRequest(
   requestId: RequestIdType,
   duration: number,
   response: Awaited<ReturnType<typeof fetch>>,
+  traceId: string,
 ) {
-  const traceId = response.headers.get("x-fpx-trace-id") ?? "";
-
   const { responseBody, responseTime, responseHeaders, responseStatusCode } =
     await appResponseInsertSchema
       .extend({

@@ -1,31 +1,11 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import {
-  MizuLog,
-  isMizuErrorMessage,
-  isMizuFetchEndMessage,
-  isMizuFetchErrorMessage,
-  isMizuFetchStartMessage,
-  isMizuRequestEndMessage,
-  isMizuRequestStartMessage,
-} from "@/queries";
-import {
-  hasStringMessage,
-  renderFullLogMessage,
-  truncateWithEllipsis,
-} from "@/utils";
+import { OtelEvent } from "@/queries/traces-otel";
+import { truncateWithEllipsis } from "@/utils";
 import { useMemo } from "react";
+import { getString } from "../RequestDetailsPage/v2/otel-helpers";
 
-export function EventsTable({ logs }: { logs?: MizuLog[] }) {
-  const filteredLogs = useMemo(() => {
-    return logs?.filter((log) => {
-      return (
-        !isMizuRequestStartMessage(log.message) &&
-        !isMizuRequestEndMessage(log.message)
-      );
-    });
-  }, [logs]);
-
-  if (!filteredLogs || !filteredLogs.length) {
+export function EventsTable({ events }: { events?: OtelEvent[] }) {
+  if (!events || !events.length) {
     return (
       <div className="pl-8 text-gray-400 font-italic text-sm pb-2">
         <div>No logs</div>
@@ -36,65 +16,40 @@ export function EventsTable({ logs }: { logs?: MizuLog[] }) {
   return (
     <Table>
       <TableBody>
-        {filteredLogs.map((log) => (
-          <EventTableRow key={log.id} log={log} />
+        {events.map((event, index) => (
+          <EventTableRow key={index} event={event} />
         ))}
       </TableBody>
     </Table>
   );
 }
 
-const EventTableRow = ({ log }: { log: MizuLog }) => {
+const EventTableRow = ({ event }: { event: OtelEvent }) => {
   const description = useMemo(
-    () => truncateWithEllipsis(getEventDescription(log), 55),
-    [log],
+    () => truncateWithEllipsis(getEventDescription(event), 55),
+    [event],
   );
-  const eventName = useMemo(() => getEventName(log), [log]);
+  const eventName = useMemo(() => getEventName(event), [event]);
   return (
-    <TableRow key={log.id}>
+    <TableRow>
       <TableCell className="w-[100px] text-gray-400">{eventName}</TableCell>
       <TableCell>{description}</TableCell>
     </TableRow>
   );
 };
 
-function getEventName(log: MizuLog) {
-  if (isMizuFetchStartMessage(log?.message)) {
-    return "fetch start";
+function getEventName(event: OtelEvent) {
+  if (event.name === "log") {
+    return getString(event.attributes.level) ?? "log";
   }
-  if (isMizuFetchErrorMessage(log?.message)) {
-    return "fetch error";
-  }
-  if (isMizuFetchEndMessage(log?.message)) {
-    return "fetch end";
-  }
-  if (log.level === "error") {
-    return <span className="text-red-400">error log</span>;
-  }
-  return `${log.level} log`;
+  return event.name;
 }
 
-function getEventDescription(log: MizuLog) {
-  if (isMizuFetchStartMessage(log?.message)) {
-    return `${log.message.method} ${log.message.url}`;
+function getEventDescription(event: OtelEvent) {
+  if (event.name === "exception") {
+    return getString(event.attributes["exception.message"]) || "<no message>";
   }
-  if (isMizuFetchErrorMessage(log?.message)) {
-    return `\t${log.message.url}`;
+  if (event.name === "log") {
+    return getString(event.attributes.message) || "<no message>";
   }
-  if (isMizuFetchEndMessage(log?.message)) {
-    return `\t${log.message.url}`;
-  }
-  if (isMizuErrorMessage(log?.message)) {
-    return log.message.message;
-  }
-  if (log.args?.length > 0) {
-    return renderFullLogMessage([log?.message, ...log.args]);
-  }
-  if (hasStringMessage(log.message)) {
-    return log.message.message;
-  }
-  if (typeof log?.message === "string") {
-    return log.message;
-  }
-  return JSON.stringify(log.message);
 }

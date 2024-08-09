@@ -159,7 +159,6 @@ export const FormSchema = z.object({
   anthropicApiKey: z.string().optional(),
   anthropicBaseUrl: z.string().optional(),
   anthropicModel: AnthropicModelSchema.optional(),
-  tracingLiteEnabled: z.boolean().optional(),
 });
 
 export type UserSettings = z.infer<typeof FormSchema>;

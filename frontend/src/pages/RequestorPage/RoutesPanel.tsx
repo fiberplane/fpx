@@ -4,14 +4,16 @@ import { cn } from "@/utils";
 import {
   CaretDownIcon,
   CaretRightIcon,
+  ClockIcon,
   TrashIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { Resizable } from "react-resizable";
+import { RequestorHistory } from "./RequestorHistory";
 import { ResizableHandle } from "./Resizable";
 import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
-import { ProbedRoute, useDeleteRoute } from "./queries";
+import { ProbedRoute, Requestornator, useDeleteRoute } from "./queries";
 import { AddRouteButton } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { isWsRequest } from "./types";
@@ -21,6 +23,8 @@ type RoutesPanelProps = {
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
   deleteDraftRoute?: () => void;
+  history: Array<Requestornator>;
+  loadHistoricalRequest: (traceId: string) => void;
 };
 
 export function RoutesPanel({
@@ -28,6 +32,8 @@ export function RoutesPanel({
   selectedRoute,
   handleRouteClick,
   deleteDraftRoute,
+  history,
+  loadHistoricalRequest,
 }: RoutesPanelProps) {
   const customRoutesEnabled = useCustomRoutesEnabled();
   const { width, handleResize } = useResizableWidth(320);
@@ -91,6 +97,20 @@ export function RoutesPanel({
     return filteredRoutes?.filter((r) => r.isDraft) ?? [];
   }, [filteredRoutes]);
 
+  const hasAnyHistory = useMemo(() => {
+    return history.length > 0;
+  }, [history]);
+
+  const filteredHistory = useMemo(() => {
+    const cleanFilter = filterValue.trim().toLowerCase();
+    if (cleanFilter.length < 3 && history) {
+      return history;
+    }
+    return history?.filter((r) =>
+      r.app_requests?.requestUrl?.includes(filterValue),
+    );
+  }, [filterValue, history]);
+
   return (
     <Resizable
       className={`w-full hidden lg:block lg:min-w-[200px] lg:w-[${width}px] lg:mt-0`}
@@ -135,6 +155,13 @@ export function RoutesPanel({
           </div>
         </div>
         <div className="overflow-y-auto relative">
+          {hasAnyHistory && (
+            <HistorySection
+              history={filteredHistory}
+              loadHistoricalRequest={loadHistoricalRequest}
+            />
+          )}
+
           {hasAnyDraftRoutes && (
             <RoutesSection
               title="Draft routes"
@@ -181,6 +208,46 @@ export function RoutesPanel({
         </div>
       </div>
     </Resizable>
+  );
+}
+
+type HistorySectionProps = {
+  history: Array<Requestornator>;
+  loadHistoricalRequest: (traceId: string) => void;
+};
+
+function HistorySection({
+  history,
+  loadHistoricalRequest,
+}: HistorySectionProps) {
+  const [showHistorySection, setShowHistorySection] = useState(false);
+  const ShowHistorySectionIcon = showHistorySection
+    ? CaretDownIcon
+    : CaretRightIcon;
+
+  return (
+    <>
+      <div className="font-medium text-sm flex items-center mb-2 mt-4">
+        <div
+          className="flex items-center w-full cursor-pointer"
+          onClick={() => {
+            setShowHistorySection((current) => !current);
+          }}
+        >
+          <ShowHistorySectionIcon className="h-4 w-4 cursor-pointer text-muted-foreground" />
+          <span className="flex items-center text-muted-foreground">
+            <ClockIcon className="h-3 w-3 mx-1.5 cursor-pointer" />
+            History
+          </span>
+        </div>
+      </div>
+      {showHistorySection && (
+        <RequestorHistory
+          history={history}
+          loadHistoricalRequest={loadHistoricalRequest}
+        />
+      )}
+    </>
   );
 }
 

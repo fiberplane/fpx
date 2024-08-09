@@ -10,7 +10,6 @@ import { useQueryClient } from "@tanstack/react-query";
  */
 export function useWebsocketQueryInvalidation() {
   const queryClient = useQueryClient();
-
   const wsMessage = useRealtimeService();
 
   if (wsMessage) {

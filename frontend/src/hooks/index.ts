@@ -1,5 +1,4 @@
 export { useTimeAgo } from "./useTimeAgo.js";
-export { useRequestDetails } from "./useRequestDetails.js";
 export { useIsSmScreen } from "./useIsSmScreen.ts";
 export { useIsMdScreen } from "./useIsMdScreen.ts";
 export { useIsLgScreen } from "./useIsLgScreen.ts";
@@ -7,4 +6,3 @@ export { useAiEnabled } from "./useAiEnabled.ts";
 export { useCustomRoutesEnabled } from "./useCustomRoutesEnabled.ts";
 export { useRealtimeService } from "./useRealtimeService.ts";
 export { useWebsocketQueryInvalidation } from "./useWebsocketQueryInvalidation.ts";
-export { useTracingLiteEnabled } from "./useTracingLiteEnabled.ts";

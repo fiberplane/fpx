@@ -10,9 +10,9 @@ import appRoutes from "./routes/app-routes.js";
 import dependencies from "./routes/dependencies.js";
 import inference from "./routes/inference.js";
 import issues from "./routes/issues.js";
-import logs from "./routes/logs.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
+import traces from "./routes/traces.js";
 
 export function createApp(
   db: LibSQLDatabase<typeof schema>,
@@ -50,7 +50,7 @@ export function createApp(
   );
 
   // All routes are modularized in the ./routes folder
-  app.route("/", logs);
+  app.route("/", traces);
   app.route("/", inference);
   app.route("/", source);
   app.route("/", dependencies);

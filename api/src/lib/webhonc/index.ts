@@ -5,6 +5,7 @@ import type { z } from "zod";
 import * as schema from "../../db/schema.js";
 import logger from "../../logger.js";
 import { resolveServiceArg } from "../../probe-routes.js";
+import { generateOtelTraceId } from "../otel/index.js";
 import {
   executeProxyRequest,
   handleFailedRequest,
@@ -103,8 +104,7 @@ const messageHandlers: {
   },
   request_incoming: async (message, _wsConnections, db) => {
     // no trace id is coming from the websocket, so we generate one
-    // TODO: change this to an OTEL trace id after #102 is merged
-    const traceId = crypto.randomUUID();
+    const traceId = generateOtelTraceId();
 
     const serviceTarget = resolveServiceArg(process.env.FPX_SERVICE_TARGET);
     const resolvedPath = path.join(serviceTarget, ...message.payload.path);
@@ -158,7 +158,7 @@ const messageHandlers: {
 
       const duration = Date.now() - startTime;
 
-      await handleSuccessfulRequest(db, requestId, duration, response);
+      await handleSuccessfulRequest(db, requestId, duration, response, traceId);
 
       // Store the request in the database
     } catch (error) {

@@ -1,5 +1,6 @@
 import {
   type Attributes,
+  type Exception,
   type Span,
   type SpanKind,
   SpanStatusCode,
@@ -18,7 +19,7 @@ export type MeasureOptions<
   RESULT,
   /**
    * The raw return type of the function being measured
-   * (it is used to determine if the onEnd function can be async)
+   * (it is used to determine if the onSuccess function can be async)
    */
   RAW_RESULT,
 > = {
@@ -39,7 +40,7 @@ export type MeasureOptions<
    *
    * This way you can do things like add additional attributes to the span
    */
-  onEnd?: (
+  onSuccess?: (
     span: Span,
     result: RESULT,
   ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
@@ -51,6 +52,15 @@ export type MeasureOptions<
    * This way you can do things like add additional attributes to the span
    */
   onError?: (span: Span, error: unknown) => void;
+
+  /**
+   * You can specify a function that will allow you to throw an error based on the value of the
+   * result (returned by the measured function). This error will only be used for recording the error
+   * in the span and will not be thrown.
+   */
+  checkResult?: (
+    result: RESULT,
+  ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
 };
 
 /**
@@ -91,12 +101,16 @@ export function measure<R, A extends unknown[]>(
     ? nameOrOptions.attributes
     : undefined;
   const onStart = isOptions ? nameOrOptions.onStart : undefined;
-  const onEnd = isOptions ? nameOrOptions.onEnd : undefined;
+  const onSuccess = isOptions ? nameOrOptions.onSuccess : undefined;
   const onError = isOptions ? nameOrOptions.onError : undefined;
+  const checkResult = isOptions ? nameOrOptions.checkResult : undefined;
 
   return (...args: A): R => {
     function handleActiveSpan(span: Span): R {
       let shouldEndSpan = true;
+
+      let pendingPromiseChain: Promise<R> | undefined;
+
       if (onStart) {
         try {
           onStart(span, args);
@@ -104,30 +118,45 @@ export function measure<R, A extends unknown[]>(
           // swallow error
         }
       }
+
       try {
         const returnValue = fn(...args);
         if (isPromise<R>(returnValue)) {
           shouldEndSpan = false;
           return handlePromise<R>(span, returnValue, {
-            onEnd,
+            onSuccess,
             onError,
+            checkResult,
           }) as R;
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
-        if (onEnd) {
-          try {
-            onEnd(span, returnValue);
-          } catch {
-            // swallow error
-          }
+
+        // HACK - `onSuccess` can be async, so we need to wait for it to finish before ending the span (in the finally clause)
+        if (onSuccess) {
+          pendingPromiseChain = new Promise((resolve) => {
+            try {
+              const onSuccessResult = onSuccess(span, returnValue);
+              if (onSuccessResult instanceof Promise) {
+                onSuccessResult.then(() => {
+                  resolve(returnValue);
+                });
+              } else {
+                resolve(returnValue);
+              }
+            } catch (_error) {
+              // swallow error
+              // console.debug("Error in onSuccess", _error);
+              resolve(returnValue);
+            }
+          });
         }
+
         return returnValue;
       } catch (error) {
-        span.setStatus({
-          code: SpanStatusCode.ERROR,
-          message: error instanceof Error ? error.message : "Unknown error",
-        });
+        const sendError: Exception =
+          error instanceof Error ? error : "Unknown error occurred";
+        span.recordException(sendError);
 
         if (onError) {
           try {
@@ -139,7 +168,13 @@ export function measure<R, A extends unknown[]>(
 
         throw error;
       } finally {
-        if (shouldEndSpan) {
+        if (pendingPromiseChain) {
+          pendingPromiseChain.then(() => {
+            if (shouldEndSpan) {
+              span.end();
+            }
+          });
+        } else if (shouldEndSpan) {
           span.end();
         }
       }
@@ -159,31 +194,72 @@ export function measure<R, A extends unknown[]>(
  *
  * @returns the promise
  */
-function handlePromise<T>(
+async function handlePromise<T>(
   span: Span,
   promise: Promise<T>,
-  options: Pick<MeasureOptions<unknown[], T, Promise<T>>, "onEnd" | "onError">,
+  options: Pick<
+    MeasureOptions<unknown[], T, Promise<T>>,
+    "onSuccess" | "onError" | "checkResult"
+  >,
 ): Promise<T> {
-  const { onEnd, onError } = options;
-  return promise
-    .then(async (result: T) => {
-      span.setStatus({ code: SpanStatusCode.OK });
-      if (onEnd) {
-        try {
-          await onEnd(span, result);
-        } catch {
-          // swallow error
+  const { onSuccess, onError, checkResult } = options;
+  try {
+    const result = await Promise.resolve(promise);
+
+    if (checkResult) {
+      try {
+        await checkResult(result);
+      } catch (error) {
+        // recordException only accepts Error objects or strings
+        const sendError: Exception =
+          error instanceof Error ? error : "Unknown error occured";
+        span.recordException(sendError);
+
+        if (onError) {
+          try {
+            await onError(span, sendError);
+          } catch {
+            // swallow error
+          }
         }
+
+        if (onSuccess) {
+          try {
+            await onSuccess(span, result);
+          } catch {
+            // swallow error
+          }
+        }
+
+        return result;
       }
-      return result;
-    })
-    .catch((error: unknown) => {
+    }
+
+    span.setStatus({ code: SpanStatusCode.OK });
+    if (onSuccess) {
+      try {
+        await onSuccess(span, result);
+      } catch {
+        // swallow error
+      }
+    }
+
+    return result;
+  } catch (error) {
+    try {
       // recordException only accepts Error objects or strings
-      const sendError =
-        error instanceof Error || typeof error === "string"
-          ? error
-          : "Unknown error occurred";
+      const sendError: Exception =
+        error instanceof Error ? error : "Unknown error occured";
       span.recordException(sendError);
+
+      const message =
+        typeof sendError === "string"
+          ? sendError
+          : sendError.message || "Unknown error occured";
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message,
+      });
 
       if (onError) {
         try {
@@ -192,11 +268,15 @@ function handlePromise<T>(
           // swallow error
         }
       }
+    } catch {
+      // swallow error
+    }
 
-      // Rethrow the error
-      throw error;
-    })
-    .finally(() => span.end());
+    // Rethrow the error
+    throw error;
+  } finally {
+    span.end();
+  }
 }
 
 function isPromise<T>(value: unknown): value is Promise<T> {
