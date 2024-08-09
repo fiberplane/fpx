@@ -1,7 +1,6 @@
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useWebsocketQueryInvalidation } from "@/hooks";
 import { type MizuTrace, useMizuTraces, useMizuTracesV2 } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
@@ -53,10 +52,6 @@ export function RequestsPage() {
       console.log("traces with spans:", queryV2.data);
     }
   }, [queryV2.data]);
-
-  // Will add new fpx-requests as they come in by refetching
-  // In the future, we'll want to build a better ux around this (not auto refresh the table)
-  useWebsocketQueryInvalidation();
 
   return (
     <Tabs

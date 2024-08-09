@@ -1,6 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 
+import { Badge } from "@/components/ui/badge";
+import { BadgeProps } from "@/components/ui/badge/Badge";
 import { Status } from "@/components/ui/status";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { MizuTraceV2, isMizuRootRequestSpan } from "@/queries";
 import { isMizuErrorMessage, isMizuFetchErrorMessage } from "@/queries/types";
 import { useMemo } from "react";
@@ -9,6 +16,7 @@ import { FpxCard, RequestMethod } from "../shared";
 import {
   getMethod,
   getPathWithSearch,
+  getRequestHeaders,
   getResponseBody,
   getStatusCode,
 } from "./otel-helpers";
@@ -64,14 +72,47 @@ export function HttpSummary({ trace }: { trace: MizuTraceV2 }) {
   const statusCode = useMemo(() => selectStatusCode(trace), [trace]);
   const path = useMemo(() => selectPath(trace), [trace]);
   const method = useMemo(() => selectMethod(trace), [trace]);
+  const isProxied = useMemo(() => selectIsProxied(trace), [trace]);
 
   return (
     <div className="flex gap-2 items-center">
       <Status className="md:text-base" statusCode={Number(statusCode)} />
       <RequestMethod method={method} />
       <p className="text-sm md:text-base font-mono">{path}</p>
+      {isProxied && (
+        <ProxiedBadge className="rounded-xl cursor-default">
+          Proxied
+        </ProxiedBadge>
+      )}
     </div>
   );
+}
+
+function ProxiedBadge(props: BadgeProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <Badge {...props}>{props.children}</Badge>
+      </TooltipTrigger>
+      <TooltipContent
+        className="bg-slate-950 text-white"
+        align="center"
+        side="bottom"
+      >
+        This request was proxied from the webhonc service
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function selectIsProxied(trace: MizuTraceV2) {
+  const requestSpan = trace.spans.find(isMizuRootRequestSpan);
+  if (!requestSpan) {
+    console.warn("No request span found");
+    return false;
+  }
+  const headers = getRequestHeaders(requestSpan);
+  return !!headers["x-fpx-webhonc-id"];
 }
 
 function selectStatusCode(trace: MizuTraceV2) {

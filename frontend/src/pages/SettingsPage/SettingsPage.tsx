@@ -13,6 +13,7 @@ import { cn } from "@/utils";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
+import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 import { RoutesSettingsForm } from "./RoutesSettingsForm";
 import { TracingLiteSettingsForm } from "./TracingLiteSettingsForm";
 
@@ -34,6 +35,7 @@ export function SettingsPage() {
 const AI_TAB = "AI";
 const CUSTOM_ROUTES_TAB = "Custom Routes";
 const TRACING_LITE_TAB = "Tracing Lite";
+const PROXY_REQUESTS_TAB = "Proxy Requests";
 
 function SettingsLayout({ settings }: { settings: Record<string, string> }) {
   const [activeTab, setActiveTab] = useState(AI_TAB);
@@ -85,6 +87,9 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
             <DropdownMenuItem onClick={() => setActiveTab(TRACING_LITE_TAB)}>
               {TRACING_LITE_TAB}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveTab(PROXY_REQUESTS_TAB)}>
+              {PROXY_REQUESTS_TAB}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         {/* For md breakpoint, show tab triggers */}
@@ -107,6 +112,12 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
         >
           Tracing Lite
         </TabsTrigger>
+        <TabsTrigger
+          className="hidden md:block w-full justify-start text-left py-2 px-4"
+          value={PROXY_REQUESTS_TAB}
+        >
+          Proxy Requests
+        </TabsTrigger>
       </TabsList>
       <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll">
         <TabsContent className="m-0" value={AI_TAB}>
@@ -117,6 +128,9 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
         </TabsContent>
         <TabsContent className="m-0" value={TRACING_LITE_TAB}>
           <TracingLiteSettingsForm settings={settings} />
+        </TabsContent>
+        <TabsContent className="m-0" value={PROXY_REQUESTS_TAB}>
+          <ProxyRequestsSettingsForm settings={settings} />
         </TabsContent>
       </div>
     </Tabs>
