@@ -39,7 +39,7 @@ function patchMethod(methodName: LEVELS, level: string) {
         });
       }
 
-      return original(message, ...args);
+      return original(rawMessage, ...args);
     };
   });
 }
