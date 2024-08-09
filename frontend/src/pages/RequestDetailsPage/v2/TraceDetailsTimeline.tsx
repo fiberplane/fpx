@@ -361,7 +361,7 @@ const WaterfallRowSpan: React.FC<{
         >
           <div
             className={cn(
-              "h-0.5 min-w-1 bg-blue-500 w-full",
+              "h-0.5 min-w-0.5 bg-blue-500 w-full",
               shouldRenderSingleLine && "bg-transparent",
             )}
           ></div>
