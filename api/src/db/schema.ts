@@ -16,7 +16,6 @@ type OctokitResponseGithubIssues =
 
 type OctokitGithubIssue = OctokitResponseGithubIssues["data"][number];
 
-// this is the template
 export const appRoutes = sqliteTable(
   "app_routes",
   {
@@ -62,13 +61,6 @@ export const appRoutesInsertSchema = createInsertSchema(appRoutes);
 
 export type AppRoute = z.infer<typeof appRoutesSelectSchema>;
 export type NewAppRoute = z.infer<typeof appRoutesInsertSchema>;
-
-// 1. get a request from the client: url, method, headers, body
-// 2. construct the request object and persist it
-// 3. we need to forward that request to our app server
-// 4. get a response from the app server including the traceId
-// 5. construct the response object and persist it
-// 6. we need to forward that response to the client
 
 export const appRequests = sqliteTable("app_requests", {
   id: integer("id", { mode: "number" }).primaryKey(),
@@ -188,6 +180,18 @@ const CallerLocationSchema = z.object({
   column: z.string(),
 });
 
+// TODO: Make a better schema for this
+//       And add a separate schema for the raw spans from the exporter
+//       Inspo: https://github.com/wperron/sqliteexporter/blob/main/migrations/20240120195122_init.up.sql
+export const otelSpans = sqliteTable("otel_spans", {
+  spanId: text("span_id"),
+  traceId: text("trace_id"),
+  rawPayload: text("raw_payload", { mode: "json" }),
+  parsedPayload: text("parsed_payload", { mode: "json" }),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+});
+
 export const githubIssues = sqliteTable("github_issues", {
   id: integer("id", { mode: "number" }).primaryKey(),
   owner: text("owner", { mode: "text" }).notNull(),
@@ -260,7 +264,9 @@ export type NewMizuLog = typeof mizuLogs.$inferInsert; // insert type
 
 export const settings = sqliteTable("settings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  content: text("content", { mode: "json" }),
+  content: text("content", { mode: "json" }).$type<
+    Record<string, string | number | boolean>
+  >(),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });

@@ -1,12 +1,13 @@
 {
   "name": "@fiberplane/hono-otel",
-  "description": "Hono middleware to forward data to a local instance of @mizu-dev/studio",
+  "description": "Hono middleware to forward OpenTelemetry traces to a local instance of @fiberplane/studio",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
   "main": "dist/index.js",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.8",
   "dependencies": {
     "@opentelemetry/api": "~1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.52.1",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.52.1",
     "@opentelemetry/resources": "^1.25.1",
     "@opentelemetry/sdk-trace-base": "^1.25.1",
@@ -20,11 +21,13 @@
     "@swc/cli": "^0.4.0",
     "@swc/core": "^1.5.22",
     "@swc/plugin-transform-imports": "^2.0.4",
+    "hono": "^4.3.9",
+    "nodemon": "^3.1.4",
     "rimraf": "^6.0.1",
     "typescript": "^5.4.5"
   },
   "publishConfig": {
-    "access": "private"
+    "access": "public"
   },
   "license": "MIT or Apache 2",
   "keywords": [
@@ -44,6 +47,7 @@
     "build:swc": "cd src && swc . -d ../dist --source-maps",
     "dev": "wrangler dev sample/index.ts",
     "prepublishOnly": "npm run build",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "watch": "nodemon --watch src --ext ts,js,json --exec \"npm run build\""
   }
 }

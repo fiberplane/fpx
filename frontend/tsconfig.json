@@ -28,6 +28,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "../client-library-otel/src/utils/wrapper.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

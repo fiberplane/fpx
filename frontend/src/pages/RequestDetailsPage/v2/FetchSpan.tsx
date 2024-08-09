@@ -1,7 +1,7 @@
 import { Status } from "@/components/ui/status";
 import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import { MizuFetchSpan, MizuSpan } from "@/queries/traces-v2";
+import { OtelSpan } from "@/queries";
 import { cn, noop } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -10,37 +10,37 @@ import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
 import {
-  getMethod,
   getRequestBody,
   getRequestHeaders,
+  getRequestMethod,
+  getRequestUrl,
   getResponseBody,
   getResponseHeaders,
   getStatusCode,
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
-import { timelineId } from "./timelineId";
 import {
-  NeonSpan,
-  isAnthropicSpan,
-  isNeonSpan,
-  isOpenAISpan,
+  NeonVendorInfo,
+  VendorInfo,
+  isAnthropicVendorInfo,
+  isNeonVendorInfo,
+  isOpenAIVendorInfo,
 } from "./vendorify-traces";
 
-function getRequestUrl(span: MizuSpan) {
-  return `${span.attributes["url.full"]}`;
-}
+export function FetchSpan({
+  span,
+  vendorInfo,
+}: { span: OtelSpan; vendorInfo: VendorInfo }) {
+  const id = span.span_id;
 
-export function FetchSpan({ span }: { span: MizuFetchSpan }) {
-  const id = timelineId(span);
-
-  const method = getMethod(span);
+  const method = getRequestMethod(span);
 
   const requestHeaders = useMemo<Record<string, string>>(() => {
     return getRequestHeaders(span);
   }, [span]);
 
   const requestBody = useMemo<string>(() => {
-    return getRequestBody(span);
+    return getRequestBody(span) ?? "";
   }, [span]);
 
   const responseHeaders = useMemo<Record<string, string>>(() => {
@@ -48,7 +48,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
   }, [span]);
 
   const responseBody = useMemo<string>(() => {
-    return getResponseBody(span);
+    return getResponseBody(span) ?? "";
   }, [span]);
 
   const duration = useMemo(() => {
@@ -63,7 +63,7 @@ export function FetchSpan({ span }: { span: MizuFetchSpan }) {
 
   const url = getRequestUrl(span);
 
-  const { component, title } = useVendorSpecificSection(span) ?? {};
+  const { component, title } = useVendorSpecificSection(vendorInfo) ?? {};
 
   return (
     <GenericFetchSpan
@@ -126,7 +126,7 @@ function GenericFetchSpan({
               <ClockIcon className="w-4 h-4" />
               <span className=" font-light">{duration}ms</span>
             </div>
-            <Status statusCode={statusCode} />
+            {statusCode !== undefined && <Status statusCode={statusCode} />}
           </div>
         </div>
 
@@ -178,46 +178,47 @@ const DEFAULT_VENDOR_RESULT = {
  * @param span The span to render.
  * @returns A component and title for a vendor-specific section of the span.
  */
-function useVendorSpecificSection(span: MizuSpan) {
+function useVendorSpecificSection(vendorInfo: VendorInfo) {
   return useMemo(() => {
-    if (isNeonSpan(span)) {
+    // const vendorInfo =
+    if (isNeonVendorInfo(vendorInfo)) {
       return {
-        component: <NeonSection span={span} />,
+        component: <NeonSection vendorInfo={vendorInfo} />,
         title: "Neon Database Call",
       };
     }
-    if (isOpenAISpan(span)) {
+    if (isOpenAIVendorInfo(vendorInfo)) {
       return {
         component: undefined,
         title: "OpenAI API Call",
       };
     }
-    if (isAnthropicSpan(span)) {
+    if (isAnthropicVendorInfo(vendorInfo)) {
       return {
         component: undefined,
         title: "Anthropic API Call",
       };
     }
     return DEFAULT_VENDOR_RESULT;
-  }, [span]);
+  }, [vendorInfo]);
 }
 
-function NeonSection({ span }: { span: NeonSpan }) {
+function NeonSection({ vendorInfo }: { vendorInfo: NeonVendorInfo }) {
   const queryValue = useMemo(() => {
     try {
-      const paramsFromNeon = span.vendorInfo.sql.params ?? [];
+      const paramsFromNeon = vendorInfo.sql.params ?? [];
       // NOTE - sql-formatter expects the index in the array to match the `$nr` syntax from postgres
       //        this makes the 0th index unused, but it makes the rest of the indices match the `$1`, `$2`, etc.
       const params = ["", ...paramsFromNeon];
-      return format(span.vendorInfo.sql.query, {
+      return format(vendorInfo.sql.query, {
         language: "postgresql",
         params,
       });
     } catch (e) {
       // Being very defensive soz
-      return span?.vendorInfo?.sql?.query ?? "";
+      return vendorInfo?.sql?.query ?? "";
     }
-  }, [span]);
+  }, [vendorInfo]);
   return (
     <SubSection>
       <SubSectionHeading>SQL Query</SubSectionHeading>

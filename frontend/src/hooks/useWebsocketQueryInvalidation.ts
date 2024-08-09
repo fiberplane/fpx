@@ -1,63 +1,50 @@
-import { MIZU_TRACES_KEY, PROBED_ROUTES_KEY } from "@/queries";
+import { useRealtimeService } from "@/hooks/useRealtimeService";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
-import z from "zod";
 
 /**
- * Right now only one specific action!
- * This is an object describing which queries (react-queries)
- * to invalidate and rerun on the frontend.
+ * BE CAREFUL WITH THIS HOOK
+ *
+ * This hook is used to invalidate queries when a websocket message is received. It should only
+ * be used at the top-most level of the app, and should not be used in any other components to avoid
+ * infinite re-renders.
  */
-const FPXWebsocketMessageSchema = z.object({
-  type: z.literal("invalidateQueries"),
-  payload: z.array(z.enum([MIZU_TRACES_KEY, PROBED_ROUTES_KEY])),
-});
-
-type FPXWebsocketMessage = z.infer<typeof FPXWebsocketMessageSchema>;
-
-const isFPXWebsocketMessage = (m: unknown): m is FPXWebsocketMessage =>
-  FPXWebsocketMessageSchema.safeParse(m).success;
-
 export function useWebsocketQueryInvalidation() {
   const queryClient = useQueryClient();
+  const wsMessage = useRealtimeService();
 
-  useEffect(() => {
-    const socket = new WebSocket("/ws");
-
-    socket.onopen = () => {
-      console.debug("Connected to websocket server");
-    };
-
-    socket.onmessage = (ev) => {
-      console.debug("Received websocket message", ev?.data);
-      let action: unknown;
-      try {
-        action = JSON.parse(ev?.data);
-      } catch {
-        // Silent - we log stuff below
+  if (wsMessage) {
+    switch (wsMessage.event) {
+      case "trace_created": {
+        console.debug("trace_created");
+        queryClient.invalidateQueries({ queryKey: wsMessage.payload });
+        break;
       }
-      const decodedAction =
-        action && isFPXWebsocketMessage(action) ? action : null;
-      if (!decodedAction) {
+
+      case "connection_open": {
+        // TODO: rewriting some webhook/websocket stuff tbd if this is needed
+        console.debug("connection_open");
+        // queryClient.invalidateQueries({
+        // queryKey: [WEBHONC_ID_KEY, WEBHONC_REQUEST_KEY],
+        // });
+        break;
+      }
+
+      case "request_incoming": {
+        // TODO: rewriting some webhook/websocket stuff tbd if this is needed
+        console.debug("request_incoming");
+        // queryClient.invalidateQueries({
+        //   queryKey: [WEBHONC_REQUEST_KEY],
+        //   refetchType: "all",
+        // });
+        break;
+      }
+
+      default: {
         console.warn(
           "Received websocket message that we cannot react to",
-          action,
+          wsMessage,
         );
-        return;
       }
-      queryClient.invalidateQueries({ queryKey: decodedAction.payload });
-    };
-
-    socket.onclose = (ev) => {
-      console.debug("Disconnected from websocket server", ev);
-    };
-
-    socket.onerror = (error) => {
-      console.error("Error with websocket server", error);
-    };
-
-    return () => {
-      socket.close();
-    };
-  }, [queryClient]);
+    }
+  }
 }

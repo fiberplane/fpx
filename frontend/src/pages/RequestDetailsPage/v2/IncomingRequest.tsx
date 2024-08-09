@@ -1,35 +1,29 @@
+import { CountBadge } from "@/components/CountBadge";
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import { MizuRootRequestSpan } from "@/queries/traces-v2";
+import { OtelSpan } from "@/queries";
 import { cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
-import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
+import { BodyViewerV2 } from "./BodyViewerV2";
 import { KeyValueTableV2 } from "./KeyValueTableV2";
 import {
   getMatchedRoute,
-  getMethod,
   getRequestBody,
   getRequestHeaders,
+  getRequestMethod,
   getRequestQueryParams,
+  getRequestUrl,
   getResponseBody,
   getResponseHeaders,
   getStatusCode,
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
-import { timelineId } from "./timelineId";
 
-function getPathWithSearch(span: MizuRootRequestSpan) {
-  const path = span.attributes["url.path"];
-  const queryParams = span.attributes["url.query"];
-  const queryParamsString = queryParams ? `?${queryParams}` : "";
-  return `${path}${queryParamsString}`;
-}
-
-export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
-  const id = timelineId(span);
-  const method = getMethod(span);
+export function IncomingRequest({ span }: { span: OtelSpan }) {
+  const id = span.span_id;
+  const method = getRequestMethod(span);
   const duration = useMemo(() => {
     try {
       const duration =
@@ -41,7 +35,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   }, [span]);
 
   const pathWithSearch = useMemo<string>(() => {
-    return getPathWithSearch(span);
+    return getRequestUrl(span);
   }, [span]);
 
   const matchedRoute = useMemo<string>(() => {
@@ -49,7 +43,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   }, [span]);
 
   const requestHeaders = useMemo<Record<string, string>>(() => {
-    return getRequestHeaders(span);
+    return getRequestHeaders(span) ?? {};
   }, [span]);
 
   const requestHeadersCount = useMemo<number>(() => {
@@ -57,7 +51,8 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   }, [requestHeaders]);
 
   const requestBody = useMemo<string>(() => {
-    return getRequestBody(span);
+    const body = getRequestBody(span);
+    return body ?? "";
   }, [span]);
 
   const responseHeaders = useMemo<Record<string, string>>(() => {
@@ -69,7 +64,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
   }, [responseHeaders]);
 
   const responseBody = useMemo<string>(() => {
-    return getResponseBody(span);
+    return getResponseBody(span) ?? "";
   }, [span]);
 
   const canHaveRequestBody = useMemo<boolean>(() => {
@@ -81,6 +76,8 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     return getRequestQueryParams(span);
   }, [span]);
 
+  const statusCode = getStatusCode(span);
+
   return (
     <div id={id}>
       <div className="flex flex-col gap-4">
@@ -88,7 +85,7 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
           <SectionHeading>Incoming Request</SectionHeading>
 
           <div className="flex gap-2">
-            <Status statusCode={getStatusCode(span)} />
+            {statusCode && <Status statusCode={statusCode} />}
             <div className="inline-flex gap-2 font-mono py-1 px-2 text-xs bg-accent/80 rounded">
               <span className={cn(getHttpMethodTextColor(method))}>
                 {method}
@@ -132,7 +129,10 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
             <Divider />
             <SubSection>
               <SubSectionHeading>Request Body</SubSectionHeading>
-              <TextOrJsonViewer text={requestBody} />
+              <BodyViewerV2
+                body={requestBody}
+                contentType={requestHeaders["content-type"]}
+              />
             </SubSection>
           </>
         )}
@@ -151,7 +151,10 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
             <Divider />
             <SubSection>
               <SubSectionHeading>Response Body</SubSectionHeading>
-              <TextOrJsonViewer text={responseBody} />
+              <BodyViewerV2
+                body={responseBody}
+                contentType={responseHeaders["content-type"]}
+              />
             </SubSection>
           </>
         )}
@@ -159,11 +162,3 @@ export function IncomingRequest({ span }: { span: MizuRootRequestSpan }) {
     </div>
   );
 }
-
-const CountBadge = ({ count }: { count: number }) => {
-  return (
-    <span className="text-gray-400 font-normal bg-muted-foreground/20 rounded px-1.5 inline-block ml-2">
-      {count}
-    </span>
-  );
-};

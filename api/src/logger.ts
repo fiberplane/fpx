@@ -2,10 +2,13 @@
 const logLevels = ["debug", "info", "warn", "error"] as const;
 type LogLevel = (typeof logLevels)[number];
 
+const isDev = process.env.npm_lifecycle_event === "dev";
+
 // Determine the current log level from the environment variable or default to "info"
+const defaultLogLevel: LogLevel = isDev ? "debug" : "info";
 const currentLogLevel: LogLevel = isLogLevel(process.env.FPX_LOG_LEVEL)
   ? process.env.FPX_LOG_LEVEL
-  : "info";
+  : defaultLogLevel;
 
 /**
  * Determines if a message at a given log level should be logged based on the current log level.

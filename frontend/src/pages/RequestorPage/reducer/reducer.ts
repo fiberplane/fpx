@@ -51,6 +51,7 @@ const CLEAR_BODY = "CLEAR_BODY" as const;
 const SET_BODY_TYPE = "SET_BODY_TYPE" as const;
 const SET_WEBSOCKET_MESSAGE = "SET_WEBSOCKET_MESSAGE" as const;
 const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
+const CLEAR_HISTORICAL_REQUEST = "CLEAR_HISTORICAL_REQUEST" as const;
 const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
 const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
 
@@ -115,8 +116,11 @@ type RequestorAction =
   | {
       type: typeof LOAD_HISTORICAL_REQUEST;
       payload: {
-        // TODO
+        traceId: string;
       };
+    }
+  | {
+      type: typeof CLEAR_HISTORICAL_REQUEST;
     }
   | {
       type: typeof SET_ACTIVE_REQUESTS_PANEL_TAB;
@@ -169,11 +173,19 @@ function requestorReducer(
       const nextPathParams = matchedRoute
         ? extractMatchedPathParams(matchedRoute)
         : extractPathParams(nextPath).map(mapPathParamKey);
+
+      // If the selected route changed, we want to clear the active history response trace id
+      const nextActiveHistoryResponseTraceId =
+        state.selectedRoute === nextSelectedRoute
+          ? state.activeHistoryResponseTraceId
+          : null;
+
       return {
         ...state,
         path: action.payload,
         selectedRoute: nextSelectedRoute,
         pathParams: nextPathParams,
+        activeHistoryResponseTraceId: nextActiveHistoryResponseTraceId,
       };
     }
     case METHOD_UPDATE: {
@@ -218,6 +230,9 @@ function requestorReducer(
         // but then we switch to a non-websocket route and the "messages" tab contents remain visible
         visibleResponsePanelTabs: nextVisibleResponsePanelTabs,
         activeResponsePanelTab: nextActiveResponsePanelTab,
+
+        // HACK - This allows us to stop showing the response body for a historical request
+        activeHistoryResponseTraceId: null,
       };
     }
     case SELECT_ROUTE: {
@@ -225,6 +240,9 @@ function requestorReducer(
       const nextMethod = probedRouteToInputMethod(action.payload);
       const nextRequestType = action.payload.requestType;
 
+      // The visible tabs in the requests panel are based on the request type and method
+      // If we switch to a new route, it's possible that the "Body" or "Websocket Message" tabs
+      // are no longer visible, so we need to update the currently active tab on the requests panel
       const nextVisibleRequestsPanelTabs = getVisibleRequestPanelTabs({
         requestType: nextRequestType,
         method: nextMethod,
@@ -235,14 +253,30 @@ function requestorReducer(
         ? state.activeRequestsPanelTab
         : nextVisibleRequestsPanelTabs[0];
 
+      // The visible tabs in the response panel are based on the request type (http or websocket)
+      // If we switch to a new route, it's possible that the "Websocket Message" tab
+      // is no longer visible, so we need to update the currently active tab on the response panel
       const nextVisibleResponsePanelTabs = getVisibleResponsePanelTabs({
         requestType: nextRequestType,
       });
-      const nextActiveResponsePanelTab = nextVisibleResponsePanelTabs.includes(
+      let nextActiveResponsePanelTab = nextVisibleResponsePanelTabs.includes(
         state.activeResponsePanelTab,
       )
         ? state.activeResponsePanelTab
         : nextVisibleResponsePanelTabs[0];
+
+      // One more thing, if the debug tab is selected but we switch to an http route,
+      // we want to switch to the "body" tab instead of the "debug" tab
+      const didSelectedRouteChange = state.selectedRoute !== action.payload;
+      const isDebugTabCurrentlySelected =
+        state.activeResponsePanelTab === "debug";
+
+      if (didSelectedRouteChange && isDebugTabCurrentlySelected) {
+        // If the selected route changed and the debug tab is selected,
+        // we want to switch to the "body" tab
+        nextActiveResponsePanelTab = "body";
+      }
+
       return {
         ...state,
         selectedRoute: action.payload,
@@ -269,6 +303,9 @@ function requestorReducer(
         // but then we switch to a non-websocket route and the "messages" tab contents remain visible
         visibleResponsePanelTabs: nextVisibleResponsePanelTabs,
         activeResponsePanelTab: nextActiveResponsePanelTab,
+
+        // HACK - This allows us to stop showing the response body for a historical request
+        activeHistoryResponseTraceId: null,
       };
     }
     case SET_PATH_PARAMS: {
@@ -387,6 +424,12 @@ function requestorReducer(
     }
     case SET_WEBSOCKET_MESSAGE: {
       return { ...state, websocketMessage: action.payload };
+    }
+    case LOAD_HISTORICAL_REQUEST: {
+      return { ...state, activeHistoryResponseTraceId: action.payload.traceId };
+    }
+    case CLEAR_HISTORICAL_REQUEST: {
+      return { ...state, activeHistoryResponseTraceId: null };
     }
     case SET_ACTIVE_REQUESTS_PANEL_TAB: {
       return { ...state, activeRequestsPanelTab: action.payload };
@@ -551,6 +594,17 @@ export function useRequestor() {
     [dispatch],
   );
 
+  const showResponseBodyFromHistory = useCallback(
+    (traceId: string) => {
+      dispatch({ type: LOAD_HISTORICAL_REQUEST, payload: { traceId } });
+    },
+    [dispatch],
+  );
+
+  const clearResponseBodyFromHistory = useCallback(() => {
+    dispatch({ type: CLEAR_HISTORICAL_REQUEST });
+  }, [dispatch]);
+
   /**
    * When there's no selected route, we return a "draft" route,
    * which will not appear in the sidebar
@@ -617,6 +671,10 @@ export function useRequestor() {
     // Selectors
     getActiveRoute,
     getIsInDraftMode,
+
+    // History (WIP)
+    showResponseBodyFromHistory,
+    clearResponseBodyFromHistory,
   };
 }
 function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {

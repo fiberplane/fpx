@@ -115,3 +115,47 @@ export function redactSensitiveHeaders(
 
   return redactedHeaders;
 }
+
+export function truncatePathWithEllipsis(path: string | null) {
+  if (path === null) {
+    return null;
+  }
+  const maxLength = 50;
+  return path.length > maxLength ? `${path.slice(0, maxLength)}...` : path;
+}
+
+export function safeParseUrl(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    return {
+      host: parsedUrl.host,
+      scheme: parsedUrl.protocol.replace(":", ""),
+    };
+  } catch (error) {
+    console.error("[safeParseUrl] Invalid URL:", url, error);
+    return {
+      host: "",
+      scheme: "",
+    };
+  }
+}
+
+export const safeToQueryComponent = (
+  queryParams: Record<string, string> | null | undefined,
+) => {
+  if (!queryParams) {
+    return "";
+  }
+  try {
+    return new URLSearchParams(queryParams).toString();
+  } catch (error) {
+    console.error("Invalid query params:", queryParams, error);
+    return "";
+  }
+};
+
+export function formatHeaders(headers: Record<string, string>): string {
+  return Object.entries(headers)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join("\n");
+}

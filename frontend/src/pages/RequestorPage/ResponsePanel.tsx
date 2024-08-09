@@ -1,5 +1,6 @@
 import "react-resizable/css/styles.css"; // Import the styles for the resizable component
 
+import RobotIcon from "@/assets/Robot.svg";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -15,7 +16,6 @@ import {
   ArrowDownIcon,
   ArrowTopRightIcon,
   ArrowUpIcon,
-  ClockIcon,
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -24,7 +24,7 @@ import { Timestamp } from "../RequestDetailsPage/Timestamp";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
 import { HeaderTable } from "./HeaderTable";
-import { Method, RequestorHistory, StatusCode } from "./RequestorHistory";
+import { Method, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestGeneration } from "./ai";
 import { Requestornator } from "./queries";
@@ -32,18 +32,16 @@ import type { ResponsePanelTab } from "./reducer";
 import { type RequestType, isWsRequest } from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
-// TODO - Create skeleton loading components for each tab content
-
 type Props = {
   activeResponsePanelTab: ResponsePanelTab;
   setActiveResponsePanelTab: (tab: string) => void;
   shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   response?: Requestornator;
   isLoading: boolean;
-  history: Array<Requestornator>;
-  loadHistoricalRequest: (traceId: string) => void;
   requestType: RequestType;
   websocketState: WebSocketState;
+  openAiTestGenerationPanel: () => void;
+  isAiTestGenerationPanelOpen: boolean;
 };
 
 export function ResponsePanel({
@@ -52,10 +50,10 @@ export function ResponsePanel({
   shouldShowResponseTab,
   response,
   isLoading,
-  history,
-  loadHistoricalRequest,
   requestType,
   websocketState,
+  openAiTestGenerationPanel,
+  isAiTestGenerationPanelOpen,
 }: Props) {
   const isFailure = !!response?.app_responses?.isFailure;
   const showBottomToolbar = !!response?.app_responses?.traceId;
@@ -76,11 +74,23 @@ export function ResponsePanel({
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
           <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
-          <div className="flex-grow flex justify-end">
-            <CustomTabTrigger value="history" className="mr-2">
-              <ClockIcon className="h-3.5 w-3.5" />
-              <span className="hidden md:inline-block ml-2">History</span>
-            </CustomTabTrigger>
+          <div
+            className={cn(
+              // Hide this button on mobile, and rely on the button + drawer pattern instead
+              "max-sm:hidden",
+              "flex-grow sm:flex justify-end",
+            )}
+          >
+            <Button
+              variant={isAiTestGenerationPanelOpen ? "outline" : "ghost"}
+              size="icon"
+              onClick={openAiTestGenerationPanel}
+              className={cn(
+                isAiTestGenerationPanelOpen && "opacity-50 bg-slate-900",
+              )}
+            >
+              <RobotIcon className="h-4 w-4 cursor-pointer" />
+            </Button>
           </div>
         </CustomTabsList>
         <CustomTabsContent value="messages">
@@ -167,16 +177,6 @@ export function ResponsePanel({
             </div>
           </TabContentInner>
         </CustomTabsContent>
-        <CustomTabsContent value="history">
-          {history?.length > 0 ? (
-            <RequestorHistory
-              history={history}
-              loadHistoricalRequest={loadHistoricalRequest}
-            />
-          ) : (
-            <NoHistory />
-          )}
-        </CustomTabsContent>
       </Tabs>
     </div>
   );
@@ -185,8 +185,10 @@ export function ResponsePanel({
 const BottomToolbar = ({ response }: { response: Requestornator }) => {
   return (
     <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
-      <AiTestGeneration history={[response]} />
-      <Link to={`/requests/${response?.app_responses?.traceId}`}>
+      <div className="sm:hidden">
+        <AiTestGeneration history={[response]} />
+      </div>
+      <Link to={`/requests/otel/${response?.app_responses?.traceId}`}>
         <Button variant="secondary">
           Go to Trace Details
           <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
@@ -347,19 +349,6 @@ export function ResponseBodyText({
       <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
         <code className="h-full">{lines}</code>
       </pre>
-    </div>
-  );
-}
-
-function NoHistory() {
-  return (
-    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
-      <div className="text-md text-white text-center">
-        You have no requests in your history
-      </div>
-      <div className="mt-1 sm:mt-2 text-ms text-gray-400 text-center font-light">
-        Start making some requests!
-      </div>
     </div>
   );
 }

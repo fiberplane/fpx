@@ -2,16 +2,15 @@
 import "./styles.css";
 
 import { useToast } from "@/components/ui/use-toast";
-import { useWebsocketQueryInvalidation } from "@/hooks";
 import { cn } from "@/utils";
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
-import { useAi } from "./ai";
+import { AiTestGenerationPanel, useAi } from "./ai";
 import { Requestornator, useMakeProxiedRequest } from "./queries";
 import { useRequestor } from "./reducer";
 import { useRoutes } from "./routes";
@@ -23,9 +22,6 @@ import { sortRequestornatorsDescending } from "./utils";
 
 export const RequestorPage = () => {
   const { toast } = useToast();
-
-  // Refresh routes in response to filesystem updates
-  useWebsocketQueryInvalidation();
 
   const requestorState = useRequestor();
   // @ts-expect-error - This is helpful for debugging, soz
@@ -67,6 +63,11 @@ export const RequestorPage = () => {
     state: { activeResponsePanelTab },
     setActiveResponsePanelTab,
     shouldShowResponseTab,
+
+    // History (WIP)
+    state: { activeHistoryResponseTraceId },
+    showResponseBodyFromHistory,
+    clearResponseBodyFromHistory,
   } = requestorState;
 
   const selectedRoute = getActiveRoute();
@@ -98,15 +99,17 @@ export const RequestorPage = () => {
     setBody,
     setQueryParams,
     setRequestHeaders,
+    showResponseBodyFromHistory,
   });
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     { path, method, route: selectedRoute?.path },
     sessionHistory,
+    activeHistoryResponseTraceId,
   );
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
-    useMakeProxiedRequest();
+    useMakeProxiedRequest({ clearResponseBodyFromHistory });
 
   // WIP - Allows us to connect to a websocket and send messages through it
   const {
@@ -156,13 +159,18 @@ export const RequestorPage = () => {
     showAiGeneratedInputsBanner,
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
-  } = useAi(selectedRoute, history, {
-    setBody,
-    setQueryParams,
-    setPath: handlePathInputChange,
-    setRequestHeaders,
-    updatePathParamValues,
-  });
+  } = useAi(
+    selectedRoute,
+    history,
+    {
+      setBody,
+      setQueryParams,
+      setPath: handlePathInputChange,
+      setRequestHeaders,
+      updatePathParamValues,
+    },
+    body,
+  );
 
   useHotkeys(
     "mod+g",
@@ -182,6 +190,13 @@ export const RequestorPage = () => {
     {
       enableOnFormTags: ["input"],
     },
+  );
+
+  const [isAiTestGenerationPanelOpen, setIsAiTestGenerationPanelOpen] =
+    useState(false);
+  const toggleAiTestGenerationPanel = useCallback(
+    () => setIsAiTestGenerationPanelOpen((current) => !current),
+    [],
   );
 
   return (
@@ -221,6 +236,8 @@ export const RequestorPage = () => {
           routes={routes}
           selectedRoute={selectedRoute}
           handleRouteClick={handleSelectRoute}
+          history={history}
+          loadHistoricalRequest={loadHistoricalRequest}
         />
       </div>
 
@@ -257,7 +274,10 @@ export const RequestorPage = () => {
           className={cn(
             BACKGROUND_LAYER,
             "grid",
-            "sm:grid-cols-[auto_1fr]",
+            isAiTestGenerationPanelOpen
+              ? // TODO - auto_auto_auto would be ideal but the resizability of the query panel messes things up
+                "sm:grid-cols-[auto_1fr_auto]"
+              : "sm:grid-cols-[auto_1fr]",
             "rounded-md",
             "border",
             // HACK - This defensively prevents overflow from getting too excessive,
@@ -300,11 +320,19 @@ export const RequestorPage = () => {
             shouldShowResponseTab={shouldShowResponseTab}
             response={mostRecentRequestornatorForRoute}
             isLoading={isRequestorRequesting}
-            history={history}
-            loadHistoricalRequest={loadHistoricalRequest}
             websocketState={websocketState}
             requestType={selectedRoute?.requestType}
+            openAiTestGenerationPanel={toggleAiTestGenerationPanel}
+            isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
           />
+          {isAiTestGenerationPanelOpen && (
+            <AiTestGenerationPanel
+              // TODO - Only use history for recent matching route
+              history={history}
+              toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
+              getActiveRoute={getActiveRoute}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -320,8 +348,16 @@ export default RequestorPage;
 function useMostRecentRequestornator(
   requestInputs: { path: string; method: string; route?: string },
   all: Requestornator[],
+  activeHistoryResponseTraceId: string | null,
 ) {
   return useMemo<Requestornator | undefined>(() => {
+    if (activeHistoryResponseTraceId) {
+      return all.find(
+        (r: Requestornator) =>
+          r?.app_responses?.traceId === activeHistoryResponseTraceId,
+      );
+    }
+
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
         r?.app_requests?.requestRoute === requestInputs.route &&
@@ -332,5 +368,5 @@ function useMostRecentRequestornator(
     matchingResponses?.sort(sortRequestornatorsDescending);
 
     return matchingResponses?.[0];
-  }, [all, requestInputs]);
+  }, [all, requestInputs, activeHistoryResponseTraceId]);
 }

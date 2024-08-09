@@ -1,25 +1,39 @@
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { env } from "hono/adapter";
 import { z } from "zod";
 import {
   type NewAppRequest,
   appRequests,
-  appResponseInsertSchema,
   appResponses,
   appRoutes,
   appRoutesInsertSchema,
 } from "../db/schema.js";
-import type * as schema from "../db/schema.js";
+import {
+  OTEL_TRACE_ID_REGEX,
+  generateOtelTraceId,
+  isValidOtelTraceId,
+} from "../lib/otel/index.js";
+import {
+  executeProxyRequest,
+  handleFailedRequest,
+  handleSuccessfulRequest,
+} from "../lib/proxy-request/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { errorToJson, generateUUID, safeParseJson } from "../lib/utils.js";
+import {
+  type SerializedFile,
+  serializeRequestBodyForFpxDb,
+} from "../lib/utils.js";
+import {
+  fallback,
+  resolveUrlQueryParams,
+  resolveWebhoncUrl,
+  safeParseJson,
+} from "../lib/utils.js";
+import { getWebHoncConnectionId } from "../lib/webhonc/store.js";
 import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
-
-type RequestIdType = schema.AppResponse["requestId"];
-type DbType = LibSQLDatabase<typeof schema>;
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -62,6 +76,73 @@ app.post(
   },
 );
 
+const schemaProbedRoutes = z.object({
+  routes: z.array(
+    z.object({
+      method: z.string(),
+      path: z.string(),
+      handler: z.string(),
+      handlerType: z.string(),
+    }),
+  ),
+});
+
+app.post(
+  "/v0/probed-routes",
+  zValidator("json", schemaProbedRoutes),
+  async (ctx) => {
+    const db = ctx.get("db");
+    const { routes } = ctx.req.valid("json");
+
+    try {
+      if (routes.length > 0) {
+        // "Unregister" all app routes (including middleware)
+        await db.update(appRoutes).set({ currentlyRegistered: false });
+        // "Re-register" all current app routes
+        for (const route of routes) {
+          await db
+            .insert(appRoutes)
+            .values({
+              ...route,
+              currentlyRegistered: true,
+            })
+            .onConflictDoUpdate({
+              target: [
+                appRoutes.path,
+                appRoutes.method,
+                appRoutes.handlerType,
+                appRoutes.routeOrigin,
+              ],
+              set: { handler: route.handler, currentlyRegistered: true },
+            });
+        }
+
+        // TODO - Detect if anything actually changed before invalidating the query on the frontend
+        //        This would be more of an optimization, but is friendlier to the frontend
+        const wsConnections = ctx.get("wsConnections");
+
+        if (wsConnections) {
+          for (const ws of wsConnections) {
+            ws.send(
+              JSON.stringify({
+                event: "trace_created",
+                payload: ["appRoutes"],
+              }),
+            );
+          }
+        }
+      }
+
+      return ctx.text("OK");
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error("Error processing probed routes", err);
+      }
+      return ctx.json({ error: "Error processing probed routes" }, 500);
+    }
+  },
+);
+
 app.delete("/v0/app-routes/:method/:path", async (ctx) => {
   const db = ctx.get("db");
   const { method, path } = ctx.req.param();
@@ -91,28 +172,25 @@ app.get("/v0/all-requests", async (ctx) => {
   return ctx.json(requests);
 });
 
-type SerializedFile = {
-  name: string;
-  type: string;
-  size: number;
-};
-
-function serializeFile(file: File): SerializedFile {
-  return {
-    name: file.name,
-    type: file.type,
-    size: file.size,
-  };
-}
-
-function serializeFormDataValue(
-  value: FormDataEntryValue,
-): string | SerializedFile {
-  if (value instanceof File) {
-    return serializeFile(value);
-  }
-  return value;
-}
+export const ProxyRequestHeadersSchema = z.object({
+  "x-fpx-trace-id": fallback(
+    z.string().regex(OTEL_TRACE_ID_REGEX),
+    generateOtelTraceId,
+  ).describe("The otel trace id to use for the request"),
+  "x-fpx-route": z
+    .string()
+    .optional()
+    .describe("The Hono route pattern associated with the request"),
+  "x-fpx-path-params": z
+    .string()
+    .optional()
+    .describe("The path params to use for the request, if any"),
+  "x-fpx-proxy-to": z
+    .string()
+    .describe(
+      "The url to proxy to, this is the url we execute a request against",
+    ),
+});
 
 /**
  * This route is used to proxy requests to the service we're calling.
@@ -124,324 +202,168 @@ function serializeFormDataValue(
  * The reason it'd be nice to do this, however, is to support responses that include binary data.
  * Or maybe even streams eventually?
  */
-app.all("/v0/proxy-request/*", async (ctx) => {
-  const traceId = ctx.req.header("x-fpx-trace-id") || generateUUID();
-  logger.debug("Proxying request with traceId:", traceId);
-  const db = ctx.get("db");
 
-  const requestRoute = ctx.req.header("x-fpx-route");
-  const requestPathParams = safeParseJson(ctx.req.header("x-fpx-path-params"));
+app.all(
+  "/v0/proxy-request/*",
+  // Validate the headers we use to record request details and proxy the request
+  zValidator("header", ProxyRequestHeadersSchema),
+  async (ctx) => {
+    const {
+      "x-fpx-trace-id": traceIdHeader,
+      "x-fpx-proxy-to": proxyToHeader,
+      "x-fpx-path-params": pathParamsHeader,
+      "x-fpx-route": routeHeader,
+    } = ctx.req.valid("header");
+    // Try to extract the trace id from the header, otherwise generate a new one
+    const shouldUseHeaderTraceId = isValidOtelTraceId(traceIdHeader ?? "");
+    const traceId: string =
+      traceIdHeader && shouldUseHeaderTraceId
+        ? traceIdHeader
+        : generateOtelTraceId();
 
-  const requestMethod = ctx.req.method;
-  const requestUrlHeader = ctx.req.header("x-fpx-proxy-to") ?? "";
-  const requestHeaders: Record<string, string> = {};
-
-  // If the header is in this list, we don't want to pass it through to the service
-  const ignoreTheseHeaders = [
-    "x-fpx-route",
-    "x-fpx-path-params",
-    "x-fpx-proxy-to",
-  ];
-  ctx.req.raw.headers.forEach((value, key) => {
-    if (ignoreTheseHeaders.includes(key.toLowerCase())) {
-      return;
+    if (!shouldUseHeaderTraceId) {
+      logger.debug(
+        `Invalid trace id in header: ${traceIdHeader}, generating new trace id: ${traceId}`,
+      );
     }
-    requestHeaders[key] = value;
-  });
-  // Ensure the trace id is present
-  if (!requestHeaders["x-fpx-trace-id"]) {
-    requestHeaders["x-fpx-trace-id"] = traceId;
-  }
 
-  // Construct the url we want to proxy to
-  const requestQueryParams = {
-    ...ctx.req.query(),
-  };
-  const requestUrl = resolveUrl(requestUrlHeader, requestQueryParams);
-  logger.debug("Proxying request to:", requestUrl);
-  logger.debug("Proxying request with headers:", requestHeaders);
-  // Create a new request object
-  // Clone the incoming request, so we can make a proxy Request object
-  const clonedReq = ctx.req.raw.clone();
-  const proxiedReq = new Request(requestUrl, {
-    method: requestMethod,
-    headers: new Headers(requestHeaders),
-    body: clonedReq.body ? clonedReq.body.tee()[0] : null,
-  });
+    const db = ctx.get("db");
 
-  // Extract the request body based on content type
-  // *The whole point of this is to serialize the request body into the database, for future reference*
-  //
-  let requestBody:
-    | null
-    | string
-    | {
-        [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = null;
-  try {
-    requestBody = await serializeRequestBodyForFpxDb();
-  } catch (error) {
-    requestBody = "<failed to parse>";
-    logger.error("Failed to serialize request body", error);
-  }
+    const requestRoute = routeHeader ?? null;
+    const requestPathParams = pathParamsHeader
+      ? safeParseJson(pathParamsHeader)
+      : null;
 
-  // Record request details
-  const newRequest: NewAppRequest = {
-    // @ts-expect-error - Trust me, the request method is correct
-    requestMethod,
-    requestUrl,
-    requestHeaders,
-    requestPathParams,
-    requestQueryParams,
-    requestBody,
-    requestRoute,
-  };
+    const requestMethod = ctx.req.method;
+    const requestUrlHeader = proxyToHeader;
+    const requestHeaders: Record<string, string> = {};
 
-  const insertResult = await db
-    .insert(appRequests)
-    .values(newRequest)
-    .returning({ requestId: appRequests.id });
-
-  const requestId = insertResult[0].requestId;
-
-  const startTime = Date.now();
-  try {
-    // Proxy the request
-    const response = await fetch(proxiedReq);
-
-    // Clone the response and prepare to return it
-    const clonedResponse = response.clone();
-    const newHeaders = new Headers(clonedResponse.headers);
-
-    // HACK - Frontend often couldn't parse the body because of encoding mismatch
-    newHeaders.delete("content-encoding");
-
-    const proxiedResponse = new Response(clonedResponse.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: newHeaders,
+    // If the header is in this list, we don't want to pass it through to the service
+    const ignoreTheseHeaders = [
+      "x-fpx-route",
+      "x-fpx-path-params",
+      "x-fpx-proxy-to",
+    ];
+    ctx.req.raw.headers.forEach((value, key) => {
+      if (ignoreTheseHeaders.includes(key.toLowerCase())) {
+        return;
+      }
+      requestHeaders[key] = value;
     });
+    // Ensure the trace id is present
+    if (!requestHeaders["x-fpx-trace-id"]) {
+      requestHeaders["x-fpx-trace-id"] = traceId;
+    }
 
-    const duration = Date.now() - startTime;
-
-    const { traceId: responseTraceId } = await handleSuccessfulRequest(
-      db,
-      requestId,
-      duration,
-      response,
+    // Construct the url we want to proxy to
+    const requestQueryParams = {
+      ...ctx.req.query(),
+    };
+    const requestUrl = resolveUrlQueryParams(
+      requestUrlHeader,
+      requestQueryParams,
     );
-
-    if (responseTraceId !== traceId) {
-      logger.warn(
-        `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
-      );
-    }
-
-    // Guarantee the trace-id is set in response headers
-    proxiedResponse.headers.set("x-fpx-trace-id", traceId);
-
-    return proxiedResponse;
-  } catch (fetchError) {
-    console.log("fetchError", fetchError);
-    const responseTime = Date.now() - startTime;
-    const { failureDetails, failureReason, isFailure } =
-      await handleFailedRequest(
-        db,
-        requestId,
-        traceId,
-        responseTime,
-        fetchError,
-      );
-
-    ctx.header("x-fpx-trace-id", traceId);
-    ctx.status(500);
-    return ctx.json({
-      isFailure,
-      responseTime,
-      failureDetails,
-      failureReason,
-      traceId,
-      requestId,
+    logger.debug("Proxying request to:", requestUrl);
+    logger.debug("Proxying request with headers:", requestHeaders);
+    // Create a new request object
+    // Clone the incoming request, so we can make a proxy Request object
+    const clonedReq = ctx.req.raw.clone();
+    const proxiedReq = new Request(requestUrl, {
+      method: requestMethod,
+      headers: new Headers(requestHeaders),
+      body: clonedReq.body ? clonedReq.body.tee()[0] : null,
     });
-  }
 
-  /**
-   * Helper that serializes the request body into a format that can be stored in the database
-   *
-   * This will *not* store binary data, for example, like File objects
-   */
-  async function serializeRequestBodyForFpxDb() {
-    const contentType = ctx.req.header("content-type");
+    // Extract the request body based on content type
+    // *The whole point of this is to serialize the request body into the database, for future reference*
+    //
     let requestBody:
       | null
       | string
       | {
           [x: string]: string | SerializedFile | (string | SerializedFile)[];
         } = null;
-    if (ctx.req.raw.body) {
-      if (requestMethod === "GET" || requestMethod === "HEAD") {
-        logger.warn(
-          "Request method is GET or HEAD, but request body is not null",
-        );
-        requestBody = null;
-      } else if (contentType?.includes("application/json")) {
-        // NOTE - This kind of handles the case where the body is note valid json,
-        //        but the content type is set to application/json
-        const textBody = await ctx.req.text();
-        requestBody = safeParseJson(textBody);
-      } else if (contentType?.includes("application/x-www-form-urlencoded")) {
-        const formData = await ctx.req.formData();
-        requestBody = {};
-        // @ts-expect-error - MDN says formData does indeed have an entries method :thinking_face:
-        for (const [key, value] of formData.entries()) {
-          requestBody[key] = value;
-        }
-      } else if (contentType?.includes("multipart/form-data")) {
-        // NOTE - `File` will just show up as an empty object in sqllite - could be nice to record metadata?
-        //         like the name of the file
-        const formData = await ctx.req.parseBody({ all: true });
-        requestBody = {};
-        for (const [key, value] of Object.entries(formData)) {
-          if (Array.isArray(value)) {
-            requestBody[key] = value.map(serializeFormDataValue);
-          } else {
-            requestBody[key] = serializeFormDataValue(value);
-          }
-        }
-      } else if (contentType?.includes("application/octet-stream")) {
-        requestBody = "<binary data>";
-      } else {
-        requestBody = await ctx.req.text();
-      }
+    try {
+      requestBody = await serializeRequestBodyForFpxDb(ctx);
+    } catch (error) {
+      requestBody = "<failed to parse>";
+      logger.error("Failed to serialize request body", error);
     }
 
-    return requestBody;
-  }
+    // Record request details
+    const newRequest: NewAppRequest = {
+      // @ts-expect-error - Trust me, the request method is correct, and it's a string
+      requestMethod,
+      requestUrl,
+      requestHeaders,
+      requestPathParams,
+      requestQueryParams,
+      requestBody,
+      requestRoute,
+    };
+
+    const insertResult = await db
+      .insert(appRequests)
+      .values(newRequest)
+      .returning({ requestId: appRequests.id });
+
+    const requestId = insertResult[0].requestId;
+
+    const startTime = Date.now();
+    try {
+      // Proxy the request
+      const response = await executeProxyRequest(proxiedReq);
+
+      // Clone the response and prepare to return it
+      const clonedResponse = response.clone();
+      const newHeaders = new Headers(clonedResponse.headers);
+
+      // HACK - Frontend often couldn't parse the body because of encoding mismatch
+      newHeaders.delete("content-encoding");
+
+      const proxiedResponse = new Response(clonedResponse.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders,
+      });
+      const duration = Date.now() - startTime;
+
+      await handleSuccessfulRequest(db, requestId, duration, response, traceId);
+
+      proxiedResponse.headers.set("x-fpx-trace-id", traceId);
+
+      return proxiedResponse;
+    } catch (fetchError) {
+      logger.debug("Error executing proxied request (fetchError):", fetchError);
+      const responseTime = Date.now() - startTime;
+      const { failureDetails, failureReason, isFailure } =
+        await handleFailedRequest(
+          db,
+          requestId,
+          traceId,
+          responseTime,
+          fetchError,
+        );
+
+      ctx.header("x-fpx-trace-id", traceId);
+      ctx.status(500);
+      return ctx.json({
+        isFailure,
+        responseTime,
+        failureDetails,
+        failureReason,
+        traceId,
+        requestId,
+      });
+    }
+  },
+);
+
+app.get("/v0/webhonc", async (ctx) => {
+  const connectionId = getWebHoncConnectionId();
+  const baseUrl = resolveWebhoncUrl();
+  const protocol = baseUrl.startsWith("localhost") ? "http" : "https";
+  return ctx.json({ webhoncUrl: `${protocol}://${baseUrl}/${connectionId}` });
 });
-
-/**
- * Extract useful data from the response when a request succeeds,
- * and save that data in the `app_responses` table
- */
-async function handleSuccessfulRequest(
-  db: DbType,
-  requestId: RequestIdType,
-  duration: number,
-  response: Awaited<ReturnType<typeof fetch>>,
-) {
-  const traceId = response.headers.get("x-fpx-trace-id") ?? "";
-
-  const { responseBody, responseTime, responseHeaders, responseStatusCode } =
-    await appResponseInsertSchema
-      .extend({
-        headers: z.instanceof(Headers),
-        status: z.number(),
-        body: z.instanceof(ReadableStream),
-        traceId: z.string().optional(),
-      })
-      .transform(async ({ headers, status }) => {
-        const responseHeaders: Record<string, string> = {};
-        // NOTE - Order of arguments when you do `forEach` on a Headers object is (headerValue, headerName)
-        headers.forEach((headerValue, headerName) => {
-          responseHeaders[headerName] = headerValue;
-        });
-
-        return {
-          responseHeaders,
-          responseStatusCode: status,
-          responseBody: await safeReadTextBody(response),
-          responseTime: duration,
-        };
-      })
-      .parseAsync(response);
-
-  await db.insert(appResponses).values([
-    {
-      isFailure: false,
-      responseStatusCode,
-      responseTime,
-      responseHeaders,
-      responseBody,
-      traceId,
-      requestId,
-    },
-  ]);
-
-  return {
-    isFailure: false,
-    responseStatusCode,
-    responseTime,
-    responseHeaders,
-    responseBody,
-    traceId,
-  };
-}
-
-function safeReadTextBody(response: Response) {
-  return response.text().catch((error) => {
-    logger.error("Failed to parse response body", error);
-    return null;
-  });
-}
-
-function hasMessage(error: unknown): error is { message: string } {
-  return (
-    !!error &&
-    typeof error === "object" &&
-    "message" in error &&
-    typeof error?.message === "string"
-  );
-}
-
-/**
- * Extract useful data from the error when a request fails,
- * and save that data in the `app_responses` table
- */
-async function handleFailedRequest(
-  db: DbType,
-  requestId: RequestIdType,
-  traceId: string,
-  responseTime: number,
-  error: unknown,
-) {
-  let failureReason = "unknown";
-  if (hasMessage(error)) {
-    failureReason = error.message;
-  }
-  let failureDetails: Record<string, string> = {};
-  if (error instanceof Error) {
-    failureDetails = errorToJson(error);
-  }
-
-  await db.insert(appResponses).values([
-    {
-      isFailure: true,
-      responseTime,
-      traceId,
-      requestId,
-      failureReason,
-      failureDetails,
-    },
-  ]);
-
-  return {
-    isFailure: true,
-    responseTime,
-    traceId,
-    requestId,
-    failureReason,
-    failureDetails,
-  };
-}
-
-function resolveUrl(url: string, queryParams?: Record<string, string> | null) {
-  if (!queryParams) return url;
-
-  const urlObject = new URL(url);
-  for (const [key, value] of Object.entries(queryParams)) {
-    urlObject.searchParams.set(key, value);
-  }
-  return urlObject.toString();
-}
 
 export default app;
