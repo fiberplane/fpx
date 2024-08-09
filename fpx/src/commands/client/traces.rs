@@ -48,9 +48,6 @@ async fn handle_get(args: GetArgs) -> Result<()> {
 
 #[derive(clap::Args, Debug)]
 pub struct ListArgs {
-    /// TraceID - hex encoded
-    pub trace_id: String,
-
     /// Base url of the fpx dev server.
     #[arg(from_global)]
     pub base_url: Url,
@@ -59,7 +56,7 @@ pub struct ListArgs {
 async fn handle_list(args: ListArgs) -> Result<()> {
     let api_client = ApiClient::new(args.base_url.clone());
 
-    let result = api_client.span_list(args.trace_id).await?;
+    let result = api_client.trace_list().await?;
 
     serde_json::to_writer_pretty(stdout(), &result)?;
 

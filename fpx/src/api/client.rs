@@ -158,4 +158,13 @@ impl ApiClient {
 
         self.do_req(Method::GET, path, None::<()>).await
     }
+
+    /// List a summary traces
+    pub async fn trace_list(
+        &self,
+    ) -> Result<Vec<models::TraceSummary>, ApiClientError<TraceGetError>> {
+        let path = "api/traces";
+
+        self.do_req(Method::GET, path, None::<()>).await
+    }
 }
