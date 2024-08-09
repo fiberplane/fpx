@@ -18,10 +18,12 @@ pub struct WebSocketHibernationServer {
 #[durable_object]
 impl DurableObject for WebSocketHibernationServer {
     fn new(state: State, env: Env) -> Self {
+        let connections = state.get_websockets();
+
         Self {
             env,
             state,
-            connections: vec![],
+            connections,
         }
     }
 

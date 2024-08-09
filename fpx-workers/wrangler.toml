@@ -2,22 +2,17 @@ name = "fpx-workers"
 main = "build/worker/shim.mjs"
 compatibility_date = "2024-07-30"
 
-[env.dev]
-d1_databases = [
-  { binding = "DB", database_name = "fpx_test", database_id = "" },
-]
-
-[env.production]
-d1_databases = [
-  { binding = "DB", database_name = "DB", database_id = "c6a49b5e-b1c9-4cee-8c91-3440c5bd3233" },
-]
-
-[build]
-command = "cargo install -q worker-build && worker-build --release"
-
 [[durable_objects.bindings]]
 name = "WEBSOCKET_HIBERNATION_SERVER"
 class_name = "WebSocketHibernationServer"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "DB"
+database_id = "c6a49b5e-b1c9-4cee-8c91-3440c5bd3233"
+
+[build]
+command = "cargo install -q worker-build && worker-build --release"
 
 [[migrations]]
 tag = "v1"
