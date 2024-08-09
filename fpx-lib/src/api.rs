@@ -61,6 +61,7 @@ pub fn create_api(events: BoxedEvents, service: Service, store: BoxedStore) -> a
             "/api/traces/:trace_id",
             get(handlers::traces::traces_get_handler),
         )
+        .route("/api/traces", get(handlers::traces::traces_list_handler))
         .layer(crate::otel::OtelTraceLayer::default())
         .with_state(api_state)
         .fallback(StatusCode::NOT_FOUND)

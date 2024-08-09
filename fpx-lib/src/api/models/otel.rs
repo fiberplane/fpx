@@ -311,6 +311,30 @@ pub struct TraceSummary {
     pub root_span: Option<SpanSummary>,
 }
 
+impl TraceSummary {
+    pub fn from_spans(trace_id: String, spans: Vec<crate::data::models::Span>) -> Self {
+        let num_spans = spans.len() as u32;
+
+        // Find the first start and the last end time. Note: unwrap is safe here
+        // since we check that there is at least 1 span present.
+        let start_time = spans.iter().map(|span| span.start_time).min().unwrap();
+        let end_time = spans.iter().map(|span| span.end_time).max().unwrap();
+
+        let root_span = spans
+            .into_iter()
+            .find(|span| span.parent_span_id.is_none())
+            .map(|span| span.inner.into_inner().into());
+
+        Self {
+            trace_id,
+            start_time: start_time.into(),
+            end_time: end_time.into(),
+            root_span,
+            num_spans,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SpanSummary {
     /// The span id.

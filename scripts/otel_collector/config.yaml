@@ -9,7 +9,7 @@ receivers:
 
 exporters:
   otlphttp:
-    endpoint: http://localhost:8787
+    endpoint: http://localhost:6767
     encoding: json
     compression: none
 
