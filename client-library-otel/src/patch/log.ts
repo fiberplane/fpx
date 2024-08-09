@@ -29,9 +29,7 @@ function patchMethod(methodName: LEVELS, level: string) {
       const span = trace.getActiveSpan();
       const messageType = rawMessage === null ? "null" : typeof rawMessage;
       const message =
-        messageType === "string"
-          ? rawMessage
-          : safelySerializeJSON(rawMessage);
+        messageType === "string" ? rawMessage : safelySerializeJSON(rawMessage);
       if (span) {
         span.addEvent("log", {
           message,
