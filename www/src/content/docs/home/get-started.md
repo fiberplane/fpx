@@ -18,6 +18,7 @@ If you want a project including an ORM, a database and already has a cloud deplo
 ```
 create honc-app@latest 
 ```
+
 ### 2. Add FPX middleware
 Add the fpx middleware to the `index.ts` of your Hono project
 
