@@ -72,7 +72,9 @@ export function HistoryEntry({
             <div
               className={cn(
                 "whitespace-nowrap",
-                "overflow-ellipsis",
+                "overflow-hidden",
+                "text-ellipsis",
+                "max-w-full",
                 "flex-grow",
                 "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
               )}
