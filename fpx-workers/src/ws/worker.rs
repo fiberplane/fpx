@@ -34,6 +34,18 @@ impl DurableObject for WebSocketHibernationServer {
             .run(req, env)
             .await
     }
+
+    async fn websocket_close(
+        &mut self,
+        ws: WebSocket,
+        _code: usize,
+        _reason: String,
+        _was_clean: bool,
+    ) -> Result<()> {
+        self.connections.retain_mut(|conn| conn != &ws);
+
+        Ok(())
+    }
 }
 
 /// Handles creating and storing a new hibernating WebSocket connection.
