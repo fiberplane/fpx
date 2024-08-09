@@ -1,20 +1,20 @@
 export const makeRequestTool = {
-  type: "function" as const,
+  type: "function",
   function: {
     name: "make_request",
     description:
       "Generates some random data for an http request to an api backend",
     // Describe parameters as json schema https://json-schema.org/understanding-json-schema/
     parameters: {
-      type: "object" as const,
+      type: "object",
       properties: {
         path: {
-          type: "string" as const,
+          type: "string",
         },
         pathParams: {
-          type: "array" as const,
+          type: "array",
           items: {
-            type: "object" as const,
+            type: "object",
             properties: {
               key: {
                 type: "string",
@@ -26,21 +26,21 @@ export const makeRequestTool = {
           },
         },
         queryParams: {
-          type: "array" as const,
+          type: "array",
           items: {
-            type: "object" as const,
+            type: "object",
             properties: {
               key: {
-                type: "string" as const,
+                type: "string",
               },
               value: {
-                type: "string" as const,
+                type: "string",
               },
             },
           },
         },
         body: {
-          type: "string" as const,
+          type: "string",
         },
         bodyType: {
           type: "object" as const,
@@ -55,15 +55,15 @@ export const makeRequestTool = {
           },
         },
         headers: {
-          type: "array" as const,
+          type: "array",
           items: {
-            type: "object" as const,
+            type: "object",
             properties: {
               key: {
-                type: "string" as const,
+                type: "string",
               },
               value: {
-                type: "string" as const,
+                type: "string",
               },
             },
           },
@@ -73,4 +73,4 @@ export const makeRequestTool = {
       required: ["path"],
     },
   },
-};
+} as const;
