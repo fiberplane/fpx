@@ -1,11 +1,18 @@
 import { useCallback, useReducer } from "react";
+import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
 import { KeyValueParameter } from "../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import { ProbedRoute } from "../queries";
 import { findMatchedRoute } from "../routes";
 import { RequestMethod, RequestMethodInputValue, RequestType } from "../types";
 import { useSaveUiState } from "./persistence";
-import { type RequestorState, createInitialState, initialState } from "./state";
+import {
+  RequestBodyType,
+  RequestorBody,
+  type RequestorState,
+  createInitialState,
+  initialState,
+} from "./state";
 import {
   RequestsPanelTab,
   ResponsePanelTab,
@@ -40,6 +47,9 @@ const CLEAR_PATH_PARAMS = "CLEAR_PATH_PARAMS" as const;
 const SET_QUERY_PARAMS = "SET_QUERY_PARAMS" as const;
 const SET_HEADERS = "SET_HEADERS" as const;
 const SET_BODY = "SET_BODY" as const;
+const CLEAR_BODY = "CLEAR_BODY" as const;
+const SET_BODY_TYPE = "SET_BODY_TYPE" as const;
+const SET_WEBSOCKET_MESSAGE = "SET_WEBSOCKET_MESSAGE" as const;
 const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
 const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
 const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
@@ -86,7 +96,21 @@ type RequestorAction =
     }
   | {
       type: typeof SET_BODY;
-      payload: RequestorState["body"];
+      payload: RequestorBody;
+    }
+  | {
+      type: typeof CLEAR_BODY;
+    }
+  | {
+      type: typeof SET_BODY_TYPE;
+      payload: {
+        type: RequestBodyType;
+        isMultipart?: boolean;
+      };
+    }
+  | {
+      type: typeof SET_WEBSOCKET_MESSAGE;
+      payload: string;
     }
   | {
       type: typeof LOAD_HISTORICAL_REQUEST;
@@ -294,7 +318,75 @@ function requestorReducer(
       return { ...state, requestHeaders: action.payload };
     }
     case SET_BODY: {
-      return { ...state, body: action.payload };
+      const nextBody = action.payload;
+      if (nextBody.type === "form-data") {
+        return {
+          ...state,
+          body: {
+            type: nextBody.type,
+            isMultipart: nextBody.isMultipart,
+            value: enforceFormDataTerminalDraftParameter(nextBody.value),
+          },
+        };
+      }
+      return { ...state, body: nextBody };
+    }
+    case CLEAR_BODY: {
+      const nextBody =
+        state.body.type === "form-data"
+          ? {
+              type: "form-data" as const,
+              value: enforceFormDataTerminalDraftParameter([]),
+              isMultipart: state.body.isMultipart,
+            }
+          : state.body.type === "file"
+            ? { type: state.body.type, value: undefined }
+            : { type: state.body.type, value: "" };
+      return { ...state, body: nextBody };
+    }
+    // NOTE - This needs to be its own reducer function it is so darn hard to read, i'm sorry
+    case SET_BODY_TYPE: {
+      const oldBodyValue = state.body.value;
+      const oldBodyType = state.body.type;
+      const newBodyType = action.payload.type;
+      if (oldBodyType === newBodyType) {
+        // HACK - Refactor
+        if (state.body.type === "form-data") {
+          return {
+            ...state,
+            body: {
+              ...state.body,
+              isMultipart: !!action.payload.isMultipart,
+            },
+          };
+        }
+        return state;
+      }
+      if (newBodyType === "form-data") {
+        const isMultipart = !!action.payload.isMultipart;
+        return {
+          ...state,
+          body: {
+            type: newBodyType,
+            isMultipart,
+            value: enforceFormDataTerminalDraftParameter([]),
+          },
+        };
+      }
+      if (newBodyType === "file") {
+        return { ...state, body: { type: newBodyType, value: undefined } };
+      }
+      if (oldBodyType === "form-data") {
+        return { ...state, body: { type: newBodyType, value: "" } };
+      }
+      // HACK - These lines makes things clearer for typescript, but are a nightmare to read, i'm so sorry
+      const isNonTextOldBody =
+        Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
+      const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
+      return { ...state, body: { type: newBodyType, value: newBodyValue } };
+    }
+    case SET_WEBSOCKET_MESSAGE: {
+      return { ...state, websocketMessage: action.payload };
     }
     case SET_ACTIVE_REQUESTS_PANEL_TAB: {
       return { ...state, activeRequestsPanelTab: action.payload };
@@ -409,17 +501,34 @@ export function useRequestor() {
   );
 
   const setBody = useCallback(
-    (body: undefined | string | RequestorState["body"]) => {
+    (body: undefined | string | RequestorBody) => {
       if (body === undefined) {
-        dispatch({
-          type: SET_BODY,
-          payload: { type: "text", value: undefined },
-        });
+        dispatch({ type: CLEAR_BODY });
       } else if (typeof body === "string") {
         dispatch({ type: SET_BODY, payload: { type: "text", value: body } });
       } else {
         dispatch({ type: SET_BODY, payload: body });
       }
+    },
+    [dispatch],
+  );
+
+  const setWebsocketMessage = useCallback(
+    (websocketMessage: string | undefined) => {
+      dispatch({
+        type: SET_WEBSOCKET_MESSAGE,
+        payload: websocketMessage ?? "",
+      });
+    },
+    [dispatch],
+  );
+
+  const handleRequestBodyTypeChange = useCallback(
+    (requestBodyType: RequestBodyType, isMultipart?: boolean) => {
+      dispatch({
+        type: SET_BODY_TYPE,
+        payload: { type: requestBodyType, isMultipart },
+      });
     },
     [dispatch],
   );
@@ -492,6 +601,10 @@ export function useRequestor() {
     setQueryParams,
     setRequestHeaders,
     setBody,
+    handleRequestBodyTypeChange,
+
+    // Websocket form
+    setWebsocketMessage,
 
     // Requests Panel tabs
     setActiveRequestsPanelTab,

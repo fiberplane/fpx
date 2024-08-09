@@ -1,3 +1,4 @@
+use crate::events::ServerEvents;
 use async_trait::async_trait;
 use libsql::de;
 use serde::de::DeserializeOwned;
@@ -10,6 +11,7 @@ mod util;
 
 pub type Result<T, E = DbError> = anyhow::Result<T, E>;
 
+pub type BoxedEvents = Arc<dyn ServerEvents>;
 pub type BoxedStore = Arc<dyn Store>;
 
 #[derive(Clone, Default, Debug)]

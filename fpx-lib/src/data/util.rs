@@ -264,7 +264,7 @@ mod tests {
         let timestamp_1 = Timestamp(timestamp_1);
         let timestamp_1_fractional = timestamp_1.fractional();
 
-        let js_value: JsValue = timestamp_1.into();
+        let js_value: wasm_bindgen::JsValue = timestamp_1.into();
         let js_value_fractional = js_value.as_f64().unwrap();
 
         assert_eq!(timestamp_1_fractional, js_value_fractional)

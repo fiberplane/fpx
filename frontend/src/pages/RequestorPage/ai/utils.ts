@@ -39,18 +39,18 @@ export function appRequestToHttpRequest(entry: Requestornator) {
 
 export function appResponseToHttpRequest(entry: Requestornator) {
   const responseHeaders =
-    redactSensitiveHeaders(entry.app_responses.responseHeaders) ?? {};
+    redactSensitiveHeaders(entry.app_responses?.responseHeaders) ?? {};
 
   // NOTE - Can we glean the http version somehow, somewhere?
   return [
     "<response>",
     // TODO - Append response statusText to the string below!!! (we don't have that info right now)
-    `HTTP/1.1 ${entry.app_responses.responseStatusCode}`,
+    `HTTP/1.1 ${entry.app_responses?.responseStatusCode}`,
     ...Object.entries(responseHeaders).map(
       ([key, value]) => `${key}: ${value}`,
     ),
     ``,
-    `${entry.app_responses.responseBody || ""}`,
+    `${entry.app_responses?.responseBody || ""}`,
     "</response>",
   ].join("\n");
 }

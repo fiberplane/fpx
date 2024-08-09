@@ -6,7 +6,6 @@ import { env } from "hono/adapter";
 import { z } from "zod";
 import {
   type NewAppRequest,
-  appRequestInsertSchema,
   appRequests,
   appResponseInsertSchema,
   appResponses,
@@ -15,7 +14,7 @@ import {
 } from "../db/schema.js";
 import type * as schema from "../db/schema.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { errorToJson, generateUUID } from "../lib/utils.js";
+import { errorToJson, generateUUID, safeParseJson } from "../lib/utils.js";
 import logger from "../logger.js";
 import { resolveServiceArg } from "../probe-routes.js";
 
@@ -87,116 +86,238 @@ app.get("/v0/all-requests", async (ctx) => {
   const requests = await db
     .select()
     .from(appResponses)
-    .rightJoin(appRequests, eq(appResponses.requestId, appRequests.id));
+    .rightJoin(appRequests, eq(appResponses.requestId, appRequests.id))
+    .limit(1000);
   return ctx.json(requests);
 });
 
-app.post(
-  "/v0/send-request",
-  zValidator("json", appRequestInsertSchema),
-  async (ctx) => {
-    const traceId = ctx.req.header("x-fpx-trace-id") ?? generateUUID();
+type SerializedFile = {
+  name: string;
+  type: string;
+  size: number;
+};
 
-    const {
-      requestMethod,
-      requestUrl,
-      requestHeaders,
-      requestQueryParams,
-      requestPathParams,
-      requestBody,
-      requestRoute,
-    } = ctx.req.valid("json");
+function serializeFile(file: File): SerializedFile {
+  return {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+  };
+}
 
-    const db = ctx.get("db");
+function serializeFormDataValue(
+  value: FormDataEntryValue,
+): string | SerializedFile {
+  if (value instanceof File) {
+    return serializeFile(value);
+  }
+  return value;
+}
 
-    // NOTE - We want to pass the trace-id through to the service we're calling
-    //        This helps us optionally correlate requests more easily in the frontend
-    const modifiedRequestHeaders = {
-      ...(requestHeaders ?? {}),
-      "x-fpx-trace-id": traceId,
-    };
+/**
+ * This route is used to proxy requests to the service we're calling.
+ * It's used to add the trace-id header to the request, and to handle the response.
+ *
+ * As of writing it actually tries to proxy the entire response, but this might be harder
+ * to do properly than just, e.g., returning the traceId.
+ *
+ * The reason it'd be nice to do this, however, is to support responses that include binary data.
+ * Or maybe even streams eventually?
+ */
+app.all("/v0/proxy-request/*", async (ctx) => {
+  const traceId = ctx.req.header("x-fpx-trace-id") || generateUUID();
+  logger.debug("Proxying request with traceId:", traceId);
+  const db = ctx.get("db");
 
-    const requestObject = {
-      method: requestMethod,
-      body:
-        (requestBody ? JSON.stringify(requestBody) : requestBody) ??
-        // biome-ignore lint/suspicious/noExplicitAny: just make it work
-        (undefined as any),
-      headers: modifiedRequestHeaders,
-    };
+  const requestRoute = ctx.req.header("x-fpx-route");
+  const requestPathParams = safeParseJson(ctx.req.header("x-fpx-path-params"));
 
-    const finalUrl = resolveUrl(requestUrl, requestQueryParams);
+  const requestMethod = ctx.req.method;
+  const requestUrlHeader = ctx.req.header("x-fpx-proxy-to") ?? "";
+  const requestHeaders: Record<string, string> = {};
 
-    const newRequest: NewAppRequest = {
-      requestMethod,
-      requestUrl,
-      requestHeaders,
-      requestPathParams,
-      requestQueryParams,
-      requestBody,
-      requestRoute,
-    };
-
-    const insertResult = await db
-      .insert(appRequests)
-      .values(newRequest)
-      .returning({ requestId: appRequests.id });
-
-    const requestId = insertResult[0].requestId; // only one insert always happens not sure why drizzle returns an array...
-
-    const startTime = Date.now();
-    try {
-      const response = await fetch(finalUrl, requestObject);
-      const duration = Date.now() - startTime;
-
-      const {
-        responseStatusCode,
-        responseTime,
-        responseHeaders,
-        responseBody,
-        traceId: responseTraceId,
-        isFailure,
-      } = await handleSuccessfulRequest(db, requestId, duration, response);
-
-      if (responseTraceId !== traceId) {
-        logger.warn(
-          `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
-        );
-      }
-
-      return ctx.json({
-        responseStatusCode,
-        responseTime,
-        responseHeaders,
-        responseBody,
-        isFailure,
-        traceId: responseTraceId,
-        requestId,
-      });
-    } catch (fetchError) {
-      // NOTE - This will happen when the service is unreachable.
-      //        Could be good to parse the error for more information!
-      const responseTime = Date.now() - startTime;
-      const { failureDetails, failureReason, isFailure } =
-        await handleFailedRequest(
-          db,
-          requestId,
-          traceId,
-          responseTime,
-          fetchError,
-        );
-
-      return ctx.json({
-        isFailure,
-        responseTime,
-        failureDetails,
-        failureReason,
-        traceId,
-        requestId,
-      });
+  // If the header is in this list, we don't want to pass it through to the service
+  const ignoreTheseHeaders = [
+    "x-fpx-route",
+    "x-fpx-path-params",
+    "x-fpx-proxy-to",
+  ];
+  ctx.req.raw.headers.forEach((value, key) => {
+    if (ignoreTheseHeaders.includes(key.toLowerCase())) {
+      return;
     }
-  },
-);
+    requestHeaders[key] = value;
+  });
+  // Ensure the trace id is present
+  if (!requestHeaders["x-fpx-trace-id"]) {
+    requestHeaders["x-fpx-trace-id"] = traceId;
+  }
+
+  // Construct the url we want to proxy to
+  const requestQueryParams = {
+    ...ctx.req.query(),
+  };
+  const requestUrl = resolveUrl(requestUrlHeader, requestQueryParams);
+  logger.debug("Proxying request to:", requestUrl);
+  logger.debug("Proxying request with headers:", requestHeaders);
+  // Create a new request object
+  // Clone the incoming request, so we can make a proxy Request object
+  const clonedReq = ctx.req.raw.clone();
+  const proxiedReq = new Request(requestUrl, {
+    method: requestMethod,
+    headers: new Headers(requestHeaders),
+    body: clonedReq.body ? clonedReq.body.tee()[0] : null,
+  });
+
+  // Extract the request body based on content type
+  // *The whole point of this is to serialize the request body into the database, for future reference*
+  //
+  let requestBody:
+    | null
+    | string
+    | {
+        [x: string]: string | SerializedFile | (string | SerializedFile)[];
+      } = null;
+  try {
+    requestBody = await serializeRequestBodyForFpxDb();
+  } catch (error) {
+    requestBody = "<failed to parse>";
+    logger.error("Failed to serialize request body", error);
+  }
+
+  // Record request details
+  const newRequest: NewAppRequest = {
+    // @ts-expect-error - Trust me, the request method is correct
+    requestMethod,
+    requestUrl,
+    requestHeaders,
+    requestPathParams,
+    requestQueryParams,
+    requestBody,
+    requestRoute,
+  };
+
+  const insertResult = await db
+    .insert(appRequests)
+    .values(newRequest)
+    .returning({ requestId: appRequests.id });
+
+  const requestId = insertResult[0].requestId;
+
+  const startTime = Date.now();
+  try {
+    // Proxy the request
+    const response = await fetch(proxiedReq);
+
+    // Clone the response and prepare to return it
+    const clonedResponse = response.clone();
+    const newHeaders = new Headers(clonedResponse.headers);
+
+    // HACK - Frontend often couldn't parse the body because of encoding mismatch
+    newHeaders.delete("content-encoding");
+
+    const proxiedResponse = new Response(clonedResponse.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders,
+    });
+
+    const duration = Date.now() - startTime;
+
+    const { traceId: responseTraceId } = await handleSuccessfulRequest(
+      db,
+      requestId,
+      duration,
+      response,
+    );
+
+    if (responseTraceId !== traceId) {
+      logger.warn(
+        `Trace-id mismatch! Request: ${traceId}, Response: ${responseTraceId}`,
+      );
+    }
+
+    // Guarantee the trace-id is set in response headers
+    proxiedResponse.headers.set("x-fpx-trace-id", traceId);
+
+    return proxiedResponse;
+  } catch (fetchError) {
+    console.log("fetchError", fetchError);
+    const responseTime = Date.now() - startTime;
+    const { failureDetails, failureReason, isFailure } =
+      await handleFailedRequest(
+        db,
+        requestId,
+        traceId,
+        responseTime,
+        fetchError,
+      );
+
+    ctx.header("x-fpx-trace-id", traceId);
+    ctx.status(500);
+    return ctx.json({
+      isFailure,
+      responseTime,
+      failureDetails,
+      failureReason,
+      traceId,
+      requestId,
+    });
+  }
+
+  /**
+   * Helper that serializes the request body into a format that can be stored in the database
+   *
+   * This will *not* store binary data, for example, like File objects
+   */
+  async function serializeRequestBodyForFpxDb() {
+    const contentType = ctx.req.header("content-type");
+    let requestBody:
+      | null
+      | string
+      | {
+          [x: string]: string | SerializedFile | (string | SerializedFile)[];
+        } = null;
+    if (ctx.req.raw.body) {
+      if (requestMethod === "GET" || requestMethod === "HEAD") {
+        logger.warn(
+          "Request method is GET or HEAD, but request body is not null",
+        );
+        requestBody = null;
+      } else if (contentType?.includes("application/json")) {
+        // NOTE - This kind of handles the case where the body is note valid json,
+        //        but the content type is set to application/json
+        const textBody = await ctx.req.text();
+        requestBody = safeParseJson(textBody);
+      } else if (contentType?.includes("application/x-www-form-urlencoded")) {
+        const formData = await ctx.req.formData();
+        requestBody = {};
+        // @ts-expect-error - MDN says formData does indeed have an entries method :thinking_face:
+        for (const [key, value] of formData.entries()) {
+          requestBody[key] = value;
+        }
+      } else if (contentType?.includes("multipart/form-data")) {
+        // NOTE - `File` will just show up as an empty object in sqllite - could be nice to record metadata?
+        //         like the name of the file
+        const formData = await ctx.req.parseBody({ all: true });
+        requestBody = {};
+        for (const [key, value] of Object.entries(formData)) {
+          if (Array.isArray(value)) {
+            requestBody[key] = value.map(serializeFormDataValue);
+          } else {
+            requestBody[key] = serializeFormDataValue(value);
+          }
+        }
+      } else if (contentType?.includes("application/octet-stream")) {
+        requestBody = "<binary data>";
+      } else {
+        requestBody = await ctx.req.text();
+      }
+    }
+
+    return requestBody;
+  }
+});
 
 /**
  * Extract useful data from the response when a request succeeds,

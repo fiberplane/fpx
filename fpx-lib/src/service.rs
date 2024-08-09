@@ -1,6 +1,5 @@
 use crate::api::models::{Span, SpanAdded};
-use crate::data::{BoxedStore, DbError};
-use crate::events::ServerEvents;
+use crate::data::{BoxedEvents, BoxedStore, DbError};
 use anyhow::Result;
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,
@@ -16,11 +15,11 @@ use thiserror::Error;
 #[derive(Clone)]
 pub struct Service {
     store: BoxedStore,
-    events: ServerEvents,
+    events: BoxedEvents,
 }
 
 impl Service {
-    pub fn new(store: BoxedStore, events: ServerEvents) -> Self {
+    pub fn new(store: BoxedStore, events: BoxedEvents) -> Self {
         Self { store, events }
     }
 
@@ -45,7 +44,9 @@ impl Service {
 
         self.store.commit_transaction(tx).await?;
 
-        self.events.broadcast(SpanAdded::new(trace_ids).into());
+        self.events
+            .broadcast(SpanAdded::new(trace_ids).into())
+            .await;
 
         Ok(ExportTraceServiceResponse {
             partial_success: None,
