@@ -103,11 +103,13 @@ function convertEventToOrphanLog(
   logId: number,
   event: OtelEvent,
 ) {
+  const argsAsString = getString(event.attributes.args);
+  const parsedArgs = argsAsString ? safeParseJson(argsAsString) : [];
   return {
     id: logId,
     traceId,
     level: getString(event.attributes.level),
-    args: safeParseJson(getString(event.attributes.args)) || [],
+    args: parsedArgs || [],
     timestamp: event.timestamp,
     message: getString(event.attributes.message),
     createdAt: event.timestamp,
