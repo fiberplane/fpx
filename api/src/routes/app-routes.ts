@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { env } from "hono/adapter";
 import { z } from "zod";
 import {
@@ -23,6 +23,7 @@ import {
 import type { Bindings, Variables } from "../lib/types.js";
 import {
   type SerializedFile,
+  isJson,
   serializeRequestBodyForFpxDb,
 } from "../lib/utils.js";
 import {
@@ -177,6 +178,10 @@ export const ProxyRequestHeadersSchema = z.object({
     z.string().regex(OTEL_TRACE_ID_REGEX),
     generateOtelTraceId,
   ).describe("The otel trace id to use for the request"),
+  "x-fpx-headers-json": z
+    .string()
+    .optional()
+    .describe("The headers to use for the request, serialized as JSON"),
   "x-fpx-route": z
     .string()
     .optional()
@@ -192,6 +197,12 @@ export const ProxyRequestHeadersSchema = z.object({
     ),
 });
 
+const PROXY_HEADERS_IGNORE = [
+  "x-fpx-route",
+  "x-fpx-path-params",
+  "x-fpx-proxy-to",
+];
+
 /**
  * This route is used to proxy requests to the service we're calling.
  * It's used to add the trace-id header to the request, and to handle the response.
@@ -202,7 +213,6 @@ export const ProxyRequestHeadersSchema = z.object({
  * The reason it'd be nice to do this, however, is to support responses that include binary data.
  * Or maybe even streams eventually?
  */
-
 app.all(
   "/v0/proxy-request/*",
   // Validate the headers we use to record request details and proxy the request
@@ -213,6 +223,7 @@ app.all(
       "x-fpx-proxy-to": proxyToHeader,
       "x-fpx-path-params": pathParamsHeader,
       "x-fpx-route": routeHeader,
+      "x-fpx-headers-json": headersJsonHeader,
     } = ctx.req.valid("header");
     // Try to extract the trace id from the header, otherwise generate a new one
     const shouldUseHeaderTraceId = isValidOtelTraceId(traceIdHeader ?? "");
@@ -236,26 +247,12 @@ app.all(
 
     const requestMethod = ctx.req.method;
     const requestUrlHeader = proxyToHeader;
-    const requestHeaders: Record<string, string> = {};
 
-    // If the header is in this list, we don't want to pass it through to the service
-    const ignoreTheseHeaders = [
-      "x-fpx-route",
-      "x-fpx-path-params",
-      "x-fpx-proxy-to",
-    ];
-    ctx.req.raw.headers.forEach((value, key) => {
-      if (ignoreTheseHeaders.includes(key.toLowerCase())) {
-        return;
-      }
-      requestHeaders[key] = value;
-    });
-    // Ensure the trace id is present
-    if (!requestHeaders["x-fpx-trace-id"]) {
-      requestHeaders["x-fpx-trace-id"] = traceId;
-    }
+    // NOTE - These are the headers that will be used in the request to the service
+    const requestHeaders: Record<string, string> =
+      constructProxiedRequestHeaders(ctx, headersJsonHeader ?? "", traceId);
 
-    // Construct the url we want to proxy to
+    // Construct the url we want to proxy to, using the query params from the original request
     const requestQueryParams = {
       ...ctx.req.query(),
     };
@@ -265,6 +262,7 @@ app.all(
     );
     logger.debug("Proxying request to:", requestUrl);
     logger.debug("Proxying request with headers:", requestHeaders);
+
     // Create a new request object
     // Clone the incoming request, so we can make a proxy Request object
     const clonedReq = ctx.req.raw.clone();
@@ -367,3 +365,69 @@ app.get("/v0/webhonc", async (ctx) => {
 });
 
 export default app;
+
+/**
+ * Constructs the headers that will be used in the request to the service,
+ * allowing us to use what the user specifically set in the FPX ui
+ *
+ * @param ctx
+ * @param fpxRequestorUiHeaders
+ * @param traceId
+ * @returns
+ */
+function constructProxiedRequestHeaders(
+  ctx: Context,
+  fpxRequestorUiHeaders: string,
+  traceId: string,
+) {
+  // NOTE - These are the headers that were set in the FPX ui itself
+  const requestHeadersFromRequestorUi: Record<string, string> = isJson(
+    fpxRequestorUiHeaders,
+  )
+    ? safeParseJson(fpxRequestorUiHeaders)
+    : {};
+
+  // NOTE - These are the headers that will be used in the request to the service
+  const requestHeaders: Record<string, string> = {};
+
+  // NOTE - We don't want to copy over the headers that were set by the browser fetch client
+  //        This is because the browser fetch client sets some headers that we don't want to pass through
+  //        to the service, such as the referer header, and several sec-fetch headers, etc
+  //        See: FP-3930
+  //
+  // ctx.req.raw.headers.forEach((value, key) => {
+  //   if (ignoreTheseHeaders.includes(key.toLowerCase())) {
+  //     return;
+  //   }
+  //   requestHeaders[key] = value;
+  // });
+
+  for (const [key, value] of Object.entries(requestHeadersFromRequestorUi)) {
+    // If a header is in this list, we don't want to pass it through to the service
+    if (PROXY_HEADERS_IGNORE.includes(key.toLowerCase())) {
+      continue;
+    }
+    requestHeaders[key] = value;
+  }
+
+  const alreadyHasContentType = Object.keys(requestHeaders).some(
+    (key) => key.toLowerCase() === "content-type",
+  );
+
+  // Give the user's content type preference priority,
+  // Otherwise, use the content type from the original request
+  // This is important for multipart form data, for which we want to preserve the form boundary
+  if (!alreadyHasContentType) {
+    const rawContentType = ctx.req.raw.headers.get("content-type");
+    if (rawContentType) {
+      requestHeaders["Content-Type"] = rawContentType;
+    }
+  }
+
+  // Ensure the trace id is present
+  if (!requestHeaders["x-fpx-trace-id"]) {
+    requestHeaders["x-fpx-trace-id"] = traceId;
+  }
+
+  return requestHeaders;
+}

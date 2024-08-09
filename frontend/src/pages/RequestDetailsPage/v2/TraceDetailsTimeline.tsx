@@ -327,7 +327,11 @@ const WaterfallRowSpan: React.FC<{
   const id = span.span_id;
   const spanDuration =
     new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
-  const lineWidth = `${((spanDuration / duration) * 100).toPrecision(2)}%`;
+  const normalizedDuration = spanDuration / duration;
+  // NOTE - We want to render a single line, instead of a tai-fighter shape, if the span is less than 1% of the total duration
+  const shouldRenderSingleLine = normalizedDuration < 0.01;
+  const percentageWidth = (normalizedDuration * 100).toPrecision(2);
+  const lineWidth = `${percentageWidth}%`;
   const lineOffset = `${((new Date(span.start_time).getTime() - startTime) / duration) * 100}%`;
   const icon = useTimelineIcon(span, vendorInfo);
   const title = useTimelineTitle({ span, vendorInfo });
@@ -349,10 +353,18 @@ const WaterfallRowSpan: React.FC<{
       <div className="flex flex-col w-20 overflow-hidden">{title}</div>
       <div className="text-gray-400 flex flex-grow items-center mx-4">
         <div
-          className="h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1"
+          className={cn(
+            "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1",
+            shouldRenderSingleLine && "border-r-0",
+          )}
           style={{ width: lineWidth, marginLeft: lineOffset }}
         >
-          <div className="h-0.5 min-w-1 bg-blue-500 w-full"></div>
+          <div
+            className={cn(
+              "h-0.5 min-w-0.5 bg-blue-500 w-full",
+              shouldRenderSingleLine && "bg-transparent",
+            )}
+          ></div>
         </div>
       </div>
       <div className="ml-auto text-gray-400 text-xs w-12 px-2">

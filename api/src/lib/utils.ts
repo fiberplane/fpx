@@ -5,6 +5,18 @@ import { minimatch } from "minimatch";
 import { type Schema, any } from "zod";
 import logger from "../logger.js";
 
+export function isJson(str: unknown) {
+  if (typeof str !== "string") {
+    return false;
+  }
+  try {
+    JSON.parse(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Hacky helper in case you want to try parsing a message as json, but want to fall back to its og value
  */

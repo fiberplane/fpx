@@ -156,6 +156,8 @@ If it appears that more fields are coming alongside a file, return a body type o
 For form data, you can return a body type of "form-data". You can still return a JSON object like above,
 I will handle converting it to form data.
 
+Never add the x-fpx-trace-id header to the request.
+
 ===
 
 Use the tool "make_request". Always respond in valid JSON. Help the user test the happy path.
