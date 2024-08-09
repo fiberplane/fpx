@@ -5,11 +5,10 @@
 //! fine.
 
 use super::errors::ApiClientError;
-use super::handlers::spans::SpanGetError;
-use super::handlers::{RequestGetError, RequestListError};
-use crate::api::models;
 use crate::otel_util::HeaderMapInjector;
 use anyhow::Result;
+use fpx_lib::api::handlers::spans::SpanGetError;
+use fpx_lib::api::models;
 use http::{HeaderMap, Method};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
@@ -110,35 +109,6 @@ impl ApiClient {
                 Err(ApiClientError::from_response(status_code, body))
             }
         }
-    }
-
-    /// Retrieve the details of a single request.
-    pub async fn request_get(
-        &self,
-        request_id: i64,
-    ) -> Result<models::Request, ApiClientError<RequestGetError>> {
-        let path = format!("api/requests/{}", request_id);
-
-        self.do_req(Method::GET, path, None::<()>).await
-    }
-
-    /// Retrieve a list of requests
-    pub async fn request_list(
-        &self,
-    ) -> Result<Vec<models::RequestSummary>, ApiClientError<RequestListError>> {
-        let path = "api/requests";
-
-        self.do_req(Method::GET, path, None::<()>).await
-    }
-
-    /// Create and execute a new request
-    pub async fn request_create(
-        &self,
-        new_request: models::NewRequest,
-    ) -> Result<models::Response, ApiClientError<models::NewRequestError>> {
-        let path = "/api/requests";
-
-        self.do_req(Method::POST, path, Some(&new_request)).await
     }
 
     /// Retrieve the details of a single span.

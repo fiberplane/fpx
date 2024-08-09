@@ -5,6 +5,7 @@ use opentelemetry_proto::tonic::trace::v1::{span, Status};
 use opentelemetry_proto::tonic::{
     collector::trace::v1::ExportTraceServiceRequest, common::v1::KeyValue,
 };
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use strum::AsRefStr;
@@ -117,7 +118,7 @@ impl Span {
     }
 }
 
-#[derive(Default, Serialize, Deserialize, PartialEq, Debug, Clone, AsRefStr)]
+#[derive(Default, Serialize, Deserialize, PartialEq, Debug, Clone, AsRefStr, JsonSchema)]
 pub enum SpanKind {
     Internal,
     Server,

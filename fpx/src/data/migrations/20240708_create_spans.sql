@@ -6,8 +6,8 @@ CREATE TABLE spans (
     name TEXT NOT NULL,
     kind TEXT NOT NULL,
 
-    start_time INTEGER NOT NULL,
-    end_time INTEGER NOT NULL,
+    start_time REAL NOT NULL,
+    end_time REAL NOT NULL,
 
     inner TEXT
 ) STRICT;

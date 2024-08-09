@@ -30,6 +30,10 @@ pub enum DbError {
 
     #[error("Internal error: {0}")]
     InternalError(String),
+
+    #[cfg(feature = "libsql")]
+    #[error("Internal database error occurred: {0}")]
+    LibsqlError(#[from] libsql::Error),
 }
 
 #[async_trait]
