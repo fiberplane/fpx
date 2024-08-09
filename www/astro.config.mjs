@@ -12,16 +12,13 @@ export default defineConfig({
       },
       sidebar: [
         {
-          label: "Guides",
+          label: "Home",
           items: [
             // Each item here is one entry in the navigation menu.
-            { label: "Example Guide", slug: "guides/example" },
+            { label: "Get started", slug: "home/get-started" },
           ],
         },
-        {
-          label: "Reference",
-          autogenerate: { directory: "reference" },
-        },
+     
       ],
       customCss: ["./src/tailwind.css"],
     }),
