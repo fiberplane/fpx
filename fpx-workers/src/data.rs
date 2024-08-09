@@ -42,7 +42,15 @@ impl Store for D1Store {
         Ok(())
     }
 
-    async fn fetch_one<T>(&self, tx: &Transaction, query: impl Into<String>, values: &[Self::ValueTypes]) -> Result<T> where T: for<'a> Deserialize<'a> {
+    async fn fetch_one<T>(
+        &self,
+        tx: &Transaction,
+        query: impl Into<String>,
+        values: &[Self::ValueTypes],
+    ) -> Result<T>
+    where
+        T: for<'a> Deserialize<'a>,
+    {
         let prepared_statement = self.database.prepare(query);
 
         let result = prepared_statement
@@ -58,7 +66,15 @@ impl Store for D1Store {
         Ok(result)
     }
 
-    async fn fetch_all<T>(&self, tx: &Transaction, query: impl Into<String>, values: &[Self::ValueTypes]) -> Result<Vec<T>> where T: for<'a> Deserialize<'a> {
+    async fn fetch_all<T>(
+        &self,
+        tx: &Transaction,
+        query: impl Into<String>,
+        values: &[Self::ValueTypes],
+    ) -> Result<Vec<T>>
+    where
+        T: for<'a> Deserialize<'a>,
+    {
         let prepared_statement = self.database.prepare(query);
 
         let result = prepared_statement
@@ -75,7 +91,15 @@ impl Store for D1Store {
         Ok(result)
     }
 
-    async fn fetch_optional<T>(&self, tx: &Transaction, query: impl Into<String>, values: &[Self::ValueTypes]) -> Result<Option<T>, DbError> where T: for<'a> Deserialize<'a> {
+    async fn fetch_optional<T>(
+        &self,
+        tx: &Transaction,
+        query: impl Into<String>,
+        values: &[Self::ValueTypes],
+    ) -> Result<Option<T>, DbError>
+    where
+        T: for<'a> Deserialize<'a>,
+    {
         todo!()
     }
 }

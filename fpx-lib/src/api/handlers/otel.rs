@@ -17,8 +17,8 @@ use tracing::error;
 /// Note: this returns a [`Result`] with both of them being a
 /// [`impl IntoResponse`] since this way we can support the [`?`] operator. We
 #[tracing::instrument(skip_all)]
-pub async fn trace_collector_handler(
-    State(service): State<Service>,
+pub async fn trace_collector_handler<T>(
+    State(service): State<Service<T>>,
     headers: HeaderMap,
     JsonOrProtobuf(payload): JsonOrProtobuf<ExportTraceServiceRequest>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {

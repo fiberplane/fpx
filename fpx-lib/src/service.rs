@@ -13,13 +13,13 @@ use thiserror::Error;
 /// used by the gRPC and HTTP API. Luckily the models used by both APIs are the
 /// same, so we don't have to define an extra model for the Service API.
 #[derive(Clone)]
-pub struct Service {
-    store: BoxedStore,
+pub struct Service<T> {
+    store: BoxedStore<T>,
     events: BoxedEvents,
 }
 
-impl Service {
-    pub fn new(store: BoxedStore, events: BoxedEvents) -> Self {
+impl<T> Service<T> {
+    pub fn new(store: BoxedStore<T>, events: BoxedEvents) -> Self {
         Self { store, events }
     }
 

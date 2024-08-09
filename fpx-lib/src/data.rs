@@ -1,7 +1,5 @@
 use crate::events::ServerEvents;
 use async_trait::async_trait;
-use libsql::de;
-use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use std::sync::Arc;
 use thiserror::Error;
@@ -12,7 +10,7 @@ mod util;
 pub type Result<T, E = DbError> = anyhow::Result<T, E>;
 
 pub type BoxedEvents = Arc<dyn ServerEvents>;
-pub type BoxedStore = Arc<dyn Store>;
+pub type BoxedStore<T> = Arc<dyn Store<ValueTypes = T>>;
 
 #[derive(Clone, Default, Debug)]
 pub struct Transaction {}
@@ -81,7 +79,7 @@ pub trait Store: Send + Sync {
         self.fetch_one(
             tx,
             "SELECT * FROM spans WHERE trace_id = $1 AND span_id = $2",
-            &[trace_id.into(), span_id.into()],
+            [trace_id.into(), span_id.into()],
         )
         .await
     }

@@ -10,8 +10,9 @@ use thiserror::Error;
 use tracing::error;
 
 #[tracing::instrument(skip_all)]
-pub async fn span_get_handler(
-    State(store): State<BoxedStore>,
+#[axum::debug_handler]
+pub async fn span_get_handler<T>(
+    State(store): State<BoxedStore<T>>,
     Path((trace_id, span_id)): Path<(String, String)>,
 ) -> Result<Json<Span>, ApiServerError<SpanGetError>> {
     let tx = store.start_readonly_transaction().await?;
@@ -55,8 +56,9 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn span_list_handler(
-    State(store): State<BoxedStore>,
+#[axum::debug_handler]
+pub async fn span_list_handler<T>(
+    State(store): State<BoxedStore<T>>,
     Path(trace_id): Path<String>,
 ) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
     let tx = store.start_readonly_transaction().await?;

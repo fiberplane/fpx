@@ -24,26 +24,30 @@ pub struct Config {
 }
 
 #[derive(Clone)]
-pub struct ApiState {
+pub struct ApiState<T> {
     _events: BoxedEvents,
-    service: Service,
-    store: BoxedStore,
+    service: Service<T>,
+    store: BoxedStore<T>,
 }
 
-impl FromRef<ApiState> for BoxedStore {
-    fn from_ref(state: &ApiState) -> Self {
+impl<T> FromRef<ApiState<T>> for BoxedStore<T> {
+    fn from_ref(state: &ApiState<T>) -> Self {
         state.store.clone()
     }
 }
 
-impl FromRef<ApiState> for Service {
-    fn from_ref(state: &ApiState) -> Self {
+impl<T> FromRef<ApiState<T>> for Service<T> {
+    fn from_ref(state: &ApiState<T>) -> Self {
         state.service.clone()
     }
 }
 
 /// Create a API and expose it through a axum router.
-pub fn create_api(events: BoxedEvents, service: Service, store: BoxedStore) -> axum::Router {
+pub fn create_api<T>(
+    events: BoxedEvents,
+    service: Service<T>,
+    store: BoxedStore<T>,
+) -> axum::Router {
     let api_state = ApiState {
         _events: events,
         service,
