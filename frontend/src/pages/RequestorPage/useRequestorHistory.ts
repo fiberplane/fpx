@@ -91,7 +91,13 @@ export function useRequestorHistory({
         const headers = match.app_requests.requestHeaders ?? {};
         setRequestHeaders(
           createKeyValueParameters(
-            Object.entries(headers).map(([key, value]) => ({ key, value })),
+            Object.entries(headers)
+              .map(([key, value]) => ({ key, value }))
+              .filter(
+                // HACK - We don't want to pass through the trace id header,
+                //        Otherwise each successive request will be correlated!!
+                ({ key }) => key?.toLowerCase() !== "x-fpx-trace-id",
+              ),
           ),
         );
 
