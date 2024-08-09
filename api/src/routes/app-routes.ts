@@ -268,12 +268,11 @@ app.all(
     // Create a new request object
     // Clone the incoming request, so we can make a proxy Request object
     const clonedReq = ctx.req.raw.clone();
-
-    // const proxiedReq = new Request(requestUrl, {
-    //   method: requestMethod,
-    //   headers: new Headers(requestHeaders),
-    //   body: clonedReq.body ? clonedReq.body.tee()[0] : null,
-    // });
+    const proxiedReq = new Request(requestUrl, {
+      method: requestMethod,
+      headers: new Headers(requestHeaders),
+      body: clonedReq.body ? clonedReq.body.tee()[0] : null,
+    });
 
     // Extract the request body based on content type
     // *The whole point of this is to serialize the request body into the database, for future reference*
@@ -313,8 +312,7 @@ app.all(
     const startTime = Date.now();
     try {
       // Proxy the request
-      newRequest.requestBody = clonedReq.body;
-      const response = await executeProxyRequest(newRequest);
+      const response = await executeProxyRequest(proxiedReq);
 
       // Clone the response and prepare to return it
       const clonedResponse = response.clone();
