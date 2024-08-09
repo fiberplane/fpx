@@ -1,5 +1,5 @@
 {
-  "version": "0.7.0-unstable.1",
+  "version": "0.7.0-unstable.2",
   "name": "@fiberplane/studio",
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
@@ -7,6 +7,7 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "types": "./src/lib/types.ts",
   "scripts": {
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",

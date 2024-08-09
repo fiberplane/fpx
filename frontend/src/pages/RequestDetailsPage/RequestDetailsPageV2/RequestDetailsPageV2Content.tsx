@@ -146,7 +146,7 @@ export function RequestDetailsPageContentV2({
         )}
       </div>
       <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
-        <SummaryV2 trace={rootSpan.span} />
+        <SummaryV2 requestSpan={rootSpan.span} />
         <div className="grid lg:grid-cols-[auto_1fr] border-t">
           <div
             className={cn(

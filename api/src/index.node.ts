@@ -1,12 +1,20 @@
 import { createServer } from "node:http";
 import { serve } from "@hono/node-server";
+import { createClient } from "@libsql/client";
 import chalk from "chalk";
 import { config } from "dotenv";
+import { drizzle } from "drizzle-orm/libsql";
 import figlet from "figlet";
-import { type WebSocket, WebSocketServer } from "ws";
+import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
+import { DEFAULT_DATABASE_URL } from "./constants.js";
+import * as schema from "./db/schema.js";
+import { setupRealtimeService } from "./lib/realtime/index.js";
+import { resolveWebhoncUrl } from "./lib/utils.js";
+import { connectToWebhonc } from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
+import { getSetting } from "./routes/settings.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
@@ -14,10 +22,16 @@ import {
 
 config({ path: ".dev.vars" });
 
+// A couple of global in-memory only data structures:
+// - wsConnections for realtime service
 const wsConnections = new Set<WebSocket>();
 
+const sql = createClient({
+  url: process.env.FPX_DATABASE_URL ?? DEFAULT_DATABASE_URL,
+});
+const db = drizzle(sql, { schema });
 // Set up the api routes
-const app = createApp(wsConnections);
+const app = createApp(db, wsConnections);
 
 /**
  * Serve all the frontend static files
@@ -67,26 +81,13 @@ const watchDir = process.env.FPX_WATCH_DIR ?? process.cwd();
 startRouteProbeWatcher(watchDir);
 
 // Set up websocket server
-const wss = new WebSocketServer({ server, path: "/ws" });
-wss.on("connection", (ws) => {
-  logger.debug("WebSocket connection established", ws.OPEN);
-  wsConnections.add(ws);
+setupRealtimeService({ server, path: "/ws", wsConnections });
 
-  ws.on("ping", () => {
-    logger.debug("ping");
-    ws.send("pong");
-  });
-  ws.on("error", (err) => {
-    if ("code" in err && err.code === "EADDRINUSE") {
-      logger.error(
-        "WebSocket error: Address in use. Please choose a different port.",
-      );
-    } else {
-      logger.error("WebSocket error:", err);
-    }
-  });
-  ws.on("close", (code) => {
-    wsConnections.delete(ws);
-    logger.debug("WebSocket connection closed", code);
-  });
-});
+// check settings if proxy requests is enabled
+const proxyRequestsEnabled = await getSetting(db, "proxyRequestsEnabled");
+
+if (proxyRequestsEnabled) {
+  logger.debug("Proxy requests feature enabled, connecting to webhonc...");
+  const webhoncUrl = resolveWebhoncUrl();
+  connectToWebhonc(webhoncUrl, db, wsConnections);
+}

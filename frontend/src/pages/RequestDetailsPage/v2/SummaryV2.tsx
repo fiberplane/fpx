@@ -1,6 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 
+import { Badge } from "@/components/ui/badge";
+import { BadgeProps } from "@/components/ui/badge/Badge";
 import { Status } from "@/components/ui/status";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { OtelSpan } from "@/queries/traces-otel";
 import {
   SEMATTRS_EXCEPTION_MESSAGE,
@@ -11,31 +18,32 @@ import { FpxCard, RequestMethod } from "../shared";
 import { BodyViewerV2 } from "./BodyViewerV2";
 import {
   getPathWithSearch,
+  getRequestHeaders,
   getRequestMethod,
   getResponseBody,
   getStatusCode,
   getString,
 } from "./otel-helpers";
 
-export function SummaryV2({ trace }: { trace: OtelSpan }) {
+export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
   const errors = useMemo(
     () =>
-      trace.events
+      requestSpan.events
         .filter((event) => event.name === "exception")
         .map((event) => ({
           name: getString(event.attributes[SEMATTRS_EXCEPTION_TYPE]),
           message: getString(event.attributes[SEMATTRS_EXCEPTION_MESSAGE]),
         })),
-    [trace],
+    [requestSpan],
   );
   const hasErrors = errors.length > 0;
-  const body = useMemo(() => getResponseBody(trace) ?? "", [trace]);
+  const body = useMemo(() => getResponseBody(requestSpan) ?? "", [requestSpan]);
   return (
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
       <FpxCard className="bg-muted/20">
         <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
           <div className="md:hidden">
-            <HttpSummary trace={trace} />
+            <HttpSummary trace={requestSpan} />
           </div>
           <div className="grid gap-2 overflow-x-auto">
             <h4 className="uppercase text-xs text-muted-foreground">
@@ -76,7 +84,7 @@ export function HttpSummary({ trace }: { trace: OtelSpan }) {
   const statusCode = useMemo(() => getStatusCode(trace), [trace]);
   const path = useMemo(() => getPathWithSearch(trace), [trace]);
   const method = useMemo(() => getRequestMethod(trace), [trace]);
-
+  const isProxied = useMemo(() => selectIsProxied(trace), [trace]);
   return (
     <div className="flex gap-2 items-center">
       {statusCode !== undefined && (
@@ -84,6 +92,33 @@ export function HttpSummary({ trace }: { trace: OtelSpan }) {
       )}
       <RequestMethod method={method} />
       <p className="text-sm md:text-base font-mono">{path}</p>
+      {isProxied && (
+        <ProxiedBadge className="rounded-xl cursor-default">
+          Proxied
+        </ProxiedBadge>
+      )}
     </div>
   );
+}
+
+function ProxiedBadge(props: BadgeProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <Badge {...props}>{props.children}</Badge>
+      </TooltipTrigger>
+      <TooltipContent
+        className="bg-slate-950 text-white"
+        align="center"
+        side="bottom"
+      >
+        This request was proxied from the webhonc service
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+function selectIsProxied(requestSpan: OtelSpan) {
+  const headers = getRequestHeaders(requestSpan);
+  return !!headers["x-fpx-webhonc-id"];
 }

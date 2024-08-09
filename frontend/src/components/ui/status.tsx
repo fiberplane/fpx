@@ -17,15 +17,15 @@ export function Status({
         "px-1.5",
         {
           "bg-green-950/60 hover:bg-green-950/60 text-green-400":
-            statusCode / 100 === 2,
+            Math.floor(statusCode / 100) === 2,
         },
         {
           "bg-yellow-950/60 hover:bg-yellow-950/60 text-yellow-500":
-            statusCode / 100 === 4,
+            Math.floor(statusCode / 100) === 4,
         },
         {
           "bg-red-950/60 hover:bg-red-950/60 text-red-400":
-            statusCode / 100 === 5,
+            Math.floor(statusCode / 100) === 5,
         },
         className,
       )}

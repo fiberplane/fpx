@@ -74,4 +74,5 @@ export const FormSchema = z.object({
   anthropicApiKey: z.string().optional(),
   anthropicBaseUrl: z.string().optional(),
   anthropicModel: AnthropicModelSchema.optional(),
+  proxyRequestsEnabled: z.boolean().optional(),
 });

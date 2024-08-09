@@ -2,7 +2,6 @@ import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { useWebsocketQueryInvalidation } from "@/hooks";
 import { type OtelTrace, useOtelTraces } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
@@ -56,10 +55,6 @@ export function RequestsPage() {
   const tracesWithErrors = useMemo(() => {
     return otelTraces.data?.filter(isFpxTraceError);
   }, [otelTraces.data]);
-
-  // Will add new fpx-requests as they come in by refetching
-  // In the future, we'll want to build a better ux around this (not auto refresh the table)
-  useWebsocketQueryInvalidation();
 
   return (
     <Tabs
