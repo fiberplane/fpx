@@ -56,7 +56,7 @@ pub async fn traces_get_handler(
     // Retrieve all the spans that are associated with the trace
     let spans = store.span_list_by_trace(&tx, &trace_id).await?;
 
-    if spans.len() == 0 {
+    if spans.is_empty() {
         return Err(TraceGetError::NotFound.into());
     }
 

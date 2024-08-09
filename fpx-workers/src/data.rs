@@ -141,4 +141,24 @@ impl Store for D1Store {
         })
         .await
     }
+
+    /// Get a list of all the traces. (currently limited to 20, sorted by most
+    /// recent [`end_time`])
+    ///
+    /// Note that a trace is a computed value, so not all properties are
+    /// present. To get all the data, use the [`Self::span_list_by_trace`] fn.
+    async fn traces_list(
+        &self,
+        _tx: &Transaction,
+        // Future improvement could hold sort fields, limits, etc
+    ) -> Result<Vec<fpx_lib::data::models::Trace>> {
+        SendFuture::new(async {
+            let traces = self
+                .fetch_all("SELECT * FROM spans GROUP BY trace_id LIMIT 20", &[])
+                .await?;
+
+            Ok(traces)
+        })
+        .await
+    }
 }

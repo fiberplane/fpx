@@ -6,7 +6,7 @@ use opentelemetry::propagation::{Extractor, Injector, TextMapPropagator};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use std::str::FromStr;
 use tower::Layer;
-use tracing::{field, info, info_span, Instrument, Span};
+use tracing::{field, info_span, Instrument, Span};
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 /// The [`HeaderMapInjector`] provides a implementation for the otel
