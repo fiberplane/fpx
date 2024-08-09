@@ -18,7 +18,6 @@ export default defineConfig({
             { label: "Get started", slug: "home/get-started" },
           ],
         },
-     
       ],
       customCss: ["./src/tailwind.css"],
     }),
