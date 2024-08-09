@@ -59,16 +59,16 @@ export function HistoryEntry({
   );
 
   return (
-    <div className="mt-0.5 rounded py-1 px-1 pl-6 shadow-sm text-xs hover:bg-gray-800">
+    <div className="rounded py-1 px-1 pl-5 shadow-sm text-xs text-gray-200 hover:bg-gray-800 hover:text-white">
       <div
         className="flex flex-col space-y-2 justify-center space-x-2 font-mono"
         onClick={() => {
           loadHistoricalRequest?.(traceId);
         }}
       >
-        <div className="flex space-between cursor-pointer text-gray-300">
+        <div className="flex space-between cursor-pointer ">
           <div className="flex items-center gap-2 w-full">
-            <Method method={requestMethod} />
+            <Method method={requestMethod} className="text-xs min-w-12" />
             <div
               className={cn(
                 "whitespace-nowrap",
@@ -76,6 +76,7 @@ export function HistoryEntry({
                 "text-ellipsis",
                 "max-w-full",
                 "flex-grow",
+                "text-sm ",
                 "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
               )}
             >
@@ -84,7 +85,11 @@ export function HistoryEntry({
                 : fallbackUrl || "Details missing"}
             </div>
             <div className="flex items-center ml-auto">
-              <StatusCode status={responseStatusCode} isFailure={isFailure} />
+              <StatusCode
+                status={responseStatusCode}
+                isFailure={isFailure}
+                className="text-xs"
+              />
             </div>
           </div>
         </div>
@@ -93,13 +98,17 @@ export function HistoryEntry({
   );
 }
 
-export function Method({ method }: { method: string }) {
+export function Method({
+  method,
+  className,
+}: { method: string; className?: string }) {
   return (
     <span
       className={cn(
         "font-mono",
         "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
         getHttpMethodTextColor(method?.toUpperCase?.()),
+        className,
       )}
     >
       {method}
@@ -110,7 +119,8 @@ export function Method({ method }: { method: string }) {
 export function StatusCode({
   status,
   isFailure,
-}: { status: string | number; isFailure: boolean }) {
+  className,
+}: { status: string | number; isFailure: boolean; className?: string }) {
   const strStatus = status?.toString() ?? "-";
   const isGreen = strStatus.startsWith("2");
   const isOrange = strStatus.startsWith("4");
@@ -127,6 +137,7 @@ export function StatusCode({
         isGreen && ["text-green-400", "bg-green-800"],
         isOrange && ["text-orange-400", "bg-orange-800"],
         (isRed || isFailure) && ["text-red-400", "bg-red-800"],
+        className,
       )}
     >
       {isFailure ? "Fail" : strStatus}
