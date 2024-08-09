@@ -103,8 +103,9 @@ function convertEventToOrphanLog(
   logId: number,
   event: OtelEvent,
 ) {
-  const argsAsString = getString(event.attributes.args);
+  const argsAsString = getString(event.attributes.arguments);
   const parsedArgs = argsAsString ? safeParseJson(argsAsString) : [];
+
   return {
     id: logId,
     traceId,
