@@ -8,6 +8,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
 import { useSettingsForm } from "./form";
@@ -23,7 +24,7 @@ export function ProxyRequestsSettingsForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <div>
-          <h3 className="mb-4 text-lg font-medium">Proxy Requests Settings</h3>
+          <h3 className="mb-4 text-lg font-medium">Public URL Settings</h3>
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -37,7 +38,7 @@ export function ProxyRequestsSettingsForm({
                   <div className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
                       <FormLabel className="text-base">
-                        Enable Proxy Requests
+                        Enable Public URL
                         <span className="font-light text-gray-400 ml-2">
                           (Alpha)
                         </span>
@@ -57,15 +58,40 @@ export function ProxyRequestsSettingsForm({
                     </FormControl>
                   </div>
                   {field.value && (
-                    <Card className="bg-muted/20 rounded-xl">
-                      <CardContent className="p-4">
-                        <p className="text-sm text-muted-foreground">
-                          <span className="font-bold">Note</span>: You will need
-                          to restart the FPX studio for this change to take
-                          effect.
-                        </p>
-                      </CardContent>
-                    </Card>
+                    <>
+                      <Card className="bg-muted/20 rounded-xl">
+                        <CardContent className="p-4">
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-bold">Note</span>: You will
+                            need to restart the FPX studio for this change to
+                            take effect.
+                          </p>
+                        </CardContent>
+                      </Card>
+
+                      <FormField
+                        control={form.control}
+                        name="baseUrl"
+                        render={({ field }) => (
+                          <div className="flex flex-col gap-1">
+                            <FormLabel className="block font-normal text-sm text-gray-300">
+                              Base URL
+                            </FormLabel>
+                            <FormDescription className="mb-1">
+                              You can configure the base URL used by the public
+                              URL service.
+                            </FormDescription>
+                            <FormControl>
+                              <Input
+                                placeholder={field.value ?? ""}
+                                value={field.value ?? ""}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                          </div>
+                        )}
+                      />
+                    </>
                   )}
                 </FormItem>
               )}

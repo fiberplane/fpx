@@ -13,6 +13,7 @@ const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   anthropicModel: CLAUDE_3_5_SONNET,
   customRoutesEnabled: false,
   proxyRequestsEnabled: false,
+  baseUrl: "https://webhonc.mies.workers.dev",
 };
 
 export function useSettingsForm(settings: Record<string, string | boolean>) {

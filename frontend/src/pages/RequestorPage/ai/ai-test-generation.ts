@@ -169,26 +169,3 @@ function trimLines(input: string) {
     .map((l) => l.trim())
     .join("\n");
 }
-
-export function useCopyToClipboard() {
-  const [isCopied, setIsCopied] = useState(false);
-
-  const copyToClipboard = useCallback((text: string) => {
-    if (!navigator.clipboard) {
-      console.error("Clipboard API not available");
-      return;
-    }
-
-    navigator.clipboard.writeText(text).then(
-      () => {
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000); // Reset the copied state after 2 seconds
-      },
-      (err) => {
-        console.error("Failed to copy text: ", err);
-      },
-    );
-  }, []);
-
-  return { isCopied, copyToClipboard };
-}
