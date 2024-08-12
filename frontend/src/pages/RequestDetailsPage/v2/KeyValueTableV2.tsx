@@ -2,43 +2,25 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useState } from "react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
+import { CountBadge } from "@/components/CountBadge";
+import { SubSectionHeading } from "./shared";
+import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 
 export function KeyValueTableV2({
   keyValue,
   emptyMessage = "No data",
   className,
-  defaultMaxRows = 10,
-  defaultCollapsed = true,
 }: {
   keyValue: Record<string, string>;
   emptyMessage?: string;
   className?: string;
-  defaultMaxRows?: number;
-  defaultCollapsed?: boolean;
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
-  const toggleCollapsed = useCallback(() => {
-    setIsCollapsed(c => !c)
-  }, []);
-  const tableEntries = useMemo(() => {
-    return Object.entries(keyValue);
-  }, [keyValue]);
-
-  const displayedEntries = useMemo(() => {
-    return isCollapsed ? tableEntries.slice(0, defaultMaxRows) : tableEntries;
-  }, [isCollapsed, tableEntries, defaultMaxRows]);
-
-  const hiddenHeadersCount = useMemo(() => {
-    return tableEntries.length - displayedEntries.length;
-  }, [tableEntries, displayedEntries]);
-
   return (
     <div className={cn(className)}>
       <Table className="border-0">
         <TableBody className="">
-          {displayedEntries.length > 0 ? (
-            displayedEntries.map(([key, value]) => (
+          {Object.entries(keyValue).length > 0 ? (
+            Object.entries(keyValue).map(([key, value]) => (
               <TableRow key={key}>
                 <TableCell className="px-0 font-medium min-w-[140px] w-[140px] lg:min-w-[200px] uppercase text-xs text-muted-foreground">
                   {key}
@@ -53,19 +35,55 @@ export function KeyValueTableV2({
               </TableCell>
             </TableRow>
           )}
-          {tableEntries.length > defaultMaxRows && (
-            <Collapsible open={!isCollapsed} onOpenChange={toggleCollapsed}>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="mt-2 text-blue-500">
-                  
-                  {isCollapsed ? `${hiddenHeadersCount} hidden headers - Click to see more` : "Collapse"}
-                </Button>
-              </CollapsibleTrigger>
-            </Collapsible>
-          )}
         </TableBody>
       </Table>
+    </div>
+  );
+}
 
+export function CollapsibleKeyValueTableV2({
+  keyValue,
+  emptyMessage = "No data",
+  className,
+  defaultCollapsed = true,
+  title,
+}: {
+  keyValue: Record<string, string>;
+  emptyMessage?: string;
+  className?: string;
+  defaultCollapsed?: boolean;
+  title: string;
+}) {
+  const [isOpen, setIsOpen] = useState(!defaultCollapsed);
+  const count = useMemo(() => Object.entries(keyValue).length, [keyValue]);
+  const toggleIsOpen = useCallback(() => setIsOpen(o => !o), []);
+
+  // TODO - If count is 0, do not render the collapsible
+
+  return (
+    <div className={cn(className)}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <SubSectionHeading className="flex items-center gap-2" onClick={toggleIsOpen}>
+            {isOpen ? <CaretDownIcon className="w-4 h-4 cursor-pointer" /> : <CaretRightIcon className="w-4 h-4 cursor-pointer" />}
+            {title} <CountBadge count={count} />
+          </SubSectionHeading>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <KeyValueTableV2 keyValue={keyValue} emptyMessage={emptyMessage} className="pl-6 mt-1" />
+        </CollapsibleContent>
+      </Collapsible>
+      {/* {isCollapsed && (
+        <div className="flex items-center">
+          <span className="font-medium">Request Headers</span>
+          <span className="ml-2 text-gray-400">({Object.entries(keyValue).length})</span>
+          <span className="ml-2 text-gray-400">
+            {Object.entries(keyValue)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(" | ")}
+          </span>
+        </div>
+      )} */}
     </div>
   );
 }

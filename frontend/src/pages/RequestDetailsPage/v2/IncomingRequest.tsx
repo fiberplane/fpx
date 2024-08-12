@@ -1,4 +1,3 @@
-import { CountBadge } from "@/components/CountBadge";
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { OtelSpan } from "@/queries";
@@ -7,7 +6,7 @@ import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { SectionHeading } from "../shared";
 import { BodyViewerV2 } from "./BodyViewerV2";
-import { KeyValueTableV2 } from "./KeyValueTableV2";
+import { CollapsibleKeyValueTableV2 } from "./KeyValueTableV2";
 import {
   getMatchedRoute,
   getRequestBody,
@@ -46,10 +45,6 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
     return getRequestHeaders(span) ?? {};
   }, [span]);
 
-  const requestHeadersCount = useMemo<number>(() => {
-    return Object.keys(requestHeaders).length;
-  }, [requestHeaders]);
-
   const requestBody = useMemo<string>(() => {
     const body = getRequestBody(span);
     return body ?? "";
@@ -58,10 +53,6 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
   const responseHeaders = useMemo<Record<string, string>>(() => {
     return getResponseHeaders(span);
   }, [span]);
-
-  const responseHeadersCount = useMemo<number>(() => {
-    return Object.keys(responseHeaders).length;
-  }, [responseHeaders]);
 
   const responseBody = useMemo<string>(() => {
     return getResponseBody(span) ?? "";
@@ -107,22 +98,15 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
           </div>
         </div>
 
-        <SubSection>
-          <SubSectionHeading>
-            Request Headers <CountBadge count={requestHeadersCount} />
-          </SubSectionHeading>
-          <KeyValueTableV2 keyValue={requestHeaders} />
-        </SubSection>
-
         {requestQueryParams && (
           <SubSection>
-            <SubSectionHeading>
-              Query Parameters{" "}
-              <CountBadge count={Object.keys(requestQueryParams).length} />
-            </SubSectionHeading>
-            <KeyValueTableV2 keyValue={requestQueryParams} />
+            <CollapsibleKeyValueTableV2 keyValue={requestQueryParams} title="Query Parameters" />
           </SubSection>
         )}
+
+        <SubSection>
+          <CollapsibleKeyValueTableV2 keyValue={requestHeaders} title="Request Headers" />
+        </SubSection>
 
         {canHaveRequestBody && requestBody && (
           <>
@@ -140,10 +124,7 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
         <Divider />
 
         <SubSection>
-          <SubSectionHeading>
-            Response Headers <CountBadge count={responseHeadersCount} />
-          </SubSectionHeading>
-          <KeyValueTableV2 keyValue={responseHeaders} />
+          <CollapsibleKeyValueTableV2 keyValue={responseHeaders} title="Response Headers" />
         </SubSection>
 
         {responseBody && (
