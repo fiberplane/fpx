@@ -55,17 +55,7 @@ jobs:
       - name: Typecheck all workspaces
         run: pnpm --recursive typecheck
 
-      # HACK: Install rollup to make client-library build succeed due to npm bug with optional dependencies
-      # - name: Install Rollup for Linux
-      #   run: pnpm install @rollup/rollup-linux-x64-gnu --save-dev
-
-      # HACK: For some reason need to install swc bindings in CI too
-      # - name: Install swc
-      #   run: npm install @swc/cli @swc/core @swc/plugin-transform-imports --save-dev
-
-      # HACK: This is getting ridiculous, but we need the linux-x64 build for sharp
-      # - name: Install sharp
-      #   run: npm install --os=linux --cpu=x64 sharp --save-dev
+      # Building
 
       - name: Build all workspaces
         run: pnpm --recursive build
