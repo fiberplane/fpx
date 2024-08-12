@@ -7,13 +7,10 @@ pnpm install
 pnpm db:generate
 pnpm db:migrate
 
-# NOTE - This app runs Hono in a Node.js execution context by default,
-#        Since we need access to the filesystem to do fun stuff
-pnpm dev
-
-# If you want more granular logging locally, you can set the FPX_LOG_LEVEL env var
-# (This will also be read from .dev.vars)
-FPX_LOG_LEVEL=debug pnpm dev
+# NOTE - You will usually test against a local API
+#        For route detection to work, you need to set FPX_WATCH_DIR
+#        This can also be set in .dev.vars
+FPX_WATCH_DIR=../../path/to/example/api pnpm dev
 ```
 
 ### Adding some AI
