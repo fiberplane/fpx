@@ -2,8 +2,8 @@ import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import readline from "node:readline";
+import toml from "@iarna/toml";
 import chalk from "chalk";
-import toml from "toml";
 
 import logger from "./logger.js";
 
@@ -142,6 +142,89 @@ export function safeParseTomlFile(filePath) {
 }
 
 /**
+ * Save a TOML file to disk
+ */
+export function saveTomlFile(filePath, tomlData) {
+  const fileContent = toml.stringify(tomlData);
+  fs.writeFileSync(filePath, fileContent);
+}
+
+/**
+ * Update a wrangler.toml file with a new compatibility flag
+ *
+ * Uses the following logic:
+ *
+ * - If the compatibility_flags line doesn't exist, but the compatibility_date line does, insert the compatibility_flags line after the compatibility_date line
+ * - If the compatibility_flags line exists, replace the existing compatibility_flags line with the new one
+ * - If neither of the above conditions are met, then we'll have to toml stringify the js object we got from parsing their wrangler file
+ *   and unfortuantely this wll erase all the user's comments :/
+ */
+export function updateWranglerCompatibilityFlags(filePath, nextToml) {
+  // Get stringified version of current toml file
+  const stringifiedPrevToml = safeReadFile(filePath);
+  const prevTomlLines = stringifiedPrevToml.split("\n");
+
+  // Get the stringified version of the new toml file
+  let stringifiedNewToml = toml.stringify(nextToml);
+
+  // Get the new compatibility_flags line from thew new file
+  const newCompatibilityFlagsLine = stringifiedNewToml
+    .split("\n")
+    .find((line) => line.startsWith("compatibility_flags"));
+
+  // Look for the old compatibility_date line in the current file
+  const prevTomlCompatDateIndex = prevTomlLines.findIndex((line) =>
+    line.startsWith("compatibility_date"),
+  );
+
+  // Look for the old compatibility_flags line in the current file
+  const prevTomlCompatFlagsIndex = prevTomlLines.findIndex((line) =>
+    line.startsWith("compatibility_flags"),
+  );
+
+  // Check if we should replace the existing compatibility_flags line
+  const shouldReplaceExistingCompatLine = prevTomlCompatFlagsIndex !== -1;
+
+  // Check if we should insert the new compatibility_flags line after the compatibility_date line
+  const shouldInsertAfterCompatibilityDate =
+    !shouldReplaceExistingCompatLine && prevTomlCompatDateIndex !== -1;
+
+  // Try to add after the compatibility_date line
+  if (shouldInsertAfterCompatibilityDate) {
+    logger.debug(
+      "We are going try hackily inserting the compatibility_flags line after the compatibility_date line",
+    );
+    stringifiedNewToml = [
+      ...prevTomlLines.slice(0, prevTomlCompatDateIndex + 1),
+      newCompatibilityFlagsLine,
+      ...prevTomlLines.slice(prevTomlCompatDateIndex + 1),
+    ].join("\n");
+    fs.writeFileSync(filePath, stringifiedNewToml);
+    return;
+  }
+
+  if (shouldReplaceExistingCompatLine) {
+    // Try to replace the existing compatibility_flags line
+    logger.debug(
+      "We are going try to replace the existing compatibility_flags line",
+    );
+    stringifiedNewToml = [
+      ...prevTomlLines.slice(0, prevTomlCompatFlagsIndex),
+      newCompatibilityFlagsLine,
+      ...prevTomlLines.slice(prevTomlCompatFlagsIndex + 1),
+    ].join("\n");
+    fs.writeFileSync(filePath, stringifiedNewToml);
+    return;
+  }
+
+  // If we can't do any of the above, we'll have to toml stringify and clobber the user's comments :/
+  logger.debug(
+    "We are going to have to toml stringify and clobber the user's comments :(",
+  );
+  saveTomlFile(filePath, nextToml);
+}
+
+/**
  * Convert a user provided yes/no CLI answer to a boolean
  *
  * This is used to convert the answer to a boolean, with a fallback value
@@ -277,4 +360,18 @@ async function isPortTakenOnHost(port, host) {
  */
 export function isMacOS() {
   return process.platform === "darwin";
+}
+
+/**
+ * Safely read a file from disk
+ *
+ * @param {string} filePath - The path to the file to read
+ * @returns {string|null} - The contents of the file, or null if the file does not exist
+ */
+export function safeReadFile(filePath) {
+  if (filePath && fs.existsSync(filePath)) {
+    const fileContent = fs.readFileSync(filePath, "utf8");
+    return fileContent.toString();
+  }
+  return null;
 }
