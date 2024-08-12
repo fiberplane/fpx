@@ -14,10 +14,10 @@
     "db:migrate": "tsx migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio",
-    "build": "npm run db:generate && tsc",
+    "build": "pnpm run db:generate && tsc",
     "format": "biome check . --write",
-    "lint": "biome lint . && tsc --noEmit",
-    "lint:ci": "biome ci . #api",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest --run"
   },
   "publishConfig": {
@@ -44,7 +44,6 @@
     "figlet": "^1.7.0",
     "hono": "^4.3.7",
     "minimatch": "^10.0.1",
-    "octokit": "^4.0.2",
     "openai": "^4.47.1",
     "source-map": "^0.7.4",
     "toml": "^3.0.0",
@@ -53,7 +52,6 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240403.0",
-    "@octokit/types": "^13.5.0",
     "@opentelemetry/otlp-transformer": "^0.52.1",
     "@types/figlet": "^1.5.8",
     "@types/node": "^20.11.17",

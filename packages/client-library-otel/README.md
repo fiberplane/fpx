@@ -36,15 +36,15 @@ While developing within the monorepo, you can run a watcher on the src dir to au
 
 ```bash
 cd client-library-otel
-npm run watch
+pnpm watch
 ```
 
-Then, point your sample app's package.json to the local build:
+Then, if your sample app is within the monorepo, point your sample app's package.json to the local build:
 
 ```json
 {
   "dependencies": {
-    "@fiberplane/hono-otel": "file:../fpx/client-library-otel"
+    "@fiberplane/hono-otel": "workspace:*"
   }
 }
 ```

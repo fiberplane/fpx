@@ -7,9 +7,7 @@ import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
 import logger from "./logger.js";
 import appRoutes from "./routes/app-routes.js";
-import dependencies from "./routes/dependencies.js";
 import inference from "./routes/inference.js";
-import issues from "./routes/issues.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
 import traces from "./routes/traces.js";
@@ -53,8 +51,6 @@ export function createApp(
   app.route("/", traces);
   app.route("/", inference);
   app.route("/", source);
-  app.route("/", dependencies);
-  app.route("/", issues);
   app.route("/", appRoutes);
   app.route("/", settings);
 
