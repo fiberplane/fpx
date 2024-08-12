@@ -1,52 +1,71 @@
 # This workflow will be triggered by a GitHub pull-request.
 ---
-  name: Build node packages
-  
-  on:
-    pull_request:
-      branches: ["*"]
-    push:
-      branches: ["main", "release-*"]
-  
-  env:
-    CARGO_TERM_COLOR: always
-    FORCE_COLOR: true
-  
-  jobs:
-    build_packages:
-      name: Build packages
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+name: Build node packages
 
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: lts/*
-            cache: npm
+on:
+  pull_request:
+    branches: ["*"]
+  push:
+    branches: ["main", "release-*"]
 
-        - name: Install dependencies
-          run: npm ci --workspaces
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_COLOR: true
 
-        # HACK: Install Biome CLI for Linux due to npm bug with optional dependencies
-        - name: Install Biome CLI for Linux
-          run: npm install @biomejs/cli-linux-x64 --save-dev
+jobs:
+  build_packages:
+    name: Build packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        - name: Lint all workspaces
-          run: npm run lint:ci --workspaces
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
-        # HACK: Install rollup to make client-library build succeed due to npm bug with optional dependencies
-        - name: Install Rollup for Linux
-          run: npm install @rollup/rollup-linux-x64-gnu --save-dev
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "pnpm"
 
-        # HACK: For some reason need to install swc bindings in CI too
-        - name: Install swc
-          run: npm install @swc/cli @swc/core @swc/plugin-transform-imports --save-dev
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          version: latest
 
-        # HACK: This is getting ridiculous, but we need the linux-x64 build for sharp
-        - name: Install sharp
-          run: npm install --os=linux --cpu=x64 sharp --save-dev
+      - name: Install dependencies
+        run: pnpm install
+        env:
+          CI: true
 
-        - name: Build all workspaces
-          run: npm run build --workspaces --if-present
+      # Linting: we use global biome command
+      # any extra commands should be added to the lint:ci script
+      # in the package.json
+
+      - name: Lint all workspaces (biome)
+        run: biome ci .
+
+      - name: Lint all workspaces (eslint)
+        run: pnpm run --recursive lint:ci
+
+      - name: Typecheck all workspaces
+        run: pnpm run --recursive typecheck
+
+      # HACK: Install rollup to make client-library build succeed due to npm bug with optional dependencies
+      # - name: Install Rollup for Linux
+      #   run: pnpm install @rollup/rollup-linux-x64-gnu --save-dev
+
+      # HACK: For some reason need to install swc bindings in CI too
+      # - name: Install swc
+      #   run: npm install @swc/cli @swc/core @swc/plugin-transform-imports --save-dev
+
+      # HACK: This is getting ridiculous, but we need the linux-x64 build for sharp
+      # - name: Install sharp
+      #   run: npm install --os=linux --cpu=x64 sharp --save-dev
+
+      - name: Build all workspaces
+        run: pnpm run build --recursive
