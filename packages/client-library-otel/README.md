@@ -39,7 +39,7 @@ cd client-library-otel
 pnpm watch
 ```
 
-Then, point your sample app's package.json to the local build:
+Then, if your sample app is within the monorepo, point your sample app's package.json to the local build:
 
 ```json
 {
