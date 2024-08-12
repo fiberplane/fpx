@@ -3,7 +3,7 @@ import net from "node:net";
 import path from "node:path";
 import readline from "node:readline";
 import chalk from "chalk";
-import toml from "toml";
+import toml from "@iarna/toml";
 
 import logger from "./logger.js";
 
@@ -142,6 +142,14 @@ export function safeParseTomlFile(filePath) {
 }
 
 /**
+ * Save a TOML file to disk
+ */
+export function saveTomlFile(filePath, tomlData) {
+  const fileContent = toml.stringify(tomlData);
+  fs.writeFileSync(filePath, fileContent);
+}
+
+/**
  * Convert a user provided yes/no CLI answer to a boolean
  *
  * This is used to convert the answer to a boolean, with a fallback value
@@ -277,4 +285,18 @@ async function isPortTakenOnHost(port, host) {
  */
 export function isMacOS() {
   return process.platform === "darwin";
+}
+
+/**
+ * Safely read a file from disk
+ *
+ * @param {string} filePath - The path to the file to read
+ * @returns {string|null} - The contents of the file, or null if the file does not exist
+ */
+export function safeReadFile(filePath) {
+  if (filePath && fs.existsSync(filePath)) {
+    const fileContent = fs.readFileSync(filePath, "utf8");
+    return fileContent.toString();
+  }
+  return null;
 }

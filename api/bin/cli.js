@@ -4,6 +4,7 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import toml from "@iarna/toml";
 import chalk from "chalk";
 
 import logger from "./logger.js";
@@ -14,6 +15,8 @@ import {
   isPortTaken,
   safeParseJSONFile,
   safeParseTomlFile,
+  saveTomlFile,
+  safeReadFile,
   selectClosestPath,
 } from "./utils.js";
 
@@ -76,6 +79,8 @@ async function runWizard() {
   const FPX_SERVICE_TARGET = await getServiceTarget();
 
   await pingTargetAndConfirm(FPX_SERVICE_TARGET);
+
+  await updateWranglerTomlWithNodejsCompatibility();
 
   const FPX_DATABASE_URL = getFpxDatabaseUrl();
 
@@ -239,6 +244,97 @@ async function pingTargetAndConfirm(port) {
       `  ⚠️ Could not find your api on port ${port}. Remember to start it!\n  ${chalk.dim("(Press enter to continue.)")}`,
     );
   }
+}
+
+/**
+ * Update the project's wrangler.toml with the nodejs_compat flag
+ * The line should look like this:
+
+    compatibility_flags = [ "nodejs_compat" ]
+
+ * Skip if:
+ * - The wrangler.toml file does not exist
+ * - The compatibility_flags array already includes "nodejs_compat"
+ */
+async function updateWranglerTomlWithNodejsCompatibility() {
+  logger.debug("Checking wrangler.toml for nodejs compatibility flag", WRANGLER_TOML_PATH, WRANGLER_TOML);
+
+  const hasNodejsCompatFlag = WRANGLER_TOML?.compatibility_flags?.includes("nodejs_compat");
+
+  if (!WRANGLER_TOML_PATH) {
+    logger.debug("Wrangler.toml not found");
+    return;
+  }
+
+  if (hasNodejsCompatFlag) {
+    logger.debug("Wrangler.toml already has nodejs compatibility flag", WRANGLER_TOML);
+    return;
+  }
+
+  const lede = `  ⚠️ wrangler.toml needs to specify the nodejs_compat flag`
+  const operation = `  Add Nodejs compatibility flag to wrangler.toml?`;
+  const question = [chalk.yellow(lede), operation].filter(Boolean).join("\n");
+  const updateWranglerTomlAnswer = await askUser(question, "y");
+  const shouldUpdateWranglerToml = cliAnswerToBool(updateWranglerTomlAnswer);
+
+  if (!shouldUpdateWranglerToml) {
+    return;
+  }
+
+  logger.debug(
+    `Replacing ${WRANGLER_TOML_PATH} with node.js compatibility flag`,
+  );
+  const nextToml = { ...WRANGLER_TOML };
+  if (!nextToml.compatibility_flags) {
+    nextToml.compatibility_flags = [];
+  }
+  nextToml.compatibility_flags.push("nodejs_compat");
+
+  // HACK - We want to preserve comments in the wrangler.toml, we we will try a very simple approach
+  //        to update the file.
+  //
+  //        We'll read the file, update the compatibility_flags array, and write the file back.
+  //        This approach is not foolproof and will clobber comments, but it's a start.
+  //
+
+  const stringifiedOldToml = safeReadFile(WRANGLER_TOML_PATH);
+  const stringifiedOldTomlLines = stringifiedOldToml.split("\n");
+
+  let stringifiedNewToml = toml.stringify(nextToml);
+  const oldCompatibilityFlagsLine = stringifiedOldTomlLines.find(line => line.startsWith("compatibility_flags"));
+  const oldCompatibilityFlagsLineIndex = stringifiedOldTomlLines.indexOf(oldCompatibilityFlagsLine);
+  const oldCompatibilityDateLine = stringifiedOldTomlLines.find(line => line.startsWith("compatibility_date"));
+
+  const newCompatibilityFlagsLine = stringifiedNewToml.split("\n").find(line => line.startsWith("compatibility_flags"));
+
+  const canDoHackyInsertion = !oldCompatibilityFlagsLine && !!oldCompatibilityDateLine;
+  const canDoHackyReplacement = !!oldCompatibilityFlagsLine;
+  if (canDoHackyInsertion) {
+    const oldCompatibilityDateLineIndex = stringifiedOldTomlLines.indexOf(oldCompatibilityDateLine);
+    logger.debug("We are going try hackily inserting the compatibility_flags line after the compatibility_date line");
+    stringifiedNewToml = [
+      ...stringifiedOldTomlLines.slice(0, oldCompatibilityDateLineIndex + 1),
+      newCompatibilityFlagsLine,
+      ...stringifiedOldTomlLines.slice(oldCompatibilityDateLineIndex + 1),
+    ].join("\n");
+    fs.writeFileSync(WRANGLER_TOML_PATH, stringifiedNewToml);
+  } else if (canDoHackyReplacement) {
+    logger.debug("We are going try to replace the existing compatibility_flags line");
+    stringifiedNewToml = [
+      ...stringifiedOldTomlLines.slice(0, oldCompatibilityFlagsLineIndex),
+      newCompatibilityFlagsLine,
+      ...stringifiedOldTomlLines.slice(oldCompatibilityFlagsLineIndex + 1),
+    ].join("\n");
+    fs.writeFileSync(WRANGLER_TOML_PATH, stringifiedNewToml);
+  } else {
+    logger.debug("We are going to have to toml stringify and clobber the user's comments :(");
+    saveTomlFile(WRANGLER_TOML_PATH, nextToml);
+    return;
+  }
+
+  logger.info(
+    chalk.dim(`  ℹ️ Updated ${WRANGLER_TOML_PATH} with nodejs compatibility flag`),
+  );
 }
 
 /**

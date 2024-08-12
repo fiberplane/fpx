@@ -24,7 +24,11 @@
     "access": "public"
   },
   "license": "MIT or Apache 2",
-  "keywords": ["hono", "local", "debugging"],
+  "keywords": [
+    "hono",
+    "local",
+    "debugging"
+  ],
   "bin": {
     "fpx": "bin/cli.js"
   },
@@ -32,6 +36,7 @@
     "@anthropic-ai/sdk": "^0.24.3",
     "@hono/node-server": "^1.11.1",
     "@hono/zod-validator": "^0.2.2",
+    "@iarna/toml": "^2.2.5",
     "@langchain/core": "^0.2.15",
     "@libsql/client": "^0.6.2",
     "acorn": "^8.11.3",
@@ -46,7 +51,6 @@
     "minimatch": "^10.0.1",
     "openai": "^4.47.1",
     "source-map": "^0.7.4",
-    "toml": "^3.0.0",
     "ws": "^8.17.1",
     "zod": "^3.23.8"
   },
