@@ -50,10 +50,10 @@ jobs:
         run: biome ci .
 
       - name: Lint all workspaces (eslint)
-        run: pnpm run --recursive lint:ci
+        run: pnpm --recursive lint:ci
 
       - name: Typecheck all workspaces
-        run: pnpm run --recursive typecheck
+        run: pnpm --recursive typecheck
 
       # HACK: Install rollup to make client-library build succeed due to npm bug with optional dependencies
       # - name: Install Rollup for Linux
@@ -68,4 +68,4 @@ jobs:
       #   run: npm install --os=linux --cpu=x64 sharp --save-dev
 
       - name: Build all workspaces
-        run: pnpm run build --recursive
+        run: pnpm --recursive build
