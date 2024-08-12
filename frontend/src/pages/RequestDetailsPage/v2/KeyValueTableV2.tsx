@@ -121,8 +121,8 @@ export function CollapsibleKeyValueTableV2({
   sensitiveKeys?: string[];
 }) {
   const [isOpen, setIsOpen] = useState(!defaultCollapsed);
-  const count = useMemo(() => Object.entries(keyValue).length, [keyValue]);
-  const toggleIsOpen = useCallback(() => setIsOpen((o) => !o), []);
+  const count = Object.entries(keyValue).length;
+  const toggleIsOpen = () => setIsOpen((o) => !o);
 
   return (
     <div className={cn(className)}>
