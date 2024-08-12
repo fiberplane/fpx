@@ -14,10 +14,10 @@
     "db:migrate": "tsx migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio",
-    "build": "npm run db:generate && tsc",
+    "build": "pnpm run db:generate && tsc",
     "format": "biome check . --write",
-    "lint": "biome lint . && tsc --noEmit",
-    "lint:ci": "biome ci . #api",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest --run"
   },
   "publishConfig": {
