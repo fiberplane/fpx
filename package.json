@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Local development debugging interface for Hono apps, powered by OpenTelemetry",
   "scripts": {
-	  "preinstall": "npx only-allow pnpm",
+    "preinstall": "npx only-allow pnpm",
     "build:fpx-studio": "pnpm run clean:fpx-studio && pnpm run build:api && pnpm run build:frontend",
     "build:api": "pnpm --filter @fiberplane/studio build",
     "dev:api": "pnpm --filter @fiberplane/studio dev",
