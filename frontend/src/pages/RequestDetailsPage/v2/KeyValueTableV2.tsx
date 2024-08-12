@@ -58,8 +58,6 @@ export function CollapsibleKeyValueTableV2({
   const count = useMemo(() => Object.entries(keyValue).length, [keyValue]);
   const toggleIsOpen = useCallback(() => setIsOpen(o => !o), []);
 
-  // TODO - If count is 0, do not render the collapsible
-
   return (
     <div className={cn(className)}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -73,17 +71,6 @@ export function CollapsibleKeyValueTableV2({
           <KeyValueTableV2 keyValue={keyValue} emptyMessage={emptyMessage} className="pl-6 mt-1" />
         </CollapsibleContent>
       </Collapsible>
-      {/* {isCollapsed && (
-        <div className="flex items-center">
-          <span className="font-medium">Request Headers</span>
-          <span className="ml-2 text-gray-400">({Object.entries(keyValue).length})</span>
-          <span className="ml-2 text-gray-400">
-            {Object.entries(keyValue)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join(" | ")}
-          </span>
-        </div>
-      )} */}
     </div>
   );
 }
