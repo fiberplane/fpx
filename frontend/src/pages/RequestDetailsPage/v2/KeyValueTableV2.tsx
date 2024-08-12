@@ -6,6 +6,11 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/utils";
 import {
   CaretDownIcon,
@@ -29,18 +34,36 @@ export const KeyValueRow = ({
       <TableCell className="px-0 font-medium min-w-[140px] w-[140px] lg:min-w-[200px] uppercase text-xs text-muted-foreground">
         {key}
       </TableCell>
-      <TableCell className="font-mono">
-        {isSensitive && !showSensitive ? "*****" : value}
+      <TableCell className="font-mono flex items-center">
         {isSensitive && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowSensitive(!showSensitive)}
-            className="ml-2"
-          >
-            {showSensitive ? <EyeClosedIcon /> : <EyeOpenIcon />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowSensitive(!showSensitive)}
+                className="mr-2 flex-shrink-0"
+              >
+                {showSensitive ? (
+                  <EyeClosedIcon className="w-3 h-3" />
+                ) : (
+                  <EyeOpenIcon className="w-3 h-3" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              {showSensitive ? "Hide Sensitive Value" : "Show Sensitive Value"}
+            </TooltipContent>
+          </Tooltip>
         )}
+        <span
+          className={cn(
+            "flex-grow",
+            isSensitive && !showSensitive ? "italic text-muted-foreground" : "",
+          )}
+        >
+          {isSensitive && !showSensitive ? "hidden" : value}
+        </span>
       </TableCell>
     </TableRow>
   );
@@ -60,7 +83,7 @@ export function KeyValueTableV2({
   return (
     <div className={cn(className)}>
       <Table className="border-0">
-        <TableBody className="">
+        <TableBody>
           {Object.entries(keyValue).length > 0 ? (
             Object.entries(keyValue).map((entry) => (
               <KeyValueRow

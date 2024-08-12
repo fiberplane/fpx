@@ -111,6 +111,7 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
           <CollapsibleKeyValueTableV2
             keyValue={requestHeaders}
             title="Request Headers"
+            className="max-w-full"
             sensitiveKeys={SENSITIVE_HEADERS}
           />
         </SubSection>
