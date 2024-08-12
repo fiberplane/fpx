@@ -1,11 +1,22 @@
+import { cn } from "@/utils";
+
 export const SubSection = ({ children }: { children: React.ReactNode }) => {
   return <div className="flex flex-col gap-2">{children}</div>;
 };
 
 export const SubSectionHeading = ({
   children,
-}: { children: React.ReactNode }) => {
-  return <div className="font-semibold text-sm">{children}</div>;
+  onClick,
+  className,
+}: { children: React.ReactNode; onClick?: () => void; className?: string }) => {
+  return (
+    <div
+      className={cn("font-semibold text-sm py-1", className)}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
 };
 
 export const Divider = () => {

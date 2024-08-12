@@ -2,13 +2,13 @@ import { Status } from "@/components/ui/status";
 import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { OtelSpan } from "@/queries";
-import { cn, noop } from "@/utils";
+import { SENSITIVE_HEADERS, cn, noop } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
-import { KeyValueTableV2 } from "./KeyValueTableV2";
+import { CollapsibleKeyValueTableV2 } from "./KeyValueTableV2";
 import {
   getRequestBody,
   getRequestHeaders,
@@ -133,8 +133,11 @@ function GenericFetchSpan({
         {children}
 
         <SubSection>
-          <SubSectionHeading>Request Headers</SubSectionHeading>
-          <KeyValueTableV2 keyValue={requestHeaders} />
+          <CollapsibleKeyValueTableV2
+            keyValue={requestHeaders}
+            title="Request Headers"
+            sensitiveKeys={SENSITIVE_HEADERS}
+          />
         </SubSection>
 
         {requestBody && (
@@ -150,8 +153,11 @@ function GenericFetchSpan({
         <Divider />
 
         <SubSection>
-          <SubSectionHeading>Response Headers</SubSectionHeading>
-          <KeyValueTableV2 keyValue={responseHeaders} />
+          <CollapsibleKeyValueTableV2
+            keyValue={responseHeaders}
+            title="Response Headers"
+            sensitiveKeys={SENSITIVE_HEADERS}
+          />
         </SubSection>
 
         {responseBody && (
