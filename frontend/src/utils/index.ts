@@ -90,6 +90,8 @@ export function isModifierKeyPressed(
   return event.ctrlKey;
 }
 
+export const SENSITIVE_HEADERS = ["authorization", "cookie", "set-cookie", "neon-connection-string"];
+
 export function redactSensitiveHeaders(
   headers?: null | Record<string, string>,
 ) {
@@ -97,16 +99,10 @@ export function redactSensitiveHeaders(
     return headers;
   }
 
-  const sensitiveHeaders = [
-    "authorization",
-    "cookie",
-    "set-cookie",
-    "neon-connection-string",
-  ];
   const redactedHeaders: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(headers)) {
-    if (sensitiveHeaders.includes(key.toLowerCase())) {
+    if (SENSITIVE_HEADERS.includes(key.toLowerCase())) {
       redactedHeaders[key] = "REDACTED";
     } else {
       redactedHeaders[key] = value;
