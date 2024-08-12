@@ -20,6 +20,11 @@ create honc-app@latest
 ```
 
 ### 2. Add FPX middleware
+Install the fpx middleware
+```
+npm i @fiberplane/hono-otel
+```
+
 Add the fpx middleware to the `index.ts` of your Hono project
 
 ```typescript
@@ -33,7 +38,7 @@ app.get('/', (c) => {
   return c.text('Hello Hono!')
 })
 
-export default app
+export default instrument(app)
 ```
 
 start your application
