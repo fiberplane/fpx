@@ -1,7 +1,7 @@
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { OtelSpan } from "@/queries";
-import { cn, SENSITIVE_HEADERS } from "@/utils";
+import { SENSITIVE_HEADERS, cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { SectionHeading } from "../shared";
@@ -100,12 +100,19 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
 
         {requestQueryParams && (
           <SubSection>
-            <CollapsibleKeyValueTableV2 keyValue={requestQueryParams} title="Query Parameters" />
+            <CollapsibleKeyValueTableV2
+              keyValue={requestQueryParams}
+              title="Query Parameters"
+            />
           </SubSection>
         )}
 
         <SubSection>
-          <CollapsibleKeyValueTableV2 keyValue={requestHeaders} title="Request Headers" sensitiveKeys={SENSITIVE_HEADERS} />
+          <CollapsibleKeyValueTableV2
+            keyValue={requestHeaders}
+            title="Request Headers"
+            sensitiveKeys={SENSITIVE_HEADERS}
+          />
         </SubSection>
 
         {canHaveRequestBody && requestBody && (
@@ -124,7 +131,11 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
         <Divider />
 
         <SubSection>
-          <CollapsibleKeyValueTableV2 keyValue={responseHeaders} title="Response Headers" sensitiveKeys={SENSITIVE_HEADERS} />
+          <CollapsibleKeyValueTableV2
+            keyValue={responseHeaders}
+            title="Response Headers"
+            sensitiveKeys={SENSITIVE_HEADERS}
+          />
         </SubSection>
 
         {responseBody && (

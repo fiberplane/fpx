@@ -90,7 +90,12 @@ export function isModifierKeyPressed(
   return event.ctrlKey;
 }
 
-export const SENSITIVE_HEADERS = ["authorization", "cookie", "set-cookie", "neon-connection-string"];
+export const SENSITIVE_HEADERS = [
+  "authorization",
+  "cookie",
+  "set-cookie",
+  "neon-connection-string",
+];
 
 export function redactSensitiveHeaders(
   headers?: null | Record<string, string>,
