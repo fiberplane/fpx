@@ -207,6 +207,9 @@ export function makeProxiedRequest({
   // HACK - This is the most secure code I've ever written
   modHeaders["x-fpx-proxy-to"] = addBaseUrl(path);
 
+  // HACK - Serialize headers into the headers
+  modHeaders["x-fpx-headers-json"] = JSON.stringify(modHeaders);
+
   // We resolve the url with query parameters
   const searchString = queryParamsForUrl.toString();
   const resolvedPath = searchString ? `${path}?${searchString}` : path;
