@@ -2,24 +2,40 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { z } from "zod";
-import type { Bindings, Variables } from "./types";
+import type { Bindings } from "./types";
 import { resolveBody, resolveWebhoncId } from "./utils";
-import type { WebHonc } from "./webhonc";
+import { WebHonc } from "./webhonc";
 
-const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+const app = new Hono<{ Bindings: Bindings }>();
 
 app.use(logger());
 
-app.get("/ws", async (c) => {
-  if (c.req.header("upgrade") !== "websocket") {
-    return new Response("Not a websocket request", { status: 426 });
-  }
+app.get(
+  "/connect/:id?",
+  zValidator("param", z.object({ id: z.string().optional() })),
+  async (c) => {
+    if (c.req.header("upgrade") !== "websocket") {
+      return new Response("Not a websocket request", { status: 426 });
+    }
 
-  const id = c.env.WEBHONC.newUniqueId();
-  const webhonc = c.env.WEBHONC.get(id) as DurableObjectStub<WebHonc>;
+    const { id } = c.req.valid("param");
 
-  return webhonc.fetch(c.req.raw);
-});
+    // Durable Object ID
+    let doId: DurableObjectId | undefined;
+
+    if (id) {
+      doId = resolveWebhoncId(c, id);
+    }
+
+    if (!doId) {
+      doId = c.env.WEBHONC.newUniqueId();
+    }
+
+    const webhonc = c.env.WEBHONC.get(doId);
+
+    return webhonc.fetch(c.req.raw);
+  },
+);
 
 app.all(
   "/:id/*",
@@ -28,14 +44,16 @@ app.all(
     const { id } = c.req.valid("param");
 
     console.debug("Handling request with id", id);
-    const webhonc = resolveWebhoncId(c, id);
+    const webhoncId = resolveWebhoncId(c, id);
 
-    if (!webhonc) {
+    if (!webhoncId) {
       console.error("No webhonc found for id", id);
       return new Response("No connection established on this id", {
         status: 404,
       });
     }
+
+    const webhonc = c.env.WEBHONC.get(webhoncId);
 
     // We need to serialize the path components without the id
     // so we can send it down the wire and replay it locally

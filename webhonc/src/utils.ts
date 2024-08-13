@@ -1,22 +1,21 @@
-import type { Context } from "hono";
-import type { WebHonc } from "./webhonc";
+import type { WebHoncContext } from "./types";
 
-export function resolveWebhoncId(c: Context, id: string) {
+export function resolveWebhoncId(c: WebHoncContext, id: string) {
   try {
     const doId = c.env.WEBHONC.idFromString(id);
-    const webhonc = c.env.WEBHONC.get(doId) as DurableObjectStub<WebHonc>;
-    return webhonc;
+    return doId;
   } catch (error) {
     // TypeError is thrown when the id is not a valid Durable Object ID
     // we handle those cases but this is in case the error is something else
     if (!(error instanceof TypeError)) {
       console.error(error);
     }
-    return null;
+
+    return;
   }
 }
 
-export async function resolveBody(c: Context) {
+export async function resolveBody(c: WebHoncContext) {
   const contentType = c.req.header("content-type")?.toLowerCase();
   const method = c.req.method.toUpperCase();
 
