@@ -25,7 +25,7 @@ export function connectToWebhonc(
   wsConnections: Set<WebSocket>,
 ) {
   const protocol = host.startsWith("localhost") ? "ws" : "wss";
-  const socket = new WebSocket(`${protocol}://${host}/ws`);
+  const socket = new WebSocket(`${protocol}://${host}/connect`);
 
   socket.onopen = () => {
     logger.debug(`Connected to the webhonc service at ${host}`);
@@ -149,10 +149,9 @@ const messageHandlers: {
 
     try {
       const response = await executeProxyRequest({
-        requestHeaders: message.payload.headers,
-        // @ts-expect-error - Trust me, the request method is correct, and it's a string
-        requestMethod: message.payload.method,
-        requestBody: message.payload.body,
+        requestHeaders: newRequest.requestHeaders,
+        requestMethod: newRequest.requestMethod,
+        requestBody: newRequest.requestBody,
         requestUrl,
       });
 
