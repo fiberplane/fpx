@@ -7,7 +7,8 @@
   },
   "vcs": {
     "enabled": true,
-    "clientKind": "git"
+    "clientKind": "git",
+    "useIgnoreFile": true
   },
   "formatter": {
     "enabled": true,
@@ -42,12 +43,6 @@
           }
         }
       }
-    },
-    {
-      "include": ["test-content"],
-      "formatter": {
-        "enabled": false
-      }
     }
   ],
   "files": {
@@ -57,7 +52,10 @@
 
       // Client library related
       "dist/*.js",
-      "dist/*.d.ts"
+      "dist/*.d.ts",
+
+      // ignore all tsconfig.json files
+      "tsconfig.json"
 
       // Rust code related
       // This caused biome to ignore the entire fpx folder
