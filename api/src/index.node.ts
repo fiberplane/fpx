@@ -14,7 +14,7 @@ import { resolveWebhoncUrl } from "./lib/utils.js";
 import { connectToWebhonc } from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
-import { getSetting } from "./routes/settings.js";
+import { getSetting } from "./lib/settings/index.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
@@ -73,7 +73,6 @@ server.on("error", (err) => {
 
 // First, fire off an async probe to the service we want to monitor
 //   - This will collect information on all routes that the service exposes
-//   - This powers a postman-like UI to ping routes and see responses
 //
 // Additionally, this will watch for changes to files in the project directory,
 //   - If a file changes, send a new probe to the service
