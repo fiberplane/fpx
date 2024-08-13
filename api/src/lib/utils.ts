@@ -181,11 +181,7 @@ async function tryGetResponseBodyAsText(response: Response) {
     return "#fpx.binary";
   }
 
-  try {
-    return await response.text();
-  } catch {
-    return null;
-  }
+  return await response.text();
 }
 
 export type SerializedFile = {
