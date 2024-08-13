@@ -168,7 +168,7 @@ export const createInitialState = (initial: RequestorState) => {
  * We don't save things like `routes` since that could be crufty,
  * and will be refetched when the page reloads anyhow
  */
-const SavedRequestorStateSchema = RequestorStateSchema.pick({
+export const SavedRequestorStateSchema = RequestorStateSchema.pick({
   path: true,
   method: true,
   requestType: true,

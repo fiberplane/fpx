@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useBeforeUnload } from "react-router-dom";
-import { LOCAL_STORAGE_KEY, SavedRequestorState } from "./state";
+import {
+  LOCAL_STORAGE_KEY,
+  SavedRequestorState,
+  SavedRequestorStateSchema,
+} from "./state";
 
 /**
  * Hook that saves the UI state to local storage when the component unmounts,
@@ -18,7 +22,8 @@ export function useSaveUiState(state: SavedRequestorState) {
 
   const saveUiState = useCallback(() => {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateRef.current));
+      const state = SavedRequestorStateSchema.parse(stateRef.current);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
     } catch {
       // Ignore errors
       console.error("Error saving state to local storage");
