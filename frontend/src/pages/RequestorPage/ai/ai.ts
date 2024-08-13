@@ -173,6 +173,7 @@ export function useAi(
     setRequestHeaders,
     updatePathParamValues,
     toast,
+    addServiceUrlIfBarePath,
   ]);
 
   return {
