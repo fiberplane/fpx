@@ -17,43 +17,79 @@ import { getWebHoncConnectionId, setWebHoncConnectionId } from "./store.js";
 
 // TODO: maintain and surface the webhonc connection state so that UI
 // can adapt accordingly
-// TODO: handle the case where the webhonc service is down, exponentially try
-// reconnecting etc
-export function connectToWebhonc(
+export async function connectToWebhonc(
   host: string,
   db: LibSQLDatabase<typeof schema>,
   wsConnections: Set<WebSocket>,
 ) {
-  const protocol = host.startsWith("localhost") ? "ws" : "wss";
-  const socket = new WebSocket(`${protocol}://${host}/connect`);
+  const MAX_RECONNECT_DELAY = 30000; // Maximum delay between reconnection attempts (30 seconds)
+  const INITIAL_RECONNECT_DELAY = 1000; // Initial delay for reconnection (1 second)
+  let reconnectAttempt = 0;
+  let reconnectTimeout: NodeJS.Timeout | null = null;
 
-  socket.onopen = () => {
-    logger.debug(`Connected to the webhonc service at ${host}`);
-  };
-
-  socket.onmessage = async (event) => {
-    logger.debug("Received message from the webhonc service:", event.data);
-    try {
-      await handleMessage(event, wsConnections, db);
-    } catch (error) {
-      logger.error("Error handling message from webhonc:", error);
-    }
-  };
-
-  socket.onclose = (event) => {
-    logger.debug(
-      "Webhonc connection closed",
-      event.reason,
-      event.code,
-      event.wasClean,
+  const connect = async () => {
+    const protocol = host.startsWith("localhost") ? "ws" : "wss";
+    const maybeWebhoncId = await getWebHoncConnectionId(db);
+    const socket = new WebSocket(
+      `${protocol}://${host}/connect${maybeWebhoncId ? `/${maybeWebhoncId}` : ""}`,
     );
+
+    const cleanup = () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close(1000, "fpx server shutting down");
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+    };
+
+    process.on("SIGINT", cleanup);
+    process.on("SIGTERM", cleanup);
+
+    socket.onopen = () => {
+      logger.debug(`Connected to the webhonc service at ${host}`);
+      reconnectAttempt = 0; // Reset reconnect attempt counter on successful connection
+    };
+
+    socket.onmessage = async (event) => {
+      logger.debug("Received message from the webhonc service:", event.data);
+      try {
+        await handleMessage(event, wsConnections, db);
+      } catch (error) {
+        logger.error("Error handling message from webhonc:", error);
+      }
+    };
+
+    socket.onclose = (event) => {
+      logger.debug(
+        "Webhonc connection closed",
+        event.reason,
+        event.code,
+        event.wasClean,
+      );
+
+      // Implement reconnection logic
+      const reconnectDelay = Math.min(
+        INITIAL_RECONNECT_DELAY * 2 ** reconnectAttempt,
+        MAX_RECONNECT_DELAY,
+      );
+
+      logger.debug(`Attempting to reconnect in ${reconnectDelay}ms`);
+
+      reconnectTimeout = setTimeout(async () => {
+        reconnectAttempt++;
+        await connect();
+      }, reconnectDelay);
+    };
+
+    socket.onerror = (event) => {
+      logger.error("Webhonc connection error", event.message);
+    };
+
+    return socket;
   };
 
-  socket.onerror = (event) => {
-    logger.error("Webhonc connection error", event.message);
-  };
-
-  return socket;
+  return await connect();
 }
 
 async function handleMessage(
@@ -90,9 +126,9 @@ const messageHandlers: {
   trace_created: async (_message, _wsConnections, _db) => {
     logger.debug("trace_created message received, no action required");
   },
-  connection_open: async (message, wsConnections) => {
+  connection_open: async (message, wsConnections, db) => {
     const { connectionId } = message.payload;
-    setWebHoncConnectionId(connectionId);
+    setWebHoncConnectionId(db, connectionId);
     for (const ws of wsConnections) {
       ws.send(
         JSON.stringify({
@@ -126,7 +162,7 @@ const messageHandlers: {
       requestRoute: message.payload.path.join("/"),
     };
 
-    const webhoncId = getWebHoncConnectionId();
+    const webhoncId = await getWebHoncConnectionId(db);
 
     const supplementedHeaders = {
       "x-fpx-trace-id": traceId,
