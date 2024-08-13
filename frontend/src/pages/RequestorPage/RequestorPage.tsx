@@ -325,10 +325,10 @@ export const RequestorPage = () => {
 
           <ResponsePanel
             activeResponse={activeResponse}
+            tracedResponse={mostRecentRequestornatorForRoute}
             activeResponsePanelTab={activeResponsePanelTab}
             setActiveResponsePanelTab={setActiveResponsePanelTab}
             shouldShowResponseTab={shouldShowResponseTab}
-            response={mostRecentRequestornatorForRoute}
             isLoading={isRequestorRequesting}
             websocketState={websocketState}
             requestType={selectedRoute?.requestType}

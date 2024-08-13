@@ -17,13 +17,13 @@ import { Method, StatusCode } from "../RequestorHistory";
 import { Requestornator } from "../queries";
 import { useCopyToClipboard, usePrompt } from "./ai-test-generation";
 
-export function AiTestGeneration({
+export function AiTestGenerationDrawer({
   history,
 }: {
-  history: Array<Requestornator>;
+  history: null | Array<Requestornator>;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
-  const lastRequest = history[0];
+  const lastRequest = history?.[0] ?? null;
 
   const [userInput, setUserInput] = useState("");
 
@@ -55,12 +55,14 @@ export function AiTestGeneration({
                 }
               />
             </div>
-            <div className="mt-2">
-              <div className="text-xs uppercase font-bold text-gray-400">
-                Additional context
+            {lastRequest && (
+              <div className="mt-2">
+                <div className="text-xs uppercase font-bold text-gray-400">
+                  Additional context
+                </div>
+                <ContextEntry response={lastRequest} />
               </div>
-              <ContextEntry response={lastRequest} />
-            </div>
+            )}
           </div>
           <DrawerFooter className="mt-4 flex flex-row justify-end px-2">
             <DrawerClose asChild>

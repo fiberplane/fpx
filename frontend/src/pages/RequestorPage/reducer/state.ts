@@ -53,7 +53,7 @@ const RequestorActiveResponseSchema = z.object({
   responseBody: RequestorResponseBodySchema,
   responseHeaders: z.record(z.string()).nullable(),
   responseStatusCode: z.string(),
-  isFailure: z.boolean().nullable(),
+  isFailure: z.boolean(),
 
   requestUrl: z.string(),
   requestMethod: z.string(),
