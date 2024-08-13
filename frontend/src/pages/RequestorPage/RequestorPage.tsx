@@ -28,8 +28,9 @@ export const RequestorPage = () => {
   globalThis.requestorState = requestorState;
   const {
     // Routes panel
-    state: { routes },
+    state: { routes, serviceBaseUrl },
     setRoutes,
+    setServiceBaseUrl,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     getActiveRoute,
 
@@ -39,6 +40,8 @@ export const RequestorPage = () => {
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
     getIsInDraftMode,
+    addServiceUrlToPath,
+    removeServiceUrlFromPath,
 
     // Request panel
     state: { pathParams, queryParams, requestHeaders, body },
@@ -76,8 +79,10 @@ export const RequestorPage = () => {
 
   const selectedRoute = getActiveRoute();
 
-  const { addBaseUrl } = useRoutes({
+  // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
+  useRoutes({
     setRoutes,
+    setServiceBaseUrl,
   });
 
   // NOTE - Use this to test overflow of requests panel
@@ -126,7 +131,7 @@ export const RequestorPage = () => {
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
     body,
-    addBaseUrl,
+    addServiceUrlToPath,
     path,
     method,
     pathParams,
@@ -260,7 +265,6 @@ export const RequestorPage = () => {
         )}
       >
         <RequestorInput
-          addBaseUrl={addBaseUrl}
           requestType={selectedRoute?.requestType}
           method={method}
           handleMethodChange={handleMethodChange}
@@ -336,6 +340,7 @@ export const RequestorPage = () => {
               history={history}
               toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
               getActiveRoute={getActiveRoute}
+              removeServiceUrl={removeServiceUrl}
             />
           )}
         </div>

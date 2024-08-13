@@ -76,6 +76,7 @@ export const RequestorStateSchema = z.object({
   ),
 
   // Request form
+  serviceBaseUrl: z.string().describe("Base URL for requests"),
   path: z.string().describe("Path input"),
   method: RequestMethodSchema.describe("Method input"),
   requestType: RequestTypeSchema.describe("Request type input"),

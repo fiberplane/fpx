@@ -318,7 +318,6 @@ function ResponseSummary({
   const method = isRequestorActiveResponse(response)
     ? response?.requestMethod
     : response?.app_requests?.requestMethod;
-  // const url = response?.app_requests?.requestUrl;
   const url = isRequestorActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(

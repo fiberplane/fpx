@@ -18,10 +18,12 @@ export function AiTestGenerationPanel({
   history,
   toggleAiTestGenerationPanel,
   getActiveRoute,
+  removeServiceUrlFromPath,
 }: {
   history: Array<Requestornator>;
   toggleAiTestGenerationPanel: () => void;
   getActiveRoute: () => ProbedRoute;
+  removeServiceUrlFromPath: (path: string) => string;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
@@ -36,7 +38,7 @@ export function AiTestGenerationPanel({
 
       const match = findMatchedRoute(
         [activeRoute],
-        path,
+        removeServiceUrlFromPath(path),
         activeRoute.method,
         activeRoute.requestType,
       );

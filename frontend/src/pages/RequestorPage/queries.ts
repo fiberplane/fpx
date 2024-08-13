@@ -183,7 +183,7 @@ export function useMakeProxiedRequest({
 }
 
 export function makeProxiedRequest({
-  addBaseUrl,
+  addServiceUrlToPath,
   path,
   method,
   body,
@@ -192,7 +192,7 @@ export function makeProxiedRequest({
   queryParams,
   route,
 }: {
-  addBaseUrl: (path: string) => string;
+  addServiceUrlToPath: (path: string) => string;
   path: string;
   method: string;
   body: RequestorBody;
@@ -201,6 +201,15 @@ export function makeProxiedRequest({
   queryParams: KeyValueParameter[];
   route?: string;
 }) {
+  // HACK - We need to make sure the path is safe to use as a URL pathname
+  let safePath: string;
+  try {
+    const url = new URL(path);
+    safePath = url.pathname;
+  } catch {
+    safePath = path?.startsWith("/") ? path : `/${path}`;
+  }
+
   const queryParamsForUrl = new URLSearchParams();
   queryParams.forEach((param) => {
     if (param.enabled) {
@@ -222,14 +231,16 @@ export function makeProxiedRequest({
   // HACK - This is the most secure code I've ever written
   //        We're serializing the proxy-to url into a header
   //        and this is the url that ultimately receives the request
-  modHeaders["x-fpx-proxy-to"] = addBaseUrl(path);
+  const proxyToUrl = addServiceUrlToPath(path);
+  modHeaders["x-fpx-proxy-to"] = proxyToUrl;
 
   // HACK - Serialize headers into the headers waaaaat
   modHeaders["x-fpx-headers-json"] = JSON.stringify(modHeaders);
 
   // We resolve the url with query parameters
   const searchString = queryParamsForUrl.toString();
-  const resolvedPath = searchString ? `${path}?${searchString}` : path;
+
+  const resolvedPath = searchString ? `${safePath}?${searchString}` : safePath;
 
   // We create the body
   // FIXME - We should validate JSON in the UI itself
@@ -252,7 +263,7 @@ export function makeProxiedRequest({
       isFailure: responseBody.type === "error",
 
       // NOTE - Need these fields for UI, to render the summary in the response panel
-      requestUrl: addBaseUrl(resolvedPath),
+      requestUrl: proxyToUrl,
       requestMethod: method,
     };
   });

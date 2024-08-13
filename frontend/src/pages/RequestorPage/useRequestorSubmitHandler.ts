@@ -2,8 +2,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCallback } from "react";
 import { KeyValueParameter } from "./KeyValueForm";
 import { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
-import { RequestorBody, RequestorState } from "./reducer";
-import { useRoutes } from "./routes";
+import { RequestorBody, RequestorState, useRequestor } from "./reducer";
 import { isWsRequest } from "./types";
 
 export function useRequestorSubmitHandler({
@@ -11,7 +10,7 @@ export function useRequestorSubmitHandler({
   selectedRoute,
   body,
   path,
-  addBaseUrl,
+  addServiceUrlToPath,
   method,
   pathParams,
   queryParams,
@@ -20,7 +19,7 @@ export function useRequestorSubmitHandler({
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addBaseUrl: ReturnType<typeof useRoutes>["addBaseUrl"];
+  addServiceUrlToPath: ReturnType<typeof useRequestor>["addServiceUrlToPath"];
   selectedRoute: ProbedRoute | null;
   body: RequestorBody;
   path: string;
@@ -39,9 +38,7 @@ export function useRequestorSubmitHandler({
       e.preventDefault();
 
       if (isWsRequest(requestType)) {
-        const url = addBaseUrl(path, {
-          requestType,
-        });
+        const url = addServiceUrlToPath(path);
         connectWebsocket(url);
         toast({
           description: "Connecting to websocket",
@@ -74,9 +71,7 @@ export function useRequestorSubmitHandler({
 
       // TODO - Check me
       if (isWsRequest(requestType)) {
-        const url = addBaseUrl(path, {
-          requestType: requestType,
-        });
+        const url = addServiceUrlToPath(path);
         connectWebsocket(url);
         toast({
           description: "Connecting to websocket",
@@ -86,7 +81,7 @@ export function useRequestorSubmitHandler({
 
       makeRequest(
         {
-          addBaseUrl,
+          addServiceUrlToPath,
           path,
           method,
           body,
@@ -119,7 +114,7 @@ export function useRequestorSubmitHandler({
       body,
       requestHeaders,
       makeRequest,
-      addBaseUrl,
+      addServiceUrlToPath,
       path,
       method,
       pathParams,

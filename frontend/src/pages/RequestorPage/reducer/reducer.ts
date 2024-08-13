@@ -4,7 +4,12 @@ import { KeyValueParameter } from "../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import { ProbedRoute } from "../queries";
 import { findMatchedRoute } from "../routes";
-import { RequestMethod, RequestMethodInputValue, RequestType } from "../types";
+import {
+  RequestMethod,
+  RequestMethodInputValue,
+  RequestType,
+  isWsRequest,
+} from "../types";
 import { useSaveUiState } from "./persistence";
 import {
   RequestBodyType,
@@ -39,6 +44,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
 };
 
 const SET_ROUTES = "SET_ROUTES" as const;
+const SET_SERVICE_BASE_URL = "SET_SERVICE_BASE_URL" as const;
 const PATH_UPDATE = "PATH_UPDATE" as const;
 const METHOD_UPDATE = "METHOD_UPDATE" as const;
 const SELECT_ROUTE = "SELECT_ROUTE" as const;
@@ -61,6 +67,10 @@ type RequestorAction =
   | {
       type: typeof SET_ROUTES;
       payload: ProbedRoute[];
+    }
+  | {
+      type: typeof SET_SERVICE_BASE_URL;
+      payload: string;
     }
   | {
       type: typeof PATH_UPDATE;
@@ -146,7 +156,7 @@ function requestorReducer(
       const nextRoutes = action.payload;
       const matchedRoute = findMatchedRoute(
         nextRoutes,
-        state.path,
+        removeBaseUrl(state.serviceBaseUrl, state.path),
         state.method,
         state.requestType,
       );
@@ -163,11 +173,14 @@ function requestorReducer(
         pathParams: nextPathParams,
       };
     }
+    case SET_SERVICE_BASE_URL: {
+      return { ...state, serviceBaseUrl: action.payload };
+    }
     case PATH_UPDATE: {
       const nextPath = action.payload;
       const matchedRoute = findMatchedRoute(
         state.routes,
-        nextPath,
+        removeBaseUrl(state.serviceBaseUrl, nextPath),
         state.method,
         state.requestType,
       );
@@ -198,7 +211,7 @@ function requestorReducer(
       const { method, requestType } = action.payload;
       const matchedRoute = findMatchedRoute(
         state.routes,
-        state.path,
+        removeBaseUrl(state.serviceBaseUrl, state.path),
         method,
         requestType,
       );
@@ -288,7 +301,9 @@ function requestorReducer(
         selectedRoute: action.payload,
 
         // Reset form values, but preserve things like path params, query params, headers, etc
-        path: action.payload.path,
+        path: addBaseUrl(state.serviceBaseUrl, action.payload.path, {
+          requestType: nextRequestType,
+        }),
         method: nextMethod,
         requestType: nextRequestType,
 
@@ -491,6 +506,13 @@ export function useRequestor() {
     [dispatch],
   );
 
+  const setServiceBaseUrl = useCallback(
+    (serviceBaseUrl: string) => {
+      dispatch({ type: SET_SERVICE_BASE_URL, payload: serviceBaseUrl });
+    },
+    [dispatch],
+  );
+
   const updatePath = useCallback(
     (path: string) => {
       dispatch({ type: PATH_UPDATE, payload: path });
@@ -622,6 +644,22 @@ export function useRequestor() {
    */
   const getActiveRoute = (): ProbedRoute => _getActiveRoute(state);
 
+  const removeServiceUrlFromPath = useCallback(
+    (path: string) => {
+      return removeBaseUrl(state.serviceBaseUrl, path);
+    },
+    [state.serviceBaseUrl],
+  );
+
+  const addServiceUrlToPath = useCallback(
+    (path: string) => {
+      return addBaseUrl(state.serviceBaseUrl, path, {
+        requestType: state.requestType,
+      });
+    },
+    [state.serviceBaseUrl, state.requestType],
+  );
+
   /**
    * We consider the inputs in "draft" mode when there's no matching route in the side bar
    */
@@ -662,6 +700,7 @@ export function useRequestor() {
 
     // Api
     setRoutes,
+    setServiceBaseUrl,
     selectRoute,
 
     // Form fields
@@ -674,6 +713,8 @@ export function useRequestor() {
     setRequestHeaders,
     setBody,
     handleRequestBodyTypeChange,
+    addServiceUrlToPath,
+    removeServiceUrlFromPath,
 
     // Websocket form
     setWebsocketMessage,
@@ -765,4 +806,65 @@ function extractMatchedPathParams(
       };
     },
   );
+}
+
+/**
+ * Removes the base url from a path so we can try to match a route...
+ */
+const removeBaseUrl = (serviceBaseUrl: string, path: string) => {
+  if (!pathHasValidBaseUrl(path)) {
+    return path;
+  }
+
+  if (!pathHasValidBaseUrl(serviceBaseUrl)) {
+    return path;
+  }
+
+  const serviceHost = new URL(serviceBaseUrl).host;
+  const servicePort = new URL(serviceBaseUrl).port;
+
+  const pathHost = new URL(path).host;
+  const pathPort = new URL(path).port;
+
+  // TODO - Make this work with query params!!!
+  if (pathHost === serviceHost && pathPort === servicePort) {
+    return new URL(path).pathname;
+  }
+
+  return path;
+};
+
+const addBaseUrl = (
+  serviceBaseUrl: string,
+  path: string,
+  { requestType }: { requestType: RequestType } = { requestType: "http" },
+) => {
+  // NOTE - This is necessary to allow the user to type new base urls... even though we replace the base url whenever they switch routes
+  if (pathHasValidBaseUrl(path)) {
+    return path;
+  }
+
+  const parsedBaseUrl = new URL(serviceBaseUrl);
+  if (isWsRequest(requestType)) {
+    parsedBaseUrl.protocol = "ws";
+  }
+  let updatedBaseUrl = parsedBaseUrl.toString();
+  if (updatedBaseUrl.endsWith("/")) {
+    updatedBaseUrl = updatedBaseUrl.slice(0, -1);
+  }
+  if (path?.startsWith(updatedBaseUrl)) {
+    return path;
+  }
+
+  const safePath = path?.startsWith("/") ? path : `/${path}`;
+  return `${updatedBaseUrl}${safePath}`;
+};
+
+function pathHasValidBaseUrl(path: string) {
+  try {
+    new URL(path);
+    return true;
+  } catch {
+    return false;
+  }
 }
