@@ -130,6 +130,7 @@ export const initialState: RequestorState = {
   routes: [],
   selectedRoute: null,
   path: "/",
+  serviceBaseUrl: "http://localhost:8787",
   method: "GET",
   requestType: "http",
 
