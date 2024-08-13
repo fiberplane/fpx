@@ -1,0 +1,5 @@
+packages:
+  - "frontend"
+  - "api"
+  - "packages/*"
+  - "webhonc"

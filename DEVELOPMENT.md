@@ -35,7 +35,7 @@ Follow the instructions in the [`client-library` README](./client-library/README
 
 This project uses typescript, biome and npm workspaces. The frontend package also uses eslint for linting purposes, all other packages use biome for linting (formatting is always done with biome).
 
-In the project root you can format all typescript codebases with `npm run format`.
+In the project root you can format all typescript codebases with `pnpm run format`.
 
 You will also want to use the project root to prepare the npx command for the distributable API. See the root's `package.json` scripts, as well as the api's README for more details on testing the npx command.
 

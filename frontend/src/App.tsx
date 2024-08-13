@@ -9,7 +9,6 @@ import {
 } from "react-router-dom";
 import Layout from "./Layout";
 import { Toaster } from "./components/ui/toaster";
-import { IssuesPage } from "./pages/IssuesPage/IssuesPage";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import {
   RequestorPage,
@@ -37,7 +36,6 @@ export function App() {
                   element={<RequestDetailsPage />}
                 />
                 <Route path="/requestor" element={<RequestorPage />} />
-                <Route path="/issues" element={<IssuesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Routes>
             </Layout>

@@ -3,16 +3,17 @@
   "version": "1.0.0",
   "description": "Local development debugging interface for Hono apps, powered by OpenTelemetry",
   "scripts": {
-    "build:fpx-studio": "npm run clean:fpx-studio && npm run build:api && npm run build:frontend",
-    "build:api": "npm run --workspace api build",
-    "dev:api": "npm run --workspace api dev",
-    "build:frontend": "npm run --workspace frontend build && cp -r frontend/dist/* api/dist",
-    "dev:frontend": "npm run --workspace frontend dev",
-    "clean:fpx-studio": "npm run clean:api && npm run clean:frontend",
+    "preinstall": "npx only-allow pnpm",
+    "build:fpx-studio": "pnpm run clean:fpx-studio && pnpm run build:api && pnpm run build:frontend",
+    "build:api": "pnpm --filter @fiberplane/studio build",
+    "dev:api": "pnpm --filter @fiberplane/studio dev",
+    "build:frontend": "pnpm --filter @fiberplane/studio-frontend build && cp -r frontend/dist/* api/dist",
+    "dev:frontend": "pnpm --filter @fiberplane/studio-frontend dev",
+    "clean:fpx-studio": "pnpm run clean:api && pnpm run clean:frontend",
     "clean:api": "rimraf api/dist",
     "clean:frontend": "rimraf frontend/dist",
     "format": "biome check . --write",
-    "lint": "biome lint ."
+    "lint": "pnpm --recursive lint"
   },
   "repository": {
     "type": "git",
@@ -22,18 +23,10 @@
     "url": "https://github.com/fiberplane/fpx/issues"
   },
   "homepage": "https://github.com/fiberplane/fpx#readme",
-  "workspaces": [
-    "client-library",
-    "client-library-otel",
-    "frontend",
-    "api",
-    "webhonc"
-  ],
-  "dependencies": {
-    "@biomejs/biome": "^1.8.0"
-  },
   "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
     "rimraf": "^5.0.7",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "wrangler": "^3.62.0"
   }
 }

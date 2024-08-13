@@ -15,6 +15,7 @@ import {
   safeParseJSONFile,
   safeParseTomlFile,
   selectClosestPath,
+  updateWranglerCompatibilityFlags,
 } from "./utils.js";
 
 // Shim __filename and __dirname since we're using esm
@@ -76,6 +77,8 @@ async function runWizard() {
   const FPX_SERVICE_TARGET = await getServiceTarget();
 
   await pingTargetAndConfirm(FPX_SERVICE_TARGET);
+
+  await updateWranglerTomlWithNodejsCompatibility();
 
   const FPX_DATABASE_URL = getFpxDatabaseUrl();
 
@@ -239,6 +242,68 @@ async function pingTargetAndConfirm(port) {
       `  ⚠️ Could not find your api on port ${port}. Remember to start it!\n  ${chalk.dim("(Press enter to continue.)")}`,
     );
   }
+}
+
+/**
+ * Update the project's wrangler.toml with the nodejs_compat flag
+ * The line should look like this:
+
+    compatibility_flags = [ "nodejs_compat" ]
+
+ * Skip if:
+ * - The wrangler.toml file does not exist
+ * - The compatibility_flags array already includes "nodejs_compat"
+ */
+async function updateWranglerTomlWithNodejsCompatibility() {
+  logger.debug(
+    "Checking wrangler.toml for nodejs compatibility flag",
+    WRANGLER_TOML_PATH,
+    WRANGLER_TOML,
+  );
+
+  const hasNodejsCompatFlag =
+    WRANGLER_TOML?.compatibility_flags?.includes("nodejs_compat");
+
+  if (!WRANGLER_TOML_PATH) {
+    logger.debug("Wrangler.toml not found");
+    return;
+  }
+
+  if (hasNodejsCompatFlag) {
+    logger.debug(
+      "Wrangler.toml already has nodejs compatibility flag",
+      WRANGLER_TOML,
+    );
+    return;
+  }
+
+  const lede = "  ⚠️ wrangler.toml needs to specify the nodejs_compat flag";
+  const operation = "  Add Nodejs compatibility flag to wrangler.toml?";
+  const question = [chalk.yellow(lede), operation].filter(Boolean).join("\n");
+  const updateWranglerTomlAnswer = await askUser(question, "y");
+  const shouldUpdateWranglerToml = cliAnswerToBool(updateWranglerTomlAnswer);
+
+  if (!shouldUpdateWranglerToml) {
+    return;
+  }
+
+  logger.debug(
+    `Replacing ${WRANGLER_TOML_PATH} with node.js compatibility flag`,
+  );
+
+  const nextToml = { ...WRANGLER_TOML };
+  if (!nextToml.compatibility_flags) {
+    nextToml.compatibility_flags = [];
+  }
+  nextToml.compatibility_flags.push("nodejs_compat");
+
+  updateWranglerCompatibilityFlags(WRANGLER_TOML_PATH, nextToml);
+
+  logger.info(
+    chalk.dim(
+      `  ℹ️ Updated ${WRANGLER_TOML_PATH} with nodejs compatibility flag`,
+    ),
+  );
 }
 
 /**

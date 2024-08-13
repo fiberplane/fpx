@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
   "css": {
     "linter": {
       "enabled": true
@@ -7,7 +7,8 @@
   },
   "vcs": {
     "enabled": true,
-    "clientKind": "git"
+    "clientKind": "git",
+    "useIgnoreFile": true
   },
   "formatter": {
     "enabled": true,
@@ -17,11 +18,17 @@
     "enabled": true
   },
   "linter": {
-    "enabled": false
+    "enabled": true
   },
   "overrides": [
     {
-      "include": ["client-library", "api"],
+      "include": ["frontend"],
+      "linter": {
+        "enabled": false
+      }
+    },
+    {
+      "include": ["client-library-otel", "api"],
       "linter": {
         "enabled": true,
         "rules": {
@@ -36,27 +43,25 @@
           }
         }
       }
-    },
-    {
-      "include": ["test-content"],
-      "formatter": {
-        "enabled": false
-      }
     }
   ],
   "files": {
     "ignore": [
       // API related
       "meta/*.json",
-      "seed-assets/*.json",
-      "test-content/*.*",
 
       // Client library related
       "dist/*.js",
       "dist/*.d.ts",
 
+      // ignore all tsconfig.json files
+      "tsconfig.json"
+
       // Rust code related
-      "fpx/*.*"
+      // This caused biome to ignore the entire fpx folder
+      // commenting out for now as we still want to find a way to
+      // skip Rust code in biome
+      // "fpx/*.*"
     ]
   }
 }
