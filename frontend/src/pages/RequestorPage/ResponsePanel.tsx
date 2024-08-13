@@ -2,10 +2,16 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 
 import RobotIcon from "@/assets/Robot.svg";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs } from "@/components/ui/tabs";
 import {
+  SENSITIVE_HEADERS,
   cn,
   isJson,
   noop,
@@ -16,14 +22,17 @@ import {
   ArrowDownIcon,
   ArrowTopRightIcon,
   ArrowUpIcon,
+  CaretDownIcon,
+  CaretRightIcon,
   LinkBreak2Icon,
 } from "@radix-ui/react-icons";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Timestamp } from "../RequestDetailsPage/Timestamp";
+import { CollapsibleKeyValueTableV2 } from "../RequestDetailsPage/v2/KeyValueTableV2";
+import { SubSectionHeading } from "../RequestDetailsPage/v2/shared";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
-import { HeaderTable } from "./HeaderTable";
 import { Method, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestGeneration } from "./ai";
@@ -74,8 +83,7 @@ export function ResponsePanel({
         className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
       >
         <CustomTabsList>
-          <CustomTabTrigger value="body">Response</CustomTabTrigger>
-          <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
+          <CustomTabTrigger value="response">Response</CustomTabTrigger>
           {shouldShowMessages && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
@@ -113,7 +121,7 @@ export function ResponsePanel({
             <WebsocketMessages websocketState={websocketState} />
           </TabContentInner>
         </CustomTabsContent>
-        <CustomTabsContent value="body">
+        <CustomTabsContent value="response">
           <TabContentInner
             isLoading={isLoading}
             isEmpty={!response && !activeResponse}
@@ -139,30 +147,20 @@ export function ResponsePanel({
             <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
               <ResponseSummary response={activeResponse ?? response} />
               <ResponseBody
+                headersSlot={
+                  <CollapsibleKeyValueTableV2
+                    sensitiveKeys={SENSITIVE_HEADERS}
+                    title="Headers"
+                    keyValue={response?.app_responses?.responseHeaders ?? {}}
+                    className="mb-2"
+                  />
+                }
                 response={activeResponse ?? response}
+                // HACK - To support absolutely positioned bottom toolbar
                 className={cn(showBottomToolbar && "pb-16")}
               />
               {showBottomToolbar && <BottomToolbar response={response} />}
             </div>
-          </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="headers">
-          <TabContentInner
-            isLoading={isLoading}
-            isEmpty={!response}
-            isFailure={isFailure}
-            LoadingState={<LoadingHeadersTable />}
-            FailState={<FailedRequest response={response} />}
-            EmptyState={<NoResponse />}
-          >
-            <>
-              <HeaderTable
-                // HACK - To support absolutely positioned bottom toolbar
-                className="pb-16"
-                headers={response?.app_responses?.responseHeaders ?? {}}
-              />
-              {showBottomToolbar && <BottomToolbar response={response} />}
-            </>
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="debug">
@@ -184,6 +182,43 @@ export function ResponsePanel({
           </TabContentInner>
         </CustomTabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function CollapsibleBodyContainer({
+  className,
+  defaultCollapsed = false,
+  title = "Body",
+  children,
+}: {
+  emptyMessage?: string;
+  className?: string;
+  defaultCollapsed?: boolean;
+  title?: string;
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(!defaultCollapsed);
+  const toggleIsOpen = () => setIsOpen((o) => !o);
+
+  return (
+    <div className={cn(className)}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <SubSectionHeading
+            className="flex items-center gap-2"
+            onClick={toggleIsOpen}
+          >
+            {isOpen ? (
+              <CaretDownIcon className="w-4 h-4 cursor-pointer" />
+            ) : (
+              <CaretRightIcon className="w-4 h-4 cursor-pointer" />
+            )}
+            {title}
+          </SubSectionHeading>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">{children}</CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }
@@ -312,9 +347,11 @@ function ResponseSummary({
 }
 
 function ResponseBody({
+  headersSlot,
   response,
   className,
 }: {
+  headersSlot?: React.ReactNode;
   response?: Requestornator | RequestorActiveResponse;
   className?: string;
 }) {
@@ -334,7 +371,16 @@ function ResponseBody({
     }
 
     if (body?.type === "text") {
-      return <ResponseBodyText body={body.value} className={className} />;
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            <ResponseBodyText body={body.value} className={className} />
+          </CollapsibleBodyContainer>
+        </div>
+      );
     }
 
     if (body?.type === "json") {
@@ -344,7 +390,10 @@ function ResponseBody({
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+          </CollapsibleBodyContainer>
         </div>
       );
     }
@@ -355,14 +404,26 @@ function ResponseBody({
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          Unknown response type, cannot render body
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            Unknown response type, cannot render body
+          </CollapsibleBodyContainer>
         </div>
       );
     }
 
     // TODO
     if (body?.type === "binary") {
-      return <ResponseBodyBinary body={body} />;
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            <ResponseBodyBinary body={body} />;
+          </CollapsibleBodyContainer>
+        </div>
+      );
     }
   }
 
@@ -377,7 +438,10 @@ function ResponseBody({
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+          </CollapsibleBodyContainer>
         </div>
       );
     }
@@ -385,39 +449,39 @@ function ResponseBody({
     // For text responses, just split into lines and render with rudimentary line numbers
     // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
-    return <ResponseBodyText body={body ?? ""} className={className} />;
+    return (
+      <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
+        {headersSlot}
+        <CollapsibleBodyContainer>
+          <ResponseBodyText body={body ?? ""} className={className} />
+        </CollapsibleBodyContainer>
+      </div>
+    );
   }
 }
 
 function ResponseBodyBinary({
   body,
-  className,
 }: {
   body: { contentType: string; type: "binary"; value: ArrayBuffer };
-  className?: string;
 }) {
   const isImage = body.contentType.startsWith("image/");
 
   if (isImage) {
     const blob = new Blob([body.value], { type: body.contentType });
     const imageUrl = URL.createObjectURL(blob);
-
     return (
-      <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
-        <img
-          src={imageUrl}
-          alt="Response Image"
-          className="max-w-full h-auto"
-          onLoad={() => URL.revokeObjectURL(imageUrl)}
-        />
-      </div>
+      <img
+        src={imageUrl}
+        alt="Response Image"
+        className="max-w-full h-auto"
+        onLoad={() => URL.revokeObjectURL(imageUrl)}
+      />
     );
   }
-  return (
-    <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
-      Binary response {body.contentType}
-    </div>
-  );
+
+  // TODO - Stylize
+  return <div>Binary response {body.contentType}</div>;
 }
 
 export function ResponseBodyText({
@@ -491,34 +555,6 @@ function LoadingResponseBody() {
         <Skeleton className="w-full h-4" />
       </div>
       <Skeleton className="w-full h-32 mt-2" />
-    </>
-  );
-}
-
-function LoadingHeadersTable() {
-  return (
-    <>
-      <Skeleton className="w-full h-4" />
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
     </>
   );
 }

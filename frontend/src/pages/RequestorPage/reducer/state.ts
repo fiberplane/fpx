@@ -145,8 +145,8 @@ export const initialState: RequestorState = {
   activeRequestsPanelTab: "params",
   visibleRequestsPanelTabs: ["params", "headers"],
 
-  activeResponsePanelTab: "body",
-  visibleResponsePanelTabs: ["body", "headers", "debug", "history"],
+  activeResponsePanelTab: "response",
+  visibleResponsePanelTabs: ["response", "debug"],
 
   // HACK - This is used to force us to show a response body for a request loaded from history
   activeHistoryResponseTraceId: null,
