@@ -1,12 +1,13 @@
-// This is a simple store for the webhonc connection id that should be set
-// whenever the app boots up and establishes a connection with the webhonc
-// service.
-let webhoncConnectionId: string | undefined = undefined;
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type * as schema from "../../db/schema.js";
+import { getSetting, upsertSettings } from "../settings/index.js";
 
-export function setWebHoncConnectionId(id: string) {
-  webhoncConnectionId = id;
+const WEBHONC_CONNECTION_ID_KEY = "webhoncConnectionId";
+
+export async function setWebHoncConnectionId(db: LibSQLDatabase<typeof schema>, id: string) {
+  await upsertSettings(db, { [WEBHONC_CONNECTION_ID_KEY]: id });
 }
 
-export function getWebHoncConnectionId() {
-  return webhoncConnectionId;
+export async function getWebHoncConnectionId(db: LibSQLDatabase<typeof schema>) {
+  return await getSetting(db, WEBHONC_CONNECTION_ID_KEY);
 }
