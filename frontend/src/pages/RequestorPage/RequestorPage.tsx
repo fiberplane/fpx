@@ -40,7 +40,7 @@ export const RequestorPage = () => {
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
     getIsInDraftMode,
-    addServiceUrlToPath,
+    addServiceUrlIfBarePath,
     removeServiceUrlFromPath,
 
     // Request panel
@@ -131,7 +131,7 @@ export const RequestorPage = () => {
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
     body,
-    addServiceUrlToPath,
+    addServiceUrlIfBarePath,
     path,
     method,
     pathParams,
@@ -177,6 +177,7 @@ export const RequestorPage = () => {
       setPath: handlePathInputChange,
       setRequestHeaders,
       updatePathParamValues,
+      addServiceUrlIfBarePath,
     },
     body,
   );

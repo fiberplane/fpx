@@ -10,7 +10,7 @@ export function useRequestorSubmitHandler({
   selectedRoute,
   body,
   path,
-  addServiceUrlToPath,
+  addServiceUrlIfBarePath,
   method,
   pathParams,
   queryParams,
@@ -19,7 +19,9 @@ export function useRequestorSubmitHandler({
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addServiceUrlToPath: ReturnType<typeof useRequestor>["addServiceUrlToPath"];
+  addServiceUrlIfBarePath: ReturnType<
+    typeof useRequestor
+  >["addServiceUrlIfBarePath"];
   selectedRoute: ProbedRoute | null;
   body: RequestorBody;
   path: string;
@@ -38,7 +40,7 @@ export function useRequestorSubmitHandler({
       e.preventDefault();
 
       if (isWsRequest(requestType)) {
-        const url = addServiceUrlToPath(path);
+        const url = addServiceUrlIfBarePath(path);
         connectWebsocket(url);
         toast({
           description: "Connecting to websocket",
@@ -71,7 +73,7 @@ export function useRequestorSubmitHandler({
 
       // TODO - Check me
       if (isWsRequest(requestType)) {
-        const url = addServiceUrlToPath(path);
+        const url = addServiceUrlIfBarePath(path);
         connectWebsocket(url);
         toast({
           description: "Connecting to websocket",
@@ -81,7 +83,7 @@ export function useRequestorSubmitHandler({
 
       makeRequest(
         {
-          addServiceUrlToPath,
+          addServiceUrlIfBarePath,
           path,
           method,
           body,
@@ -114,7 +116,7 @@ export function useRequestorSubmitHandler({
       body,
       requestHeaders,
       makeRequest,
-      addServiceUrlToPath,
+      addServiceUrlIfBarePath,
       path,
       method,
       pathParams,

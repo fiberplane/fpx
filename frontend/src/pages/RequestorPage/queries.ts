@@ -188,7 +188,7 @@ export function useMakeProxiedRequest({
 }
 
 export function makeProxiedRequest({
-  addServiceUrlToPath,
+  addServiceUrlIfBarePath,
   path,
   method,
   body,
@@ -197,7 +197,7 @@ export function makeProxiedRequest({
   queryParams,
   route,
 }: {
-  addServiceUrlToPath: (path: string) => string;
+  addServiceUrlIfBarePath: (path: string) => string;
   path: string;
   method: string;
   body: RequestorBody;
@@ -236,7 +236,7 @@ export function makeProxiedRequest({
   // HACK - This is the most secure code I've ever written
   //        We're serializing the proxy-to url into a header
   //        and this is the url that ultimately receives the request
-  const proxyToUrl = addServiceUrlToPath(path);
+  const proxyToUrl = addServiceUrlIfBarePath(path);
   modHeaders["x-fpx-proxy-to"] = proxyToUrl;
 
   // HACK - Serialize headers into the headers waaaaat
