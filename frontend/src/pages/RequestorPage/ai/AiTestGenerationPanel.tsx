@@ -29,8 +29,8 @@ export function AiTestGenerationPanel({
 
   const lastMatchingRequest = useMemo<Requestornator | null>(() => {
     const activeRoute = getActiveRoute();
+
     const match = history.find((response) => {
-      // FIXME
       const path = parsePathFromRequestUrl(response.app_requests?.requestUrl);
 
       if (path === null) {
@@ -44,7 +44,16 @@ export function AiTestGenerationPanel({
         activeRoute.requestType,
       );
 
-      return !!match;
+      if (match) {
+        return true;
+      }
+
+      // HACK - For requesets against non-detected routes, we can search for the exact request url...
+      if (response.app_requests?.requestUrl === activeRoute.path) {
+        return true;
+      }
+
+      return false;
     });
 
     return match ?? null;

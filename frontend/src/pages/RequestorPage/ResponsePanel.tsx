@@ -74,12 +74,12 @@ export function ResponsePanel({
   // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
   const responseToRender = activeResponse ?? tracedResponse;
 
-  console.log("responseToRender", responseToRender);
-
   const isFailure = isRequestorActiveResponse(responseToRender)
     ? responseToRender.isFailure
     : responseToRender?.app_responses?.isFailure;
 
+  // FIXME - This should actually look if the trace exists in the database
+  //         Since a trace ID will still be created even if we request a non-existent route OR against a service that doesn't exist
   const hasTraceId = isRequestorActiveResponse(responseToRender)
     ? !!responseToRender?.traceId
     : !!responseToRender?.app_responses?.traceId;
@@ -263,7 +263,10 @@ const BottomToolbar = ({
       <div className="sm:hidden">
         <AiTestGenerationDrawer history={response ? [response] : null} />
       </div>
-      <Link to={`/requests/otel/${traceId}`}>
+      <Link
+        to={`/requests/otel/${traceId}`}
+        className={cn(disableGoToTraceButton && "pointer-events-none")}
+      >
         <Button variant="secondary" disabled={disableGoToTraceButton}>
           {disableGoToTraceButton ? (
             "Cannot Find Trace"
@@ -394,7 +397,6 @@ function ResponseBody({
   response?: Requestornator | RequestorActiveResponse;
   className?: string;
 }) {
-  console.log("[rb] response", response);
   const isFailure = isRequestorActiveResponse(response)
     ? response?.isFailure
     : response?.app_responses?.isFailure;
@@ -405,7 +407,6 @@ function ResponseBody({
   }
 
   if (isRequestorActiveResponse(response)) {
-    console.log("[rb] isRequestorActiveResponse", response);
     const body = response?.responseBody;
     if (body?.type === "error") {
       return <FailedRequest response={response} />;

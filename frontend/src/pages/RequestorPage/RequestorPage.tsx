@@ -378,6 +378,23 @@ function useMostRecentRequestornator(
     // Descending sort by updatedAt
     matchingResponses?.sort(sortRequestornatorsDescending);
 
-    return matchingResponses?.[0];
+    const latestMatch = matchingResponses?.[0];
+
+    if (latestMatch) {
+      return latestMatch;
+    }
+
+    // HACK - We can try to match against the exact request URL
+    //        This is a fallback to support the case where the route doesn't exist,
+    //        perhaps because we made a request to a service we are not explicitly monitoring
+    const matchingResponsesFallback = all?.filter(
+      (r: Requestornator) =>
+        r?.app_requests?.requestUrl === requestInputs.path &&
+        r?.app_requests?.requestMethod === requestInputs.method,
+    );
+
+    matchingResponsesFallback?.sort(sortRequestornatorsDescending);
+
+    return matchingResponsesFallback?.[0];
   }, [all, requestInputs, activeHistoryResponseTraceId]);
 }
