@@ -7,11 +7,10 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@biomejs/biome':
-        specifier: ^1.8.0
-        version: 1.8.3
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.8.3
+        version: 1.8.3
       rimraf:
         specifier: ^5.0.7
         version: 5.0.10
@@ -8024,7 +8023,7 @@ snapshots:
 
   '@typescript/vfs@1.6.0(typescript@5.5.4)':
     dependencies:
-      debug: 4.3.6(supports-color@8.1.1)
+      debug: 4.3.6
       typescript: 5.5.4
     transitivePeerDependencies:
       - supports-color
@@ -8717,7 +8716,7 @@ snapshots:
 
   esbuild-register@3.6.0(esbuild@0.19.12):
     dependencies:
-      debug: 4.3.6(supports-color@8.1.1)
+      debug: 4.3.6
       esbuild: 0.19.12
     transitivePeerDependencies:
       - supports-color
@@ -10899,7 +10898,7 @@ snapshots:
   threads@1.7.0:
     dependencies:
       callsites: 3.1.0
-      debug: 4.3.6(supports-color@8.1.1)
+      debug: 4.3.6
       is-observable: 2.1.0
       observable-fns: 0.6.1
     optionalDependencies:
@@ -11142,7 +11141,7 @@ snapshots:
   vite-node@1.6.0(@types/node@20.14.15):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.6(supports-color@8.1.1)
+      debug: 4.3.6
       pathe: 1.1.2
       picocolors: 1.0.1
       vite: 5.4.0(@types/node@20.14.15)
@@ -11197,7 +11196,7 @@ snapshots:
       '@vitest/utils': 1.6.0
       acorn-walk: 8.3.3
       chai: 4.5.0
-      debug: 4.3.6(supports-color@8.1.1)
+      debug: 4.3.6
       execa: 8.0.1
       local-pkg: 0.5.0
       magic-string: 0.30.11
