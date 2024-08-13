@@ -7,6 +7,7 @@ interface RealtimeServiceOptions {
   path: string;
   wsConnections: Set<WebSocket>;
 }
+
 export function setupRealtimeService({
   server,
   path,

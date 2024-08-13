@@ -1,6 +1,7 @@
 // Only using for global types
 
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type { Context } from "hono";
 import type { WebSocket } from "ws";
 import { z } from "zod";
 import type * as schema from "../db/schema.js";
@@ -15,6 +16,8 @@ export type Variables = {
   db: LibSQLDatabase<typeof schema>;
   wsConnections: Set<WebSocket>;
 };
+
+export type ApiContext = Context<{ Bindings: Bindings, Variables: Variables }>;
 
 /**
  * ==========================================================

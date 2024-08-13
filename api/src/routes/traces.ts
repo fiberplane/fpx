@@ -1,10 +1,11 @@
 import type { IExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import * as schema from "../db/schema.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
+import { getSpans } from "../db/service/traces.js";
 
 const { otelSpans } = schema;
 
@@ -17,13 +18,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
  * This powers the table of traces in the UI.
  */
 app.get("/v1/traces", async (ctx) => {
-  const db = ctx.get("db");
-
-  const spans = await db
-    .select()
-    .from(otelSpans)
-    .where(and(sql`parsed_payload->>'scope_name' = 'fpx-tracer'`))
-    .orderBy(desc(otelSpans.createdAt));
+  const spans = await getSpans(ctx);
 
   const traceMap = new Map<string, Array<(typeof spans)[0]>>();
 
@@ -38,13 +33,18 @@ app.get("/v1/traces", async (ctx) => {
     traceMap.get(traceId)?.push(span);
   }
 
-  const traces = Array.from(traceMap.entries()).map(([traceId, spans]) => ({
+  const traces: ListTracesResponse = Array.from(traceMap.entries()).map(([traceId, spans]) => ({
     traceId,
     spans,
   }));
 
   return ctx.json(traces);
 });
+
+export type ListTracesResponse = Array<{
+  traceId: string,
+  spans: Awaited<ReturnType<typeof getSpans>>
+}>;
 
 /**
  * As of writing, this endpoint is used to fetch all spans for a given trace ID.

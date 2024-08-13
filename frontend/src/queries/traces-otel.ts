@@ -1,6 +1,9 @@
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { MIZU_TRACES_KEY } from "./queries";
+// import types from "@fiberplane/studio";
+// console.log(types);
+import { KaasBroodje } from "@fiberplane/studio-types";
 
 const OtelAttributesSchema = z.record(
   z.string(),
@@ -115,28 +118,19 @@ async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
 export function useOtelTraces() {
   return useQuery({
     queryKey: [MIZU_TRACES_KEY],
-    queryFn: (): Promise<OtelTrace[]> => {
-      return fetch("/v1/traces")
-        .then((res) => res.json())
-        .then((r) => {
-          // Uncomment the following line for inspection:
-          // console.log("Otel Traces before decoding:", r);
-          return r;
-        })
-        .then((r) => {
-          return r.map(
-            (t: {
-              traceId: string;
-              spans: { parsedPayload: unknown; rawPayload: unknown }[];
-            }) => {
-              return {
-                traceId: t.traceId,
-                spans: t.spans.map((span) =>
-                  toOtelSpan(span.parsedPayload, span.rawPayload),
-                ),
-              };
-            },
-          );
+    queryFn: async (): Promise<OtelTrace[]> => {
+      const response = await fetch("/v1/traces");
+      const json = await response.json();
+
+      return json.map(
+        (t: {
+          traceId: string;
+          spans: { parsedPayload: unknown; rawPayload: unknown; }[];
+        }) => {
+          return {
+            traceId: t.traceId,
+            spans: t.spans.map((span) => toOtelSpan(span.parsedPayload, span.rawPayload)),
+          };
         });
     },
   });

@@ -8,6 +8,7 @@
     "node": ">=16.0.0"
   },
   "types": "./src/lib/types.ts",
+  "typings": "./src/lib/types.ts",
   "scripts": {
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
@@ -29,6 +30,7 @@
     "fpx": "bin/cli.js"
   },
   "dependencies": {
+    "@fiberplane/studio-types": "workspace:*",
     "@anthropic-ai/sdk": "^0.24.3",
     "@hono/node-server": "^1.11.1",
     "@hono/zod-validator": "^0.2.2",

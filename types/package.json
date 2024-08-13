@@ -1,0 +1,6 @@
+{
+  "name": "@fiberplane/studio-types",
+  "scripts": {
+    "build": "tsc"
+  }
+}
