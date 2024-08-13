@@ -84,8 +84,7 @@ export function useRequestorHistory({
         handleSelectRoute(matchedRoute.route, pathParams);
 
         // Reset the path to the *exact* path of the request, instead of the route pattern
-        const path =
-          parsePathFromRequestUrl(match.app_requests.requestUrl) ?? "";
+        const path = match.app_requests.requestUrl ?? "";
         setPath(path);
 
         const headers = match.app_requests.requestHeaders ?? {};
@@ -124,8 +123,7 @@ export function useRequestorHistory({
       } else {
         // HACK - move this logic into the reducer
         // Reset the path to the *exact* path of the request, instead of the route pattern
-        const path =
-          parsePathFromRequestUrl(match.app_requests.requestUrl) ?? "";
+        const path = match.app_requests.requestUrl ?? "";
         setPath(path);
 
         const requestType = match.app_requests.requestUrl.startsWith("ws")
