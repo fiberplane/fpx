@@ -5,7 +5,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
     "lint": "biome lint .",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "typecheck": "pnpm run cf-typegen && tsc --noEmit"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.2.2",
