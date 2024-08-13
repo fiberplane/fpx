@@ -4,7 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { reduceFormDataParameters } from "./FormDataForm";
 import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
-import type { RequestorBody } from "./reducer/state";
+import type {
+  RequestorActiveResponse,
+  RequestorBody,
+  RequestorResponseBody,
+} from "./reducer/state";
 import { RequestMethodSchema, RequestTypeSchema } from "./types";
 
 export const ProbedRouteSchema = z.object({
@@ -150,17 +154,28 @@ export type MakeProxiedRequestQueryFn = ReturnType<
 
 export function useMakeProxiedRequest({
   clearResponseBodyFromHistory,
-}: { clearResponseBodyFromHistory: () => void }) {
+  setActiveResponse,
+}: {
+  clearResponseBodyFromHistory: () => void;
+  setActiveResponse: (response: RequestorActiveResponse | null) => void;
+}) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: makeProxiedRequest,
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate and refetch requestor requests
       queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
       clearResponseBodyFromHistory();
+      if (data) {
+        setActiveResponse(data);
+      } else {
+        console.error("No data returned from makeProxiedRequest");
+      }
     },
     onError: () => {
       clearResponseBodyFromHistory();
+      // TODO - Clear active response
+      setActiveResponse(null);
     },
   });
 
@@ -222,11 +237,100 @@ export function makeProxiedRequest({
     method,
     headers: modHeaders,
     body: method === "GET" || method === "HEAD" ? undefined : hackyBody,
-  }).then((r) => {
+  }).then(async (r) => {
+    // Serialize response body to render in the UI
+    const responseBody = await serializeResponseBody(r);
+    // Serialize response headers into a JavaScript object
+    const responseHeaders = Object.fromEntries(r.headers.entries());
     return {
-      traceId: r.headers.get("x-fpx-trace-id"),
+      traceId: r.headers.get("x-fpx-trace-id") ?? crypto.randomUUID(),
+      responseHeaders,
+      responseBody,
+      responseStatusCode: r.status.toString(),
+      isFailure: responseBody.type === "error",
+
+      // Need these fields for UI
+      requestUrl: addBaseUrl(resolvedPath),
+      requestMethod: method,
     };
   });
+}
+
+async function serializeResponseBody(
+  response: Response,
+): Promise<RequestorResponseBody> {
+  const contentType = response.headers.get("content-type") || "";
+
+  try {
+    if (!response.body) {
+      return {
+        contentType,
+        type: "empty",
+      };
+    }
+
+    if (contentType.includes("application/json")) {
+      const json = await response.text();
+      return {
+        contentType,
+        type: "json",
+        value: json,
+      };
+    }
+
+    if (contentType.includes("text/html")) {
+      const text = await response.text();
+      return {
+        contentType,
+        type: "html",
+        value: text,
+      };
+    }
+
+    if (contentType.includes("text/")) {
+      const text = await response.text();
+      return {
+        contentType,
+        type: "text",
+        value: text,
+      };
+    }
+
+    // Handle binary data
+    const binaryContentTypes = [
+      "application/octet-stream",
+      "image/",
+      "audio/",
+      "video/",
+      "application/pdf",
+      "application/zip",
+      // Add more binary content types as needed
+    ];
+
+    if (binaryContentTypes.some((type) => contentType.includes(type))) {
+      const buffer = await response.arrayBuffer();
+      return {
+        contentType,
+        type: "binary",
+        value: buffer,
+      };
+    }
+
+    // Default case for unknown content types
+    const text = await response.text();
+    return {
+      contentType,
+      type: "unknown",
+      value: text,
+    };
+  } catch (e) {
+    console.error("Error serializing response body", e);
+    return {
+      contentType,
+      type: "error",
+      value: null,
+    };
+  }
 }
 
 function createBody(body: RequestorBody) {

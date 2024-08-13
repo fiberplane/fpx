@@ -5,9 +5,69 @@ import {
 } from "../KeyValueForm";
 import { ProbedRouteSchema } from "../queries";
 import { RequestMethodSchema, RequestTypeSchema } from "../types";
-import { loadUiStateFromLocalStorage } from "./persistence";
 import { RequestorBodySchema } from "./request-body";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
+
+const RequestorResponseBodySchema = z.discriminatedUnion("type", [
+  z.object({
+    contentType: z.string(),
+    type: z.literal("empty"),
+  }),
+  z.object({
+    contentType: z.string(),
+    type: z.literal("json"),
+    // NOTE - we pass it as text
+    value: z.string(),
+  }),
+  z.object({
+    contentType: z.string(),
+    type: z.literal("text"),
+    value: z.string(),
+  }),
+  z.object({
+    contentType: z.string(),
+    type: z.literal("html"),
+    value: z.string(),
+  }),
+  z.object({
+    contentType: z.string(),
+    type: z.literal("binary"),
+    value: z.instanceof(ArrayBuffer),
+  }),
+  z.object({
+    contentType: z.string(),
+    type: z.literal("unknown"),
+    value: z.string(),
+  }),
+  z.object({
+    contentType: z.string(),
+    type: z.literal("error"),
+    value: z.null(),
+  }),
+]);
+
+export type RequestorResponseBody = z.infer<typeof RequestorResponseBodySchema>;
+
+const RequestorActiveResponseSchema = z.object({
+  traceId: z.string().nullable(),
+  responseBody: RequestorResponseBodySchema,
+  responseHeaders: z.record(z.string()).nullable(),
+  responseStatusCode: z.string(),
+  isFailure: z.boolean().nullable(),
+
+  requestUrl: z.string(),
+  requestMethod: z.string(),
+});
+
+export const isRequestorActiveResponse = (
+  response: unknown,
+): response is RequestorActiveResponse => {
+  return RequestorActiveResponseSchema.safeParse(response).success;
+};
+
+export type RequestorActiveResponse = z.infer<
+  typeof RequestorActiveResponseSchema
+>;
 
 export const RequestorStateSchema = z.object({
   routes: z.array(ProbedRouteSchema).describe("All routes"),
@@ -53,6 +113,11 @@ export const RequestorStateSchema = z.object({
     .string()
     .nullable()
     .describe("The trace id to show in the response panel"),
+
+  // NOTE - This is used to force us to show a response body for a request that was most recently made
+  activeResponse: RequestorActiveResponseSchema.nullable().describe(
+    "The response to show in the response panel",
+  ),
 });
 
 export type RequestorState = z.infer<typeof RequestorStateSchema>;
@@ -85,6 +150,8 @@ export const initialState: RequestorState = {
 
   // HACK - This is used to force us to show a response body for a request loaded from history
   activeHistoryResponseTraceId: null,
+
+  activeResponse: null,
 };
 
 /**
@@ -95,3 +162,52 @@ export const createInitialState = (initial: RequestorState) => {
   const savedState = loadUiStateFromLocalStorage();
   return savedState ? { ...initial, ...savedState } : initial;
 };
+
+/**
+ * A subset of the RequestorState that is saved to local storage.
+ * We don't save things like `routes` since that could be crufty,
+ * and will be refetched when the page reloads anyhow
+ */
+const SavedRequestorStateSchema = RequestorStateSchema.pick({
+  path: true,
+  method: true,
+  requestType: true,
+  pathParams: true,
+  queryParams: true,
+  requestHeaders: true,
+  body: true,
+});
+
+export type SavedRequestorState = z.infer<typeof SavedRequestorStateSchema>;
+
+const isSavedRequestorState = (
+  state: unknown,
+): state is SavedRequestorState => {
+  const result = SavedRequestorStateSchema.safeParse(state);
+  if (!result.success) {
+    console.error(
+      "SavedRequestorState validation failed:",
+      result.error.format(),
+    );
+  }
+  return result.success;
+};
+
+export const LOCAL_STORAGE_KEY = "requestorUiState";
+
+function loadUiStateFromLocalStorage(): SavedRequestorState | null {
+  const possibleUiState = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (!possibleUiState) {
+    return null;
+  }
+
+  try {
+    const uiState = JSON.parse(possibleUiState);
+    if (isSavedRequestorState(uiState)) {
+      return uiState;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}

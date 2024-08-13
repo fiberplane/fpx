@@ -29,10 +29,15 @@ import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { AiTestGeneration } from "./ai";
 import { Requestornator } from "./queries";
 import type { ResponsePanelTab } from "./reducer";
+import {
+  RequestorActiveResponse,
+  isRequestorActiveResponse,
+} from "./reducer/state";
 import { type RequestType, isWsRequest } from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
 type Props = {
+  activeResponse: RequestorActiveResponse | null;
   activeResponsePanelTab: ResponsePanelTab;
   setActiveResponsePanelTab: (tab: string) => void;
   shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
@@ -45,6 +50,7 @@ type Props = {
 };
 
 export function ResponsePanel({
+  activeResponse,
   activeResponsePanelTab,
   setActiveResponsePanelTab,
   shouldShowResponseTab,
@@ -110,7 +116,7 @@ export function ResponsePanel({
         <CustomTabsContent value="body">
           <TabContentInner
             isLoading={isLoading}
-            isEmpty={!response}
+            isEmpty={!response && !activeResponse}
             isFailure={
               isWsRequest(requestType) ? websocketState.hasError : isFailure
             }
@@ -131,9 +137,9 @@ export function ResponsePanel({
             }
           >
             <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
-              <ResponseSummary response={response} />
+              <ResponseSummary response={activeResponse ?? response} />
               <ResponseBody
-                response={response}
+                response={activeResponse ?? response}
                 className={cn(showBottomToolbar && "pb-16")}
               />
               {showBottomToolbar && <BottomToolbar response={response} />}
@@ -268,14 +274,22 @@ function TabContentInner({
   );
 }
 
-function ResponseSummary({ response }: { response?: Requestornator }) {
-  const status = response?.app_responses?.responseStatusCode;
-  const method = response?.app_requests?.requestMethod;
+function ResponseSummary({
+  response,
+}: { response?: Requestornator | RequestorActiveResponse }) {
+  const status = isRequestorActiveResponse(response)
+    ? response?.responseStatusCode
+    : response?.app_responses?.responseStatusCode;
+  const method = isRequestorActiveResponse(response)
+    ? response?.requestMethod
+    : response?.app_requests?.requestMethod;
   // const url = response?.app_requests?.requestUrl;
-  const url = parsePathFromRequestUrl(
-    response?.app_requests?.requestUrl ?? "",
-    response?.app_requests?.requestQueryParams ?? undefined,
-  );
+  const url = isRequestorActiveResponse(response)
+    ? response?.requestUrl
+    : parsePathFromRequestUrl(
+        response?.app_requests?.requestUrl ?? "",
+        response?.app_requests?.requestQueryParams ?? undefined,
+      );
   return (
     <div className="flex items-center mb-4 space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
@@ -300,30 +314,85 @@ function ResponseSummary({ response }: { response?: Requestornator }) {
 function ResponseBody({
   response,
   className,
-}: { response?: Requestornator; className?: string }) {
-  const isFailure = response?.app_responses?.isFailure;
-  const body = response?.app_responses?.responseBody;
+}: {
+  response?: Requestornator | RequestorActiveResponse;
+  className?: string;
+}) {
+  const isFailure = isRequestorActiveResponse(response)
+    ? response?.isFailure
+    : response?.app_responses?.isFailure;
 
   // This means we couldn't even contact the service
   if (isFailure) {
     return <FailedRequest response={response} />;
   }
 
-  // Special rendering for JSON
-  if (body && isJson(body)) {
-    const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
+  if (isRequestorActiveResponse(response)) {
+    const body = response?.responseBody;
+    if (body?.type === "error") {
+      return <FailedRequest response={response} />;
+    }
 
-    return (
-      <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
-        <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
-      </div>
-    );
+    if (body?.type === "text") {
+      return <ResponseBodyText body={body.value} className={className} />;
+    }
+
+    if (body?.type === "json") {
+      const prettyBody = JSON.stringify(JSON.parse(body.value), null, 2);
+
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+        </div>
+      );
+    }
+
+    // TODO
+    if (body?.type === "unknown") {
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          Unknown response type
+        </div>
+      );
+    }
+
+    // TODO
+    if (body?.type === "binary") {
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          Binary response
+        </div>
+      );
+    }
   }
 
-  // For text responses, just split into lines and render with rudimentary line numbers
-  // TODO - if response is empty, show that in a ux friendly way, with 204 for example
+  if (!isRequestorActiveResponse(response)) {
+    const body = response?.app_responses?.responseBody;
 
-  return <ResponseBodyText body={body ?? ""} className={className} />;
+    // Special rendering for JSON
+    if (body && isJson(body)) {
+      const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
+
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+        </div>
+      );
+    }
+
+    // For text responses, just split into lines and render with rudimentary line numbers
+    // TODO - if response is empty, show that in a ux friendly way, with 204 for example
+
+    return <ResponseBodyText body={body ?? ""} className={className} />;
+  }
 }
 
 export function ResponseBodyText({
@@ -429,9 +498,13 @@ function LoadingHeadersTable() {
   );
 }
 
-function FailedRequest({ response }: { response?: Requestornator }) {
+function FailedRequest({
+  response,
+}: { response?: Requestornator | RequestorActiveResponse }) {
   // TODO - Show a more friendly error message
-  const failureReason = response?.app_responses?.failureReason;
+  const failureReason = isRequestorActiveResponse(response)
+    ? null
+    : response?.app_responses?.failureReason;
   const friendlyMessage =
     failureReason === "fetch failed" ? "Service unreachable" : null;
   // const failureDetails = response?.app_responses?.failureDetails;

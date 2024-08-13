@@ -64,6 +64,10 @@ export const RequestorPage = () => {
     setActiveResponsePanelTab,
     shouldShowResponseTab,
 
+    // Response Panel response body
+    state: { activeResponse },
+    setActiveResponse,
+
     // History (WIP)
     state: { activeHistoryResponseTraceId },
     showResponseBodyFromHistory,
@@ -109,7 +113,7 @@ export const RequestorPage = () => {
   );
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
-    useMakeProxiedRequest({ clearResponseBodyFromHistory });
+    useMakeProxiedRequest({ clearResponseBodyFromHistory, setActiveResponse });
 
   // WIP - Allows us to connect to a websocket and send messages through it
   const {
@@ -315,6 +319,7 @@ export const RequestorPage = () => {
           />
 
           <ResponsePanel
+            activeResponse={activeResponse}
             activeResponsePanelTab={activeResponsePanelTab}
             setActiveResponsePanelTab={setActiveResponsePanelTab}
             shouldShowResponseTab={shouldShowResponseTab}

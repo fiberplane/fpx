@@ -8,6 +8,7 @@ import { RequestMethod, RequestMethodInputValue, RequestType } from "../types";
 import { useSaveUiState } from "./persistence";
 import {
   RequestBodyType,
+  RequestorActiveResponse,
   RequestorBody,
   type RequestorState,
   createInitialState,
@@ -52,6 +53,7 @@ const SET_BODY_TYPE = "SET_BODY_TYPE" as const;
 const SET_WEBSOCKET_MESSAGE = "SET_WEBSOCKET_MESSAGE" as const;
 const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
 const CLEAR_HISTORICAL_REQUEST = "CLEAR_HISTORICAL_REQUEST" as const;
+const SET_ACTIVE_RESPONSE = "SET_ACTIVE_RESPONSE" as const;
 const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
 const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
 
@@ -121,6 +123,10 @@ type RequestorAction =
     }
   | {
       type: typeof CLEAR_HISTORICAL_REQUEST;
+    }
+  | {
+      type: typeof SET_ACTIVE_RESPONSE;
+      payload: RequestorActiveResponse | null;
     }
   | {
       type: typeof SET_ACTIVE_REQUESTS_PANEL_TAB;
@@ -306,6 +312,8 @@ function requestorReducer(
 
         // HACK - This allows us to stop showing the response body for a historical request
         activeHistoryResponseTraceId: null,
+
+        activeResponse: null,
       };
     }
     case SET_PATH_PARAMS: {
@@ -430,6 +438,9 @@ function requestorReducer(
     }
     case CLEAR_HISTORICAL_REQUEST: {
       return { ...state, activeHistoryResponseTraceId: null };
+    }
+    case SET_ACTIVE_RESPONSE: {
+      return { ...state, activeResponse: action.payload };
     }
     case SET_ACTIVE_REQUESTS_PANEL_TAB: {
       return { ...state, activeRequestsPanelTab: action.payload };
@@ -638,6 +649,13 @@ export function useRequestor() {
     [state.visibleResponsePanelTabs],
   );
 
+  const setActiveResponse = useCallback(
+    (response: RequestorActiveResponse | null) => {
+      dispatch({ type: SET_ACTIVE_RESPONSE, payload: response });
+    },
+    [dispatch],
+  );
+
   return {
     state,
     dispatch,
@@ -667,6 +685,9 @@ export function useRequestor() {
     // Response Panel tabs
     setActiveResponsePanelTab,
     shouldShowResponseTab,
+
+    // Response Panel response body
+    setActiveResponse,
 
     // Selectors
     getActiveRoute,
