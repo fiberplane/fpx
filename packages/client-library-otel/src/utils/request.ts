@@ -192,6 +192,40 @@ function formDataValueToString(value: string | File) {
 async function tryGetResponseBodyAsText(
   response: GlobalResponse | WorkerResponse,
 ) {
+  const contentType = response.headers.get("content-type");
+  if (contentType?.includes("image/")) {
+    return "#fpx.image";
+  }
+  if (contentType?.includes("application/pdf")) {
+    return "#fpx.pdf";
+  }
+  if (contentType?.includes("application/zip")) {
+    return "#fpx.zip";
+  }
+  if (contentType?.includes("audio/")) {
+    return "#fpx.audio";
+  }
+  if (contentType?.includes("video/")) {
+    return "#fpx.video";
+  }
+  if (
+    contentType?.includes("application/octet-stream") ||
+    contentType?.includes("application/vnd.ms-excel") ||
+    contentType?.includes(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ) ||
+    contentType?.includes("application/vnd.ms-powerpoint") ||
+    contentType?.includes(
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ) ||
+    contentType?.includes("application/msword") ||
+    contentType?.includes(
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
+  ) {
+    return "#fpx.binary";
+  }
+
   try {
     return await response.text();
   } catch {
