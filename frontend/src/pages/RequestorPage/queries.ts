@@ -165,15 +165,20 @@ export function useMakeProxiedRequest({
     onSuccess: (data) => {
       // Invalidate and refetch requestor requests
       queryClient.invalidateQueries({ queryKey: [REQUESTOR_REQUESTS_KEY] });
+
+      // Make sure the response panel is cleared of data, then add the new response
       clearResponseBodyFromHistory();
       if (data) {
         setActiveResponse(data);
       } else {
-        console.error("No data returned from makeProxiedRequest - this should not happen!");
+        console.error(
+          "No data returned from makeProxiedRequest - this should not happen!",
+        );
         setActiveResponse(null);
       }
     },
     onError: () => {
+      // Make sure the response panel is cleared of data
       clearResponseBodyFromHistory();
       setActiveResponse(null);
     },

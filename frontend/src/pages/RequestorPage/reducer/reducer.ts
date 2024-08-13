@@ -652,6 +652,10 @@ export function useRequestor() {
    */
   const getActiveRoute = (): ProbedRoute => _getActiveRoute(state);
 
+  /**
+   * Helper that removes the service url from a path,
+   * otherwise it returns the path unchanged
+   */
   const removeServiceUrlFromPath = useCallback(
     (path: string) => {
       return removeBaseUrl(state.serviceBaseUrl, path);
@@ -659,7 +663,10 @@ export function useRequestor() {
     [state.serviceBaseUrl],
   );
 
-  const addServiceUrlToPath = useCallback(
+  /**
+   * Helper that adds the service url to a path if it doesn't already have a host
+   */
+  const addServiceUrlIfBarePath = useCallback(
     (path: string) => {
       return addBaseUrl(state.serviceBaseUrl, path, {
         requestType: state.requestType,
@@ -726,7 +733,7 @@ export function useRequestor() {
     setRequestHeaders,
     setBody,
     handleRequestBodyTypeChange,
-    addServiceUrlToPath,
+    addServiceUrlIfBarePath,
     removeServiceUrlFromPath,
 
     // Websocket form
