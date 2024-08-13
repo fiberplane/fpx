@@ -280,7 +280,7 @@ function requestorReducer(
       if (didSelectedRouteChange && isDebugTabCurrentlySelected) {
         // If the selected route changed and the debug tab is selected,
         // we want to switch to the "body" tab
-        nextActiveResponsePanelTab = "body";
+        nextActiveResponsePanelTab = "response";
       }
 
       return {
