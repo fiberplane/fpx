@@ -28,7 +28,7 @@ export const RequestorPage = () => {
   globalThis.requestorState = requestorState;
   const {
     // Routes panel
-    state: { routes, serviceBaseUrl },
+    state: { routes },
     setRoutes,
     setServiceBaseUrl,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
@@ -340,7 +340,7 @@ export const RequestorPage = () => {
               history={history}
               toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
               getActiveRoute={getActiveRoute}
-              removeServiceUrl={removeServiceUrl}
+              removeServiceUrlFromPath={removeServiceUrlFromPath}
             />
           )}
         </div>

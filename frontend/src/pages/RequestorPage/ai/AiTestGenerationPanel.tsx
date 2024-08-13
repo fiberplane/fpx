@@ -30,6 +30,7 @@ export function AiTestGenerationPanel({
   const lastMatchingRequest = useMemo<Requestornator | null>(() => {
     const activeRoute = getActiveRoute();
     const match = history.find((response) => {
+      // FIXME
       const path = parsePathFromRequestUrl(response.app_requests?.requestUrl);
 
       if (path === null) {
@@ -47,7 +48,7 @@ export function AiTestGenerationPanel({
     });
 
     return match ?? null;
-  }, [getActiveRoute, history]);
+  }, [getActiveRoute, history, removeServiceUrlFromPath]);
 
   const [userInput, setUserInput] = useState("");
 

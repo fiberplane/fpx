@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ProbedRoute, useProbedRoutes } from "../queries";
-import { RequestType, isWsRequest } from "../types";
 import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
 type UseRoutesOptions = {
