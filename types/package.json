@@ -1,6 +1,8 @@
 {
   "name": "@fiberplane/fpx-types",
+  "type": "module",
   "types": "./src/index.ts",
+  "main": "./src/index.ts",
   "devDependencies": {
     "zod": "^3.23.8"
   }
