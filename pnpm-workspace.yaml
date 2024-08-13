@@ -1,4 +1,5 @@
 packages:
+  - types
   - "frontend"
   - "api"
   - "packages/*"
