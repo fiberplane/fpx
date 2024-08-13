@@ -9,7 +9,7 @@ import {
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
 import { OtelSpans, useOtelTrace } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Requestornator } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
 
