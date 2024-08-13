@@ -169,12 +169,12 @@ export function useMakeProxiedRequest({
       if (data) {
         setActiveResponse(data);
       } else {
-        console.error("No data returned from makeProxiedRequest");
+        console.error("No data returned from makeProxiedRequest - this should not happen!");
+        setActiveResponse(null);
       }
     },
     onError: () => {
       clearResponseBodyFromHistory();
-      // TODO - Clear active response
       setActiveResponse(null);
     },
   });

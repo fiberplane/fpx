@@ -695,6 +695,11 @@ export function useRequestor() {
     [state.visibleResponsePanelTabs],
   );
 
+  /**
+   * Sets the active response in the response panel
+   * This refers to the ACTUAL response body returned through our proxy,
+   * which allows us to show things like binary data in the response panel
+   */
   const setActiveResponse = useCallback(
     (response: RequestorActiveResponse | null) => {
       dispatch({ type: SET_ACTIVE_RESPONSE, payload: response });
