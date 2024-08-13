@@ -220,9 +220,11 @@ export function makeProxiedRequest({
   );
 
   // HACK - This is the most secure code I've ever written
+  //        We're serializing the proxy-to url into a header
+  //        and this is the url that ultimately receives the request
   modHeaders["x-fpx-proxy-to"] = addBaseUrl(path);
 
-  // HACK - Serialize headers into the headers
+  // HACK - Serialize headers into the headers waaaaat
   modHeaders["x-fpx-headers-json"] = JSON.stringify(modHeaders);
 
   // We resolve the url with query parameters
@@ -249,7 +251,7 @@ export function makeProxiedRequest({
       responseStatusCode: r.status.toString(),
       isFailure: responseBody.type === "error",
 
-      // Need these fields for UI
+      // NOTE - Need these fields for UI, to render the summary in the response panel
       requestUrl: addBaseUrl(resolvedPath),
       requestMethod: method,
     };

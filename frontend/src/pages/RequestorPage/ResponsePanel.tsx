@@ -349,26 +349,20 @@ function ResponseBody({
       );
     }
 
-    // TODO
+    // TODO - Stylize
     if (body?.type === "unknown") {
       return (
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          Unknown response type
+          Unknown response type, cannot render body
         </div>
       );
     }
 
     // TODO
     if (body?.type === "binary") {
-      return (
-        <div
-          className={cn("overflow-hidden overflow-y-auto w-full", className)}
-        >
-          Binary response
-        </div>
-      );
+      return <ResponseBodyBinary body={body} />;
     }
   }
 
@@ -393,6 +387,37 @@ function ResponseBody({
 
     return <ResponseBodyText body={body ?? ""} className={className} />;
   }
+}
+
+function ResponseBodyBinary({
+  body,
+  className,
+}: {
+  body: { contentType: string; type: "binary"; value: ArrayBuffer };
+  className?: string;
+}) {
+  const isImage = body.contentType.startsWith("image/");
+
+  if (isImage) {
+    const blob = new Blob([body.value], { type: body.contentType });
+    const imageUrl = URL.createObjectURL(blob);
+
+    return (
+      <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
+        <img
+          src={imageUrl}
+          alt="Response Image"
+          className="max-w-full h-auto"
+          onLoad={() => URL.revokeObjectURL(imageUrl)}
+        />
+      </div>
+    );
+  }
+  return (
+    <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
+      Binary response {body.contentType}
+    </div>
+  );
 }
 
 export function ResponseBodyText({
