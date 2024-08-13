@@ -453,7 +453,11 @@ function requestorReducer(
       return { ...state, websocketMessage: action.payload };
     }
     case LOAD_HISTORICAL_REQUEST: {
-      return { ...state, activeHistoryResponseTraceId: action.payload.traceId };
+      return {
+        ...state,
+        activeHistoryResponseTraceId: action.payload.traceId,
+        activeResponse: null,
+      };
     }
     case CLEAR_HISTORICAL_REQUEST: {
       return { ...state, activeHistoryResponseTraceId: null };
