@@ -202,7 +202,7 @@ function CollapsibleBodyContainer({
   const toggleIsOpen = () => setIsOpen((o) => !o);
 
   return (
-    <div className={cn(className)}>
+    <div className={cn(className, "border-t", "pt-2")}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <SubSectionHeading
