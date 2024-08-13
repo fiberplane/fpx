@@ -5,8 +5,8 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { generateRequestWithAiProvider } from "../lib/ai/index.js";
 import { cleanPrompt } from "../lib/ai/prompts.js";
-import type { Bindings, Variables } from "../lib/types.js";
 import { getInferenceConfig } from "../lib/settings/index.js";
+import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 

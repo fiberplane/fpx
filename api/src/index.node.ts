@@ -10,11 +10,11 @@ import { createApp } from "./app.js";
 import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
+import { getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
 import { connectToWebhonc } from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
-import { getSetting } from "./lib/settings/index.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,

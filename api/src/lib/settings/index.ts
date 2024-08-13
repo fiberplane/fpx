@@ -13,8 +13,8 @@ export async function upsertSettings(
       .insert(settings)
       .values({ key, value })
       .onConflictDoUpdate({
-      	target: [settings.key],
-       	set: { value }
+        target: [settings.key],
+        set: { value },
       });
   }
 }
@@ -29,9 +29,9 @@ export async function getSetting(
     .where(eq(settings.key, key))
     .limit(1);
 
-  if (!setting) return
+  if (!setting) return;
 
-  return setting.value
+  return setting.value;
 }
 
 export async function getAllSettings(db: LibSQLDatabase<typeof schema>) {

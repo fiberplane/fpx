@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import type { Bindings, Variables } from "../lib/types.js";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
+import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
