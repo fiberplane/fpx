@@ -174,7 +174,11 @@ function requestorReducer(
       };
     }
     case SET_SERVICE_BASE_URL: {
-      return { ...state, serviceBaseUrl: action.payload };
+      return {
+        ...state,
+        serviceBaseUrl: action.payload,
+        path: addBaseUrl(action.payload, state.path),
+      };
     }
     case PATH_UPDATE: {
       const nextPath = action.payload;
