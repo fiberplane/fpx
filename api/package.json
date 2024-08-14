@@ -12,6 +12,7 @@
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
+    "db:drop": "drizzle-kit drop",
     "db:seed": "tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio",
     "build": "pnpm run db:generate && tsc",
@@ -24,7 +25,11 @@
     "access": "public"
   },
   "license": "MIT or Apache 2",
-  "keywords": ["hono", "local", "debugging"],
+  "keywords": [
+    "hono",
+    "local",
+    "debugging"
+  ],
   "bin": {
     "fpx": "bin/cli.js"
   },
