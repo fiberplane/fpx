@@ -1,14 +1,18 @@
 {
   "name": "@fiberplane/fpx-types",
   "description": "Shared types for fpx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
-  "types": "./src/index.ts",
-  "main": "./src/index.ts",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
   "publishConfig": {
     "access": "public"
   },
   "license": "MIT or Apache 2",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "pnpm clean && tsc"
+  },
   "devDependencies": {
     "zod": "^3.23.8"
   }
