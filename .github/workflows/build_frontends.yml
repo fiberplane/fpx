@@ -63,4 +63,4 @@ jobs:
       # Release a preview version
 
       - name: Publish a temporary preview version
-        run: pnpx pkg-pr-new publish "./api" "./packages/client-library-otel"
+        run: pnpx pkg-pr-new publish --pnpm "./api" "./packages/client-library-otel"
