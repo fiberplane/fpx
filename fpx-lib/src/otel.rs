@@ -123,7 +123,7 @@ where
 ///
 /// Note that this will only set a minimal set of attributes on the span.
 fn create_span_from_req(req: &Request) -> Span {
-    // Try to get the matched path from the request. This ia a extenion from
+    // Try to get the matched path from the request. This is a extension from
     // Axum, so it might not be present. Fallback on the actual path if it
     // isn't present.
     let path = if let Some(path) = req.extensions().get::<MatchedPath>() {

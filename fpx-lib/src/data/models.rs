@@ -1,25 +1,15 @@
 use crate::api;
-use crate::api::models::{RequestSummary, SpanKind};
+use crate::api::models::SpanKind;
 use crate::data::util::{Json, Timestamp};
 use serde::Deserialize;
-use std::collections::BTreeMap;
 
-#[derive(Debug, Deserialize)]
-pub struct Request {
-    pub id: u32,
-    pub method: String,
-    pub url: String,
-    pub body: Option<String>,
-    pub headers: Json<BTreeMap<String, String>>,
+/// A computed value based on the span objects that are present.
+#[derive(Clone, Debug, Deserialize)]
+pub struct Trace {
+    pub trace_id: String,
 }
 
-impl From<Request> for api::models::Request {
-    fn from(req: Request) -> Self {
-        api::models::Request::new(req.id, req.method, req.url, req.body, req.headers.0)
-    }
-}
-
-#[derive(Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Span {
     pub trace_id: String,
     pub span_id: String,
@@ -67,26 +57,5 @@ impl From<api::models::Span> for Span {
             end_time,
             inner,
         }
-    }
-}
-
-impl From<Request> for RequestSummary {
-    fn from(request: Request) -> Self {
-        RequestSummary::new(request.id, request.method, request.url)
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Response {
-    pub id: u32,
-    pub request_id: u32,
-    pub status: u16,
-    pub body: Option<String>,
-    pub headers: Json<BTreeMap<String, String>>,
-}
-
-impl From<Response> for api::models::Response {
-    fn from(res: Response) -> Self {
-        api::models::Response::new(res.id, res.request_id, res.status, res.body, res.headers.0)
     }
 }

@@ -1,150 +1,39 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
+use async_trait::async_trait;
+use fpx_lib::data::models::Span;
+use fpx_lib::data::{DbError, Result, Store, Transaction};
 use libsql::{params, Builder, Connection};
-use std::collections::BTreeMap;
-use std::fmt::Display;
-use std::marker::PhantomData;
-use std::ops::Deref;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use thiserror::Error;
-use tokio::sync::{Mutex, MutexGuard};
-use tracing::instrument;
 use util::RowsExt;
 
-pub mod migrations;
-pub mod models;
-#[cfg(test)]
-mod tests;
-pub mod util;
+mod migrations;
+mod util;
 
-pub struct Transaction<'a, T>
-where
-    T: TransactionType,
-{
-    tx: libsql::Transaction,
-    guard: MutexGuard<'a, ()>,
-    marker: PhantomData<T>,
-}
-
-impl<'a, T> Transaction<'a, T>
-where
-    T: TransactionType,
-{
-    pub fn new(tx: libsql::Transaction, guard: MutexGuard<'a, ()>) -> Self {
-        Self {
-            tx,
-            guard,
-            marker: PhantomData,
-        }
-    }
-}
-
-impl<'a, T> Deref for Transaction<'a, T>
-where
-    T: TransactionType,
-{
-    type Target = libsql::Transaction;
-
-    fn deref(&self) -> &Self::Target {
-        &self.tx
-    }
-}
-
-pub trait TransactionType {}
-pub trait ReadTransaction: TransactionType {}
-pub trait WriteTransaction: TransactionType {}
-
-pub struct ReadOnly;
-impl TransactionType for ReadOnly {}
-impl ReadTransaction for ReadOnly {}
-
-pub struct ReadWrite;
-impl TransactionType for ReadWrite {}
-impl ReadTransaction for ReadWrite {}
-impl WriteTransaction for ReadWrite {}
-
-#[derive(Debug, Error)]
-pub enum DbError {
-    #[error("No rows were returned")]
-    NotFound,
-
-    #[error("failed to deserialize into `T`: {0}")]
-    FailedDeserialize(#[from] serde::de::value::Error),
-
-    #[error("Internal database error occurred: {0}")]
-    InternalError(#[from] libsql::Error),
-}
-
-/// Store is a abstraction around data access.
-///
-/// It has a single connection open to the database (either file or in-memory).
-/// The [`Connection`]'s implementation is already relying on a Arc, so we do
-/// not have to do do anything there.
 #[derive(Clone)]
-pub struct Store {
-    lock: Arc<Mutex<()>>,
+pub struct LibsqlStore {
     connection: Connection,
 }
 
-pub enum DataPath {
-    InMemory,
-    File(PathBuf),
-}
-
-impl DataPath {
-    pub fn as_path(&self) -> &Path {
-        match self {
-            DataPath::InMemory => Path::new(":memory:"),
-            DataPath::File(path) => path.as_path(),
-        }
-    }
-}
-
-impl Display for DataPath {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            DataPath::InMemory => write!(f, ":memory:"),
-            DataPath::File(path) => write!(f, "{}", path.display()),
-        }
-    }
-}
-
-impl Store {
-    /// Open a new store with the specified path
-    pub async fn open(path: DataPath) -> Result<Self> {
+impl LibsqlStore {
+    pub async fn in_memory() -> Result<Self, anyhow::Error> {
         // Not sure if we need this database object, but for now we just drop
         // it.
-        let database = Builder::new_local(path.as_path())
+        let database = Builder::new_local(":memory:")
             .build()
             .await
-            .with_context(|| {
-                format!(
-                    "failed to build libSQL database object: {:?}",
-                    path.as_path()
-                )
-            })?;
+            .context("failed to build libSQL database object")?;
 
-        let mut connection = database.connect().with_context(|| {
-            format!("failed to connect to libSQL database: {:?}", path.as_path())
-        })?;
+        let mut connection = database
+            .connect()
+            .context("failed to connect to libSQL database")?;
 
-        Self::initialize_connection(&mut connection)
-            .await
-            .context("failed to initialize connection")?;
+        Self::initialize_connection(&mut connection).await?;
 
-        Ok(Store {
-            lock: Arc::new(Mutex::new(())),
-            connection,
-        })
-    }
-
-    pub async fn in_memory() -> Result<Self> {
-        Self::open(DataPath::InMemory).await
+        Ok(LibsqlStore { connection })
     }
 
     /// This function will execute a few PRAGMA statements to set the database
     /// connection. This should run before any other queries are executed.
-    async fn initialize_connection(connection: &mut Connection) -> Result<(), DbError> {
+    async fn initialize_connection(connection: &mut Connection) -> Result<()> {
         connection
             .query(
                 "PRAGMA journal_mode = WAL;
@@ -158,170 +47,56 @@ impl Store {
                 (),
             )
             .await
-            .map_err(DbError::InternalError)?;
+            .map_err(|err| DbError::InternalError(err.to_string()))?;
 
         Ok(())
     }
+}
 
-    /// Start a transaction that will only do queries.
-    ///
-    /// NOTE: Currently this creates a global lock on the entire database until
-    /// the transaction is committed or rolled back. So make sure that the
-    /// transaction is open as short as possible.
-    pub async fn start_readonly_transaction(&self) -> Result<Transaction<ReadOnly>, DbError> {
-        let guard = self.lock.lock().await;
+#[async_trait]
+impl Store for LibsqlStore {
+    async fn start_readonly_transaction(&self) -> Result<Transaction> {
+        Ok(Transaction {})
+    }
+    async fn start_readwrite_transaction(&self) -> Result<Transaction> {
+        Ok(Transaction {})
+    }
 
-        let tx = self
+    async fn commit_transaction(&self, _tx: Transaction) -> Result<(), DbError> {
+        Ok(())
+    }
+    async fn rollback_transaction(&self, _tx: Transaction) -> Result<(), DbError> {
+        Ok(())
+    }
+
+    async fn span_get(&self, _tx: &Transaction, trace_id: String, span_id: String) -> Result<Span> {
+        let span = self
             .connection
-            .transaction()
-            .await
-            .map_err(DbError::InternalError)?;
-
-        Ok(Transaction::new(tx, guard))
-    }
-
-    /// Start a transaction that might do a write operation, such as a INSERT,
-    /// UPDATE or DELETE.
-    ///
-    /// NOTE: Currently this creates a global lock on the entire database until
-    /// the transaction is committed or rolled back. So make sure that the
-    /// transaction is open as short as possible.
-    pub async fn start_readwrite_transaction(&self) -> Result<Transaction<ReadWrite>, DbError> {
-        let guard = self.lock.lock().await;
-
-        let tx = self
-            .connection
-            .transaction()
-            .await
-            .map_err(DbError::InternalError)?;
-
-        Ok(Transaction::new(tx, guard))
-    }
-
-    /// Commit a transaction and release the global lock.
-    pub async fn commit_transaction<T>(&self, tx: Transaction<'_, T>) -> Result<(), DbError>
-    where
-        T: TransactionType,
-    {
-        let result = tx.tx.commit().await.map_err(DbError::InternalError);
-
-        drop(tx.guard);
-
-        result
-    }
-
-    /// Rollback a transaction and release the global lock.
-    pub async fn rollback_transaction<T>(&self, tx: Transaction<'_, T>) -> Result<(), DbError>
-    where
-        T: TransactionType,
-    {
-        let result = tx.tx.rollback().await.map_err(DbError::InternalError);
-
-        drop(tx.guard);
-
-        result
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub async fn request_create<T: WriteTransaction>(
-        tx: &Transaction<'_, T>,
-        method: &str,
-        url: &str,
-        body: Option<&str>,
-        headers: BTreeMap<String, String>,
-    ) -> Result<models::Request> {
-        let headers = serde_json::to_string(&headers)?;
-
-        let request: models::Request = tx
             .query(
-                "INSERT INTO requests (method, url, body, headers) VALUES (?, ?, ?, ?) RETURNING *",
-                params!(method, url, body, headers),
+                "SELECT * FROM spans WHERE trace_id=$1 AND span_id=$2",
+                (trace_id, span_id),
             )
-            .await
-            .context("Unable to create request")?
+            .await?
             .fetch_one()
             .await?;
 
-        Ok(request)
+        Ok(span)
     }
 
-    pub async fn request_list<T: ReadTransaction>(
-        &self,
-        tx: &Transaction<'_, T>,
-    ) -> Result<Vec<models::Request>> {
-        let requests: Vec<models::Request> = tx
-            .query("SELECT * FROM requests", params!())
+    async fn span_list_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<Vec<Span>> {
+        let spans = self
+            .connection
+            .query("SELECT * FROM spans WHERE trace_id=$1", params!(trace_id))
             .await?
             .fetch_all()
             .await?;
 
-        Ok(requests)
+        Ok(spans)
     }
 
-    #[tracing::instrument(skip_all)]
-    pub async fn request_get<T: ReadTransaction>(
-        &self,
-        tx: &Transaction<'_, T>,
-        id: i64,
-    ) -> Result<models::Request, DbError> {
-        let request: models::Request = tx
-            .query("SELECT * FROM requests WHERE id = ?", params!(id))
-            .await?
-            .fetch_one()
-            .await?;
-
-        Ok(request)
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub async fn response_create<T: WriteTransaction>(
-        tx: &Transaction<'_, T>,
-        request_id: u32,
-        status: u16,
-        headers: BTreeMap<String, String>,
-        body: Option<String>,
-    ) -> Result<models::Response> {
-        let headers_json = serde_json::to_string(&headers).unwrap_or_default();
-
-        let response: models::Response = tx
-            .query(
-                "INSERT INTO responses (request_id, status, headers, body) VALUES (?, ?, ?, ?) RETURNING *",
-                params!(request_id, status, headers_json, body),
-            )
-            .await?
-            .fetch_one()
-            .await?;
-
-        Ok(response)
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub async fn response_get_by_request_id<T: ReadTransaction>(
-        &self,
-        tx: &Transaction<'_, T>,
-        request_id: u32,
-    ) -> Result<Option<models::Response>> {
-        let response: Option<models::Response> = tx
-            .query(
-                "SELECT * FROM responses WHERE request_id = ?",
-                params!(request_id),
-            )
-            .await?
-            .fetch_optional()
-            .await?;
-
-        Ok(response)
-    }
-
-    /// Create a new span in the database. This will return a new span with any
-    /// fields potentially updated.
-    #[instrument(err, skip_all)]
-    pub async fn span_create<T: WriteTransaction>(
-        &self,
-        tx: &Transaction<'_, T>,
-        span: models::Span,
-    ) -> Result<models::Span, DbError> {
-        let span = tx
+    async fn span_create(&self, _tx: &Transaction, span: Span) -> Result<Span> {
+        let span = self
+            .connection
             .query(
                 "INSERT INTO spans
                     (
@@ -355,39 +130,32 @@ impl Store {
         Ok(span)
     }
 
-    /// Retrieve a single span from the database.
-    #[instrument(err, skip_all, fields(trace_id = ?trace_id.as_ref(), span_id = ?span_id.as_ref()))]
-    pub async fn span_get<T: ReadTransaction>(
+    /// Get a list of all the traces. (currently limited to 20, sorted by most
+    /// recent [`end_time`])
+    ///
+    /// Note that a trace is a computed value, so not all properties are
+    /// present. To get all the data, use the [`Self::span_list_by_trace`] fn.
+    async fn traces_list(
         &self,
-        tx: &Transaction<'_, T>,
-        trace_id: impl AsRef<str>,
-        span_id: impl AsRef<str>,
-    ) -> Result<models::Span, DbError> {
-        let span = tx
+        _tx: &Transaction,
+        // Future improvement could hold sort fields, limits, etc
+    ) -> Result<Vec<fpx_lib::data::models::Trace>> {
+        let traces = self
+            .connection
             .query(
-                "SELECT * FROM spans WHERE trace_id=$1 AND span_id=$2",
-                (trace_id.as_ref(), span_id.as_ref()),
+                "
+                SELECT trace_id, MAX(end_time) as end_time
+                FROM spans
+                GROUP BY trace_id
+                ORDER BY end_time DESC
+                LIMIT 20
+                ",
+                (),
             )
-            .await?
-            .fetch_one()
-            .await?;
-
-        Ok(span)
-    }
-
-    /// Retrieve all spans for a single trace from the database.
-    #[instrument(err, skip(self, tx))]
-    pub async fn span_list_by_trace<T: ReadTransaction>(
-        &self,
-        tx: &Transaction<'_, T>,
-        trace_id: String,
-    ) -> Result<Vec<models::Span>, DbError> {
-        let span = tx
-            .query("SELECT * FROM spans WHERE trace_id=$1", params!(trace_id))
             .await?
             .fetch_all()
             .await?;
 
-        Ok(span)
+        Ok(traces)
     }
 }

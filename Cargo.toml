@@ -1,12 +1,13 @@
 [workspace]
 resolver = "2"
-members = ["fpx", "fpx-macros", "xtask"]
+members = ["fpx", "fpx-lib", "fpx-workers", "fpx-macros", "xtask"]
 default-members = ["fpx"]
 
 [workspace.package]
 authors = ["Fiberplane <info@fiberplane.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/fiberplane/fpx"
+version = "0.1.0"
 
 [workspace.dependencies]
 anyhow = { version = "1.0" }

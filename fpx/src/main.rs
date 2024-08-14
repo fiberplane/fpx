@@ -15,14 +15,10 @@ use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Registry};
 
 mod api;
-pub mod canned_requests;
 mod commands;
 pub mod data;
-mod events;
-mod grpc;
-mod inspector;
-mod otel_util;
-mod service;
+pub mod events;
+pub mod grpc;
 
 #[tokio::main]
 async fn main() -> Result<()> {

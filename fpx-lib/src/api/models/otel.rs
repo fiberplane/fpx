@@ -5,6 +5,7 @@ use opentelemetry_proto::tonic::trace::v1::{span, Status};
 use opentelemetry_proto::tonic::{
     collector::trace::v1::ExportTraceServiceRequest, common::v1::KeyValue,
 };
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use strum::AsRefStr;
@@ -16,7 +17,7 @@ fn parse_time_nanos(nanos: u64) -> time::OffsetDateTime {
         .expect("timestamp is too large for OffsetDateTime")
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Span {
     pub trace_id: String,
     pub span_id: String,
@@ -117,7 +118,7 @@ impl Span {
     }
 }
 
-#[derive(AsRefStr, Default, Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Default, Serialize, Deserialize, PartialEq, Debug, Clone, AsRefStr, JsonSchema)]
 pub enum SpanKind {
     Internal,
     Server,
@@ -142,13 +143,21 @@ impl From<span::SpanKind> for SpanKind {
     }
 }
 
+#[cfg(feature = "libsql")]
 impl From<SpanKind> for libsql::Value {
     fn from(value: SpanKind) -> Self {
         value.as_ref().into()
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[cfg(feature = "wasm-bindgen")]
+impl From<SpanKind> for wasm_bindgen::JsValue {
+    fn from(value: SpanKind) -> Self {
+        wasm_bindgen::JsValue::from_str(value.as_ref())
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SpanEvent {
     pub name: String,
 
@@ -221,7 +230,7 @@ impl From<StatusCode> for SpanStatusCode {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct AttributeMap(BTreeMap<String, Option<AttributeValue>>);
 
 impl From<KeyValueList> for AttributeMap {
@@ -246,7 +255,7 @@ impl From<Vec<KeyValue>> for AttributeMap {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum AttributeValue {
     String(String),
     Bool(bool),
@@ -274,6 +283,84 @@ impl From<any_value::Value> for AttributeValue {
                 AttributeValue::Array(val)
             }
             any_value::Value::KvlistValue(val) => AttributeValue::KeyValueList(val.values.into()),
+        }
+    }
+}
+
+/// A trace contains a summary of its traces.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TraceSummary {
+    /// The trace id.
+    pub trace_id: String,
+
+    /// Start of the first span
+    #[serde(with = "time::serde::rfc3339")]
+    pub start_time: time::OffsetDateTime,
+
+    /// End of the last span
+    #[serde(with = "time::serde::rfc3339")]
+    pub end_time: time::OffsetDateTime,
+
+    /// The numbers of spans that we have for this trace.
+    pub num_spans: u32,
+
+    /// A summary of the root span associated with this trace.
+    ///
+    /// A root span is a span that has no parent span. This can be empty if the
+    /// root span was never collected.
+    pub root_span: Option<SpanSummary>,
+}
+
+impl TraceSummary {
+    pub fn from_spans(trace_id: String, spans: Vec<crate::data::models::Span>) -> Option<Self> {
+        if spans.is_empty() {
+            return None;
+        }
+
+        let num_spans = spans.len() as u32;
+
+        // Find the first start and the last end time. Note: unwrap is safe here
+        // since we check that there is at least 1 span present.
+        let start_time = spans.iter().map(|span| span.start_time).min().unwrap();
+        let end_time = spans.iter().map(|span| span.end_time).max().unwrap();
+
+        let root_span = spans
+            .into_iter()
+            .find(|span| span.parent_span_id.is_none())
+            .map(|span| span.inner.into_inner().into());
+
+        Some(Self {
+            trace_id,
+            start_time: start_time.into(),
+            end_time: end_time.into(),
+            root_span,
+            num_spans,
+        })
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct SpanSummary {
+    /// The span id.
+    pub span_id: String,
+
+    /// The name of the span.
+    pub name: String,
+
+    /// The kind of span.
+    pub span_kind: SpanKind,
+
+    /// Optional status of the span.
+    pub result: Option<Status>,
+}
+
+impl From<Span> for SpanSummary {
+    fn from(span: Span) -> Self {
+        Self {
+            span_id: span.span_id,
+            name: span.name,
+            span_kind: span.kind,
+            result: span.status,
         }
     }
 }

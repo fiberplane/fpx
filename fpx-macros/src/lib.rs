@@ -23,6 +23,17 @@ pub fn derive_api_error(input: TokenStream) -> TokenStream {
     let struct_ident = &input.ident;
     let mut variants = vec![];
 
+    if data.variants.is_empty() {
+        return (quote! {
+            impl crate::api::errors::ApiError for #struct_ident {
+                fn status_code(&self) -> http::StatusCode {
+                    http::StatusCode::INTERNAL_SERVER_ERROR
+                }
+            }
+        })
+        .into();
+    }
+
     for variant in &data.variants {
         let ident = &variant.ident;
 

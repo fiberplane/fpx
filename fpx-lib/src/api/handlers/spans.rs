@@ -1,6 +1,6 @@
 use crate::api::errors::{ApiServerError, CommonError};
 use crate::api::models::Span;
-use crate::data::{DbError, Store};
+use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;
 use fpx_macros::ApiError;
@@ -11,7 +11,7 @@ use tracing::error;
 
 #[tracing::instrument(skip_all)]
 pub async fn span_get_handler(
-    State(store): State<Store>,
+    State(store): State<BoxedStore>,
     Path((trace_id, span_id)): Path<(String, String)>,
 ) -> Result<Json<Span>, ApiServerError<SpanGetError>> {
     let tx = store.start_readonly_transaction().await?;
@@ -56,7 +56,7 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 
 #[tracing::instrument(skip_all)]
 pub async fn span_list_handler(
-    State(store): State<Store>,
+    State(store): State<BoxedStore>,
     Path(trace_id): Path<String>,
 ) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
     let tx = store.start_readonly_transaction().await?;
@@ -64,7 +64,7 @@ pub async fn span_list_handler(
     hex::decode(&trace_id)
         .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
 
-    let spans = store.span_list_by_trace(&tx, trace_id).await?;
+    let spans = store.span_list_by_trace(&tx, &trace_id).await?;
     let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
 
     Ok(Json(spans))
