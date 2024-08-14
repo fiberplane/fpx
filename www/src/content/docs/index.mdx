@@ -28,15 +28,15 @@ hero:
 import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
 
 
-<div className="grid gap-4 lg:grid-cols-2 lg:gap-4">
-  <div className="w-full p-2 flex justify-center md:p-4  lg:hidden">
+<div className="grid gap-4 lg:grid-cols-2 lg:gap-4 sticky">
+  <div className="w-full p-2 flex justify-center md:p-4 lg:hidden">
     <div className="rounded overflow-hidden">
       ![FPX product screenshot](../../assets/fpx-screenshot-2.png)
     </div>
   </div>
 
   <div className="w-full">
-  ## Quickstart
+    ## Quickstart
     <Steps>
     1. Create a Hono API
 
@@ -45,7 +45,7 @@ import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
         ```
 
     2. Add `@fiberplane/hono-otel` with two lines of code
-        ```ts {"1. Import the instrument function":2-3} {"2. Wrap your application":11-12}
+        ```ts ins={"1. Import the instrument function":2-3} ins={"2. Wrap your application with instrument":11-12}
         import { Hono } from 'hono';
 
         import { instrument } from '@fiberplane/hono-otel';
@@ -66,11 +66,11 @@ import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
     </Steps>
   </div>
 
-  <div className="w-full flex flex-col justify-content items-center py-12 px-6 max-lg:hidden sticky">
-    <div className="translate-y-[70%] translate-z-2 shadow-lg">
+  <div className="w-full flex flex-col justify-content items-center px-8 pt-8 max-lg:hidden sticky top-32 self-start overflow-hidden">
+    <div className="translate-x-[10%] translate-z-2 shadow-lg">
       ![FPX product screenshot](../../assets/fpx-screenshot-1.png)
     </div>
-    <div className="-translate-y-[80%] translate-x-[15%] translate-z-0 shadow-lg">
+    <div className="pl-8 -translate-y-[90%] -translate-x-[10%] translate-z-0 shadow-lg">
       ![FPX product screenshot](../../assets/fpx-screenshot-2.png)
     </div>
   </div>
