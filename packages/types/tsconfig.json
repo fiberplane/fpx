@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+  	"target": "ESNext",
+   	"module": "NodeNext",
     "declaration": true,
     "declarationMap": true,
     "inlineSourceMap": true,
