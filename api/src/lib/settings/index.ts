@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { z } from "zod";
 import { settings } from "../../db/schema.js";
@@ -6,17 +6,26 @@ import type * as schema from "../../db/schema.js";
 
 export async function upsertSettings(
   db: LibSQLDatabase<typeof schema>,
-  content: Record<string, string>,
+  content: Record<string, string | number | boolean>,
 ) {
-  for (const [key, value] of Object.entries(content)) {
-    await db
-      .insert(settings)
-      .values({ key, value })
-      .onConflictDoUpdate({
-        target: [settings.key],
-        set: { value },
-      });
-  }
+  const settingsToUpdate = Object.entries(content).map(
+    ([key, originalValue]) => {
+      const { value, type } = denormalizeType(originalValue);
+      return {
+        key,
+        value,
+        type,
+      };
+    },
+  );
+  return await db
+    .insert(settings)
+    .values(settingsToUpdate)
+    .onConflictDoUpdate({
+      target: [settings.key],
+      set: { value: sql`excluded.value` },
+    })
+    .returning();
 }
 
 export async function getSetting(
@@ -31,7 +40,7 @@ export async function getSetting(
 
   if (!setting) return;
 
-  return setting.value;
+  return normalize(setting.value);
 }
 
 export async function getAllSettings(db: LibSQLDatabase<typeof schema>) {
@@ -39,10 +48,46 @@ export async function getAllSettings(db: LibSQLDatabase<typeof schema>) {
 
   if (settingsRecords.length === 0) return {};
 
-  return settingsRecords.reduce<Record<string, string>>((acc, rec) => {
-    acc[rec.key] = rec.value;
-    return acc;
-  }, {});
+  return settingsRecords.reduce<Record<string, string | boolean | number>>(
+    (acc, rec) => {
+      acc[rec.key] = normalize(rec.value);
+      return acc;
+    },
+    {},
+  );
+}
+
+// HACK: This is a temporary solution to handle boolean and number values,
+// since all the settings are currently stored as strings.
+// Revisit this once db schema is updated
+function normalize(value: string): boolean | number | string {
+  const lowerValue = value.toLowerCase();
+
+  // Check for boolean values
+  if (lowerValue === "true" || lowerValue === "1" || lowerValue === "1.0")
+    return true;
+  if (lowerValue === "false" || lowerValue === "0" || lowerValue === "0.0")
+    return false;
+
+  // Check for number
+  const numberValue = Number(value);
+  if (!Number.isNaN(numberValue)) return numberValue;
+
+  // Return as string if not boolean or number
+  return value;
+}
+
+function denormalizeType(value: boolean | number | string): {
+  value: string;
+  type: "boolean" | "number" | "string";
+} {
+  if (typeof value === "boolean") {
+    return { value: value ? "1.0" : "0.0", type: "boolean" };
+  }
+  if (typeof value === "number") {
+    return { value: value.toString(), type: "number" };
+  }
+  return { value: value, type: "string" };
 }
 
 // NOTE - gpt-3.5-turbo was not working with our current prompting logic
