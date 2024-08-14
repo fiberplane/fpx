@@ -242,8 +242,7 @@ export function resolveUrlQueryParams(
  * or port, e.g. webhonc.mies.workers.dev
  */
 export function resolveWebhoncUrl() {
-  // const fallbackUrl = "webhonc.mies.workers.dev";
-  const fallbackUrl = "localhost:3000";
+  const fallbackUrl = "webhonc.mies.workers.dev";
   if (!process.env.FPX_WEBHONC_BASE_URL) return fallbackUrl;
   const customUrl = new URL(process.env.FPX_WEBHONC_BASE_URL);
   return customUrl.host;
