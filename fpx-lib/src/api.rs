@@ -6,12 +6,9 @@ use http::StatusCode;
 use std::path::PathBuf;
 use url::Url;
 
-// pub mod client;
 pub mod errors;
 pub mod handlers;
 pub mod models;
-// mod studio;
-// mod ws;
 
 #[allow(dead_code)]
 pub struct Config {
