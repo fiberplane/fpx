@@ -2,5 +2,5 @@
 // by running `wrangler types --env-interface CloudflareBindings`
 
 interface CloudflareBindings {
-	WEBHONC: DurableObjectNamespace<import("./src/index").WebHonc>;
+  WEBHONC: DurableObjectNamespace<import("./src/index").WebHonc>;
 }
