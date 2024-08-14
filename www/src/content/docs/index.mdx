@@ -13,7 +13,7 @@ hero:
       FPX
     </span>
     Understands your API
-  tagline: Stop treating your API as a mystery box. Start testing and debugging with pizzazz.
+  tagline: Stop treating your API as a mystery box. Start building, testing, and debugging with pizzazz.
 
   actions:
     - text: Get started
@@ -29,16 +29,23 @@ import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
 
 
 <div className="grid gap-4 lg:grid-cols-2 lg:gap-4">
+  <div className="w-full p-2 flex justify-center md:p-4  lg:hidden">
+    <div className="rounded overflow-hidden">
+      ![FPX product screenshot](../../assets/fpx-screenshot-2.png)
+    </div>
+  </div>
+
   <div className="w-full">
+  ## Quickstart
     <Steps>
-    1. Spin up your Hono API
+    1. Create your Hono API
 
         ```sh
-        npx create-honc-app@latest my-app
+        npm create hono@latest my-api
         ```
 
-    2. Add `@fiberplane/hono-otel` to your project
-        ```ts
+    2. Add `@fiberplane/hono-otel` with two lines of code
+        ```ts {"1. Import the instrument function":2-3} {"2. Wrap your application":11-12}
         import { Hono } from 'hono';
 
         import { instrument } from '@fiberplane/hono-otel';
@@ -49,17 +56,23 @@ import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
 
         // ... define your routes
 
+
         export default instrument(app);
         ```
-    3. Launch FPX in your api directory
+    3. Launch FPX in your API directory
         ```sh
         npx @fiberplane/studio@latest
         ```
     </Steps>
   </div>
 
-  <div className="w-full">
-    ![A rocketship in space](../../assets/fpx-screenshot-1.png)
+  <div className="w-full flex flex-col justify-content items-center py-12 px-6 max-lg:hidden sticky">
+    <div className="translate-y-[70%] translate-z-2 shadow-lg">
+      ![FPX product screenshot](../../assets/fpx-screenshot-1.png)
+    </div>
+    <div className="-translate-y-[80%] translate-x-[15%] translate-z-0 shadow-lg">
+      ![FPX product screenshot](../../assets/fpx-screenshot-2.png)
+    </div>
   </div>
 </div>
 
