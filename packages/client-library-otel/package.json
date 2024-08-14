@@ -5,6 +5,13 @@
   "type": "module",
   "main": "dist/index.js",
   "version": "0.1.0-alpha.8",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fiberplane/fpx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fiberplane/fpx/issues"
+  },
   "dependencies": {
     "@opentelemetry/api": "~1.9.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.52.1",

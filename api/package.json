@@ -4,6 +4,13 @@
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fiberplane/fpx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fiberplane/fpx/issues"
+  },
   "engines": {
     "node": ">=16.0.0"
   },
