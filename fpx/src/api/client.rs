@@ -90,10 +90,6 @@ impl ApiClient {
         // Make request
         let response = req.send().await?;
 
-        if let Some(header_value) = response.headers().get("traceparent") {
-            debug!(?header_value, "response contained a traceparent header!")
-        }
-
         // Copy the status code here in case we are unable to parse the response as
         // the Ok or Err variant.
         let status_code = response.status();
