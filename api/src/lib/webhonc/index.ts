@@ -1,4 +1,5 @@
 import path from "node:path";
+import { WsMessageSchema } from "@fiberplane/fpx-types";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import WebSocket from "ws";
 import type { z } from "zod";
@@ -11,7 +12,6 @@ import {
   handleFailedRequest,
   handleSuccessfulRequest,
 } from "../proxy-request/index.js";
-import { WsMessageSchema } from "../types.js";
 import { resolveUrlQueryParams } from "../utils.js";
 import { getWebHoncConnectionId, setWebHoncConnectionId } from "./store.js";
 

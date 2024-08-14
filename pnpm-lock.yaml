@@ -90,6 +90,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20240403.0
         version: 4.20240806.0
+      '@fiberplane/fpx-types':
+        specifier: workspace:*
+        version: link:../packages/types
       '@opentelemetry/otlp-transformer':
         specifier: ^0.52.1
         version: 0.52.1(@opentelemetry/api@1.9.0)
@@ -387,6 +390,12 @@ importers:
         specifier: ^5.4.5
         version: 5.5.4
 
+  packages/types:
+    devDependencies:
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+
   types: {}
 
   webhonc:
@@ -404,6 +413,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20240620.0
         version: 4.20240806.0
+      '@fiberplane/fpx-types':
+        specifier: workspace:*
+        version: link:../packages/types
       typescript:
         specifier: ^5.5.3
         version: 5.5.4

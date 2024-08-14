@@ -53,6 +53,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@fiberplane/fpx-types": "workspace:*",
     "@cloudflare/workers-types": "^4.20240403.0",
     "@opentelemetry/otlp-transformer": "^0.52.1",
     "@types/figlet": "^1.5.8",
