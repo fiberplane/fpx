@@ -1,5 +1,4 @@
 # This workflow will be triggered by a GitHub pull-request.
----
 name: Build node packages
 
 on:
@@ -64,6 +63,9 @@ jobs:
         run: pnpm --recursive build
 
       # Release a preview version
+
+      - name: Copy the frontend files into the api
+        run: cp -r ./frontend/dist/* ./api/dist
 
       - name: Publish a temporary preview version
         run: pnpx pkg-pr-new publish --pnpm "./api" "./packages/client-library-otel"
