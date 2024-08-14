@@ -42,6 +42,9 @@ jobs:
         env:
           CI: true
 
+      - name: Build shared types
+        run: pnpm build:types
+
       # Linting: we use global biome command
       # any extra commands should be added to the lint:ci script
       # in the package.json
