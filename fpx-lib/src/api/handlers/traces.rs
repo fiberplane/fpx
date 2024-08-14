@@ -30,11 +30,7 @@ pub async fn traces_list_handler(
 #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
-pub enum TraceListError {
-    #[api_error(status_code = StatusCode::INTERNAL_SERVER_ERROR)]
-    #[error("Internal server error")]
-    FakeError,
-}
+pub enum TraceListError {}
 
 impl From<DbError> for ApiServerError<TraceListError> {
     fn from(err: DbError) -> Self {
