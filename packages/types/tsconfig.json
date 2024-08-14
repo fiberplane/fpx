@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
+  	"target": "ESNext",
+   	"module": "NodeNext",
     "declaration": true,
-    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "inlineSourceMap": true,
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
