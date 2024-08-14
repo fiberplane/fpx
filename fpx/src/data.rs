@@ -142,7 +142,16 @@ impl Store for LibsqlStore {
     ) -> Result<Vec<fpx_lib::data::models::Trace>> {
         let traces = self
             .connection
-            .query("SELECT * FROM spans GROUP BY trace_id LIMIT 20", ())
+            .query(
+                "
+                SELECT trace_id, MAX(end_time) as end_time
+                FROM spans
+                GROUP BY trace_id
+                ORDER BY end_time DESC
+                LIMIT 20
+                ",
+                (),
+            )
             .await?
             .fetch_all()
             .await?;
