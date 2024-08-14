@@ -7,17 +7,17 @@ import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
 import logger from "./logger.js";
 
+import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
 import inference from "./routes/inference.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
 import traces from "./routes/traces.js";
-import type * as webhoncType from "./lib/webhonc/index.js"
 
 export function createApp(
   db: LibSQLDatabase<typeof schema>,
   webhonc: typeof webhoncType,
-  wsConnections?: Set<WebSocket>
+  wsConnections?: Set<WebSocket>,
 ) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -25,7 +25,7 @@ export function createApp(
   app.use(async (c, next) => {
     c.set("db", db);
 
-    c.set("webhonc", webhonc)
+    c.set("webhonc", webhonc);
 
     if (wsConnections) {
       c.set("wsConnections", wsConnections);

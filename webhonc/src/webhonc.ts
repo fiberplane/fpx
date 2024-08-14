@@ -48,7 +48,13 @@ export class WebHonc extends DurableObject<Bindings> {
     reason: string,
     wasClean: boolean,
   ) {
-    console.debug("WebSocket closed:", code, reason, wasClean, ws.deserializeAttachment());
+    console.debug(
+      "WebSocket closed:",
+      code,
+      reason,
+      wasClean,
+      ws.deserializeAttachment(),
+    );
     try {
       ws.close(code);
     } catch (error) {

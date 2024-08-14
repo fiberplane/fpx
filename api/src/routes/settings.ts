@@ -18,28 +18,29 @@ app.get("/v0/settings", cors(), async (ctx) => {
 /**
  * Upsert the settings record
  */
- app.post("/v0/settings", cors(), async (ctx) => {
-   const { content } = await ctx.req.json();
-   const db = ctx.get("db");
-   const webhonc = ctx.get("webhonc");
+app.post("/v0/settings", cors(), async (ctx) => {
+  const { content } = await ctx.req.json();
+  const db = ctx.get("db");
+  const webhonc = ctx.get("webhonc");
 
-   logger.debug("Configuration updated..");
+  logger.debug("Configuration updated..");
 
-   const updatedSettings = await upsertSettings(db, content);
+  const updatedSettings = await upsertSettings(db, content);
 
-   const proxyUrlEnabled = !!Number(updatedSettings.find(
-     (setting) => setting.key === "proxyRequestsEnabled",
-   )?.value);
+  const proxyUrlEnabled = !!Number(
+    updatedSettings.find((setting) => setting.key === "proxyRequestsEnabled")
+      ?.value,
+  );
 
-   if (proxyUrlEnabled) {
-    await webhonc.start()
-   }
+  if (proxyUrlEnabled) {
+    await webhonc.start();
+  }
 
-   if (!proxyUrlEnabled) {
-     await webhonc.stop()
-   }
+  if (!proxyUrlEnabled) {
+    await webhonc.stop();
+  }
 
-   return ctx.json(updatedSettings);
- });
+  return ctx.json(updatedSettings);
+});
 
 export default app;

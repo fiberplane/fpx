@@ -53,7 +53,7 @@ export async function stop() {
     socket = undefined;
   }
   if (reconnectTimeout) {
-  console.log("closing reconnect timeout");
+    console.log("closing reconnect timeout");
     clearTimeout(reconnectTimeout);
   }
 }
@@ -109,7 +109,7 @@ function setupSocketListeners() {
       event.wasClean,
     );
     // If the connection is closed due to a normal close, we don't want to reconnect
-    if (event.code === 1000) return
+    if (event.code === 1000) return;
 
     scheduleReconnect();
   };

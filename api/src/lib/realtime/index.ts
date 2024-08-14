@@ -15,7 +15,10 @@ export function setupRealtimeService({
   const wss = new WebSocketServer({ server, path });
 
   wss.on("connection", (ws) => {
-    logger.debug("ws connection established with the browser", ws.readyState === ws.OPEN);
+    logger.debug(
+      "ws connection established with the browser",
+      ws.readyState === ws.OPEN,
+    );
     wsConnections.add(ws);
 
     ws.on("ping", () => {
