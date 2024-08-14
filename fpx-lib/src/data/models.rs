@@ -3,6 +3,12 @@ use crate::api::models::SpanKind;
 use crate::data::util::{Json, Timestamp};
 use serde::Deserialize;
 
+/// A computed value based on the span objects that are present.
+#[derive(Clone, Debug, Deserialize)]
+pub struct Trace {
+    pub trace_id: String,
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct Span {
     pub trace_id: String,

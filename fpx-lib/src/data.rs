@@ -54,12 +54,18 @@ pub trait Store: Send + Sync {
     async fn span_list_by_trace(
         &self,
         tx: &Transaction,
-        trace_id: String,
+        trace_id: &str,
     ) -> Result<Vec<models::Span>>;
 
-    async fn span_create(
+    async fn span_create(&self, tx: &Transaction, span: models::Span) -> Result<models::Span>;
+
+    /// Get a list of all the traces.
+    ///
+    /// Note that a trace is a computed value, so not all properties are
+    /// present. To get all the data, use the [`Self::span_list_by_trace`] fn.
+    async fn traces_list(
         &self,
         tx: &Transaction,
-        span: models::Span,
-    ) -> Result<models::Span, DbError>;
+        // Future improvement could hold sort fields, limits, etc
+    ) -> Result<Vec<models::Trace>>;
 }

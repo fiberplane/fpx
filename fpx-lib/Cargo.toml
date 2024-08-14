@@ -14,9 +14,12 @@ async-trait = { version = "0.1", default-features = false }
 axum = { version = "0.7", default-features = false, features = ["json"] }
 bytes = { version = "1.0", default-features = false }
 fpx-macros = { version = "0.1.0", path = "../fpx-macros" }
+futures-util = { version = "0.3", default-features = false }
 hex = { version = "0.4", default-features = false, features = ["alloc"] }
 http = { version = "1.1", default-features = false }
 libsql = { version = "0.4", default-features = false, optional = true }
+opentelemetry = { version = "0.24", default-features = false }
+opentelemetry_sdk = { version = "0.24", default-features = false }
 opentelemetry-proto = { version = "0.7", default-features = false, features = [
     "trace",
     "gen-tonic-messages",
@@ -33,9 +36,11 @@ time = { version = "0.3", default-features = false, features = [
     "serde-human-readable",
 ] }
 tokio = { version = "1.39", default-features = false }
+tower = { version = "0.4", default-features = false }
 tracing = { version = "0.1", default-features = false, features = [
     "attributes",
 ] }
+tracing-opentelemetry = { version = "0.25", default-features = false }
 url = { version = "2.5", default-features = false }
 wasm-bindgen = { version = "0.2", default-features = false, optional = true }
 

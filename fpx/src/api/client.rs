@@ -5,13 +5,15 @@
 //! fine.
 
 use super::errors::ApiClientError;
-use crate::otel_util::HeaderMapInjector;
 use anyhow::Result;
 use fpx_lib::api::handlers::spans::SpanGetError;
+use fpx_lib::api::handlers::traces::TraceGetError;
 use fpx_lib::api::models;
+use fpx_lib::otel::HeaderMapInjector;
 use http::{HeaderMap, Method};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
+use std::error::Error;
 use tracing::trace;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
@@ -47,6 +49,7 @@ impl ApiClient {
     /// fails it will consider the call as failed and will try to parse the body
     /// as [`E`]. Any other error will use the relevant variant in
     /// [`ApiClientError`].
+    #[tracing::instrument(skip_all, fields(otel.kind="Client",otel.status_code, otel.status_message))]
     async fn do_req<T, E, B>(
         &self,
         method: Method,
@@ -55,7 +58,7 @@ impl ApiClient {
     ) -> Result<T, ApiClientError<E>>
     where
         T: serde::de::DeserializeOwned,
-        E: serde::de::DeserializeOwned,
+        E: serde::de::DeserializeOwned + Error,
         B: serde::ser::Serialize,
     {
         let u = self.base_url.join(path.as_ref())?;
@@ -99,14 +102,20 @@ impl ApiClient {
 
         // Try to parse the result as T.
         match serde_json::from_slice::<T>(&body) {
-            Ok(result) => Ok(result),
+            Ok(result) => {
+                tracing::Span::current().record("otel.status_code", "Ok");
+                Ok(result)
+            }
             Err(err) => {
                 trace!(
                     ?status_code,
                     ?err,
                     "Failed to parse response as expected type"
                 );
-                Err(ApiClientError::from_response(status_code, body))
+                let err = ApiClientError::from_response(status_code, body);
+                tracing::Span::current().record("otel.status_code", "Err");
+                tracing::Span::current().record("otel.status_message", err.to_string());
+                Err(err)
             }
         }
     }
@@ -132,6 +141,25 @@ impl ApiClient {
         trace_id: impl AsRef<str>,
     ) -> Result<Vec<models::Span>, ApiClientError<SpanGetError>> {
         let path = format!("api/traces/{}/spans", trace_id.as_ref());
+
+        self.do_req(Method::GET, path, None::<()>).await
+    }
+
+    /// Retrieve a summary of a single trace.
+    pub async fn trace_get(
+        &self,
+        trace_id: impl AsRef<str>,
+    ) -> Result<models::TraceSummary, ApiClientError<TraceGetError>> {
+        let path = format!("api/traces/{}", trace_id.as_ref());
+
+        self.do_req(Method::GET, path, None::<()>).await
+    }
+
+    /// List a summary traces
+    pub async fn trace_list(
+        &self,
+    ) -> Result<Vec<models::TraceSummary>, ApiClientError<TraceGetError>> {
+        let path = "api/traces";
 
         self.do_req(Method::GET, path, None::<()>).await
     }

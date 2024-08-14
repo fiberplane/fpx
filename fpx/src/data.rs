@@ -2,10 +2,11 @@ use anyhow::Context;
 use async_trait::async_trait;
 use fpx_lib::data::models::Span;
 use fpx_lib::data::{DbError, Result, Store, Transaction};
-use libsql::{de, params, Builder, Connection, Rows};
-use serde::de::DeserializeOwned;
+use libsql::{params, Builder, Connection};
+use util::RowsExt;
 
 mod migrations;
+mod util;
 
 #[derive(Clone)]
 pub struct LibsqlStore {
@@ -82,18 +83,18 @@ impl Store for LibsqlStore {
         Ok(span)
     }
 
-    async fn span_list_by_trace(&self, _tx: &Transaction, trace_id: String) -> Result<Vec<Span>> {
-        let span = self
+    async fn span_list_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<Vec<Span>> {
+        let spans = self
             .connection
             .query("SELECT * FROM spans WHERE trace_id=$1", params!(trace_id))
             .await?
             .fetch_all()
             .await?;
 
-        Ok(span)
+        Ok(spans)
     }
 
-    async fn span_create(&self, _tx: &Transaction, span: Span) -> Result<Span, DbError> {
+    async fn span_create(&self, _tx: &Transaction, span: Span) -> Result<Span> {
         let span = self
             .connection
             .query(
@@ -128,39 +129,33 @@ impl Store for LibsqlStore {
 
         Ok(span)
     }
-}
 
-#[allow(dead_code)]
-pub(crate) trait RowsExt {
-    /// `T` must be a `struct`
-    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T, DbError>;
+    /// Get a list of all the traces. (currently limited to 20, sorted by most
+    /// recent [`end_time`])
+    ///
+    /// Note that a trace is a computed value, so not all properties are
+    /// present. To get all the data, use the [`Self::span_list_by_trace`] fn.
+    async fn traces_list(
+        &self,
+        _tx: &Transaction,
+        // Future improvement could hold sort fields, limits, etc
+    ) -> Result<Vec<fpx_lib::data::models::Trace>> {
+        let traces = self
+            .connection
+            .query(
+                "
+                SELECT trace_id, MAX(end_time) as end_time
+                FROM spans
+                GROUP BY trace_id
+                ORDER BY end_time DESC
+                LIMIT 20
+                ",
+                (),
+            )
+            .await?
+            .fetch_all()
+            .await?;
 
-    /// `T` must be a `struct`
-    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>, DbError>;
-
-    /// `T` must be a `struct`
-    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>, DbError>;
-}
-
-impl RowsExt for Rows {
-    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T, DbError> {
-        self.fetch_optional().await?.ok_or(DbError::NotFound)
-    }
-
-    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>, DbError> {
-        match self.next().await? {
-            Some(row) => Ok(Some(de::from_row(&row)?)),
-            None => Ok(None),
-        }
-    }
-
-    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>, DbError> {
-        let mut results = Vec::new();
-
-        while let Some(row) = self.next().await? {
-            results.push(de::from_row(&row)?);
-        }
-
-        Ok(results)
+        Ok(traces)
     }
 }

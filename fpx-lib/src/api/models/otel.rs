@@ -286,3 +286,77 @@ impl From<any_value::Value> for AttributeValue {
         }
     }
 }
+
+/// A trace contains a summary of its traces.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TraceSummary {
+    /// The trace id.
+    pub trace_id: String,
+
+    /// Start of the first span
+    #[serde(with = "time::serde::rfc3339")]
+    pub start_time: time::OffsetDateTime,
+
+    /// End of the last span
+    #[serde(with = "time::serde::rfc3339")]
+    pub end_time: time::OffsetDateTime,
+
+    /// The numbers of spans that we have for this trace.
+    pub num_spans: u32,
+
+    /// A summary of the root span associated with this trace.
+    ///
+    /// A root span is a span that has no parent span. This can be empty if the
+    /// root span was never collected.
+    pub root_span: Option<SpanSummary>,
+}
+
+impl TraceSummary {
+    pub fn from_spans(trace_id: String, spans: Vec<crate::data::models::Span>) -> Self {
+        let num_spans = spans.len() as u32;
+
+        // Find the first start and the last end time. Note: unwrap is safe here
+        // since we check that there is at least 1 span present.
+        let start_time = spans.iter().map(|span| span.start_time).min().unwrap();
+        let end_time = spans.iter().map(|span| span.end_time).max().unwrap();
+
+        let root_span = spans
+            .into_iter()
+            .find(|span| span.parent_span_id.is_none())
+            .map(|span| span.inner.into_inner().into());
+
+        Self {
+            trace_id,
+            start_time: start_time.into(),
+            end_time: end_time.into(),
+            root_span,
+            num_spans,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct SpanSummary {
+    /// The span id.
+    pub span_id: String,
+
+    /// The name of the span.
+    pub name: String,
+
+    /// The kind of span.
+    pub span_kind: SpanKind,
+
+    /// Optional status of the span.
+    pub result: Option<Status>,
+}
+
+impl From<Span> for SpanSummary {
+    fn from(span: Span) -> Self {
+        Self {
+            span_id: span.span_id,
+            name: span.name,
+            span_kind: span.kind,
+            result: span.status,
+        }
+    }
+}

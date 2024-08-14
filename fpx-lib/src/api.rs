@@ -1,4 +1,5 @@
 use crate::data::{BoxedEvents, BoxedStore};
+use crate::otel::OtelTraceLayer;
 use crate::service::Service;
 use axum::extract::FromRef;
 use axum::routing::{get, post};
@@ -57,6 +58,12 @@ pub fn create_api(events: BoxedEvents, service: Service, store: BoxedStore) -> a
             "/api/traces/:trace_id/spans",
             get(handlers::spans::span_list_handler),
         )
+        .route(
+            "/api/traces/:trace_id",
+            get(handlers::traces::traces_get_handler),
+        )
+        .route("/api/traces", get(handlers::traces::traces_list_handler))
+        .layer(OtelTraceLayer::default())
         .with_state(api_state)
         .fallback(StatusCode::NOT_FOUND)
 }
