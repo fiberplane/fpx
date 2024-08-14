@@ -12,7 +12,7 @@ import * as schema from "./db/schema.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
-import { connectToWebhonc } from "./lib/webhonc/index.js";
+import * as webhonc from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
 import {
@@ -31,7 +31,7 @@ const sql = createClient({
 });
 const db = drizzle(sql, { schema });
 // Set up the api routes
-const app = createApp(db, wsConnections);
+const app = createApp(db, webhonc, wsConnections);
 
 /**
  * Serve all the frontend static files
@@ -82,11 +82,13 @@ startRouteProbeWatcher(watchDir);
 // Set up websocket server
 setupRealtimeService({ server, path: "/ws", wsConnections });
 
+// set up webhonc manager
+webhonc.setupWebhonc({ host: resolveWebhoncUrl(), db, wsConnections });
+
 // check settings if proxy requests is enabled
-const proxyRequestsEnabled = await getSetting(db, "proxyRequestsEnabled");
+const proxyRequestsEnabled = await getSetting(db, "proxyRequestsEnabled") as boolean;
 
 if (proxyRequestsEnabled) {
-  logger.debug("Proxy requests feature enabled, connecting to webhonc...");
-  const webhoncUrl = resolveWebhoncUrl();
-  connectToWebhonc(webhoncUrl, db, wsConnections);
+  logger.debug("Proxy requests feature enabled.");
+  await webhonc.start();
 }
