@@ -395,6 +395,9 @@ importers:
 
   webhonc:
     dependencies:
+      '@fiberplane/fpx-types':
+        specifier: workspace:*
+        version: link:../packages/types
       '@hono/zod-validator':
         specifier: ^0.2.2
         version: 0.2.2(hono@4.5.5)(zod@3.23.8)
@@ -408,9 +411,6 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20240620.0
         version: 4.20240806.0
-      '@fiberplane/fpx-types':
-        specifier: workspace:*
-        version: link:../packages/types
       typescript:
         specifier: ^5.5.3
         version: 5.5.4
