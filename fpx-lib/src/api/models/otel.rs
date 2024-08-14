@@ -312,7 +312,11 @@ pub struct TraceSummary {
 }
 
 impl TraceSummary {
-    pub fn from_spans(trace_id: String, spans: Vec<crate::data::models::Span>) -> Self {
+    pub fn from_spans(trace_id: String, spans: Vec<crate::data::models::Span>) -> Option<Self> {
+        if spans.is_empty() {
+            return None;
+        }
+
         let num_spans = spans.len() as u32;
 
         // Find the first start and the last end time. Note: unwrap is safe here
@@ -325,13 +329,13 @@ impl TraceSummary {
             .find(|span| span.parent_span_id.is_none())
             .map(|span| span.inner.into_inner().into());
 
-        Self {
+        Some(Self {
             trace_id,
             start_time: start_time.into(),
             end_time: end_time.into(),
             root_span,
             num_spans,
-        }
+        })
     }
 }
 

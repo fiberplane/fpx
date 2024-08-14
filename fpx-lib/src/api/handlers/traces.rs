@@ -21,7 +21,9 @@ pub async fn traces_list_handler(
 
     for trace in traces.into_iter() {
         let spans = store.span_list_by_trace(&tx, &trace.trace_id).await?;
-        result.push(TraceSummary::from_spans(trace.trace_id, spans));
+        if let Some(trace_summary) = TraceSummary::from_spans(trace.trace_id, spans) {
+            result.push(trace_summary);
+        }
     }
 
     Ok(Json(result))
@@ -52,11 +54,7 @@ pub async fn traces_get_handler(
     // Retrieve all the spans that are associated with the trace
     let spans = store.span_list_by_trace(&tx, &trace_id).await?;
 
-    if spans.is_empty() {
-        return Err(TraceGetError::NotFound.into());
-    }
-
-    let trace = TraceSummary::from_spans(trace_id, spans);
+    let trace = TraceSummary::from_spans(trace_id, spans).ok_or(TraceGetError::NotFound)?;
 
     Ok(Json(trace))
 }
