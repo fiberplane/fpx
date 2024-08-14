@@ -14,10 +14,3 @@ export function RequestDetailsPage() {
 
   return <RequestDetailsPageV2 traceId={traceId} />;
 }
-
-export type TocItem = {
-  id: string;
-  title: string;
-  status?: string | number;
-  method?: string;
-};

@@ -1,6 +1,6 @@
 import { OtelSpan } from "@/queries";
 import { z } from "zod";
-import { getRequestBody, getRequestUrl } from "./otel-helpers";
+import { getRequestBody, getRequestUrl, getString } from "./otel-helpers";
 
 const NoneVendorInfoSchema = z.object({
   vendor: z.literal("none"),
@@ -16,6 +16,15 @@ const NeonVendorInfoSchema = z.object({
 
 export type NeonVendorInfo = z.infer<typeof NeonVendorInfoSchema>;
 
+const PostgresVendorInfoSchema = z.object({
+  vendor: z.literal("postgres"),
+  sql: z.object({
+    query: z.string(),
+  }),
+});
+
+export type PostgresVendorInfo = z.infer<typeof PostgresVendorInfoSchema>;
+
 const OpenAIVendorInfoSchema = z.object({
   vendor: z.literal("openai"),
 });
@@ -30,6 +39,7 @@ type AnthropicVendorInfo = z.infer<typeof AnthropicVendorInfoSchema>;
 
 const VendorInfoSchema = z.union([
   NeonVendorInfoSchema,
+  PostgresVendorInfoSchema,
   OpenAIVendorInfoSchema,
   AnthropicVendorInfoSchema,
   NoneVendorInfoSchema,
@@ -41,6 +51,12 @@ export const isNeonVendorInfo = (
   vendorInfo: VendorInfo,
 ): vendorInfo is NeonVendorInfo => {
   return vendorInfo.vendor === "neon";
+};
+
+export const isPostgresVendorInfo = (
+  vendorInfo: VendorInfo,
+): vendorInfo is PostgresVendorInfo => {
+  return vendorInfo.vendor === "postgres";
 };
 
 export const isOpenAIVendorInfo = (
@@ -55,6 +71,7 @@ export const isAnthropicVendorInfo = (
   return vendorInfo.vendor === "anthropic";
 };
 
+
 export function getVendorInfo(span: OtelSpan): VendorInfo {
   if (isOpenAIFetch(span)) {
     return { vendor: "openai" };
@@ -65,6 +82,10 @@ export function getVendorInfo(span: OtelSpan): VendorInfo {
       vendor: "neon",
       sql: getNeonSqlQuery(span),
     };
+  }
+
+  if (isPostgresCall(span)) {
+    return { vendor: "postgres", sql: getPostgresSqlQuery(span) };
   }
 
   if (isAnthropicFetch(span)) {
@@ -87,6 +108,10 @@ const isOpenAIFetch = (span: OtelSpan) => {
 // TODO - Make this a bit more robust?
 const isNeonFetch = (span: OtelSpan) => {
   return !!span.attributes["http.request.header.neon-connection-string"];
+};
+
+const isPostgresCall = (span: OtelSpan) => {
+  return span.attributes["fpx.db"] === "postgresql";
 };
 
 const isAnthropicFetch = (span: OtelSpan) => {
@@ -115,4 +140,8 @@ function getNeonSqlQuery(span: OtelSpan) {
   } catch (e) {
     return { query: "DB QUERY", params: [] };
   }
+}
+
+function getPostgresSqlQuery(span: OtelSpan) {
+  return { query: getString(span.attributes["fpx.sql.query"]) };
 }

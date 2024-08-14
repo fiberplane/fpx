@@ -16,7 +16,8 @@ import {
   isIncomingRequestSpan,
 } from "./otel-helpers";
 import { SubSection, SubSectionHeading } from "./shared";
-import { VendorInfo } from "./vendorify-traces";
+import { isPostgresVendorInfo, VendorInfo } from "./vendorify-traces";
+import { PostgresSpan } from "./PostgresSpan";
 
 export function TraceDetailsV2({
   waterfall,
@@ -55,10 +56,10 @@ function SpanDetails({
     return <FetchSpan span={span} vendorInfo={vendorInfo} />;
   }
 
-  return <GenericSpan span={span} />;
+  return <GenericSpan span={span} vendorInfo={vendorInfo} />;
 }
 
-function GenericSpan({ span }: { span: OtelSpan }) {
+function GenericSpan({ span, vendorInfo }: { span: OtelSpan; vendorInfo: VendorInfo }) {
   const attributes = useMemo(() => {
     const attr: Record<string, string> = {};
     for (const key of Object.keys(span.attributes)) {
@@ -73,6 +74,10 @@ function GenericSpan({ span }: { span: OtelSpan }) {
     }
     return attr;
   }, [span]);
+
+  if (isPostgresVendorInfo(vendorInfo)) {
+    return <PostgresSpan span={span} vendorInfo={vendorInfo} />;
+  }
 
   console.log("Generic span", span);
   return (

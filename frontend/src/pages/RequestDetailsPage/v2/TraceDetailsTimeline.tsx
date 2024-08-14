@@ -4,6 +4,7 @@ import Diamond from "@/assets/Diamond.svg";
 import HonoLogo from "@/assets/HonoLogo.svg";
 import NeonLogo from "@/assets/NeonLogo.svg";
 import OpenAiLogo from "@/assets/OpenAILogo.svg";
+import SupabaseLogo from "@/assets/SupabaseLogo.svg";
 
 import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
@@ -24,6 +25,7 @@ import {
   isAnthropicVendorInfo,
   isNeonVendorInfo,
   isOpenAIVendorInfo,
+  isPostgresVendorInfo,
 } from "./vendorify-traces";
 
 type TraceDetailsTimelineProps = {
@@ -184,6 +186,23 @@ const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
         );
       }
 
+      // TODO - Add SQL
+      if (isPostgresVendorInfo(vendorInfo)) {
+        return (
+          <div
+            className={cn(
+              "uppercase",
+              "font-normal",
+              "font-mono",
+              "text-xs",
+              "truncate",
+            )}
+          >
+            Postgres Call
+          </div>
+        );
+      }
+
       const isOpenAICall = isOpenAIVendorInfo(vendorInfo);
       if (isOpenAICall) {
         return (
@@ -285,6 +304,9 @@ const getTypeIcon = (type: string) => {
       return <Database className="w-3.5 h-3.5 text-blue-600" />;
     case "neon":
       return <NeonLogo className="w-3.5 h-3.5 text-blue-600" />;
+    case "postgres":
+      // return <PostgresLogo className="w-3.5 h-3.5 text-blue-600" />;
+      return <SupabaseLogo className="w-3.5 h-3.5 text-blue-600" />;
     case "openai":
       return <OpenAiLogo className="w-3.5 h-3.5 text-blue-600" />;
     case "anthropic":
