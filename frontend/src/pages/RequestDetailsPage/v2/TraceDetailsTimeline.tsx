@@ -198,7 +198,7 @@ const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
               "truncate",
             )}
           >
-            Postgres Call
+            Supabase
           </div>
         );
       }

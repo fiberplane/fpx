@@ -20,6 +20,7 @@ const PostgresVendorInfoSchema = z.object({
   vendor: z.literal("postgres"),
   sql: z.object({
     query: z.string(),
+    params: z.string(),
   }),
 });
 
@@ -111,7 +112,7 @@ const isNeonFetch = (span: OtelSpan) => {
 };
 
 const isPostgresCall = (span: OtelSpan) => {
-  return span.attributes["fpx.db"] === "postgresql";
+  return span.attributes["fpx.db.vendor"] === "postgresql";
 };
 
 const isAnthropicFetch = (span: OtelSpan) => {
@@ -143,5 +144,5 @@ function getNeonSqlQuery(span: OtelSpan) {
 }
 
 function getPostgresSqlQuery(span: OtelSpan) {
-  return { query: getString(span.attributes["fpx.sql.query"]) };
+  return { query: getString(span.attributes["fpx.db.sql.query"]), params: getString(span.attributes["fpx.db.sql.params"]) };
 }
