@@ -48,8 +48,12 @@ export class WebHonc extends DurableObject<Bindings> {
     reason: string,
     wasClean: boolean,
   ) {
-    console.debug("WebSocket closed:", code, reason, wasClean);
-    ws.close(code);
+    console.debug("WebSocket closed:", code, reason, wasClean, ws.deserializeAttachment());
+    try {
+      ws.close(code);
+    } catch (error) {
+      console.error("Error closing WebSocket:", error);
+    }
   }
 
   public async pushWebhookData(connectionId: string, data: WsMessage) {
