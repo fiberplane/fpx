@@ -1,4 +1,4 @@
-import type { UserSettings } from "../../routes/settings.js";
+import type { UserSettings } from "../../lib/settings/index.js";
 import { generateRequestWithAnthropic } from "./anthropic.js";
 import { generateRequestWithOpenAI } from "./openai.js";
 
