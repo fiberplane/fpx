@@ -192,19 +192,10 @@ export type MizuLog = typeof mizuLogs.$inferSelect; // return type when queried
 // When you create a record
 export type NewMizuLog = typeof mizuLogs.$inferInsert; // insert type
 
-// export const settings = sqliteTable("settings", {
-//   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-//   content: text("content", { mode: "json" }).$type<
-//     Record<string, string | number | boolean>
-//   >(),
-//   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-//   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-// });
-
 export const settings = sqliteTable("settings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   key: text("key").notNull().unique(),
-  value: text("value").notNull().default(""), // Store all values as text
+  value: text("value").notNull().default(""),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });

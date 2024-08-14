@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9014cf46-5e33-4161-91b2-90ab7ecc2337",
+  "id": "b0f82ae6-848d-414b-93e5-0b4eb77566f2",
   "prevId": "8a85f445-1717-4147-b5c7-2b737ab5905d",
   "tables": {
     "app_requests": {
@@ -444,7 +444,8 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "''"
         },
         "created_at": {
           "name": "created_at",
