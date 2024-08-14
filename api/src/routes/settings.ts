@@ -2,12 +2,12 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
+import logger from "../logger.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 /**
- * Get the **signular** settings record from the database
- * If it doesn't exist, create it.
+ * Retrieve the settings record
  */
 app.get("/v0/settings", cors(), async (ctx) => {
   const db = ctx.get("db");
@@ -16,15 +16,30 @@ app.get("/v0/settings", cors(), async (ctx) => {
 });
 
 /**
- * Get the **signular** settings record from the database,
- * and update its content.
- * If it doesn't exist, create it, then update it.
+ * Upsert the settings record
  */
-app.post("/v0/settings", cors(), async (ctx) => {
-  const { content } = await ctx.req.json();
-  const db = ctx.get("db");
-  const updatedSettings = upsertSettings(db, content);
-  return ctx.json(updatedSettings);
-});
+ app.post("/v0/settings", cors(), async (ctx) => {
+   const { content } = await ctx.req.json();
+   const db = ctx.get("db");
+   const webhonc = ctx.get("webhonc");
+
+   logger.debug("Configuration updated..");
+
+   const updatedSettings = await upsertSettings(db, content);
+
+   const proxyUrlEnabled = !!Number(updatedSettings.find(
+     (setting) => setting.key === "proxyRequestsEnabled",
+   )?.value);
+
+   if (proxyUrlEnabled) {
+    await webhonc.start()
+   }
+
+   if (!proxyUrlEnabled) {
+     await webhonc.stop()
+   }
+
+   return ctx.json(updatedSettings);
+ });
 
 export default app;
