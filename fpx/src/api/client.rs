@@ -14,7 +14,7 @@ use http::{HeaderMap, Method};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use std::error::Error;
-use tracing::{debug, trace};
+use tracing::trace;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
 
