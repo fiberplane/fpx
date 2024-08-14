@@ -358,7 +358,8 @@ app.all(
 );
 
 app.get("/v0/webhonc", async (ctx) => {
-  const connectionId = getWebHoncConnectionId();
+	const db = ctx.get("db");
+  const connectionId = await getWebHoncConnectionId(db);
   const baseUrl = resolveWebhoncUrl();
   const protocol = baseUrl.startsWith("localhost") ? "http" : "https";
   return ctx.json({ webhoncUrl: `${protocol}://${baseUrl}/${connectionId}` });
