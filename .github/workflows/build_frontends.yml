@@ -62,8 +62,5 @@ jobs:
 
       # Release a preview version
 
-      - name: Build fpx studio
-        run: pnpm run build:fpx-studio
-
       - name: Publish a temporary preview version
         run: pnpx pkg-pr-new publish --compact ./api ./packages/client-library-otel
