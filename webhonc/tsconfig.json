@@ -6,7 +6,7 @@
     "strict": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
-    "types": ["@cloudflare/workers-types"],
+    "types": ["@cloudflare/workers-types", "@fiberplane/fpx-types"],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "rootDir": "."
