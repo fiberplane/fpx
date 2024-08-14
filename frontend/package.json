@@ -68,7 +68,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@fiberplane/studio-types": "workspace:*",
+    "@fiberplane/fpx-types": "workspace:*",
     "@darkobits/vite-plugin-favicons": "^0.3.2",
     "@types/node": "^20.12.12",
     "@types/react": "^18.2.66",

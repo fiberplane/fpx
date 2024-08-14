@@ -12,9 +12,9 @@ import {
   getStatusCode,
   getString,
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
-import { OtelSpans } from "@/queries";
 import { fetchSourceLocation } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
+import { OtelSpans } from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";
 
 async function summarizeError(trace?: OtelSpans) {
