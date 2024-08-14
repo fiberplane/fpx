@@ -51,7 +51,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     let service = service::Service::new(store.clone(), events.clone());
 
-    let app = api::create_api(events.clone(), service.clone(), store.clone());
+    let app = api::create_api(service.clone(), store.clone());
     let grpc_service = GrpcService::new(service);
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)

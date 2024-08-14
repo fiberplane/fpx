@@ -53,7 +53,7 @@ async fn fetch(
     let boxed_store = Arc::new(store);
 
     let service = service::Service::new(boxed_store.clone(), boxed_events.clone());
-    let api_router = api::create_api(boxed_events, service, boxed_store);
+    let api_router = api::create_api(service, boxed_store);
 
     let mut router: axum::Router = axum::Router::new()
         .route("/api/ws", get(ws_connect))
