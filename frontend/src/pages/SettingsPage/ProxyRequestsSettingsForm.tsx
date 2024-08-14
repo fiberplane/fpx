@@ -43,11 +43,29 @@ export function ProxyRequestsSettingsForm({
                           (Alpha)
                         </span>
                       </FormLabel>
-                      <FormDescription className="max-w-3xl">
-                        Enable proxying of requests from a remote service. This
-                        feature is useful for debugging, testing, and developing
-                        with services that are only available on a public
-                        internet (like webhooks).
+                      <FormDescription className="max-w-3xl grid gap-2">
+                        <p>
+                          Enable proxying of requests from a remote service.
+                          This feature is useful for debugging, testing, and
+                          developing with services that are only available on a
+                          public internet (like webhooks).
+                        </p>
+                        <p>
+                          Any request received at this URL will be forwarded to
+                          your app including all the request data (path,
+                          headers, body, etc.).
+                        </p>
+                        <p>
+                          E.g.: A request{" "}
+                          <code className="font-mono text-wrap">
+                            &lt;public_url&gt;/some-route{" "}
+                          </code>
+                          will be forwarded to your app:
+                          <code className="font-mono text-wrap">
+                            {" "}
+                            &lt;your_app&gt;/some-route
+                          </code>
+                        </p>
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -59,16 +77,6 @@ export function ProxyRequestsSettingsForm({
                   </div>
                   {field.value && (
                     <>
-                      <Card className="bg-muted/20 rounded-xl">
-                        <CardContent className="p-4">
-                          <p className="text-sm text-muted-foreground">
-                            <span className="font-bold">Note</span>: You will
-                            need to restart the FPX studio for this change to
-                            take effect.
-                          </p>
-                        </CardContent>
-                      </Card>
-
                       <FormField
                         control={form.control}
                         name="baseUrl"

@@ -49,23 +49,37 @@ export function WebhoncBadge() {
       >
         <div className="grid gap-4 p-4">
           <div className="font-normal text-sm w-[400px] flex flex-col gap-2">
+            <div className="pb-1">
+              {isPending || url === undefined ? (
+                <div className="flex gap-2 items-center">
+                  <div className="p-2 bg-background/5 border rounded overflow-scroll text-nowrap font-mono">
+                    Loading...
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2 items-center">
+                  <div className="p-2 bg-background/5 border rounded overflow-hidden text-nowrap font-mono text-ellipsis">
+                    {url}
+                  </div>
+                </div>
+              )}
+            </div>
             <h6 className="font-semibold">Public URL</h6>
-            <p className="text-wrap">
-              Any request received at this URL will be forwarded to your API.
+            <p className="text-wrap text-sm">
+              Any request received at this URL will be forwarded to your app
+              including all the request data (path, headers, body, etc.).
             </p>
-            {isPending || url === undefined ? (
-              <div className="flex gap-2 items-center">
-                <div className="p-2 bg-background/5 border rounded overflow-scroll text-nowrap font-mono">
-                  Loading...
-                </div>
-              </div>
-            ) : (
-              <div className="flex gap-2 items-center">
-                <div className="p-2 bg-background/5 border rounded overflow-hidden text-nowrap font-mono text-ellipsis">
-                  {url}
-                </div>
-              </div>
-            )}
+            <p className="text-wrap text-sm">
+              E.g.: A request{" "}
+              <code className="font-mono text-wrap">
+                &lt;public_url&gt;/some-route{" "}
+              </code>
+              will be forwarded to your app:
+              <code className="font-mono text-wrap">
+                {" "}
+                &lt;your_app&gt;/some-route
+              </code>
+            </p>
           </div>
         </div>
       </TooltipContent>
