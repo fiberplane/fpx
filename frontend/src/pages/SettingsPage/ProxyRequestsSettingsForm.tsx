@@ -78,7 +78,7 @@ export function ProxyRequestsSettingsForm({
                     <>
                       <FormField
                         control={form.control}
-                        name="baseUrl"
+                        name="proxyBaseUrl"
                         render={({ field }) => (
                           <div className="flex flex-col gap-1">
                             <FormLabel className="block font-normal text-sm text-gray-300">
