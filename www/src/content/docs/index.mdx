@@ -12,17 +12,18 @@ hero:
     >
       FPX
     </span>
-    Understands your API
-  tagline: Stop treating your API as a mystery box. Start building, testing, and debugging with pizzazz.
+    Understands Hono APIs
+  tagline: Start building, testing and debugging with the full context of your source code and runtime behavior.
 
   actions:
     - text: Get started
-      link: /home/get-started/
+      link: "#quickstart"
       icon: right-arrow
       variant: primary
-    - text: Watch the demo
-      link: https://starlight.astro.build
-      icon: external
+    # - text: Watch the demo
+    #   link: https://starlight.astro.build
+    #   icon: external
+
 ---
 
 import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
@@ -35,7 +36,7 @@ import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
     </div>
   </div>
 
-  <div className="w-full">
+  <div className="w-full" id="quickstart">
     ## Quickstart
     <Steps>
     1. Create a Hono API
@@ -45,7 +46,7 @@ import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
         ```
 
     2. Add `@fiberplane/hono-otel` with two lines of code
-        ```ts ins={"1. Import the instrument function":2-3} ins={"2. Wrap your application with instrument":11-12}
+        ```ts ins={"Import the instrument function":2-3} ins={"Wrap your application with instrument":11-12}
         import { Hono } from 'hono';
 
         import { instrument } from '@fiberplane/hono-otel';
@@ -66,11 +67,11 @@ import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
     </Steps>
   </div>
 
-  <div className="w-full flex flex-col justify-content items-center px-8 pt-8 max-lg:hidden overflow-hidden">
-    <div className="translate-x-[10%] translate-z-2 shadow-lg">
+  <div className="w-full flex flex-col justify-content items-center pl-4 pt-8 max-lg:hidden overflow-hidden">
+    <div className="translate-x-[10%] translate-z-2">
       ![FPX product screenshot](../../assets/fpx-screenshot-1.png)
     </div>
-    <div className="pl-8 -translate-y-[90%] -translate-x-[10%] translate-z-0 shadow-lg">
+    <div className="pl-8 -translate-y-[90%] -translate-x-[10%] translate-z-0">
       ![FPX product screenshot](../../assets/fpx-screenshot-2.png)
     </div>
   </div>
