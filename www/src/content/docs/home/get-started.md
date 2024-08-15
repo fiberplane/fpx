@@ -21,7 +21,7 @@ create honc-app@latest
 
 ### 2. Add FPX middleware
 Install the fpx middleware
-```
+```sh
 npm i @fiberplane/hono-otel
 ```
 
@@ -45,6 +45,6 @@ start your application
 
 ### 3. Launch FPX
 in a new terminal next to your application start fpx:
-```
+```sh
 npx @fiberplane/studio
 ```
