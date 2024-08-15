@@ -20,12 +20,15 @@ app.get("/v0/settings", cors(), async (ctx) => {
  */
 app.post("/v0/settings", cors(), async (ctx) => {
   const { content } = await ctx.req.json();
+
+  logger.debug("Updating settings", { content });
+
   const db = ctx.get("db");
   const webhonc = ctx.get("webhonc");
 
-  logger.debug("Configuration updated..");
-
   const updatedSettings = await upsertSettings(db, content);
+
+  logger.debug("Configuration updated...");
 
   const proxyUrlEnabled = !!Number(
     updatedSettings.find((setting) => setting.key === "proxyRequestsEnabled")

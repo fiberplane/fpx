@@ -70,7 +70,7 @@ function normalize(value: string): boolean | number | string {
     return false;
 
   // Check for number
-  const numberValue = Number(value);
+  const numberValue = Number.parseFloat(value);
   if (!Number.isNaN(numberValue)) return numberValue;
 
   // Return as string if not boolean or number
