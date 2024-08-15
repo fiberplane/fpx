@@ -1,0 +1,80 @@
+---
+title: FPX
+description: Build, test, and debug your Hono api with pizzazz
+template: splash
+hero:
+  title: |
+    <span
+      class="font-black text-transparent
+        bg-clip-text bg-gradient-to-b
+        from-accent-700 to-accent-400
+        dark:from-accent-500 dark:to-accent-200"
+    >
+      FPX
+    </span>
+    Understands Hono APIs
+  tagline: Start building, testing and debugging with the full context of your source code and runtime behavior.
+
+  actions:
+    - text: Get started
+      link: "#quickstart"
+      icon: right-arrow
+      variant: primary
+    # - text: Watch the demo
+    #   link: https://starlight.astro.build
+    #   icon: external
+
+---
+
+import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
+
+
+<div className="grid gap-4 lg:grid-cols-2 lg:gap-4">
+  <div className="w-full p-2 flex justify-center md:p-4 lg:hidden">
+    <div className="rounded overflow-hidden">
+      ![FPX product screenshot](../../assets/fpx-screenshot-2.png)
+    </div>
+  </div>
+
+  <div className="w-full" id="quickstart">
+    ## Quickstart
+    <Steps>
+    1. Create a Hono API
+
+        ```sh
+        npm create hono@latest
+        ```
+
+    2. Add `@fiberplane/hono-otel` with two lines of code
+        ```ts ins={"Import the instrument function":2-3} ins={"Wrap your application with instrument":11-12}
+        import { Hono } from 'hono';
+
+        import { instrument } from '@fiberplane/hono-otel';
+
+        const app = new Hono();
+
+        app.get('/', (c) => c.text('Hello, world!'));
+
+        // ... define your routes
+
+
+        export default instrument(app);
+        ```
+    3. Launch FPX in your API directory
+        ```sh
+        npx @fiberplane/studio@latest
+        ```
+    </Steps>
+  </div>
+
+  <div className="w-full flex flex-col justify-content items-center px-4 pt-8 max-lg:hidden">
+    <div className="translate-x-[10%] translate-z-2">
+      ![FPX product screenshot](../../assets/fpx-screenshot-2.png)
+    </div>
+    <div className="pl-8 -translate-y-[90%] -translate-x-[10%] translate-z-0">
+      ![FPX product screenshot](../../assets/fpx-screenshot-1.png)
+    </div>
+  </div>
+</div>
+
+
