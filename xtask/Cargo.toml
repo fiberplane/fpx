@@ -9,7 +9,6 @@ repository = { workspace = true }
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive", "env"] }
-fpx = { version = "0.1.0", path = "../fpx" }
 fpx-lib = { version = "0.1.0", path = "../fpx-lib" }
 schemars = { workspace = true }
 serde = { workspace = true }
