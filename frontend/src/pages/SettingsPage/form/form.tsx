@@ -48,6 +48,7 @@ export function useSettingsForm(settings: Record<string, string | boolean>) {
           anthropicBaseUrl: data.anthropicBaseUrl ?? "",
           anthropicModel: data.anthropicModel,
           proxyRequestsEnabled: data.proxyRequestsEnabled,
+          baseUrl: data.baseUrl,
         },
       },
       {
