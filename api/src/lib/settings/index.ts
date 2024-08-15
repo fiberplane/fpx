@@ -69,9 +69,8 @@ function normalize(value: string): boolean | number | string {
   if (lowerValue === "false" || lowerValue === "0" || lowerValue === "0.0")
     return false;
 
-  // Check for hexadecimal values - return them as strings
-  const hexRegex = /^0x[0-9A-Fa-f]+$/;
-  if (hexRegex.test(value)) {
+  // Check for any letter
+  if (/[a-zA-Z]/.test(value)) {
     return value;
   }
 
