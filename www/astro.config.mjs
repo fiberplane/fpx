@@ -8,7 +8,7 @@ export default defineConfig({
     starlight({
       title: "FPX",
       social: {
-        github: "https://github.com/withastro/starlight",
+        github: "https://github.com/fiberplane/fpx",
       },
       sidebar: [
         {
