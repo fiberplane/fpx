@@ -6,9 +6,16 @@ import { defineConfig } from "astro/config";
 export default defineConfig({
   integrations: [
     starlight({
-      title: "FPX",
+      logo: {
+        src: "@/assets/fp-logo.png",
+        replacesTitle: true,
+      },
+      title: "Fiberplane",
+      description:
+        "Fiberplane is an API client and a local debugging companion for Hono APIs.",
       social: {
         github: "https://github.com/fiberplane/fpx",
+        discord: "https://discord.com/invite/cqdY6SpfVR",
       },
       sidebar: [
         {

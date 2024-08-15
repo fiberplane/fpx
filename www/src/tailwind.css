@@ -6,3 +6,15 @@
 Add additional Tailwind styles to this file, for example with @layer:
 https://tailwindcss.com/docs/adding-custom-styles#using-css-and-layer
 */
+
+/* a few non-tailwind tweaks for header */
+
+.social-icons::after {
+  display: none;
+}
+
+[data-has-hero] header {
+	border-bottom: 1px solid transparent;
+	background-color: transparent;
+	position: inherit;
+}
