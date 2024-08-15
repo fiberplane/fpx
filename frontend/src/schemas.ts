@@ -18,65 +18,6 @@ export const ClientMessageSchema = z
 
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;
 
-export const RequestSchema = z
-  .object({
-    body: z.union([z.string(), z.null()]).optional(),
-    headers: z.record(z.string()),
-    id: z.number().int().gte(0),
-    method: z.string(),
-    url: z.string(),
-  })
-  .describe("A request that has been captured by fpx.");
-
-export type Request = z.infer<typeof RequestSchema>;
-
-export const RequestAddedSchema = z.object({
-  inspectorId: z
-    .union([
-      z
-        .number()
-        .int()
-        .describe(
-          "The id of the inspector that was associated with the request. This is null in the case where the request was send to `/api/inspect`.",
-        ),
-      z
-        .null()
-        .describe(
-          "The id of the inspector that was associated with the request. This is null in the case where the request was send to `/api/inspect`.",
-        ),
-    ])
-    .describe(
-      "The id of the inspector that was associated with the request. This is null in the case where the request was send to `/api/inspect`.",
-    )
-    .optional(),
-  requestId: z
-    .number()
-    .int()
-    .gte(0)
-    .describe("The id of the request that has been captured."),
-});
-
-export type RequestAdded = z.infer<typeof RequestAddedSchema>;
-
-export const RequestorErrorSchema = z.object({ error: z.literal("internal") });
-
-export type RequestorError = z.infer<typeof RequestorErrorSchema>;
-
-export const RequestorRequestPayloadSchema = z
-  .object({
-    body: z.union([z.string(), z.null()]).optional(),
-    headers: z.union([z.record(z.string()), z.null()]).optional(),
-    method: z.string(),
-    url: z.string(),
-  })
-  .describe(
-    "The payload that describes the request that Requestor has to execute",
-  );
-
-export type RequestorRequestPayload = z.infer<
-  typeof RequestorRequestPayloadSchema
->;
-
 export const ServerMessageSchema = z
   .object({
     messageId: z
@@ -111,9 +52,9 @@ export const ServerMessageSchema = z
             "An error occurred on the server. This could be caused by a message or could be caused by something else. See the outer message for the message id.",
           ),
         z
-          .object({ details: z.any(), type: z.literal("requestAdded") })
+          .object({ details: z.any(), type: z.literal("spanAdded") })
           .describe(
-            "A request has been captured. It contains a reference to the request id and optionally a reference to the inspector id.",
+            "When a Span has been ingested via the export interface (either gRPC or http), its TraceID and SpanID will be sent through this message. Both ID's will be hex encoded.",
           ),
       ];
       const errors = schemas.reduce<z.ZodError[]>(
