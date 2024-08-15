@@ -15,6 +15,11 @@ import { EmptyState } from "../EmptyState";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import { getVendorInfo } from "../v2/vendorify-traces";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;
@@ -147,33 +152,38 @@ export function RequestDetailsPageContentV2({
       </div>
       <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
         <SummaryV2 requestSpan={rootSpan.span} />
-        <div className="grid lg:grid-cols-[auto_1fr] border-t">
-          <div
-            className={cn(
-              "hidden",
-              "lg:block lg:sticky lg:top-4 self-start",
-              "min-w-[300px]",
-              "xl:min-w-[360px]",
-              "2xl:min-w-[420px]",
-            )}
+          <ResizablePanelGroup
+            direction="horizontal"
+            className={cn("grid grid-rows-[auto_1fr] gap-4 w-full")}
           >
-            <TraceDetailsTimeline waterfall={waterfall} />
-          </div>
-          <div
-            className={cn(
-              "grid items-center gap-4 overflow-x-auto relative",
-              "max-lg:grid-rows-[auto_1fr]",
-              "lg:border-l",
-              "lg:items-start",
-              "lg:p-4",
-            )}
-          >
-            <div className="w-full lg:hidden">
+            <ResizablePanel
+            	defaultSize={20}
+              className={cn(
+                "hidden",
+                "lg:block lg:sticky lg:top-4 self-start",
+                "min-w-[300px]",
+                "xl:min-w-[260px]",
+                "2xl:min-w-[320px]",
+              )}
+            >
               <TraceDetailsTimeline waterfall={waterfall} />
-            </div>
-            <TraceDetailsV2 waterfall={waterfall} />
-          </div>
-        </div>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel
+              className={cn(
+                "grid items-center gap-4 overflow-x-auto relative",
+                "w-full",
+                "max-lg:grid-rows-[auto_1fr]",
+                "lg:items-start",
+                "lg:p-4",
+              )}
+            >
+              <div className="w-full lg:hidden">
+                <TraceDetailsTimeline waterfall={waterfall} />
+              </div>
+              <TraceDetailsV2 waterfall={waterfall} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
       </div>
     </div>
   );
