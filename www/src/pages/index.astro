@@ -1,0 +1,45 @@
+---
+import { Image } from "astro:assets";
+import fpxScreenshot1 from "@/assets/fpx-screenshot-1.png";
+import fpxScreenshot2 from "@/assets/fpx-screenshot-2.png";
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { Content } from "./index.mdx";
+---
+
+<StarlightPage frontmatter={{
+	title: "Fiberplane",
+	template: "splash",
+	hero: {
+		title: "Test and debug your Hono APIs",
+		tagline: "Fiberplane helps you build, test and debug your APIs with the full context of your source code and runtime behavior.",
+		actions: [
+			{
+				text: "Get started",
+				link: "#quickstart",
+				icon: "right-arrow",
+				variant: "primary",
+			},
+		],
+	},
+}}>
+<div class="grid gap-4 lg:grid-cols-2 lg:gap-4">
+  <div class="w-full p-2 flex justify-center md:p-4 lg:hidden">
+  <div class="rounded overflow-hidden">
+  <Image src={fpxScreenshot2} alt="FPX product screenshot" class="shadow-xl rounded" />
+    </div>
+  </div>
+
+  <div class="w-full" id="quickstart">
+    <Content />
+  </div>
+
+  <div class="w-full flex flex-col justify-content items-center px-8 pt-8 max-lg:hidden">
+    <div class="translate-x-[10%] translate-z-2">
+    <Image src={fpxScreenshot2} alt="FPX product screenshot" class="shadow-xl rounded" />
+    </div>
+    <div class="pl-8 -translate-y-[50%] -translate-x-[10%] translate-z-0">
+    	<Image src={fpxScreenshot1} alt="FPX product screenshot" class="shadow-xl rounded" />
+    </div>
+  </div>
+</div>
+</StarlightPage>
