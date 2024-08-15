@@ -13,6 +13,11 @@ exporters:
     encoding: json
     compression: none
 
+  otlphttp/fpx-workers:
+    endpoint: http://localhost:8787
+    encoding: json
+    compression: none
+
   otlp:
     endpoint: http://localhost:4567
     tls:
@@ -25,7 +30,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [debug, otlphttp]
+      exporters: [debug, otlphttp/fpx-workers]
 
   telemetry:
     logs:

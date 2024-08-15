@@ -111,6 +111,11 @@ impl Store for D1Store {
         span: models::Span,
     ) -> Result<models::Span, DbError> {
         SendFuture::new(async {
+            let parent_span = match span.parent_span_id {
+                Some(val) => val.into(),
+                None => JsValue::null(),
+            };
+
             self.fetch_one(
                 "INSERT INTO spans
                     (
@@ -129,7 +134,7 @@ impl Store for D1Store {
                 &[
                     span.trace_id.into(),
                     span.span_id.into(),
-                    span.parent_span_id.unwrap_or_default().into(),
+                    parent_span,
                     span.name.into(),
                     span.kind.into(),
                     span.start_time.into(),
