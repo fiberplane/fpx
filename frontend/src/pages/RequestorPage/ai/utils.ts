@@ -26,13 +26,18 @@ export function appRequestToHttpRequest(entry: Requestornator) {
     ? `${requestUrl}?${queryParams}`
     : requestUrl;
 
+  // HACK - Should we only do this for certain JSON content type? Or text?
+  let requestBody = entry.app_requests.requestBody;
+  if (requestBody && typeof requestBody === "object") {
+    requestBody = JSON.stringify(requestBody);
+  }
   // NOTE - Can we glean the http version somehow, somewhere?
   return [
     "<request>",
     `HTTP/1.1 ${entry.app_requests.requestMethod} ${requestUrlWithParams}`,
     ...Object.entries(requestHeaders).map(([key, value]) => `${key}: ${value}`),
     ``,
-    `${entry.app_requests.requestBody || ""}`,
+    `${requestBody || ""}`,
     "</request>",
   ].join("\n");
 }

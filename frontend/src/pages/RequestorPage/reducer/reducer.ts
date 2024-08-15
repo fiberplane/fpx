@@ -4,10 +4,16 @@ import { KeyValueParameter } from "../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import { ProbedRoute } from "../queries";
 import { findMatchedRoute } from "../routes";
-import { RequestMethod, RequestMethodInputValue, RequestType } from "../types";
+import {
+  RequestMethod,
+  RequestMethodInputValue,
+  RequestType,
+  isWsRequest,
+} from "../types";
 import { useSaveUiState } from "./persistence";
 import {
   RequestBodyType,
+  RequestorActiveResponse,
   RequestorBody,
   type RequestorState,
   createInitialState,
@@ -38,6 +44,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
 };
 
 const SET_ROUTES = "SET_ROUTES" as const;
+const SET_SERVICE_BASE_URL = "SET_SERVICE_BASE_URL" as const;
 const PATH_UPDATE = "PATH_UPDATE" as const;
 const METHOD_UPDATE = "METHOD_UPDATE" as const;
 const SELECT_ROUTE = "SELECT_ROUTE" as const;
@@ -52,6 +59,7 @@ const SET_BODY_TYPE = "SET_BODY_TYPE" as const;
 const SET_WEBSOCKET_MESSAGE = "SET_WEBSOCKET_MESSAGE" as const;
 const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
 const CLEAR_HISTORICAL_REQUEST = "CLEAR_HISTORICAL_REQUEST" as const;
+const SET_ACTIVE_RESPONSE = "SET_ACTIVE_RESPONSE" as const;
 const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
 const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
 
@@ -59,6 +67,10 @@ type RequestorAction =
   | {
       type: typeof SET_ROUTES;
       payload: ProbedRoute[];
+    }
+  | {
+      type: typeof SET_SERVICE_BASE_URL;
+      payload: string;
     }
   | {
       type: typeof PATH_UPDATE;
@@ -123,6 +135,10 @@ type RequestorAction =
       type: typeof CLEAR_HISTORICAL_REQUEST;
     }
   | {
+      type: typeof SET_ACTIVE_RESPONSE;
+      payload: RequestorActiveResponse | null;
+    }
+  | {
       type: typeof SET_ACTIVE_REQUESTS_PANEL_TAB;
       payload: RequestsPanelTab;
     }
@@ -140,7 +156,7 @@ function requestorReducer(
       const nextRoutes = action.payload;
       const matchedRoute = findMatchedRoute(
         nextRoutes,
-        state.path,
+        removeBaseUrl(state.serviceBaseUrl, state.path),
         state.method,
         state.requestType,
       );
@@ -157,11 +173,18 @@ function requestorReducer(
         pathParams: nextPathParams,
       };
     }
+    case SET_SERVICE_BASE_URL: {
+      return {
+        ...state,
+        serviceBaseUrl: action.payload,
+        path: addBaseUrl(action.payload, state.path),
+      };
+    }
     case PATH_UPDATE: {
       const nextPath = action.payload;
       const matchedRoute = findMatchedRoute(
         state.routes,
-        nextPath,
+        removeBaseUrl(state.serviceBaseUrl, nextPath),
         state.method,
         state.requestType,
       );
@@ -192,7 +215,7 @@ function requestorReducer(
       const { method, requestType } = action.payload;
       const matchedRoute = findMatchedRoute(
         state.routes,
-        state.path,
+        removeBaseUrl(state.serviceBaseUrl, state.path),
         method,
         requestType,
       );
@@ -274,7 +297,7 @@ function requestorReducer(
       if (didSelectedRouteChange && isDebugTabCurrentlySelected) {
         // If the selected route changed and the debug tab is selected,
         // we want to switch to the "body" tab
-        nextActiveResponsePanelTab = "body";
+        nextActiveResponsePanelTab = "response";
       }
 
       return {
@@ -282,7 +305,9 @@ function requestorReducer(
         selectedRoute: action.payload,
 
         // Reset form values, but preserve things like path params, query params, headers, etc
-        path: action.payload.path,
+        path: addBaseUrl(state.serviceBaseUrl, action.payload.path, {
+          requestType: nextRequestType,
+        }),
         method: nextMethod,
         requestType: nextRequestType,
 
@@ -306,6 +331,8 @@ function requestorReducer(
 
         // HACK - This allows us to stop showing the response body for a historical request
         activeHistoryResponseTraceId: null,
+
+        activeResponse: null,
       };
     }
     case SET_PATH_PARAMS: {
@@ -426,10 +453,17 @@ function requestorReducer(
       return { ...state, websocketMessage: action.payload };
     }
     case LOAD_HISTORICAL_REQUEST: {
-      return { ...state, activeHistoryResponseTraceId: action.payload.traceId };
+      return {
+        ...state,
+        activeHistoryResponseTraceId: action.payload.traceId,
+        activeResponse: null,
+      };
     }
     case CLEAR_HISTORICAL_REQUEST: {
       return { ...state, activeHistoryResponseTraceId: null };
+    }
+    case SET_ACTIVE_RESPONSE: {
+      return { ...state, activeResponse: action.payload };
     }
     case SET_ACTIVE_REQUESTS_PANEL_TAB: {
       return { ...state, activeRequestsPanelTab: action.payload };
@@ -476,6 +510,13 @@ export function useRequestor() {
   const setRoutes = useCallback(
     (routes: ProbedRoute[]) => {
       dispatch({ type: SET_ROUTES, payload: routes });
+    },
+    [dispatch],
+  );
+
+  const setServiceBaseUrl = useCallback(
+    (serviceBaseUrl: string) => {
+      dispatch({ type: SET_SERVICE_BASE_URL, payload: serviceBaseUrl });
     },
     [dispatch],
   );
@@ -612,6 +653,29 @@ export function useRequestor() {
   const getActiveRoute = (): ProbedRoute => _getActiveRoute(state);
 
   /**
+   * Helper that removes the service url from a path,
+   * otherwise it returns the path unchanged
+   */
+  const removeServiceUrlFromPath = useCallback(
+    (path: string) => {
+      return removeBaseUrl(state.serviceBaseUrl, path);
+    },
+    [state.serviceBaseUrl],
+  );
+
+  /**
+   * Helper that adds the service url to a path if it doesn't already have a host
+   */
+  const addServiceUrlIfBarePath = useCallback(
+    (path: string) => {
+      return addBaseUrl(state.serviceBaseUrl, path, {
+        requestType: state.requestType,
+      });
+    },
+    [state.serviceBaseUrl, state.requestType],
+  );
+
+  /**
    * We consider the inputs in "draft" mode when there's no matching route in the side bar
    */
   const getIsInDraftMode = useCallback((): boolean => {
@@ -638,12 +702,25 @@ export function useRequestor() {
     [state.visibleResponsePanelTabs],
   );
 
+  /**
+   * Sets the active response in the response panel
+   * This refers to the ACTUAL response body returned through our proxy,
+   * which allows us to show things like binary data in the response panel
+   */
+  const setActiveResponse = useCallback(
+    (response: RequestorActiveResponse | null) => {
+      dispatch({ type: SET_ACTIVE_RESPONSE, payload: response });
+    },
+    [dispatch],
+  );
+
   return {
     state,
     dispatch,
 
     // Api
     setRoutes,
+    setServiceBaseUrl,
     selectRoute,
 
     // Form fields
@@ -656,6 +733,8 @@ export function useRequestor() {
     setRequestHeaders,
     setBody,
     handleRequestBodyTypeChange,
+    addServiceUrlIfBarePath,
+    removeServiceUrlFromPath,
 
     // Websocket form
     setWebsocketMessage,
@@ -667,6 +746,9 @@ export function useRequestor() {
     // Response Panel tabs
     setActiveResponsePanelTab,
     shouldShowResponseTab,
+
+    // Response Panel response body
+    setActiveResponse,
 
     // Selectors
     getActiveRoute,
@@ -744,4 +826,65 @@ function extractMatchedPathParams(
       };
     },
   );
+}
+
+/**
+ * Removes the base url from a path so we can try to match a route...
+ */
+const removeBaseUrl = (serviceBaseUrl: string, path: string) => {
+  if (!pathHasValidBaseUrl(path)) {
+    return path;
+  }
+
+  if (!pathHasValidBaseUrl(serviceBaseUrl)) {
+    return path;
+  }
+
+  const serviceHost = new URL(serviceBaseUrl).host;
+  const servicePort = new URL(serviceBaseUrl).port;
+
+  const pathHost = new URL(path).host;
+  const pathPort = new URL(path).port;
+
+  // TODO - Make this work with query params!!!
+  if (pathHost === serviceHost && pathPort === servicePort) {
+    return new URL(path).pathname;
+  }
+
+  return path;
+};
+
+const addBaseUrl = (
+  serviceBaseUrl: string,
+  path: string,
+  { requestType }: { requestType: RequestType } = { requestType: "http" },
+) => {
+  // NOTE - This is necessary to allow the user to type new base urls... even though we replace the base url whenever they switch routes
+  if (pathHasValidBaseUrl(path)) {
+    return path;
+  }
+
+  const parsedBaseUrl = new URL(serviceBaseUrl);
+  if (isWsRequest(requestType)) {
+    parsedBaseUrl.protocol = "ws";
+  }
+  let updatedBaseUrl = parsedBaseUrl.toString();
+  if (updatedBaseUrl.endsWith("/")) {
+    updatedBaseUrl = updatedBaseUrl.slice(0, -1);
+  }
+  if (path?.startsWith(updatedBaseUrl)) {
+    return path;
+  }
+
+  const safePath = path?.startsWith("/") ? path : `/${path}`;
+  return `${updatedBaseUrl}${safePath}`;
+};
+
+function pathHasValidBaseUrl(path: string) {
+  try {
+    new URL(path);
+    return true;
+  } catch {
+    return false;
+  }
 }

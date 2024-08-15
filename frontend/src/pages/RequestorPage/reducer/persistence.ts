@@ -1,54 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useBeforeUnload } from "react-router-dom";
-import { z } from "zod";
-import { RequestorStateSchema } from "./state";
-
-/**
- * A subset of the RequestorState that is saved to local storage.
- * We don't save things like `routes` since that could be crufty,
- * and will be refetched when the page reloads anyhow
- */
-const SavedRequestorStateSchema = RequestorStateSchema.pick({
-  path: true,
-  method: true,
-  requestType: true,
-  pathParams: true,
-  queryParams: true,
-  requestHeaders: true,
-  body: true,
-});
-
-type SavedRequestorState = z.infer<typeof SavedRequestorStateSchema>;
-
-const isSavedRequestorState = (
-  state: unknown,
-): state is SavedRequestorState => {
-  const result = SavedRequestorStateSchema.safeParse(state);
-  if (!result.success) {
-    console.error(
-      "SavedRequestorState validation failed:",
-      result.error.format(),
-    );
-  }
-  return result.success;
-};
-
-export function loadUiStateFromLocalStorage(): SavedRequestorState | null {
-  const possibleUiState = localStorage.getItem("requestorUiState");
-  if (!possibleUiState) {
-    return null;
-  }
-
-  try {
-    const uiState = JSON.parse(possibleUiState);
-    if (isSavedRequestorState(uiState)) {
-      return uiState;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
+import {
+  LOCAL_STORAGE_KEY,
+  SavedRequestorState,
+  SavedRequestorStateSchema,
+} from "./state";
 
 /**
  * Hook that saves the UI state to local storage when the component unmounts,
@@ -66,10 +22,8 @@ export function useSaveUiState(state: SavedRequestorState) {
 
   const saveUiState = useCallback(() => {
     try {
-      localStorage.setItem(
-        "requestorUiState",
-        JSON.stringify(stateRef.current),
-      );
+      const state = SavedRequestorStateSchema.parse(stateRef.current);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
     } catch {
       // Ignore errors
       console.error("Error saving state to local storage");
@@ -87,7 +41,7 @@ export function useSaveUiState(state: SavedRequestorState) {
   useBeforeUnload(
     useCallback(() => {
       // NOTE - `removeItem` doesn't throw errors, so we don't need a try-catch
-      localStorage?.removeItem?.("requestorUiState");
+      localStorage?.removeItem?.(LOCAL_STORAGE_KEY);
     }, []),
   );
 }

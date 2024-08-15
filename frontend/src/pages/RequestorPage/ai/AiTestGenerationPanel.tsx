@@ -18,15 +18,18 @@ export function AiTestGenerationPanel({
   history,
   toggleAiTestGenerationPanel,
   getActiveRoute,
+  removeServiceUrlFromPath,
 }: {
   history: Array<Requestornator>;
   toggleAiTestGenerationPanel: () => void;
   getActiveRoute: () => ProbedRoute;
+  removeServiceUrlFromPath: (path: string) => string;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
   const lastMatchingRequest = useMemo<Requestornator | null>(() => {
     const activeRoute = getActiveRoute();
+
     const match = history.find((response) => {
       const path = parsePathFromRequestUrl(response.app_requests?.requestUrl);
 
@@ -36,16 +39,25 @@ export function AiTestGenerationPanel({
 
       const match = findMatchedRoute(
         [activeRoute],
-        path,
+        removeServiceUrlFromPath(path),
         activeRoute.method,
         activeRoute.requestType,
       );
 
-      return !!match;
+      if (match) {
+        return true;
+      }
+
+      // HACK - For requesets against non-detected routes, we can search for the exact request url...
+      if (response.app_requests?.requestUrl === activeRoute.path) {
+        return true;
+      }
+
+      return false;
     });
 
     return match ?? null;
-  }, [getActiveRoute, history]);
+  }, [getActiveRoute, history, removeServiceUrlFromPath]);
 
   const [userInput, setUserInput] = useState("");
 

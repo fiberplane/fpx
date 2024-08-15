@@ -2,10 +2,16 @@ import "react-resizable/css/styles.css"; // Import the styles for the resizable 
 
 import RobotIcon from "@/assets/Robot.svg";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs } from "@/components/ui/tabs";
 import {
+  SENSITIVE_HEADERS,
   cn,
   isJson,
   noop,
@@ -16,27 +22,36 @@ import {
   ArrowDownIcon,
   ArrowTopRightIcon,
   ArrowUpIcon,
+  CaretDownIcon,
+  CaretRightIcon,
   LinkBreak2Icon,
+  QuestionMarkIcon,
 } from "@radix-ui/react-icons";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Timestamp } from "../RequestDetailsPage/Timestamp";
+import { CollapsibleKeyValueTableV2 } from "../RequestDetailsPage/v2/KeyValueTableV2";
+import { SubSectionHeading } from "../RequestDetailsPage/v2/shared";
 import { CodeMirrorJsonEditor } from "./Editors";
 import { FpxDetails } from "./FpxDetails";
-import { HeaderTable } from "./HeaderTable";
 import { Method, StatusCode } from "./RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
-import { AiTestGeneration } from "./ai";
+import { AiTestGenerationDrawer } from "./ai";
 import { Requestornator } from "./queries";
 import type { ResponsePanelTab } from "./reducer";
+import {
+  RequestorActiveResponse,
+  isRequestorActiveResponse,
+} from "./reducer/state";
 import { type RequestType, isWsRequest } from "./types";
 import { WebSocketState } from "./useMakeWebsocketRequest";
 
 type Props = {
+  activeResponse: RequestorActiveResponse | null;
   activeResponsePanelTab: ResponsePanelTab;
   setActiveResponsePanelTab: (tab: string) => void;
   shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
-  response?: Requestornator;
+  tracedResponse?: Requestornator;
   isLoading: boolean;
   requestType: RequestType;
   websocketState: WebSocketState;
@@ -45,18 +60,36 @@ type Props = {
 };
 
 export function ResponsePanel({
+  activeResponse,
   activeResponsePanelTab,
   setActiveResponsePanelTab,
   shouldShowResponseTab,
-  response,
+  tracedResponse,
   isLoading,
   requestType,
   websocketState,
   openAiTestGenerationPanel,
   isAiTestGenerationPanelOpen,
 }: Props) {
-  const isFailure = !!response?.app_responses?.isFailure;
-  const showBottomToolbar = !!response?.app_responses?.traceId;
+  // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
+  const responseToRender = activeResponse ?? tracedResponse;
+
+  const isFailure = isRequestorActiveResponse(responseToRender)
+    ? responseToRender.isFailure
+    : responseToRender?.app_responses?.isFailure;
+
+  // FIXME - This should actually look if the trace exists in the database
+  //         Since a trace ID will still be created even if we request a non-existent route OR against a service that doesn't exist
+  const hasTraceId = isRequestorActiveResponse(responseToRender)
+    ? !!responseToRender?.traceId
+    : !!responseToRender?.app_responses?.traceId;
+
+  const showBottomToolbar = !!responseToRender;
+  const disableGoToTraceButton = !hasTraceId;
+
+  const responseHeaders = isRequestorActiveResponse(responseToRender)
+    ? responseToRender.responseHeaders
+    : responseToRender?.app_responses?.responseHeaders;
 
   const shouldShowMessages = shouldShowResponseTab("messages");
 
@@ -68,8 +101,7 @@ export function ResponsePanel({
         className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
       >
         <CustomTabsList>
-          <CustomTabTrigger value="body">Response</CustomTabTrigger>
-          <CustomTabTrigger value="headers">Headers</CustomTabTrigger>
+          <CustomTabTrigger value="response">Response</CustomTabTrigger>
           {shouldShowMessages && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
@@ -107,19 +139,19 @@ export function ResponsePanel({
             <WebsocketMessages websocketState={websocketState} />
           </TabContentInner>
         </CustomTabsContent>
-        <CustomTabsContent value="body">
+        <CustomTabsContent value="response">
           <TabContentInner
             isLoading={isLoading}
-            isEmpty={!response}
+            isEmpty={!responseToRender}
             isFailure={
-              isWsRequest(requestType) ? websocketState.hasError : isFailure
+              isWsRequest(requestType) ? websocketState.hasError : !!isFailure
             }
             LoadingState={<LoadingResponseBody />}
             FailState={
               isWsRequest(requestType) ? (
                 <FailedWebsocket />
               ) : (
-                <FailedRequest response={response} />
+                <FailedRequest response={tracedResponse} />
               )
             }
             EmptyState={
@@ -131,49 +163,49 @@ export function ResponsePanel({
             }
           >
             <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
-              <ResponseSummary response={response} />
+              <ResponseSummary response={responseToRender} />
               <ResponseBody
-                response={response}
+                headersSlot={
+                  <CollapsibleKeyValueTableV2
+                    sensitiveKeys={SENSITIVE_HEADERS}
+                    title="Headers"
+                    keyValue={responseHeaders ?? {}}
+                    className="mb-2"
+                  />
+                }
+                response={responseToRender}
+                // HACK - To support absolutely positioned bottom toolbar
                 className={cn(showBottomToolbar && "pb-16")}
               />
-              {showBottomToolbar && <BottomToolbar response={response} />}
+              {showBottomToolbar && (
+                <BottomToolbar
+                  response={tracedResponse}
+                  disableGoToTraceButton={disableGoToTraceButton}
+                />
+              )}
             </div>
-          </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="headers">
-          <TabContentInner
-            isLoading={isLoading}
-            isEmpty={!response}
-            isFailure={isFailure}
-            LoadingState={<LoadingHeadersTable />}
-            FailState={<FailedRequest response={response} />}
-            EmptyState={<NoResponse />}
-          >
-            <>
-              <HeaderTable
-                // HACK - To support absolutely positioned bottom toolbar
-                className="pb-16"
-                headers={response?.app_responses?.responseHeaders ?? {}}
-              />
-              {showBottomToolbar && <BottomToolbar response={response} />}
-            </>
           </TabContentInner>
         </CustomTabsContent>
         <CustomTabsContent value="debug">
           <TabContentInner
             isLoading={isLoading}
-            isEmpty={!response}
-            isFailure={isFailure}
-            FailState={<FailedRequest response={response} />}
+            isEmpty={!tracedResponse}
+            isFailure={!!isFailure}
+            FailState={<FailedRequest response={tracedResponse} />}
             EmptyState={<NoResponse />}
           >
             <div className={cn("h-full")}>
               <FpxDetails
-                response={response}
+                response={tracedResponse}
                 // HACK - Allows for absolute positioned toolbar
-                className={cn("pb-16")}
+                className={cn(showBottomToolbar && "pb-16")}
               />
-              {showBottomToolbar && <BottomToolbar response={response} />}
+              {showBottomToolbar && (
+                <BottomToolbar
+                  response={tracedResponse}
+                  disableGoToTraceButton={disableGoToTraceButton}
+                />
+              )}
             </div>
           </TabContentInner>
         </CustomTabsContent>
@@ -182,16 +214,68 @@ export function ResponsePanel({
   );
 }
 
-const BottomToolbar = ({ response }: { response: Requestornator }) => {
+function CollapsibleBodyContainer({
+  className,
+  defaultCollapsed = false,
+  title = "Body",
+  children,
+}: {
+  emptyMessage?: string;
+  className?: string;
+  defaultCollapsed?: boolean;
+  title?: string;
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(!defaultCollapsed);
+  const toggleIsOpen = () => setIsOpen((o) => !o);
+
+  return (
+    <div className={cn(className, "border-t", "pt-2")}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <SubSectionHeading
+            className="flex items-center gap-2"
+            onClick={toggleIsOpen}
+          >
+            {isOpen ? (
+              <CaretDownIcon className="w-4 h-4 cursor-pointer" />
+            ) : (
+              <CaretRightIcon className="w-4 h-4 cursor-pointer" />
+            )}
+            {title}
+          </SubSectionHeading>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">{children}</CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
+// TODO - When there's no matching trace, don't allow the user to go to trace details
+const BottomToolbar = ({
+  response,
+  disableGoToTraceButton,
+}: { response?: Requestornator | null; disableGoToTraceButton: boolean }) => {
+  const traceId = response?.app_responses?.traceId;
+
   return (
     <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
       <div className="sm:hidden">
-        <AiTestGeneration history={[response]} />
+        <AiTestGenerationDrawer history={response ? [response] : null} />
       </div>
-      <Link to={`/requests/otel/${response?.app_responses?.traceId}`}>
-        <Button variant="secondary">
-          Go to Trace Details
-          <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+      <Link
+        to={`/requests/otel/${traceId}`}
+        className={cn(disableGoToTraceButton && "pointer-events-none")}
+      >
+        <Button variant="secondary" disabled={disableGoToTraceButton}>
+          {disableGoToTraceButton ? (
+            "Cannot Find Trace"
+          ) : (
+            <>
+              Go to Trace Details
+              <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
+            </>
+          )}
         </Button>
       </Link>
     </div>
@@ -268,14 +352,21 @@ function TabContentInner({
   );
 }
 
-function ResponseSummary({ response }: { response?: Requestornator }) {
-  const status = response?.app_responses?.responseStatusCode;
-  const method = response?.app_requests?.requestMethod;
-  // const url = response?.app_requests?.requestUrl;
-  const url = parsePathFromRequestUrl(
-    response?.app_requests?.requestUrl ?? "",
-    response?.app_requests?.requestQueryParams ?? undefined,
-  );
+function ResponseSummary({
+  response,
+}: { response?: Requestornator | RequestorActiveResponse }) {
+  const status = isRequestorActiveResponse(response)
+    ? response?.responseStatusCode
+    : response?.app_responses?.responseStatusCode;
+  const method = isRequestorActiveResponse(response)
+    ? response?.requestMethod
+    : response?.app_requests?.requestMethod;
+  const url = isRequestorActiveResponse(response)
+    ? response?.requestUrl
+    : parsePathFromRequestUrl(
+        response?.app_requests?.requestUrl ?? "",
+        response?.app_requests?.requestQueryParams ?? undefined,
+      );
   return (
     <div className="flex items-center mb-4 space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
@@ -298,32 +389,158 @@ function ResponseSummary({ response }: { response?: Requestornator }) {
 }
 
 function ResponseBody({
+  headersSlot,
   response,
   className,
-}: { response?: Requestornator; className?: string }) {
-  const isFailure = response?.app_responses?.isFailure;
-  const body = response?.app_responses?.responseBody;
+}: {
+  headersSlot?: React.ReactNode;
+  response?: Requestornator | RequestorActiveResponse;
+  className?: string;
+}) {
+  const isFailure = isRequestorActiveResponse(response)
+    ? response?.isFailure
+    : response?.app_responses?.isFailure;
 
   // This means we couldn't even contact the service
   if (isFailure) {
     return <FailedRequest response={response} />;
   }
 
-  // Special rendering for JSON
-  if (body && isJson(body)) {
-    const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
+  if (isRequestorActiveResponse(response)) {
+    const body = response?.responseBody;
+    if (body?.type === "error") {
+      return <FailedRequest response={response} />;
+    }
+
+    if (body?.type === "text" || body?.type === "html") {
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            <ResponseBodyText body={body.value} className={className} />
+          </CollapsibleBodyContainer>
+        </div>
+      );
+    }
+
+    if (body?.type === "json") {
+      const prettyBody = JSON.stringify(JSON.parse(body.value), null, 2);
+
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+          </CollapsibleBodyContainer>
+        </div>
+      );
+    }
+
+    // TODO
+    if (body?.type === "binary") {
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            <ResponseBodyBinary body={body} />;
+          </CollapsibleBodyContainer>
+        </div>
+      );
+    }
+
+    // TODO - Stylize
+    if (body?.type === "unknown") {
+      return (
+        <UnknownResponse headersSlot={headersSlot} className={className} />
+      );
+    }
+
+    return <UnknownResponse headersSlot={headersSlot} className={className} />;
+  }
+
+  if (!isRequestorActiveResponse(response)) {
+    const body = response?.app_responses?.responseBody;
+
+    // Special rendering for JSON
+    if (body && isJson(body)) {
+      const prettyBody = JSON.stringify(JSON.parse(body), null, 2);
+
+      return (
+        <div
+          className={cn("overflow-hidden overflow-y-auto w-full", className)}
+        >
+          {headersSlot}
+          <CollapsibleBodyContainer>
+            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+          </CollapsibleBodyContainer>
+        </div>
+      );
+    }
+
+    // For text responses, just split into lines and render with rudimentary line numbers
+    // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
     return (
       <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
-        <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+        {headersSlot}
+        <CollapsibleBodyContainer>
+          <ResponseBodyText body={body ?? ""} className={className} />
+        </CollapsibleBodyContainer>
       </div>
     );
   }
+}
 
-  // For text responses, just split into lines and render with rudimentary line numbers
-  // TODO - if response is empty, show that in a ux friendly way, with 204 for example
+function UnknownResponse({
+  className,
+  headersSlot,
+}: {
+  headersSlot: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
+      {headersSlot}
+      <CollapsibleBodyContainer>
+        <div className="text-gray-400 py-20 flex flex-col items-center justify-center gap-4">
+          <QuestionMarkIcon className="h-8 w-8" />
+          <span className="text-gray-200 italic">
+            Unknown response type, cannot render body
+          </span>
+        </div>
+      </CollapsibleBodyContainer>
+    </div>
+  );
+}
 
-  return <ResponseBodyText body={body ?? ""} className={className} />;
+function ResponseBodyBinary({
+  body,
+}: {
+  body: { contentType: string; type: "binary"; value: ArrayBuffer };
+}) {
+  const isImage = body.contentType.startsWith("image/");
+
+  if (isImage) {
+    const blob = new Blob([body.value], { type: body.contentType });
+    const imageUrl = URL.createObjectURL(blob);
+    return (
+      <img
+        src={imageUrl}
+        alt="Response Image"
+        className="max-w-full h-auto"
+        onLoad={() => URL.revokeObjectURL(imageUrl)}
+      />
+    );
+  }
+
+  // TODO - Stylize
+  return <div>Binary response {body.contentType}</div>;
 }
 
 export function ResponseBodyText({
@@ -401,37 +618,13 @@ function LoadingResponseBody() {
   );
 }
 
-function LoadingHeadersTable() {
-  return (
-    <>
-      <Skeleton className="w-full h-4" />
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-      <div className="flex mt-2 space-x-2">
-        <Skeleton className="w-[200px] h-8" />
-        <Skeleton className="flex-grow h-8" />
-      </div>
-    </>
-  );
-}
-
-function FailedRequest({ response }: { response?: Requestornator }) {
+function FailedRequest({
+  response,
+}: { response?: Requestornator | RequestorActiveResponse }) {
   // TODO - Show a more friendly error message
-  const failureReason = response?.app_responses?.failureReason;
+  const failureReason = isRequestorActiveResponse(response)
+    ? null
+    : response?.app_responses?.failureReason;
   const friendlyMessage =
     failureReason === "fetch failed" ? "Service unreachable" : null;
   // const failureDetails = response?.app_responses?.failureDetails;

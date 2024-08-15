@@ -21,6 +21,7 @@ type FormSetters = {
   setRequestHeaders: (params: KeyValueParameter[]) => void;
   setPath: (path: string) => void;
   updatePathParamValues: (pathParams: { key: string; value: string }[]) => void;
+  addServiceUrlIfBarePath: (path: string) => string;
 };
 
 export function useAi(
@@ -44,6 +45,7 @@ export function useAi(
     setPath,
     setRequestHeaders,
     updatePathParamValues,
+    addServiceUrlIfBarePath,
   } = formSetters;
 
   const bodyType = body.type;
@@ -144,7 +146,7 @@ export function useAi(
       //        meaning it needs to synchronize path params with the path.
       //        We tell it to do so, but if it makes a mistake, then things get confusing.
       if (path) {
-        setPath(path);
+        setPath(addServiceUrlIfBarePath(path));
       }
 
       // TODO - Validate path params
@@ -171,6 +173,7 @@ export function useAi(
     setRequestHeaders,
     updatePathParamValues,
     toast,
+    addServiceUrlIfBarePath,
   ]);
 
   return {
