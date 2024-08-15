@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ProbedRoute, useProbedRoutes } from "../queries";
-import { RequestType, isWsRequest } from "../types";
 import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
 type UseRoutesOptions = {
   setRoutes: (routes: ProbedRoute[]) => void;
+  setServiceBaseUrl: (serviceBaseUrl: string) => void;
 };
 
 /**
@@ -41,7 +41,7 @@ const filterRoutes = (routes: ProbedRoute[]) => {
   });
 };
 
-export function useRoutes({ setRoutes }: UseRoutesOptions) {
+export function useRoutes({ setRoutes, setServiceBaseUrl }: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
@@ -57,40 +57,23 @@ export function useRoutes({ setRoutes }: UseRoutesOptions) {
     );
   }, [routesAndMiddleware]);
 
+  // HACK - Antipattern, add serviceBaseUrl to the reducer based off of external changes
+  // HACK - Defaults to localhost:8787 if not set
+  const serviceBaseUrl =
+    routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
+  useEffect(() => {
+    setServiceBaseUrl(serviceBaseUrl);
+  }, [serviceBaseUrl, setServiceBaseUrl]);
+
   // HACK - Antipattern, add routes to the reducer based off of external changes
   // NOTE - This will only add routes if they don't exist
   useEffect(() => {
     setRoutes(routes);
   }, [routes, setRoutes]);
 
-  // TODO - Support swapping out base url in UI,
-  //        right now you can only change it by modifying FPX_SERVICE_TARGET in the API
-  const addBaseUrl = useCallback(
-    (
-      path: string,
-      { requestType }: { requestType: RequestType } = { requestType: "http" },
-    ) => {
-      const baseUrl = routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
-      const parsedBaseUrl = new URL(baseUrl);
-      if (isWsRequest(requestType)) {
-        parsedBaseUrl.protocol = "ws";
-      }
-      let updatedBaseUrl = parsedBaseUrl.toString();
-      if (updatedBaseUrl.endsWith("/")) {
-        updatedBaseUrl = updatedBaseUrl.slice(0, -1);
-      }
-      if (path?.startsWith(updatedBaseUrl)) {
-        return path;
-      }
-      return `${updatedBaseUrl}${path}`;
-    },
-    [routesAndMiddleware],
-  );
-
   return {
     isError,
     isLoading,
     routes,
-    addBaseUrl,
   };
 }

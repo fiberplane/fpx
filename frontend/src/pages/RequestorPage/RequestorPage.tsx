@@ -30,6 +30,7 @@ export const RequestorPage = () => {
     // Routes panel
     state: { routes },
     setRoutes,
+    setServiceBaseUrl,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     getActiveRoute,
 
@@ -39,6 +40,8 @@ export const RequestorPage = () => {
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
     getIsInDraftMode,
+    addServiceUrlIfBarePath,
+    removeServiceUrlFromPath,
 
     // Request panel
     state: { pathParams, queryParams, requestHeaders, body },
@@ -64,6 +67,10 @@ export const RequestorPage = () => {
     setActiveResponsePanelTab,
     shouldShowResponseTab,
 
+    // Response Panel response body
+    state: { activeResponse },
+    setActiveResponse,
+
     // History (WIP)
     state: { activeHistoryResponseTraceId },
     showResponseBodyFromHistory,
@@ -72,8 +79,10 @@ export const RequestorPage = () => {
 
   const selectedRoute = getActiveRoute();
 
-  const { addBaseUrl } = useRoutes({
+  // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
+  useRoutes({
     setRoutes,
+    setServiceBaseUrl,
   });
 
   // NOTE - Use this to test overflow of requests panel
@@ -109,7 +118,7 @@ export const RequestorPage = () => {
   );
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
-    useMakeProxiedRequest({ clearResponseBodyFromHistory });
+    useMakeProxiedRequest({ clearResponseBodyFromHistory, setActiveResponse });
 
   // WIP - Allows us to connect to a websocket and send messages through it
   const {
@@ -122,7 +131,7 @@ export const RequestorPage = () => {
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
     body,
-    addBaseUrl,
+    addServiceUrlIfBarePath,
     path,
     method,
     pathParams,
@@ -168,6 +177,7 @@ export const RequestorPage = () => {
       setPath: handlePathInputChange,
       setRequestHeaders,
       updatePathParamValues,
+      addServiceUrlIfBarePath,
     },
     body,
   );
@@ -256,7 +266,6 @@ export const RequestorPage = () => {
         )}
       >
         <RequestorInput
-          addBaseUrl={addBaseUrl}
           requestType={selectedRoute?.requestType}
           method={method}
           handleMethodChange={handleMethodChange}
@@ -315,10 +324,11 @@ export const RequestorPage = () => {
           />
 
           <ResponsePanel
+            activeResponse={activeResponse}
+            tracedResponse={mostRecentRequestornatorForRoute}
             activeResponsePanelTab={activeResponsePanelTab}
             setActiveResponsePanelTab={setActiveResponsePanelTab}
             shouldShowResponseTab={shouldShowResponseTab}
-            response={mostRecentRequestornatorForRoute}
             isLoading={isRequestorRequesting}
             websocketState={websocketState}
             requestType={selectedRoute?.requestType}
@@ -331,6 +341,7 @@ export const RequestorPage = () => {
               history={history}
               toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
               getActiveRoute={getActiveRoute}
+              removeServiceUrlFromPath={removeServiceUrlFromPath}
             />
           )}
         </div>
@@ -367,6 +378,23 @@ function useMostRecentRequestornator(
     // Descending sort by updatedAt
     matchingResponses?.sort(sortRequestornatorsDescending);
 
-    return matchingResponses?.[0];
+    const latestMatch = matchingResponses?.[0];
+
+    if (latestMatch) {
+      return latestMatch;
+    }
+
+    // HACK - We can try to match against the exact request URL
+    //        This is a fallback to support the case where the route doesn't exist,
+    //        perhaps because we made a request to a service we are not explicitly monitoring
+    const matchingResponsesFallback = all?.filter(
+      (r: Requestornator) =>
+        r?.app_requests?.requestUrl === requestInputs.path &&
+        r?.app_requests?.requestMethod === requestInputs.method,
+    );
+
+    matchingResponsesFallback?.sort(sortRequestornatorsDescending);
+
+    return matchingResponsesFallback?.[0];
   }, [all, requestInputs, activeHistoryResponseTraceId]);
 }

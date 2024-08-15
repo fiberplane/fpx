@@ -2,8 +2,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCallback } from "react";
 import { KeyValueParameter } from "./KeyValueForm";
 import { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
-import { RequestorBody, RequestorState } from "./reducer";
-import { useRoutes } from "./routes";
+import { RequestorBody, RequestorState, useRequestor } from "./reducer";
 import { isWsRequest } from "./types";
 
 export function useRequestorSubmitHandler({
@@ -11,7 +10,7 @@ export function useRequestorSubmitHandler({
   selectedRoute,
   body,
   path,
-  addBaseUrl,
+  addServiceUrlIfBarePath,
   method,
   pathParams,
   queryParams,
@@ -20,7 +19,9 @@ export function useRequestorSubmitHandler({
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addBaseUrl: ReturnType<typeof useRoutes>["addBaseUrl"];
+  addServiceUrlIfBarePath: ReturnType<
+    typeof useRequestor
+  >["addServiceUrlIfBarePath"];
   selectedRoute: ProbedRoute | null;
   body: RequestorBody;
   path: string;
@@ -39,9 +40,7 @@ export function useRequestorSubmitHandler({
       e.preventDefault();
 
       if (isWsRequest(requestType)) {
-        const url = addBaseUrl(path, {
-          requestType,
-        });
+        const url = addServiceUrlIfBarePath(path);
         connectWebsocket(url);
         toast({
           description: "Connecting to websocket",
@@ -74,9 +73,7 @@ export function useRequestorSubmitHandler({
 
       // TODO - Check me
       if (isWsRequest(requestType)) {
-        const url = addBaseUrl(path, {
-          requestType: requestType,
-        });
+        const url = addServiceUrlIfBarePath(path);
         connectWebsocket(url);
         toast({
           description: "Connecting to websocket",
@@ -86,7 +83,7 @@ export function useRequestorSubmitHandler({
 
       makeRequest(
         {
-          addBaseUrl,
+          addServiceUrlIfBarePath,
           path,
           method,
           body,
@@ -119,7 +116,7 @@ export function useRequestorSubmitHandler({
       body,
       requestHeaders,
       makeRequest,
-      addBaseUrl,
+      addServiceUrlIfBarePath,
       path,
       method,
       pathParams,

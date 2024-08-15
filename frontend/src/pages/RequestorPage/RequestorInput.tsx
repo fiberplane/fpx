@@ -13,7 +13,7 @@ import {
   MixerHorizontalIcon,
   TriangleRightIcon,
 } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
@@ -32,10 +32,6 @@ type RequestInputProps = {
   handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
-  addBaseUrl: (
-    path: string,
-    { requestType }: { requestType: RequestType },
-  ) => string;
   formRef: React.RefObject<HTMLFormElement>;
   requestType: RequestType;
   websocketState: WebSocketState;
@@ -51,7 +47,6 @@ export function RequestorInput({
   handlePathInputChange,
   onSubmit,
   isRequestorRequesting,
-  addBaseUrl,
   requestType,
   formRef,
   websocketState,
@@ -60,7 +55,6 @@ export function RequestorInput({
   const { toast } = useToast();
 
   const isWsConnected = websocketState.isConnected;
-  const [value, setValue] = useState("");
 
   const { mutate: addRoutes } = useAddRoutes();
 
@@ -89,14 +83,6 @@ export function RequestorInput({
     preventDefault: getIsInDraftMode(),
   });
 
-  // HACK - If path changes externally, update the value here
-  // This happens if the user clicks a route in the sidebar, for example,
-  // or when they load a request from history
-  useEffect(() => {
-    const url = addBaseUrl(path ?? "", { requestType });
-    setValue(url);
-  }, [path, addBaseUrl, requestType]);
-
   return (
     <form
       ref={formRef}
@@ -111,16 +97,9 @@ export function RequestorInput({
         />
         <Input
           type="text"
-          value={value}
+          value={path}
           onChange={(e) => {
-            setValue(e.target.value);
-            try {
-              const url = new URL(e.target.value);
-              handlePathInputChange(url.pathname);
-            } catch {
-              // TODO - Error state? Toast?
-              console.error("Invalid URL", e.target.value);
-            }
+            handlePathInputChange(e.target.value);
           }}
           className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
         />
