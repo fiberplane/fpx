@@ -48,12 +48,12 @@ export async function start() {
 }
 
 export async function stop() {
-  if (socket && socket.readyState === WebSocket.OPEN) {
+  if (socket) {
     socket.close(1000, "Closing connection due to settings change");
     socket = undefined;
   }
   if (reconnectTimeout) {
-    console.log("closing reconnect timeout");
+    logger.debug("closing reconnect timeout");
     clearTimeout(reconnectTimeout);
   }
 }
