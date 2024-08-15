@@ -14,3 +14,11 @@ class_name = "WebHonc"
 tag = "v1"
 new_classes = ["WebHonc"]
 
+[env.preview]
+[[env.preview.durable_objects.bindings]]
+name = "WEBHONC"
+class_name = "WebHonc"
+
+[[env.preview.migrations]]
+tag = "v1"
+new_classes = ["WebHonc"]

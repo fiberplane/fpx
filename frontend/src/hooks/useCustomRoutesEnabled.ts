@@ -10,6 +10,6 @@ import { useMemo } from "react";
 export function useCustomRoutesEnabled() {
   const { data } = useFetchSettings();
   return useMemo(() => {
-    return data?.content?.customRoutesEnabled ?? false;
+    return data?.customRoutesEnabled ?? false;
   }, [data]);
 }

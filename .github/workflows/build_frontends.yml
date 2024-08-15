@@ -1,5 +1,4 @@
 # This workflow will be triggered by a GitHub pull-request.
----
 name: Build node packages
 
 on:
@@ -42,6 +41,9 @@ jobs:
         env:
           CI: true
 
+      - name: Build shared types
+        run: pnpm build:types
+
       # Linting: we use global biome command
       # any extra commands should be added to the lint:ci script
       # in the package.json
@@ -59,3 +61,11 @@ jobs:
 
       - name: Build all workspaces
         run: pnpm --recursive build
+
+      # Release a preview version
+
+      - name: Copy the frontend files into the api
+        run: cp -r ./frontend/dist/* ./api/dist
+
+      - name: Publish a temporary preview version
+        run: pnpx pkg-pr-new publish --pnpm "./api" "./packages/client-library-otel"

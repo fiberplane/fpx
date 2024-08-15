@@ -25,7 +25,7 @@ export function SettingsPage() {
       ) : isError ? (
         <div>Error Loading Settings</div>
       ) : (
-        <SettingsLayout settings={data?.content} />
+        <SettingsLayout settings={data} />
       )}
     </div>
   );

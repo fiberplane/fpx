@@ -9,7 +9,7 @@ import {
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
 import { OtelSpans, useOtelTrace } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Requestornator } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
 
@@ -168,27 +168,4 @@ function trimLines(input: string) {
     .split("\n")
     .map((l) => l.trim())
     .join("\n");
-}
-
-export function useCopyToClipboard() {
-  const [isCopied, setIsCopied] = useState(false);
-
-  const copyToClipboard = useCallback((text: string) => {
-    if (!navigator.clipboard) {
-      console.error("Clipboard API not available");
-      return;
-    }
-
-    navigator.clipboard.writeText(text).then(
-      () => {
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000); // Reset the copied state after 2 seconds
-      },
-      (err) => {
-        console.error("Failed to copy text: ", err);
-      },
-    );
-  }, []);
-
-  return { isCopied, copyToClipboard };
 }

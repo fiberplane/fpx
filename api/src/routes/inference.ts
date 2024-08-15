@@ -5,8 +5,8 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { generateRequestWithAiProvider } from "../lib/ai/index.js";
 import { cleanPrompt } from "../lib/ai/prompts.js";
+import { getInferenceConfig } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import { getInferenceConfig } from "./settings.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -76,7 +76,7 @@ app.post(
         {
           role: "system",
           content: cleanPrompt(`
-            You are a code debugging assistant for apps that use Hono (web framework), 
+            You are a code debugging assistant for apps that use Hono (web framework),
             Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
             You are given a function and an error message.
             Provide a succinct suggestion to fix the error, or say "I need more context to help fix this".
@@ -85,7 +85,7 @@ app.post(
         {
           role: "user",
           content: cleanPrompt(`
-            I hit the following error: 
+            I hit the following error:
             ${errorMessage}
             This error originated in the following route handler for my Hono application:
             ${handlerSourceCode}
@@ -135,7 +135,7 @@ app.post("/v0/summarize-trace-error/:traceId", cors(), async (ctx) => {
       {
         role: "system",
         content: cleanPrompt(`
-            You are a code debugging assistant for apps that use Hono (web framework), 
+            You are a code debugging assistant for apps that use Hono (web framework),
             Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
 
             You are given a route handler and some trace events that happened when the handler was executed.

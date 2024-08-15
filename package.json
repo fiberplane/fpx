@@ -4,6 +4,7 @@
   "description": "Local development debugging interface for Hono apps, powered by OpenTelemetry",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
+    "build:types": "pnpm --filter @fiberplane/fpx-types build",
     "build:fpx-studio": "pnpm run clean:fpx-studio && pnpm run build:api && pnpm run build:frontend",
     "build:api": "pnpm --filter @fiberplane/studio build",
     "dev:api": "pnpm --filter @fiberplane/studio dev",
@@ -17,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fiberplane/fpx.git"
+    "url": "https://github.com/fiberplane/fpx.git"
   },
   "bugs": {
     "url": "https://github.com/fiberplane/fpx/issues"
@@ -25,8 +26,9 @@
   "homepage": "https://github.com/fiberplane/fpx#readme",
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
+    "pkg-pr-new": "^0.0.20",
     "rimraf": "^5.0.7",
-    "typescript": "^5.5.3",
+    "typescript": "^5.5.4",
     "wrangler": "^3.62.0"
   }
 }

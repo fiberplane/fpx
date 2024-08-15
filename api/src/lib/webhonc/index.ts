@@ -15,26 +15,87 @@ import {
 import { resolveUrlQueryParams } from "../utils.js";
 import { getWebHoncConnectionId, setWebHoncConnectionId } from "./store.js";
 
-// TODO: maintain and surface the webhonc connection state so that UI
-// can adapt accordingly
-// TODO: handle the case where the webhonc service is down, exponentially try
-// reconnecting etc
-export function connectToWebhonc(
-  host: string,
-  db: LibSQLDatabase<typeof schema>,
-  wsConnections: Set<WebSocket>,
-) {
-  const protocol = host.startsWith("localhost") ? "ws" : "wss";
-  const socket = new WebSocket(`${protocol}://${host}/ws`);
+type WebhoncManagerConfig = {
+  host: string;
+  db: LibSQLDatabase<typeof schema>;
+  wsConnections: Set<WebSocket>;
+};
+
+let socket: WebSocket | undefined = undefined;
+let reconnectTimeout: NodeJS.Timeout | undefined = undefined;
+let reconnectAttempt = 0;
+let config: WebhoncManagerConfig | undefined = undefined;
+
+const MAX_RECONNECT_DELAY = 30000;
+const INITIAL_RECONNECT_DELAY = 1000;
+
+export function setupWebhonc(managerConfig: WebhoncManagerConfig) {
+  config = managerConfig;
+}
+
+export async function start() {
+  if (!config) {
+    throw new Error("WebhoncManager not initialized");
+  }
+
+  if (socket) {
+    logger.debug("Webhonc process already started. Skipping...");
+    return;
+  }
+
+  logger.debug("Starting Webhonc process...");
+  await connect();
+}
+
+export async function stop() {
+  if (socket) {
+    socket.close(1000, "Closing connection due to settings change");
+    socket = undefined;
+  }
+  if (reconnectTimeout) {
+    logger.debug("closing reconnect timeout");
+    clearTimeout(reconnectTimeout);
+  }
+}
+
+export function getStatus() {
+  if (!config) {
+    throw new Error("WebhoncManager not initialized");
+  }
+
+  return {
+    connected: socket?.readyState === WebSocket.OPEN,
+    connectionId: socket ? getWebHoncConnectionId(config.db) : null,
+  };
+}
+
+async function connect() {
+  if (!config) {
+    throw new Error("WebhoncManager not initialized");
+  }
+
+  const protocol = config.host.startsWith("localhost") ? "ws" : "wss";
+  const maybeWebhoncId = await getWebHoncConnectionId(config.db);
+  socket = new WebSocket(
+    `${protocol}://${config.host}/connect${maybeWebhoncId ? `/${maybeWebhoncId}` : ""}`,
+  );
+
+  setupSocketListeners();
+}
+
+function setupSocketListeners() {
+  if (!socket) return;
+  if (!config) return;
 
   socket.onopen = () => {
-    logger.debug(`Connected to the webhonc service at ${host}`);
+    logger.debug(`Connected to the webhonc service at ${config?.host}`);
+    reconnectAttempt = 0;
   };
 
   socket.onmessage = async (event) => {
     logger.debug("Received message from the webhonc service:", event.data);
     try {
-      await handleMessage(event, wsConnections, db);
+      await handleMessage(event);
     } catch (error) {
       logger.error("Error handling message from webhonc:", error);
     }
@@ -47,20 +108,34 @@ export function connectToWebhonc(
       event.code,
       event.wasClean,
     );
+    // If the connection is closed due to a normal close, we don't want to reconnect
+    if (event.code === 1000) return;
+
+    scheduleReconnect();
   };
 
   socket.onerror = (event) => {
-    logger.error("Webhonc connection error", event.message);
+    logger.error("Webhonc connection error", event);
   };
-
-  return socket;
 }
 
-async function handleMessage(
-  event: WebSocket.MessageEvent,
-  wsConnections: Set<WebSocket>,
-  db: LibSQLDatabase<typeof schema>,
-) {
+function scheduleReconnect() {
+  const reconnectDelay = Math.min(
+    INITIAL_RECONNECT_DELAY * 2 ** reconnectAttempt,
+    MAX_RECONNECT_DELAY,
+  );
+
+  logger.debug(`Attempting to reconnect in ${reconnectDelay}ms`);
+
+  reconnectTimeout = setTimeout(async () => {
+    reconnectAttempt++;
+    await connect();
+  }, reconnectDelay);
+}
+
+async function handleMessage(event: WebSocket.MessageEvent) {
+  if (!config) return;
+
   const parsedMessage = WsMessageSchema.parse(
     // it probably doesn't make sense that we're parsing the entire message and then re-serializing it
     // for the request maker but this is the easiest way to move forward for now
@@ -69,12 +144,11 @@ async function handleMessage(
 
   const handler = messageHandlers[parsedMessage.event] as (
     message: typeof parsedMessage,
-    wsConnections: Set<WebSocket>,
-    db: LibSQLDatabase<typeof schema>,
+    config: WebhoncManagerConfig,
   ) => Promise<void>;
 
   if (handler) {
-    await handler(parsedMessage, wsConnections, db);
+    await handler(parsedMessage, config);
   } else {
     logger.error(`Unhandled event type: ${parsedMessage.event}`);
   }
@@ -83,17 +157,16 @@ async function handleMessage(
 const messageHandlers: {
   [K in z.infer<typeof WsMessageSchema>["event"]]: (
     message: Extract<z.infer<typeof WsMessageSchema>, { event: K }>,
-    wsConnections: Set<WebSocket>,
-    db: LibSQLDatabase<typeof schema>,
+    config: WebhoncManagerConfig,
   ) => Promise<void>;
 } = {
-  trace_created: async (_message, _wsConnections, _db) => {
+  trace_created: async (_message, _config) => {
     logger.debug("trace_created message received, no action required");
   },
-  connection_open: async (message, wsConnections) => {
+  connection_open: async (message, config) => {
     const { connectionId } = message.payload;
-    setWebHoncConnectionId(connectionId);
-    for (const ws of wsConnections) {
+    setWebHoncConnectionId(config.db, connectionId);
+    for (const ws of config.wsConnections) {
       ws.send(
         JSON.stringify({
           event: "connection_open",
@@ -102,8 +175,9 @@ const messageHandlers: {
       );
     }
   },
-  request_incoming: async (message, _wsConnections, db) => {
+  request_incoming: async (message, config) => {
     // no trace id is coming from the websocket, so we generate one
+    const db = config.db;
     const traceId = generateOtelTraceId();
 
     const serviceTarget = resolveServiceArg(process.env.FPX_SERVICE_TARGET);
@@ -126,7 +200,7 @@ const messageHandlers: {
       requestRoute: message.payload.path.join("/"),
     };
 
-    const webhoncId = getWebHoncConnectionId();
+    const webhoncId = await getWebHoncConnectionId(db);
 
     const supplementedHeaders = {
       "x-fpx-trace-id": traceId,
@@ -149,10 +223,9 @@ const messageHandlers: {
 
     try {
       const response = await executeProxyRequest({
-        requestHeaders: message.payload.headers,
-        // @ts-expect-error - Trust me, the request method is correct, and it's a string
-        requestMethod: message.payload.method,
-        requestBody: message.payload.body,
+        requestHeaders: newRequest.requestHeaders,
+        requestMethod: newRequest.requestMethod,
+        requestBody: newRequest.requestBody,
         requestUrl,
       });
 

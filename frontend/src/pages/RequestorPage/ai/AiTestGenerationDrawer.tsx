@@ -10,12 +10,13 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Textarea } from "@/components/ui/textarea";
+import { useCopyToClipboard } from "@/hooks";
 import { cn, parsePathFromRequestUrl, truncatePathWithEllipsis } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { Requestornator } from "../queries";
-import { useCopyToClipboard, usePrompt } from "./ai-test-generation";
+import { usePrompt } from "./ai-test-generation";
 
 export function AiTestGenerationDrawer({
   history,

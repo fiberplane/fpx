@@ -9,6 +9,6 @@ import { useMemo } from "react";
 export function useProxyRequestsEnabled() {
   const { data } = useFetchSettings();
   return useMemo(() => {
-    return !!data?.content?.proxyRequestsEnabled;
+    return !!data?.proxyRequestsEnabled;
   }, [data]);
 }

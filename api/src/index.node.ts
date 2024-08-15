@@ -10,11 +10,11 @@ import { createApp } from "./app.js";
 import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
+import { getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
-import { connectToWebhonc } from "./lib/webhonc/index.js";
+import * as webhonc from "./lib/webhonc/index.js";
 import logger from "./logger.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
-import { getSetting } from "./routes/settings.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
@@ -31,7 +31,7 @@ const sql = createClient({
 });
 const db = drizzle(sql, { schema });
 // Set up the api routes
-const app = createApp(db, wsConnections);
+const app = createApp(db, webhonc, wsConnections);
 
 /**
  * Serve all the frontend static files
@@ -73,7 +73,6 @@ server.on("error", (err) => {
 
 // First, fire off an async probe to the service we want to monitor
 //   - This will collect information on all routes that the service exposes
-//   - This powers a postman-like UI to ping routes and see responses
 //
 // Additionally, this will watch for changes to files in the project directory,
 //   - If a file changes, send a new probe to the service
@@ -83,11 +82,13 @@ startRouteProbeWatcher(watchDir);
 // Set up websocket server
 setupRealtimeService({ server, path: "/ws", wsConnections });
 
+// set up webhonc manager
+webhonc.setupWebhonc({ host: resolveWebhoncUrl(), db, wsConnections });
+
 // check settings if proxy requests is enabled
-const proxyRequestsEnabled = await getSetting(db, "proxyRequestsEnabled");
+const proxyRequestsEnabled = !!(await getSetting(db, "proxyRequestsEnabled"));
 
 if (proxyRequestsEnabled) {
-  logger.debug("Proxy requests feature enabled, connecting to webhonc...");
-  const webhoncUrl = resolveWebhoncUrl();
-  connectToWebhonc(webhoncUrl, db, wsConnections);
+  logger.debug("Proxy requests feature enabled.");
+  await webhonc.start();
 }

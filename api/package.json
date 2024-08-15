@@ -4,6 +4,13 @@
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fiberplane/fpx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fiberplane/fpx/issues"
+  },
   "engines": {
     "node": ">=16.0.0"
   },
@@ -12,6 +19,7 @@
     "dev": "tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
+    "db:drop": "drizzle-kit drop",
     "db:seed": "tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio",
     "build": "pnpm run db:generate && tsc",
@@ -35,6 +43,7 @@
     "@iarna/toml": "^2.2.5",
     "@langchain/core": "^0.2.15",
     "@libsql/client": "^0.6.2",
+    "@fiberplane/fpx-types": "workspace:*",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.2",
     "chalk": "^5.3.0",
@@ -51,7 +60,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@fiberplane/fpx-types": "workspace:*",
     "@cloudflare/workers-types": "^4.20240403.0",
     "@opentelemetry/otlp-transformer": "^0.52.1",
     "@types/figlet": "^1.5.8",

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useCopyToClipboard } from "@/hooks";
 import { parsePathFromRequestUrl } from "@/utils";
 import {
   CopyIcon,
@@ -12,7 +13,7 @@ import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { ProbedRoute, Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
 import { ContextEntry } from "./AiTestGenerationDrawer";
-import { useCopyToClipboard, usePrompt } from "./ai-test-generation";
+import { usePrompt } from "./ai-test-generation";
 
 export function AiTestGenerationPanel({
   history,

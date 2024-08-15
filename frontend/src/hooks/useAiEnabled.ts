@@ -10,6 +10,6 @@ import { useMemo } from "react";
 export function useAiEnabled() {
   const { data } = useFetchSettings();
   return useMemo(() => {
-    return data?.content?.aiEnabled ?? false;
+    return data?.aiEnabled ?? false;
   }, [data]);
 }
