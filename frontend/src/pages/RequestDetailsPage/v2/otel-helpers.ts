@@ -90,7 +90,8 @@ export function getNumber<T = number>(
     defaultValue: T;
   },
 ) {
-  if (typeof value === "string") {
+  // NOTE - `Number("")` returns `0`, so we need to check for an empty string
+  if (typeof value === "string" && !!value) {
     return Number(value);
   }
 
