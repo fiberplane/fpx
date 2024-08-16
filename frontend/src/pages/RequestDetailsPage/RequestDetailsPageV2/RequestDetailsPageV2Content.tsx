@@ -154,7 +154,7 @@ export function RequestDetailsPageContentV2({
         <SummaryV2 requestSpan={rootSpan.span} />
         <ResizablePanelGroup
           direction="horizontal"
-          className={cn("grid grid-rows-[auto_1fr] gap-4 w-full")}
+          className={cn("grid grid-rows-[auto_1fr] w-full border-t")}
         >
           <ResizablePanel
             defaultSize={20}
