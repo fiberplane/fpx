@@ -7,6 +7,11 @@ import {
 
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { MizuOrphanLog } from "@/queries";
 import { OtelSpan } from "@/queries/traces-otel";
 import { cn } from "@/utils";
@@ -147,23 +152,28 @@ export function RequestDetailsPageContentV2({
       </div>
       <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
         <SummaryV2 requestSpan={rootSpan.span} />
-        <div className="grid lg:grid-cols-[auto_1fr] border-t">
-          <div
+        <ResizablePanelGroup
+          direction="horizontal"
+          className={cn("grid grid-rows-[auto_1fr] w-full border-t")}
+        >
+          <ResizablePanel
+            defaultSize={20}
             className={cn(
               "hidden",
               "lg:block lg:sticky lg:top-4 self-start",
               "min-w-[300px]",
-              "xl:min-w-[360px]",
-              "2xl:min-w-[420px]",
+              "xl:min-w-[260px]",
+              "2xl:min-w-[320px]",
             )}
           >
             <TraceDetailsTimeline waterfall={waterfall} />
-          </div>
-          <div
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel
             className={cn(
               "grid items-center gap-4 overflow-x-auto relative",
+              "w-full",
               "max-lg:grid-rows-[auto_1fr]",
-              "lg:border-l",
               "lg:items-start",
               "lg:p-4",
             )}
@@ -172,8 +182,8 @@ export function RequestDetailsPageContentV2({
               <TraceDetailsTimeline waterfall={waterfall} />
             </div>
             <TraceDetailsV2 waterfall={waterfall} />
-          </div>
-        </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );
