@@ -348,7 +348,7 @@ function requestorReducer(
       }, state.selectedRoute?.path ?? state.path);
       return {
         ...state,
-        path: nextPath,
+        path: addBaseUrl(state.serviceBaseUrl, nextPath),
         pathParams: action.payload,
       };
     }
