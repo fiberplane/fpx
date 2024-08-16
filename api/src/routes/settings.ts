@@ -20,6 +20,7 @@ app.get("/v0/settings", cors(), async (ctx) => {
  */
 app.post("/v0/settings", cors(), async (ctx) => {
   const { content } = await ctx.req.json();
+  console.log(content);
 
   logger.debug("Updating settings", { content });
 

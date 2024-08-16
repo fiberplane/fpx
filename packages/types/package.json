@@ -17,9 +17,15 @@
   "license": "MIT or Apache 2",
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "pnpm clean && tsc"
+    "build": "pnpm clean && rollup -c"
   },
   "devDependencies": {
     "zod": "^3.23.8"
+  },
+  "dependencies": {
+    "rollup": "^4.20.0",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "typescript": "^5.5.4"
   }
 }

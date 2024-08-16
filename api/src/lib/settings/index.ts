@@ -1,12 +1,13 @@
+import { Settings, SettingsSchema, type SettingsKey } from '@fiberplane/fpx-types';
 import { eq, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { z } from "zod";
 import { settings } from "../../db/schema.js";
 import type * as schema from "../../db/schema.js";
 
-export async function upsertSettings(
+export async function upsertSettings<T extends SettingsKey>(
   db: LibSQLDatabase<typeof schema>,
-  content: Record<string, string | number | boolean>,
+  content: Record<T, Extract<Settings, { type: T }>>,
 ) {
   const settingsToUpdate = Object.entries(content).map(
     ([key, originalValue]) => {
@@ -18,6 +19,7 @@ export async function upsertSettings(
       };
     },
   );
+
   return await db
     .insert(settings)
     .values(settingsToUpdate)
@@ -28,19 +30,21 @@ export async function upsertSettings(
     .returning();
 }
 
-export async function getSetting(
+export async function getSetting<T extends SettingsKey>(
   db: LibSQLDatabase<typeof schema>,
-  key: string,
-) {
+  key: T,
+): Promise<Extract<Settings, { type: T }> | undefined> {
   const [setting] = await db
     .select()
     .from(settings)
-    .where(eq(settings.key, key))
+    .where(eq(settings.key, String(key)))
     .limit(1);
 
-  if (!setting) return;
+  if (!setting) {
+    return;
+  }
 
-  return normalize(setting.value);
+  return SettingsSchema.parse(settings.value) as Extract<Settings, { type: T }>;
 }
 
 export async function getAllSettings(db: LibSQLDatabase<typeof schema>) {
@@ -48,9 +52,9 @@ export async function getAllSettings(db: LibSQLDatabase<typeof schema>) {
 
   if (settingsRecords.length === 0) return {};
 
-  return settingsRecords.reduce<Record<string, string | boolean | number>>(
+  return settingsRecords.reduce<Partial<Record<SettingsKey, string | boolean | number>>>(
     (acc, rec) => {
-      acc[rec.key] = normalize(rec.value);
+      acc[rec.key as SettingsKey] = normalize(rec.value);
       return acc;
     },
     {},

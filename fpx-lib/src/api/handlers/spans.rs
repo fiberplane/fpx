@@ -1,5 +1,5 @@
 use crate::api::errors::{ApiServerError, CommonError};
-use crate::api::models::Span;
+use crate::api::models::{Span, TypeScriptCompatSpan};
 use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;
@@ -52,6 +52,25 @@ impl From<DbError> for ApiServerError<SpanGetError> {
             }
         }
     }
+}
+
+#[axum::debug_handler]
+#[tracing::instrument(skip_all)]
+#[deprecated]
+pub async fn ts_compat_span_list_handler(
+    State(store): State<BoxedStore>,
+    Path(trace_id): Path<String>,
+) -> Result<Json<Vec<TypeScriptCompatSpan>>, ApiServerError<CommonError>> {
+    let tx = store.start_readonly_transaction().await.unwrap();
+
+    hex::decode(&trace_id)
+        .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))
+        .unwrap();
+
+    let spans = store.span_list_by_trace(&tx, &trace_id).await.unwrap();
+    let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
+
+    Ok(Json(spans))
 }
 
 #[tracing::instrument(skip_all)]
