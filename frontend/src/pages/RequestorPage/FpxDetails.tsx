@@ -1,14 +1,7 @@
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-// import { Skeleton } from "@/components/ui/skeleton";
 import { useOtelTrace } from "@/queries";
 import { cn, isJson, objectWithKey } from "@/utils";
-import { CaretSortIcon, CodeIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
-import { useMemo, useState } from "react";
+import { CodeIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
+import { useMemo } from "react";
 import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { useRequestWaterfall } from "../RequestDetailsPage/RequestDetailsPageV2/useRequestWaterfall";
 import { TraceDetailsTimeline } from "../RequestDetailsPage/v2";
@@ -19,7 +12,6 @@ import {
   isErrorLogEvent,
   // getRequestHeaders,
 } from "../RequestDetailsPage/v2/otel-helpers";
-import { HeaderTable } from "./HeaderTable";
 import { Requestornator } from "./queries";
 
 type FpxDetailsProps = {
@@ -54,7 +46,7 @@ function parseMessage(message: string) {
       if (name === "NeonDbError") {
         // vscode://file/path/to/my/file.md
         const file = "/Users/brettbeutell/fiber/goose-quotes/src/index.ts";
-        const lineNumber = 153;
+        const lineNumber = 171;
         const columnNumber = 2;
 
         goToCode = (
@@ -140,9 +132,16 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
         emptyMessage="There were no logs or events during this request"
         keyCellClassName="w-[72px] lg:w-[72px] lg:min-w-[72px]"
       />
-      <Section title="Environment">
-        <HeaderTable headers={requestEnv ?? {}} />
-      </Section>
+      <div className="pt-1 pb-2 border-t" />
+      <CollapsibleKeyValueTableV2
+        title="Environment Vars"
+        keyValue={requestEnv}
+        defaultCollapsed
+        // TODO - Make sensitive keys configurable with a function or something
+        sensitiveKeys={["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "DATABASE_URL"]}
+        emptyMessage="No environment vars found"
+        keyCellClassName="w-[96px] lg:w-[96px] lg:min-w-[96px]"
+      />
       {/* <Section title="Headers Your API Received">
         <HeaderTable headers={headersReceived} />
       </Section> */}
@@ -197,34 +196,34 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
 //   );
 // }
 
-function Section({
-  title,
-  children,
-  defaultIsOpen = false,
-}: { title: string; children: React.ReactNode; defaultIsOpen?: boolean }) {
-  const [isOpen, setIsOpen] = useState(defaultIsOpen);
+// function Section({
+//   title,
+//   children,
+//   defaultIsOpen = false,
+// }: { title: string; children: React.ReactNode; defaultIsOpen?: boolean }) {
+//   const [isOpen, setIsOpen] = useState(defaultIsOpen);
 
-  return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="rounded-md border mt-2 px-1 pt-1 pb-2 shadow-sm">
-        <SectionTitle>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <CaretSortIcon className="h-3.5 w-3.5" />
-              <span className="sr-only">Toggle</span>
-              <span className="ml-2 text-sm">{title}</span>
-            </Button>
-          </CollapsibleTrigger>
-        </SectionTitle>
-        <CollapsibleContent className="">{children}</CollapsibleContent>
-      </div>
-    </Collapsible>
-  );
-}
+//   return (
+//     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+//       <div className="rounded-md border mt-2 px-1 pt-1 pb-2 shadow-sm">
+//         <SectionTitle>
+//           <CollapsibleTrigger asChild>
+//             <Button variant="ghost" size="sm">
+//               <CaretSortIcon className="h-3.5 w-3.5" />
+//               <span className="sr-only">Toggle</span>
+//               <span className="ml-2 text-sm">{title}</span>
+//             </Button>
+//           </CollapsibleTrigger>
+//         </SectionTitle>
+//         <CollapsibleContent className="">{children}</CollapsibleContent>
+//       </div>
+//     </Collapsible>
+//   );
+// }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-md mt-2 pt-1 pb-2 text-sm">{children}</div>;
-}
+// function SectionTitle({ children }: { children: React.ReactNode }) {
+//   return <div className="rounded-md mt-2 pt-1 pb-2 text-sm">{children}</div>;
+// }
 
 function NoTrace() {
   return (
