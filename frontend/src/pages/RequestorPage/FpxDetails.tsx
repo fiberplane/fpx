@@ -59,9 +59,10 @@ function parseMessage(message: string) {
 
         goToCode = (
           <a
-            className="text-xs text-primary underline-offset-4 hover:underline"
+            className="text-xs text-primary underline-offset-4 hover:underline flex items-center gap-2"
             href={`vscode://file/${file.trim()}:${lineNumber}:${columnNumber}`}
           >
+            <CodeIcon className="h-3.5 w-3.5" />
             Go to Code
           </a>
         );

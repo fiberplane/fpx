@@ -15,7 +15,6 @@ import {
 import { MizuOrphanLog } from "@/queries";
 import { OtelSpan } from "@/queries/traces-otel";
 import { cn } from "@/utils";
-import { useMemo } from "react";
 import { EmptyState } from "../EmptyState";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
