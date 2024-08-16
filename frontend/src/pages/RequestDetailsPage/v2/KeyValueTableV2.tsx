@@ -18,20 +18,30 @@ import {
   EyeClosedIcon,
   EyeOpenIcon,
 } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { SubSectionHeading } from "./shared";
 
 export const KeyValueRow = ({
   entry,
   sensitiveKeys = [],
-}: { entry: [string, string]; sensitiveKeys?: string[] }) => {
+  keyCellClassName,
+}: {
+  entry: [string | ReactNode, string | ReactNode];
+  sensitiveKeys?: string[];
+  keyCellClassName?: string;
+}) => {
   const [key, value] = entry;
-  const isSensitive = sensitiveKeys.includes(key);
+  const isSensitive = typeof key === "string" && sensitiveKeys.includes(key);
   const [showSensitive, setShowSensitive] = useState(false);
 
   return (
     <TableRow>
-      <TableCell className="px-0 font-medium min-w-[140px] w-[140px] lg:min-w-[200px] uppercase text-xs text-muted-foreground">
+      <TableCell
+        className={cn(
+          "px-0 font-medium min-w-[140px] w-[140px] lg:min-w-[200px] uppercase text-xs text-muted-foreground",
+          keyCellClassName,
+        )}
+      >
         {key}
       </TableCell>
       <TableCell className="font-mono flex items-center">
@@ -74,22 +84,31 @@ export function KeyValueTableV2({
   emptyMessage = "No data",
   className,
   sensitiveKeys = [],
+  keyCellClassName,
 }: {
-  keyValue: Record<string, string>;
+  keyValue:
+    | Record<string, string>
+    | Array<[string | ReactNode, string | ReactNode]>;
   emptyMessage?: string;
   className?: string;
   sensitiveKeys?: string[];
+  keyCellClassName?: string;
 }) {
+  const isEmpty = Array.isArray(keyValue)
+    ? keyValue.length === 0
+    : Object.keys(keyValue).length === 0;
+  const entries = Array.isArray(keyValue) ? keyValue : Object.entries(keyValue);
   return (
     <div className={cn(className)}>
       <Table className="border-0">
         <TableBody>
-          {Object.entries(keyValue).length > 0 ? (
-            Object.entries(keyValue).map((entry) => (
+          {!isEmpty ? (
+            entries.map((entry, index) => (
               <KeyValueRow
-                key={entry[0]}
+                key={typeof entry[0] === "string" ? entry[0] : index}
                 entry={entry}
                 sensitiveKeys={sensitiveKeys}
+                keyCellClassName={keyCellClassName}
               />
             ))
           ) : (
@@ -112,13 +131,17 @@ export function CollapsibleKeyValueTableV2({
   defaultCollapsed = true,
   title,
   sensitiveKeys = [],
+  keyCellClassName,
 }: {
-  keyValue: Record<string, string>;
+  keyValue:
+    | Record<string, string>
+    | Array<[string | ReactNode, string | ReactNode]>;
   emptyMessage?: string;
   className?: string;
   defaultCollapsed?: boolean;
   title: string;
   sensitiveKeys?: string[];
+  keyCellClassName?: string;
 }) {
   const [isOpen, setIsOpen] = useState(!defaultCollapsed);
   const count = Object.entries(keyValue).length;
@@ -146,6 +169,7 @@ export function CollapsibleKeyValueTableV2({
             emptyMessage={emptyMessage}
             className="pl-6 mt-1"
             sensitiveKeys={sensitiveKeys}
+            keyCellClassName={keyCellClassName}
           />
         </CollapsibleContent>
       </Collapsible>

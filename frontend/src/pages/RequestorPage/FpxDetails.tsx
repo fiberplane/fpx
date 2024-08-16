@@ -6,17 +6,19 @@ import {
 } from "@/components/ui/collapsible";
 // import { Skeleton } from "@/components/ui/skeleton";
 import { useOtelTrace } from "@/queries";
-import { cn } from "@/utils";
-import { CaretSortIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { cn, isJson, objectWithKey } from "@/utils";
+import { CaretSortIcon, CodeIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
+import { useMemo, useState } from "react";
 import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { useRequestWaterfall } from "../RequestDetailsPage/RequestDetailsPageV2/useRequestWaterfall";
 import { TraceDetailsTimeline } from "../RequestDetailsPage/v2";
+import { CollapsibleKeyValueTableV2 } from "../RequestDetailsPage/v2/KeyValueTableV2";
 import {
   getRequestEnv,
-  getRequestHeaders,
+  getString,
+  isErrorLogEvent,
+  // getRequestHeaders,
 } from "../RequestDetailsPage/v2/otel-helpers";
-import { EventsTable } from "./EventsTable";
 import { HeaderTable } from "./HeaderTable";
 import { Requestornator } from "./queries";
 
@@ -39,6 +41,45 @@ type TraceDetailsProps = {
   className?: string;
 };
 
+function parseMessage(message: string) {
+  if (isJson(message)) {
+    const jsonMessage = JSON.parse(message);
+    if (
+      objectWithKey(jsonMessage, "name") &&
+      objectWithKey(jsonMessage, "message")
+    ) {
+      const name = jsonMessage.name as string;
+      const message = jsonMessage.message as string;
+      let goToCode: string | React.ReactNode = "";
+      if (name === "NeonDbError") {
+        // vscode://file/path/to/my/file.md
+        const file = "/Users/brettbeutell/fiber/goose-quotes/src/index.ts";
+        const lineNumber = 153;
+        const columnNumber = 2;
+
+        goToCode = (
+          <a
+            className="text-xs text-primary underline-offset-4 hover:underline"
+            href={`vscode://file/${file.trim()}:${lineNumber}:${columnNumber}`}
+          >
+            Go to Code
+          </a>
+        );
+      }
+      return (
+        <div className="flex flex-col gap-1">
+          <span className="flex items-center gap-2">
+            <span className="font-semibold text-gray-200">{name}</span>
+            <span className="text-gray-200">{message}</span>
+          </span>
+          {goToCode}
+        </div>
+      );
+    }
+  }
+  return message;
+}
+
 function TraceDetails({ response, className }: TraceDetailsProps) {
   const traceId = response.app_responses.traceId;
   const { data: spans, error, isLoading } = useOtelTrace(traceId);
@@ -47,33 +88,63 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
   const orphanLogs = useOrphanLogs(traceId, spans ?? []);
   const { waterfall } = useRequestWaterfall(spans ?? [], orphanLogs);
 
+  const eventsForKvTable = useMemo(() => {
+    const events = spans?.flatMap((span) => span.events) ?? [];
+    return events.map((event) => {
+      // TODO - Make better messages
+      const isException = event.name?.toLowerCase() === "exception";
+      const isError = isErrorLogEvent(event);
+      const name = isException ? (
+        <span className="text-red-300">Exception</span>
+      ) : isError ? (
+        <span className="text-red-300">Error</span>
+      ) : (
+        event.name
+      );
+
+      const stringMessage = getString(event.attributes.message);
+      const message = stringMessage ? (
+        parseMessage(stringMessage)
+      ) : (
+        <span className="text-gray-400 italic">No message</span>
+      );
+      return [name, message] as [
+        string | React.ReactNode,
+        string | React.ReactNode,
+      ];
+    });
+  }, [spans]);
+
   if (isNotFound) {
     return <div>Trace not found</div>;
   }
 
   const requestSpan = spans?.find((span) => span.name === "request");
-  const headersReceived = requestSpan ? getRequestHeaders(requestSpan) : {};
+  // const headersReceived = requestSpan ? getRequestHeaders(requestSpan) : {};
   const requestEnv = requestSpan ? getRequestEnv(requestSpan) : {};
 
   // TODO - Implement this in the middleware
   // const shouldShowSourceFunction = false;
-
-  const events = spans?.flatMap((span) => span.events) ?? [];
 
   return (
     <div className={cn("mt-2", className)}>
       <div className="w-full">
         <TraceDetailsTimeline waterfall={waterfall} className="pt-0 -mt-2" />
       </div>
-      <Section title="Events" defaultIsOpen>
-        <EventsTable events={events} />
-      </Section>
+      <div className="pt-1 pb-2 border-t" />
+      <CollapsibleKeyValueTableV2
+        title="Events"
+        keyValue={eventsForKvTable}
+        defaultCollapsed={false}
+        emptyMessage="There were no logs or events during this request"
+        keyCellClassName="w-[72px] lg:w-[72px] lg:min-w-[72px]"
+      />
       <Section title="Environment">
         <HeaderTable headers={requestEnv ?? {}} />
       </Section>
-      <Section title="Headers Your API Received">
+      {/* <Section title="Headers Your API Received">
         <HeaderTable headers={headersReceived} />
-      </Section>
+      </Section> */}
       {/* {shouldShowSourceFunction && (
         <Section title="Source Function">
           <div>
