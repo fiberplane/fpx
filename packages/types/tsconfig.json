@@ -1,15 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ES6",
-    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "module": "NodeNext",
     "strict": true,
     "skipLibCheck": true,
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": true
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

@@ -1,15 +1,10 @@
 {
   "name": "@fiberplane/fpx-types",
-  "description": "Shared types for fpx",
+  "description": "Shared types and schemas for fpx",
   "version": "0.0.4",
   "type": "module",
-  "types": "./dist/index.d.ts",
-  "main": "./dist/index.js",
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+    ".": "./dist/index.js"
   },
   "publishConfig": {
     "access": "public"
@@ -17,15 +12,9 @@
   "license": "MIT or Apache 2",
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "pnpm clean && rollup -c"
+    "build": "tsc"
   },
   "devDependencies": {
     "zod": "^3.23.8"
-  },
-  "dependencies": {
-    "rollup": "^4.20.0",
-    "rollup-plugin-dts": "^6.1.1",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.5.4"
   }
 }

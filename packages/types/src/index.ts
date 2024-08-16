@@ -1,3 +1,3 @@
-export * from "./schemas";
-export * from "./settings";
-export * from "./ws";
+export * from "./schemas.js";
+export * from "./settings.js";
+export * from "./ws.js";
