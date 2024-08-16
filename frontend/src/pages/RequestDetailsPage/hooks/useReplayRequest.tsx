@@ -1,4 +1,6 @@
+import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
 import { OtelSpan } from "@/queries";
+import { useCallback, useMemo } from "react";
 import {
   getRequestBody,
   getRequestHeaders,
@@ -6,8 +8,6 @@ import {
   getRequestQueryParams,
   getRequestUrl,
 } from "../v2/otel-helpers";
-import { useCallback, useMemo } from "react";
-import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
 
 export function useReplayRequest({ span: span }: { span: OtelSpan }) {
   const id = span.span_id;
