@@ -9,6 +9,9 @@ import { useOtelTrace } from "@/queries";
 import { cn } from "@/utils";
 import { CaretSortIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { useState } from "react";
+import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
+import { useRequestWaterfall } from "../RequestDetailsPage/RequestDetailsPageV2/useRequestWaterfall";
+import { TraceDetailsTimeline } from "../RequestDetailsPage/v2";
 import {
   getRequestEnv,
   getRequestHeaders,
@@ -38,24 +41,30 @@ type TraceDetailsProps = {
 
 function TraceDetails({ response, className }: TraceDetailsProps) {
   const traceId = response.app_responses.traceId;
-  const { data: trace, error, isLoading } = useOtelTrace(traceId);
-  const isNotFound = !trace && !error && !isLoading;
+  const { data: spans, error, isLoading } = useOtelTrace(traceId);
+  const isNotFound = !spans && !error && !isLoading;
+
+  const orphanLogs = useOrphanLogs(traceId, spans ?? []);
+  const { waterfall } = useRequestWaterfall(spans ?? [], orphanLogs);
 
   if (isNotFound) {
     return <div>Trace not found</div>;
   }
 
-  const requestSpan = trace?.find((span) => span.name === "request");
+  const requestSpan = spans?.find((span) => span.name === "request");
   const headersReceived = requestSpan ? getRequestHeaders(requestSpan) : {};
   const requestEnv = requestSpan ? getRequestEnv(requestSpan) : {};
 
   // TODO - Implement this in the middleware
   // const shouldShowSourceFunction = false;
 
-  const events = trace?.flatMap((span) => span.events) ?? [];
+  const events = spans?.flatMap((span) => span.events) ?? [];
 
   return (
     <div className={cn("mt-2", className)}>
+      <div className="w-full">
+        <TraceDetailsTimeline waterfall={waterfall} className="pt-0 -mt-2" />
+      </div>
       <Section title="Events" defaultIsOpen>
         <EventsTable events={events} />
       </Section>
