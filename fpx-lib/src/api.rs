@@ -4,6 +4,9 @@ use crate::service::Service;
 use axum::extract::FromRef;
 use axum::routing::{get, post};
 use http::StatusCode;
+use tower::ServiceBuilder;
+use tower_http::compression::CompressionLayer;
+use tower_http::decompression::RequestDecompressionLayer;
 
 pub mod errors;
 pub mod handlers;
@@ -46,7 +49,12 @@ pub fn create_api(service: Service, store: BoxedStore) -> axum::Router {
             get(handlers::traces::traces_get_handler),
         )
         .route("/api/traces", get(handlers::traces::traces_list_handler))
-        .layer(OtelTraceLayer::default())
         .with_state(api_state)
         .fallback(StatusCode::NOT_FOUND)
+        .layer(OtelTraceLayer::default()) // Note: We cannot add this to the ServiceBuilder below, due to type issues.
+        .layer(
+            ServiceBuilder::new()
+                .layer(RequestDecompressionLayer::new())
+                .layer(CompressionLayer::new()),
+        )
 }

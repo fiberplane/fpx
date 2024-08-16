@@ -13,6 +13,7 @@ anyhow = { version = "1.0", default-features = false }
 async-trait = { version = "0.1", default-features = false }
 axum = { workspace = true, default-features = false, features = [
     "json",
+    "matched-path",
 ] }
 bytes = { version = "1.0", default-features = false }
 fpx-macros = { version = "0.1.0", path = "../fpx-macros" }
@@ -38,6 +39,12 @@ time = { version = "0.3", default-features = false, features = [
     "serde-human-readable",
 ] }
 tokio = { version = "1.39", default-features = false }
+tower-http = { version = "0.5", default-features = false, features = [
+    "compression-br",
+    "compression-gzip",
+    "decompression-br",
+    "decompression-gzip",
+] }
 tower = { version = "0.4", default-features = false }
 tracing = { version = "0.1", default-features = false, features = [
     "attributes",
