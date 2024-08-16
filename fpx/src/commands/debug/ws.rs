@@ -37,7 +37,6 @@ pub async fn handle_command(args: Args) -> Result<()> {
                 .close()
                 .await
                 .expect("Unable to close write channel");
-            info!("closed?");
         }
     });
 
@@ -46,7 +45,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
         match msg {
             Some(Ok(msg)) => info!("Received message: {:?}", msg),
-            Some(Err(err)) => error!("Received error: {:?}", err),
+            Some(Err(err)) => error!(?err, "Received error"),
             None => {
                 info!("Connection closed");
                 break;
