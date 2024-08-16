@@ -17,7 +17,7 @@ wasm-opt = false
 crate-type = ["cdylib"]
 
 [dependencies]
-axum = { version = "0.7", default-features = false, features = [
+axum = { workspace = true, default-features = false, features = [
     "matched-path",
 ] }
 console_error_panic_hook = { version = "0.1" }

@@ -11,7 +11,9 @@ repository = { workspace = true }
 [dependencies]
 anyhow = { version = "1.0", default-features = false }
 async-trait = { version = "0.1", default-features = false }
-axum = { version = "0.7", default-features = false, features = ["json"] }
+axum = { workspace = true, default-features = false, features = [
+    "json",
+] }
 bytes = { version = "1.0", default-features = false }
 fpx-macros = { version = "0.1.0", path = "../fpx-macros" }
 futures-util = { version = "0.3", default-features = false }
