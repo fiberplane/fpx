@@ -14,12 +14,14 @@ import {
 } from "@/components/ui/resizable";
 import { MizuOrphanLog } from "@/queries";
 import { OtelSpan } from "@/queries/traces-otel";
-import { cn } from "@/utils";
+import { cn, isMac } from "@/utils";
+import { useMemo } from "react";
 import { EmptyState } from "../EmptyState";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import { getVendorInfo } from "../v2/vendorify-traces";
 import { useRequestWaterfall } from "./useRequestWaterfall";
+import { useReplayRequest } from "../hooks/useReplayRequest";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;
@@ -45,6 +47,8 @@ export function RequestDetailsPageContentV2({
   };
 }) {
   const { rootSpan, waterfall } = useRequestWaterfall(spans, orphanLogs);
+
+  const { replay, isReplaying } = useReplayRequest({ span: rootSpan!.span });
 
   if (!rootSpan) {
     return <EmptyState />;
@@ -76,8 +80,43 @@ export function RequestDetailsPageContentV2({
             <HttpSummary trace={rootSpan.span} />
           </div>
         </div>
+        <div></div>
         {pagination && (
           <div className="flex gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  disabled={isReplaying}
+                  onClick={replay}
+                >
+                  Replay
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="left"
+                sideOffset={15}
+                className={cn(
+                  "bg-slate-900 ",
+                  "text-muted-foreground",
+                  "px-2",
+                  "py-1.5",
+                  "gap-1.5",
+                  "text-sm",
+                  "flex",
+                  "items-center",
+                )}
+                align="center"
+              >
+                <p>Replay request</p>
+                <div className="flex gap-1">
+                  <KeyboardShortcutKey>
+                    {isMac ? "⌘" : "Ctrl"}
+                  </KeyboardShortcutKey>{" "}
+                  <KeyboardShortcutKey>Enter</KeyboardShortcutKey>
+                </div>
+              </TooltipContent>
+            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -91,10 +130,11 @@ export function RequestDetailsPageContentV2({
               </TooltipTrigger>
               <TooltipContent
                 side="left"
-                className="bg-slate-950 text-white"
+                className="bg-slate-900 text-white px-2 py-1.5 gap-1.5"
                 align="center"
               >
-                Prev <KeyboardShortcutKey>K</KeyboardShortcutKey>
+                <p>Prev</p>
+                <KeyboardShortcutKey>K</KeyboardShortcutKey>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -110,10 +150,11 @@ export function RequestDetailsPageContentV2({
               </TooltipTrigger>
               <TooltipContent
                 side="bottom"
-                className="bg-slate-950 text-white"
+                className="bg-slate-900 text-white px-2 py-1.5 gap-1.5"
                 align="center"
               >
-                Next <KeyboardShortcutKey>J</KeyboardShortcutKey>
+                <p>Next</p>
+                <KeyboardShortcutKey>J</KeyboardShortcutKey>
               </TooltipContent>
             </Tooltip>
           </div>
