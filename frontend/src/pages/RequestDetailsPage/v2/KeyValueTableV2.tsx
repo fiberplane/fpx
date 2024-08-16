@@ -166,15 +166,18 @@ export function CollapsibleKeyValueTableV2({
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <SubSectionHeading
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 justify-between w-48"
             onClick={toggleIsOpen}
           >
-            {isOpen ? (
-              <CaretDownIcon className="w-4 h-4 cursor-pointer" />
-            ) : (
-              <CaretRightIcon className="w-4 h-4 cursor-pointer" />
-            )}
-            {title} <CountBadge count={count} />
+            <div className="flex items-center text-left gap-2">
+              {isOpen ? (
+                <CaretDownIcon className="w-4 h-4 cursor-pointer" />
+              ) : (
+                <CaretRightIcon className="w-4 h-4 cursor-pointer" />
+              )}
+              {title}
+            </div>
+            <CountBadge count={count} />
           </SubSectionHeading>
         </CollapsibleTrigger>
         <CollapsibleContent>
