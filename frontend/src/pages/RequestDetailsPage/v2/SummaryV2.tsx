@@ -112,7 +112,7 @@ function ProxiedBadge(props: BadgeProps) {
         align="center"
         side="bottom"
       >
-        This request was proxied from the webhonc service
+        This request was proxied from the FPX proxy service
       </TooltipContent>
     </Tooltip>
   );
