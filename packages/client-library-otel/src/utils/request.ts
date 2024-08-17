@@ -56,12 +56,12 @@ export async function getRootRequestAttributes(request: Request, env: unknown) {
         ...bodyAttr,
       };
     }
+  }
 
-    if (request.headers) {
-      const headers = headersToObject(new Headers(request.headers));
-      for (const [key, value] of Object.entries(headers)) {
-        attributes[`http.request.header.${key}`] = value;
-      }
+  if (request.headers) {
+    const headers = headersToObject(new Headers(request.headers));
+    for (const [key, value] of Object.entries(headers)) {
+      attributes[`http.request.header.${key}`] = value;
     }
   }
 
