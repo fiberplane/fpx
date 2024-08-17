@@ -4,6 +4,8 @@
 
 This is a client library that will send telemetry data to a *local* FPX server upon every incoming request and outgoing response.
 
+Under the hood, it uses [OpenTelemetry](https://opentelemetry.io/) traces to collect telemetry data and send it to a local FPX server.
+
 By default, it proxies `console.*` functions to send logging data to a local FPX server, 
 so any time you use a `console.log`, `console.error`, etc., in your app, it will also send those log messages to FPX.
 
@@ -52,7 +54,7 @@ Visit `http://localhost:8788` to see your logs and traces come in as you test yo
 This section takes you through:
 
 - Installing the FPX Hono Opentelemetry Client
-- **Configuring** your project to use FPX
+- Configuring your project to use FPX
 - Advanced usage with custom spans
 
 It assumes you already have a Hono app running locally.
