@@ -76,7 +76,7 @@ export async function generateRequestWithAnthropic({
         content: userPrompt,
       },
     ],
-    temperature: 0.12,
+    temperature: 0.06,
     max_tokens: 2048,
   });
 
