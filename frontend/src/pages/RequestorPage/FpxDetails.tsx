@@ -33,7 +33,7 @@ type TraceDetailsProps = {
   className?: string;
 };
 
-function parseMessage(message: string) {
+function parseMessage(message: string, goToCodeEnabled = false) {
   if (isJson(message)) {
     const jsonMessage = JSON.parse(message);
     if (
@@ -42,16 +42,17 @@ function parseMessage(message: string) {
     ) {
       const name = jsonMessage.name as string;
       const message = jsonMessage.message as string;
-      let goToCode: string | React.ReactNode = "";
-      if (name === "NeonDbError") {
-        // vscode://file/path/to/my/file.md
-        const file = "/Users/brettbeutell/fiber/goose-quotes/src/index.ts";
+      // TODO - Implement this once we have file and line number info from logs
+      let goToCode: null | React.ReactNode = null;
+      if (goToCodeEnabled) {
+        const file = "";
         const lineNumber = 171;
         const columnNumber = 2;
 
         goToCode = (
           <a
             className="text-xs text-primary underline-offset-4 hover:underline flex items-center gap-2"
+            // vscode://file/path/to/my/file.md
             href={`vscode://file/${file.trim()}:${lineNumber}:${columnNumber}`}
           >
             <CodeIcon className="h-3.5 w-3.5" />
@@ -61,7 +62,7 @@ function parseMessage(message: string) {
       }
       return (
         <div className="flex flex-col gap-1">
-          <span className="flex items-center gap-2">
+          <span className="flex flex-col justify-center gap-1">
             <span className="font-semibold text-gray-200">{name}</span>
             <span className="text-gray-200">{message}</span>
           </span>
