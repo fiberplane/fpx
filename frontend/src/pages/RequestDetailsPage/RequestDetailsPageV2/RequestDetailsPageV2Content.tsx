@@ -135,9 +135,9 @@ export function RequestDetailsPageContentV2({
               "2xl:min-w-[320px]",
             )}
           >
-            <TraceDetailsTimeline waterfall={waterfall} />
+            <TraceDetailsTimeline waterfall={waterfall} className="lg:pt-0" />
           </ResizablePanel>
-          <ResizableHandle />
+          <ResizableHandle className="max-lg:hidden" />
           <ResizablePanel
             className={cn(
               "grid items-center gap-4 overflow-x-auto relative",
