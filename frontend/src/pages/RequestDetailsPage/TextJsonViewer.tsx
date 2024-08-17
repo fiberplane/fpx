@@ -23,6 +23,6 @@ export function TextOrJsonViewer({
       />
     );
   } catch (error) {
-    return <ResponseBodyText body={text} />;
+    return <ResponseBodyText body={text} maxPreviewLength={10} />;
   }
 }
