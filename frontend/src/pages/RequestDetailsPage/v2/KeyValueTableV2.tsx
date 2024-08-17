@@ -52,36 +52,39 @@ export const KeyValueRow = ({
       >
         {key}
       </TableCell>
-      <TableCell className="font-mono flex items-center">
-        {isSensitive && (
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowSensitive(!showSensitive)}
-                className="mr-2 flex-shrink-0"
-              >
-                {showSensitive ? (
-                  <EyeClosedIcon className="w-3 h-3" />
-                ) : (
-                  <EyeOpenIcon className="w-3 h-3" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              {showSensitive ? "Hide Sensitive Value" : "Show Sensitive Value"}
-            </TooltipContent>
-          </Tooltip>
-        )}
-        <span
-          className={cn(
-            "flex-grow",
-            isSensitive && !showSensitive ? "italic text-muted-foreground" : "",
+      <TableCell className="font-mono align-middle h-full">
+        <div className="flex items-center w-full">
+          {isSensitive && (
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSensitive(!showSensitive)}
+                  className="mr-3 flex-shrink-0 w-4 h-4"
+                >
+                  {showSensitive ? (
+                    <EyeClosedIcon className="w-3 h-3" />
+                  ) : (
+                    <EyeOpenIcon className="w-3 h-3" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                {showSensitive ? "Hide Sensitive Value" : "Show Sensitive Value"}
+              </TooltipContent>
+            </Tooltip>
           )}
-        >
-          {isSensitive && !showSensitive ? "hidden" : value}
-        </span>
+          <span
+            className={cn(
+              "flex-grow",
+              isSensitive && !showSensitive ? "italic text-muted-foreground" : "",
+            )}
+          >
+            {isSensitive && !showSensitive ? "hidden" : value}
+          </span>
+
+        </div>
       </TableCell>
     </TableRow>
   );
