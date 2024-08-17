@@ -1,13 +1,68 @@
-# FPX Experimental Opentelemetry Client
+# FPX Hono Opentelemetry Client (BETA)
 
-> **Note:** This library is in alpha, and is still under development.
+> **Note:** This library is in beta, and is still under active development.
+
+This is a client library that will send telemetry data to a *local* FPX server upon every incoming request and outgoing response.
+
+By default, it proxies `console.*` functions to send logging data to a local FPX server, 
+so any time you use a `console.log`, `console.error`, etc., in your app, it will also send those log messages to FPX.
+
+Likewise, any time your app makes a `fetch` request, it will create a trace for that request. This behavior is configurable.
+
+The library is a no-op when the `FPX_ENDPOINT` environment variable is not present, so it is safe to deploy to production.
+
+## Quick Start
+
+Create Hono project
+```sh
+# Create a hono project, using cloudflare-workers runtime
+npm create hono@latest my-hono-project
+# > cloudflare-workers
+```
+
+Install the FPX Hono Opentelemetry Client
+
+```sh
+npm i @fiberplane/hono-otel@beta
+```
+
+Add middleware to your project
+
+```ts
+import { Hono } from "hono";
+import { instrument } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("Hello, Hono!"));
+
+export default instrument(app);
+```
+
+Launch the FPX Studio UI from your project directory
+
+```sh
+npx @fiberplane/studio
+```
+
+Visit `http://localhost:8788` to see your logs and traces come in as you test your app!
 
 ## Usage
 
-Install the library in your project:
+This section takes you through:
+
+- Installing the FPX Hono Opentelemetry Client
+- **Configuring** your project to use FPX
+- Advanced usage with custom spans
+
+It assumes you already have a Hono app running locally.
+
+### Installation
+
+Install the library in your project. At writing, the library is in beta, so you need to install it with the `@beta` tag:
 
 ```bash
-npm install @fiberplane/hono-otel
+npm install @fiberplane/hono-otel@beta
 ```
 
 Wrap your Hono app with the `instrument` function:
@@ -20,31 +75,87 @@ const app = new Hono();
 
 app.get("/", (c) => c.text("Hello, Hono!"));
 
+// Other routes and middleware can be added here
+
 export default instrument(app);
 ```
 
-If you're running in Cloudflare Workers, enable nodejs compatibility mode:
+### Configuration
+
+If you're running in Cloudflare Workers, enable nodejs compatibility mode. (This is done automatically for you when you run `npx @fiberplane/studio`.)
 
 ```toml
 # Add this to the top level of your wrangler.toml
 compatibility_flags = [ "nodejs_compat" ]
 ```
 
+#### The `FPX_ENDPOINT` Environment Variable
+
+When your app is running, the `FPX_ENDPOINT` environment variable controls where the FPX client library sends telemetry data.
+
+If it is not defined, the middleware will do nothing. This means you can safely deploy your Hono app to any cloud environment, and by default, it will not collect and send telemetry data.
+
+The FPX cli (`npx @fiberplane/studio`) should help you initialize your project correctly, but if you want to connect your api to FPX Studio manually, you can add or modify this variable with, e.g., `FPX_ENDPOINT=http://localhost:8788/v1/traces` in your environment variable file.
+
+```sh
+echo -e '\nFPX_ENDPOINT=http://localhost:8788/v1/traces\n' >> .dev.vars
+```
+
+#### Additional Configuration
+
+When you instrument your app, you can also pass in a configuration object to override the default behavior of the `instrument` function.
+
+The options are:
+
+- `monitor.fetch`: Whether to create traces for all fetch requests. (Default: `true`)
+- `monitor.logging`: Whether to proxy `console.*` functions to send logging data to a local FPX server. (Default: `true`)
+
+Here is an example:
+
+```typescript
+import { Hono } from "hono";
+import { instrument } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("Hello, Hono!"));
+
+export default instrument(app, {
+  monitor: {
+    // Don't create traces for fetch requests
+    fetch: false,
+    // Don't proxy `console.*` functions to send logging data to a local FPX server
+    logging: false,
+  },
+});
+```
+
+### Advanced Usage: Custom Spans with `measure`
+
+The library also allows you to create custom spans for any function in your app.
+
+To make use of this feature, you need to import the `measure` function from the library and wrap your function with it.
+
+```typescript
+import { instrument, measure } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+// Create a loop function that will get recorded as a span inside the trace for a incoming given request
+const loop = measure("loop", (n: number) => {
+  for (let i = 0; i < n; i++) {
+    console.log(`Loop iteration: ${i}`);
+  }
+});
+
+app.get("/", (c) => {
+  loop(100);
+  return c.text("Hello, Hono!");
+});
+
+export default instrument(app);
+```
+
 ## Development
 
-While developing within the monorepo, you can run a watcher on the src dir to automatically build the library:
-
-```bash
-cd client-library-otel
-pnpm watch
-```
-
-Then, if your sample app is within the monorepo, point your sample app's package.json to the local build:
-
-```json
-{
-  "dependencies": {
-    "@fiberplane/hono-otel": "workspace:*"
-  }
-}
-```
+See [DEVELOPMENT.md](./DEVELOPMENT.md) for instructions on how to develop this library.
