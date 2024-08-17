@@ -5,12 +5,24 @@ export function BodyViewerV2({
   body,
   contentType,
   collapsed,
-}: { body: string; contentType?: string; collapsed?: boolean }) {
+  textMaxPreviewLines,
+}: {
+  body: string;
+  contentType?: string;
+  collapsed?: boolean;
+  textMaxPreviewLines?: number | null;
+}) {
   if (contentType?.includes("multipart/form-data")) {
     return <FormDataViewer body={body} />;
   }
 
-  return <TextOrJsonViewer text={body} collapsed={collapsed} />;
+  return (
+    <TextOrJsonViewer
+      text={body}
+      collapsed={collapsed}
+      textMaxPreviewLines={textMaxPreviewLines}
+    />
+  );
 }
 
 function FormDataViewer({ body }: { body: string }) {
