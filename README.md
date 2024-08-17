@@ -1,6 +1,7 @@
 # fpx studio
 
 ![FPX](fpx.svg)
+[website](https://fpx.fiberplane.com/)
 
 fpx studio is a local-first tool for building and debugging Hono apis. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
 
