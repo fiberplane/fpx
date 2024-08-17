@@ -27,11 +27,19 @@ export const KeyValueRow = ({
   keyCellClassName,
 }: {
   entry: [string | ReactNode, string | ReactNode];
-  sensitiveKeys?: string[];
+  sensitiveKeys?: string[] | ((key: string) => boolean);
   keyCellClassName?: string;
 }) => {
   const [key, value] = entry;
-  const isSensitive = typeof key === "string" && sensitiveKeys.includes(key);
+
+  let isSensitive = false;
+  if (typeof key === "string") {
+    if (typeof sensitiveKeys === "function") {
+      isSensitive = sensitiveKeys(key);
+    } else if (Array.isArray(sensitiveKeys)) {
+      isSensitive = sensitiveKeys.includes(key);
+    }
+  }
   const [showSensitive, setShowSensitive] = useState(false);
 
   return (
@@ -91,7 +99,7 @@ export function KeyValueTableV2({
     | Array<[string | ReactNode, string | ReactNode]>;
   emptyMessage?: string;
   className?: string;
-  sensitiveKeys?: string[];
+  sensitiveKeys?: string[] | ((key: string) => boolean);
   keyCellClassName?: string;
 }) {
   const isEmpty = Array.isArray(keyValue)
@@ -140,7 +148,7 @@ export function CollapsibleKeyValueTableV2({
   className?: string;
   defaultCollapsed?: boolean;
   title: string;
-  sensitiveKeys?: string[];
+  sensitiveKeys?: string[] | ((key: string) => boolean);
   keyCellClassName?: string;
 }) {
   const [isOpen, setIsOpen] = useState(!defaultCollapsed);
