@@ -71,19 +71,22 @@ export const KeyValueRow = ({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">
-                {showSensitive ? "Hide Sensitive Value" : "Show Sensitive Value"}
+                {showSensitive
+                  ? "Hide Sensitive Value"
+                  : "Show Sensitive Value"}
               </TooltipContent>
             </Tooltip>
           )}
           <span
             className={cn(
               "flex-grow",
-              isSensitive && !showSensitive ? "italic text-muted-foreground" : "",
+              isSensitive && !showSensitive
+                ? "italic text-muted-foreground"
+                : "",
             )}
           >
             {isSensitive && !showSensitive ? "hidden" : value}
           </span>
-
         </div>
       </TableCell>
     </TableRow>
