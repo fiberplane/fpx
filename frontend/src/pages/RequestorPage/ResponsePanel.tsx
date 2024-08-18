@@ -556,14 +556,16 @@ export function ResponseBodyText({
   defaultExpanded?: boolean;
   className?: string;
 }) {
+  const [isExpanded, setIsExpanded] = useState(!!defaultExpanded);
+  const toggleIsExpanded = () => setIsExpanded((e) => !e);
+
   // For text responses, just split into lines and render with rudimentary line numbers
-  const {
-    lines,
-    hiddenLinesCount,
-    shouldShowExpandButton,
+  const { lines, hiddenLinesCount, shouldShowExpandButton } = useTextPreview(
+    body,
     isExpanded,
-    toggleIsExpanded,
-  } = useTextPreview(body, defaultExpanded, maxPreviewLength, maxPreviewLines);
+    maxPreviewLength,
+    maxPreviewLines,
+  );
 
   // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
@@ -600,14 +602,11 @@ export function ResponseBodyText({
 
 function useTextPreview(
   body: string,
-  defaultExpanded: boolean,
+  isExpanded: boolean,
   maxPreviewLength: number | null,
   maxPreviewLines: number | null,
 ) {
-  const [isExpanded, setIsExpanded] = useState(!!defaultExpanded);
-  const toggleIsExpanded = () => setIsExpanded((e) => !e);
-
-  const { lines, shouldShowExpandButton, hiddenLinesCount } = useMemo(() => {
+  return useMemo(() => {
     let hiddenLinesCount = 0;
     const allLinesCount = body.split("\n")?.length;
 
@@ -625,7 +624,18 @@ function useTextPreview(
       previewBody = body ? body.slice(0, maxPreviewLength) + "..." : "";
     }
 
-    let lines = (isExpanded ? body : previewBody)
+    let previewLines = previewBody?.split("\n");
+    if (
+      maxPreviewLines &&
+      !isExpanded &&
+      previewLines.length > maxPreviewLines
+    ) {
+      previewLines = previewLines.slice(0, maxPreviewLines);
+      previewBody = `${previewLines.join("\n")}...`;
+      hiddenLinesCount = allLinesCount - previewLines.length;
+    }
+
+    const lines = (isExpanded ? body : previewBody)
       ?.split("\n")
       ?.map((line, index) => (
         <div key={index} className="flex h-full">
@@ -636,26 +646,12 @@ function useTextPreview(
         </div>
       ));
 
-    if (maxPreviewLines && !isExpanded && lines.length > maxPreviewLines) {
-      const prevLines = lines;
-      lines = lines.slice(0, maxPreviewLines);
-      hiddenLinesCount = prevLines.length - lines.length;
-    }
-
     return {
       lines,
       shouldShowExpandButton: exceedsMaxPreviewLength || exceedsMaxPreviewLines,
       hiddenLinesCount,
     };
   }, [body, maxPreviewLines, maxPreviewLength, isExpanded]);
-
-  return {
-    isExpanded,
-    toggleIsExpanded,
-    lines,
-    shouldShowExpandButton,
-    hiddenLinesCount,
-  };
 }
 
 function NoResponse() {
