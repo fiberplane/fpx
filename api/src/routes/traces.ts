@@ -21,7 +21,7 @@ app.get("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
 
   await upsertSettings(db, {
-    "fpxWorkerProxy": { url: "http://localhost:8585" },
+    fpxWorkerProxy: { url: "http://localhost:8585" },
   });
 
   const proxySettings = await getSetting(db, "fpxWorkerProxy");
@@ -70,7 +70,9 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
 
   const proxySettings = await getSetting(db, "fpxWorkerProxy");
   if (proxySettings) {
-    const response = await fetch(`${proxySettings.url}/ts-compat/v1/traces/${traceId}/spans`);
+    const response = await fetch(
+      `${proxySettings.url}/ts-compat/v1/traces/${traceId}/spans`,
+    );
     const json = await response.json();
     return ctx.json(json);
   }
@@ -106,7 +108,7 @@ app.post("/v1/traces", async (ctx) => {
       headers: {
         "Content-Type": "application/json",
       },
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(body),
     });
     const json = await response.json();

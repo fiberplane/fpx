@@ -1,11 +1,21 @@
-import { type Setting, SettingSchema, type Settings, SettingsForm, SettingsFormSchema, type SettingsKey } from '@fiberplane/fpx-types';
+import {
+  type Setting,
+  SettingSchema,
+  type Settings,
+  type SettingsForm,
+  SettingsFormSchema,
+  type SettingsKey,
+} from "@fiberplane/fpx-types";
 import { eq, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 // import { z } from "zod";
 import { settings } from "../../db/schema.js";
 import type * as schema from "../../db/schema.js";
 
-export async function upsertSettings(db: LibSQLDatabase<typeof schema>, content: Record<string, string>) {
+export async function upsertSettings(
+  db: LibSQLDatabase<typeof schema>,
+  content: Record<string, string>,
+) {
   const parsedSettings = SettingsFormSchema.parse(content);
 
   const rows = Object.entries(parsedSettings).map(([key, value]) => ({
@@ -23,11 +33,16 @@ export async function upsertSettings(db: LibSQLDatabase<typeof schema>, content:
     .returning();
 }
 
-export async function upsertSettingsOld(db: LibSQLDatabase<typeof schema>, content: Settings) {
-  const settingsToUpdate = Object.entries(content).filter(([_, value]) => Boolean(value)).map(([key, value]) => ({
-    key,
-    value: JSON.stringify(value),
-  }));
+export async function upsertSettingsOld(
+  db: LibSQLDatabase<typeof schema>,
+  content: Settings,
+) {
+  const settingsToUpdate = Object.entries(content)
+    .filter(([_, value]) => Boolean(value))
+    .map(([key, value]) => ({
+      key,
+      value: JSON.stringify(value),
+    }));
 
   return await db
     .insert(settings)
@@ -42,7 +57,7 @@ export async function upsertSettingsOld(db: LibSQLDatabase<typeof schema>, conte
 export async function getSetting<T extends SettingsKey>(
   db: LibSQLDatabase<typeof schema>,
   key: T,
-): Promise<Omit<Extract<Setting, { type: T }>, 'type'> | undefined> {
+): Promise<Omit<Extract<Setting, { type: T }>, "type"> | undefined> {
   const [setting] = await db
     .select()
     .from(settings)
@@ -56,7 +71,9 @@ export async function getSetting<T extends SettingsKey>(
   return parseSetting(key, setting.value);
 }
 
-export async function getAllSettings(db: LibSQLDatabase<typeof schema>): Promise<SettingsForm> {
+export async function getAllSettings(
+  db: LibSQLDatabase<typeof schema>,
+): Promise<SettingsForm> {
   const settings = await db.query.settings.findMany();
 
   const mapped = settings.reduce<Record<string, string>>((acc, setting) => {
@@ -72,18 +89,18 @@ export async function getAllSettingsOld(db: LibSQLDatabase<typeof schema>) {
 
   if (settingsRecords.length === 0) return {};
 
-  return settingsRecords.reduce<Settings>(
-    (acc, rec) => {
-      acc[rec.key as SettingsKey] = parseSetting(rec.key, rec.value)
-      return acc;
-    },
-    {},
-  );
+  return settingsRecords.reduce<Settings>((acc, rec) => {
+    acc[rec.key as SettingsKey] = parseSetting(rec.key, rec.value);
+    return acc;
+  }, {});
 }
 
 function parseSetting<T extends SettingsKey>(type: string, value: string) {
   const parsedJson = JSON.parse(value);
-  const { type: _type, ...props } = SettingSchema.parse({ type, ...parsedJson });
+  const { type: _type, ...props } = SettingSchema.parse({
+    type,
+    ...parsedJson,
+  });
   return props as Omit<Extract<Setting, { type: T }>, "type">;
 }
 
@@ -207,7 +224,8 @@ export async function getInferenceConfig(db: LibSQLDatabase<typeof schema>) {
   const settingsRecords = await getAllSettings(db);
 
   if (Object.keys(settingsRecords).length > 0) {
-    const { success, data: settings } = SettingsFormSchema.safeParse(settingsRecords);
+    const { success, data: settings } =
+      SettingsFormSchema.safeParse(settingsRecords);
     // const { success, data: settings } = FormSchema.safeParse(settingsRecords);
     if (success) {
       return settings;
