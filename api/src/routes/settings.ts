@@ -1,4 +1,4 @@
-import type { Settings } from "@fiberplane/fpx-types";
+import type { Settings, SettingsForm } from "@fiberplane/fpx-types";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
@@ -20,7 +20,7 @@ app.get("/v0/settings", cors(), async (ctx) => {
  * Upsert the settings record
  */
 app.post("/v0/settings", cors(), async (ctx) => {
-  const { content } = await ctx.req.json() as { content: Settings };
+  const { content } = await ctx.req.json() as { content: Record<string, string> };
 
   logger.debug("Updating settings", { content });
 

@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { generateRequestWithAiProvider } from "../lib/ai/index.js";
 import { cleanPrompt } from "../lib/ai/prompts.js";
-import { getInferenceConfig } from "../lib/settings/index.js";
+import { getAllSettings, getInferenceConfig } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -57,7 +57,8 @@ app.post(
     const { handlerSourceCode, errorMessage } = ctx.req.valid("json");
 
     const db = ctx.get("db");
-    const inferenceConfig = await getInferenceConfig(db);
+
+    const inferenceConfig = await getAllSettings(db);
     if (!inferenceConfig) {
       return ctx.json(
         {

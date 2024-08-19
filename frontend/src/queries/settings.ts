@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Setting, Settings, SettingsKey } from "@fiberplane/fpx-types"
+import type { Setting, Settings, SettingsForm, SettingsKey } from "@fiberplane/fpx-types"
 
 const FPX_USER_SETTINGS_QUERY_KEY = "FPX_USER_SETTINGS";
 
@@ -8,7 +8,7 @@ export function useFetchSettings() {
     queryKey: [FPX_USER_SETTINGS_QUERY_KEY],
     queryFn: async () => {
       const response = await fetch("/v0/settings");
-      return await response.json() as Settings;
+      return await response.json() as SettingsForm;
     }
   });
 }
@@ -16,7 +16,7 @@ export function useFetchSettings() {
 export function useSetting<T extends SettingsKey>(key: T) {
   const { data } = useFetchSettings();
   if (data && data[key]) {
-    return data[key] as Extract<Setting, { type: T }>;
+    return data[key] as Settings[T] // as Extract<Setting, { type: T }>;
   }
 }
 

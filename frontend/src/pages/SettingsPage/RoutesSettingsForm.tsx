@@ -9,12 +9,12 @@ import {
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
-import { Settings } from "@fiberplane/fpx-types";
+import { SettingsForm } from "@fiberplane/fpx-types";
 import { useSettingsForm } from "./form";
 
 export function RoutesSettingsForm({
   settings,
-}: { settings: Settings }) {
+}: { settings: SettingsForm }) {
   const { form, onSubmit } = useSettingsForm(settings);
   const isCustomRoutesDirty = form.formState.dirtyFields.customRoutesEnabled;
 

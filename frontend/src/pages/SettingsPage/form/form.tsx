@@ -3,39 +3,39 @@ import { useUpdateSettings } from "@/queries";
 import { errorHasMessage } from "@/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { CLAUDE_3_5_SONNET, FormSchema, GPT_4o } from "./types";
-import { Settings } from "@fiberplane/fpx-types";
+// import { z } from "zod";
+// import { CLAUDE_3_5_SONNET, FormSchema, GPT_4o } from "./types";
+import { CLAUDE_3_5_SONNET, GPT_4o, SettingsForm, SettingsFormSchema } from "@fiberplane/fpx-types";
 
 const DEFAULT_VALUES = {
-  aiEnabled: { value: false },
-  aiProviderType: { value: "openai" },
-  openaiModel: { value: GPT_4o },
-  anthropicModel: { value: CLAUDE_3_5_SONNET },
-  customRoutesEnabled: { value: false },
-  proxyRequestsEnabled: { value: false },
-  proxyBaseUrl: { value: "https://webhonc.mies.workers.dev" },
-} satisfies Settings;
+  aiEnabled: false,
+  aiProviderType: "openai",
+  openaiModel: GPT_4o,
+  anthropicModel: CLAUDE_3_5_SONNET,
+  customRoutesEnabled: false,
+  proxyRequestsEnabled: false,
+  proxyBaseUrl: "https://webhonc.mies.workers.dev",
+} satisfies SettingsForm;
 
-export function useSettingsForm(settings: Settings) {
+export function useSettingsForm(settings: SettingsForm) {
+  console.log(settings);
   const { toast } = useToast();
 
   const { mutate: updateSettings } = useUpdateSettings();
 
-  const form = useForm<Settings>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<SettingsForm>({
+    resolver: zodResolver(SettingsFormSchema),
     defaultValues: {
       ...DEFAULT_VALUES,
       ...settings,
     },
   });
 
-  function onSubmit(data: Settings) {
+  function onSubmit(data: SettingsForm) {
     updateSettings(
       {
         content: {
           ...data,
-
           // customRoutesEnabled: data.customRoutesEnabled,
           // aiEnabled: data.aiEnabled,
           // aiProviderType: data.aiProviderType,

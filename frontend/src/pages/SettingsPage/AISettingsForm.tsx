@@ -31,17 +31,12 @@ import {
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
-import {
-  AnthropicModelOptions,
-  OpenAiModelOptions,
-  ProviderOptions,
-} from "./form/types";
-import { Settings } from "@fiberplane/fpx-types";
+import { AnthropicModelOptions, OpenAiModelOptions, ProviderOptions, SettingsForm } from "@fiberplane/fpx-types";
 
 export function AISettingsForm({
   settings,
 }: {
-  settings: Settings;
+  settings: SettingsForm;
 }) {
   const { form, onSubmit } = useSettingsForm(settings);
 
