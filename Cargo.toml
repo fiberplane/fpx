@@ -11,6 +11,7 @@ version = "0.1.0"
 
 [workspace.dependencies]
 anyhow = { version = "1.0" }
+axum = { version = "0.7", default-features = false }
 clap = { version = "4.0", features = ["derive", "env"] }
 schemars = "0.8.21"
 serde = { version = "1.0", features = ["derive"] }

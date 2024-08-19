@@ -11,18 +11,15 @@ exporters:
   otlphttp:
     endpoint: http://localhost:6767
     encoding: json
-    compression: none
 
   otlphttp/fpx-workers:
     endpoint: http://localhost:8787
     encoding: json
-    compression: none
 
   otlp:
     endpoint: http://localhost:4567
     tls:
       insecure: true
-    compression: none
 
   debug:
 
