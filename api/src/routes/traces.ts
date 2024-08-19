@@ -3,7 +3,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import * as schema from "../db/schema.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
-import { getSetting } from "../lib/settings/index.js";
+import { getSetting, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
@@ -20,7 +20,11 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
 
-  const proxySettings = await getSetting(db, "proxy_url");
+  await upsertSettings(db, {
+    "fpxWorkerProxy": { url: "http://localhost:8585" },
+  });
+
+  const proxySettings = await getSetting(db, "fpxWorkerProxy");
   if (proxySettings) {
     const response = await fetch(`${proxySettings.url}/ts-compat/v1/traces`);
     const json = await response.json();
@@ -64,7 +68,7 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
 
   const db = ctx.get("db");
 
-  const proxySettings = await getSetting(db, "proxy_url");
+  const proxySettings = await getSetting(db, "fpxWorkerProxy");
   if (proxySettings) {
     const response = await fetch(`${proxySettings.url}/ts-compat/v1/traces/${traceId}/spans`);
     const json = await response.json();
@@ -96,7 +100,7 @@ app.post("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
   const body: IExportTraceServiceRequest = await ctx.req.json();
 
-  const proxySettings = await getSetting(db, "proxy_url");
+  const proxySettings = await getSetting(db, "fpxWorkerProxy");
   if (proxySettings) {
     const response = await fetch(`${proxySettings.url}/v1/traces`, {
       headers: {

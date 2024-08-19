@@ -2,12 +2,8 @@ import { z } from "zod";
 
 export const SettingsSchema = z.discriminatedUnion("type", [
   z.object({
-    type: z.literal("proxy_url"),
+    type: z.literal("fpxWorkerProxy"),
     url: z.string().url(),
-  }),
-  z.object({
-    type: z.literal("some_test"),
-    value: z.string(),
   }),
 ]);
 

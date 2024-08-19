@@ -10,6 +10,8 @@ export function useFetchSettings() {
 }
 
 function updateSettings({ content }: { content: object }) {
+  console.log(content);
+  return;
   return fetch("/v0/settings", {
     method: "POST",
     headers: {
