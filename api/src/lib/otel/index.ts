@@ -9,6 +9,7 @@ import type {
   ILink,
   IStatus,
 } from "@opentelemetry/otlp-transformer";
+import { transformStack } from "../transform-stack.js";
 
 export const OTEL_TRACE_ID_REGEX = /^[0-9a-f]{32}$/i;
 
@@ -84,12 +85,12 @@ type MizuSpan = {
  * - `mapAttributes` simply returns the value, instead of an object whose key describes the attribute data type.
  *   By convention, we only use string and number values. Complex values are serialized.
  */
-export function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
+export async function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
   const result: Array<MizuSpan> = [];
 
   for (const resourceSpan of tracesData.resourceSpans ?? []) {
     const resourceAttributes = resourceSpan.resource
-      ? mapAttributes(resourceSpan.resource.attributes)
+      ? await mapAttributes(resourceSpan.resource.attributes)
       : null;
 
     for (const scopeSpan of resourceSpan.scopeSpans ?? []) {
@@ -102,13 +103,13 @@ export function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
       }
 
       const scopeAttributes = scopeSpan.scope
-        ? mapAttributes(scopeSpan.scope.attributes ?? [])
+        ? await mapAttributes(scopeSpan.scope.attributes ?? [])
         : null;
 
       for (const span of scopeSpan.spans ?? []) {
         const kind = convertToSpanKind(span.kind);
 
-        const attributes = mapAttributes(span.attributes);
+        const attributes = await mapAttributes(span.attributes);
 
         const startTime = new Date(Number(span.startTimeUnixNano) / 1e6);
         const endTime = new Date(Number(span.endTimeUnixNano) / 1e6);
@@ -117,8 +118,8 @@ export function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
           ? stringOrUintToString(span.parentSpanId)
           : null;
 
-        const events = span.events.map((event) => mapEvent(event));
-        const links = span.links.map((link) => mapLink(link));
+        const events = await Promise.all(span.events.map((event) => mapEvent(event)));
+        const links = await Promise.all(span.links.map((link) => mapLink(link)));
 
         const traceId = stringOrUintToString(span.traceId);
         const spanId = stringOrUintToString(span.spanId);
@@ -159,7 +160,7 @@ type AttributeValue =
   | AttributeValuePrimitive[]
   | Record<string, AttributeValuePrimitive>;
 
-function mapAttributeValue(value: IAnyValue): AttributeValue {
+async function mapAttributeValue(value: IAnyValue): Promise<AttributeValue> {
   if (!value) return null;
   if (value.stringValue !== undefined) return value.stringValue;
   if (value.boolValue !== undefined) return value.boolValue;
@@ -168,7 +169,7 @@ function mapAttributeValue(value: IAnyValue): AttributeValue {
   if (value.bytesValue !== undefined) return value.bytesValue;
   if (value.arrayValue !== undefined) {
     // @ts-expect-error - By convention we don't actually nest values so don't need a recursive type
-    return value.arrayValue.values.map(mapAttributeValue);
+    return Promise.all(value.arrayValue.values.map(mapAttributeValue));
   }
   if (value.kvlistValue !== undefined) {
     // @ts-expect-error - By convention we don't actually nest values so don't need a recursive type
@@ -177,30 +178,41 @@ function mapAttributeValue(value: IAnyValue): AttributeValue {
   return null;
 }
 
-function mapAttributes(
+async function mapAttributes(
   attributes: IKeyValue[],
-): Record<string, AttributeValue> {
+): Promise<Record<string, AttributeValue>> {
   const result: Record<string, AttributeValue> = {};
   for (const kv of attributes) {
-    result[kv.key] = kv.value ? mapAttributeValue(kv.value) : null;
+    if (kv.key === "exception.stacktrace") {
+      // HACK - convert stack trace if possible
+      const value = kv.value ? await mapAttributeValue(kv.value) : null;
+      if (typeof value === "string") {
+        result[kv.key] = await transformStack(value);
+      } else {
+        result[kv.key] = value
+      }
+    } else {
+      result[kv.key] = kv.value ? await mapAttributeValue(kv.value) : null;
+    }
   }
+
   return result;
 }
 
-function mapEvent(event: IEvent) {
+async function mapEvent(event: IEvent) {
   return {
     name: event.name,
     timestamp: new Date(Number(event.timeUnixNano) / 1e6),
-    attributes: mapAttributes(event.attributes),
+    attributes: await mapAttributes(event.attributes),
   };
 }
 
-function mapLink(link: ILink) {
+async function mapLink(link: ILink) {
   return {
     trace_id: stringOrUintToString(link.traceId),
     span_id: stringOrUintToString(link.spanId),
     trace_state: link.traceState,
-    attributes: mapAttributes(link.attributes),
+    attributes: await mapAttributes(link.attributes),
   };
 }
 

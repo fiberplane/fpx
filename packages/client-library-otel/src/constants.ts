@@ -15,7 +15,7 @@ export const FPX_REQUEST_ENV = "fpx.http.request.env";
 
 export const FPX_RESPONSE_BODY = "fpx.http.response.body";
 
-// NOT YET IMPLMENTED
+// NOT YET IMPLEMENTED
 export const FPX_REQUEST_HANDLER_FILE = "fpx.http.request.handler.file";
 export const FPX_REQUEST_HANDLER_SOURCE_CODE =
   "fpx.http.request.handler.source_code";

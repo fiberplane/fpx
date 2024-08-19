@@ -12,11 +12,13 @@ import { OrphanLog } from "./OrphanLog";
 import {
   getNumber,
   getString,
+  isErrorLogEvent,
   isFetchSpan,
   isIncomingRequestSpan,
 } from "./otel-helpers";
 import { SubSection, SubSectionHeading } from "./shared";
 import { VendorInfo } from "./vendorify-traces";
+import { StackTrace } from "../StackTrace";
 
 export function TraceDetailsV2({
   waterfall,
@@ -74,7 +76,6 @@ function GenericSpan({ span }: { span: OtelSpan }) {
     return attr;
   }, [span]);
 
-  console.log("Generic span", span);
   return (
     <div id={span.span_id}>
       <div className="flex flex-col gap-4">
@@ -111,6 +112,17 @@ function GenericSpan({ span }: { span: OtelSpan }) {
                   // swallow error
                 }
 
+                const messageString = getString(event.attributes["message"]);
+                const message = isErrorLogEvent(event) ? JSON.stringify({
+                  message: messageString,
+                  level: getString(event.attributes["level"]),
+                  stacktrace: getString(event.attributes["exception.stacktrace"]),
+                }): messageString;
+
+                if (isErrorLogEvent(event)) {
+                  console.log("got me some error");
+                }
+
                 return (
                   <OrphanLog
                     key={index}
@@ -118,7 +130,7 @@ function GenericSpan({ span }: { span: OtelSpan }) {
                       args,
                       id: new Date(event.timestamp).getTime(),
                       timestamp: event.timestamp,
-                      message: getString(event.attributes["message"]),
+                      message,
                       level: getString(event.attributes["level"]),
                       traceId: span.trace_id,
                       createdAt: event.timestamp,
@@ -129,17 +141,15 @@ function GenericSpan({ span }: { span: OtelSpan }) {
               }
 
               if (event.name === "exception") {
-                console.log(Object.keys(event.attributes));
+                // console.log(Object.keys(event.attributes));
+                const stacktrace = getString(event.attributes["exception.stacktrace"]);
                 return (
                   <SubSection key={event.timestamp}>
                     <SubSectionHeading>
                       Exception:{" "}
                       {getString(event.attributes["exception.message"])}
-                    </SubSectionHeading>
-                    <TextOrJsonViewer
-                      text={getString(event.attributes["exception.stacktrace"])}
-                      collapsed
-                    />
+                    </SubSectionHeading>          
+                    <StackTrace stackTrace={stacktrace} />
                   </SubSection>
                 );
               }

@@ -38,12 +38,12 @@ app.get("/", async (c) => {
 });
 
 const delayedError = measure("delayedError", async () => {
-  await sleep(2);
+  // await sleep(2);
   throw new Error("This is an error");
 });
 
 app.get("/error", async () => {
-  await sleep(5);
+  // await sleep(5);
   await delayedError();
 });
 
