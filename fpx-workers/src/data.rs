@@ -1,4 +1,5 @@
 use axum::async_trait;
+use fpx_lib::data::sql::SqlBuilder;
 use fpx_lib::data::{models, DbError, Result, Store, Transaction};
 use serde::Deserialize;
 use std::sync::Arc;
@@ -8,12 +9,14 @@ use worker::D1Database;
 
 pub struct D1Store {
     database: Arc<D1Database>,
+    sql_builder: SqlBuilder,
 }
 
 impl D1Store {
     pub fn new(database: D1Database) -> Self {
         D1Store {
             database: Arc::new(database),
+            sql_builder: SqlBuilder::new(),
         }
     }
 
@@ -80,12 +83,12 @@ impl Store for D1Store {
     async fn span_get(
         &self,
         _tx: &Transaction,
-        trace_id: String,
-        span_id: String,
+        trace_id: &str,
+        span_id: &str,
     ) -> Result<models::Span> {
         SendFuture::new(async {
             self.fetch_one(
-                "SELECT * FROM spans WHERE trace_id=$1 AND span_id=$2",
+                self.sql_builder.span_get(),
                 &[trace_id.into(), span_id.into()],
             )
             .await
@@ -99,7 +102,7 @@ impl Store for D1Store {
         trace_id: &str,
     ) -> Result<Vec<models::Span>> {
         SendFuture::new(async {
-            self.fetch_all("SELECT * FROM spans WHERE trace_id=$1", &[trace_id.into()])
+            self.fetch_all(self.sql_builder.span_list_by_trace(), &[trace_id.into()])
                 .await
         })
         .await
@@ -117,20 +120,7 @@ impl Store for D1Store {
             };
 
             self.fetch_one(
-                "INSERT INTO spans
-                    (
-                        trace_id,
-                        span_id,
-                        parent_span_id,
-                        name,
-                        kind,
-                        start_time,
-                        end_time,
-                        inner
-                    )
-                    VALUES
-                        ($1, $2, $3, $4, $5, $6, $7, $8)
-                    RETURNING *",
+                self.sql_builder.span_create(),
                 &[
                     span.trace_id.into(),
                     span.span_id.into(),
@@ -159,16 +149,7 @@ impl Store for D1Store {
     ) -> Result<Vec<fpx_lib::data::models::Trace>> {
         SendFuture::new(async {
             let traces = self
-                .fetch_all(
-                    "
-                    SELECT trace_id, MAX(end_time) as end_time
-                    FROM spans
-                    GROUP BY trace_id
-                    ORDER BY end_time DESC
-                    LIMIT 20
-                    ",
-                    &[],
-                )
+                .fetch_all(self.sql_builder.traces_list(None), &[])
                 .await?;
 
             Ok(traces)

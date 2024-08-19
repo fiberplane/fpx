@@ -23,6 +23,15 @@ where
     }
 }
 
+impl<T> PartialEq for Json<T>
+where
+    T: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
 impl<T> Json<T> {
     pub fn into_inner(self) -> T {
         self.0
