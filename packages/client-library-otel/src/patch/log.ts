@@ -1,5 +1,5 @@
 import { trace } from "@opentelemetry/api";
-import { wrap } from "shimmer";
+import shimmer from "shimmer";
 import {
   errorToJson,
   isLikelyNeonDbError,
@@ -7,6 +7,8 @@ import {
   neonDbErrorToJson,
   safelySerializeJSON,
 } from "../utils/index.js";
+
+const { wrap } = shimmer;
 
 type DEBUG = "debug";
 type LOG = "log";

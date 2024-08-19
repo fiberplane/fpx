@@ -1,11 +1,13 @@
 import { SpanKind } from "@opentelemetry/api";
-import { wrap } from "shimmer";
+import shimmer from "shimmer";
 import { measure } from "../measure.js";
 import {
   getRequestAttributes,
   getResponseAttributes,
   isWrapped,
 } from "../utils/index.js";
+
+const { wrap } = shimmer;
 
 export function patchFetch() {
   // Check if the function is already patched
