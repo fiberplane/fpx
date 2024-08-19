@@ -1,4 +1,5 @@
 use fpx_lib::api::models::ServerMessage;
+use tracing::error;
 use worker::*;
 
 /// An implementation of a hibernating WebSocket Server using [`durable_object`].
@@ -44,6 +45,11 @@ impl DurableObject for WebSocketHibernationServer {
         _reason: String,
         _was_clean: bool,
     ) -> Result<()> {
+        // Try to close the websocket connection (do not send a code or reason)
+        if let Err(err) = ws.close::<String>(None, None) {
+            error!(?err, "Failed to close WebSocket connection");
+        }
+
         self.connections.retain_mut(|conn| conn != &ws);
 
         Ok(())

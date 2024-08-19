@@ -384,12 +384,18 @@ function requestorReducer(
     case SET_BODY: {
       const nextBody = action.payload;
       if (nextBody.type === "form-data") {
+        const nextBodyValue = enforceFormDataTerminalDraftParameter(
+          nextBody.value,
+        );
+        const shouldForceMultipart = nextBodyValue.some(
+          (param) => param.value.value instanceof File,
+        );
         return {
           ...state,
           body: {
             type: nextBody.type,
-            isMultipart: nextBody.isMultipart,
-            value: enforceFormDataTerminalDraftParameter(nextBody.value),
+            isMultipart: shouldForceMultipart || nextBody.isMultipart,
+            value: nextBodyValue,
           },
         };
       }

@@ -1,8 +1,10 @@
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
 import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "./assets/fpx.svg";
 import { WebhoncBadge } from "./components/WebhoncBadge";
+import { Button } from "./components/ui/button";
 import { useWebsocketQueryInvalidation } from "./hooks";
 import { useProxyRequestsEnabled } from "./hooks/useProxyRequestsEnabled";
 import { cn } from "./utils";
@@ -39,11 +41,24 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             </div>
           </div>
         </div>
-        {shouldShowProxyRequests && (
-          <div className="px-4">
-            <WebhoncBadge />
+        <div className="flex items-center gap-2">
+          {shouldShowProxyRequests && (
+            <div className="ml-2">
+              <WebhoncBadge />
+            </div>
+          )}
+          <div className="flex items-center gap-2 border-l">
+            <Button variant="ghost" size="icon">
+              <a
+                href="https://github.com/fiberplane/fpx"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <GitHubLogoIcon className="w-4 h-4" />
+              </a>
+            </Button>
           </div>
-        )}
+        </div>
       </nav>
       <main
         className={cn("md:gap-8", "overflow-hidden", "h-[calc(100vh-64px)]")}

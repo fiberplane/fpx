@@ -12,7 +12,7 @@ embed-studio = [] # When enabled it will embed Studio from frontend/dist
 [dependencies]
 anyhow = { workspace = true }
 async-trait = { version = "0.1" }
-axum = { version = "0.7", features = [
+axum = { workspace = true, default-features = false, features = [
     "http1",
     "query",
     "tokio",

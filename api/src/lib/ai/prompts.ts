@@ -244,6 +244,8 @@ Try strategies like specifying invalid data, missing data, or invalid data types
 Try to break the system. But do not break yourself! 
 Keep your responses to a reasonable length. Including your random data.
 
+Never add the x-fpx-trace-id header to the request.
+
 Use the tool "make_request". Always respond in valid JSON.
 ***Don't make your responses too long, otherwise we cannot parse your JSON response.***
 `);
