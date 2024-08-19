@@ -6,7 +6,7 @@ import {
   isWrapped,
   neonDbErrorToJson,
   safelySerializeJSON,
-} from "../utils";
+} from "../utils/index.js";
 
 type DEBUG = "debug";
 type LOG = "log";

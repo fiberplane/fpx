@@ -5,7 +5,7 @@ import {
   getRequestAttributes,
   getResponseAttributes,
   isWrapped,
-} from "../utils";
+} from "../utils/index.js";
 
 export function patchFetch() {
   // Check if the function is already patched

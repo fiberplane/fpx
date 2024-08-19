@@ -8,9 +8,13 @@ import {
 import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
-import { AsyncLocalStorageContextManager } from "./async-hooks";
+import { AsyncLocalStorageContextManager } from "./async-hooks/index.js";
 import { measure } from "./measure.js";
-import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
+import {
+  patchConsole,
+  patchFetch,
+  patchWaitUntil,
+} from "./patch/index.js";
 import { propagateFpxTraceId } from "./propagation.js";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes.js";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types.js";
@@ -18,7 +22,7 @@ import {
   getRequestAttributes,
   getResponseAttributes,
   getRootRequestAttributes,
-} from "./utils";
+} from "./utils/index.js";
 
 type FpxConfig = {
   monitor: {
