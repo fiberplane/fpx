@@ -109,9 +109,6 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             ? clonedRequest.body.tee()
             : [null, null];
 
-          console.log("body1", body1);
-          console.log("body2", body2);
-
           // In order to keep `onStart` synchronous (below), we construct
           // some necessary attributes here, using a cloned request
           const requestForAttributes = new Request(clonedRequest.url, {
