@@ -16,7 +16,7 @@
 
 import { AsyncLocalStorage } from "node:async_hooks";
 import { type Context, ROOT_CONTEXT } from "@opentelemetry/api";
-import { AbstractAsyncHooksContextManager } from "./AbstractAsyncHooksContextManager";
+import { AbstractAsyncHooksContextManager } from "./AbstractAsyncHooksContextManager.js";
 
 export class AsyncLocalStorageContextManager extends AbstractAsyncHooksContextManager {
   private _asyncLocalStorage: AsyncLocalStorage<Context>;

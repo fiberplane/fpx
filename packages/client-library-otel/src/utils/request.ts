@@ -14,13 +14,13 @@ import {
   FPX_REQUEST_SCHEME,
   FPX_REQUEST_SEARCH,
   FPX_RESPONSE_BODY,
-} from "../constants";
+} from "../constants.js";
 import type {
   GlobalResponse,
   HonoResponse,
   InitParam,
   InputParam,
-} from "../types";
+} from "../types.js";
 
 // There are so many different types of headers
 // and we want to support all of them so we can

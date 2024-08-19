@@ -1,6 +1,6 @@
 import { SpanKind } from "@opentelemetry/api";
 import { wrap } from "shimmer";
-import { measure } from "../measure";
+import { measure } from "../measure.js";
 import {
   getRequestAttributes,
   getResponseAttributes,

@@ -1,4 +1,4 @@
-import type { HonoLikeApp } from "./types";
+import type { HonoLikeApp } from "./types.js";
 
 type FetchFn = typeof fetch;
 

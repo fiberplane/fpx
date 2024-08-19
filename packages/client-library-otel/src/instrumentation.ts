@@ -9,11 +9,11 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
-import { measure } from "./measure";
+import { measure } from "./measure.js";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
-import { propagateFpxTraceId } from "./propagation";
-import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
-import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
+import { propagateFpxTraceId } from "./propagation.js";
+import { isRouteInspectorRequest, respondWithRoutes } from "./routes.js";
+import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types.js";
 import {
   getRequestAttributes,
   getResponseAttributes,
