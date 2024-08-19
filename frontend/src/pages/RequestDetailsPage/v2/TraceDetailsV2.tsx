@@ -3,6 +3,7 @@ import { SpanStatus } from "@/constants";
 import { OtelSpan, isMizuOrphanLog } from "@/queries";
 import { useMemo } from "react";
 import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
+import { StackTrace } from "../StackTrace";
 import { SectionHeading } from "../shared";
 import { FetchSpan } from "./FetchSpan";
 import { IncomingRequest } from "./IncomingRequest";
@@ -16,7 +17,6 @@ import {
 } from "./otel-helpers";
 import { SubSection, SubSectionHeading } from "./shared";
 import { VendorInfo } from "./vendorify-traces";
-import { StackTrace } from "../StackTrace";
 
 export function TraceDetailsV2({
   waterfall,
@@ -128,13 +128,15 @@ function GenericSpan({ span }: { span: OtelSpan }) {
               }
 
               if (event.name === "exception") {
-                const stacktrace = getString(event.attributes["exception.stacktrace"]);
+                const stacktrace = getString(
+                  event.attributes["exception.stacktrace"],
+                );
                 return (
                   <SubSection key={event.timestamp}>
                     <SubSectionHeading>
                       Exception:{" "}
                       {getString(event.attributes["exception.message"])}
-                    </SubSectionHeading>          
+                    </SubSectionHeading>
                     <StackTrace stackTrace={stacktrace} />
                   </SubSection>
                 );
