@@ -3,7 +3,6 @@ import { SpanStatus } from "@/constants";
 import { OtelSpan, isMizuOrphanLog } from "@/queries";
 import { useMemo } from "react";
 import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
-import { TextOrJsonViewer } from "../TextJsonViewer";
 import { SectionHeading } from "../shared";
 import { FetchSpan } from "./FetchSpan";
 import { IncomingRequest } from "./IncomingRequest";
@@ -12,7 +11,6 @@ import { OrphanLog } from "./OrphanLog";
 import {
   getNumber,
   getString,
-  isErrorLogEvent,
   isFetchSpan,
   isIncomingRequestSpan,
 } from "./otel-helpers";
@@ -112,17 +110,6 @@ function GenericSpan({ span }: { span: OtelSpan }) {
                   // swallow error
                 }
 
-                const messageString = getString(event.attributes["message"]);
-                const message = isErrorLogEvent(event) ? JSON.stringify({
-                  message: messageString,
-                  level: getString(event.attributes["level"]),
-                  stacktrace: getString(event.attributes["exception.stacktrace"]),
-                }): messageString;
-
-                if (isErrorLogEvent(event)) {
-                  console.log("got me some error");
-                }
-
                 return (
                   <OrphanLog
                     key={index}
@@ -130,7 +117,7 @@ function GenericSpan({ span }: { span: OtelSpan }) {
                       args,
                       id: new Date(event.timestamp).getTime(),
                       timestamp: event.timestamp,
-                      message,
+                      message: getString(event.attributes["message"]),
                       level: getString(event.attributes["level"]),
                       traceId: span.trace_id,
                       createdAt: event.timestamp,
@@ -141,7 +128,6 @@ function GenericSpan({ span }: { span: OtelSpan }) {
               }
 
               if (event.name === "exception") {
-                // console.log(Object.keys(event.attributes));
                 const stacktrace = getString(event.attributes["exception.stacktrace"]);
                 return (
                   <SubSection key={event.timestamp}>
