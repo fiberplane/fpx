@@ -299,6 +299,8 @@ export const RequestorPage = () => {
             activeRequestsPanelTab={activeRequestsPanelTab}
             setActiveRequestsPanelTab={setActiveRequestsPanelTab}
             shouldShowRequestTab={shouldShowRequestTab}
+            path={path}
+            method={method}
             body={body}
             setBody={setBody}
             handleRequestBodyTypeChange={handleRequestBodyTypeChange}

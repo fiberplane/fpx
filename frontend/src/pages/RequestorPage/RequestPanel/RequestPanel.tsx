@@ -29,10 +29,14 @@ import {
 import "./styles.css";
 import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
 import { FileUploadForm } from "./FileUploadForm";
+import { CopyAsCurl } from "./CopyAsCurl";
+import { RequestMethod } from "../types";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
   setActiveRequestsPanelTab: (tab: string) => void;
+  method: RequestMethod;
+  path: string;
   shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
   body: RequestorBody;
   // FIXME
@@ -104,6 +108,8 @@ function RequestMeta(props: RequestPanelProps) {
     setActiveRequestsPanelTab,
     shouldShowRequestTab,
     body,
+    path,
+    method,
     setBody,
     pathParams,
     queryParams,
@@ -138,9 +144,18 @@ function RequestMeta(props: RequestPanelProps) {
       className={cn(
         "min-w-[200px] border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
-        "overflow-hidden h-full max-h-full",
+        "overflow-hidden h-full max-h-full relative",
       )}
     >
+      <div className="absolute right-0">
+        <CopyAsCurl
+          method={method}
+          body={body}
+          path={path}
+          queryParams={queryParams}
+          requestHeaders={requestHeaders}
+        />
+      </div>
       <CustomTabsList>
         <CustomTabTrigger value="params">
           Params
