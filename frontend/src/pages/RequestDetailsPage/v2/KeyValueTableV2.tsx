@@ -18,52 +18,76 @@ import {
   EyeClosedIcon,
   EyeOpenIcon,
 } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { SubSectionHeading } from "./shared";
 
 export const KeyValueRow = ({
   entry,
   sensitiveKeys = [],
-}: { entry: [string, string]; sensitiveKeys?: string[] }) => {
+  keyCellClassName,
+}: {
+  entry: [string | ReactNode, string | ReactNode];
+  sensitiveKeys?: string[] | ((key: string) => boolean);
+  keyCellClassName?: string;
+}) => {
   const [key, value] = entry;
-  const isSensitive = sensitiveKeys.includes(key);
+
+  let isSensitive = false;
+  if (typeof key === "string") {
+    if (typeof sensitiveKeys === "function") {
+      isSensitive = sensitiveKeys(key);
+    } else if (Array.isArray(sensitiveKeys)) {
+      isSensitive = sensitiveKeys.includes(key);
+    }
+  }
   const [showSensitive, setShowSensitive] = useState(false);
 
   return (
     <TableRow>
-      <TableCell className="px-0 font-medium min-w-[140px] w-[140px] lg:min-w-[200px] uppercase text-xs text-muted-foreground">
+      <TableCell
+        className={cn(
+          "px-0 font-medium min-w-[140px] w-[140px] lg:min-w-[200px] uppercase text-xs text-muted-foreground",
+          keyCellClassName,
+        )}
+      >
         {key}
       </TableCell>
-      <TableCell className="font-mono flex items-center">
-        {isSensitive && (
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowSensitive(!showSensitive)}
-                className="mr-2 flex-shrink-0"
-              >
-                {showSensitive ? (
-                  <EyeClosedIcon className="w-3 h-3" />
-                ) : (
-                  <EyeOpenIcon className="w-3 h-3" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              {showSensitive ? "Hide Sensitive Value" : "Show Sensitive Value"}
-            </TooltipContent>
-          </Tooltip>
-        )}
-        <span
-          className={cn(
-            "flex-grow",
-            isSensitive && !showSensitive ? "italic text-muted-foreground" : "",
+      <TableCell className="font-mono align-middle h-full">
+        <div className="flex items-center w-full">
+          {isSensitive && (
+            <Tooltip>
+              <TooltipTrigger>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowSensitive(!showSensitive)}
+                  className="mr-3 flex-shrink-0 w-4 h-4"
+                >
+                  {showSensitive ? (
+                    <EyeClosedIcon className="w-3 h-3" />
+                  ) : (
+                    <EyeOpenIcon className="w-3 h-3" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                {showSensitive
+                  ? "Hide Sensitive Value"
+                  : "Show Sensitive Value"}
+              </TooltipContent>
+            </Tooltip>
           )}
-        >
-          {isSensitive && !showSensitive ? "hidden" : value}
-        </span>
+          <span
+            className={cn(
+              "flex-grow",
+              isSensitive && !showSensitive
+                ? "italic text-muted-foreground"
+                : "",
+            )}
+          >
+            {isSensitive && !showSensitive ? "hidden" : value}
+          </span>
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -74,22 +98,31 @@ export function KeyValueTableV2({
   emptyMessage = "No data",
   className,
   sensitiveKeys = [],
+  keyCellClassName,
 }: {
-  keyValue: Record<string, string>;
+  keyValue:
+    | Record<string, string>
+    | Array<[string | ReactNode, string | ReactNode]>;
   emptyMessage?: string;
   className?: string;
-  sensitiveKeys?: string[];
+  sensitiveKeys?: string[] | ((key: string) => boolean);
+  keyCellClassName?: string;
 }) {
+  const isEmpty = Array.isArray(keyValue)
+    ? keyValue.length === 0
+    : Object.keys(keyValue).length === 0;
+  const entries = Array.isArray(keyValue) ? keyValue : Object.entries(keyValue);
   return (
     <div className={cn(className)}>
       <Table className="border-0">
         <TableBody>
-          {Object.entries(keyValue).length > 0 ? (
-            Object.entries(keyValue).map((entry) => (
+          {!isEmpty ? (
+            entries.map((entry, index) => (
               <KeyValueRow
-                key={entry[0]}
+                key={typeof entry[0] === "string" ? entry[0] : index}
                 entry={entry}
                 sensitiveKeys={sensitiveKeys}
+                keyCellClassName={keyCellClassName}
               />
             ))
           ) : (
@@ -112,13 +145,17 @@ export function CollapsibleKeyValueTableV2({
   defaultCollapsed = true,
   title,
   sensitiveKeys = [],
+  keyCellClassName,
 }: {
-  keyValue: Record<string, string>;
+  keyValue:
+    | Record<string, string>
+    | Array<[string | ReactNode, string | ReactNode]>;
   emptyMessage?: string;
   className?: string;
   defaultCollapsed?: boolean;
   title: string;
-  sensitiveKeys?: string[];
+  sensitiveKeys?: string[] | ((key: string) => boolean);
+  keyCellClassName?: string;
 }) {
   const [isOpen, setIsOpen] = useState(!defaultCollapsed);
   const count = Object.entries(keyValue).length;
@@ -146,6 +183,7 @@ export function CollapsibleKeyValueTableV2({
             emptyMessage={emptyMessage}
             className="pl-6 mt-1"
             sensitiveKeys={sensitiveKeys}
+            keyCellClassName={keyCellClassName}
           />
         </CollapsibleContent>
       </Collapsible>

@@ -28,6 +28,7 @@ import {
 
 type TraceDetailsTimelineProps = {
   waterfall: Waterfall;
+  className?: string;
 };
 
 const normalizeWaterfallTimestamps = (waterfall: Waterfall) => {
@@ -46,6 +47,7 @@ const normalizeWaterfallTimestamps = (waterfall: Waterfall) => {
 
   return {
     minStart,
+    // NOTE - `duration` could be 0
     duration: maxEnd - minStart,
   };
 };
@@ -59,7 +61,9 @@ const timelineId = (spanOrLog: Waterfall[0]) => {
 
 export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
   waterfall,
+  className,
 }) => {
+  // NOTE - `duration` could be 0
   const { minStart, duration } = normalizeWaterfallTimestamps(waterfall);
 
   const [activeId, setActiveId] = useState<string>("");
@@ -127,6 +131,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
       className={cn(
         "text-white rounded-lg overflow-y-auto",
         "py-4",
+        className,
         // NOTE - Likely need explicit height on this to allow for overflow to be scrollable :thinking_face:
         //        I ran into issues because of the stickiness + grid
         //        Problem now is that the portion above is now variable height.
@@ -179,7 +184,8 @@ const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
               "truncate",
             )}
           >
-            {vendorInfo.sql?.query?.slice(0, 30)}
+            DB Query
+            {/* {vendorInfo.sql?.query?.slice(0, 30)} */}
           </div>
         );
       }
@@ -206,10 +212,16 @@ const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
         );
       }
 
-      const isRootRequest = span.parent_span_id === null;
+      const isRootRequest = span.kind === SpanKind.SERVER;
       if (isRootRequest) {
         return (
-          <div className={cn("font-mono text-sm truncate", "text-gray-200")}>
+          <div
+            className={cn(
+              "font-mono text-sm truncate",
+              "text-gray-200",
+              "capitalize",
+            )}
+          >
             {span.name}
           </div>
         );
@@ -330,9 +342,14 @@ const WaterfallRowSpan: React.FC<{
   const normalizedDuration = spanDuration / duration;
   // NOTE - We want to render a single line, instead of a tai-fighter shape, if the span is less than 1% of the total duration
   const shouldRenderSingleLine = normalizedDuration < 0.01;
-  const percentageWidth = (normalizedDuration * 100).toPrecision(2);
+  const percentageWidth =
+    duration === 0 ? 100 : (normalizedDuration * 100).toPrecision(2);
   const lineWidth = `${percentageWidth}%`;
-  const lineOffset = `${((new Date(span.start_time).getTime() - startTime) / duration) * 100}%`;
+  const lineOffsetNumeric =
+    duration === 0
+      ? 0
+      : ((new Date(span.start_time).getTime() - startTime) / duration) * 100;
+  const lineOffset = `${lineOffsetNumeric}%`;
   const icon = useTimelineIcon(span, vendorInfo);
   const title = useTimelineTitle({ span, vendorInfo });
 
