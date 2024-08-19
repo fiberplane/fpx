@@ -10,7 +10,6 @@ import {
   getRequestEnv,
   getString,
   isErrorLogEvent,
-  // getRequestHeaders,
 } from "../RequestDetailsPage/v2/otel-helpers";
 import { Requestornator } from "./queries";
 
@@ -114,7 +113,6 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
   }
 
   const requestSpan = spans?.find((span) => span.name === "request");
-  // const headersReceived = requestSpan ? getRequestHeaders(requestSpan) : {};
   const requestEnv = requestSpan ? getRequestEnv(requestSpan) : {};
 
   // TODO - Implement this in the middleware
@@ -138,36 +136,10 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
         title="Environment Vars"
         keyValue={requestEnv}
         defaultCollapsed
-        // TODO - Make sensitive keys configurable with a function or something
         sensitiveKeys={isSensitiveEnvVar}
         emptyMessage="No environment vars found"
         keyCellClassName="w-[96px] lg:w-[96px] lg:min-w-[96px]"
       />
-      {/* <Section title="Headers Your API Received">
-        <HeaderTable headers={headersReceived} />
-      </Section> */}
-      {/* {shouldShowSourceFunction && (
-        <Section title="Source Function">
-          <div>
-            {shouldShowSourceFunction ? (
-              <SourceFunction
-                fpxRequestMessage={fpxRequestMessage}
-                fpxResponseMessage={fpxResponseMessage}
-              />
-            ) : (
-              <div>
-                Could not find source code, only compiled code:
-                <CodeMirrorTypescriptEditor
-                  jsx
-                  value={fpxResponseMessage?.handler}
-                  readOnly
-                  onChange={noop}
-                />
-              </div>
-            )}
-          </div>
-        </Section>
-      )} */}
     </div>
   );
 }
@@ -217,60 +189,6 @@ function isSensitiveEnvVar(key: string) {
   }
   return false;
 }
-
-// type SourceFunctionProps = {
-//   fpxRequestMessage: MizuRequestStart;
-//   fpxResponseMessage: MizuRequestEnd;
-// };
-// function SourceFunction({
-//   fpxRequestMessage,
-//   fpxResponseMessage,
-// }: SourceFunctionProps) {
-//   const source = fpxRequestMessage?.file;
-//   const handler = fpxResponseMessage?.handler;
-//   const handlerSourceCode = useHandlerSourceCode(source, handler) ?? "";
-
-//   return (
-//     <div>
-//       <CodeMirrorTypescriptEditor
-//         jsx
-//         value={handlerSourceCode}
-//         readOnly
-//         onChange={noop}
-//         minHeight="100px"
-//       />
-//     </div>
-//   );
-// }
-
-// function Section({
-//   title,
-//   children,
-//   defaultIsOpen = false,
-// }: { title: string; children: React.ReactNode; defaultIsOpen?: boolean }) {
-//   const [isOpen, setIsOpen] = useState(defaultIsOpen);
-
-//   return (
-//     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-//       <div className="rounded-md border mt-2 px-1 pt-1 pb-2 shadow-sm">
-//         <SectionTitle>
-//           <CollapsibleTrigger asChild>
-//             <Button variant="ghost" size="sm">
-//               <CaretSortIcon className="h-3.5 w-3.5" />
-//               <span className="sr-only">Toggle</span>
-//               <span className="ml-2 text-sm">{title}</span>
-//             </Button>
-//           </CollapsibleTrigger>
-//         </SectionTitle>
-//         <CollapsibleContent className="">{children}</CollapsibleContent>
-//       </div>
-//     </Collapsible>
-//   );
-// }
-
-// function SectionTitle({ children }: { children: React.ReactNode }) {
-//   return <div className="rounded-md mt-2 pt-1 pb-2 text-sm">{children}</div>;
-// }
 
 function NoTrace() {
   return (
