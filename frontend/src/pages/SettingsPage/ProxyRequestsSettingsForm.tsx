@@ -10,8 +10,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
-import { useSettingsForm } from "./form";
 import { SettingsForm } from "@fiberplane/fpx-types";
+import { useSettingsForm } from "./form";
 
 // TODO: automatically restart the fpx studio when this is changed
 export function ProxyRequestsSettingsForm({

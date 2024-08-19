@@ -7,7 +7,7 @@ import { useMemo } from "react";
  *
  */
 export function useProxyRequestsEnabled() {
-  const proxyRequestsEnabledSetting = useSetting('proxyRequestsEnabled');
+  const proxyRequestsEnabledSetting = useSetting("proxyRequestsEnabled");
   return useMemo(() => {
     return proxyRequestsEnabledSetting?.value ?? false;
   }, [proxyRequestsEnabledSetting]);

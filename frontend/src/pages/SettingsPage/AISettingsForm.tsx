@@ -23,6 +23,12 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils";
 import {
+  AnthropicModelOptions,
+  OpenAiModelOptions,
+  ProviderOptions,
+  SettingsForm,
+} from "@fiberplane/fpx-types";
+import {
   CaretDownIcon,
   EyeClosedIcon,
   EyeOpenIcon,
@@ -31,7 +37,6 @@ import {
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
-import { AnthropicModelOptions, OpenAiModelOptions, ProviderOptions, SettingsForm } from "@fiberplane/fpx-types";
 
 export function AISettingsForm({
   settings,
@@ -113,7 +118,7 @@ export function AISettingsForm({
                                         <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
                                         {
                                           ProviderOptions[
-                                          providerField.value ?? "openai"
+                                            providerField.value ?? "openai"
                                           ]
                                         }
                                       </Button>
@@ -160,11 +165,11 @@ export function AISettingsForm({
                                             <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
                                             {providerField.value === "openai"
                                               ? OpenAiModelOptions[
-                                              field.value as keyof typeof OpenAiModelOptions
-                                              ]
+                                                  field.value as keyof typeof OpenAiModelOptions
+                                                ]
                                               : AnthropicModelOptions[
-                                              field.value as keyof typeof AnthropicModelOptions
-                                              ]}
+                                                  field.value as keyof typeof AnthropicModelOptions
+                                                ]}
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-full max-w-lg">
@@ -215,7 +220,7 @@ export function AISettingsForm({
                                     to make requests to the{" "}
                                     {
                                       ProviderOptions[
-                                      providerField.value ?? "openai"
+                                        providerField.value ?? "openai"
                                       ]
                                     }{" "}
                                     API. It should be ignored by version control
@@ -247,7 +252,7 @@ export function AISettingsForm({
                                     You can configure the base URL used by{" "}
                                     {
                                       ProviderOptions[
-                                      providerField.value ?? "openai"
+                                        providerField.value ?? "openai"
                                       ]
                                     }{" "}
                                     API client to use any compatible endpoint.

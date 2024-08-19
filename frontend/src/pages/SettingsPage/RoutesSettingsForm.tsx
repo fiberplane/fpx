@@ -12,9 +12,7 @@ import { cn } from "@/utils";
 import { SettingsForm } from "@fiberplane/fpx-types";
 import { useSettingsForm } from "./form";
 
-export function RoutesSettingsForm({
-  settings,
-}: { settings: SettingsForm }) {
+export function RoutesSettingsForm({ settings }: { settings: SettingsForm }) {
   const { form, onSubmit } = useSettingsForm(settings);
   const isCustomRoutesDirty = form.formState.dirtyFields.customRoutesEnabled;
 

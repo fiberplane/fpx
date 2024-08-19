@@ -1,11 +1,16 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useUpdateSettings } from "@/queries";
 import { errorHasMessage } from "@/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 // import { z } from "zod";
 // import { CLAUDE_3_5_SONNET, FormSchema, GPT_4o } from "./types";
-import { CLAUDE_3_5_SONNET, GPT_4o, SettingsForm, SettingsFormSchema } from "@fiberplane/fpx-types";
+import {
+  CLAUDE_3_5_SONNET,
+  GPT_4o,
+  SettingsForm,
+  SettingsFormSchema,
+} from "@fiberplane/fpx-types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 const DEFAULT_VALUES = {
   aiEnabled: false,

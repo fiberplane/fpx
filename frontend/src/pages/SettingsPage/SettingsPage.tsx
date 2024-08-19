@@ -10,12 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFetchSettings } from "@/queries";
 import { cn } from "@/utils";
+import { SettingsForm } from "@fiberplane/fpx-types";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 import { RoutesSettingsForm } from "./RoutesSettingsForm";
-import { SettingsForm } from "@fiberplane/fpx-types";
 
 export function SettingsPage() {
   const { data, isPending, isError } = useFetchSettings();
