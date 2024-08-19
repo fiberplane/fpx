@@ -426,7 +426,7 @@ function ResponseBody({
     }
 
     if (body?.type === "json") {
-      const prettyBody = JSON.stringify(JSON.parse(body.value), null, 2);
+      const prettyBody = JSON.stringify(safeParseJson(body.value), null, 2);
 
       return (
         <div
@@ -660,3 +660,13 @@ function FailedWebsocket() {
     </div>
   );
 }
+
+const safeParseJson = (jsonString: string) => {
+  try {
+    const parsed = JSON.parse(jsonString);
+    return parsed;
+  } catch (error) {
+    console.error("Failed to parse JSON:", error);
+    return jsonString;
+  }
+};

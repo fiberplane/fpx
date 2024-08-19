@@ -109,17 +109,30 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             ? clonedRequest.body.tee()
             : [null, null];
 
+          console.log("body1", body1);
+          console.log("body2", body2);
+
           // In order to keep `onStart` synchronous (below), we construct
           // some necessary attributes here, using a cloned request
           const requestForAttributes = new Request(clonedRequest.url, {
             method: request.method,
             headers: new Headers(request.headers),
             body: body1,
+
+            // NOTE - This is a workaround to support node environments
+            //        Which will throw errors when body is a stream but duplex is not set
+            //        https://github.com/nodejs/node/issues/46221
+            duplex: body1 ? "half" : undefined,
           });
 
           // Replace the original request's body with the second stream
           const newRequest = new Request(clonedRequest, {
             body: body2,
+
+            // NOTE - This is a workaround to support node environments
+            //        Which will throw errors when body is a stream but duplex is not set
+            //        https://github.com/nodejs/node/issues/46221
+            duplex: body2 ? "half" : undefined,
           });
 
           // Parse the body and headers for the root request.
@@ -216,4 +229,30 @@ function mergeConfigs(
   return {
     monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
+}
+
+/**
+ * Heuristic to guess if a request is full duplex or half duplex
+ *
+ * @param request
+ * @returns "full" or "half"
+ */
+function guessDuplex(request: Request) {
+  if (request.body) {
+    // Check if the body is a ReadableStream
+    if (request.body instanceof ReadableStream) {
+      // Heuristic: Check for methods that typically require full duplex
+      const fullDuplexMethods = ["POST", "PUT", "PATCH"];
+      if (!fullDuplexMethods.includes(request.method)) {
+        return "half";
+      }
+
+      // Heuristic: Check for Transfer-Encoding header indicating chunked transfer
+      const transferEncoding = request.headers.get("Transfer-Encoding");
+      if (transferEncoding?.includes("chunked")) {
+        return "full";
+      }
+    }
+  }
+  return "half";
 }
