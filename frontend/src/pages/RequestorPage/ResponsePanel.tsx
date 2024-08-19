@@ -560,12 +560,8 @@ export function ResponseBodyText({
   const toggleIsExpanded = () => setIsExpanded((e) => !e);
 
   // For text responses, just split into lines and render with rudimentary line numbers
-  const { lines, hiddenLinesCount, shouldShowExpandButton } = useTextPreview(
-    body,
-    isExpanded,
-    maxPreviewLength,
-    maxPreviewLines,
-  );
+  const { lines, hiddenLinesCount, hiddenCharsCount, shouldShowExpandButton } =
+    useTextPreview(body, isExpanded, maxPreviewLength, maxPreviewLines);
 
   // TODO - if response is empty, show that in a ux friendly way, with 204 for example
 
@@ -584,7 +580,11 @@ export function ResponseBodyText({
         >
           {!isExpanded && (
             <div className="text-sm text-gray-400">
-              {hiddenLinesCount} lines hidden
+              {hiddenLinesCount > 0 ? (
+                <>{hiddenLinesCount} lines hidden</>
+              ) : (
+                <>{hiddenCharsCount} characters hidden</>
+              )}
             </div>
           )}
           <Button
@@ -607,6 +607,7 @@ function useTextPreview(
   maxPreviewLines: number | null,
 ) {
   return useMemo(() => {
+    let hiddenCharsCount = 0;
     let hiddenLinesCount = 0;
     const allLinesCount = body.split("\n")?.length;
 
@@ -622,6 +623,7 @@ function useTextPreview(
     let previewBody = body;
     if (maxPreviewLength && exceedsMaxPreviewLength && !isExpanded) {
       previewBody = body ? body.slice(0, maxPreviewLength) + "..." : "";
+      hiddenCharsCount = body.length - maxPreviewLength;
     }
 
     let previewLines = previewBody?.split("\n");
@@ -650,6 +652,7 @@ function useTextPreview(
       lines,
       shouldShowExpandButton: exceedsMaxPreviewLength || exceedsMaxPreviewLines,
       hiddenLinesCount,
+      hiddenCharsCount,
     };
   }, [body, maxPreviewLines, maxPreviewLength, isExpanded]);
 }
