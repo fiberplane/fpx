@@ -230,29 +230,3 @@ function mergeConfigs(
     monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
 }
-
-/**
- * Heuristic to guess if a request is full duplex or half duplex
- *
- * @param request
- * @returns "full" or "half"
- */
-function guessDuplex(request: Request) {
-  if (request.body) {
-    // Check if the body is a ReadableStream
-    if (request.body instanceof ReadableStream) {
-      // Heuristic: Check for methods that typically require full duplex
-      const fullDuplexMethods = ["POST", "PUT", "PATCH"];
-      if (!fullDuplexMethods.includes(request.method)) {
-        return "half";
-      }
-
-      // Heuristic: Check for Transfer-Encoding header indicating chunked transfer
-      const transferEncoding = request.headers.get("Transfer-Encoding");
-      if (transferEncoding?.includes("chunked")) {
-        return "full";
-      }
-    }
-  }
-  return "half";
-}
