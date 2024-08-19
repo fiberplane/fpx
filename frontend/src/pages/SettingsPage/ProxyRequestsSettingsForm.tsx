@@ -11,11 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
 import { useSettingsForm } from "./form";
+import { Settings } from "@fiberplane/fpx-types";
 
 // TODO: automatically restart the fpx studio when this is changed
 export function ProxyRequestsSettingsForm({
   settings,
-}: { settings: Record<string, string> }) {
+}: { settings: Settings }) {
   const { form, onSubmit } = useSettingsForm(settings);
   const isProxyRequestsDirty = form.formState.dirtyFields.proxyRequestsEnabled;
 

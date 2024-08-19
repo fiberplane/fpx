@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useFetchSettings } from "@/queries";
-import { cn } from "@/utils";
+import { useFetchSettings } from "@/queries"; import { cn } from "@/utils";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 import { RoutesSettingsForm } from "./RoutesSettingsForm";
+import { Settings } from "@fiberplane/fpx-types";
 
 export function SettingsPage() {
   const { data, isPending, isError } = useFetchSettings();
@@ -35,7 +35,7 @@ const AI_TAB = "AI";
 const CUSTOM_ROUTES_TAB = "Custom Routes";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
 
-function SettingsLayout({ settings }: { settings: Record<string, string> }) {
+function SettingsLayout({ settings }: { settings: Settings }) {
   const [activeTab, setActiveTab] = useState(AI_TAB);
 
   return (

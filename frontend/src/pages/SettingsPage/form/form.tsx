@@ -5,23 +5,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CLAUDE_3_5_SONNET, FormSchema, GPT_4o } from "./types";
+import { Settings } from "@fiberplane/fpx-types";
 
-const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
-  aiEnabled: false,
-  aiProviderType: "openai",
-  openaiModel: GPT_4o,
-  anthropicModel: CLAUDE_3_5_SONNET,
-  customRoutesEnabled: false,
-  proxyRequestsEnabled: false,
-  proxyBaseUrl: "https://webhonc.mies.workers.dev",
-};
+const DEFAULT_VALUES = {
+  aiEnabled: { value: false },
+  aiProviderType: { value: "openai" },
+  openaiModel: { value: GPT_4o },
+  anthropicModel: { value: CLAUDE_3_5_SONNET },
+  customRoutesEnabled: { value: false },
+  proxyRequestsEnabled: { value: false },
+  proxyBaseUrl: { value: "https://webhonc.mies.workers.dev" },
+} satisfies Settings;
 
-export function useSettingsForm(settings: Record<string, string | boolean>) {
+export function useSettingsForm(settings: Settings) {
   const { toast } = useToast();
 
   const { mutate: updateSettings } = useUpdateSettings();
 
-  const form = useForm<z.infer<typeof FormSchema>>({
+  const form = useForm<Settings>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       ...DEFAULT_VALUES,
@@ -29,26 +30,28 @@ export function useSettingsForm(settings: Record<string, string | boolean>) {
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  function onSubmit(data: Settings) {
     updateSettings(
       {
         content: {
-          customRoutesEnabled: data.customRoutesEnabled,
-          aiEnabled: data.aiEnabled,
-          aiProviderType: data.aiProviderType,
-          // Remove the stored api key if the feature is disabled
-          ...(data.aiEnabled
-            ? {
-                openaiApiKey: data.openaiApiKey,
-                anthropicApiKey: data.anthropicApiKey,
-              }
-            : {}),
-          openaiBaseUrl: data.openaiBaseUrl ?? "",
-          openaiModel: data.openaiModel,
-          anthropicBaseUrl: data.anthropicBaseUrl ?? "",
-          anthropicModel: data.anthropicModel,
-          proxyRequestsEnabled: data.proxyRequestsEnabled,
-          proxyBaseUrl: data.proxyBaseUrl,
+          ...data,
+
+          // customRoutesEnabled: data.customRoutesEnabled,
+          // aiEnabled: data.aiEnabled,
+          // aiProviderType: data.aiProviderType,
+          // // Remove the stored api key if the feature is disabled
+          // ...(data.aiEnabled
+          //   ? {
+          //     openaiApiKey: data.openaiApiKey,
+          //     anthropicApiKey: data.anthropicApiKey,
+          //   }
+          //   : {}),
+          // openaiBaseUrl: data.openaiBaseUrl ?? "",
+          // openaiModel: data.openaiModel,
+          // anthropicBaseUrl: data.anthropicBaseUrl ?? "",
+          // anthropicModel: data.anthropicModel,
+          // proxyRequestsEnabled: data.proxyRequestsEnabled,
+          // proxyBaseUrl: data.proxyBaseUrl,
         },
       },
       {

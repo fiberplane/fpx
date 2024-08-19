@@ -1,4 +1,4 @@
-import { useFetchSettings } from "@/queries";
+import { useSetting } from "@/queries/settings";
 import { useMemo } from "react";
 
 /**
@@ -7,8 +7,8 @@ import { useMemo } from "react";
  *
  */
 export function useProxyRequestsEnabled() {
-  const { data } = useFetchSettings();
+  const proxyRequestsEnabledSetting = useSetting('proxyRequestsEnabled');
   return useMemo(() => {
-    return !!data?.proxyRequestsEnabled;
-  }, [data]);
+    return proxyRequestsEnabledSetting?.value ?? false;
+  }, [proxyRequestsEnabledSetting]);
 }

@@ -1,14 +1,11 @@
-import { type Settings, SettingsSchema, type SettingsKey } from '@fiberplane/fpx-types';
+import { type Settings, SettingSchema, type SettingsKey, type Setting } from '@fiberplane/fpx-types';
 import { eq, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { z } from "zod";
 import { settings } from "../../db/schema.js";
 import type * as schema from "../../db/schema.js";
 
-export async function upsertSettings<T extends SettingsKey>(
-  db: LibSQLDatabase<typeof schema>,
-  content: Partial<Record<T, Omit<Extract<Settings, { type: T }>, 'type'>>>,
-) {
+export async function upsertSettings(db: LibSQLDatabase<typeof schema>, content: Settings) {
   const settingsToUpdate = Object.entries(content).map(([key, value]) => ({
     key,
     value: JSON.stringify(value),
@@ -27,7 +24,7 @@ export async function upsertSettings<T extends SettingsKey>(
 export async function getSetting<T extends SettingsKey>(
   db: LibSQLDatabase<typeof schema>,
   key: T,
-): Promise<Omit<Extract<Settings, { type: T }>, 'type'> | undefined> {
+): Promise<Omit<Extract<Setting, { type: T }>, 'type'> | undefined> {
   const [setting] = await db
     .select()
     .from(settings)
@@ -46,9 +43,7 @@ export async function getAllSettings(db: LibSQLDatabase<typeof schema>) {
 
   if (settingsRecords.length === 0) return {};
 
-  return settingsRecords.reduce<
-    Partial<Record<SettingsKey, Omit<Settings, 'type'>>>
-  >(
+  return settingsRecords.reduce<Settings>(
     (acc, rec) => {
       acc[rec.key as SettingsKey] = parseSetting(rec.key, rec.value)
       return acc;
@@ -59,8 +54,8 @@ export async function getAllSettings(db: LibSQLDatabase<typeof schema>) {
 
 function parseSetting<T extends SettingsKey>(type: string, value: string) {
   const parsedJson = JSON.parse(value);
-  const { type: _type, ...props } = SettingsSchema.parse({ type, ...parsedJson });
-  return props as Omit<Extract<Settings, { type: T }>, "type">;
+  const { type: _type, ...props } = SettingSchema.parse({ type, ...parsedJson });
+  return props as Omit<Extract<Setting, { type: T }>, "type">;
 }
 
 // // HACK: This is a temporary solution to handle boolean and number values,
