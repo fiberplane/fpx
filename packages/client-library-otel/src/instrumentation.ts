@@ -10,11 +10,7 @@ import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks/index.js";
 import { measure } from "./measure.js";
-import {
-  patchConsole,
-  patchFetch,
-  patchWaitUntil,
-} from "./patch/index.js";
+import { patchConsole, patchFetch, patchWaitUntil } from "./patch/index.js";
 import { propagateFpxTraceId } from "./propagation.js";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes.js";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types.js";
