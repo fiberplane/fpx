@@ -85,7 +85,9 @@ type MizuSpan = {
  * - `mapAttributes` simply returns the value, instead of an object whose key describes the attribute data type.
  *   By convention, we only use string and number values. Complex values are serialized.
  */
-export async function fromCollectorRequest(tracesData: IExportTraceServiceRequest) {
+export async function fromCollectorRequest(
+  tracesData: IExportTraceServiceRequest,
+) {
   const result: Array<MizuSpan> = [];
 
   for (const resourceSpan of tracesData.resourceSpans ?? []) {
@@ -118,8 +120,12 @@ export async function fromCollectorRequest(tracesData: IExportTraceServiceReques
           ? stringOrUintToString(span.parentSpanId)
           : null;
 
-        const events = await Promise.all(span.events.map((event) => mapEvent(event)));
-        const links = await Promise.all(span.links.map((link) => mapLink(link)));
+        const events = await Promise.all(
+          span.events.map((event) => mapEvent(event)),
+        );
+        const links = await Promise.all(
+          span.links.map((link) => mapLink(link)),
+        );
 
         const traceId = stringOrUintToString(span.traceId);
         const spanId = stringOrUintToString(span.spanId);
@@ -189,7 +195,7 @@ async function mapAttributes(
       if (typeof value === "string") {
         result[kv.key] = await transformStack(value);
       } else {
-        result[kv.key] = value
+        result[kv.key] = value;
       }
     } else {
       result[kv.key] = kv.value ? await mapAttributeValue(kv.value) : null;
