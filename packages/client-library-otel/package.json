@@ -24,6 +24,7 @@
     "hono": "^4.3.9",
     "nodemon": "^3.1.4",
     "rimraf": "^6.0.1",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.4.5"
   },
   "publishConfig": {
@@ -42,8 +43,9 @@
     "format": "biome check . --write",
     "lint": "biome lint .",
     "typecheck": "tsc --noEmit",
-    "build": "pnpm run clean && npm run build:types && pnpm run build:swc",
-    "build:types": "tsc --project tsconfig.json --emitDeclarationOnly",
+    "build": "pnpm run clean && npm run build:types && pnpm run build:swc && pnpm run build:alias",
+    "build:types": "tsc --project tsconfig.json",
+    "build:alias": "tsc-alias -p tsconfig.json -f",
     "build:swc": "cd src && swc . -d ../dist --source-maps",
     "dev": "wrangler dev sample/index.ts",
     "prepublishOnly": "pnpm run build",
