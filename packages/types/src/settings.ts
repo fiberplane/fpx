@@ -52,6 +52,8 @@ export const SettingsSchema = z.object({
   customRoutesEnabled: z.boolean().optional(),
   aiEnabled: z.boolean().optional(),
   aiProviderType: AiProviderTypeSchema.optional(),
+  fpxWorkerEnabled: z.boolean().optional(),
+  fpxWorkerBaseUrl: z.string().url().optional(),
   openaiApiKey: z.string().optional(),
   openaiBaseUrl: z.string().optional(),
   openaiModel: OpenAiModelSchema.optional(),

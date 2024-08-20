@@ -16,6 +16,7 @@ import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 import { RoutesSettingsForm } from "./RoutesSettingsForm";
+import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
 
 export function SettingsPage() {
   const { data, isPending, isError } = useFetchSettings();
@@ -36,6 +37,7 @@ export function SettingsPage() {
 const AI_TAB = "AI";
 const CUSTOM_ROUTES_TAB = "Custom Routes";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
+const FPX_WORKER_PROXY_TAB = "FPX Worker Proxy";
 
 function SettingsLayout({ settings }: { settings: Settings }) {
   const [activeTab, setActiveTab] = useState(AI_TAB);
@@ -87,6 +89,9 @@ function SettingsLayout({ settings }: { settings: Settings }) {
             <DropdownMenuItem onClick={() => setActiveTab(PROXY_REQUESTS_TAB)}>
               {PROXY_REQUESTS_TAB}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveTab(FPX_WORKER_PROXY_TAB)}>
+              {FPX_WORKER_PROXY_TAB}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         {/* For md breakpoint, show tab triggers */}
@@ -109,6 +114,12 @@ function SettingsLayout({ settings }: { settings: Settings }) {
         >
           Proxy Requests
         </TabsTrigger>
+        <TabsTrigger
+          className="hidden md:block w-full justify-start text-left py-2 px-4"
+          value={FPX_WORKER_PROXY_TAB}
+        >
+          {FPX_WORKER_PROXY_TAB}
+        </TabsTrigger>
       </TabsList>
       <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll">
         <TabsContent className="m-0" value={AI_TAB}>
@@ -119,6 +130,9 @@ function SettingsLayout({ settings }: { settings: Settings }) {
         </TabsContent>
         <TabsContent className="m-0" value={PROXY_REQUESTS_TAB}>
           <ProxyRequestsSettingsForm settings={settings} />
+        </TabsContent>
+        <TabsContent className="m-0" value={FPX_WORKER_PROXY_TAB}>
+          <FpxWorkerProxySettingsForm settings={settings} />
         </TabsContent>
       </div>
     </Tabs>

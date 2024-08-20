@@ -10,6 +10,6 @@ import { useMemo } from "react";
 export function useAiEnabled() {
   const aiEnabledSetting = useSetting("aiEnabled");
   return useMemo(() => {
-    return aiEnabledSetting?.value ?? false;
+    return aiEnabledSetting ?? false;
   }, [aiEnabledSetting]);
 }

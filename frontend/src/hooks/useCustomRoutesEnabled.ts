@@ -10,6 +10,6 @@ import { useMemo } from "react";
 export function useCustomRoutesEnabled() {
   const customRoutesEnabledSetting = useSetting("customRoutesEnabled");
   return useMemo(() => {
-    return customRoutesEnabledSetting?.value ?? false;
+    return customRoutesEnabledSetting ?? false;
   }, [customRoutesEnabledSetting]);
 }
