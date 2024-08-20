@@ -22,6 +22,12 @@
   },
   "overrides": [
     {
+      "include": ["www"],
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
       "include": ["frontend"],
       "linter": {
         "enabled": false
