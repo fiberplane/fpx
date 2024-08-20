@@ -86,9 +86,9 @@ setupRealtimeService({ server, path: "/ws", wsConnections });
 webhonc.setupWebhonc({ host: resolveWebhoncUrl(), db, wsConnections });
 
 // check settings if proxy requests is enabled
-const proxyRequestsEnabled = !!(await getSetting(db, "proxyRequestsEnabled"));
+const proxyRequestsEnabled = await getSetting(db, "proxyRequestsEnabled");
 
-if (proxyRequestsEnabled) {
+if (proxyRequestsEnabled?.value ?? false) {
   logger.debug("Proxy requests feature enabled.");
   await webhonc.start();
 }

@@ -4,10 +4,11 @@ import logger from "./logger.js";
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 
-// biome-ignore lint/suspicious/noExplicitAny: Trust me, this is easier
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
-  // biome-ignore lint/suspicious/noExplicitAny: Trust me, this is easier
-  return (...args: any[]) => {
+function debounce<T extends (...args: Parameters<T>) => void>(
+  func: T,
+  wait: number,
+) {
+  return (...args: Parameters<T>) => {
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
