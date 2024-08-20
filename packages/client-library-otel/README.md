@@ -1,12 +1,12 @@
-# FPX Hono Opentelemetry Client (BETA)
+# Fiberplane Hono Opentelemetry Library (BETA)
 
 > **Note:** This library is in beta, and is still under active development.
 
-This is a client library that will send telemetry data to a *local* FPX server upon every incoming request and outgoing response.
+This is a client library that will send telemetry data to a *local* Fiberplane Studio server upon every incoming request and outgoing response, in order to be visualized in the Studio UI.
 
 Under the hood, it uses [OpenTelemetry](https://opentelemetry.io/) traces to collect telemetry data and send it to a local FPX server.
 
-By default, it proxies `console.*` functions to send logging data to a local FPX server, 
+By default, it proxies `console.*` functions to send logging data to a local Fiberplane Studio server, 
 so any time you use a `console.log`, `console.error`, etc., in your app, it will also send those log messages to FPX.
 
 Likewise, any time your app makes a `fetch` request, it will create a trace for that request. This behavior is configurable.
@@ -22,7 +22,7 @@ npm create hono@latest my-hono-project
 # > cloudflare-workers
 ```
 
-Install the FPX Hono Opentelemetry Client
+Install the Fiberplane Hono Opentelemetry Library
 
 ```sh
 npm i @fiberplane/hono-otel@beta
@@ -41,7 +41,7 @@ app.get("/", (c) => c.text("Hello, Hono!"));
 export default instrument(app);
 ```
 
-Launch the FPX Studio UI from your project directory
+Launch the Fiberplane Studio UI from your project directory
 
 ```sh
 npx @fiberplane/studio
@@ -53,8 +53,8 @@ Visit `http://localhost:8788` to see your logs and traces come in as you test yo
 
 This section takes you through:
 
-- Installing the FPX Hono Opentelemetry Client
-- Configuring your project to use FPX
+- Installing the Fiberplane Hono Opentelemetry Library
+- Configuring your project to use Fiberplane Studio
 - Advanced usage with custom spans
 
 It assumes you already have a Hono app running locally.
@@ -97,7 +97,7 @@ When your app is running, the `FPX_ENDPOINT` environment variable controls where
 
 If it is not defined, the middleware will do nothing. This means you can safely deploy your Hono app to any cloud environment, and by default, it will not collect and send telemetry data.
 
-The FPX cli (`npx @fiberplane/studio`) should help you initialize your project correctly, but if you want to connect your api to FPX Studio manually, you can add or modify this variable with, e.g., `FPX_ENDPOINT=http://localhost:8788/v1/traces` in your environment variable file.
+The Fiberplane cli (`npx @fiberplane/studio`) should help you initialize your project correctly, but if you want to connect your api to Fiberplane Studio manually, you can add or modify this variable with, e.g., `FPX_ENDPOINT=http://localhost:8788/v1/traces` in your environment variable file.
 
 ```sh
 echo -e '\nFPX_ENDPOINT=http://localhost:8788/v1/traces\n' >> .dev.vars
@@ -110,7 +110,7 @@ When you instrument your app, you can also pass in a configuration object to ove
 The options are:
 
 - `monitor.fetch`: Whether to create traces for all fetch requests. (Default: `true`)
-- `monitor.logging`: Whether to proxy `console.*` functions to send logging data to a local FPX server. (Default: `true`)
+- `monitor.logging`: Whether to proxy `console.*` functions to send logging data to a local Fiberplane Studio server. (Default: `true`)
 
 Here is an example:
 
