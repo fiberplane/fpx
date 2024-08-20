@@ -57,10 +57,10 @@ export const SettingsSchema = z.object({
   customRoutesEnabled: z.boolean().optional(),
   fpxWorkerProxy: z.object({
     enabled: z.boolean().optional(),
-    // Optional seems broken on urls with react-hook-form
+    // Optional seems broken on urls with react-hook-form and controlled inputs resulting into empty strings
     // Fix from:
     // https://github.com/colinhacks/zod/discussions/1254#discussioncomment-3123225
-    baseUrl: z.union([z.literal(""), z.string().trim().url()]),
+    baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
   }).optional(),
   openaiApiKey: z.string().optional(),
   openaiBaseUrl: z.string().optional(),
