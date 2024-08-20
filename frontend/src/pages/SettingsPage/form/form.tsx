@@ -11,7 +11,6 @@ const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
   aiProviderType: "openai",
   openaiModel: GPT_4o,
   anthropicModel: CLAUDE_3_5_SONNET,
-  customRoutesEnabled: false,
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",
 };
@@ -33,7 +32,6 @@ export function useSettingsForm(settings: Record<string, string | boolean>) {
     updateSettings(
       {
         content: {
-          customRoutesEnabled: data.customRoutesEnabled,
           aiEnabled: data.aiEnabled,
           aiProviderType: data.aiProviderType,
           // Remove the stored api key if the feature is disabled

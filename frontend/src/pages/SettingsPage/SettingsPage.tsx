@@ -14,7 +14,6 @@ import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
-import { RoutesSettingsForm } from "./RoutesSettingsForm";
 
 export function SettingsPage() {
   const { data, isPending, isError } = useFetchSettings();
@@ -32,7 +31,6 @@ export function SettingsPage() {
 }
 
 const AI_TAB = "AI";
-const CUSTOM_ROUTES_TAB = "Custom Routes";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
 
 function SettingsLayout({ settings }: { settings: Record<string, string> }) {
@@ -79,9 +77,6 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
             <DropdownMenuItem onClick={() => setActiveTab(AI_TAB)}>
               {AI_TAB}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setActiveTab(CUSTOM_ROUTES_TAB)}>
-              {CUSTOM_ROUTES_TAB}
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActiveTab(PROXY_REQUESTS_TAB)}>
               {PROXY_REQUESTS_TAB}
             </DropdownMenuItem>
@@ -97,12 +92,6 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
         </TabsTrigger>
         <TabsTrigger
           className="hidden md:block w-full justify-start text-left py-2 px-4"
-          value={CUSTOM_ROUTES_TAB}
-        >
-          Custom Routes
-        </TabsTrigger>
-        <TabsTrigger
-          className="hidden md:block w-full justify-start text-left py-2 px-4"
           value={PROXY_REQUESTS_TAB}
         >
           Proxy Requests
@@ -111,9 +100,6 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
       <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll">
         <TabsContent className="m-0" value={AI_TAB}>
           <AISettingsForm settings={settings} />
-        </TabsContent>
-        <TabsContent className="m-0" value={CUSTOM_ROUTES_TAB}>
-          <RoutesSettingsForm settings={settings} />
         </TabsContent>
         <TabsContent className="m-0" value={PROXY_REQUESTS_TAB}>
           <ProxyRequestsSettingsForm settings={settings} />
