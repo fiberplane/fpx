@@ -178,6 +178,10 @@ export const SavedRequestorStateSchema = RequestorStateSchema.pick({
   queryParams: true,
   requestHeaders: true,
   body: true,
+  activeRequestsPanelTab: true,
+  visibleRequestsPanelTabs: true,
+  activeResponsePanelTab: true,
+  visibleResponsePanelTabs: true,
 });
 
 export type SavedRequestorState = z.infer<typeof SavedRequestorStateSchema>;
