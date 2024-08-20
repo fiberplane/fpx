@@ -81,7 +81,7 @@ function ResizableRequestMeta(props: RequestPanelProps) {
   const styleWidth = useStyleWidth(width);
   return (
     <Resizable
-      className="min-w-[200px] overflow-hidden h-full"
+      className="min-w-[200px] h-full"
       width={width} // Initial width
       axis="x" // Restrict resizing to the horizontal axis
       onResize={handleResize}
@@ -142,7 +142,8 @@ function RequestMeta(props: RequestPanelProps) {
       className={cn(
         "min-w-[200px] border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
-        "overflow-hidden h-full max-h-full relative",
+        "h-full max-h-full",
+        "grid-rows-[auto_1fr]",
       )}
     >
       <CustomTabsList>
@@ -190,7 +191,6 @@ function RequestMeta(props: RequestPanelProps) {
           </div>
         )}
       </CustomTabsList>
-
       <CustomTabsContent
         value="params"
         className={cn(
@@ -342,10 +342,9 @@ function RequestMeta(props: RequestPanelProps) {
         </CustomTabsContent>
       )}
 
-      {/* HACK - This toolbar is absolutely positioned for now */}
       <div
         className={clsx(
-          "flex items-end gap-2 absolute w-full bottom-0 right-0 px-3 py-2 backdrop-blur-sm",
+          "flex items-end gap-2 w-full p-2 backdrop-blur-sm border-t",
           FORM_BODY_FEATURE_FLAG_ENABLED ? "justify-between" : "justify-end",
         )}
       >
