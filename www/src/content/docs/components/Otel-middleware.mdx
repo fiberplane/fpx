@@ -57,7 +57,7 @@ If you are not using Fiberplane Studio, ensure that Node.js compatibility mode i
 compatibility_flags = [ "nodejs_compat" ]
 ``` 
 ### Customizing the `instrument` function behavior
-The middleware allows you to override the default behavior of the `instrument` function. By default, the function creates traces for all fetched requests in the application and sends logging data to a locally running FPX Studio. You can disable these features by setting the corresponding monitoring variables to `false`. 
+The middleware allows you to override the default behavior of the `instrument` function. By default, the function creates traces for all fetch requests in the application, and sends logging data to a locally running Fiberplane Studio. You can disable these features by setting the corresponding monitoring variables to `false`. 
 
 ```typescript
 import { Hono } from "hono";
