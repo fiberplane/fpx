@@ -1,16 +1,22 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use fpx_lib::data::models::Span;
+use fpx_lib::data::sql::SqlBuilder;
 use fpx_lib::data::{DbError, Result, Store, Transaction};
 use libsql::{params, Builder, Connection};
+use std::sync::Arc;
 use util::RowsExt;
 
 mod migrations;
 mod util;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Clone)]
 pub struct LibsqlStore {
     connection: Connection,
+    sql_builder: Arc<SqlBuilder>,
 }
 
 impl LibsqlStore {
@@ -28,7 +34,12 @@ impl LibsqlStore {
 
         Self::initialize_connection(&mut connection).await?;
 
-        Ok(LibsqlStore { connection })
+        let sql_builder = Arc::new(SqlBuilder::new());
+
+        Ok(LibsqlStore {
+            connection,
+            sql_builder,
+        })
     }
 
     /// This function will execute a few PRAGMA statements to set the database
@@ -69,13 +80,10 @@ impl Store for LibsqlStore {
         Ok(())
     }
 
-    async fn span_get(&self, _tx: &Transaction, trace_id: String, span_id: String) -> Result<Span> {
+    async fn span_get(&self, _tx: &Transaction, trace_id: &str, span_id: &str) -> Result<Span> {
         let span = self
             .connection
-            .query(
-                "SELECT * FROM spans WHERE trace_id=$1 AND span_id=$2",
-                (trace_id, span_id),
-            )
+            .query(&self.sql_builder.span_get(), (trace_id, span_id))
             .await?
             .fetch_one()
             .await?;
@@ -86,7 +94,7 @@ impl Store for LibsqlStore {
     async fn span_list_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<Vec<Span>> {
         let spans = self
             .connection
-            .query("SELECT * FROM spans WHERE trace_id=$1", params!(trace_id))
+            .query(&self.sql_builder.span_list_by_trace(), params!(trace_id))
             .await?
             .fetch_all()
             .await?;
@@ -98,20 +106,7 @@ impl Store for LibsqlStore {
         let span = self
             .connection
             .query(
-                "INSERT INTO spans
-                    (
-                        trace_id,
-                        span_id,
-                        parent_span_id,
-                        name,
-                        kind,
-                        start_time,
-                        end_time,
-                        inner
-                    )
-                    VALUES
-                        ($1, $2, $3, $4, $5, $6, $7, $8)
-                    RETURNING *",
+                &self.sql_builder.span_create(),
                 params!(
                     span.trace_id,
                     span.span_id,
@@ -142,16 +137,7 @@ impl Store for LibsqlStore {
     ) -> Result<Vec<fpx_lib::data::models::Trace>> {
         let traces = self
             .connection
-            .query(
-                "
-                SELECT trace_id, MAX(end_time) as end_time
-                FROM spans
-                GROUP BY trace_id
-                ORDER BY end_time DESC
-                LIMIT 20
-                ",
-                (),
-            )
+            .query(&self.sql_builder.traces_list(None), ())
             .await?
             .fetch_all()
             .await?;

@@ -4,7 +4,8 @@ use std::sync::Arc;
 use thiserror::Error;
 
 pub mod models;
-mod util;
+pub mod sql;
+pub mod util;
 
 pub type Result<T, E = DbError> = anyhow::Result<T, E>;
 
@@ -47,8 +48,8 @@ pub trait Store: Send + Sync {
     async fn span_get(
         &self,
         tx: &Transaction,
-        trace_id: String,
-        span_id: String,
+        trace_id: &str,
+        span_id: &str,
     ) -> Result<models::Span>;
 
     async fn span_list_by_trace(
