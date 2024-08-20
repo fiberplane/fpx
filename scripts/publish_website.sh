@@ -16,7 +16,7 @@ fi
 
 S3_BUCKET_ID=""
 CF_DISTRIBUTION_ID=""
-PUBLISH_DIR=""
+PUBLISH_DIR="www/dist" # Default value
 DRY_RUN=false
 
 display_usage() {
@@ -25,66 +25,54 @@ display_usage() {
 	echo "Deploy website to S3 and invalidate CloudFront distribution."
 	echo
 	echo "Options:"
-	echo "  --s3-bucket-id=ID        Specify the S3 bucket ID (required)"
-	echo "  --cf-distribution-id=ID  Specify the CloudFront distribution ID (required)"
-	echo "  --publish-dir=DIR        Specify the directory to publish (default: dist)"
+	echo "  --s3-bucket-id \"ID\"        Specify the S3 bucket ID (required)"
+	echo "  --cf-distribution-id \"ID\"  Specify the CloudFront distribution ID (required)"
+	echo "  --publish-dir \"DIR\"         Specify the directory to publish (default: www/dist)"
 	echo "  --dry-run                Perform a dry run without making changes"
 	echo "  --help                   Display this help message and exit"
 	echo
 	echo "Example:"
-	echo "  $0 --s3-bucket-id=my-bucket --cf-distribution-id=ABCDEF123456 --publish-dir=./dist"
+	echo "  $0 --s3-bucket-id \"my-bucket\" --cf-distribution-id \"ABCDEF123456\" --publish-dir \"./dist\""
 }
 
-while [[ "$#" -gt 0 ]]; do
-	case $1 in
-	--s3-bucket-id | --s3-bucket-id=*)
-		if [[ "$1" == *=* ]]; then
-			S3_BUCKET_ID="${1#*=}"
-		else
+parse_args() {
+	while [[ "$#" -gt 0 ]]; do
+		case $1 in
+		--s3-bucket-id)
 			S3_BUCKET_ID="$2"
-			shift
-		fi
-		;;
-	--cf-distribution-id | --cf-distribution-id=*)
-		if [[ "$1" == *=* ]]; then
-			CF_DISTRIBUTION_ID="${1#*=}"
-		else
+			shift 2
+			;;
+		--cf-distribution-id)
 			CF_DISTRIBUTION_ID="$2"
-			shift
-		fi
-		;;
-	--publish-dir | --publish-dir=*)
-		if [[ "$1" == *=* ]]; then
-			PUBLISH_DIR="${1#*=}"
-		else
+			shift 2
+			;;
+		--publish-dir)
 			PUBLISH_DIR="$2"
+			shift 2
+			;;
+		--dry-run)
+			DRY_RUN=true
 			shift
-		fi
-		;;
-	--dry-run)
-		DRY_RUN=true
-		;;
-	--help)
-		display_usage
-		exit 0
-		;;
-	*)
-		echo "Unknown parameter passed: $1" >&2
-		display_usage
-		exit 1
-		;;
-	esac
-	shift
-done
+			;;
+		--help)
+			display_usage
+			exit 0
+			;;
+		*)
+			echo "Unknown parameter passed: $1" >&2
+			display_usage
+			exit 1
+			;;
+		esac
+	done
+}
+
+parse_args "$@"
 
 if [ -z "$S3_BUCKET_ID" ] || [ -z "$CF_DISTRIBUTION_ID" ]; then
 	echo "Error: S3 bucket ID and CloudFront distribution ID are required." >&2
 	display_usage
 	exit 1
-fi
-
-if [ -z "$PUBLISH_DIR" ]; then
-	PUBLISH_DIR="dist"
 fi
 
 if [ ! -d "$PUBLISH_DIR" ]; then
@@ -99,7 +87,8 @@ AUTHOR=$(git config user.name)
 COMMIT_HASH=$(git rev-parse HEAD)
 
 if [ "$DRY_RUN" = true ]; then
-	aws s3 sync "$PUBLISH_DIR" "s3://$S3_BUCKET_ID" --delete --metadata "{\"author\":\"$AUTHOR\",\"commit\":\"$COMMIT_HASH\"}" --dryrun
+	echo "DRY RUN: Would execute the following command:"
+	echo "aws s3 sync \"$PUBLISH_DIR\" \"s3://$S3_BUCKET_ID\" --delete --metadata \"{\\\"author\\\":\\\"$AUTHOR\\\",\\\"commit\\\":\\\"$COMMIT_HASH\\\"}\""
 else
 	aws s3 sync "$PUBLISH_DIR" "s3://$S3_BUCKET_ID" --delete --metadata "{\"author\":\"$AUTHOR\",\"commit\":\"$COMMIT_HASH\"}" || {
 		echo "Error: Failed to sync with S3 bucket" >&2
