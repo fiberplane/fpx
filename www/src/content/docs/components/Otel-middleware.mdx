@@ -5,14 +5,18 @@ description: description of otel middleware
 
 The Hono [Otel middleware](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel) leverages [OpenTelemetry](https://opentelemetry.io/) to instrument applications and send traces to FPX Studio. It requires use of the [Hono](https://hono.dev/) web application framework.
 
-## Installation 
+## Installation
+
 To install the Otel middleware for your Hono application, run the following command in your project directory:
+
 ```
-npm i @fiberplane/hono-otel@beta 
-``` 
+npm i @fiberplane/hono-otel@beta
+```
 
 ## Usage within a Hono application
+
 Below is an example of how to use the Otel middleware within a Hono application:
+
 ```typescript
 import { Hono } from "hono";
 import { instrument } from "@fiberplane/hono-otel";
@@ -25,6 +29,7 @@ export default instrument(app);
 ```
 
 ### Advanced usage: Custom spans
+
 The measure function from the Hono Otel middleware allows you to create custom spans for any function within your application, enabling more granular tracing.
 
 ```typescript
@@ -48,16 +53,20 @@ export default instrument(app);
 ```
 
 ## Configuration
+
 By default, the Hono Otel middleware does not send traces. To define an endpoint, you need to set the `FPX_ENDPOINT` environment variable.
 
 When starting Fiberplane Studio via the command line with `npx @fiberplane/studio`, the `FPX_ENDPOINT` is automatically set to the Fiberplane Studio's default port 8788: `http://localhost:8788/v1/traces`. Additionally, the Fiberplane Studio CLI setup enables Node.js compatibility mode for Cloudflare Workers.
 
 If you are not using Fiberplane Studio, ensure that Node.js compatibility mode is enabled in the `wrangler.toml` file:
+
 ```
 compatibility_flags = [ "nodejs_compat" ]
-``` 
+```
+
 ### Customizing the `instrument` function behavior
-The middleware allows you to override the default behavior of the `instrument` function. By default, the function creates traces for all fetch requests in the application, and sends logging data to a locally running Fiberplane Studio. You can disable these features by setting the corresponding monitoring variables to `false`. 
+
+The middleware allows you to override the default behavior of the `instrument` function. By default, the function creates traces for all fetch requests in the application, and sends logging data to a locally running Fiberplane Studio. You can disable these features by setting the corresponding monitoring variables to `false`.
 
 ```typescript
 import { Hono } from "hono";
@@ -76,6 +85,5 @@ export default instrument(app, {
   },
 });
 ```
-
 
 Find the code on [Github](https://github.com/fiberplane/fpx/tree/docs/www)
