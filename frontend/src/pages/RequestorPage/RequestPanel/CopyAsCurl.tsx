@@ -31,10 +31,15 @@ export function CopyAsCurl({
   const handleCopy = async () => {
     const payload = jsonBody({ body, method });
 
+    // As we don't support automatic body type switching yet, we now manually
+    // set the initial header to Content-Type: application/json if there's a
+    // payload. Otherwise, it will be empty.
+    const initialHeader = payload ? "-H 'Content-Type: application/json'" : "";
+
     const headers = requestHeaders.reduce(
       (acc, { enabled, key, value }) =>
         enabled ? `${acc} -H "${key}: ${value}"` : acc,
-      "",
+      initialHeader,
     );
 
     const url = new URL(path);
@@ -91,5 +96,5 @@ function jsonBody({ body, method }: Pick<RequestorState, "body" | "method">) {
     return undefined;
   }
 
-  return JSON.stringify(body.value);
+  return body.value?.trim();
 }
