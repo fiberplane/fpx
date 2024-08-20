@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-export const ProviderOptions = {
-  openai: "OpenAI",
-  anthropic: "Anthropic",
-} as const;
-
-export const AiProviderTypeSchema = z.union([z.literal("openai"), z.literal("anthropic"),]);
-
-export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;
-
 export const CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20240620";
 export const CLAUDE_3_OPUS = "claude-3-opus-20240229";
 export const CLAUDE_3_SONNET = "claude-3-sonnet-20240229";
@@ -48,20 +39,29 @@ export const OpenAiModelSchema = z.union([
 
 export type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
 
+export const ProviderOptions = {
+  openai: "OpenAI",
+  anthropic: "Anthropic",
+} as const;
+
+export const AiProviderTypeSchema = z.union([z.literal("openai"), z.literal("anthropic"),]);
+
+export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;
+
 export const SettingsSchema = z.object({
-  customRoutesEnabled: z.boolean().optional(),
   aiEnabled: z.boolean().optional(),
   aiProviderType: AiProviderTypeSchema.optional(),
-  fpxWorkerEnabled: z.boolean().optional(),
-  fpxWorkerBaseUrl: z.string().url().optional(),
-  openaiApiKey: z.string().optional(),
-  openaiBaseUrl: z.string().optional(),
-  openaiModel: OpenAiModelSchema.optional(),
   anthropicApiKey: z.string().optional(),
   anthropicBaseUrl: z.string().optional(),
   anthropicModel: AnthropicModelSchema.optional(),
-  proxyRequestsEnabled: z.boolean().optional(),
+  customRoutesEnabled: z.boolean().optional(),
+  fpxWorkerBaseUrl: z.string().url().optional(),
+  fpxWorkerEnabled: z.boolean().optional(),
+  openaiApiKey: z.string().optional(),
+  openaiBaseUrl: z.string().optional(),
+  openaiModel: OpenAiModelSchema.optional(),
   proxyBaseUrl: z.string().optional(),
+  proxyRequestsEnabled: z.boolean().optional(),
   webhoncConnectionId: z.string().optional()
 })
 
