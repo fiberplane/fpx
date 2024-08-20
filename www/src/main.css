@@ -1,0 +1,73 @@
+/* For global overrides */
+:root {
+  --border-radius: 0.5rem;
+  --image-border-radius: 0.25rem;
+}
+
+/* Dark mode colors. */
+:root {
+  --sl-color-accent-low: #102246;
+  --sl-color-accent: #1e5be3;
+  --sl-color-accent-high: #b0c9f8;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #eceef2;
+  --sl-color-gray-2: #c0c2c7;
+  --sl-color-gray-3: #888b96;
+  --sl-color-gray-4: #545861;
+  --sl-color-gray-5: #353841;
+  --sl-color-gray-6: #24272f;
+  --sl-color-black: #17181c;
+
+  --sl-color-bg-nav: var(--sl-color-black);
+}
+
+/* Light mode colors. */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #c4d8fb;
+  --sl-color-accent: #205ee5;
+  --sl-color-accent-high: #122e68;
+  --sl-color-white: #17181c;
+  --sl-color-gray-1: #24272f;
+  --sl-color-gray-2: #353841;
+  --sl-color-gray-3: #545861;
+  --sl-color-gray-4: #888b96;
+  --sl-color-gray-5: #c0c2c7;
+  --sl-color-gray-6: #eceef2;
+  --sl-color-gray-7: #f5f6f8;
+  --sl-color-black: #ffffff;
+
+  --sl-color-bg-nav: var(--sl-color-black);
+}
+
+/* Navbar */
+
+.social-icons a {
+  color: var(--sl-color-white);
+}
+
+/* Sidebar */
+
+nav.sidebar a {
+  font-size: var(--sl-text-base);
+}
+
+nav.sidebar a:hover {
+  color: var(--sl-color-accent);
+}
+
+/*
+
+NOTE: attempted to figure out group styling but gave up
+
+nav.sidebar summary .group-label {
+  color: var(--sl-color-gray-4);
+  font-size: var(--sl-text-xs);
+} */
+
+nav.sidebar a[aria-current="page"],
+nav.sidebar a[aria-current="page"]:hover,
+nav.sidebar a[aria-current="page"]:focus {
+  font-weight: 600;
+  background-color: transparent;
+  color: var(--sl-color-accent);
+}

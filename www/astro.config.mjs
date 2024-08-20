@@ -1,5 +1,4 @@
 import starlight from "@astrojs/starlight";
-import tailwind from "@astrojs/tailwind";
 import { defineConfig } from "astro/config";
 
 // https://astro.build/config
@@ -49,8 +48,7 @@ export default defineConfig({
       components: {
         Header: "@/components/Header.astro",
       },
-      customCss: ["./src/tailwind.css"],
+      customCss: ["@/main.css"],
     }),
-    tailwind({ applyBaseStyles: false }),
   ],
 });

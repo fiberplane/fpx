@@ -429,12 +429,6 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.25.4
         version: 0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))
-      '@astrojs/starlight-tailwind':
-        specifier: ^2.0.3
-        version: 2.0.3(@astrojs/starlight@0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4)))(@astrojs/tailwind@5.1.0(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))(tailwindcss@3.4.9))(tailwindcss@3.4.9)
-      '@astrojs/tailwind':
-        specifier: ^5.1.0
-        version: 5.1.0(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))(tailwindcss@3.4.9)
       astro:
         specifier: ^4.13.2
         version: 4.13.3(@types/node@20.14.15)(typescript@5.5.4)
@@ -517,23 +511,10 @@ packages:
   '@astrojs/sitemap@3.1.6':
     resolution: {integrity: sha512-1Qp2NvAzVImqA6y+LubKi1DVhve/hXXgFvB0szxiipzh7BvtuKe4oJJ9dXSqaubaTkt4nMa6dv6RCCAYeB6xaQ==}
 
-  '@astrojs/starlight-tailwind@2.0.3':
-    resolution: {integrity: sha512-ZwbdXS/9rxYlo3tKZoTZoBPUnaaqek02b341dHwOkmMT0lIR2w+8k0mRUGxnRaYtPdMcaL+nYFd8RUa8sjdyRg==}
-    peerDependencies:
-      '@astrojs/starlight': '>=0.9.0'
-      '@astrojs/tailwind': ^5.0.0
-      tailwindcss: ^3.3.3
-
   '@astrojs/starlight@0.25.4':
     resolution: {integrity: sha512-TRPgRsd5opi2tCXvh8rWizpLsJsRRXbYecULG5b/1x4BFyp40ZJVB77cLMjTj3lHwqWs0Sybtq5OBpOy6fuIEQ==}
     peerDependencies:
       astro: ^4.8.6
-
-  '@astrojs/tailwind@5.1.0':
-    resolution: {integrity: sha512-BJoCDKuWhU9FT2qYg+fr6Nfb3qP4ShtyjXGHKA/4mHN94z7BGcmauQK23iy+YH5qWvTnhqkd6mQPQ1yTZTe9Ig==}
-    peerDependencies:
-      astro: ^3.0.0 || ^4.0.0
-      tailwindcss: ^3.0.24
 
   '@astrojs/telemetry@3.1.0':
     resolution: {integrity: sha512-/ca/+D8MIKEC8/A9cSaPUqQNZm+Es/ZinRv0ZAzvu2ios7POQSsVD+VOj7/hypWNsNM3T7RpfgNq7H2TU1KEHA==}
@@ -4932,7 +4913,6 @@ packages:
 
   libsql@0.3.19:
     resolution: {integrity: sha512-Aj5cQ5uk/6fHdmeW0TiXK42FqUlwx7ytmMLPSaUQPin5HKKKuUPD62MAbN4OEweGBBI7q1BekoEN4gPUEL6MZA==}
-    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   lilconfig@2.1.0:
@@ -7202,12 +7182,6 @@ snapshots:
       stream-replace-string: 2.0.0
       zod: 3.23.8
 
-  '@astrojs/starlight-tailwind@2.0.3(@astrojs/starlight@0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4)))(@astrojs/tailwind@5.1.0(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))(tailwindcss@3.4.9))(tailwindcss@3.4.9)':
-    dependencies:
-      '@astrojs/starlight': 0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))
-      '@astrojs/tailwind': 5.1.0(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))(tailwindcss@3.4.9)
-      tailwindcss: 3.4.9
-
   '@astrojs/starlight@0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))':
     dependencies:
       '@astrojs/mdx': 3.1.3(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))
@@ -7234,16 +7208,6 @@ snapshots:
       vfile: 6.0.2
     transitivePeerDependencies:
       - supports-color
-
-  '@astrojs/tailwind@5.1.0(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))(tailwindcss@3.4.9)':
-    dependencies:
-      astro: 4.13.3(@types/node@20.14.15)(typescript@5.5.4)
-      autoprefixer: 10.4.20(postcss@8.4.41)
-      postcss: 8.4.41
-      postcss-load-config: 4.0.2(postcss@8.4.41)
-      tailwindcss: 3.4.9
-    transitivePeerDependencies:
-      - ts-node
 
   '@astrojs/telemetry@3.1.0':
     dependencies:
