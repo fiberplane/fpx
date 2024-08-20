@@ -12,6 +12,5 @@ export async function setWebHoncConnectionId(
 export async function getWebHoncConnectionId(
   db: LibSQLDatabase<typeof schema>,
 ) {
-  return ((await getSetting(db, "webhoncConnectionId"))?.value ??
-    false) as string;
+  return ((await getSetting(db, "webhoncConnectionId")) ?? false) as string;
 }
