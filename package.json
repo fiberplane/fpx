@@ -15,7 +15,6 @@
     "clean:fpx-studio": "pnpm run clean:api && pnpm run clean:frontend",
     "clean:api": "rimraf api/dist",
     "clean:frontend": "rimraf frontend/dist",
-    "deploy:www": "pnpm --filter www run deploy",
     "format": "biome check . --write",
     "lint": "pnpm --recursive lint"
   },

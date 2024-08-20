@@ -8,7 +8,6 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "staging": "wrangler pages deploy ./dist --env staging",
-    "deploy": "../scripts/publish_website.sh",
     "format": "biome check . --write",
     "lint:ci": "biome ci .",
     "astro": "astro"
