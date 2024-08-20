@@ -57,8 +57,7 @@ app.post(
     const { handlerSourceCode, errorMessage } = ctx.req.valid("json");
 
     const db = ctx.get("db");
-
-    const inferenceConfig = await getAllSettings(db);
+    const inferenceConfig = await getInferenceConfig(db);
     if (!inferenceConfig) {
       return ctx.json(
         {
