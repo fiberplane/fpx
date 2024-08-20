@@ -73,28 +73,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     return waterfall.map((spanOrLog) => timelineId(spanOrLog));
   }, [waterfall]);
 
-  // Scroll timeline entry item into view if it is out of viewport
-  // TODO - Check if this breaks on smaller screens?
-  useEffect(() => {
-    const element = document.querySelector(`[data-toc-id="${activeId}"]`);
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    if (element) {
-      timeoutId = setTimeout(() => {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "nearest",
-        });
-      }, 300);
-    }
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [activeId]);
+  // TODO - We should scroll timeline entries into view if the active one is out of viewport
 
   const handleObserve = useCallback((entries: IntersectionObserverEntry[]) => {
     for (const entry of entries) {
