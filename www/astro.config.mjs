@@ -52,6 +52,12 @@ export default defineConfig({
         Header: "@/components/Header.astro",
       },
       customCss: ["@/main.css"],
+      expressiveCode: {
+        themes: ["github-dark", "github-light"],
+        styleOverrides: {
+          borderRadius: "var(--border-radius)",
+        },
+      },
     }),
   ],
 });
