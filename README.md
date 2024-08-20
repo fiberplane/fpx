@@ -23,7 +23,7 @@ cd my-hono-project
 npm i @fiberplane/hono-otel@latest
 ```
 
-Add middleware to your project
+Add it to your api
 
 ```ts
 import { Hono } from "hono";
@@ -46,7 +46,7 @@ Visit `http://localhost:8788` to see your logs and traces come in as you test yo
 
 ***
 
-Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` client library](https://www.npmjs.com/package/@fiberplane/hono-otel). Adding that library is a breeze, and you can read more about what it does in [the project's README](./packages/client-library-otel/README.md).
+Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` client library](https://www.npmjs.com/package/@fiberplane/hono-otel). You can read more about what it does in [the project's README](./packages/client-library-otel/README.md).
 
 ## Contributing
 
