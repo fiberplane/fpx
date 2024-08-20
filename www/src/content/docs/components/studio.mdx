@@ -1,0 +1,29 @@
+---
+title: Fiberplane Studio
+description: description of studio
+---
+Fiberplane Studio is the frontend component that allows you to explore your Hono API during development. It runs locally on your machine and serves as a companion for debugging
+
+## CLI setup 
+The easiest way to run Fiberplane Studio is through a CLI command. Simply run the command from the root of your project:
+
+```
+npx @fiberplane/studio
+```
+
+This will spin up the studio on the default port 8788. In the background, it also sets the FPX_ENDPOINT to your application and adds the Node.js compatibility flag in the wrangler.toml file."
+
+## Studio Settings
+
+Within the Frontend, you can enable various settings. In the following Features sections, you'll learn how to leverage these settings for debugging and testing your application.
+
+### Request Autofill
+When enabled in the Studio, this feature allows you to generate sample request data using AI. To use this feature, you must provide a valid API key for either OpenAI or Anthropic.
+
+### Custom routes
+When enabled, this feature allows you to define and send custom HTTP requests that are not detected by the Hono Otel middleware.
+
+### Proxy Requests
+When enabled, this feature allows you to use a public URL to proxy requests towards your application.
+
+Find the code on [GitHub](https://github.com/fiberplane/fpx/tree/main). 
