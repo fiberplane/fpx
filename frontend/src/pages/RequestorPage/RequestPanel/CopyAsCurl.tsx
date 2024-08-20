@@ -29,7 +29,7 @@ export function CopyAsCurl({
   const timeout = useRef<ReturnType<typeof setTimeout>>();
 
   const handleCopy = async () => {
-    const payload = jsonBody({ body, method });
+    const payload = getJsonPayload({ body, method });
 
     // As we don't support automatic body type switching yet, we now manually
     // set the initial header to Content-Type: application/json if there's a
@@ -92,10 +92,25 @@ export function CopyAsCurl({
  * As we only support JSON right now, we check if the provided body is JSON to
  * then return the JSON stringified body.
  */
-function jsonBody({ body, method }: Pick<RequestorState, "body" | "method">) {
-  if (method === "GET" || method === "HEAD" || body.type !== "json") {
+function getJsonPayload({
+  body,
+  method,
+}: Pick<RequestorState, "body" | "method">) {
+  if (
+    method === "GET" ||
+    method === "HEAD" ||
+    !(body.type === "json" && body.value)
+  ) {
     return undefined;
   }
 
-  return body.value?.trim();
+  const trimmedValue = body.value.trim();
+
+  // If the string contains single quotes, we need to use a heredoc to avoid
+  // escaping single quote issues
+  if (trimmedValue.indexOf("'") > 0) {
+    return `@- <<EOF\n${trimmedValue}\nEOF`;
+  }
+
+  return `'${trimmedValue}'`;
 }
