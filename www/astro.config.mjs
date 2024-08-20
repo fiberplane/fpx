@@ -29,19 +29,18 @@ export default defineConfig({
         {
           label: "Components",
           items:[
-            {lable: "Otel middleware", slug: "components/otel-middleware"},
-            {lable: "Studio", slug: "components/studio"}        
+            {label: "Otel middleware", slug: "components/otel-middleware"},
+            {label: "Studio", slug: "components/studio"}        
           ]
         },
         {
           label: "Features",
           items:[
-            {lable: "Making requets", slug: "features/making-requests"},
-            {lable: "Showing traces", slug: "features/showing-traces"},
-            {lable: "Generating with AI", slug: "features/generating-with-ai"},
-            {lable: "Generating prompts for tests", slug: "features/generating-prompts-for-tests"},
-            {label: "Webhooks", slug: "features/webhooks"}
-                    
+            {label: "Making requests", slug: "features/making-requests"},
+            {label: "Showing traces", slug: "features/showing-traces"},
+            {label: "Generating with AI", slug: "features/generating-with-ai"},
+            {label: "Generating prompts for tests", slug: "features/generating-prompts-for-tests"},
+            {label: "Webhooks", slug: "features/webhooks"}   
           ]
         }
       ],
