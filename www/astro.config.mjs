@@ -23,28 +23,31 @@ export default defineConfig({
             // Each item here is one entry in the navigation menu.
             { label: "Get started", slug: "home/get-started" },
           ],
-          
         },
         {
           label: "Components",
-          items:[
-            {label: "Otel middleware", slug: "components/otel-middleware"},
-            {label: "Studio", slug: "components/studio"}        
-          ]
+          items: [
+            { label: "Otel middleware", slug: "components/otel-middleware" },
+            { label: "Studio", slug: "components/studio" },
+          ],
         },
         {
           label: "Features",
-          items:[
-            {label: "Making requests", slug: "features/making-requests"},
-            {label: "Showing traces", slug: "features/showing-traces"},
-            {label: "Generating with AI", slug: "features/generating-with-ai"},
-            {label: "Generating prompts for tests", slug: "features/generating-prompts-for-tests"},
-            {label: "Webhooks", slug: "features/webhooks"}   
-          ]
-        }
+          items: [
+            { label: "Making requests", slug: "features/making-requests" },
+            { label: "Showing traces", slug: "features/showing-traces" },
+            {
+              label: "Generating with AI",
+              slug: "features/generating-with-ai",
+            },
+            {
+              label: "Generating prompts for tests",
+              slug: "features/generating-prompts-for-tests",
+            },
+            { label: "Webhooks", slug: "features/webhooks" },
+          ],
+        },
       ],
-      // HACK - Disable pagefind search until we have searchable content!
-      pagefind: false,
       components: {
         Header: "@/components/Header.astro",
       },
