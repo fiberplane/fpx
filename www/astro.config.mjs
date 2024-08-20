@@ -47,8 +47,7 @@ export default defineConfig({
       // HACK - Disable pagefind search until we have searchable content!
       pagefind: false,
       components: {
-        ThemeSelect: "./src/components/ThemeSelect.astro",
-        ThemeProvider: "./src/components/ThemeProvider.astro",
+        Header: "@/components/Header.astro",
       },
       customCss: ["./src/tailwind.css"],
     }),
