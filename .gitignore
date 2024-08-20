@@ -21,6 +21,10 @@ target
 # CLion
 .idea
 
+# Package locks
+**/package-lock.json
+**/yarn.lock
+
 # TypeScript / Yarn
 .yarn/*
 !.yarn/patches
