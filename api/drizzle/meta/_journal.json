@@ -78,6 +78,13 @@
       "when": 1724162747393,
       "tag": "0010_exotic_archangel",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1724163077731,
+      "tag": "0011_aspiring_triathlon",
+      "breakpoints": true
     }
   ]
 }
