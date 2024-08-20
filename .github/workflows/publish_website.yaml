@@ -1,13 +1,18 @@
+name: Build and publish website
 on:
   push:
     branches:
       - main
     paths:
       - "www/**"
+  workflow_dispatch:
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
