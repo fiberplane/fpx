@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::error;
 
-#[axum::debug_handler]
 #[tracing::instrument(skip_all)]
 #[deprecated]
 pub async fn ts_compat_traces_list_handler(

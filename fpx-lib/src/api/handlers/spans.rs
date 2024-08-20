@@ -54,7 +54,6 @@ impl From<DbError> for ApiServerError<SpanGetError> {
     }
 }
 
-#[axum::debug_handler]
 #[tracing::instrument(skip_all)]
 #[deprecated]
 pub async fn ts_compat_span_list_handler(
