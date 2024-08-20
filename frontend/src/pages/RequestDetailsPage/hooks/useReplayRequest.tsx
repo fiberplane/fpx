@@ -1,5 +1,5 @@
 import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
-import { OtelSpan } from "@/queries";
+import type { OtelSpan } from "@/queries";
 import { useCallback, useMemo } from "react";
 import {
   getRequestBody,
@@ -9,7 +9,7 @@ import {
   getRequestUrl,
 } from "../v2/otel-helpers";
 
-export function useReplayRequest({ span: span }: { span: OtelSpan }) {
+export function useReplayRequest({ span }: { span: OtelSpan }) {
   const id = span.span_id;
   const method = getRequestMethod(span);
 
@@ -25,33 +25,70 @@ export function useReplayRequest({ span: span }: { span: OtelSpan }) {
     return getRequestHeaders(span) ?? {};
   }, [span]);
 
-  const replayHeaders = Object.entries(requestHeaders)
-    .map(([key, value]) => ({
+  const filterReplayHeaders = useCallback(
+    (
+      headers: Array<{
+        key: string;
+        value: string;
+        id: string;
+        enabled: boolean;
+      }>,
+    ) => {
+      const excludedHeaders = [
+        "x-fpx-trace-id",
+        "transfer-encoding",
+        "content-length",
+        "host",
+        "connection",
+        "accept-encoding",
+        "user-agent",
+        "referer",
+        "origin",
+        "cookie",
+        "sec-fetch-site",
+        "sec-fetch-mode",
+        "sec-fetch-dest",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-platform",
+        "pragma",
+        "cache-control",
+        "te",
+      ];
+
+      return headers.filter(
+        (header) => !excludedHeaders.includes(header.key.toLowerCase()),
+      );
+    },
+    [],
+  );
+
+  const replayHeaders = useMemo(() => {
+    const headers = Object.entries(requestHeaders).map(([key, value]) => ({
       id: key,
       key,
       value,
       enabled: true,
-    }))
-    .filter(
-      (header) =>
-        header.key.toLowerCase() !== "x-fpx-trace-id" &&
-        header.key.toLowerCase() !== "transfer-encoding" &&
-        header.key.toLowerCase() !== "content-length",
-    );
+    }));
+
+    return filterReplayHeaders(headers);
+  }, [requestHeaders, filterReplayHeaders]);
 
   console.log("Replay headers", replayHeaders);
 
-  const requestBody = useMemo<string>(() => {
+  const replayBody = useMemo<string>(() => {
     const body = getRequestBody(span);
     return body ?? "";
   }, [span]);
 
-  console.log("Replay body", requestBody);
+  console.log("Replay body", replayBody);
 
   const canHaveRequestBody = useMemo<boolean>(() => {
     const ucMethod = method.toUpperCase();
     return ucMethod !== "GET" && ucMethod !== "HEAD";
   }, [method]);
+
+  console.log(canHaveRequestBody);
 
   const requestQueryParams = useMemo<Record<string, string> | null>(() => {
     return getRequestQueryParams(span);
@@ -67,7 +104,7 @@ export function useReplayRequest({ span: span }: { span: OtelSpan }) {
       console.log("Replay request");
       return makeRequest({
         addServiceUrlIfBarePath: (replayPath) => replayBaseUrl + replayPath,
-        body: canHaveRequestBody ? requestBody : undefined,
+        body: canHaveRequestBody ? replayBody : undefined,
         headers: replayHeaders,
         method,
         path: replayPath,
@@ -87,9 +124,10 @@ export function useReplayRequest({ span: span }: { span: OtelSpan }) {
       method,
       replayBaseUrl,
       replayPath,
-      requestBody,
+      replayBody,
       requestHeaders,
       requestQueryParams,
+      replayHeaders,
     ],
   );
 

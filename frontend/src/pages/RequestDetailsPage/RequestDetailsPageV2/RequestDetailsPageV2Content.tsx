@@ -15,14 +15,12 @@ import {
 import { MizuOrphanLog } from "@/queries";
 import { OtelSpan } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
-import { useMemo } from "react";
-import { EmptyState } from "../EmptyState";
 import { useReplayRequest } from "../hooks/useReplayRequest";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import { getVendorInfo } from "../v2/vendorify-traces";
 import { useRequestWaterfall } from "./useRequestWaterfall";
-import { useReplayRequest } from "../hooks/useReplayRequest";
+import { EmptyState } from "../EmptyState";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;
