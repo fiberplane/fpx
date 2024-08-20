@@ -13,7 +13,9 @@ import { cn } from "@/utils";
 import { Settings } from "@fiberplane/fpx-types";
 import { useSettingsForm } from "./form";
 
-export function FpxWorkerProxySettingsForm({ settings }: { settings: Settings }) {
+export function FpxWorkerProxySettingsForm({
+  settings,
+}: { settings: Settings }) {
   const { form, onSubmit } = useSettingsForm(settings);
   const isDirty = form.formState.isDirty;
 

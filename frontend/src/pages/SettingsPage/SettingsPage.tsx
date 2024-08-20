@@ -14,9 +14,9 @@ import { Settings } from "@fiberplane/fpx-types";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
+import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 import { RoutesSettingsForm } from "./RoutesSettingsForm";
-import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
 
 export function SettingsPage() {
   const { data, isPending, isError } = useFetchSettings();
@@ -89,7 +89,9 @@ function SettingsLayout({ settings }: { settings: Settings }) {
             <DropdownMenuItem onClick={() => setActiveTab(PROXY_REQUESTS_TAB)}>
               {PROXY_REQUESTS_TAB}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setActiveTab(FPX_WORKER_PROXY_TAB)}>
+            <DropdownMenuItem
+              onClick={() => setActiveTab(FPX_WORKER_PROXY_TAB)}
+            >
               {FPX_WORKER_PROXY_TAB}
             </DropdownMenuItem>
           </DropdownMenuContent>
