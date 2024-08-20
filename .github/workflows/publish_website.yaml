@@ -44,3 +44,6 @@ jobs:
           --s3-bucket-id="$FIBERPLANE_COM_BUCKET_ID" \
           --cf-distribution-id="$FIBERPLANE_COM_CLOUDFRONT_ID" \
           --publish-dir="./www/dist"
+        env:
+          FIBERPLANE_COM_BUCKET_ID: ${{ vars.FIBERPLANE_COM_BUCKET_ID }}
+          FIBERPLANE_COM_CLOUDFRONT_ID: ${{ secrets.FIBERPLANE_COM_CLOUDFRONT_ID }}
