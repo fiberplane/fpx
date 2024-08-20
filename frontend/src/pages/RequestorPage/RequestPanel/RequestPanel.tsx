@@ -80,7 +80,7 @@ function ResizableRequestMeta(props: RequestPanelProps) {
   const styleWidth = useStyleWidth(width);
   return (
     <Resizable
-      className="min-w-[200px] overflow-hidden h-full"
+      className="min-w-[200px] h-full"
       width={width} // Initial width
       axis="x" // Restrict resizing to the horizontal axis
       onResize={handleResize}
