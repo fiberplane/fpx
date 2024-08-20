@@ -115,11 +115,21 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             method: request.method,
             headers: new Headers(request.headers),
             body: body1,
+
+            // NOTE - This is a workaround to support node environments
+            //        Which will throw errors when body is a stream but duplex is not set
+            //        https://github.com/nodejs/node/issues/46221
+            duplex: body1 ? "half" : undefined,
           });
 
           // Replace the original request's body with the second stream
           const newRequest = new Request(clonedRequest, {
             body: body2,
+
+            // NOTE - This is a workaround to support node environments
+            //        Which will throw errors when body is a stream but duplex is not set
+            //        https://github.com/nodejs/node/issues/46221
+            duplex: body2 ? "half" : undefined,
           });
 
           // Parse the body and headers for the root request.
