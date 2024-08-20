@@ -3,7 +3,7 @@ import { SpanStatus } from "@/constants";
 import { OtelSpan, isMizuOrphanLog } from "@/queries";
 import { useMemo } from "react";
 import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
-import { TextOrJsonViewer } from "../TextJsonViewer";
+import { StackTrace } from "../StackTrace";
 import { SectionHeading } from "../shared";
 import { FetchSpan } from "./FetchSpan";
 import { IncomingRequest } from "./IncomingRequest";
@@ -74,7 +74,6 @@ function GenericSpan({ span }: { span: OtelSpan }) {
     return attr;
   }, [span]);
 
-  console.log("Generic span", span);
   return (
     <div id={span.span_id}>
       <div className="flex flex-col gap-4">
@@ -129,17 +128,16 @@ function GenericSpan({ span }: { span: OtelSpan }) {
               }
 
               if (event.name === "exception") {
-                console.log(Object.keys(event.attributes));
+                const stacktrace = getString(
+                  event.attributes["exception.stacktrace"],
+                );
                 return (
                   <SubSection key={event.timestamp}>
                     <SubSectionHeading>
                       Exception:{" "}
                       {getString(event.attributes["exception.message"])}
                     </SubSectionHeading>
-                    <TextOrJsonViewer
-                      text={getString(event.attributes["exception.stacktrace"])}
-                      collapsed
-                    />
+                    <StackTrace stackTrace={stacktrace} />
                   </SubSection>
                 );
               }

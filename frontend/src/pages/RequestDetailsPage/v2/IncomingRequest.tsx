@@ -124,6 +124,7 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
               <BodyViewerV2
                 body={requestBody}
                 contentType={requestHeaders["content-type"]}
+                textMaxPreviewLines={15}
               />
             </SubSection>
           </>
@@ -147,6 +148,7 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
               <BodyViewerV2
                 body={responseBody}
                 contentType={responseHeaders["content-type"]}
+                textMaxPreviewLines={15}
               />
             </SubSection>
           </>

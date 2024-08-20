@@ -5,7 +5,14 @@ import { nordTheme } from "@uiw/react-json-view/nord";
 export function TextOrJsonViewer({
   text,
   collapsed,
-}: { text: string; collapsed?: boolean | undefined }) {
+  textMaxPreviewLength,
+  textMaxPreviewLines,
+}: {
+  text: string;
+  collapsed?: boolean | undefined;
+  textMaxPreviewLength?: number | null;
+  textMaxPreviewLines?: number | null;
+}) {
   try {
     const json = JSON.parse(text);
     // HACK - JsonView freaks out if the value isn't an object
@@ -23,6 +30,12 @@ export function TextOrJsonViewer({
       />
     );
   } catch (error) {
-    return <ResponseBodyText body={text} />;
+    return (
+      <ResponseBodyText
+        body={text}
+        maxPreviewLength={textMaxPreviewLength}
+        maxPreviewLines={textMaxPreviewLines}
+      />
+    );
   }
 }

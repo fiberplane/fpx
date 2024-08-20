@@ -9,7 +9,7 @@ pub struct Trace {
     pub trace_id: String,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct Span {
     pub trace_id: String,
     pub span_id: String,
@@ -27,6 +27,10 @@ pub struct Span {
 impl Span {
     pub fn into_inner(self) -> api::models::Span {
         self.inner.into_inner()
+    }
+
+    pub fn as_inner(&self) -> &api::models::Span {
+        self.inner.as_ref()
     }
 }
 
