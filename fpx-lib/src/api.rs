@@ -29,15 +29,14 @@ impl FromRef<ApiState> for Service {
     }
 }
 
+#[derive(Default)]
 pub struct Builder {
     enable_compression: bool,
 }
 
 impl Builder {
     pub fn new() -> Self {
-        Self {
-            enable_compression: false,
-        }
+        Self::default()
     }
 
     pub fn set_compression(mut self, compression: bool) -> Self {
