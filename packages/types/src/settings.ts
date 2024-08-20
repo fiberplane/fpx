@@ -55,8 +55,13 @@ export const SettingsSchema = z.object({
   anthropicBaseUrl: z.string().optional(),
   anthropicModel: AnthropicModelSchema.optional(),
   customRoutesEnabled: z.boolean().optional(),
-  fpxWorkerBaseUrl: z.string().url().optional(),
-  fpxWorkerEnabled: z.boolean().optional(),
+  fpxWorkerProxy: z.object({
+    enabled: z.boolean().optional(),
+    // Optional seems broken on urls with react-hook-form
+    // Fix from:
+    // https://github.com/colinhacks/zod/discussions/1254#discussioncomment-3123225
+    baseUrl: z.union([z.literal(""), z.string().trim().url()]),
+  }).optional(),
   openaiApiKey: z.string().optional(),
   openaiBaseUrl: z.string().optional(),
   openaiModel: OpenAiModelSchema.optional(),

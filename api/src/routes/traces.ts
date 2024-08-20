@@ -20,10 +20,9 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
 
-  const proxySettingsEnabled = await getSetting(db, "fpxWorkerEnabled");
-  const proxySettingsBaseUrl = await getSetting(db, "fpxWorkerBaseUrl");
-  if (proxySettingsEnabled && proxySettingsBaseUrl) {
-    const response = await fetch(`${proxySettingsBaseUrl}/ts-compat/v1/traces`);
+  const fpxWorker = await getSetting(db, "fpxWorkerProxy");
+  if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const response = await fetch(`${fpxWorker.baseUrl}/ts-compat/v1/traces`);
     const json = await response.json();
     return ctx.json(json);
   }
@@ -65,11 +64,10 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
 
   const db = ctx.get("db");
 
-  const proxySettingsEnabled = await getSetting(db, "fpxWorkerEnabled");
-  const proxySettingsBaseUrl = await getSetting(db, "fpxWorkerBaseUrl");
-  if (proxySettingsEnabled && proxySettingsBaseUrl) {
+  const fpxWorker = await getSetting(db, "fpxWorkerProxy");
+  if (fpxWorker?.enabled && fpxWorker.baseUrl) {
     const response = await fetch(
-      `${proxySettingsBaseUrl}/ts-compat/v1/traces/${traceId}/spans`,
+      `${fpxWorker.baseUrl}/ts-compat/v1/traces/${traceId}/spans`,
     );
     const json = await response.json();
     return ctx.json(json);
@@ -100,10 +98,9 @@ app.post("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
   const body: IExportTraceServiceRequest = await ctx.req.json();
 
-  const proxySettingsEnabled = await getSetting(db, "fpxWorkerEnabled");
-  const proxySettingsBaseUrl = await getSetting(db, "fpxWorkerBaseUrl");
-  if (proxySettingsEnabled && proxySettingsBaseUrl) {
-    const response = await fetch(`${proxySettingsBaseUrl}/v1/traces`, {
+  const fpxWorker = await getSetting(db, "fpxWorkerProxy");
+  if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const response = await fetch(`${fpxWorker.baseUrl}/v1/traces`, {
       headers: {
         "Content-Type": "application/json",
       },

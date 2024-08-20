@@ -17,7 +17,9 @@ export function FpxWorkerProxySettingsForm({
   settings,
 }: { settings: Settings }) {
   const { form, onSubmit } = useSettingsForm(settings);
-  const isDirty = form.formState.isDirty;
+  const isDirty =
+    form.formState.dirtyFields.fpxWorkerProxy?.enabled ||
+    form.formState.dirtyFields.fpxWorkerProxy?.baseUrl;
 
   return (
     <Form {...form}>
@@ -27,7 +29,7 @@ export function FpxWorkerProxySettingsForm({
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="fpxWorkerEnabled"
+              name="fpxWorkerProxy.enabled"
               render={({ field }) => (
                 <FormItem
                   className={cn("rounded-lg border p-4", {
@@ -44,26 +46,8 @@ export function FpxWorkerProxySettingsForm({
                       </FormLabel>
                       <FormDescription className="max-w-3xl grid gap-2">
                         <p>
-                          Enable proxying of requests from a remote service.
-                          This feature is useful for debugging, testing, and
-                          developing with services that are only available on a
-                          public internet (like webhooks).
-                        </p>
-                        <p>
-                          Any request received at this URL will be forwarded to
-                          your app including all the request data (path,
-                          headers, body, etc.).
-                        </p>
-                        <p>
-                          E.g.: A request{" "}
-                          <code className="font-mono text-wrap">
-                            &lt;public_url&gt;/some-route{" "}
-                          </code>
-                          will be forwarded to your app:
-                          <code className="font-mono text-wrap">
-                            {" "}
-                            &lt;your_app&gt;/some-route
-                          </code>
+                          Enable proxying of requests to and from a remote
+                          ingestion engine.
                         </p>
                       </FormDescription>
                     </div>
@@ -78,7 +62,7 @@ export function FpxWorkerProxySettingsForm({
                     <>
                       <FormField
                         control={form.control}
-                        name="fpxWorkerBaseUrl"
+                        name="fpxWorkerProxy.baseUrl"
                         render={({ field }) => (
                           <div className="flex flex-col gap-1">
                             <FormLabel className="block font-normal text-sm text-gray-300">
