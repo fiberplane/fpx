@@ -5,24 +5,52 @@
 
 [website](https://fiberplane.com/)
 
-Fiberplane Studio is a local  tool for building and debugging Hono apis. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
+Fiberplane Studio is a local tool for building and debugging Hono APIs. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
 
-## Get Started
+## Quick Start
 
-Launch the studio via `npx` in the root directory of your Hono project:
+Create Hono project
+```sh
+# Create a hono project, using cloudflare-workers runtime
+npm create hono@latest my-hono-project
+# > cloudflare-workers
+```
+
+Install the Fiberplane Hono Opentelemetry Library
 
 ```sh
 cd my-hono-project
-npx @fiberplane/studio@beta
+npm i @fiberplane/hono-otel@latest
 ```
 
-If it's your first time running the cli, it will ask you for some configuration details. After that, a local web app will open on `http://localhost:8788`.
+Add middleware to your project
 
-Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` middleware](https://www.npmjs.com/package/@fiberplane/hono-otel). Adding that middleware is a breeze, and you can read more about it in [the project's README](./packages/client-library-otel/README.md).
+```ts
+import { Hono } from "hono";
+import { instrument } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("Hello, Hono!"));
+
+export default instrument(app);
+```
+
+Launch the Fiberplane Studio UI from your project directory
+
+```sh
+npx @fiberplane/studio@latest
+```
+
+Visit `http://localhost:8788` to see your logs and traces come in as you test your app!
+
+***
+
+Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` client library](https://www.npmjs.com/package/@fiberplane/hono-otel). Adding that library is a breeze, and you can read more about what it does in [the project's README](./packages/client-library-otel/README.md).
 
 ## Contributing
 
-See the [`DEVELOPMENT.md`](./DEVELOPMENT.md) file for more details on how to _develop_ the Studio locally. Please get in touch via GitHub issues, or on the [Fiberplane Discord](https://discord.com/invite/cqdY6SpfVR), if you have any feedback or suggestions!
+See [`DEVELOPMENT.md`](./DEVELOPMENT.md) for more details on how to run the Studio locally. Please get in touch via GitHub issues, or on the [Fiberplane Discord](https://discord.com/invite/cqdY6SpfVR), if you have any feedback or suggestions!
 
 ## License
 

@@ -1,12 +1,14 @@
-# fpx
+# Fiberplane Studio
+
+Welcome to the Fiberplane Studio monorepo!
 
 ## Description
 
-This has an api and a frontend that can consume telemetry data from a Hono app.
+This project has an api and a frontend that can consume telemetry data from a Hono app.
 
-To connect your Hono app to the api, you'll need to add the code in the [`client-library`](./client-library). You can do this via NPM, or linking to the local codebase. Please read [client-library/README.md](./client-library/README.md) for instructions.
+To connect your Hono app to the api, you'll need to add the code in the [`client-library-otel`](./packages/client-library-otel). You can do this via NPM, or linking to the local codebase. Please read [client-library-otel/README.md](./packages/client-library-otel/README.md) for instructions.
 
-Worth noting is that the api connects to a local libsql (sqlite) database. Setup steps for this are simple (just need to run migrations), and are in [api/README.md](./api/README.md).
+Worth noting is that the api connects to a local libsql (sqlite) database. Setup steps for this are simple (you just need to run migrations), and are in [api/README.md](./api/README.md).
 
 The frontend is a React + Typescript + Tailwind app that uses [shadcn/ui](https://ui.shadcn.com/) components. For more info on the frontend, see: [frontend/README.md](./frontend/README.md).
 
