@@ -1,10 +1,11 @@
-# fpx studio
+# Fiberplane Studio
 
+<!-- TODO - REPLACE LOGO -->
 ![FPX](fpx.svg)
 
-[website](https://fpx.fiberplane.com/)
+[website](https://fiberplane.com/)
 
-fpx studio is a local-first tool for building and debugging Hono apis. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
+Fiberplane Studio is a local  tool for building and debugging Hono apis. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
 
 ## Get Started
 
@@ -12,16 +13,16 @@ Launch the studio via `npx` in the root directory of your Hono project:
 
 ```sh
 cd my-hono-project
-npx @fiberplane/studio
+npx @fiberplane/studio@beta
 ```
 
 If it's your first time running the cli, it will ask you for some configuration details. After that, a local web app will open on `http://localhost:8788`.
 
-`fpx` is designed to be used in conjunction with the [`@fiberplane/hono` middleware](https://www.npmjs.com/package/@fiberplane/hono). Adding that middleware is a breeze, and you can read more about it in the project's README.
+Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` middleware](https://www.npmjs.com/package/@fiberplane/hono-otel). Adding that middleware is a breeze, and you can read more about it in [the project's README](./packages/client-library-otel/README.md).
 
 ## Contributing
 
-See the [`DEVELOPMENT.md`](./DEVELOPMENT.md) file for more details on how to _develop_ the studio locally. Please get in touch via GitHub issues, or on the [Fiberplane Discord](https://discord.com/invite/cqdY6SpfVR), if you have any feedback or suggestions!
+See the [`DEVELOPMENT.md`](./DEVELOPMENT.md) file for more details on how to _develop_ the Studio locally. Please get in touch via GitHub issues, or on the [Fiberplane Discord](https://discord.com/invite/cqdY6SpfVR), if you have any feedback or suggestions!
 
 ## License
 
