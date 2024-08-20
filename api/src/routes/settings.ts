@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
+import { SettingsFormSchema } from "@fiberplane/fpx-types";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -23,12 +24,14 @@ app.post("/v0/settings", cors(), async (ctx) => {
     content: Record<string, string>;
   };
 
+  const parsedContent = SettingsFormSchema.parse(content);
+
   logger.debug("Updating settings", { content });
 
   const db = ctx.get("db");
   const webhonc = ctx.get("webhonc");
 
-  const updatedSettings = await upsertSettings(db, content);
+  const updatedSettings = await upsertSettings(db, parsedContent);
 
   logger.debug("Configuration updated...");
 

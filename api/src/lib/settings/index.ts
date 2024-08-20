@@ -1,6 +1,4 @@
 import {
-  SettingSchema,
-  type Settings,
   type SettingsForm,
   SettingsFormSchema,
   type SettingsKey,
@@ -12,7 +10,7 @@ import type * as schema from "../../db/schema.js";
 
 export async function upsertSettings(
   db: LibSQLDatabase<typeof schema>,
-  content: Record<string, string>,
+  content: SettingsForm,
 ) {
   const parsedSettings = SettingsFormSchema.parse(content);
 
@@ -33,7 +31,7 @@ export async function upsertSettings(
 
 export async function upsertSettingsOld(
   db: LibSQLDatabase<typeof schema>,
-  content: Settings,
+  content: SettingsForm,
 ) {
   const settingsToUpdate = Object.entries(content)
     .filter(([_, value]) => Boolean(value))
@@ -55,7 +53,7 @@ export async function upsertSettingsOld(
 export async function getSetting<T extends SettingsKey>(
   db: LibSQLDatabase<typeof schema>,
   key: T,
-) {
+): Promise<SettingsForm[T] | undefined> {
   const [setting] = await db
     .select()
     .from(settings)
@@ -66,10 +64,7 @@ export async function getSetting<T extends SettingsKey>(
     return;
   }
 
-  return SettingSchema.parse({
-    type: setting.key,
-    value: JSON.parse(setting.value),
-  });
+  return JSON.parse(setting.value);
 }
 
 export async function getAllSettings(
