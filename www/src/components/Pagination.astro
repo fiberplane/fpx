@@ -1,10 +1,9 @@
 ---
 import { Icon } from "@astrojs/starlight/components";
-import type { Props } from "../props";
+import type { Props } from "@astrojs/starlight/props";
 
-const { dir, labels, pagination } = Astro.props;
+const { pagination } = Astro.props;
 const { prev, next } = pagination;
-// const isRtl = dir === "rtl";
 ---
 
 <div class="pagination-links">
