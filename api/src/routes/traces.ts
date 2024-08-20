@@ -115,7 +115,7 @@ app.post("/v1/traces", async (ctx) => {
   }
 
   try {
-    const tracesPayload = fromCollectorRequest(body).map((span) => ({
+    const tracesPayload = (await fromCollectorRequest(body)).map((span) => ({
       rawPayload: body,
       parsedPayload: span,
       spanId: span.span_id,

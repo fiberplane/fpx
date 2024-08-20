@@ -20,7 +20,7 @@ pub async fn span_get_handler(
         .map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidTraceId))?;
     hex::decode(&span_id).map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidSpanId))?;
 
-    let span = store.span_get(&tx, trace_id, span_id).await?;
+    let span = store.span_get(&tx, &trace_id, &span_id).await?;
 
     Ok(Json(span.into()))
 }

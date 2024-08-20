@@ -57,9 +57,9 @@
       // API related
       "meta/*.json",
 
-      // Client library related
-      "dist/*.js",
-      "dist/*.d.ts",
+      // Client library and website related
+      "dist",
+      ".astro",
 
       // ignore all tsconfig.json files
       "tsconfig.json"

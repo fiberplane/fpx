@@ -314,10 +314,14 @@ app.all(
 
       // Clone the response and prepare to return it
       const clonedResponse = response.clone();
+
       const newHeaders = new Headers(clonedResponse.headers);
 
       // HACK - Frontend often couldn't parse the body because of encoding mismatch
       newHeaders.delete("content-encoding");
+      // HACK - Having an explicit content length could mess up the frontend
+      //        when the body is a stream ((this happened when running a hono app on Deno))
+      newHeaders.delete("content-length");
 
       const proxiedResponse = new Response(clonedResponse.body, {
         status: response.status,

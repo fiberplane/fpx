@@ -1,0 +1,54 @@
+name: Build and publish website
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "www/**"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_GITHUB_ACTIONS }}
+          aws-region: eu-central-1
+
+      - name: Install dependencies
+        run: pnpm install
+        env:
+          CI: true
+
+      - name: Lint website
+        run: pnpm --filter www lint:ci
+
+      - name: Build website
+        run: pnpm build:www
+
+      - name: Deploy website
+        run: ./scripts/publish_website.sh \
+          --s3-bucket-id="$FIBERPLANE_COM_BUCKET_ID" \
+          --cf-distribution-id="$FIBERPLANE_COM_CLOUDFRONT_ID" \
+          --publish-dir="./www/dist"
+        env:
+          FIBERPLANE_COM_BUCKET_ID: ${{ vars.FIBERPLANE_COM_BUCKET_ID }}
+          FIBERPLANE_COM_CLOUDFRONT_ID: ${{ secrets.FIBERPLANE_COM_CLOUDFRONT_ID }}
