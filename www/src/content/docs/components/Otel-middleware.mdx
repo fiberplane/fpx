@@ -48,7 +48,7 @@ export default instrument(app);
 ```
 
 ## Configuration
-By default, the Otel Hono middleware does not send traces. To define an endpoint, you need to set the `FPX_ENDPOINT` environment variable.
+By default, the Hono Otel middleware does not send traces. To define an endpoint, you need to set the `FPX_ENDPOINT` environment variable.
 
 When starting Fiberplane Studio via the command line with `npx @fiberplane/studio`, the `FPX_ENDPOINT` is automatically set to the Fiberplane Studio's default port 8788: `http://localhost:8788/v1/traces`. Additionally, the Fiberplane Studio CLI setup enables Node.js compatibility mode for Cloudflare Workers.
 
