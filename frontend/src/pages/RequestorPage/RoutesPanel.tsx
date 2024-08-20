@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input";
-import { useCustomRoutesEnabled } from "@/hooks";
 import { cn } from "@/utils";
 import {
   CaretDownIcon,
@@ -35,7 +34,6 @@ export function RoutesPanel({
   history,
   loadHistoricalRequest,
 }: RoutesPanelProps) {
-  const customRoutesEnabled = useCustomRoutesEnabled();
   const { width, handleResize } = useResizableWidth(320);
   const styleWidth = useStyleWidth(width);
 
@@ -151,7 +149,7 @@ export function RoutesPanel({
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
             />
-            {customRoutesEnabled && <AddRouteButton />}
+            <AddRouteButton />
           </div>
         </div>
         <div className="overflow-y-auto relative">

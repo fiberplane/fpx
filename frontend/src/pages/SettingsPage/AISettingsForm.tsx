@@ -46,7 +46,7 @@ export function AISettingsForm({
 
   const isAiDirty =
     Object.keys(form.formState.dirtyFields).filter(
-      (key) => !["customRoutesEnabled"].includes(key),
+      (key) => !["proxyRequestsEnabled", "proxyBaseUrl"].includes(key),
     ).length > 0;
 
   return (
