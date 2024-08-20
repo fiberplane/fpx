@@ -6,41 +6,108 @@ import { Content } from "@/content/landing/index.mdx";
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 ---
 
-<StarlightPage frontmatter={{
-	title: "Fiberplane",
-	template: "splash",
-	hero: {
-		title: "Test and debug your Hono API",
-		tagline: "Fiberplane helps you build, test and debug your API with the full context of your source code and runtime behavior.",
-		actions: [
-			{
-				text: "Get started",
-				link: "#quickstart",
-				icon: "right-arrow",
-				variant: "primary",
-				attrs: { class: "rounded-xl"}
-			},
-		],
-	},
-}}>
-<div class="grid gap-4 lg:grid-cols-2 lg:gap-4">
-  <div class="w-full p-2 flex justify-center md:p-4 lg:hidden">
-  <div class="rounded overflow-hidden">
-  <Image src={fpxScreenshot2} alt="FPX product screenshot" class="shadow-xl rounded" />
+<StarlightPage
+  frontmatter={{
+    title: "Fiberplane",
+    template: "splash",
+    hero: {
+      title: "Test and debug your Hono API",
+      tagline:
+        "Fiberplane helps you build, test and debug your API with the full context of your source code and runtime behavior.",
+      actions: [
+        {
+          text: "Get started",
+          link: "home/get-started",
+          icon: "right-arrow",
+          variant: "primary",
+          attrs: {
+            // HACK: just need the button to behave but don't want to rewrite the whole splash template
+            style: "border-radius: var(--border-radius);",
+          },
+        },
+      ],
+    },
+  }}
+>
+  <div class="outer">
+    <div class="mobile-product-preview">
+      <Image src={fpxScreenshot2} alt="FPX product screenshot" />
     </div>
-  </div>
 
-  <div class="w-full" id="quickstart">
-    <Content />
-  </div>
+    <div id="quickstart">
+      <Content />
+    </div>
 
-  <div class="w-full flex flex-col justify-content items-center px-8 pt-8 max-lg:hidden">
-    <div class="translate-x-[10%] translate-z-2">
-    <Image src={fpxScreenshot2} alt="FPX product screenshot" class="shadow-xl rounded" />
-    </div>
-    <div class="pl-8 -translate-y-[50%] -translate-x-[10%] translate-z-0">
-    	<Image src={fpxScreenshot1} alt="FPX product screenshot" class="shadow-xl rounded" />
+    <div class="product-preview">
+      <div id="screenshot-2">
+        <Image src={fpxScreenshot2} alt="FPX product screenshot" />
+      </div>
+      <div id="screenshot-1">
+        <Image src={fpxScreenshot1} alt="FPX product screenshot" />
+      </div>
     </div>
   </div>
-</div>
 </StarlightPage>
+
+<style>
+  img {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 0.25rem;
+  }
+
+  .outer {
+    grid-template-columns: 1fr;
+    gap: 4rem;
+    display: grid;
+  }
+
+  .mobile-product-preview {
+    display: flex;
+    width: 100%;
+    padding: 0.5rem;
+    justify-content: center;
+  }
+
+  #quickstart {
+    width: 100%;
+  }
+
+  .product-preview {
+    display: none;
+  }
+
+  /* md */
+  @media (min-width: 768px) {
+    .mobile-product-preview {
+      padding: 1rem;
+    }
+  }
+
+  /* lg */
+  @media (min-width: 1024px) {
+    .outer {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mobile-product-preview {
+      display: none;
+    }
+
+    .product-preview {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 2rem 0;
+    }
+
+    #screenshot-2 {
+      transform: translateX(10%);
+    }
+
+    #screenshot-1 {
+      transform: translateX(-10%) translateY(-50%);
+    }
+  }
+</style>
