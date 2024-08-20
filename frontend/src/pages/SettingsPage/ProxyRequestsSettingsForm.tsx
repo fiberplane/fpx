@@ -10,13 +10,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
-import { SettingsForm } from "@fiberplane/fpx-types";
+import { Settings } from "@fiberplane/fpx-types";
 import { useSettingsForm } from "./form";
 
 // TODO: automatically restart the fpx studio when this is changed
 export function ProxyRequestsSettingsForm({
   settings,
-}: { settings: SettingsForm }) {
+}: { settings: Settings }) {
   const { form, onSubmit } = useSettingsForm(settings);
   const isProxyRequestsDirty = form.formState.dirtyFields.proxyRequestsEnabled;
 

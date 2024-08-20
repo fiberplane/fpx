@@ -1,9 +1,9 @@
+import { SettingsSchema } from "@fiberplane/fpx-types";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
-import { SettingsFormSchema } from "@fiberplane/fpx-types";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -24,7 +24,12 @@ app.post("/v0/settings", cors(), async (ctx) => {
     content: Record<string, string>;
   };
 
-  const parsedContent = SettingsFormSchema.parse(content);
+  const parsedContent = SettingsSchema.parse(content);
+  // Remove the stored api key if the feature is disabled
+  if (!parsedContent.aiEnabled) {
+    parsedContent.openaiApiKey = undefined;
+    parsedContent.anthropicApiKey = undefined;
+  }
 
   logger.debug("Updating settings", { content });
 

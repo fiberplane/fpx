@@ -1,7 +1,7 @@
 import {
-  type SettingsForm,
-  SettingsFormSchema,
+  type Settings,
   type SettingsKey,
+  SettingsSchema,
 } from "@fiberplane/fpx-types";
 import { eq, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
@@ -10,9 +10,9 @@ import type * as schema from "../../db/schema.js";
 
 export async function upsertSettings(
   db: LibSQLDatabase<typeof schema>,
-  content: SettingsForm,
+  content: Settings,
 ) {
-  const parsedSettings = SettingsFormSchema.parse(content);
+  const parsedSettings = SettingsSchema.parse(content);
 
   const rows = Object.entries(parsedSettings).map(([key, value]) => ({
     key,
@@ -31,7 +31,7 @@ export async function upsertSettings(
 
 export async function upsertSettingsOld(
   db: LibSQLDatabase<typeof schema>,
-  content: SettingsForm,
+  content: Settings,
 ) {
   const settingsToUpdate = Object.entries(content)
     .filter(([_, value]) => Boolean(value))
@@ -53,31 +53,27 @@ export async function upsertSettingsOld(
 export async function getSetting<T extends SettingsKey>(
   db: LibSQLDatabase<typeof schema>,
   key: T,
-): Promise<SettingsForm[T] | undefined> {
-  const [setting] = await db
-    .select()
-    .from(settings)
-    .where(eq(settings.key, String(key)))
-    .limit(1);
+): Promise<Settings[T] | undefined> {
+  const result = await db.query.settings.findFirst({ where: eq(settings.key, String(key)) });
 
-  if (!setting) {
+  if (!result?.value) {
     return;
   }
 
-  return JSON.parse(setting.value);
+  return JSON.parse(result.value);
 }
 
 export async function getAllSettings(
   db: LibSQLDatabase<typeof schema>,
-): Promise<SettingsForm> {
-  const settings = await db.query.settings.findMany();
+): Promise<Settings> {
+  const results = await db.query.settings.findMany();
 
-  const mapped = settings.reduce<Record<string, string>>((acc, setting) => {
-    acc[setting.key] = JSON.parse(setting.value);
+  const mappedToSchema = results.reduce<Record<string, string>>((acc, setting) => {
+    acc[setting.key] = setting.value ? JSON.parse(setting.value) : undefined;
     return acc;
   }, {});
 
-  return SettingsFormSchema.parse(mapped);
+  return SettingsSchema.parse(mappedToSchema);
 }
 
 export async function getInferenceConfig(db: LibSQLDatabase<typeof schema>) {
@@ -85,7 +81,8 @@ export async function getInferenceConfig(db: LibSQLDatabase<typeof schema>) {
 
   if (Object.keys(settingsRecords).length > 0) {
     const { success, data: settings } =
-      SettingsFormSchema.safeParse(settingsRecords);
+      SettingsSchema.safeParse(settingsRecords);
+
     if (success) {
       return settings;
     }

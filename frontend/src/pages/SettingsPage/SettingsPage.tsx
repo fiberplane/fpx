@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFetchSettings } from "@/queries";
 import { cn } from "@/utils";
-import { SettingsForm } from "@fiberplane/fpx-types";
+import { Settings } from "@fiberplane/fpx-types";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
@@ -37,7 +37,7 @@ const AI_TAB = "AI";
 const CUSTOM_ROUTES_TAB = "Custom Routes";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
 
-function SettingsLayout({ settings }: { settings: SettingsForm }) {
+function SettingsLayout({ settings }: { settings: Settings }) {
   const [activeTab, setActiveTab] = useState(AI_TAB);
 
   return (

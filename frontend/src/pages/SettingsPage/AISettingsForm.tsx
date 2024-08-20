@@ -26,7 +26,7 @@ import {
   AnthropicModelOptions,
   OpenAiModelOptions,
   ProviderOptions,
-  SettingsForm,
+  Settings,
 } from "@fiberplane/fpx-types";
 import {
   CaretDownIcon,
@@ -41,7 +41,7 @@ import { useSettingsForm } from "./form";
 export function AISettingsForm({
   settings,
 }: {
-  settings: SettingsForm;
+  settings: Settings;
 }) {
   const { form, onSubmit } = useSettingsForm(settings);
 

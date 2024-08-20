@@ -48,7 +48,7 @@ export const OpenAiModelSchema = z.union([
 
 export type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
 
-export const SettingsFormSchema = z.object({
+export const SettingsSchema = z.object({
   customRoutesEnabled: z.boolean().optional(),
   aiEnabled: z.boolean().optional(),
   aiProviderType: AiProviderTypeSchema.optional(),
@@ -63,6 +63,6 @@ export const SettingsFormSchema = z.object({
   webhoncConnectionId: z.string().optional()
 })
 
-export type SettingsForm = z.infer<typeof SettingsFormSchema>;
+export type Settings = z.infer<typeof SettingsSchema>;
 
-export type SettingsKey = keyof SettingsForm;
+export type SettingsKey = keyof Settings;
