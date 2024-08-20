@@ -12,23 +12,22 @@ import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
 import { ResizableHandle } from "../Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestingPersona } from "../ai";
+import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
 import { useResizableWidth, useStyleWidth } from "../hooks";
 import type {
   RequestBodyType,
   RequestorBody,
   RequestsPanelTab,
 } from "../reducer";
+import { RequestMethod } from "../types";
 import { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
+import { CopyAsCurl } from "./CopyAsCurl";
+import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import { RequestBodyTypeDropdown } from "./RequestBodyCombobox";
 import "./styles.css";
-import clsx from "clsx";
-import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
-import { RequestMethod } from "../types";
-import { CopyAsCurl } from "./CopyAsCurl";
-import { FileUploadForm } from "./FileUploadForm";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
@@ -81,7 +80,7 @@ function ResizableRequestMeta(props: RequestPanelProps) {
   const styleWidth = useStyleWidth(width);
   return (
     <Resizable
-      className="min-w-[200px] h-full"
+      className="min-w-[200px] overflow-hidden h-full"
       width={width} // Initial width
       axis="x" // Restrict resizing to the horizontal axis
       onResize={handleResize}
@@ -142,8 +141,7 @@ function RequestMeta(props: RequestPanelProps) {
       className={cn(
         "min-w-[200px] border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
-        "h-full max-h-full",
-        "grid-rows-[auto_1fr]",
+        "overflow-hidden h-full max-h-full",
       )}
     >
       <CustomTabsList>
@@ -342,27 +340,23 @@ function RequestMeta(props: RequestPanelProps) {
         </CustomTabsContent>
       )}
 
-      <div
-        className={clsx(
-          "flex items-end gap-2 w-full p-2 backdrop-blur-sm border-t",
-          FORM_BODY_FEATURE_FLAG_ENABLED ? "justify-between" : "justify-end",
-        )}
-      >
-        {FORM_BODY_FEATURE_FLAG_ENABLED && (
+      {/* HACK - This toolbar is absolutely positioned for now */}
+      {FORM_BODY_FEATURE_FLAG_ENABLED && (
+        <div className="flex justify-between gap-2 absolute bottom-0 w-full p-2 backdrop-blur-sm border-t">
           <RequestBodyTypeDropdown
             requestBody={body}
             handleRequestBodyTypeChange={handleRequestBodyTypeChange}
           />
-        )}
 
-        <CopyAsCurl
-          method={method}
-          body={body}
-          path={path}
-          queryParams={queryParams}
-          requestHeaders={requestHeaders}
-        />
-      </div>
+          <CopyAsCurl
+            method={method}
+            body={body}
+            path={path}
+            queryParams={queryParams}
+            requestHeaders={requestHeaders}
+          />
+        </div>
+      )}
     </Tabs>
   );
 }

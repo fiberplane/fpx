@@ -80,6 +80,7 @@ export function CopyAsCurl({
           )}
         </Button>
       </TooltipTrigger>
+
       <TooltipContent>{isCopied ? "Copied!" : "Copy as cURL"}</TooltipContent>
     </Tooltip>
   );
