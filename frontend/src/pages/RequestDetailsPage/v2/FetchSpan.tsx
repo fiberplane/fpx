@@ -145,7 +145,7 @@ function GenericFetchSpan({
             <Divider />
             <SubSection>
               <SubSectionHeading>Request Body</SubSectionHeading>
-              <TextOrJsonViewer text={requestBody} />
+              <TextOrJsonViewer text={requestBody} textMaxPreviewLines={15} />
             </SubSection>
           </>
         )}
@@ -165,7 +165,7 @@ function GenericFetchSpan({
             <Divider />
             <SubSection>
               <SubSectionHeading>Response Body</SubSectionHeading>
-              <TextOrJsonViewer text={responseBody} />
+              <TextOrJsonViewer text={responseBody} textMaxPreviewLines={15} />
             </SubSection>
           </>
         )}
