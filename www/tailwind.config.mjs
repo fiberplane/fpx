@@ -1,5 +1,4 @@
 import starlightPlugin from "@astrojs/starlight-tailwind";
-import colors from "tailwindcss/colors";
 
 // from fpx
 // --background: #0c0a13;
