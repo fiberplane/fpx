@@ -160,12 +160,24 @@ type AttributeValue =
   | Record<string, AttributeValuePrimitive>;
 
 function mapAttributeValue(value: IAnyValue): AttributeValue {
-  if (!value) return null;
-  if (value.stringValue !== undefined) return value.stringValue;
-  if (value.boolValue !== undefined) return value.boolValue;
-  if (value.intValue !== undefined) return value.intValue;
-  if (value.doubleValue !== undefined) return value.doubleValue;
-  if (value.bytesValue !== undefined) return value.bytesValue;
+  if (!value) {
+    return null;
+  }
+  if (value.stringValue !== undefined) {
+    return value.stringValue;
+  }
+  if (value.boolValue !== undefined) {
+    return value.boolValue;
+  }
+  if (value.intValue !== undefined) {
+    return value.intValue;
+  }
+  if (value.doubleValue !== undefined) {
+    return value.doubleValue;
+  }
+  if (value.bytesValue !== undefined) {
+    return value.bytesValue;
+  }
   if (value.arrayValue !== undefined) {
     // @ts-expect-error - By convention we don't actually nest values so don't need a recursive type
     return value.arrayValue.values.map(mapAttributeValue);

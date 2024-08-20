@@ -202,8 +202,8 @@ export async function serializeRequestBodyForFpxDb(ctx: Context) {
     | null
     | string
     | {
-      [x: string]: string | SerializedFile | (string | SerializedFile)[];
-    } = null;
+        [x: string]: string | SerializedFile | (string | SerializedFile)[];
+      } = null;
   if (ctx.req.raw.body) {
     if (requestMethod === "GET" || requestMethod === "HEAD") {
       logger.warn(
@@ -285,8 +285,8 @@ export function resolveUrlQueryParams(
 export function resolveWebhoncUrl() {
   const fallbackUrl = "webhonc.mies.workers.dev";
   if (!process.env.FPX_WEBHONC_BASE_URL) {
-    return fallbackUrl
-  };
+    return fallbackUrl;
+  }
   const customUrl = new URL(process.env.FPX_WEBHONC_BASE_URL);
   return customUrl.host;
 }

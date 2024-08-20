@@ -54,7 +54,9 @@ export async function getSetting<T extends SettingsKey>(
   db: LibSQLDatabase<typeof schema>,
   key: T,
 ): Promise<Settings[T] | undefined> {
-  const result = await db.query.settings.findFirst({ where: eq(settings.key, String(key)) });
+  const result = await db.query.settings.findFirst({
+    where: eq(settings.key, String(key)),
+  });
 
   if (!result?.value) {
     return;
@@ -68,10 +70,13 @@ export async function getAllSettings(
 ): Promise<Settings> {
   const results = await db.query.settings.findMany();
 
-  const mappedToSchema = results.reduce<Record<string, string>>((acc, setting) => {
-    acc[setting.key] = setting.value ? JSON.parse(setting.value) : undefined;
-    return acc;
-  }, {});
+  const mappedToSchema = results.reduce<Record<string, string>>(
+    (acc, setting) => {
+      acc[setting.key] = setting.value ? JSON.parse(setting.value) : undefined;
+      return acc;
+    },
+    {},
+  );
 
   return SettingsSchema.parse(mappedToSchema);
 }
