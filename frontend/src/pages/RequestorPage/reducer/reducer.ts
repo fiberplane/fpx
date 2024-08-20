@@ -10,6 +10,7 @@ import {
   RequestType,
   isWsRequest,
 } from "../types";
+import { addContentTypeHeader } from "./content-type";
 import { useSaveUiState } from "./persistence";
 import {
   RequestBodyType,
@@ -390,14 +391,14 @@ function requestorReducer(
         const shouldForceMultipart = nextBodyValue.some(
           (param) => param.value.value instanceof File,
         );
-        return {
+        return addContentTypeHeader({
           ...state,
           body: {
             type: nextBody.type,
             isMultipart: shouldForceMultipart || nextBody.isMultipart,
             value: nextBodyValue,
           },
-        };
+        });
       }
       return { ...state, body: nextBody };
     }
@@ -422,38 +423,47 @@ function requestorReducer(
       if (oldBodyType === newBodyType) {
         // HACK - Refactor
         if (state.body.type === "form-data") {
-          return {
+          return addContentTypeHeader({
             ...state,
             body: {
               ...state.body,
               isMultipart: !!action.payload.isMultipart,
             },
-          };
+          });
         }
-        return state;
+        return addContentTypeHeader(state);
       }
       if (newBodyType === "form-data") {
         const isMultipart = !!action.payload.isMultipart;
-        return {
+        return addContentTypeHeader({
           ...state,
           body: {
             type: newBodyType,
             isMultipart,
             value: enforceFormDataTerminalDraftParameter([]),
           },
-        };
+        });
       }
       if (newBodyType === "file") {
-        return { ...state, body: { type: newBodyType, value: undefined } };
+        return addContentTypeHeader({
+          ...state,
+          body: { type: newBodyType, value: undefined },
+        });
       }
       if (oldBodyType === "form-data") {
-        return { ...state, body: { type: newBodyType, value: "" } };
+        return addContentTypeHeader({
+          ...state,
+          body: { type: newBodyType, value: "" },
+        });
       }
       // HACK - These lines makes things clearer for typescript, but are a nightmare to read, i'm so sorry
       const isNonTextOldBody =
         Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
       const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
-      return { ...state, body: { type: newBodyType, value: newBodyValue } };
+      return addContentTypeHeader({
+        ...state,
+        body: { type: newBodyType, value: newBodyValue },
+      });
     }
     case SET_WEBSOCKET_MESSAGE: {
       return { ...state, websocketMessage: action.payload };
