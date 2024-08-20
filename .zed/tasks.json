@@ -2,7 +2,7 @@
   {
     "label": "format all",
     "command": "pnpm format",
-    "use_new_terminal": true,
+    "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",
     "hide": "on_success",
@@ -29,6 +29,15 @@
   {
     "label": "frontend dev",
     "command": "pnpm --filter @fiberplane/studio-frontend dev",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "on_success",
+    "shell": "system"
+  },
+  {
+    "label": "www dev",
+    "command": "pnpm --filter www dev",
     "use_new_terminal": false,
     "allow_concurrent_runs": false,
     "reveal": "always",

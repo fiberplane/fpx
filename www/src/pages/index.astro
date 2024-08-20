@@ -2,16 +2,16 @@
 import { Image } from "astro:assets";
 import fpxScreenshot1 from "@/assets/fpx-screenshot-1.png";
 import fpxScreenshot2 from "@/assets/fpx-screenshot-2.png";
+import { Content } from "@/content/landing/index.mdx";
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
-import { Content } from "./index.mdx";
 ---
 
 <StarlightPage frontmatter={{
 	title: "Fiberplane",
 	template: "splash",
 	hero: {
-		title: "Test and debug your Hono APIs",
-		tagline: "Fiberplane helps you build, test and debug your APIs with the full context of your source code and runtime behavior.",
+		title: "Test and debug your Hono API",
+		tagline: "Fiberplane helps you build, test and debug your API with the full context of your source code and runtime behavior.",
 		actions: [
 			{
 				text: "Get started",

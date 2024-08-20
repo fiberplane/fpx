@@ -7,7 +7,7 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "deploy": "wrangler pages deploy",
+    "staging": "wrangler pages deploy ./dist --env staging",
     "format": "biome check . --write",
     "lint:ci": "biome ci .",
     "astro": "astro"

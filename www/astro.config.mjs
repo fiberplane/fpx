@@ -12,7 +12,7 @@ export default defineConfig({
       },
       title: "Fiberplane",
       description:
-        "Fiberplane is an API client and a local debugging companion for Hono APIs.",
+        "Fiberplane is an API client and a local debugging companion for Hono API.",
       social: {
         github: "https://github.com/fiberplane/fpx",
         discord: "https://discord.com/invite/cqdY6SpfVR",
