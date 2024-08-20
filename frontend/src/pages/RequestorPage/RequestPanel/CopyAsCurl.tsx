@@ -1,4 +1,12 @@
+import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
+import { useEffect, useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { RequestorState } from "../reducer";
 
 type CopyAsCurlProps = Pick<
@@ -17,7 +25,10 @@ export function CopyAsCurl({
   queryParams,
   requestHeaders,
 }: CopyAsCurlProps) {
-  const handleClick = async () => {
+  const [isCopied, setIsCopied] = useState(false);
+  const timeout = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleCopy = async () => {
     const payload = jsonBody({ body, method });
 
     const headers = requestHeaders.reduce(
@@ -34,26 +45,46 @@ export function CopyAsCurl({
     }
 
     const curlCommand = `curl -X ${method} ${url} ${headers} ${
-      payload ? `-d '${payload}'` : ""
+      payload ? `-d ${payload}` : ""
     }`;
 
     try {
       await navigator.clipboard.writeText(curlCommand);
+      setIsCopied(true);
+      timeout.current = setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
       console.error("Failed to copy to clipboard: ", error);
     }
   };
 
+  useEffect(() => () => clearTimeout(timeout.current), []);
+
   return (
-    <Button onClick={handleClick} variant="default" type="button">
-      copy as curl
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          onClick={handleCopy}
+          variant="secondary"
+          size="icon"
+          type="button"
+        >
+          {isCopied ? (
+            <CheckIcon className="w-5 h-5" />
+          ) : (
+            <CopyIcon className="w-4 h-4" />
+          )}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{isCopied ? "Copied!" : "Copy as cURL"}</TooltipContent>
+    </Tooltip>
   );
 }
 
 /**
- * Prevent sending JSON body for GET and HEAD requests. If the method is valid
- * and the body is JSON, return the JSON stringified body.
+ * Prevent sending JSON body for GET and HEAD requests, as they're the only
+ * methods where providing data is invalid.
+ * As we only support JSON right now, we check if the provided body is JSON to
+ * then return the JSON stringified body.
  */
 function jsonBody({ body, method }: Pick<RequestorState, "body" | "method">) {
   if (method === "GET" || method === "HEAD" || body.type !== "json") {

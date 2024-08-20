@@ -22,15 +22,13 @@ import { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
 import { PathParamForm } from "./PathParamForm";
-import {
-  RequestBodyTypeDropdown,
-  RequestBodyTypeDropdownProps,
-} from "./RequestBodyCombobox";
+import { RequestBodyTypeDropdown } from "./RequestBodyCombobox";
 import "./styles.css";
+import clsx from "clsx";
 import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
-import { FileUploadForm } from "./FileUploadForm";
-import { CopyAsCurl } from "./CopyAsCurl";
 import { RequestMethod } from "../types";
+import { CopyAsCurl } from "./CopyAsCurl";
+import { FileUploadForm } from "./FileUploadForm";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
@@ -147,15 +145,6 @@ function RequestMeta(props: RequestPanelProps) {
         "overflow-hidden h-full max-h-full relative",
       )}
     >
-      <div className="absolute right-0">
-        <CopyAsCurl
-          method={method}
-          body={body}
-          path={path}
-          queryParams={queryParams}
-          requestHeaders={requestHeaders}
-        />
-      </div>
       <CustomTabsList>
         <CustomTabTrigger value="params">
           Params
@@ -311,13 +300,6 @@ function RequestMeta(props: RequestPanelProps) {
               }}
             />
           )}
-          {/* HACK - This toolbar is absolutely positioned for now */}
-          {FORM_BODY_FEATURE_FLAG_ENABLED && (
-            <BottomToolbar
-              requestBody={body}
-              handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-            />
-          )}
         </CustomTabsContent>
       )}
       {shouldShowMessages && (
@@ -359,23 +341,32 @@ function RequestMeta(props: RequestPanelProps) {
           )}
         </CustomTabsContent>
       )}
+
+      {/* HACK - This toolbar is absolutely positioned for now */}
+      <div
+        className={clsx(
+          "flex items-end gap-2 absolute w-full bottom-0 right-0 px-3 py-2 backdrop-blur-sm",
+          FORM_BODY_FEATURE_FLAG_ENABLED ? "justify-between" : "justify-end",
+        )}
+      >
+        {FORM_BODY_FEATURE_FLAG_ENABLED && (
+          <RequestBodyTypeDropdown
+            requestBody={body}
+            handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+          />
+        )}
+
+        <CopyAsCurl
+          method={method}
+          body={body}
+          path={path}
+          queryParams={queryParams}
+          requestHeaders={requestHeaders}
+        />
+      </div>
     </Tabs>
   );
 }
-
-const BottomToolbar = ({
-  requestBody,
-  handleRequestBodyTypeChange,
-}: RequestBodyTypeDropdownProps) => {
-  return (
-    <div className="flex justify-start gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
-      <RequestBodyTypeDropdown
-        requestBody={requestBody}
-        handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-      />
-    </div>
-  );
-};
 
 type PanelSectionHeaderProps = {
   title: string;
