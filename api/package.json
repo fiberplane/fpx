@@ -16,7 +16,7 @@
   },
   "types": "./src/lib/types.ts",
   "scripts": {
-    "dev": "tsx watch src/index.node.ts",
+    "dev": "pnpm run db:migrate && tsx watch src/index.node.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx migrate.ts",
     "db:drop": "drizzle-kit drop",
