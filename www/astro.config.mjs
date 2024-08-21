@@ -26,10 +26,10 @@ export default defineConfig({
         },
         {
           label: "Components",
-          items: [
-            { label: "Otel middleware", slug: "components/otel-middleware" },
-            { label: "Studio", slug: "components/studio" },
-          ],
+          items:[
+            {label: "Client library", slug: "components/client-library"},
+            {label: "Studio", slug: "components/studio"}        
+          ]
         },
         {
           label: "Features",
