@@ -1,8 +1,8 @@
 # xtasks
 
-The xtask crate allows us to perform actions on this workspace, using Rust
-code. It not only allows for strongly typed commands, but also allows for
-integration with our existing Rust codebase.
+The xtask crate allows us to perform actions on Rust related code within this
+workspace, using Rust code. Think of things like generating code, or running
+build tasks.
 
 For more information about the xtask pattern, see this site: [matklad/cargo-xtask](https://github.com/matklad/cargo-xtask?tab=readme-ov-file#cargo-xtask)
 
@@ -17,7 +17,8 @@ require that the working directory is in a specific directory).
 ## `cargo xtask generate-schemas`
 
 This commands takes the definitions from our Rust models and generate TS schemas
-from them. This command can be executed without requiring any arguments.
+from them. This command can be executed without requiring any arguments, but
+should be run within the root of this repository.
 
 ```
 cargo xtask generate-schemas
