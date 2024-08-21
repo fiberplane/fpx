@@ -13,8 +13,13 @@ const OtelAttributesSchema = z.record(
       Int: z.number(),
     }),
     z.number(),
+
+    // NOTE - It's possible the middleware is setting null for some attributes
+    //        We need this null case here defensively
+    //        FP-4019
+    z.null(),
+
     // z.boolean(),
-    // z.null(),
     // z.undefined(),
     // z.record(
     //   z.string(),

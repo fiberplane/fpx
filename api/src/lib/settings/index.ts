@@ -73,7 +73,9 @@ export async function getAllSettings(
 
   const mappedToSchema = results.reduce<Record<string, string>>(
     (acc, setting) => {
-      acc[setting.key] = setting.value ? JSON.parse(setting.value) : undefined;
+      acc[setting.key] = setting.value
+        ? safeParseJson(setting.value)
+        : undefined;
       return acc;
     },
     {},
