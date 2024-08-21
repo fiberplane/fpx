@@ -19,7 +19,8 @@ export function FpxWorkerProxySettingsForm({
   const { form, onSubmit } = useSettingsForm(settings);
   const isDirty =
     (form.formState.dirtyFields.fpxWorkerProxy?.enabled ||
-      form.formState.dirtyFields.fpxWorkerProxy?.baseUrl) ?? false;
+      form.formState.dirtyFields.fpxWorkerProxy?.baseUrl) ??
+    false;
 
   return (
     <Form {...form}>
