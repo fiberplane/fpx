@@ -4,7 +4,8 @@ import {
   RequestBodyTypeDropdownProps,
 } from "./RequestBodyCombobox";
 
-type BottomToolbarProps = RequestBodyTypeDropdownProps & CopyAsCurlProps;
+type BottomToolbarProps = CopyAsCurlProps &
+  Omit<RequestBodyTypeDropdownProps, "isDisabled" | "requestBody">;
 
 export function BottomToolbar({
   body,

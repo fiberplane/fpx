@@ -339,7 +339,6 @@ function RequestMeta(props: RequestPanelProps) {
         </CustomTabsContent>
       )}
 
-      {/* HACK - This toolbar is absolutely positioned for now */}
       {FORM_BODY_FEATURE_FLAG_ENABLED && (
         <BottomToolbar
           body={body}
