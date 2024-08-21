@@ -356,16 +356,14 @@ const WaterfallRowSpan: React.FC<{
   const spanDuration =
     new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
   const normalizedDuration = spanDuration / duration;
-  // NOTE - We want to render a single line, instead of a tai-fighter shape, if the span is less than 1% of the total duration
-  const shouldRenderSingleLine = normalizedDuration < 0.01;
   const percentageWidth =
     duration === 0 ? 100 : (normalizedDuration * 100).toFixed(4);
-  const lineWidth = `${percentageWidth}%`;
+  const lineWidth = `calc(${4 * 0.0625}rem + ${percentageWidth}%)`;
   const lineOffsetNumeric =
     duration === 0
       ? 0
       : ((new Date(span.start_time).getTime() - startTime) / duration) * 100;
-  const lineOffset = `calc(${lineOffsetNumeric.toFixed(4)}% - ${(shouldRenderSingleLine ? 1 : 2) * /*0.0625*/ 1}px)`;
+  const lineOffset = `calc(${lineOffsetNumeric.toFixed(4)}% - ${2 * 0.0625}rem)`;
   const icon = useTimelineIcon(span, { vendorInfo });
   const title = useTimelineTitle({ span, vendorInfo });
 
@@ -384,11 +382,10 @@ const WaterfallRowSpan: React.FC<{
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-20 overflow-hidden">{title}</div>
-      <div className="text-gray-400 flex flex-grow items-center mx-4">
+      <div className="text-gray-400 flex flex-grow items-center mx-4 relative h-0.5">
         <div
           className={cn(
-            "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-0  flex-grow-0",
-            shouldRenderSingleLine && "border-r-0",
+            "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-0 absolute",
           )}
           style={{ width: lineWidth, marginLeft: lineOffset }}
           title={`${span.start_time} - ${span.end_time}`}
@@ -396,7 +393,6 @@ const WaterfallRowSpan: React.FC<{
           <div
             className={cn(
               "h-0.5 min-w-0.5 bg-blue-500 w-full",
-              shouldRenderSingleLine && "bg-transparent",
             )}
           ></div>
         </div>
@@ -416,7 +412,8 @@ const WaterfallRowLog: React.FC<{
 }> = ({ log, duration, startTime, isActive }) => {
   const left =
     ((new Date(log.timestamp).getTime() - startTime) / duration) * 100;
-  const lineOffset = `calc(${left}% - ${3 * 0.0625}rem)`;
+  // const lineOffset = `calc(${left}% - ${3 * 0.0625}rem)`;
+  const lineOffset = `calc(${left.toFixed(4)}% - ${3 * 0.0625}rem)`;
   const icon = useTimelineIcon(log, {
     colorOverride: getColorForLevel(log.level),
   });
@@ -434,7 +431,6 @@ const WaterfallRowLog: React.FC<{
       )}
       href={`#${log.id}`}
     >
-      {/* <> */}
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-20 overflow-hidden">
         <div className="font-mono font-normal text-xs truncate text-gray-200">
@@ -443,7 +439,7 @@ const WaterfallRowLog: React.FC<{
       </div>
       <div className="text-gray-400 flex flex-grow items-center mx-4">
         <div
-          className="h-2.5 flex items-center min-w-1"
+          className="h-2.5 items-center min-w-1"
           style={{ marginLeft: lineOffset }}
           title={log.timestamp}
         >
@@ -451,7 +447,6 @@ const WaterfallRowLog: React.FC<{
         </div>
       </div>
       <div className="ml-auto text-gray-400 text-xs w-12 px-2" />
-      {/* </> */}
     </a>
   );
 };
