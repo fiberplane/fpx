@@ -27,6 +27,7 @@ export function CopyAsCurl({
 }: CopyAsCurlProps) {
   const [isCopied, setIsCopied] = useState(false);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
+  const isUnsupportedBodyType = body.type === "file";
 
   const handleCopy = async () => {
     const payload = getBodyValue({ body, method });
@@ -63,10 +64,6 @@ export function CopyAsCurl({
 
   useEffect(() => () => clearTimeout(timeout.current), []);
 
-  if (body.type === "file") {
-    return null;
-  }
-
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -75,6 +72,8 @@ export function CopyAsCurl({
           variant="secondary"
           size="icon"
           type="button"
+          className={"disabled:pointer-events-auto hover:cursor-pointer"}
+          disabled={isUnsupportedBodyType}
         >
           {isCopied ? (
             <CheckIcon className="w-5 h-5" />
@@ -84,7 +83,13 @@ export function CopyAsCurl({
         </Button>
       </TooltipTrigger>
 
-      <TooltipContent>{isCopied ? "Copied!" : "Copy as cURL"}</TooltipContent>
+      <TooltipContent>
+        {isUnsupportedBodyType ? (
+          "Copy as cURL is not supported for file uploads"
+        ) : (
+          <>{isCopied ? "Copied!" : "Copy as cURL"}</>
+        )}
+      </TooltipContent>
     </Tooltip>
   );
 }

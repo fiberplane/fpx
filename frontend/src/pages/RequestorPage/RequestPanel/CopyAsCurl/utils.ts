@@ -1,5 +1,9 @@
 import type { RequestorState } from "../../reducer";
 
+/**
+ * Get the Content-Type header for the request, if any.
+ * @
+ */
 export function getContentTypeHeader(body: RequestorState["body"]) {
   switch (body.type) {
     case "json":
@@ -17,8 +21,8 @@ export function getContentTypeHeader(body: RequestorState["body"]) {
 }
 
 /**
- * Prevent sending JSON body for GET and HEAD requests, as they're the only
- * methods where providing data is invalid.
+ * Get the value of the request body, if any. It doesn't support multi-part
+ * forms using `File` objects.
  */
 export function getBodyValue({
   body,
@@ -26,38 +30,41 @@ export function getBodyValue({
 }: Pick<RequestorState, "body" | "method">) {
   // Prevent sending JSON body for GET and HEAD requests, as they're the only
   // methods where providing data is invalid.
-  if (method === "GET" || method === "HEAD") {
+  if (method === "GET" || method === "HEAD" || !body.value) {
     return undefined;
   }
 
-  if (body.type === "file" || !body.value) {
-    return undefined;
-  }
+  const bodyValue = (() => {
+    switch (body.type) {
+      case "form-data": {
+        return body.value.reduce((acc, field) => {
+          if (!field.enabled || field.value.type !== "text") {
+            return acc;
+          }
 
-  if (body.type === "form-data") {
-    const formData = body.value.reduce((acc, field) => {
-      const isValidField = field.enabled && field.value.type === "text";
+          const encodedKey = encodeURIComponent(field.key);
+          const encodedValue = encodeURIComponent(field.value.value);
+          const fieldValues = `${encodedKey}=${encodedValue}`;
 
-      if (isValidField) {
-        const accumulator = acc.length === 0 ? acc : `${acc}&`;
-        return `${accumulator}${field.key}=${field.value.value}`;
+          const accumulator = acc.length === 0 ? acc : `${acc}&`;
+          return accumulator.concat(fieldValues);
+        }, "");
       }
+      case "json": {
+        return body.value.trim();
+      }
+      case "text":
+        return body.value;
+    }
+  })();
 
-      return acc;
-    }, "");
-
-    return getStringWithSafeSingleQuotes(formData);
+  if (bodyValue) {
+    return getStringWithSafeSingleQuotes(bodyValue);
   }
-
-  // Trim the JSON body value to avoid sending unnecessary whitespace
-  const value = body.type === "json" ? body.value.trim() : body.value;
-  const bodyValue = getStringWithSafeSingleQuotes(value);
-
-  return bodyValue;
 }
 
 export function getStringWithSafeSingleQuotes(value: string) {
-  // If the string contains single quotes, we need to use a heredoc to avoid
+  // If the string contains single quotes, we need to use a Heredoc to avoid
   // escaping single quote issues
   if (value.indexOf("'") > 0) {
     return `@- <<EOF\n${value}\nEOF`;
