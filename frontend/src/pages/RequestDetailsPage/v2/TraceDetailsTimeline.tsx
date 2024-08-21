@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
 import { MizuOrphanLog, OtelSpan, isMizuOrphanLog } from "@/queries";
 import { cn, safeParseJson } from "@/utils";
+import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 import { formatDistanceStrict } from "date-fns";
 import React, {
   useCallback,
@@ -24,7 +25,6 @@ import {
   isNeonVendorInfo,
   isOpenAIVendorInfo,
 } from "./vendorify-traces";
-import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 
 type TraceDetailsTimelineProps = {
   waterfall: Waterfall;
@@ -368,7 +368,7 @@ const WaterfallRowSpan: React.FC<{
   const lineOffset = `calc(${lineOffsetNumeric.toFixed(4)}% - ${(shouldRenderSingleLine ? 1 : 2) * /*0.0625*/ 1}px)`;
   const icon = useTimelineIcon(span, { vendorInfo });
   const title = useTimelineTitle({ span, vendorInfo });
-  
+
   return (
     <a
       data-toc-id={id}
@@ -387,25 +387,24 @@ const WaterfallRowSpan: React.FC<{
       <div className="text-gray-400 flex flex-grow items-center mx-4">
         <div
           className={cn(
-          "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-0  flex-grow-0",
-          shouldRenderSingleLine && "border-r-0",
-        )}
-        style={{ width: lineWidth, marginLeft: lineOffset }}
-        title={
-          `${span.start_time} - ${span.end_time}`}
-      >
-        <div
-          className={cn(
-            "h-0.5 min-w-0.5 bg-blue-500 w-full",
-            shouldRenderSingleLine && "bg-transparent",
+            "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-0  flex-grow-0",
+            shouldRenderSingleLine && "border-r-0",
           )}
-        ></div>
+          style={{ width: lineWidth, marginLeft: lineOffset }}
+          title={`${span.start_time} - ${span.end_time}`}
+        >
+          <div
+            className={cn(
+              "h-0.5 min-w-0.5 bg-blue-500 w-full",
+              shouldRenderSingleLine && "bg-transparent",
+            )}
+          ></div>
+        </div>
       </div>
-    </div>
-    <div className="text-gray-400 text-xs w-12 px-2">
-      {formatDuration(span.start_time, span.end_time)}
-    </div>
-   </a>
+      <div className="text-gray-400 text-xs w-12 px-2">
+        {formatDuration(span.start_time, span.end_time)}
+      </div>
+    </a>
   );
 };
 
@@ -415,7 +414,8 @@ const WaterfallRowLog: React.FC<{
   startTime: number;
   isActive: boolean;
 }> = ({ log, duration, startTime, isActive }) => {
-  const left = ((new Date(log.timestamp).getTime() - startTime) / duration) * 100;
+  const left =
+    ((new Date(log.timestamp).getTime() - startTime) / duration) * 100;
   const lineOffset = `calc(${left}% - ${3 * 0.0625}rem)`;
   const icon = useTimelineIcon(log, {
     colorOverride: getColorForLevel(log.level),
@@ -434,7 +434,7 @@ const WaterfallRowLog: React.FC<{
       )}
       href={`#${log.id}`}
     >
-    {/* <> */}
+      {/* <> */}
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-20 overflow-hidden">
         <div className="font-mono font-normal text-xs truncate text-gray-200">
@@ -452,7 +452,7 @@ const WaterfallRowLog: React.FC<{
       </div>
       <div className="ml-auto text-gray-400 text-xs w-12 px-2" />
       {/* </> */}
-      </a>
+    </a>
   );
 };
 

@@ -25,7 +25,7 @@ const loop = measure("loop", (n: number) => {
 app.get("/", async (c) => {
   console.log("Hello Hono!");
   console.error("This message is logged as an error");
-  console.debug("Debug message")
+  console.debug("Debug message");
 
   loop(3);
 
