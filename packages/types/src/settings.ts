@@ -57,7 +57,6 @@ export const SettingsSchema = z.object({
   anthropicApiKey: z.string().optional(),
   anthropicBaseUrl: z.string().optional(),
   anthropicModel: AnthropicModelSchema.optional(),
-  customRoutesEnabled: z.boolean().optional(),
   fpxWorkerProxy: z
     .object({
       enabled: z.boolean().optional(),
