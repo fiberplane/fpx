@@ -119,7 +119,6 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     >
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
       <div className="flex flex-col">
-      {/* <div className="grid grid-cols-[1rem_minmax(0,5rem)_minmax(0,auto)_3rem] gap-2 items-center"> */}
         {waterfall.map((spanOrLog) => {
           if (isMizuOrphanLog(spanOrLog)) {
             return (
@@ -356,12 +355,9 @@ const WaterfallRowSpan: React.FC<{
   const id = span.span_id;
   const spanDuration =
     new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
-    console.log(
-      'span.end_time', span.end_time, 'span.start_time', span.start_time, 'spanDuration', spanDuration);
   const normalizedDuration = spanDuration / duration;
   // NOTE - We want to render a single line, instead of a tai-fighter shape, if the span is less than 1% of the total duration
   const shouldRenderSingleLine = normalizedDuration < 0.01;
-  // console.log("should render a single line", shouldRenderSingleLine, span.name)
   const percentageWidth =
     duration === 0 ? 100 : (normalizedDuration * 100).toFixed(4);
   const lineWidth = `${percentageWidth}%`;
