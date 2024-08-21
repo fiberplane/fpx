@@ -23,7 +23,7 @@ import { RequestMethod } from "../types";
 import { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
-import { CopyAsCurl } from "./CopyAsCurl";
+import { CopyAsCurl } from "./CopyAsCurl/CopyAsCurl";
 import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import { RequestBodyTypeDropdown } from "./RequestBodyCombobox";

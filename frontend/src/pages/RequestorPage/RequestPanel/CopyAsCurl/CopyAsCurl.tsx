@@ -7,7 +7,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { RequestorState } from "../reducer";
+import { RequestorState } from "../../reducer";
+import { getBodyValue, getContentTypeHeader } from "./utils";
 
 type CopyAsCurlProps = Pick<
   RequestorState,
@@ -48,9 +49,8 @@ export function CopyAsCurl({
       }
     }
 
-    const curlCommand = `curl -X ${method} ${url} ${headers} ${
-      payload ? `-d ${payload}` : ""
-    }`;
+    const data = payload ? `-d ${payload}` : "";
+    const curlCommand = `curl -X ${method} ${url} ${headers} ${data}`;
 
     try {
       await navigator.clipboard.writeText(curlCommand);
@@ -87,43 +87,4 @@ export function CopyAsCurl({
       <TooltipContent>{isCopied ? "Copied!" : "Copy as cURL"}</TooltipContent>
     </Tooltip>
   );
-}
-
-function getContentTypeHeader(body: RequestorState["body"]) {
-  switch (body.type) {
-    case "json":
-      return "-H 'Content-Type: application/json'";
-    case "text":
-      return "-H 'Content-Type: text/plain'";
-    default:
-      return "";
-  }
-}
-
-/**
- * Prevent sending JSON body for GET and HEAD requests, as they're the only
- * methods where providing data is invalid.
- */
-function getBodyValue({
-  body,
-  method,
-}: Pick<RequestorState, "body" | "method">) {
-  if (method === "GET" || method === "HEAD") {
-    return undefined;
-  }
-
-  if (body.type === "file" || body.type === "form-data" || !body.value) {
-    return undefined;
-  }
-
-  // Trim the JSON body value to avoid sending unnecessary whitespace
-  const value = body.type === "json" ? body.value.trim() : body.value;
-
-  // If the string contains single quotes, we need to use a heredoc to avoid
-  // escaping single quote issues
-  if (value.indexOf("'") > 0) {
-    return `@- <<EOF\n${value}\nEOF`;
-  }
-
-  return `'${value}'`;
 }
