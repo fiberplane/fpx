@@ -1,46 +1,55 @@
 # fpx
 
-The fpx command is a command line tool that hosts the API and UI.
+The fpx tool is a command line tool to launch a local HTTP or gRPC OTEL
+ingestion endpoint. It also includes a CLI client to interact with some of the
+Rest and web-socket endpoints.
 
-The fpx tool is intended to be used within a repository as it will use the code
-in the repository for retrieving data while also storing cache in the same
-repository.
+NOTE: Currently only a in-memory storage is supported.
 
 ## Usage
 
-To run the fpx tool, download en install it first, then run the following command:
+First, make sure you have Rust installed on your machine. You can install Rust
+using [rustup](https://rustup.rs/) or take a look at the
+[official instructions](https://www.rust-lang.org/tools/install).
+
+Then run the following command to execute the local dev server:
 
 ```
-fpx dev
+cargo run -- dev
 ```
 
-Depending on your configuration some background tasks will be started and a web
-server will be started. By default this will be available at
-`http://localhost:6767`.
+See `Commands` for more information.
 
-## Installation
+## Commands
 
-### npm
+The fpx binary is primarily used to start a local dev server, but it is also
+possible to run some other commands.
 
-> TODO: Publish to npm
+For ease of use, the `fpx` cargo alias has been added, meaning you can run
+`cargo fpx` in any directory in this repository and compile and then invoke
+`fpx`.
 
-- npm install -g @fiberplane/fpx
+### `fpx dev`
 
-### Homebrew
+Starts the local dev server.
 
-> TODO: Create homebrew repo
+Use `-e` or `--enable-tracing` to send otlp payloads to `--otlp-endpoint`. Note
+that this should not be used to send traces to itself, as that will create an
+infinite loop.
 
-- brew install fiberplane/fpx/fpx
+### `fpx client`
 
-### Cargo
+Invokes endpoints on a fpx server.
 
-> TODO: Publish to crates.io
+This command can also send traces to a otel endpoint. NOTE: there are some known
+issues where it doesn't seem to work properly.
 
-- Run `cargo install fpx`
+Examples:
 
-### Manual installation
+```
+# Fetch all traces
+fpx client traces list
 
-> TODO: Create releases
-
-- Download the latest release from the [releases page](https://github.com/fiberplane/fpx/releases).
-- Make it available in you `$PATH`
+# Fetch a specific span
+fpx client spans get aa aa
+```

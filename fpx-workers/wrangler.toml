@@ -13,6 +13,15 @@ database_id = "c6a49b5e-b1c9-4cee-8c91-3440c5bd3233"
 
 [build]
 command = "cargo install -q worker-build && worker-build --release"
+watch_dir = [
+    "src",
+    "migrations",
+    "Cargo.toml",
+    "../fpx-lib",
+    "../fpx-macros",
+    "../Cargo.toml",
+    "../Cargo.lock",
+]
 
 [[migrations]]
 tag = "v1"
