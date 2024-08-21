@@ -1,6 +1,5 @@
 import AnthropicLogo from "@/assets/AnthropicLogo.svg";
 import Database from "@/assets/Database.svg";
-import Diamond from "@/assets/Diamond.svg";
 import HonoLogo from "@/assets/HonoLogo.svg";
 import NeonLogo from "@/assets/NeonLogo.svg";
 import OpenAiLogo from "@/assets/OpenAILogo.svg";
@@ -8,7 +7,7 @@ import OpenAiLogo from "@/assets/OpenAILogo.svg";
 import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
 import { MizuOrphanLog, OtelSpan, isMizuOrphanLog } from "@/queries";
-import { cn } from "@/utils";
+import { cn, safeParseJson } from "@/utils";
 import { formatDistanceStrict } from "date-fns";
 import React, {
   useCallback,
@@ -25,6 +24,7 @@ import {
   isNeonVendorInfo,
   isOpenAIVendorInfo,
 } from "./vendorify-traces";
+import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 
 type TraceDetailsTimelineProps = {
   waterfall: Waterfall;
@@ -119,6 +119,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
     >
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
       <div className="flex flex-col">
+      {/* <div className="grid grid-cols-[1rem_minmax(0,5rem)_minmax(0,auto)_3rem] gap-2 items-center"> */}
         {waterfall.map((spanOrLog) => {
           if (isMizuOrphanLog(spanOrLog)) {
             return (
@@ -235,53 +236,90 @@ const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
       );
     }
 
+    const message = waterfallItem.message
+      ? safeParseJson(waterfallItem.message)
+      : "log";
     return (
       <div className="font-mono font-normal text-xs truncate text-gray-200">
-        {/* TODO! */}
-        log
-        {/* {spanOrLog.name} */}
+        {typeof message === "string" ? message : "log"}
       </div>
     );
   }, [waterfallItem]);
 };
 
+type IconOptions = {
+  vendorInfo?: VendorInfo;
+  colorOverride?: string;
+};
+
 const useTimelineIcon = (
   spanOrLog: OtelSpan | MizuOrphanLog,
-  vendorInfo?: VendorInfo,
+  options: IconOptions = {},
 ) => {
+  const { vendorInfo, colorOverride } = options;
   return useMemo(() => {
     let iconType = isMizuOrphanLog(spanOrLog) ? "log" : spanOrLog.kind;
     if (vendorInfo && vendorInfo.vendor !== "none") {
       iconType = vendorInfo.vendor;
     }
 
-    return getTypeIcon(iconType);
-  }, [spanOrLog, vendorInfo]);
+    return getTypeIcon(iconType, colorOverride);
+  }, [spanOrLog, vendorInfo, colorOverride]);
 };
 
-const getTypeIcon = (type: string) => {
+const getTypeIcon = (type: string, colorOverride: string = "") => {
   switch (type) {
     case "request":
     case "SERVER":
     case SpanKind.SERVER:
-      return <HonoLogo className="w-3.5 h-3.5" />;
+      return <HonoLogo className={`w-3.5 h-3.5 ${colorOverride}`} />;
     case "CLIENT":
     case SpanKind.CLIENT:
     case "fetch":
-      return <Diamond className="w-3.5 h-3.5 text-blue-600" />;
+      return (
+        <PaperPlaneIcon
+          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+        />
+      );
     case "log":
-      return <Diamond className="w-3.5 h-3.5 text-orange-400" />;
+      return (
+        <CommitIcon
+          className={`w-3.5 h-3.5 rotate-90 ${colorOverride || "text-gray-400"}`}
+        />
+      );
+    // return <Diamond className={`w-3.5 h-3.5 text-orange-400 ${className}`} />;
     // NOT IN USE
     case "db":
-      return <Database className="w-3.5 h-3.5 text-blue-600" />;
+      return (
+        <Database
+          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+        />
+      );
     case "neon":
-      return <NeonLogo className="w-3.5 h-3.5 text-blue-600" />;
+      return (
+        <NeonLogo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+        />
+      );
     case "openai":
-      return <OpenAiLogo className="w-3.5 h-3.5 text-blue-600" />;
+      return (
+        <OpenAiLogo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+        />
+      );
     case "anthropic":
-      return <AnthropicLogo className="w-3.5 h-3.5 text-blue-600" />;
+      return (
+        <AnthropicLogo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+        />
+      );
     default:
-      return "🔸";
+      return (
+        <TimerIcon
+          className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+        />
+      );
+    // return "🔸";
   }
 };
 
@@ -318,20 +356,23 @@ const WaterfallRowSpan: React.FC<{
   const id = span.span_id;
   const spanDuration =
     new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
+    console.log(
+      'span.end_time', span.end_time, 'span.start_time', span.start_time, 'spanDuration', spanDuration);
   const normalizedDuration = spanDuration / duration;
   // NOTE - We want to render a single line, instead of a tai-fighter shape, if the span is less than 1% of the total duration
   const shouldRenderSingleLine = normalizedDuration < 0.01;
+  // console.log("should render a single line", shouldRenderSingleLine, span.name)
   const percentageWidth =
-    duration === 0 ? 100 : (normalizedDuration * 100).toPrecision(2);
+    duration === 0 ? 100 : (normalizedDuration * 100).toFixed(4);
   const lineWidth = `${percentageWidth}%`;
   const lineOffsetNumeric =
     duration === 0
       ? 0
       : ((new Date(span.start_time).getTime() - startTime) / duration) * 100;
-  const lineOffset = `${lineOffsetNumeric}%`;
-  const icon = useTimelineIcon(span, vendorInfo);
+  const lineOffset = `calc(${lineOffsetNumeric.toFixed(4)}% - ${(shouldRenderSingleLine ? 1 : 2) * /*0.0625*/ 1}px)`;
+  const icon = useTimelineIcon(span, { vendorInfo });
   const title = useTimelineTitle({ span, vendorInfo });
-
+  
   return (
     <a
       data-toc-id={id}
@@ -350,23 +391,25 @@ const WaterfallRowSpan: React.FC<{
       <div className="text-gray-400 flex flex-grow items-center mx-4">
         <div
           className={cn(
-            "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-1",
-            shouldRenderSingleLine && "border-r-0",
+          "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-0  flex-grow-0",
+          shouldRenderSingleLine && "border-r-0",
+        )}
+        style={{ width: lineWidth, marginLeft: lineOffset }}
+        title={
+          `${span.start_time} - ${span.end_time}`}
+      >
+        <div
+          className={cn(
+            "h-0.5 min-w-0.5 bg-blue-500 w-full",
+            shouldRenderSingleLine && "bg-transparent",
           )}
-          style={{ width: lineWidth, marginLeft: lineOffset }}
-        >
-          <div
-            className={cn(
-              "h-0.5 min-w-0.5 bg-blue-500 w-full",
-              shouldRenderSingleLine && "bg-transparent",
-            )}
-          ></div>
-        </div>
+        ></div>
       </div>
-      <div className="ml-auto text-gray-400 text-xs w-12 px-2">
-        {formatDuration(span.start_time, span.end_time)}
-      </div>
-    </a>
+    </div>
+    <div className="text-gray-400 text-xs w-12 px-2">
+      {formatDuration(span.start_time, span.end_time)}
+    </div>
+   </a>
   );
 };
 
@@ -376,14 +419,15 @@ const WaterfallRowLog: React.FC<{
   startTime: number;
   isActive: boolean;
 }> = ({ log, duration, startTime, isActive }) => {
-  const id = log.id;
-  const lineOffset = `${((new Date(log.timestamp).getTime() - startTime) / duration) * 100}%`;
-  const icon = useTimelineIcon(log);
+  const left = ((new Date(log.timestamp).getTime() - startTime) / duration) * 100;
+  const lineOffset = `calc(${left}% - ${3 * 0.0625}rem)`;
+  const icon = useTimelineIcon(log, {
+    colorOverride: getColorForLevel(log.level),
+  });
   const title = useTimelineTitle(log);
 
   return (
     <a
-      data-toc-id={id}
       className={cn(
         "flex items-center p-2",
         "border-l-2 border-transparent",
@@ -394,6 +438,7 @@ const WaterfallRowLog: React.FC<{
       )}
       href={`#${log.id}`}
     >
+    {/* <> */}
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-20 overflow-hidden">
         <div className="font-mono font-normal text-xs truncate text-gray-200">
@@ -402,13 +447,28 @@ const WaterfallRowLog: React.FC<{
       </div>
       <div className="text-gray-400 flex flex-grow items-center mx-4">
         <div
-          className="h-2.5 border-l-2flex items-center min-w-1"
+          className="h-2.5 flex items-center min-w-1"
           style={{ marginLeft: lineOffset }}
+          title={log.timestamp}
         >
           <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
         </div>
       </div>
       <div className="ml-auto text-gray-400 text-xs w-12 px-2" />
-    </a>
+      {/* </> */}
+      </a>
   );
 };
+
+function getColorForLevel(level: string) {
+  switch (level) {
+    case "info":
+      return "text-muted-foreground";
+    case "warn":
+      return "text-yellow-500";
+    case "error":
+      return "text-red-500";
+    default:
+      return "text-gray-500";
+  }
+}

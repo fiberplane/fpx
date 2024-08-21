@@ -7,6 +7,7 @@ import { getString } from "../v2/otel-helpers";
 export function useOrphanLogs(traceId: string, spans: Array<OtelSpan>) {
   // NOTE - Flatten out events into orphan logs to allow the UI to render them
   const orphanLogs = useMemo(() => {
+    console.log('creating orhapnlogs', spans.map(span => span.end_time).sort());
     const orphans: MizuOrphanLog[] = [];
     for (const span of spans ?? []) {
       if (span.events) {
@@ -47,7 +48,7 @@ function convertEventToOrphanLog(
 ) {
   const argsAsString = getString(event.attributes.arguments);
   const parsedArgs = argsAsString ? safeParseJson(argsAsString) : [];
-
+  console.log('event.timestamp', event);
   return {
     id: logId,
     traceId,
