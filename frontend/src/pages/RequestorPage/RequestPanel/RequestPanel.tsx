@@ -23,10 +23,9 @@ import { RequestMethod } from "../types";
 import { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
-import { CopyAsCurl } from "./CopyAsCurl/CopyAsCurl";
+import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
-import { RequestBodyTypeDropdown } from "./RequestBodyCombobox";
 import "./styles.css";
 
 type RequestPanelProps = {
@@ -342,20 +341,14 @@ function RequestMeta(props: RequestPanelProps) {
 
       {/* HACK - This toolbar is absolutely positioned for now */}
       {FORM_BODY_FEATURE_FLAG_ENABLED && (
-        <div className="flex justify-between gap-2 absolute bottom-0 w-full p-2 backdrop-blur-sm border-t">
-          <RequestBodyTypeDropdown
-            requestBody={body}
-            handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-          />
-
-          <CopyAsCurl
-            method={method}
-            body={body}
-            path={path}
-            queryParams={queryParams}
-            requestHeaders={requestHeaders}
-          />
-        </div>
+        <BottomToolbar
+          body={body}
+          handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+          method={method}
+          path={path}
+          queryParams={queryParams}
+          requestHeaders={requestHeaders}
+        />
       )}
     </Tabs>
   );

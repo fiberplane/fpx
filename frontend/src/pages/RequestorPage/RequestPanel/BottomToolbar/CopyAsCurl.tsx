@@ -10,7 +10,7 @@ import {
 import { RequestorState } from "../../reducer";
 import { getBodyValue, getContentTypeHeader } from "./utils";
 
-type CopyAsCurlProps = Pick<
+export type CopyAsCurlProps = Pick<
   RequestorState,
   "body" | "method" | "path" | "requestHeaders" | "queryParams"
 >;
@@ -27,14 +27,15 @@ export function CopyAsCurl({
 }: CopyAsCurlProps) {
   const [isCopied, setIsCopied] = useState(false);
   const timeout = useRef<ReturnType<typeof setTimeout>>();
-  const isUnsupportedBodyType = body.type === "file";
+  const isUnsupportedBodyType =
+    body.type === "file" || (body.type === "form-data" && body.isMultipart);
 
   const handleCopy = async () => {
     const payload = getBodyValue({ body, method });
 
     // As we don't support automatic body type switching yet, we now manually
-    // set the initial header to Content-Type: application/json if there's a
-    // payload. Otherwise, it will be empty.
+    // set the initial header the correspoinding content type based on the
+    // method & body. Otherwise, it will be empty.
     const initialHeader = payload ? getContentTypeHeader(body) : "";
 
     const headers = requestHeaders.reduce(
@@ -72,7 +73,7 @@ export function CopyAsCurl({
           variant="secondary"
           size="icon"
           type="button"
-          className={"disabled:pointer-events-auto hover:cursor-pointer"}
+          className="disabled:pointer-events-auto"
           disabled={isUnsupportedBodyType}
         >
           {isCopied ? (
