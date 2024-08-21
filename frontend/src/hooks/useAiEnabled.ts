@@ -8,8 +8,8 @@ import { useMemo } from "react";
  * IMPROVE: Since this is an asynchronous call, we could include some form of "isLoading"
  */
 export function useAiEnabled() {
-  const aiEnabledSetting = useSetting("aiEnabled");
+  const aiEnabled = useSetting("aiEnabled");
   return useMemo(() => {
-    return aiEnabledSetting ?? false;
-  }, [aiEnabledSetting]);
+    return aiEnabled ?? false;
+  }, [aiEnabled]);
 }

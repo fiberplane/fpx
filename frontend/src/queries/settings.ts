@@ -1,5 +1,6 @@
 import type { Settings, SettingsKey } from "@fiberplane/fpx-types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 const FPX_USER_SETTINGS_QUERY_KEY = "FPX_USER_SETTINGS";
 
@@ -15,9 +16,11 @@ export function useFetchSettings() {
 
 export function useSetting<T extends SettingsKey>(key: T) {
   const { data } = useFetchSettings();
-  if (data && data[key]) {
-    return data[key];
-  }
+  return useMemo(() => {
+    if (data && data[key]) {
+      return data[key];
+    }
+  }, [data, key]);
 }
 
 async function updateSettings({ content }: { content: Settings }) {
