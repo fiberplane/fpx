@@ -8,15 +8,13 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "staging": "wrangler pages deploy ./dist --env staging",
-    "format": "biome check . --write",
+    "format": "prettier --write .",
     "lint:ci": "biome ci .",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.2",
     "@astrojs/starlight": "^0.25.4",
-    "@astrojs/starlight-tailwind": "^2.0.3",
-    "@astrojs/tailwind": "^5.1.0",
     "astro": "^4.13.2",
     "rollup": "^4.20.0",
     "sharp": "^0.32.5",
@@ -25,6 +23,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
+    "prettier": "^3.3.3",
+    "prettier-plugin-astro": "^0.14.1",
     "wrangler": "^3.70.0"
   }
 }
