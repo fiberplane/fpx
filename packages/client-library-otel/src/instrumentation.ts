@@ -125,12 +125,27 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           // Replace the original request's body with the second stream
           const newRequest = new Request(clonedRequest, {
             body: body2,
-
+            headers: new Headers(request.headers),
+            method: request.method,
             // NOTE - This is a workaround to support node environments
             //        Which will throw errors when body is a stream but duplex is not set
             //        https://github.com/nodejs/node/issues/46221
             duplex: body2 ? "half" : undefined,
           });
+
+          // Determine the content length of the body2 stream, in order to pass it correctly to the server
+          let newRequestContentLength = null;
+          if (body2 && newRequest.headers.has("Content-Length")) {
+            const blob = await new Response(body2).blob();
+            newRequestContentLength = blob.size;
+          }
+          // Update the Content-Length header on the newRequest object
+          if (newRequestContentLength !== null) {
+            newRequest.headers.set(
+              "Content-Length",
+              newRequestContentLength.toString(),
+            );
+          }
 
           // Parse the body and headers for the root request.
           //
