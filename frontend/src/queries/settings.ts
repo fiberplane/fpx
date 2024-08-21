@@ -1,4 +1,4 @@
-import type { Settings, SettingsKey } from "@fiberplane/fpx-types";
+import { SettingsSchema, type Settings, type SettingsKey } from "@fiberplane/fpx-types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -9,7 +9,8 @@ export function useFetchSettings() {
     queryKey: [FPX_USER_SETTINGS_QUERY_KEY],
     queryFn: async () => {
       const response = await fetch("/v0/settings");
-      return (await response.json()) as Settings;
+      const json = await response.json();
+      return SettingsSchema.parse(json);
     },
   });
 }
