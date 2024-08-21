@@ -12,18 +12,15 @@ use tracing::error;
 #[tracing::instrument(skip_all)]
 pub async fn ts_compat_traces_list_handler(
     State(store): State<BoxedStore>,
-) -> Result<Json<Vec<TypeScriptCompatTrace>>, ApiServerError<CommonError>> {
-    let tx = store.start_readonly_transaction().await.unwrap();
+) -> Result<Json<Vec<TypeScriptCompatTrace>>, ApiServerError<TraceListError>> {
+    let tx = store.start_readonly_transaction().await?;
 
-    let traces = store.traces_list(&tx).await.unwrap();
+    let traces = store.traces_list(&tx).await?;
 
     let mut result: Vec<TypeScriptCompatTrace> = Vec::new();
 
     for trace in traces.into_iter() {
-        let spans = store
-            .span_list_by_trace(&tx, &trace.trace_id)
-            .await
-            .unwrap();
+        let spans = store.span_list_by_trace(&tx, &trace.trace_id).await?;
 
         result.push(TypeScriptCompatTrace {
             trace_id: trace.trace_id.clone(),

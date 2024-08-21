@@ -58,14 +58,13 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 pub async fn ts_compat_span_list_handler(
     State(store): State<BoxedStore>,
     Path(trace_id): Path<String>,
-) -> Result<Json<Vec<TypeScriptCompatSpan>>, ApiServerError<CommonError>> {
-    let tx = store.start_readonly_transaction().await.unwrap();
+) -> Result<Json<Vec<TypeScriptCompatSpan>>, ApiServerError<SpanListError>> {
+    let tx = store.start_readonly_transaction().await?;
 
     hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))
-        .unwrap();
+        .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
 
-    let spans = store.span_list_by_trace(&tx, &trace_id).await.unwrap();
+    let spans = store.span_list_by_trace(&tx, &trace_id).await?;
     let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
 
     Ok(Json(spans))
