@@ -156,7 +156,7 @@ impl Into<TypeScriptCompatSpan> for crate::data::models::Span {
         TypeScriptCompatSpan {
             span_id: Some(self.span_id.clone()),
             trace_id: Some(self.trace_id.clone()),
-            created_at: self.start_time.into(),
+            created_at: self.end_time.into(),
             updated_at: self.end_time.into(),
             parsed_payload: self.clone().into(),
         }
