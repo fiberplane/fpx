@@ -1,4 +1,4 @@
-import { useFetchSettings } from "@/queries";
+import { useSetting } from "@/queries/settings";
 import { useMemo } from "react";
 
 /**
@@ -8,8 +8,8 @@ import { useMemo } from "react";
  * IMPROVE: Since this is an asynchronous call, we could include some form of "isLoading"
  */
 export function useAiEnabled() {
-  const { data } = useFetchSettings();
+  const aiEnabled = useSetting("aiEnabled");
   return useMemo(() => {
-    return data?.aiEnabled ?? false;
-  }, [data]);
+    return aiEnabled ?? false;
+  }, [aiEnabled]);
 }

@@ -3,6 +3,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import * as schema from "../db/schema.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
+import { getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
@@ -18,6 +19,13 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
  */
 app.get("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
+
+  const fpxWorker = await getSetting(db, "fpxWorkerProxy");
+  if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const response = await fetch(`${fpxWorker.baseUrl}/ts-compat/v1/traces`);
+    const json = await response.json();
+    return ctx.json(json);
+  }
 
   const spans = await db
     .select()
@@ -52,7 +60,18 @@ app.get("/v1/traces", async (ctx) => {
  * This powers the details page of a trace in the UI.
  */
 app.get("/v1/traces/:traceId/spans", async (ctx) => {
+  const traceId = ctx.req.param("traceId");
+
   const db = ctx.get("db");
+
+  const fpxWorker = await getSetting(db, "fpxWorkerProxy");
+  if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const response = await fetch(
+      `${fpxWorker.baseUrl}/ts-compat/v1/traces/${traceId}/spans`,
+    );
+    const json = await response.json();
+    return ctx.json(json);
+  }
 
   const traces = await db
     .select()
@@ -60,7 +79,7 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
     .where(
       and(
         sql`parsed_payload->>'scope_name' = 'fpx-tracer'`,
-        eq(otelSpans.traceId, ctx.req.param("traceId")),
+        eq(otelSpans.traceId, traceId),
       ),
     );
   return ctx.json(traces);
@@ -77,8 +96,20 @@ app.post("/v1/traces/delete-all-hack", async (ctx) => {
  */
 app.post("/v1/traces", async (ctx) => {
   const db = ctx.get("db");
-
   const body: IExportTraceServiceRequest = await ctx.req.json();
+
+  const fpxWorker = await getSetting(db, "fpxWorkerProxy");
+  if (fpxWorker?.enabled && fpxWorker.baseUrl) {
+    const response = await fetch(`${fpxWorker.baseUrl}/v1/traces`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    const json = await response.json();
+    return ctx.json(json);
+  }
 
   try {
     const tracesPayload = (await fromCollectorRequest(body)).map((span) => ({

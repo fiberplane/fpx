@@ -265,7 +265,9 @@ export function resolveUrlQueryParams(
   url: string,
   queryParams?: Record<string, string> | null,
 ) {
-  if (!queryParams) return url;
+  if (!queryParams) {
+    return url;
+  }
 
   const urlObject = new URL(url);
   for (const [key, value] of Object.entries(queryParams)) {
@@ -282,7 +284,9 @@ export function resolveUrlQueryParams(
  */
 export function resolveWebhoncUrl() {
   const fallbackUrl = "webhonc.mies.workers.dev";
-  if (!process.env.FPX_WEBHONC_BASE_URL) return fallbackUrl;
+  if (!process.env.FPX_WEBHONC_BASE_URL) {
+    return fallbackUrl;
+  }
   const customUrl = new URL(process.env.FPX_WEBHONC_BASE_URL);
   return customUrl.host;
 }

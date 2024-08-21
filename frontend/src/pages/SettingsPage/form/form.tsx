@@ -1,59 +1,45 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useUpdateSettings } from "@/queries";
 import { errorHasMessage } from "@/utils";
+import {
+  CLAUDE_3_5_SONNET,
+  GPT_4o,
+  Settings,
+  SettingsSchema,
+} from "@fiberplane/fpx-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { CLAUDE_3_5_SONNET, FormSchema, GPT_4o } from "./types";
 
-const DEFAULT_VALUES: z.infer<typeof FormSchema> = {
+const DEFAULT_VALUES = {
   aiEnabled: false,
   aiProviderType: "openai",
   openaiModel: GPT_4o,
   anthropicModel: CLAUDE_3_5_SONNET,
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",
-};
+} satisfies Settings;
 
-export function useSettingsForm(settings: Record<string, string | boolean>) {
+export function useSettingsForm(settings: Settings) {
   const { toast } = useToast();
 
   const { mutate: updateSettings } = useUpdateSettings();
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<Settings>({
+    resolver: zodResolver(SettingsSchema),
     defaultValues: {
       ...DEFAULT_VALUES,
       ...settings,
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  function onSubmit(content: Settings) {
     updateSettings(
-      {
-        content: {
-          aiEnabled: data.aiEnabled,
-          aiProviderType: data.aiProviderType,
-          // Remove the stored api key if the feature is disabled
-          ...(data.aiEnabled
-            ? {
-                openaiApiKey: data.openaiApiKey,
-                anthropicApiKey: data.anthropicApiKey,
-              }
-            : {}),
-          openaiBaseUrl: data.openaiBaseUrl ?? "",
-          openaiModel: data.openaiModel,
-          anthropicBaseUrl: data.anthropicBaseUrl ?? "",
-          anthropicModel: data.anthropicModel,
-          proxyRequestsEnabled: data.proxyRequestsEnabled,
-          proxyBaseUrl: data.proxyBaseUrl,
-        },
-      },
+      { content },
       {
         onSuccess() {
           toast({ title: "Settings updated!" });
           // Reset the form state, so dirty fields are no longer dirty
-          form.reset(data);
+          form.reset(content);
         },
         onError(error) {
           toast({

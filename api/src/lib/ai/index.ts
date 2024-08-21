@@ -1,4 +1,4 @@
-import type { UserSettings } from "../../lib/settings/index.js";
+import type { Settings } from "@fiberplane/fpx-types";
 import { generateRequestWithAnthropic } from "./anthropic.js";
 import { generateRequestWithOpenAI } from "./openai.js";
 
@@ -11,7 +11,7 @@ export async function generateRequestWithAiProvider({
   history,
   openApiSpec,
 }: {
-  inferenceConfig: UserSettings;
+  inferenceConfig: Settings;
   persona: string;
   method: string;
   path: string;

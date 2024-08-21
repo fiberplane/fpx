@@ -127,13 +127,11 @@ export function useOtelTraces() {
           return r.map(
             (t: {
               traceId: string;
-              spans: { parsedPayload: unknown; rawPayload: unknown }[];
+              spans: { parsedPayload: unknown }[];
             }) => {
               return {
                 traceId: t.traceId,
-                spans: t.spans.map((span) =>
-                  toOtelSpan(span.parsedPayload, span.rawPayload),
-                ),
+                spans: t.spans.map((span) => toOtelSpan(span.parsedPayload)),
               };
             },
           );
@@ -142,10 +140,7 @@ export function useOtelTraces() {
   });
 }
 
-function toOtelSpan(
-  t: unknown,
-  rawPayload: unknown,
-): (OtelSpan & { rawPayload: unknown }) | null {
+function toOtelSpan(t: unknown): OtelSpan | null {
   const result = OtelSpanSchema.safeParse(t);
   if (!result.success) {
     console.error("OtelSpanSchema parse error:", result.error.format());
@@ -153,6 +148,5 @@ function toOtelSpan(
   }
   return {
     ...result.data,
-    rawPayload,
   };
 }
