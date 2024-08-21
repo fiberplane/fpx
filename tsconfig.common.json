@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+
+    "strict": true,
+    "noImplicitOverride": false,
+
+    "allowJs": true,
+    "checkJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "lib": ["ESNext"],
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
