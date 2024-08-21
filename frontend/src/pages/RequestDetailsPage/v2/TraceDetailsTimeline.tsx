@@ -390,7 +390,7 @@ const WaterfallRowSpan: React.FC<{
           style={{ width: lineWidth, marginLeft: lineOffset }}
           title={`${span.start_time} - ${span.end_time}`}
         >
-          <div className={cn("h-0.5 min-w-0.5 bg-blue-500 w-full")}></div>
+          <div className={"h-0.5 min-w-0.5 bg-blue-500 w-full"}></div>
         </div>
       </div>
       <div className="text-gray-400 text-xs w-12 px-2">
