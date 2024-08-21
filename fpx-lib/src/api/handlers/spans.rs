@@ -55,7 +55,6 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 }
 
 #[tracing::instrument(skip_all)]
-#[deprecated]
 pub async fn ts_compat_span_list_handler(
     State(store): State<BoxedStore>,
     Path(trace_id): Path<String>,

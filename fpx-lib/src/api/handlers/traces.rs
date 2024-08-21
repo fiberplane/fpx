@@ -10,7 +10,6 @@ use thiserror::Error;
 use tracing::error;
 
 #[tracing::instrument(skip_all)]
-#[deprecated]
 pub async fn ts_compat_traces_list_handler(
     State(store): State<BoxedStore>,
 ) -> Result<Json<Vec<TypeScriptCompatTrace>>, ApiServerError<CommonError>> {

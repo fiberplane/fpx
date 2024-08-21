@@ -143,7 +143,6 @@ impl From<SpanAdded> for ServerMessage {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-#[deprecated]
 pub struct TypeScriptCompatSpan {
     pub span_id: Option<String>,
     pub trace_id: Option<String>,
@@ -166,7 +165,6 @@ impl Into<TypeScriptCompatSpan> for crate::data::models::Span {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-#[deprecated]
 pub struct TypeScriptCompatTrace {
     pub trace_id: String,
     pub spans: Vec<TypeScriptCompatSpan>,
