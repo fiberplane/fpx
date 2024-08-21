@@ -1,9 +1,9 @@
 import {
   KeyValueParameter,
   enforceTerminalDraftParameter,
-} from "../KeyValueForm";
-import { isDraftParameter } from "../KeyValueForm/data";
-import { RequestorBody, RequestorState } from "./state";
+} from "../../KeyValueForm";
+import { isDraftParameter } from "../../KeyValueForm/data";
+import { RequestorBody, RequestorState } from "../state";
 
 /**
  * This makes sure to synchronize the content type header with the body type.
@@ -152,7 +152,10 @@ function getUpdateOperation(
   }
 
   if (currentBody.type === "file") {
-    if (currentContentTypeHeader.value?.startsWith("text/") || currentContentTypeHeader.value?.startsWith("application/json")) {
+    if (
+      currentContentTypeHeader.value?.startsWith("text/") ||
+      currentContentTypeHeader.value?.startsWith("application/json")
+    ) {
       return {
         type: "remove",
         value: currentContentTypeHeader,

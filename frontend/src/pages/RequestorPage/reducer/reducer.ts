@@ -10,8 +10,8 @@ import {
   RequestType,
   isWsRequest,
 } from "../types";
-import { addContentTypeHeader } from "./content-type";
 import { useSaveUiState } from "./persistence";
+import { addContentTypeHeader, setBodyTypeReducer } from "./reducers";
 import {
   RequestBodyType,
   RequestorActiveResponse,
@@ -415,55 +415,8 @@ function requestorReducer(
             : { type: state.body.type, value: "" };
       return { ...state, body: nextBody };
     }
-    // NOTE - This needs to be its own reducer function it is so darn hard to read, i'm sorry
     case SET_BODY_TYPE: {
-      const oldBodyValue = state.body.value;
-      const oldBodyType = state.body.type;
-      const newBodyType = action.payload.type;
-      if (oldBodyType === newBodyType) {
-        // HACK - Refactor
-        if (state.body.type === "form-data") {
-          return addContentTypeHeader({
-            ...state,
-            body: {
-              ...state.body,
-              isMultipart: !!action.payload.isMultipart,
-            },
-          });
-        }
-        return addContentTypeHeader(state);
-      }
-      if (newBodyType === "form-data") {
-        const isMultipart = !!action.payload.isMultipart;
-        return addContentTypeHeader({
-          ...state,
-          body: {
-            type: newBodyType,
-            isMultipart,
-            value: enforceFormDataTerminalDraftParameter([]),
-          },
-        });
-      }
-      if (newBodyType === "file") {
-        return addContentTypeHeader({
-          ...state,
-          body: { type: newBodyType, value: undefined },
-        });
-      }
-      if (oldBodyType === "form-data") {
-        return addContentTypeHeader({
-          ...state,
-          body: { type: newBodyType, value: "" },
-        });
-      }
-      // HACK - These lines makes things clearer for typescript, but are a nightmare to read, i'm so sorry
-      const isNonTextOldBody =
-        Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
-      const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
-      return addContentTypeHeader({
-        ...state,
-        body: { type: newBodyType, value: newBodyValue },
-      });
+      return addContentTypeHeader(setBodyTypeReducer(state, action.payload));
     }
     case SET_WEBSOCKET_MESSAGE: {
       return { ...state, websocketMessage: action.payload };
