@@ -41,16 +41,25 @@
       }
     },
     {
-      "include": ["client-library-otel", "api"],
+      "include": ["packages/client-library-otel"],
       "linter": {
         "enabled": true,
         "rules": {
           "recommended": true,
           "style": {
             "useBlockStatements": {
-              "level": "error"
+              "level": "off"
             }
-          },
+          }
+        }
+      }
+    },
+    {
+      "include": ["packages/client-library-otel", "api"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "recommended": true,
           "correctness": {
             "noUnusedImports": {
               "level": "error"
