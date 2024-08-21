@@ -126,6 +126,9 @@ importers:
       '@codemirror/lang-sql':
         specifier: ^6.7.0
         version: 6.7.0(@codemirror/view@6.32.0)
+      '@fiberplane/fpx-types':
+        specifier: workspace:*
+        version: link:../packages/types
       '@fiberplane/hooks':
         specifier: ^0.3.0
         version: 0.3.0

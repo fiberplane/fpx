@@ -23,6 +23,12 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils";
 import {
+  AnthropicModelOptions,
+  OpenAiModelOptions,
+  ProviderOptions,
+  Settings,
+} from "@fiberplane/fpx-types";
+import {
   CaretDownIcon,
   EyeClosedIcon,
   EyeOpenIcon,
@@ -31,16 +37,11 @@ import {
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
-import {
-  AnthropicModelOptions,
-  OpenAiModelOptions,
-  ProviderOptions,
-} from "./form/types";
 
 export function AISettingsForm({
   settings,
 }: {
-  settings: Record<string, string>;
+  settings: Settings;
 }) {
   const { form, onSubmit } = useSettingsForm(settings);
 

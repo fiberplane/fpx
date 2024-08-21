@@ -10,13 +10,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFetchSettings } from "@/queries";
 import { cn } from "@/utils";
+import { Settings } from "@fiberplane/fpx-types";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
+import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 
 export function SettingsPage() {
   const { data, isPending, isError } = useFetchSettings();
+
   return (
     <div className={cn("mt-4 px-4 overflow-hidden h-full", "lg:px-6")}>
       {isPending ? (
@@ -32,8 +35,9 @@ export function SettingsPage() {
 
 const AI_TAB = "AI";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
+const FPX_WORKER_PROXY_TAB = "FPX Worker Proxy";
 
-function SettingsLayout({ settings }: { settings: Record<string, string> }) {
+function SettingsLayout({ settings }: { settings: Settings }) {
   const [activeTab, setActiveTab] = useState(AI_TAB);
 
   return (
@@ -80,6 +84,11 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
             <DropdownMenuItem onClick={() => setActiveTab(PROXY_REQUESTS_TAB)}>
               {PROXY_REQUESTS_TAB}
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setActiveTab(FPX_WORKER_PROXY_TAB)}
+            >
+              {FPX_WORKER_PROXY_TAB}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         {/* For md breakpoint, show tab triggers */}
@@ -96,6 +105,12 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
         >
           Proxy Requests
         </TabsTrigger>
+        <TabsTrigger
+          className="hidden md:block w-full justify-start text-left py-2 px-4"
+          value={FPX_WORKER_PROXY_TAB}
+        >
+          {FPX_WORKER_PROXY_TAB}
+        </TabsTrigger>
       </TabsList>
       <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll">
         <TabsContent className="m-0" value={AI_TAB}>
@@ -103,6 +118,9 @@ function SettingsLayout({ settings }: { settings: Record<string, string> }) {
         </TabsContent>
         <TabsContent className="m-0" value={PROXY_REQUESTS_TAB}>
           <ProxyRequestsSettingsForm settings={settings} />
+        </TabsContent>
+        <TabsContent className="m-0" value={FPX_WORKER_PROXY_TAB}>
+          <FpxWorkerProxySettingsForm settings={settings} />
         </TabsContent>
       </div>
     </Tabs>

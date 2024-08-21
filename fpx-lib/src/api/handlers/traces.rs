@@ -1,5 +1,5 @@
 use crate::api::errors::{ApiServerError, CommonError};
-use crate::api::models::TraceSummary;
+use crate::api::models::{TraceSummary, TypeScriptCompatTrace};
 use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;
@@ -8,6 +8,28 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::error;
+
+#[tracing::instrument(skip_all)]
+pub async fn ts_compat_traces_list_handler(
+    State(store): State<BoxedStore>,
+) -> Result<Json<Vec<TypeScriptCompatTrace>>, ApiServerError<TraceListError>> {
+    let tx = store.start_readonly_transaction().await?;
+
+    let traces = store.traces_list(&tx).await?;
+
+    let mut result: Vec<TypeScriptCompatTrace> = Vec::new();
+
+    for trace in traces.into_iter() {
+        let spans = store.span_list_by_trace(&tx, &trace.trace_id).await?;
+
+        result.push(TypeScriptCompatTrace {
+            trace_id: trace.trace_id.clone(),
+            spans: spans.iter().map(|span| span.clone().into()).collect(),
+        });
+    }
+
+    Ok(Json(result))
+}
 
 #[tracing::instrument(skip_all)]
 pub async fn traces_list_handler(

@@ -178,7 +178,6 @@ const CallerLocationSchema = z.object({
 export const otelSpans = sqliteTable("otel_spans", {
   spanId: text("span_id"),
   traceId: text("trace_id"),
-  rawPayload: text("raw_payload", { mode: "json" }),
   parsedPayload: text("parsed_payload", { mode: "json" }),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),

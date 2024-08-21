@@ -67,6 +67,14 @@ impl Builder {
                 get(handlers::traces::traces_get_handler),
             )
             .route("/api/traces", get(handlers::traces::traces_list_handler))
+            .route(
+                "/ts-compat/v1/traces/:trace_id/spans",
+                get(handlers::spans::ts_compat_span_list_handler),
+            )
+            .route(
+                "/ts-compat/v1/traces",
+                get(handlers::traces::ts_compat_traces_list_handler),
+            )
             .with_state(api_state)
             .fallback(StatusCode::NOT_FOUND)
             .layer(OtelTraceLayer::default())

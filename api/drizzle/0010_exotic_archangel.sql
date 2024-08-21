@@ -1,0 +1,1 @@
+ALTER TABLE `otel_spans` DROP COLUMN `raw_payload`;

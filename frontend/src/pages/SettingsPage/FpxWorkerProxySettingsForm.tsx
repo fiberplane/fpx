@@ -13,12 +13,14 @@ import { cn } from "@/utils";
 import { Settings } from "@fiberplane/fpx-types";
 import { useSettingsForm } from "./form";
 
-// TODO: automatically restart the fpx studio when this is changed
-export function ProxyRequestsSettingsForm({
+export function FpxWorkerProxySettingsForm({
   settings,
 }: { settings: Settings }) {
   const { form, onSubmit } = useSettingsForm(settings);
-  const isProxyRequestsDirty = form.formState.dirtyFields.proxyRequestsEnabled;
+  const isDirty =
+    (form.formState.dirtyFields.fpxWorkerProxy?.enabled ||
+      form.formState.dirtyFields.fpxWorkerProxy?.baseUrl) ??
+    false;
 
   return (
     <Form {...form}>
@@ -28,11 +30,11 @@ export function ProxyRequestsSettingsForm({
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="proxyRequestsEnabled"
+              name="fpxWorkerProxy.enabled"
               render={({ field }) => (
                 <FormItem
                   className={cn("rounded-lg border p-4", {
-                    "border-yellow-100/50": isProxyRequestsDirty,
+                    "border-yellow-100/50": isDirty,
                   })}
                 >
                   <div className="flex flex-row items-center justify-between">
@@ -45,26 +47,8 @@ export function ProxyRequestsSettingsForm({
                       </FormLabel>
                       <FormDescription className="max-w-3xl grid gap-2">
                         <p>
-                          Enable proxying of requests from a remote service.
-                          This feature is useful for debugging, testing, and
-                          developing with services that are only available on a
-                          public internet (like webhooks).
-                        </p>
-                        <p>
-                          Any request received at this URL will be forwarded to
-                          your app including all the request data (path,
-                          headers, body, etc.).
-                        </p>
-                        <p>
-                          E.g.: A request{" "}
-                          <code className="font-mono text-wrap">
-                            &lt;public_url&gt;/some-route{" "}
-                          </code>
-                          will be forwarded to your app:
-                          <code className="font-mono text-wrap">
-                            {" "}
-                            &lt;your_app&gt;/some-route
-                          </code>
+                          Enable proxying of requests to and from a remote
+                          ingestion engine.
                         </p>
                       </FormDescription>
                     </div>
@@ -79,7 +63,7 @@ export function ProxyRequestsSettingsForm({
                     <>
                       <FormField
                         control={form.control}
-                        name="proxyBaseUrl"
+                        name="fpxWorkerProxy.baseUrl"
                         render={({ field }) => (
                           <div className="flex flex-col gap-1">
                             <FormLabel className="block font-normal text-sm text-gray-300">
