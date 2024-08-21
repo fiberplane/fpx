@@ -1,4 +1,8 @@
-import { SettingsSchema, type Settings, type SettingsKey } from "@fiberplane/fpx-types";
+import {
+  type Settings,
+  type SettingsKey,
+  SettingsSchema,
+} from "@fiberplane/fpx-types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
