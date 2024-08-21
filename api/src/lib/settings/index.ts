@@ -160,7 +160,6 @@ export const ProviderOptions = {
 } as const;
 
 export const FormSchema = z.object({
-  customRoutesEnabled: z.boolean().optional(),
   aiEnabled: z.boolean().optional(),
   aiProviderType: ProviderTypeSchema.optional(),
   openaiApiKey: z.string().optional(),

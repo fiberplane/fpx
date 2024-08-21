@@ -14,11 +14,12 @@
 /// the sqlite dialect. We might also be able to support configurable table
 /// names. For this reason all functions have a reference to `self` and all
 /// return a owned string.
+#[derive(Default)]
 pub struct SqlBuilder {}
 
 impl SqlBuilder {
     pub fn new() -> Self {
-        Self {}
+        Self::default()
     }
 
     /// Retrieve a single span by trace_id and span_id.
