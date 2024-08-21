@@ -408,7 +408,6 @@ const WaterfallRowLog: React.FC<{
 }> = ({ log, duration, startTime, isActive }) => {
   const left =
     ((new Date(log.timestamp).getTime() - startTime) / duration) * 100;
-  // const lineOffset = `calc(${left}% - ${3 * 0.0625}rem)`;
   const lineOffset = `calc(${left.toFixed(4)}% - ${3 * 0.0625}rem)`;
   const icon = useTimelineIcon(log, {
     colorOverride: getColorForLevel(log.level),
