@@ -8,8 +8,6 @@ pub mod debug;
 pub mod dev;
 pub mod system;
 
-static DEFAULT_FPX_DIRECTORY: &str = ".fpx";
-
 /// FPX - Super-charge your local development.
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -26,8 +24,8 @@ pub struct Args {
     pub otlp_endpoint: Url,
 
     /// fpx directory
-    #[arg(global = true, short, long, env, default_value = DEFAULT_FPX_DIRECTORY)]
-    pub fpx_directory: PathBuf,
+    #[arg(global = true, short, long, env)]
+    pub fpx_directory: Option<PathBuf>,
 }
 
 #[derive(Subcommand, Debug)]

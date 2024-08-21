@@ -1,13 +1,12 @@
-use anyhow::{Context, Result};
+use anyhow::{Context, Ok, Result};
 use clap::Parser;
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig;
-use opentelemetry_sdk::runtime;
 use opentelemetry_sdk::trace::Config;
-use opentelemetry_sdk::Resource;
+use opentelemetry_sdk::{runtime, Resource};
 use std::env;
-use std::path::Path;
+use std::path::PathBuf;
 use tracing::trace;
 use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::layer::SubscriberExt;
@@ -86,22 +85,61 @@ fn shutdown_tracing() {
     opentelemetry::global::shutdown_tracer_provider();
 }
 
-/// Ensure that all the necessary directories are created for fpx.
+/// Ensure that the fpx directory exists and is initialized. It will return a
+/// path to the fpx directory.
 ///
-/// This includes the top level fpx working directory and many of the
-/// directories for other modules.
-async fn initialize_fpx_dir(path: &Path) -> Result<()> {
+/// If override_path is provided than that path is used as the fpx directory. It
+/// won't delete anything in that directory.
+///
+/// If no [`override_path`] is provided, it will search for the fpx directory
+/// using the algorithm described in [`find_fpx_dir`]. If no directory is found,
+/// then a .fpx directory is created in the current directory.
+async fn initialize_fpx_dir(override_path: &Option<PathBuf>) -> Result<PathBuf> {
+    trace!("Initializing fpx directory");
+    let path = match override_path {
+        Some(path) => {
+            trace!(fpx_directory = ?path, "Using override path for fpx directory");
+            path.to_path_buf()
+        }
+        None => match find_fpx_dir()? {
+            Some(path) => {
+                trace!(fpx_directory = ?path, "Found fpx directory in a parent directory");
+                path
+            }
+            None => {
+                let path = env::current_dir()?.join(".fpx");
+                trace!(fpx_directory = ?path, "No fpx directory found, using the current directory");
+                path
+            }
+        },
+    };
+
     // Create top level fpx directory
     std::fs::DirBuilder::new()
         .recursive(true)
-        .create(path)
+        .create(&path)
         .with_context(|| format!("Failed to create fpx working directory: {:?}", path))?;
 
-    // Create inspectors directory
-    std::fs::DirBuilder::new()
-        .recursive(true)
-        .create(path.join("inspectors"))
-        .with_context(|| format!("Failed to create fpx working directory: {:?}", path))?;
+    Ok(path)
+}
 
-    Ok(())
+/// Find the fpx directory in the current directory or any parent directories.
+/// This returns [`None`] if no fpx directory is found.
+///
+/// Any directory that is named `.fpx` is considered the fpx directory.
+fn find_fpx_dir() -> Result<Option<PathBuf>> {
+    let mut dir = Some(env::current_dir()?);
+
+    while let Some(inner_dir) = dir {
+        for entry in inner_dir.read_dir()? {
+            let entry = entry?;
+            if entry.file_type()?.is_dir() && entry.file_name() == ".fpx" {
+                return Ok(Some(entry.path()));
+            }
+        }
+
+        dir = inner_dir.parent().map(Into::into);
+    }
+
+    Ok(None)
 }
