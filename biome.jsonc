@@ -29,6 +29,12 @@
   },
   "overrides": [
     {
+      "include": ["packages/types/src/schemas.ts"],
+      "linter": {
+        "enabled": false
+      }
+    },
+    {
       "include": ["frontend"],
       "linter": {
         "enabled": false
@@ -40,6 +46,11 @@
         "enabled": true,
         "rules": {
           "recommended": true,
+          "style": {
+            "useBlockStatements": {
+              "level": "error"
+            }
+          },
           "correctness": {
             "noUnusedImports": {
               "level": "error"

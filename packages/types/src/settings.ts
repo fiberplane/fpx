@@ -44,7 +44,10 @@ export const ProviderOptions = {
   anthropic: "Anthropic",
 } as const;
 
-export const AiProviderTypeSchema = z.union([z.literal("openai"), z.literal("anthropic"),]);
+export const AiProviderTypeSchema = z.union([
+  z.literal("openai"),
+  z.literal("anthropic"),
+]);
 
 export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;
 
@@ -55,20 +58,22 @@ export const SettingsSchema = z.object({
   anthropicBaseUrl: z.string().optional(),
   anthropicModel: AnthropicModelSchema.optional(),
   customRoutesEnabled: z.boolean().optional(),
-  fpxWorkerProxy: z.object({
-    enabled: z.boolean().optional(),
-    // Optional seems broken on urls with react-hook-form and controlled inputs resulting into empty strings
-    // Fix from:
-    // https://github.com/colinhacks/zod/discussions/1254#discussioncomment-3123225
-    baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
-  }).optional(),
+  fpxWorkerProxy: z
+    .object({
+      enabled: z.boolean().optional(),
+      // Optional seems broken on urls with react-hook-form and controlled inputs resulting into empty strings
+      // Fix from:
+      // https://github.com/colinhacks/zod/discussions/1254#discussioncomment-3123225
+      baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
+    })
+    .optional(),
   openaiApiKey: z.string().optional(),
   openaiBaseUrl: z.string().optional(),
   openaiModel: OpenAiModelSchema.optional(),
   proxyBaseUrl: z.string().optional(),
   proxyRequestsEnabled: z.boolean().optional(),
-  webhoncConnectionId: z.string().optional()
-})
+  webhoncConnectionId: z.string().optional(),
+});
 
 export type Settings = z.infer<typeof SettingsSchema>;
 
