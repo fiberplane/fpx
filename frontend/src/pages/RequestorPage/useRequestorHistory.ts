@@ -83,9 +83,10 @@ export function useRequestorHistory({
         // NOTE - Helps us set path parameters correctly
         handleSelectRoute(matchedRoute.route, pathParams);
 
-        // TODO - Remove query parameters that are explicitly in the `queryParams`
         // Reset the path to the *exact* path of the request, instead of the route pattern
         const queryParams = match.app_requests.requestQueryParams ?? {};
+        // NOTE - We remove the query parameters that are explicitly in the `queryParams`
+        //        So we do not duplicate them between the path and the form
         const path = removeQueryParams(
           match.app_requests.requestUrl ?? "",
           queryParams,
@@ -125,10 +126,11 @@ export function useRequestorHistory({
           setBody(safeBody);
         }
       } else {
-        // TODO - Remove query parameters that are explicitly in the `queryParams`
         // HACK - move this logic into the reducer
         // Reset the path to the *exact* path of the request, instead of the route pattern
         const queryParams = match.app_requests.requestQueryParams ?? {};
+        // NOTE - We remove the query parameters that are explicitly in the `queryParams`
+        //        So we do not duplicate them between the path and the form
         const path = removeQueryParams(
           match.app_requests.requestUrl ?? "",
           queryParams,
