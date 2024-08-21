@@ -54,7 +54,9 @@ export function setBodyTypeReducer(
     };
   }
 
-  // Handle the case where the body type is changing to text or json, so we want to clear the body value and make it an empty string
+  // At this point, we know the next body type is going to be text or json, soooo
+  // Let's handle the case where the body type is changing to text or json,
+  // meaning we want to clear the body value and make it an empty string
   if (oldBodyType === "form-data") {
     return {
       ...state,
@@ -62,7 +64,7 @@ export function setBodyTypeReducer(
     };
   }
 
-  // HACK - These new few lines makes things clearer for typescript, but are a nightmare to read, i'm so sorry
+  // HACK - These new few lines makes things clearer for typescript, but are a nightmare to read and reason about, i'm so sorry
   const isNonTextOldBody =
     Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
   const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
