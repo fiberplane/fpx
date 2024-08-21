@@ -5,7 +5,7 @@ use fpx_lib::data::sql::SqlBuilder;
 use fpx_lib::data::{DbError, Result, Store, Transaction};
 use libsql::{params, Builder, Connection};
 use std::fmt::Display;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::Arc;
 use tracing::trace;
 use util::RowsExt;
