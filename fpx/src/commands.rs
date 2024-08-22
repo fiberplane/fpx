@@ -23,7 +23,11 @@ pub struct Args {
     #[clap(long, env, default_value = "http://localhost:4317")]
     pub otlp_endpoint: Url,
 
-    /// fpx directory
+    /// Change the fpx directory.
+    ///
+    /// By default fpx will search for a `.fpx` directory in the current
+    /// directory or its ancestors. If it wasn't found it will create a `.fpx`
+    /// directory in the current directory.
     #[arg(global = true, short, long, env)]
     pub fpx_directory: Option<PathBuf>,
 }
