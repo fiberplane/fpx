@@ -1,5 +1,15 @@
 {/* This is intentionally inlined to avoid FOUC. */}
 <script is:inline>
+	window.addEventListener('load', () => {
+		const theme = 'light';
+		document.documentElement.dataset.theme = theme;
+		window.StarlightThemeProvider.updatePickers(theme);
+	});
+  window.addEventListener('astro:load', () => {
+		const theme = 'light';
+		document.documentElement.dataset.theme = theme;
+		window.StarlightThemeProvider.updatePickers(theme);
+	});
 	window.StarlightThemeProvider = (() => {
 		const storedTheme =
 			typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
