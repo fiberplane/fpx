@@ -42,11 +42,11 @@ Launch the Fiberplane Studio UI from your project directory
 npx @fiberplane/studio@latest
 ```
 
-Visit `http://localhost:8788` to see your logs and traces come in as you test your app!
+Visit `http://localhost:8788` to make requests to your api, and see your logs and traces come in as you test your app!
 
 ***
 
-Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` client library](https://www.npmjs.com/package/@fiberplane/hono-otel). You can read more about what it does in [the project's README](./packages/client-library-otel/README.md).
+Studio is designed to be used in conjunction with the [`@fiberplane/hono-otel` client library](https://www.npmjs.com/package/@fiberplane/hono-otel). You can read more about what it does in [that project's README](./packages/client-library-otel/README.md).
 
 ## Contributing
 
