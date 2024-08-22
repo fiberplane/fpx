@@ -17,18 +17,15 @@ export function getBodyValue({
   const bodyValue = (() => {
     switch (body.type) {
       case "form-data": {
-        return body.value.reduce((acc, field) => {
-          if (!field.enabled || field.value.type !== "text") {
-            return acc;
+        const urlEncodedFormData = new URLSearchParams();
+
+        for (const field of body.value) {
+          if (field.enabled && field.value.type === "text") {
+            urlEncodedFormData.append(field.key, field.value.value);
           }
+        }
 
-          const encodedKey = encodeURIComponent(field.key);
-          const encodedValue = encodeURIComponent(field.value.value);
-          const fieldValues = `${encodedKey}=${encodedValue}`;
-
-          const accumulator = acc.length === 0 ? acc : `${acc}&`;
-          return accumulator.concat(fieldValues);
-        }, "");
+        return urlEncodedFormData.toString();
       }
       case "json": {
         return body.value.trim();

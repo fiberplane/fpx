@@ -49,7 +49,7 @@ export function CopyAsCurl({
     }
 
     const data = payload ? `-d ${payload}` : "";
-    const curlCommand = `curl -X ${method} ${url} ${headers} ${data}`;
+    const curlCommand = `curl -X ${method} '${url}' ${headers} ${data}`;
 
     try {
       await navigator.clipboard.writeText(curlCommand);
