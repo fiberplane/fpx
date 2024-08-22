@@ -1,5 +1,5 @@
 {
-  "version": "0.8.0-alpha.4",
+  "version": "0.8.0-alpha.5",
   "name": "@fiberplane/studio",
   "description": "Local development debugging interface for Hono apps",
   "author": "Fiberplane<info@fiberplane.com>",
