@@ -5,8 +5,11 @@ description: Tutorial on requests in studio
 
 import { Image } from 'astro:assets';
 import { Aside } from '@astrojs/starlight/components';
+import { LinkCard } from '@astrojs/starlight/components';
 
 import FirstRequest from '@/assets/making-requests--make-request.gif';
+import CreateGoose from '@/assets/making-requests--create-goose.gif';
+import CurlRequest from '@/assets/making-requests--curl.gif';
 
 Requests. Everybody loves a good HTTP request. Right? Don't they? Surely they do.
 
@@ -56,18 +59,41 @@ In the routes panel, click the "+" button and select "Custom Route". Add the url
 If you have an OpenAPI spec handy, you can also import it and all your routes will be automatically added to the sidebar.
 
 <Aside>
-OpenAPI support is a little limited right now, so you might need to manually add your base url in some cases.
+OpenAPI support is experimental right now, so if you encounter any issues, please let us know on [GitHub](https://github.com/fiberplane/fpx/issues).
 </Aside>
 
 
 ## Copy as cURL
 
-> **TODO** Add screenshot of the copy as cURL button
+Say we have a route `POST /api/geese` that creates a goose. We can fill in the body with the data we want to send to the server as follows:
+
+<Image src={CreateGoose} alt="Create goose" />
+
+We can copy the cURL command to make this request by clicking the "Copy as cURL" button in the bottom right of the request panel.
+
+<Image src={CurlRequest} alt="Curl request" />
+
+This would copy the following cURL command to your clipboard:
+
+```sh
+curl -X POST 'http://localhost:8787/api/geese'  -H "Content-Type: application/json" -d '{
+  "name": "Gus",
+  "isFlockLeader": true,
+  "programmingLanguage": "Go",
+  "motivations": "To lead the flock to new heights",
+  "location": "Central Park"
+}'
+```
 
 ## Websockets (Coming soon!)
 
-The current version of Fiberplane Studio does not support opening a websocket connection and sending messages. We're working on it!
+The current version of Fiberplane Studio does not support opening a websocket connection and sending messages to a client API. But we're working on it!
 
-If you want to see this, be sure to chime in on GitHub.
+If you want to see this, be sure to chime in on our open GitHub issue that's tracking websocket support.
 
-> **LINK TO OPEN ISSUE**
+<LinkCard
+  title="Follow along on GitHub"
+  description="We're always looking for feedback and contributions. If you have any ideas or suggestions for Websocket support, please let us know on GitHub."
+  href="https://github.com/fiberplane/fpx/issues/181"
+  icon="external"
+/>
