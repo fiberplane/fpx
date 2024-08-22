@@ -8,8 +8,6 @@ pub mod debug;
 pub mod dev;
 pub mod system;
 
-static DEFAULT_FPX_DIRECTORY: &str = ".fpx";
-
 /// FPX - Super-charge your local development.
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -25,9 +23,13 @@ pub struct Args {
     #[clap(long, env, default_value = "http://localhost:4317")]
     pub otlp_endpoint: Url,
 
-    /// fpx directory
-    #[arg(global = true, short, long, env, default_value = DEFAULT_FPX_DIRECTORY)]
-    pub fpx_directory: PathBuf,
+    /// Change the fpx directory.
+    ///
+    /// By default fpx will search for a `.fpx` directory in the current
+    /// directory or its ancestors. If it wasn't found it will create a `.fpx`
+    /// directory in the current directory.
+    #[arg(global = true, short, long, env)]
+    pub fpx_directory: Option<PathBuf>,
 }
 
 #[derive(Subcommand, Debug)]

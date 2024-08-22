@@ -151,14 +151,14 @@ pub struct TypeScriptCompatSpan {
     pub parsed_payload: Span,
 }
 
-impl Into<TypeScriptCompatSpan> for crate::data::models::Span {
-    fn into(self) -> TypeScriptCompatSpan {
-        TypeScriptCompatSpan {
-            span_id: Some(self.span_id.clone()),
-            trace_id: Some(self.trace_id.clone()),
-            created_at: self.end_time.into(),
-            updated_at: self.end_time.into(),
-            parsed_payload: self.clone().into(),
+impl From<crate::data::models::Span> for TypeScriptCompatSpan {
+    fn from(span: crate::data::models::Span) -> Self {
+        Self {
+            span_id: Some(span.span_id.clone()),
+            trace_id: Some(span.trace_id.clone()),
+            created_at: span.end_time.into(),
+            updated_at: span.end_time.into(),
+            parsed_payload: span.clone().into(),
         }
     }
 }
