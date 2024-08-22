@@ -50,17 +50,17 @@ type MizuSpan = {
   kind: string;
   scope_name: string | null;
   scope_version: string | null | undefined;
-  start_time: Date;
-  end_time: Date;
+  start_time: string;
+  end_time: string;
   attributes: Record<string, AttributeValue>;
   scope_attributes: Record<string, AttributeValue> | null;
   resource_attributes: Record<string, AttributeValue> | null;
   status:
-    | {
-        code: EStatusCode;
-        message: string;
-      }
-    | undefined;
+  | {
+    code: EStatusCode;
+    message: string;
+  }
+  | undefined;
   events: {
     name: string;
     timestamp: Date;
@@ -87,7 +87,7 @@ type MizuSpan = {
  */
 export async function fromCollectorRequest(
   tracesData: IExportTraceServiceRequest,
-) {
+): Promise<Array<MizuSpan>> {
   const result: Array<MizuSpan> = [];
 
   for (const resourceSpan of tracesData.resourceSpans ?? []) {
@@ -142,15 +142,17 @@ export async function fromCollectorRequest(
           kind,
           scope_name: scopeName,
           scope_version: scopeVersion,
-          start_time: startTime,
-          end_time: endTime,
+          // TODO: Verify date formats
+          start_time: startTime.toString(),
+          // TODO: Verify date formats
+          end_time: endTime.toString(),
           attributes,
           scope_attributes: scopeAttributes,
           resource_attributes: resourceAttributes,
           status: span.status ? mapStatus(span.status) : undefined,
           events,
           links,
-        };
+        } satisfies MizuSpan;
 
         result.push(spanInstance);
       }
