@@ -1,26 +1,6 @@
 import type { RequestorState } from "../../reducer";
 
 /**
- * Get the Content-Type header for the request, if any.
- * @
- */
-export function getContentTypeHeader(body: RequestorState["body"]) {
-  switch (body.type) {
-    case "json":
-      return "-H 'Content-Type: application/json'";
-    case "text":
-      return "-H 'Content-Type: text/plain'";
-    case "form-data":
-      if (body.isMultipart) {
-        return "";
-      }
-      return "-H 'Content-Type: application/x-www-form-urlencoded'";
-    default:
-      return "";
-  }
-}
-
-/**
  * Get the value of the request body, if any. It doesn't support multi-part
  * forms using `File` objects.
  */

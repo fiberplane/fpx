@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { RequestorState } from "../../reducer";
-import { getBodyValue, getContentTypeHeader } from "./utils";
+import { getBodyValue } from "./utils";
 
 export type CopyAsCurlProps = Pick<
   RequestorState,
@@ -33,16 +33,13 @@ export function CopyAsCurl({
   const handleCopy = async () => {
     const payload = getBodyValue({ body, method });
 
-    // As we don't support automatic body type switching yet, we now manually
-    // set the initial header the correspoinding content type based on the
-    // method & body. Otherwise, it will be empty.
-    const initialHeader = payload ? getContentTypeHeader(body) : "";
+    const headers = requestHeaders.reduce((acc, { enabled, key, value }) => {
+      if (!enabled) {
+        return acc;
+      }
 
-    const headers = requestHeaders.reduce(
-      (acc, { enabled, key, value }) =>
-        enabled ? `${acc} -H "${key}: ${value}"` : acc,
-      initialHeader,
-    );
+      return `${acc} -H "${key}: ${value}"`;
+    }, "");
 
     const url = new URL(path);
     for (const { enabled, key, value } of queryParams) {
