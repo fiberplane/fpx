@@ -98,7 +98,7 @@ export function ResponsePanel({
       <Tabs
         value={activeResponsePanelTab}
         onValueChange={setActiveResponsePanelTab}
-        className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
+        className="flex flex-col h-full overflow-hidden"
       >
         <CustomTabsList>
           <CustomTabTrigger value="response">Response</CustomTabTrigger>
@@ -162,7 +162,7 @@ export function ResponsePanel({
               )
             }
           >
-            <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
+            <div className={cn("md:h-full grid grid-rows-[auto_1fr]")}>
               <ResponseSummary response={responseToRender} />
               <ResponseBody
                 headersSlot={

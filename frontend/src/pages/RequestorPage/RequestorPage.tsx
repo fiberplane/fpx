@@ -19,6 +19,17 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableHandle,
+  usePanelConstraints,
+} from "@/components/ui/resizable";
+import { useIsSmScreen } from "@/hooks";
+
+function getMainSectionWidth() {
+  return window.innerWidth - 320 - 80;
+}
 
 export const RequestorPage = () => {
   const { toast } = useToast();
@@ -209,6 +220,63 @@ export const RequestorPage = () => {
     [],
   );
 
+  const width = getMainSectionWidth();
+  const isSmallScreen = useIsSmScreen();
+
+  const { minSize, maxSize } = usePanelConstraints({
+    // Change the groupId to `""` on small screens because we're not rendering
+    // the resizable panel group
+    groupId: isSmallScreen ? "" : "requestor-page",
+    initialGroupSize: width,
+    minPixelSize: 206,
+    minimalGroupSize: 624,
+  });
+
+  const requestContent = (
+    <RequestPanel
+      activeRequestsPanelTab={activeRequestsPanelTab}
+      setActiveRequestsPanelTab={setActiveRequestsPanelTab}
+      shouldShowRequestTab={shouldShowRequestTab}
+      body={body}
+      setBody={setBody}
+      handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+      pathParams={pathParams}
+      queryParams={queryParams}
+      requestHeaders={requestHeaders}
+      setPathParams={setPathParams}
+      clearPathParams={clearPathParams}
+      setQueryParams={setQueryParams}
+      setRequestHeaders={setRequestHeaders}
+      websocketMessage={websocketMessage}
+      setWebsocketMessage={setWebsocketMessage}
+      aiEnabled={aiEnabled}
+      isLoadingParameters={isLoadingParameters}
+      fillInRequest={fillInRequest}
+      testingPersona={testingPersona}
+      setTestingPersona={setTestingPersona}
+      showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
+      setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
+      setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
+      websocketState={websocketState}
+      sendWebsocketMessage={sendWebsocketMessage}
+    />
+  );
+
+  const responseContent = (
+    <ResponsePanel
+      activeResponse={activeResponse}
+      tracedResponse={mostRecentRequestornatorForRoute}
+      activeResponsePanelTab={activeResponsePanelTab}
+      setActiveResponsePanelTab={setActiveResponsePanelTab}
+      shouldShowResponseTab={shouldShowResponseTab}
+      isLoading={isRequestorRequesting}
+      websocketState={websocketState}
+      requestType={selectedRoute?.requestType}
+      openAiTestGenerationPanel={toggleAiTestGenerationPanel}
+      isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
+    />
+  );
+
   return (
     <div
       className={cn(
@@ -229,7 +297,7 @@ export const RequestorPage = () => {
     >
       <div
         className={cn(
-          "max-h-full",
+          // "max-h-full",
           "relative",
           "overflow-y-auto",
           "lg:overflow-x-hidden",
@@ -253,7 +321,8 @@ export const RequestorPage = () => {
 
       <div
         className={cn(
-          "grid",
+          "flex",
+          "flex-col",
           // This is a custom css class that uses the famed `auto minmax(0, 1fr)` trick
           "fpx-requestor-grid-rows",
           "gap-2",
@@ -279,72 +348,55 @@ export const RequestorPage = () => {
           getIsInDraftMode={getIsInDraftMode}
         />
 
-        <div
-          className={cn(
-            BACKGROUND_LAYER,
-            "grid",
-            isAiTestGenerationPanelOpen
-              ? // TODO - auto_auto_auto would be ideal but the resizability of the query panel messes things up
-                "sm:grid-cols-[auto_1fr_auto]"
-              : "sm:grid-cols-[auto_1fr]",
-            "rounded-md",
-            "border",
-            // HACK - This defensively prevents overflow from getting too excessive,
-            //        In the case where the inner content expands beyond the parent
-            "max-w-screen",
-            "max-h-full",
-          )}
-        >
-          <RequestPanel
-            activeRequestsPanelTab={activeRequestsPanelTab}
-            setActiveRequestsPanelTab={setActiveRequestsPanelTab}
-            shouldShowRequestTab={shouldShowRequestTab}
-            body={body}
-            setBody={setBody}
-            handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-            pathParams={pathParams}
-            queryParams={queryParams}
-            requestHeaders={requestHeaders}
-            setPathParams={setPathParams}
-            clearPathParams={clearPathParams}
-            setQueryParams={setQueryParams}
-            setRequestHeaders={setRequestHeaders}
-            websocketMessage={websocketMessage}
-            setWebsocketMessage={setWebsocketMessage}
-            aiEnabled={aiEnabled}
-            isLoadingParameters={isLoadingParameters}
-            fillInRequest={fillInRequest}
-            testingPersona={testingPersona}
-            setTestingPersona={setTestingPersona}
-            showAiGeneratedInputsBanner={showAiGeneratedInputsBanner}
-            setShowAiGeneratedInputsBanner={setShowAiGeneratedInputsBanner}
-            setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
-            websocketState={websocketState}
-            sendWebsocketMessage={sendWebsocketMessage}
-          />
-
-          <ResponsePanel
-            activeResponse={activeResponse}
-            tracedResponse={mostRecentRequestornatorForRoute}
-            activeResponsePanelTab={activeResponsePanelTab}
-            setActiveResponsePanelTab={setActiveResponsePanelTab}
-            shouldShowResponseTab={shouldShowResponseTab}
-            isLoading={isRequestorRequesting}
-            websocketState={websocketState}
-            requestType={selectedRoute?.requestType}
-            openAiTestGenerationPanel={toggleAiTestGenerationPanel}
-            isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
-          />
-          {isAiTestGenerationPanelOpen && (
-            <AiTestGenerationPanel
-              // TODO - Only use history for recent matching route
-              history={history}
-              toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
-              getActiveRoute={getActiveRoute}
-              removeServiceUrlFromPath={removeServiceUrlFromPath}
-            />
-          )}
-        </div>
+        {isSmallScreen ? (
+          <>
+            {requestContent}
+            {responseContent}
+          </>
+        ) : (
+          <ResizablePanelGroup
+            direction={isSmallScreen ? "vertical" : "horizontal"}
+            id="requestor-page"
+            // autoSaveId="requestor-page"
+            className={cn(
+              BACKGROUND_LAYER,
+              "rounded-md",
+              "border",
+              // HACK - This defensively prevents overflow from getting too excessive,
+              //        In the case where the inner content expands beyond the parent
+              "max-w-screen",
+              "max-h-full",
+            )}
+          >
+            <ResizablePanel
+              order={1}
+              id="request-panel"
+              defaultSize={width < 624 ? undefined : (300 / width) * 100}
+              minSize={minSize}
+              maxSize={maxSize}
+            >
+              {requestContent}
+            </ResizablePanel>
+            <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
+            <ResizablePanel id="response-panel" order={2} minSize={10}>
+              {responseContent}
+            </ResizablePanel>
+            {isAiTestGenerationPanelOpen && !isSmallScreen && (
+              <>
+                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
+                <ResizablePanel order={3} id="ai-panel">
+                  <AiTestGenerationPanel
+                    // TODO - Only use history for recent matching route
+                    history={history}
+                    toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
+                    getActiveRoute={getActiveRoute}
+                    removeServiceUrlFromPath={removeServiceUrlFromPath}
+                  />
+                </ResizablePanel>
+              </>
+            )}
+          </ResizablePanelGroup>
+        )}
       </div>
     </div>
   );
