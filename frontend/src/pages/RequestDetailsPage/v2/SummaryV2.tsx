@@ -8,7 +8,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { OtelSpan } from "@/queries/traces-otel";
 import {
   SEMATTRS_EXCEPTION_MESSAGE,
   SEMATTRS_EXCEPTION_TYPE,
@@ -24,6 +23,7 @@ import {
   getStatusCode,
   getString,
 } from "./otel-helpers";
+import { OtelSpan } from "@fiberplane/fpx-types";
 
 export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
   const errors = useMemo(

@@ -1,6 +1,6 @@
-import { OtelSpan } from "@/queries";
 import { z } from "zod";
 import { getRequestBody, getRequestUrl } from "./otel-helpers";
+import { OtelSpan } from "@fiberplane/fpx-types";
 
 const NoneVendorInfoSchema = z.object({
   vendor: z.literal("none"),

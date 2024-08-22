@@ -7,11 +7,12 @@ import {
   isErrorLogEvent,
   isFetchSpan,
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
-import { OtelSpans, useOtelTrace } from "@/queries";
+import { useOtelTrace } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import { useMemo } from "react";
 import { Requestornator } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
+import { OtelSpan } from "@fiberplane/fpx-types";
 
 function createRequestDescription(request: Requestornator | null): string {
   if (!request) {
@@ -98,7 +99,7 @@ function cleanPrompt(prompt: string) {
 
 // NOTE - This only focuses on exceptions! Will need to improve it in the future
 // TODO - Also add error logs or fetch errors
-function serializeTraceForLLM(trace: OtelSpans) {
+function serializeTraceForLLM(trace: Array<OtelSpan>) {
   const events = trace.flatMap((span) => span.events);
   const exceptions = events.filter((event) => event.name === "exception");
   const exceptionsContext = exceptions.reduce(

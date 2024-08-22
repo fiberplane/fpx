@@ -6,6 +6,7 @@ import { fromCollectorRequest } from "../lib/otel/index.js";
 import { getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
+import { OtelSpanSchema, type TraceDetailSpansResponse, type TraceListResponse } from "@fiberplane/fpx-types";
 
 const { otelSpans } = schema;
 
@@ -51,7 +52,9 @@ app.get("/v1/traces", async (ctx) => {
     spans,
   }));
 
-  return ctx.json(traces);
+  const response: TraceListResponse = traces.map(({ traceId, spans }) => ({ traceId, spans: spans.map(({ parsedPayload }) => OtelSpanSchema.parse(parsedPayload)) }));
+
+  return ctx.json(response);
 });
 
 /**
@@ -82,7 +85,10 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
         eq(otelSpans.traceId, traceId),
       ),
     );
-  return ctx.json(traces);
+
+  const response: TraceDetailSpansResponse = traces.map(({ parsedPayload }) => OtelSpanSchema.parse(parsedPayload));
+
+  return ctx.json(response);
 });
 
 app.post("/v1/traces/delete-all-hack", async (ctx) => {

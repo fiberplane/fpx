@@ -9,8 +9,7 @@ import {
   FPX_RESPONSE_BODY,
   SpanKind,
 } from "@/constants";
-import { OtelSpan } from "@/queries";
-import { OtelAttributes, OtelEvent, OtelTrace } from "@/queries/traces-otel";
+import { OtelAttributes, OtelEvent, OtelSpan, OtelTrace } from "@fiberplane/fpx-types";
 
 export const isErrorLogEvent = (event: OtelEvent) => {
   return event.name === "log" && getString(event.attributes.level) === "error";

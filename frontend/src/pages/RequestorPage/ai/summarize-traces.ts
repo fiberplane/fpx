@@ -12,12 +12,12 @@ import {
   getStatusCode,
   getString,
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
-import { OtelSpans } from "@/queries";
 import { fetchSourceLocation } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
+import { OtelSpan } from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";
 
-async function summarizeError(trace?: OtelSpans) {
+async function summarizeError(trace?: Array<OtelSpan>) {
   if (!trace) {
     return null;
   }
@@ -56,7 +56,7 @@ async function summarizeError(trace?: OtelSpans) {
  * - Fetch-related events
  * - Error logs
  */
-export function serializeTraceForLLM(trace: OtelSpans) {
+export function serializeTraceForLLM(trace: Array<OtelSpan>) {
   return trace.reduce(
     (result, span) => {
       if (span.name === "request") {
@@ -149,7 +149,7 @@ export function serializeTraceForLLM(trace: OtelSpans) {
   );
 }
 
-export function useSummarizeError(trace?: OtelSpans) {
+export function useSummarizeError(trace?: Array<OtelSpan>) {
   return useQuery({
     queryKey: ["summarizeError"],
     queryFn: () => summarizeError(trace),
@@ -165,7 +165,7 @@ function trimLines(input: string) {
     .join("\n");
 }
 
-function getHandlerFromTrace(trace: OtelSpans) {
+function getHandlerFromTrace(trace: Array<OtelSpan>) {
   for (const span of trace) {
     if (span.name === "request") {
       return getString(span.attributes[FPX_REQUEST_HANDLER_SOURCE_CODE]);
@@ -173,7 +173,7 @@ function getHandlerFromTrace(trace: OtelSpans) {
   }
 }
 
-function getSourceFileFromTrace(trace: OtelSpans) {
+function getSourceFileFromTrace(trace: Array<OtelSpan>) {
   for (const span of trace) {
     if (span.name === "request") {
       return getString(span.attributes[FPX_REQUEST_HANDLER_FILE]);

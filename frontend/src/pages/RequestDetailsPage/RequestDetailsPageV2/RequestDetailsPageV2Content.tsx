@@ -13,13 +13,13 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { MizuOrphanLog } from "@/queries";
-import { OtelSpan } from "@/queries/traces-otel";
 import { cn } from "@/utils";
 import { EmptyState } from "../EmptyState";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import { getVendorInfo } from "../v2/vendorify-traces";
 import { useRequestWaterfall } from "./useRequestWaterfall";
+import { OtelSpan } from "@fiberplane/fpx-types";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;

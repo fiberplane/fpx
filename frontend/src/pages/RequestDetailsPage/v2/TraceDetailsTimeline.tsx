@@ -6,7 +6,7 @@ import OpenAiLogo from "@/assets/OpenAILogo.svg";
 
 import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
-import { MizuOrphanLog, OtelSpan, isMizuOrphanLog } from "@/queries";
+import { MizuOrphanLog, isMizuOrphanLog } from "@/queries";
 import { cn, safeParseJson } from "@/utils";
 import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 import { formatDistanceStrict } from "date-fns";
@@ -25,6 +25,7 @@ import {
   isNeonVendorInfo,
   isOpenAIVendorInfo,
 } from "./vendorify-traces";
+import { OtelSpan } from "@fiberplane/fpx-types";
 
 type TraceDetailsTimelineProps = {
   waterfall: Waterfall;

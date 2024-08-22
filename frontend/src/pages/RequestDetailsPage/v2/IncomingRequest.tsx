@@ -1,6 +1,5 @@
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import { OtelSpan } from "@/queries";
 import { SENSITIVE_HEADERS, cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -19,6 +18,7 @@ import {
   getStatusCode,
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
+import { OtelSpan } from "@fiberplane/fpx-types";
 
 export function IncomingRequest({ span }: { span: OtelSpan }) {
   const id = span.span_id;
