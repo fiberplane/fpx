@@ -7,6 +7,7 @@ import { eq, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { settings } from "../../db/schema.js";
 import type * as schema from "../../db/schema.js";
+import { safeParseJson } from "../utils.js";
 
 export async function upsertSettings(
   db: LibSQLDatabase<typeof schema>,
@@ -62,7 +63,7 @@ export async function getSetting<T extends SettingsKey>(
     return;
   }
 
-  return JSON.parse(result.value);
+  return safeParseJson(result.value);
 }
 
 export async function getAllSettings(
@@ -72,7 +73,9 @@ export async function getAllSettings(
 
   const mappedToSchema = results.reduce<Record<string, string>>(
     (acc, setting) => {
-      acc[setting.key] = setting.value ? JSON.parse(setting.value) : undefined;
+      acc[setting.key] = setting.value
+        ? safeParseJson(setting.value)
+        : undefined;
       return acc;
     },
     {},

@@ -11,6 +11,7 @@ import {
   isWsRequest,
 } from "../types";
 import { useSaveUiState } from "./persistence";
+import { addContentTypeHeader, setBodyTypeReducer } from "./reducers";
 import {
   RequestBodyType,
   RequestorActiveResponse,
@@ -177,7 +178,7 @@ function requestorReducer(
       return {
         ...state,
         serviceBaseUrl: action.payload,
-        path: addBaseUrl(action.payload, state.path),
+        path: addBaseUrl(action.payload, state.path, { forceChangeHost: true }),
       };
     }
     case PATH_UPDATE: {
@@ -390,14 +391,14 @@ function requestorReducer(
         const shouldForceMultipart = nextBodyValue.some(
           (param) => param.value.value instanceof File,
         );
-        return {
+        return addContentTypeHeader({
           ...state,
           body: {
             type: nextBody.type,
             isMultipart: shouldForceMultipart || nextBody.isMultipart,
             value: nextBodyValue,
           },
-        };
+        });
       }
       return { ...state, body: nextBody };
     }
@@ -414,46 +415,8 @@ function requestorReducer(
             : { type: state.body.type, value: "" };
       return { ...state, body: nextBody };
     }
-    // NOTE - This needs to be its own reducer function it is so darn hard to read, i'm sorry
     case SET_BODY_TYPE: {
-      const oldBodyValue = state.body.value;
-      const oldBodyType = state.body.type;
-      const newBodyType = action.payload.type;
-      if (oldBodyType === newBodyType) {
-        // HACK - Refactor
-        if (state.body.type === "form-data") {
-          return {
-            ...state,
-            body: {
-              ...state.body,
-              isMultipart: !!action.payload.isMultipart,
-            },
-          };
-        }
-        return state;
-      }
-      if (newBodyType === "form-data") {
-        const isMultipart = !!action.payload.isMultipart;
-        return {
-          ...state,
-          body: {
-            type: newBodyType,
-            isMultipart,
-            value: enforceFormDataTerminalDraftParameter([]),
-          },
-        };
-      }
-      if (newBodyType === "file") {
-        return { ...state, body: { type: newBodyType, value: undefined } };
-      }
-      if (oldBodyType === "form-data") {
-        return { ...state, body: { type: newBodyType, value: "" } };
-      }
-      // HACK - These lines makes things clearer for typescript, but are a nightmare to read, i'm so sorry
-      const isNonTextOldBody =
-        Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
-      const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
-      return { ...state, body: { type: newBodyType, value: newBodyValue } };
+      return addContentTypeHeader(setBodyTypeReducer(state, action.payload));
     }
     case SET_WEBSOCKET_MESSAGE: {
       return { ...state, websocketMessage: action.payload };
@@ -863,15 +826,31 @@ const removeBaseUrl = (serviceBaseUrl: string, path: string) => {
 const addBaseUrl = (
   serviceBaseUrl: string,
   path: string,
-  { requestType }: { requestType: RequestType } = { requestType: "http" },
+  {
+    requestType,
+    forceChangeHost,
+  }: { requestType?: RequestType; forceChangeHost?: boolean } = {
+    requestType: "http",
+    forceChangeHost: false,
+  },
 ) => {
   // NOTE - This is necessary to allow the user to type new base urls... even though we replace the base url whenever they switch routes
-  if (pathHasValidBaseUrl(path)) {
+  if (pathHasValidBaseUrl(path) && !forceChangeHost) {
     return path;
   }
 
+  // HACK - Fix this later, not a great pattern
+  if (pathHasValidBaseUrl(path) && forceChangeHost) {
+    const safeBaseUrl = serviceBaseUrl.endsWith("/")
+      ? serviceBaseUrl.slice(0, -1)
+      : serviceBaseUrl;
+    const parsedPath = new URL(path);
+    const search = parsedPath.search;
+    return `${safeBaseUrl}${parsedPath.pathname}${search}`;
+  }
+
   const parsedBaseUrl = new URL(serviceBaseUrl);
-  if (isWsRequest(requestType)) {
+  if (requestType && isWsRequest(requestType)) {
     parsedBaseUrl.protocol = "ws";
   }
   let updatedBaseUrl = parsedBaseUrl.toString();
