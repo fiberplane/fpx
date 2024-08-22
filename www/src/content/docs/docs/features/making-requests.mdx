@@ -3,7 +3,10 @@ title: Making requests
 description: Tutorial on requests in studio
 ---
 
+import { Image } from 'astro:assets';
 import { Aside } from '@astrojs/starlight/components';
+
+import FirstRequest from '@/assets/making-requests--make-request.gif';
 
 Requests. Everybody loves a good HTTP request. Right? Don't they? Surely they do.
 
@@ -11,14 +14,14 @@ Fiberplane Studio makes it easy to fire off requests against your API.
 
 Once you're up and running locally, the first page you see in Studio leaves you a single click away from making your first request.
 
-> **TODO** Add screenshot or gif of the first page + a simple request
+<Image src={FirstRequest} alt="First request" />
 
 "What just happened there?" You might be asking yourself.
 
-When using Fiberplane Studio with the Client Library (**link**), Studio will automatically detect the routes in your Hono API and display them in the sidebar.
+When using Fiberplane Studio with the [Hono client library](/docs/components/client-library/), Studio automatically detects the routes in your Hono API and displays them in the sidebar.
 
-In this case, the first route, `GET /`, is selected by default. By clicking "Send", we make a request to our API and see the response in the panel below.
-If there were any logs along the way, we can see them in the "Debug" section.
+In this case, the first route, `GET /`, is selected by default, and by clicking "Send", we make a request to our API and see the response in the panel below.
+(Not shown: If there were any logs along the way, we can see them in the "Debug" section.)
 
 We can repeat this process for any of the routes in our API, adding whatever query parameters, headers or body payloads we need.
 
