@@ -1,4 +1,4 @@
-use anyhow::{Context, Ok, Result};
+use anyhow::{Context, Result};
 use clap::Parser;
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
@@ -7,7 +7,7 @@ use opentelemetry_sdk::trace::Config;
 use opentelemetry_sdk::{runtime, Resource};
 use std::env;
 use std::path::PathBuf;
-use tracing::trace;
+use tracing::{error, trace};
 use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -101,7 +101,7 @@ async fn initialize_fpx_dir(override_path: &Option<PathBuf>) -> Result<PathBuf> 
             trace!(fpx_directory = ?path, "Using override path for fpx directory");
             path.to_path_buf()
         }
-        None => match find_fpx_dir()? {
+        None => match find_fpx_dir() {
             Some(path) => {
                 trace!(fpx_directory = ?path, "Found fpx directory in a parent directory");
                 path
@@ -114,7 +114,7 @@ async fn initialize_fpx_dir(override_path: &Option<PathBuf>) -> Result<PathBuf> 
         },
     };
 
-    // Create top level fpx directory
+    // Create top level .fpx directory
     std::fs::DirBuilder::new()
         .recursive(true)
         .create(&path)
@@ -127,19 +127,22 @@ async fn initialize_fpx_dir(override_path: &Option<PathBuf>) -> Result<PathBuf> 
 /// This returns [`None`] if no fpx directory is found.
 ///
 /// Any directory that is named `.fpx` is considered the fpx directory.
-fn find_fpx_dir() -> Result<Option<PathBuf>> {
-    let mut dir = Some(env::current_dir()?);
+fn find_fpx_dir() -> Option<PathBuf> {
+    let Ok(cwd) = env::current_dir() else {
+        error!("Failed to get current directory");
+        return None;
+    };
 
+    let mut dir = Some(cwd);
     while let Some(inner_dir) = dir {
-        for entry in inner_dir.read_dir()? {
-            let entry = entry?;
-            if entry.file_type()?.is_dir() && entry.file_name() == ".fpx" {
-                return Ok(Some(entry.path()));
-            }
+        let fpx_dir = inner_dir.join(".fpx");
+
+        if fpx_dir.is_dir() {
+            return Some(fpx_dir);
         }
 
         dir = inner_dir.parent().map(Into::into);
     }
 
-    Ok(None)
+    None
 }
