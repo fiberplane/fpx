@@ -38,6 +38,11 @@ export function respondWithRoutes(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ routes }),
+    }).catch((_e) => {
+      // NOTE - We're not awaiting this fetch, so we need to catch its errors
+      //        to avoid unhandled promise rejections.
+      // TODO - Use a logger, or only log if library debugging is enabled
+      // console.error("Error sending routes to FPX", e);
     });
   } catch (_e) {
     // TODO - Use a logger, or only log if library debugging is enabled
