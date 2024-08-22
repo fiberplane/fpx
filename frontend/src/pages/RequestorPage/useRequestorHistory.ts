@@ -44,7 +44,7 @@ export function useRequestorHistory({
     if (allRequests) {
       const cloned = [...allRequests];
       cloned.sort(sortRequestornatorsDescending);
-      return cloned;
+      return cloned.slice(0, 4);
     }
     return [];
   }, [allRequests]);
