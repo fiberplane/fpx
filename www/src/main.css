@@ -39,12 +39,13 @@
   --sl-color-bg-nav: var(--sl-color-black);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 800;
-}
-
-.sl-markdown-content h1, h2, h3, h4, h5, h6 {
-	font-weight: 800 !important;
+.sl-markdown-content h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 800 !important;
 }
 
 /* Navbar */
@@ -100,4 +101,23 @@ nav.sidebar a[aria-current="page"]:focus {
   font-weight: 600;
   background-color: transparent;
   color: var(--sl-color-accent);
+}
+
+/* Headings */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 800;
+}
+
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6) > a {
+  color: var(--sl-color-white);
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 }
