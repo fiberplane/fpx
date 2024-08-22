@@ -10,6 +10,8 @@ import { LinkCard } from '@astrojs/starlight/components';
 import FirstRequest from '@/assets/making-requests--make-request.gif';
 import CreateGoose from '@/assets/making-requests--create-goose.png';
 import CurlRequest from '@/assets/making-requests--curl.png';
+import BodySelector from '@/assets/making-requests--body-type.png';
+import FormBodyExample from '@/assets/making-requests--body-type-form-data.png';
 
 Requests. Everybody loves a good HTTP request. Right? Don't they? Surely they do.
 
@@ -28,17 +30,25 @@ In this case, the first route, `GET /`, is selected by default, and by clicking 
 
 We can repeat this process for any of the routes in our API, adding whatever query parameters, headers or body payloads we need.
 
-## Body Payloads (Text, JSON, FormData)
+## Request Body Payloads
 
-Body payloads are JSON by default. As much as we love JSON, sometimes you do need to send a blob or submit a form. Fair enough.
+We love JSON. We're huge fans. To that end, request body payloads in Studio are JSON by default. If you had a route like `POST /api/geese`, you could fill in the request body as follows:
 
-To modify the body payload, click the "Body" tab and select the type you want to use.
+<Image src={CreateGoose} alt="Create goose" />
 
-This will, in certain cases, change the `Content-Type` header to match the type of the body you're sending.
+However, as much as we love JSON, sometimes you do need to send a blob or submit a form. Fair enough.
 
-If you attach a file to a form, the file will be sent as a multipart/form-data request.
+To modify the body payload, click the body selector along the bottom of the request panel, and select the type you want to use.
 
-If you just want to send a file, you can attach it directly to the request.
+<Image src={BodySelector} alt="Body selector" />
+
+This will render a different UI form depending on the body payload, and if necessary, change the `Content-Type` header to match the type of the body you're sending.
+
+Let's see how we would send the same body payload as before, but this time as an `application/x-www-form-urlencoded` request.
+
+<Image src={FormBodyExample} alt="Form Data example body payload" />
+
+If you attach a file to a form, the file will be sent as a multipart/form-data request. If you just want to send a file, you can attach it directly to the request, and it will be sent with the content-type `application/octet-stream`, unless you specify otherwise.
 
 ## Request History
 
@@ -65,7 +75,7 @@ OpenAPI support is experimental right now, so if you encounter any issues, pleas
 
 ## Copy as cURL
 
-Say we have a route `POST /api/geese` that creates a goose. We can fill in the body with the data we want to send to the server as follows:
+Recall our route `POST /api/geese`, which creates a goose. Remember we filled in the body with the data we want to send to the server as follows:
 
 <Image src={CreateGoose} alt="Create goose" />
 
