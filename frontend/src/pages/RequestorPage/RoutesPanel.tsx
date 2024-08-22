@@ -268,13 +268,13 @@ function RoutesSection(props: RoutesSectionProps) {
 
   return (
     <>
-      <div className="font-medium text-sm flex items-center mb-2 mt-4">
-        <ShowRoutesSectionIcon
-          className="h-4 w-4 mr-0.5 cursor-pointer"
-          onClick={() => {
-            setShowRoutesSection((current) => !current);
-          }}
-        />
+      <div
+        className="font-medium text-sm flex items-center mb-2 mt-4"
+        onClick={() => {
+          setShowRoutesSection((current) => !current);
+        }}
+      >
+        <ShowRoutesSectionIcon className="h-4 w-4 mr-0.5 cursor-pointer" />
         {title}
       </div>
       {showRoutesSection && (
