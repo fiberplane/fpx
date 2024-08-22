@@ -16,7 +16,20 @@ export default defineConfig({
         github: "https://github.com/fiberplane/fpx",
         discord: "https://discord.com/invite/cqdY6SpfVR",
       },
-
+      sidebar: [
+        {
+          label: "Quickstart",
+          items: ["docs/get-started"],
+        },
+        {
+          label: "Components",
+          autogenerate: { directory: "docs/components" },
+        },
+        {
+          label: "Features",
+          autogenerate: { directory: "docs/features" },
+        },
+      ],
       components: {
         Header: "@/components/Header.astro",
         Pagination: "@/components/Pagination.astro",
