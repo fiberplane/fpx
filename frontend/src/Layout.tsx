@@ -47,7 +47,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
               <WebhoncBadge />
             </div>
           )}
-          <div className="flex items-center gap-2 border-l">
+          <div className="flex items-center gap-0 border-l px-1">
             <Button variant="ghost" size="icon">
               <a
                 href="https://github.com/fiberplane/fpx"

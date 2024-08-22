@@ -26,7 +26,7 @@ export function FpxWorkerProxySettingsForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <div>
-          <h3 className="mb-4 text-lg font-medium">Public URL Settings</h3>
+          <h3 className="mb-4 text-lg font-medium">Fpx Worker Proxy Settings</h3>
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -40,7 +40,7 @@ export function FpxWorkerProxySettingsForm({
                   <div className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
                       <FormLabel className="text-base">
-                        Enable Public URL
+                        Enable Fpx Worker Proxy
                         <span className="font-light text-gray-400 ml-2">
                           (Alpha)
                         </span>
