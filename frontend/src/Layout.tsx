@@ -1,4 +1,4 @@
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
 import { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
@@ -55,6 +55,15 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
                 rel="noopener noreferrer"
               >
                 <GitHubLogoIcon className="w-4 h-4" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon">
+              <a
+                href="https://discord.com/invite/cqdY6SpfVR"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <DiscordLogoIcon className="w-4 h-4" />
               </a>
             </Button>
           </div>
