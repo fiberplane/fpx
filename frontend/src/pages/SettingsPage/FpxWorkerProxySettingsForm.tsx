@@ -26,7 +26,9 @@ export function FpxWorkerProxySettingsForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <div>
-          <h3 className="mb-4 text-lg font-medium">Fpx Worker Proxy Settings</h3>
+          <h3 className="mb-4 text-lg font-medium">
+            Fpx Worker Proxy Settings
+          </h3>
           <div className="space-y-4">
             <FormField
               control={form.control}
