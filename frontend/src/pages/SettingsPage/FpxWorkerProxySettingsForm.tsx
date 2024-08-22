@@ -27,7 +27,7 @@ export function FpxWorkerProxySettingsForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <div>
           <h3 className="mb-4 text-lg font-medium">
-            Fpx Worker Proxy Settings
+            Cloudflare Worker Proxy Settings
           </h3>
           <div className="space-y-4">
             <FormField
@@ -42,15 +42,16 @@ export function FpxWorkerProxySettingsForm({
                   <div className="flex flex-row items-center justify-between">
                     <div className="space-y-1">
                       <FormLabel className="text-base">
-                        Enable Fpx Worker Proxy
+                        Cloudflare Worker Trace Ingestion
                         <span className="font-light text-gray-400 ml-2">
-                          (Alpha)
+                          (Experimental)
                         </span>
                       </FormLabel>
                       <FormDescription className="max-w-3xl grid gap-2">
                         <p>
-                          Enable proxying of requests to and from a remote
-                          ingestion engine.
+                          Enable reading trace data to from a remote ingestion
+                          engine hosted on Cloudflare workers. Contact
+                          Fiberplane for more information.
                         </p>
                       </FormDescription>
                     </div>
@@ -72,8 +73,8 @@ export function FpxWorkerProxySettingsForm({
                               Base URL
                             </FormLabel>
                             <FormDescription className="mb-1">
-                              You can configure the base URL used by the public
-                              URL service.
+                              You can configure the base URL used by the
+                              Cloudflare Worker Trace Ingestion service.
                             </FormDescription>
                             <FormControl>
                               <Input
