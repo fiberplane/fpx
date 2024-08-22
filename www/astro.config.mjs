@@ -1,3 +1,5 @@
+import { rehypeHeadingIds } from "@astrojs/markdown-remark";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 
@@ -44,4 +46,15 @@ export default defineConfig({
       },
     }),
   ],
+  markdown: {
+    rehypePlugins: [
+      rehypeHeadingIds,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: "wrap",
+        },
+      ],
+    ],
+  },
 });

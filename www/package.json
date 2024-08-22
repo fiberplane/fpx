@@ -14,8 +14,10 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.2",
+    "@astrojs/markdown-remark": "^5.2.0",
     "@astrojs/starlight": "^0.25.4",
     "astro": "^4.13.2",
+    "rehype-autolink-headings": "^7.1.0",
     "rollup": "^4.20.0",
     "sharp": "^0.32.5",
     "starlight-package-managers": "^0.6.0",

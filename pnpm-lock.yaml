@@ -429,18 +429,27 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.2
         version: 0.9.2(prettier-plugin-astro@0.14.1)(prettier@3.3.3)(typescript@5.5.4)
+      '@astrojs/markdown-remark':
+        specifier: ^5.2.0
+        version: 5.2.0
       '@astrojs/starlight':
         specifier: ^0.25.4
         version: 0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))
       astro:
         specifier: ^4.13.2
         version: 4.13.3(@types/node@20.14.15)(typescript@5.5.4)
+      rehype-autolink-headings:
+        specifier: ^7.1.0
+        version: 7.1.0
       rollup:
         specifier: ^4.20.0
         version: 4.20.0
       sharp:
         specifier: ^0.32.5
         version: 0.32.6
+      starlight-package-managers:
+        specifier: ^0.6.0
+        version: 0.6.0(@astrojs/starlight@0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4)))(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))
       tailwindcss:
         specifier: ^3.4.4
         version: 3.4.9
@@ -4520,6 +4529,9 @@ packages:
   hast-util-has-property@3.0.0:
     resolution: {integrity: sha512-MNilsvEKLFpV604hwfhVStK0usFY/QmM5zX16bo7EjnAEGofr5YyI37kzopBlZJkHD4t887i+q/C8/tr5Q94cA==}
 
+  hast-util-heading-rank@3.0.0:
+    resolution: {integrity: sha512-EJKb8oMUXVHcWZTDepnr+WNbfnXKFNf9duMesmr4S8SXTJBJ9M4Yok08pu9vxdJwdlGRhVumk9mEhkEvKGifwA==}
+
   hast-util-is-body-ok-link@3.0.0:
     resolution: {integrity: sha512-VFHY5bo2nY8HiV6nir2ynmEB1XkxzuUffhEGeVx7orbu/B1KaGyeGgMZldvMVx5xWrDlLLG/kQ6YkJAMkBEx0w==}
 
@@ -4923,6 +4935,7 @@ packages:
 
   libsql@0.3.19:
     resolution: {integrity: sha512-Aj5cQ5uk/6fHdmeW0TiXK42FqUlwx7ytmMLPSaUQPin5HKKKuUPD62MAbN4OEweGBBI7q1BekoEN4gPUEL6MZA==}
+    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   lilconfig@2.1.0:
@@ -5978,6 +5991,9 @@ packages:
   regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
 
+  rehype-autolink-headings@7.1.0:
+    resolution: {integrity: sha512-rItO/pSdvnvsP4QRB1pmPiNHUskikqtPojZKJPPPAVx9Hj8i8TwMBhofrrAYRhYOOBZH9tgmG5lPqDLuIWPWmw==}
+
   rehype-expressive-code@0.35.6:
     resolution: {integrity: sha512-pPdE+pRcRw01kxMOwHQjuRxgwlblZt5+wAc3w2aPGgmcnn57wYjn07iKO7zaznDxYVxMYVvYlnL+R3vWFQS4Gw==}
 
@@ -6288,6 +6304,13 @@ packages:
 
   stacktracey@2.1.8:
     resolution: {integrity: sha512-Kpij9riA+UNg7TnphqjH7/CzctQ/owJGNbFkfEeve4Z4uxT5+JapVLFXcsurIfN34gnTWZNJ/f7NMG0E8JDzTw==}
+
+  starlight-package-managers@0.6.0:
+    resolution: {integrity: sha512-2tE0B4ZVEZXZ1LJjcSvVXLfJP8SB2nE+nhiFgSa3fuHUPtnbzmFxLVp7jEKD8jaMXKWPYtlNTy95gJSK9W1sbQ==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.22.0'
+      astro: '>=4.2.7'
 
   state-local@1.0.7:
     resolution: {integrity: sha512-HTEHMNieakEnoe33shBYcZ7NX83ACUjCu8c40iOGEZsngj9zRnkqS9j1pqQPXwobB0ZcVTk27REb7COQ0UR59w==}
@@ -11248,6 +11271,10 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
 
+  hast-util-heading-rank@3.0.0:
+    dependencies:
+      '@types/hast': 3.0.4
+
   hast-util-is-body-ok-link@3.0.0:
     dependencies:
       '@types/hast': 3.0.4
@@ -13072,6 +13099,15 @@ snapshots:
 
   regenerator-runtime@0.14.1: {}
 
+  rehype-autolink-headings@7.1.0:
+    dependencies:
+      '@types/hast': 3.0.4
+      '@ungap/structured-clone': 1.2.0
+      hast-util-heading-rank: 3.0.0
+      hast-util-is-element: 3.0.0
+      unified: 11.0.5
+      unist-util-visit: 5.0.0
+
   rehype-expressive-code@0.35.6:
     dependencies:
       expressive-code: 0.35.6
@@ -13476,6 +13512,11 @@ snapshots:
     dependencies:
       as-table: 1.0.55
       get-source: 2.0.12
+
+  starlight-package-managers@0.6.0(@astrojs/starlight@0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4)))(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4)):
+    dependencies:
+      '@astrojs/starlight': 0.25.4(astro@4.13.3(@types/node@20.14.15)(typescript@5.5.4))
+      astro: 4.13.3(@types/node@20.14.15)(typescript@5.5.4)
 
   state-local@1.0.7: {}
 
