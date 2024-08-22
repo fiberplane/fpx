@@ -16,7 +16,8 @@ To install the client library for your Hono application, run the following comma
 ## Usage within the Hono application
 
 Below is an example of how to use the client library within a Hono application:
-```js {2,8}
+
+```ts {2,8} title="index.ts"
 import { Hono } from "hono";
 import { instrument } from "@fiberplane/hono-otel";
 
@@ -28,9 +29,10 @@ export default instrument(app);
 ```
 
 ### Advanced usage: Custom spans
+
 The `measure` function from the client library allows you to create custom spans for any function within your application, enabling more granular tracing.
 
-```js {6}
+```ts {6-10} title="index.ts"
 import { instrument, measure } from "@fiberplane/hono-otel";
 
 const app = new Hono();
@@ -57,13 +59,17 @@ By default, the client library does not send traces. To define an endpoint, you 
 When starting Fiberplane Studio via the command line with `npx @fiberplane/studio`, the `FPX_ENDPOINT` is automatically set to the Fiberplane Studio's default port 8788: `http://localhost:8788/v1/traces`. Additionally, the Fiberplane Studio CLI setup enables Node.js compatibility mode for Cloudflare Workers.
 
 If you are not using Fiberplane Studio and use Cloudflare workers, ensure that Node.js compatibility mode is enabled in the `wrangler.toml` file:
-```
-compatibility_flags = [ "nodejs_compat" ]
-``` 
-### Customizing the `instrument` function behavior
-The client library allows you to override the default behavior of the `instrument` function. By default, the function creates traces for all fetched requests in the application and sends logging data to a locally running FPX Studio. You can disable these features by setting the corresponding monitoring variables to `false`. 
 
-```js {9-14}
+```toml title="wrangler.toml"
+# ...
+compatibility_flags = [ "nodejs_compat" ]
+```
+
+### Customizing the `instrument` function behavior
+
+The client library allows you to override the default behavior of the `instrument` function. By default, the function creates traces for all fetched requests in the application and sends logging data to a locally running FPX Studio. You can disable these features by setting the corresponding monitoring variables to `false`.
+
+```js {9-14} title="index.ts"
 import { Hono } from "hono";
 import { instrument } from "@fiberplane/hono-otel";
 
@@ -80,6 +86,5 @@ export default instrument(app, {
   },
 });
 ```
-
 
 Find the code on [Github](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel)
