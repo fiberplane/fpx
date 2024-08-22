@@ -5,7 +5,10 @@ description: Tutorial on AI request generation features in Studio
 
 import { Image } from "astro:assets";
 import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif"
-import fpxGenAiSettings from "@/assets/gen-ai-requests--settings.png"
+import fpxGenAiSettingsEnable from "@/assets/gen-ai-requests--settings-enable.png"
+import fpxGenAiSettingsProvider from "@/assets/gen-ai-requests--settings-provider.png"
+import fpxGenAiSettingsBaseUrl from "@/assets/gen-ai-requests--settings-baseurl.png"
+import fpxGenAiHostile from "@/assets/gen-ai-requests--hostile.png"
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
@@ -15,7 +18,7 @@ Studio has an opt-in, experimental feature to help you generate request payloads
 
 Let's walk through an example, then we can touch on how to enable AI Request Autofill, how it works under the hood, and where it works best.
 
-## Example: Creating a Resource
+## Example: Creating a Goose
 
 Let's say we have a route `POST /api/goose` that creates a new goose. This route expects a JSON body with the following shape:
 
@@ -34,17 +37,7 @@ Once we've [enabled](#enabling-request-autofill) AI Request Autofill,
 we can click the Magic Wand icon on the requests page to generate some request data. 
 (Feel free to also use the shortcut `CMD + G`.)
 
-In this case, Studio will generate a request body.
-
-{/* ```ts
-{
-  name: "Goosey",
-  description: "A goose named Goosey who is kind of a loosey goose (not fit for leadership).",
-  isFlockLeader: false,
-  age: 2,
-  location: "New York"
-}
-``` */}
+In this case, Studio will generate a request body with the shape above.
 
 <Image src={fpxGenAiGenerateBody} alt="Generated Request Body" />
 
@@ -52,7 +45,7 @@ Looks like we're going to create a goose named "Gus" who loves Golang. Very alli
 
 After this, we could go ahead and click Send (or press `CMD + Enter`), and Studio will send the request to the API and create Gus.
 
-Under the hood, Studio keeps track of the most recent requests you've made to your API in order to generate request data that follow your current testing path.
+Under the hood, Studio keeps track of the most recent requests you've made to your API in order to generate request data that follows your current testing path.
 
 So, besides generating a request body, Studio can also prefill data for:
 
@@ -70,7 +63,7 @@ First, we need to enable AI features in Studio. Head on over to the Settings pag
 
 Toggle "Enable Request Autofill", and then configure the AI provider and model you want to use.
 
-<Image src={fpxGenAiSettings} alt="Settings Page" />
+<Image src={fpxGenAiSettingsEnable} alt="Settings Page - Enable AI Request Autofill" />
 
 As of writing, Studio supports both OpenAI and Anthropic as LLM providers, and allows selection of the following models:
 
@@ -88,6 +81,10 @@ As of writing, Studio supports both OpenAI and Anthropic as LLM providers, and a
   </TabItem>
 </Tabs>
 
+You can select the provider and model once you've enabled AI Request Autofill.
+
+<Image src={fpxGenAiSettingsProvider} alt="Settings Page - Select AI Provider" />
+
 Once you've selected the provider and model, fill in your API key and click "Save". You're ready to go!
 
 The API key is stored locally in your project, and ignored by git by default. (Specifically, it's stored in a local database, which you can find in `.fpxconfig/fpx.db`.)
@@ -96,6 +93,8 @@ The API key is stored locally in your project, and ignored by git by default. (S
 
 If your LLM provider exposes an API that is compatible with OpenAI or Anthropic, you can use it. You just need to set the base URL in your provider configuration.
 
+<Image src={fpxGenAiSettingsBaseUrl} alt="Settings Page - Set Base URL" />
+
 This is a way to use a local AI, if you're so inclined! There are [instructions in our GitHub repo](https://github.com/fiberplane/fpx/tree/main/local-inference) on how to do this.
 Just be warned: in our experiments with running local models, request parameters would often take 10+ seconds to generate, which is a little slow 🐢.
 
@@ -103,11 +102,13 @@ Just be warned: in our experiments with running local models, request parameters
 
 By default, Studio will generate request data that takes inspiration from the most recent requests you've made to your API, and it will try to help you test the happy path.
 
-If you want to change this behavior, click the caret by the magic wand icon, and select "Hostile" underneath "Personas".
+If you want to change this behavior, click the caret by the magic wand icon, and select "Hostile" underneath "Testing Persona".
 
-> TODO: Add a screenshot of the request generation dropdown
+<Image src={fpxGenAiHostile} alt="Request Generation Dropdown" />
 
 In this case, if we're testing a route like `GET /api/goose/:id`, Studio will generate a url parameter like `invalid_id`. 
+
+This is a great way to test the resilience of your API to unexpected and invalid inputs.
 
 ## How all of this works
 
@@ -118,7 +119,7 @@ The AI generates a request based on the following:
 
 If you imported an OpenAPI spec, the AI will also generate requests based on the definitions in the spec.
 
-What does this mean in practice? Well, if your request handler shells out to several helper functions, Studio will struggle to guess the correct request data.
+What does this mean in practice? Well, if your request handler shells out to several helper functions to parse and transform the request data, Studio will struggle to guess the correct request data.
 We are working on ways to improve this.
 
 ### What gets sent to the LLM?
