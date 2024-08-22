@@ -3,15 +3,15 @@ title: Fiberplane Studio
 description: description of studio
 ---
 
+import PackageManagers from "@/components/PackageManagers.astro";
+
 Fiberplane Studio is the frontend component that allows you to explore your Hono API during development. It runs locally on your machine and serves as a companion for debugging
 
 ## CLI setup
 
 The easiest way to run Fiberplane Studio is through a CLI command. Simply run the command from the root of your project:
 
-```
-npx @fiberplane/studio
-```
+<PackageManagers type="exec" pkg="@fiberplane/studio" />
 
 This will spin up the studio on the default port 8788. In the background, it also sets the `FPX_ENDPOINT` to your application and adds the Node.js compatibility flag in the `wrangler.toml` file.
 

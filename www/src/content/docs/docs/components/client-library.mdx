@@ -3,15 +3,18 @@ title: Client library
 description: description of client library
 ---
 
+import PackageManagers from "@/components/PackageManagers.astro";
+
 The [client library](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel) leverages [OpenTelemetry](https://opentelemetry.io/) to instrument applications and send [traces](https://opentelemetry.io/docs/concepts/signals/traces/) to Fiberplane Studio. It requires the use of [Hono](https://hono.dev/) web application framework.
 
-## Installation 
+## Installation
+
 To install the client library for your Hono application, run the following command in your project directory:
-```
-npm i @fiberplane/hono-otel@beta 
-``` 
+
+<PackageManagers pkg="@fiberplane/hono-otel" />
 
 ## Usage within the Hono application
+
 Below is an example of how to use the client library within a Hono application:
 ```js {2,8}
 import { Hono } from "hono";
@@ -48,6 +51,7 @@ export default instrument(app);
 ```
 
 ## Configuration
+
 By default, the client library does not send traces. To define an endpoint, you need to set the `FPX_ENDPOINT` environment variable.
 
 When starting Fiberplane Studio via the command line with `npx @fiberplane/studio`, the `FPX_ENDPOINT` is automatically set to the Fiberplane Studio's default port 8788: `http://localhost:8788/v1/traces`. Additionally, the Fiberplane Studio CLI setup enables Node.js compatibility mode for Cloudflare Workers.
