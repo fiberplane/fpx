@@ -4,8 +4,9 @@ description: Tutorial on AI request generation features in Studio
 ---
 
 import { Image } from "astro:assets";
-import fpxGenAIMagicWand from "@/assets/fpx-gen-ai-magic-wand.png";
-import fpxGenAICreateGooseBody from "@/assets/fpx-gen-ai-create-goose-body.png";
+import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif"
+import fpxGenAiSettings from "@/assets/gen-ai-requests--settings.png"
+
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Generating sample request data is a common task in api development. It can also be very tedious.
@@ -21,23 +22,19 @@ Let's say we have a route `POST /api/goose` that creates a new goose. This route
 ```ts
 {
   name: string;
-  description: string;
   isFlockLeader: boolean;
-  age: number;
+  programmingLanguage: string;
+  motivations: string;
   location: string;
 }
 ```
 
 In the Fiberplane Studio UI, Studio's AI can generate these fields for us. 
-Once we've enabled AI Request Autofill (we'll tackle configuration [in a bit](#enabling-request-autofill)), 
-we just click the Magic Wand icon on the requests page to generate some request data. 
-Feel free to also use the shortcut `CMD + G`.
+Once we've [enabled](#enabling-request-autofill) AI Request Autofill, 
+we can click the Magic Wand icon on the requests page to generate some request data. 
+(Feel free to also use the shortcut `CMD + G`.)
 
-<Image src={fpxGenAIMagicWand} alt="Magic Wand Button" />
-
-In this case, Studio will generate a request body that looks something like this:
-
-<Image src={fpxGenAICreateGooseBody} alt="Generated Request Body" />
+In this case, Studio will generate a request body.
 
 {/* ```ts
 {
@@ -49,11 +46,13 @@ In this case, Studio will generate a request body that looks something like this
 }
 ``` */}
 
-Go ahead and click Send (or press `CMD + Enter`), and Studio will send the request to the API and create the goose!
+<Image src={fpxGenAiGenerateBody} alt="Generated Request Body" />
 
-> TODO: Add a screenshot of the response
+Looks like we're going to create a goose named "Gus" who loves Golang. Very alliterative!
 
-Under the hood, Studio keeps track of the most recent requests you've made to your API, in order to generate request data that follow your current testing path.
+After this, we could go ahead and click Send (or press `CMD + Enter`), and Studio will send the request to the API and create Gus.
+
+Under the hood, Studio keeps track of the most recent requests you've made to your API in order to generate request data that follow your current testing path.
 
 So, besides generating a request body, Studio can also prefill data for:
 
@@ -61,9 +60,7 @@ So, besides generating a request body, Studio can also prefill data for:
 - Query parameters
 - Request Headers
 
-For example, if you just created Goosey, and its id was `123`, Studio will use that id when you generate parameters for a route like `GET /api/goose/:id` or `DELETE /api/goose/:id`.
-
-> TODO: Add a screenshot of the response
+For example, if you just created a goose named "Gus", and its id was `123`, Studio will use that id when you generate parameters for a route like `GET /api/goose/:id` or `DELETE /api/goose/:id`.
 
 Before showing any more examples, though, let's talk about how to get this thing configured.
 
@@ -71,9 +68,9 @@ Before showing any more examples, though, let's talk about how to get this thing
 
 First, we need to enable AI features in Studio. Head on over to the Settings page and select the section "Request Autofill". 
 
-Click on the toggle by "Enable Request Autofill", and then configure the AI provider and model you want to use.
+Toggle "Enable Request Autofill", and then configure the AI provider and model you want to use.
 
-> TODO: Add a screenshot of the settings page
+<Image src={fpxGenAiSettings} alt="Settings Page" />
 
 As of writing, Studio supports both OpenAI and Anthropic as LLM providers, and allows selection of the following models:
 
