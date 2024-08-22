@@ -1,8 +1,8 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { truncateWithEllipsis } from "@/utils";
+import { OtelEvent } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { getString } from "../RequestDetailsPage/v2/otel-helpers";
-import { OtelEvent } from "@fiberplane/fpx-types";
 
 export function EventsTable({ events }: { events?: OtelEvent[] }) {
   if (!events || !events.length) {

@@ -1,8 +1,8 @@
 import { MizuOrphanLog, isMizuOrphanLog } from "@/queries";
 import { safeParseJson } from "@/utils";
+import { OtelEvent, OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { getString } from "../v2/otel-helpers";
-import { OtelEvent, OtelSpan } from "@fiberplane/fpx-types";
 
 export function useOrphanLogs(traceId: string, spans: Array<OtelSpan>) {
   // NOTE - Flatten out events into orphan logs to allow the UI to render them

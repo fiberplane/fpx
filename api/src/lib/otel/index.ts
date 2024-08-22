@@ -56,11 +56,11 @@ type MizuSpan = {
   scope_attributes: Record<string, AttributeValue> | null;
   resource_attributes: Record<string, AttributeValue> | null;
   status:
-  | {
-    code: EStatusCode;
-    message: string;
-  }
-  | undefined;
+    | {
+        code: EStatusCode;
+        message: string;
+      }
+    | undefined;
   events: {
     name: string;
     timestamp: Date;

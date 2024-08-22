@@ -9,10 +9,10 @@ import {
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
 import { useOtelTrace } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
+import { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { Requestornator } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
-import { OtelSpan } from "@fiberplane/fpx-types";
 
 function createRequestDescription(request: Requestornator | null): string {
   if (!request) {

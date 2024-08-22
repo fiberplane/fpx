@@ -1,8 +1,8 @@
 import { MizuOrphanLog } from "@/queries";
+import { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { getVendorInfo } from "../v2/vendorify-traces";
 import { SpanWithVendorInfo, Waterfall } from "./RequestDetailsPageV2Content";
-import { OtelSpan } from "@fiberplane/fpx-types";
 
 export function useRequestWaterfall(
   spans: Array<OtelSpan>,

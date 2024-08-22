@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const OtelStatusSchema = z.object({
   code: z.number(),
@@ -76,7 +76,6 @@ export const OtelSpanSchema = z
     ),
   })
   .passthrough(); // HACK - Passthrough to vendorify traces
-
 
 export type OtelSpan = z.infer<typeof OtelSpanSchema>;
 

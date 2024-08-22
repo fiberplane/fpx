@@ -2,6 +2,7 @@ import { Status } from "@/components/ui/status";
 import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import { SENSITIVE_HEADERS, cn, noop } from "@/utils";
+import { OtelSpan } from "@fiberplane/fpx-types";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
@@ -25,7 +26,6 @@ import {
   isNeonVendorInfo,
   isOpenAIVendorInfo,
 } from "./vendorify-traces";
-import { OtelSpan } from "@fiberplane/fpx-types";
 
 export function FetchSpan({
   span,

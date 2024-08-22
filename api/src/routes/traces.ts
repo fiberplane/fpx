@@ -1,3 +1,8 @@
+import {
+  OtelSpanSchema,
+  type TraceDetailSpansResponse,
+  type TraceListResponse,
+} from "@fiberplane/fpx-types";
 import type { IExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
 import { and, desc, sql } from "drizzle-orm";
 import { Hono } from "hono";
@@ -6,7 +11,6 @@ import { fromCollectorRequest } from "../lib/otel/index.js";
 import { getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
-import { OtelSpanSchema, type TraceDetailSpansResponse, type TraceListResponse } from "@fiberplane/fpx-types";
 
 const { otelSpans } = schema;
 
@@ -51,7 +55,10 @@ app.get("/v1/traces", async (ctx) => {
     spans,
   }));
 
-  const response: TraceListResponse = traces.map(({ traceId, spans }) => ({ traceId, spans: spans.map(({ inner }) => OtelSpanSchema.parse(inner)) }));
+  const response: TraceListResponse = traces.map(({ traceId, spans }) => ({
+    traceId,
+    spans: spans.map(({ inner }) => OtelSpanSchema.parse(inner)),
+  }));
 
   return ctx.json(response);
 });
@@ -88,7 +95,9 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
   console.log(traces);
   console.log(sql`inner->>'trace_id' = '${traceId}'`);
 
-  const response: TraceDetailSpansResponse = traces.map(({ inner }) => OtelSpanSchema.parse(inner));
+  const response: TraceDetailSpansResponse = traces.map(({ inner }) =>
+    OtelSpanSchema.parse(inner),
+  );
 
   return ctx.json(response);
 });
@@ -120,11 +129,14 @@ app.post("/v1/traces", async (ctx) => {
   }
 
   try {
-    const tracesPayload = (await fromCollectorRequest(body)).map((span) => ({
-      inner: OtelSpanSchema.parse(span),
-      spanId: span.span_id,
-      traceId: span.trace_id,
-    } satisfies typeof otelSpans.$inferInsert));
+    const tracesPayload = (await fromCollectorRequest(body)).map(
+      (span) =>
+        ({
+          inner: OtelSpanSchema.parse(span),
+          spanId: span.span_id,
+          traceId: span.trace_id,
+        }) satisfies typeof otelSpans.$inferInsert,
+    );
 
     try {
       await db.insert(otelSpans).values(tracesPayload);

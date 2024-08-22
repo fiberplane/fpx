@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { SpanStatus } from "@/constants";
 import { isMizuOrphanLog } from "@/queries";
+import { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { StackTrace } from "../StackTrace";
@@ -17,7 +18,6 @@ import {
 } from "./otel-helpers";
 import { SubSection, SubSectionHeading } from "./shared";
 import { VendorInfo } from "./vendorify-traces";
-import { OtelSpan } from "@fiberplane/fpx-types";
 
 export function TraceDetailsV2({
   waterfall,
