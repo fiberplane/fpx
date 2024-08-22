@@ -79,7 +79,7 @@ function ResizableRequestMeta(props: RequestPanelProps) {
   const styleWidth = useStyleWidth(width);
   return (
     <Resizable
-      className="min-w-[200px] h-full"
+      className="min-w-[200px] overflow-hidden h-full"
       width={width} // Initial width
       axis="x" // Restrict resizing to the horizontal axis
       onResize={handleResize}
@@ -192,7 +192,7 @@ function RequestMeta(props: RequestPanelProps) {
         value="params"
         className={cn(
           // Need a lil bottom padding to avoid clipping the inputs of the last row in the form
-          "pb-1",
+          "pb-16",
         )}
       >
         <AIGeneratedInputsBanner

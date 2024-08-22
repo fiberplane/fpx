@@ -81,7 +81,7 @@ export function CopyAsCurl({
         </Button>
       </TooltipTrigger>
 
-      <TooltipContent>
+      <TooltipContent align="end">
         {isUnsupportedBodyType ? (
           "Copy as cURL is not supported for file uploads"
         ) : (
