@@ -51,6 +51,7 @@ export default defineConfig({
       components: {
         Header: "@/components/Header.astro",
         Pagination: "@/components/Pagination.astro",
+        ThemeProvider: "@/components/ThemeProvider.astro",
       },
       customCss: ["@/main.css"],
       expressiveCode: {
