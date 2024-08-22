@@ -1,6 +1,8 @@
 ---
 title: Generating Requests with AI
 description: Tutorial on AI request generation features in Studio
+sidebar:
+  order: 3
 ---
 
 import { Image } from "astro:assets";
@@ -57,9 +59,9 @@ For example, if you just created a goose named "Gus", and its id was `123`, Stud
 
 Before showing any more examples, though, let's talk about how to get this thing configured.
 
-## Enabling Request Autofill 
+## Enabling Request Autofill
 
-First, we need to enable AI features in Studio. Head on over to the Settings page and select the section "Request Autofill". 
+First, we need to enable AI features in Studio. Head on over to the Settings page and select the section "Request Autofill".
 
 Toggle "Enable Request Autofill", and then configure the AI provider and model you want to use.
 
@@ -106,7 +108,7 @@ If you want to change this behavior, click the caret by the magic wand icon, and
 
 <Image src={fpxGenAiHostile} alt="Request Generation Dropdown" />
 
-In this case, if we're testing a route like `GET /api/goose/:id`, Studio will generate a url parameter like `invalid_id`. 
+In this case, if we're testing a route like `GET /api/goose/:id`, Studio will generate a url parameter like `invalid_id`.
 
 This is a great way to test the resilience of your API to unexpected and invalid inputs.
 
@@ -133,6 +135,6 @@ In order to generate a request, Studio sends the following to the AI provider yo
 
 Certain sensitive headers are redacted by default, like `Authorization` and `Cookie`.
 
-We don't recommend using this feature when working with sensitive production data. 
+We don't recommend using this feature when working with sensitive production data.
 
 Furthermore, if you're using Fiberplane Studio at work, make sure your organization's policies allow sending source code to a 3rd party like OpenAi or Anthropic.
