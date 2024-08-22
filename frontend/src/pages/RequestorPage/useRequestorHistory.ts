@@ -1,3 +1,4 @@
+import { removeQueryParams } from "@/utils";
 import { useMemo } from "react";
 import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
 import { useSessionHistory } from "./RequestorSessionHistoryContext";
@@ -83,7 +84,13 @@ export function useRequestorHistory({
         handleSelectRoute(matchedRoute.route, pathParams);
 
         // Reset the path to the *exact* path of the request, instead of the route pattern
-        const path = match.app_requests.requestUrl ?? "";
+        const queryParams = match.app_requests.requestQueryParams ?? {};
+        // NOTE - We remove the query parameters that are explicitly in the `queryParams`
+        //        So we do not duplicate them between the path and the form
+        const path = removeQueryParams(
+          match.app_requests.requestUrl ?? "",
+          queryParams,
+        );
         setPath(path);
 
         const headers = match.app_requests.requestHeaders ?? {};
@@ -99,7 +106,6 @@ export function useRequestorHistory({
           ),
         );
 
-        const queryParams = match.app_requests.requestQueryParams ?? {};
         setQueryParams(
           createKeyValueParameters(
             Object.entries(queryParams).map(([key, value]) => ({
@@ -122,7 +128,13 @@ export function useRequestorHistory({
       } else {
         // HACK - move this logic into the reducer
         // Reset the path to the *exact* path of the request, instead of the route pattern
-        const path = match.app_requests.requestUrl ?? "";
+        const queryParams = match.app_requests.requestQueryParams ?? {};
+        // NOTE - We remove the query parameters that are explicitly in the `queryParams`
+        //        So we do not duplicate them between the path and the form
+        const path = removeQueryParams(
+          match.app_requests.requestUrl ?? "",
+          queryParams,
+        );
         setPath(path);
 
         const requestType = match.app_requests.requestUrl.startsWith("ws")
@@ -144,7 +156,6 @@ export function useRequestorHistory({
           ),
         );
 
-        const queryParams = match.app_requests.requestQueryParams ?? {};
         setQueryParams(
           createKeyValueParameters(
             Object.entries(queryParams).map(([key, value]) => ({

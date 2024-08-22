@@ -24,6 +24,7 @@ type RoutesPanelProps = {
   deleteDraftRoute?: () => void;
   history: Array<Requestornator>;
   loadHistoricalRequest: (traceId: string) => void;
+  removeServiceUrlFromPath: (path: string) => string;
 };
 
 export function RoutesPanel({
@@ -33,6 +34,7 @@ export function RoutesPanel({
   deleteDraftRoute,
   history,
   loadHistoricalRequest,
+  removeServiceUrlFromPath,
 }: RoutesPanelProps) {
   const { width, handleResize } = useResizableWidth(320);
   const styleWidth = useStyleWidth(width);
@@ -157,6 +159,7 @@ export function RoutesPanel({
             <HistorySection
               history={filteredHistory}
               loadHistoricalRequest={loadHistoricalRequest}
+              removeServiceUrlFromPath={removeServiceUrlFromPath}
             />
           )}
 
@@ -212,11 +215,13 @@ export function RoutesPanel({
 type HistorySectionProps = {
   history: Array<Requestornator>;
   loadHistoricalRequest: (traceId: string) => void;
+  removeServiceUrlFromPath: (path: string) => string;
 };
 
 function HistorySection({
   history,
   loadHistoricalRequest,
+  removeServiceUrlFromPath,
 }: HistorySectionProps) {
   const [showHistorySection, setShowHistorySection] = useState(false);
   const ShowHistorySectionIcon = showHistorySection
@@ -243,6 +248,7 @@ function HistorySection({
         <RequestorHistory
           history={history}
           loadHistoricalRequest={loadHistoricalRequest}
+          removeServiceUrlFromPath={removeServiceUrlFromPath}
         />
       )}
     </>

@@ -248,6 +248,7 @@ export const RequestorPage = () => {
           handleRouteClick={handleSelectRoute}
           history={history}
           loadHistoricalRequest={loadHistoricalRequest}
+          removeServiceUrlFromPath={removeServiceUrlFromPath}
         />
       </div>
 

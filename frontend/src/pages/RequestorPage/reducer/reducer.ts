@@ -177,7 +177,7 @@ function requestorReducer(
       return {
         ...state,
         serviceBaseUrl: action.payload,
-        path: addBaseUrl(action.payload, state.path),
+        path: addBaseUrl(action.payload, state.path, { forceChangeHost: true }),
       };
     }
     case PATH_UPDATE: {
@@ -863,15 +863,31 @@ const removeBaseUrl = (serviceBaseUrl: string, path: string) => {
 const addBaseUrl = (
   serviceBaseUrl: string,
   path: string,
-  { requestType }: { requestType: RequestType } = { requestType: "http" },
+  {
+    requestType,
+    forceChangeHost,
+  }: { requestType?: RequestType; forceChangeHost?: boolean } = {
+    requestType: "http",
+    forceChangeHost: false,
+  },
 ) => {
   // NOTE - This is necessary to allow the user to type new base urls... even though we replace the base url whenever they switch routes
-  if (pathHasValidBaseUrl(path)) {
+  if (pathHasValidBaseUrl(path) && !forceChangeHost) {
     return path;
   }
 
+  // HACK - Fix this later, not a great pattern
+  if (pathHasValidBaseUrl(path) && forceChangeHost) {
+    const safeBaseUrl = serviceBaseUrl.endsWith("/")
+      ? serviceBaseUrl.slice(0, -1)
+      : serviceBaseUrl;
+    const parsedPath = new URL(path);
+    const search = parsedPath.search;
+    return `${safeBaseUrl}${parsedPath.pathname}${search}`;
+  }
+
   const parsedBaseUrl = new URL(serviceBaseUrl);
-  if (isWsRequest(requestType)) {
+  if (requestType && isWsRequest(requestType)) {
     parsedBaseUrl.protocol = "ws";
   }
   let updatedBaseUrl = parsedBaseUrl.toString();
