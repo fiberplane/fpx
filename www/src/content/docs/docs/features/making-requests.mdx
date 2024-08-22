@@ -1,0 +1,70 @@
+---
+title: Making requests
+description: Tutorial on requests in studio
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Requests. Everybody loves a good HTTP request. Right? Don't they? Surely they do.
+
+Fiberplane Studio makes it easy to fire off requests against your API.
+
+Once you're up and running locally, the first page you see in Studio leaves you a single click away from making your first request.
+
+> **TODO** Add screenshot or gif of the first page + a simple request
+
+"What just happened there?" You might be asking yourself.
+
+When using Fiberplane Studio with the Client Library (**link**), Studio will automatically detect the routes in your Hono API and display them in the sidebar.
+
+In this case, the first route, `GET /`, is selected by default. By clicking "Send", we make a request to our API and see the response in the panel below.
+If there were any logs along the way, we can see them in the "Debug" section.
+
+We can repeat this process for any of the routes in our API, adding whatever query parameters, headers or body payloads we need.
+
+## Body Payloads (Text, JSON, FormData)
+
+Body payloads are JSON by default. As much as we love JSON, sometimes you do need to send a blob or submit a form. Fair enough.
+
+To modify the body payload, click the "Body" tab and select the type you want to use.
+
+This will, in certain cases, change the `Content-Type` header to match the type of the body you're sending.
+
+If you attach a file to a form, the file will be sent as a multipart/form-data request.
+
+If you just want to send a file, you can attach it directly to the request.
+
+## Request History
+
+In the routes sidebar, there's a collapsed section called "History". This is where you can see all the requests you've made to your API.
+
+If you click on a request in the history, you'll see the details of the request and response appear in the main panels.
+
+If you want to re-run a request, you can click the "Send" button again.
+
+## Custom routes (e.g., OpenAPI)
+
+What if you want to make a request to an API route that isn't detected via the Client Library? Or perhaps to a staging service? We got you covered.
+
+In the routes panel, click the "+" button and select "Custom Route". Add the url and method you want to use, and click "Save".
+
+> **TODO** Add screenshot of the custom route modal
+
+If you have an OpenAPI spec handy, you can also import it and all your routes will be automatically added to the sidebar.
+
+<Aside>
+OpenAPI support is a little limited right now, so you might need to manually add your base url in some cases.
+</Aside>
+
+
+## Copy as cURL
+
+> **TODO** Add screenshot of the copy as cURL button
+
+## Websockets (Coming soon!)
+
+The current version of Fiberplane Studio does not support opening a websocket connection and sending messages. We're working on it!
+
+If you want to see this, be sure to chime in on GitHub.
+
+> **LINK TO OPEN ISSUE**
