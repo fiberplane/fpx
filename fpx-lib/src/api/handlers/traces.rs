@@ -112,7 +112,7 @@ pub async fn traces_delete_handler(
         .map_err(|_| ApiServerError::ServiceError(TraceDeleteError::InvalidTraceId))?;
 
     // Retrieve all the spans that are associated with the trace
-    let _ = store.span_delete_by_trace(&tx, &trace_id).await?;
+    store.span_delete_by_trace(&tx, &trace_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

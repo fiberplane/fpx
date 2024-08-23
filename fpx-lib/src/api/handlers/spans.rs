@@ -114,7 +114,7 @@ pub async fn span_delete_handler(
     hex::decode(&span_id)
         .map_err(|_| ApiServerError::ServiceError(SpanDeleteError::InvalidSpanId))?;
 
-    let _ = store.span_delete(&tx, &trace_id, &span_id).await?;
+    store.span_delete(&tx, &trace_id, &span_id).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
