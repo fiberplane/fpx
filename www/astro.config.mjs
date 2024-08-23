@@ -1,6 +1,7 @@
+import { rehypeHeadingIds } from "@astrojs/markdown-remark";
 import starlight from "@astrojs/starlight";
-import tailwind from "@astrojs/tailwind";
 import { defineConfig } from "astro/config";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 // https://astro.build/config
 export default defineConfig({
@@ -19,21 +20,41 @@ export default defineConfig({
       },
       sidebar: [
         {
-          label: "Home",
-          items: [
-            // Each item here is one entry in the navigation menu.
-            { label: "Get started", slug: "home/get-started" },
-          ],
+          label: "Quickstart",
+          items: ["docs/get-started"],
+        },
+        {
+          label: "Components",
+          autogenerate: { directory: "docs/components" },
+        },
+        {
+          label: "Features",
+          autogenerate: { directory: "docs/features" },
         },
       ],
-      // HACK - Disable pagefind search until we have searchable content!
-      pagefind: false,
       components: {
-        ThemeSelect: "./src/components/ThemeSelect.astro",
-        ThemeProvider: "./src/components/ThemeProvider.astro",
+        Header: "@/components/Header.astro",
+        Pagination: "@/components/Pagination.astro",
+        ThemeProvider: "@/components/ThemeProvider.astro",
       },
-      customCss: ["./src/tailwind.css"],
+      customCss: ["@/main.css"],
+      expressiveCode: {
+        themes: ["github-dark", "github-light"],
+        styleOverrides: {
+          borderRadius: "var(--border-radius)",
+        },
+      },
     }),
-    tailwind({ applyBaseStyles: false }),
   ],
+  markdown: {
+    rehypePlugins: [
+      rehypeHeadingIds,
+      [
+        rehypeAutolinkHeadings,
+        {
+          behavior: "wrap",
+        },
+      ],
+    ],
+  },
 });
