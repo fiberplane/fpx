@@ -12,7 +12,6 @@ import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
 import { ResizableHandle } from "../Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestingPersona } from "../ai";
-import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
 import { useResizableWidth, useStyleWidth } from "../hooks";
 import type {
   RequestBodyType,
@@ -339,16 +338,14 @@ function RequestMeta(props: RequestPanelProps) {
         </CustomTabsContent>
       )}
 
-      {FORM_BODY_FEATURE_FLAG_ENABLED && (
-        <BottomToolbar
-          body={body}
-          handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-          method={method}
-          path={path}
-          queryParams={queryParams}
-          requestHeaders={requestHeaders}
-        />
-      )}
+      <BottomToolbar
+        body={body}
+        handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+        method={method}
+        path={path}
+        queryParams={queryParams}
+        requestHeaders={requestHeaders}
+      />
     </Tabs>
   );
 }
