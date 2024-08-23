@@ -1,18 +1,18 @@
 import { instrument } from "@fiberplane/hono-otel";
 import { Hono } from "hono";
-import { env } from 'hono/adapter'
+import { env } from "hono/adapter";
 
 const app = new Hono<{ Bindings: { FPX_ENDPOINT: string } }>();
 
 app.get("/", (c) => {
-  console.log("hi", env(c).FPX_ENDPOINT)
+  console.log("hi", env(c).FPX_ENDPOINT);
   return c.text("Hello Hono!");
 });
 
 /**
  * Route that echoes the request headers
  * Useful for testing the OTel instrumentation passes through headers correctly
- * 
+ *
  * https://linear.app/fiberplane/issue/FP-4020/otel-instrumentation-are-we-eating-the-incoming-request-headers
  */
 app.get("/headers", (c) => {
