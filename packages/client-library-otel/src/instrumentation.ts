@@ -102,7 +102,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
           const endpoint =
-            typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
+            typeof env === "object" && env !== null ? getFpxEndpoint(env) : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
           const FPX_LOG_LEVEL = libraryDebugMode ? "debug" : env?.FPX_LOG_LEVEL;
@@ -284,4 +284,27 @@ function mergeConfigs(
     libraryDebugMode,
     monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
+}
+
+
+/**
+ * We aren't getting access to the FPX_ENDPOINT in the fetch function in Node,
+ * this helper will also check process.env
+ * 
+ * TODO - Try using `env` from hono/adapter to get the env var?
+ */
+function getFpxEndpoint(env: HonoLikeEnv) {
+  const fpxEndpointFromEnv = typeof env === "object" && env !== null
+    ? (env as Record<string, string | null>).FPX_ENDPOINT
+    : null;
+
+  if (fpxEndpointFromEnv) {
+    return fpxEndpointFromEnv;
+  }
+
+  if (typeof process !== "undefined" && typeof process.env !== "undefined") {
+    return process?.env?.FPX_ENDPOINT;
+  }
+
+  return null;
 }
