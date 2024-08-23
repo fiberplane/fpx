@@ -301,12 +301,7 @@ export const RequestorPage = () => {
       )}
     >
       <div
-        className={cn(
-          // "max-h-full",
-          "relative",
-          "overflow-y-auto",
-          "lg:overflow-x-hidden",
-        )}
+        className={cn("relative", "overflow-y-auto", "lg:overflow-x-hidden")}
       >
         <div className="lg:hidden">
           <RoutesCombobox
