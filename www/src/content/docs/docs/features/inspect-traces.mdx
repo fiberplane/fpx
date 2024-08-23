@@ -6,22 +6,22 @@ sidebar:
 ---
 
 import KeyboardButton from "@/components/KeyboardButton.astro";
-import { LinkCard } from '@astrojs/starlight/components';
+import { LinkCard } from "@astrojs/starlight/components";
 
-Studio works with a companion client library, `@fiberplane/hono-otel`. 
-When used together, Studio can show you not only the response of each HTTP request, 
+Studio works with a companion client library, `@fiberplane/hono-otel`.
+When used together, Studio can show you not only the response of each HTTP request,
 but the entire trace of the request-response lifecycle: Timing, application logs, exceptions, and more.
 
 <LinkCard
-  title="Install the Client Library"
+  title="Install the client library"
   description="Read the guide on how to install and use the client library."
   href="/docs/components/client-library"
 />
 
 ### Navigating to the request trace page
 
-To inspect request traces, navigate to the "Requests" tab in the Studio UI. 
-This will show you a list of all the requests that have been made to your API. 
+To inspect request traces, navigate to the "Requests" tab in the Studio UI.
+This will show you a list of all the requests that have been made to your API.
 Select the request you want to see the trace for.
 
 ![Request detail view](@/assets/fpx-request-details-view.png)
@@ -32,7 +32,6 @@ Hit <KeyboardButton>esc</KeyboardButton> to close the trace details view and ret
 
 Alternatively, after you [make a request](/docs/features/making-requests) through Studio, you can click "Go to Trace Details" to see the trace for that request.
 
-
 ## Summary
 
 At the top of the page, you will see a summary of the trace. It will show either the body of the response, or a list of errors that occurred during the request.
@@ -41,23 +40,22 @@ At the top of the page, you will see a summary of the trace. It will show either
 
 ## Timeline
 
-The request timeline gives you visual sense of how long each of the steps in the request-response lifecycle took to complete. 
-The entire lifecycle of the request is shown at the top, and any actions, cascading requests, 
-or other events that occur during the request are shown nested underneath. 
+The request timeline gives you visual sense of how long each of the steps in the request-response lifecycle took to complete.
+The entire lifecycle of the request is shown at the top, and any actions, cascading requests,
+or other events that occur during the request are shown nested underneath.
 You can click on any of these events to see more details about the event on the right side.
 
 ![Request summary or errors](@/assets/fpx-request-details-view-timeline.png)
 
 ## Details
 
-The details panel shows all of the most important information of the request-response lifecycle from when the request is received (including its headers, query parameters, and body) to when the response is sent back to the client. 
+The details panel shows all of the most important information of the request-response lifecycle from when the request is received (including its headers, query parameters, and body) to when the response is sent back to the client.
 Outgoing network requests made by the API are also shown here, as well as any errors or logs produced during the request.
 
 ![Request summary or errors](@/assets/fpx-request-details-view-details.png)
 
-
-Details view will render the output in best effort mode. By default, the output is rendered as plain text. 
-If the output is a JSON object, it will be rendered in a foldable tree JSON view. 
+Details view will render the output in best effort mode. By default, the output is rendered as plain text.
+If the output is a JSON object, it will be rendered in a foldable tree JSON view.
 For some vendors, like Neon, we are able to extract and display the final SQL query that gets run on the database.
 
 ![Request summary or errors](@/assets/trace-requests--sql.png)
