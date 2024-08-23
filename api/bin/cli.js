@@ -74,11 +74,11 @@ async function runWizard() {
 
   await updateEnvFileWithFpxEndpoint(FPX_PORT);
 
+  await updateWranglerTomlWithNodejsCompatibility();
+
   const FPX_SERVICE_TARGET = await getServiceTarget();
 
   await pingTargetAndConfirm(FPX_SERVICE_TARGET);
-
-  await updateWranglerTomlWithNodejsCompatibility();
 
   const FPX_DATABASE_URL = getFpxDatabaseUrl();
 
