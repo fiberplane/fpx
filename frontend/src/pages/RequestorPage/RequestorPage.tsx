@@ -359,7 +359,7 @@ export const RequestorPage = () => {
           <ResizablePanelGroup
             direction={isSmallScreen ? "vertical" : "horizontal"}
             id="requestor-page"
-            // autoSaveId="requestor-page"
+            autoSaveId="requestor-page"
             className={cn(
               BACKGROUND_LAYER,
               "rounded-md",
