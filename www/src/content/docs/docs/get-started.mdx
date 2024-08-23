@@ -16,17 +16,17 @@ Fiberplane Studio is a local debugging companion designed to help you to build, 
 
 		<PackageManagers type="create" pkg="hono@latest" args="my-app" />
 
-		If you want a project including an ORM, a database and already has a cloud deployment platform in mind we recommend using [HONC](https://honc.dev/):
+		If you want a project that includes an ORM, a database, and is ready to deploy, we recommend using [HONC](https://honc.dev/):
 
 		<PackageManagers type="create" pkg="honc@latest" />
 
-	2. ### Add FPX middleware
+	2. ### Add Fiberplane Studio client
 
-		Install the fpx middleware
+		Install the Studio client library in your Hono project
 
 		<PackageManagers pkg="@fiberplane/hono-otel" />
 
-		Add the fpx middleware to the `index.ts` of your Hono project
+		Add the client library to `index.ts`
 
 		```typescript title="index.ts"
 		import { Hono } from "hono";
