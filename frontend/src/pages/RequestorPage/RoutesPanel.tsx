@@ -7,10 +7,7 @@ import {
   TrashIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-// import { Resizable } from "react-resizable";
 import { RequestorHistory } from "./RequestorHistory";
-// import { ResizableHandle } from "./Resizable";
-// import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute, Requestornator, useDeleteRoute } from "./queries";
 import { AddRouteButton } from "./routes";
@@ -106,26 +103,13 @@ export function RoutesPanel({
     if (cleanFilter.length < 3 && history) {
       return history;
     }
-    return history?.filter((r) =>
-      r.app_requests?.requestUrl?.includes(filterValue),
+    return history?.filter(
+      (r) => r.app_requests?.requestUrl?.includes(filterValue),
     );
   }, [filterValue, history]);
 
   return (
-    // <Resizable
-    //   className={`w-full hidden lg:block lg:min-w-[200px] lg:w-[${width}px] lg:mt-0`}
-    //   width={width} // Initial width
-    //   axis="x" // Restrict resizing to the horizontal axis
-    //   onResize={handleResize}
-    //   resizeHandles={["e"]} // Limit resize handle to just the east (right) handle
-    //   handle={(_, ref) => (
-    //     // Render a custom handle component, so we can indicate "resizability"
-    //     // along the entire right side of the container
-    //     <ResizableHandle ref={ref} />
-    //   )}
-    // >
     <div
-      // style={styleWidth}
       className={cn(
         BACKGROUND_LAYER,
         "px-4 overflow-hidden border rounded-md",
@@ -135,16 +119,7 @@ export function RoutesPanel({
         // "flex-grow",
       )}
     >
-      {/* <div></div> */}
-      <div
-        className={cn(
-          // "sticky top-0 z-10",
-          // HACK - This needs to have an explicity bg color so that when we scroll behind it,
-          //        the content doesn't show line-through
-          // TODO - Improve the grid layout to remove the need to have this be sticky and have a bg color
-          // "bg-[rgb(24,30,43)]",
-        )}
-      >
+      <div>
         <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12">
           Routes
         </h2>
@@ -212,7 +187,6 @@ export function RoutesPanel({
         )}
       </div>
     </div>
-    // </Resizable>
   );
 }
 
@@ -313,7 +287,10 @@ function RoutesSection(props: RoutesSectionProps) {
 export function RouteItem({
   route,
   deleteDraftRoute,
-}: { route: ProbedRoute; deleteDraftRoute?: () => void }) {
+}: {
+  route: ProbedRoute;
+  deleteDraftRoute?: () => void;
+}) {
   const { mutate: deleteRoute } = useDeleteRoute();
   const canDeleteRoute =
     route.routeOrigin === "custom" ||
