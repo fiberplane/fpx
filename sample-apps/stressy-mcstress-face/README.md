@@ -4,6 +4,16 @@
 
 ## Setup
 
+From the monorepo's root:
+
+Get the client library up to date for working with this app locally.
+
+```sh
+pnpm i
+cd packages/client-library-otel
+pnpm watch # (or pnpm build)
+```
+
 Configure
 
 ```sh
