@@ -8,7 +8,7 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
-import { useIsSmScreen } from "@/hooks";
+import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -225,15 +225,24 @@ export const RequestorPage = () => {
 
   const width = getMainSectionWidth();
   const isSmallScreen = useIsSmScreen();
+  const isLgScreen = useIsLgScreen();
 
   const { minSize, maxSize } = usePanelConstraints({
-    // Change the groupId to `""` on small screens because we're not rendering
-    // the resizable panel group
-    groupId: isSmallScreen ? "" : "requestor-page",
-    initialGroupSize: width,
-    minPixelSize: 206,
-    minimalGroupSize: 624,
+    groupId: "requestor-page-main",
+    initialGroupSize: width + 320,
+    minPixelSize: 200,
+    minimalGroupSize: 944,
   });
+
+  const { minSize: requestPanelMinSize, maxSize: requestPanelMaxSize } =
+    usePanelConstraints({
+      // Change the groupId to `""` on small screens because we're not rendering
+      // the resizable panel group
+      groupId: isSmallScreen ? "" : "requestor-page-main-panel",
+      initialGroupSize: width,
+      minPixelSize: 206,
+      minimalGroupSize: 624,
+    });
 
   const requestContent = (
     <RequestPanel
@@ -288,116 +297,146 @@ export const RequestorPage = () => {
         // It's critical the parent has a fixed height for our grid layout to work
         "h-[calc(100vh-64px)]",
         // We want to `grid` all the things
-        "grid",
+        // "grid",
+        "flex",
+        "flex-col",
         "gap-2",
         "py-4 px-2",
         "sm:px-4 sm:py-3",
         // Define row templates up until the `lg` breakpoint
-        "max-lg:grid-rows-[auto_1fr]",
+        // "max-lg:grid-rows-[auto_1fr]",
         // Define column templates for the `lg` breakpoint
-        "lg:grid-cols-[auto_1fr]",
+        // "lg:grid-cols-[auto_1fr]",
         // Adjust spacing at the large breakpoint
         "lg:gap-4",
       )}
     >
       <div
-        className={cn("relative", "overflow-y-auto", "lg:overflow-x-hidden")}
+        className={cn(
+          "relative",
+          "overflow-y-auto",
+          "lg:overflow-x-hidden",
+          "lg:hidden",
+        )}
       >
-        <div className="lg:hidden">
-          <RoutesCombobox
-            routes={routes}
-            selectedRoute={selectedRoute}
-            handleRouteClick={handleSelectRoute}
-          />
-        </div>
-        <RoutesPanel
+        <RoutesCombobox
           routes={routes}
           selectedRoute={selectedRoute}
           handleRouteClick={handleSelectRoute}
-          history={history}
-          loadHistoricalRequest={loadHistoricalRequest}
-          removeServiceUrlFromPath={removeServiceUrlFromPath}
         />
       </div>
-
-      <div
-        className={cn(
-          "flex",
-          "flex-col",
-          // This is a custom css class that uses the famed `auto minmax(0, 1fr)` trick
-          "fpx-requestor-grid-rows",
-          "gap-2",
-          // HACK - This is a workaround to prevent the grid from overflowing on smaller screens
-          "h-[calc(100%-0.6rem)]",
-          "lg:h-full",
-          "relative",
-          "overflow-scroll",
-          "sm:overflow-hidden",
-        )}
+      <ResizablePanelGroup
+        direction="horizontal"
+        id="requestor-page-main"
+        className="w-full"
       >
-        <RequestorInput
-          requestType={selectedRoute?.requestType}
-          method={method}
-          handleMethodChange={handleMethodChange}
-          path={path}
-          handlePathInputChange={handlePathInputChange}
-          onSubmit={onSubmit}
-          disconnectWebsocket={disconnectWebsocket}
-          isRequestorRequesting={isRequestorRequesting}
-          formRef={formRef}
-          websocketState={websocketState}
-          getIsInDraftMode={getIsInDraftMode}
-        />
-        {isSmallScreen ? (
+        {isLgScreen && (
           <>
-            {requestContent}
-            {responseContent}
-          </>
-        ) : (
-          <ResizablePanelGroup
-            direction={isSmallScreen ? "vertical" : "horizontal"}
-            id="requestor-page"
-            autoSaveId="requestor-page"
-            className={cn(
-              BACKGROUND_LAYER,
-              "rounded-md",
-              "border",
-              // HACK - This defensively prevents overflow from getting too excessive,
-              //        In the case where the inner content expands beyond the parent
-              "max-w-screen",
-              "max-h-full",
-            )}
-          >
             <ResizablePanel
-              order={1}
-              id="request-panel"
-              defaultSize={width < 624 ? undefined : (300 / width) * 100}
               minSize={minSize}
               maxSize={maxSize}
+              defaultSize={(320 / width) * 100}
             >
-              {requestContent}
+              <RoutesPanel
+                routes={routes}
+                selectedRoute={selectedRoute}
+                handleRouteClick={handleSelectRoute}
+                history={history}
+                loadHistoricalRequest={loadHistoricalRequest}
+                removeServiceUrlFromPath={removeServiceUrlFromPath}
+              />
             </ResizablePanel>
-            <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-            <ResizablePanel id="response-panel" order={2} minSize={10}>
-              {responseContent}
-            </ResizablePanel>
-            {isAiTestGenerationPanelOpen && !isSmallScreen && (
-              <>
-                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-                <ResizablePanel order={3} id="ai-panel">
-                  <AiTestGenerationPanel
-                    // TODO - Only use history for recent matching route
-                    history={history}
-                    toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
-                    getActiveRoute={getActiveRoute}
-                    removeServiceUrlFromPath={removeServiceUrlFromPath}
-                  />
-                </ResizablePanel>
-              </>
-            )}
-          </ResizablePanelGroup>
+            <ResizableHandle
+              hitAreaMargins={{ coarse: 20, fine: 10 }}
+              className="mr-2"
+            />
+          </>
         )}
-      </div>
+        <ResizablePanel>
+          <div
+            className={cn(
+              "flex",
+              "flex-col",
+              // This is a custom css class that uses the famed `auto minmax(0, 1fr)` trick
+              "fpx-requestor-grid-rows",
+              "gap-2",
+              // HACK - This is a workaround to prevent the grid from overflowing on smaller screens
+              "h-[calc(100%-0.6rem)]",
+              "lg:h-full",
+              "relative",
+              "overflow-scroll",
+              "sm:overflow-hidden",
+            )}
+          >
+            <RequestorInput
+              requestType={selectedRoute?.requestType}
+              method={method}
+              handleMethodChange={handleMethodChange}
+              path={path}
+              handlePathInputChange={handlePathInputChange}
+              onSubmit={onSubmit}
+              disconnectWebsocket={disconnectWebsocket}
+              isRequestorRequesting={isRequestorRequesting}
+              formRef={formRef}
+              websocketState={websocketState}
+              getIsInDraftMode={getIsInDraftMode}
+            />
+            {isSmallScreen ? (
+              <>
+                {requestContent}
+                {responseContent}
+              </>
+            ) : (
+              <ResizablePanelGroup
+                direction={isSmallScreen ? "vertical" : "horizontal"}
+                id="requestor-page-main-panel"
+                autoSaveId="requestor-page-main-panel"
+                className={cn(
+                  BACKGROUND_LAYER,
+                  "rounded-md",
+                  "border",
+                  // HACK - This defensively prevents overflow from getting too excessive,
+                  //        In the case where the inner content expands beyond the parent
+                  "max-w-screen",
+                  "max-h-full",
+                )}
+              >
+                <ResizablePanel
+                  order={1}
+                  id="request-panel"
+                  defaultSize={width < 624 ? undefined : (300 / width) * 100}
+                  minSize={requestPanelMinSize}
+                  maxSize={requestPanelMaxSize}
+                >
+                  {requestContent}
+                </ResizablePanel>
+                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
+                <ResizablePanel id="response-panel" order={2} minSize={10}>
+                  {responseContent}
+                </ResizablePanel>
+                {isAiTestGenerationPanelOpen && !isSmallScreen && (
+                  <>
+                    <ResizableHandle
+                      hitAreaMargins={{ coarse: 20, fine: 10 }}
+                    />
+                    <ResizablePanel order={3} id="ai-panel">
+                      <AiTestGenerationPanel
+                        // TODO - Only use history for recent matching route
+                        history={history}
+                        toggleAiTestGenerationPanel={
+                          toggleAiTestGenerationPanel
+                        }
+                        getActiveRoute={getActiveRoute}
+                        removeServiceUrlFromPath={removeServiceUrlFromPath}
+                      />
+                    </ResizablePanel>
+                  </>
+                )}
+              </ResizablePanelGroup>
+            )}
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
