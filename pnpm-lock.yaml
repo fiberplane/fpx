@@ -438,6 +438,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.12.1
         version: 1.12.1
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
       hono:
         specifier: ^4.5.8
         version: 4.5.8

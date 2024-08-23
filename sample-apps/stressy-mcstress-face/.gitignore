@@ -1,3 +1,5 @@
+.dev.vars
+
 # dev
 .yarn/
 !.yarn/releases

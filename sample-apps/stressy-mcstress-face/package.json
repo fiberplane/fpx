@@ -4,8 +4,9 @@
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^1.12.1",
     "@fiberplane/hono-otel": "workspace:*",
+    "@hono/node-server": "^1.12.1",
+    "dotenv": "^16.4.5",
     "hono": "^4.5.8"
   },
   "devDependencies": {
