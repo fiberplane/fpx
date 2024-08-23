@@ -62,7 +62,7 @@ export const OtelSpanSchema = z
     status: OtelStatusSchema.optional(),
 
     // This is where we will store logs that happened along the way
-    events: z.array(OtelEventSchema),
+    events: z.array(OtelEventSchema).optional(),
 
     // Links to related traces, etc
     links: z.array(

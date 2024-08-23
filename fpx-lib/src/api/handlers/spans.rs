@@ -1,5 +1,5 @@
 use crate::api::errors::{ApiServerError, CommonError};
-use crate::api::models::{Span, TypeScriptCompatSpan};
+use crate::api::models::Span;
 use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;
@@ -58,7 +58,7 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 pub async fn ts_compat_span_list_handler(
     State(store): State<BoxedStore>,
     Path(trace_id): Path<String>,
-) -> Result<Json<Vec<TypeScriptCompatSpan>>, ApiServerError<SpanListError>> {
+) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
     let tx = store.start_readonly_transaction().await?;
 
     hex::decode(&trace_id)

@@ -29,11 +29,11 @@ const isErrorEvent = (event: OtelEvent) => {
 };
 
 export const hasErrorEvent = (span: OtelSpan) => {
-  return span.events.some(isErrorEvent);
+  return span.events?.some(isErrorEvent);
 };
 
 export const getErrorEvents = (span: OtelSpan) => {
-  return span.events.filter(isErrorEvent);
+  return span.events?.filter(isErrorEvent) ?? [];
 };
 
 export function isFpxRequestSpan(span: OtelSpan) {
