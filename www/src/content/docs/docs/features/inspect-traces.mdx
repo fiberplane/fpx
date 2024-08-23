@@ -6,7 +6,8 @@ sidebar:
 ---
 
 import KeyboardButton from "@/components/KeyboardButton.astro";
-import { LinkCard } from "@astrojs/starlight/components";
+import Button from "@/components/Button.astro";
+import { LinkCard, Icon } from "@astrojs/starlight/components";
 
 Studio works with a companion client library, `@fiberplane/hono-otel`.
 When used together, Studio can show you not only the response of each HTTP request,
@@ -26,7 +27,7 @@ Select the request you want to see the trace for.
 
 ![Request detail view](@/assets/fpx-request-details-view.png)
 
-You can jump up or down the request overview using the caret buttons at the top right of the page or simply pressing keys <KeyboardButton>j</KeyboardButton> and <KeyboardButton>k</KeyboardButton>.
+You can jump up or down the request overview using the <Button type="icon" style="secondary"><Icon name="up-caret" /></Button> and <Button type="icon" style="secondary"><Icon name="down-caret" /></Button> buttons at the top right of the page or simply pressing keys <KeyboardButton>j</KeyboardButton> and <KeyboardButton>k</KeyboardButton>.
 
 Hit <KeyboardButton>esc</KeyboardButton> to close the trace details view and return to the request list.
 
