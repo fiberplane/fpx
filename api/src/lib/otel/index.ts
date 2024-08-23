@@ -50,8 +50,8 @@ type MizuSpan = {
   kind: string;
   scope_name: string | null;
   scope_version: string | null | undefined;
-  start_time: string;
-  end_time: string;
+  start_time: Date;
+  end_time: Date;
   attributes: Record<string, AttributeValue>;
   scope_attributes: Record<string, AttributeValue> | null;
   resource_attributes: Record<string, AttributeValue> | null;
@@ -142,10 +142,8 @@ export async function fromCollectorRequest(
           kind,
           scope_name: scopeName,
           scope_version: scopeVersion,
-          // TODO: Verify date formats
-          start_time: startTime.toString(),
-          // TODO: Verify date formats
-          end_time: endTime.toString(),
+          start_time: startTime,
+          end_time: endTime,
           attributes,
           scope_attributes: scopeAttributes,
           resource_attributes: resourceAttributes,

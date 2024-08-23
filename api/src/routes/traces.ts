@@ -92,9 +92,6 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
       ),
     );
 
-  console.log(traces);
-  console.log(sql`inner->>'trace_id' = '${traceId}'`);
-
   const response: TraceDetailSpansResponse = traces.map(({ inner }) =>
     OtelSpanSchema.parse(inner),
   );

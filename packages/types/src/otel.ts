@@ -56,8 +56,8 @@ export const OtelSpanSchema = z
     trace_state: z.string().nullish(),
     flags: z.number().optional(), // This determines whether or not the trace will be sampled
     kind: z.string(),
-    start_time: z.string(), // ISO 8601 format
-    end_time: z.string(), // ISO 8601 format
+    start_time: z.coerce.date(), // ISO 8601 format
+    end_time: z.coerce.date(), // ISO 8601 format
     attributes: OtelAttributesSchema,
     status: OtelStatusSchema.optional(),
 
