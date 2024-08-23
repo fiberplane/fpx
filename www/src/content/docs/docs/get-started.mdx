@@ -9,44 +9,39 @@ import { Steps } from "@astrojs/starlight/components";
 Fiberplane Studio is a local debugging companion designed to help you to build, test, and develop [Hono](https://www.hono.dev) APIs.
 
 <Steps>
+1. ### Set up a Hono project
+    You can set up a basic Hono project via your terminal:
 
-	1. ### Set up a Hono project
+    <PackageManagers type="create" pkg="hono@latest" args="my-app" />
 
-		You can set up a basic Hono project via your terminal:
+    If you want a project that includes an ORM, a database, and is ready to deploy, we recommend using [HONC](https://honc.dev/):
 
-		<PackageManagers type="create" pkg="hono@latest" args="my-app" />
+    <PackageManagers type="create" pkg="honc@latest" />
 
-		If you want a project that includes an ORM, a database, and is ready to deploy, we recommend using [HONC](https://honc.dev/):
+2. ### Add the Fiberplane Studio client
+    Install the Studio client library in your Hono project
 
-		<PackageManagers type="create" pkg="honc@latest" />
+    <PackageManagers pkg="@fiberplane/hono-otel" />
 
-	2. ### Add the Fiberplane Studio client
+    Add the client library to `index.ts`
 
-		Install the Studio client library in your Hono project
+    ```typescript title="index.ts"
+    import { Hono } from "hono";
+    import { instrument } from "@fiberplane/hono-otel";
 
-		<PackageManagers pkg="@fiberplane/hono-otel" />
+    const app = new Hono<{ Bindings: Bindings }>();
 
-		Add the client library to `index.ts`
+    app.get("/", (c) => {
+      return c.text("Hello Hono!");
+    });
 
-		```typescript title="index.ts"
-		import { Hono } from "hono";
-		import { instrument } from "@fiberplane/hono-otel";
+    export default instrument(app);
+    ```
 
-		const app = new Hono<{ Bindings: Bindings }>();
+3. ### Launch Fiberplane Studio
+    In a new terminal window, and from your project directory, start Fiberplane Studio:
 
-		app.get("/", (c) => {
-		  return c.text("Hello Hono!");
-		});
-
-		export default instrument(app);
-		```
-
-	3. ### Launch Fiberplane Studio
-
-		In a new terminal window, and from your project directory, start Fiberplane Studio:
-
-		<PackageManagers type="exec" pkg="@fiberplane/studio" />
+    <PackageManagers type="exec" pkg="@fiberplane/studio" />
 
     Finally, start (or restart) your application, and you're ready to go!
-
 </Steps>
