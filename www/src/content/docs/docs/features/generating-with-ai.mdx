@@ -11,7 +11,7 @@ import fpxGenAiSettingsEnable from "@/assets/gen-ai-requests--settings-enable.pn
 import fpxGenAiSettingsProvider from "@/assets/gen-ai-requests--settings-provider.png"
 import fpxGenAiSettingsBaseUrl from "@/assets/gen-ai-requests--settings-baseurl.png"
 import fpxGenAiHostile from "@/assets/gen-ai-requests--hostile.png"
-
+import KeyboardButton from "@/components/KeyboardButton.astro";
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Generating sample request data is a common task in api development. It can also be very tedious.
@@ -34,10 +34,10 @@ Let's say we have a route `POST /api/goose` that creates a new goose. This route
 }
 ```
 
-In the Fiberplane Studio UI, Studio's AI can generate these fields for us. 
-Once we've [enabled](#enabling-request-autofill) AI Request Autofill, 
-we can click the Magic Wand icon on the requests page to generate some request data. 
-(Feel free to also use the shortcut `CMD + G`.)
+In the Fiberplane Studio UI, Studio's AI can generate these fields for us.
+Once we've [enabled](#enabling-request-autofill) AI Request Autofill,
+we can click the Magic Wand icon on the requests page to generate some request data.
+(Feel free to also use the shortcut <KeyboardButton>cmd</KeyboardButton><KeyboardButton>g</KeyboardButton>.)
 
 In this case, Studio will generate a request body with the shape above.
 
