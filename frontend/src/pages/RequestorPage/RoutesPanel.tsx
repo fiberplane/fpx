@@ -116,7 +116,6 @@ export function RoutesPanel({
         "h-full",
         "flex",
         "flex-col",
-        // "flex-grow",
       )}
     >
       <div>
