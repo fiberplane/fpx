@@ -1,7 +1,14 @@
 // We need some special CSS for grid layout that tailwind cannot handle
 import "./styles.css";
 
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+  usePanelConstraints,
+} from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -19,16 +26,12 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
-import {
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizableHandle,
-  usePanelConstraints,
-} from "@/components/ui/resizable";
-import { useIsSmScreen } from "@/hooks";
 
+/**
+ * Estimate the size of the main section based on the window width
+ */
 function getMainSectionWidth() {
-  return window.innerWidth - 320 - 80;
+  return window.innerWidth - 400;
 }
 
 export const RequestorPage = () => {
