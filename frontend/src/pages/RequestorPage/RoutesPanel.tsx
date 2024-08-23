@@ -103,8 +103,8 @@ export function RoutesPanel({
     if (cleanFilter.length < 3 && history) {
       return history;
     }
-    return history?.filter(
-      (r) => r.app_requests?.requestUrl?.includes(filterValue),
+    return history?.filter((r) =>
+      r.app_requests?.requestUrl?.includes(filterValue),
     );
   }, [filterValue, history]);
 
