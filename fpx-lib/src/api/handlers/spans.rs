@@ -101,3 +101,40 @@ impl From<DbError> for ApiServerError<SpanListError> {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
+
+#[tracing::instrument(skip_all)]
+pub async fn span_delete_handler(
+    State(store): State<BoxedStore>,
+    Path((trace_id, span_id)): Path<(String, String)>,
+) -> Result<StatusCode, ApiServerError<SpanDeleteError>> {
+    let tx = store.start_readonly_transaction().await?;
+
+    hex::decode(&trace_id)
+        .map_err(|_| ApiServerError::ServiceError(SpanDeleteError::InvalidTraceId))?;
+    hex::decode(&span_id)
+        .map_err(|_| ApiServerError::ServiceError(SpanDeleteError::InvalidSpanId))?;
+
+    let _ = store.span_delete(&tx, &trace_id, &span_id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Debug, Serialize, Deserialize, Error, ApiError)]
+#[serde(tag = "error", content = "details", rename_all = "camelCase")]
+#[non_exhaustive]
+pub enum SpanDeleteError {
+    #[api_error(status_code = StatusCode::BAD_REQUEST)]
+    #[error("Trace ID is invalid")]
+    InvalidTraceId,
+
+    #[api_error(status_code = StatusCode::BAD_REQUEST)]
+    #[error("Trace ID is invalid")]
+    InvalidSpanId,
+}
+
+impl From<DbError> for ApiServerError<SpanDeleteError> {
+    fn from(err: DbError) -> Self {
+        error!(?err, "Failed to list spans from database");
+        ApiServerError::CommonError(CommonError::InternalServerError)
+    }
+}

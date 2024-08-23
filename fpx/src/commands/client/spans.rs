@@ -17,12 +17,16 @@ pub enum Command {
 
     /// List all spans for a single trace
     List(ListArgs),
+
+    /// Delete a single span
+    Delete(DeleteArgs),
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
     match args.command {
         Command::Get(args) => handle_get(args).await,
         Command::List(args) => handle_list(args).await,
+        Command::Delete(args) => handle_delete(args).await,
     }
 }
 
@@ -65,6 +69,27 @@ async fn handle_list(args: ListArgs) -> Result<()> {
     let result = api_client.span_list(args.trace_id).await?;
 
     serde_json::to_writer_pretty(stdout(), &result)?;
+
+    Ok(())
+}
+
+#[derive(clap::Args, Debug)]
+pub struct DeleteArgs {
+    /// TraceID - hex encoded
+    pub trace_id: String,
+
+    /// SpanID - hex encoded
+    pub span_id: String,
+
+    /// Base url of the fpx dev server.
+    #[arg(from_global)]
+    pub base_url: Url,
+}
+
+async fn handle_delete(args: DeleteArgs) -> Result<()> {
+    let api_client = ApiClient::new(args.base_url.clone());
+
+    let _ = api_client.span_delete(args.trace_id, args.span_id).await?;
 
     Ok(())
 }

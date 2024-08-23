@@ -54,19 +54,20 @@ impl Builder {
 
         let router = axum::Router::new()
             .route("/v1/traces", post(handlers::otel::trace_collector_handler))
+            .route("/api/traces", get(handlers::traces::traces_list_handler))
             .route(
-                "/api/traces/:trace_id/spans/:span_id",
-                get(handlers::spans::span_get_handler),
+                "/api/traces/:trace_id",
+                get(handlers::traces::traces_get_handler)
+                    .delete(handlers::traces::traces_delete_handler),
             )
             .route(
                 "/api/traces/:trace_id/spans",
                 get(handlers::spans::span_list_handler),
             )
             .route(
-                "/api/traces/:trace_id",
-                get(handlers::traces::traces_get_handler),
+                "/api/traces/:trace_id/spans/:span_id",
+                get(handlers::spans::span_get_handler).delete(handlers::spans::span_delete_handler),
             )
-            .route("/api/traces", get(handlers::traces::traces_list_handler))
             .route(
                 "/ts-compat/v1/traces/:trace_id/spans",
                 get(handlers::spans::ts_compat_span_list_handler),

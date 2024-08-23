@@ -180,4 +180,24 @@ impl Store for LibsqlStore {
 
         Ok(traces)
     }
+
+    /// Delete all spans with a specific trace_id.
+    async fn span_delete_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<u64> {
+        let rows_affected = self
+            .connection
+            .execute(&self.sql_builder.span_delete_by_trace(), params!(trace_id))
+            .await?;
+
+        Ok(rows_affected)
+    }
+
+    /// Delete a single span.
+    async fn span_delete(&self, _tx: &Transaction, trace_id: &str, span_id: &str) -> Result<u64> {
+        let rows_affected = self
+            .connection
+            .execute(&self.sql_builder.span_delete(), params!(trace_id, span_id))
+            .await?;
+
+        Ok(rows_affected)
+    }
 }

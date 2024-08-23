@@ -10,10 +10,11 @@ use fpx_lib::api::handlers::spans::SpanGetError;
 use fpx_lib::api::handlers::traces::TraceGetError;
 use fpx_lib::api::models;
 use fpx_lib::otel::HeaderMapInjector;
-use http::{HeaderMap, Method};
+use http::{HeaderMap, Method, StatusCode};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use std::error::Error;
+use std::future::Future;
 use tracing::trace;
 use tracing_opentelemetry::OpenTelemetrySpanExt;
 use url::Url;
@@ -49,27 +50,20 @@ impl ApiClient {
     /// fails it will consider the call as failed and will try to parse the body
     /// as [`E`]. Any other error will use the relevant variant in
     /// [`ApiClientError`].
-    #[tracing::instrument(skip_all, fields(otel.kind="Client",otel.status_code, otel.status_message))]
-    async fn do_req<T, E, B>(
+    #[tracing::instrument(skip_all, fields(otel.kind="Client", otel.status_code, otel.status_message))]
+    async fn do_req<T, E, P>(
         &self,
         method: Method,
         path: impl AsRef<str>,
-        body: Option<B>,
+        response_parser: impl FnOnce(reqwest::Response) -> P,
     ) -> Result<T, ApiClientError<E>>
     where
-        T: serde::de::DeserializeOwned,
-        E: serde::de::DeserializeOwned + Error,
-        B: serde::ser::Serialize,
+        E: Error,
+        P: Future<Output = Result<T, ApiClientError<E>>>,
     {
         let u = self.base_url.join(path.as_ref())?;
 
-        let mut req = self.client.request(method, u);
-
-        if let Some(body) = body {
-            let json = serde_json::to_string(&body).unwrap();
-
-            req = req.header("Content-Type", "application/json").body(json);
-        }
+        let req = self.client.request(method, u);
 
         // Take the current otel context, and inject those details into the
         // Request using the TraceContext format.
@@ -84,40 +78,36 @@ impl ApiClient {
             req.headers(headers)
         };
 
-        // TODO: Create new otel span (SpanKind::Client) and add relevant client
-        // attributes to it.
-
-        // Make request
+        // Send the request
         let response = req.send().await?;
 
-        // Copy the status code here in case we are unable to parse the response as
-        // the Ok or Err variant.
-        let status_code = response.status();
+        // TODO: Retrieve all kinds of interesting details of the response and
+        // set them in the OTEL trace:
+        // - http.request.method
+        // - server.address
+        // - server.port
+        // - url.full
+        // - user_agent.original
+        // - url.scheme
+        // - url.template
+        // - http.response.status_code
+        // # Not sure if this is possible since we need to specify all fields upfront:
+        // - http.request.header.<key>
+        // - http.response.header.<key>
 
-        // Read the entire response into a local buffer.
-        let body = response.bytes().await?;
+        // Parse the response according to the response_parser.
+        let result = response_parser(response).await;
 
-        // TODO: Mark the span status as Err if we are unable to parse the
-        // response.
-
-        // Try to parse the result as T.
-        match serde_json::from_slice::<T>(&body) {
-            Ok(result) => {
-                tracing::Span::current().record("otel.status_code", "Ok");
-                Ok(result)
-            }
-            Err(err) => {
-                trace!(
-                    ?status_code,
-                    ?err,
-                    "Failed to parse response as expected type"
-                );
-                let err = ApiClientError::from_response(status_code, body);
-                tracing::Span::current().record("otel.status_code", "Err");
-                tracing::Span::current().record("otel.status_message", err.to_string());
-                Err(err)
-            }
+        // Set the status_code and status_message in the current OTEL span,
+        // according to the result of the response_parser.
+        if let Err(ref err) = &result {
+            tracing::Span::current().record("otel.status_code", "Err");
+            tracing::Span::current().record("otel.status_message", err.to_string());
+        } else {
+            tracing::Span::current().record("otel.status_code", "Ok");
         }
+
+        result
     }
 
     /// Retrieve the details of a single span.
@@ -132,7 +122,7 @@ impl ApiClient {
             span_id.as_ref()
         );
 
-        self.do_req(Method::GET, path, None::<()>).await
+        self.do_req(Method::GET, path, api_result).await
     }
 
     /// Retrieve all the spans associated with a single trace.
@@ -142,7 +132,7 @@ impl ApiClient {
     ) -> Result<Vec<models::Span>, ApiClientError<SpanGetError>> {
         let path = format!("api/traces/{}/spans", trace_id.as_ref());
 
-        self.do_req(Method::GET, path, None::<()>).await
+        self.do_req(Method::GET, path, api_result).await
     }
 
     /// Retrieve a summary of a single trace.
@@ -152,7 +142,7 @@ impl ApiClient {
     ) -> Result<models::TraceSummary, ApiClientError<TraceGetError>> {
         let path = format!("api/traces/{}", trace_id.as_ref());
 
-        self.do_req(Method::GET, path, None::<()>).await
+        self.do_req(Method::GET, path, api_result).await
     }
 
     /// List a summary traces
@@ -161,6 +151,74 @@ impl ApiClient {
     ) -> Result<Vec<models::TraceSummary>, ApiClientError<TraceGetError>> {
         let path = "api/traces";
 
-        self.do_req(Method::GET, path, None::<()>).await
+        self.do_req(Method::GET, path, api_result).await
+    }
+
+    /// List a summary traces
+    pub async fn trace_delete(
+        &self,
+        trace_id: impl AsRef<str>,
+    ) -> Result<(), ApiClientError<TraceGetError>> {
+        let path = format!("api/traces/{}", trace_id.as_ref());
+
+        self.do_req(Method::DELETE, path, no_body).await
+    }
+
+    pub async fn span_delete(
+        &self,
+        trace_id: impl AsRef<str>,
+        span_id: impl AsRef<str>,
+    ) -> Result<(), ApiClientError<TraceGetError>> {
+        let path = format!(
+            "api/traces/{}/spans/{}",
+            trace_id.as_ref(),
+            span_id.as_ref()
+        );
+
+        self.do_req(Method::DELETE, path, no_body).await
+    }
+}
+
+/// Check whether the response is a 204 No Content response, if it is return
+/// Ok(()). Otherwise try to parse the response as a ApiError.
+async fn no_body<E>(response: reqwest::Response) -> Result<(), ApiClientError<E>>
+where
+    E: serde::de::DeserializeOwned + Error,
+{
+    if response.status() == StatusCode::NO_CONTENT {
+        return Ok(());
+    }
+
+    Err(ApiClientError::from_response(
+        response.status(),
+        response.bytes().await?,
+    ))
+}
+
+/// Try to parse the result as T. If that fails, try to parse the result as a
+/// ApiError.
+async fn api_result<T, E>(response: reqwest::Response) -> Result<T, ApiClientError<E>>
+where
+    T: serde::de::DeserializeOwned,
+    E: serde::de::DeserializeOwned + Error,
+{
+    // Copy the status code here in case we are unable to parse the response as
+    // the Ok or Err variant.
+    let status_code = response.status();
+
+    // Read the entire response into a local buffer.
+    let body = response.bytes().await?;
+
+    // Try to parse the result as T.
+    match serde_json::from_slice::<T>(&body) {
+        Ok(result) => Ok(result),
+        Err(err) => {
+            trace!(
+                ?status_code,
+                ?err,
+                "Failed to parse response as expected type"
+            );
+            Err(ApiClientError::from_response(status_code, body))
+        }
     }
 }
