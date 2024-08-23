@@ -4,17 +4,24 @@ description: How to test webhooks in Fiberplane Studio
 ---
 import { Image } from "astro:assets";
 
+Webhooks allow external services to notify your application when specific events occur. 
+This approach is ideal for realtime updates and event-driven architectures.
 
+To make use of webhooks, your application must expose a public endpoint that the third-party service can call. 
+This can be tricky during local development, as `localhost` is not accessible from the broader internet.
 
-Fiberplane Studio streamlines the process of integrating and managing webhooks in your development workflow. Unlike traditional APIs, where your application actively sends requests, webhooks allow external services to notify your application when specific events occur. This approach is ideal for real-time updates and event-driven architectures. To utilize webhooks, your application must expose an endpoint that the third-party service can call, processing the incoming payload accordingly.
+Fiberplane Studio streamlines the process of integrating and managing webhooks in your local development workflow, 
+optionally exposing your local api via a public proxy. Let's see how to set this up.
 
 ## Expose Your Local Environment Using Studio
 In order to test and develop with webhooks in a local environment, you need to expose your local application to the internet. Fiberplane Studio simplifies this by providing a feature to proxy requests from a public URL to your local environment.
 
 ### Step 1: Enable Public URL Proxying
-To get started, navigate to the Studio settings. Under the "Proxy Requests" section, enable the public Url feature. Once activated, you’ll see a green indicator in the top-right corner of the interface that says "Public URL active." This confirms that your local environment is now accessible via a public URL.
+To get started, navigate to the settings page. Under the "Proxy Requests" section, enable the Public URL feature. 
+Once enabled, you’ll see a green indicator in the top-right corner of the screen that says "Public URL Active." 
+This confirms that your local environment is now accessible via a public URL.
 
-TODO: SCREENSHOT (showing how to get a public URL in Studio settings)
+![Public URL active](@/assets/webhooks--settings.png)
 
 ### Step 2: Configure the Webhook URL
 With the public URL enabled, you can now use it as the webhook URL for any third-party service that supports webhooks. Copy the generated URL from the settings, and make sure to append the appropriate endpoint path for your application. For instance, if your application listens for incoming events on `/api/webhook`, your full webhook URL might look something like `https://generated-url-from-studio/api/webhook`.
