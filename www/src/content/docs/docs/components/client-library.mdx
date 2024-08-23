@@ -1,21 +1,29 @@
 ---
-title: Client library
-description: description of client library
+title: Client Library
+description: An OpenTelemetry client library for Hono that integrates with Fiberplane Studio
 ---
 
+import { LinkCard } from '@astrojs/starlight/components';
 import PackageManagers from "@/components/PackageManagers.astro";
 
-The [client library](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel) leverages [OpenTelemetry](https://opentelemetry.io/) to instrument applications and send [traces](https://opentelemetry.io/docs/concepts/signals/traces/) to Fiberplane Studio. It requires the use of [Hono](https://hono.dev/) web application framework.
+The Fiberplane Studio Client Library integrates with the [Hono](https://hono.dev/) web framework to send [OpenTelemetry traces](https://opentelemetry.io/docs/concepts/signals/traces/) to Fiberplane Studio, and give you rich application context while you're developing.
+
+<LinkCard
+  title="View the code on GitHub"
+  description=""
+  href="https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel"
+  icon="external"
+/>
 
 ## Installation
 
-To install the client library for your Hono application, run the following command in your project directory:
+The install process is nothing novel. To install the client library in your Hono project by running the following command:
 
 <PackageManagers pkg="@fiberplane/hono-otel" />
 
-## Usage within the Hono application
+## Usage within Hono
 
-Below is an example of how to use the client library within a Hono application:
+Below is an example of how to integrate the client library in a Hono app:
 
 ```ts {2,8} title="index.ts"
 import { Hono } from "hono";
@@ -54,20 +62,26 @@ export default instrument(app);
 
 ## Configuration
 
-By default, the client library does not send traces. To define an endpoint, you need to set the `FPX_ENDPOINT` environment variable.
+By default, the client library does not send traces. To start sending data to Fiberplane Studio, you need to set the `FPX_ENDPOINT` environment variable.
 
-When starting Fiberplane Studio via the command line with `npx @fiberplane/studio`, the `FPX_ENDPOINT` is automatically set to the Fiberplane Studio's default port 8788: `http://localhost:8788/v1/traces`. Additionally, the Fiberplane Studio CLI setup enables Node.js compatibility mode for Cloudflare Workers.
+When starting Fiberplane Studio via the command line with `npx @fiberplane/studio`, the `FPX_ENDPOINT` is automatically set to Fiberplane Studio's default ingestion endpoint: `http://localhost:8788/v1/traces`.
 
-If you are not using Fiberplane Studio and use Cloudflare workers, ensure that Node.js compatibility mode is enabled in the `wrangler.toml` file:
+If you are using Cloudflare workers, ensure that Node.js compatibility mode must be enabled in your `wrangler.toml` file:
 
 ```toml title="wrangler.toml"
 # ...
 compatibility_flags = [ "nodejs_compat" ]
 ```
 
-### Customizing the `instrument` function behavior
+By default, the Fiberplane Studio CLI setup will enable Node.js compatibility mode for Cloudflare Workers.
 
-The client library allows you to override the default behavior of the `instrument` function. By default, the function creates traces for all fetched requests in the application and sends logging data to a locally running FPX Studio. You can disable these features by setting the corresponding monitoring variables to `false`.
+### Customizing the client library behavior
+
+The client library allows you to override the default behavior of the `instrument` function. 
+
+By default, `instrument` will change the behavior of `fetch` and `console.*` methods, in order to produce telemetry data for all `fetch` requests and logging events. 
+
+You can disable these features by setting the following configuration parameters to `false`:
 
 ```js {9-14} title="index.ts"
 import { Hono } from "hono";
@@ -87,4 +101,4 @@ export default instrument(app, {
 });
 ```
 
-Find the code on [Github](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel)
+To explore more of what the client library can do, check out the code on [Github](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel).
