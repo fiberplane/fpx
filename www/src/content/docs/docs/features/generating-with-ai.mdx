@@ -14,13 +14,13 @@ import fpxGenAiHostile from "@/assets/gen-ai-requests--hostile.png"
 import KeyboardButton from "@/components/KeyboardButton.astro";
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Generating sample request data is a common task in api development. It can also be very tedious.
+Generating sample request data is a common and often tedious task in API development.
 
 Studio has an opt-in, experimental feature to help you generate request payloads using an LLM of your choice. We call this **AI Request Autofill**, because that name seemed pretty descriptive.
 
 Let's walk through an example, then we can touch on how to enable AI Request Autofill, how it works under the hood, and where it works best.
 
-## Example: Creating a Goose
+## Example: Creating a sample payload (a "goose")
 
 Let's say we have a route `POST /api/goose` that creates a new goose. This route expects a JSON body with the following shape:
 

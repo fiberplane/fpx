@@ -3,6 +3,7 @@ title: Fiberplane Studio
 description: A local development, testing, and debugging tool for Hono APIs
 ---
 
+import { LinkCard } from "@astrojs/starlight/components";
 import PackageManagers from "@/components/PackageManagers.astro";
 
 Fiberplane Studio is the frontend component that allows you to explore your Hono API during development. It runs locally on your machine and serves as a companion for debugging and testing your Hono app.
@@ -24,8 +25,21 @@ Within the Studio, you can enable various settings. In the following Features se
 
 When enabled in the Studio, this feature allows you to generate sample request data using AI. To use this feature, you must provide a valid API key for either OpenAI or Anthropic.
 
+<LinkCard
+  title="Generating request data with AI"
+  description="Learn how to generate request data using AI in Fiberplane Studio"
+  href="/docs/features/generating-with-ai"
+/>
+
 ### Proxy requests
 
 When enabled, this feature allows you to use a public URL to proxy requests towards your application.
+
+
+<LinkCard
+  title="Testing webhooks"
+  description="Learn how you can use request proxying to test webhooks"
+  href="/docs/features/webhooks"
+/>
 
 Find the code on [GitHub](https://github.com/fiberplane/fpx/tree/main).
