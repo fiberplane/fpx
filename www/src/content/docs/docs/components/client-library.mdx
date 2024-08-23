@@ -6,7 +6,7 @@ description: An OpenTelemetry client library for Hono that integrates with Fiber
 import { LinkCard } from '@astrojs/starlight/components';
 import PackageManagers from "@/components/PackageManagers.astro";
 
-The Fiberplane Studio Client Library integrates with the [Hono](https://hono.dev/) web framework to send [OpenTelemetry traces](https://opentelemetry.io/docs/concepts/signals/traces/) to Fiberplane Studio, and give you rich application context while you're developing.
+The Fiberplane Studio client library integrates with the [Hono](https://hono.dev/) web framework to send [OpenTelemetry traces](https://opentelemetry.io/docs/concepts/signals/traces/) to Fiberplane Studio, and give you rich application context while you're developing.
 
 <LinkCard
   title="View the code on GitHub"
@@ -77,9 +77,9 @@ By default, the Fiberplane Studio CLI setup will enable Node.js compatibility mo
 
 ### Customizing the client library behavior
 
-The client library allows you to override the default behavior of the `instrument` function. 
+The client library allows you to override the default behavior of the `instrument` function.
 
-By default, `instrument` will change the behavior of `fetch` and `console.*` methods, in order to produce telemetry data for all `fetch` requests and logging events. 
+By default, `instrument` will change the behavior of `fetch` and `console.*` methods, in order to produce telemetry data for all `fetch` requests and logging events.
 
 You can disable these features by setting the following configuration parameters to `false`:
 
