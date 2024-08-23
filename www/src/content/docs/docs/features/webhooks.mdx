@@ -26,23 +26,28 @@ This confirms that your local environment is now accessible via a public URL.
 ### Step 2: Configure the Webhook URL
 With a Public URL enabled, you can now use it as the webhook URL for any third-party service that supports webhooks. Copy the generated URL from the settings, and make sure to append the appropriate endpoint path for your application. For instance, if your application listens for incoming events on `/api/webhook`, your full webhook URL might look something like `https://generated-url-from-studio/api/webhook`.
 
-![Public URL active](@/assets/webhooks--public-url-hover-card.png)
+![Public URL active hover card](@/assets/webhooks--public-url-hover-card.png)
 
 ## Handling Webhooks event in Studio
 Now that you've successfully proxied the webhook requests to your local environment, you can start testing and refining how your application handles incoming webhook payloads. By leveraging Studio's capabilities, you can ensure that your application correctly processes webhook data, handles edge cases, and responds appropriately to different types of events.
 
 ### Step 3: Trigger Webhook event
-Once you've set up the webhook URL in the third-party application, trigger an event to test it. When the event is fired, Studio will capture the incoming request under the "Requests" tab. Here, you can view detailed information about the request, including headers, payload, and the path it was sent to. A label indicating that the request was "proxied" will be displayed, confirming that the request was successfully routed through Studio's public URL feature.
+Once you've set up the webhook URL in the third-party application, trigger an event to test it. 
+When the event is fired, Studio will capture the incoming request under the "Requests" tab. 
+Here, you can view detailed information about the request, including headers, payload, and the path it was sent to. 
+A label indicating that the request was "proxied" will be displayed, confirming that the request was successfully routed through Studio's public URL feature.
 
-TODO: SCREENSHOT (Show the trace of a proxied request with the payload of the webhook and the "proxied" lable)
-
+![Proxied request example](@/assets/webhooks--proxied-badge.png)
+{/* 
 ### Step 4: Replaying Webhook Events
 One of the powerful features of Fiberplane Studio is the ability to replay webhook events. After capturing the initial payload, you can use the replay functionality to resend the same request to your application. This is particularly useful for testing and debugging, allowing you to refine your application's response to different webhook scenarios without needing to repeatedly trigger events from the third-party service.
 
-TODO: SCREENSHOT (Show how to reply a webhook event)
+TODO: SCREENSHOT (Show how to reply a webhook event) */}
 
 ## Best Practices for Using Webhooks in Studio
-When working with webhooks, ensure that your application can handle incoming requests asynchronously and securely. Since webhooks are event-driven and can be triggered by external services, it’s important to validate incoming data and implement proper error handling.
+When working with webhooks, ensure that your application can handle incoming requests asynchronously and securely. 
+
+Since webhooks are event-driven and can be triggered by external services, it’s important to validate incoming data and implement proper error handling.
 
 Additionally, be mindful of the security implications of exposing your local environment via a public URL. While Studio's proxy feature is convenient, it’s recommended to use this feature primarily for development purposes and to secure the URL with authentication or IP whitelisting when possible.
 
