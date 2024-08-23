@@ -1,27 +1,37 @@
 ---
-title: Showing traced requests
+title: Rich Request Traces
 description: Using the Fiberplane Studio
 sidebar:
   order: 2
 ---
 
 import KeyboardButton from "@/components/KeyboardButton.astro";
+import { LinkCard } from '@astrojs/starlight/components';
 
-Studio comes with a companion client library `@fiberplane/hono-otel` that if used together, can show you not just the response a typical HTTP client would see, but the entire request-to-response cycle traced.
+Studio works with a companion client library, `@fiberplane/hono-otel`. 
+When used together, Studio can show you not only the response of each HTTP request, 
+but the entire trace of the request-response lifecycle: Timing, application logs, exceptions, and more.
 
-See the [Client Library docs](/docs/components/client-library) for more information on the client library.
+<LinkCard
+  title="Install the Client Library"
+  description="Read the guide on how to install and use the client library."
+  href="/docs/components/client-library"
+/>
 
 ### Navigating to the request trace page
 
-Too see requests that have been traced, you can navigate to the "Requests" tab in the Studio UI. This will show you a list of all the requests that have been made to your API. Select the request you want to see the trace for.
-
-Alternatively, when you [make a request](/docs/features/making-requests), you can click "Go to Trace Details" to see the trace for that request.
+To inspect request traces, navigate to the "Requests" tab in the Studio UI. 
+This will show you a list of all the requests that have been made to your API. 
+Select the request you want to see the trace for.
 
 ![Request detail view](@/assets/fpx-request-details-view.png)
 
 You can jump up or down the request overview using the caret buttons at the top right of the page or simply pressing keys <KeyboardButton>j</KeyboardButton> and <KeyboardButton>k</KeyboardButton>.
 
 Hit <KeyboardButton>esc</KeyboardButton> to close the trace details view.
+
+Alternatively, when you [make a request](/docs/features/making-requests), you can click "Go to Trace Details" to see the trace for that request.
+
 
 ## Summary
 
