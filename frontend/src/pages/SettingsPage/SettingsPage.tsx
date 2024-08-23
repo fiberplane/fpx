@@ -35,7 +35,7 @@ export function SettingsPage() {
 
 const AI_TAB = "AI";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
-const FPX_WORKER_PROXY_TAB = "FPX Worker Proxy";
+const FPX_WORKER_PROXY_TAB = "Production Ingestion";
 
 function SettingsLayout({ settings }: { settings: Settings }) {
   const [activeTab, setActiveTab] = useState(AI_TAB);

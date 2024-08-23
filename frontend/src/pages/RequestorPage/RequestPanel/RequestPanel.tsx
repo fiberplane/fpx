@@ -9,7 +9,6 @@ import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestingPersona } from "../ai";
-import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
 import type {
   RequestBodyType,
   RequestorBody,
@@ -300,16 +299,14 @@ export function RequestPanel(props: RequestPanelProps) {
         </CustomTabsContent>
       )}
 
-      {FORM_BODY_FEATURE_FLAG_ENABLED && (
-        <BottomToolbar
-          body={body}
-          handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-          method={method}
-          path={path}
-          queryParams={queryParams}
-          requestHeaders={requestHeaders}
-        />
-      )}
+      <BottomToolbar
+        body={body}
+        handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+        method={method}
+        path={path}
+        queryParams={queryParams}
+        requestHeaders={requestHeaders}
+      />
     </Tabs>
   );
 }
