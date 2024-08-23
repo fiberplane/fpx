@@ -3,15 +3,11 @@ import { cn, isJson, objectWithKey } from "@/utils";
 import { CodeIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
-import { useRequestWaterfall } from "../RequestDetailsPage/RequestDetailsPageV2/useRequestWaterfall";
 import { TraceDetailsTimeline } from "../RequestDetailsPage/v2";
 import { CollapsibleKeyValueTableV2 } from "../RequestDetailsPage/v2/KeyValueTableV2";
-import {
-  getRequestEnv,
-  getString,
-  isErrorLogEvent,
-} from "../RequestDetailsPage/v2/otel-helpers";
+import { getRequestEnv, getString, isErrorLogEvent } from "@/utils";
 import { Requestornator } from "./queries";
+import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
 
 type FpxDetailsProps = {
   response?: Requestornator;
@@ -79,7 +75,7 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
   const isNotFound = !spans && !error && !isLoading;
 
   const orphanLogs = useOrphanLogs(traceId, spans ?? []);
-  const { waterfall } = useRequestWaterfall(spans ?? [], orphanLogs);
+  const { waterfall } = useAsWaterfall(spans ?? [], orphanLogs);
 
   const eventsForKvTable = useMemo(() => {
     const events = spans?.flatMap((span) => span.events) ?? [];

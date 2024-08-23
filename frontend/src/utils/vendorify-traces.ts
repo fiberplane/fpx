@@ -1,6 +1,13 @@
-import { OtelSpan } from "@/queries";
+import { MizuOrphanLog, OtelSpan } from "@/queries";
 import { z } from "zod";
 import { getRequestBody, getRequestUrl } from "./otel-helpers";
+
+export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
+
+export type SpanWithVendorInfo = {
+  span: OtelSpan;
+  vendorInfo: ReturnType<typeof getVendorInfo>;
+};
 
 const NoneVendorInfoSchema = z.object({
   vendor: z.literal("none"),

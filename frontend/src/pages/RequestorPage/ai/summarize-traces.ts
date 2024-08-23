@@ -11,7 +11,7 @@ import {
   getResponseHeaders,
   getStatusCode,
   getString,
-} from "@/pages/RequestDetailsPage/v2/otel-helpers";
+} from "@/utils";
 import { OtelSpans } from "@/queries";
 import { fetchSourceLocation } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";

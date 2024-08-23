@@ -17,7 +17,7 @@ import {
   getResponseBody,
   getResponseHeaders,
   getStatusCode,
-} from "./otel-helpers";
+} from "@/utils";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 import {
   NeonVendorInfo,
@@ -25,7 +25,7 @@ import {
   isAnthropicVendorInfo,
   isNeonVendorInfo,
   isOpenAIVendorInfo,
-} from "./vendorify-traces";
+} from "@/utils";
 
 export function FetchSpan({
   span,

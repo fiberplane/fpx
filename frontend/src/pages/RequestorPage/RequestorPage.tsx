@@ -26,6 +26,7 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
+import { RequestorTimeline } from "./RequestorTimeline";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -244,6 +245,9 @@ export const RequestorPage = () => {
       minimalGroupSize: 624,
     });
 
+  // const traceId = "8558ede965fd25921d150931e0bfc8dc";
+  const traceId = mostRecentRequestornatorForRoute?.app_responses.traceId;
+
   const requestContent = (
     <RequestPanel
       activeRequestsPanelTab={activeRequestsPanelTab}
@@ -311,14 +315,7 @@ export const RequestorPage = () => {
         "lg:gap-4",
       )}
     >
-      <div
-        className={cn(
-          "relative",
-          "overflow-y-auto",
-          "lg:overflow-x-hidden",
-          "lg:hidden",
-        )}
-      >
+      <div className={cn("relative", "lg:overflow-x-hidden", "lg:hidden")}>
         <RoutesCombobox
           routes={routes}
           selectedRoute={selectedRoute}
@@ -434,6 +431,20 @@ export const RequestorPage = () => {
                 )}
               </ResizablePanelGroup>
             )}
+            <div
+              className={cn(
+                BACKGROUND_LAYER,
+                "flex",
+                "flex-col",
+                "rounded-md",
+                "border",
+              )}
+            >
+              <Title>Timeline</Title>
+              <div className="grid grid-cols-[auto_auto]">
+                {traceId && <RequestorTimeline traceId={traceId} />}
+              </div>
+            </div>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -489,3 +500,19 @@ function useMostRecentRequestornator(
     return matchingResponsesFallback?.[0];
   }, [all, requestInputs, activeHistoryResponseTraceId]);
 }
+
+export const Title = (props: { children: React.ReactNode }) => (
+  <div
+    className="inline-flex items-center bg-muted p-1 text-muted-foreground w-full justify-start rounded-none border-b s
+pace-x-6 h-12"
+  >
+    <h1
+      className="inline-flex items-center justify-center whitespace-nowrap rounded-md ring-offset-background transition-
+all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-ev
+ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm font-normal border-b border-transparent font-medium tex
+t-gray-100 shadow-none bg-inherit rounded-none border-blue-500"
+    >
+      {props.children}
+    </h1>
+  </div>
+);

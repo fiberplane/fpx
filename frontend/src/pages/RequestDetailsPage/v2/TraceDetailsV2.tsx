@@ -14,9 +14,9 @@ import {
   getString,
   isFetchSpan,
   isIncomingRequestSpan,
-} from "./otel-helpers";
+  VendorInfo,
+} from "@/utils";
 import { SubSection, SubSectionHeading } from "./shared";
-import { VendorInfo } from "./vendorify-traces";
 
 export function TraceDetailsV2({
   waterfall,

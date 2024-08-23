@@ -18,15 +18,7 @@ import { cn } from "@/utils";
 import { EmptyState } from "../EmptyState";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
-import { getVendorInfo } from "../v2/vendorify-traces";
-import { useRequestWaterfall } from "./useRequestWaterfall";
-
-export type SpanWithVendorInfo = {
-  span: OtelSpan;
-  vendorInfo: ReturnType<typeof getVendorInfo>;
-};
-
-export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
+import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
 
 const EMPTY_LIST: Array<MizuOrphanLog> = [];
 
@@ -44,7 +36,7 @@ export function RequestDetailsPageContentV2({
     handleNextTrace: () => void;
   };
 }) {
-  const { rootSpan, waterfall } = useRequestWaterfall(spans, orphanLogs);
+  const { rootSpan, waterfall } = useAsWaterfall(spans, orphanLogs);
 
   if (!rootSpan) {
     return <EmptyState />;

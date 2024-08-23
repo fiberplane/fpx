@@ -23,7 +23,7 @@ import {
   getResponseBody,
   getStatusCode,
   getString,
-} from "./otel-helpers";
+} from "@/utils";
 
 export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
   const errors = useMemo(

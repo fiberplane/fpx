@@ -2,7 +2,7 @@ import { MizuOrphanLog, OtelSpan, isMizuOrphanLog } from "@/queries";
 import { OtelEvent } from "@/queries/traces-otel";
 import { safeParseJson } from "@/utils";
 import { useMemo } from "react";
-import { getString } from "../v2/otel-helpers";
+import { getString } from "@/utils";
 
 export function useOrphanLogs(traceId: string, spans: Array<OtelSpan>) {
   // NOTE - Flatten out events into orphan logs to allow the UI to render them

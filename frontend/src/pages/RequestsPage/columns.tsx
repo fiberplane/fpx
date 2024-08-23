@@ -12,7 +12,7 @@ import {
   getStatusCode,
   isFpxRequestSpan,
   isFpxTraceError,
-} from "../RequestDetailsPage/v2/otel-helpers";
+} from "@/utils";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
 //         in order to support fast refresh with Vite

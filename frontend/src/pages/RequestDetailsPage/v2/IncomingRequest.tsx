@@ -17,7 +17,7 @@ import {
   getResponseBody,
   getResponseHeaders,
   getStatusCode,
-} from "./otel-helpers";
+} from "@/utils";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 
 export function IncomingRequest({ span }: { span: OtelSpan }) {

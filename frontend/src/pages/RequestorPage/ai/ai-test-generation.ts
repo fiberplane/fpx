@@ -6,7 +6,7 @@ import {
   hasHttpError,
   isErrorLogEvent,
   isFetchSpan,
-} from "@/pages/RequestDetailsPage/v2/otel-helpers";
+} from "@/utils";
 import { OtelSpans, useOtelTrace } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import { useMemo } from "react";

@@ -6,7 +6,7 @@ import { usePagination } from "../hooks";
 import { RequestDetailsPageContentV2 } from "./RequestDetailsPageV2Content";
 import { useOrphanLogs } from "./useOrphanLogs";
 
-export function Otel({
+export function RequestDetailsPageV2({
   traceId,
 }: {
   traceId: string;

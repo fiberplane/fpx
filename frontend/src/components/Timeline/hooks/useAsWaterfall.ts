@@ -2,7 +2,7 @@ import { MizuOrphanLog, OtelSpan } from "@/queries";
 import { useMemo } from "react";
 import { getVendorInfo, SpanWithVendorInfo, Waterfall } from "@/utils";
 
-export function useRequestWaterfall(
+export function useAsWaterfall(
   spans: Array<OtelSpan>,
   orphanLogs: Array<MizuOrphanLog>,
 ) {
