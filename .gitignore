@@ -4,7 +4,6 @@ shared/dist
 .envrc
 
 # Fpx
-.fpx
 .fpxconfig
 
 # Rust targets

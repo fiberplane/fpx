@@ -62,6 +62,7 @@ export function useRoutes({ setRoutes, setServiceBaseUrl }: UseRoutesOptions) {
   const serviceBaseUrl =
     routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
   useEffect(() => {
+    console.log("setting serviceBaseUrl", serviceBaseUrl);
     setServiceBaseUrl(serviceBaseUrl);
   }, [serviceBaseUrl, setServiceBaseUrl]);
 

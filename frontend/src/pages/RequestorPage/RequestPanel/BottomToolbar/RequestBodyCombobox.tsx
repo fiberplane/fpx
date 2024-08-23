@@ -11,10 +11,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/utils";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import type { RequestBodyType, RequestorBody } from "../reducer";
+import type { RequestBodyType, RequestorBody } from "../../reducer";
 
 type RequestBodyTypeOption = {
   value: RequestBodyType;
@@ -34,11 +39,13 @@ export type RequestBodyTypeDropdownProps = {
     contentType: RequestBodyType,
     isMultipart?: boolean,
   ) => void;
+  isDisabled: boolean;
 };
 
 export function RequestBodyTypeDropdown({
   requestBody,
   handleRequestBodyTypeChange,
+  isDisabled,
 }: RequestBodyTypeDropdownProps) {
   const [open, setOpen] = useState(false);
   const requestBodyType = requestBody.type;
@@ -50,17 +57,29 @@ export function RequestBodyTypeDropdown({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <div className="flex items-center gap-4">
-        <PopoverTrigger asChild>
-          <Button
-            variant="secondary"
-            role="combobox"
-            aria-expanded={open}
-            className="pl-3"
-          >
-            <CaretSortIcon className="w-4 h-4 mr-1" />
-            {bodyTypeLabel}
-          </Button>
-        </PopoverTrigger>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                variant="secondary"
+                role="combobox"
+                aria-expanded={open}
+                className="pl-3 disabled:pointer-events-auto"
+                disabled={isDisabled}
+              >
+                <CaretSortIcon className="w-4 h-4 mr-1" />
+                {bodyTypeLabel}
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+
+          {isDisabled && (
+            <TooltipContent align="start">
+              Cannot change body type for GET and HEAD requests
+            </TooltipContent>
+          )}
+        </Tooltip>
+
         {requestBody.type === "form-data" && (
           <div className="flex items-center gap-1">
             <Switch

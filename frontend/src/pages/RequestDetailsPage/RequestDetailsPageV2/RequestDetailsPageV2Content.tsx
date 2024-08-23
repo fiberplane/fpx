@@ -121,6 +121,9 @@ export function RequestDetailsPageContentV2({
       </div>
       <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
         <SummaryV2 requestSpan={rootSpan.span} />
+        <div className="min-w-0 overflow-hidden w-full lg:hidden">
+          <TraceDetailsTimeline waterfall={waterfall} />
+        </div>
         <ResizablePanelGroup
           direction="horizontal"
           className={cn("grid grid-rows-[auto_1fr] w-full border-t")}
@@ -142,14 +145,10 @@ export function RequestDetailsPageContentV2({
             className={cn(
               "grid items-center gap-4 overflow-x-auto relative",
               "w-full",
-              "max-lg:grid-rows-[auto_1fr]",
               "lg:items-start",
               "lg:p-4",
             )}
           >
-            <div className="w-full lg:hidden">
-              <TraceDetailsTimeline waterfall={waterfall} />
-            </div>
             <TraceDetailsV2 waterfall={waterfall} />
           </ResizablePanel>
         </ResizablePanelGroup>

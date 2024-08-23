@@ -18,9 +18,22 @@
     "enabled": true
   },
   "linter": {
-    "enabled": true
+    "enabled": true,
+    "rules": {
+      "style": {
+        "useBlockStatements": {
+          "level": "error"
+        }
+      }
+    }
   },
   "overrides": [
+    {
+      "include": ["packages/types/src/schemas.ts"],
+      "linter": {
+        "enabled": false
+      }
+    },
     {
       "include": ["frontend"],
       "linter": {
@@ -28,7 +41,21 @@
       }
     },
     {
-      "include": ["client-library-otel", "api"],
+      "include": ["packages/client-library-otel"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "recommended": true,
+          "style": {
+            "useBlockStatements": {
+              "level": "off"
+            }
+          }
+        }
+      }
+    },
+    {
+      "include": ["packages/client-library-otel", "api"],
       "linter": {
         "enabled": true,
         "rules": {

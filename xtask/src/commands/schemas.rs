@@ -9,7 +9,7 @@ use std::path::Path;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
-    #[arg(short, long, env, default_value = "frontend")]
+    #[arg(short, long, env, default_value = "packages/types")]
     pub project_directory: String,
     #[arg(short, long, env, default_value = "src/schemas.ts")]
     pub output_path: String,

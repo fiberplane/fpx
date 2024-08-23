@@ -42,6 +42,7 @@ export function isJson(str: string) {
 export function parsePathFromRequestUrl(
   url: string,
   queryParams?: Record<string, string>,
+  { preserveHost = false } = {},
 ) {
   try {
     const fancyUrl = new URL(url);
@@ -50,9 +51,33 @@ export function parsePathFromRequestUrl(
         fancyUrl.searchParams.set(key, value);
       }
     }
+    if (preserveHost) {
+      return fancyUrl.toString();
+    }
     return `${fancyUrl.pathname}${fancyUrl.search}`;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Removes specified query parameters from a URL
+ */
+export function removeQueryParams(
+  url: string,
+  queryParams: Record<string, string>,
+) {
+  if (!url) {
+    return url;
+  }
+  try {
+    const newUrl = new URL(url);
+    for (const [key] of Object.entries(queryParams)) {
+      newUrl.searchParams.delete(key);
+    }
+    return newUrl.toString();
+  } catch {
+    return url;
   }
 }
 

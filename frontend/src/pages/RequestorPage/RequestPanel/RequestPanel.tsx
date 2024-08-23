@@ -9,26 +9,26 @@ import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestingPersona } from "../ai";
+import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
 import type {
   RequestBodyType,
   RequestorBody,
   RequestsPanelTab,
 } from "../reducer";
+import { RequestMethod } from "../types";
 import { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
-import { PathParamForm } from "./PathParamForm";
-import {
-  RequestBodyTypeDropdown,
-  RequestBodyTypeDropdownProps,
-} from "./RequestBodyCombobox";
-import "./styles.css";
-import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
+import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
+import { PathParamForm } from "./PathParamForm";
+import "./styles.css";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
   setActiveRequestsPanelTab: (tab: string) => void;
+  method: RequestMethod;
+  path: string;
   shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
   body: RequestorBody;
   // FIXME
@@ -65,6 +65,8 @@ export function RequestPanel(props: RequestPanelProps) {
     setActiveRequestsPanelTab,
     shouldShowRequestTab,
     body,
+    path,
+    method,
     setBody,
     pathParams,
     queryParams,
@@ -147,12 +149,11 @@ export function RequestPanel(props: RequestPanelProps) {
           </div>
         )}
       </CustomTabsList>
-
       <CustomTabsContent
         value="params"
         className={cn(
           // Need a lil bottom padding to avoid clipping the inputs of the last row in the form
-          "pb-1",
+          "pb-16",
         )}
       >
         <AIGeneratedInputsBanner
@@ -257,13 +258,6 @@ export function RequestPanel(props: RequestPanelProps) {
               }}
             />
           )}
-          {/* HACK - This toolbar is absolutely positioned for now */}
-          {FORM_BODY_FEATURE_FLAG_ENABLED && (
-            <BottomToolbar
-              requestBody={body}
-              handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-            />
-          )}
         </CustomTabsContent>
       )}
       {shouldShowMessages && (
@@ -305,23 +299,20 @@ export function RequestPanel(props: RequestPanelProps) {
           )}
         </CustomTabsContent>
       )}
+
+      {FORM_BODY_FEATURE_FLAG_ENABLED && (
+        <BottomToolbar
+          body={body}
+          handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+          method={method}
+          path={path}
+          queryParams={queryParams}
+          requestHeaders={requestHeaders}
+        />
+      )}
     </Tabs>
   );
 }
-
-const BottomToolbar = ({
-  requestBody,
-  handleRequestBodyTypeChange,
-}: RequestBodyTypeDropdownProps) => {
-  return (
-    <div className="flex justify-start gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
-      <RequestBodyTypeDropdown
-        requestBody={requestBody}
-        handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-      />
-    </div>
-  );
-};
 
 type PanelSectionHeaderProps = {
   title: string;

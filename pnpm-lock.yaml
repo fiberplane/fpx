@@ -28,7 +28,7 @@ importers:
     dependencies:
       '@anthropic-ai/sdk':
         specifier: ^0.24.3
-        version: 0.24.3
+        version: 0.24.3(encoding@0.1.13)
       '@fiberplane/fpx-types':
         specifier: workspace:*
         version: link:../packages/types
@@ -43,7 +43,7 @@ importers:
         version: 2.2.5
       '@langchain/core':
         specifier: ^0.2.15
-        version: 0.2.23(openai@4.55.4(zod@3.23.8))
+        version: 0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
       '@libsql/client':
         specifier: ^0.6.2
         version: 0.6.2
@@ -79,7 +79,7 @@ importers:
         version: 10.0.1
       openai:
         specifier: ^4.47.1
-        version: 4.55.4(zod@3.23.8)
+        version: 4.55.4(encoding@0.1.13)(zod@3.23.8)
       source-map:
         specifier: ^0.7.4
         version: 0.7.4
@@ -126,6 +126,9 @@ importers:
       '@codemirror/lang-sql':
         specifier: ^6.7.0
         version: 6.7.0(@codemirror/view@6.32.0)
+      '@fiberplane/fpx-types':
+        specifier: workspace:*
+        version: link:../packages/types
       '@fiberplane/hooks':
         specifier: ^0.3.0
         version: 0.3.0
@@ -4008,6 +4011,9 @@ packages:
   emoji-regex@9.2.2:
     resolution: {integrity: sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==}
 
+  encoding@0.1.13:
+    resolution: {integrity: sha512-ETBauow1T35Y/WZMkio9jiM0Z5xjHHmJ4XmjZOq1l/dXz3lr2sRn87nJy20RupqSh1F2m3HHPSp8ShIPQJrJ3A==}
+
   end-of-stream@1.4.4:
     resolution: {integrity: sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==}
 
@@ -4614,6 +4620,10 @@ packages:
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
+    engines: {node: '>=0.10.0'}
+
+  iconv-lite@0.6.3:
+    resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
 
   ieee754@1.2.1:
@@ -7069,7 +7079,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@anthropic-ai/sdk@0.24.3':
+  '@anthropic-ai/sdk@0.24.3(encoding@0.1.13)':
     dependencies:
       '@types/node': 18.19.44
       '@types/node-fetch': 2.6.11
@@ -7077,7 +7087,7 @@ snapshots:
       agentkeepalive: 4.5.0
       form-data-encoder: 1.7.2
       formdata-node: 4.4.1
-      node-fetch: 2.7.0
+      node-fetch: 2.7.0(encoding@0.1.13)
       web-streams-polyfill: 3.3.3
     transitivePeerDependencies:
       - encoding
@@ -8170,13 +8180,13 @@ snapshots:
       string-argv: 0.3.2
       type-detect: 4.1.0
 
-  '@langchain/core@0.2.23(openai@4.55.4(zod@3.23.8))':
+  '@langchain/core@0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))':
     dependencies:
       ansi-styles: 5.2.0
       camelcase: 6.3.0
       decamelize: 1.2.0
       js-tiktoken: 1.0.12
-      langsmith: 0.1.41(@langchain/core@0.2.23(openai@4.55.4(zod@3.23.8)))(openai@4.55.4(zod@3.23.8))
+      langsmith: 0.1.41(@langchain/core@0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8)))(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
       mustache: 4.2.0
       p-queue: 6.6.2
       p-retry: 4.6.2
@@ -10530,6 +10540,11 @@ snapshots:
 
   emoji-regex@9.2.2: {}
 
+  encoding@0.1.13:
+    dependencies:
+      iconv-lite: 0.6.3
+    optional: true
+
   end-of-stream@1.4.4:
     dependencies:
       once: 1.4.0
@@ -11432,6 +11447,11 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
+  iconv-lite@0.6.3:
+    dependencies:
+      safer-buffer: 2.1.2
+    optional: true
+
   ieee754@1.2.1: {}
 
   ignore-by-default@1.0.1: {}
@@ -11661,7 +11681,7 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  langsmith@0.1.41(@langchain/core@0.2.23(openai@4.55.4(zod@3.23.8)))(openai@4.55.4(zod@3.23.8)):
+  langsmith@0.1.41(@langchain/core@0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8)))(openai@4.55.4(encoding@0.1.13)(zod@3.23.8)):
     dependencies:
       '@types/uuid': 9.0.8
       commander: 10.0.1
@@ -11670,8 +11690,8 @@ snapshots:
       semver: 7.6.3
       uuid: 9.0.1
     optionalDependencies:
-      '@langchain/core': 0.2.23(openai@4.55.4(zod@3.23.8))
-      openai: 4.55.4(zod@3.23.8)
+      '@langchain/core': 0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
+      openai: 4.55.4(encoding@0.1.13)(zod@3.23.8)
 
   leven@4.0.0: {}
 
@@ -12424,9 +12444,11 @@ snapshots:
 
   node-fetch-native@1.6.4: {}
 
-  node-fetch@2.7.0:
+  node-fetch@2.7.0(encoding@0.1.13):
     dependencies:
       whatwg-url: 5.0.0
+    optionalDependencies:
+      encoding: 0.1.13
 
   node-fetch@3.3.2:
     dependencies:
@@ -12496,7 +12518,7 @@ snapshots:
     dependencies:
       mimic-fn: 4.0.0
 
-  openai@4.55.4(zod@3.23.8):
+  openai@4.55.4(encoding@0.1.13)(zod@3.23.8):
     dependencies:
       '@types/node': 18.19.44
       '@types/node-fetch': 2.6.11
@@ -12504,7 +12526,7 @@ snapshots:
       agentkeepalive: 4.5.0
       form-data-encoder: 1.7.2
       formdata-node: 4.4.1
-      node-fetch: 2.7.0
+      node-fetch: 2.7.0(encoding@0.1.13)
     optionalDependencies:
       zod: 3.23.8
     transitivePeerDependencies:

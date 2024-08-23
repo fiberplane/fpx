@@ -32,13 +32,17 @@ pub struct Args {
 
     /// fpx directory
     #[arg(from_global)]
-    pub fpx_directory: PathBuf,
+    pub fpx_directory: Option<PathBuf>,
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
-    initialize_fpx_dir(args.fpx_directory.as_path()).await?;
+    let fpx_directory = initialize_fpx_dir(&args.fpx_directory).await?;
 
-    let store = open_store(&args).await?;
+    let store = if args.in_memory_database {
+        LibsqlStore::in_memory().await?
+    } else {
+        LibsqlStore::file(&fpx_directory.join("fpx.db")).await?
+    };
 
     LibsqlStore::migrate(&store).await?;
 
@@ -113,10 +117,4 @@ pub async fn handle_command(args: Args) -> Result<()> {
     );
 
     Ok(())
-}
-
-async fn open_store(_args: &Args) -> Result<LibsqlStore> {
-    let store = LibsqlStore::in_memory().await?;
-
-    Ok(store)
 }

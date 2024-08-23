@@ -5,6 +5,7 @@ import {
 } from "../KeyValueForm";
 import { ProbedRouteSchema } from "../queries";
 import { RequestMethodSchema, RequestTypeSchema } from "../types";
+import { addContentTypeHeader } from "./reducers";
 import { RequestorBodySchema } from "./request-body";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
 
@@ -126,7 +127,7 @@ export type RequestorState = z.infer<typeof RequestorStateSchema>;
 export type RequestorBody = RequestorState["body"];
 export type RequestBodyType = RequestorBody["type"];
 
-export const initialState: RequestorState = {
+export const initialState: RequestorState = addContentTypeHeader({
   routes: [],
   selectedRoute: null,
   path: "/",
@@ -154,7 +155,7 @@ export const initialState: RequestorState = {
   activeHistoryResponseTraceId: null,
 
   activeResponse: null,
-};
+});
 
 /**
  * Initializer for the reducer's state that attempts to load the UI state from local storage

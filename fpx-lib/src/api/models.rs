@@ -140,3 +140,32 @@ impl From<SpanAdded> for ServerMessage {
         ServerMessageDetails::SpanAdded(Box::new(val)).into()
     }
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TypeScriptCompatSpan {
+    pub span_id: Option<String>,
+    pub trace_id: Option<String>,
+    pub created_at: time::OffsetDateTime,
+    pub updated_at: time::OffsetDateTime,
+    pub parsed_payload: Span,
+}
+
+impl From<crate::data::models::Span> for TypeScriptCompatSpan {
+    fn from(span: crate::data::models::Span) -> Self {
+        Self {
+            span_id: Some(span.span_id.clone()),
+            trace_id: Some(span.trace_id.clone()),
+            created_at: span.end_time.into(),
+            updated_at: span.end_time.into(),
+            parsed_payload: span.clone().into(),
+        }
+    }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TypeScriptCompatTrace {
+    pub trace_id: String,
+    pub spans: Vec<TypeScriptCompatSpan>,
+}

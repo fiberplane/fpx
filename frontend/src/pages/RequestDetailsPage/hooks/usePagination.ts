@@ -17,7 +17,9 @@ export function usePagination({
   const currentIndex = findIndex(traceId) || 0;
 
   const handleNextTrace = useHandler(() => {
-    if (currentIndex === undefined) return;
+    if (currentIndex === undefined) {
+      return;
+    }
 
     if (currentIndex === maxIndex) {
       return;

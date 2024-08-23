@@ -5,11 +5,13 @@ import { Requestornator } from "./queries";
 type RequestorHistoryProps = {
   history: Array<Requestornator>;
   loadHistoricalRequest: (traceId: string) => void;
+  removeServiceUrlFromPath: (path: string) => string;
 };
 
 export function RequestorHistory({
   history,
   loadHistoricalRequest,
+  removeServiceUrlFromPath,
 }: RequestorHistoryProps) {
   return (
     <>
@@ -29,6 +31,7 @@ export function RequestorHistory({
               traceId={traceId}
               response={h}
               loadHistoricalRequest={loadHistoricalRequest}
+              removeServiceUrlFromPath={removeServiceUrlFromPath}
             />
           );
         })}
@@ -40,22 +43,27 @@ type HistoryEntryProps = {
   traceId: string;
   response: Requestornator;
   loadHistoricalRequest?: (traceId: string) => void;
+  removeServiceUrlFromPath: (path: string) => string;
 };
 
 export function HistoryEntry({
   traceId,
   response,
   loadHistoricalRequest,
+  removeServiceUrlFromPath,
 }: HistoryEntryProps) {
   const isFailure = response?.app_responses?.isFailure;
   const requestMethod = response.app_requests?.requestMethod;
   const responseStatusCode = response.app_responses?.responseStatusCode;
 
+  const path = parsePathFromRequestUrl(
+    response.app_requests?.requestUrl,
+    response.app_requests?.requestQueryParams ?? undefined,
+    { preserveHost: true },
+  );
+
   const fallbackUrl = truncatePathWithEllipsis(
-    parsePathFromRequestUrl(
-      response.app_requests?.requestUrl,
-      response.app_requests?.requestQueryParams ?? undefined,
-    ),
+    path ? removeServiceUrlFromPath(path) : path,
   );
 
   return (

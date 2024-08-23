@@ -237,6 +237,8 @@ export const RequestorPage = () => {
       activeRequestsPanelTab={activeRequestsPanelTab}
       setActiveRequestsPanelTab={setActiveRequestsPanelTab}
       shouldShowRequestTab={shouldShowRequestTab}
+      path={path}
+      method={method}
       body={body}
       setBody={setBody}
       handleRequestBodyTypeChange={handleRequestBodyTypeChange}
@@ -316,6 +318,7 @@ export const RequestorPage = () => {
           handleRouteClick={handleSelectRoute}
           history={history}
           loadHistoricalRequest={loadHistoricalRequest}
+          removeServiceUrlFromPath={removeServiceUrlFromPath}
         />
       </div>
 
@@ -347,7 +350,6 @@ export const RequestorPage = () => {
           websocketState={websocketState}
           getIsInDraftMode={getIsInDraftMode}
         />
-
         {isSmallScreen ? (
           <>
             {requestContent}

@@ -1,3 +1,4 @@
+import { SettingsSchema } from "@fiberplane/fpx-types";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
@@ -19,14 +20,23 @@ app.get("/v0/settings", cors(), async (ctx) => {
  * Upsert the settings record
  */
 app.post("/v0/settings", cors(), async (ctx) => {
-  const { content } = await ctx.req.json();
+  const { content } = (await ctx.req.json()) as {
+    content: Record<string, string>;
+  };
+
+  const parsedContent = SettingsSchema.parse(content);
+  // Remove the stored api key if the feature is disabled
+  if (!parsedContent.aiEnabled) {
+    parsedContent.openaiApiKey = undefined;
+    parsedContent.anthropicApiKey = undefined;
+  }
 
   logger.debug("Updating settings", { content });
 
   const db = ctx.get("db");
   const webhonc = ctx.get("webhonc");
 
-  const updatedSettings = await upsertSettings(db, content);
+  const updatedSettings = await upsertSettings(db, parsedContent);
 
   logger.debug("Configuration updated...");
 

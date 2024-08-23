@@ -84,8 +84,9 @@ async function connect() {
 }
 
 function setupSocketListeners() {
-  if (!socket) return;
-  if (!config) return;
+  if (!socket || !config) {
+    return;
+  }
 
   socket.onopen = () => {
     logger.debug(`Connected to the webhonc service at ${config?.host}`);
@@ -109,7 +110,9 @@ function setupSocketListeners() {
       event.wasClean,
     );
     // If the connection is closed due to a normal close, we don't want to reconnect
-    if (event.code === 1000) return;
+    if (event.code === 1000) {
+      return;
+    }
 
     scheduleReconnect();
   };
@@ -134,7 +137,9 @@ function scheduleReconnect() {
 }
 
 async function handleMessage(event: WebSocket.MessageEvent) {
-  if (!config) return;
+  if (!config) {
+    return;
+  }
 
   const parsedMessage = WsMessageSchema.parse(
     // it probably doesn't make sense that we're parsing the entire message and then re-serializing it
