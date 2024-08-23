@@ -1,3 +1,7 @@
+# Stressy McStress Face (A Hono-Node App)
+
+> **NOTE** - Node.js is not currently supported by the Fiberplane OTel client library. This app is a work in progress, intended for testing as we develop the client library further.
+
 ## Setup
 
 Configure
