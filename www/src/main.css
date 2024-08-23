@@ -2,6 +2,9 @@
 :root {
   --border-radius: 0.5rem;
   --image-border-radius: 0.25rem;
+
+  --bg-primary: hsl(217.2 91.2% 59.8%);
+  --bg-secondary: hsl(217.2 32.6% 17.5%);
 }
 
 /* Dark mode colors. */
