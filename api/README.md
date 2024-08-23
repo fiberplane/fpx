@@ -13,12 +13,6 @@ pnpm db:migrate
 FPX_WATCH_DIR=../../path/to/example/api pnpm dev
 ```
 
-### Adding some AI
-
-- Get an OpenAI API Key
-- Add it to `.dev.vars`
-- Voilà
-
 ## Publishing
 
 ### Testing the npx command locally
