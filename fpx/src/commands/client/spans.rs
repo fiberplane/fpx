@@ -89,7 +89,7 @@ pub struct DeleteArgs {
 async fn handle_delete(args: DeleteArgs) -> Result<()> {
     let api_client = ApiClient::new(args.base_url.clone());
 
-    let _ = api_client.span_delete(args.trace_id, args.span_id).await?;
+    api_client.span_delete(args.trace_id, args.span_id).await?;
 
     Ok(())
 }

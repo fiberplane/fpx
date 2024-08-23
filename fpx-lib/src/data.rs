@@ -71,8 +71,13 @@ pub trait Store: Send + Sync {
     ) -> Result<Vec<models::Trace>>;
 
     /// Delete all spans with a specific trace_id.
-    async fn span_delete_by_trace(&self, tx: &Transaction, trace_id: &str) -> Result<u64>;
+    async fn span_delete_by_trace(&self, tx: &Transaction, trace_id: &str) -> Result<Option<u64>>;
 
     /// Delete a single span.
-    async fn span_delete(&self, tx: &Transaction, trace_id: &str, span_id: &str) -> Result<u64>;
+    async fn span_delete(
+        &self,
+        tx: &Transaction,
+        trace_id: &str,
+        span_id: &str,
+    ) -> Result<Option<u64>>;
 }
