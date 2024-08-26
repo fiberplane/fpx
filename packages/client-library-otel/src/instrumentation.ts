@@ -133,20 +133,6 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             duplex: body2 ? "half" : undefined,
           });
 
-          // Determine the content length of the body2 stream, in order to pass it correctly to the server
-          // let newRequestContentLength = null;
-          // if (body2 && newRequest.headers.has("Content-Length")) {
-          //   const blob = await new Response(body2).blob();
-          //   newRequestContentLength = blob.size;
-          // }
-          // // Update the Content-Length header on the newRequest object
-          // if (newRequestContentLength !== null) {
-          //   newRequest.headers.set(
-          //     "Content-Length",
-          //     newRequestContentLength.toString(),
-          //   );
-          // }
-
           // Parse the body and headers for the root request.
           //
           // NOTE - This will add some latency, and it will serialize the env object.
