@@ -88,7 +88,7 @@ export function usePanelConstraints(
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [groupId, updateCurrent]);
 
   return current;
 }
