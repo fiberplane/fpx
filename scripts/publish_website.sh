@@ -83,14 +83,14 @@ fi
 
 # We record the author and commit hash in the metadata
 # If the script was run by CI, we use the CI user and commit hash
-AUTHOR=$(git config user.name)
-COMMIT_HASH=$(git rev-parse HEAD)
+#AUTHOR=$(git config user.name)
+#COMMIT_HASH=$(git rev-parse HEAD)
 
 if [ "$DRY_RUN" = true ]; then
 	echo "DRY RUN: Would execute the following command:"
-	echo "aws s3 sync \"$PUBLISH_DIR\" \"s3://$S3_BUCKET_ID\" --delete --metadata \"{\\\"author\\\":\\\"$AUTHOR\\\",\\\"commit\\\":\\\"$COMMIT_HASH\\\"}\""
+	echo "aws s3 sync \"$PUBLISH_DIR\" \"s3://$S3_BUCKET_ID\" --delete"
 else
-	aws s3 sync "$PUBLISH_DIR" "s3://$S3_BUCKET_ID" --delete --metadata "{\"author\":\"$AUTHOR\",\"commit\":\"$COMMIT_HASH\"}" || {
+	aws s3 sync "$PUBLISH_DIR" "s3://$S3_BUCKET_ID" --delete || {
 		echo "Error: Failed to sync with S3 bucket" >&2
 		exit 1
 	}
@@ -98,9 +98,9 @@ fi
 
 if [ "$DRY_RUN" = true ]; then
 	echo "DRY RUN: Would execute the following command:"
-	echo "aws cloudfront create-invalidation --distribution-id \"$CF_DISTRIBUTION_ID\" --paths \"/*\" --comment \"Invalidation by $AUTHOR for commit $COMMIT_HASH\""
+	echo "aws cloudfront create-invalidation --distribution-id \"$CF_DISTRIBUTION_ID\" --paths \"/*\""
 else
-	aws cloudfront create-invalidation --distribution-id "$CF_DISTRIBUTION_ID" --paths "/*" --comment "Invalidation by $AUTHOR for commit $COMMIT_HASH" || {
+	aws cloudfront create-invalidation --distribution-id "$CF_DISTRIBUTION_ID" --paths "/*" || {
 		echo "Error: Failed to create CloudFront invalidation" >&2
 		exit 1
 	}

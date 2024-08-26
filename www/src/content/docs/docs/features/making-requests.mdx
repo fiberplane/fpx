@@ -1,0 +1,132 @@
+---
+title: Make Requests
+description: Tutorial on how to make HTTP requests in Fiberplane Studio
+sidebar:
+  order: 1
+---
+
+import { Image } from 'astro:assets';
+import { Aside } from '@astrojs/starlight/components';
+import { LinkCard } from '@astrojs/starlight/components';
+import { Card } from '@astrojs/starlight/components';
+import Button from '@/components/Button.astro';
+import KeyboardButton from '@/components/KeyboardButton.astro';
+
+import FirstRequest from '@/assets/making-requests--make-request.gif';
+import CreateGoose from '@/assets/making-requests--create-goose.png';
+import CurlRequest from '@/assets/making-requests--curl.png';
+import BodySelector from '@/assets/making-requests--body-type.png';
+import FormBodyExample from '@/assets/making-requests--body-type-form-data.png';
+import RequestHistory from '@/assets/making-requests--history.png';
+import CustomRoutes from '@/assets/making-requests--custom-routes.png';
+
+Requests. Everybody loves a good HTTP request. Right? Don't they? Surely they do.
+
+Fiberplane Studio makes it easy to fire off requests against your API.
+Once you're up and running locally, the first page you see in Studio leaves you a single click away from making your first request.
+
+<Image src={FirstRequest} alt="First request" />
+
+
+## Your First Request
+
+When using Fiberplane Studio with the [Hono client library](/docs/components/client-library/), Studio automatically detects the routes in your Hono API and displays them in the sidebar.
+
+In the example above, the first route, `GET /`, is selected by default. By clicking <Button style="primary">Send</Button>, we make a request to our API, and see the response in the panel below. (You can also hit <KeyboardButton>cmd</KeyboardButton><KeyboardButton>enter</KeyboardButton> to send the request.)
+
+If there were any logs along the way, we can see them in the "Debug" section.
+
+We can repeat this process for any of the routes in our API, adding whatever query parameters, headers, or body payloads we need.
+
+## Request Bodies
+
+We love JSON. It's a great data format, and we're huge fans.
+To that end, request body payloads in Studio are JSON by default. If you have a route like `POST /api/geese`, you can fill in the request body as follows:
+
+<Image src={CreateGoose} alt="Create goose" />
+
+However, as much as we love JSON, sometimes you do need to send a blob or submit a form. Fair enough.
+
+To modify the body payload, click the body selector along the bottom of the request panel, and select the type you want to use.
+
+<Image src={BodySelector} alt="Body selector" />
+
+This will render different inputs depending on the body payload, and when necessary, change the `Content-Type` header to match the type of the body you're sending.
+
+Let's see how we would send the same body payload as before, but this time as an `application/x-www-form-urlencoded` request.
+
+<Image src={FormBodyExample} alt="Form Data example body payload" />
+
+In this case, we selected <Button style="secondary">Form</Button> from the dropdown, and Studio rendered a form with fields for each of the properties in our Goose object. We can also attach a file to a form, and it will be sent as a `multipart/form-data` request.
+
+If you just want to send a file, you can attach it directly to the request, and it will be sent with the content-type `application/octet-stream`, unless you specify otherwise.
+
+## Request History
+
+In the routes sidebar, there's a section called "History". This is where you can see all the requests you've made to your API.
+
+<Image src={RequestHistory} alt="Request history" />
+
+Click on a request in the history, and you'll see the details of the corresponding request and response appear in the main panels.
+If you want to re-run the request, just click the "Send" button again!
+
+## Custom Routes
+
+What if you want to make a request to an API route that isn't detected via the Client Library? Or perhaps to a staging service? We got you covered.
+
+In the routes panel, click the `+` button and select "Custom Route". Add the url and method you want to use, and click "Save".
+
+<Image src={CustomRoutes} alt="Custom routes" />
+
+
+### Importing OpenAPI Specs
+
+If you have an OpenAPI spec handy, you can also import it by clicking the `+` button. All your routes will be automatically added to the sidebar.
+
+<Aside>
+OpenAPI support is experimental right now, so if you encounter any issues, please let us know on [GitHub](https://github.com/fiberplane/fpx/issues).
+</Aside>
+
+
+## Copy as cURL
+
+Recall our route `POST /api/geese`, which creates a goose. Remember we filled in the body with the data we want to send to the server as follows:
+
+```json
+{
+  "name": "Gus",
+  "isFlockLeader": true,
+  "programmingLanguage": "Go",
+  "motivations": "To lead the flock to new heights",
+  "location": "Central Park"
+}
+```
+
+If we wanted to replicate this request from the terminal, we can copy its corresponding `cURL` command by clicking the "Copy as cURL" button in the bottom right of the request panel.
+
+<Image src={CurlRequest} alt="Copy request as cURL command" />
+
+This would copy the following cURL command to your clipboard:
+
+```sh
+curl -X POST 'http://localhost:8787/api/geese'  -H "Content-Type: application/json" -d '{
+  "name": "Gus",
+  "isFlockLeader": true,
+  "programmingLanguage": "Go",
+  "motivations": "To lead the flock to new heights",
+  "location": "Central Park"
+}'
+```
+
+## Websockets (Coming soon!)
+
+The current version of Fiberplane Studio does not support opening a Websocket connection and sending messages to a client API. But we're working on it!
+
+If you want to see this feature sooner rather than later, be sure to chime in on our open GitHub issue that's tracking Websocket support.
+
+<LinkCard
+  title="Follow along on GitHub"
+  description="We're always looking for feedback and contributions. If you have any ideas or suggestions for Websocket support, please let us know on GitHub."
+  href="https://github.com/fiberplane/fpx/issues/181"
+  icon="external"
+/>

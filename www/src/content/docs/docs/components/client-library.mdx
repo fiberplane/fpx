@@ -1,0 +1,104 @@
+---
+title: Client Library
+description: An OpenTelemetry client library for Hono that integrates with Fiberplane Studio
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+import PackageManagers from "@/components/PackageManagers.astro";
+
+The Fiberplane Studio client library integrates with the [Hono](https://hono.dev/) web framework to send [OpenTelemetry traces](https://opentelemetry.io/docs/concepts/signals/traces/) to Fiberplane Studio, and give you rich application context while you're developing.
+
+<LinkCard
+  title="View the code on GitHub"
+  description=""
+  href="https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel"
+  icon="external"
+/>
+
+## Installation
+
+The install process is nothing novel. To install the client library in your Hono project by running the following command:
+
+<PackageManagers pkg="@fiberplane/hono-otel" />
+
+## Usage within Hono
+
+Below is an example of how to integrate the client library in a Hono app:
+
+```ts {2,8} title="index.ts"
+import { Hono } from "hono";
+import { instrument } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("Hello, Hono!"));
+
+export default instrument(app);
+```
+
+### Advanced usage: Custom spans
+
+The `measure` function from the client library allows you to create custom spans for any function within your application, enabling more granular tracing.
+
+```ts {6-10} title="index.ts"
+import { instrument, measure } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+// Create a loop function that will get recorded as a span inside the trace for a incoming given request
+const loop = measure("loop", (n: number) => {
+  for (let i = 0; i < n; i++) {
+    console.log(`Loop iteration: ${i}`);
+  }
+});
+
+app.get("/", (c) => {
+  loop(100);
+  return c.text("Hello, Hono!");
+});
+
+export default instrument(app);
+```
+
+## Configuration
+
+By default, the client library does not send traces. To start sending data to Fiberplane Studio, you need to set the `FPX_ENDPOINT` environment variable.
+
+When starting Fiberplane Studio via the command line with `npx @fiberplane/studio`, the `FPX_ENDPOINT` is automatically set to Fiberplane Studio's default ingestion endpoint: `http://localhost:8788/v1/traces`.
+
+If you are using Cloudflare workers, ensure that Node.js compatibility mode must be enabled in your `wrangler.toml` file:
+
+```toml title="wrangler.toml"
+# ...
+compatibility_flags = [ "nodejs_compat" ]
+```
+
+By default, the Fiberplane Studio CLI setup will enable Node.js compatibility mode for Cloudflare Workers.
+
+### Customizing the client library behavior
+
+The client library allows you to override the default behavior of the `instrument` function.
+
+By default, `instrument` will change the behavior of `fetch` and `console.*` methods, in order to produce telemetry data for all `fetch` requests and logging events.
+
+You can disable these features by setting the following configuration parameters to `false`:
+
+```js {9-14} title="index.ts"
+import { Hono } from "hono";
+import { instrument } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("Hello, Hono!"));
+
+export default instrument(app, {
+  monitor: {
+    // Don't create traces for fetch requests
+    fetch: false,
+    // Don't proxy `console.*` functions to send logging data to a local FPX server
+    logging: false,
+  },
+});
+```
+
+To explore more of what the client library can do, check out the code on [Github](https://github.com/fiberplane/fpx/tree/main/packages/client-library-otel).

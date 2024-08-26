@@ -47,9 +47,6 @@ jobs:
       - name: Deploy website
         run: |
           ./scripts/publish_website.sh \
-            --s3-bucket-id "$FIBERPLANE_COM_BUCKET_ID" \
-            --cf-distribution-id "$FIBERPLANE_COM_CLOUDFRONT_ID" \
+            --s3-bucket-id "${{ vars.FIBERPLANE_COM_BUCKET_ID }}" \
+            --cf-distribution-id "${{ vars.FIBERPLANE_COM_CLOUDFRONT_ID }}" \
             --publish-dir "./www/dist"
-        env:
-          FIBERPLANE_COM_BUCKET_ID: ${{ vars.FIBERPLANE_COM_BUCKET_ID }}
-          FIBERPLANE_COM_CLOUDFRONT_ID: ${{ secrets.FIBERPLANE_COM_CLOUDFRONT_ID }}

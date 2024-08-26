@@ -24,10 +24,7 @@ export function addContentTypeHeader(state: RequestorState): RequestorState {
   const currentHeaders = state.requestHeaders;
   const currentContentTypeHeader = getCurrentContentType(state);
 
-  const updateOperation = getUpdateOperation(
-    currentContentTypeHeader,
-    state.body,
-  );
+  const updateOperation = getUpdateOperation(state, currentContentTypeHeader);
 
   let nextHeaders = currentHeaders;
   if (updateOperation?.type === "add") {
@@ -102,9 +99,22 @@ function getCurrentContentType(state: RequestorState) {
 }
 
 function getUpdateOperation(
+  state: RequestorState,
   currentContentTypeHeader: KeyValueParameter | null,
-  currentBody: RequestorBody,
 ) {
+  const canHaveBody = state.method !== "GET" && state.method !== "HEAD";
+
+  // Handle the case where the method doesn't support a body, so we don't want to add the content type header
+  if (!canHaveBody) {
+    return currentContentTypeHeader
+      ? {
+          type: "remove",
+          value: currentContentTypeHeader,
+        }
+      : null;
+  }
+
+  const currentBody = state.body;
   const nextContentTypeValue = mapBodyToContentType(currentBody);
 
   // `null` means "no change"
@@ -135,6 +145,14 @@ function getUpdateOperation(
         value: nextContentTypeValue,
         enabled: true,
       },
+    };
+  }
+
+  // If the method is GET or HEAD, we don't want to add the content type header
+  if (state.method === "GET" || state.method === "HEAD") {
+    return {
+      type: "remove",
+      value: currentContentTypeHeader,
     };
   }
 

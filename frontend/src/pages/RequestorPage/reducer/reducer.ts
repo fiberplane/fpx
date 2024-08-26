@@ -239,7 +239,7 @@ function requestorReducer(
       )
         ? state.activeResponsePanelTab
         : nextVisibleResponsePanelTabs[0];
-      return {
+      return addContentTypeHeader({
         ...state,
         method,
         requestType,
@@ -257,7 +257,7 @@ function requestorReducer(
 
         // HACK - This allows us to stop showing the response body for a historical request
         activeHistoryResponseTraceId: null,
-      };
+      });
     }
     case SELECT_ROUTE: {
       // See comment below for why we want to do this dance
@@ -301,7 +301,7 @@ function requestorReducer(
         nextActiveResponsePanelTab = "response";
       }
 
-      return {
+      return addContentTypeHeader({
         ...state,
         selectedRoute: action.payload,
 
@@ -334,7 +334,7 @@ function requestorReducer(
         activeHistoryResponseTraceId: null,
 
         activeResponse: null,
-      };
+      });
     }
     case SET_PATH_PARAMS: {
       // FIXME - This will be buggy in the case where there is a route like
