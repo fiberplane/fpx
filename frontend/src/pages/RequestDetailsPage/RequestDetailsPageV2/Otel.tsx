@@ -50,6 +50,7 @@ export function Otel({
 
   return (
     <RequestDetailsPageContentV2
+      traceId={traceId}
       spans={spans}
       orphanLogs={orphanLogs}
       pagination={pagination}
