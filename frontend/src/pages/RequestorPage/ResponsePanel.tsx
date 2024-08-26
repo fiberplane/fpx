@@ -1,5 +1,3 @@
-import "react-resizable/css/styles.css"; // Import the styles for the resizable component
-
 import RobotIcon from "@/assets/Robot.svg";
 import { Button } from "@/components/ui/button";
 import {
