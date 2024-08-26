@@ -15,18 +15,18 @@ import {
 import type { MizuOrphanLog } from "@/queries";
 import { type OtelSpan, useOtelTraces } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { EmptyState } from "../EmptyState";
+import {
+  useMostRecentRequest,
+  useReplayRequest,
+  useShouldReplay,
+} from "../hooks";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import type { getVendorInfo } from "../v2/vendorify-traces";
 import { useRequestWaterfall } from "./useRequestWaterfall";
-import {
-  useShouldReplay,
-  useReplayRequest,
-  useMostRecentRequest,
-} from "../hooks";
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;
