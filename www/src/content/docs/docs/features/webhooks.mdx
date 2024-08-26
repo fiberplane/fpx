@@ -1,0 +1,54 @@
+---
+title: Test Webhooks
+description: How to test webhooks in Fiberplane Studio
+---
+import { Image } from "astro:assets";
+
+Webhooks allow external services to notify your application when specific events occur. 
+This approach is ideal for realtime updates and event-driven architectures.
+
+To make use of webhooks, your application must expose a public endpoint that the third-party service can call. 
+This can be tricky during local development, as `localhost` is not accessible from the broader internet.
+
+Fiberplane Studio streamlines the process of integrating and managing webhooks in your local development workflow, 
+optionally exposing your local api via a public proxy. Let's see how to set this up.
+
+## Expose Your Local Environment Using Studio
+In order to test and develop with webhooks in a local environment, you need to expose your local application to the internet. Fiberplane Studio simplifies this by providing a feature to proxy requests from a public URL to your local environment.
+
+### Step 1: Enable Public URL Proxying
+To get started, navigate to the settings page. Under the "Proxy Requests" section, enable the Public URL feature. 
+Once enabled, you’ll see a green indicator in the top-right corner of the screen that says "Public URL Active." 
+This confirms that your local environment is now accessible via a public URL.
+
+![Public URL active](@/assets/webhooks--settings.png)
+
+### Step 2: Configure the Webhook URL
+With a Public URL enabled, you can now use it as the webhook URL for any third-party service that supports webhooks. Copy the generated URL from the settings, and make sure to append the appropriate endpoint path for your application. For instance, if your application listens for incoming events on `/api/webhook`, your full webhook URL might look something like `https://generated-url-from-studio/api/webhook`.
+
+![Public URL active hover card](@/assets/webhooks--public-url-hover-card.png)
+
+## Handling Webhooks event in Studio
+Now that you've successfully proxied the webhook requests to your local environment, you can start testing and refining how your application handles incoming webhook payloads. By leveraging Studio's capabilities, you can ensure that your application correctly processes webhook data, handles edge cases, and responds appropriately to different types of events.
+
+### Step 3: Trigger Webhook event
+Once you've set up the webhook URL in the third-party application, trigger an event to test it. 
+When the event is fired, Studio will capture the incoming request under the "Requests" tab. 
+Here, you can view detailed information about the request, including headers, payload, and the path it was sent to. 
+A label indicating that the request was "proxied" will be displayed, confirming that the request was successfully routed through Studio's public URL feature.
+
+![Proxied request example](@/assets/webhooks--proxied-badge.png)
+{/* 
+### Step 4: Replaying Webhook Events
+One of the powerful features of Fiberplane Studio is the ability to replay webhook events. After capturing the initial payload, you can use the replay functionality to resend the same request to your application. This is particularly useful for testing and debugging, allowing you to refine your application's response to different webhook scenarios without needing to repeatedly trigger events from the third-party service.
+
+TODO: SCREENSHOT (Show how to reply a webhook event) */}
+
+## Best Practices for Using Webhooks in Studio
+When working with webhooks, ensure that your application can handle incoming requests asynchronously and securely. 
+
+Since webhooks are event-driven and can be triggered by external services, it’s important to validate incoming data and implement proper error handling.
+
+Additionally, be mindful of the security implications of exposing your local environment via a public URL. While Studio's proxy feature is convenient, it’s recommended to use this feature primarily for development purposes and to secure the URL with authentication or IP whitelisting when possible.
+
+By following this guide, you can effectively set up and manage webhooks in Fiberplane Studio, making your development process more efficient and robust.

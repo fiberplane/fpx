@@ -1,0 +1,14 @@
+---
+import {
+  PackageManagers as AllPackageManagers,
+  type PackageManagersProps,
+} from "starlight-package-managers";
+
+type Props = PackageManagersProps;
+---
+
+<AllPackageManagers
+  icons={false}
+  pkgManagers={["npm", "pnpm", "yarn", "bun"]}
+  {...Astro.props}
+/>

@@ -27,6 +27,7 @@ import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
 import { RequestorTimeline } from "./RequestorTimeline";
+import { Timeline } from "@/components/Timeline";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -246,7 +247,7 @@ export const RequestorPage = () => {
     });
 
   // const traceId = "8558ede965fd25921d150931e0bfc8dc";
-  const traceId = mostRecentRequestornatorForRoute?.app_responses.traceId;
+  // const traceId = mostRecentRequestornatorForRoute?.app_responses.traceId;
 
   const requestContent = (
     <RequestPanel
@@ -294,6 +295,20 @@ export const RequestorPage = () => {
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
     />
   );
+
+  const traceId = mostRecentRequestornatorForRoute?.app_responses.traceId;
+  const timelineContent = (<div
+    className={cn(
+      BACKGROUND_LAYER,
+      "flex",
+      "flex-col",
+      "rounded-md",
+      "border",
+    )}
+  >
+    <Title>Timeline</Title>
+    {traceId && <RequestorTimeline traceId={traceId} />}
+  </div>);
 
   return (
     <div
@@ -382,69 +397,71 @@ export const RequestorPage = () => {
               <>
                 {requestContent}
                 {responseContent}
+                {timelineContent}
               </>
             ) : (
               <ResizablePanelGroup
-                direction={isSmallScreen ? "vertical" : "horizontal"}
-                id="requestor-page-main-panel"
-                autoSaveId="requestor-page-main-panel"
-                className={cn(
-                  BACKGROUND_LAYER,
-                  "rounded-md",
-                  "border",
-                  // HACK - This defensively prevents overflow from getting too excessive,
-                  //        In the case where the inner content expands beyond the parent
-                  "max-w-screen",
-                  "max-h-full",
-                )}
+                direction="vertical"
+                id="builder-timeline-split"
+                className="gap-2"
               >
-                <ResizablePanel
-                  order={1}
-                  id="request-panel"
-                  defaultSize={width < 624 ? undefined : (300 / width) * 100}
-                  minSize={requestPanelMinSize}
-                  maxSize={requestPanelMaxSize}
-                >
-                  {requestContent}
-                </ResizablePanel>
-                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-                <ResizablePanel id="response-panel" order={2} minSize={10}>
-                  {responseContent}
-                </ResizablePanel>
-                {isAiTestGenerationPanelOpen && !isSmallScreen && (
-                  <>
+                <ResizablePanel id="builder" className="relative">
+                  <ResizablePanelGroup
+                    direction={isSmallScreen ? "vertical" : "horizontal"}
+                    id="requestor-page-main-panel"
+                    autoSaveId="requestor-page-main-panel"
+                    className={cn(
+                      BACKGROUND_LAYER,
+                      "rounded-md",
+                      "border",
+                      // HACK - This defensively prevents overflow from getting too excessive,
+                      //        In the case where the inner content expands beyond the parent
+                      "max-w-screen",
+                      "max-h-full",
+                    )}
+                  >
+                    <ResizablePanel
+                      order={1}
+                      id="request-panel"
+                      defaultSize={
+                        width < 624 ? undefined : (300 / width) * 100
+                      }
+                      minSize={requestPanelMinSize}
+                      maxSize={requestPanelMaxSize}
+                    >
+                      {requestContent}
+                    </ResizablePanel>
                     <ResizableHandle
                       hitAreaMargins={{ coarse: 20, fine: 10 }}
                     />
-                    <ResizablePanel order={3} id="ai-panel">
-                      <AiTestGenerationPanel
-                        // TODO - Only use history for recent matching route
-                        history={history}
-                        toggleAiTestGenerationPanel={
-                          toggleAiTestGenerationPanel
-                        }
-                        getActiveRoute={getActiveRoute}
-                        removeServiceUrlFromPath={removeServiceUrlFromPath}
-                      />
+                    <ResizablePanel id="response-panel" order={2} minSize={10}>
+                      {responseContent}
                     </ResizablePanel>
-                  </>
-                )}
+                    {isAiTestGenerationPanelOpen && !isSmallScreen && (
+                      <>
+                        <ResizableHandle
+                          hitAreaMargins={{ coarse: 20, fine: 10 }}
+                        />
+                        <ResizablePanel order={3} id="ai-panel">
+                          <AiTestGenerationPanel
+                            // TODO - Only use history for recent matching route
+                            history={history}
+                            toggleAiTestGenerationPanel={
+                              toggleAiTestGenerationPanel
+                            }
+                            getActiveRoute={getActiveRoute}
+                            removeServiceUrlFromPath={removeServiceUrlFromPath}
+                          />
+                        </ResizablePanel>
+                      </>
+                    )}
+                  </ResizablePanelGroup>
+                </ResizablePanel>
+                <ResizablePanel id="timeline">
+                  {timelineContent}
+                </ResizablePanel>
               </ResizablePanelGroup>
             )}
-            <div
-              className={cn(
-                BACKGROUND_LAYER,
-                "flex",
-                "flex-col",
-                "rounded-md",
-                "border",
-              )}
-            >
-              <Title>Timeline</Title>
-              <div className="grid grid-cols-[auto_auto]">
-                {traceId && <RequestorTimeline traceId={traceId} />}
-              </div>
-            </div>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

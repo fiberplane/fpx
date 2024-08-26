@@ -1,0 +1,126 @@
+/* For global overrides */
+:root {
+  --border-radius: 0.5rem;
+  --image-border-radius: 0.25rem;
+
+  --bg-primary: hsl(217.2 91.2% 59.8%);
+  --bg-secondary: hsl(217.2 32.6% 17.5%);
+}
+
+/* Dark mode colors. */
+:root {
+  --sl-color-accent-low: #102246;
+  --sl-color-accent: #1e5be3;
+  --sl-color-accent-high: #b0c9f8;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #eceef2;
+  --sl-color-gray-2: #c0c2c7;
+  --sl-color-gray-3: #888b96;
+  --sl-color-gray-4: #545861;
+  --sl-color-gray-5: #353841;
+  --sl-color-gray-6: #24272f;
+  --sl-color-black: #17181c;
+
+  --sl-color-bg-nav: var(--sl-color-black);
+}
+
+/* Light mode colors. */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #c4d8fb;
+  --sl-color-accent: #205ee5;
+  --sl-color-accent-high: #122e68;
+  --sl-color-white: #17181c;
+  --sl-color-gray-1: #24272f;
+  --sl-color-gray-2: #353841;
+  --sl-color-gray-3: #545861;
+  --sl-color-gray-4: #888b96;
+  --sl-color-gray-5: #c0c2c7;
+  --sl-color-gray-6: #eceef2;
+  --sl-color-gray-7: #f5f6f8;
+  --sl-color-black: #ffffff;
+
+  --sl-color-bg-nav: var(--sl-color-black);
+}
+
+.sl-markdown-content h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 800 !important;
+}
+
+/* Navbar */
+
+.social-icons a {
+  color: var(--sl-color-white);
+}
+
+/*
+  Sidebar
+
+  HACK: this entire section is a hacky patch for the existing sidebar component.
+  A more proper way would be to customize the component per:
+  https://starlight.astro.build/guides/overriding-components/
+  , but we gotta shippp
+*/
+
+nav.sidebar a {
+  font-size: var(--sl-text-base);
+}
+
+nav.sidebar a:hover {
+  color: var(--sl-color-accent);
+}
+
+nav.sidebar .top-level li {
+  padding-inline-start: 0;
+  margin-inline-start: 0;
+  border-inline-start: none;
+}
+
+nav.sidebar details > ul details > ul {
+  margin-inline-start: 0.5rem;
+  padding-inline-start: 0.5rem;
+  border-inline-start: 1px solid var(--sl-color-gray-5);
+}
+
+nav.sidebar .group-label span.large {
+  font-size: var(--sl-text-sm);
+  text-transform: uppercase;
+}
+
+nav.sidebar ul ul .group-label span.large {
+  color: var(--sl-color-white);
+  text-transform: none;
+  font-size: var(--sl-text-base);
+  font-weight: normal;
+}
+
+nav.sidebar a[aria-current="page"],
+nav.sidebar a[aria-current="page"]:hover,
+nav.sidebar a[aria-current="page"]:focus {
+  font-weight: 600;
+  background-color: transparent;
+  color: var(--sl-color-accent);
+}
+
+/* Headings */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 800;
+}
+
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6) > a {
+  color: var(--sl-color-white);
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}

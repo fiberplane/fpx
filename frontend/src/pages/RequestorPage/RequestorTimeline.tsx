@@ -32,7 +32,7 @@ export function RequestorTimeline(props: Props) {
         />
       </ResizablePanel>
       <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-      <ResizablePanel>Skillzz</ResizablePanel>
+      <ResizablePanel><div>Skillzz</div></ResizablePanel>
     </ResizablePanelGroup>
   );
 }

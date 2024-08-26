@@ -1,0 +1,142 @@
+---
+title: Generate Requests with AI
+description: How to generate request data using AI in Fiberplane Studio
+sidebar:
+  order: 3
+---
+
+import { Image } from "astro:assets";
+import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif"
+import fpxGenAiSettingsEnable from "@/assets/gen-ai-requests--settings-enable.png"
+import fpxGenAiSettingsProvider from "@/assets/gen-ai-requests--settings-provider.png"
+import fpxGenAiSettingsBaseUrl from "@/assets/gen-ai-requests--settings-baseurl.png"
+import fpxGenAiHostile from "@/assets/gen-ai-requests--hostile.png"
+
+import Button from "@/components/Button.astro";
+import KeyboardButton from "@/components/KeyboardButton.astro";
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Generating sample request data is a common and often tedious task in API development.
+
+Studio has an opt-in, experimental feature to help you generate request payloads using an LLM of your choice. We call this **AI Request Autofill**, because that name seemed pretty descriptive.
+
+Let's walk through an example, then we can touch on how to enable AI Request Autofill, how it works under the hood, and where it works best.
+
+## Example: Creating a sample payload
+
+Let's say we have a route `POST /api/goose` that creates a new goose. This route expects a JSON body with the following shape:
+
+```ts
+{
+  name: string;
+  isFlockLeader: boolean;
+  programmingLanguage: string;
+  motivations: string;
+  location: string;
+}
+```
+
+In the Fiberplane Studio UI, Studio's AI can generate these fields for us.
+Once we've [enabled](#enabling-request-autofill) AI Request Autofill,
+we can click the Magic Wand icon on the requests page to generate some request data.
+(Feel free to also use the shortcut <KeyboardButton>cmd</KeyboardButton><KeyboardButton>g</KeyboardButton>.)
+
+In this case, Studio will generate a request body with the shape above.
+
+<Image src={fpxGenAiGenerateBody} alt="Generated Request Body" />
+
+Looks like we're going to create a goose named "Gus" who loves Golang. Very alliterative!
+
+After this, we could go ahead and click <Button>Send</Button> (or press <KeyboardButton>cmd</KeyboardButton><KeyboardButton>enter</KeyboardButton>), and Studio will send the request to the API and create Gus.
+
+Under the hood, Studio keeps track of the most recent requests you've made to your API in order to generate request data that follows your current testing path.
+
+So, besides generating a request body, Studio can also prefill data for:
+
+- URL path parameters
+- Query parameters
+- Request Headers
+
+For example, if you just created a goose named "Gus", and its id was `123`, Studio will use that id when you generate parameters for a route like `GET /api/goose/:id` or `DELETE /api/goose/:id`.
+
+Before showing any more examples, though, let's talk about how to get this thing configured.
+
+## Enabling Request Autofill
+
+First, we need to enable AI features in Studio. Head on over to the Settings page and select the section "Request Autofill".
+
+Toggle "Enable Request Autofill", and then configure the AI provider and model you want to use.
+
+<Image src={fpxGenAiSettingsEnable} alt="Settings Page - Enable AI Request Autofill" />
+
+As of writing, Studio supports both OpenAI and Anthropic as LLM providers, and allows selection of the following models:
+
+<Tabs syncKey="aiProvider">
+  <TabItem label="Anthropic">
+    - Claude 3.5 Sonnet
+    - Claude 3 Opus
+    - Claude 3 Sonnet
+    - Claude 3 Haiku
+  </TabItem>
+  <TabItem label="OpenAI">
+    - GPT-4o
+    - GPT-4o Mini
+    - GPT-4 Turbo
+  </TabItem>
+</Tabs>
+
+You can select the provider and model once you've enabled AI Request Autofill.
+
+<Image src={fpxGenAiSettingsProvider} alt="Settings Page - Select AI Provider" />
+
+Once you've selected the provider and model, fill in your API key and click "Save". You're ready to go!
+
+The API key is stored locally in your project, and ignored by git by default. (Specifically, it's stored in a local database, which you can find in `.fpxconfig/fpx.db`.)
+
+### Using a different LLM provider
+
+If your LLM provider exposes an API that is compatible with OpenAI or Anthropic, you can use it. You just need to set the base URL in your provider configuration.
+
+<Image src={fpxGenAiSettingsBaseUrl} alt="Settings Page - Set Base URL" />
+
+This is a way to use a local AI, if you're so inclined! There are [instructions in our GitHub repo](https://github.com/fiberplane/fpx/tree/main/local-inference) on how to do this.
+Just be warned: in our experiments with running local models, request parameters would often take 10+ seconds to generate, which is a little slow 🐢.
+
+## Example: Testing like a QA Engineer
+
+By default, Studio will generate request data that takes inspiration from the most recent requests you've made to your API, and it will try to help you test the happy path.
+
+If you want to change this behavior, click the caret by the magic wand icon, and select "Hostile" underneath "Testing Persona".
+
+<Image src={fpxGenAiHostile} alt="Request Generation Dropdown" />
+
+In this case, if we're testing a route like `GET /api/goose/:id`, Studio will generate a url parameter like `invalid_id`.
+
+This is a great way to test the resilience of your API to unexpected and invalid inputs.
+
+## How all of this works
+
+The AI generates a request based on the following:
+
+- The most recent requests you've made to your API
+- The handler code for the request you're currently working on
+
+If you imported an OpenAPI spec, the AI will also generate requests based on the definitions in the spec.
+
+What does this mean in practice? Well, if your request handler shells out to several helper functions to parse and transform the request data, Studio will struggle to guess the correct request data.
+We are working on ways to improve this.
+
+### What gets sent to the LLM?
+
+In order to generate a request, Studio sends the following to the AI provider you chose:
+
+- The most recent requests you've made to your API
+- The source code for the handler of the request you're currently working on
+- The OpenAPI spec for your route, if you imported one
+- The request you're currently working on
+
+Certain sensitive headers are redacted by default, like `Authorization` and `Cookie`.
+
+We don't recommend using this feature when working with sensitive production data.
+
+Furthermore, if you're using Fiberplane Studio at work, make sure your organization's policies allow sending source code to a 3rd party like OpenAi or Anthropic.
