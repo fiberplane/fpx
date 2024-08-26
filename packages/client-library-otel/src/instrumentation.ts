@@ -9,6 +9,7 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
+import { proxyCloudflareBinding } from "./cf-bindings";
 import { measure } from "./measure";
 import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
 import { propagateFpxTraceId } from "./propagation";
@@ -25,6 +26,8 @@ type FpxConfig = {
     /** Send data to FPX about each fetch call made during a handler's lifetime */
     fetch: boolean;
     logging: boolean;
+    /** Proxy Cloudflare bindings to add instrumentation */
+    cfBindings: boolean;
   };
 };
 
@@ -40,6 +43,7 @@ const defaultConfig = {
   monitor: {
     fetch: true,
     logging: true,
+    cfBindings: true,
   },
 };
 
@@ -57,7 +61,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           env: HonoLikeEnv,
           executionContext: ExecutionContext | undefined,
         ) {
-          // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,
+          // NOTE - We do *not* want to have a default for the FPX_ENDPOINT,
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
           const endpoint =
@@ -81,8 +85,22 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           // Patch the related functions to monitor
           const {
-            monitor: { fetch: monitorFetch, logging: monitorLogging },
+            monitor: {
+              fetch: monitorFetch,
+              logging: monitorLogging,
+              cfBindings: monitorCfBindings,
+            },
           } = mergeConfigs(defaultConfig, config);
+          if (monitorCfBindings) {
+            const envKeys = env ? Object.keys(env) : [];
+            for (const bindingName of envKeys) {
+              // @ts-expect-error - We know that env is a Record<string, string | null>
+              env[bindingName] = proxyCloudflareBinding(
+                env[bindingName],
+                bindingName,
+              );
+            }
+          }
           if (monitorLogging) {
             patchConsole();
           }
