@@ -114,8 +114,8 @@ export function useReplayRequest({ span }: { span: OtelSpan }) {
           ),
         },
         {
-          onSuccess(data) {
-            const traceId = data?.traceId;
+          onError(error) {
+            console.error("Error replaying request", error);
           },
         },
       );
