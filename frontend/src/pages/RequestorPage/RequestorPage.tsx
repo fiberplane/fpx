@@ -296,18 +296,11 @@ export const RequestorPage = () => {
       className={cn(
         // It's critical the parent has a fixed height for our grid layout to work
         "h-[calc(100vh-64px)]",
-        // We want to `grid` all the things
-        // "grid",
         "flex",
         "flex-col",
         "gap-2",
         "py-4 px-2",
         "sm:px-4 sm:py-3",
-        // Define row templates up until the `lg` breakpoint
-        // "max-lg:grid-rows-[auto_1fr]",
-        // Define column templates for the `lg` breakpoint
-        // "lg:grid-cols-[auto_1fr]",
-        // Adjust spacing at the large breakpoint
         "lg:gap-4",
       )}
     >
@@ -360,8 +353,6 @@ export const RequestorPage = () => {
             className={cn(
               "flex",
               "flex-col",
-              // This is a custom css class that uses the famed `auto minmax(0, 1fr)` trick
-              "fpx-requestor-grid-rows",
               "gap-2",
               // HACK - This is a workaround to prevent the grid from overflowing on smaller screens
               "h-[calc(100%-0.6rem)]",
