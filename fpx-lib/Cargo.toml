@@ -55,3 +55,7 @@ wasm-bindgen = { version = "0.2", default-features = false, optional = true }
 
 [dev-dependencies]
 http-body-util = { version = "0.1", default-features = false }
+tokio = { version = "1.39", default-features = false, features = [
+    "macros",
+    "test-util",
+] }
