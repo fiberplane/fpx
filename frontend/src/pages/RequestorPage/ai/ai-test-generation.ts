@@ -74,7 +74,7 @@ And I got the following response:
 
 ${responseDescription}
 
-My app produced these logs:
+My app produced the following error logs and exceptions:
 
 <app-logs>
 ${appLogs}

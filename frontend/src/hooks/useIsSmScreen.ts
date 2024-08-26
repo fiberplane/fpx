@@ -6,5 +6,5 @@ import { useMedia } from "@fiberplane/hooks";
  * IMPROVE - Use css variable instead of hardcoded 640px?
  */
 export function useIsSmScreen() {
-  return useMedia("(min-width: 640px)");
+  return useMedia("(max-width: 640px)");
 }

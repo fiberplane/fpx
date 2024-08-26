@@ -1,38 +1,33 @@
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { Dispatch, SetStateAction } from "react";
-import { Resizable } from "react-resizable";
 import { CodeMirrorJsonEditor } from "../Editors";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
-import { ResizableHandle } from "../Resizable";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestingPersona } from "../ai";
-import { useResizableWidth, useStyleWidth } from "../hooks";
 import type {
   RequestBodyType,
   RequestorBody,
   RequestsPanelTab,
 } from "../reducer";
+import { RequestMethod } from "../types";
 import { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
-import { PathParamForm } from "./PathParamForm";
-import {
-  RequestBodyTypeDropdown,
-  RequestBodyTypeDropdownProps,
-} from "./RequestBodyCombobox";
-import "./styles.css";
-import { FORM_BODY_FEATURE_FLAG_ENABLED } from "../formBodyFeatureFlag";
+import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
+import { PathParamForm } from "./PathParamForm";
+import "./styles.css";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
   setActiveRequestsPanelTab: (tab: string) => void;
+  method: RequestMethod;
+  path: string;
   shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
   body: RequestorBody;
   // FIXME
@@ -63,47 +58,14 @@ type RequestPanelProps = {
 };
 
 export function RequestPanel(props: RequestPanelProps) {
-  const shouldBeResizable = useIsSmScreen();
-
-  return shouldBeResizable ? (
-    <ResizableRequestMeta {...props} />
-  ) : (
-    <RequestMeta {...props} />
-  );
-}
-
-function ResizableRequestMeta(props: RequestPanelProps) {
-  // TODO - I tried setting the width based off of result of `useMedia` but I think something is wrong with that fiberplane hook,
-  //        since it was matching (min-width: 1024px) even on small screens, and setting the panel too wide by default for smaller devices...
-  const { width, handleResize } = useResizableWidth(320);
-  const styleWidth = useStyleWidth(width);
-  return (
-    <Resizable
-      className="min-w-[200px] overflow-hidden h-full"
-      width={width} // Initial width
-      axis="x" // Restrict resizing to the horizontal axis
-      onResize={handleResize}
-      resizeHandles={["e"]} // Limit resize handle to just the east (right) handle
-      handle={(_, ref) => (
-        // Render a custom handle component, so we can indicate "resizability"
-        // along the entire right side of the container
-        <ResizableHandle ref={ref} />
-      )}
-    >
-      <div style={styleWidth} className="min-w-[200px] border-r">
-        <RequestMeta {...props} />
-      </div>
-    </Resizable>
-  );
-}
-
-function RequestMeta(props: RequestPanelProps) {
   const {
     handleRequestBodyTypeChange,
     activeRequestsPanelTab,
     setActiveRequestsPanelTab,
     shouldShowRequestTab,
     body,
+    path,
+    method,
     setBody,
     pathParams,
     queryParams,
@@ -136,9 +98,9 @@ function RequestMeta(props: RequestPanelProps) {
       value={activeRequestsPanelTab}
       onValueChange={setActiveRequestsPanelTab}
       className={cn(
-        "min-w-[200px] border-none sm:border-r",
+        "border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
-        "overflow-hidden h-full max-h-full",
+        "lg:overflow-hidden lg:h-full max-h-full",
       )}
     >
       <CustomTabsList>
@@ -186,12 +148,11 @@ function RequestMeta(props: RequestPanelProps) {
           </div>
         )}
       </CustomTabsList>
-
       <CustomTabsContent
         value="params"
         className={cn(
           // Need a lil bottom padding to avoid clipping the inputs of the last row in the form
-          "pb-1",
+          "pb-16",
         )}
       >
         <AIGeneratedInputsBanner
@@ -296,13 +257,6 @@ function RequestMeta(props: RequestPanelProps) {
               }}
             />
           )}
-          {/* HACK - This toolbar is absolutely positioned for now */}
-          {FORM_BODY_FEATURE_FLAG_ENABLED && (
-            <BottomToolbar
-              requestBody={body}
-              handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-            />
-          )}
         </CustomTabsContent>
       )}
       {shouldShowMessages && (
@@ -344,23 +298,18 @@ function RequestMeta(props: RequestPanelProps) {
           )}
         </CustomTabsContent>
       )}
+
+      <BottomToolbar
+        body={body}
+        handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+        method={method}
+        path={path}
+        queryParams={queryParams}
+        requestHeaders={requestHeaders}
+      />
     </Tabs>
   );
 }
-
-const BottomToolbar = ({
-  requestBody,
-  handleRequestBodyTypeChange,
-}: RequestBodyTypeDropdownProps) => {
-  return (
-    <div className="flex justify-start gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
-      <RequestBodyTypeDropdown
-        requestBody={requestBody}
-        handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-      />
-    </div>
-  );
-};
 
 type PanelSectionHeaderProps = {
   title: string;
@@ -387,10 +336,14 @@ export function PanelSectionHeader({
       {children}
 
       {handleClearData && (
-        <EraserIcon
+        <button
           className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
+          title="Clear data"
           onClick={handleClearData}
-        />
+          tabIndex={0}
+        >
+          <EraserIcon />
+        </button>
       )}
     </div>
   );

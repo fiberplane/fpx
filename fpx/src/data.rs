@@ -4,7 +4,10 @@ use fpx_lib::data::models::Span;
 use fpx_lib::data::sql::SqlBuilder;
 use fpx_lib::data::{DbError, Result, Store, Transaction};
 use libsql::{params, Builder, Connection};
+use std::fmt::Display;
+use std::path::Path;
 use std::sync::Arc;
+use tracing::trace;
 use util::RowsExt;
 
 mod migrations;
@@ -13,6 +16,29 @@ mod util;
 #[cfg(test)]
 mod tests;
 
+pub enum DataPath<'a> {
+    InMemory,
+    File(&'a Path),
+}
+
+impl<'a> DataPath<'a> {
+    pub fn as_path(&self) -> &'a Path {
+        match self {
+            DataPath::InMemory => Path::new(":memory:"),
+            DataPath::File(path) => path,
+        }
+    }
+}
+
+impl<'a> Display for DataPath<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DataPath::InMemory => write!(f, ":memory:"),
+            DataPath::File(path) => f.write_fmt(format_args!("{}", path.display())),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct LibsqlStore {
     connection: Connection,
@@ -20,10 +46,12 @@ pub struct LibsqlStore {
 }
 
 impl LibsqlStore {
-    pub async fn in_memory() -> Result<Self, anyhow::Error> {
+    pub async fn open(path: DataPath<'_>) -> Result<Self, anyhow::Error> {
+        trace!(%path, "Opening Libsql database");
+
         // Not sure if we need this database object, but for now we just drop
         // it.
-        let database = Builder::new_local(":memory:")
+        let database = Builder::new_local(path.as_path())
             .build()
             .await
             .context("failed to build libSQL database object")?;
@@ -40,6 +68,14 @@ impl LibsqlStore {
             connection,
             sql_builder,
         })
+    }
+
+    pub async fn in_memory() -> Result<Self, anyhow::Error> {
+        Self::open(DataPath::InMemory).await
+    }
+
+    pub async fn file(db_path: &Path) -> Result<Self, anyhow::Error> {
+        Self::open(DataPath::File(db_path)).await
     }
 
     /// This function will execute a few PRAGMA statements to set the database

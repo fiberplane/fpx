@@ -65,7 +65,7 @@ export function AiTestGenerationPanel({
   const prompt = usePrompt(lastMatchingRequest, userInput);
 
   return (
-    <div className="overflow-hidden h-full relative border-l xl:max-w-[380px]">
+    <div className="overflow-hidden h-full relative border-l">
       <Tabs defaultValue="ai-prompt">
         <CustomTabsList>
           <CustomTabTrigger value="ai-prompt">AI Prompt</CustomTabTrigger>

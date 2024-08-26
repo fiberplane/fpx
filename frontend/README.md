@@ -8,6 +8,8 @@ pnpm i
 pnpm dev
 ```
 
+The [`.vite.config.ts`](./vite.config.ts) file is used to configure proxies to the api.
+
 The original readme that comes with a new vite project is here: [README-VITE.md](./README-VITE.md)
 
 ### Stack
