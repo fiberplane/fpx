@@ -96,6 +96,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             for (const bindingName of envKeys) {
               // @ts-expect-error - We know that env is a Record<string, string | null>
               env[bindingName] = proxyCloudflareBinding(
+                // @ts-expect-error - We know that env is a Record<string, string | null>
                 env[bindingName],
                 bindingName,
               );
