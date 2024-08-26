@@ -2,7 +2,7 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { Status } from "@/components/ui/status";
-import { OtelTrace } from "@fiberplane/fpx-types";
+import type { OtelTrace } from "@fiberplane/fpx-types";
 import { Link } from "react-router-dom";
 import { Timestamp } from "../RequestDetailsPage/Timestamp";
 import { RequestMethod } from "../RequestDetailsPage/shared";
@@ -129,7 +129,7 @@ export const columns: ColumnDef<OtelTrace>[] = [
       if (!startTime) {
         return <span>—</span>;
       }
-      return <Timestamp date={startTime} />;
+      return <Timestamp date={startTime.toString()} />;
     },
     meta: {
       // NOTE - This is how to hide a cell depending on breakpoint!

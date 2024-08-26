@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { SpanStatus } from "@/constants";
 import { isMizuOrphanLog } from "@/queries";
-import { OtelSpan } from "@fiberplane/fpx-types";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { StackTrace } from "../StackTrace";
@@ -98,7 +98,7 @@ function GenericSpan({ span }: { span: OtelSpan }) {
         <SubSectionHeading>Attributes</SubSectionHeading>
         <KeyValueTableV2 keyValue={attributes} />
       </SubSection>
-      {span.events.length > 0 && (
+      {span.events && span.events.length > 0 && (
         <SubSection>
           <SubSectionHeading>Events</SubSectionHeading>
           <div className="px-4">

@@ -1,4 +1,4 @@
-import { OtelSpan } from "@fiberplane/fpx-types";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { z } from "zod";
 import { getRequestBody, getRequestUrl } from "./otel-helpers";
 

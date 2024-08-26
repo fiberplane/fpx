@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
 import { MizuOrphanLog, isMizuOrphanLog } from "@/queries";
 import { cn, safeParseJson } from "@/utils";
-import { OtelSpan } from "@fiberplane/fpx-types";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 import { formatDistanceStrict } from "date-fns";
 import React, {
@@ -323,9 +323,7 @@ const getTypeIcon = (type: string, colorOverride: string = "") => {
   }
 };
 
-const formatDuration = (start: string, end: string) => {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
+const formatDuration = (startDate: Date, endDate: Date) => {
   const durationMs = endDate.getTime() - startDate.getTime();
   if (durationMs < 1000) {
     return `${durationMs}ms`;

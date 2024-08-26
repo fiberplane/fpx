@@ -1,8 +1,8 @@
 import {
   OtelSpanSchema,
-  OtelTrace,
-  TraceDetailSpansResponse,
-  TraceListResponse,
+  type OtelTrace,
+  type TraceDetailSpansResponse,
+  type TraceListResponse,
 } from "@fiberplane/fpx-types";
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 import { z } from "zod";

@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useOtelTraces } from "@/queries";
 import { cn } from "@/utils";
-import { OtelTrace } from "@fiberplane/fpx-types";
+import type { OtelTrace } from "@fiberplane/fpx-types";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { Row, getPaginationRowModel } from "@tanstack/react-table";
 import { useCallback, useMemo } from "react";

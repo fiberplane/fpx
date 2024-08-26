@@ -9,7 +9,7 @@ import {
   FPX_RESPONSE_BODY,
   SpanKind,
 } from "@/constants";
-import {
+import type {
   OtelAttributes,
   OtelEvent,
   OtelSpan,

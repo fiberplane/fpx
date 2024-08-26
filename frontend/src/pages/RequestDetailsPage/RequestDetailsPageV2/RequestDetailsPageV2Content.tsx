@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/resizable";
 import { MizuOrphanLog } from "@/queries";
 import { cn } from "@/utils";
-import { OtelSpan } from "@fiberplane/fpx-types";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { EmptyState } from "../EmptyState";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";

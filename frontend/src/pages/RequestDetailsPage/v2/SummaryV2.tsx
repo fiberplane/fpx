@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { OtelSpan } from "@fiberplane/fpx-types";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import {
   SEMATTRS_EXCEPTION_MESSAGE,
   SEMATTRS_EXCEPTION_TYPE,
@@ -29,11 +29,11 @@ export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
   const errors = useMemo(
     () =>
       requestSpan.events
-        .filter((event) => event.name === "exception")
+        ?.filter((event) => event.name === "exception")
         .map((event) => ({
           name: getString(event.attributes[SEMATTRS_EXCEPTION_TYPE]),
           message: getString(event.attributes[SEMATTRS_EXCEPTION_MESSAGE]),
-        })),
+        })) ?? [],
     [requestSpan],
   );
   const hasErrors = errors.length > 0;

@@ -14,7 +14,7 @@ import {
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
 import { fetchSourceLocation } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
-import { OtelSpan } from "@fiberplane/fpx-types";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";
 
 async function summarizeError(trace?: Array<OtelSpan>) {

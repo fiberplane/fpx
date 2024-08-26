@@ -82,7 +82,7 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
   const { waterfall } = useRequestWaterfall(spans ?? [], orphanLogs);
 
   const eventsForKvTable = useMemo(() => {
-    const events = spans?.flatMap((span) => span.events) ?? [];
+    const events = spans?.flatMap((span) => span.events ?? []) ?? [];
     return events.map((event) => {
       // TODO - Make better messages
       const isException = event.name?.toLowerCase() === "exception";

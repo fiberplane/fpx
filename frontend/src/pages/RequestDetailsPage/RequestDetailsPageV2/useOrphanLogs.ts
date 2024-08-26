@@ -1,6 +1,6 @@
 import { MizuOrphanLog, isMizuOrphanLog } from "@/queries";
 import { safeParseJson } from "@/utils";
-import { OtelEvent, OtelSpan } from "@fiberplane/fpx-types";
+import type { OtelEvent, OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { getString } from "../v2/otel-helpers";
 
