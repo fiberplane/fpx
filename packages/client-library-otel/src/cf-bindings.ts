@@ -63,7 +63,6 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
 
-      // TODO - How do we use the arguments to the function to create attributes on the span?
       if (typeof value === "function") {
         const methodName = String(prop);
         // OPTIMIZE - Do we want to do these lookups / this wrapping every time the property is accessed?
@@ -77,8 +76,13 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
               "cloudflare.binding.name": bindingName,
               "cloudflare.binding.type": bindingType,
             },
-            // OPTIMIZE - bind is expensive, can we avoid it?
+            // TODO - Use these three callbacks to add additional attributes to the span
+            //
+            // onStart: (span, args) => {},
+            // onSuccess: (span, result) => {},
+            // onError: (span, error) => {},
           },
+          // OPTIMIZE - bind is expensive, can we avoid it?
           value.bind(target),
         );
         return measuredBinding;
