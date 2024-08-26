@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Cross2Icon, InfoCircledIcon } from "@radix-ui/react-icons";
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
 type AIGeneratedInputsBannerProps = {
   showAiGeneratedInputsBanner: boolean;

@@ -16,9 +16,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn, isMac } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useState } from "react";
-import { AiTestingPersona, FRIENDLY, HOSTILE } from "../ai";
+import { type AiTestingPersona, FRIENDLY, HOSTILE } from "../ai";
 
 type AiDropDownMenuProps = {
   isLoadingParameters: boolean;
@@ -42,22 +43,23 @@ export function AiDropDownMenu({
     [onPersonaChange],
   );
 
-  const handleGenerateRequest = useCallback(() => {
+  const handleGenerateRequest = useHandler(() => {
     fillInRequest();
     setOpen(false);
-  }, [fillInRequest, setOpen]);
+  });
 
   // When the user shift+clicks of meta+clicks on the trigger,
   // automatically open the menu
   // I'm doing this because the caret is kinda hard to press...
   const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
-  const handleMagicWandButtonClick = useCallback(() => {
+  const handleMagicWandButtonClick = useHandler(() => {
     if (!open && isMetaOrShiftPressed) {
       setOpen(true);
       return;
     }
+
     fillInRequest();
-  }, [isMetaOrShiftPressed, setOpen, open, fillInRequest]);
+  });
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -75,7 +77,7 @@ export function AiDropDownMenu({
               />
             </Button>
             <DropdownMenuTrigger asChild>
-              <button>
+              <button type="button">
                 <CaretDownIcon className="w-4 h-4" />
               </button>
             </DropdownMenuTrigger>

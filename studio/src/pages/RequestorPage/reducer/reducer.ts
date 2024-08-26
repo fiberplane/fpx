@@ -1,28 +1,28 @@
 import { useCallback, useReducer } from "react";
 import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
-import { KeyValueParameter } from "../KeyValueForm";
+import type { KeyValueParameter } from "../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
-import { ProbedRoute } from "../queries";
+import type { ProbedRoute } from "../queries";
 import { findMatchedRoute } from "../routes";
 import {
-  RequestMethod,
-  RequestMethodInputValue,
-  RequestType,
+  type RequestMethod,
+  type RequestMethodInputValue,
+  type RequestType,
   isWsRequest,
 } from "../types";
 import { useSaveUiState } from "./persistence";
 import { addContentTypeHeader, setBodyTypeReducer } from "./reducers";
 import {
-  RequestBodyType,
-  RequestorActiveResponse,
-  RequestorBody,
+  type RequestBodyType,
+  type RequestorActiveResponse,
+  type RequestorBody,
   type RequestorState,
   createInitialState,
   initialState,
 } from "./state";
 import {
-  RequestsPanelTab,
-  ResponsePanelTab,
+  type RequestsPanelTab,
+  type ResponsePanelTab,
   getVisibleRequestPanelTabs,
   getVisibleResponsePanelTabs,
   isRequestsPanelTab,
@@ -343,9 +343,9 @@ function requestorReducer(
       const nextPath = action.payload.reduce((accPath, param) => {
         if (param.enabled) {
           return accPath.replace(`:${param.key}`, param.value || param.key);
-        } else {
-          return accPath;
         }
+
+        return accPath;
       }, state.selectedRoute?.path ?? state.path);
       return {
         ...state,
@@ -762,9 +762,15 @@ function extractPathParams(path: string) {
   const regex = /\/(:[a-zA-Z0-9_-]+)/g;
 
   const result: Array<string> = [];
-  let match;
+  // let match = regex.exec(path);
   let lastIndex = -1;
-  while ((match = regex.exec(path)) !== null) {
+  while (true) {
+    const match = regex.exec(path);
+
+    if (match === null) {
+      break;
+    }
+
     // Check if the regex is stuck in an infinite loop
     if (regex.lastIndex === lastIndex) {
       break;

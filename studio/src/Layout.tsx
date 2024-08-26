@@ -1,6 +1,6 @@
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "./assets/fpx.svg";
 import { WebhoncBadge } from "./components/WebhoncBadge";

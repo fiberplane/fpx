@@ -6,21 +6,16 @@ import OpenAiLogo from "@/assets/OpenAILogo.svg";
 
 import { Badge } from "@/components/ui/badge";
 import { SpanKind } from "@/constants";
-import { MizuOrphanLog, OtelSpan, isMizuOrphanLog } from "@/queries";
+import { type MizuOrphanLog, type OtelSpan, isMizuOrphanLog } from "@/queries";
 import { cn, safeParseJson } from "@/utils";
 import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 import { formatDistanceStrict } from "date-fns";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { isFetchSpan } from "./otel-helpers";
 import {
-  VendorInfo,
+  type VendorInfo,
   isAnthropicVendorInfo,
   isNeonVendorInfo,
   isOpenAIVendorInfo,
@@ -266,7 +261,7 @@ const useTimelineIcon = (
   }, [spanOrLog, vendorInfo, colorOverride]);
 };
 
-const getTypeIcon = (type: string, colorOverride: string = "") => {
+const getTypeIcon = (type: string, colorOverride = "") => {
   switch (type) {
     case "request":
     case "SERVER":
@@ -390,7 +385,7 @@ const WaterfallRowSpan: React.FC<{
           style={{ width: lineWidth, marginLeft: lineOffset }}
           title={`${span.start_time} - ${span.end_time}`}
         >
-          <div className={"h-0.5 min-w-0.5 bg-blue-500 w-full"}></div>
+          <div className="h-0.5 min-w-0.5 bg-blue-500 w-full" />
         </div>
       </div>
       <div className="text-gray-400 text-xs w-12 px-2">
@@ -438,7 +433,7 @@ const WaterfallRowLog: React.FC<{
           style={{ marginLeft: lineOffset }}
           title={log.timestamp}
         >
-          <div className="h-1.5 w-1.5 bg-blue-500 rounded-full"></div>
+          <div className="h-1.5 w-1.5 bg-blue-500 rounded-full" />
         </div>
       </div>
       <div className="ml-auto text-gray-400 text-xs w-12 px-2" />

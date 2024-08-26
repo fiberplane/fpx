@@ -9,8 +9,12 @@ import {
   FPX_RESPONSE_BODY,
   SpanKind,
 } from "@/constants";
-import { OtelSpan } from "@/queries";
-import { OtelAttributes, OtelEvent, OtelTrace } from "@/queries/traces-otel";
+import type { OtelSpan } from "@/queries";
+import type {
+  OtelAttributes,
+  OtelEvent,
+  OtelTrace,
+} from "@/queries/traces-otel";
 
 export const isErrorLogEvent = (event: OtelEvent) => {
   return event.name === "log" && getString(event.attributes.level) === "error";

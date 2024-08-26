@@ -1,7 +1,7 @@
 import { Status } from "@/components/ui/status";
 import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import { OtelSpan } from "@/queries";
+import type { OtelSpan } from "@/queries";
 import { SENSITIVE_HEADERS, cn, noop } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
@@ -20,8 +20,8 @@ import {
 } from "./otel-helpers";
 import { Divider, SubSection, SubSectionHeading } from "./shared";
 import {
-  NeonVendorInfo,
-  VendorInfo,
+  type NeonVendorInfo,
+  type VendorInfo,
   isAnthropicVendorInfo,
   isNeonVendorInfo,
   isOpenAIVendorInfo,

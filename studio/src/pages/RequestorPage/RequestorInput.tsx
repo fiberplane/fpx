@@ -18,12 +18,12 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
 import {
-  RequestMethod,
-  RequestMethodInputValue,
-  RequestType,
+  type RequestMethod,
+  type RequestMethodInputValue,
+  type RequestType,
   isWsRequest,
 } from "./types";
-import { WebSocketState } from "./useMakeWebsocketRequest";
+import type { WebSocketState } from "./useMakeWebsocketRequest";
 
 type RequestInputProps = {
   method: RequestMethod;

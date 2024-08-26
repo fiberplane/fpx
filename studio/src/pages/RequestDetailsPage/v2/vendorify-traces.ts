@@ -1,4 +1,4 @@
-import { OtelSpan } from "@/queries";
+import type { OtelSpan } from "@/queries";
 import { z } from "zod";
 import { getRequestBody, getRequestUrl } from "./otel-helpers";
 

@@ -7,17 +7,6 @@ export function useEscapeToList() {
 
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  const handleFocus = (event: FocusEvent) => {
-    if (event.target instanceof HTMLInputElement) {
-      setIsInputFocused(true);
-    }
-  };
-  const handleBlur = (event: FocusEvent) => {
-    if (event.target instanceof HTMLInputElement) {
-      setIsInputFocused(false);
-    }
-  };
-
   useHotkeys(["Escape"], () => {
     // catch all the cases where the user is in the input field
     // and we don't want to exit the page
@@ -33,6 +22,17 @@ export function useEscapeToList() {
   });
 
   useEffect(() => {
+    const handleFocus = (event: FocusEvent) => {
+      if (event.target instanceof HTMLInputElement) {
+        setIsInputFocused(true);
+      }
+    };
+    const handleBlur = (event: FocusEvent) => {
+      if (event.target instanceof HTMLInputElement) {
+        setIsInputFocused(false);
+      }
+    };
+
     // We can use AbortController to remove both event listeners a bit more cleanly
     // https://frontendmasters.com/blog/patterns-for-memory-efficient-dom-manipulation/#use-abortcontroller-to-unbind-groups-of-events
     document.addEventListener("focus", handleFocus, true);

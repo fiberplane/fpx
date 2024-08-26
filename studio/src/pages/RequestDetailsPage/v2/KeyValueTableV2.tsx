@@ -18,7 +18,7 @@ import {
   EyeClosedIcon,
   EyeOpenIcon,
 } from "@radix-ui/react-icons";
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { SubSectionHeading } from "./shared";
 
 export const KeyValueRow = ({

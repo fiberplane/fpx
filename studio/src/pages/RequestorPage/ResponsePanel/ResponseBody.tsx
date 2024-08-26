@@ -80,7 +80,7 @@ export function ResponseBody({
         >
           {headersSlot}
           <CollapsibleBodyContainer>
-            <ResponseBodyBinary body={body} />;
+            <ResponseBodyBinary body={body} />
           </CollapsibleBodyContainer>
         </div>
       );
@@ -164,7 +164,7 @@ function ResponseBodyBinary({
     return (
       <img
         src={imageUrl}
-        alt="Response Image"
+        alt="Response"
         className="max-w-full h-auto"
         onLoad={() => URL.revokeObjectURL(imageUrl)}
       />
@@ -254,7 +254,7 @@ function useTextPreview(
     // If we're not expanded, we want to show a preview of the body depending on the maxPreviewLength
     let previewBody = body;
     if (maxPreviewLength && exceedsMaxPreviewLength && !isExpanded) {
-      previewBody = body ? body.slice(0, maxPreviewLength) + "..." : "";
+      previewBody = body ? `${body.slice(0, maxPreviewLength)}...` : "";
       hiddenCharsCount = body.length - maxPreviewLength;
     }
 

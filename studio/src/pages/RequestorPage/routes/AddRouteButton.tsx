@@ -16,13 +16,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PlusIcon } from "@radix-ui/react-icons";
-import { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "@scalar/openapi-parser";
+import type { OpenAPIV2, OpenAPIV3, OpenAPIV3_1 } from "@scalar/openapi-parser";
 import { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { type SubmitHandler, useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestMethodCombobox } from "../RequestMethodCombobox";
-import { Route, useAddRoutes, useOpenApiParse } from "../queries";
-import { RequestMethodInputValue } from "../types";
+import { type Route, useAddRoutes, useOpenApiParse } from "../queries";
+import type { RequestMethodInputValue } from "../types";
 
 export function AddRouteButton() {
   useHotkeys("c", (e) => {
@@ -168,31 +168,35 @@ function OpenApiForm({
 
       setOpen(false);
 
-      const submissionRoutes: Route[] = Object.entries(schema.paths!)
-        .map(([path, pathObj]: [string, PathObject]) => {
-          // destructure the params so we don't include them
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { parameters, ...pathObjWithoutParams } = pathObj;
-          return Object.entries(pathObjWithoutParams).map(
-            ([method, operation]: [string, OperationObject]) => {
-              const seen = new WeakSet();
-              return {
-                path: path.replace(/{(.*?)}/g, ":$1"),
-                method: method.toUpperCase(),
-                handlerType: "route" as const,
-                routeOrigin: "open_api" as const,
-                openApiSpec: JSON.stringify(operation, (_key, value) => {
-                  if (typeof value === "object" && value !== null) {
-                    if (seen.has(value)) return "[Circular]";
-                    seen.add(value);
-                  }
-                  return value;
-                }),
-              };
+      const submissionRoutes: Route[] = schema.paths
+        ? Object.entries(schema.paths).flatMap(
+            ([path, pathObj]: [string, PathObject]) => {
+              // destructure the params so we don't include them
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { parameters, ...pathObjWithoutParams } = pathObj;
+              return Object.entries(pathObjWithoutParams).map(
+                ([method, operation]: [string, OperationObject]) => {
+                  const seen = new WeakSet();
+                  return {
+                    path: path.replace(/{(.*?)}/g, ":$1"),
+                    method: method.toUpperCase(),
+                    handlerType: "route" as const,
+                    routeOrigin: "open_api" as const,
+                    openApiSpec: JSON.stringify(operation, (_key, value) => {
+                      if (typeof value === "object" && value !== null) {
+                        if (seen.has(value)) {
+                          return "[Circular]";
+                        }
+                        seen.add(value);
+                      }
+                      return value;
+                    }),
+                  };
+                },
+              );
             },
-          );
-        })
-        .flat();
+          )
+        : [];
 
       addRoutes(submissionRoutes);
     } catch (error) {
@@ -226,7 +230,7 @@ function OpenApiForm({
             placeholder="Paste your OpenAPI spec here"
             onPaste={onPaste}
             autoFocus
-          ></Textarea>
+          />
           {isPending && <p className="text-sm">Validating OpenAPI spec...</p>}
           {errors.openApiSpec && (
             <p className="text-sm text-red-500">Invalid OpenAPI spec</p>

@@ -1,8 +1,8 @@
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
+import type * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as React from "react";
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 
 const TAB_HEIGHT = "h-12";
 

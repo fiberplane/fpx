@@ -76,7 +76,7 @@ function parseStackTrace(stack: string) {
     .filter((l) => !l.startsWith("at neon"));
 
   // Attempt to match the regex pattern against the provided stack trace
-  let match;
+  let match: RegExpMatchArray | null = null;
   for (const stack of stackLines) {
     match = stack.match(regex);
     if (match) {
@@ -95,8 +95,8 @@ function parseStackTrace(stack: string) {
       line: Number.parseInt(line, 10),
       column: Number.parseInt(column, 10),
     };
-  } else {
-    // Return null or throw an error if no match is found
-    return null;
   }
+
+  // Return null or throw an error if no match is found
+  return null;
 }

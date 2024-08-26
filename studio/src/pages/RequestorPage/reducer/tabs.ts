@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RequestMethod, RequestType } from "../types";
+import type { RequestMethod, RequestType } from "../types";
 
 export const RequestsPanelTabSchema = z.enum([
   "params",

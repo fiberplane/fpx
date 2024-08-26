@@ -1,9 +1,9 @@
 import {
-  KeyValueParameter,
+  type KeyValueParameter,
   enforceTerminalDraftParameter,
 } from "../../KeyValueForm";
 import { isDraftParameter } from "../../KeyValueForm/data";
-import { RequestorBody, RequestorState } from "../state";
+import type { RequestorBody, RequestorState } from "../state";
 
 /**
  * This makes sure to synchronize the content type header with the body type.

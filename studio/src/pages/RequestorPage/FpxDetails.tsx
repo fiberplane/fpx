@@ -11,7 +11,7 @@ import {
   getString,
   isErrorLogEvent,
 } from "../RequestDetailsPage/v2/otel-helpers";
-import { Requestornator } from "./queries";
+import type { Requestornator } from "./queries";
 
 type FpxDetailsProps = {
   response?: Requestornator;
@@ -88,9 +88,13 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
       const isException = event.name?.toLowerCase() === "exception";
       const isError = isErrorLogEvent(event);
       const name = isException ? (
-        <span className="text-red-300">Exception</span>
+        <span className="text-red-300" key="name">
+          Exception
+        </span>
       ) : isError ? (
-        <span className="text-red-300">Error</span>
+        <span className="text-red-300" key="name">
+          Error
+        </span>
       ) : (
         event.name
       );
@@ -99,7 +103,9 @@ function TraceDetails({ response, className }: TraceDetailsProps) {
       const message = stringMessage ? (
         parseMessage(stringMessage)
       ) : (
-        <span className="text-gray-400 italic">No message</span>
+        <span key="message" className="text-gray-400 italic">
+          No message
+        </span>
       );
       return [name, message] as [
         string | React.ReactNode,

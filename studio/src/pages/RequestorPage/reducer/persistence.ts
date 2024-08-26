@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useBeforeUnload } from "react-router-dom";
 import {
   LOCAL_STORAGE_KEY,
-  SavedRequestorState,
+  type SavedRequestorState,
   SavedRequestorStateSchema,
 } from "./state";
 

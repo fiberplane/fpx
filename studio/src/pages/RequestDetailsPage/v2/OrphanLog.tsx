@@ -1,4 +1,4 @@
-import { MizuOrphanLog } from "@/queries";
+import type { MizuOrphanLog } from "@/queries";
 import {
   cn,
   objectHasName,

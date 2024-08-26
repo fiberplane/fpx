@@ -1,5 +1,5 @@
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
-import { RequestBodyType, RequestorState } from "../state";
+import type { RequestBodyType, RequestorState } from "../state";
 
 /**
  * This reducer is responsible for setting the body type of the request.

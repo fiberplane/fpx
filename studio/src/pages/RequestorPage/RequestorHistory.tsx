@@ -1,6 +1,6 @@
 import { cn, parsePathFromRequestUrl, truncatePathWithEllipsis } from "@/utils";
 import { getHttpMethodTextColor } from "./method";
-import { Requestornator } from "./queries";
+import type { Requestornator } from "./queries";
 
 type RequestorHistoryProps = {
   history: Array<Requestornator>;
@@ -70,6 +70,11 @@ export function HistoryEntry({
     <div className="rounded py-1 px-1 pl-5 shadow-sm text-xs text-gray-200 hover:bg-gray-800 hover:text-white">
       <div
         className="flex flex-col space-y-2 justify-center space-x-2 font-mono"
+        onKeyUp={(e) => {
+          if (e.key === "Enter") {
+            loadHistoricalRequest?.(traceId);
+          }
+        }}
         onClick={() => {
           loadHistoricalRequest?.(traceId);
         }}

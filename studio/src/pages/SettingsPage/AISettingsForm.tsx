@@ -26,7 +26,7 @@ import {
   AnthropicModelOptions,
   OpenAiModelOptions,
   ProviderOptions,
-  Settings,
+  type Settings,
 } from "@fiberplane/fpx-types";
 import {
   CaretDownIcon,

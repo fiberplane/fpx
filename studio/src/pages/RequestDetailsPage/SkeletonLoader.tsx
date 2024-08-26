@@ -21,14 +21,14 @@ export function SkeletonLoader() {
           "sm:gap-6 sm:py-8",
         )}
       >
-        <div className="h-8 w-48 bg-gray-800 animate-pulse rounded"></div>
+        <div className="h-8 w-48 bg-gray-800 animate-pulse rounded" />
         <div className="flex gap-2">
-          <div className="h-8 w-8 bg-gray-800 animate-pulse rounded"></div>
-          <div className="h-8 w-8 bg-gray-800 animate-pulse rounded"></div>
+          <div className="h-8 w-8 bg-gray-800 animate-pulse rounded" />
+          <div className="h-8 w-8 bg-gray-800 animate-pulse rounded" />
         </div>
       </div>
       <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
-        <div className="h-6 w-32 bg-gray-800 animate-pulse rounded"></div>
+        <div className="h-6 w-32 bg-gray-800 animate-pulse rounded" />
         <div className="grid lg:grid-cols-[auto_1fr] lg:gap-2 xl:gap-3">
           <div
             className={cn(
@@ -39,7 +39,7 @@ export function SkeletonLoader() {
               "2xl:min-w-[420px]",
             )}
           >
-            <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+            <div className="h-64 bg-gray-800 animate-pulse rounded" />
           </div>
           <div
             className={cn(
@@ -49,9 +49,9 @@ export function SkeletonLoader() {
             )}
           >
             <div className="w-full lg:hidden">
-              <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+              <div className="h-64 bg-gray-800 animate-pulse rounded" />
             </div>
-            <div className="h-64 bg-gray-800 animate-pulse rounded"></div>
+            <div className="h-64 bg-gray-800 animate-pulse rounded" />
           </div>
         </div>
       </div>

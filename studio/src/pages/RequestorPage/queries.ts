@@ -3,7 +3,10 @@ import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { reduceFormDataParameters } from "./FormDataForm";
-import { KeyValueParameter, reduceKeyValueParameters } from "./KeyValueForm";
+import {
+  type KeyValueParameter,
+  reduceKeyValueParameters,
+} from "./KeyValueForm";
 import type {
   RequestorActiveResponse,
   RequestorBody,
@@ -216,11 +219,11 @@ export function makeProxiedRequest({
   }
 
   const queryParamsForUrl = new URLSearchParams();
-  queryParams.forEach((param) => {
+  for (const param of queryParams) {
     if (param.enabled) {
       queryParamsForUrl.set(param.key, param.value);
     }
-  });
+  }
 
   // NOTE - we add custom headers to record additional metadata about the request
   const modHeaders = reduceKeyValueParameters(headers);

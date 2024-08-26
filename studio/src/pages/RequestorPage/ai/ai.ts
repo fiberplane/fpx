@@ -4,9 +4,12 @@ import { errorHasMessage, isJson } from "@/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { createFormDataParameter } from "../FormDataForm/data";
-import { KeyValueParameter, createKeyValueParameters } from "../KeyValueForm";
-import { ProbedRoute, Requestornator } from "../queries";
-import { RequestorBody } from "../reducer";
+import {
+  type KeyValueParameter,
+  createKeyValueParameters,
+} from "../KeyValueForm";
+import type { ProbedRoute, Requestornator } from "../queries";
+import type { RequestorBody } from "../reducer";
 import { isRequestorBodyType } from "../reducer/request-body";
 import { useAiRequestData } from "./generate-request-data";
 

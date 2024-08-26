@@ -4,7 +4,7 @@ import { errorHasMessage } from "@/utils";
 import {
   CLAUDE_3_5_SONNET,
   GPT_4o,
-  Settings,
+  type Settings,
   SettingsSchema,
 } from "@fiberplane/fpx-types";
 import { zodResolver } from "@hookform/resolvers/zod";

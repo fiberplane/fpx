@@ -7,10 +7,10 @@ import {
   isErrorLogEvent,
   isFetchSpan,
 } from "@/pages/RequestDetailsPage/v2/otel-helpers";
-import { OtelSpans, useOtelTrace } from "@/queries";
+import { type OtelSpans, useOtelTrace } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import { useMemo } from "react";
-import { Requestornator } from "../queries";
+import type { Requestornator } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
 
 function createRequestDescription(request: Requestornator | null): string {

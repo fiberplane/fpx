@@ -22,7 +22,7 @@ export function useFetchSettings() {
 export function useSetting<T extends SettingsKey>(key: T) {
   const { data } = useFetchSettings();
   return useMemo(() => {
-    if (data && data[key]) {
+    if (data && key in data && data[key]) {
       return data[key];
     }
   }, [data, key]);

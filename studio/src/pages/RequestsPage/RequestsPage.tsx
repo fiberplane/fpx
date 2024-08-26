@@ -5,7 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { type OtelTrace, useOtelTraces } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
-import { Row, getPaginationRowModel } from "@tanstack/react-table";
+import { type Row, getPaginationRowModel } from "@tanstack/react-table";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { isFpxTraceError } from "../RequestDetailsPage/v2/otel-helpers";

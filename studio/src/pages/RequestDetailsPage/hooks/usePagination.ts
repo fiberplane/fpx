@@ -30,10 +30,14 @@ export function usePagination({
   });
 
   const handlePrevTrace = useHandler(() => {
-    if (currentIndex === undefined) return;
+    if (currentIndex === undefined) {
+      return;
+    }
+
     if (currentIndex === 0) {
       return;
     }
+
     const route = getTraceRoute(currentIndex - 1);
     navigate(route);
   });

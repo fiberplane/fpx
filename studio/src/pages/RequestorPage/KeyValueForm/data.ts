@@ -1,4 +1,4 @@
-import {
+import type {
   ChangeKeyValueParametersHandler,
   DraftKeyValueParameter,
   KeyValueParameter,

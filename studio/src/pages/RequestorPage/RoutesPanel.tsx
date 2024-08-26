@@ -9,7 +9,11 @@ import {
 import { useMemo, useState } from "react";
 import { RequestorHistory } from "./RequestorHistory";
 import { getHttpMethodTextColor } from "./method";
-import { ProbedRoute, Requestornator, useDeleteRoute } from "./queries";
+import {
+  type ProbedRoute,
+  type Requestornator,
+  useDeleteRoute,
+} from "./queries";
 import { AddRouteButton } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { isWsRequest } from "./types";
@@ -207,6 +211,11 @@ function HistorySection({
       <div className="font-medium text-sm flex items-center mb-2 mt-4">
         <div
           className="flex items-center w-full cursor-pointer"
+          onKeyUp={(e) => {
+            if (e.key === "Enter") {
+              setShowHistorySection((current) => !current);
+            }
+          }}
           onClick={() => {
             setShowHistorySection((current) => !current);
           }}
@@ -250,6 +259,11 @@ function RoutesSection(props: RoutesSectionProps) {
     <>
       <div
         className="font-medium text-sm flex items-center mb-2 mt-4"
+        onKeyUp={(e) => {
+          if (e.key === "Enter") {
+            setShowRoutesSection((current) => !current);
+          }
+        }}
         onClick={() => {
           setShowRoutesSection((current) => !current);
         }}
@@ -263,6 +277,11 @@ function RoutesSection(props: RoutesSectionProps) {
             <div
               key={index}
               onClick={() => handleRouteClick(route)}
+              onKeyUp={(e) => {
+                if (e.key === "Enter") {
+                  handleRouteClick(route);
+                }
+              }}
               className={cn(
                 "flex items-center py-1 pl-5 pr-2 rounded cursor-pointer font-mono text-sm",
                 {

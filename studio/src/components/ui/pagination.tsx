@@ -5,7 +5,7 @@ import {
 } from "@radix-ui/react-icons";
 import * as React from "react";
 
-import { ButtonProps } from "@/components/ui/button";
+import type { ButtonProps } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button/variants";
 import { cn } from "@/utils";
 

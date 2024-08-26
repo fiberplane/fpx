@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/utils";
-import { Settings } from "@fiberplane/fpx-types";
+import type { Settings } from "@fiberplane/fpx-types";
 import { useSettingsForm } from "./form";
 
 // TODO: automatically restart the fpx studio when this is changed

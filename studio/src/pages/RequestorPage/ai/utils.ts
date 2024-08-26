@@ -1,5 +1,5 @@
 import { redactSensitiveHeaders } from "@/utils";
-import { Requestornator } from "../queries";
+import type { Requestornator } from "../queries";
 
 /**
  * Simplify a history entry into a string that can be used to represent previous requests/responses.
@@ -36,7 +36,7 @@ export function appRequestToHttpRequest(entry: Requestornator) {
     "<request>",
     `HTTP/1.1 ${entry.app_requests.requestMethod} ${requestUrlWithParams}`,
     ...Object.entries(requestHeaders).map(([key, value]) => `${key}: ${value}`),
-    ``,
+    "",
     `${requestBody || ""}`,
     "</request>",
   ].join("\n");
@@ -54,7 +54,7 @@ export function appResponseToHttpRequest(entry: Requestornator) {
     ...Object.entries(responseHeaders).map(
       ([key, value]) => `${key}: ${value}`,
     ),
-    ``,
+    "",
     `${entry.app_responses?.responseBody || ""}`,
     "</response>",
   ].join("\n");

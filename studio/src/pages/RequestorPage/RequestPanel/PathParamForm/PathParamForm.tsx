@@ -1,6 +1,6 @@
 import { KeyValueRow } from "../../KeyValueForm";
 import { createChangeEnabled } from "../../KeyValueForm/data";
-import {
+import type {
   ChangeKeyValueParametersHandler,
   KeyValueParameter,
 } from "../../KeyValueForm/types";

@@ -1,4 +1,4 @@
-import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
+import { type QueryFunctionContext, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { MIZU_TRACES_KEY } from "./queries";
 

@@ -1,8 +1,8 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useCallback } from "react";
-import { KeyValueParameter } from "./KeyValueForm";
-import { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
-import { RequestorBody, RequestorState, useRequestor } from "./reducer";
+import type { KeyValueParameter } from "./KeyValueForm";
+import type { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
+import type { RequestorBody, RequestorState, useRequestor } from "./reducer";
 import { isWsRequest } from "./types";
 
 export function useRequestorSubmitHandler({

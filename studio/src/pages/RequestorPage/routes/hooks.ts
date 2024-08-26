@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { ProbedRoute, useProbedRoutes } from "../queries";
+import { type ProbedRoute, useProbedRoutes } from "../queries";
 import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
 type UseRoutesOptions = {

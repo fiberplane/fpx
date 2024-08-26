@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { RequestorState } from "../../reducer";
+import type { RequestorState } from "../../reducer";
 import { getBodyValue } from "./utils";
 
 export type CopyAsCurlProps = Pick<

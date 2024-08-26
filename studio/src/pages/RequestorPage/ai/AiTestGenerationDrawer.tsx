@@ -15,7 +15,7 @@ import { cn, parsePathFromRequestUrl, truncatePathWithEllipsis } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
-import { Requestornator } from "../queries";
+import type { Requestornator } from "../queries";
 import { usePrompt } from "./ai-test-generation";
 
 export function AiTestGenerationDrawer({

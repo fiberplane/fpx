@@ -26,10 +26,10 @@ local_resource(
 local_resource(
     "frontend-serve",
     labels=["frontend"],
-    deps=["frontend/src"],
+    deps=["studio/src"],
     resource_deps=["node_modules", "api-dist"],
     serve_cmd="npm run dev",
-    serve_dir="frontend",
+    serve_dir="studio",
     trigger_mode=TRIGGER_MODE_MANUAL,
 )
 

@@ -18,7 +18,7 @@ import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
 import { AiTestGenerationPanel, useAi } from "./ai";
-import { Requestornator, useMakeProxiedRequest } from "./queries";
+import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import { useRequestor } from "./reducer";
 import { useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";

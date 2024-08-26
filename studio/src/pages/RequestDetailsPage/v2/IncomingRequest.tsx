@@ -1,6 +1,6 @@
 import { Status } from "@/components/ui/status";
 import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
-import { OtelSpan } from "@/queries";
+import type { OtelSpan } from "@/queries";
 import { SENSITIVE_HEADERS, cn } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";

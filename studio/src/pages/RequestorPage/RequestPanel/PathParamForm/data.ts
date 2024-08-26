@@ -1,4 +1,4 @@
-import {
+import type {
   ChangeKeyValueParametersHandler,
   KeyValueParameter,
 } from "../../KeyValueForm/types";

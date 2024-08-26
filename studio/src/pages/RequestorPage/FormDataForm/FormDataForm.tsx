@@ -10,7 +10,10 @@ import {
   createChangeValue,
   isDraftParameter,
 } from "./data";
-import { ChangeFormDataParametersHandler, FormDataParameter } from "./types";
+import type {
+  ChangeFormDataParametersHandler,
+  FormDataParameter,
+} from "./types";
 
 type Props = {
   keyValueParameters: FormDataParameter[];

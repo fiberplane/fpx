@@ -1,4 +1,4 @@
-import { Requestornator } from "./queries";
+import type { Requestornator } from "./queries";
 
 export function sortRequestornatorsDescending(
   a: Requestornator,

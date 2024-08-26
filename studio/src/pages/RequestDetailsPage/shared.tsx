@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/utils";
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { getHttpMethodTextColor } from "../RequestorPage/method";
 
 export const FpxCard = ({

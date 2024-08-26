@@ -1,7 +1,7 @@
-import { CopyAsCurl, CopyAsCurlProps } from "./CopyAsCurl";
+import { CopyAsCurl, type CopyAsCurlProps } from "./CopyAsCurl";
 import {
   RequestBodyTypeDropdown,
-  RequestBodyTypeDropdownProps,
+  type RequestBodyTypeDropdownProps,
 } from "./RequestBodyCombobox";
 
 type BottomToolbarProps = CopyAsCurlProps &

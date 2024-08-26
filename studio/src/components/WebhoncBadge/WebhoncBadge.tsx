@@ -23,7 +23,7 @@ export function WebhoncBadge() {
               "bg-muted/20 text-muted-foreground": !url,
             },
           )}
-          onClick={() => copyToClipboard(url!)}
+          onClick={() => url && copyToClipboard(url)}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           title="Copy public URL to clipboard"

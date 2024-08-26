@@ -1,14 +1,21 @@
 import { removeQueryParams } from "@/utils";
 import { useMemo } from "react";
-import { KeyValueParameter, createKeyValueParameters } from "./KeyValueForm";
+import {
+  type KeyValueParameter,
+  createKeyValueParameters,
+} from "./KeyValueForm";
 import { useSessionHistory } from "./RequestorSessionHistoryContext";
 import {
-  ProbedRoute,
-  Requestornator,
+  type ProbedRoute,
+  type Requestornator,
   useFetchRequestorRequests,
 } from "./queries";
 import { findMatchedRoute } from "./routes";
-import { RequestMethodInputValue, isRequestMethod, isWsRequest } from "./types";
+import {
+  type RequestMethodInputValue,
+  isRequestMethod,
+  isWsRequest,
+} from "./types";
 import { sortRequestornatorsDescending } from "./utils";
 
 type RequestorHistoryHookArgs = {

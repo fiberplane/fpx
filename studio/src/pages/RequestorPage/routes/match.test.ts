@@ -1,5 +1,5 @@
-import { ProbedRoute } from "../queries";
-import { RequestMethod, RequestType } from "../types";
+import type { ProbedRoute } from "../queries";
+import type { RequestMethod, RequestType } from "../types";
 import { findSmartRouterMatches } from "./match";
 
 const toRoute = (

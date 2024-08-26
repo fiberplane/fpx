@@ -13,6 +13,11 @@ export const SubSectionHeading = ({
     <div
       className={cn("font-semibold text-sm py-1", className)}
       onClick={onClick}
+      onKeyUp={(e) => {
+        if (e.key === "Enter") {
+          onClick?.();
+        }
+      }}
     >
       {children}
     </div>

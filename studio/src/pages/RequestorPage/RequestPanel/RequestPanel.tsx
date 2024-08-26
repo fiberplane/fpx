@@ -3,19 +3,19 @@ import { Tabs } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { CodeMirrorJsonEditor } from "../Editors";
 import { FormDataForm } from "../FormDataForm";
-import { KeyValueForm, KeyValueParameter } from "../KeyValueForm";
+import { KeyValueForm, type KeyValueParameter } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import { AiTestingPersona } from "../ai";
+import type { AiTestingPersona } from "../ai";
 import type {
   RequestBodyType,
   RequestorBody,
   RequestsPanelTab,
 } from "../reducer";
-import { RequestMethod } from "../types";
-import { WebSocketState } from "../useMakeWebsocketRequest";
+import type { RequestMethod } from "../types";
+import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
 import { BottomToolbar } from "./BottomToolbar";
@@ -337,6 +337,7 @@ export function PanelSectionHeader({
 
       {handleClearData && (
         <button
+          type="button"
           className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
           title="Clear data"
           onClick={handleClearData}

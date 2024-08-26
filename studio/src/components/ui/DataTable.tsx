@@ -10,11 +10,11 @@ import { isModifierKeyPressed } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import {
   type ColumnDef,
-  PaginationState,
+  type PaginationState,
   type Row,
   type RowData,
-  RowModel,
-  Table as TableType,
+  type RowModel,
+  type Table as TableType,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -115,8 +115,13 @@ export function DataTable<TData, TValue>({
 
   const handleNextRow = useHandler(() => {
     setSelectedRowIndex((prevIndex) => {
-      if (prevIndex === null) return 0;
-      if (prevIndex + 1 >= rows.length) return prevIndex;
+      if (prevIndex === null) {
+        return 0;
+      }
+
+      if (prevIndex + 1 >= rows.length) {
+        return prevIndex;
+      }
 
       return prevIndex + 1;
     });
@@ -124,8 +129,14 @@ export function DataTable<TData, TValue>({
 
   const handlePrevRow = useHandler(() => {
     setSelectedRowIndex((prevIndex) => {
-      if (prevIndex === null) return 0;
-      if (prevIndex - 1 < 0) return prevIndex;
+      if (prevIndex === null) {
+        return 0;
+      }
+
+      if (prevIndex - 1 < 0) {
+        return prevIndex;
+      }
+
       return prevIndex - 1;
     });
   });

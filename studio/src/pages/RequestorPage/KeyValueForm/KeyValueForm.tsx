@@ -9,7 +9,10 @@ import {
   createChangeValue,
   isDraftParameter,
 } from "./data";
-import { ChangeKeyValueParametersHandler, KeyValueParameter } from "./types";
+import type {
+  ChangeKeyValueParametersHandler,
+  KeyValueParameter,
+} from "./types";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];

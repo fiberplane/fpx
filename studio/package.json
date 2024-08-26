@@ -7,9 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "typecheck": "tsc --noEmit",
-    "lint": "biome lint . && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0 && tsc",
-    "lint:ci": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0 && tsc",
     "format": "biome check . --write",
+    "lint": "biome lint . && pnpm run typecheck",
     "preview": "vite preview",
     "deploy": "pnpm run build && wrangler pages deploy dist",
     "test": "vitest --run"

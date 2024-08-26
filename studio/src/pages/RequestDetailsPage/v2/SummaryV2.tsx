@@ -1,14 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
-import { BadgeProps } from "@/components/ui/badge/Badge";
+import type { BadgeProps } from "@/components/ui/badge/Badge";
 import { Status } from "@/components/ui/status";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { OtelSpan } from "@/queries/traces-otel";
+import type { OtelSpan } from "@/queries/traces-otel";
 import {
   SEMATTRS_EXCEPTION_MESSAGE,
   SEMATTRS_EXCEPTION_TYPE,
@@ -50,16 +50,13 @@ export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
               {hasErrors ? "ERRORS" : "RESPONSE"}
             </h4>
             {hasErrors ? (
-              errors.map((error, idx) => (
+              errors.map((error, index) => (
                 <a
                   className="block"
                   href={`#log-error-${error?.name}`}
-                  key={idx}
+                  key={index}
                 >
-                  <Card
-                    key={idx}
-                    className="relative rounded-sm bg-secondary hover:bg-secondary/75 text-sm font-mono"
-                  >
+                  <Card className="relative rounded-sm bg-secondary hover:bg-secondary/75 text-sm font-mono">
                     <CardContent className="p-2 whitespace-pre-wrap">
                       {error?.name}: {error?.message}
                     </CardContent>

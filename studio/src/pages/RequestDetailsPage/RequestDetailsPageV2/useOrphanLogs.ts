@@ -1,5 +1,5 @@
-import { MizuOrphanLog, OtelSpan, isMizuOrphanLog } from "@/queries";
-import { OtelEvent } from "@/queries/traces-otel";
+import { type MizuOrphanLog, type OtelSpan, isMizuOrphanLog } from "@/queries";
+import type { OtelEvent } from "@/queries/traces-otel";
 import { safeParseJson } from "@/utils";
 import { useMemo } from "react";
 import { getString } from "../v2/otel-helpers";

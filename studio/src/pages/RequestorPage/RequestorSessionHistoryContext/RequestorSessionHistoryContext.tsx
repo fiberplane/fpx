@@ -10,7 +10,8 @@
  *
  */
 
-import React, { createContext, useState, ReactNode } from "react";
+import type React from "react";
+import { type ReactNode, createContext, useState } from "react";
 
 type RequestorTraceId = string;
 

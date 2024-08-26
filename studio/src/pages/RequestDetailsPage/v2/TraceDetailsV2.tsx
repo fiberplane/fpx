@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { SpanStatus } from "@/constants";
-import { OtelSpan, isMizuOrphanLog } from "@/queries";
+import { type OtelSpan, isMizuOrphanLog } from "@/queries";
 import { useMemo } from "react";
-import { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
+import type { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { StackTrace } from "../StackTrace";
 import { SectionHeading } from "../shared";
 import { FetchSpan } from "./FetchSpan";
@@ -16,7 +16,7 @@ import {
   isIncomingRequestSpan,
 } from "./otel-helpers";
 import { SubSection, SubSectionHeading } from "./shared";
-import { VendorInfo } from "./vendorify-traces";
+import type { VendorInfo } from "./vendorify-traces";
 
 export function TraceDetailsV2({
   waterfall,
@@ -105,7 +105,7 @@ function GenericSpan({ span }: { span: OtelSpan }) {
               if (event.name === "log") {
                 let args: Array<unknown> = [];
                 try {
-                  args = JSON.parse(getString(event.attributes["args"]));
+                  args = JSON.parse(getString(event.attributes.args));
                 } catch {
                   // swallow error
                 }
@@ -117,8 +117,8 @@ function GenericSpan({ span }: { span: OtelSpan }) {
                       args,
                       id: new Date(event.timestamp).getTime(),
                       timestamp: event.timestamp,
-                      message: getString(event.attributes["message"]),
-                      level: getString(event.attributes["level"]),
+                      message: getString(event.attributes.message),
+                      level: getString(event.attributes.level),
                       traceId: span.trace_id,
                       createdAt: event.timestamp,
                       updatedAt: event.timestamp,

@@ -21,7 +21,7 @@ import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RouteItem } from "./RoutesPanel";
-import { ProbedRoute } from "./queries";
+import type { ProbedRoute } from "./queries";
 import { AddRoutesDialog } from "./routes/AddRouteButton";
 
 type RoutesComboboxProps = {

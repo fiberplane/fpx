@@ -1,6 +1,6 @@
 import { QueryClientProvider, queryClient } from "@/queries";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
 import {
   Route,
   BrowserRouter as Router,
