@@ -4,9 +4,10 @@ description: How to get started with Fiberplane Studio
 ---
 
 import PackageManagers from "@/components/PackageManagers.astro";
-import { Steps, LinkCard } from "@astrojs/starlight/components";
+import { Aside, Steps, LinkCard } from "@astrojs/starlight/components";
 
 Fiberplane Studio is a local debugging companion designed to help you to build, test, and develop [Hono](https://www.hono.dev) APIs.
+
 
 <Steps>
 1. ### Set up a Hono project
@@ -39,6 +40,11 @@ Fiberplane Studio is a local debugging companion designed to help you to build, 
 
     export default instrument(app);
     ```
+
+
+    <Aside type="caution">
+    Fiberplane Studio and client library currently only support Hono running on Cloudflare Workers runtime. If you are using Node.js, Deno, or Bun, you can still use Fiberplane Studio, but you will not get the same features as the client library. You can upvote any of the [respective issues here](https://github.com/fiberplane/fpx/issues/192) to help us prioritize the development.
+    </Aside>
 
 3. ### Launch Fiberplane Studio
     In a new terminal window start Fiberplane Studio from your project directory:
