@@ -98,7 +98,7 @@ export function RequestPanel(props: RequestPanelProps) {
       value={activeRequestsPanelTab}
       onValueChange={setActiveRequestsPanelTab}
       className={cn(
-        "min-w-[200px] border-none sm:border-r",
+        "border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
         "lg:overflow-hidden lg:h-full max-h-full",
       )}

@@ -33,9 +33,6 @@ export function RoutesPanel({
   loadHistoricalRequest,
   removeServiceUrlFromPath,
 }: RoutesPanelProps) {
-  // const { width, handleResize } = useResizableWidth(320);
-  // const styleWidth = useStyleWidth(width);
-
   const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
     return routes?.some((r) => !r.currentlyRegistered) ?? false;
   }, [routes]);

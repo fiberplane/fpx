@@ -230,7 +230,7 @@ export const RequestorPage = () => {
   const { minSize, maxSize } = usePanelConstraints({
     groupId: "requestor-page-main",
     initialGroupSize: width + 320,
-    minPixelSize: 200,
+    minPixelSize: 250,
     minimalGroupSize: 944,
   });
 
@@ -240,7 +240,7 @@ export const RequestorPage = () => {
       // the resizable panel group
       groupId: isSmallScreen ? "" : "requestor-page-main-panel",
       initialGroupSize: width,
-      minPixelSize: 206,
+      minPixelSize: 300,
       minimalGroupSize: 624,
     });
 
@@ -328,11 +328,14 @@ export const RequestorPage = () => {
       <ResizablePanelGroup
         direction="horizontal"
         id="requestor-page-main"
+        autoSaveId="requestor-page-main"
         className="w-full"
       >
         {isLgScreen && (
           <>
             <ResizablePanel
+              id="routes"
+              order={0}
               minSize={minSize}
               maxSize={maxSize}
               defaultSize={(320 / width) * 100}
@@ -352,7 +355,7 @@ export const RequestorPage = () => {
             />
           </>
         )}
-        <ResizablePanel>
+        <ResizablePanel id="main" order={1}>
           <div
             className={cn(
               "flex",
@@ -404,7 +407,11 @@ export const RequestorPage = () => {
                 <ResizablePanel
                   order={1}
                   id="request-panel"
-                  defaultSize={width < 624 ? undefined : (300 / width) * 100}
+                  defaultSize={
+                    width < 624 || requestPanelMinSize === undefined
+                      ? undefined
+                      : Math.max(requestPanelMinSize, (300 / width) * 100)
+                  }
                   minSize={requestPanelMinSize}
                   maxSize={requestPanelMaxSize}
                 >

@@ -64,6 +64,7 @@ export function usePanelConstraints(
       setCurrent(result);
     }
   });
+
   useLayoutEffect(() => {
     const group = getPanelGroupElement(groupId);
     if (!group) {
@@ -74,16 +75,20 @@ export function usePanelConstraints(
       console.warn("Unable to find the group");
       return;
     }
+
     const observer = new ResizeObserver((entries) => {
       const width = entries[0].contentRect.width;
       updateCurrent(width);
     });
     observer.observe(group);
 
+    // Trigger the initial update
+    updateCurrent(group.offsetWidth);
+
     return () => {
       observer.disconnect();
     };
-  });
+  }, []);
 
   return current;
 }
