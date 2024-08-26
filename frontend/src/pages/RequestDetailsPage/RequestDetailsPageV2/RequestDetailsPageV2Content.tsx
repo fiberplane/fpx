@@ -12,15 +12,21 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { MizuOrphanLog } from "@/queries";
-import { OtelSpan } from "@/queries/traces-otel";
+import type { MizuOrphanLog } from "@/queries";
+import { type OtelSpan, useOtelTraces } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
-import { useReplayRequest } from "../hooks/useReplayRequest";
+import { EmptyState } from "../EmptyState";
 import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
-import { getVendorInfo } from "../v2/vendorify-traces";
+import type { getVendorInfo } from "../v2/vendorify-traces";
 import { useRequestWaterfall } from "./useRequestWaterfall";
-import { EmptyState } from "../EmptyState";
+import {
+  useShouldReplay,
+  useReplayRequest,
+  useMostRecentRequest,
+} from "../hooks";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;
@@ -32,10 +38,12 @@ export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
 const EMPTY_LIST: Array<MizuOrphanLog> = [];
 
 export function RequestDetailsPageContentV2({
+  traceId,
   pagination,
   spans,
   orphanLogs = EMPTY_LIST,
 }: {
+  traceId: string;
   spans: Array<OtelSpan>;
   orphanLogs?: Array<MizuOrphanLog>;
   pagination?: {
@@ -45,7 +53,22 @@ export function RequestDetailsPageContentV2({
     handleNextTrace: () => void;
   };
 }) {
+  const currentTrace = {
+    traceId,
+    spans,
+  };
+  const { data: traces } = useOtelTraces();
+
+  useEffect(() => {
+    console.log(traces);
+  }, [traces]);
+
+  const { isMostRecentTrace, traceId: mostRecentTraceId } =
+    useMostRecentRequest(currentTrace, traces);
+
   const { rootSpan, waterfall } = useRequestWaterfall(spans, orphanLogs);
+
+  const shouldReplay = useShouldReplay(currentTrace);
 
   const { replay, isReplaying } = useReplayRequest({ span: rootSpan!.span });
 
@@ -77,11 +100,20 @@ export function RequestDetailsPageContentV2({
           <h2 className="text-2xl font-semibold">Request Details</h2>
           <div className="hidden md:block">
             <HttpSummary trace={rootSpan.span} />
+            <div></div>
           </div>
         </div>
         <div></div>
-        {pagination && (
-          <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {!isMostRecentTrace && (
+            <Link
+              className="text-blue-600 pr-4"
+              to={`/requests/otel/${mostRecentTraceId}`}
+            >
+              View most recent response ↗
+            </Link>
+          )}
+          {shouldReplay && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -116,48 +148,52 @@ export function RequestDetailsPageContentV2({
                 </div>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  disabled={pagination.currentIndex === 0}
-                  onClick={pagination.handlePrevTrace}
+          )}
+          {pagination && (
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    disabled={pagination.currentIndex === 0}
+                    onClick={pagination.handlePrevTrace}
+                  >
+                    <ChevronUpIcon className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="left"
+                  className="bg-slate-900 text-white px-2 py-1.5 gap-1.5"
+                  align="center"
                 >
-                  <ChevronUpIcon className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="left"
-                className="bg-slate-900 text-white px-2 py-1.5 gap-1.5"
-                align="center"
-              >
-                <p>Prev</p>
-                <KeyboardShortcutKey>K</KeyboardShortcutKey>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  disabled={pagination.currentIndex === pagination.maxIndex}
-                  onClick={pagination.handleNextTrace}
+                  <p>Prev</p>
+                  <KeyboardShortcutKey>K</KeyboardShortcutKey>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    disabled={pagination.currentIndex === pagination.maxIndex}
+                    onClick={pagination.handleNextTrace}
+                  >
+                    <ChevronDownIcon className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className="bg-slate-900 text-white px-2 py-1.5 gap-1.5"
+                  align="center"
                 >
-                  <ChevronDownIcon className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className="bg-slate-900 text-white px-2 py-1.5 gap-1.5"
-                align="center"
-              >
-                <p>Next</p>
-                <KeyboardShortcutKey>J</KeyboardShortcutKey>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+                  <p>Next</p>
+                  <KeyboardShortcutKey>J</KeyboardShortcutKey>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          )}
+        </div>
       </div>
       <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
         <SummaryV2 requestSpan={rootSpan.span} />
