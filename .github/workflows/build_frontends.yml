@@ -51,7 +51,7 @@ jobs:
       - name: Lint all workspaces (biome)
         run: biome ci .
 
-      - name: Lint all workspaces (eslint)
+      - name: Lint all workspaces (eslint or other linters)
         run: pnpm --recursive lint:ci
 
       - name: Typecheck all workspaces
