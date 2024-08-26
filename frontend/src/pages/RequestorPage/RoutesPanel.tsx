@@ -7,10 +7,7 @@ import {
   TrashIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import { Resizable } from "react-resizable";
 import { RequestorHistory } from "./RequestorHistory";
-import { ResizableHandle } from "./Resizable";
-import { useResizableWidth, useStyleWidth } from "./hooks";
 import { getHttpMethodTextColor } from "./method";
 import { ProbedRoute, Requestornator, useDeleteRoute } from "./queries";
 import { AddRouteButton } from "./routes";
@@ -36,9 +33,6 @@ export function RoutesPanel({
   loadHistoricalRequest,
   removeServiceUrlFromPath,
 }: RoutesPanelProps) {
-  const { width, handleResize } = useResizableWidth(320);
-  const styleWidth = useStyleWidth(width);
-
   const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
     return routes?.some((r) => !r.currentlyRegistered) ?? false;
   }, [routes]);
@@ -112,103 +106,83 @@ export function RoutesPanel({
   }, [filterValue, history]);
 
   return (
-    <Resizable
-      className={`w-full hidden lg:block lg:min-w-[200px] lg:w-[${width}px] lg:mt-0`}
-      width={width} // Initial width
-      axis="x" // Restrict resizing to the horizontal axis
-      onResize={handleResize}
-      resizeHandles={["e"]} // Limit resize handle to just the east (right) handle
-      handle={(_, ref) => (
-        // Render a custom handle component, so we can indicate "resizability"
-        // along the entire right side of the container
-        <ResizableHandle ref={ref} />
+    <div
+      className={cn(
+        BACKGROUND_LAYER,
+        "px-4 overflow-hidden border rounded-md",
+        "h-full",
+        "flex",
+        "flex-col",
       )}
     >
-      <div
-        style={styleWidth}
-        className={cn(
-          BACKGROUND_LAYER,
-          "px-4 overflow-hidden overflow-y-auto border rounded-md",
-          "lg:h-full",
-        )}
-      >
-        <div
-          className={cn(
-            "sticky top-0 z-10",
-            // HACK - This needs to have an explicity bg color so that when we scroll behind it,
-            //        the content doesn't show line-through
-            // TODO - Improve the grid layout to remove the need to have this be sticky and have a bg color
-            "bg-[rgb(24,30,43)]",
-          )}
-        >
-          <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12">
-            Routes
-          </h2>
-          <div className="flex items-center space-x-2 pb-3">
-            <Input
-              className="text-sm"
-              placeholder="Search routes"
-              value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-            />
-            <AddRouteButton />
-          </div>
+      <div>
+        <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12">
+          Routes
+        </h2>
+        <div className="flex items-center space-x-2 pb-3">
+          <Input
+            className="text-sm"
+            placeholder="Search routes"
+            value={filterValue}
+            onChange={(e) => setFilterValue(e.target.value)}
+          />
+          <AddRouteButton />
         </div>
-        <div className="overflow-y-auto relative">
-          {hasAnyHistory && (
-            <HistorySection
-              history={filteredHistory}
-              loadHistoricalRequest={loadHistoricalRequest}
-              removeServiceUrlFromPath={removeServiceUrlFromPath}
-            />
-          )}
+      </div>
+      <div className="overflow-y-auto relative">
+        {hasAnyHistory && (
+          <HistorySection
+            history={filteredHistory}
+            loadHistoricalRequest={loadHistoricalRequest}
+            removeServiceUrlFromPath={removeServiceUrlFromPath}
+          />
+        )}
 
-          {hasAnyDraftRoutes && (
-            <RoutesSection
-              title="Draft routes"
-              routes={draftRoutes ?? []}
-              selectedRoute={selectedRoute}
-              handleRouteClick={handleRouteClick}
-              deleteDraftRoute={deleteDraftRoute}
-            />
-          )}
-
-          {hasAnyUserAddedRoutes && (
-            <RoutesSection
-              title="Custom routes"
-              routes={userAddedRoutes ?? []}
-              selectedRoute={selectedRoute}
-              handleRouteClick={handleRouteClick}
-            />
-          )}
-
+        {hasAnyDraftRoutes && (
           <RoutesSection
-            title="Detected in app"
-            routes={detectedRoutes}
+            title="Draft routes"
+            routes={draftRoutes ?? []}
+            selectedRoute={selectedRoute}
+            handleRouteClick={handleRouteClick}
+            deleteDraftRoute={deleteDraftRoute}
+          />
+        )}
+
+        {hasAnyUserAddedRoutes && (
+          <RoutesSection
+            title="Custom routes"
+            routes={userAddedRoutes ?? []}
             selectedRoute={selectedRoute}
             handleRouteClick={handleRouteClick}
           />
+        )}
 
-          {hasAnyPreviouslyDetectedRoutes && (
-            <RoutesSection
-              title="Previously detected routes"
-              routes={prevDetectedRoutes}
-              selectedRoute={selectedRoute}
-              handleRouteClick={handleRouteClick}
-            />
-          )}
+        <RoutesSection
+          title="Detected in app"
+          routes={detectedRoutes}
+          selectedRoute={selectedRoute}
+          handleRouteClick={handleRouteClick}
+        />
 
-          {hasAnyOpenApiRoutes && (
-            <RoutesSection
-              title="OpenAPI"
-              routes={openApiRoutes ?? []}
-              selectedRoute={selectedRoute}
-              handleRouteClick={handleRouteClick}
-            />
-          )}
-        </div>
+        {hasAnyPreviouslyDetectedRoutes && (
+          <RoutesSection
+            title="Previously detected routes"
+            routes={prevDetectedRoutes}
+            selectedRoute={selectedRoute}
+            handleRouteClick={handleRouteClick}
+          />
+        )}
+
+        {hasAnyOpenApiRoutes && (
+          <RoutesSection
+            title="OpenAPI"
+            routes={openApiRoutes ?? []}
+            selectedRoute={selectedRoute}
+            handleRouteClick={handleRouteClick}
+          />
+        )}
       </div>
-    </Resizable>
+    </div>
   );
 }
 
@@ -309,7 +283,10 @@ function RoutesSection(props: RoutesSectionProps) {
 export function RouteItem({
   route,
   deleteDraftRoute,
-}: { route: ProbedRoute; deleteDraftRoute?: () => void }) {
+}: {
+  route: ProbedRoute;
+  deleteDraftRoute?: () => void;
+}) {
   const { mutate: deleteRoute } = useDeleteRoute();
   const canDeleteRoute =
     route.routeOrigin === "custom" ||
