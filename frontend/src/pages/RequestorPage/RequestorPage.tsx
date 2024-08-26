@@ -241,7 +241,6 @@ export const RequestorPage = () => {
       groupId: isSmallScreen ? "" : "requestor-page-main-panel",
       initialGroupSize: width,
       minPixelSize: 300,
-      minimalGroupSize: 624,
     });
 
   const requestContent = (
@@ -344,7 +343,7 @@ export const RequestorPage = () => {
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="mr-2"
+              className="mr-2 w-0"
             />
           </>
         )}
