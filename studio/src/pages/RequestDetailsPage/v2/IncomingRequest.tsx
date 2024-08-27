@@ -73,7 +73,9 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
     <div id={id}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <SectionHeading>Incoming Request</SectionHeading>
+          <SectionHeading className="max-lg:mt-2">
+            Incoming Request
+          </SectionHeading>
 
           <div className="flex gap-2">
             {statusCode && <Status statusCode={statusCode} />}
