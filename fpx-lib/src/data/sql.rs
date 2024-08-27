@@ -86,4 +86,21 @@ impl SqlBuilder {
             ",
         )
     }
+
+    /// Delete all spans with a specific trace_id.
+    ///
+    /// Query parameters:
+    /// - $1: trace_id
+    pub fn span_delete_by_trace(&self) -> String {
+        String::from("DELETE FROM spans WHERE trace_id=$1")
+    }
+
+    /// Delete a specific span.
+    ///
+    /// Query parameters:
+    /// - $1: trace_id
+    /// - $2: span_id
+    pub fn span_delete(&self) -> String {
+        String::from("DELETE FROM spans WHERE trace_id=$1 AND span_id=$2")
+    }
 }
