@@ -2,5 +2,6 @@ packages:
   - "frontend"
   - "api"
   - "packages/*"
+  - "sample-apps/*"
   - "webhonc"
   - "www"

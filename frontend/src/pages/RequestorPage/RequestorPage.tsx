@@ -27,7 +27,6 @@ import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
 import { RequestorTimeline } from "./RequestorTimeline";
-import { Timeline } from "@/components/Timeline";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -232,7 +231,7 @@ export const RequestorPage = () => {
   const { minSize, maxSize } = usePanelConstraints({
     groupId: "requestor-page-main",
     initialGroupSize: width + 320,
-    minPixelSize: 200,
+    minPixelSize: 250,
     minimalGroupSize: 944,
   });
 
@@ -242,12 +241,8 @@ export const RequestorPage = () => {
       // the resizable panel group
       groupId: isSmallScreen ? "" : "requestor-page-main-panel",
       initialGroupSize: width,
-      minPixelSize: 206,
-      minimalGroupSize: 624,
+      minPixelSize: 300,
     });
-
-  // const traceId = "8558ede965fd25921d150931e0bfc8dc";
-  // const traceId = mostRecentRequestornatorForRoute?.app_responses.traceId;
 
   const requestContent = (
     <RequestPanel
@@ -315,22 +310,22 @@ export const RequestorPage = () => {
       className={cn(
         // It's critical the parent has a fixed height for our grid layout to work
         "h-[calc(100vh-64px)]",
-        // We want to `grid` all the things
-        // "grid",
         "flex",
         "flex-col",
         "gap-2",
         "py-4 px-2",
         "sm:px-4 sm:py-3",
-        // Define row templates up until the `lg` breakpoint
-        // "max-lg:grid-rows-[auto_1fr]",
-        // Define column templates for the `lg` breakpoint
-        // "lg:grid-cols-[auto_1fr]",
-        // Adjust spacing at the large breakpoint
         "lg:gap-4",
       )}
     >
-      <div className={cn("relative", "lg:overflow-x-hidden", "lg:hidden")}>
+      <div
+        className={cn(
+          "relative",
+          "overflow-y-auto",
+          "lg:overflow-x-hidden",
+          "lg:hidden",
+        )}
+      >
         <RoutesCombobox
           routes={routes}
           selectedRoute={selectedRoute}
@@ -340,11 +335,14 @@ export const RequestorPage = () => {
       <ResizablePanelGroup
         direction="horizontal"
         id="requestor-page-main"
+        autoSaveId="requestor-page-main"
         className="w-full"
       >
         {isLgScreen && (
           <>
             <ResizablePanel
+              id="routes"
+              order={0}
               minSize={minSize}
               maxSize={maxSize}
               defaultSize={(320 / width) * 100}
@@ -360,17 +358,15 @@ export const RequestorPage = () => {
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="mr-2"
+              className="mr-2 w-0"
             />
           </>
         )}
-        <ResizablePanel>
+        <ResizablePanel id="main" order={1}>
           <div
             className={cn(
               "flex",
               "flex-col",
-              // This is a custom css class that uses the famed `auto minmax(0, 1fr)` trick
-              "fpx-requestor-grid-rows",
               "gap-2",
               // HACK - This is a workaround to prevent the grid from overflowing on smaller screens
               "h-[calc(100%-0.6rem)]",
@@ -424,7 +420,9 @@ export const RequestorPage = () => {
                       order={1}
                       id="request-panel"
                       defaultSize={
-                        width < 624 ? undefined : (300 / width) * 100
+                        width < 624 || requestPanelMinSize === undefined
+                          ? undefined
+                          : Math.max(requestPanelMinSize, (300 / width) * 100)
                       }
                       minSize={requestPanelMinSize}
                       maxSize={requestPanelMaxSize}

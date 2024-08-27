@@ -9,7 +9,7 @@ import { Steps } from "@astrojs/starlight/components";
     npm create hono@latest
     ```
 
-2. Add `@fiberplane/hono-otel` with two lines of code
+2. Add `@fiberplane/hono-otel` with two lines of code (only Cloudflare Workers runtime is supported at the moment)
 
    ```ts ins={"Import the instrument function":2-3} ins={"Wrap your application with instrument":8-9}
    import { Hono } from "hono";

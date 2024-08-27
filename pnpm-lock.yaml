@@ -64,10 +64,10 @@ importers:
         version: 0.21.4
       drizzle-orm:
         specifier: ^0.30.10
-        version: 0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@opentelemetry/api@1.9.0)(@types/react@18.3.3)(react@18.3.1)
+        version: 0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
       drizzle-zod:
         specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@opentelemetry/api@1.9.0)(@types/react@18.3.3)(react@18.3.1))(zod@3.23.8)
+        version: 0.5.1(drizzle-orm@0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1))(zod@3.23.8)
       figlet:
         specifier: ^1.7.0
         version: 1.7.0
@@ -395,6 +395,59 @@ importers:
       zod:
         specifier: ^3.23.8
         version: 3.23.8
+
+  sample-apps/goose-quotes:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      '@neondatabase/serverless':
+        specifier: ^0.9.4
+        version: 0.9.4
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      drizzle-orm:
+        specifier: ^0.32.0
+        version: 0.32.2(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
+      hono:
+        specifier: ^4.5.1
+        version: 4.5.5
+      openai:
+        specifier: ^4.53.0
+        version: 4.55.4(encoding@0.1.13)(zod@3.23.8)
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240529.0
+        version: 4.20240806.0
+      drizzle-kit:
+        specifier: ^0.23.0
+        version: 0.23.2
+      wrangler:
+        specifier: ^3.67.1
+        version: 3.70.0(@cloudflare/workers-types@4.20240806.0)
+
+  sample-apps/stressy-mcstress-face:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      '@hono/node-server':
+        specifier: ^1.12.1
+        version: 1.12.1
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      hono:
+        specifier: ^4.5.8
+        version: 4.5.8
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.14.15
+      tsx:
+        specifier: ^4.7.1
+        version: 4.17.0
 
   webhonc:
     dependencies:
@@ -788,6 +841,9 @@ packages:
 
   '@devexpress/error-stack-parser@2.0.6':
     resolution: {integrity: sha512-fneVypElGUH6Be39mlRZeAu00pccTlf4oVuzf9xPJD1cdEqI8NyAiQua/EW7lZdrbMUbgyXcJmfKPefhYius3A==}
+
+  '@drizzle-team/brocli@0.8.2':
+    resolution: {integrity: sha512-zTrFENsqGvOkBOuHDC1pXCkDXNd2UhP4lI3gYGhQ1R1SPeAAfqzPsV1dcpMy4uNU6kB5VpU5NGhvwxVNETR02A==}
 
   '@emmetio/abbreviation@2.3.3':
     resolution: {integrity: sha512-mgv58UrU3rh4YgbE/TzgLQwJ3pFsHHhCLqY20aJq+9comytTXUDNGG/SMtSeMJdkpxgXSXunBGLD8Boka3JyVA==}
@@ -1569,6 +1625,10 @@ packages:
     resolution: {integrity: sha512-e6oHjNiErRxsZRZBmc2KucuvY3btlO/XPncIpP2X75bRdTilF9GLjm3NHvKKunpJbbJJj31/FoPTksTf8djAVw==}
     engines: {node: '>=18.14.1'}
 
+  '@hono/node-server@1.12.1':
+    resolution: {integrity: sha512-C9l+08O8xtXB7Ppmy8DjBFH1hYji7JKzsU32Yt1poIIbdPp6S7aOI8IldDHD9YFJ55lv2c21ovNrmxatlHfhAg==}
+    engines: {node: '>=18.14.1'}
+
   '@hono/zod-validator@0.2.2':
     resolution: {integrity: sha512-dSDxaPV70Py8wuIU2QNpoVEIOSzSXZ/6/B/h4xA7eOMz7+AarKTSGV8E6QwrdcCbBLkpqfJ4Q2TmBO0eP1tCBQ==}
     peerDependencies:
@@ -1833,6 +1893,9 @@ packages:
 
   '@neon-rs/load@0.0.4':
     resolution: {integrity: sha512-kTPhdZyTQxB+2wpiRcFWrDcejc4JI6tkPuS7UZCG4l6Zvc5kU/gGQ/ozvHTh1XR5tS+UlfAfGuPajjzQjCiHCw==}
+
+  '@neondatabase/serverless@0.9.4':
+    resolution: {integrity: sha512-D0AXgJh6xkf+XTlsO7iwE2Q1w8981E1cLCPAALMU2YKtkF/1SF6BiAzYARZFYo175ON+b1RNIy9TdSFHm5nteg==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -3018,6 +3081,9 @@ packages:
   '@types/node@20.14.15':
     resolution: {integrity: sha512-Fz1xDMCF/B00/tYSVMlmK7hVeLh7jE5f3B7X1/hmV0MJBwE27KlS7EvD/Yp+z1lm8mVhwV5w+n8jOZG8AfTlKw==}
 
+  '@types/pg@8.11.6':
+    resolution: {integrity: sha512-/2WmmBXHLsfRqzfHW7BNZ8SbYzE8OSk7i3WjFYvfgRHj7S1xj+16Je5fUKv3lVdVzk/zn9TXOqf+avFCFIE0yQ==}
+
   '@types/prop-types@15.7.12':
     resolution: {integrity: sha512-5zvhXYtRNRluoE/jAp4GVsSduVUzNWKkOZrCDBWYtE7biZywwdC2AcEzg+cSMLFRfVgeAFqpfNabiPjxFddV1Q==}
 
@@ -3887,6 +3953,10 @@ packages:
     resolution: {integrity: sha512-Nxcc1ONJLRgbhmR+azxjNF9Ly9privNLEIgW53c92whb4xp8jZLH1kMCh/54ci1mTMuYxPdOukqLwJ8wRudNwA==}
     hasBin: true
 
+  drizzle-kit@0.23.2:
+    resolution: {integrity: sha512-NWkQ7GD2OTbQ7HzcjsaCOf3n0tlFPSEAF38fvDpwDj8jRbGWGFtN2cD8I8wp4lU+5Os/oyP2xycTKGLHdPipUw==}
+    hasBin: true
+
   drizzle-orm@0.30.10:
     resolution: {integrity: sha512-IRy/QmMWw9lAQHpwbUh1b8fcn27S/a9zMIzqea1WNOxK9/4EB8gIo+FZWLiPXzl2n9ixGSv8BhsLZiOppWEwBw==}
     peerDependencies:
@@ -3959,6 +4029,95 @@ packages:
       pg:
         optional: true
       postgres:
+        optional: true
+      react:
+        optional: true
+      sql.js:
+        optional: true
+      sqlite3:
+        optional: true
+
+  drizzle-orm@0.32.2:
+    resolution: {integrity: sha512-3fXKzPzrgZIcnWCSLiERKN5Opf9Iagrag75snfFlKeKSYB1nlgPBshzW3Zn6dQymkyiib+xc4nIz0t8U+Xdpuw==}
+    peerDependencies:
+      '@aws-sdk/client-rds-data': '>=3'
+      '@cloudflare/workers-types': '>=3'
+      '@electric-sql/pglite': '>=0.1.1'
+      '@libsql/client': '*'
+      '@neondatabase/serverless': '>=0.1'
+      '@op-engineering/op-sqlite': '>=2'
+      '@opentelemetry/api': ^1.4.1
+      '@planetscale/database': '>=1'
+      '@prisma/client': '*'
+      '@tidbcloud/serverless': '*'
+      '@types/better-sqlite3': '*'
+      '@types/pg': '*'
+      '@types/react': '>=18'
+      '@types/sql.js': '*'
+      '@vercel/postgres': '>=0.8.0'
+      '@xata.io/client': '*'
+      better-sqlite3: '>=7'
+      bun-types: '*'
+      expo-sqlite: '>=13.2.0'
+      knex: '*'
+      kysely: '*'
+      mysql2: '>=2'
+      pg: '>=8'
+      postgres: '>=3'
+      prisma: '*'
+      react: '>=18'
+      sql.js: '>=1'
+      sqlite3: '>=5'
+    peerDependenciesMeta:
+      '@aws-sdk/client-rds-data':
+        optional: true
+      '@cloudflare/workers-types':
+        optional: true
+      '@electric-sql/pglite':
+        optional: true
+      '@libsql/client':
+        optional: true
+      '@neondatabase/serverless':
+        optional: true
+      '@op-engineering/op-sqlite':
+        optional: true
+      '@opentelemetry/api':
+        optional: true
+      '@planetscale/database':
+        optional: true
+      '@prisma/client':
+        optional: true
+      '@tidbcloud/serverless':
+        optional: true
+      '@types/better-sqlite3':
+        optional: true
+      '@types/pg':
+        optional: true
+      '@types/react':
+        optional: true
+      '@types/sql.js':
+        optional: true
+      '@vercel/postgres':
+        optional: true
+      '@xata.io/client':
+        optional: true
+      better-sqlite3:
+        optional: true
+      bun-types:
+        optional: true
+      expo-sqlite:
+        optional: true
+      knex:
+        optional: true
+      kysely:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      postgres:
+        optional: true
+      prisma:
         optional: true
       react:
         optional: true
@@ -4581,6 +4740,10 @@ packages:
 
   hono@4.5.5:
     resolution: {integrity: sha512-fXBXHqaVfimWofbelLXci8pZyIwBMkDIwCa4OwZvK+xVbEyYLELVP4DfbGaj1aEM6ZY3hHgs4qLvCO2ChkhgQw==}
+    engines: {node: '>=16.0.0'}
+
+  hono@4.5.8:
+    resolution: {integrity: sha512-pqpSlcdqGkpTTRpLYU1PnCz52gVr0zVR9H5GzMyJWuKQLLEBQxh96q45QizJ2PPX8NATtz2mu31/PKW/Jt+90Q==}
     engines: {node: '>=16.0.0'}
 
   html-escaper@3.0.3:
@@ -5454,6 +5617,9 @@ packages:
   observable-fns@0.6.1:
     resolution: {integrity: sha512-9gRK4+sRWzeN6AOewNBTLXir7Zl/i3GB6Yl26gK4flxz8BXVpD3kt8amREmWNb0mxYOGDotvE5a4N+PtGGKdkg==}
 
+  obuf@1.1.2:
+    resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
+
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
 
@@ -5659,6 +5825,21 @@ packages:
   periscopic@3.1.0:
     resolution: {integrity: sha512-vKiQ8RRtkl9P+r/+oefh25C3fhybptkHKCZSPlcXiJux2tJF55GnEj3BVn4A5gKfq9NWWXXrxkHBwVPUfH0opw==}
 
+  pg-int8@1.0.1:
+    resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
+    engines: {node: '>=4.0.0'}
+
+  pg-numeric@1.0.2:
+    resolution: {integrity: sha512-BM/Thnrw5jm2kKLE5uJkXqqExRUY/toLHda65XgFTBTFYZyopbKjBe29Ii3RbkvlsMoFwD+tHeGaCjjv0gHlyw==}
+    engines: {node: '>=4'}
+
+  pg-protocol@1.6.1:
+    resolution: {integrity: sha512-jPIlvgoD63hrEuihvIg+tJhoGjUsLPn6poJY9N5CnlPd91c2T18T/9zBtLxZSb1EhYxBRoZJtzScCaWlYLtktg==}
+
+  pg-types@4.0.2:
+    resolution: {integrity: sha512-cRL3JpS3lKMGsKaWndugWQoLOCoP+Cic8oseVcbr0qhPzYD5DWXK+RZ9LY9wxRf7RQia4SCwQlXk0q6FCPrVng==}
+    engines: {node: '>=10'}
+
   picocolors@1.0.1:
     resolution: {integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==}
 
@@ -5748,6 +5929,25 @@ packages:
   postcss@8.4.41:
     resolution: {integrity: sha512-TesUflQ0WKZqAvg52PWL6kHgLKP6xB6heTOdoYM0Wt2UHyxNa4K25EZZMgKns3BH1RLVbZCREPpLY0rhnNoHVQ==}
     engines: {node: ^10 || ^12 || >=14}
+
+  postgres-array@3.0.2:
+    resolution: {integrity: sha512-6faShkdFugNQCLwucjPcY5ARoW1SlbnrZjmGl0IrrqewpvxvhSLHimCVzqeuULCbG0fQv7Dtk1yDbG3xv7Veog==}
+    engines: {node: '>=12'}
+
+  postgres-bytea@3.0.0:
+    resolution: {integrity: sha512-CNd4jim9RFPkObHSjVHlVrxoVQXz7quwNFpz7RY1okNNme49+sVyiTvTRobiLV548Hx/hb1BG+iE7h9493WzFw==}
+    engines: {node: '>= 6'}
+
+  postgres-date@2.1.0:
+    resolution: {integrity: sha512-K7Juri8gtgXVcDfZttFKVmhglp7epKb1K4pgrkLxehjqkrgPhfG6OO8LHLkfaqkbpjNRnra018XwAr1yQFWGcA==}
+    engines: {node: '>=12'}
+
+  postgres-interval@3.0.0:
+    resolution: {integrity: sha512-BSNDnbyZCXSxgA+1f5UU2GmwhoI0aU5yMxRGO8CdFEcY2BQF9xm/7MqKnYoM1nJDk8nONNWDk9WeSmePFhQdlw==}
+    engines: {node: '>=12'}
+
+  postgres-range@1.1.4:
+    resolution: {integrity: sha512-i/hbxIE9803Alj/6ytL7UHQxRvZkI9O4Sy+J3HGc4F4oo/2eQAjTSNJ0bfxyse3bH0nuVesCk+3IRLaMtG3H6w==}
 
   prebuild-install@7.1.2:
     resolution: {integrity: sha512-UnNke3IQb6sgarcZIDU3gbMeTp/9SSU1DAIkil7PrqG1vZlBtY5msYccSKSHDqa3hNg436IXK+SNImReuA1wEQ==}
@@ -7574,6 +7774,8 @@ snapshots:
     dependencies:
       stackframe: 1.3.4
 
+  '@drizzle-team/brocli@0.8.2': {}
+
   '@emmetio/abbreviation@2.3.3':
     dependencies:
       '@emmetio/scanner': 1.0.4
@@ -8035,6 +8237,8 @@ snapshots:
 
   '@hono/node-server@1.12.0': {}
 
+  '@hono/node-server@1.12.1': {}
+
   '@hono/zod-validator@0.2.2(hono@4.5.5)(zod@3.23.8)':
     dependencies:
       hono: 4.5.5
@@ -8321,6 +8525,10 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@neon-rs/load@0.0.4': {}
+
+  '@neondatabase/serverless@0.9.4':
+    dependencies:
+      '@types/pg': 8.11.6
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -9496,6 +9704,12 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
+  '@types/pg@8.11.6':
+    dependencies:
+      '@types/node': 20.14.15
+      pg-protocol: 1.6.1
+      pg-types: 4.0.2
+
   '@types/prop-types@15.7.12': {}
 
   '@types/react-dom@18.3.0':
@@ -10499,17 +10713,38 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@opentelemetry/api@1.9.0)(@types/react@18.3.3)(react@18.3.1):
+  drizzle-kit@0.23.2:
+    dependencies:
+      '@drizzle-team/brocli': 0.8.2
+      '@esbuild-kit/esm-loader': 2.6.5
+      esbuild: 0.19.12
+      esbuild-register: 3.6.0(esbuild@0.19.12)
+    transitivePeerDependencies:
+      - supports-color
+
+  drizzle-orm@0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20240806.0
       '@libsql/client': 0.6.2
+      '@neondatabase/serverless': 0.9.4
       '@opentelemetry/api': 1.9.0
+      '@types/pg': 8.11.6
       '@types/react': 18.3.3
       react: 18.3.1
 
-  drizzle-zod@0.5.1(drizzle-orm@0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@opentelemetry/api@1.9.0)(@types/react@18.3.3)(react@18.3.1))(zod@3.23.8):
+  drizzle-orm@0.32.2(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1):
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20240806.0
+      '@libsql/client': 0.6.2
+      '@neondatabase/serverless': 0.9.4
+      '@opentelemetry/api': 1.9.0
+      '@types/pg': 8.11.6
+      '@types/react': 18.3.3
+      react: 18.3.1
+
+  drizzle-zod@0.5.1(drizzle-orm@0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1))(zod@3.23.8):
     dependencies:
-      drizzle-orm: 0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@opentelemetry/api@1.9.0)(@types/react@18.3.3)(react@18.3.1)
+      drizzle-orm: 0.30.10(@cloudflare/workers-types@4.20240806.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
       zod: 3.23.8
 
   dset@3.1.3: {}
@@ -11418,6 +11653,8 @@ snapshots:
   highlight-words-core@1.2.2: {}
 
   hono@4.5.5: {}
+
+  hono@4.5.8: {}
 
   html-escaper@3.0.3: {}
 
@@ -12503,6 +12740,8 @@ snapshots:
 
   observable-fns@0.6.1: {}
 
+  obuf@1.1.2: {}
+
   once@1.4.0:
     dependencies:
       wrappy: 1.0.2
@@ -12740,6 +12979,22 @@ snapshots:
       estree-walker: 3.0.3
       is-reference: 3.0.2
 
+  pg-int8@1.0.1: {}
+
+  pg-numeric@1.0.2: {}
+
+  pg-protocol@1.6.1: {}
+
+  pg-types@4.0.2:
+    dependencies:
+      pg-int8: 1.0.1
+      pg-numeric: 1.0.2
+      postgres-array: 3.0.2
+      postgres-bytea: 3.0.0
+      postgres-date: 2.1.0
+      postgres-interval: 3.0.0
+      postgres-range: 1.1.4
+
   picocolors@1.0.1: {}
 
   picomatch@2.3.1: {}
@@ -12825,6 +13080,18 @@ snapshots:
       nanoid: 3.3.7
       picocolors: 1.0.1
       source-map-js: 1.2.0
+
+  postgres-array@3.0.2: {}
+
+  postgres-bytea@3.0.0:
+    dependencies:
+      obuf: 1.1.2
+
+  postgres-date@2.1.0: {}
+
+  postgres-interval@3.0.0: {}
+
+  postgres-range@1.1.4: {}
 
   prebuild-install@7.1.2:
     dependencies:

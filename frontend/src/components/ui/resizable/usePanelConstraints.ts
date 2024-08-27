@@ -64,6 +64,7 @@ export function usePanelConstraints(
       setCurrent(result);
     }
   });
+  
   useLayoutEffect(() => {
     const group = getPanelGroupElement(groupId);
     if (!group) {
@@ -80,10 +81,13 @@ export function usePanelConstraints(
     });
     observer.observe(group);
 
+    // Trigger the initial update
+    updateCurrent(group.offsetWidth);
+
     return () => {
       observer.disconnect();
     };
-  });
+  }, [groupId, updateCurrent]);
 
   return current;
 }
