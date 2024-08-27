@@ -1,6 +1,6 @@
+import { instrument } from "@fiberplane/hono-otel";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import { instrument } from "@fiberplane/hono-otel";
 import * as schema from "./db/schema";
 
 type Bindings = {

@@ -34,7 +34,11 @@ export function isCloudflareD1Binding(o: unknown) {
 
 // TODO - Remove this, it is temporary
 function isCloudflareBinding(o: unknown): o is object {
-  return isCloudflareAiBinding(o) || isCloudflareR2Binding(o) || isCloudflareD1Binding(o);
+  return (
+    isCloudflareAiBinding(o) ||
+    isCloudflareR2Binding(o) ||
+    isCloudflareD1Binding(o)
+  );
 }
 
 /**
