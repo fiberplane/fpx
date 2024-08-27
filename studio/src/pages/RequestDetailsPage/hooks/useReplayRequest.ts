@@ -1,4 +1,5 @@
 import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
+import { useRequestor } from "@/pages/RequestorPage/reducer";
 import type { OtelSpan } from "@/queries";
 import { useCallback, useMemo } from "react";
 import {
@@ -8,7 +9,6 @@ import {
   getRequestQueryParams,
   getRequestUrl,
 } from "../v2/otel-helpers";
-import { useRequestor } from "@/pages/RequestorPage/reducer";
 
 export function useReplayRequest({ span }: { span: OtelSpan }) {
   const method = getRequestMethod(span);

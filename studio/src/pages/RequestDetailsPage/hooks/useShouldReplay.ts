@@ -1,4 +1,4 @@
-import { OtelTrace } from "@/queries";
+import type { OtelTrace } from "@/queries";
 import {
   getRequestHeaders,
   getRequestMethod,

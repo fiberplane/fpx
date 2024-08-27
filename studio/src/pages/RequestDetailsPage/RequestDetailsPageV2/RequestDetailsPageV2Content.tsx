@@ -15,6 +15,8 @@ import {
 import type { MizuOrphanLog } from "@/queries";
 import { type OtelSpan, useOtelTraces } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
+import { useRef } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { Link } from "react-router-dom";
 import { EmptyState } from "../EmptyState";
 import {
@@ -26,8 +28,6 @@ import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import type { getVendorInfo } from "../v2/vendorify-traces";
 import { useRequestWaterfall } from "./useRequestWaterfall";
-import { useHotkeys } from "react-hotkeys-hook";
-import { useRef } from "react";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;

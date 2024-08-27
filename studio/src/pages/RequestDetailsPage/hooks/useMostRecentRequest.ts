@@ -1,4 +1,4 @@
-import { OtelTrace } from "@/queries";
+import type { OtelTrace } from "@/queries";
 import { getRequestPath, isFpxRequestSpan } from "../v2/otel-helpers";
 
 export function useMostRecentRequest(
