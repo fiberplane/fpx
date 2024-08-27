@@ -14,7 +14,7 @@
     "dev:frontend": "pnpm --filter @fiberplane/studio-frontend dev",
     "clean:fpx-studio": "pnpm run clean:api && pnpm run clean:frontend",
     "clean:api": "rimraf api/dist",
-    "clean:frontend": "rimraf frontend/dist",
+    "clean:frontend": "rimraf studio/dist",
     "format": "biome check . --write",
     "lint": "pnpm --recursive lint"
   },

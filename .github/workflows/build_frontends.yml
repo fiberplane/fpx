@@ -51,7 +51,7 @@ jobs:
       - name: Lint all workspaces (biome)
         run: biome ci .
 
-      - name: Lint all workspaces (eslint)
+      - name: Lint all workspaces (eslint or other linters)
         run: pnpm --recursive lint:ci
 
       - name: Typecheck all workspaces
@@ -65,7 +65,7 @@ jobs:
       # Release a preview version
 
       - name: Copy the frontend files into the api
-        run: cp -r ./frontend/dist/* ./api/dist
+        run: cp -r ./studio/dist/* ./api/dist
 
       - name: Publish a temporary preview version
         run: pnpx pkg-pr-new publish --pnpm "./api" "./packages/client-library-otel"
