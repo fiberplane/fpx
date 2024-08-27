@@ -1,18 +1,42 @@
 ---
-// import { flattenSidebar, type SidebarEntry } from "../utils/navigation";
-import { SidebarEntry } from "@astrojs/starlight/types";
-/** Turn the nested tree structure of a sidebar into a flat list of all the links. */
- function flattenSidebar(sidebar: SidebarEntry[]): Link[] {
-	return sidebar.flatMap((entry) =>
-		entry.type === 'group' ? flattenSidebar(entry.entries) : entry
-	);
-}
-import ChevronRightIcon from "~icons/lucide/chevron-right";
+// The file is mostly copied from the original sidebar component
+// in @astrojs/starlight
+
+// NOTE: bit of a hacky way to ge the types for the sidebar because Starlight
+// doesn't export them in its types'
+import type {
+  Link,
+  SidebarEntry,
+} from "node_modules/@astrojs/starlight/utils/navigation";
 import { Badge } from "@astrojs/starlight/components";
+import { Icon } from "astro-icon/components";
+
+/** Turn the nested tree structure of a sidebar into a flat list of all the links. */
+function flattenSidebar(sidebar: SidebarEntry[]): Link[] {
+  return sidebar.flatMap((entry) =>
+    entry.type === "group" ? flattenSidebar(entry.entries) : entry,
+  );
+}
 
 interface Props {
   sublist: SidebarEntry[];
   nested?: boolean;
+}
+
+// TODO: this is hardcoded for each group for now but we should effectively extend the
+// Starlight configuration to allow to define the custom icons for each group
+function resolveGroupIcon(label: string): string {
+  const groupIcons: Record<string, string> = {
+    Quickstart: "lucide:rocket",
+    Components: "lucide:component",
+    Features: "lucide:hammer",
+  };
+
+  if (!(label in groupIcons)) {
+    return "lucide:file-text";
+  }
+
+  return groupIcons[label];
 }
 
 const { sublist, nested } = Astro.props;
@@ -47,6 +71,7 @@ const { sublist, nested } = Astro.props;
           >
             <summary>
               <div class="group-label">
+                <Icon name={resolveGroupIcon(entry.label)} />
                 <span class="large">{entry.label}</span>
                 {entry.badge && (
                   <Badge
@@ -56,8 +81,7 @@ const { sublist, nested } = Astro.props;
                   />
                 )}
               </div>
-              <ChevronRightIcon class="caret" />
-              <!-- <Icon name="right-caret" class="caret" size="1.25rem" /> -->
+              <Icon name="lucide:chevron-right" class="caret" size="1.25rem" />
             </summary>
             <Astro.self sublist={entry.entries} nested />
           </details>
@@ -97,6 +121,7 @@ const { sublist, nested } = Astro.props;
   summary {
     display: flex;
     align-items: center;
+    vertical-align: middle;
     justify-content: space-between;
     padding: 0.2em var(--sl-sidebar-item-padding-inline);
     line-height: 1.4;
@@ -144,6 +169,17 @@ const { sublist, nested } = Astro.props;
   a > *:not(:last-child),
   .group-label > *:not(:last-child) {
     margin-inline-end: 0.25em;
+  }
+
+  .group-label {
+    display: flex;
+    align-items: center;
+  }
+
+  .group-label :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
   }
 
   @media (min-width: 50rem) {
