@@ -99,7 +99,10 @@ export function useReplayRequest({ span }: { span: OtelSpan }) {
   }, [span]);
 
   const { mutate: makeRequest, isPending: isReplaying } = useMakeProxiedRequest(
-    {},
+    {
+      clearResponseBodyFromHistory: () => {},
+      setActiveResponse: () => {},
+    },
   );
 
   const replay = useCallback(
