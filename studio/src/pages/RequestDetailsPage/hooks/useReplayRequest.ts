@@ -10,7 +10,13 @@ import {
   getRequestUrl,
 } from "../v2/otel-helpers";
 
-export function useReplayRequest({ span }: { span: OtelSpan }) {
+export function useReplayRequest({ span }: { span?: OtelSpan }) {
+  if (!span) {
+    return {
+      replay: () => {},
+      isReplaying: false,
+    };
+  }
   const method = getRequestMethod(span);
 
   const pathWithSearch = useMemo<string>(() => {

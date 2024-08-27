@@ -7,10 +7,14 @@ import {
 } from "../v2/otel-helpers";
 
 export function useShouldReplay(trace: OtelTrace | null): boolean {
-  if (!trace || trace?.spans?.length === 0) return false;
+  if (!trace || trace?.spans?.length === 0) {
+    return false;
+  }
 
   const requestSpan = trace?.spans?.find(isFpxRequestSpan);
-  if (!requestSpan) return false;
+  if (!requestSpan) {
+    return false;
+  }
 
   const requestMethod = getRequestMethod(requestSpan);
   const requestHeaders = getRequestHeaders(requestSpan);

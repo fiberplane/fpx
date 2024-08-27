@@ -67,7 +67,7 @@ export function RequestDetailsPageContentV2({
 
   const shouldReplay = useShouldReplay(currentTrace);
 
-  const { replay, isReplaying } = useReplayRequest({ span: rootSpan!.span });
+  const { replay, isReplaying } = useReplayRequest({ span: rootSpan?.span });
 
   const replayRef = useRef<HTMLButtonElement>(null);
 
@@ -105,10 +105,8 @@ export function RequestDetailsPageContentV2({
           <h2 className="text-2xl font-semibold">Request Details</h2>
           <div className="hidden md:block">
             <HttpSummary trace={rootSpan.span} />
-            <div></div>
           </div>
         </div>
-        <div></div>
         <div className="flex gap-2 items-center">
           {!isMostRecentTrace && (
             <Link
