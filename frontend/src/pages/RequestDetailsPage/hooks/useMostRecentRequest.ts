@@ -3,7 +3,7 @@ import { getRequestPath, isFpxRequestSpan } from "../v2/otel-helpers";
 
 export function useMostRecentRequest(
   currentTrace: OtelTrace,
-  traces: OtelTrace[] | null,
+  traces?: OtelTrace[] | null,
 ) {
   if (!traces) {
     console.debug("Traces are null");
