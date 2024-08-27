@@ -396,6 +396,7 @@ export const RequestorPage = () => {
               >
                 <ResizablePanel
                   order={1}
+                  className="relative"
                   id="request-panel"
                   defaultSize={
                     width < 624 || requestPanelMinSize === undefined
