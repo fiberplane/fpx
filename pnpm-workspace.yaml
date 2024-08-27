@@ -1,6 +1,7 @@
 packages:
-  - "frontend"
+  - "studio"
   - "api"
   - "packages/*"
+  - "sample-apps/*"
   - "webhonc"
   - "www"

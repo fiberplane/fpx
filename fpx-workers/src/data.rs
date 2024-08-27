@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::sync::Arc;
 use wasm_bindgen::JsValue;
 use worker::send::SendFuture;
-use worker::D1Database;
+use worker::{D1Database, D1ResultMeta};
 
 pub struct D1Store {
     database: Arc<D1Database>,
@@ -24,17 +24,17 @@ impl D1Store {
     where
         T: for<'a> Deserialize<'a>,
     {
-        let prepared_statement = self.database.prepare(query);
+        let prepared_statement = self
+            .database
+            .prepare(query)
+            .bind(values)
+            .map_err(|err| DbError::InternalError(err.to_string()))?; // TODO: Correct error;
 
         let result = prepared_statement
-            .bind(values)
-            .map_err(|err| DbError::InternalError(err.to_string()))?; // TODO: Correct error
-
-        let result = result
             .first(None)
             .await
-            .map_err(|err| DbError::InternalError(err.to_string()))?
-            .ok_or(DbError::NotFound)?; // TODO: Correct error
+            .map_err(|err| DbError::InternalError(err.to_string()))? // TODO: Correct error;
+            .ok_or(DbError::NotFound)?;
 
         Ok(result)
     }
@@ -43,13 +43,13 @@ impl D1Store {
     where
         T: for<'a> Deserialize<'a>,
     {
-        let prepared_statement = self.database.prepare(query);
+        let prepared_statement = self
+            .database
+            .prepare(query)
+            .bind(values)
+            .map_err(|err| DbError::InternalError(err.to_string()))?; // TODO: Correct error;
 
         let result = prepared_statement
-            .bind(values)
-            .map_err(|err| DbError::InternalError(err.to_string()))?; // TODO: Correct error
-
-        let result = result
             .all()
             .await
             .map_err(|err| DbError::InternalError(err.to_string()))? // TODO: Correct error
@@ -153,6 +153,65 @@ impl Store for D1Store {
                 .await?;
 
             Ok(traces)
+        })
+        .await
+    }
+
+    /// Delete all spans with a specific trace_id.
+    async fn span_delete_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<Option<u64>> {
+        SendFuture::new(async {
+            let prepared_statement = self
+                .database
+                .prepare(self.sql_builder.span_delete_by_trace())
+                .bind(&[trace_id.into()])
+                .map_err(|err| DbError::InternalError(err.to_string()))?;
+
+            let results = prepared_statement
+                .run()
+                .await
+                .map_err(|err| DbError::InternalError(err.to_string()))?;
+
+            if let Ok(Some(D1ResultMeta {
+                rows_written: Some(rows_written),
+                ..
+            })) = results.meta()
+            {
+                Ok(Some(rows_written as u64))
+            } else {
+                Ok(None)
+            }
+        })
+        .await
+    }
+
+    /// Delete a single span.
+    async fn span_delete(
+        &self,
+        _tx: &Transaction,
+        trace_id: &str,
+        span_id: &str,
+    ) -> Result<Option<u64>> {
+        SendFuture::new(async {
+            let prepared_statement = self
+                .database
+                .prepare(self.sql_builder.span_delete())
+                .bind(&[trace_id.into(), span_id.into()])
+                .map_err(|err| DbError::InternalError(err.to_string()))?;
+
+            let results = prepared_statement
+                .run()
+                .await
+                .map_err(|err| DbError::InternalError(err.to_string()))?;
+
+            if let Ok(Some(D1ResultMeta {
+                rows_written: Some(rows_written),
+                ..
+            })) = results.meta()
+            {
+                Ok(Some(rows_written as u64))
+            } else {
+                Ok(None)
+            }
         })
         .await
     }

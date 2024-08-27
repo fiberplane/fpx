@@ -78,3 +78,35 @@ impl From<DbError> for ApiServerError<TraceGetError> {
         ApiServerError::CommonError(CommonError::InternalServerError)
     }
 }
+
+#[tracing::instrument(skip_all)]
+pub async fn traces_delete_handler(
+    State(store): State<BoxedStore>,
+    Path(trace_id): Path<String>,
+) -> Result<StatusCode, ApiServerError<TraceDeleteError>> {
+    let tx = store.start_readonly_transaction().await?;
+
+    hex::decode(&trace_id)
+        .map_err(|_| ApiServerError::ServiceError(TraceDeleteError::InvalidTraceId))?;
+
+    // Retrieve all the spans that are associated with the trace
+    store.span_delete_by_trace(&tx, &trace_id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Debug, Serialize, Deserialize, Error, ApiError)]
+#[serde(tag = "error", content = "details", rename_all = "camelCase")]
+#[non_exhaustive]
+pub enum TraceDeleteError {
+    #[api_error(status_code = StatusCode::BAD_REQUEST)]
+    #[error("Trace ID is invalid")]
+    InvalidTraceId,
+}
+
+impl From<DbError> for ApiServerError<TraceDeleteError> {
+    fn from(err: DbError) -> Self {
+        error!(?err, "Failed to list trace from database");
+        ApiServerError::CommonError(CommonError::InternalServerError)
+    }
+}

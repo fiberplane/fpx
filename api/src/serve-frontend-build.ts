@@ -17,10 +17,10 @@ const __dirname = dirname(__filename);
  */
 const POSSIBLE_FRONTEND_BUILD_PATHS = [
   /* For when we `npm run dev` from the api folder */
-  path.resolve(__dirname, "..", "..", "frontend", "dist"),
+  path.resolve(__dirname, "..", "..", "studio", "dist"),
   /* For when we run via `npx`
      **NOTE**
-     This path assumes we are running from the `dist` folder in a compiled version of the api, 
+     This path assumes we are running from the `dist` folder in a compiled version of the api,
      and that the frontend build has been copy pasted into the selfsame `dist` folder.
   */
   path.resolve(__dirname, "..", "..", "dist"),

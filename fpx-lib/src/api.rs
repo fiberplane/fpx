@@ -54,19 +54,20 @@ impl Builder {
 
         let router = axum::Router::new()
             .route("/v1/traces", post(handlers::otel::trace_collector_handler))
+            .route("/v1/traces", get(handlers::traces::traces_list_handler))
             .route(
-                "/v1/traces/:trace_id/spans/:span_id",
-                get(handlers::spans::span_get_handler),
+                "/v1/traces/:trace_id",
+                get(handlers::traces::traces_get_handler)
+                    .delete(handlers::traces::traces_delete_handler),
             )
             .route(
                 "/v1/traces/:trace_id/spans",
                 get(handlers::spans::span_list_handler),
             )
             .route(
-                "/v1/traces/:trace_id",
-                get(handlers::traces::traces_get_handler),
+                "/v1/traces/:trace_id/spans/:span_id",
+                get(handlers::spans::span_get_handler).delete(handlers::spans::span_delete_handler),
             )
-            .route("/v1/traces", get(handlers::traces::traces_list_handler))
             .with_state(api_state)
             .fallback(StatusCode::NOT_FOUND)
             .layer(OtelTraceLayer::default())

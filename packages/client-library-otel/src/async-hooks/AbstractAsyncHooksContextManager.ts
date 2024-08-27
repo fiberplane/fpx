@@ -101,13 +101,17 @@ export abstract class AbstractAsyncHooksContextManager
     ee: T,
   ): T {
     const map = this._getPatchMap(ee);
-    if (map !== undefined) return ee;
+    if (map !== undefined) {
+      return ee;
+    }
     this._createPatchMap(ee);
 
     // patch methods that add a listener to propagate context
     // biome-ignore lint/complexity/noForEach: this is from the original code
     ADD_LISTENER_METHODS.forEach((methodName) => {
-      if (ee[methodName] === undefined) return;
+      if (ee[methodName] === undefined) {
+        return;
+      }
       ee[methodName] = this._patchAddListener(ee, ee[methodName], context);
     });
     // patch methods that remove a listener
