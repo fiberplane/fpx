@@ -41,9 +41,16 @@
       }
     },
     {
-      "include": ["frontend"],
+      "include": ["studio"],
       "linter": {
-        "enabled": false
+        "enabled": true,
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": {
+              "level": "off"
+            }
+          }
+        }
       }
     },
     {
