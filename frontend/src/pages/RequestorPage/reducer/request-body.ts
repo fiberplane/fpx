@@ -20,24 +20,22 @@ export const isRequestorBodyType = (
 ): bodyType is RequestorBodyType =>
   RequestorBodyTypeSchema.safeParse(bodyType).success;
 
-export const RequestorBodySchema = z
-  .union([
-    z.object({
-      type: RequestorBodyTextTypeSchema,
-      value: z.string().optional(),
-    }),
-    z.object({
-      type: RequestorBodyJsonTypeSchema,
-      value: z.string().optional(),
-    }),
-    z.object({
-      type: RequestorBodyFormDataTypeSchema,
-      isMultipart: z.boolean(),
-      value: z.array(FormDataParameterSchema),
-    }),
-    z.object({
-      type: RequestorBodyFileTypeSchema,
-      value: z.instanceof(File).optional(),
-    }),
-  ])
-  .optional();
+export const RequestorBodySchema = z.union([
+  z.object({
+    type: RequestorBodyTextTypeSchema,
+    value: z.string().optional(),
+  }),
+  z.object({
+    type: RequestorBodyJsonTypeSchema,
+    value: z.string().optional(),
+  }),
+  z.object({
+    type: RequestorBodyFormDataTypeSchema,
+    isMultipart: z.boolean(),
+    value: z.array(FormDataParameterSchema),
+  }),
+  z.object({
+    type: RequestorBodyFileTypeSchema,
+    value: z.instanceof(File).optional(),
+  }),
+]);
