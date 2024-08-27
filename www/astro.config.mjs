@@ -47,6 +47,9 @@ export default defineConfig({
         },
       },
     }),
+    // NOTE: if we ever go to server rendering or hybrid rendering,
+    // we'll need to specify manually which icon sets to include
+    // https://github.com/natemoo-re/astro-icon?tab=readme-ov-file#configinclude
     icon(),
   ],
   markdown: {
