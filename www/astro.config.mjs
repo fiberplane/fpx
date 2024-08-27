@@ -2,13 +2,10 @@ import { rehypeHeadingIds } from "@astrojs/markdown-remark";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
-import Icons from "unplugin-icons/vite";
+import icon from "astro-icon";
 
 // https://astro.build/config
 export default defineConfig({
-  vite: {
-    plugins: [Icons({ compiler: "astro" })],
-  },
   integrations: [
     starlight({
       logo: {
@@ -50,6 +47,7 @@ export default defineConfig({
         },
       },
     }),
+    icon(),
   ],
   markdown: {
     rehypePlugins: [

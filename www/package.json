@@ -18,13 +18,13 @@
     "@astrojs/starlight": "^0.25.4",
     "@iconify-json/lucide": "^1.1.208",
     "astro": "^4.13.2",
+    "astro-icon": "^1.1.1",
     "rehype-autolink-headings": "^7.1.0",
     "rollup": "^4.20.0",
     "sharp": "^0.32.5",
     "starlight-package-managers": "^0.6.0",
     "tailwindcss": "^3.4.4",
-    "typescript": "^5.5.4",
-    "unplugin-icons": "^0.19.2"
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
