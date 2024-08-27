@@ -2,9 +2,13 @@ import { rehypeHeadingIds } from "@astrojs/markdown-remark";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import Icons from "unplugin-icons/vite";
 
 // https://astro.build/config
 export default defineConfig({
+  vite: {
+    plugins: [Icons({ compiler: "astro" })],
+  },
   integrations: [
     starlight({
       logo: {
@@ -36,6 +40,7 @@ export default defineConfig({
         Header: "@/components/Header.astro",
         Pagination: "@/components/Pagination.astro",
         ThemeProvider: "@/components/ThemeProvider.astro",
+        Sidebar: "@/components/Sidebar.astro",
       },
       customCss: ["@/main.css"],
       expressiveCode: {
