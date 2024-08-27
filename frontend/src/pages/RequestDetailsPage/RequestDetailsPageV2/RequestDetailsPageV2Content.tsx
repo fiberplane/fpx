@@ -15,7 +15,6 @@ import {
 import type { MizuOrphanLog } from "@/queries";
 import { type OtelSpan, useOtelTraces } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { EmptyState } from "../EmptyState";
 import {
@@ -27,6 +26,8 @@ import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 import type { getVendorInfo } from "../v2/vendorify-traces";
 import { useRequestWaterfall } from "./useRequestWaterfall";
+import { useHotkeys } from "react-hotkeys-hook";
+import { useRef } from "react";
 
 export type SpanWithVendorInfo = {
   span: OtelSpan;
@@ -59,10 +60,6 @@ export function RequestDetailsPageContentV2({
   };
   const { data: traces } = useOtelTraces();
 
-  useEffect(() => {
-    console.log(traces);
-  }, [traces]);
-
   const { isMostRecentTrace, traceId: mostRecentTraceId } =
     useMostRecentRequest(currentTrace, traces);
 
@@ -71,6 +68,14 @@ export function RequestDetailsPageContentV2({
   const shouldReplay = useShouldReplay(currentTrace);
 
   const { replay, isReplaying } = useReplayRequest({ span: rootSpan!.span });
+
+  const replayRef = useRef<HTMLButtonElement>(null);
+
+  useHotkeys(["mod+enter"], () => {
+    if (replayRef.current && shouldReplay) {
+      replayRef.current.click();
+    }
+  });
 
   if (!rootSpan) {
     return <EmptyState />;
@@ -120,6 +125,7 @@ export function RequestDetailsPageContentV2({
                   variant="default"
                   disabled={isReplaying}
                   onClick={replay}
+                  ref={replayRef}
                 >
                   Replay
                 </Button>
