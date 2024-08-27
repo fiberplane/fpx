@@ -8,6 +8,7 @@ import {
   getRequestQueryParams,
   getRequestUrl,
 } from "../v2/otel-helpers";
+import { useRequestor } from "@/pages/RequestorPage/reducer";
 
 export function useReplayRequest({ span }: { span: OtelSpan }) {
   const method = getRequestMethod(span);
@@ -78,12 +79,12 @@ export function useReplayRequest({ span }: { span: OtelSpan }) {
     try {
       JSON.parse(body ?? "");
       return {
-        type: "json",
+        type: "json" as const,
         value: body ?? "",
       };
     } catch {
       return {
-        type: "text",
+        type: "text" as const,
         value: body ?? "",
       };
     }
@@ -98,10 +99,12 @@ export function useReplayRequest({ span }: { span: OtelSpan }) {
     return getRequestQueryParams(span);
   }, [span]);
 
+  const { clearResponseBodyFromHistory, setActiveResponse } = useRequestor();
+
   const { mutate: makeRequest, isPending: isReplaying } = useMakeProxiedRequest(
     {
-      clearResponseBodyFromHistory: () => {},
-      setActiveResponse: () => {},
+      clearResponseBodyFromHistory,
+      setActiveResponse,
     },
   );
 
@@ -111,7 +114,7 @@ export function useReplayRequest({ span }: { span: OtelSpan }) {
       return makeRequest(
         {
           addServiceUrlIfBarePath: (replayPath) => replayBaseUrl + replayPath,
-          body: canHaveRequestBody ? replayBody : undefined,
+          body: canHaveRequestBody ? replayBody : { type: "text" },
           headers: replayHeaders,
           method,
           path: replayPath,
