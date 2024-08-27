@@ -19,6 +19,7 @@ export function isCloudflareR2Binding(o: unknown) {
     return false;
   }
 
+  // TODO - Edge case, also check for `list`, `delete`, and other known methods on this binding, in case the user is using another class named R2Bucket (?)
   return true;
 }
 
