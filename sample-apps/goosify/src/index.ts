@@ -13,4 +13,10 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
+app.get("/api/geese", async (c) => {
+  const geese = await c.env.DB.prepare("SELECT * FROM geese").all();
+  return c.json({ geese });
+});
+
+
 export default app;

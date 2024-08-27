@@ -1,4 +1,5 @@
 # prod
+.prod.vars
 dist/
 
 # dev

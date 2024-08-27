@@ -13,7 +13,8 @@ bucket_name = "goosify-bucket"
 [[d1_databases]]
 binding = "DB"
 database_name = "goosify"
-database_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+migrations_dir = "drizzle/migrations"
 
 [ai]
 binding = "AI"
