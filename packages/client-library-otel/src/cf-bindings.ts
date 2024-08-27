@@ -4,43 +4,7 @@ import { errorToJson, safelySerializeJSON } from "./utils";
 // TODO - Can we use a Symbol here instead?
 const IS_PROXIED_KEY = "__fpx_proxied";
 
-function isCloudflareAiBinding(o: unknown) {
-  const constructorName = getConstructorName(o);
-  if (constructorName !== "Ai") {
-    return false;
-  }
 
-  // TODO - Edge case, also check for `fetcher` and other known properties on this binding, in case the user is using another class named Ai (?)
-  return true;
-}
-
-function isCloudflareR2Binding(o: unknown) {
-  const constructorName = getConstructorName(o);
-  if (constructorName !== "R2Bucket") {
-    return false;
-  }
-
-  // TODO - Edge case, also check for `list`, `delete`, and other known methods on this binding, in case the user is using another class named R2Bucket (?)
-  return true;
-}
-
-export function isCloudflareD1Binding(o: unknown) {
-  const constructorName = getConstructorName(o);
-  if (constructorName !== "D1Database") {
-    return false;
-  }
-
-  return true;
-}
-
-// TODO - Remove this, it is temporary
-function isCloudflareBinding(o: unknown): o is object {
-  return (
-    isCloudflareAiBinding(o) ||
-    isCloudflareR2Binding(o) ||
-    isCloudflareD1Binding(o)
-  );
-}
 
 /**
  * Proxy a Cloudflare binding to add instrumentation.
@@ -128,6 +92,54 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
   return proxiedBinding;
 }
 
+function isCloudflareAiBinding(o: unknown) {
+  const constructorName = getConstructorName(o);
+  if (constructorName !== "Ai") {
+    return false;
+  }
+
+  // TODO - Edge case, also check for `fetcher` and other known properties on this binding, in case the user is using another class named Ai (?)
+  return true;
+}
+
+function isCloudflareR2Binding(o: unknown) {
+  const constructorName = getConstructorName(o);
+  if (constructorName !== "R2Bucket") {
+    return false;
+  }
+
+  // TODO - Edge case, also check for `list`, `delete`, and other known methods on this binding, in case the user is using another class named R2Bucket (?)
+  return true;
+}
+
+function isCloudflareD1Binding(o: unknown) {
+  const constructorName = getConstructorName(o);
+  if (constructorName !== "D1Database") {
+    return false;
+  }
+
+  return true;
+}
+
+function isCloudflareKVBinding(o: unknown) {
+  const constructorName = getConstructorName(o);
+  if (constructorName !== "KVNamespace") {
+    return false;
+  }
+
+  return true;
+}
+
+// TODO - Remove this, it is temporary
+function isCloudflareBinding(o: unknown): o is object {
+  return (
+    isCloudflareAiBinding(o) ||
+    isCloudflareR2Binding(o) ||
+    isCloudflareD1Binding(o) ||
+    isCloudflareKVBinding(o)
+  );
+}
+
 /**
  * Get the constructor name of an object
  * Helps us detect Cloudflare bindings
@@ -171,3 +183,5 @@ function markAsProxied(o: object) {
     configurable: true,
   });
 }
+
+
