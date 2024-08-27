@@ -86,9 +86,9 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
           {
             name,
             attributes: {
-              "cloudflare.binding.method": methodName,
-              "cloudflare.binding.name": bindingName,
-              "cloudflare.binding.type": bindingType,
+              "cf.binding.method": methodName,
+              "cf.binding.name": bindingName,
+              "cf.binding.type": bindingType,
             },
             // TODO - Use these three callbacks to add additional attributes to the span
             //
