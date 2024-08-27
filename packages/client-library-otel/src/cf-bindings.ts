@@ -4,8 +4,6 @@ import { errorToJson, safelySerializeJSON } from "./utils";
 // TODO - Can we use a Symbol here instead?
 const IS_PROXIED_KEY = "__fpx_proxied";
 
-
-
 /**
  * Proxy a Cloudflare binding to add instrumentation.
  * For now, just wraps all functions on the binding to use a measured version of the function.
@@ -38,14 +36,21 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
     return o;
   }
 
+  // HACK - Clean this up. Special logic for D1.
+  if (isCloudflareD1Binding(o)) {
+    return proxyD1Binding(o, bindingName);
+  }
+
   const proxiedBinding = new Proxy(o, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
 
       if (typeof value === "function") {
         const methodName = String(prop);
+
         // OPTIMIZE - Do we want to do these lookups / this wrapping every time the property is accessed?
         const bindingType = getConstructorName(target);
+
         // Use the user's binding name, not the Cloudflare constructor name
         const name = `${bindingName}.${methodName}`;
         const measuredBinding = measure(
@@ -123,7 +128,7 @@ function isCloudflareD1Binding(o: unknown) {
 
 function isCloudflareKVBinding(o: unknown) {
   const constructorName = getConstructorName(o);
-  if (constructorName !== "KVNamespace") {
+  if (constructorName !== "KvNamespace") {
     return false;
   }
 
@@ -184,4 +189,71 @@ function markAsProxied(o: object) {
   });
 }
 
+/**
+ * Proxy a D1 binding to add instrumentation.
+ * 
+ * What this actually does is create a proxy of the `database` prop... I hope this works
+ *
+ * @param o - The D1Database binding to proxy
+ *
+ * @returns A proxied binding, whose `.database._send` and `.database._sendOrThrow` methods are instrumented
+ */
+function proxyD1Binding(o: unknown, bindingName: string) {
+  if (!o || typeof o !== "object") {
+    return o;
+  }
 
+  if (!isCloudflareD1Binding(o)) {
+    return o;
+  }
+
+  if (isAlreadyProxied(o)) {
+    return o;
+  }
+
+  const d1Proxy = new Proxy(o, {
+    get(d1Target, d1Prop) {
+      const d1Method = String(d1Prop);
+      const d1Value = Reflect.get(d1Target, d1Prop);
+      // HACK - These are technically public methods on the database object,
+      // but they have an underscore prefix which usually means "private" by convention...
+      // BEWARE!!!
+      const isSendingMethod = d1Method === "_send" || d1Method === "_sendOrThrow";
+      if (typeof d1Value === "function" && isSendingMethod) {
+        // ...
+        return measure({
+          name: "D1 Call",
+          attributes: {
+            "cf.binding.method": d1Method,
+            "cf.binding.name": bindingName,
+            "cf.binding.type": "D1Database",
+          },
+          onStart: (span, args) => {
+            span.setAttributes({
+              args: safelySerializeJSON(args),
+            });
+          },
+          // TODO - Use this callback to add additional attributes to the span regarding the response...
+          //        But the thing is, the result could be so wildly different depending on the method!
+          //        Might be good to proxy each binding individually, eventually?
+          //
+          // onSuccess: (span, result) => {},
+          onError: (span, error) => {
+            const serializableError =
+              error instanceof Error ? errorToJson(error) : error;
+            const errorAttributes = {
+              "cf.binding.error": safelySerializeJSON(serializableError),
+            };
+            span.setAttributes(errorAttributes);
+          },
+        }, d1Value.bind(d1Target));
+      }
+
+      return d1Value;
+    },
+  });
+
+  markAsProxied(d1Proxy);
+
+  return d1Proxy;
+}

@@ -8,3 +8,10 @@ export const geese = sqliteTable("geese", {
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });
+
+export const gooseImages = sqliteTable("goose_images", {
+  id: integer("id", { mode: "number" }).primaryKey(),
+  filename: text("filename").notNull(),
+  prompt: text("prompt").notNull(),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+});

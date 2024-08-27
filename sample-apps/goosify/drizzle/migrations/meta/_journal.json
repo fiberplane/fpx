@@ -8,6 +8,13 @@
       "when": 1724758784931,
       "tag": "0000_new_human_robot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1724775919239,
+      "tag": "0001_omniscient_silver_fox",
+      "breakpoints": true
     }
   ]
 }
