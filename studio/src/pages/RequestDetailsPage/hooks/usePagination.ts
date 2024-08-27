@@ -30,7 +30,9 @@ export function usePagination({
   }, [currentIndex, navigate, getTraceRoute, maxIndex]);
 
   const handlePrevTrace = useCallback(() => {
-    if (currentIndex === undefined) return;
+    if (currentIndex === undefined) {
+      return;
+    }
     if (currentIndex === 0) {
       return;
     }
