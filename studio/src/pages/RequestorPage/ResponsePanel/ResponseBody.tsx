@@ -4,7 +4,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { SubSectionHeading } from "@/pages/RequestDetailsPage/v2/shared";
 import { cn, isJson, noop, safeParseJson } from "@/utils";
 import {
   CaretDownIcon,
@@ -13,12 +12,12 @@ import {
   QuestionMarkIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import { CodeMirrorJsonEditor } from "../Editors";
 import type { Requestornator } from "../queries";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../reducer/state";
+import { CodeMirrorJsonEditor, SubSectionHeading } from "@/components/Timeline";
 
 export function ResponseBody({
   headersSlot,

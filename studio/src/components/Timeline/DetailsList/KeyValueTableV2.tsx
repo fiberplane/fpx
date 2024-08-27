@@ -19,7 +19,7 @@ import {
   EyeOpenIcon,
 } from "@radix-ui/react-icons";
 import { type ReactNode, useState } from "react";
-import { SubSectionHeading } from "./shared";
+import { SubSectionHeading } from "../shared";
 
 export const KeyValueRow = ({
   entry,
@@ -166,7 +166,7 @@ export function CollapsibleKeyValueTableV2({
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <SubSectionHeading
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
             onClick={toggleIsOpen}
           >
             {isOpen ? (

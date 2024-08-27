@@ -17,8 +17,9 @@ import type { MizuOrphanLog } from "@/queries";
 import type { OtelSpan } from "@/queries/traces-otel";
 import { cn } from "@/utils";
 import { EmptyState } from "../EmptyState";
-import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
+import { TraceDetailsTimeline } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
+import { TimelineListDetails } from "@/components/Timeline";
 
 const EMPTY_LIST: Array<MizuOrphanLog> = [];
 
@@ -141,7 +142,7 @@ export function RequestDetailsPageContentV2({
               "lg:p-4",
             )}
           >
-            <TraceDetailsV2 waterfall={waterfall} />
+            <TimelineListDetails waterfall={waterfall} />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

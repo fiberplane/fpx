@@ -10,7 +10,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -27,6 +27,7 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
+import { getPanelGroupElement } from "react-resizable-panels";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -235,6 +236,21 @@ export const RequestorPage = () => {
     minimalGroupSize: 944,
   });
 
+  //   const { minHeight} = usePanelConstraints({
+  //   groupId: "builder-timeline-split",
+  //   minPixelSize:
+  // })
+  //
+  // useLayoutEffect(() => {
+  //     const group = getPanelGroupElement("builder-timeline-split");
+  //     if (!group) {
+  //         return;
+  //     }
+
+  //     const height = group.clientHeight;
+  //     // setPPane
+  // }, [])
+
   const { minSize: requestPanelMinSize, maxSize: requestPanelMaxSize } =
     usePanelConstraints({
       // Change the groupId to `""` on small screens because we're not rendering
@@ -428,6 +444,7 @@ export const RequestorPage = () => {
                       }
                       minSize={requestPanelMinSize}
                       maxSize={requestPanelMaxSize}
+                      className="relative"
                     >
                       {requestContent}
                     </ResizablePanel>

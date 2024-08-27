@@ -14,9 +14,9 @@ import { cn } from "@/utils";
 import { CheckIcon } from "@radix-ui/react-icons";
 import * as React from "react";
 import { forwardRef } from "react";
-import { getHttpMethodTextColor } from "./method";
 import type { RequestMethodInputValue } from "./types";
 import { WEBSOCKETS_ENABLED } from "./webSocketFeatureFlag";
+import { getHttpMethodTextColor } from "@/utils";
 
 type InputOption = {
   value: RequestMethodInputValue;

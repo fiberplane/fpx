@@ -1,7 +1,6 @@
 import { Status } from "@/components/ui/status";
-import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
 import type { OtelSpan } from "@/queries";
-import { SENSITIVE_HEADERS, cn } from "@/utils";
+import { SENSITIVE_HEADERS, cn, getHttpMethodTextColor } from "@/utils";
 import {
   getMatchedRoute,
   getRequestBody,
@@ -15,10 +14,14 @@ import {
 } from "@/utils";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
-import { SectionHeading } from "../shared";
-import { BodyViewerV2 } from "./BodyViewerV2";
-import { CollapsibleKeyValueTableV2 } from "./KeyValueTableV2";
-import { Divider, SubSection, SubSectionHeading } from "./shared";
+import { BodyViewerV2 } from "../BodyViewerV2";
+import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
+import {
+  Divider,
+  SectionHeading,
+  SubSection,
+  SubSectionHeading,
+} from "../../shared";
 
 export function IncomingRequest({ span }: { span: OtelSpan }) {
   const id = span.span_id;

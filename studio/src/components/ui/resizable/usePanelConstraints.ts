@@ -15,6 +15,8 @@ type PanelConstraintOptions = {
    * not big enough, there won't be any min/max value applied.
    */
   minimalGroupSize?: number;
+
+  dimension?: "width" | "height";
 };
 
 type SizeConstraint = {
@@ -38,6 +40,7 @@ export function usePanelConstraints(
     maxPixelSize,
     minPixelSize,
     minimalGroupSize,
+    dimension = "width",
   } = options;
 
   const getConstraint = useHandler((size: number) => {
@@ -76,8 +79,8 @@ export function usePanelConstraints(
       return;
     }
     const observer = new ResizeObserver((entries) => {
-      const width = entries[0].contentRect.width;
-      updateCurrent(width);
+      const size = entries[0].contentRect[dimension];
+      updateCurrent(size);
     });
     observer.observe(group);
 
@@ -87,7 +90,7 @@ export function usePanelConstraints(
     return () => {
       observer.disconnect();
     };
-  }, [groupId, updateCurrent]);
+  }, [groupId, updateCurrent, dimension]);
 
   return current;
 }

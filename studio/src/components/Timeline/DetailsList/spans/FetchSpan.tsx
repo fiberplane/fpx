@@ -1,8 +1,7 @@
 import { Status } from "@/components/ui/status";
-import { CodeMirrorSqlEditor } from "@/pages/RequestorPage/Editors/CodeMirrorEditor";
-import { getHttpMethodTextColor } from "@/pages/RequestorPage/method";
+import { CodeMirrorSqlEditor } from "../CodeMirrorEditor";
 import type { OtelSpan } from "@/queries";
-import { SENSITIVE_HEADERS, cn, noop } from "@/utils";
+import { SENSITIVE_HEADERS, cn, getHttpMethodTextColor, noop } from "@/utils";
 import {
   getRequestBody,
   getRequestHeaders,
@@ -23,9 +22,9 @@ import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { TextOrJsonViewer } from "../TextJsonViewer";
-import { SectionHeading } from "../shared";
-import { CollapsibleKeyValueTableV2 } from "./KeyValueTableV2";
-import { Divider, SubSection, SubSectionHeading } from "./shared";
+import { SectionHeading } from "../../shared";
+import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
+import { Divider, SubSection, SubSectionHeading } from "../../shared";
 
 export function FetchSpan({
   span,

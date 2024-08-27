@@ -22,8 +22,7 @@ import {
   SEMATTRS_EXCEPTION_TYPE,
 } from "@opentelemetry/semantic-conventions";
 import { useMemo } from "react";
-import { FpxCard, RequestMethod } from "../shared";
-import { BodyViewerV2 } from "./BodyViewerV2";
+import { BodyViewerV2, FpxCard, RequestMethod } from "@/components/Timeline";
 
 export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
   const errors = useMemo(

@@ -5,7 +5,7 @@ import {
   objectHasStack,
   renderFullLogMessage,
 } from "@/utils";
-import { StackTrace } from "../StackTrace";
+import { StackTrace } from "./StackTrace";
 import { SectionHeading } from "../shared";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {

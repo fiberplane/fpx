@@ -12,7 +12,7 @@ import {
 } from "@/utils";
 import { Link } from "react-router-dom";
 import { Timestamp } from "../RequestDetailsPage/Timestamp";
-import { RequestMethod } from "../RequestDetailsPage/shared";
+import { RequestMethod } from "@/components/Timeline";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
 //         in order to support fast refresh with Vite

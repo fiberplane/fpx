@@ -1,7 +1,7 @@
 import type { OtelSpan } from "@/queries";
 import { type VendorInfo, cn } from "@/utils";
-import { useTimelineIcon, useTimelineTitle } from "./hooks";
-import { formatDuration } from "./utils";
+import { useTimelineIcon, useTimelineTitle } from "../hooks";
+import { formatDuration } from "../utils";
 
 export const TimelineGraphSpan: React.FC<{
   span: OtelSpan;

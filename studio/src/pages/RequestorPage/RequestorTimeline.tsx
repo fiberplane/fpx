@@ -1,5 +1,6 @@
 import {
   TimelineGraph,
+  TimelineListDetails,
   extractWaterfallTimeStats,
 } from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
@@ -35,8 +36,6 @@ export function RequestorTimeline(props: Props) {
     minPixelSize: 300,
   });
 
-  console.log(minSize);
-
   return (
     <ResizablePanelGroup direction="horizontal" id="requestor-timeline">
       <ResizablePanel minSize={minSize} defaultSize={33}>
@@ -50,8 +49,10 @@ export function RequestorTimeline(props: Props) {
         </Content>
       </ResizablePanel>
       <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-      <ResizablePanel>
-        <Content>Other content</Content>
+      <ResizablePanel className="max-h-full">
+        <Content className="overflow-auto h-fit">
+          <TimelineListDetails waterfall={waterfall} />
+        </Content>
       </ResizablePanel>
     </ResizablePanelGroup>
   );

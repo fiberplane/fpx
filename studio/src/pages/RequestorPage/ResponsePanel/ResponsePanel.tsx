@@ -5,7 +5,6 @@ import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { ArrowTopRightIcon } from "@radix-ui/react-icons";
 import { Link } from "react-router-dom";
-import { CollapsibleKeyValueTableV2 } from "../../RequestDetailsPage/v2/KeyValueTableV2";
 import { FpxDetails } from "../FpxDetails";
 import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -24,6 +23,7 @@ import {
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
+import { CollapsibleKeyValueTableV2 } from "@/components/Timeline";
 
 type Props = {
   activeResponse: RequestorActiveResponse | null;
@@ -156,12 +156,6 @@ export function ResponsePanel({
                 // HACK - To support absolutely positioned bottom toolbar
                 className={cn(showBottomToolbar && "pb-16")}
               />
-              {showBottomToolbar && (
-                <BottomToolbar
-                  response={tracedResponse}
-                  disableGoToTraceButton={disableGoToTraceButton}
-                />
-              )}
             </div>
           </TabContentInner>
         </CustomTabsContent>

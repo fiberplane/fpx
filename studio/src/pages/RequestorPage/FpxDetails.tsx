@@ -6,8 +6,8 @@ import { CodeIcon, LinkBreak2Icon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { TraceDetailsTimeline } from "../RequestDetailsPage/v2";
-import { CollapsibleKeyValueTableV2 } from "../RequestDetailsPage/v2/KeyValueTableV2";
 import type { Requestornator } from "./queries";
+import { CollapsibleKeyValueTableV2 } from "@/components/Timeline";
 
 type FpxDetailsProps = {
   response?: Requestornator;
