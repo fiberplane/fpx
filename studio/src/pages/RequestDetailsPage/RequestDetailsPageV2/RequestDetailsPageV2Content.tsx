@@ -1,4 +1,8 @@
-import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
+import {
+  ArrowTopRightIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@radix-ui/react-icons";
 import {
   Tooltip,
   TooltipContent,
@@ -103,17 +107,18 @@ export function RequestDetailsPageContentV2({
       >
         <div className="flex items-center gap-6">
           <h2 className="text-2xl font-semibold">Request Details</h2>
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <HttpSummary trace={rootSpan.span} />
           </div>
         </div>
         <div className="flex gap-2 items-center">
           {!isMostRecentTrace && (
             <Link
-              className="text-blue-600 pr-4"
+              className="text-blue-600 pr-4 text-sm inline-flex items-center gap-1.5"
               to={`/requests/otel/${mostRecentTraceId}`}
             >
-              View most recent response ↗
+              Jump to latest
+              <ArrowTopRightIcon className="w-3.5 h-3.5" />
             </Link>
           )}
           {shouldReplay && (

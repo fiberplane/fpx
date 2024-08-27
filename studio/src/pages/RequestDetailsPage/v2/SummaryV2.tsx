@@ -42,7 +42,7 @@ export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
     <div className="grid gap-2 grid-rows-[auto_1fr] overflow-hidden">
       <FpxCard className="bg-muted/20">
         <CardContent className="grid gap-4 grid-rows-[auto_1fr] p-4">
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <HttpSummary trace={requestSpan} />
           </div>
           <div className="grid gap-2 overflow-x-auto">
