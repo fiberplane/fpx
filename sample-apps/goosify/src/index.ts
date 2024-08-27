@@ -1,4 +1,6 @@
+import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
+import * as schema from "./db/schema";
 
 type Bindings = {
   DB: D1Database;
@@ -14,9 +16,11 @@ app.get("/", (c) => {
 });
 
 app.get("/api/geese", async (c) => {
-  const geese = await c.env.DB.prepare("SELECT * FROM geese").all();
+  // NOTE - This is equivalent to a raw D1 query
+  // const geese = await c.env.DB.prepare("SELECT * FROM geese").all();
+  const db = drizzle(c.env.DB);
+  const geese = await db.select().from(schema.geese);
   return c.json({ geese });
 });
-
 
 export default app;

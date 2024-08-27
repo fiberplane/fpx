@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify src/index.ts",
-    "db:generate": "LOCAL_DB_PATH=$(find .wrangler/state/v3/d1/miniflare-D1DatabaseObject -type f -name '*.sqlite' -print -quit) drizzle-kit generate",
+    "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply goosify --local",
     "db:studio": "drizzle-kit studio",
     "db:touch": "wrangler d1 execute goosify --local --command='SELECT 1'",

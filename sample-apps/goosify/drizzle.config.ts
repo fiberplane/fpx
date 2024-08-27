@@ -1,12 +1,12 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
 let dbConfig: ReturnType<typeof defineConfig>;
 if (process.env.GOOSIFY_ENV === "production") {
   config({ path: "./.prod.vars" });
-  dbConfig= defineConfig({
+  dbConfig = defineConfig({
     schema: "./src/db/schema.ts",
     out: "./drizzle/migrations",
     dialect: "sqlite",
@@ -42,10 +42,10 @@ export default dbConfig;
 // Modified from: https://github.com/drizzle-team/drizzle-orm/discussions/1545
 function getLocalD1DB() {
   try {
-    const basePath = path.resolve('.wrangler');
+    const basePath = path.resolve(".wrangler");
     const files = fs
-      .readdirSync(basePath, { encoding: 'utf-8', recursive: true })
-      .filter((f) => f.endsWith('.sqlite'));
+      .readdirSync(basePath, { encoding: "utf-8", recursive: true })
+      .filter((f) => f.endsWith(".sqlite"));
 
     // In case there are multiple .sqlite files, we want the most recent one.
     files.sort((a, b) => {
@@ -70,4 +70,3 @@ function getLocalD1DB() {
     }
   }
 }
-
