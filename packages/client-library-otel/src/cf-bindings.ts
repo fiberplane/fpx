@@ -1,4 +1,5 @@
 import { measure } from "./measure";
+import { errorToJson, safelySerializeJSON } from "./utils";
 
 // TODO - Can we use a Symbol here instead?
 const IS_PROXIED_KEY = "__fpx_proxied";
@@ -81,7 +82,8 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
         const methodName = String(prop);
         // OPTIMIZE - Do we want to do these lookups / this wrapping every time the property is accessed?
         const bindingType = getConstructorName(target);
-        const name = `${bindingType}.${bindingName}.${methodName}`;
+        // Use the user's binding name, not the Cloudflare constructor name
+        const name = `${bindingName}.${methodName}`;
         const measuredBinding = measure(
           {
             name,
@@ -90,11 +92,24 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
               "cf.binding.name": bindingName,
               "cf.binding.type": bindingType,
             },
-            // TODO - Use these three callbacks to add additional attributes to the span
+            onStart: (span, args) => {
+              span.setAttributes({
+                args: safelySerializeJSON(args),
+              });
+            },
+            // TODO - Use this callback to add additional attributes to the span regarding the response...
+            //        But the thing is, the result could be so wildly different depending on the method!
+            //        Might be good to proxy each binding individually, eventually?
             //
-            // onStart: (span, args) => {},
             // onSuccess: (span, result) => {},
-            // onError: (span, error) => {},
+            onError: (span, error) => {
+              const serializableError =
+                error instanceof Error ? errorToJson(error) : error;
+              const errorAttributes = {
+                "cf.binding.error": safelySerializeJSON(serializableError),
+              };
+              span.setAttributes(errorAttributes);
+            },
           },
           // OPTIMIZE - bind is expensive, can we avoid it?
           value.bind(target),
