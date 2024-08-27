@@ -75,10 +75,18 @@ export function useReplayRequest({ span }: { span: OtelSpan }) {
 
   const replayBody = useMemo(() => {
     const body = getRequestBody(span);
-    return {
-      type: "json",
-      value: body ?? "",
-    };
+    try {
+      JSON.parse(body ?? "");
+      return {
+        type: "json",
+        value: body ?? "",
+      };
+    } catch {
+      return {
+        type: "text",
+        value: body ?? "",
+      };
+    }
   }, [span]);
 
   const canHaveRequestBody = useMemo<boolean>(() => {
