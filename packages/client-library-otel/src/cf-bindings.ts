@@ -191,7 +191,7 @@ function markAsProxied(o: object) {
 
 /**
  * Proxy a D1 binding to add instrumentation.
- * 
+ *
  * What this actually does is create a proxy of the `database` prop... I hope this works
  *
  * @param o - The D1Database binding to proxy
@@ -218,35 +218,39 @@ function proxyD1Binding(o: unknown, bindingName: string) {
       // HACK - These are technically public methods on the database object,
       // but they have an underscore prefix which usually means "private" by convention...
       // BEWARE!!!
-      const isSendingMethod = d1Method === "_send" || d1Method === "_sendOrThrow";
+      const isSendingMethod =
+        d1Method === "_send" || d1Method === "_sendOrThrow";
       if (typeof d1Value === "function" && isSendingMethod) {
         // ...
-        return measure({
-          name: "D1 Call",
-          attributes: {
-            "cf.binding.method": d1Method,
-            "cf.binding.name": bindingName,
-            "cf.binding.type": "D1Database",
+        return measure(
+          {
+            name: "D1 Call",
+            attributes: {
+              "cf.binding.method": d1Method,
+              "cf.binding.name": bindingName,
+              "cf.binding.type": "D1Database",
+            },
+            onStart: (span, args) => {
+              span.setAttributes({
+                args: safelySerializeJSON(args),
+              });
+            },
+            // TODO - Use this callback to add additional attributes to the span regarding the response...
+            //        But the thing is, the result could be so wildly different depending on the method!
+            //        Might be good to proxy each binding individually, eventually?
+            //
+            // onSuccess: (span, result) => {},
+            onError: (span, error) => {
+              const serializableError =
+                error instanceof Error ? errorToJson(error) : error;
+              const errorAttributes = {
+                "cf.binding.error": safelySerializeJSON(serializableError),
+              };
+              span.setAttributes(errorAttributes);
+            },
           },
-          onStart: (span, args) => {
-            span.setAttributes({
-              args: safelySerializeJSON(args),
-            });
-          },
-          // TODO - Use this callback to add additional attributes to the span regarding the response...
-          //        But the thing is, the result could be so wildly different depending on the method!
-          //        Might be good to proxy each binding individually, eventually?
-          //
-          // onSuccess: (span, result) => {},
-          onError: (span, error) => {
-            const serializableError =
-              error instanceof Error ? errorToJson(error) : error;
-            const errorAttributes = {
-              "cf.binding.error": safelySerializeJSON(serializableError),
-            };
-            span.setAttributes(errorAttributes);
-          },
-        }, d1Value.bind(d1Target));
+          d1Value.bind(d1Target),
+        );
       }
 
       return d1Value;

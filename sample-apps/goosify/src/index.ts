@@ -52,10 +52,10 @@ app.get("/api/cyberpunk-goose", async (c) => {
   };
   const cyberpunkGooseImage = await c.env.AI.run(
     "@cf/lykon/dreamshaper-8-lcm",
-    inputs
+    inputs,
   );
 
-  const blob = new Blob([cyberpunkGooseImage], { type: 'image/png' });
+  const blob = new Blob([cyberpunkGooseImage], { type: "image/png" });
   const filename = `cyberpunk-goose--${crypto.randomUUID()}.png`;
   await c.env.GOOSIFY_R2.put(filename, blob);
 
@@ -71,12 +71,14 @@ app.get("/api/cyberpunk-goose", async (c) => {
 
 export default instrument(app);
 
-
 function parseAcceptLanguage(acceptLanguage: string) {
   // Simple parser to get the most preferred language
-  const locales = acceptLanguage.split(',').map(lang => {
-    const parts = lang.split(';');
-    return { locale: parts[0], q: parts[1] ? Number.parseFloat(parts[1].split('=')[1]) : 1 };
+  const locales = acceptLanguage.split(",").map((lang) => {
+    const parts = lang.split(";");
+    return {
+      locale: parts[0],
+      q: parts[1] ? Number.parseFloat(parts[1].split("=")[1]) : 1,
+    };
   });
   locales.sort((a, b) => b.q - a.q);
   return locales[0].locale; // Return the most preferred language
