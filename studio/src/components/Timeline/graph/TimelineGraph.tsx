@@ -1,7 +1,7 @@
 import { isMizuOrphanLog } from "@/queries";
 import type { Waterfall } from "@/utils";
-import { WaterfallRowLog } from "./WaterfallRowLog";
-import { WaterfallRowSpan } from "./WaterfallRowSpan";
+import { TimelineGraphLog } from "./TimelineGraphLog";
+import { TimelineGraphSpan } from "./TimelineGraphSpan";
 
 type Props = {
   waterfall: Waterfall;
@@ -10,7 +10,7 @@ type Props = {
   activeId: string | null;
 };
 
-export function Timeline(props: Props) {
+export function TimelineGraph(props: Props) {
   const { waterfall, duration, minStart, activeId } = props;
 
   return (
@@ -18,7 +18,7 @@ export function Timeline(props: Props) {
       {waterfall.map((spanOrLog) => {
         if (isMizuOrphanLog(spanOrLog)) {
           return (
-            <WaterfallRowLog
+            <TimelineGraphLog
               key={spanOrLog.id}
               log={spanOrLog}
               duration={duration}
@@ -27,8 +27,9 @@ export function Timeline(props: Props) {
             />
           );
         }
+
         return (
-          <WaterfallRowSpan
+          <TimelineGraphSpan
             key={spanOrLog.span.span_id}
             span={spanOrLog.span}
             vendorInfo={spanOrLog.vendorInfo}

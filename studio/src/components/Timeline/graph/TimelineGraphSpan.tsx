@@ -3,7 +3,7 @@ import { type VendorInfo, cn } from "@/utils";
 import { useTimelineIcon, useTimelineTitle } from "./hooks";
 import { formatDuration } from "./utils";
 
-export const WaterfallRowSpan: React.FC<{
+export const TimelineGraphSpan: React.FC<{
   span: OtelSpan;
   vendorInfo: VendorInfo;
   duration: number;

@@ -1,4 +1,7 @@
-import { Timeline, extractWaterfallTimeStats } from "@/components/Timeline";
+import {
+  TimelineGraph,
+  extractWaterfallTimeStats,
+} from "@/components/Timeline";
 import { type Waterfall, cn } from "@/utils";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -66,7 +69,7 @@ export const TraceDetailsTimeline: React.FC<TraceDetailsTimelineProps> = ({
       className={cn("text-white rounded-lg overflow-y-auto", "py-4", className)}
     >
       <h3 className="text-muted-foreground text-sm uppercase mb-4">Timeline</h3>
-      <Timeline
+      <TimelineGraph
         activeId={activeId}
         duration={duration}
         minStart={minStart}

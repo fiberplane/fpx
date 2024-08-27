@@ -1,4 +1,7 @@
-import { Timeline, extractWaterfallTimeStats } from "@/components/Timeline";
+import {
+  TimelineGraph,
+  extractWaterfallTimeStats,
+} from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
 import {
   ResizableHandle,
@@ -28,14 +31,17 @@ export function RequestorTimeline(props: Props) {
   const { minSize } = usePanelConstraints({
     groupId: isSmallScreen ? "" : "requestor-timeline",
     initialGroupSize: 600,
+    minimalGroupSize: 624,
     minPixelSize: 300,
   });
 
+  console.log(minSize);
+
   return (
     <ResizablePanelGroup direction="horizontal" id="requestor-timeline">
-      <ResizablePanel minSize={minSize}>
+      <ResizablePanel minSize={minSize} defaultSize={33}>
         <Content>
-          <Timeline
+          <TimelineGraph
             waterfall={waterfall}
             minStart={minStart}
             duration={duration}
@@ -52,5 +58,7 @@ export function RequestorTimeline(props: Props) {
 }
 
 const Content = (props: { className?: string; children: ReactNode }) => (
-  <div className={cn("mt-2 px-3 py-2", props.className)}>{props.children}</div>
+  <div className={cn("mt-2 px-3 py-2 min-h-[10rem]", props.className)}>
+    {props.children}
+  </div>
 );

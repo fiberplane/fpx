@@ -3,7 +3,7 @@ import { cn } from "@/utils";
 import { useTimelineIcon, useTimelineTitle } from "./hooks";
 import { getColorForLevel } from "./utils";
 
-export const WaterfallRowLog: React.FC<{
+export const TimelineGraphLog: React.FC<{
   log: MizuOrphanLog;
   duration: number;
   startTime: number;

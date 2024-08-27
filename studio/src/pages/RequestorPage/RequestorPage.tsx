@@ -424,7 +424,7 @@ export const RequestorPage = () => {
                       defaultSize={
                         width < 624 || requestPanelMinSize === undefined
                           ? undefined
-                          : Math.max(requestPanelMinSize, (300 / width) * 100)
+                          : Math.max(requestPanelMinSize, 33)
                       }
                       minSize={requestPanelMinSize}
                       maxSize={requestPanelMaxSize}
