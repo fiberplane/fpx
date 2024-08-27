@@ -29,7 +29,6 @@ export function isCloudflareD1Binding(o: unknown) {
     return false;
   }
 
-  console.log("D1 shall be proxied", o);
   return true;
 }
 
@@ -69,8 +68,6 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
   if (isAlreadyProxied(o)) {
     return o;
   }
-
-  console.log("Proxying binding", bindingName, o);
 
   const proxiedBinding = new Proxy(o, {
     get(target, prop, receiver) {
