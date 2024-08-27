@@ -3,7 +3,7 @@ import { measure } from "./measure";
 // TODO - Can we use a Symbol here instead?
 const IS_PROXIED_KEY = "__fpx_proxied";
 
-export function isCloudflareAiBinding(o: unknown) {
+function isCloudflareAiBinding(o: unknown) {
   const constructorName = getConstructorName(o);
   if (constructorName !== "Ai") {
     return false;
@@ -13,7 +13,7 @@ export function isCloudflareAiBinding(o: unknown) {
   return true;
 }
 
-export function isCloudflareR2Binding(o: unknown) {
+function isCloudflareR2Binding(o: unknown) {
   const constructorName = getConstructorName(o);
   if (constructorName !== "R2Bucket") {
     return false;
@@ -23,9 +23,19 @@ export function isCloudflareR2Binding(o: unknown) {
   return true;
 }
 
+export function isCloudflareD1Binding(o: unknown) {
+  const constructorName = getConstructorName(o);
+  if (constructorName !== "D1Database") {
+    return false;
+  }
+
+  console.log("D1 shall be proxied", o);
+  return true;
+}
+
 // TODO - Remove this, it is temporary
 function isCloudflareBinding(o: unknown): o is object {
-  return isCloudflareAiBinding(o) || isCloudflareR2Binding(o);
+  return isCloudflareAiBinding(o) || isCloudflareR2Binding(o) || isCloudflareD1Binding(o);
 }
 
 /**
@@ -59,6 +69,8 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
   if (isAlreadyProxied(o)) {
     return o;
   }
+
+  console.log("Proxying binding", bindingName, o);
 
   const proxiedBinding = new Proxy(o, {
     get(target, prop, receiver) {

@@ -2,6 +2,9 @@ name = "goosify"
 compatibility_date = "2024-08-27"
 compatibility_flags = [ "nodejs_compat" ]
 
+# [dev]
+# port = 3003
+
 [[kv_namespaces]]
 binding = "GOOSIFY_KV"
 id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
