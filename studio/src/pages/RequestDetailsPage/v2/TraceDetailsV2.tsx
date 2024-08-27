@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { SpanStatus } from "@/constants";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 import { isMizuOrphanLog } from "@/queries";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import type { Waterfall } from "../RequestDetailsPageV2/RequestDetailsPageV2Content";
 import { StackTrace } from "../StackTrace";
