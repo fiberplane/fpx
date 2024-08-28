@@ -93,7 +93,13 @@ app.get("/api/cyberpunk-goose", async (c) => {
   return c.body(cyberpunkGooseImage);
 });
 
-export default instrument(app);
+export default instrument(app, {
+  monitor: {
+    fetch: true,
+    logging: true,
+    cfBindings: true,
+  },
+});
 
 function parseAcceptLanguage(acceptLanguage: string) {
   // Simple parser to get the most preferred language

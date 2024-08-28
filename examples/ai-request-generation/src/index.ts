@@ -63,7 +63,13 @@ app.post("/", async (c) => {
   return c.json(requestDescriptor);
 });
 
-export default instrument(app);
+export default instrument(app, {
+  monitor: {
+    fetch: true,
+    logging: true,
+    cfBindings: true,
+  },
+});
 
 export async function runInference(
   client: Ai,
