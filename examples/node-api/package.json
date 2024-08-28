@@ -1,7 +1,8 @@
 {
   "name": "node-api",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "debug": "tsx --inspect-brk src/index.ts"
   },
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",

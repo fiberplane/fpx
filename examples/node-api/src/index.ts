@@ -9,13 +9,14 @@ config();
 const app = new Hono();
 
 app.get("/", (c) => {
+  console.log("Hello Hono!");
   return c.text("Hello Hono!");
 });
 
 const port = 8787;
-console.log(`Server is running on port ${port}`);
+console.log(`Server is running on port http://localhost:${port}`);
 
 serve({
-  fetch: instrument(app.fetch),
+  fetch: instrument(app).fetch,
   port,
 });

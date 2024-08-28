@@ -181,8 +181,6 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             duplex: body2 ? "half" : undefined,
           });
 
-          console.log("About to parse root request attributes...");
-
           // Parse the body and headers for the root request.
           //
           // NOTE - This will add some latency, and it will serialize the env object.

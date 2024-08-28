@@ -21,6 +21,7 @@ import type {
   InitParam,
   InputParam,
 } from "../types";
+import { safelySerializeJSON } from "./json";
 
 // There are so many different types of headers
 // and we want to support all of them so we can
@@ -45,7 +46,8 @@ export function headersToObject(headers: PossibleHeaders) {
 export async function getRootRequestAttributes(request: Request, env: unknown) {
   let attributes: Attributes = {
     // NOTE - We should not do this in production
-    [FPX_REQUEST_ENV]: JSON.stringify(env),
+    // NOTE - In node.js `env` is an object with keys "incoming" and "outgoing", one of which has circular references
+    [FPX_REQUEST_ENV]: safelySerializeJSON(env),
   };
 
   if (request.body) {
