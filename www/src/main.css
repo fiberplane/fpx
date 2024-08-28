@@ -128,7 +128,7 @@ h6 {
 
 /* Styling buttons */
 
-kbd {
+kbd:not(site-search kbd) {
   background-color: var(--sl-color-gray-6);
   border-radius: 0.25rem;
   border: 1px solid var(--sl-color-gray-5);
