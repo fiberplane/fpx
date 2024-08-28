@@ -3,6 +3,8 @@ import Search from "@astrojs/starlight/components/Search.astro";
 import SiteTitle from "@astrojs/starlight/components/SiteTitle.astro";
 import SocialIcons from "@astrojs/starlight/components/SocialIcons.astro";
 import type { Props } from "@astrojs/starlight/props";
+
+const currentPath = Astro.url.pathname;
 ---
 
 <div class="header">
@@ -11,8 +13,12 @@ import type { Props } from "@astrojs/starlight/props";
   </div>
   <div class="right">
     <nav>
-      <a href="/docs">Docs</a>
-      <a href="/blog">Blog</a>
+      <a href="/docs" class={currentPath.startsWith("/docs") ? "active" : ""}
+        >Docs</a
+      >
+      <a href="/blog" class={currentPath.startsWith("/blog") ? "active" : ""}
+        >Blog</a
+      >
     </nav>
     <Search {...Astro.props} />
     <div class="social-icons">
@@ -42,13 +48,19 @@ import type { Props } from "@astrojs/starlight/props";
     background-color: var(--sl-color-gray-6);
     border-radius: var(--border-radius);
   }
+
+  nav a.active {
+    background-color: var(--sl-color-gray-6);
+    border-radius: var(--border-radius);
+  }
+
   nav a:visited {
     color: var(--sl-color-white);
   }
 
   .right {
     display: flex;
-    gap: 1rem;
+    gap: 2rem;
     align-items: center;
   }
 
