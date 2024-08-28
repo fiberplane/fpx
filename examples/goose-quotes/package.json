@@ -19,5 +19,5 @@
     "drizzle-kit": "^0.23.0",
     "wrangler": "^3.72.3"
   },
-  "homepage": "https://github.com/fiberplane/fpx/sample-apps/goose-quotes#readme"
+  "homepage": "https://github.com/fiberplane/fpx/examples/goose-quotes#readme"
 }

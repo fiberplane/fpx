@@ -115,6 +115,75 @@ importers:
         specifier: ^1.6.0
         version: 1.6.0(@types/node@20.14.15)
 
+  examples/ai-request-generation:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      '@langchain/core':
+        specifier: ^0.2.18
+        version: 0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
+      hono:
+        specifier: ^4.5.9
+        version: 4.5.9
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240821.1
+        version: 4.20240821.1
+      wrangler:
+        specifier: ^3.72.3
+        version: 3.72.3(@cloudflare/workers-types@4.20240821.1)
+
+  examples/goose-quotes:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      '@neondatabase/serverless':
+        specifier: ^0.9.4
+        version: 0.9.4
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      drizzle-orm:
+        specifier: ^0.32.0
+        version: 0.32.2(@cloudflare/workers-types@4.20240821.1)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
+      hono:
+        specifier: ^4.5.9
+        version: 4.5.9
+      openai:
+        specifier: ^4.53.0
+        version: 4.55.4(encoding@0.1.13)(zod@3.23.8)
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240821.1
+        version: 4.20240821.1
+      drizzle-kit:
+        specifier: ^0.23.0
+        version: 0.23.2
+      wrangler:
+        specifier: ^3.72.3
+        version: 3.72.3(@cloudflare/workers-types@4.20240821.1)
+
+  examples/goosify:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      hono:
+        specifier: ^4.5.9
+        version: 4.5.9
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240821.1
+        version: 4.20240821.1
+      wrangler:
+        specifier: ^3.72.3
+        version: 3.72.3(@cloudflare/workers-types@4.20240821.1)
+
   packages/client-library-otel:
     dependencies:
       '@opentelemetry/api':
@@ -178,75 +247,6 @@ importers:
       zod:
         specifier: ^3.23.8
         version: 3.23.8
-
-  sample-apps/ai-request-generation:
-    dependencies:
-      '@fiberplane/hono-otel':
-        specifier: workspace:*
-        version: link:../../packages/client-library-otel
-      '@langchain/core':
-        specifier: ^0.2.18
-        version: 0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
-      hono:
-        specifier: ^4.5.9
-        version: 4.5.9
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20240821.1
-        version: 4.20240821.1
-      wrangler:
-        specifier: ^3.72.3
-        version: 3.72.3(@cloudflare/workers-types@4.20240821.1)
-
-  sample-apps/goose-quotes:
-    dependencies:
-      '@fiberplane/hono-otel':
-        specifier: workspace:*
-        version: link:../../packages/client-library-otel
-      '@neondatabase/serverless':
-        specifier: ^0.9.4
-        version: 0.9.4
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.4.5
-      drizzle-orm:
-        specifier: ^0.32.0
-        version: 0.32.2(@cloudflare/workers-types@4.20240821.1)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
-      hono:
-        specifier: ^4.5.9
-        version: 4.5.9
-      openai:
-        specifier: ^4.53.0
-        version: 4.55.4(encoding@0.1.13)(zod@3.23.8)
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20240821.1
-        version: 4.20240821.1
-      drizzle-kit:
-        specifier: ^0.23.0
-        version: 0.23.2
-      wrangler:
-        specifier: ^3.72.3
-        version: 3.72.3(@cloudflare/workers-types@4.20240821.1)
-
-  sample-apps/goosify:
-    dependencies:
-      '@fiberplane/hono-otel':
-        specifier: workspace:*
-        version: link:../../packages/client-library-otel
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.4.5
-      hono:
-        specifier: ^4.5.9
-        version: 4.5.9
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20240821.1
-        version: 4.20240821.1
-      wrangler:
-        specifier: ^3.72.3
-        version: 3.72.3(@cloudflare/workers-types@4.20240821.1)
 
   studio:
     dependencies:
