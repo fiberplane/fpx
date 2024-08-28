@@ -5,7 +5,8 @@ sidebar:
   order: 9999
 ---
 
-import { FileTree, Aside } from "@astrojs/starlight/components";
+import { FileTree, Aside, Steps } from "@astrojs/starlight/components";
+import Button from "@/components/Button.astro";
 
 This is a little cheatsheet for using Starlight for documenting Fiberplane features on our website.
 
@@ -140,4 +141,58 @@ app.get("/another-route", (c) => {
 export default instrument(app);
 ```
 
+Full reference of the Expressive Code component can be found [here](https://expressive-code.com/key-features/syntax-highlighting/)
+
 ### Steps
+
+Anytime you have multistep instructions, use the `<Steps>` component to render them as opposed to adding a list number in a heading.
+
+
+<Steps>
+1. Step 1
+
+	nested things here
+2. Step 2
+
+	```sh
+	rm -rf /
+	```
+3. #### Step 3 (can also be a heading)
+
+</Steps>
+
+### Aside
+
+Use the `<Aside>` component to give tips or warnings about something.
+
+<Aside type="caution">
+  <p>This is a caution!</p>
+</Aside>
+
+<Aside type="tip">
+  <p>This is a tip!</p>
+</Aside>
+
+<Aside type="danger">
+  <p>Don't do this!</p>
+</Aside>
+
+### Buttons and keyboard shortcuts
+
+Instead of saying 'press the "Send" button' on the screen you can use the `<Button>` component to render a button with a nicer styling that resembles the buttons on the UI.
+
+Press the <Button>Send</Button> button to send the request
+
+```md
+Press <Button>Send</Button> to send the request.
+```
+
+You can also use the HTML-native `<kbd>` component to render a keyboard shortcut.
+
+Hit <kbd>cmd</kbd><kbd>enter</kbd> to send the request
+
+```md
+Hit <kbd>cmd</kbd><kbd>enter</kbd> to send the request.
+```
+
+Feel free to tweak the `Button.astro` component and color vars in the css files to match your needs.
