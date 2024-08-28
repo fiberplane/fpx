@@ -5,7 +5,7 @@ sidebar:
   order: 9999
 ---
 
-import { FileTree, Aside, Steps } from "@astrojs/starlight/components";
+import { FileTree, Aside, Steps, Card } from "@astrojs/starlight/components";
 import Button from "@/components/Button.astro";
 
 This is a little cheatsheet for using Starlight for documenting Fiberplane features on our website.
@@ -222,29 +222,31 @@ import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif"
 
 ***
 
-If you're on a mac, we recommend using [CleanShot X](https://cleanshot.com/) to take screenshots.
+If you're on a `mac` (_shoutout Tim 🍎_), use [CleanShot X](https://cleanshot.com/) to take screenshots.
 
-If you don't feel like dealing with that, ask Lau, Mies, or Brett to take the screenshots for you.
+If you don't feel like dealing with that, ask Brett, Lau, or Mies to take the screenshots for you.
 
-<Aside type="tip" title="GIFs are large">
-You can record gifs, but even when Astro optimizes them, they are still large files that a long time to load on the website.
-</Aside>
-
-We still haven't defined specific, consistent styles for images in our docs, so for now, use your best judgement on making screenshots look good.
-
-A few more things to keep in mind:
+A few things to keep in mind:
 
 - Show as much of the UI as possible, don't zoom in on a specific part
 - Use opacity to highlight or call out certain elements
 
+<Aside type="tip" title="GIFs are large">
+  You can record gifs, but even when Astro optimizes them, they are still large files that a long time to load on the website.
+</Aside>
+
+We still haven't defined specific, consistent styles for images in our docs, so for now, use your best judgement on making screenshots look good.
 
 ## Workflow
 
 Add documentation in the same branch as you're adding the feature.
-
-The website will get published when merged to `main`. 
 You can comment out your pages if you don't want them to appear, 
 or use the `draft: true` frontmatter flag (like on this page) to hide it from the website in production.
+
+<Card title="Website is published when we merge to main">
+  The website is deployed automatically when changes are merged into `main`.
+  Shoutout Lau. Shoutout GitHub Actions.
+</Card>
 
 ### Best practices
 
