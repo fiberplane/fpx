@@ -32,7 +32,6 @@ export function patchCloudflareBindings(
       continue;
     }
 
-    // @ts-expect-error - We know that env is a Record<string, string | null>
     env[bindingName] = patchCloudflareBinding(envValue, bindingName);
   }
 }
