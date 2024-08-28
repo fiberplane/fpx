@@ -125,7 +125,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           // Replace the original request's body with the second stream
           const newRequest = new Request(clonedRequest, {
             body: body2,
-
+            headers: new Headers(request.headers),
+            method: request.method,
             // NOTE - This is a workaround to support node environments
             //        Which will throw errors when body is a stream but duplex is not set
             //        https://github.com/nodejs/node/issues/46221

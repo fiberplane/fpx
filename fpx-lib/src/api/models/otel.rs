@@ -231,7 +231,7 @@ impl From<StatusCode> for SpanStatusCode {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
-pub struct AttributeMap(BTreeMap<String, Option<AttributeValue>>);
+pub struct AttributeMap(pub BTreeMap<String, Option<AttributeValue>>);
 
 impl From<KeyValueList> for AttributeMap {
     fn from(value: KeyValueList) -> Self {

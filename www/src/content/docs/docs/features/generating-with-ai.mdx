@@ -13,7 +13,6 @@ import fpxGenAiSettingsBaseUrl from "@/assets/gen-ai-requests--settings-baseurl.
 import fpxGenAiHostile from "@/assets/gen-ai-requests--hostile.png"
 
 import Button from "@/components/Button.astro";
-import KeyboardButton from "@/components/KeyboardButton.astro";
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Generating sample request data is a common and often tedious task in API development.
@@ -39,7 +38,7 @@ Let's say we have a route `POST /api/goose` that creates a new goose. This route
 In the Fiberplane Studio UI, Studio's AI can generate these fields for us.
 Once we've [enabled](#enabling-request-autofill) AI Request Autofill,
 we can click the Magic Wand icon on the requests page to generate some request data.
-(Feel free to also use the shortcut <KeyboardButton>cmd</KeyboardButton><KeyboardButton>g</KeyboardButton>.)
+(Feel free to also use the shortcut <kbd>cmd</kbd><kbd>g</kbd>.)
 
 In this case, Studio will generate a request body with the shape above.
 
@@ -47,7 +46,7 @@ In this case, Studio will generate a request body with the shape above.
 
 Looks like we're going to create a goose named "Gus" who loves Golang. Very alliterative!
 
-After this, we could go ahead and click <Button>Send</Button> (or press <KeyboardButton>cmd</KeyboardButton><KeyboardButton>enter</KeyboardButton>), and Studio will send the request to the API and create Gus.
+After this, we could go ahead and click <Button>Send</Button> (or press <kbd>cmd</kbd><kbd>enter</kbd>), and Studio will send the request to the API and create Gus.
 
 Under the hood, Studio keeps track of the most recent requests you've made to your API in order to generate request data that follows your current testing path.
 

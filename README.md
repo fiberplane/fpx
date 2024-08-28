@@ -3,7 +3,7 @@
 <!-- TODO - REPLACE LOGO -->
 ![FPX](fpx.svg)
 
-[website](https://fiberplane.com/)
+[website & docs](https://fiberplane.com/)
 
 Fiberplane Studio is a local tool for building and debugging Hono APIs. It can make requests against your api, inspect relevant runtime information when things go wrong, and help you build on the fly with confidence.
 

@@ -1,4 +1,4 @@
-import { useHandler } from "@fiberplane/hooks";
+import { useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +16,7 @@ export function usePagination({
   const navigate = useNavigate();
   const currentIndex = findIndex(traceId) || 0;
 
-  const handleNextTrace = useHandler(() => {
+  const handleNextTrace = useCallback(() => {
     if (currentIndex === undefined) {
       return;
     }
@@ -27,20 +27,19 @@ export function usePagination({
 
     const route = getTraceRoute(currentIndex + 1);
     navigate(route);
-  });
+  }, [currentIndex, navigate, getTraceRoute, maxIndex]);
 
-  const handlePrevTrace = useHandler(() => {
+  const handlePrevTrace = useCallback(() => {
     if (currentIndex === undefined) {
       return;
     }
-
     if (currentIndex === 0) {
       return;
     }
 
     const route = getTraceRoute(currentIndex - 1);
     navigate(route);
-  });
+  }, [currentIndex, navigate, getTraceRoute]);
 
   useHotkeys(["J"], () => {
     handleNextTrace();

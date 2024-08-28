@@ -10,7 +10,6 @@ import { Aside } from '@astrojs/starlight/components';
 import { LinkCard } from '@astrojs/starlight/components';
 import { Card } from '@astrojs/starlight/components';
 import Button from '@/components/Button.astro';
-import KeyboardButton from '@/components/KeyboardButton.astro';
 
 import FirstRequest from '@/assets/making-requests--make-request.gif';
 import CreateGoose from '@/assets/making-requests--create-goose.png';
@@ -32,7 +31,7 @@ Once you're up and running locally, the first page you see in Studio leaves you 
 
 When using Fiberplane Studio with the [Hono client library](/docs/components/client-library/), Studio automatically detects the routes in your Hono API and displays them in the sidebar.
 
-In the example above, the first route, `GET /`, is selected by default. By clicking <Button style="primary">Send</Button>, we make a request to our API, and see the response in the panel below. (You can also hit <KeyboardButton>cmd</KeyboardButton><KeyboardButton>enter</KeyboardButton> to send the request.)
+In the example above, the first route, `GET /`, is selected by default. By clicking <Button style="primary">Send</Button>, we make a request to our API, and see the response in the panel below. (You can also hit <kbd>cmd</kbd><kbd>enter</kbd> to send the request.)
 
 If there were any logs along the way, we can see them in the "Debug" section.
 
