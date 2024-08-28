@@ -1,6 +1,5 @@
 ---
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
-import Blog from "@/layout/Blog.astro";
 import { getCollection, type CollectionEntry } from "astro:content";
 
 interface Props {
@@ -24,6 +23,8 @@ const { Content, headings } = await entry.render();
     title: entry.data.title,
     description: entry.data.description,
     head: [
+      // HACK - a little trip to YIKEA here, but I needed to override the width
+      // for the blog without reimplementing the whole thing
       {
         tag: "style",
         content: `:root { --sl-content-width: 700px !important; }`,
