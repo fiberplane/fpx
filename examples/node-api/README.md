@@ -1,8 +1,9 @@
-```
+```sh
 pnpm install
+cp .env.example .env
 pnpm dev
 ```
 
-```
-open http://localhost:3000
+```sh
+open http://localhost:8787
 ```
