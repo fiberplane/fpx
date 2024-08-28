@@ -33,14 +33,27 @@ const { Content, headings } = await entry.render();
   }}
   headings={headings}
 >
-  <div class="blog-post">
+  <div class="blog-meta">
+    by {entry.data.author} on {
+      new Date(entry.data.date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    }
+  </div>
+  <div class="blog-content">
     <Content />
   </div>
 </StarlightPage>
 
 <style>
-  .blog-post {
-    max-width: var(--sl-content-width);
+  .blog-meta {
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .blog-content {
     display: flex;
     flex-direction: column;
     margin: auto;
