@@ -25,17 +25,29 @@ import {
   getRootRequestAttributes,
 } from "./utils";
 
+/**
+ * The type for the configuration object we use to configure the instrumentation
+ * Different from @FpxConfigOptions because all properties are required
+ *
+ * @internal
+ */
 type FpxConfig = {
   monitor: {
-    /** Send data to FPX about each fetch call made during a handler's lifetime */
+    /** Send data to FPX about each `fetch` call made during a handler's lifetime */
     fetch: boolean;
+    /** Send data to FPX about each `console.*` call made during a handler's lifetime */
     logging: boolean;
     /** Proxy Cloudflare bindings to add instrumentation */
     cfBindings: boolean;
   };
 };
 
-// TODO - Create helper type for making deeply partial types
+/**
+ * The type for the configuration object the user might pass to `instrument`
+ * Different from @FpxConfig because all properties are optional
+ *
+ * @public
+ */
 type FpxConfigOptions = Partial<
   FpxConfig & {
     monitor: Partial<FpxConfig["monitor"]>;
@@ -43,6 +55,7 @@ type FpxConfigOptions = Partial<
 >;
 
 const defaultConfig = {
+  // TODO - Implement library debug logging
   // libraryDebugMode: false,
   monitor: {
     fetch: true,
@@ -54,6 +67,7 @@ const defaultConfig = {
 export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
   // Freeze the web standard fetch function so that we can use it below to report registered routes back to fpx studio
   const webStandardFetch = fetch;
+
   return new Proxy(app, {
     // Intercept the `fetch` function on the Hono app instance
     get(target, prop, receiver) {
@@ -62,7 +76,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
         const originalFetch = value as HonoLikeFetch;
         return async function fetch(
           request: Request,
-          // Name this "rawEnv" because we coerce it for our sanity below
+          // Name this "rawEnv" because we coerce it below into something that's easier to work with
           rawEnv: HonoLikeEnv,
           executionContext: ExecutionContext | undefined,
         ) {
@@ -75,9 +89,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
           const endpoint =
-            typeof env === "object" && env !== null
-              ? (env as Record<string, string | null>).FPX_ENDPOINT
-              : null;
+            typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
           if (!isEnabled) {

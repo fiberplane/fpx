@@ -1,4 +1,10 @@
 import type { Span } from "@opentelemetry/api";
+import {
+  CF_BINDING_ERROR,
+  CF_BINDING_METHOD,
+  CF_BINDING_NAME,
+  CF_BINDING_TYPE,
+} from "../constants";
 import { measure } from "../measure";
 import { errorToJson, safelySerializeJSON } from "../utils";
 
@@ -9,17 +15,25 @@ import { errorToJson, safelySerializeJSON } from "../utils";
  */
 const IS_PROXIED_KEY = "__fpx_proxied";
 
+/**
+ * Patch Cloudflare bindings to add instrumentation
+ *
+ * @param env - The environment for the worker, which may contain Cloudflare bindings
+ */
 export function patchCloudflareBindings(
-  env?: Record<string, string | null> | null,
+  env?: Record<string, string | null | object> | null,
 ) {
   const envKeys = env ? Object.keys(env) : [];
   for (const bindingName of envKeys) {
+    // Skip any environment variables that are not objects,
+    // since they can't be bindings
+    const envValue = env?.[bindingName];
+    if (!envValue || typeof envValue !== "object") {
+      continue;
+    }
+
     // @ts-expect-error - We know that env is a Record<string, string | null>
-    env[bindingName] = patchCloudflareBinding(
-      // @ts-expect-error - We know that env is a Record<string, string | null>
-      env[bindingName],
-      bindingName,
-    );
+    env[bindingName] = patchCloudflareBinding(envValue, bindingName);
   }
 }
 
@@ -36,12 +50,7 @@ export function patchCloudflareBindings(
  *
  * @returns A proxied binding
  */
-function patchCloudflareBinding(o: unknown, bindingName: string) {
-  // HACK - This makes typescript happier about proxying the object
-  if (!o || typeof o !== "object") {
-    return o;
-  }
-
+function patchCloudflareBinding(o: object, bindingName: string) {
   if (!isCloudflareBinding(o)) {
     return o;
   }
@@ -66,16 +75,17 @@ function patchCloudflareBinding(o: unknown, bindingName: string) {
         // OPTIMIZE - Do we want to do these lookups / this wrapping every time the property is accessed?
         const bindingType = getConstructorName(target);
 
-        // Use the user's binding name, not the Cloudflare constructor name
+        // The name for the span, which will show up in the UI
         const name = `${bindingName}.${methodName}`;
+
         const measuredBinding = measure(
           {
             name,
-            attributes: {
-              "cf.binding.method": methodName,
-              "cf.binding.name": bindingName,
-              "cf.binding.type": bindingType,
-            },
+            attributes: getCfBindingAttributes(
+              bindingType,
+              bindingName,
+              methodName,
+            ),
             onStart: (span, args) => {
               span.setAttributes({
                 args: safelySerializeJSON(args),
@@ -116,11 +126,7 @@ function patchCloudflareBinding(o: unknown, bindingName: string) {
  *
  * @returns A proxied binding, whose `.database._send` and `.database._sendOrThrow` methods are instrumented
  */
-function proxyD1Binding(o: unknown, bindingName: string) {
-  if (!o || typeof o !== "object") {
-    return o;
-  }
-
+function proxyD1Binding(o: object, bindingName: string) {
   if (!isCloudflareD1Binding(o)) {
     return o;
   }
@@ -142,11 +148,11 @@ function proxyD1Binding(o: unknown, bindingName: string) {
         return measure(
           {
             name: "D1 Call",
-            attributes: {
-              "cf.binding.method": d1Method,
-              "cf.binding.name": bindingName,
-              "cf.binding.type": "D1Database",
-            },
+            attributes: getCfBindingAttributes(
+              "D1Database",
+              bindingName,
+              d1Method,
+            ),
             onStart: (span, args) => {
               span.setAttributes({
                 args: safelySerializeJSON(args),
@@ -171,6 +177,27 @@ function proxyD1Binding(o: unknown, bindingName: string) {
 }
 
 /**
+ * Get the attributes for a Cloudflare binding
+ *
+ * @param bindingType - The type of the binding, e.g., "D1Database" or "R2Bucket"
+ * @param bindingName - The name of the binding in the environment, e.g., "AI" or "AVATARS_BUCKET"
+ * @param methodName - The name of the method being called on the binding, e.g., "run" or "put"
+ *
+ * @returns The attributes for the binding
+ */
+function getCfBindingAttributes(
+  bindingType: string,
+  bindingName: string,
+  methodName: string,
+) {
+  return {
+    [CF_BINDING_TYPE]: bindingType,
+    [CF_BINDING_NAME]: bindingName,
+    [CF_BINDING_METHOD]: methodName,
+  };
+}
+
+/**
  * Add "cf.binding.error" attribute to a span
  *
  * @param span - The span to add the attribute to
@@ -179,7 +206,7 @@ function proxyD1Binding(o: unknown, bindingName: string) {
 function handleError(span: Span, error: unknown) {
   const serializableError = error instanceof Error ? errorToJson(error) : error;
   const errorAttributes = {
-    "cf.binding.error": safelySerializeJSON(serializableError),
+    [CF_BINDING_ERROR]: safelySerializeJSON(serializableError),
   };
   span.setAttributes(errorAttributes);
 }

@@ -15,6 +15,11 @@ export const FPX_REQUEST_ENV = "fpx.http.request.env";
 
 export const FPX_RESPONSE_BODY = "fpx.http.response.body";
 
+export const CF_BINDING_TYPE = "cf.binding.type";
+export const CF_BINDING_NAME = "cf.binding.name";
+export const CF_BINDING_METHOD = "cf.binding.method";
+export const CF_BINDING_ERROR = "cf.binding.error";
+
 // NOT YET IMPLEMENTED
 export const FPX_REQUEST_HANDLER_FILE = "fpx.http.request.handler.file";
 export const FPX_REQUEST_HANDLER_SOURCE_CODE =
