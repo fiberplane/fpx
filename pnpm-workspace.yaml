@@ -2,6 +2,6 @@ packages:
   - "studio"
   - "api"
   - "packages/*"
-  - "sample-apps/*"
+  - "examples/*"
   - "webhonc"
   - "www"

@@ -494,7 +494,13 @@ app.get(
   }),
 );
 
-export default instrument(app);
+export default instrument(app, {
+  monitor: {
+    fetch: true,
+    logging: true,
+    cfBindings: true,
+  },
+});
 
 function trimPrompt(prompt: string) {
   return prompt

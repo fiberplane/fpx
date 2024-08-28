@@ -10,7 +10,12 @@ import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
 import { measure } from "./measure";
-import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
+import {
+  patchCloudflareBindings,
+  patchConsole,
+  patchFetch,
+  patchWaitUntil,
+} from "./patch";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
@@ -20,15 +25,29 @@ import {
   getRootRequestAttributes,
 } from "./utils";
 
+/**
+ * The type for the configuration object we use to configure the instrumentation
+ * Different from @FpxConfigOptions because all properties are required
+ *
+ * @internal
+ */
 type FpxConfig = {
   monitor: {
-    /** Send data to FPX about each fetch call made during a handler's lifetime */
+    /** Send data to FPX about each `fetch` call made during a handler's lifetime */
     fetch: boolean;
+    /** Send data to FPX about each `console.*` call made during a handler's lifetime */
     logging: boolean;
+    /** Proxy Cloudflare bindings to add instrumentation */
+    cfBindings: boolean;
   };
 };
 
-// TODO - Create helper type for making deeply partial types
+/**
+ * The type for the configuration object the user might pass to `instrument`
+ * Different from @FpxConfig because all properties are optional
+ *
+ * @public
+ */
 type FpxConfigOptions = Partial<
   FpxConfig & {
     monitor: Partial<FpxConfig["monitor"]>;
@@ -36,16 +55,20 @@ type FpxConfigOptions = Partial<
 >;
 
 const defaultConfig = {
+  // TODO - Implement library debug logging
   // libraryDebugMode: false,
   monitor: {
     fetch: true,
     logging: true,
+    // NOTE - We don't proxy Cloudflare bindings by default yet because it's still experimental, and we don't have fancy UI for it yet in the Studio
+    cfBindings: false,
   },
 };
 
 export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
   // Freeze the web standard fetch function so that we can use it below to report registered routes back to fpx studio
   const webStandardFetch = fetch;
+
   return new Proxy(app, {
     // Intercept the `fetch` function on the Hono app instance
     get(target, prop, receiver) {
@@ -54,20 +77,24 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
         const originalFetch = value as HonoLikeFetch;
         return async function fetch(
           request: Request,
-          env: HonoLikeEnv,
+          // Name this "rawEnv" because we coerce it below into something that's easier to work with
+          rawEnv: HonoLikeEnv,
           executionContext: ExecutionContext | undefined,
         ) {
-          // NOTE - We used to have a handy default for the fpx endpoint, but we need to remove that,
+          const env = rawEnv as
+            | undefined
+            | null
+            | Record<string, string | null>;
+
+          // NOTE - We do *not* want to have a default for the FPX_ENDPOINT,
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
           const endpoint =
-            typeof env === "object" && env !== null
-              ? (env as Record<string, string | null>).FPX_ENDPOINT
-              : null;
+            typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
           if (!isEnabled) {
-            return await originalFetch(request, env, executionContext);
+            return await originalFetch(request, rawEnv, executionContext);
           }
 
           // If the request is from the route inspector, respond with the routes
@@ -75,14 +102,19 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
 
-          const serviceName =
-            (env as Record<string, string | null>).FPX_SERVICE_NAME ??
-            "unknown";
+          const serviceName = env?.FPX_SERVICE_NAME ?? "unknown";
 
           // Patch the related functions to monitor
           const {
-            monitor: { fetch: monitorFetch, logging: monitorLogging },
+            monitor: {
+              fetch: monitorFetch,
+              logging: monitorLogging,
+              cfBindings: monitorCfBindings,
+            },
           } = mergeConfigs(defaultConfig, config);
+          if (monitorCfBindings) {
+            patchCloudflareBindings(env);
+          }
           if (monitorLogging) {
             patchConsole();
           }
@@ -171,7 +203,11 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           try {
             return await context.with(activeContext, async () => {
-              return await measuredFetch(newRequest, env, proxyExecutionCtx);
+              return await measuredFetch(
+                newRequest,
+                env as HonoLikeEnv,
+                proxyExecutionCtx,
+              );
             });
           } finally {
             // Make sure all promises are resolved before sending data to the server
