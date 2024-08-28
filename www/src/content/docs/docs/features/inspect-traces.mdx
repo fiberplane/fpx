@@ -5,7 +5,6 @@ sidebar:
   order: 2
 ---
 
-import KeyboardButton from "@/components/KeyboardButton.astro";
 import Button from "@/components/Button.astro";
 import { LinkCard, Icon } from "@astrojs/starlight/components";
 
@@ -27,9 +26,9 @@ Select the request you want to see the trace for.
 
 ![Request detail view](@/assets/inspect-traces--request-details.png)
 
-You can jump up or down the request overview using the <Button type="icon" style="secondary"><Icon name="up-caret" /></Button> and <Button type="icon" style="secondary"><Icon name="down-caret" /></Button> buttons at the top right of the page or simply pressing keys <KeyboardButton>j</KeyboardButton> and <KeyboardButton>k</KeyboardButton>.
+You can jump up or down the request overview using the <Button type="icon" style="secondary"><Icon name="up-caret" /></Button> and <Button type="icon" style="secondary"><Icon name="down-caret" /></Button> buttons at the top right of the page or simply pressing keys <kbd>j</kbd> and <kbd>k</kbd>.
 
-Hit <KeyboardButton>esc</KeyboardButton> to close the trace details view and return to the request list.
+Hit <kbd>esc</kbd> to close the trace details view and return to the request list.
 
 Alternatively, after you [make a request](/docs/features/making-requests) through Studio, you can click "Go to Trace Details" to see the trace for that request.
 
