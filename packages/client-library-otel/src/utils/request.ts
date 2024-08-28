@@ -45,10 +45,13 @@ export function headersToObject(headers: PossibleHeaders) {
  */
 export async function getRootRequestAttributes(request: Request, env: unknown) {
   let attributes: Attributes = {
-    // NOTE - We should not do this in production
-    // NOTE - In node.js `env` is an object with keys "incoming" and "outgoing", one of which has circular references
-    [FPX_REQUEST_ENV]: safelySerializeJSON(env),
+    [FPX_REQUEST_ENV]: shouldSerializeEnv(env) ? safelySerializeJSON(env) : "",
   };
+
+  // NOTE - We should not *ever* do this in production
+  if (shouldSerializeEnv(env)) {
+    attributes[FPX_REQUEST_ENV] = safelySerializeJSON(env);
+  }
 
   if (request.body) {
     const bodyAttr = await formatRootRequestBody(request);
@@ -68,6 +71,28 @@ export async function getRootRequestAttributes(request: Request, env: unknown) {
   }
 
   return attributes;
+}
+
+/**
+ * In node.js `env` is an object with keys "incoming" and "outgoing", one of which has circular references
+ * We don't want to serialize this
+ *
+ * @param env
+ * @returns
+ */
+function shouldSerializeEnv(env: unknown) {
+  if (typeof env === "object" && env !== null) {
+    return Object.keys(env).some((key) => {
+      if (
+        key?.toLowerCase() !== "incoming" &&
+        key?.toLowerCase() !== "outgoing"
+      ) {
+        return true;
+      }
+      return false;
+    });
+  }
+  return true;
 }
 
 async function formatRootRequestBody(request: Request) {
