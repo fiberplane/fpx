@@ -45,6 +45,30 @@ app.get("/api/geese", async (c) => {
   return c.json({ geese });
 });
 
+app.get("/api/Gans", async (c) => {
+  const prompt = c.req.query("prompt") || "What's happenin' Gans?";
+
+  const messages = [
+    {
+      role: "system",
+      content:
+        "You are a friendly German Gans. You speak only of Geese. You speak only in German. You are a little grumpy",
+    },
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
+  const response = await c.env.AI.run(
+    "@cf/thebloke/discolm-german-7b-v1-awq",
+    // NOTE - This is an issue with the types
+    // https://github.com/cloudflare/workerd/issues/2181
+    { messages } as BaseAiTextGeneration["inputs"],
+  );
+
+  return c.json(response);
+});
+
 // TODO
 app.get("/api/cyberpunk-goose", async (c) => {
   const inputs = {
