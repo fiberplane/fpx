@@ -19,8 +19,18 @@ Then, you can inspect the request and response in Fiberplane Studio.
 npx @fiberplane/studio
 ```
 
-Use the following request body against the ___ route
+Test one of the following JSON request bodies against the `POST /` route, and you'll see structured output describing a sample HTTP request.
+
+You can adjust query parameters like `temperature` in the request query params.
 
 ```json
+{
+  "prompt": "GET /users/:id"
+}
+```
 
+```json
+{
+  "prompt": "GET /users/:id"
+}
 ```

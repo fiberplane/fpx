@@ -17,7 +17,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240821.1",
     "drizzle-kit": "^0.23.0",
-    "wrangler": "^3.72.2"
+    "wrangler": "^3.72.3"
   },
   "homepage": "https://github.com/fiberplane/fpx/sample-apps/goose-quotes#readme"
 }

@@ -15,8 +15,11 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>()
 
-app.get('/', async (c) => {
-  const inferenceResult = await runInference(c.env.AI, "/users/:id")
+app.post('/', async (c) => {
+  const strTemperature = c.req.query('temperature') ?? "0.12";
+  const temperature = Number.parseFloat(strTemperature) ?? 0.12;
+  const body = await c.req.json();
+  const inferenceResult = await runInference(c.env.AI, body.prompt, temperature)
 
   // We are not using streaming outputs, but just in case, handle the stream here
   if (inferenceResult instanceof ReadableStream) {
@@ -50,7 +53,7 @@ app.get('/', async (c) => {
 
 export default instrument(app);
 
-export async function runInference(client: Ai, userPrompt: string) {
+export async function runInference(client: Ai, userPrompt: string, temperature: number) {
   const result = await client.run(
     // @ts-ignore - This model exists in the Worker types as far as I can tell
     //              I don't know why it's causing a typescript error here :(
@@ -73,7 +76,7 @@ export async function runInference(client: Ai, userPrompt: string) {
         //   content: userPrompt,
         // },
       ],
-      temperature: 0.12,
+      temperature,
 
       // NOTE - The request will fail if you don't put the prompt here
       prompt: userPrompt,

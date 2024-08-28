@@ -2,10 +2,7 @@
   "name": "request-generation-showcase",
   "scripts": {
     "dev": "wrangler dev src/index.ts",
-    "deploy": "wrangler deploy --minify src/index.ts",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx migrate.ts",
-    "db:seed": "tsx seed.ts"
+    "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",
@@ -14,6 +11,6 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240821.1",
-    "wrangler": "^3.72.2"
+    "wrangler": "^3.72.3"
   }
 }
