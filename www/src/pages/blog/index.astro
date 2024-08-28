@@ -1,5 +1,56 @@
 ---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 import { getCollection } from "astro:content";
 
-const posts = await getCollection({});
+const posts = await getCollection("blog");
 ---
+
+<StarlightPage
+  frontmatter={{
+    title: "Blog",
+    description: "Fiberplane likes to write sometimes",
+    template: "splash",
+  }}
+>
+  <ul class="blog-post-list">
+    {
+      posts.map((post) => (
+        <li>
+          <h4>
+            <a href={`/blog/${post.slug}`}>{post.data.title}</a>
+          </h4>
+          <span class="post-date">
+            {new Date(post.data.date).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+</StarlightPage>
+
+<style>
+  .blog-post-list h4 > a:hover {
+    text-decoration: none;
+    color: var(--sl-color-accent);
+  }
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  ul h4 {
+    margin: 0;
+  }
+  .post-date {
+    margin-left: 1rem;
+  }
+</style>
