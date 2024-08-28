@@ -91,10 +91,10 @@ pub struct TypeScriptCompatAttributeMap(BTreeMap<String, Option<serde_json::Valu
 
 impl From<AttributeMap> for TypeScriptCompatAttributeMap {
     fn from(attr_map: AttributeMap) -> Self {
-        let result: BTreeMap<String, Option<serde_json::Value>> = attr_map
+        let result = attr_map
             .0
             .into_iter()
-            .map(|(key, value)| (key, value.map(|value| value.into())))
+            .map(|(key, value)| (key, value.map(Into::into)))
             .collect();
 
         TypeScriptCompatAttributeMap(result)
@@ -103,18 +103,16 @@ impl From<AttributeMap> for TypeScriptCompatAttributeMap {
 
 impl From<crate::api::models::otel::AttributeMap> for serde_json::Map<String, serde_json::Value> {
     fn from(attr_map: crate::api::models::otel::AttributeMap) -> Self {
-        let mut json_map = serde_json::Map::new();
-
-        for (key, value) in attr_map.0.into_iter() {
-            let value = match value {
-                Some(value) => value.into(),
-                None => serde_json::Value::Null,
-            };
-
-            json_map.insert(key, value);
-        }
-
-        json_map
+        attr_map
+            .0
+            .into_iter()
+            .map(|(key, value)| {
+                (
+                    key,
+                    value.map(Into::into).unwrap_or(serde_json::Value::Null),
+                )
+            })
+            .collect()
     }
 }
 
