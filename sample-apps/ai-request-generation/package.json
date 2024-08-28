@@ -1,23 +1,19 @@
 {
-  "name": "goose-quotes",
+  "name": "request-generation-showcase",
   "scripts": {
     "dev": "wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify src/index.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "tsx migrate.ts",
+    "db:seed": "tsx seed.ts"
   },
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",
-    "@neondatabase/serverless": "^0.9.4",
-    "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.32.0",
-    "hono": "^4.5.9",
-    "openai": "^4.53.0"
+    "@langchain/core": "^0.2.18",
+    "hono": "^4.5.9"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240821.1",
-    "drizzle-kit": "^0.23.0",
     "wrangler": "^3.72.2"
-  },
-  "homepage": "https://github.com/fiberplane/fpx/sample-apps/goose-quotes#readme"
+  }
 }

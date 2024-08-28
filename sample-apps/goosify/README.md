@@ -18,10 +18,6 @@ There is some plumbing in place to deploy to prod, but that's not what this is m
 You'll need a CF account to run this with the AI binding.
 
 ## Commands
-```sh
-pnpm i
-pnpm dev
-```
 
 ```sh
 # HACK - This script initializes a D1 database *locally* so that we can mess with it
@@ -29,3 +25,9 @@ pnpm db:touch
 pnpm db:generate
 pnpm db:migrate
 ```
+
+```sh
+pnpm i
+pnpm dev
+```
+
