@@ -17,9 +17,9 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import type { MizuOrphanLog } from "@/queries";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useOtelTraces } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Link } from "react-router-dom";
