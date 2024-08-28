@@ -9,9 +9,13 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
-import { proxyCloudflareBinding } from "./cf-bindings";
 import { measure } from "./measure";
-import { patchConsole, patchFetch, patchWaitUntil } from "./patch";
+import {
+  patchCloudflareBindings,
+  patchConsole,
+  patchFetch,
+  patchWaitUntil,
+} from "./patch";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
@@ -58,9 +62,15 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
         const originalFetch = value as HonoLikeFetch;
         return async function fetch(
           request: Request,
-          env: HonoLikeEnv,
+          // Name this "rawEnv" because we coerce it for our sanity below
+          rawEnv: HonoLikeEnv,
           executionContext: ExecutionContext | undefined,
         ) {
+          const env = rawEnv as
+            | undefined
+            | null
+            | Record<string, string | null>;
+
           // NOTE - We do *not* want to have a default for the FPX_ENDPOINT,
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
@@ -71,7 +81,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
           if (!isEnabled) {
-            return await originalFetch(request, env, executionContext);
+            return await originalFetch(request, rawEnv, executionContext);
           }
 
           // If the request is from the route inspector, respond with the routes
@@ -79,9 +89,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
 
-          const serviceName =
-            (env as Record<string, string | null>).FPX_SERVICE_NAME ??
-            "unknown";
+          const serviceName = env?.FPX_SERVICE_NAME ?? "unknown";
 
           // Patch the related functions to monitor
           const {
@@ -92,15 +100,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             },
           } = mergeConfigs(defaultConfig, config);
           if (monitorCfBindings) {
-            const envKeys = env ? Object.keys(env) : [];
-            for (const bindingName of envKeys) {
-              // @ts-expect-error - We know that env is a Record<string, string | null>
-              env[bindingName] = proxyCloudflareBinding(
-                // @ts-expect-error - We know that env is a Record<string, string | null>
-                env[bindingName],
-                bindingName,
-              );
-            }
+            patchCloudflareBindings(env);
           }
           if (monitorLogging) {
             patchConsole();
@@ -190,7 +190,11 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           try {
             return await context.with(activeContext, async () => {
-              return await measuredFetch(newRequest, env, proxyExecutionCtx);
+              return await measuredFetch(
+                newRequest,
+                env as HonoLikeEnv,
+                proxyExecutionCtx,
+              );
             });
           } finally {
             // Make sure all promises are resolved before sending data to the server

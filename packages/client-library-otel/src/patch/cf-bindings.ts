@@ -1,28 +1,42 @@
-import { measure } from "./measure";
-import { errorToJson, safelySerializeJSON } from "./utils";
+import type { Span } from "@opentelemetry/api";
+import { measure } from "../measure";
+import { errorToJson, safelySerializeJSON } from "../utils";
 
-// TODO - Can we use a Symbol here instead?
+/**
+ * A key used to mark objects as proxied by us, so that we don't proxy them again.
+ *
+ * @internal
+ */
 const IS_PROXIED_KEY = "__fpx_proxied";
+
+export function patchCloudflareBindings(
+  env?: Record<string, string | null> | null,
+) {
+  const envKeys = env ? Object.keys(env) : [];
+  for (const bindingName of envKeys) {
+    // @ts-expect-error - We know that env is a Record<string, string | null>
+    env[bindingName] = patchCloudflareBinding(
+      // @ts-expect-error - We know that env is a Record<string, string | null>
+      env[bindingName],
+      bindingName,
+    );
+  }
+}
 
 /**
  * Proxy a Cloudflare binding to add instrumentation.
  * For now, just wraps all functions on the binding to use a measured version of the function.
  *
- * For R2, we could specifically proxy and add smarts for:
- * - get
- * - list
- * - head
- * - put
- * - delete
+ * For R2, we could still specifically proxy and add smarts for:
  * - createMultipartUpload
  * - resumeMultipartUpload
  *
  * @param o - The binding to proxy
- * @param bindingName - The name of the binding in the environment, e.g., "Ai" or "AVATARS_BUCKET"
+ * @param bindingName - The name of the binding in the environment, e.g., "AI" or "AVATARS_BUCKET"
  *
  * @returns A proxied binding
  */
-export function proxyCloudflareBinding(o: unknown, bindingName: string) {
+function patchCloudflareBinding(o: unknown, bindingName: string) {
   // HACK - This makes typescript happier about proxying the object
   if (!o || typeof o !== "object") {
     return o;
@@ -36,7 +50,8 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
     return o;
   }
 
-  // HACK - Clean this up. Special logic for D1.
+  // HACK - Special logic for D1, since we only really care about the `_send` and `_sendOrThrow` methods,
+  //        not about the `prepare`, etc, methods.
   if (isCloudflareD1Binding(o)) {
     return proxyD1Binding(o, bindingName);
   }
@@ -71,14 +86,7 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
             //        Might be good to proxy each binding individually, eventually?
             //
             // onSuccess: (span, result) => {},
-            onError: (span, error) => {
-              const serializableError =
-                error instanceof Error ? errorToJson(error) : error;
-              const errorAttributes = {
-                "cf.binding.error": safelySerializeJSON(serializableError),
-              };
-              span.setAttributes(errorAttributes);
-            },
+            onError: handleError,
           },
           // OPTIMIZE - bind is expensive, can we avoid it?
           value.bind(target),
@@ -95,6 +103,95 @@ export function proxyCloudflareBinding(o: unknown, bindingName: string) {
   markAsProxied(proxiedBinding);
 
   return proxiedBinding;
+}
+
+/**
+ * Proxy a D1 binding to add instrumentation to database calls.
+ *
+ * In order to instrument the calls to the database itself, we need to proxy the `_send` and `_sendOrThrow` methods.
+ * As of writing, the code that makes these calls is here:
+ * https://github.com/cloudflare/workerd/blob/bee639d6c2ff41bfc1bd75a40c9d3c98724585ce/src/cloudflare/internal/d1-api.ts#L131
+ *
+ * @param o - The D1Database binding to proxy
+ *
+ * @returns A proxied binding, whose `.database._send` and `.database._sendOrThrow` methods are instrumented
+ */
+function proxyD1Binding(o: unknown, bindingName: string) {
+  if (!o || typeof o !== "object") {
+    return o;
+  }
+
+  if (!isCloudflareD1Binding(o)) {
+    return o;
+  }
+
+  if (isAlreadyProxied(o)) {
+    return o;
+  }
+
+  const d1Proxy = new Proxy(o, {
+    get(d1Target, d1Prop) {
+      const d1Method = String(d1Prop);
+      const d1Value = Reflect.get(d1Target, d1Prop);
+      // HACK - These are technically public methods on the database object,
+      // but they have an underscore prefix which usually means "private" by convention.
+      //
+      const isSendingQuery =
+        d1Method === "_send" || d1Method === "_sendOrThrow";
+      if (typeof d1Value === "function" && isSendingQuery) {
+        return measure(
+          {
+            name: "D1 Call",
+            attributes: {
+              "cf.binding.method": d1Method,
+              "cf.binding.name": bindingName,
+              "cf.binding.type": "D1Database",
+            },
+            onStart: (span, args) => {
+              span.setAttributes({
+                args: safelySerializeJSON(args),
+              });
+            },
+            // TODO - Use this callback to add additional attributes to the span regarding the response.
+            // onSuccess: (span, result) => {},
+            onError: handleError,
+          },
+          // OPTIMIZE - bind is expensive, can we avoid it?
+          d1Value.bind(d1Target),
+        );
+      }
+
+      return d1Value;
+    },
+  });
+
+  markAsProxied(d1Proxy);
+
+  return d1Proxy;
+}
+
+/**
+ * Add "cf.binding.error" attribute to a span
+ *
+ * @param span - The span to add the attribute to
+ * @param error - The error to add to the span
+ */
+function handleError(span: Span, error: unknown) {
+  const serializableError = error instanceof Error ? errorToJson(error) : error;
+  const errorAttributes = {
+    "cf.binding.error": safelySerializeJSON(serializableError),
+  };
+  span.setAttributes(errorAttributes);
+}
+
+// TODO - Remove this, it is temporary
+function isCloudflareBinding(o: unknown): o is object {
+  return (
+    isCloudflareAiBinding(o) ||
+    isCloudflareR2Binding(o) ||
+    isCloudflareD1Binding(o) ||
+    isCloudflareKVBinding(o)
+  );
 }
 
 function isCloudflareAiBinding(o: unknown) {
@@ -135,18 +232,9 @@ function isCloudflareKVBinding(o: unknown) {
   return true;
 }
 
-// TODO - Remove this, it is temporary
-function isCloudflareBinding(o: unknown): o is object {
-  return (
-    isCloudflareAiBinding(o) ||
-    isCloudflareR2Binding(o) ||
-    isCloudflareD1Binding(o) ||
-    isCloudflareKVBinding(o)
-  );
-}
-
 /**
  * Get the constructor name of an object
+ *
  * Helps us detect Cloudflare bindings
  *
  * @param o - The object to get the constructor name of
@@ -187,77 +275,4 @@ function markAsProxied(o: object) {
     writable: true,
     configurable: true,
   });
-}
-
-/**
- * Proxy a D1 binding to add instrumentation.
- *
- * What this actually does is create a proxy of the `database` prop... I hope this works
- *
- * @param o - The D1Database binding to proxy
- *
- * @returns A proxied binding, whose `.database._send` and `.database._sendOrThrow` methods are instrumented
- */
-function proxyD1Binding(o: unknown, bindingName: string) {
-  if (!o || typeof o !== "object") {
-    return o;
-  }
-
-  if (!isCloudflareD1Binding(o)) {
-    return o;
-  }
-
-  if (isAlreadyProxied(o)) {
-    return o;
-  }
-
-  const d1Proxy = new Proxy(o, {
-    get(d1Target, d1Prop) {
-      const d1Method = String(d1Prop);
-      const d1Value = Reflect.get(d1Target, d1Prop);
-      // HACK - These are technically public methods on the database object,
-      // but they have an underscore prefix which usually means "private" by convention...
-      // BEWARE!!!
-      const isSendingMethod =
-        d1Method === "_send" || d1Method === "_sendOrThrow";
-      if (typeof d1Value === "function" && isSendingMethod) {
-        // ...
-        return measure(
-          {
-            name: "D1 Call",
-            attributes: {
-              "cf.binding.method": d1Method,
-              "cf.binding.name": bindingName,
-              "cf.binding.type": "D1Database",
-            },
-            onStart: (span, args) => {
-              span.setAttributes({
-                args: safelySerializeJSON(args),
-              });
-            },
-            // TODO - Use this callback to add additional attributes to the span regarding the response...
-            //        But the thing is, the result could be so wildly different depending on the method!
-            //        Might be good to proxy each binding individually, eventually?
-            //
-            // onSuccess: (span, result) => {},
-            onError: (span, error) => {
-              const serializableError =
-                error instanceof Error ? errorToJson(error) : error;
-              const errorAttributes = {
-                "cf.binding.error": safelySerializeJSON(serializableError),
-              };
-              span.setAttributes(errorAttributes);
-            },
-          },
-          d1Value.bind(d1Target),
-        );
-      }
-
-      return d1Value;
-    },
-  });
-
-  markAsProxied(d1Proxy);
-
-  return d1Proxy;
 }
