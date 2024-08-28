@@ -7,6 +7,7 @@ import { ProbedRouteSchema } from "../queries";
 import { RequestMethodSchema, RequestTypeSchema } from "../types";
 import { addContentTypeHeader } from "./reducers";
 import { RequestorBodySchema } from "./request-body";
+import { isCurrentSessionState } from "./session-persistence-key";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
 
 const RequestorResponseBodySchema = z.discriminatedUnion("type", [
@@ -210,7 +211,7 @@ function loadUiStateFromLocalStorage(): SavedRequestorState | null {
 
   try {
     const uiState = JSON.parse(possibleUiState);
-    if (isSavedRequestorState(uiState)) {
+    if (isSavedRequestorState(uiState) && isCurrentSessionState(uiState)) {
       return uiState;
     }
     return null;
