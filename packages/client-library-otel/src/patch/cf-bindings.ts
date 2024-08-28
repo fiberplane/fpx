@@ -3,10 +3,11 @@ import {
   CF_BINDING_ERROR,
   CF_BINDING_METHOD,
   CF_BINDING_NAME,
+  CF_BINDING_RESULT,
   CF_BINDING_TYPE,
 } from "../constants";
 import { measure } from "../measure";
-import { errorToJson, safelySerializeJSON } from "../utils";
+import { errorToJson, isUintArray, safelySerializeJSON } from "../utils";
 
 /**
  * A key used to mark objects as proxied by us, so that we don't proxy them again.
@@ -90,11 +91,9 @@ function patchCloudflareBinding(o: object, bindingName: string) {
                 args: safelySerializeJSON(args),
               });
             },
-            // TODO - Use this callback to add additional attributes to the span regarding the response...
-            //        But the thing is, the result could be so wildly different depending on the method!
-            //        Might be good to proxy each binding individually, eventually?
-            //
-            // onSuccess: (span, result) => {},
+            onSuccess: (span, result) => {
+              addResultAttribute(span, result);
+            },
             onError: handleError,
           },
           // OPTIMIZE - bind is expensive, can we avoid it?
@@ -157,8 +156,9 @@ function proxyD1Binding(o: object, bindingName: string) {
                 args: safelySerializeJSON(args),
               });
             },
-            // TODO - Use this callback to add additional attributes to the span regarding the response.
-            // onSuccess: (span, result) => {},
+            onSuccess: (span, result) => {
+              addResultAttribute(span, result);
+            },
             onError: handleError,
           },
           // OPTIMIZE - bind is expensive, can we avoid it?
@@ -194,6 +194,24 @@ function getCfBindingAttributes(
     [CF_BINDING_NAME]: bindingName,
     [CF_BINDING_METHOD]: methodName,
   };
+}
+
+/**
+ * Add "cf.binding.result" attribute to a span
+ *
+ * @NOTE - The results of method calls could be so wildly different, and sometimes very large.
+ *         We should be more careful here with what we attribute to the span.
+ *         Also, might want to turn this off by default in production.
+ *
+ * @param span - The span to add the attribute to
+ * @param result - The result to add to the span
+ */
+function addResultAttribute(span: Span, result: unknown) {
+  // HACK - Probably a smarter way to avoid serlializing massive amounts of binary data, but this works for now
+  const isBinary = isUintArray(result);
+  span.setAttributes({
+    [CF_BINDING_RESULT]: isBinary ? "binary" : safelySerializeJSON(result),
+  });
 }
 
 /**

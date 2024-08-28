@@ -18,6 +18,7 @@ export const FPX_RESPONSE_BODY = "fpx.http.response.body";
 export const CF_BINDING_TYPE = "cf.binding.type";
 export const CF_BINDING_NAME = "cf.binding.name";
 export const CF_BINDING_METHOD = "cf.binding.method";
+export const CF_BINDING_RESULT = "cf.binding.result";
 export const CF_BINDING_ERROR = "cf.binding.error";
 
 // NOT YET IMPLEMENTED
