@@ -190,8 +190,6 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             env,
           );
 
-          console.log("Created rootRequestAttributes:", rootRequestAttributes);
-
           const measuredFetch = measure(
             {
               name: "request",
