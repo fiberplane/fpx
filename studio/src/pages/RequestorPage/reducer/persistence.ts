@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useBeforeUnload } from "react-router-dom";
+import { addSessionIdToState } from "./session-persistence-key";
 import {
   LOCAL_STORAGE_KEY,
   type SavedRequestorState,
@@ -22,7 +23,9 @@ export function useSaveUiState(state: SavedRequestorState) {
 
   const saveUiState = useCallback(() => {
     try {
-      const state = SavedRequestorStateSchema.parse(stateRef.current);
+      const state =
+        // Fixes issue where having multiple tabs open would disrupt the persisted requestor state of other tabs
+        addSessionIdToState(SavedRequestorStateSchema.parse(stateRef.current));
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
     } catch {
       // Ignore errors
