@@ -5,7 +5,7 @@ sidebar:
   order: 9999
 ---
 
-import { FileTree, Aside, Steps, Card } from "@astrojs/starlight/components";
+import { FileTree, Aside, Steps, Card, LinkCard } from "@astrojs/starlight/components";
 import Button from "@/components/Button.astro";
 
 This is a little cheatsheet for using Starlight for documenting Fiberplane features on our website.
@@ -253,3 +253,13 @@ or use the `draft: true` frontmatter flag (like on this page) to hide it from th
 - Keep headings short and descriptive. They will appear automatically in the sidebar.
 - See if you can append to a page as opposed to creating a new one. Long pages are good.
 - Always mention Geese
+
+
+## What Next
+
+<LinkCard
+  title="Fix Some Docs"
+  href="https://fiberplane.com"
+  icon="external"
+  description="Peruse the docs website at fiberplane.com, and if you find a typo, bug, etc., open a PR to fix it"
+/>
