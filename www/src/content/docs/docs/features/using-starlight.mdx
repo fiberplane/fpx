@@ -196,3 +196,55 @@ Hit <kbd>cmd</kbd><kbd>enter</kbd> to send the request.
 ```
 
 Feel free to tweak the `Button.astro` component and color vars in the css files to match your needs.
+
+### Adding images
+
+<Aside type="caution" title="Avoid product screenshots when you can">
+  **Product** screenshots are great for demonstrating features, but they can become outdated quickly. Use screenshots sparingly.
+</Aside>
+
+To add an image to a page, first put it in the `src/assets` folder.
+
+Then you can use standard markdown to add it to the page:
+
+```mdx title="src/my-new-docs-page.md"
+![alt text](@/assets/name-of-image.png)
+```
+
+You can also use the Astro Image component:
+
+```mdx title="src/my-new-docs-page.mdx"
+import { Image } from "astro:assets";
+import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif"
+
+<Image src={fpxGenAiGenerateBody} alt="Generate a request body with AI" />
+```
+
+***
+
+If you're on a mac, we recommend using [CleanShot X](https://cleanshot.com/) to take screenshots.
+
+If you don't feel like dealing with that, ask Lau, Mies, or Brett to take the screenshots for you.
+
+<Aside type="tip" title="GIFs are large">
+You can record gifs, but even when Astro optimizes them, they are still large files that a long time to load on the website.
+</Aside>
+
+We still haven't defined specific, consistent styles for images in our docs, so for now, use your best judgement on making screenshots look good.
+
+A few more things to keep in mind:
+
+- Show as much of the UI as possible, don't zoom in on a specific part
+- Use opacity to highlight or call out certain elements
+
+
+## Workflow
+
+Add documentation in the same branch as you're adding the feature.
+
+The website will get published when merged to `main`. You can comment out our pages if you don't want them to appear, or use the `draft: true` frontmatter flag to hide it from the website in production.
+
+### Best practices
+
+- Keep headings short and descriptive. They will appear automatically in the sidebar.
+- See if you can append to a page as opposed to creating a new one. Long pages are good.
