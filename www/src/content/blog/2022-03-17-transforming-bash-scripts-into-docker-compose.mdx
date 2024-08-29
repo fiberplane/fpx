@@ -1,0 +1,163 @@
+---
+title: Transforming bash scripts into Docker Compose
+slug: transforming-bash-scripts-into-docker-compose
+description: Fiberplane started out with developers using a mix of Linux and MacOS where bash scripts work perfectly fine for getting a local dev environment running. As the team grew...
+date: 2022-03-17
+author: Simon Rasmussen
+tags:
+  - Docker compose
+  - Bash scripts
+  - Operation Systems
+---
+
+Fiberplane started out with developers using a mix of Linux and MacOS where bash scripts work perfectly fine for getting a local dev environment running. As the team grew, one of those awkward Windows developers (me, the author) joined and had to deal with a conglomerate of bash scripts without rocking the boat too much by changing the existing process.
+
+Fortunately for me, the bash scripts were just a series of Docker commands and a bit of bash magic that fairly trivially could be converted to Docker Compose.
+
+Here’s a short overview for Windows developers of how I did that: Our backend service relies on two services being available, postgres and AWS S3. For testing object storage while developing locally we use [MinIO](https://min.io/) which provides us with an S3 compatible object storage to test against.
+
+As such the run_all_services.sh bash script serves as the entry point that crates the docker network, starts postgres, then MinIO and awaits ctrl+c to shutdown the whole shebang.
+
+This ends up looking something like this:
+
+```
+# This will start all the services required for tests or running the service.
+# All services will have their output prefixed with the name of the service.
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+prefix_cmd() {
+    local PREF="${1//\//\\/}" # replace / with \/
+    shift
+    local CMD=("$@")
+    "${CMD[@]}" 1> >(sed "s/^/${PREF}/") 2> >(sed "s/^/${PREF}/" 1>&2)
+}
+
+ctrl_c() {
+    echo "===> Shutting down services"
+
+    echo "===> Shutting down postgresql"
+    kill "$postgresql_pid"
+
+    echo "===> Shutting down minio"
+    kill "$minio_pid"
+}
+
+echo "===> Creating docker network"
+docker network create fiberplane-api
+
+echo "===> Starting postgresql"
+prefix_cmd "postgresql: " "$SCRIPT_DIR/run_postgresql.sh" &
+postgresql_pid=$!
+
+echo "===> Starting minio"
+prefix_cmd "minio: " "$SCRIPT_DIR/run_minio.sh" &
+minio_pid=$!
+
+trap ctrl_c INT
+
+wait $postgresql_pid $minio_pid
+
+echo "===> All services stopped"
+```
+
+The keen-eyed reader might notice this runs another two bash scripts concurrently which each respectively start postgres/MinIO.
+
+The MinIO bash script looks like this:
+
+```bash
+#!/bin/bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+docker run -t --rm \
+    --name minio \
+    --network fiberplane-api \
+    -v "$SCRIPT_DIR/minio_storage:/data" \
+    -p 9000:9000 \
+    -p 9001:9001 \
+    minio/minio:latest server /data \
+        --address=":9000" \
+        --console-address=":9001"
+```
+
+This is simple to translate into a `docker-compose.yml`. So, let’s do just that:
+
+```yaml
+version: "3.7"
+
+services:
+  #we'll call our service minio just like the --name argument above
+  minio:
+    #next we use the latest image:
+    image: minio/minio:latest
+    #then we specify the command to run inside the container
+    command: server /data --address=":9000" --console-address=":9001"
+    #next we map a minio_storage volume to /data which is slightly different
+    #from the original command above
+    volumes:
+      - minio_storage:/data
+    #last but not least we expose the same ports as above:
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+#here we define the minio volume that gets mapped into the container
+volumes:
+  minio_storage:
+```
+
+I decided to use a volume rather than a bind mount in the docker-compose conversion as this is simply a development setup and we don’t care if the volume gets nuked at some point. Docker desktop on Windows with WSL 2 isn’t the best combination. Using a volume is a better choice.
+
+The script used to start the run_postgressql.sh docker container looks like this:
+
+```bash
+#!/bin/bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+docker run -t --rm \
+    --name postgres \
+    --network fiberplane-api \
+    -v "$SCRIPT_DIR/postgresql_storage:/var/lib/postgresql/data" \
+    -e POSTGRES_PASSWORD=fiberplane \
+    -p 5432:5432 \
+    postgres:11
+```
+
+Using the same approach as above, we can expand the `docker-compose.yml` with the postgres service:
+
+```yaml
+services:
+  postgres:
+    image: postgres:11
+    volumes:
+      - postgres_storage:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    #docker-compose also allows us to define env vars inside
+    #the container environment:
+    environment:
+      POSTGRES_PASSWORD: fiberplane
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --address=":9000" --console-address=":9001"
+    volumes:
+      - minio_storage:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+volumes:
+  postgres_storage:
+  minio_storage:
+```
+
+With all of that, our `docker-compose.yml` file is complete so we can save it in the root of our git repo, create a PR and begin using it!
+
+Where my colleagues can continue to use ./scripts/run_all_services.sh to get up and running, I can simply use docker compose up which will start the services and shut them down when I press ctrl+c just like the bash scripts.
+
+As an additional benefit I can use docker compose up -d to run in daemon mode which will run the services in the background so I can reuse my terminal.
+
+If I wish to access the service logs in while they are running the background I can simply issue a docker compose logs --follow command.
