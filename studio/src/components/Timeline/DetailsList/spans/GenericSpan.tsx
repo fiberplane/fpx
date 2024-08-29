@@ -27,25 +27,24 @@ export function GenericSpan({ span }: { span: OtelSpan }) {
   const icon = useTimelineIcon(span);
   return (
     <div id={span.span_id}>
-      <div className="flex flex-col gap-4">
-        <SectionHeading className="flex items-center gap-2">
-          {icon}
-          <>
-            {span.name}
-            {span.status?.code === SpanStatus.ERROR && (
-              <>
-                &nbsp;
-                <Badge className="ml-2 mr-2" variant={"destructive"}>
-                  Error
-                </Badge>
-              </>
-            )}
-            <div className="text-gray-400 text-xs w-12 px-2">
-              {formatDuration(span.start_time, span.end_time)}
-            </div>
-          </>
-        </SectionHeading>
-      </div>
+      <SectionHeading className="grid gap-2 grid-cols-[auto_1fr] items-center">
+        {icon}
+        <div className="flex items-center gap-2 max-w-full">
+
+          {span.name}
+          {span.status?.code === SpanStatus.ERROR && (
+            <>
+              &nbsp;
+              <Badge className="ml-2 mr-2" variant={"destructive"}>
+                Error
+              </Badge>
+            </>
+          )}
+          <div className="text-gray-400 text-xs w-12 px-2">
+            {formatDuration(span.start_time, span.end_time)}
+          </div>
+        </div>
+      </SectionHeading>
       {Object.keys(attributes).length > 0 && (
         <SubSection>
           <SubSectionHeading>Attributes</SubSectionHeading>

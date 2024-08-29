@@ -36,7 +36,7 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
           </SectionHeading>
 
           <div className="flex gap-2">
-            <div className="inline-flex gap-2 font-mono py-1 px-2 text-xs bg-accent/80 rounded">
+            <div className="inline-flex gap-2 font-mono py-1 text-xs bg-accent/80 rounded px-1">
               <span className={cn(getHttpMethodTextColor(method))}>
                 {method}
               </span>
@@ -56,7 +56,6 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
           title="Environment Vars"
           keyValue={requestEnv}
           defaultCollapsed
-          className="px-2"
           sensitiveKeys={isSensitiveEnvVar}
           emptyMessage="No environment vars found"
           keyCellClassName="w-[96px] lg:w-[96px] lg:min-w-[96px]"

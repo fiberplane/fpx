@@ -6,9 +6,9 @@ import {
   renderFullLogMessage,
 } from "@/utils";
 import { useTimelineIcon } from "../hooks";
-import { SectionHeading } from "../shared";
 import { getColorForLevel } from "../utils";
 import { StackTrace } from "./StackTrace";
+import { SubSectionHeading } from "../shared";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const id = log.id;
@@ -37,11 +37,11 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const hasDescription = !!description;
 
   const topContent = hasDescription ? (
-    <div className="px-2 font-mono text-sm">{description}</div>
+    <div className="font-mono text-sm">{description}</div>
   ) : contentsType === "multi-arg-log" ? (
-    <LogContents fullLogArgs={contents} />
+    <LogContents className="px-0" fullLogArgs={contents} />
   ) : contentsType === "json" ? (
-    <LogContents fullLogArgs={contents} />
+    <LogContents className="px-0" fullLogArgs={contents} />
   ) : stack ? (
     <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400">
       <StackTrace stackTrace={stack} />
@@ -55,28 +55,26 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
       id={id?.toString()}
       className="overflow-x-auto overflow-y-hidden max-w-full"
     >
-      <div className={cn("grid gap-2 grid-cols-[auto_1fr_auto]")}>
-        <SectionHeading className={cn("font-semibold flex items-center gap-2")}>
-          {icon}
-        </SectionHeading>
+      <div className={cn("grid gap-2 grid-cols-[auto_1fr_auto] items-center")}>
+        {icon}
         {topContent}
 
-        <SectionHeading
+        <SubSectionHeading
           className={cn(
             "font-semibold text-sm flex items-center gap-2",
             getColorForLevel(log.level),
           )}
         >
           {heading}
-        </SectionHeading>
+        </SubSectionHeading>
       </div>
 
       {hasDescription && contentsType === "multi-arg-log" && (
-        <LogContents fullLogArgs={contents} />
+        <LogContents className="px-2" fullLogArgs={contents} />
       )}
 
       {hasDescription && contentsType === "json" && (
-        <LogContents fullLogArgs={contents} />
+        <LogContents className="px-2" fullLogArgs={contents} />
       )}
 
       {stack && (
@@ -121,11 +119,23 @@ function getLogContents(message: string, args?: Array<unknown>) {
   };
 }
 
+
+type Props = {
+  fullLogArgs: Array<unknown>;
+  className?: string;
+}
+
 // TODO - Use something like util.inspect but for the frontend
-const LogContents = ({ fullLogArgs }: { fullLogArgs: Array<unknown> }) => {
+const LogContents = (
+  { fullLogArgs, className }: Props) => {
+  const content = renderFullLogMessage(fullLogArgs);
+  if (content.trim() !== content) {
+    console.log('got spaces', content);
+  }
+
   return (
-    <code className="p-2 rounded bg-slate-950/10 text-mono whitespace-pre">
-      {renderFullLogMessage(fullLogArgs)}
+    <code className={cn("p-2 rounded bg-slate-950/10 text-mono whitespace-pre", className)}>
+      {content}
     </code>
   );
 };
