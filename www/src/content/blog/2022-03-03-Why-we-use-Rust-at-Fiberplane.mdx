@@ -1,0 +1,34 @@
+---
+title: Why we use Rust at Fiberplane
+description: Ever wondered how to pass rich data types such as structs between a TypeScript and Rust WebAssembly module?
+slug: why-we-use-rust-at-fiberplane
+date: 2022-03-03
+author: Arend van Beelen
+tags:
+  - Company
+  - Rust 
+---
+import { Image } from "astro:assets";
+
+Our Principal Software Engineer Arend van Beelen shares why we love Rust and why this programming language is so useful for our company.
+
+tl;dr: We love the language for its reliability, portability and performance.
+
+At Fiberplane, we're building a collaborative notebook editor for incident response and infrastructure debugging. When we originally set out to define our technology stack, we quickly settled on Rust
+
+## One unified language
+
+One thing we knew early on was that we would likely want to incorporate WebAssembly into our frontend. The technology is up-and-coming and pushes the performance envelope of what a web application can achieve. With the type of tool we were creating, we didn’t want to leave any options for improving performance on the table. So, we wanted in on that.
+
+At the same time, we wanted a language that we could use both in the backend and in the frontend through WASM. This way, our engineers could easily switch and work full-stack. Rust, which has been only recently emerging as a viable backend language, became a natural choice due to its first-class WASM support. It has great tooling for building WASM binaries and its binaries are relatively small compared to other languages. Part of that is due to its lack of a garbage collector, which gives it an advantage over languages such as Go.
+
+At this point, it may also be worth mentioning that this choice is already paying its dividends: While we still use plenty of TypeScript and React code in our frontend, most of our core logic, including Redux reducers, is written in Rust. We’ll be sharing more posts on this topic soon!
+
+## Reliability as a core feature
+One of the use cases when our customers are using our product is when they’re experiencing an incident in their systems. The last thing they want is to experience incidents in ours. That’s why we as a company take reliability very seriously and make it part of our DNA. Rust, with its rigid type system and emphasis on correctness, matches this culture and provides us with the right tooling to help us achieve our goals. Rust’s borrow checker isn’t merely there to provide safety in the absence of a garbage collector; it protects us against accidental mutations in multi-threaded as well as event-driven code. Our engineers already had experience in languages such as TypeScript, Go and C# but regardless of our background, we agree on one thing: With Rust, we introduce fewer bugs and gain more confidence in our code.
+
+## Excellent performance
+When building tools for infrastructure debugging, you should be prepared to handle lots and lots of data. Think of real-time logging, plotting graphs of metrics, or collecting traces. We wanted a language that wouldn’t become a bottleneck and Rust fits that bill. Rust runs without a ‘garbage collector’ and has a low memory overhead which makes its performance predictable – if we find any performance issues it tends to be our code, rather than our tools being the cause. We feel this is a good position to be in, because it means the solution is in our hands as well. It allows us to focus our optimization efforts where we feel they provide the most benefit.
+
+## Wrapping up
+Fiberplane is still a young company and our product recently hit private beta. Already, Rust is proving to be a great match for our team. From the collaboration we’re experiencing between frontend and backend developers to the performance it spoils us with, we’re thankful to the Rust team and all the contributors for coming up with such a great language!
