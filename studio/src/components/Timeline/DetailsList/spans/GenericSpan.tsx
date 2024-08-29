@@ -30,7 +30,6 @@ export function GenericSpan({ span }: { span: OtelSpan }) {
       <SectionHeading className="grid gap-2 grid-cols-[auto_1fr] items-center">
         {icon}
         <div className="flex items-center gap-2 max-w-full">
-
           {span.name}
           {span.status?.code === SpanStatus.ERROR && (
             <>

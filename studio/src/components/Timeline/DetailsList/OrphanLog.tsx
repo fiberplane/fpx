@@ -6,9 +6,9 @@ import {
   renderFullLogMessage,
 } from "@/utils";
 import { useTimelineIcon } from "../hooks";
+import { SubSectionHeading } from "../shared";
 import { getColorForLevel } from "../utils";
 import { StackTrace } from "./StackTrace";
-import { SubSectionHeading } from "../shared";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const id = log.id;
@@ -30,9 +30,6 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const icon = useTimelineIcon(log, {
     colorOverride: getColorForLevel(log.level),
   });
-  // if (contents) {
-  //   console.log(contents, contentsType);
-  // }
 
   const hasDescription = !!description;
 
@@ -43,7 +40,7 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   ) : contentsType === "json" ? (
     <LogContents className="px-0" fullLogArgs={contents} />
   ) : stack ? (
-    <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400">
+    <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400 text-xs">
       <StackTrace stackTrace={stack} />
     </div>
   ) : (
@@ -119,22 +116,22 @@ function getLogContents(message: string, args?: Array<unknown>) {
   };
 }
 
-
 type Props = {
   fullLogArgs: Array<unknown>;
   className?: string;
-}
+};
 
 // TODO - Use something like util.inspect but for the frontend
-const LogContents = (
-  { fullLogArgs, className }: Props) => {
+const LogContents = ({ fullLogArgs, className }: Props) => {
   const content = renderFullLogMessage(fullLogArgs);
-  if (content.trim() !== content) {
-    console.log('got spaces', content);
-  }
 
   return (
-    <code className={cn("p-2 rounded bg-slate-950/10 text-mono whitespace-pre", className)}>
+    <code
+      className={cn(
+        "p-2 rounded bg-slate-950/10 text-mono whitespace-pre",
+        className,
+      )}
+    >
       {content}
     </code>
   );

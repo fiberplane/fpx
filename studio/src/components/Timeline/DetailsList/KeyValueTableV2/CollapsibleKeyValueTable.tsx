@@ -30,7 +30,6 @@ export function CollapsibleKeyValueTableV2({
   keyCellClassName,
   headingClassName,
 }: Props) {
-  // const [isOpen, setIsOpen] = useState(!defaultCollapsed);
   const count = Object.entries(keyValue).length;
   const heading = useMemo(() => {
     return (
@@ -40,7 +39,7 @@ export function CollapsibleKeyValueTableV2({
       </>
     );
   }, [count, title]);
-  // const toggleIsOpen = () => setIsOpen((o) => !o);
+
   return (
     <CollapsibleSubSection
       className={className}

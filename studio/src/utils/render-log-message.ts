@@ -6,12 +6,13 @@
  * This needs improvement
  */
 export function renderFullLogMessage(allLogArgs: Array<unknown>) {
-  return allLogArgs.reduce((result: string, curr): string => {
-    console.log('result', result.length, 'curr', curr);
-    if (Array.isArray(curr) || (curr && typeof curr === "object")) {
-      return `${result}${result.length > 0 ? " " : ""}${JSON.stringify(curr)}`;
-    }
+  return allLogArgs
+    .map((arg) => {
+      if (Array.isArray(arg) || (arg && typeof arg === "object")) {
+        return JSON.stringify(arg);
+      }
 
-    return `${result}${result.length > 0 ? " " : ""}${curr}`;
-  }, "");
+      return `${arg}`;
+    })
+    .join(" ");
 }
