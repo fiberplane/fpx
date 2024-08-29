@@ -2,7 +2,10 @@
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 import { getCollection } from "astro:content";
 
-const posts = await getCollection("blog");
+const postsUnsorted = await getCollection("blog");
+const postsSortedByDateDesc = postsUnsorted.toSorted(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+);
 ---
 
 <StarlightPage
@@ -17,7 +20,7 @@ const posts = await getCollection("blog");
 >
   <ul class="blog-post-list">
     {
-      posts.map((post) => (
+      postsSortedByDateDesc.map((post) => (
         <li>
           <h4>
             <a href={`/blog/${post.slug}`}>{post.data.title}</a>
