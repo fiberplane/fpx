@@ -1,0 +1,52 @@
+name: Publish Canary Hono Otel Client Lib
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/client-library-otel/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install
+        env:
+          CI: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+
+      - name: Check if version is already published
+        id: check_version
+        run: |
+          PACKAGE_VERSION=$(node -p 'require("./packages/client-library-otel/package.json").version')
+          if npm view @fiberplane/hono-otel@$PACKAGE_VERSION version &> /dev/null; then
+            echo "VERSION_EXISTS=true" >> $GITHUB_OUTPUT
+          else
+            echo "VERSION_EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to npm with @canary tag
+        if: steps.check_version.outputs.VERSION_EXISTS == 'false'
+        run: pnpm publish --filter @fiberplane/hono-otel --tag canary --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Log skipped publish
+        if: steps.check_version.outputs.VERSION_EXISTS == 'true'
+        run: echo "Skipped publishing as version already exists on npm"
