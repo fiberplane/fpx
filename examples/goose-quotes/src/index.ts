@@ -430,6 +430,15 @@ app.get("/api/geese/:id/avatar", async (c) => {
   });
 });
 
+/**
+ * `app.all` test
+ *
+ * For all methods, print "Honk honk!"
+ */
+app.all("/always-honk/:echo?", (c) => {
+  return c.text(`Honk honk! ${c.req.param("echo") ?? ""}`);
+});
+
 app.get(
   "/ws",
   upgradeWebSocket((c) => {
