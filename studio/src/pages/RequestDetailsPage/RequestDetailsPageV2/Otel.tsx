@@ -50,6 +50,7 @@ export function RequestDetailsPageV2({
 
   return (
     <RequestDetailsPageContentV2
+      traceId={traceId}
       spans={spans}
       orphanLogs={orphanLogs}
       pagination={pagination}

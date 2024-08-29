@@ -1,4 +1,8 @@
-import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
+import {
+  ArrowTopRightIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@radix-ui/react-icons";
 import {
   Tooltip,
   TooltipContent,
@@ -15,19 +19,29 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import type { MizuOrphanLog } from "@/queries";
-import type { OtelSpan } from "@/queries/traces-otel";
-import { cn } from "@/utils";
+import { type OtelSpan, useOtelTraces } from "@/queries/traces-otel";
+import { cn, isMac } from "@/utils";
+import { useRef } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { Link } from "react-router-dom";
 import { EmptyState } from "../EmptyState";
+import {
+  useMostRecentRequest,
+  useReplayRequest,
+  useShouldReplay,
+} from "../hooks";
 import { TraceDetailsTimeline } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 
 const EMPTY_LIST: Array<MizuOrphanLog> = [];
 
 export function RequestDetailsPageContentV2({
+  traceId,
   pagination,
   spans,
   orphanLogs = EMPTY_LIST,
 }: {
+  traceId: string;
   spans: Array<OtelSpan>;
   orphanLogs?: Array<MizuOrphanLog>;
   pagination?: {
@@ -37,7 +51,28 @@ export function RequestDetailsPageContentV2({
     handleNextTrace: () => void;
   };
 }) {
+  const currentTrace = {
+    traceId,
+    spans,
+  };
+  const { data: traces } = useOtelTraces();
+
+  const { isMostRecentTrace, traceId: mostRecentTraceId } =
+    useMostRecentRequest(currentTrace, traces);
+
   const { rootSpan, waterfall } = useAsWaterfall(spans, orphanLogs);
+
+  const shouldReplay = useShouldReplay(currentTrace);
+
+  const { replay, isReplaying } = useReplayRequest({ span: rootSpan?.span });
+
+  const replayRef = useRef<HTMLButtonElement>(null);
+
+  useHotkeys(["mod+enter"], () => {
+    if (replayRef.current && shouldReplay) {
+      replayRef.current.click();
+    }
+  });
 
   if (!rootSpan) {
     return <EmptyState />;
@@ -65,52 +100,102 @@ export function RequestDetailsPageContentV2({
       >
         <div className="flex items-center gap-6">
           <h2 className="text-2xl font-semibold">Request Details</h2>
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <HttpSummary trace={rootSpan.span} />
           </div>
         </div>
-        {pagination && (
-          <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {!isMostRecentTrace && (
+            <Link
+              className="text-blue-600 pr-4 text-sm inline-flex items-center gap-1.5"
+              to={`/requests/otel/${mostRecentTraceId}`}
+            >
+              Jump to latest
+              <ArrowTopRightIcon className="w-3.5 h-3.5" />
+            </Link>
+          )}
+          {shouldReplay && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant="secondary"
-                  size="icon"
-                  disabled={pagination.currentIndex === 0}
-                  onClick={pagination.handlePrevTrace}
+                  variant="default"
+                  disabled={isReplaying}
+                  onClick={replay}
+                  ref={replayRef}
                 >
-                  <ChevronUpIcon className="w-4 h-4" />
+                  Replay
                 </Button>
               </TooltipTrigger>
               <TooltipContent
                 side="left"
-                className="bg-slate-950 text-white"
+                sideOffset={15}
+                className={cn(
+                  "bg-slate-900 ",
+                  "text-muted-foreground",
+                  "px-2",
+                  "py-1.5",
+                  "gap-1.5",
+                  "text-sm",
+                  "flex",
+                  "items-center",
+                )}
                 align="center"
               >
-                Prev <KeyboardShortcutKey>K</KeyboardShortcutKey>
+                <p>Replay request</p>
+                <div className="flex gap-1">
+                  <KeyboardShortcutKey>
+                    {isMac ? "⌘" : "Ctrl"}
+                  </KeyboardShortcutKey>{" "}
+                  <KeyboardShortcutKey>Enter</KeyboardShortcutKey>
+                </div>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  disabled={pagination.currentIndex === pagination.maxIndex}
-                  onClick={pagination.handleNextTrace}
+          )}
+          {pagination && (
+            <div className="flex gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    disabled={pagination.currentIndex === 0}
+                    onClick={pagination.handlePrevTrace}
+                  >
+                    <ChevronUpIcon className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="left"
+                  className="bg-slate-900 text-white px-2 py-1.5 gap-1.5"
+                  align="center"
                 >
-                  <ChevronDownIcon className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className="bg-slate-950 text-white"
-                align="center"
-              >
-                Next <KeyboardShortcutKey>J</KeyboardShortcutKey>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+                  <p>Prev</p>
+                  <KeyboardShortcutKey>K</KeyboardShortcutKey>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    disabled={pagination.currentIndex === pagination.maxIndex}
+                    onClick={pagination.handleNextTrace}
+                  >
+                    <ChevronDownIcon className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className="bg-slate-900 text-white px-2 py-1.5 gap-1.5"
+                  align="center"
+                >
+                  <p>Next</p>
+                  <KeyboardShortcutKey>J</KeyboardShortcutKey>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          )}
+        </div>
       </div>
       <TimelineProvider>
         <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>

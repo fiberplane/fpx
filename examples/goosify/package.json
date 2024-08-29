@@ -1,0 +1,22 @@
+{
+  "name": "goosify",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply goosify --local",
+    "db:studio": "drizzle-kit studio",
+    "db:touch": "wrangler d1 execute goosify --local --command='SELECT 1'",
+    "db:migrate:prod": "GOOSIFY_ENV=production drizzle-kit migrate",
+    "db:studio:prod": "GOOSIFY_ENV=production drizzle-kit studio"
+  },
+  "dependencies": {
+    "@fiberplane/hono-otel": "workspace:*",
+    "dotenv": "^16.4.5",
+    "hono": "^4.5.9"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240821.1",
+    "wrangler": "^3.72.3"
+  }
+}

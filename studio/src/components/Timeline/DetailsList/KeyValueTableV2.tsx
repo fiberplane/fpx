@@ -21,7 +21,7 @@ import {
 import { type ReactNode, useState } from "react";
 import { SubSectionHeading } from "../shared";
 
-export const KeyValueRow = ({
+const KeyValueRow = ({
   entry,
   sensitiveKeys = [],
   keyCellClassName,
@@ -138,6 +138,19 @@ export function KeyValueTableV2({
   );
 }
 
+type Props = {
+  keyValue:
+    | Record<string, string>
+    | Array<[string | ReactNode, string | ReactNode]>;
+  emptyMessage?: string;
+  className?: string;
+  headerClassName?: string;
+  defaultCollapsed?: boolean;
+  title: string;
+  sensitiveKeys?: string[] | ((key: string) => boolean);
+  keyCellClassName?: string;
+};
+
 export function CollapsibleKeyValueTableV2({
   keyValue,
   emptyMessage = "No data",
@@ -146,17 +159,8 @@ export function CollapsibleKeyValueTableV2({
   title,
   sensitiveKeys = [],
   keyCellClassName,
-}: {
-  keyValue:
-    | Record<string, string>
-    | Array<[string | ReactNode, string | ReactNode]>;
-  emptyMessage?: string;
-  className?: string;
-  defaultCollapsed?: boolean;
-  title: string;
-  sensitiveKeys?: string[] | ((key: string) => boolean);
-  keyCellClassName?: string;
-}) {
+  headerClassName,
+}: Props) {
   const [isOpen, setIsOpen] = useState(!defaultCollapsed);
   const count = Object.entries(keyValue).length;
   const toggleIsOpen = () => setIsOpen((o) => !o);
@@ -166,15 +170,21 @@ export function CollapsibleKeyValueTableV2({
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <SubSectionHeading
-            className="flex items-center gap-2 cursor-pointer"
+            className={cn(
+              "flex items-center gap-2 cursor-pointer",
+              headerClassName,
+            )}
             onClick={toggleIsOpen}
           >
-            {isOpen ? (
-              <CaretDownIcon className="w-4 h-4 cursor-pointer" />
-            ) : (
-              <CaretRightIcon className="w-4 h-4 cursor-pointer" />
-            )}
-            {title} <CountBadge count={count} />
+            <div className="flex items-center text-left gap-2">
+              {isOpen ? (
+                <CaretDownIcon className="w-4 h-4 cursor-pointer" />
+              ) : (
+                <CaretRightIcon className="w-4 h-4 cursor-pointer" />
+              )}
+              {title}
+            </div>
+            <CountBadge count={count} />
           </SubSectionHeading>
         </CollapsibleTrigger>
         <CollapsibleContent>

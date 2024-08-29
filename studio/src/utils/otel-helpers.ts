@@ -119,7 +119,7 @@ export function getQuery(span: OtelSpan) {
 export function getPathWithSearch(span: OtelSpan) {
   const path = getRequestPath(span);
   const queryParams = getQuery(span);
-  const queryParamsString = queryParams ? `?${queryParams}` : "";
+  const queryParamsString = queryParams ? `${queryParams}` : "";
   return `${path}${queryParamsString}`;
 }
 

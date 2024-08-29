@@ -1,0 +1,275 @@
+---
+title: Using Starlight
+draft: true # don't change so it doesn't get published
+sidebar:
+  order: 9999
+---
+
+import { FileTree, Aside, Steps, Card, LinkCard } from "@astrojs/starlight/components";
+import Button from "@/components/Button.astro";
+
+This is a little cheatsheet for using Starlight for documenting Fiberplane features on our website.
+
+
+### Adding a new page
+
+<Aside type="tip">
+
+See if it fits under any existing docs pages - long docs pages are **good**. They are <kbd>cmd</kbd> / <kbd>ctrl</kbd><kbd>f</kbd>-able and allow the reader to find all info they need under one page.
+
+</Aside>
+
+To add another page, create a new file in the `src/content/docs/docs` folder.
+
+<FileTree>
+- astro.config.mjs
+- package.json
+- README.md
+- ...
+- public/  (e.g: file assets, plain text - not images!)
+- src/
+	- assets/ images that need to be optimized by Astro
+	- components/ our custom reusable components
+	- pages/
+	- content/
+		- landing/
+		- blog/
+		- docs/
+			- docs/
+				- get-started.mdx
+				- components/
+					- client-library.mdx
+				- features/
+					- making-requests.mdx
+					- generating-with-ai.mdx
+					- **new-page.mdx**
+					- ...
+</FileTree>
+
+The Sidebar will be populated automatically. If not you can configure it in the `astro.config.mjs` file.
+
+### How docs are organized
+
+- Get started: just the quick start for now
+- Components: an overview of each of the components
+- Features: how to use main features of Fiberplane Studio (user flows)
+
+### Frontmatter
+
+Every document has a frontmatter section at the top that describes the most important elements. Some fields are mandatory and the site won't build if they are missing.
+
+```md
+---
+title: Using Starlight # (required)
+description: A short description of the page # page will build without this but you should include it
+sidebar: # all optional but you might want to configure it sometimes
+  hidden: false # (optional) default is false you can hide it if you want
+  order: 5  # the order of the sidebar items (alphabetical otherwise
+  label: Getting started with Starlight # default is the title but you can change it
+
+---
+
+
+# My heading <!-- don't use h1s -->
+
+My documentation page content
+
+```
+
+See full [frontmatter reference](https://starlight.astro.build/reference/frontmatter) for more information.
+
+## Components
+
+Starlight has a lot of components to organize your information. You can find the complete reference of what's builtin [here](https://starlight.astro.build/guides/components).
+
+Builtin components can be imported from `@astrojs/starlight/components` and our custom ones from `@/components/*` directly in the same MDX file.
+
+```mdx
+import { Aside, Steps } from "@astrojs/starlight/components";
+import { Button } from "@/components/Button.astro";
+```
+
+We'll highlight a few with some best practices.
+
+### Using code components
+
+Code components don't need to be imported, they can be added using the classic markdown syntax.
+
+Provide as much context as possible:
+
+- what is the environment? File or a shell? What is the file path?
+- use appropriate syntax highlighting
+- show the action using a diff or annotation
+
+**This is good:**
+
+```ts
+import { Hono } from "hono";
+import { instrument } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+app.get("/", (c) => {
+  return c.text("Hello, world!");
+});
+
+app.get("/another-route", (c) => {
+  return c.text("Another route!");
+});
+
+export default instrument(app);
+```
+
+**This is better:**
+
+```ts title="src/index.ts" ins={"Import the instrument function":2-3} ins={11-13} ins={"Wrapping the app with instrument":15-16}
+import { Hono } from "hono";
+
+import { instrument } from "@fiberplane/hono-otel";
+
+const app = new Hono();
+
+app.get("/", (c) => {
+  return c.text("Hello, world!");
+});
+
+app.get("/another-route", (c) => {
+  return c.text("Another route!");
+});
+
+
+export default instrument(app);
+```
+
+Full reference of the Expressive Code component can be found [here](https://expressive-code.com/key-features/syntax-highlighting/)
+
+### Steps
+
+Anytime you have multistep instructions, use the `<Steps>` component to render them as opposed to adding a list number in a heading.
+
+
+<Steps>
+1. Step 1
+
+	nested things here
+2. Step 2
+
+	```sh
+	rm -rf /
+	```
+3. #### Step 3 (can also be a heading)
+
+</Steps>
+
+### Aside
+
+Use the `<Aside>` component to give tips or warnings about something.
+
+<Aside type="caution">
+  <p>This is a caution!</p>
+</Aside>
+
+<Aside type="tip">
+  <p>This is a tip!</p>
+</Aside>
+
+<Aside type="danger">
+  <p>Don't do this!</p>
+</Aside>
+
+### Buttons and keyboard shortcuts
+
+Instead of saying 'press the "Send" button' on the screen you can use the `<Button>` component to render a button with a nicer styling that resembles the buttons on the UI.
+
+Press the <Button>Send</Button> button to send the request
+
+```md
+Press <Button>Send</Button> to send the request.
+```
+
+You can also use the HTML-native `<kbd>` component to render a keyboard shortcut.
+
+Hit <kbd>cmd</kbd><kbd>enter</kbd> to send the request
+
+```md
+Hit <kbd>cmd</kbd><kbd>enter</kbd> to send the request.
+```
+
+Feel free to tweak the `Button.astro` component and color vars in the css files to match your needs.
+
+### Adding images
+
+<Aside type="caution" title="Avoid product screenshots when you can">
+  **Product** screenshots are great for demonstrating features, but they can become outdated quickly. Use screenshots sparingly.
+</Aside>
+
+To add an image to a page, first put it in the `src/assets` folder.
+
+Then you can use standard markdown to add it to the page:
+
+```mdx title="src/my-new-docs-page.md"
+![alt text](@/assets/name-of-image.png)
+```
+
+You can also use the Astro Image component:
+
+```mdx title="src/my-new-docs-page.mdx"
+import { Image } from "astro:assets";
+import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif"
+
+<Image src={fpxGenAiGenerateBody} alt="Generate a request body with AI" />
+```
+
+***
+
+If you're on a `mac` (_shoutout Tim 🍎_), use [CleanShot X](https://cleanshot.com/) to take screenshots.
+
+If you don't feel like dealing with that, ask Brett, Lau, or Mies to take the screenshots for you.
+
+A few things to keep in mind:
+
+- Show as much of the UI as possible, don't zoom in on a specific part
+- Use opacity to highlight or call out certain elements
+
+<Aside type="tip" title="GIFs are large">
+  You can record gifs, but even when Astro optimizes them, they are still large files that a long time to load on the website.
+</Aside>
+
+We still haven't defined specific, consistent styles for images in our docs, so for now, use your best judgement on making screenshots look good.
+
+## Workflow
+
+Add documentation in the same branch as you're adding the feature.
+You can comment out your pages if you don't want them to appear,
+or use the `draft: true` frontmatter flag (like on this page) to hide it from the website in production.
+
+<Card title="Website is published when we merge to main">
+  The website is deployed automatically when changes are merged into `main`.
+  Shoutout Lau. Shoutout GitHub Actions. Shoutout bash scripts.
+</Card>
+
+### Best practices
+
+- Keep headings short and descriptive. They will appear automatically in the sidebar.
+- See if you can append to a page as opposed to creating a new one. Long pages are good.
+- Always mention Geese 🪿
+
+### Writing guidance
+
+Here are some materials from a technical writing course (shoutout Nele) we went through while back, for recap:
+
+- [Slides for workshop 1](https://docs.google.com/presentation/d/1RB6XHTaqXOBayO-VNS2hfj3HFv16YlX2T-s_-0tQpgw/edit?resourcekey=0-FfJiVW7eBjC8rEfwhPumpg#slide=id.g5950a2689d_0_7)
+- [Google technical writing materials 1](https://developers.google.com/tech-writing/one)
+- [Slides for workshop 2](https://docs.google.com/presentation/d/19EHjrIg_rKkdTU2PAoY_QdpSkvUXhe5T4X23wvq7l1k/edit?usp=sharing&resourcekey=0-9NfSUt7iddOUiNoOQ_kKTw)
+- [Google technical writing materials 2](https://developers.google.com/tech-writing/two)
+
+Always feel free to enlist help for reviewing your writing!
+
+## What Next
+
+<LinkCard
+  title="Fix Some Docs"
+  href="https://fiberplane.com"
+  icon="external"
+  description="Peruse the docs website at fiberplane.com, and if you find a typo, bug, etc., open a PR to fix it"
+/>

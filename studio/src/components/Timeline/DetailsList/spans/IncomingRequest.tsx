@@ -30,7 +30,7 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
     <div id={id}>
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-2">
-          <SectionHeading className="flex items-center gap-2">
+          <SectionHeading className="flex items-center gap-2 max-lg:mt-2">
             {icon}
             Incoming Request
           </SectionHeading>

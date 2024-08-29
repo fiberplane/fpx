@@ -1,6 +1,7 @@
 export { TimelineGraph } from "./graph";
 export { extractWaterfallTimeStats } from "./utils";
 export { RequestMethod, SubSectionHeading, FpxCard } from "./shared";
+export { useAsWaterfall } from "./hooks";
 export {
   BodyViewerV2,
   CodeMirrorJsonEditor,

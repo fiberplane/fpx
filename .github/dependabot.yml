@@ -7,6 +7,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "tokio-tungstenite"
+
+      # these two need to be updated together so prevent dependabot from updating just one of each
+      - dependency-name: "tower"
+      - dependency-name: "axum"
     groups:
       cargo-dependencies:
         applies-to: version-updates

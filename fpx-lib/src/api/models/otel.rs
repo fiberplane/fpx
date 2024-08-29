@@ -1,10 +1,8 @@
-use opentelemetry_proto::tonic::common::v1::{any_value, KeyValueList};
+use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
+use opentelemetry_proto::tonic::common::v1::{any_value, KeyValue, KeyValueList};
 use opentelemetry_proto::tonic::trace::v1::span::{Event, Link};
 use opentelemetry_proto::tonic::trace::v1::status::StatusCode;
 use opentelemetry_proto::tonic::trace::v1::{span, Status};
-use opentelemetry_proto::tonic::{
-    collector::trace::v1::ExportTraceServiceRequest, common::v1::KeyValue,
-};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -231,7 +229,7 @@ impl From<StatusCode> for SpanStatusCode {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
-pub struct AttributeMap(BTreeMap<String, Option<AttributeValue>>);
+pub struct AttributeMap(pub BTreeMap<String, Option<AttributeValue>>);
 
 impl From<KeyValueList> for AttributeMap {
     fn from(value: KeyValueList) -> Self {
@@ -241,7 +239,7 @@ impl From<KeyValueList> for AttributeMap {
 
 impl From<Vec<KeyValue>> for AttributeMap {
     fn from(attributes: Vec<KeyValue>) -> Self {
-        let result: BTreeMap<String, Option<AttributeValue>> = attributes
+        let result = attributes
             .into_iter()
             .map(|kv| {
                 (
@@ -256,34 +254,39 @@ impl From<Vec<KeyValue>> for AttributeMap {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub enum AttributeValue {
-    String(String),
-    Bool(bool),
-    Int(i64),
-    Double(f64),
-    Array(Vec<AttributeValue>),
-    KeyValueList(AttributeMap),
-    Bytes(Vec<u8>),
+    StringValue(String),
+    BoolValue(bool),
+    IntValue(i64),
+    DoubleValue(f64),
+    ArrayValue(Vec<AttributeValue>),
+    KvlistValue(AttributeMap),
+    BytesValue(Vec<u8>),
 }
 
 impl From<any_value::Value> for AttributeValue {
     fn from(value: any_value::Value) -> Self {
         match value {
-            any_value::Value::StringValue(val) => AttributeValue::String(val),
-            any_value::Value::BoolValue(val) => AttributeValue::Bool(val),
-            any_value::Value::IntValue(val) => AttributeValue::Int(val),
-            any_value::Value::DoubleValue(val) => AttributeValue::Double(val),
-            any_value::Value::BytesValue(val) => AttributeValue::Bytes(val),
-            any_value::Value::ArrayValue(val) => {
-                let val: Vec<_> = val
-                    .values
-                    .into_iter()
-                    .flat_map(|value| value.value.map(|value| value.into()))
-                    .collect();
-                AttributeValue::Array(val)
-            }
-            any_value::Value::KvlistValue(val) => AttributeValue::KeyValueList(val.values.into()),
+            any_value::Value::StringValue(val) => AttributeValue::StringValue(val),
+            any_value::Value::BoolValue(val) => AttributeValue::BoolValue(val),
+            any_value::Value::IntValue(val) => AttributeValue::IntValue(val),
+            any_value::Value::DoubleValue(val) => AttributeValue::DoubleValue(val),
+            any_value::Value::BytesValue(val) => AttributeValue::BytesValue(val),
+            any_value::Value::ArrayValue(val) => val.into(),
+            any_value::Value::KvlistValue(val) => AttributeValue::KvlistValue(val.values.into()),
         }
+    }
+}
+
+impl From<opentelemetry_proto::tonic::common::v1::ArrayValue> for AttributeValue {
+    fn from(value: opentelemetry_proto::tonic::common::v1::ArrayValue) -> Self {
+        let value: Vec<_> = value
+            .values
+            .into_iter()
+            .flat_map(|value| value.value.map(|value| value.into()))
+            .collect();
+        AttributeValue::ArrayValue(value)
     }
 }
 
@@ -361,6 +364,68 @@ impl From<Span> for SpanSummary {
             name: span.name,
             span_kind: span.kind,
             result: span.status,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn attribute_value_serialize_deserialize() {
+        struct Test<'a> {
+            input: AttributeValue,
+            expected: &'a str,
+        }
+
+        let mut kv_list = BTreeMap::new();
+        kv_list.insert("key1".to_string(), Some(AttributeValue::IntValue(1234)));
+        kv_list.insert(
+            "key2".to_string(),
+            Some(AttributeValue::DoubleValue(1234.1234)),
+        );
+        let kv_list: AttributeMap = AttributeMap(kv_list);
+        let tests = vec![
+            Test {
+                input: AttributeValue::IntValue(1234),
+                expected: "{\"intValue\":1234}",
+            },
+            Test {
+                input: AttributeValue::DoubleValue(1234.1234),
+                expected: "{\"doubleValue\":1234.1234}",
+            },
+            Test {
+                input: AttributeValue::StringValue("hello".to_string()),
+                expected: "{\"stringValue\":\"hello\"}",
+            },
+            Test {
+                input: AttributeValue::BoolValue(true),
+                expected: "{\"boolValue\":true}",
+            },
+            Test {
+                input: AttributeValue::BytesValue(vec![1, 2, 3, 4]),
+                expected: "{\"bytesValue\":[1,2,3,4]}",
+            },
+            Test {
+                input: AttributeValue::ArrayValue(vec![
+                    AttributeValue::IntValue(1234),
+                    AttributeValue::DoubleValue(1234.1234),
+                ]),
+                expected: "{\"arrayValue\":[{\"intValue\":1234},{\"doubleValue\":1234.1234}]}",
+            },
+            Test {
+                input: AttributeValue::KvlistValue(kv_list),
+                expected: "{\"kvlistValue\":{\"key1\":{\"intValue\":1234},\"key2\":{\"doubleValue\":1234.1234}}}",
+            },
+        ];
+
+        for test in tests {
+            let actual = serde_json::to_string(&test.input).unwrap();
+            assert_eq!(actual, test.expected);
+
+            let converted_back: AttributeValue = serde_json::from_str(&actual).unwrap();
+            assert_eq!(converted_back, test.input);
         }
     }
 }
