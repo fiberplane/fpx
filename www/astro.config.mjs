@@ -1,8 +1,8 @@
 import { rehypeHeadingIds } from "@astrojs/markdown-remark";
 import starlight from "@astrojs/starlight";
+import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
-import icon from "astro-icon";
 
 // https://astro.build/config
 export default defineConfig({

@@ -2,14 +2,14 @@
 // The file is mostly copied from the original sidebar component
 // in @astrojs/starlight
 
+import { Badge } from "@astrojs/starlight/components";
+import { Icon } from "astro-icon/components";
 // NOTE: bit of a hacky way to ge the types for the sidebar because Starlight
 // doesn't export them in its types'
 import type {
   Link,
   SidebarEntry,
 } from "node_modules/@astrojs/starlight/utils/navigation";
-import { Badge } from "@astrojs/starlight/components";
-import { Icon } from "astro-icon/components";
 
 /** Turn the nested tree structure of a sidebar into a flat list of all the links. */
 function flattenSidebar(sidebar: SidebarEntry[]): Link[] {
