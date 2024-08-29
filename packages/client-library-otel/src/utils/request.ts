@@ -21,6 +21,7 @@ import type {
   InitParam,
   InputParam,
 } from "../types";
+import { shouldFallbackToProcessEnv } from "./env";
 import { safelySerializeJSON } from "./json";
 
 // There are so many different types of headers
@@ -41,15 +42,22 @@ export function headersToObject(headers: PossibleHeaders) {
 }
 
 /**
- * HELPER
+ * Helper to get the request attributes for the root request.
+ *
+ * Requires that we have a cloned request, so we can get the body and headers
+ * without consuming the original request.
  */
-export async function getRootRequestAttributes(request: Request, env: unknown) {
-  let attributes: Attributes = {
-    [FPX_REQUEST_ENV]: shouldSerializeEnv(env) ? safelySerializeJSON(env) : "",
-  };
+export async function getRootRequestAttributes(
+  request: Request,
+  honoEnv: unknown,
+) {
+  let attributes: Attributes = {};
 
-  // NOTE - We should not *ever* do this in production
-  if (shouldSerializeEnv(env)) {
+  // HACK - We need to account for the fact that the Hono `env` is different across runtimes
+  //        If process.env is available, we use that, otherwise we use the `env` object from the Hono runtime
+  const env = shouldFallbackToProcessEnv(honoEnv) ? process.env : honoEnv;
+  if (env) {
+    // NOTE - We should not *ever* do this in production
     attributes[FPX_REQUEST_ENV] = safelySerializeJSON(env);
   }
 
@@ -71,28 +79,6 @@ export async function getRootRequestAttributes(request: Request, env: unknown) {
   }
 
   return attributes;
-}
-
-/**
- * In node.js `env` is an object with keys "incoming" and "outgoing", one of which has circular references
- * We don't want to serialize this
- *
- * @param env
- * @returns
- */
-function shouldSerializeEnv(env: unknown) {
-  if (typeof env === "object" && env !== null) {
-    return Object.keys(env).some((key) => {
-      if (
-        key?.toLowerCase() !== "incoming" &&
-        key?.toLowerCase() !== "outgoing"
-      ) {
-        return true;
-      }
-      return false;
-    });
-  }
-  return true;
 }
 
 async function formatRootRequestBody(request: Request) {

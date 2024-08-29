@@ -24,6 +24,7 @@ import {
   getRequestAttributes,
   getResponseAttributes,
   getRootRequestAttributes,
+  runtimeHasProcessEnv,
 } from "./utils";
 
 /**
@@ -289,10 +290,8 @@ function mergeConfigs(
 }
 
 /**
- * We aren't getting access to the FPX_ENDPOINT in the fetch function in Node,
- * this helper will also check process.env
- *
- * TODO - Try using `env` from hono/adapter to get the env var?
+ * In Hono-node environments, the FPX_ENDPOINT env var is not available on the `env` object that's passed to `app.fetch`.
+ * This helper will also check process.env and fallback to that if the env var is not present on the `env` object.
  */
 function getFpxEndpoint(env: HonoLikeEnv) {
   const fpxEndpointFromEnv =
@@ -304,7 +303,7 @@ function getFpxEndpoint(env: HonoLikeEnv) {
     return fpxEndpointFromEnv;
   }
 
-  if (typeof process !== "undefined" && typeof process.env !== "undefined") {
+  if (runtimeHasProcessEnv()) {
     return process?.env?.FPX_ENDPOINT;
   }
 
