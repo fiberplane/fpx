@@ -9,3 +9,4 @@ export {
   CollapsibleKeyValueTableV2,
   TimelineListDetails,
 } from "./DetailsList";
+export { TimelineProvider } from "./context";

@@ -1,6 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { cn, getHttpMethodTextColor } from "@/utils";
-import type { ComponentProps } from "react";
+import { Collapsible } from "@radix-ui/react-collapsible";
+import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
+import { type ComponentProps, type ReactNode, useState } from "react";
+import { CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 
 export const FpxCard = ({
   children,
@@ -45,8 +48,11 @@ export function RequestMethod({
   );
 }
 
-export const SubSection = ({ children }: { children: React.ReactNode }) => {
-  return <div className="flex flex-col gap-2">{children}</div>;
+export const SubSection = ({
+  children,
+  className,
+}: { children: React.ReactNode; className?: string }) => {
+  return <div className={cn("flex flex-col gap-2", className)}>{children}</div>;
 };
 
 export const SubSectionHeading = ({
@@ -56,7 +62,8 @@ export const SubSectionHeading = ({
 }: { children: React.ReactNode; onClick?: () => void; className?: string }) => {
   return (
     <div
-      className={cn("font-semibold text-sm py-1", className)}
+      className={cn("font-semibold text-xs py-1", className)}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
       onKeyUp={(e) => {
         if (e.key === "Enter") {
@@ -71,4 +78,32 @@ export const SubSectionHeading = ({
 
 export const Divider = () => {
   return <div className="h-[1px] w-full bg-muted/80" />;
+};
+
+export const CollapsibleSubSection = ({
+  heading,
+  children,
+}: { heading: ReactNode; children: React.ReactNode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleIsOpen = () => setIsOpen((o) => !o);
+  return (
+    <SubSection>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <SubSectionHeading
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={toggleIsOpen}
+          >
+            {isOpen ? (
+              <CaretDownIcon className="w-4 h-4 cursor-pointer" />
+            ) : (
+              <CaretRightIcon className="w-4 h-4 cursor-pointer" />
+            )}
+            {heading}
+          </SubSectionHeading>
+        </CollapsibleTrigger>
+        <CollapsibleContent>{children}</CollapsibleContent>
+      </Collapsible>
+    </SubSection>
+  );
 };

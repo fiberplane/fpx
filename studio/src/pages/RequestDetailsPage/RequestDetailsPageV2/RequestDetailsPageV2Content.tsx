@@ -6,6 +6,7 @@ import {
 } from "@radix-ui/react-tooltip";
 
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+import { TimelineListDetails, TimelineProvider } from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +20,6 @@ import { cn } from "@/utils";
 import { EmptyState } from "../EmptyState";
 import { TraceDetailsTimeline } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
-import { TimelineListDetails } from "@/components/Timeline";
 
 const EMPTY_LIST: Array<MizuOrphanLog> = [];
 
@@ -112,40 +112,42 @@ export function RequestDetailsPageContentV2({
           </div>
         )}
       </div>
-      <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
-        <SummaryV2 requestSpan={rootSpan.span} />
-        <div className="min-w-0 overflow-hidden w-full lg:hidden">
-          <TraceDetailsTimeline waterfall={waterfall} />
+      <TimelineProvider>
+        <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
+          <SummaryV2 requestSpan={rootSpan.span} />
+          <div className="min-w-0 overflow-hidden w-full lg:hidden">
+            <TraceDetailsTimeline waterfall={waterfall} />
+          </div>
+          <ResizablePanelGroup
+            direction="horizontal"
+            className={cn("grid grid-rows-[auto_1fr] w-full border-t")}
+          >
+            <ResizablePanel
+              defaultSize={20}
+              className={cn(
+                "hidden",
+                "lg:block lg:sticky lg:top-4 self-start",
+                "min-w-[300px]",
+                "xl:min-w-[260px]",
+                "2xl:min-w-[320px]",
+              )}
+            >
+              <TraceDetailsTimeline waterfall={waterfall} className="lg:pt-0" />
+            </ResizablePanel>
+            <ResizableHandle className="max-lg:hidden" />
+            <ResizablePanel
+              className={cn(
+                "grid items-center gap-4 overflow-x-auto relative",
+                "w-full",
+                "lg:items-start",
+                "lg:p-4",
+              )}
+            >
+              <TimelineListDetails waterfall={waterfall} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
-        <ResizablePanelGroup
-          direction="horizontal"
-          className={cn("grid grid-rows-[auto_1fr] w-full border-t")}
-        >
-          <ResizablePanel
-            defaultSize={20}
-            className={cn(
-              "hidden",
-              "lg:block lg:sticky lg:top-4 self-start",
-              "min-w-[300px]",
-              "xl:min-w-[260px]",
-              "2xl:min-w-[320px]",
-            )}
-          >
-            <TraceDetailsTimeline waterfall={waterfall} className="lg:pt-0" />
-          </ResizablePanel>
-          <ResizableHandle className="max-lg:hidden" />
-          <ResizablePanel
-            className={cn(
-              "grid items-center gap-4 overflow-x-auto relative",
-              "w-full",
-              "lg:items-start",
-              "lg:p-4",
-            )}
-          >
-            <TimelineListDetails waterfall={waterfall} />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+      </TimelineProvider>
     </div>
   );
 }

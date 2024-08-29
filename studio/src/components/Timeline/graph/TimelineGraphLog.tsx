@@ -1,5 +1,6 @@
 import type { MizuOrphanLog } from "@/queries";
 import { cn } from "@/utils";
+import { useTimelineContext } from "../context";
 import { useTimelineIcon, useTimelineTitle } from "../hooks";
 import { getColorForLevel } from "../utils";
 
@@ -16,6 +17,7 @@ export const TimelineGraphLog: React.FC<{
     colorOverride: getColorForLevel(log.level),
   });
   const title = useTimelineTitle(log);
+  const { setHighlightedSpanId, highlightedSpanId } = useTimelineContext();
 
   return (
     <a
@@ -26,8 +28,16 @@ export const TimelineGraphLog: React.FC<{
         isActive && "bg-primary/10 border-blue-500",
         "transition-all",
         "cursor-pointer",
+        "data-[highlighted=true]:bg-primary/10",
       )}
+      data-highlighted={highlightedSpanId === `${log.id}`}
       href={`#${log.id}`}
+      onMouseEnter={() => setHighlightedSpanId(`${log.id}`)}
+      onMouseLeave={
+        setHighlightedSpanId
+          ? () => setHighlightedSpanId(`${log.id}`)
+          : undefined
+      }
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-20 overflow-hidden">

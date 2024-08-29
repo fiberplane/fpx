@@ -1,3 +1,4 @@
+import { CodeMirrorJsonEditor, SubSectionHeading } from "@/components/Timeline";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -17,7 +18,6 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../reducer/state";
-import { CodeMirrorJsonEditor, SubSectionHeading } from "@/components/Timeline";
 
 export function ResponseBody({
   headersSlot,

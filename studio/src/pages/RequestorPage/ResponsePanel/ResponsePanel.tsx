@@ -1,14 +1,22 @@
 import RobotIcon from "@/assets/Robot.svg";
+import {
+  CollapsibleKeyValueTableV2,
+  SubSectionHeading,
+} from "@/components/Timeline";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
-import { ArrowTopRightIcon } from "@radix-ui/react-icons";
-import { Link } from "react-router-dom";
-import { FpxDetails } from "../FpxDetails";
+import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
+import { useState } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
+import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import { AiTestGenerationDrawer } from "../ai";
 import type { Requestornator } from "../queries";
 import type { ResponsePanelTab } from "../reducer";
 import {
@@ -23,7 +31,6 @@ import {
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
-import { CollapsibleKeyValueTableV2 } from "@/components/Timeline";
 
 type Props = {
   activeResponse: RequestorActiveResponse | null;
@@ -57,166 +64,131 @@ export function ResponsePanel({
     ? responseToRender.isFailure
     : responseToRender?.app_responses?.isFailure;
 
-  // FIXME - This should actually look if the trace exists in the database
-  //         Since a trace ID will still be created even if we request a non-existent route OR against a service that doesn't exist
-  const hasTraceId = isRequestorActiveResponse(responseToRender)
-    ? !!responseToRender?.traceId
-    : !!responseToRender?.app_responses?.traceId;
-
   const showBottomToolbar = !!responseToRender;
-  const disableGoToTraceButton = !hasTraceId;
 
   const responseHeaders = isRequestorActiveResponse(responseToRender)
     ? responseToRender.responseHeaders
     : responseToRender?.app_responses?.responseHeaders;
 
   const shouldShowMessages = shouldShowResponseTab("messages");
+  const traceId = tracedResponse?.app_responses.traceId;
+
+  const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="overflow-hidden h-full relative">
-      <Tabs
-        value={activeResponsePanelTab}
-        onValueChange={setActiveResponsePanelTab}
-        className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
-      >
-        <CustomTabsList>
-          <CustomTabTrigger value="response">Response</CustomTabTrigger>
-          {shouldShowMessages && (
-            <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
-          )}
-          <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
-          <div
-            className={cn(
-              // Hide this button on mobile, and rely on the button + drawer pattern instead
-              "max-sm:hidden",
-              "flex-grow sm:flex justify-end",
+    <div className="overflow-x-hidden overflow-y-auto h-full relative">
+      <div>
+        <Tabs
+          value={activeResponsePanelTab}
+          onValueChange={setActiveResponsePanelTab}
+          className="grid grid-rows-[auto_1fr] overflow-hidden"
+        >
+          <CustomTabsList>
+            <CustomTabTrigger value="response" className="flex items-center">
+              {responseToRender ? (
+                <ResponseSummary response={responseToRender} />
+              ) : (
+                "Response"
+              )}
+            </CustomTabTrigger>
+            {shouldShowMessages && (
+              <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
             )}
-          >
-            <Button
-              variant={isAiTestGenerationPanelOpen ? "outline" : "ghost"}
-              size="icon"
-              onClick={openAiTestGenerationPanel}
+            <div
               className={cn(
-                isAiTestGenerationPanelOpen && "opacity-50 bg-slate-900",
+                // Hide this button on mobile, and rely on the button + drawer pattern instead
+                "max-sm:hidden",
+                "flex-grow sm:flex justify-end",
               )}
             >
-              <RobotIcon className="h-4 w-4 cursor-pointer" />
-            </Button>
-          </div>
-        </CustomTabsList>
-        <CustomTabsContent value="messages">
-          <TabContentInner
-            isLoading={websocketState.isConnecting}
-            isEmpty={
-              !websocketState.isConnected && !websocketState.isConnecting
-            }
-            isFailure={websocketState.hasError}
-            LoadingState={<LoadingResponseBody />}
-            FailState={<FailedWebsocket />}
-            EmptyState={<NoWebsocketConnection />}
-          >
-            <WebsocketMessages websocketState={websocketState} />
-          </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="response">
-          <TabContentInner
-            isLoading={isLoading}
-            isEmpty={!responseToRender}
-            isFailure={
-              isWsRequest(requestType) ? websocketState.hasError : !!isFailure
-            }
-            LoadingState={<LoadingResponseBody />}
-            FailState={
-              isWsRequest(requestType) ? (
-                <FailedWebsocket />
-              ) : (
-                <FailedRequest response={tracedResponse} />
-              )
-            }
-            EmptyState={
-              isWsRequest(requestType) ? (
-                <NoWebsocketConnection />
-              ) : (
-                <NoResponse />
-              )
-            }
-          >
-            <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
-              <ResponseSummary response={responseToRender} />
-              <ResponseBody
-                headersSlot={
-                  <CollapsibleKeyValueTableV2
-                    sensitiveKeys={SENSITIVE_HEADERS}
-                    title="Headers"
-                    keyValue={responseHeaders ?? {}}
-                    className="mb-2"
-                  />
-                }
-                response={responseToRender}
-                // HACK - To support absolutely positioned bottom toolbar
-                className={cn(showBottomToolbar && "pb-16")}
-              />
+              <Button
+                variant={isAiTestGenerationPanelOpen ? "outline" : "ghost"}
+                size="icon"
+                onClick={openAiTestGenerationPanel}
+                className={cn(
+                  isAiTestGenerationPanelOpen && "opacity-50 bg-slate-900",
+                )}
+              >
+                <RobotIcon className="h-4 w-4 cursor-pointer" />
+              </Button>
             </div>
-          </TabContentInner>
-        </CustomTabsContent>
-        <CustomTabsContent value="debug">
-          <TabContentInner
-            isLoading={isLoading}
-            isEmpty={!tracedResponse}
-            isFailure={!!isFailure}
-            FailState={<FailedRequest response={tracedResponse} />}
-            EmptyState={<NoResponse />}
-          >
-            <div className={cn("h-full")}>
-              <FpxDetails
-                response={tracedResponse}
-                // HACK - Allows for absolute positioned toolbar
-                className={cn(showBottomToolbar && "pb-16")}
-              />
-              {showBottomToolbar && (
-                <BottomToolbar
-                  response={tracedResponse}
-                  disableGoToTraceButton={disableGoToTraceButton}
+          </CustomTabsList>
+          <CustomTabsContent value="messages">
+            <TabContentInner
+              isLoading={websocketState.isConnecting}
+              isEmpty={
+                !websocketState.isConnected && !websocketState.isConnecting
+              }
+              isFailure={websocketState.hasError}
+              LoadingState={<LoadingResponseBody />}
+              FailState={<FailedWebsocket />}
+              EmptyState={<NoWebsocketConnection />}
+            >
+              <WebsocketMessages websocketState={websocketState} />
+            </TabContentInner>
+          </CustomTabsContent>
+          <CustomTabsContent value="response">
+            <TabContentInner
+              isLoading={isLoading}
+              isEmpty={!responseToRender}
+              isFailure={
+                isWsRequest(requestType) ? websocketState.hasError : !!isFailure
+              }
+              LoadingState={<LoadingResponseBody />}
+              FailState={
+                isWsRequest(requestType) ? (
+                  <FailedWebsocket />
+                ) : (
+                  <FailedRequest response={tracedResponse} />
+                )
+              }
+              EmptyState={
+                isWsRequest(requestType) ? (
+                  <NoWebsocketConnection />
+                ) : (
+                  <NoResponse />
+                )
+              }
+            >
+              <div className={cn("grid grid-rows-[auto_1fr]")}>
+                <ResponseBody
+                  headersSlot={
+                    <CollapsibleKeyValueTableV2
+                      sensitiveKeys={SENSITIVE_HEADERS}
+                      title="Headers"
+                      keyValue={responseHeaders ?? {}}
+                      className="mb-2"
+                    />
+                  }
+                  response={responseToRender}
+                  // HACK - To support absolutely positioned bottom toolbar
+                  className={cn(showBottomToolbar && "pb-2")}
                 />
+              </div>
+            </TabContentInner>
+          </CustomTabsContent>
+        </Tabs>
+      </div>
+      {traceId && (
+        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="pl-3">
+          <CollapsibleTrigger asChild className="mb-2">
+            <SubSectionHeading className="flex items-center gap-2 cursor-pointer">
+              {isOpen ? (
+                <CaretDownIcon className="w-4 h-4 cursor-pointer" />
+              ) : (
+                <CaretRightIcon className="w-4 h-4 cursor-pointer" />
               )}
-            </div>
-          </TabContentInner>
-        </CustomTabsContent>
-      </Tabs>
+              Timeline
+            </SubSectionHeading>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <RequestorTimeline traceId={traceId} />
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   );
 }
-
-// TODO - When there's no matching trace, don't allow the user to go to trace details
-const BottomToolbar = ({
-  response,
-  disableGoToTraceButton,
-}: { response?: Requestornator | null; disableGoToTraceButton: boolean }) => {
-  const traceId = response?.app_responses?.traceId;
-
-  return (
-    <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
-      <div className="sm:hidden">
-        <AiTestGenerationDrawer history={response ? [response] : null} />
-      </div>
-      <Link
-        to={`/requests/otel/${traceId}`}
-        className={cn(disableGoToTraceButton && "pointer-events-none")}
-      >
-        <Button variant="secondary" disabled={disableGoToTraceButton}>
-          {disableGoToTraceButton ? (
-            "Cannot Find Trace"
-          ) : (
-            <>
-              Go to Trace Details
-              <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
-            </>
-          )}
-        </Button>
-      </Link>
-    </div>
-  );
-};
 
 /**
  * Helper component for handling loading/failure/empty states in tab content
@@ -265,7 +237,7 @@ function ResponseSummary({
         response?.app_requests?.requestQueryParams ?? undefined,
       );
   return (
-    <div className="flex items-center mb-4 space-x-2 text-sm">
+    <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
       <div>
         <Method method={method ?? "—"} />

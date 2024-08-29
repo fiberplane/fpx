@@ -210,3 +210,49 @@ export function getHttpMethodTextColor(method: string) {
     WS: "text-green-500",
   }[String(method).toUpperCase()];
 }
+
+export function isSensitiveEnvVar(key: string) {
+  if (!key) {
+    return false;
+  }
+  if (key.includes("APIKEY")) {
+    return true;
+  }
+  if (key.includes("API_KEY")) {
+    return true;
+  }
+  if (key.includes("ACCESS")) {
+    return true;
+  }
+  if (key.includes("AUTH_")) {
+    return true;
+  }
+  if (key.includes("CREDENTIALS")) {
+    return true;
+  }
+  if (key.includes("CERTIFICATE")) {
+    return true;
+  }
+  if (key.includes("PASSPHRASE")) {
+    return true;
+  }
+  if (key.includes("DATABASE_URL")) {
+    return true;
+  }
+  if (key.includes("CONNECTION_STRING")) {
+    return true;
+  }
+  if (key.includes("SECRET")) {
+    return true;
+  }
+  if (key.includes("PASSWORD")) {
+    return true;
+  }
+  if (key.includes("PRIVATE")) {
+    return true;
+  }
+  if (key.includes("TOKEN")) {
+    return true;
+  }
+  return false;
+}

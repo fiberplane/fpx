@@ -8,6 +8,7 @@ type Props = {
   duration: number;
   minStart: number;
   activeId: string | null;
+  className?: string;
 };
 
 export function TimelineGraph(props: Props) {

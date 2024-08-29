@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 
+import { BodyViewerV2, FpxCard, RequestMethod } from "@/components/Timeline";
 import { Badge } from "@/components/ui/badge";
 import type { BadgeProps } from "@/components/ui/badge/Badge";
 import { Status } from "@/components/ui/status";
@@ -22,7 +23,6 @@ import {
   SEMATTRS_EXCEPTION_TYPE,
 } from "@opentelemetry/semantic-conventions";
 import { useMemo } from "react";
-import { BodyViewerV2, FpxCard, RequestMethod } from "@/components/Timeline";
 
 export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
   const errors = useMemo(

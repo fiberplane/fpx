@@ -1,5 +1,6 @@
 import type { OtelSpan } from "@/queries";
 import { type VendorInfo, cn } from "@/utils";
+import { useTimelineContext } from "../context";
 import { useTimelineIcon, useTimelineTitle } from "../hooks";
 import { formatDuration } from "../utils";
 
@@ -24,6 +25,7 @@ export const TimelineGraphSpan: React.FC<{
   const lineOffset = `calc(${lineOffsetNumeric.toFixed(4)}% - ${2 * 0.0625}rem)`;
   const icon = useTimelineIcon(span, { vendorInfo });
   const title = useTimelineTitle({ span, vendorInfo });
+  const { setHighlightedSpanId, highlightedSpanId } = useTimelineContext();
 
   return (
     <a
@@ -33,10 +35,18 @@ export const TimelineGraphSpan: React.FC<{
         "border-l-2 border-transparent",
         "hover:bg-primary/10 hover:border-blue-500",
         isActive && "bg-primary/10 border-blue-500",
+        "data-[highlighted=true]:bg-primary/10",
         "transition-all",
         "cursor-pointer",
       )}
+      data-highlighted={highlightedSpanId === span.span_id}
       href={`#${span.span_id}`}
+      onMouseEnter={() => setHighlightedSpanId(span.span_id)}
+      onMouseLeave={
+        setHighlightedSpanId
+          ? () => setHighlightedSpanId(span.span_id)
+          : undefined
+      }
     >
       <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
       <div className="flex flex-col w-20 overflow-hidden">{title}</div>

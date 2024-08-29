@@ -1,5 +1,4 @@
 import { Status } from "@/components/ui/status";
-import { CodeMirrorSqlEditor } from "../CodeMirrorEditor";
 import type { OtelSpan } from "@/queries";
 import { SENSITIVE_HEADERS, cn, getHttpMethodTextColor, noop } from "@/utils";
 import {
@@ -21,10 +20,12 @@ import {
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
-import { TextOrJsonViewer } from "../TextJsonViewer";
-import { SectionHeading } from "../../shared";
+import { useTimelineIcon } from "../../hooks";
+import { CollapsibleSubSection, SectionHeading } from "../../shared";
+import { SubSection, SubSectionHeading } from "../../shared";
+import { CodeMirrorSqlEditor } from "../CodeMirrorEditor";
 import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
-import { Divider, SubSection, SubSectionHeading } from "../../shared";
+import { TextOrJsonViewer } from "../TextJsonViewer";
 
 export function FetchSpan({
   span,
@@ -63,9 +64,10 @@ export function FetchSpan({
   const url = getRequestUrl(span);
 
   const { component, title } = useVendorSpecificSection(vendorInfo) ?? {};
-
+  const icon = useTimelineIcon(span);
   return (
     <GenericFetchSpan
+      icon={icon}
       id={id}
       title={title}
       statusCode={getStatusCode(span)}
@@ -93,6 +95,7 @@ type GenericFetchSpanProps = {
   requestBody?: string;
   responseHeaders: Record<string, string>;
   responseBody?: string;
+  icon?: React.ReactNode;
   children?: React.ReactNode;
 };
 
@@ -107,15 +110,19 @@ function GenericFetchSpan({
   requestBody,
   responseHeaders,
   responseBody,
+  icon,
   children,
 }: GenericFetchSpanProps) {
   return (
     <div id={id}>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2 my-4">
-          <SectionHeading>{title || "Fetch"}</SectionHeading>
-          <div className="flex gap-2">
-            <div className="inline-flex gap-2 font-mono py-1 px-2 text-xs bg-accent/80 rounded">
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
+          <SectionHeading className="flex gap-2 items-center">
+            {icon} {title || "Fetch"}
+            <div className="text-gray-400 text-xs w-12 px-2">{duration}ms</div>
+          </SectionHeading>
+          <div className="flex gap-2 flex-wrap">
+            <div className="inline-flex gap-2 font-mono py-1 text-xs  px-2 bg-accent/80 rounded">
               <span className={cn("uppercase", getHttpMethodTextColor(method))}>
                 {method}
               </span>
@@ -131,43 +138,53 @@ function GenericFetchSpan({
 
         {children}
 
-        <SubSection>
-          <CollapsibleKeyValueTableV2
-            keyValue={requestHeaders}
-            title="Request Headers"
-            sensitiveKeys={SENSITIVE_HEADERS}
-          />
-        </SubSection>
-
-        {requestBody && (
-          <>
-            <Divider />
+        <div className="px-2">
+          <SubSectionHeading>Request</SubSectionHeading>
+          <div>
             <SubSection>
-              <SubSectionHeading>Request Body</SubSectionHeading>
-              <TextOrJsonViewer text={requestBody} textMaxPreviewLines={15} />
+              <CollapsibleKeyValueTableV2
+                keyValue={requestHeaders}
+                title=" Headers"
+                sensitiveKeys={SENSITIVE_HEADERS}
+              />
             </SubSection>
-          </>
-        )}
 
-        <Divider />
+            {requestBody && (
+              <>
+                <CollapsibleSubSection heading="Request Body">
+                  <TextOrJsonViewer
+                    text={requestBody}
+                    textMaxPreviewLines={15}
+                  />
+                </CollapsibleSubSection>
+              </>
+            )}
+          </div>
+        </div>
 
-        <SubSection>
-          <CollapsibleKeyValueTableV2
-            keyValue={responseHeaders}
-            title="Response Headers"
-            sensitiveKeys={SENSITIVE_HEADERS}
-          />
-        </SubSection>
-
-        {responseBody && (
-          <>
-            <Divider />
+        <div className="px-2">
+          <SubSectionHeading>Response</SubSectionHeading>
+          <div>
             <SubSection>
-              <SubSectionHeading>Response Body</SubSectionHeading>
-              <TextOrJsonViewer text={responseBody} textMaxPreviewLines={15} />
+              <CollapsibleKeyValueTableV2
+                keyValue={responseHeaders}
+                title="Headers"
+                sensitiveKeys={SENSITIVE_HEADERS}
+              />
             </SubSection>
-          </>
-        )}
+
+            {responseBody && (
+              <>
+                <CollapsibleSubSection heading="Body">
+                  <TextOrJsonViewer
+                    text={responseBody}
+                    textMaxPreviewLines={15}
+                  />
+                </CollapsibleSubSection>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

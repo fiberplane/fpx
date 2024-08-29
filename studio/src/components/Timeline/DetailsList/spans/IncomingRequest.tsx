@@ -1,40 +1,19 @@
-import { Status } from "@/components/ui/status";
 import type { OtelSpan } from "@/queries";
-import { SENSITIVE_HEADERS, cn, getHttpMethodTextColor } from "@/utils";
 import {
-  getMatchedRoute,
-  getRequestBody,
-  getRequestHeaders,
-  getRequestMethod,
-  getRequestQueryParams,
-  getRequestUrl,
-  getResponseBody,
-  getResponseHeaders,
-  getStatusCode,
+  cn,
+  getHttpMethodTextColor,
+  getRequestEnv,
+  isSensitiveEnvVar,
 } from "@/utils";
-import { ClockIcon } from "@radix-ui/react-icons";
+import { getMatchedRoute, getRequestMethod, getRequestUrl } from "@/utils";
 import { useMemo } from "react";
-import { BodyViewerV2 } from "../BodyViewerV2";
+import { useTimelineIcon } from "../../hooks";
+import { SectionHeading } from "../../shared";
 import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
-import {
-  Divider,
-  SectionHeading,
-  SubSection,
-  SubSectionHeading,
-} from "../../shared";
 
 export function IncomingRequest({ span }: { span: OtelSpan }) {
   const id = span.span_id;
   const method = getRequestMethod(span);
-  const duration = useMemo(() => {
-    try {
-      const duration =
-        new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
-      return duration;
-    } catch (e) {
-      return null;
-    }
-  }, [span]);
 
   const pathWithSearch = useMemo<string>(() => {
     return getRequestUrl(span);
@@ -44,42 +23,19 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
     return getMatchedRoute(span);
   }, [span]);
 
-  const requestHeaders = useMemo<Record<string, string>>(() => {
-    return getRequestHeaders(span) ?? {};
-  }, [span]);
-
-  const requestBody = useMemo<string>(() => {
-    const body = getRequestBody(span);
-    return body ?? "";
-  }, [span]);
-
-  const responseHeaders = useMemo<Record<string, string>>(() => {
-    return getResponseHeaders(span);
-  }, [span]);
-
-  const responseBody = useMemo<string>(() => {
-    return getResponseBody(span) ?? "";
-  }, [span]);
-
-  const canHaveRequestBody = useMemo<boolean>(() => {
-    const ucMethod = method.toUpperCase();
-    return ucMethod !== "GET" && ucMethod !== "HEAD";
-  }, [method]);
-
-  const requestQueryParams = useMemo<Record<string, string> | null>(() => {
-    return getRequestQueryParams(span);
-  }, [span]);
-
-  const statusCode = getStatusCode(span);
+  const icon = useTimelineIcon(span);
+  const requestEnv = getRequestEnv(span);
 
   return (
     <div id={id}>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-2">
-          <SectionHeading>Incoming Request</SectionHeading>
+          <SectionHeading className="flex items-center gap-2">
+            {icon}
+            Incoming Request
+          </SectionHeading>
 
           <div className="flex gap-2">
-            {statusCode && <Status statusCode={statusCode} />}
             <div className="inline-flex gap-2 font-mono py-1 px-2 text-xs bg-accent/80 rounded">
               <span className={cn(getHttpMethodTextColor(method))}>
                 {method}
@@ -94,68 +50,17 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
                 </span>
               </div>
             )}
-            <div className="inline-flex gap-2 font-mono text-gray-400 py-1 px-2 text-xs bg-accent/80 rounded">
-              <ClockIcon className="w-4 h-4" />
-              <span className="font-light">{duration}ms</span>
-            </div>
           </div>
         </div>
-
-        {requestQueryParams && (
-          <SubSection>
-            <CollapsibleKeyValueTableV2
-              keyValue={requestQueryParams}
-              title="Query Parameters"
-            />
-          </SubSection>
-        )}
-
-        <SubSection>
-          <CollapsibleKeyValueTableV2
-            keyValue={requestHeaders}
-            title="Request Headers"
-            className="max-w-full"
-            sensitiveKeys={SENSITIVE_HEADERS}
-          />
-        </SubSection>
-
-        {canHaveRequestBody && requestBody && (
-          <>
-            <Divider />
-            <SubSection>
-              <SubSectionHeading>Request Body</SubSectionHeading>
-              <BodyViewerV2
-                body={requestBody}
-                contentType={requestHeaders["content-type"]}
-                textMaxPreviewLines={15}
-              />
-            </SubSection>
-          </>
-        )}
-
-        <Divider />
-
-        <SubSection>
-          <CollapsibleKeyValueTableV2
-            keyValue={responseHeaders}
-            title="Response Headers"
-            sensitiveKeys={SENSITIVE_HEADERS}
-          />
-        </SubSection>
-
-        {responseBody && (
-          <>
-            <Divider />
-            <SubSection>
-              <SubSectionHeading>Response Body</SubSectionHeading>
-              <BodyViewerV2
-                body={responseBody}
-                contentType={responseHeaders["content-type"]}
-                textMaxPreviewLines={15}
-              />
-            </SubSection>
-          </>
-        )}
+        <CollapsibleKeyValueTableV2
+          title="Environment Vars"
+          keyValue={requestEnv}
+          defaultCollapsed
+          className="px-2"
+          sensitiveKeys={isSensitiveEnvVar}
+          emptyMessage="No environment vars found"
+          keyCellClassName="w-[96px] lg:w-[96px] lg:min-w-[96px]"
+        />
       </div>
     </div>
   );

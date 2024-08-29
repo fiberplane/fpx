@@ -6,8 +6,10 @@
  * This needs improvement
  */
 export function renderFullLogMessage(allLogArgs: Array<unknown>) {
+  console.log("allLogArgs", allLogArgs);
   return allLogArgs.reduce((result, curr) => {
-    if (Array.isArray(curr) || (result && typeof result === "object")) {
+    console.log("result", result, "curr", curr);
+    if (Array.isArray(curr) || (curr && typeof curr === "object")) {
       return `${result} ${JSON.stringify(curr)}`;
     }
 

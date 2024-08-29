@@ -1,6 +1,7 @@
 import {
   TimelineGraph,
   TimelineListDetails,
+  TimelineProvider,
   extractWaterfallTimeStats,
 } from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
@@ -37,24 +38,39 @@ export function RequestorTimeline(props: Props) {
   });
 
   return (
-    <ResizablePanelGroup direction="horizontal" id="requestor-timeline">
-      <ResizablePanel minSize={minSize} defaultSize={33}>
-        <Content>
-          <TimelineGraph
-            waterfall={waterfall}
-            minStart={minStart}
-            duration={duration}
-            activeId=""
-          />
-        </Content>
-      </ResizablePanel>
-      <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-      <ResizablePanel className="max-h-full">
-        <Content className="overflow-auto h-fit">
-          <TimelineListDetails waterfall={waterfall} />
-        </Content>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+    <TimelineProvider>
+      <ResizablePanelGroup
+        direction="horizontal"
+        id="requestor-timeline"
+        className="border-[1px] border-muted-foreground/30 rounded-lg"
+      >
+        {!isSmallScreen && (
+          <>
+            <ResizablePanel
+              minSize={minSize}
+              defaultSize={33}
+              order={0}
+              id="graph"
+            >
+              <Content className="pr-8 sticky top-0">
+                <TimelineGraph
+                  waterfall={waterfall}
+                  minStart={minStart}
+                  duration={duration}
+                  activeId=""
+                />
+              </Content>
+            </ResizablePanel>
+            <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
+          </>
+        )}
+        <ResizablePanel className="max-h-full" order={1} id="details">
+          <Content className="overflow-auto h-fit">
+            <TimelineListDetails waterfall={waterfall} />
+          </Content>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </TimelineProvider>
   );
 }
 

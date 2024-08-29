@@ -10,11 +10,10 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
-import { RequestorTimeline } from "./RequestorTimeline";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { RoutesPanel } from "./RoutesPanel";
@@ -27,7 +26,6 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
-import { getPanelGroupElement } from "react-resizable-panels";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -236,21 +234,6 @@ export const RequestorPage = () => {
     minimalGroupSize: 944,
   });
 
-  //   const { minHeight} = usePanelConstraints({
-  //   groupId: "builder-timeline-split",
-  //   minPixelSize:
-  // })
-  //
-  // useLayoutEffect(() => {
-  //     const group = getPanelGroupElement("builder-timeline-split");
-  //     if (!group) {
-  //         return;
-  //     }
-
-  //     const height = group.clientHeight;
-  //     // setPPane
-  // }, [])
-
   const { minSize: requestPanelMinSize, maxSize: requestPanelMaxSize } =
     usePanelConstraints({
       // Change the groupId to `""` on small screens because we're not rendering
@@ -305,22 +288,6 @@ export const RequestorPage = () => {
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
     />
-  );
-
-  const traceId = mostRecentRequestornatorForRoute?.app_responses.traceId;
-  const timelineContent = (
-    <div
-      className={cn(
-        BACKGROUND_LAYER,
-        "flex",
-        "flex-col",
-        "rounded-md",
-        "border",
-      )}
-    >
-      <Title>Timeline</Title>
-      {traceId && <RequestorTimeline traceId={traceId} />}
-    </div>
   );
 
   return (
@@ -411,70 +378,58 @@ export const RequestorPage = () => {
               <>
                 {requestContent}
                 {responseContent}
-                {timelineContent}
               </>
             ) : (
               <ResizablePanelGroup
-                direction="vertical"
-                id="builder-timeline-split"
-                className="gap-2"
+                direction={isSmallScreen ? "vertical" : "horizontal"}
+                id="requestor-page-main-panel"
+                autoSaveId="requestor-page-main-panel"
+                className={cn(
+                  BACKGROUND_LAYER,
+                  "rounded-md",
+                  "border",
+                  // HACK - This defensively prevents overflow from getting too excessive,
+                  //        In the case where the inner content expands beyond the parent
+                  "max-w-screen",
+                  "max-h-full",
+                )}
               >
-                <ResizablePanel id="builder" className="relative">
-                  <ResizablePanelGroup
-                    direction={isSmallScreen ? "vertical" : "horizontal"}
-                    id="requestor-page-main-panel"
-                    autoSaveId="requestor-page-main-panel"
-                    className={cn(
-                      BACKGROUND_LAYER,
-                      "rounded-md",
-                      "border",
-                      // HACK - This defensively prevents overflow from getting too excessive,
-                      //        In the case where the inner content expands beyond the parent
-                      "max-w-screen",
-                      "max-h-full",
-                    )}
-                  >
-                    <ResizablePanel
-                      order={1}
-                      id="request-panel"
-                      defaultSize={
-                        width < 624 || requestPanelMinSize === undefined
-                          ? undefined
-                          : Math.max(requestPanelMinSize, 33)
-                      }
-                      minSize={requestPanelMinSize}
-                      maxSize={requestPanelMaxSize}
-                      className="relative"
-                    >
-                      {requestContent}
-                    </ResizablePanel>
+                <ResizablePanel
+                  order={1}
+                  id="request-panel"
+                  defaultSize={
+                    width < 624 || requestPanelMinSize === undefined
+                      ? undefined
+                      : Math.max(requestPanelMinSize, 33)
+                  }
+                  minSize={requestPanelMinSize}
+                  maxSize={requestPanelMaxSize}
+                  className="relative"
+                >
+                  {requestContent}
+                </ResizablePanel>
+                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
+                <ResizablePanel id="response-panel" order={4} minSize={10}>
+                  {responseContent}
+                </ResizablePanel>
+                {isAiTestGenerationPanelOpen && !isSmallScreen && (
+                  <>
                     <ResizableHandle
                       hitAreaMargins={{ coarse: 20, fine: 10 }}
                     />
-                    <ResizablePanel id="response-panel" order={2} minSize={10}>
-                      {responseContent}
+                    <ResizablePanel order={3} id="ai-panel">
+                      <AiTestGenerationPanel
+                        // TODO - Only use history for recent matching route
+                        history={history}
+                        toggleAiTestGenerationPanel={
+                          toggleAiTestGenerationPanel
+                        }
+                        getActiveRoute={getActiveRoute}
+                        removeServiceUrlFromPath={removeServiceUrlFromPath}
+                      />
                     </ResizablePanel>
-                    {isAiTestGenerationPanelOpen && !isSmallScreen && (
-                      <>
-                        <ResizableHandle
-                          hitAreaMargins={{ coarse: 20, fine: 10 }}
-                        />
-                        <ResizablePanel order={3} id="ai-panel">
-                          <AiTestGenerationPanel
-                            // TODO - Only use history for recent matching route
-                            history={history}
-                            toggleAiTestGenerationPanel={
-                              toggleAiTestGenerationPanel
-                            }
-                            getActiveRoute={getActiveRoute}
-                            removeServiceUrlFromPath={removeServiceUrlFromPath}
-                          />
-                        </ResizablePanel>
-                      </>
-                    )}
-                  </ResizablePanelGroup>
-                </ResizablePanel>
-                <ResizablePanel id="timeline">{timelineContent}</ResizablePanel>
+                  </>
+                )}
               </ResizablePanelGroup>
             )}
           </div>

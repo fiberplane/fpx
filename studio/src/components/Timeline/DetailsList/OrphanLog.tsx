@@ -5,8 +5,10 @@ import {
   objectHasStack,
   renderFullLogMessage,
 } from "@/utils";
-import { StackTrace } from "./StackTrace";
+import { useTimelineIcon } from "../hooks";
 import { SectionHeading } from "../shared";
+import { getColorForLevel } from "../utils";
+import { StackTrace } from "./StackTrace";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const id = log.id;
@@ -16,7 +18,7 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const levelWithDefensiveFallback = level || "info";
   const consoleMethod = levelWithDefensiveFallback === "info" ? "log" : level;
 
-  const heading = `console.${consoleMethod}${name ? `:  ${name}` : ""}`;
+  const heading = `${consoleMethod}${name ? `:  ${name}` : ""}`;
 
   const { type: contentsType, value: contents } = getLogContents(
     message ?? "",
@@ -25,19 +27,57 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const description = getDescription(message ?? "", log.args);
   // TODO - Get stack from the span!
   const stack = objectHasStack(message) ? message.stack : null;
+  const icon = useTimelineIcon(log, {
+    colorOverride: getColorForLevel(log.level),
+  });
+  // if (contents) {
+  //   console.log(contents, contentsType);
+  // }
+
+  const hasDescription = !!description;
+
+  const topContent = hasDescription ? (
+    <div className="px-2 font-mono text-sm">{description}</div>
+  ) : contentsType === "multi-arg-log" ? (
+    <LogContents fullLogArgs={contents} />
+  ) : contentsType === "json" ? (
+    <LogContents fullLogArgs={contents} />
+  ) : stack ? (
+    <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400">
+      <StackTrace stackTrace={stack} />
+    </div>
+  ) : (
+    <div />
+  );
 
   return (
-    <div id={id?.toString()} className="overflow-x-auto overflow-y-hidden">
-      <div className={cn("grid gap-2 border-t py-4")}>
-        <SectionHeading className="font-mono">{heading}</SectionHeading>
+    <div
+      id={id?.toString()}
+      className="overflow-x-auto overflow-y-hidden max-w-full"
+    >
+      <div className={cn("grid gap-2 grid-cols-[auto_1fr_auto]")}>
+        <SectionHeading className={cn("font-semibold flex items-center gap-2")}>
+          {icon}
+        </SectionHeading>
+        {topContent}
+
+        <SectionHeading
+          className={cn(
+            "font-semibold text-sm flex items-center gap-2",
+            getColorForLevel(log.level),
+          )}
+        >
+          {heading}
+        </SectionHeading>
       </div>
 
-      {description && <p className="p-2 font-mono">{description}</p>}
-
-      {contentsType === "multi-arg-log" && (
+      {hasDescription && contentsType === "multi-arg-log" && (
         <LogContents fullLogArgs={contents} />
       )}
-      {contentsType === "json" && <LogContents fullLogArgs={contents} />}
+
+      {hasDescription && contentsType === "json" && (
+        <LogContents fullLogArgs={contents} />
+      )}
 
       {stack && (
         <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400">
