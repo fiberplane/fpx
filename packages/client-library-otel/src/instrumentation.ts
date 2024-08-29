@@ -33,6 +33,8 @@ import {
  * @internal
  */
 type FpxConfig = {
+  /** Enable library debug logging */
+  libraryDebugMode: boolean;
   monitor: {
     /** Send data to FPX about each `fetch` call made during a handler's lifetime */
     fetch: boolean;
@@ -56,8 +58,7 @@ type FpxConfigOptions = Partial<
 >;
 
 const defaultConfig = {
-  // TODO - Implement library debug logging
-  // libraryDebugMode: false,
+  libraryDebugMode: false,
   monitor: {
     fetch: true,
     logging: true,
@@ -82,6 +83,16 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           rawEnv: HonoLikeEnv,
           executionContext: ExecutionContext | undefined,
         ) {
+          // Patch the related functions to monitor
+          const {
+            libraryDebugMode,
+            monitor: {
+              fetch: monitorFetch,
+              logging: monitorLogging,
+              cfBindings: monitorCfBindings,
+            },
+          } = mergeConfigs(defaultConfig, config);
+
           const env = rawEnv as
             | undefined
             | null
@@ -94,7 +105,17 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
-          const logger = getLogger(rawEnv);
+          const logger = getLogger(
+            libraryDebugMode
+              ? {
+                  FPX_LOG_LEVEL: "debug",
+                }
+              : rawEnv,
+          );
+
+          if (libraryDebugMode) {
+            logger.debug("Fiberplane: Library debug mode is enabled");
+          }
 
           if (!isEnabled) {
             logger.debug("Fiberplane is not enabled, skipping instrumentation");
@@ -109,14 +130,6 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           const serviceName = env?.FPX_SERVICE_NAME ?? "unknown";
 
-          // Patch the related functions to monitor
-          const {
-            monitor: {
-              fetch: monitorFetch,
-              logging: monitorLogging,
-              cfBindings: monitorCfBindings,
-            },
-          } = mergeConfigs(defaultConfig, config);
           if (monitorCfBindings) {
             patchCloudflareBindings(env);
           }
@@ -265,7 +278,13 @@ function mergeConfigs(
   fallbackConfig: FpxConfig,
   userConfig?: FpxConfigOptions,
 ): FpxConfig {
+  const libraryDebugMode =
+    typeof userConfig?.libraryDebugMode === "boolean"
+      ? userConfig.libraryDebugMode
+      : fallbackConfig.libraryDebugMode;
+
   return {
+    libraryDebugMode,
     monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
 }
