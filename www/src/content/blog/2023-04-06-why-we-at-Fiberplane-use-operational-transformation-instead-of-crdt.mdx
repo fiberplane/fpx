@@ -1,0 +1,56 @@
+---
+title: Why we at Fiberplane use Operational Transformation instead of CRDT
+description: An overview of what OT and CRDT are and why we chose OT over CRDT.
+slug: why-we-at-fiberplane-use-operational-transformation-instead-of-crdt
+date: 2023-04-06
+author: Arend van Beelen
+tags:
+  - WebAssembly
+  - Rust
+  - Operational Transformation
+  - CRDT
+  - real-time collaboration
+
+---
+Ever since we explained how we built our own [Rich-Text Editor](https://fiberplane.com/blog/creating-a-rich-text-editor-using-rust-and-react/), we now and then get the question “Why do you use OT instead of CRDT for collaboration?”
+
+It’s a rather technical question, and one with an even more technical answer, but if that’s your jam, I hope this post will whet your appetite.
+
+Before we can answer the question itself, we need to do a little bit of an explainer on what the two technologies are and how they work. Once we’re all on the same page, we’ll come back and see why we chose one over the other.
+
+## What is OT?
+OT stands for [Operational Transformation](https://en.wikipedia.org/wiki/Operational_transformation) and is a technology that has the ability to resolve conflicts when multiple people are editing at the same time a single document — or in our case, a notebook. For instance, let’s assume two people, Alice and Bob, are editing the following text: “one three five”.
+
+Now Alice wants to insert the word “two” in between the words “one” and “three”, while Bob wants to insert “four” between “three” and “five”. They can do so by sending operations to the server:
+
+* Alice sends “insert ‘two ’ at offset 4”, where the offset refers to the numerical character offset where the text should be inserted. In order words, “insert ‘two ’ after ‘one ’”.
+* Bob sends “insert ‘four ’ at offset 10”. Or in other words, “insert ‘four ’ after ‘one three ’”.
+
+When both of them send these operations to the server, without them yet being aware of each other’s changes, a conflict may occur. Let’s say Alice’s operation reaches the server first, then her operation gets applied without conflict. But when Bob’s operation arrives, things go wrong.
+
+Bob’s operation specified to “insert ‘four ’ at offset 10”. If we do so after Alice’s operation was applied, the end result will become “one two thfour ree five”. This was obviously not Bob’s intention.
+
+The conflict is easily explained: Bob thought he was inserting text after “one three “, hence why he sent offset 10. But the text was updated by Alice to become “one two three “ and the offset 10 is now pointed in the middle of the word “three”.
+
+How do we deal with this? OT provides a relatively easy solution: We look at previously applied operations and transform the later operation such that the offsets it specifies are updated to refer to the intended position. In our example, by the time Bob’s operation gets applied, we transform it to account for Alice’s operation. The algorithm sees that Alice’s operation performed a change at an offset that is before the offset in Bob’s operation. And it identifies that Alice’s operation inserted new text with a length of 4. Hence Bob’s operation needs to be transformed by 4, and the offset becomes 14. The transformed operation is applied, and the end result becomes “one two three four five”, which seems consistent with the result both had intended.
+
+Naturally, there are many edge cases, and things also become more complex when there is more than only plain text that needs to be considered. But this is how the algorithm works in a nutshell.
+
+However, if we look critically at how the algorithm works, we can identify one major assumption it is based on: There needs to be a central authority — the server — to decide the order in which operations get applied. While in most situations it should not matter in which order operations are transformed and applied, there are edge cases where it does matter. In such cases, the server acts as an arbiter to decide who was first.
+
+## What is CRDT?
+CRDT stands for [Conflict-free replicated data type](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) and is designed to address the main weakness of OT: The need for a central server. If the server can be taken out of the equation, there are several advantages to be had:
+
+* There is no single point of congestion anymore, meaning the server cannot become a bottleneck when it comes to scalability.
+* The lack of a central server is a huge advantage for systems where privacy is paramount, and a server that may potentially be snooping on your conversation would be unacceptable.
+
+CRDTs accomplish this by using specialized data structures that are annotated in such a way that operations on them will always converge to the same end result, regardless of the order in which those operations are applied. For text-based data types, this means annotating every character in the text with a given ID. Operations then refer to these IDs instead of offsets to avoid the need for transformations. And using clever tricks in the ordering of these IDs, clients will always be able to agree on a total ordering for the end result.
+
+## So then, why do we use OT instead of CRDT?
+Both OT and CRDT are complex algorithms, and committing to one or the other is a choice with major technological consequences. As should be clear from the explanation of the two algorithms above: If having a central server is not acceptable, then CRDT is definitely the way to go. For us, being bound to a server is not a problem; our entire service is bound to it anyway.
+
+What tipped the scales for us is that while OT is a complex algorithm, CRDT requires complex algorithms that also require complex data structures. And those data structures are important, because we use them throughout our product: In our API, our Studio, [our CLI](https://github.com/fiberplane/fp), and even [our templates](https://github.com/fiberplane/templates).
+
+If we used CRDTs, the complexity would have either trickled down to every part of our stack, or we would have needed versions of our data structures with CRDT capabilities, and versions without. To us, that seemed like a tradeoff we were happy to avoid. Using OT is still complex and comes with its own difficulties. But at least those challenges are localized and they don’t affect most of our development.
+
+We’d be happy to hear how others using CRDT experience the complexities. Hopefully, this perspective was helpful to some!
