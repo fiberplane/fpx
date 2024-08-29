@@ -9,6 +9,7 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
+import { getLogger } from "./logger";
 import { measure } from "./measure";
 import {
   patchCloudflareBindings,
@@ -93,12 +94,16 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
+          const logger = getLogger(rawEnv);
+
           if (!isEnabled) {
+            logger.debug("Fiberplane is not enabled, skipping instrumentation");
             return await originalFetch(request, rawEnv, executionContext);
           }
 
           // If the request is from the route inspector, respond with the routes
           if (isRouteInspectorRequest(request)) {
+            logger.debug("Fiberplane: Responding to route inspector request");
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
 
