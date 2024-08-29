@@ -4,6 +4,7 @@ import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
 type UseRoutesOptions = {
   setRoutes: (routes: ProbedRoute[]) => void;
+  setMiddleware: (middleware: ProbedRoute[]) => void;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
 };
 
@@ -41,7 +42,30 @@ const filterRoutes = (routes: ProbedRoute[]) => {
   });
 };
 
-export function useRoutes({ setRoutes, setServiceBaseUrl }: UseRoutesOptions) {
+/**
+ * Filter the middleware that we want to show in the UI
+ * For now, only keeps the middleware if it's a websocket middleware
+ */
+const filterActiveMiddleware = (middleware: ProbedRoute[]) => {
+  return middleware.filter((r) => {
+    if (!r.currentlyRegistered) {
+      return false;
+    }
+    if (r.handlerType === "middleware") {
+      return true;
+    }
+    if (WEBSOCKETS_ENABLED && isUpgradeWebSocketMiddleware(r)) {
+      return false;
+    }
+    return false;
+  });
+};
+
+export function useRoutes({
+  setRoutes,
+  setMiddleware,
+  setServiceBaseUrl,
+}: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
@@ -55,6 +79,10 @@ export function useRoutes({ setRoutes, setServiceBaseUrl }: UseRoutesOptions) {
           }
         : r,
     );
+  }, [routesAndMiddleware]);
+
+  const middleware = useMemo(() => {
+    return filterActiveMiddleware(routesAndMiddleware?.routes ?? []);
   }, [routesAndMiddleware]);
 
   // HACK - Antipattern, add serviceBaseUrl to the reducer based off of external changes
@@ -72,9 +100,14 @@ export function useRoutes({ setRoutes, setServiceBaseUrl }: UseRoutesOptions) {
     setRoutes(routes);
   }, [routes, setRoutes]);
 
+  useEffect(() => {
+    setMiddleware(middleware);
+  }, [middleware, setMiddleware]);
+
   return {
     isError,
     isLoading,
     routes,
+    middleware,
   };
 }

@@ -5,6 +5,10 @@ import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import type { ProbedRoute } from "../queries";
 import { findMatchedRoute } from "../routes";
 import {
+  findAllMiddlewareMatches,
+  findSmartRouterMatches,
+} from "../routes/match";
+import {
   type RequestMethod,
   type RequestMethodInputValue,
   type RequestType,
@@ -45,6 +49,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
 };
 
 const SET_ROUTES = "SET_ROUTES" as const;
+const SET_MIDDLEWARE = "SET_MIDDLEWARE" as const;
 const SET_SERVICE_BASE_URL = "SET_SERVICE_BASE_URL" as const;
 const PATH_UPDATE = "PATH_UPDATE" as const;
 const METHOD_UPDATE = "METHOD_UPDATE" as const;
@@ -67,6 +72,10 @@ const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
 type RequestorAction =
   | {
       type: typeof SET_ROUTES;
+      payload: ProbedRoute[];
+    }
+  | {
+      type: typeof SET_MIDDLEWARE;
       payload: ProbedRoute[];
     }
   | {
@@ -172,6 +181,12 @@ function requestorReducer(
         routes: nextRoutes,
         selectedRoute: nextSelectedRoute,
         pathParams: nextPathParams,
+      };
+    }
+    case SET_MIDDLEWARE: {
+      return {
+        ...state,
+        middleware: action.payload,
       };
     }
     case SET_SERVICE_BASE_URL: {
@@ -483,6 +498,13 @@ export function useRequestor() {
     [dispatch],
   );
 
+  const setMiddleware = useCallback(
+    (middleware: ProbedRoute[]) => {
+      dispatch({ type: SET_MIDDLEWARE, payload: middleware });
+    },
+    [dispatch],
+  );
+
   const setServiceBaseUrl = useCallback(
     (serviceBaseUrl: string) => {
       dispatch({ type: SET_SERVICE_BASE_URL, payload: serviceBaseUrl });
@@ -683,12 +705,38 @@ export function useRequestor() {
     [dispatch],
   );
 
+  /**
+   * ...
+   */
+  const getMatchingMiddleware = useCallback(() => {
+    // TODO
+    const path = state.path;
+    const method = state.method;
+    const requestType = state.requestType;
+    const middlewareMatches = findAllMiddlewareMatches(
+      state.middleware,
+      removeBaseUrl(state.serviceBaseUrl, path),
+      method,
+      requestType,
+    );
+    console.log("middleware", state.middleware);
+    console.log("middlewareMatches", middlewareMatches);
+    return middlewareMatches;
+  }, [
+    state.middleware,
+    state.path,
+    state.method,
+    state.requestType,
+    state.serviceBaseUrl,
+  ]);
+
   return {
     state,
     dispatch,
 
     // Api
     setRoutes,
+    setMiddleware,
     setServiceBaseUrl,
     selectRoute,
 
@@ -726,6 +774,9 @@ export function useRequestor() {
     // History (WIP)
     showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
+
+    // TODO
+    getMatchingMiddleware,
   };
 }
 function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {

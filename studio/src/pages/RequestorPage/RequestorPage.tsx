@@ -44,6 +44,7 @@ export const RequestorPage = () => {
     // Routes panel
     state: { routes },
     setRoutes,
+    setMiddleware,
     setServiceBaseUrl,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     getActiveRoute,
@@ -89,13 +90,19 @@ export const RequestorPage = () => {
     state: { activeHistoryResponseTraceId },
     showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
+
+    // TODO
+    getMatchingMiddleware,
   } = requestorState;
+
+  getMatchingMiddleware();
 
   const selectedRoute = getActiveRoute();
 
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes({
     setRoutes,
+    setMiddleware,
     setServiceBaseUrl,
   });
 

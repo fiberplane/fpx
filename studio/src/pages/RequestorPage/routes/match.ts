@@ -118,6 +118,81 @@ export function findSmartRouterMatches(
   }
 }
 
+/**
+ * Prototype of doing middleware matching in the browser with Hono itself
+ *
+ * NOTE - This is only different from the above insofar as it returns ALL matches
+ */
+export function findAllMiddlewareMatches(
+  routes: ProbedRoute[],
+  pathname: string,
+  method: string,
+  requestType: "http" | "websocket",
+) {
+  // HACK - We need to be able to associate route handlers back to the ProbedRoute definition
+  const functionHandlerLookupTable: Map<() => void, ProbedRoute> = new Map();
+
+  const routers = [new RegExpRouter(), new TrieRouter()];
+  const router = new SmartRouter({ routers });
+  for (const route of routes) {
+    if (route.requestType === requestType) {
+      if (route.method && route.path) {
+        const handler = () => {};
+        router.add(route.method, route.path, handler);
+        // Add the noop handler to the lookup table,
+        // so if there's a match, we can use the handler to look up the OG route definition
+        functionHandlerLookupTable.set(handler, route);
+      }
+    }
+  }
+
+  // Matching against a pathname like `/users/:` will throw,
+  // so we need to be defensive
+  try {
+    const match = router.match(method, pathname);
+    const allAreEmpty = isMatchResultEmpty(match);
+
+    if (allAreEmpty) {
+      return null;
+    }
+
+    const matches = unpackMatches(match);
+
+    if (matches.length === 0) {
+      return null;
+    }
+
+    const routeMatches = matches.map((match) => {
+      const handler = match[0];
+      return {
+        route: functionHandlerLookupTable.get(handler as () => void),
+        pathParams: match[1],
+      };
+    });
+
+    // Sort draft routes after non-draft routes
+    routeMatches.sort((a, b) => {
+      const aIsDraft = !!a?.route?.isDraft;
+      const bIsDraft = !!b?.route?.isDraft;
+      if (aIsDraft && bIsDraft) {
+        return 0;
+      }
+      if (aIsDraft) {
+        return 1;
+      }
+      if (bIsDraft) {
+        return -1;
+      }
+      return 0;
+    });
+
+    return routeMatches;
+  } catch (e) {
+    console.error("Error matching routes", e);
+    return null;
+  }
+}
+
 // type Result<T> = [[T, ParamIndexMap][], ParamStash] | [[T, Params][]]
 //
 // - [unknown, Params][] = [unknown, Record<P extends string, string | string[]>]
