@@ -1,5 +1,14 @@
 [
   {
+    "label": "install dependencies",
+    "command": "pnpm install",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "shell": "system",
+    "hide": "on_success",
+    "reveal": "always"
+  },
+  {
     "label": "format all",
     "command": "pnpm format",
     "use_new_terminal": false,

@@ -120,7 +120,7 @@ async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
 export function useOtelTraces() {
   return useQuery({
     queryKey: [MIZU_TRACES_KEY],
-    queryFn: (): Promise<OtelTrace[]> => {
+    queryFn: async (): Promise<OtelTrace[]> => {
       return fetch("/v1/traces")
         .then((res) => res.json())
         .then((r) => {
