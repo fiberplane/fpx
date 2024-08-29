@@ -13,7 +13,7 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
-app.post("/json", async(c) => {
+app.post("/json", async (c) => {
   const body = await c.req.json();
   console.log("json body", body);
   return c.json({ message: "Hello Json!", body });
