@@ -138,6 +138,16 @@ export default instrument(app, {
 });
 ```
 
+#### The `FPX_LOG_LEVEL` Environment Variable
+
+The `FPX_LOG_LEVEL` environment variable controls the verbosity of the library's logging.
+
+The possible values are: `debug`, `info`, `warn`, and `error`.
+
+The default value is `warn`.
+
+The `libraryDebugMode` option (documented in the previous section), takes precedence over this environment variable.
+
 ### Advanced Usage: Custom Spans with `measure`
 
 The library also allows you to create custom spans for any function in your app.
