@@ -17,7 +17,7 @@ For starters, you need to be able to pass fat pointers between the TypeScript an
 
 A fat pointer can be a u64 that indicates both the 32-bit offset where the data starts as well as the total length of the data. In TypeScript, it can be represented using a BigInt.
 
-``` 
+```rust
 #[doc(hidden)]
 pub fn to_fat_ptr(ptr: *const u8, len: u32) -> FatPtr {
     (ptr as FatPtr) << 32 | (len as FatPtr)
@@ -31,7 +31,7 @@ pub fn from_fat_ptr(ptr: FatPtr) -> (*const u8, u32) {
 
 Unfortunately, you can't point this fat pointer directly to your data in Rust. That causes trouble with vectors and other indirection. You want to serialize your data with something like [msgpack.org](https://msgpack.org/), and then pass a pointer to the serialized data. That works great going from Rust to TypeScript, but what about the other way around?
 
-```Rust
+```rust
 function fromFatPtr(fatPtr: FatPtr): [ptr: number, len: number] {
   return [
     Number.parseInt((fatPtr >> 32n).toString()),
@@ -45,7 +45,7 @@ function toFatPtr(ptr: number, len: number): FatPtr {
 ```
 The fat pointer can only point to memory belonging to the WebAssembly module, but when we pass from TypeScript to Rust, how does TypeScript know which memory to use?
 
-```Rust
+```rust
 #[no_mangle]
 pub fn __fp_malloc(len: u32) -> FatPtr {
     let ptr = unsafe {
@@ -59,7 +59,7 @@ pub fn __fp_malloc(len: u32) -> FatPtr {
 ```
 To solve this, the WebAssembly needs to expose memory allocation functions, such as malloc() and free(). These are well-known from the world of C, but unlike their C counterparts, these will work with fat pointers.
 
-```Rust
+```rust
 #[doc(hidden)]
 pub unsafe fn import_value_from_host<'de, T: Deserialize<'de>>(fat_ptr: FatPtr) -> T {
     let (ptr, len) = from_fat_ptr(fat_ptr);
