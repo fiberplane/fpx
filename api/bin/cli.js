@@ -44,7 +44,7 @@ const WRANGLER_TOML_PATH = findInParentDirs("wrangler.toml");
 const PACKAGE_JSON_PATH = findInParentDirs("package.json");
 // NOTE - Deno projects might also not necessarily have a deno.json
 const DENO_CONFIG_PATH = findInParentDirs(["deno.json", "deno.jsonc"]);
-const PROJECT_ROOT_DIR = findProjectRoot();
+const PROJECT_ROOT_DIR = findProjectRoot() ?? process.cwd();
 
 // Loading some possible configuration from the environment
 const WRANGLER_TOML = safeParseTomlFile(WRANGLER_TOML_PATH);
