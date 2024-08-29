@@ -7,7 +7,7 @@ import { useTimelineIcon } from "../../hooks";
 import { SectionHeading } from "../../shared";
 import { SubSection, SubSectionHeading } from "../../shared";
 import { formatDuration } from "../../utils";
-import { KeyValueTableV2 } from "../KeyValueTableV2";
+import { KeyValueTable } from "../KeyValueTableV2";
 
 export function GenericSpan({ span }: { span: OtelSpan }) {
   const attributes = useMemo(() => {
@@ -49,7 +49,7 @@ export function GenericSpan({ span }: { span: OtelSpan }) {
       {Object.keys(attributes).length > 0 && (
         <SubSection>
           <SubSectionHeading>Attributes</SubSectionHeading>
-          <KeyValueTableV2 keyValue={attributes} />
+          <KeyValueTable keyValue={attributes} />
         </SubSection>
       )}
     </div>
