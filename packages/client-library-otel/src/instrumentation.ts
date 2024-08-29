@@ -212,6 +212,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
                   throw new Error(r.statusText);
                 }
               },
+              logger,
             },
             originalFetch,
           );

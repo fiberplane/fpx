@@ -111,6 +111,8 @@ The options are:
 
 - `monitor.fetch`: Whether to create traces for all fetch requests. (Default: `true`)
 - `monitor.logging`: Whether to proxy `console.*` functions to send logging data to a local Fiberplane Studio server. (Default: `true`)
+- `monitor.cfBindings`: Whether to proxy Cloudflare bindings (D1, R2, KV, AI) to add instrumentation to them. (Default: `false`)
+- `libraryDebugMode`: Whether to enable debug logging in the library. (Default: `false`)
 
 Here is an example:
 
@@ -123,11 +125,15 @@ const app = new Hono();
 app.get("/", (c) => c.text("Hello, Hono!"));
 
 export default instrument(app, {
+  // Enable debug logging in the library
+  libraryDebugMode: true,
   monitor: {
     // Don't create traces for fetch requests
     fetch: false,
     // Don't proxy `console.*` functions to send logging data to a local FPX server
     logging: false,
+    // Proxy Cloudflare bindings (D1, R2, KV, AI) to add instrumentation to them
+    cfBindings: true,
   },
 });
 ```
