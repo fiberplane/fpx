@@ -265,6 +265,7 @@ mod tests {
         )
     }
 
+    #[cfg(target_family = "wasm")]
     #[cfg(feature = "wasm-bindgen")]
     #[test]
     fn timestamp_serialize_wasm_bindgen() {

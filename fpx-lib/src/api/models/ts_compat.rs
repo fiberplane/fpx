@@ -119,13 +119,13 @@ impl From<crate::api::models::otel::AttributeMap> for serde_json::Map<String, se
 impl From<AttributeValue> for serde_json::Value {
     fn from(value: AttributeValue) -> Self {
         match value {
-            AttributeValue::String(value) => value.into(),
-            AttributeValue::Bool(value) => value.into(),
-            AttributeValue::Int(value) => value.into(),
-            AttributeValue::Double(value) => value.into(),
-            AttributeValue::Array(values) => values.into(),
-            AttributeValue::KeyValueList(value) => serde_json::Value::Object(value.into()),
-            AttributeValue::Bytes(value) => value.into(),
+            AttributeValue::StringValue(value) => value.into(),
+            AttributeValue::BoolValue(value) => value.into(),
+            AttributeValue::IntValue(value) => value.into(),
+            AttributeValue::DoubleValue(value) => value.into(),
+            AttributeValue::ArrayValue(values) => values.into(),
+            AttributeValue::KvlistValue(value) => serde_json::Value::Object(value.into()),
+            AttributeValue::BytesValue(value) => value.into(),
         }
     }
 }
