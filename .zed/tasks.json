@@ -43,5 +43,15 @@
     "reveal": "always",
     "hide": "on_success",
     "shell": "system"
+  },
+
+  {
+    "label": "goose dev",
+    "command": "pnpm --filter goose-quotes dev",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "on_success",
+    "shell": "system"
   }
 ]
