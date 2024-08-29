@@ -16,6 +16,7 @@ import {
 } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { TraceProvider } from "./contexts";
 
 export function App() {
   return (
@@ -23,23 +24,25 @@ export function App() {
       <RequestorSessionHistoryProvider>
         <Router>
           <TooltipProvider>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Redirect />} />
-                <Route path="/requests" element={<RequestsPage />} />
-                <Route
-                  path="/requests/otel/:traceId"
-                  element={<RequestDetailsPage />}
-                />
-                <Route
-                  path="/requests/:traceId"
-                  element={<RequestDetailsPage />}
-                />
-                <Route path="/requestor" element={<RequestorPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-              </Routes>
-            </Layout>
-            <Toaster />
+            <TraceProvider>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Redirect />} />
+                  <Route path="/requests" element={<RequestsPage />} />
+                  <Route
+                    path="/requests/otel/:traceId"
+                    element={<RequestDetailsPage />}
+                  />
+                  <Route
+                    path="/requests/:traceId"
+                    element={<RequestDetailsPage />}
+                  />
+                  <Route path="/requestor" element={<RequestorPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                </Routes>
+              </Layout>
+              <Toaster />
+            </TraceProvider>
           </TooltipProvider>
         </Router>
       </RequestorSessionHistoryProvider>
