@@ -82,7 +82,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           request: Request,
           // Name this "rawEnv" because we coerce it below into something that's easier to work with
           rawEnv: HonoLikeEnv,
-          executionContext: ExecutionContext | undefined,
+          executionContext?: ExecutionContext,
         ) {
           // Merge the default config with the user's config
           const {
