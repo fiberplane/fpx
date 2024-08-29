@@ -105,26 +105,23 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
-          const logger = getLogger(
-            libraryDebugMode
-              ? {
-                  FPX_LOG_LEVEL: "debug",
-                }
-              : rawEnv,
-          );
+          const FPX_LOG_LEVEL = libraryDebugMode ? "debug" : env?.FPX_LOG_LEVEL;
+          const logger = getLogger(FPX_LOG_LEVEL);
 
           if (libraryDebugMode) {
-            logger.debug("Fiberplane: Library debug mode is enabled");
+            logger.debug("Library debug mode is enabled");
           }
 
           if (!isEnabled) {
-            logger.debug("Fiberplane is not enabled, skipping instrumentation");
+            logger.debug(
+              "@fiberplane/hono-otel is missing FPX_ENDPOINT. Skipping instrumentation",
+            );
             return await originalFetch(request, rawEnv, executionContext);
           }
 
           // If the request is from the route inspector, respond with the routes
           if (isRouteInspectorRequest(request)) {
-            logger.debug("Fiberplane: Responding to route inspector request");
+            logger.debug("Responding to route inspector request");
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
 

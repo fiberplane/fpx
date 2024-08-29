@@ -1,5 +1,3 @@
-import type { HonoLikeEnv } from "./types";
-
 // Define the possible log levels
 const logLevels = ["debug", "info", "warn", "error"] as const;
 type LogLevel = (typeof logLevels)[number];
@@ -16,6 +14,8 @@ const ourConsole = {
   error: errorLog,
 };
 
+export type FpxLogger = ReturnType<typeof getLogger>;
+
 /**
  * Get a logger that can be used to log messages to the console.
  * - Optionally log depending on the FPX_LOG_LEVEL environment variable.
@@ -29,17 +29,10 @@ const ourConsole = {
  * @param honoEnv - The environment variables from the Hono app.
  * @returns A logger object with methods for each log level
  */
-export function getLogger(honoEnv: HonoLikeEnv) {
-  // TODO - Update with Node.js env utilties after https://github.com/fiberplane/fpx/pull/208 is merged
-
-  // @ts-expect-error - We know the env might be a record with string keys
-  const FPX_LOG_LEVEL = honoEnv?.FPX_LOG_LEVEL;
-
+export function getLogger(level: unknown) {
   // Determine the current log level from the environment variable or default to "warn"
   const defaultLogLevel: LogLevel = "warn";
-  const currentLogLevel: LogLevel = isLogLevel(FPX_LOG_LEVEL)
-    ? FPX_LOG_LEVEL
-    : defaultLogLevel;
+  const currentLogLevel: LogLevel = isLogLevel(level) ? level : defaultLogLevel;
 
   /**
    * Determines if a message at a given log level should be logged based on the current log level.
@@ -57,12 +50,14 @@ export function getLogger(honoEnv: HonoLikeEnv) {
     (acc, level) => {
       /**
        * Logs a message if the current log level allows it.
+       * Prefix the log message with "[@fiberplane]" to make it easy to grep.
+       *
        * @param message - The message to log.
        * @param optionalParams - Additional parameters to log.
        */
       acc[level] = (message?: unknown, ...optionalParams: unknown[]) => {
         if (shouldLog(level)) {
-          ourConsole[level](message, ...optionalParams);
+          ourConsole[level]("[@fiberplane]", message, ...optionalParams);
         }
       };
       return acc;
