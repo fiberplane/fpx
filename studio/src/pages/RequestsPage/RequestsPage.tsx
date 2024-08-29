@@ -2,14 +2,16 @@ import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { type OtelTrace, useOtelTraces } from "@/queries";
+import { MIZU_TRACES_KEY, type OtelTrace, useOtelTraces } from "@/queries";
 import { cn } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { type Row, getPaginationRowModel } from "@tanstack/react-table";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { isFpxTraceError } from "../RequestDetailsPage/v2/otel-helpers";
 import { columns } from "./columns";
+import { useTraceContext } from "@/contexts";
+import { useQueryClient } from "@tanstack/react-query";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";
 
@@ -18,6 +20,8 @@ const RequestsTable = ({
   filter,
 }: { traces: OtelTrace[]; filter: LevelFilter }) => {
   const navigate = useNavigate();
+
+  const { setCurrentTraceId } = useTraceContext();
 
   const filteredTraces = useMemo(() => {
     if (filter === "all") {
@@ -33,9 +37,10 @@ const RequestsTable = ({
 
   const handleRowClick = useCallback(
     (row: Row<OtelTrace>) => {
+      setCurrentTraceId(row.original.traceId);
       navigate(`/requests/otel/${row.original.traceId}`);
     },
-    [navigate],
+    [navigate, setCurrentTraceId],
   );
 
   return (
@@ -50,11 +55,26 @@ const RequestsTable = ({
 
 export function RequestsPage() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const otelTraces = useOtelTraces();
 
   const tracesWithErrors = useMemo(() => {
     return otelTraces.data?.filter(isFpxTraceError);
   }, [otelTraces.data]);
+
+  useEffect(() => {
+    if (otelTraces.data && otelTraces.data.length > 0) {
+      const first20Traces = otelTraces.data.slice(0, 20);
+      for (const trace of first20Traces) {
+        console.log("Prefetching trace", trace.traceId);
+        queryClient.prefetchQuery({
+          queryKey: [MIZU_TRACES_KEY, trace.traceId],
+          queryFn: () =>
+            fetch(`/v1/traces/${trace.traceId}/spans`).then((r) => r.json()),
+        });
+      }
+    }
+  }, [otelTraces.data, queryClient.prefetchQuery]);
 
   return (
     <Tabs
