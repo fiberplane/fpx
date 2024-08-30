@@ -10,7 +10,7 @@
     "@fiberplane/hono-otel": "workspace:*",
     "@neondatabase/serverless": "^0.9.4",
     "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.32.0",
+    "drizzle-orm": "^0.33.0",
     "hono": "^4.5.9",
     "openai": "^4.53.0"
   },
