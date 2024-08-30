@@ -27,7 +27,7 @@ export function deleteMiddleware(db: LibSQLDatabase<typeof schema>) {
 }
 
 /**
- * 
+ *
  */
 export async function reregisterRoutes(
   db: LibSQLDatabase<typeof schema>,
@@ -51,9 +51,7 @@ export async function reregisterRoutes(
     const routeToUpdate =
       route.handlerType === "route" &&
       currentDiscoveredRoutes.find(
-        (r) =>
-          r.path === route.path &&
-          r.method === route.method
+        (r) => r.path === route.path && r.method === route.method,
       );
     if (routeToUpdate) {
       await db

@@ -1,6 +1,6 @@
 import type { ProbedRoute } from "../queries";
 import type { RequestMethod, RequestType } from "../types";
-import { findSmartRouterMatches } from "./match";
+import { findFirstSmartRouterMatch } from "./match";
 
 const toRoute = (
   path: string,
@@ -29,24 +29,24 @@ describe("findSmartRouterMatch", () => {
   ];
 
   it("should return a match for the given pathname and method", () => {
-    const match = findSmartRouterMatches(routes, "/test", "GET", "http");
+    const match = findFirstSmartRouterMatch(routes, "/test", "GET", "http");
     console.log("/test match", match);
     expect(match).toBeTruthy();
   });
 
   it("should return a match for the given pathname and method", () => {
-    const match = findSmartRouterMatches(routes, "/test", "POST", "http");
+    const match = findFirstSmartRouterMatch(routes, "/test", "POST", "http");
     expect(match).toBeTruthy();
   });
 
   // NOTE - Basically just testing router behavior but this is a sanity check for me
   it("should return null if no match is found (params in route)", () => {
-    const match = findSmartRouterMatches(routes, "/users", "GET", "http");
+    const match = findFirstSmartRouterMatch(routes, "/users", "GET", "http");
     expect(match).toBeNull();
   });
 
   it("should return a match for the given pathname and method", () => {
-    const match = findSmartRouterMatches(routes, "/users/1", "GET", "http");
+    const match = findFirstSmartRouterMatch(routes, "/users/1", "GET", "http");
     expect(match).toMatchObject({
       path: "/users/:userId",
       method: "GET",

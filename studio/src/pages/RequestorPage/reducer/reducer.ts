@@ -3,11 +3,7 @@ import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
 import type { KeyValueParameter } from "../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import type { ProbedRoute } from "../queries";
-import { findMatchedRoute } from "../routes";
-import {
-  findAllMiddlewareMatches,
-  findSmartRouterMatches,
-} from "../routes/match";
+import { findAllSmartRouterMatches, findMatchedRoute } from "../routes";
 import {
   type RequestMethod,
   type RequestMethodInputValue,
@@ -42,6 +38,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
       handler: "",
       handlerType: "route",
       currentlyRegistered: false,
+      registrationOrder: -1,
       routeOrigin: "custom",
       isDraft: true,
     }
@@ -712,10 +709,10 @@ export function useRequestor() {
    * ...
    */
   const getMatchingMiddleware = useCallback(() => {
-    // TODO
     const path = state.path;
     const method = state.method;
     const requestType = state.requestType;
+
     const matchedRoute = findMatchedRoute(
       state.routes,
       removeBaseUrl(state.serviceBaseUrl, path),
@@ -736,7 +733,7 @@ export function useRequestor() {
       (r) => r.handlerType === "middleware",
     );
 
-    const middlewareMatches = findAllMiddlewareMatches(
+    const middlewareMatches = findAllSmartRouterMatches(
       filteredMiddleware,
       removeBaseUrl(state.serviceBaseUrl, path),
       method,
