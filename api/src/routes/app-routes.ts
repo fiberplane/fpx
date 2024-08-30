@@ -10,12 +10,7 @@ import {
   appRoutes,
   appRoutesInsertSchema,
 } from "../db/schema.js";
-import {
-  deleteMiddleware,
-  reregisterRoutes,
-  schemaProbedRoutes,
-  unregisterRoutes,
-} from "../lib/app-routes.js";
+import { reregisterRoutes, schemaProbedRoutes } from "../lib/app-routes.js";
 import {
   OTEL_TRACE_ID_REGEX,
   generateOtelTraceId,
@@ -92,11 +87,7 @@ app.post(
 
     try {
       if (routes.length > 0) {
-        // "Unregister" all app routes (including middleware)
-        await unregisterRoutes(db);
-        // Delete all old middleware
-        await deleteMiddleware(db);
-        // "Re-register" all current app routes
+        // "Re-register" all current app routes in a database transaction
         await reregisterRoutes(db, { routes });
 
         // TODO - Detect if anything actually changed before invalidating the query on the frontend
