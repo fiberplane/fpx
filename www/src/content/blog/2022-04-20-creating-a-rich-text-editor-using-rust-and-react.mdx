@@ -14,18 +14,20 @@ tags:
 ---
 
 ## Introduction
+
 At Fiberplane, we recently encountered an interesting challenge: We were outgrowing the library we were using for our rich text editor. We used to use Slate.js— a fine editor — but as we’re implementing our own rich text primitives for collaborative editing, we discovered the disconnect between our own primitives and Slate’s data model to be somewhat of a hindrance. So we got to thinking - what if we just built our own Rich Text Editor (RTE)?
 
 From a very high-level perspective, a rich text editor is comprised of two components:
 
-* A data model and the cor logic to operate on it.
-* A view that renders the state of said data model and that handles the usser interactions.
+- A data model and the cor logic to operate on it.
+- A view that renders the state of said data model and that handles the usser interactions.
 
 We used Slate for the view, though as a result, it pulled in its own data model as well. If we could just implement the view directly in React, we could simplify our stack considerably and have full control over every aspect of it. The downside? RTEs are notorious for their need to support complex user interactions, and now we would need to handle every interaction ourselves.
 
 In this post, we’ll discuss the challenges we faced and how we tackled those.
 
 ## Data model
+
 Our product is a collaborative notebook editor. A notebook is a block-based editor comprised of different types of cells, ranging from text cells to images and graphs. So we settled on a data model that would be beneficial both for our collaboration features, as well as for the RTE that powers any of the rich text fields that we use inside cells. For this post, we’ll focus on the TextCell:
 
 ```rust
@@ -35,6 +37,7 @@ struct TextCell {
     pub formatting: Option<Formatting>,
 }
 ```
+
 The content here is just the plain text content, while the formatting is what turns this plain text into rich text. The juicy bits are all inside the Formatting type:
 
 ```rust
@@ -54,12 +57,13 @@ enum Annotation {
     /* more like these... */
 }
 ```
+
 As you can see, it’s nothing but a list of annotations that define the type of formatting to apply and the offset from where it starts. We intentionally did not choose a tree-like structure similar to HTML because formatting ranges can overlap, which would lead to complicated tree manipulation. In addition, the simplicity of only having a single offset for each annotation makes it easy for us to implement the [Operational Transformation](https://en.wikipedia.org/wiki/Operational_transformation) (OT) algorithm we use for collaboration.
 
-
 ## Core logic
+
 With the data model also comes code for interacting with it. When you’re typing in a cell, where do we insert the newly typed characters? How does that affect the content and the associated formatting? What should happen if you toggle formatting on a selection? What if you split a cell in the middle? All of this and more is implemented in the core logic in Rust.
-Mind you, we needed most of this logic anyway, because we also needed it for our OT algorithm. But now we were able to use the same primitives to power our editor as well. 
+Mind you, we needed most of this logic anyway, because we also needed it for our OT algorithm. But now we were able to use the same primitives to power our editor as well.
 To make this logic easily testable, it is implemented as pure functions that we invoke from [Redux reducers in TypeScript](https://fiberplane.com/blog/writing-redux-reducers-in-rust). We created [fp-bindgen](https://github.com/fiberplane/fp-bindgen/) to generate bindings between the Rust code and the TypeScript code that invokes it.
 
 One piece of logic that we had to introduce ourselves to accommodate the RTE (which we didn’t need yet when we were still using Slate), was cursor management. For example, when the user presses the left arrow key, we dispatch a MoveCursor action with the following payload:
@@ -74,7 +78,8 @@ struct MoveCursorPayload {
 
 The delta specifies whether the cursor moves forward or backward, by specifying a value of 1 or -1. The extend_selection property is used when the user holds the Shift key, to extend the current selection, or create one if there isn’t one yet. And the unit determines if we’re moving the cursor per [Unicode grapheme cluster](https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries) (what a user typically calls a “character”) or per word, for when the user holds the Ctrl/⌥ key. Our Rust reducer then processes these actions and handles all the edge cases, including things like making sure the cursor doesn’t end up in the middle of an @ mention.
 
-## View 
+## View
+
 During the majority of the development of our RTE, our editor wasn’t even an editor. At least not from the browser’s point of view. That’s because the browser generally only recognizes two types of editors: plain text editors, such as `<input>` and `<textarea>` elements, and free-form editors that are created using an attribute called contenteditable. Ours was neither. We still use the contenteditable attribute in the final version, because of some practical implications we’ll discuss shortly, but we made a conscious decision to rely on it as little as possible. This had a profound impact on how we initially built our RTE, as you’ll see in this section.
 
 If our initial version did not use contenteditable at all, how were we able to create a rich text editor at all? From a user’s point of view, an RTE is nothing but something that looks like a text field with a cursor that allows them to input whatever content they like.
@@ -89,9 +94,8 @@ It certainly can appear overwhelming, and during development, it may be difficul
 
 Of course, for the final version, it’s hard to get around using contenteditable. This is because without it, browser extensions would fail to recognize your editor. And mobile browsers would stubbornly refuse to even bring up the on-screen keyboard...
 
-
-
 ## Manual diffing
+
 So we did need contenteditable, but then there was another problem: React doesn’t support patching the content of an element that has contenteditable enabled. And for good reason: contenteditable basically tells the browser to go ahead and have fun. It’s like a playground with no rules.
 
 React doesn’t like that. It relies on a Virtual DOM to determine how it needs to update the actual DOM, but that approach falls into shambles when the browser can just pull the rug out from under it and update the actual DOM without its knowledge. It’s also the same reason we avoided it in the first place: To update our data model in such a way that we preserve the user’s intent (an important aspect of the OT algorithm) it’s best to understand the interactions that lead to any changes. But if you would try to make sense of the browser’s changes to the DOM in a contenteditable element, you’d be guessing at best.
@@ -99,12 +103,13 @@ React doesn’t like that. It relies on a Virtual DOM to determine how it needs 
 So we took a page out of React’s playbook and implemented our own diffing algorithm. But rather than diff against a Virtual DOM, we simply diff and patch against the real DOM in a useLayoutEffect()hook. This was relatively simple because our use case is so specialized, and it also has the advantage that if anything unexpected happens in the real DOM (possibly due to a browser extension), our algorithm will simply revert the view to what we expect based on our data model.
 
 ## Miscellaneous
+
 All of the above may give you an idea of how the editor works at a high level, but the devil is in the details. Here’s a selection of smaller issues we needed to tackle:
 
-* **Unicode support**. Everybody’s favorite standard, and a pain to work with. Fortunately, Rust has the excellent [unicode_segmentation crate](https://crates.io/crates/unicode-segmentation) that helped us greatly. This helped us with things such as cursor navigation by word and making sure the cursor would correctly jump over grapheme clusters.
-* **Cursor positioning** is tricky, but we found the best way to go about this is to use the browser’s Selection object and set a (transparent) native cursor that way. Then we use getBoundingClientRect() to measure where the browser would have rendered the cursor, and we can position our own there.
-* **Composition** events are used by browsers for composing characters with accents and for handling inputs such as Pinyin. Don’t forget to handle these!
+- **Unicode support**. Everybody’s favorite standard, and a pain to work with. Fortunately, Rust has the excellent [unicode_segmentation crate](https://crates.io/crates/unicode-segmentation) that helped us greatly. This helped us with things such as cursor navigation by word and making sure the cursor would correctly jump over grapheme clusters.
+- **Cursor positioning** is tricky, but we found the best way to go about this is to use the browser’s Selection object and set a (transparent) native cursor that way. Then we use getBoundingClientRect() to measure where the browser would have rendered the cursor, and we can position our own there.
+- **Composition** events are used by browsers for composing characters with accents and for handling inputs such as Pinyin. Don’t forget to handle these!
 
 ## Conclusion
-Creating your own rich text editor is a daunting task, but with the right architecture and good planning, it’s certainly doable. Should you find yourself in a position where you have to choose or develop a rich text editor, we hope you found this post informative.
 
+Creating your own rich text editor is a daunting task, but with the right architecture and good planning, it’s certainly doable. Should you find yourself in a position where you have to choose or develop a rich text editor, we hope you found this post informative.

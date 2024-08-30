@@ -8,6 +8,7 @@ tags:
   - Jsonnet
   - WebAssembly
 ---
+
 Fiberplane Templates supercharge incident runbooks. Instead of having static runbooks (which most of the team probably ignores), Fiberplane Templates are triggered from alerts to create fresh collaborative notebooks already filled with debugging steps and live infrastructure data to help you debug your systems faster. This blog post explains how we evaluated different templating technologies, why we opted for Jsonnet in this use case, and how we built Fiberplane Templates.
 
 ## Fiberplanes Templates Use Case
@@ -23,22 +24,25 @@ At a high level, we wanted to support the following template use cases:
 3. **Sharing best practices**. We want to make it easy to share best practices within and across organizations to help all DevOps and SRE teams work more efficiently.
 
 ## Template Technology Criteria
+
 Our main criteria for choosing a template technology were:
 
-* **Power** - Templates need to be able to fill in fields based on input parameters. It is also useful to have basic programming constructs such as loops and if-statements to be able to define behavior like “for each of these services, add this group of notebook cells”.
-* **Ease of learning** - Templates should be easy for any developers and less technical team members to read, understand, and contribute to. You shouldn’t need to be an expert with a specific programming language to grok what a template is doing.
-* **Version control** - Everything important should be in git. ‘Nuff said.
-* **Stability** - We don’t want to be breaking runbooks because the template technology is still in development.
-* **Rust implementation** - Our backend stack is written in pure Rust so a Rust library was a plus, though not strictly necessary.
+- **Power** - Templates need to be able to fill in fields based on input parameters. It is also useful to have basic programming constructs such as loops and if-statements to be able to define behavior like “for each of these services, add this group of notebook cells”.
+- **Ease of learning** - Templates should be easy for any developers and less technical team members to read, understand, and contribute to. You shouldn’t need to be an expert with a specific programming language to grok what a template is doing.
+- **Version control** - Everything important should be in git. ‘Nuff said.
+- **Stability** - We don’t want to be breaking runbooks because the template technology is still in development.
+- **Rust implementation** - Our backend stack is written in pure Rust so a Rust library was a plus, though not strictly necessary.
 
 ## Template Approaches Considered
 
 ### Pure User Interface
+
 The first option we considered was making templates a purely UI-driven feature. This would mean defining and using templates in Fiberplane, similar to templates in Notion or Google Docs.
 
 UI-driven templates would be easy to use and learn for non-developers. However, it would be hard to represent programming concepts like for-loops and if-statements in a WYSIWYG editor, and this option would not easily support checking templates into version control. As a result, we opted for a more code-based template approach.
 
 ### WebAssembly
+
 We were already doing lots of [fun things with WASM](https://blog.fiberplane.com/announcing-fp-bindgen/) so we also considered making templates WASM modules that take in the input parameters and output Fiberplane notebooks as JSON objects.
 
 On the plus side, using WASM would enable templates to be written in many different programming languages and we could leverage some of our existing tooling. Additionally, we could support having templates proactively fetch additional data before creating a notebook (though we debated whether that is useful or overly complicated).
@@ -48,6 +52,7 @@ A major downside of the WASM approach is that templates would be distributed as 
 After concluding that WebAssembly wasn’t the right tool for the job, we searched around for text-based templating technologies.
 
 ### Mustache
+
 [Mustache](https://mustache.github.io/mustache.5.html) is an extremely minimal text-based template language most commonly used for HTML templates. Mustache is intentionally “logic-free” (no for-loops or if-statements), which unfortunately makes it a bit too limited for our use case.
 
 We also considered a variety of Mustache-inspired tools including [Jinja](https://jinja.palletsprojects.com/en/3.0.x/templates/), [Handlebars](https://handlebarsjs.com/), [Askama](https://djc.github.io/askama/), and [Tera](https://tera.netlify.app/). Most of these are designed for HTML templating, though they support other text-based formats. For our use case, it made most sense for our templates to either output the JSON objects our API uses to represent notebooks, or an equivalent data structure encoded in YAML, TOML, or another markup language.
@@ -55,6 +60,7 @@ We also considered a variety of Mustache-inspired tools including [Jinja](https
 While this approach meets many of our selection criteria, it would unfortunately make it quite easy to write templates that fail to create valid notebooks. For example, it would be difficult to discover the fields required for a particular notebook cell type or ensure that you had specified all of them.
 
 ### Jsonnet
+
 [Jsonnet](https://jsonnet.org/) is a data templating language originally developed at Google that extends JSON with basic control logic and pure functions. Its syntax is somewhat similar to that of dynamically typed scripting languages like Python or Javascript. Companies including [Grafana](https://grafana.github.io/grafonnet-lib/), [Databricks](https://databricks.com/blog/2021/10/14/developing-databricks-runbot-ci-solution.html), and [Akamai](https://developer.akamai.com/blog/2021/04/28/akamai-code-jsonnet) use Jsonnet to enable external users to configure their products or to template their internal configuration files.
 
 One of our favorite things about Jsonnet – and one of the [design considerations for](https://jsonnet.org/articles/design.html) the language – was:
@@ -66,6 +72,7 @@ And it shows! Without having used it before, we found it easy to look at Jsonnet
 As is obvious from the title of this post, Jsonnet was the option we picked, so we mostly have nice things to say about it.😉 We liked that Jsonnet offered a text-based format with all of the programming constructs we could imagine wanting, without being difficult to pick up. We’ll describe more of the details of our implementation below.
 
 ### Cue, Dhall, and Nickel
+
 Cue, Dhall, and Nickel are all in the same space as Jsonnet but add static types. As avid Rust users, we definitely like static types for programming but had some reservations about the tradeoffs they presented for this use case.
 
 [Cue]()https://cuelang.org/ can do a lot, but it is arguably the most complex of these languages. It combines data validation, configuration generation, schema definition, code generation, and data querying. In Cue, types are values, which is a clever construct that, unfortunately, takes some time to grasp for those that are less well-versed in type theory.
@@ -77,29 +84,33 @@ Cue, Dhall, and Nickel are all in the same space as Jsonnet but add static types
 Ultimately, we decided the benefits of static types were not worth the added complexity for template developers and editors in this use case. We envisioned using helper functions to build up the notebook JSON object, which would then be validated by our API. As a result, strict schema validation offered fewer benefits than it might for an organization dealing with the configuration of many disparate services that each expect different formats.
 
 ### Scripting Languages
+
 The final category we considered was embedded scripting languages, including Lua, Javascript, [Starlark](https://github.com/bazelbuild/starlark/blob/master/spec.md) (a subset of Python used by Google’s Bazel build system), and [Rhai](https://rhai.rs/).
 
 All of these offered relatively similar functionality to Jsonnet but were not specifically intended to produce JSON or a template function at the end of a script. We could have required that the scripts return a notebook object, or added a built-in function the script could call to create one or even multiple notebooks. However, this level of scripting seemed like overkill for the template feature and we preferred the approach of treating a template as a program that would generate a single notebook.
 
-
 ## Building Fiberplane Templates
+
 Once we’d chosen the templating language, we settled on the design of our templates implementation. The Fiberplane Templates library consists of a Jsonnet library of helper functions, an evaluator that wraps the Rust Jsonnet implementation, and a converter that can export an existing notebook as Jsonnet.
 
 ### Fiberplane Jsonnet Library
+
 First, we have a library of helper functions, written in Jsonnet, that enables users to build up the Fiberplane notebook JSON object. Each cell type (for headings, text cells, code cells, graphs, etc.) has its own helper function that takes the relevant parameters and provides sensible defaults.
 
 To generate API docs for the library, we use JSDoc comments and [jsdoc-to-markdown](https://github.com/jsdoc2md/jsdoc-to-markdown). While JSDoc is technically meant for Javascript, it has a handy “comments only” plugin that enables it to be used to document code written in other languages.
 
 ### Template Evaluator and Converter
+
 The template evaluator uses the Rust Jsonnet implementation, [jrsonnet](https://github.com/CertainLach/jrsonnet), and injects some use-case-specific values into the runtime:
 
-* Fiberplane Jsonnet Library - the evaluator includes the latest version of the helper function library so that templates can be standalone Jsonnet files and do not need to use a package manager like [jsonnet-bundler](https://github.com/jsonnet-bundler/jsonnet-bundler).
-* The current date - this enables using time-based values when configuring the notebook
-* Data sources - Fiberplane enables users to pull live data about their infrastructure into notebooks. The template runtime includes the data sources available when the template is executed to make it easy to pre-populate notebooks with specific data sources or exact queries needed to debug an incident.
+- Fiberplane Jsonnet Library - the evaluator includes the latest version of the helper function library so that templates can be standalone Jsonnet files and do not need to use a package manager like [jsonnet-bundler](https://github.com/jsonnet-bundler/jsonnet-bundler).
+- The current date - this enables using time-based values when configuring the notebook
+- Data sources - Fiberplane enables users to pull live data about their infrastructure into notebooks. The template runtime includes the data sources available when the template is executed to make it easy to pre-populate notebooks with specific data sources or exact queries needed to debug an incident.
 
 Finally, the converter takes an existing notebook JSON object as input and outputs a template as Jsonnet. This enables users to write simple templates in the WYSIWYG editor before exporting them.
 
 ## Conclusion
+
 We chose Jsonnet for Fiberplane Templates because it offered a sweet spot between power and ease of use. After building our template evaluator and helper function library, we’re happy with our choice and would recommend it for similar use cases involving templating API objects.
 
 **Major thanks to the Jsonnet [contributors](https://github.com/google/jsonnet/graphs/contributors) and special thanks to [@CertainLach](https://github.com/CertainLach/) and the [other contributors](https://github.com/CertainLach/jrsonnet/graphs/contributors) to the [Rust Jsonnet implementation](https://github.com/CertainLach/jrsonnet).**

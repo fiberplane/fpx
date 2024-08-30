@@ -9,6 +9,7 @@ tags:
   - Rust
   - TypeScript
 ---
+
 import { Image } from "astro:assets";
 
 Ever wondered how to pass rich data types such as structs between a TypeScript and Rust WebAssembly module? Our Principal Software Engineer Arend van Beelen has all the insights.
@@ -43,6 +44,7 @@ function toFatPtr(ptr: number, len: number): FatPtr {
   return (BigInt(ptr) << 32n) | BigInt(len);
 }
 ```
+
 The fat pointer can only point to memory belonging to the WebAssembly module, but when we pass from TypeScript to Rust, how does TypeScript know which memory to use?
 
 ```rust
@@ -57,6 +59,7 @@ pub fn __fp_malloc(len: u32) -> FatPtr {
     to_fat_ptr(ptr, len)
 }
 ```
+
 To solve this, the WebAssembly needs to expose memory allocation functions, such as malloc() and free(). These are well-known from the world of C, but unlike their C counterparts, these will work with fat pointers.
 
 ```rust
@@ -76,4 +79,5 @@ pub unsafe fn import_value_from_host<'de, T: Deserialize<'de>>(fat_ptr: FatPtr) 
     value
 }
 ```
+
 Now, whenever TypeScript needs to pass complex data to the Rust WebAssembly, it:serializes the DataSource.calls malloc() to get the memorycopies the datapasses the fat pointer to a Rust functionAnd finally, someone calls free().Found this interesting?For more updates follow us on [Twitter](https://x.com/fiberplane).
