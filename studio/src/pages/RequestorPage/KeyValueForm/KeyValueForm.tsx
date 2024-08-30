@@ -135,6 +135,9 @@ interface DynamicInputProps {
 
 const MAGIC_INPUT_HEIGHT = "1.5em";
 
+/**
+ * A stretchy input, modeled after the ones in HTTPie
+ */
 const DynamicInput: React.FC<DynamicInputProps> = ({
   value,
   onChange,
@@ -173,11 +176,9 @@ const DynamicInput: React.FC<DynamicInputProps> = ({
 
   const adjustHeight = () => {
     if (inputRef.current && measureRef.current) {
-      // measureRef.current.style.width = `${inputRef.current.offsetWidth}px`;
       measureRef.current.style.width = `${inputRef.current.offsetWidth}px`;
       const height = measureRef.current.offsetHeight;
       inputRef.current.style.height = `${height}px`;
-      // containerRef.current.style.height = `${height}px`;
     }
   };
 
@@ -188,7 +189,7 @@ const DynamicInput: React.FC<DynamicInputProps> = ({
         onChange(newValue);
       }
       if (measureRef.current) {
-        measureRef.current.innerText = newValue || "\u00A0";
+        measureRef.current.innerText = newValue;
       }
       adjustHeight();
     }
@@ -213,7 +214,6 @@ const DynamicInput: React.FC<DynamicInputProps> = ({
         onInput={handleInput}
         className={cn(
           `min-h-[${MAGIC_INPUT_HEIGHT}] py-0 px-2 border rounded`,
-          // "flex items-center",
           "focus-visible:outline-none",
           "fpx-placeholder",
           !isFocused && "overflow-hidden",
