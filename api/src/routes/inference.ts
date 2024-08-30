@@ -17,48 +17,58 @@ const generateRequestSchema = z.object({
   history: z.array(z.string()).nullish(),
   persona: z.string(),
   openApiSpec: z.string().nullish(),
-  middleware: z.array(z.object({
-    handler: z.string(),
-    method: z.string(),
-    path: z.string(),
-  })).nullish(),
+  middleware: z
+    .array(
+      z.object({
+        handler: z.string(),
+        method: z.string(),
+        path: z.string(),
+      }),
+    )
+    .nullish(),
 });
 
-app.post("/v0/generate-request", cors(), zValidator("json", generateRequestSchema), async (ctx) => {
-  const { handler, method, path, history, persona, openApiSpec, middleware } = ctx.req.valid("json");
+app.post(
+  "/v0/generate-request",
+  cors(),
+  zValidator("json", generateRequestSchema),
+  async (ctx) => {
+    const { handler, method, path, history, persona, openApiSpec, middleware } =
+      ctx.req.valid("json");
 
-  const db = ctx.get("db");
-  const inferenceConfig = await getInferenceConfig(db);
+    const db = ctx.get("db");
+    const inferenceConfig = await getInferenceConfig(db);
 
-  if (!inferenceConfig) {
-    return ctx.json(
-      {
-        message: "No inference configuration found",
-      },
-      403,
-    );
-  }
+    if (!inferenceConfig) {
+      return ctx.json(
+        {
+          message: "No inference configuration found",
+        },
+        403,
+      );
+    }
 
-  const { data: parsedArgs, error: generateError } =
-    await generateRequestWithAiProvider({
-      inferenceConfig,
-      persona,
-      method,
-      path,
-      handler,
-      history,
-      openApiSpec,
-      middleware: middleware ? middleware : undefined,
+    const { data: parsedArgs, error: generateError } =
+      await generateRequestWithAiProvider({
+        inferenceConfig,
+        persona,
+        method,
+        path,
+        handler,
+        history,
+        openApiSpec,
+        middleware: middleware ? middleware : undefined,
+      });
+
+    if (generateError) {
+      return ctx.json({ message: generateError.message }, 500);
+    }
+
+    return ctx.json({
+      request: parsedArgs,
     });
-
-  if (generateError) {
-    return ctx.json({ message: generateError.message }, 500);
-  }
-
-  return ctx.json({
-    request: parsedArgs,
-  });
-});
+  },
+);
 
 app.post(
   "/v0/analyze-error",
