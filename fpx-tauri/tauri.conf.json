@@ -1,9 +1,9 @@
 {
   "build": {
-    "beforeBuildCommand": "pnpm run build:frontend",
-    "beforeDevCommand": "pnpm run dev:frontend",
+    "beforeBuildCommand": "pnpm build:fpx-studio",
+    "beforeDevCommand": "pnpm run dev:api & pnpm run dev:frontend",
     "devPath": "http://localhost:5173",
-    "distDir": "../../assets"
+    "distDir": "../studio/dist"
   },
   "package": {
     "productName": "fpx-tauri",
@@ -28,7 +28,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.fiberplane.fpx",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
