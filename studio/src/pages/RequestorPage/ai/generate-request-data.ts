@@ -5,6 +5,7 @@ import { simplifyHistoryEntry } from "./utils";
 
 const fetchAiRequestData = (
   route: ProbedRoute | null,
+  middleware: ProbedRoute[] | null,
   bodyType: RequestBodyType,
   history: Array<Requestornator>,
   persona: string,
@@ -25,6 +26,7 @@ const fetchAiRequestData = (
       history: simplifiedHistory,
       persona,
       openApiSpec,
+      middleware,
     }),
   }).then(async (r) => {
     if (!r.ok) {
@@ -37,13 +39,15 @@ const fetchAiRequestData = (
 
 export function useAiRequestData(
   route: ProbedRoute | null,
+  matchingMiddleware: ProbedRoute[] | null,
   bodyType: RequestBodyType,
   history: Array<Requestornator>,
   persona = "Friendly",
 ) {
   return useQuery({
     queryKey: ["generateRequest"],
-    queryFn: () => fetchAiRequestData(route, bodyType, history, persona),
+    queryFn: () =>
+      fetchAiRequestData(route, matchingMiddleware, bodyType, history, persona),
     enabled: false,
     retry: false,
   });

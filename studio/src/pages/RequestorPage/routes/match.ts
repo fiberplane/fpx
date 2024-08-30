@@ -61,9 +61,7 @@ export function findFirstSmartRouterMatch(
 }
 
 /**
- * Prototype of doing middleware matching in the browser with Hono itself
- *
- * NOTE - This is only different from the above insofar as it returns ALL matches
+ * Returns all matching routes (or middleware!) from the smart router
  */
 export function findAllSmartRouterMatches(
   routes: ProbedRoute[],

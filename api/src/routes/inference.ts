@@ -11,7 +11,7 @@ import type { Bindings, Variables } from "../lib/types.js";
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.post("/v0/generate-request", cors(), async (ctx) => {
-  const { handler, method, path, history, persona, openApiSpec } =
+  const { handler, method, path, history, persona, openApiSpec, middleware } =
     await ctx.req.json();
 
   const db = ctx.get("db");
@@ -35,6 +35,7 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
       handler,
       history,
       openApiSpec,
+      middleware,
     });
 
   if (generateError) {

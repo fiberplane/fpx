@@ -95,7 +95,7 @@ export const RequestorPage = () => {
     getMatchingMiddleware,
   } = requestorState;
 
-  getMatchingMiddleware();
+  const matchingMiddleware = getMatchingMiddleware();
 
   const selectedRoute = getActiveRoute();
 
@@ -191,6 +191,7 @@ export const RequestorPage = () => {
     setIgnoreAiInputsBanner,
   } = useAi(
     selectedRoute,
+    matchingMiddleware,
     history,
     {
       setBody,

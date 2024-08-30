@@ -706,7 +706,7 @@ export function useRequestor() {
   );
 
   /**
-   * ...
+   * Looks for any middleware that will match the current request
    */
   const getMatchingMiddleware = useCallback(() => {
     const path = state.path;
@@ -743,7 +743,13 @@ export function useRequestor() {
     console.log("all routes and middleware", state.routesAndMiddleware);
     console.log("filtered middleware (before route)", filteredMiddleware);
     console.log("middlewareMatches", middlewareMatches ?? "NOOOOO MATCHES YO");
-    return middlewareMatches;
+    const middleware = [];
+    for (const m of middlewareMatches ?? []) {
+      if (m?.route && m.route?.handlerType === "middleware") {
+        middleware.push(m.route);
+      }
+    }
+    return middleware;
   }, [
     state.routes,
     state.routesAndMiddleware,
