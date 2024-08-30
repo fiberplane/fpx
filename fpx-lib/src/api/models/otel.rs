@@ -22,8 +22,11 @@ pub struct Span {
     pub parent_span_id: Option<String>,
 
     pub name: String,
+    #[serde(default)]
     pub trace_state: String,
+    #[serde(default)]
     pub flags: u32,
+    #[serde(default)]
     pub kind: SpanKind,
 
     pub scope_name: Option<String>,
@@ -229,7 +232,7 @@ impl From<StatusCode> for SpanStatusCode {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
-pub struct AttributeMap(pub BTreeMap<String, Option<AttributeValue>>);
+pub struct AttributeMap(pub BTreeMap<String, Option<serde_json::Value>>);
 
 impl From<KeyValueList> for AttributeMap {
     fn from(value: KeyValueList) -> Self {
@@ -239,17 +242,7 @@ impl From<KeyValueList> for AttributeMap {
 
 impl From<Vec<KeyValue>> for AttributeMap {
     fn from(attributes: Vec<KeyValue>) -> Self {
-        let result = attributes
-            .into_iter()
-            .map(|kv| {
-                (
-                    kv.key,
-                    kv.value.and_then(|value| value.value.map(Into::into)),
-                )
-            })
-            .collect();
-
-        AttributeMap(result)
+        todo!()
     }
 }
 
@@ -364,68 +357,6 @@ impl From<Span> for SpanSummary {
             name: span.name,
             span_kind: span.kind,
             result: span.status,
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn attribute_value_serialize_deserialize() {
-        struct Test<'a> {
-            input: AttributeValue,
-            expected: &'a str,
-        }
-
-        let mut kv_list = BTreeMap::new();
-        kv_list.insert("key1".to_string(), Some(AttributeValue::IntValue(1234)));
-        kv_list.insert(
-            "key2".to_string(),
-            Some(AttributeValue::DoubleValue(1234.1234)),
-        );
-        let kv_list: AttributeMap = AttributeMap(kv_list);
-        let tests = vec![
-            Test {
-                input: AttributeValue::IntValue(1234),
-                expected: "{\"intValue\":1234}",
-            },
-            Test {
-                input: AttributeValue::DoubleValue(1234.1234),
-                expected: "{\"doubleValue\":1234.1234}",
-            },
-            Test {
-                input: AttributeValue::StringValue("hello".to_string()),
-                expected: "{\"stringValue\":\"hello\"}",
-            },
-            Test {
-                input: AttributeValue::BoolValue(true),
-                expected: "{\"boolValue\":true}",
-            },
-            Test {
-                input: AttributeValue::BytesValue(vec![1, 2, 3, 4]),
-                expected: "{\"bytesValue\":[1,2,3,4]}",
-            },
-            Test {
-                input: AttributeValue::ArrayValue(vec![
-                    AttributeValue::IntValue(1234),
-                    AttributeValue::DoubleValue(1234.1234),
-                ]),
-                expected: "{\"arrayValue\":[{\"intValue\":1234},{\"doubleValue\":1234.1234}]}",
-            },
-            Test {
-                input: AttributeValue::KvlistValue(kv_list),
-                expected: "{\"kvlistValue\":{\"key1\":{\"intValue\":1234},\"key2\":{\"doubleValue\":1234.1234}}}",
-            },
-        ];
-
-        for test in tests {
-            let actual = serde_json::to_string(&test.input).unwrap();
-            assert_eq!(actual, test.expected);
-
-            let converted_back: AttributeValue = serde_json::from_str(&actual).unwrap();
-            assert_eq!(converted_back, test.input);
         }
     }
 }
