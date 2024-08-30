@@ -72,7 +72,9 @@ export function useRoutes({
   }, [routesAndMiddleware]);
 
   const activeRoutesAndMiddleware = useMemo(() => {
-    return filterActive(routesAndMiddleware?.routes ?? []);
+    const activeRoutes = filterActive(routesAndMiddleware?.routes ?? []);
+    activeRoutes.sort((a, b) => b.registrationOrder - a.registrationOrder);
+    return activeRoutes;
   }, [routesAndMiddleware]);
 
   // HACK - Antipattern, add serviceBaseUrl to the reducer based off of external changes

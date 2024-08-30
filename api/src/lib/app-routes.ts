@@ -26,11 +26,14 @@ export function deleteMiddleware(db: LibSQLDatabase<typeof schema>) {
   return db.delete(appRoutes).where(eq(appRoutes.handlerType, "middleware"));
 }
 
+/**
+ * 
+ */
 export async function reregisterRoutes(
   db: LibSQLDatabase<typeof schema>,
   { routes }: z.infer<typeof schemaProbedRoutes>,
 ) {
-  const currentRoutes = await db
+  const currentDiscoveredRoutes = await db
     .select()
     .from(appRoutes)
     .where(
@@ -39,14 +42,18 @@ export async function reregisterRoutes(
         eq(appRoutes.routeOrigin, "discovered"),
       ),
     );
+
+  // HACK - N+1 query because we should never have too many routes...
+  // TODO - Use a transaction
+  // TODO - Investigate "update many" logic: https://orm.drizzle.team/learn/guides/update-many-with-different-value
+  // TODO - Could just delete all old routes we're going to update then do one big insert
   for (const [index, route] of routes.entries()) {
     const routeToUpdate =
       route.handlerType === "route" &&
-      currentRoutes.find(
+      currentDiscoveredRoutes.find(
         (r) =>
           r.path === route.path &&
-          r.method === route.method &&
-          r.routeOrigin === "discovered",
+          r.method === route.method
       );
     if (routeToUpdate) {
       await db
