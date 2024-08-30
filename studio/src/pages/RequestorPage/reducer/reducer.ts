@@ -713,15 +713,29 @@ export function useRequestor() {
     const method = state.method;
     const requestType = state.requestType;
 
+    const canMatchMiddleware =
+      !pathHasValidBaseUrl(path) || path.startsWith(state.serviceBaseUrl);
+
+    // NOTE - We can only match middleware for the service we're monitoring anyhow
+    //        If someone is making a request to jsonplaceholder, we don't wanna
+    //        match middleware that might fire for an internal goose api call
+    if (!canMatchMiddleware) {
+      return null;
+    }
+
     const matchedRoute = findMatchedRoute(
       state.routes,
       removeBaseUrl(state.serviceBaseUrl, path),
       method,
       requestType,
-    );
+    )?.route;
 
-    const indexOfMatchedRoute = matchedRoute?.route
-      ? state.routesAndMiddleware.indexOf(matchedRoute?.route)
+    if (!matchedRoute) {
+      return null;
+    }
+
+    const indexOfMatchedRoute = matchedRoute
+      ? state.routesAndMiddleware.indexOf(matchedRoute)
       : -1;
 
     const registeredHandlersBeforeRoute =
@@ -739,10 +753,12 @@ export function useRequestor() {
       method,
       requestType,
     );
-    console.log("matched route", matchedRoute);
-    console.log("all routes and middleware", state.routesAndMiddleware);
-    console.log("filtered middleware (before route)", filteredMiddleware);
-    console.log("middlewareMatches", middlewareMatches ?? "NOOOOO MATCHES YO");
+
+    // console.log("matched route", matchedRoute);
+    // console.log("all routes and middleware", state.routesAndMiddleware);
+    // console.log("filtered middleware (before route)", filteredMiddleware);
+    // console.log("middlewareMatches", middlewareMatches ?? "NOOOOO MATCHES YO");
+
     const middleware = [];
     for (const m of middlewareMatches ?? []) {
       if (m?.route && m.route?.handlerType === "middleware") {
@@ -804,7 +820,8 @@ export function useRequestor() {
     showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
 
-    // TODO
+    // NOTE - This returns middleware that might fire for the current route
+    //        It's used to inject additional context to the ai request generation feature
     getMatchingMiddleware,
   };
 }

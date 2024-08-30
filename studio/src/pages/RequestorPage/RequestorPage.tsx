@@ -49,6 +49,10 @@ export const RequestorPage = () => {
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     getActiveRoute,
 
+    // NOTE - This returns middleware that might fire for the current route
+    //        It's used to inject additional context to the ai request generation feature
+    getMatchingMiddleware,
+
     // Requestor input
     // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
     state: { path, method, requestType },
@@ -90,12 +94,7 @@ export const RequestorPage = () => {
     state: { activeHistoryResponseTraceId },
     showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
-
-    // TODO
-    getMatchingMiddleware,
   } = requestorState;
-
-  const matchingMiddleware = getMatchingMiddleware();
 
   const selectedRoute = getActiveRoute();
 
@@ -191,7 +190,7 @@ export const RequestorPage = () => {
     setIgnoreAiInputsBanner,
   } = useAi(
     selectedRoute,
-    matchingMiddleware,
+    getMatchingMiddleware(),
     history,
     {
       setBody,
