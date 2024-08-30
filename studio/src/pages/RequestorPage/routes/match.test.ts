@@ -13,6 +13,7 @@ const toRoute = (
   handler: "",
   handlerType: "route" as const,
   currentlyRegistered: false,
+  registrationOrder: -1,
   routeOrigin: "custom" as const,
   isDraft: false,
 });
