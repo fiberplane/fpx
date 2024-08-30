@@ -98,14 +98,21 @@ app.post(
     try {
       if (routes.length > 0) {
         // "Unregister" all app routes (including middleware)
-        await db.update(appRoutes).set({ currentlyRegistered: false });
+        await db
+          .update(appRoutes)
+          .set({ currentlyRegistered: false, registrationOrder: -1 });
+        // Delete all old middleware
+        await db
+          .delete(appRoutes)
+          .where(eq(appRoutes.handlerType, "middleware"));
         // "Re-register" all current app routes
-        for (const route of routes) {
+        for (const [index, route] of routes.entries()) {
           await db
             .insert(appRoutes)
             .values({
               ...route,
               currentlyRegistered: true,
+              registrationOrder: index,
             })
             .onConflictDoUpdate({
               target: [
@@ -114,7 +121,11 @@ app.post(
                 appRoutes.handlerType,
                 appRoutes.routeOrigin,
               ],
-              set: { handler: route.handler, currentlyRegistered: true },
+              set: {
+                handler: route.handler,
+                currentlyRegistered: true,
+                registrationOrder: index,
+              },
             });
         }
 

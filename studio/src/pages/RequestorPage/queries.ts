@@ -20,6 +20,7 @@ export const ProbedRouteSchema = z.object({
   handler: z.string(),
   handlerType: z.enum(["route", "middleware"]),
   currentlyRegistered: z.boolean(),
+  registrationOrder: z.number().default(-1),
   routeOrigin: z.enum(["discovered", "custom", "open_api"]),
   openApiSpec: z.string().optional(),
   requestType: RequestTypeSchema,

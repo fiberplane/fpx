@@ -21,6 +21,9 @@ export const appRoutes = sqliteTable(
     currentlyRegistered: integer("currentlyRegistered", {
       mode: "boolean",
     }).default(false),
+    registrationOrder: integer("registration_order", {
+      mode: "number",
+    }).default(-1),
     // A flag for route type that indicated if the route was added manually by user or by probe
     routeOrigin: text("route_origin", {
       mode: "text",

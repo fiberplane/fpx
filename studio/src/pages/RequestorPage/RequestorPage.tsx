@@ -44,7 +44,7 @@ export const RequestorPage = () => {
     // Routes panel
     state: { routes },
     setRoutes,
-    setMiddleware,
+    setRoutesAndMiddleware,
     setServiceBaseUrl,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     getActiveRoute,
@@ -102,7 +102,7 @@ export const RequestorPage = () => {
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes({
     setRoutes,
-    setMiddleware,
+    setRoutesAndMiddleware,
     setServiceBaseUrl,
   });
 

@@ -4,7 +4,7 @@ import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
 type UseRoutesOptions = {
   setRoutes: (routes: ProbedRoute[]) => void;
-  setMiddleware: (middleware: ProbedRoute[]) => void;
+  setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
 };
 
@@ -43,27 +43,17 @@ const filterRoutes = (routes: ProbedRoute[]) => {
 };
 
 /**
- * Filter the middleware that we want to show in the UI
- * For now, only keeps the middleware if it's a websocket middleware
+ * Filter the routes and middleware that are currently registered.
  */
-const filterActiveMiddleware = (middleware: ProbedRoute[]) => {
-  return middleware.filter((r) => {
-    if (!r.currentlyRegistered) {
-      return false;
-    }
-    if (r.handlerType === "middleware") {
-      return true;
-    }
-    if (WEBSOCKETS_ENABLED && isUpgradeWebSocketMiddleware(r)) {
-      return false;
-    }
-    return false;
+const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
+  return routesAndMiddleware.filter((r) => {
+    return r.currentlyRegistered;
   });
 };
 
 export function useRoutes({
   setRoutes,
-  setMiddleware,
+  setRoutesAndMiddleware,
   setServiceBaseUrl,
 }: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
@@ -81,8 +71,8 @@ export function useRoutes({
     );
   }, [routesAndMiddleware]);
 
-  const middleware = useMemo(() => {
-    return filterActiveMiddleware(routesAndMiddleware?.routes ?? []);
+  const activeRoutesAndMiddleware = useMemo(() => {
+    return filterActive(routesAndMiddleware?.routes ?? []);
   }, [routesAndMiddleware]);
 
   // HACK - Antipattern, add serviceBaseUrl to the reducer based off of external changes
@@ -90,7 +80,7 @@ export function useRoutes({
   const serviceBaseUrl =
     routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
   useEffect(() => {
-    console.log("setting serviceBaseUrl", serviceBaseUrl);
+    console.debug("setting serviceBaseUrl", serviceBaseUrl);
     setServiceBaseUrl(serviceBaseUrl);
   }, [serviceBaseUrl, setServiceBaseUrl]);
 
@@ -100,14 +90,15 @@ export function useRoutes({
     setRoutes(routes);
   }, [routes, setRoutes]);
 
+  // HACK - Antipattern, add routes and middleware to the reducer based off of external changes
   useEffect(() => {
-    setMiddleware(middleware);
-  }, [middleware, setMiddleware]);
+    setRoutesAndMiddleware(activeRoutesAndMiddleware);
+  }, [activeRoutesAndMiddleware, setRoutesAndMiddleware]);
 
   return {
     isError,
     isLoading,
     routes,
-    middleware,
+    activeRoutesAndMiddleware,
   };
 }

@@ -49,7 +49,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
 };
 
 const SET_ROUTES = "SET_ROUTES" as const;
-const SET_MIDDLEWARE = "SET_MIDDLEWARE" as const;
+const SET_ROUTES_AND_MIDDLEWARE = "SET_ROUTES_AND_MIDDLEWARE" as const;
 const SET_SERVICE_BASE_URL = "SET_SERVICE_BASE_URL" as const;
 const PATH_UPDATE = "PATH_UPDATE" as const;
 const METHOD_UPDATE = "METHOD_UPDATE" as const;
@@ -75,7 +75,7 @@ type RequestorAction =
       payload: ProbedRoute[];
     }
   | {
-      type: typeof SET_MIDDLEWARE;
+      type: typeof SET_ROUTES_AND_MIDDLEWARE;
       payload: ProbedRoute[];
     }
   | {
@@ -183,10 +183,10 @@ function requestorReducer(
         pathParams: nextPathParams,
       };
     }
-    case SET_MIDDLEWARE: {
+    case SET_ROUTES_AND_MIDDLEWARE: {
       return {
         ...state,
-        middleware: action.payload,
+        routesAndMiddleware: action.payload,
       };
     }
     case SET_SERVICE_BASE_URL: {
@@ -498,9 +498,12 @@ export function useRequestor() {
     [dispatch],
   );
 
-  const setMiddleware = useCallback(
-    (middleware: ProbedRoute[]) => {
-      dispatch({ type: SET_MIDDLEWARE, payload: middleware });
+  const setRoutesAndMiddleware = useCallback(
+    (routesAndMiddleware: ProbedRoute[]) => {
+      dispatch({
+        type: SET_ROUTES_AND_MIDDLEWARE,
+        payload: routesAndMiddleware,
+      });
     },
     [dispatch],
   );
@@ -713,17 +716,40 @@ export function useRequestor() {
     const path = state.path;
     const method = state.method;
     const requestType = state.requestType;
-    const middlewareMatches = findAllMiddlewareMatches(
-      state.middleware,
+    const matchedRoute = findMatchedRoute(
+      state.routes,
       removeBaseUrl(state.serviceBaseUrl, path),
       method,
       requestType,
     );
-    console.log("middleware", state.middleware);
-    console.log("middlewareMatches", middlewareMatches);
+
+    const indexOfMatchedRoute = matchedRoute?.route
+      ? state.routesAndMiddleware.indexOf(matchedRoute?.route)
+      : -1;
+
+    const registeredHandlersBeforeRoute =
+      indexOfMatchedRoute > -1
+        ? state.routesAndMiddleware.slice(indexOfMatchedRoute)
+        : [];
+
+    const filteredMiddleware = registeredHandlersBeforeRoute.filter(
+      (r) => r.handlerType === "middleware",
+    );
+
+    const middlewareMatches = findAllMiddlewareMatches(
+      filteredMiddleware,
+      removeBaseUrl(state.serviceBaseUrl, path),
+      method,
+      requestType,
+    );
+    console.log("matched route", matchedRoute);
+    console.log("all routes and middleware", state.routesAndMiddleware);
+    console.log("filtered middleware (before route)", filteredMiddleware);
+    console.log("middlewareMatches", middlewareMatches ?? "NOOOOO MATCHES YO");
     return middlewareMatches;
   }, [
-    state.middleware,
+    state.routes,
+    state.routesAndMiddleware,
     state.path,
     state.method,
     state.requestType,
@@ -736,7 +762,7 @@ export function useRequestor() {
 
     // Api
     setRoutes,
-    setMiddleware,
+    setRoutesAndMiddleware,
     setServiceBaseUrl,
     selectRoute,
 
