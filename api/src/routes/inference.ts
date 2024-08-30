@@ -55,8 +55,8 @@ app.post(
         method,
         path,
         handler,
-        history,
-        openApiSpec,
+        history: history ?? undefined,
+        openApiSpec: openApiSpec ?? undefined,
         middleware: middleware ? middleware : undefined,
       });
 
