@@ -16,12 +16,14 @@ import {
 } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { ShortcutHandlers } from "./components/ShortcutHandlers";
 
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RequestorSessionHistoryProvider>
         <Router>
+          <ShortcutHandlers />
           <TooltipProvider>
             <Layout>
               <Routes>

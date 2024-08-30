@@ -5,6 +5,10 @@ import { twMerge } from "tailwind-merge";
 export { renderFullLogMessage } from "./render-log-message";
 export { truncateWithEllipsis } from "./truncate";
 
+export function isTauri() {
+  return "__TAURI__" in window;
+}
+
 export function formatDate(d: Date | string) {
   return format(new Date(d), "HH:mm:ss.SSS");
 }

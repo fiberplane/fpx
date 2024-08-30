@@ -41,6 +41,7 @@
     "@scalar/openapi-parser": "^0.7.2",
     "@tanstack/react-query": "^5.51.1",
     "@tanstack/react-table": "^8.17.3",
+    "@tauri-apps/api": "^1.6.0",
     "@types/highlight-words-core": "^1.2.3",
     "@uiw/codemirror-theme-duotone": "^4.22.2",
     "@uiw/react-codemirror": "^4.22.2",
