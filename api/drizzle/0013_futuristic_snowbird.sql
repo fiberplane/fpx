@@ -9,7 +9,7 @@ We can do it in 3 steps with drizzle orm:
 ALTER TABLE `app_routes` RENAME TO `old_app_routes`;
 --> statement-breakpoint
 CREATE TABLE `app_routes` (
-	`id` integer PRIMARY KEY AUTOINCREMENT,
+  `id` integer PRIMARY KEY AUTOINCREMENT,
   `path` TEXT,
   `method` TEXT,
   `handler` TEXT,
