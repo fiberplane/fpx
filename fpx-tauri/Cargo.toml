@@ -16,7 +16,7 @@ tauri-build = { version = "1.5.4", features = [] }
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { version = "1.7.2", features = [ "shell-all", "http-all"] }
+tauri = { version = "1.7.2", features = [ "http-all", "shell-all"] }
 tauri-plugin-window-state = "0.1.0"
 
 [features]
