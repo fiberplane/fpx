@@ -10,9 +10,22 @@ import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-app.post("/v0/generate-request", cors(), async (ctx) => {
-  const { handler, method, path, history, persona, openApiSpec, middleware } =
-    await ctx.req.json();
+const generateRequestSchema = z.object({
+  handler: z.string(),
+  method: z.string(),
+  path: z.string(),
+  history: z.array(z.string()).nullish(),
+  persona: z.string(),
+  openApiSpec: z.string().nullish(),
+  middleware: z.array(z.object({
+    handler: z.string(),
+    method: z.string(),
+    path: z.string(),
+  })).nullish(),
+});
+
+app.post("/v0/generate-request", cors(), zValidator("json", generateRequestSchema), async (ctx) => {
+  const { handler, method, path, history, persona, openApiSpec, middleware } = ctx.req.valid("json");
 
   const db = ctx.get("db");
   const inferenceConfig = await getInferenceConfig(db);
@@ -35,7 +48,7 @@ app.post("/v0/generate-request", cors(), async (ctx) => {
       handler,
       history,
       openApiSpec,
-      middleware,
+      middleware: middleware ? middleware : undefined,
     });
 
   if (generateError) {
