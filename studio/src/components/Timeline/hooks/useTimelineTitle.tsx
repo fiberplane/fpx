@@ -60,7 +60,7 @@ export const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
         return (
           <div
             className={cn(
-              "font-mono text-sm truncate",
+              "font-mono text-xs truncate",
               "text-gray-200",
               "capitalize",
             )}
