@@ -1,6 +1,7 @@
+import { CF_BINDING_TYPE } from "@/constants";
 import type { MizuOrphanLog, OtelSpan } from "@/queries";
 import { z } from "zod";
-import { getRequestBody, getRequestUrl } from "./otel-helpers";
+import { getRequestBody, getRequestUrl, getString } from "./otel-helpers";
 
 export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
 
@@ -35,10 +36,18 @@ const AnthropicVendorInfoSchema = z.object({
 
 type AnthropicVendorInfo = z.infer<typeof AnthropicVendorInfoSchema>;
 
+const CloudflareVendorInfoSchema = z.object({
+  vendor: z.literal("cloudflare"),
+  type: z.enum(["d1", "r2", "ai", "kv"]),
+});
+
+type CloudflareVendorInfo = z.infer<typeof CloudflareVendorInfoSchema>;
+
 const VendorInfoSchema = z.union([
   NeonVendorInfoSchema,
   OpenAIVendorInfoSchema,
   AnthropicVendorInfoSchema,
+  CloudflareVendorInfoSchema,
   NoneVendorInfoSchema,
 ]);
 
@@ -62,6 +71,12 @@ export const isAnthropicVendorInfo = (
   return vendorInfo.vendor === "anthropic";
 };
 
+export const isCloudflareVendorInfo = (
+  vendorInfo: VendorInfo,
+): vendorInfo is CloudflareVendorInfo => {
+  return vendorInfo.vendor === "cloudflare";
+};
+
 export function getVendorInfo(span: OtelSpan): VendorInfo {
   if (isOpenAIFetch(span)) {
     return { vendor: "openai" };
@@ -78,8 +93,40 @@ export function getVendorInfo(span: OtelSpan): VendorInfo {
     return { vendor: "anthropic" };
   }
 
+  if (isCloudflareD1Span(span)) {
+    return { vendor: "cloudflare", type: "d1" };
+  }
+
+  if (isCloudflareR2Span(span)) {
+    return { vendor: "cloudflare", type: "r2" };
+  }
+
+  if (isCloudflareAiSpan(span)) {
+    return { vendor: "cloudflare", type: "ai" };
+  }
+
+  if (isCloudflareKVSpan(span)) {
+    return { vendor: "cloudflare", type: "kv" };
+  }
+
   return { vendor: "none" };
 }
+
+const isCloudflareD1Span = (span: OtelSpan) => {
+  return getString(span.attributes[CF_BINDING_TYPE]) === "D1Database";
+};
+
+const isCloudflareR2Span = (span: OtelSpan) => {
+  return getString(span.attributes[CF_BINDING_TYPE]) === "R2Bucket";
+};
+
+const isCloudflareKVSpan = (span: OtelSpan) => {
+  return getString(span.attributes[CF_BINDING_TYPE]) === "KvNamespace";
+};
+
+const isCloudflareAiSpan = (span: OtelSpan) => {
+  return getString(span.attributes[CF_BINDING_TYPE]) === "Ai";
+};
 
 const isOpenAIFetch = (span: OtelSpan) => {
   const requestUrl = getRequestUrl(span);

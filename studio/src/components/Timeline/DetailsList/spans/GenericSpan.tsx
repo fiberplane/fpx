@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { SpanStatus } from "@/constants";
 import type { OtelSpan } from "@/queries";
-import { getNumber, getString } from "@/utils";
+import { type VendorInfo, getNumber, getString } from "@/utils";
 import { useMemo } from "react";
 import { useTimelineIcon } from "../../hooks";
 import { SectionHeading } from "../../shared";
@@ -9,7 +9,13 @@ import { SubSection, SubSectionHeading } from "../../shared";
 import { formatDuration } from "../../utils";
 import { KeyValueTable } from "../KeyValueTableV2";
 
-export function GenericSpan({ span }: { span: OtelSpan }) {
+export function GenericSpan({
+  span,
+  vendorInfo,
+}: {
+  span: OtelSpan;
+  vendorInfo: VendorInfo;
+}) {
   const attributes = useMemo(() => {
     const attr: Record<string, string> = {};
     for (const key of Object.keys(span.attributes)) {
@@ -24,7 +30,7 @@ export function GenericSpan({ span }: { span: OtelSpan }) {
     }
     return attr;
   }, [span]);
-  const icon = useTimelineIcon(span);
+  const icon = useTimelineIcon(span, { vendorInfo });
   return (
     <div id={span.span_id}>
       <SectionHeading className="grid gap-2 grid-cols-[auto_1fr] items-center">

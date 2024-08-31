@@ -1,4 +1,8 @@
 import AnthropicLogo from "@/assets/AnthropicLogo.svg";
+import CloudflareAiLogo from "@/assets/CloudflareAiLogo.svg";
+import CloudflareD1Logo from "@/assets/CloudflareD1Logo.svg";
+import CloudflareKVLogo from "@/assets/CloudflareKVLogo.svg";
+import CloudflareR2Logo from "@/assets/CloudflareR2Logo.svg";
 import Database from "@/assets/Database.svg";
 import HonoLogo from "@/assets/HonoLogo.svg";
 import NeonLogo from "@/assets/NeonLogo.svg";
@@ -52,6 +56,30 @@ export const getTypeIcon = (type: string, colorOverride = "") => {
       return (
         <AnthropicLogo
           className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+        />
+      );
+    case "cloudflare-ai":
+      return (
+        <CloudflareAiLogo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+        />
+      );
+    case "cloudflare-d1":
+      return (
+        <CloudflareD1Logo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+        />
+      );
+    case "cloudflare-kv":
+      return (
+        <CloudflareKVLogo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+        />
+      );
+    case "cloudflare-r2":
+      return (
+        <CloudflareR2Logo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
         />
       );
     default:
