@@ -36,12 +36,42 @@ const AnthropicVendorInfoSchema = z.object({
 
 type AnthropicVendorInfo = z.infer<typeof AnthropicVendorInfoSchema>;
 
-const CloudflareVendorInfoSchema = z.object({
+const CloudflareD1VendorInfoSchema = z.object({
   vendor: z.literal("cloudflare"),
-  type: z.enum(["d1", "r2", "ai", "kv"]),
+  type: z.literal("d1"),
+  sql: z.object({
+    query: z.string(),
+    params: z.array(z.string()),
+  }),
 });
 
-type CloudflareVendorInfo = z.infer<typeof CloudflareVendorInfoSchema>;
+export type CloudflareD1VendorInfo = z.infer<
+  typeof CloudflareD1VendorInfoSchema
+>;
+
+const CloudflareR2VendorInfoSchema = z.object({
+  vendor: z.literal("cloudflare"),
+  type: z.literal("r2"),
+});
+
+const CloudflareAiVendorInfoSchema = z.object({
+  vendor: z.literal("cloudflare"),
+  type: z.literal("ai"),
+});
+
+const CloudflareKVVendorInfoSchema = z.object({
+  vendor: z.literal("cloudflare"),
+  type: z.literal("kv"),
+});
+
+const CloudflareVendorInfoSchema = z.discriminatedUnion("type", [
+  CloudflareD1VendorInfoSchema,
+  CloudflareR2VendorInfoSchema,
+  CloudflareAiVendorInfoSchema,
+  CloudflareKVVendorInfoSchema,
+]);
+
+export type CloudflareVendorInfo = z.infer<typeof CloudflareVendorInfoSchema>;
 
 const VendorInfoSchema = z.union([
   NeonVendorInfoSchema,
@@ -71,6 +101,12 @@ export const isAnthropicVendorInfo = (
   return vendorInfo.vendor === "anthropic";
 };
 
+export const isCloudflareD1VendorInfo = (
+  vendorInfo: VendorInfo,
+): vendorInfo is CloudflareD1VendorInfo => {
+  return vendorInfo.vendor === "cloudflare" && vendorInfo.type === "d1";
+};
+
 export const isCloudflareVendorInfo = (
   vendorInfo: VendorInfo,
 ): vendorInfo is CloudflareVendorInfo => {
@@ -94,7 +130,7 @@ export function getVendorInfo(span: OtelSpan): VendorInfo {
   }
 
   if (isCloudflareD1Span(span)) {
-    return { vendor: "cloudflare", type: "d1" };
+    return { vendor: "cloudflare", type: "d1", sql: getD1SqlQuery(span) };
   }
 
   if (isCloudflareR2Span(span)) {
@@ -165,6 +201,22 @@ function getNeonSqlQuery(span: OtelSpan) {
     return {
       query: json.query as string,
       params: json.params as Array<string>,
+    };
+  } catch (e) {
+    return { query: "DB QUERY", params: [] };
+  }
+}
+
+function getD1SqlQuery(span: OtelSpan) {
+  const queryArgs = getString(span?.attributes?.args);
+  try {
+    const argsArray = JSON.parse(queryArgs);
+    console.log("D1 args", argsArray);
+    const query = argsArray[1];
+    const params = argsArray[2];
+    return {
+      query,
+      params,
     };
   } catch (e) {
     return { query: "DB QUERY", params: [] };
