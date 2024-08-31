@@ -155,12 +155,7 @@ export function ResponsePanel({
                 )
               }
             >
-              <div
-                className={cn(
-                  "grid grid-rows-[auto_1fr]",
-                  traceId && "grid-rows-[auto_1fr_auto]",
-                )}
-              >
+              <div className={cn("grid grid-rows-[auto_1fr]")}>
                 <ResponseBody
                   headersSlot={
                     <CollapsibleKeyValueTableV2
