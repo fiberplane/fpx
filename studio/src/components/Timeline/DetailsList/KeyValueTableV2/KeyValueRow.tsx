@@ -13,10 +13,12 @@ export const KeyValueRow = ({
   entry,
   sensitiveKeys = [],
   keyCellClassName,
+  valueCellClassName,
 }: {
   entry: [string | ReactNode, string | ReactNode];
   sensitiveKeys?: string[] | ((key: string) => boolean);
   keyCellClassName?: string;
+  valueCellClassName?: string;
 }) => {
   const [key, value] = entry;
 
@@ -40,7 +42,9 @@ export const KeyValueRow = ({
       >
         {key}
       </TableCell>
-      <TableCell className="font-mono align-middle h-full">
+      <TableCell
+        className={cn("font-mono align-middle h-full", valueCellClassName)}
+      >
         <div className="flex items-center w-full">
           {isSensitive && (
             <Tooltip>

@@ -1,25 +1,19 @@
 import { Badge } from "@/components/ui/badge";
-import { CF_BINDING_METHOD, CF_BINDING_RESULT, SpanStatus } from "@/constants";
+import { SpanStatus } from "@/constants";
 import type { OtelSpan } from "@/queries";
 import {
-  type CloudflareD1VendorInfo,
-  type CloudflareVendorInfo,
   type VendorInfo,
   getNumber,
   getString,
-  isCloudflareD1VendorInfo,
   isCloudflareVendorInfo,
-  noop,
 } from "@/utils";
 import { useMemo } from "react";
-import { format } from "sql-formatter";
 import { useTimelineIcon } from "../../hooks";
-import { CollapsibleSubSection, SectionHeading } from "../../shared";
+import { SectionHeading } from "../../shared";
 import { SubSection, SubSectionHeading } from "../../shared";
-import { formatDuration } from "../../utils";
-import { CodeMirrorSqlEditor } from "../CodeMirrorEditor";
+import { formatDuration, getCloudflareSpanName } from "../../utils";
 import { KeyValueTable } from "../KeyValueTableV2";
-import { TextOrJsonViewer } from "../TextJsonViewer";
+import { CloudflareSpan } from "./CloudflareSpan";
 
 export function GenericSpan({
   span,
@@ -43,12 +37,14 @@ export function GenericSpan({
     return attr;
   }, [span]);
   const icon = useTimelineIcon(span, { vendorInfo });
+  const isCfSpan = isCloudflareVendorInfo(vendorInfo);
+  const name = isCfSpan ? getCloudflareSpanName(span, vendorInfo) : span.name;
   return (
     <div id={span.span_id}>
       <SectionHeading className="grid gap-2 grid-cols-[auto_1fr] items-center">
         {icon}
         <div className="flex items-center gap-2 max-w-full">
-          {span.name}
+          {name}
           {span.status?.code === SpanStatus.ERROR && (
             <>
               &nbsp;
@@ -62,7 +58,7 @@ export function GenericSpan({
           </div>
         </div>
       </SectionHeading>
-      {isCloudflareVendorInfo(vendorInfo) ? (
+      {isCfSpan ? (
         <CloudflareSpan span={span} vendorInfo={vendorInfo} />
       ) : (
         Object.keys(attributes).length > 0 && (
@@ -72,107 +68,6 @@ export function GenericSpan({
           </SubSection>
         )
       )}
-    </div>
-  );
-}
-
-function CloudflareSpan({
-  span,
-  vendorInfo,
-}: { span: OtelSpan; vendorInfo: CloudflareVendorInfo }) {
-  if (isCloudflareD1VendorInfo(vendorInfo)) {
-    return <CloudflareD1Span span={span} vendorInfo={vendorInfo} />;
-  }
-  if (vendorInfo.type === "r2") {
-    return <CloudflareR2Span span={span} />;
-  }
-  if (vendorInfo.type === "ai") {
-    return <CloudflareAISpan span={span} />;
-  }
-  if (vendorInfo.type === "kv") {
-    return <CloudflareKVSpan span={span} />;
-  }
-
-  return null;
-}
-
-function CloudflareD1Span({
-  span,
-  vendorInfo,
-}: { span: OtelSpan; vendorInfo: CloudflareD1VendorInfo }) {
-  const queryValue = useMemo(() => {
-    try {
-      const paramsFromD1 = vendorInfo.sql.params ?? [];
-      const params = [...paramsFromD1];
-      return format(vendorInfo.sql.query, {
-        language: "sqlite",
-        params,
-      });
-    } catch (e) {
-      // Being very defensive soz
-      return vendorInfo?.sql?.query ?? "";
-    }
-  }, [vendorInfo]);
-
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-
-  return (
-    <div className="text-xs py-2 space-y-2">
-      <CollapsibleSubSection heading="SQL Query">
-        <CodeMirrorSqlEditor
-          value={queryValue}
-          onChange={noop}
-          readOnly={true}
-        />
-      </CollapsibleSubSection>
-      <CollapsibleSubSection heading="Result">
-        <TextOrJsonViewer text={result} collapsed={true} />
-      </CollapsibleSubSection>
-    </div>
-  );
-}
-
-function CloudflareKVSpan({ span }: { span: OtelSpan }) {
-  const method = getString(span.attributes[CF_BINDING_METHOD]);
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-  return (
-    <div className="text-xs py-2">
-      Cloudflare KV <code>{method}</code>
-      <div className="text-xs py-2 space-y-2">
-        <CollapsibleSubSection heading="Result">
-          <TextOrJsonViewer text={result} collapsed={true} />
-        </CollapsibleSubSection>
-      </div>
-    </div>
-  );
-}
-
-function CloudflareR2Span({ span }: { span: OtelSpan }) {
-  const method = getString(span.attributes[CF_BINDING_METHOD]);
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-  return (
-    <div className="text-xs py-2">
-      Cloudflare R2 <code>{method}</code>
-      <div className="text-xs py-2 space-y-2">
-        <CollapsibleSubSection heading="Result">
-          <TextOrJsonViewer text={result} collapsed={true} />
-        </CollapsibleSubSection>
-      </div>
-    </div>
-  );
-}
-
-function CloudflareAISpan({ span }: { span: OtelSpan }) {
-  const method = getString(span.attributes[CF_BINDING_METHOD]);
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-  return (
-    <div className="text-xs py-2">
-      Cloudflare AI <code>{method}</code>
-      <div className="text-xs py-2 space-y-2">
-        <CollapsibleSubSection heading="Result">
-          <TextOrJsonViewer text={result} collapsed={true} />
-        </CollapsibleSubSection>
-      </div>
     </div>
   );
 }

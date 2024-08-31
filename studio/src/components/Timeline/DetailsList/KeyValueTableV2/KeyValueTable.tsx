@@ -17,6 +17,7 @@ export function KeyValueTable({
   className,
   sensitiveKeys = [],
   keyCellClassName,
+  valueCellClassName,
 }: {
   keyValue:
     | Record<string, string>
@@ -25,6 +26,7 @@ export function KeyValueTable({
   className?: string;
   sensitiveKeys?: string[] | ((key: string) => boolean);
   keyCellClassName?: string;
+  valueCellClassName?: string;
 }) {
   const isEmpty = Array.isArray(keyValue)
     ? keyValue.length === 0
@@ -41,6 +43,7 @@ export function KeyValueTable({
                 entry={entry}
                 sensitiveKeys={sensitiveKeys}
                 keyCellClassName={keyCellClassName}
+                valueCellClassName={valueCellClassName}
               />
             ))
           ) : (
