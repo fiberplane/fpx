@@ -144,7 +144,7 @@ function GenericFetchSpan({
             <SubSection>
               <CollapsibleKeyValueTableV2
                 keyValue={requestHeaders}
-                title=" Headers"
+                title="Headers"
                 sensitiveKeys={SENSITIVE_HEADERS}
               />
             </SubSection>

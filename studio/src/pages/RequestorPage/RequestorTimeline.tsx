@@ -42,7 +42,7 @@ export function RequestorTimeline(props: Props) {
       <ResizablePanelGroup
         direction="horizontal"
         id="requestor-timeline"
-        className="border-[1px] border-muted-foreground/30 rounded-lg"
+        className=""
       >
         {!isSmallScreen && (
           <>
@@ -52,7 +52,7 @@ export function RequestorTimeline(props: Props) {
               order={0}
               id="graph"
             >
-              <Content className="pr-8 sticky top-0">
+              <Content className="pr-3 sticky top-0">
                 <TimelineGraph
                   waterfall={waterfall}
                   minStart={minStart}

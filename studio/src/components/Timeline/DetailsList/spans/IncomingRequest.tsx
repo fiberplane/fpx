@@ -1,15 +1,26 @@
 import type { OtelSpan } from "@/queries";
 import {
+  SENSITIVE_HEADERS,
   cn,
   getHttpMethodTextColor,
+  getRequestBody,
   getRequestEnv,
+  getRequestHeaders,
+  getResponseBody,
+  getResponseHeaders,
   isSensitiveEnvVar,
 } from "@/utils";
 import { getMatchedRoute, getRequestMethod, getRequestUrl } from "@/utils";
 import { useMemo } from "react";
 import { useTimelineIcon } from "../../hooks";
-import { SectionHeading } from "../../shared";
+import {
+  CollapsibleSubSection,
+  SectionHeading,
+  SubSection,
+  SubSectionHeading,
+} from "../../shared";
 import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
+import { TextOrJsonViewer } from "../TextJsonViewer";
 
 export function IncomingRequest({ span }: { span: OtelSpan }) {
   const id = span.span_id;
@@ -21,6 +32,22 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
 
   const matchedRoute = useMemo<string>(() => {
     return getMatchedRoute(span);
+  }, [span]);
+
+  const requestHeaders = useMemo<Record<string, string>>(() => {
+    return getRequestHeaders(span);
+  }, [span]);
+
+  const requestBody = useMemo<string>(() => {
+    return getRequestBody(span) ?? "";
+  }, [span]);
+
+  const responseHeaders = useMemo<Record<string, string>>(() => {
+    return getResponseHeaders(span);
+  }, [span]);
+
+  const responseBody = useMemo<string>(() => {
+    return getResponseBody(span) ?? "";
   }, [span]);
 
   const icon = useTimelineIcon(span);
@@ -52,14 +79,62 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
             )}
           </div>
         </div>
-        <CollapsibleKeyValueTableV2
-          title="Environment Vars"
-          keyValue={requestEnv}
-          defaultCollapsed
-          sensitiveKeys={isSensitiveEnvVar}
-          emptyMessage="No environment vars found"
-          keyCellClassName="w-[96px] lg:w-[96px] lg:min-w-[96px]"
-        />
+
+        <div className="px-2">
+          <SubSectionHeading>Request</SubSectionHeading>
+          <div className="">
+            <CollapsibleKeyValueTableV2
+              title="Environment Vars"
+              keyValue={requestEnv}
+              defaultCollapsed
+              sensitiveKeys={isSensitiveEnvVar}
+              emptyMessage="No environment vars found"
+              keyCellClassName="w-[96px] lg:w-[96px] lg:min-w-[96px]"
+            />
+            <SubSection>
+              <CollapsibleKeyValueTableV2
+                keyValue={requestHeaders}
+                title=" Headers"
+                sensitiveKeys={SENSITIVE_HEADERS}
+              />
+            </SubSection>
+
+            {requestBody && (
+              <>
+                <CollapsibleSubSection heading="Request Body">
+                  <TextOrJsonViewer
+                    text={requestBody}
+                    textMaxPreviewLines={15}
+                  />
+                </CollapsibleSubSection>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="px-2">
+          <SubSectionHeading>Response</SubSectionHeading>
+          <div>
+            <SubSection>
+              <CollapsibleKeyValueTableV2
+                keyValue={responseHeaders}
+                title="Headers"
+                sensitiveKeys={SENSITIVE_HEADERS}
+              />
+            </SubSection>
+
+            {responseBody && (
+              <>
+                <CollapsibleSubSection heading="Body">
+                  <TextOrJsonViewer
+                    text={responseBody}
+                    textMaxPreviewLines={15}
+                  />
+                </CollapsibleSubSection>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -287,6 +287,7 @@ export const RequestorPage = () => {
       requestType={selectedRoute?.requestType}
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
+      removeServiceUrlFromPath={removeServiceUrlFromPath}
     />
   );
 

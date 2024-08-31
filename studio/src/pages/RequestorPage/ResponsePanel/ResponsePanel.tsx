@@ -43,6 +43,7 @@ type Props = {
   websocketState: WebSocketState;
   openAiTestGenerationPanel: () => void;
   isAiTestGenerationPanelOpen: boolean;
+  removeServiceUrlFromPath: (url: string) => string;
 };
 
 export function ResponsePanel({
@@ -56,6 +57,7 @@ export function ResponsePanel({
   websocketState,
   openAiTestGenerationPanel,
   isAiTestGenerationPanelOpen,
+  removeServiceUrlFromPath,
 }: Props) {
   // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
   const responseToRender = activeResponse ?? tracedResponse;
@@ -77,16 +79,19 @@ export function ResponsePanel({
 
   return (
     <div className="overflow-x-hidden overflow-y-auto h-full relative">
-      <div>
+      <div className="h-full">
         <Tabs
           value={activeResponsePanelTab}
           onValueChange={setActiveResponsePanelTab}
-          className="grid grid-rows-[auto_1fr] overflow-hidden"
+          className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
         >
           <CustomTabsList>
             <CustomTabTrigger value="response" className="flex items-center">
               {responseToRender ? (
-                <ResponseSummary response={responseToRender} />
+                <ResponseSummary
+                  response={responseToRender}
+                  transformUrl={removeServiceUrlFromPath}
+                />
               ) : (
                 "Response"
               )}
@@ -127,7 +132,7 @@ export function ResponsePanel({
               <WebsocketMessages websocketState={websocketState} />
             </TabContentInner>
           </CustomTabsContent>
-          <CustomTabsContent value="response">
+          <CustomTabsContent value="response" className="h-full">
             <TabContentInner
               isLoading={isLoading}
               isEmpty={!responseToRender}
@@ -150,42 +155,51 @@ export function ResponsePanel({
                 )
               }
             >
-              <div className={cn("grid grid-rows-[auto_1fr]")}>
+              <div
+                className={cn(
+                  "grid grid-rows-[auto_1fr]",
+                  traceId && "grid-rows-[auto_1fr_auto]",
+                )}
+              >
                 <ResponseBody
                   headersSlot={
                     <CollapsibleKeyValueTableV2
                       sensitiveKeys={SENSITIVE_HEADERS}
                       title="Headers"
                       keyValue={responseHeaders ?? {}}
-                      className="mb-2"
+                      className="mb-0.5 pb-2"
                     />
                   }
                   response={responseToRender}
                   // HACK - To support absolutely positioned bottom toolbar
                   className={cn(showBottomToolbar && "pb-2")}
                 />
+                {traceId && (
+                  <Collapsible
+                    open={isOpen}
+                    onOpenChange={setIsOpen}
+                    className="pl-0 border-t pt-2.5 mt-0.5"
+                  >
+                    <CollapsibleTrigger asChild className="mb-2">
+                      <SubSectionHeading className="flex items-center gap-2 cursor-pointer">
+                        {isOpen ? (
+                          <CaretDownIcon className="w-4 h-4 cursor-pointer" />
+                        ) : (
+                          <CaretRightIcon className="w-4 h-4 cursor-pointer" />
+                        )}
+                        Timeline
+                      </SubSectionHeading>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <RequestorTimeline traceId={traceId} />
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
               </div>
             </TabContentInner>
           </CustomTabsContent>
         </Tabs>
       </div>
-      {traceId && (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="pl-3">
-          <CollapsibleTrigger asChild className="mb-2">
-            <SubSectionHeading className="flex items-center gap-2 cursor-pointer">
-              {isOpen ? (
-                <CaretDownIcon className="w-4 h-4 cursor-pointer" />
-              ) : (
-                <CaretRightIcon className="w-4 h-4 cursor-pointer" />
-              )}
-              Timeline
-            </SubSectionHeading>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <RequestorTimeline traceId={traceId} />
-          </CollapsibleContent>
-        </Collapsible>
-      )}
     </div>
   );
 }
@@ -223,7 +237,11 @@ function TabContentInner({
 
 function ResponseSummary({
   response,
-}: { response?: Requestornator | RequestorActiveResponse }) {
+  transformUrl = (url: string) => url,
+}: {
+  response?: Requestornator | RequestorActiveResponse;
+  transformUrl?: (url: string) => string;
+}) {
   const status = isRequestorActiveResponse(response)
     ? response?.responseStatusCode
     : response?.app_responses?.responseStatusCode;
@@ -250,7 +268,7 @@ function ResponseSummary({
             "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
           )}
         >
-          {url}
+          {transformUrl(url ?? "")}
         </span>
       </div>
     </div>
