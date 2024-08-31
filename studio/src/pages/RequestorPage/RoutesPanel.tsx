@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { cn } from "@/utils";
+import { cn, getHttpMethodTextColor } from "@/utils";
 import {
   CaretDownIcon,
   CaretRightIcon,
@@ -8,7 +8,6 @@ import {
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { RequestorHistory } from "./RequestorHistory";
-import { getHttpMethodTextColor } from "./method";
 import {
   type ProbedRoute,
   type Requestornator,

@@ -287,6 +287,7 @@ export const RequestorPage = () => {
       requestType={selectedRoute?.requestType}
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
+      removeServiceUrlFromPath={removeServiceUrlFromPath}
     />
   );
 
@@ -401,7 +402,7 @@ export const RequestorPage = () => {
                   defaultSize={
                     width < 624 || requestPanelMinSize === undefined
                       ? undefined
-                      : Math.max(requestPanelMinSize, (300 / width) * 100)
+                      : Math.max(requestPanelMinSize, 33)
                   }
                   minSize={requestPanelMinSize}
                   maxSize={requestPanelMaxSize}
@@ -409,7 +410,7 @@ export const RequestorPage = () => {
                   {requestContent}
                 </ResizablePanel>
                 <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-                <ResizablePanel id="response-panel" order={2} minSize={10}>
+                <ResizablePanel id="response-panel" order={4} minSize={10}>
                   {responseContent}
                 </ResizablePanel>
                 {isAiTestGenerationPanelOpen && !isSmallScreen && (
@@ -487,3 +488,19 @@ function useMostRecentRequestornator(
     return matchingResponsesFallback?.[0];
   }, [all, requestInputs, activeHistoryResponseTraceId]);
 }
+
+export const Title = (props: { children: React.ReactNode }) => (
+  <div
+    className="inline-flex items-center bg-muted p-1 text-muted-foreground w-full justify-start rounded-none border-b s
+pace-x-6 h-12"
+  >
+    <h1
+      className="inline-flex items-center justify-center whitespace-nowrap rounded-md ring-offset-background transition-
+all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-ev
+ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm font-normal border-b border-transparent font-medium tex
+t-gray-100 shadow-none bg-inherit rounded-none border-blue-500"
+    >
+      {props.children}
+    </h1>
+  </div>
+);

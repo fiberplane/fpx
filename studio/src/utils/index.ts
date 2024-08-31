@@ -2,6 +2,8 @@ import { type ClassValue, clsx } from "clsx";
 import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
+export * from "./vendorify-traces";
+export * from "./otel-helpers";
 export { renderFullLogMessage } from "./render-log-message";
 export { truncateWithEllipsis } from "./truncate";
 
@@ -195,3 +197,62 @@ export const safeParseJson = (jsonString: string) => {
     return jsonString;
   }
 };
+
+export function getHttpMethodTextColor(method: string) {
+  return {
+    GET: "text-blue-500",
+    POST: "text-yellow-500",
+    PUT: "text-orange-500",
+    PATCH: "text-orange-500",
+    DELETE: "text-red-500",
+    OPTIONS: "text-blue-300",
+    HEAD: "text-gray-400",
+    WS: "text-green-500",
+  }[String(method).toUpperCase()];
+}
+
+export function isSensitiveEnvVar(key: string) {
+  if (!key) {
+    return false;
+  }
+  if (key.includes("APIKEY")) {
+    return true;
+  }
+  if (key.includes("API_KEY")) {
+    return true;
+  }
+  if (key.includes("ACCESS")) {
+    return true;
+  }
+  if (key.includes("AUTH_")) {
+    return true;
+  }
+  if (key.includes("CREDENTIALS")) {
+    return true;
+  }
+  if (key.includes("CERTIFICATE")) {
+    return true;
+  }
+  if (key.includes("PASSPHRASE")) {
+    return true;
+  }
+  if (key.includes("DATABASE_URL")) {
+    return true;
+  }
+  if (key.includes("CONNECTION_STRING")) {
+    return true;
+  }
+  if (key.includes("SECRET")) {
+    return true;
+  }
+  if (key.includes("PASSWORD")) {
+    return true;
+  }
+  if (key.includes("PRIVATE")) {
+    return true;
+  }
+  if (key.includes("TOKEN")) {
+    return true;
+  }
+  return false;
+}

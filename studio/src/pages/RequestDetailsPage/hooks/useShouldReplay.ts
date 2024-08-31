@@ -4,7 +4,7 @@ import {
   getRequestMethod,
   getString,
   isFpxRequestSpan,
-} from "../v2/otel-helpers";
+} from "@/utils";
 
 export function useShouldReplay(trace: OtelTrace | null): boolean {
   if (!trace || trace?.spans?.length === 0) {

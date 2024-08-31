@@ -1,5 +1,9 @@
-import { cn, parsePathFromRequestUrl, truncatePathWithEllipsis } from "@/utils";
-import { getHttpMethodTextColor } from "./method";
+import {
+  cn,
+  getHttpMethodTextColor,
+  parsePathFromRequestUrl,
+  truncatePathWithEllipsis,
+} from "@/utils";
 import type { Requestornator } from "./queries";
 
 type RequestorHistoryProps = {

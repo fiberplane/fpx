@@ -1,3 +1,4 @@
+import { type OtelSpans, useOtelTrace } from "@/queries";
 import {
   getRequestMethod,
   getRequestUrl,
@@ -6,8 +7,7 @@ import {
   hasHttpError,
   isErrorLogEvent,
   isFetchSpan,
-} from "@/pages/RequestDetailsPage/v2/otel-helpers";
-import { type OtelSpans, useOtelTrace } from "@/queries";
+} from "@/utils";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import { useMemo } from "react";
 import type { Requestornator } from "../queries";

@@ -4,7 +4,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import type { Dispatch, SetStateAction } from "react";
-import { CodeMirrorJsonEditor } from "../Editors";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm, type KeyValueParameter } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -22,6 +21,7 @@ import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
+import { CodeMirrorJsonEditor } from "@/components/Timeline";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;

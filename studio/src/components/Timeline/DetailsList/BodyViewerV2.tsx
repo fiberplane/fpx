@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { TextOrJsonViewer } from "../TextJsonViewer";
+import { TextOrJsonViewer } from "./TextJsonViewer";
 
 export function BodyViewerV2({
   body,

@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 
+import { BodyViewerV2, RequestMethod } from "@/components/Timeline";
 import { Badge } from "@/components/ui/badge";
 import type { BadgeProps } from "@/components/ui/badge/Badge";
 import { Status } from "@/components/ui/status";
@@ -10,20 +11,19 @@ import {
 } from "@/components/ui/tooltip";
 import type { OtelSpan } from "@/queries/traces-otel";
 import {
-  SEMATTRS_EXCEPTION_MESSAGE,
-  SEMATTRS_EXCEPTION_TYPE,
-} from "@opentelemetry/semantic-conventions";
-import { useMemo } from "react";
-import { FpxCard, RequestMethod } from "../shared";
-import { BodyViewerV2 } from "./BodyViewerV2";
-import {
+  cn,
   getPathWithSearch,
   getRequestHeaders,
   getRequestMethod,
   getResponseBody,
   getStatusCode,
   getString,
-} from "./otel-helpers";
+} from "@/utils";
+import {
+  SEMATTRS_EXCEPTION_MESSAGE,
+  SEMATTRS_EXCEPTION_TYPE,
+} from "@opentelemetry/semantic-conventions";
+import { type ComponentProps, useMemo } from "react";
 
 export function SummaryV2({ requestSpan }: { requestSpan: OtelSpan }) {
   const errors = useMemo(
@@ -119,3 +119,15 @@ function selectIsProxied(requestSpan: OtelSpan) {
   const headers = getRequestHeaders(requestSpan);
   return !!headers["x-fpx-webhonc-id"];
 }
+
+const FpxCard = ({
+  children,
+  className,
+  ...props
+}: ComponentProps<typeof Card>) => {
+  return (
+    <Card className={cn("rounded-lg", className)} {...props}>
+      {children}
+    </Card>
+  );
+};

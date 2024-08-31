@@ -6,7 +6,7 @@ import {
 } from "@/utils";
 import { useMemo } from "react";
 
-export function useRequestWaterfall(
+export function useAsWaterfall(
   spans: Array<OtelSpan>,
   orphanLogs: Array<MizuOrphanLog>,
 ) {

@@ -1,18 +1,18 @@
 import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import type { ColumnDef } from "@tanstack/react-table";
 
+import { RequestMethod } from "@/components/Timeline";
 import { Status } from "@/components/ui/status";
 import type { OtelTrace } from "@/queries";
-import { Link } from "react-router-dom";
-import { Timestamp } from "../RequestDetailsPage/Timestamp";
-import { RequestMethod } from "../RequestDetailsPage/shared";
 import {
   getRequestMethod,
   getRequestPath,
   getStatusCode,
   isFpxRequestSpan,
   isFpxTraceError,
-} from "../RequestDetailsPage/v2/otel-helpers";
+} from "@/utils";
+import { Link } from "react-router-dom";
+import { Timestamp } from "../RequestDetailsPage/Timestamp";
 
 // NOTE - `columns` is defined here, in a separate file from the table,
 //         in order to support fast refresh with Vite
