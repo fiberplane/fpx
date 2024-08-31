@@ -164,10 +164,41 @@ function CloudflareKVTable({ argsObj }: { argsObj: Record<string, string> }) {
  * https://developers.cloudflare.com/r2/api/workers/workers-api-reference/#bucket-method-definitions
  */
 function CloudflareR2Span({ span }: { span: OtelSpan }) {
+  const args = getString(span.attributes.args);
   const result = getString(span.attributes[CF_BINDING_RESULT]);
   return (
     <div className="text-xs py-2">
       <CfBindingOverview span={span} />
+      <div className="text-xs py-2 space-y-2">
+        <CollapsibleSubSection heading="Args">
+          <CloudflareR2Args args={args} />
+        </CollapsibleSubSection>
+        <CollapsibleSubSection heading="Result">
+          <TextOrJsonViewer text={result} collapsed={true} />
+        </CollapsibleSubSection>
+      </div>
+    </div>
+  );
+}
+
+function CloudflareR2Args({ args }: { args: string }) {
+  return <TextOrJsonViewer text={args} collapsed={true} />;
+}
+
+/**
+ * We care mostly about the `run` method
+ */
+function CloudflareAISpan({ span }: { span: OtelSpan }) {
+  const args = getString(span.attributes.args);
+  const result = getString(span.attributes[CF_BINDING_RESULT]);
+  return (
+    <div className="text-xs py-2">
+      <CfBindingOverview span={span} />
+      <div className="text-xs py-2 space-y-2">
+        <CollapsibleSubSection heading="Model">
+          <CloudflareAiArgs args={args} />
+        </CollapsibleSubSection>
+      </div>
       <div className="text-xs py-2 space-y-2">
         <CollapsibleSubSection heading="Result">
           <TextOrJsonViewer text={result} collapsed={true} />
@@ -177,21 +208,8 @@ function CloudflareR2Span({ span }: { span: OtelSpan }) {
   );
 }
 
-/**
- * We care mostly about the `run` method
- */
-function CloudflareAISpan({ span }: { span: OtelSpan }) {
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-  return (
-    <div className="text-xs py-2">
-      <CfBindingOverview span={span} />
-      <div className="text-xs py-2 space-y-2">
-        <CollapsibleSubSection heading="Result">
-          <TextOrJsonViewer text={result} collapsed={true} />
-        </CollapsibleSubSection>
-      </div>
-    </div>
-  );
+function CloudflareAiArgs({ args }: { args: string }) {
+  return <TextOrJsonViewer text={args} collapsed={true} />;
 }
 
 function CfBindingOverview({ span }: { span: OtelSpan }) {
