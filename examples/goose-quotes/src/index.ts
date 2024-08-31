@@ -40,15 +40,21 @@ app.get("/api/geese", async (c) => {
 
   const name = c.req.query("name");
 
+  console.log("not searching");
+
   if (!name) {
     return c.json(await db.select().from(geese));
   }
+
+  console.log("searching for", name);
 
   const searchResults = await db
     .select()
     .from(geese)
     .where(ilike(geese.name, `%${name}%`))
     .orderBy(asc(geese.name));
+
+  console.log("found", searchResults.length, "results");
 
   return c.json(searchResults);
 });

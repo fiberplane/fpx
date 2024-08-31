@@ -32,8 +32,8 @@ export const TimelineGraphSpan: React.FC<{
       data-toc-id={id}
       className={cn(
         "flex items-center p-2",
-        "border-l-2 border-transparent",
-        "hover:bg-primary/10 hover:border-blue-500",
+        "border-l-2 border-transparent rounded-sm",
+        "hover:bg-primary/10 hover:border-blue-500 hover:rounded-l-none",
         isActive && "bg-primary/10 border-blue-500",
         "data-[highlighted=true]:bg-primary/10",
         "transition-all",

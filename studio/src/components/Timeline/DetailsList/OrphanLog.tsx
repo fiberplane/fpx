@@ -34,11 +34,11 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const hasDescription = !!description;
 
   const topContent = hasDescription ? (
-    <div className="font-mono text-sm">{description}</div>
+    <div className="font-mono text-xs">{description}</div>
   ) : contentsType === "multi-arg-log" ? (
-    <LogContents className="px-0" fullLogArgs={contents} />
+    <LogContents className="px-0 text-xs" fullLogArgs={contents} />
   ) : contentsType === "json" ? (
-    <LogContents className="px-0" fullLogArgs={contents} />
+    <LogContents className="px-0 text-xs" fullLogArgs={contents} />
   ) : stack ? (
     <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400 text-xs">
       <StackTrace stackTrace={stack} />
@@ -67,15 +67,15 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
       </div>
 
       {hasDescription && contentsType === "multi-arg-log" && (
-        <LogContents className="px-2" fullLogArgs={contents} />
+        <LogContents className="px-2 text-xs" fullLogArgs={contents} />
       )}
 
       {hasDescription && contentsType === "json" && (
-        <LogContents className="px-2" fullLogArgs={contents} />
+        <LogContents className="px-2 text-xs" fullLogArgs={contents} />
       )}
 
       {stack && (
-        <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400">
+        <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400 text-xs">
           <StackTrace stackTrace={stack} />
         </div>
       )}
