@@ -11,16 +11,10 @@ import {
 import { useCallback, useMemo } from "react";
 
 export function useReplayRequest({ span }: { span?: OtelSpan }) {
-  if (!span) {
-    return {
-      replay: () => {},
-      isReplaying: false,
-    };
-  }
-  const method = getRequestMethod(span);
+  const method = span ? getRequestMethod(span) : "GET";
 
   const pathWithSearch = useMemo<string>(() => {
-    return getRequestUrl(span);
+    return span ? getRequestUrl(span) : "";
   }, [span]);
 
   const url = new URL(pathWithSearch);
@@ -28,7 +22,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
   const replayPath = url.pathname;
 
   const requestHeaders = useMemo<Record<string, string>>(() => {
-    return getRequestHeaders(span) ?? {};
+    return span ? getRequestHeaders(span) ?? {} : {};
   }, [span]);
 
   const filterReplayHeaders = useCallback(
@@ -81,7 +75,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
   }, [requestHeaders, filterReplayHeaders]);
 
   const replayBody = useMemo(() => {
-    const body = getRequestBody(span);
+    const body = span ? getRequestBody(span) : undefined;
     try {
       JSON.parse(body ?? "");
       return {
@@ -102,7 +96,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
   }, [method]);
 
   const requestQueryParams = useMemo<Record<string, string> | null>(() => {
-    return getRequestQueryParams(span);
+    return span ? getRequestQueryParams(span) : null;
   }, [span]);
 
   const { clearResponseBodyFromHistory, setActiveResponse } = useRequestor();
@@ -151,6 +145,13 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
       requestQueryParams,
     ],
   );
+
+  if (!span) {
+    return {
+      replay: () => {},
+      isReplaying: false,
+    };
+  }
 
   return {
     replay,
