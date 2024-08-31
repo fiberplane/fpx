@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { CF_BINDING_METHOD, SpanStatus } from "@/constants";
+import { CF_BINDING_METHOD, CF_BINDING_RESULT, SpanStatus } from "@/constants";
 import type { OtelSpan } from "@/queries";
 import {
   type CloudflareD1VendorInfo,
@@ -14,11 +14,12 @@ import {
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { useTimelineIcon } from "../../hooks";
-import { SectionHeading } from "../../shared";
+import { CollapsibleSubSection, SectionHeading } from "../../shared";
 import { SubSection, SubSectionHeading } from "../../shared";
 import { formatDuration } from "../../utils";
 import { CodeMirrorSqlEditor } from "../CodeMirrorEditor";
 import { KeyValueTable } from "../KeyValueTableV2";
+import { TextOrJsonViewer } from "../TextJsonViewer";
 
 export function GenericSpan({
   span,
@@ -61,14 +62,15 @@ export function GenericSpan({
           </div>
         </div>
       </SectionHeading>
-      {isCloudflareVendorInfo(vendorInfo) && (
+      {isCloudflareVendorInfo(vendorInfo) ? (
         <CloudflareSpan span={span} vendorInfo={vendorInfo} />
-      )}
-      {Object.keys(attributes).length > 0 && (
-        <SubSection>
-          <SubSectionHeading>Attributes</SubSectionHeading>
-          <KeyValueTable keyValue={attributes} />
-        </SubSection>
+      ) : (
+        Object.keys(attributes).length > 0 && (
+          <SubSection>
+            <SubSectionHeading>Attributes</SubSectionHeading>
+            <KeyValueTable keyValue={attributes} />
+          </SubSection>
+        )
       )}
     </div>
   );
@@ -111,43 +113,66 @@ function CloudflareD1Span({
       return vendorInfo?.sql?.query ?? "";
     }
   }, [vendorInfo]);
+
+  const result = getString(span.attributes[CF_BINDING_RESULT]);
+
   return (
-    <div className="text-xs py-2">
-      <SubSection>
-        <SubSectionHeading>SQL Query</SubSectionHeading>
+    <div className="text-xs py-2 space-y-2">
+      <CollapsibleSubSection heading="SQL Query">
         <CodeMirrorSqlEditor
           value={queryValue}
           onChange={noop}
           readOnly={true}
         />
-      </SubSection>
+      </CollapsibleSubSection>
+      <CollapsibleSubSection heading="Result">
+        <TextOrJsonViewer text={result} collapsed={true} />
+      </CollapsibleSubSection>
     </div>
   );
 }
 
 function CloudflareKVSpan({ span }: { span: OtelSpan }) {
   const method = getString(span.attributes[CF_BINDING_METHOD]);
+  const result = getString(span.attributes[CF_BINDING_RESULT]);
   return (
     <div className="text-xs py-2">
       Cloudflare KV <code>{method}</code>
+      <div className="text-xs py-2 space-y-2">
+        <CollapsibleSubSection heading="Result">
+          <TextOrJsonViewer text={result} collapsed={true} />
+        </CollapsibleSubSection>
+      </div>
     </div>
   );
 }
 
 function CloudflareR2Span({ span }: { span: OtelSpan }) {
   const method = getString(span.attributes[CF_BINDING_METHOD]);
+  const result = getString(span.attributes[CF_BINDING_RESULT]);
   return (
     <div className="text-xs py-2">
       Cloudflare R2 <code>{method}</code>
+      <div className="text-xs py-2 space-y-2">
+        <CollapsibleSubSection heading="Result">
+          <TextOrJsonViewer text={result} collapsed={true} />
+        </CollapsibleSubSection>
+      </div>
     </div>
   );
 }
 
 function CloudflareAISpan({ span }: { span: OtelSpan }) {
   const method = getString(span.attributes[CF_BINDING_METHOD]);
+  const result = getString(span.attributes[CF_BINDING_RESULT]);
   return (
     <div className="text-xs py-2">
       Cloudflare AI <code>{method}</code>
+      <div className="text-xs py-2 space-y-2">
+        <CollapsibleSubSection heading="Result">
+          <TextOrJsonViewer text={result} collapsed={true} />
+        </CollapsibleSubSection>
+      </div>
     </div>
   );
 }
