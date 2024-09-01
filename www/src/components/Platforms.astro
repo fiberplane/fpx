@@ -6,26 +6,20 @@ import type { ComponentProps } from "astro/types"
 const PLATFORM_KEYS = ["cf-worker", "node", "bun"] as const
 const PLATFORMS = ["Cloudflare", "Node.js", "Bun"] as const
 
-const defaultPlatforms: Platform[] = ["cf-worker", "node"]
-
-export function getIcon(platform: Platform) {
-  return {
-  node: "node",
-  bun: "bun",
-  "cf-worker": "cloudflare"
-  }[platform];
+function getIcon(platform: Platform) {
+  switch (platform) {
+    case "node":
+      return "node"
+    case "bun":
+      return "bun"
+    case "cf-worker":
+      return "cloudflare"
+  }
 }
 
-export interface CommandOptions {
-  args?: string
-  comment?: string
-  dev?: boolean
-  prefix?: string
-}
+type Platform = (typeof PLATFORM_KEYS)[number]
 
-export type Platform = (typeof PLATFORM_KEYS)[number]
-
-interface Props extends CommandOptions {
+type Props = {
   code: string[]
   frame?: "none" | "terminal"
   icons?: boolean
@@ -51,7 +45,7 @@ function getTabItemProps(platform: Platform) {
   singlePlatform ? (
     <Code code={code[0]} lang="ts" {title} frame={ecFrame} />
   ) : (
-    <Tabs syncKey="starlight-package-managers-pkg">
+    <Tabs syncKey="starlight-hono-platforms">
       {platforms?.map((platform, index) => (
         <TabItem {...getTabItemProps(platform)}>
           <Code code={code[index]} lang="ts" {title} frame={ecFrame} />
