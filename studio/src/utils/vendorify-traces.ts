@@ -211,9 +211,8 @@ function getD1SqlQuery(span: OtelSpan) {
   const queryArgs = getString(span?.attributes?.args);
   try {
     const argsArray = JSON.parse(queryArgs);
-    console.log("D1 args", argsArray);
-    const query = argsArray[1];
-    const params = argsArray[2];
+    const query = argsArray?.[1];
+    const params = argsArray?.[2];
     return {
       query,
       params,
