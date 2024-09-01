@@ -3,7 +3,8 @@
 import { Code, TabItem, Tabs } from '@astrojs/starlight/components'
 import type { ComponentProps } from 'astro/types'
 
-const PLATFORMS = ['cf-worker', 'node', 'bun'] as const
+const PLATFORM_KEYS = ['cf-worker', 'node', 'bun'] as const
+const PLATFORMS = ['Cloudflare', 'Node.js', 'Bun'] as const
 
 const defaultPlatforms: Platform[] = ['cf-worker', 'node']
 
@@ -22,7 +23,7 @@ export interface CommandOptions {
   prefix?: string
 }
 
-export type Platform = (typeof PLATFORMS)[number]
+export type Platform = (typeof PLATFORM_KEYS)[number]
 
 interface Props extends CommandOptions {
   code: string[]
@@ -37,7 +38,7 @@ const singlePlatform = platforms?.length === 1 ? platforms[0] : undefined
 const ecFrame = frame === 'terminal' ? 'terminal' : 'code'
 
 function getTabItemProps(platform: Platform) {
-  const props: ComponentProps<typeof TabItem> = { label: platform }
+  const props: ComponentProps<typeof TabItem> = { label: PLATFORMS[PLATFORM_KEYS.indexOf(platform)] }
   const icon = getIcon(platform) as ComponentProps<typeof TabItem>['icon']
   if (icons && icon) {
     props.icon = icon
