@@ -20,3 +20,14 @@ export function CfBindingOverview({
     </div>
   );
 }
+
+export function KeyBadge({ keyName }: { keyName: string }) {
+  return (
+    <Badge className="text-xs gap-2" variant="secondary">
+      <span className="font-mono text-muted-foreground uppercase pr-2 border-r border-gray-500">
+        Key
+      </span>
+      {keyName}
+    </Badge>
+  );
+}

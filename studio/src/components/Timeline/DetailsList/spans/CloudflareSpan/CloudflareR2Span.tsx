@@ -5,7 +5,7 @@ import { getString } from "@/utils";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
-import { CfBindingOverview } from "./shared";
+import { CfBindingOverview, KeyBadge } from "./shared";
 
 /**
  * Cloudflare R2 has the following methods:
@@ -28,14 +28,7 @@ export function CloudflareR2Span({ span }: { span: OtelSpan }) {
   return (
     <div className="text-xs py-2">
       <CfBindingOverview span={span}>
-        {r2Args.key ? (
-          <Badge className="text-xs gap-2" variant="secondary">
-            <span className="font-mono text-muted-foreground uppercase pr-2 border-r border-gray-500">
-              Key
-            </span>
-            {r2Args.key}
-          </Badge>
-        ) : null}
+        {r2Args.key ? <KeyBadge keyName={r2Args.key} /> : null}
       </CfBindingOverview>
       <div className="text-xs py-2 space-y-2">
         {r2Args.options && (

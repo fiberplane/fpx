@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { KeyValueTable } from "../../KeyValueTableV2";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
-import { CfBindingOverview } from "./shared";
+import { CfBindingOverview, KeyBadge } from "./shared";
 
 /**
  * Cloudflare KV has the following methods:
@@ -18,16 +18,25 @@ import { CfBindingOverview } from "./shared";
 export function CloudflareKVSpan({ span }: { span: OtelSpan }) {
   const method = getString(span.attributes[CF_BINDING_METHOD]);
   const args = getString(span.attributes.args);
+  const kvArgs = useCloudflareKVArgs(args, method);
   const result = getString(span.attributes[CF_BINDING_RESULT]);
   return (
     <div className="text-xs py-2">
-      <CfBindingOverview span={span} />
+      <CfBindingOverview span={span}>
+        {kvArgs.key ? <KeyBadge keyName={kvArgs.key} /> : null}
+      </CfBindingOverview>
       <div className="text-xs py-2 space-y-2">
-        <CollapsibleSubSection heading="Args" defaultCollapsed={true}>
-          <div className="pl-6 mt-1">
-            <CloudflareKVArgs method={method} args={args} />
-          </div>
-        </CollapsibleSubSection>
+        {kvArgs?.value ? (
+          <CollapsibleSubSection heading="Args" defaultCollapsed={true}>
+            <div className="pl-6 mt-1">
+              <KeyValueTable
+                keyValue={{ value: kvArgs.value }}
+                valueCellClassName="text-xs"
+                keyCellClassName="w-12 min-w-0 lg:min-w-0"
+              />
+            </div>
+          </CollapsibleSubSection>
+        ) : null}
         <CollapsibleSubSection heading="Result" defaultCollapsed={true}>
           <div className="pl-6 mt-1">
             <TextOrJsonViewer text={result} collapsed={true} />
