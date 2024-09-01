@@ -83,7 +83,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           rawEnv: HonoLikeEnv,
           executionContext: ExecutionContext | undefined,
         ) {
-          // Patch the related functions to monitor
+          // Merge the default config with the user's config
           const {
             libraryDebugMode,
             monitor: {
@@ -125,6 +125,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           const serviceName = env?.FPX_SERVICE_NAME ?? "unknown";
 
+          // Patch all functions we want to monitor in the runtime
           if (monitorCfBindings) {
             patchCloudflareBindings(env);
           }
