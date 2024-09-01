@@ -1,6 +1,5 @@
 import { SpanKind, context } from "@opentelemetry/api";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
-import type { OTLPExporterError } from "@opentelemetry/otlp-exporter-base";
 import { Resource } from "@opentelemetry/resources";
 import {
   BasicTracerProvider,
@@ -10,7 +9,7 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
-import { type FpxLogger, getLogger, logExporterSendError } from "./logger";
+import { getLogger } from "./logger";
 import { measure } from "./measure";
 import {
   patchCloudflareBindings,
@@ -141,7 +140,6 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           const provider = setupTracerProvider({
             serviceName,
             endpoint,
-            logger
           });
 
           // Enable tracing for waitUntil
@@ -252,7 +250,6 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 function setupTracerProvider(options: {
   serviceName: string;
   endpoint: string;
-  logger: FpxLogger;
 }) {
   // We need to use async hooks to be able to propagate context
   const asyncHooksContextManager = new AsyncLocalStorageContextManager();
@@ -267,42 +264,9 @@ function setupTracerProvider(options: {
   const exporter = new OTLPTraceExporter({
     url: options.endpoint,
   });
-
-  proxySendWithErrorLogging(exporter, options.logger);
-
   provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
   provider.register();
   return provider;
-}
-
-/**
- * NOTE - This was my first attempt to be able to hook into errors that happen when
- *        OTEL tries to send the trace to Fiberplane Studio, but there's a network error.
- *        There is likely a more elegant way to do this.
- */
-function proxySendWithErrorLogging(
-  exporter: OTLPTraceExporter,
-  logger: FpxLogger,
-) {
-  const originalSend = exporter.send.bind(exporter);
-  exporter.send = (...args) => {
-    console.log('hi from send')
-    const modOnError = (e: OTLPExporterError) => {
-      console.log('hi')
-      if (logger) {
-        logExporterSendError(logger, e);
-      }
-      if (typeof args?.[2] === "function") {
-        args[2](e);
-      }
-    };
-    const modArgs: Parameters<typeof originalSend> = [
-      args[0],
-      args[1],
-      modOnError,
-    ];
-    return originalSend(...modArgs);
-  };
 }
 
 /**

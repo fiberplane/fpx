@@ -79,12 +79,3 @@ export function getLogger(level: unknown) {
 function isLogLevel(level: unknown): level is LogLevel {
   return logLevels.includes(level as LogLevel);
 }
-
-export function logExporterSendError(logger: FpxLogger, error: unknown) {
-  const errorMessage =
-    error instanceof Error ? error.message : "<Unknown error>";
-  logger.error(
-    "Error sending span. Is Fiberplane Studio running?",
-    errorMessage,
-  );
-}
