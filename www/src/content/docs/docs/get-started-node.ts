@@ -1,7 +1,7 @@
 import { instrument } from "@fiberplane/hono-otel";
 import { serve } from "@hono/node-server";
-import { config } from "dotenv";
 import { Hono } from "hono";
+import { config } from "dotenv";
 
 // Load environment variables from .env file
 // You need this to load the `FPX_ENDPOINT` variable!
