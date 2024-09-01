@@ -229,11 +229,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           try {
             return await context.with(activeContext, async () => {
-              return await measuredFetch(
-                newRequest,
-                rawEnv,
-                proxyExecutionCtx,
-              );
+              return await measuredFetch(newRequest, rawEnv, proxyExecutionCtx);
             });
           } finally {
             // Make sure all promises are resolved before sending data to the server
