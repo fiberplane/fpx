@@ -8,6 +8,7 @@ import type { OtelSpan } from "@/queries";
 import {
   type CloudflareD1VendorInfo,
   type CloudflareVendorInfo,
+  cn,
   getString,
   isCloudflareD1VendorInfo,
   noop,
@@ -190,14 +191,44 @@ function CloudflareR2Args({ args }: { args: string }) {
  */
 function CloudflareAISpan({ span }: { span: OtelSpan }) {
   const args = getString(span.attributes.args);
+
+  const argsObj = useMemo(() => {
+    try {
+      const parsedArgs = JSON.parse(args);
+      const result: Record<string, string | undefined> = {
+        model: parsedArgs[0],
+        inputs: parsedArgs[1] ? JSON.stringify(parsedArgs[1]) : undefined,
+        options: parsedArgs[2] ? JSON.stringify(parsedArgs[2]) : undefined,
+      };
+      return result;
+    } catch (e) {
+      return {};
+    }
+  }, [args]);
+
   const result = getString(span.attributes[CF_BINDING_RESULT]);
   return (
     <div className="text-xs py-2">
-      <CfBindingOverview span={span} />
+      <CfBindingOverview span={span}>
+        <Badge className="text-xs" variant="secondary">
+          {argsObj.model ? (
+            <AiModelLink model={argsObj.model} />
+          ) : (
+            "UNKNOWN MODEL"
+          )}
+        </Badge>
+      </CfBindingOverview>
       <div className="text-xs py-2 space-y-2">
-        <CollapsibleSubSection heading="Model">
-          <CloudflareAiArgs args={args} />
-        </CollapsibleSubSection>
+        {argsObj.inputs && (
+          <CollapsibleSubSection heading="Inputs">
+            <CloudflareAiArgs args={argsObj.inputs} />
+          </CollapsibleSubSection>
+        )}
+        {argsObj.options && (
+          <CollapsibleSubSection heading="Options" defaultCollapsed>
+            <CloudflareAiArgs args={argsObj.options} />
+          </CollapsibleSubSection>
+        )}
       </div>
       <div className="text-xs py-2 space-y-2">
         <CollapsibleSubSection heading="Result">
@@ -208,19 +239,38 @@ function CloudflareAISpan({ span }: { span: OtelSpan }) {
   );
 }
 
+function AiModelLink({ model }: { model: string }) {
+  const modelName = model.split("/").pop();
+  return (
+    <a
+      className="text-blue-500 hover:underline"
+      href={`https://developers.cloudflare.com/workers-ai/models/${modelName}`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {model}
+    </a>
+  );
+}
+
 function CloudflareAiArgs({ args }: { args: string }) {
   return <TextOrJsonViewer text={args} collapsed={true} />;
 }
 
-function CfBindingOverview({ span }: { span: OtelSpan }) {
+function CfBindingOverview({
+  span,
+  className,
+  children,
+}: { span: OtelSpan; className?: string; children?: React.ReactNode }) {
   const bindingName = getString(span.attributes[CF_BINDING_NAME]);
   const method = getString(span.attributes[CF_BINDING_METHOD]);
 
   return (
-    <div className="flex items-center gap-2 py-0.5">
+    <div className={cn("flex items-center gap-2 py-0.5", className)}>
       <Badge variant="secondary" className="font-mono font-light text-gray-300">
         {bindingName}.{method}
       </Badge>
+      {children}
     </div>
   );
 }
