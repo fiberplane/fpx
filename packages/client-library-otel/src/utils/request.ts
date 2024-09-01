@@ -21,7 +21,7 @@ import type {
   InitParam,
   InputParam,
 } from "../types";
-import { shouldFallbackToProcessEnv } from "./env";
+import { getNodeSafeEnv } from "./env";
 import { safelySerializeJSON } from "./json";
 
 // There are so many different types of headers
@@ -55,7 +55,7 @@ export async function getRootRequestAttributes(
 
   // HACK - We need to account for the fact that the Hono `env` is different across runtimes
   //        If process.env is available, we use that, otherwise we use the `env` object from the Hono runtime
-  const env = shouldFallbackToProcessEnv(honoEnv) ? process.env : honoEnv;
+  const env = getNodeSafeEnv(honoEnv);
   if (env) {
     // NOTE - We should not *ever* do this in production
     attributes[FPX_REQUEST_ENV] = safelySerializeJSON(env);

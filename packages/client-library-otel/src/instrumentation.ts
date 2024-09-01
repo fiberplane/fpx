@@ -9,6 +9,11 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
+import {
+  ENV_FPX_ENDPOINT,
+  ENV_FPX_LOG_LEVEL,
+  ENV_FPX_SERVICE_NAME,
+} from "./constants";
 import { getLogger } from "./logger";
 import { measure } from "./measure";
 import {
@@ -21,10 +26,10 @@ import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
 import {
+  getFromEnv,
   getRequestAttributes,
   getResponseAttributes,
   getRootRequestAttributes,
-  runtimeHasProcessEnv,
 } from "./utils";
 
 /**
@@ -104,13 +109,15 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           //        start sending data to the default url.
           const endpoint =
             typeof env === "object" && env !== null
-              ? getFpxEndpoint(env)
+              ? getFromEnv(env, ENV_FPX_ENDPOINT)
               : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
-          const FPX_LOG_LEVEL = libraryDebugMode ? "debug" : env?.FPX_LOG_LEVEL;
+          const FPX_LOG_LEVEL = libraryDebugMode
+            ? "debug"
+            : getFromEnv(env, ENV_FPX_LOG_LEVEL);
           const logger = getLogger(FPX_LOG_LEVEL);
-          // NOTE - This should only log if the FPX_LOG_LEVEL is debug
+          // NOTE - This should only log if the FPX_LOG_LEVEL is "debug"
           logger.debug("Library debug mode is enabled");
 
           if (!isEnabled) {
@@ -126,7 +133,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
 
-          const serviceName = env?.FPX_SERVICE_NAME ?? "unknown";
+          const serviceName =
+            getFromEnv(env, ENV_FPX_SERVICE_NAME) ?? "unknown";
 
           // Patch all functions we want to monitor in the runtime
           if (monitorCfBindings) {
@@ -287,25 +295,4 @@ function mergeConfigs(
     libraryDebugMode,
     monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
-}
-
-/**
- * In Hono-node environments, the FPX_ENDPOINT env var is not available on the `env` object that's passed to `app.fetch`.
- * This helper will also check process.env and fallback to that if the env var is not present on the `env` object.
- */
-function getFpxEndpoint(env: HonoLikeEnv) {
-  const fpxEndpointFromEnv =
-    typeof env === "object" && env !== null
-      ? (env as Record<string, string | null>).FPX_ENDPOINT
-      : null;
-
-  if (fpxEndpointFromEnv) {
-    return fpxEndpointFromEnv;
-  }
-
-  if (runtimeHasProcessEnv()) {
-    return process?.env?.FPX_ENDPOINT;
-  }
-
-  return null;
 }
