@@ -1,13 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import { CF_BINDING_METHOD, SpanKind } from "@/constants";
-import { OtelSpan } from "@/queries";
+import { SpanKind } from "@/constants";
 import {
-  CloudflareVendorInfo,
-  VendorInfo,
   type Waterfall,
-  getString,
   isAnthropicVendorInfo,
-  isCloudflareD1VendorInfo,
   isCloudflareVendorInfo,
   isFetchSpan,
   isNeonVendorInfo,
