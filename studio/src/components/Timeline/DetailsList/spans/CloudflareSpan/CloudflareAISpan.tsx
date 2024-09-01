@@ -39,7 +39,7 @@ export function CloudflareAISpan({ span }: { span: OtelSpan }) {
             <CloudflareAiArgs args={runAiArgs.options} />
           </CollapsibleSubSection>
         )}
-        <CollapsibleSubSection heading="Result">
+        <CollapsibleSubSection heading="Result" defaultCollapsed={true}>
           <TextOrJsonViewer text={result} collapsed={true} />
         </CollapsibleSubSection>
       </div>

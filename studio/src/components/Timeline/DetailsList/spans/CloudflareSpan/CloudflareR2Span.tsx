@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { CF_BINDING_METHOD, CF_BINDING_RESULT } from "@/constants";
 import type { OtelSpan } from "@/queries";
 import { getString } from "@/utils";

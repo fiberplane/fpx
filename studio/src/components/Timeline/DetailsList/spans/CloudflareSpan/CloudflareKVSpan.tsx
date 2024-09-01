@@ -29,11 +29,7 @@ export function CloudflareKVSpan({ span }: { span: OtelSpan }) {
         {kvArgs?.value ? (
           <CollapsibleSubSection heading="Args" defaultCollapsed={true}>
             <div className="pl-6 mt-1">
-              <KeyValueTable
-                keyValue={{ value: kvArgs.value }}
-                valueCellClassName="text-xs"
-                keyCellClassName="w-12 min-w-0 lg:min-w-0"
-              />
+              <CloudflareKVTable kvArgs={kvArgs} />
             </div>
           </CollapsibleSubSection>
         ) : null}
@@ -45,24 +41,6 @@ export function CloudflareKVSpan({ span }: { span: OtelSpan }) {
       </div>
     </div>
   );
-}
-
-function CloudflareKVArgs({ method, args }: { method: string; args: string }) {
-  const kvArgs = useCloudflareKVArgs(args, method);
-
-  if (method === "get") {
-    return <CloudflareKVTable kvArgs={kvArgs} />;
-  }
-
-  if (method === "put") {
-    return <CloudflareKVTable kvArgs={kvArgs} />;
-  }
-
-  if (method === "delete") {
-    return <CloudflareKVTable kvArgs={kvArgs} />;
-  }
-
-  return <TextOrJsonViewer text={args} collapsed={true} />;
 }
 
 function CloudflareKVTable({ kvArgs }: { kvArgs: Record<string, string> }) {
