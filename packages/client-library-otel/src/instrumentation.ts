@@ -107,10 +107,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           const FPX_LOG_LEVEL = libraryDebugMode ? "debug" : env?.FPX_LOG_LEVEL;
           const logger = getLogger(FPX_LOG_LEVEL);
-
-          if (libraryDebugMode) {
-            logger.debug("Library debug mode is enabled");
-          }
+          // NOTE - This should only log if the FPX_LOG_LEVEL is debug
+          logger.debug("Library debug mode is enabled");
 
           if (!isEnabled) {
             logger.debug(

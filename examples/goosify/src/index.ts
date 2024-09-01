@@ -94,6 +94,7 @@ app.get("/api/cyberpunk-goose", async (c) => {
 });
 
 export default instrument(app, {
+  // libraryDebugMode: true,
   monitor: {
     fetch: true,
     logging: true,
