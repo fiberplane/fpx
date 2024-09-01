@@ -1,5 +1,5 @@
 import AnthropicLogo from "@/assets/AnthropicLogo.svg";
-import CloudflareAiLogo from "@/assets/CloudflareAiLogo.svg";
+import CloudflareAiLogo from "@/assets/CloudflareAILogo.svg";
 import CloudflareD1Logo from "@/assets/CloudflareD1Logo.svg";
 import CloudflareKVLogo from "@/assets/CloudflareKVLogo.svg";
 import CloudflareR2Logo from "@/assets/CloudflareR2Logo.svg";
