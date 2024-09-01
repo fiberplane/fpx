@@ -3,6 +3,7 @@ import { SpanKind } from "@/constants";
 import {
   type Waterfall,
   isAnthropicVendorInfo,
+  isCloudflareVendorInfo,
   isFetchSpan,
   isNeonVendorInfo,
   isOpenAIVendorInfo,
@@ -10,6 +11,7 @@ import {
 } from "@/utils";
 import { cn } from "@/utils";
 import { useMemo } from "react";
+import { getCloudflareSpanName } from "../utils";
 
 export const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
   return useMemo(() => {
@@ -51,6 +53,18 @@ export const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
             className={cn("font-normal", "font-mono", "text-xs", "truncate")}
           >
             Anthropic Call
+          </div>
+        );
+      }
+
+      const isCloudflareBinding = isCloudflareVendorInfo(vendorInfo);
+      if (isCloudflareBinding) {
+        const name = getCloudflareSpanName(span, vendorInfo);
+        return (
+          <div
+            className={cn("font-normal", "font-mono", "text-xs", "truncate")}
+          >
+            {name}
           </div>
         );
       }

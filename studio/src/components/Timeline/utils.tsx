@@ -1,10 +1,15 @@
 import AnthropicLogo from "@/assets/AnthropicLogo.svg";
+import CloudflareAiLogo from "@/assets/CloudflareAILogo.svg";
+import CloudflareD1Logo from "@/assets/CloudflareD1Logo.svg";
+import CloudflareKVLogo from "@/assets/CloudflareKVLogo.svg";
+import CloudflareR2Logo from "@/assets/CloudflareR2Logo.svg";
 import Database from "@/assets/Database.svg";
 import HonoLogo from "@/assets/HonoLogo.svg";
 import NeonLogo from "@/assets/NeonLogo.svg";
 import OpenAiLogo from "@/assets/OpenAILogo.svg";
-import { SpanKind } from "@/constants";
-import type { Waterfall } from "@/utils";
+import { CF_BINDING_METHOD, SpanKind } from "@/constants";
+import type { OtelSpan } from "@/queries";
+import { type CloudflareVendorInfo, type Waterfall, getString } from "@/utils";
 import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 import { formatDistanceStrict } from "date-fns";
 
@@ -52,6 +57,30 @@ export const getTypeIcon = (type: string, colorOverride = "") => {
       return (
         <AnthropicLogo
           className={`w-3.5 h-3.5 ${colorOverride || "text-blue-500"}`}
+        />
+      );
+    case "cloudflare-ai":
+      return (
+        <CloudflareAiLogo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+        />
+      );
+    case "cloudflare-d1":
+      return (
+        <CloudflareD1Logo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+        />
+      );
+    case "cloudflare-kv":
+      return (
+        <CloudflareKVLogo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
+        />
+      );
+    case "cloudflare-r2":
+      return (
+        <CloudflareR2Logo
+          className={`w-3.5 h-3.5 ${colorOverride || "text-orange-500"}`}
         />
       );
     default:
@@ -132,4 +161,13 @@ export function getHttpMethodTextColor(method: string) {
     HEAD: "text-gray-400",
     WS: "text-green-500",
   }[String(method).toUpperCase()];
+}
+
+export function getCloudflareSpanName(
+  span: OtelSpan,
+  vendorInfo: CloudflareVendorInfo,
+) {
+  const { type } = vendorInfo;
+  const method = getString(span.attributes[CF_BINDING_METHOD]);
+  return type === "d1" ? "D1 Query" : `${type.toUpperCase()}.${method}`;
 }

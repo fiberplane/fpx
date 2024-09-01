@@ -65,7 +65,12 @@ export function ResponseBody({
         >
           {headersSlot}
           <CollapsibleBodyContainer>
-            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+            <CodeMirrorJsonEditor
+              value={prettyBody}
+              readOnly
+              onChange={noop}
+              minHeight="0"
+            />
           </CollapsibleBodyContainer>
         </div>
       );
@@ -108,7 +113,12 @@ export function ResponseBody({
         >
           {headersSlot}
           <CollapsibleBodyContainer>
-            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+            <CodeMirrorJsonEditor
+              value={prettyBody}
+              readOnly
+              onChange={noop}
+              minHeight="0"
+            />
           </CollapsibleBodyContainer>
         </div>
       );

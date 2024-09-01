@@ -80,7 +80,6 @@
     "vite": "^5.2.0",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^1.6.0",
-    "wrangler": "^3.57.0"
+    "vitest": "^1.6.0"
   }
 }

@@ -1,6 +1,7 @@
+import { CF_BINDING_TYPE } from "@/constants";
 import type { MizuOrphanLog, OtelSpan } from "@/queries";
 import { z } from "zod";
-import { getRequestBody, getRequestUrl } from "./otel-helpers";
+import { getRequestBody, getRequestUrl, getString } from "./otel-helpers";
 
 export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
 
@@ -35,10 +36,48 @@ const AnthropicVendorInfoSchema = z.object({
 
 type AnthropicVendorInfo = z.infer<typeof AnthropicVendorInfoSchema>;
 
+const CloudflareD1VendorInfoSchema = z.object({
+  vendor: z.literal("cloudflare"),
+  type: z.literal("d1"),
+  sql: z.object({
+    query: z.string(),
+    params: z.array(z.string()),
+  }),
+});
+
+export type CloudflareD1VendorInfo = z.infer<
+  typeof CloudflareD1VendorInfoSchema
+>;
+
+const CloudflareR2VendorInfoSchema = z.object({
+  vendor: z.literal("cloudflare"),
+  type: z.literal("r2"),
+});
+
+const CloudflareAiVendorInfoSchema = z.object({
+  vendor: z.literal("cloudflare"),
+  type: z.literal("ai"),
+});
+
+const CloudflareKVVendorInfoSchema = z.object({
+  vendor: z.literal("cloudflare"),
+  type: z.literal("kv"),
+});
+
+const CloudflareVendorInfoSchema = z.discriminatedUnion("type", [
+  CloudflareD1VendorInfoSchema,
+  CloudflareR2VendorInfoSchema,
+  CloudflareAiVendorInfoSchema,
+  CloudflareKVVendorInfoSchema,
+]);
+
+export type CloudflareVendorInfo = z.infer<typeof CloudflareVendorInfoSchema>;
+
 const VendorInfoSchema = z.union([
   NeonVendorInfoSchema,
   OpenAIVendorInfoSchema,
   AnthropicVendorInfoSchema,
+  CloudflareVendorInfoSchema,
   NoneVendorInfoSchema,
 ]);
 
@@ -62,6 +101,18 @@ export const isAnthropicVendorInfo = (
   return vendorInfo.vendor === "anthropic";
 };
 
+export const isCloudflareD1VendorInfo = (
+  vendorInfo: VendorInfo,
+): vendorInfo is CloudflareD1VendorInfo => {
+  return vendorInfo.vendor === "cloudflare" && vendorInfo.type === "d1";
+};
+
+export const isCloudflareVendorInfo = (
+  vendorInfo: VendorInfo,
+): vendorInfo is CloudflareVendorInfo => {
+  return vendorInfo.vendor === "cloudflare";
+};
+
 export function getVendorInfo(span: OtelSpan): VendorInfo {
   if (isOpenAIFetch(span)) {
     return { vendor: "openai" };
@@ -78,8 +129,40 @@ export function getVendorInfo(span: OtelSpan): VendorInfo {
     return { vendor: "anthropic" };
   }
 
+  if (isCloudflareD1Span(span)) {
+    return { vendor: "cloudflare", type: "d1", sql: getD1SqlQuery(span) };
+  }
+
+  if (isCloudflareR2Span(span)) {
+    return { vendor: "cloudflare", type: "r2" };
+  }
+
+  if (isCloudflareAiSpan(span)) {
+    return { vendor: "cloudflare", type: "ai" };
+  }
+
+  if (isCloudflareKVSpan(span)) {
+    return { vendor: "cloudflare", type: "kv" };
+  }
+
   return { vendor: "none" };
 }
+
+const isCloudflareD1Span = (span: OtelSpan) => {
+  return getString(span.attributes[CF_BINDING_TYPE]) === "D1Database";
+};
+
+const isCloudflareR2Span = (span: OtelSpan) => {
+  return getString(span.attributes[CF_BINDING_TYPE]) === "R2Bucket";
+};
+
+const isCloudflareKVSpan = (span: OtelSpan) => {
+  return getString(span.attributes[CF_BINDING_TYPE]) === "KvNamespace";
+};
+
+const isCloudflareAiSpan = (span: OtelSpan) => {
+  return getString(span.attributes[CF_BINDING_TYPE]) === "Ai";
+};
 
 const isOpenAIFetch = (span: OtelSpan) => {
   const requestUrl = getRequestUrl(span);
@@ -118,6 +201,21 @@ function getNeonSqlQuery(span: OtelSpan) {
     return {
       query: json.query as string,
       params: json.params as Array<string>,
+    };
+  } catch (e) {
+    return { query: "DB QUERY", params: [] };
+  }
+}
+
+function getD1SqlQuery(span: OtelSpan) {
+  const queryArgs = getString(span?.attributes?.args);
+  try {
+    const argsArray = JSON.parse(queryArgs);
+    const query = argsArray?.[1];
+    const params = argsArray?.[2];
+    return {
+      query,
+      params,
     };
   } catch (e) {
     return { query: "DB QUERY", params: [] };

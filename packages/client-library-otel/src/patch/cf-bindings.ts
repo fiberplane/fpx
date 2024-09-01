@@ -145,7 +145,7 @@ function proxyD1Binding(o: object, bindingName: string) {
       if (typeof d1Value === "function" && isSendingQuery) {
         return measure(
           {
-            name: "D1 Call",
+            name: "D1 Query",
             attributes: getCfBindingAttributes(
               "D1Database",
               bindingName,

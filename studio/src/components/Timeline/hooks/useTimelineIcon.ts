@@ -1,5 +1,5 @@
 import { type MizuOrphanLog, type OtelSpan, isMizuOrphanLog } from "@/queries";
-import type { VendorInfo } from "@/utils";
+import { type VendorInfo, isCloudflareVendorInfo } from "@/utils";
 import { useMemo } from "react";
 import { getTypeIcon } from "../utils";
 
@@ -16,7 +16,11 @@ export const useTimelineIcon = (
   return useMemo(() => {
     let iconType = isMizuOrphanLog(spanOrLog) ? "log" : spanOrLog.kind;
     if (vendorInfo && vendorInfo.vendor !== "none") {
-      iconType = vendorInfo.vendor;
+      if (isCloudflareVendorInfo(vendorInfo)) {
+        iconType = `${vendorInfo.vendor}-${vendorInfo.type}`;
+      } else {
+        iconType = vendorInfo.vendor;
+      }
     }
 
     return getTypeIcon(iconType, colorOverride);

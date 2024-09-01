@@ -1,15 +1,27 @@
 import { Badge } from "@/components/ui/badge";
 import { SpanStatus } from "@/constants";
 import type { OtelSpan } from "@/queries";
-import { getNumber, getString } from "@/utils";
+import {
+  type VendorInfo,
+  getNumber,
+  getString,
+  isCloudflareVendorInfo,
+} from "@/utils";
 import { useMemo } from "react";
 import { useTimelineIcon } from "../../hooks";
 import { SectionHeading } from "../../shared";
 import { SubSection, SubSectionHeading } from "../../shared";
-import { formatDuration } from "../../utils";
+import { formatDuration, getCloudflareSpanName } from "../../utils";
 import { KeyValueTable } from "../KeyValueTableV2";
+import { CloudflareSpan } from "./CloudflareSpan";
 
-export function GenericSpan({ span }: { span: OtelSpan }) {
+export function GenericSpan({
+  span,
+  vendorInfo,
+}: {
+  span: OtelSpan;
+  vendorInfo: VendorInfo;
+}) {
   const attributes = useMemo(() => {
     const attr: Record<string, string> = {};
     for (const key of Object.keys(span.attributes)) {
@@ -24,13 +36,15 @@ export function GenericSpan({ span }: { span: OtelSpan }) {
     }
     return attr;
   }, [span]);
-  const icon = useTimelineIcon(span);
+  const icon = useTimelineIcon(span, { vendorInfo });
+  const isCfSpan = isCloudflareVendorInfo(vendorInfo);
+  const name = isCfSpan ? getCloudflareSpanName(span, vendorInfo) : span.name;
   return (
     <div id={span.span_id}>
       <SectionHeading className="grid gap-2 grid-cols-[auto_1fr] items-center">
         {icon}
         <div className="flex items-center gap-2 max-w-full">
-          {span.name}
+          {name}
           {span.status?.code === SpanStatus.ERROR && (
             <>
               &nbsp;
@@ -44,11 +58,15 @@ export function GenericSpan({ span }: { span: OtelSpan }) {
           </div>
         </div>
       </SectionHeading>
-      {Object.keys(attributes).length > 0 && (
-        <SubSection>
-          <SubSectionHeading>Attributes</SubSectionHeading>
-          <KeyValueTable keyValue={attributes} />
-        </SubSection>
+      {isCfSpan ? (
+        <CloudflareSpan span={span} vendorInfo={vendorInfo} />
+      ) : (
+        Object.keys(attributes).length > 0 && (
+          <SubSection>
+            <SubSectionHeading>Attributes</SubSectionHeading>
+            <KeyValueTable keyValue={attributes} />
+          </SubSection>
+        )
       )}
     </div>
   );

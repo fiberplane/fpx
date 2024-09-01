@@ -28,6 +28,6 @@
     "@biomejs/biome": "1.8.3",
     "prettier": "^3.3.3",
     "prettier-plugin-astro": "^0.14.1",
-    "wrangler": "^3.70.0"
+    "wrangler": "^3.73.0"
   }
 }

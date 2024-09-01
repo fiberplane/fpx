@@ -27,7 +27,7 @@ export const CollapsibleSubSection = ({
   defaultCollapsed = false,
   className,
 }: Props) => {
-  const [isOpen, setIsOpen] = useState(defaultCollapsed);
+  const [isOpen, setIsOpen] = useState(!defaultCollapsed);
   const toggleIsOpen = () => setIsOpen((o) => !o);
   return (
     <SubSection className={className}>

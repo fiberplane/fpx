@@ -60,7 +60,13 @@ const Content = ({ item }: { item: Waterfall[0] }) => {
     );
   }
 
-  return <GenericSpan span={item.span} key={item.span.span_id} />;
+  return (
+    <GenericSpan
+      span={item.span}
+      key={item.span.span_id}
+      vendorInfo={item.vendorInfo}
+    />
+  );
 };
 
 function getId(item: Waterfall[0]) {
