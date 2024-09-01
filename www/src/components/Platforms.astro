@@ -1,18 +1,18 @@
 ---
 // biome-ignore lint/style/useImportType: Biome is confused by astro
-import { Code, TabItem, Tabs } from '@astrojs/starlight/components'
-import type { ComponentProps } from 'astro/types'
+import { Code, TabItem, Tabs } from "@astrojs/starlight/components"
+import type { ComponentProps } from "astro/types"
 
-const PLATFORM_KEYS = ['cf-worker', 'node', 'bun'] as const
-const PLATFORMS = ['Cloudflare', 'Node.js', 'Bun'] as const
+const PLATFORM_KEYS = ["cf-worker", "node", "bun"] as const
+const PLATFORMS = ["Cloudflare", "Node.js", "Bun"] as const
 
-const defaultPlatforms: Platform[] = ['cf-worker', 'node']
+const defaultPlatforms: Platform[] = ["cf-worker", "node"]
 
 export function getIcon(platform: Platform) {
   return {
-  node: 'node',
-  bun: 'bun',
-  'cf-worker': 'cloudflare'
+  node: "node",
+  bun: "bun",
+  "cf-worker": "cloudflare"
   }[platform];
 }
 
@@ -27,19 +27,19 @@ export type Platform = (typeof PLATFORM_KEYS)[number]
 
 interface Props extends CommandOptions {
   code: string[]
-  frame?: 'none' | 'terminal'
+  frame?: "none" | "terminal"
   icons?: boolean
   platforms?: Platform[]
   title?: string | undefined
 }
 
-const { code, frame = 'code', icons = true, platforms, title = undefined, ...options } = Astro.props
+const { code, frame = "code", icons = true, platforms, title = undefined, ...options } = Astro.props
 const singlePlatform = platforms?.length === 1 ? platforms[0] : undefined
-const ecFrame = frame === 'terminal' ? 'terminal' : 'code'
+const ecFrame = frame === "terminal" ? "terminal" : "code"
 
 function getTabItemProps(platform: Platform) {
   const props: ComponentProps<typeof TabItem> = { label: PLATFORMS[PLATFORM_KEYS.indexOf(platform)] }
-  const icon = getIcon(platform) as ComponentProps<typeof TabItem>['icon']
+  const icon = getIcon(platform) as ComponentProps<typeof TabItem>["icon"]
   if (icons && icon) {
     props.icon = icon
   }
