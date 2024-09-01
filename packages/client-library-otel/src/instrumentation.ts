@@ -9,6 +9,7 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
+import { getLogger } from "./logger";
 import { measure } from "./measure";
 import {
   patchCloudflareBindings,
@@ -32,6 +33,8 @@ import {
  * @internal
  */
 type FpxConfig = {
+  /** Enable library debug logging */
+  libraryDebugMode: boolean;
   monitor: {
     /** Send data to FPX about each `fetch` call made during a handler's lifetime */
     fetch: boolean;
@@ -55,8 +58,7 @@ type FpxConfigOptions = Partial<
 >;
 
 const defaultConfig = {
-  // TODO - Implement library debug logging
-  // libraryDebugMode: false,
+  libraryDebugMode: false,
   monitor: {
     fetch: true,
     logging: true,
@@ -81,6 +83,16 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           rawEnv: HonoLikeEnv,
           executionContext: ExecutionContext | undefined,
         ) {
+          // Merge the default config with the user's config
+          const {
+            libraryDebugMode,
+            monitor: {
+              fetch: monitorFetch,
+              logging: monitorLogging,
+              cfBindings: monitorCfBindings,
+            },
+          } = mergeConfigs(defaultConfig, config);
+
           const env = rawEnv as
             | undefined
             | null
@@ -93,25 +105,27 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
+          const FPX_LOG_LEVEL = libraryDebugMode ? "debug" : env?.FPX_LOG_LEVEL;
+          const logger = getLogger(FPX_LOG_LEVEL);
+          // NOTE - This should only log if the FPX_LOG_LEVEL is debug
+          logger.debug("Library debug mode is enabled");
+
           if (!isEnabled) {
+            logger.debug(
+              "@fiberplane/hono-otel is missing FPX_ENDPOINT. Skipping instrumentation",
+            );
             return await originalFetch(request, rawEnv, executionContext);
           }
 
           // If the request is from the route inspector, respond with the routes
           if (isRouteInspectorRequest(request)) {
+            logger.debug("Responding to route inspector request");
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
 
           const serviceName = env?.FPX_SERVICE_NAME ?? "unknown";
 
-          // Patch the related functions to monitor
-          const {
-            monitor: {
-              fetch: monitorFetch,
-              logging: monitorLogging,
-              cfBindings: monitorCfBindings,
-            },
-          } = mergeConfigs(defaultConfig, config);
+          // Patch all functions we want to monitor in the runtime
           if (monitorCfBindings) {
             patchCloudflareBindings(env);
           }
@@ -197,6 +211,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
                   throw new Error(r.statusText);
                 }
               },
+              logger,
             },
             originalFetch,
           );
@@ -260,7 +275,13 @@ function mergeConfigs(
   fallbackConfig: FpxConfig,
   userConfig?: FpxConfigOptions,
 ): FpxConfig {
+  const libraryDebugMode =
+    typeof userConfig?.libraryDebugMode === "boolean"
+      ? userConfig.libraryDebugMode
+      : fallbackConfig.libraryDebugMode;
+
   return {
+    libraryDebugMode,
     monitor: Object.assign(fallbackConfig.monitor, userConfig?.monitor),
   };
 }
