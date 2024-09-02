@@ -11,14 +11,17 @@ export const requestResponseSlice: StateCreator<
   RequestResponseSlice,
   [['zustand/immer', never], ['zustand/devtools', never]]
 > = (set, get) => ({
-  serviceBaseUrl: '',
+  serviceBaseUrl: "http://localhost:8787",
   path: '',
   method: 'GET',
   requestType: 'http',
-  body: { type: 'text', value: '' },
+  body: {
+    type: "json",
+    value: "",
+  },
   pathParams: [],
-  queryParams: [],
-  requestHeaders: [],
+  queryParams: enforceTerminalDraftParameter([]),
+  requestHeaders: enforceTerminalDraftParameter([]),
 
   setServiceBaseUrl: (serviceBaseUrl) => set((state) => {
     state.serviceBaseUrl = serviceBaseUrl;
