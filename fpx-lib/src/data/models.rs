@@ -1,7 +1,11 @@
 use crate::api;
 use crate::api::models::SpanKind;
 use crate::data::util::{Json, Timestamp};
-use serde::Deserialize;
+use serde::de::{Error, Visitor};
+use serde::{Deserialize, Deserializer, Serialize};
+use std::fmt::Formatter;
+use std::ops::Deref;
+use std::str::FromStr;
 
 /// A computed value based on the span objects that are present.
 #[derive(Clone, Debug, Deserialize)]
@@ -61,5 +65,83 @@ impl From<api::models::Span> for Span {
             end_time,
             inner,
         }
+    }
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct TraceId(String);
+
+impl TraceId {
+    fn new(input: impl Into<String>) -> Result<TraceId, hex::FromHexError> {
+        let id = TraceId(input.into());
+        id.validate()?;
+
+        Ok(id)
+    }
+
+    fn validate(&self) -> Result<(), hex::FromHexError> {
+        hex::decode(&self.0).map(|_| ())
+    }
+}
+
+impl From<TraceId> for String {
+    fn from(value: TraceId) -> Self {
+        value.0
+    }
+}
+
+impl FromStr for TraceId {
+    type Err = hex::FromHexError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        TraceId::new(s)
+    }
+}
+
+impl Deref for TraceId {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+struct TraceIdVisitor;
+
+impl<'de> Visitor<'de> for TraceIdVisitor {
+    type Value = TraceId;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        formatter.write_str("a hex-represented string")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        TraceId::new(v).map_err(Error::custom)
+    }
+
+    fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        TraceId::new(v).map_err(Error::custom)
+    }
+
+    fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        TraceId::new(v).map_err(Error::custom)
+    }
+}
+
+impl<'de> Deserialize<'de> for TraceId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_string(TraceIdVisitor)
     }
 }

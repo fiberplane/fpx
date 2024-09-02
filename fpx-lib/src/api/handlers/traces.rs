@@ -8,6 +8,7 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::error;
+use crate::data::models::TraceId;
 
 #[tracing::instrument(skip_all)]
 pub async fn ts_compat_traces_list_handler(
@@ -66,17 +67,14 @@ impl From<DbError> for ApiServerError<TraceListError> {
 #[tracing::instrument(skip_all)]
 pub async fn traces_get_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<String>,
+    Path(trace_id): Path<TraceId>,
 ) -> Result<Json<TraceSummary>, ApiServerError<TraceGetError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(TraceGetError::InvalidTraceId))?;
 
     // Retrieve all the spans that are associated with the trace
     let spans = store.span_list_by_trace(&tx, &trace_id).await?;
 
-    let trace = TraceSummary::from_spans(trace_id, spans).ok_or(TraceGetError::NotFound)?;
+    let trace = TraceSummary::from_spans(trace_id.into(), spans).ok_or(TraceGetError::NotFound)?;
 
     Ok(Json(trace))
 }
@@ -104,12 +102,9 @@ impl From<DbError> for ApiServerError<TraceGetError> {
 #[tracing::instrument(skip_all)]
 pub async fn traces_delete_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<String>,
+    Path(trace_id): Path<TraceId>,
 ) -> Result<StatusCode, ApiServerError<TraceDeleteError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(TraceDeleteError::InvalidTraceId))?;
 
     // Retrieve all the spans that are associated with the trace
     store.span_delete_by_trace(&tx, &trace_id).await?;

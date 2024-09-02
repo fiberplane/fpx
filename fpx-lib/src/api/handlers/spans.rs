@@ -8,17 +8,14 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::error;
+use crate::data::models::TraceId;
 
 #[tracing::instrument(skip_all)]
 pub async fn span_get_handler(
     State(store): State<BoxedStore>,
-    Path((trace_id, span_id)): Path<(String, String)>,
+    Path((trace_id, span_id)): Path<(TraceId, TraceId)>,
 ) -> Result<Json<Span>, ApiServerError<SpanGetError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidTraceId))?;
-    hex::decode(&span_id).map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidSpanId))?;
 
     let span = store.span_get(&tx, &trace_id, &span_id).await?;
 
@@ -57,12 +54,9 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 #[tracing::instrument(skip_all)]
 pub async fn ts_compat_span_list_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<String>,
+    Path(trace_id): Path<TraceId>,
 ) -> Result<Json<Vec<TypeScriptCompatSpan>>, ApiServerError<SpanListError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
 
     let spans = store.span_list_by_trace(&tx, &trace_id).await?;
     let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
@@ -73,12 +67,9 @@ pub async fn ts_compat_span_list_handler(
 #[tracing::instrument(skip_all)]
 pub async fn span_list_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<String>,
+    Path(trace_id): Path<TraceId>,
 ) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
 
     let spans = store.span_list_by_trace(&tx, &trace_id).await?;
     let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
@@ -105,14 +96,9 @@ impl From<DbError> for ApiServerError<SpanListError> {
 #[tracing::instrument(skip_all)]
 pub async fn span_delete_handler(
     State(store): State<BoxedStore>,
-    Path((trace_id, span_id)): Path<(String, String)>,
+    Path((trace_id, span_id)): Path<(TraceId, TraceId)>,
 ) -> Result<StatusCode, ApiServerError<SpanDeleteError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanDeleteError::InvalidTraceId))?;
-    hex::decode(&span_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanDeleteError::InvalidSpanId))?;
 
     store.span_delete(&tx, &trace_id, &span_id).await?;
 
