@@ -1,5 +1,6 @@
 use crate::api::errors::{ApiServerError, CommonError};
 use crate::api::models::{ts_compat::TypeScriptCompatSpan, Span};
+use crate::data::models::HexEncodedId;
 use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;
@@ -8,12 +9,11 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::error;
-use crate::data::models::TraceId;
 
 #[tracing::instrument(skip_all)]
 pub async fn span_get_handler(
     State(store): State<BoxedStore>,
-    Path((trace_id, span_id)): Path<(TraceId, TraceId)>,
+    Path((trace_id, span_id)): Path<(HexEncodedId, HexEncodedId)>,
 ) -> Result<Json<Span>, ApiServerError<SpanGetError>> {
     let tx = store.start_readonly_transaction().await?;
 
@@ -54,7 +54,7 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 #[tracing::instrument(skip_all)]
 pub async fn ts_compat_span_list_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<TraceId>,
+    Path(trace_id): Path<HexEncodedId>,
 ) -> Result<Json<Vec<TypeScriptCompatSpan>>, ApiServerError<SpanListError>> {
     let tx = store.start_readonly_transaction().await?;
 
@@ -67,7 +67,7 @@ pub async fn ts_compat_span_list_handler(
 #[tracing::instrument(skip_all)]
 pub async fn span_list_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<TraceId>,
+    Path(trace_id): Path<HexEncodedId>,
 ) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
     let tx = store.start_readonly_transaction().await?;
 
@@ -96,7 +96,7 @@ impl From<DbError> for ApiServerError<SpanListError> {
 #[tracing::instrument(skip_all)]
 pub async fn span_delete_handler(
     State(store): State<BoxedStore>,
-    Path((trace_id, span_id)): Path<(TraceId, TraceId)>,
+    Path((trace_id, span_id)): Path<(HexEncodedId, HexEncodedId)>,
 ) -> Result<StatusCode, ApiServerError<SpanDeleteError>> {
     let tx = store.start_readonly_transaction().await?;
 

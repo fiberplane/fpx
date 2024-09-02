@@ -10,14 +10,14 @@ use std::str::FromStr;
 /// A computed value based on the span objects that are present.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Trace {
-    pub trace_id: String,
+    pub trace_id: HexEncodedId,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq)]
 pub struct Span {
-    pub trace_id: String,
-    pub span_id: String,
-    pub parent_span_id: Option<String>,
+    pub trace_id: HexEncodedId,
+    pub span_id: HexEncodedId,
+    pub parent_span_id: Option<HexEncodedId>,
 
     pub name: String,
     pub kind: SpanKind,
@@ -55,10 +55,12 @@ impl From<api::models::Span> for Span {
         let end_time = span.end_time.into();
         let inner = Json(span);
 
+        // these .unwrap are safe as these are guaranteed to be valid as they come from the api `Span`
         Self {
-            trace_id,
-            span_id,
-            parent_span_id,
+            trace_id: HexEncodedId::new(trace_id).unwrap(),
+            span_id: HexEncodedId::new(span_id).unwrap(),
+            parent_span_id: parent_span_id
+                .map(|parent_span_id| HexEncodedId::new(parent_span_id).unwrap()),
             name,
             kind,
             start_time,
@@ -68,12 +70,12 @@ impl From<api::models::Span> for Span {
     }
 }
 
-#[derive(Clone, Debug, Serialize)]
-pub struct TraceId(String);
+#[derive(Clone, Debug, Serialize, PartialEq)]
+pub struct HexEncodedId(pub String);
 
-impl TraceId {
-    fn new(input: impl Into<String>) -> Result<TraceId, hex::FromHexError> {
-        let id = TraceId(input.into());
+impl HexEncodedId {
+    fn new(input: impl Into<String>) -> Result<HexEncodedId, hex::FromHexError> {
+        let id = HexEncodedId(input.into());
         id.validate()?;
 
         Ok(id)
@@ -84,21 +86,21 @@ impl TraceId {
     }
 }
 
-impl From<TraceId> for String {
-    fn from(value: TraceId) -> Self {
+impl From<HexEncodedId> for String {
+    fn from(value: HexEncodedId) -> Self {
         value.0
     }
 }
 
-impl FromStr for TraceId {
+impl FromStr for HexEncodedId {
     type Err = hex::FromHexError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        TraceId::new(s)
+        HexEncodedId::new(s)
     }
 }
 
-impl Deref for TraceId {
+impl Deref for HexEncodedId {
     type Target = String;
 
     fn deref(&self) -> &Self::Target {
@@ -106,10 +108,10 @@ impl Deref for TraceId {
     }
 }
 
-struct TraceIdVisitor;
+struct HexEncodedIdVisitor;
 
-impl<'de> Visitor<'de> for TraceIdVisitor {
-    type Value = TraceId;
+impl<'de> Visitor<'de> for HexEncodedIdVisitor {
+    type Value = HexEncodedId;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
         formatter.write_str("a hex-represented string")
@@ -119,29 +121,29 @@ impl<'de> Visitor<'de> for TraceIdVisitor {
     where
         E: Error,
     {
-        TraceId::new(v).map_err(Error::custom)
+        HexEncodedId::new(v).map_err(Error::custom)
     }
 
     fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
     where
         E: Error,
     {
-        TraceId::new(v).map_err(Error::custom)
+        HexEncodedId::new(v).map_err(Error::custom)
     }
 
     fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
     where
         E: Error,
     {
-        TraceId::new(v).map_err(Error::custom)
+        HexEncodedId::new(v).map_err(Error::custom)
     }
 }
 
-impl<'de> Deserialize<'de> for TraceId {
+impl<'de> Deserialize<'de> for HexEncodedId {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_string(TraceIdVisitor)
+        deserializer.deserialize_string(HexEncodedIdVisitor)
     }
 }

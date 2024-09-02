@@ -1,5 +1,6 @@
 use crate::api::errors::{ApiServerError, CommonError};
 use crate::api::models::{ts_compat::TypeScriptCompatTrace, TraceSummary};
+use crate::data::models::HexEncodedId;
 use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;
@@ -8,7 +9,6 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::error;
-use crate::data::models::TraceId;
 
 #[tracing::instrument(skip_all)]
 pub async fn ts_compat_traces_list_handler(
@@ -24,7 +24,7 @@ pub async fn ts_compat_traces_list_handler(
         let spans = store.span_list_by_trace(&tx, &trace.trace_id).await?;
 
         result.push(TypeScriptCompatTrace {
-            trace_id: trace.trace_id.clone(),
+            trace_id: trace.trace_id.0.clone(),
             spans: spans.iter().map(|span| span.clone().into()).collect(),
         });
     }
@@ -67,7 +67,7 @@ impl From<DbError> for ApiServerError<TraceListError> {
 #[tracing::instrument(skip_all)]
 pub async fn traces_get_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<TraceId>,
+    Path(trace_id): Path<HexEncodedId>,
 ) -> Result<Json<TraceSummary>, ApiServerError<TraceGetError>> {
     let tx = store.start_readonly_transaction().await?;
 
@@ -102,7 +102,7 @@ impl From<DbError> for ApiServerError<TraceGetError> {
 #[tracing::instrument(skip_all)]
 pub async fn traces_delete_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<TraceId>,
+    Path(trace_id): Path<HexEncodedId>,
 ) -> Result<StatusCode, ApiServerError<TraceDeleteError>> {
     let tx = store.start_readonly_transaction().await?;
 

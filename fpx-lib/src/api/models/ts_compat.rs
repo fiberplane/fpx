@@ -17,8 +17,8 @@ pub struct TypeScriptCompatSpan {
 impl From<crate::data::models::Span> for TypeScriptCompatSpan {
     fn from(span: crate::data::models::Span) -> Self {
         Self {
-            span_id: Some(span.span_id),
-            trace_id: Some(span.trace_id),
+            span_id: Some(span.span_id.0),
+            trace_id: Some(span.trace_id.0),
             created_at: span.end_time.into(),
             updated_at: span.end_time.into(),
             parsed_payload: span.inner.0.into(),

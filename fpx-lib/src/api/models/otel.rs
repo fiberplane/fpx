@@ -1,3 +1,4 @@
+use crate::data::models::HexEncodedId;
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use opentelemetry_proto::tonic::common::v1::{any_value, KeyValue, KeyValueList};
 use opentelemetry_proto::tonic::trace::v1::span::{Event, Link};
@@ -294,7 +295,7 @@ impl From<opentelemetry_proto::tonic::common::v1::ArrayValue> for AttributeValue
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct TraceSummary {
     /// The trace id.
-    pub trace_id: String,
+    pub trace_id: HexEncodedId,
 
     /// Start of the first span
     #[serde(with = "time::serde::rfc3339")]
@@ -315,7 +316,10 @@ pub struct TraceSummary {
 }
 
 impl TraceSummary {
-    pub fn from_spans(trace_id: String, spans: Vec<crate::data::models::Span>) -> Option<Self> {
+    pub fn from_spans(
+        trace_id: HexEncodedId,
+        spans: Vec<crate::data::models::Span>,
+    ) -> Option<Self> {
         if spans.is_empty() {
             return None;
         }

@@ -144,9 +144,9 @@ impl Store for LibsqlStore {
             .query(
                 &self.sql_builder.span_create(),
                 params!(
-                    span.trace_id,
-                    span.span_id,
-                    span.parent_span_id,
+                    span.trace_id.0,
+                    span.span_id.0,
+                    span.parent_span_id.map(|parent_span_id| parent_span_id.0),
                     span.name,
                     span.kind,
                     span.start_time,
