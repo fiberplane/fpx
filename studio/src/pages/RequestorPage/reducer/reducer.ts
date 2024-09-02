@@ -754,7 +754,6 @@ export function useRequestor() {
       requestType,
     );
 
-    // console.log("matched route", matchedRoute);
     // console.log("all routes and middleware", state.routesAndMiddleware);
     // console.log("filtered middleware (before route)", filteredMiddleware);
     // console.log("middlewareMatches", middlewareMatches ?? "NOOOOO MATCHES YO");
