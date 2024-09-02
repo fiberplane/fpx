@@ -28,6 +28,7 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
+import { useShallow } from "zustand/react/shallow";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -39,9 +40,6 @@ function getMainSectionWidth() {
 export const RequestorPage = () => {
   const { toast } = useToast();
 
-  const requestorState = useRequestorStore();
-  // @ts-expect-error - This is helpful for debugging, soz
-  globalThis.requestorState = requestorState;
   const {
     // Routes panel
     // state: {
@@ -106,7 +104,205 @@ export const RequestorPage = () => {
     activeHistoryResponseTraceId,
     showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
-  } = requestorState;
+  } = useRequestorStore(useShallow(
+    ({
+      // Routes panel
+      // state: {
+      // routes,
+      selectedRoute,
+      // },
+      // setRoutes,
+      // setServiceBaseUrl,
+      selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+      // getActiveRoute,
+
+      // Requestor input
+      // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
+      // state: {
+      path,
+      method,
+      requestType,
+      serviceBaseUrl,
+      // },
+      updatePath: handlePathInputChange,
+      updateMethod: handleMethodChange,
+      // getIsInDraftMode,
+      // addServiceUrlIfBarePath,
+      // addBaseUrl,
+
+      // Request panel
+      // state: {
+      pathParams,
+      queryParams,
+      requestHeaders,
+      body,
+      // },
+      setPathParams,
+      updatePathParamValues,
+      clearPathParams,
+      setQueryParams,
+      setRequestHeaders,
+      setBody,
+      handleRequestBodyTypeChange,
+
+      // Request panel - Websocket message form
+      websocketMessage,
+      setWebsocketMessage,
+
+      // Requests Panel tabs
+      activeRequestsPanelTab,
+      setActiveRequestsPanelTab,
+      visibleRequestsPanelTabs,
+      // shouldShowRequestTab,
+
+      // Response Panel tabs
+      activeResponsePanelTab,
+      visibleResponsePanelTabs,
+      setActiveResponsePanelTab,
+      // shouldShowResponseTab,
+
+      // Response Panel response body
+      activeResponse,
+      setActiveResponse,
+
+      // History (WIP)
+      activeHistoryResponseTraceId,
+      showResponseBodyFromHistory,
+      clearResponseBodyFromHistory,
+    }) => ({
+      // Routes panel
+      // state: {
+      // routes,
+      selectedRoute,
+      // },
+      // setRoutes,
+      // setServiceBaseUrl,
+      selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+      // getActiveRoute,
+
+      // Requestor input
+      // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
+      // state: {
+      path,
+      method,
+      requestType,
+      serviceBaseUrl,
+      // },
+      updatePath: handlePathInputChange,
+      updateMethod: handleMethodChange,
+      // getIsInDraftMode,
+      // addServiceUrlIfBarePath,
+      // addBaseUrl,
+
+      // Request panel
+      // state: {
+      pathParams,
+      queryParams,
+      requestHeaders,
+      body,
+      // },
+      setPathParams,
+      updatePathParamValues,
+      clearPathParams,
+      setQueryParams,
+      setRequestHeaders,
+      setBody,
+      handleRequestBodyTypeChange,
+
+      // Request panel - Websocket message form
+      websocketMessage,
+      setWebsocketMessage,
+
+      // Requests Panel tabs
+      activeRequestsPanelTab,
+      setActiveRequestsPanelTab,
+      visibleRequestsPanelTabs,
+      // shouldShowRequestTab,
+
+      // Response Panel tabs
+      activeResponsePanelTab,
+      visibleResponsePanelTabs,
+      setActiveResponsePanelTab,
+      // shouldShowResponseTab,
+
+      // Response Panel response body
+      activeResponse,
+      setActiveResponse,
+
+      // History (WIP)
+      activeHistoryResponseTraceId,
+      showResponseBodyFromHistory,
+      clearResponseBodyFromHistory,
+    })
+  ));
+
+  // @ts-expect-error - This is helpful for debugging, soz
+  // globalThis.requestorState = requestorState;
+  // const {
+  //   // Routes panel
+  //   // state: {
+  //   // routes,
+  //   selectedRoute,
+  //   // },
+  //   // setRoutes,
+  //   // setServiceBaseUrl,
+  //   selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+  //   // getActiveRoute,
+
+  //   // Requestor input
+  //   // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
+  //   // state: {
+  //   path,
+  //   method,
+  //   requestType,
+  //   serviceBaseUrl,
+  //   // },
+  //   updatePath: handlePathInputChange,
+  //   updateMethod: handleMethodChange,
+  //   // getIsInDraftMode,
+  //   // addServiceUrlIfBarePath,
+  //   // addBaseUrl,
+
+  //   // Request panel
+  //   // state: {
+  //   pathParams,
+  //   queryParams,
+  //   requestHeaders,
+  //   body,
+  //   // },
+  //   setPathParams,
+  //   updatePathParamValues,
+  //   clearPathParams,
+  //   setQueryParams,
+  //   setRequestHeaders,
+  //   setBody,
+  //   handleRequestBodyTypeChange,
+
+  //   // Request panel - Websocket message form
+  //   websocketMessage,
+  //   setWebsocketMessage,
+
+  //   // Requests Panel tabs
+  //   activeRequestsPanelTab,
+  //   setActiveRequestsPanelTab,
+  //   visibleRequestsPanelTabs,
+  //   // shouldShowRequestTab,
+
+  //   // Response Panel tabs
+  //   activeResponsePanelTab,
+  //   visibleResponsePanelTabs,
+  //   setActiveResponsePanelTab,
+  //   // shouldShowResponseTab,
+
+  //   // Response Panel response body
+  //   activeResponse,
+  //   setActiveResponse,
+
+  //   // History (WIP)
+  //   activeHistoryResponseTraceId,
+  //   showResponseBodyFromHistory,
+  //   clearResponseBodyFromHistory,
+  // } = requestorState;
 
   const getIsInDraftMode = useCallback((): boolean => {
     return !selectedRoute;
@@ -409,9 +605,9 @@ export const RequestorPage = () => {
                 // routes={routes}
                 selectedRoute={selectedRoute}
                 handleRouteClick={handleSelectRoute}
-                // history={history}
-                // loadHistoricalRequest={loadHistoricalRequest}
-                // removeServiceUrlFromPath={removeServiceUrlFromPath}
+              // history={history}
+              // loadHistoricalRequest={loadHistoricalRequest}
+              // removeServiceUrlFromPath={removeServiceUrlFromPath}
               />
             </ResizablePanel>
             <ResizableHandle
