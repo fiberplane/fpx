@@ -1,5 +1,5 @@
 use crate::api::errors::{ApiServerError, CommonError};
-use crate::api::models::{ts_compat::TypeScriptCompatSpan, Span};
+use crate::api::models::Span;
 use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;

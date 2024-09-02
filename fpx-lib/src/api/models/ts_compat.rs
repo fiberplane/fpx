@@ -26,13 +26,6 @@ impl From<crate::data::models::Span> for TypeScriptCompatSpan {
     }
 }
 
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TypeScriptCompatTrace {
-    pub trace_id: String,
-    pub spans: Vec<TypeScriptCompatSpan>,
-}
-
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct TypeScriptCompatOtelSpan {
     pub trace_id: String,
