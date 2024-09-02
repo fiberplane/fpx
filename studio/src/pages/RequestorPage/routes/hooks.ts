@@ -4,6 +4,7 @@ import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 
 type UseRoutesOptions = {
   setRoutes: (routes: ProbedRoute[]) => void;
+  setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
   setServiceBaseUrl: (serviceBaseUrl: string) => void;
 };
 
@@ -41,7 +42,20 @@ const filterRoutes = (routes: ProbedRoute[]) => {
   });
 };
 
-export function useRoutes({ setRoutes, setServiceBaseUrl }: UseRoutesOptions) {
+/**
+ * Filter the routes and middleware that are currently registered.
+ */
+const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
+  return routesAndMiddleware.filter((r) => {
+    return r.currentlyRegistered;
+  });
+};
+
+export function useRoutes({
+  setRoutes,
+  setRoutesAndMiddleware,
+  setServiceBaseUrl,
+}: UseRoutesOptions) {
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
@@ -57,12 +71,18 @@ export function useRoutes({ setRoutes, setServiceBaseUrl }: UseRoutesOptions) {
     );
   }, [routesAndMiddleware]);
 
+  const activeRoutesAndMiddleware = useMemo(() => {
+    const activeRoutes = filterActive(routesAndMiddleware?.routes ?? []);
+    activeRoutes.sort((a, b) => b.registrationOrder - a.registrationOrder);
+    return activeRoutes;
+  }, [routesAndMiddleware]);
+
   // HACK - Antipattern, add serviceBaseUrl to the reducer based off of external changes
   // HACK - Defaults to localhost:8787 if not set
   const serviceBaseUrl =
     routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
   useEffect(() => {
-    console.log("setting serviceBaseUrl", serviceBaseUrl);
+    console.debug("setting serviceBaseUrl", serviceBaseUrl);
     setServiceBaseUrl(serviceBaseUrl);
   }, [serviceBaseUrl, setServiceBaseUrl]);
 
@@ -72,9 +92,15 @@ export function useRoutes({ setRoutes, setServiceBaseUrl }: UseRoutesOptions) {
     setRoutes(routes);
   }, [routes, setRoutes]);
 
+  // HACK - Antipattern, add routes and middleware to the reducer based off of external changes
+  useEffect(() => {
+    setRoutesAndMiddleware(activeRoutesAndMiddleware);
+  }, [activeRoutesAndMiddleware, setRoutesAndMiddleware]);
+
   return {
     isError,
     isLoading,
     routes,
+    activeRoutesAndMiddleware,
   };
 }

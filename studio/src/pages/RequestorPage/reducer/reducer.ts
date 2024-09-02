@@ -3,7 +3,7 @@ import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
 import type { KeyValueParameter } from "../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import type { ProbedRoute } from "../queries";
-import { findMatchedRoute } from "../routes";
+import { findAllSmartRouterMatches, findMatchedRoute } from "../routes";
 import {
   type RequestMethod,
   type RequestMethodInputValue,
@@ -38,6 +38,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
       handler: "",
       handlerType: "route",
       currentlyRegistered: false,
+      registrationOrder: -1,
       routeOrigin: "custom",
       isDraft: true,
     }
@@ -45,6 +46,7 @@ const _getActiveRoute = (state: RequestorState): ProbedRoute => {
 };
 
 const SET_ROUTES = "SET_ROUTES" as const;
+const SET_ROUTES_AND_MIDDLEWARE = "SET_ROUTES_AND_MIDDLEWARE" as const;
 const SET_SERVICE_BASE_URL = "SET_SERVICE_BASE_URL" as const;
 const PATH_UPDATE = "PATH_UPDATE" as const;
 const METHOD_UPDATE = "METHOD_UPDATE" as const;
@@ -67,6 +69,10 @@ const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
 type RequestorAction =
   | {
       type: typeof SET_ROUTES;
+      payload: ProbedRoute[];
+    }
+  | {
+      type: typeof SET_ROUTES_AND_MIDDLEWARE;
       payload: ProbedRoute[];
     }
   | {
@@ -172,6 +178,12 @@ function requestorReducer(
         routes: nextRoutes,
         selectedRoute: nextSelectedRoute,
         pathParams: nextPathParams,
+      };
+    }
+    case SET_ROUTES_AND_MIDDLEWARE: {
+      return {
+        ...state,
+        routesAndMiddleware: action.payload,
       };
     }
     case SET_SERVICE_BASE_URL: {
@@ -483,6 +495,16 @@ export function useRequestor() {
     [dispatch],
   );
 
+  const setRoutesAndMiddleware = useCallback(
+    (routesAndMiddleware: ProbedRoute[]) => {
+      dispatch({
+        type: SET_ROUTES_AND_MIDDLEWARE,
+        payload: routesAndMiddleware,
+      });
+    },
+    [dispatch],
+  );
+
   const setServiceBaseUrl = useCallback(
     (serviceBaseUrl: string) => {
       dispatch({ type: SET_SERVICE_BASE_URL, payload: serviceBaseUrl });
@@ -683,12 +705,82 @@ export function useRequestor() {
     [dispatch],
   );
 
+  /**
+   * Looks for any middleware that will match the current request
+   */
+  const getMatchingMiddleware = useCallback(() => {
+    const path = state.path;
+    const method = state.method;
+    const requestType = state.requestType;
+
+    const canMatchMiddleware =
+      !pathHasValidBaseUrl(path) || path.startsWith(state.serviceBaseUrl);
+
+    // NOTE - We can only match middleware for the service we're monitoring anyhow
+    //        If someone is making a request to jsonplaceholder, we don't wanna
+    //        match middleware that might fire for an internal goose api call
+    if (!canMatchMiddleware) {
+      return null;
+    }
+
+    const matchedRoute = findMatchedRoute(
+      state.routes,
+      removeBaseUrl(state.serviceBaseUrl, path),
+      method,
+      requestType,
+    )?.route;
+
+    if (!matchedRoute) {
+      return null;
+    }
+
+    const indexOfMatchedRoute = matchedRoute
+      ? state.routesAndMiddleware.indexOf(matchedRoute)
+      : -1;
+
+    const registeredHandlersBeforeRoute =
+      indexOfMatchedRoute > -1
+        ? state.routesAndMiddleware.slice(indexOfMatchedRoute)
+        : [];
+
+    const filteredMiddleware = registeredHandlersBeforeRoute.filter(
+      (r) => r.handlerType === "middleware",
+    );
+
+    const middlewareMatches = findAllSmartRouterMatches(
+      filteredMiddleware,
+      removeBaseUrl(state.serviceBaseUrl, path),
+      method,
+      requestType,
+    );
+
+    // console.log("all routes and middleware", state.routesAndMiddleware);
+    // console.log("filtered middleware (before route)", filteredMiddleware);
+    // console.log("middlewareMatches", middlewareMatches ?? "NOOOOO MATCHES YO");
+
+    const middleware = [];
+    for (const m of middlewareMatches ?? []) {
+      if (m?.route && m.route?.handlerType === "middleware") {
+        middleware.push(m.route);
+      }
+    }
+    return middleware;
+  }, [
+    state.routes,
+    state.routesAndMiddleware,
+    state.path,
+    state.method,
+    state.requestType,
+    state.serviceBaseUrl,
+  ]);
+
   return {
     state,
     dispatch,
 
     // Api
     setRoutes,
+    setRoutesAndMiddleware,
     setServiceBaseUrl,
     selectRoute,
 
@@ -726,6 +818,10 @@ export function useRequestor() {
     // History (WIP)
     showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
+
+    // NOTE - This returns middleware that might fire for the current route
+    //        It's used to inject additional context to the ai request generation feature
+    getMatchingMiddleware,
   };
 }
 function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {

@@ -1,3 +1,3 @@
 export { useRoutes } from "./hooks";
-export { findMatchedRoute } from "./match";
+export { findMatchedRoute, findAllSmartRouterMatches } from "./match";
 export { AddRouteButton } from "./AddRouteButton";

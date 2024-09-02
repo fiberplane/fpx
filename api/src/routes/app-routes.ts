@@ -10,6 +10,7 @@ import {
   appRoutes,
   appRoutesInsertSchema,
 } from "../db/schema.js";
+import { reregisterRoutes, schemaProbedRoutes } from "../lib/app-routes.js";
 import {
   OTEL_TRACE_ID_REGEX,
   generateOtelTraceId,
@@ -77,17 +78,6 @@ app.post(
   },
 );
 
-const schemaProbedRoutes = z.object({
-  routes: z.array(
-    z.object({
-      method: z.string(),
-      path: z.string(),
-      handler: z.string(),
-      handlerType: z.string(),
-    }),
-  ),
-});
-
 app.post(
   "/v0/probed-routes",
   zValidator("json", schemaProbedRoutes),
@@ -97,26 +87,8 @@ app.post(
 
     try {
       if (routes.length > 0) {
-        // "Unregister" all app routes (including middleware)
-        await db.update(appRoutes).set({ currentlyRegistered: false });
-        // "Re-register" all current app routes
-        for (const route of routes) {
-          await db
-            .insert(appRoutes)
-            .values({
-              ...route,
-              currentlyRegistered: true,
-            })
-            .onConflictDoUpdate({
-              target: [
-                appRoutes.path,
-                appRoutes.method,
-                appRoutes.handlerType,
-                appRoutes.routeOrigin,
-              ],
-              set: { handler: route.handler, currentlyRegistered: true },
-            });
-        }
+        // "Re-register" all current app routes in a database transaction
+        await reregisterRoutes(db, { routes });
 
         // TODO - Detect if anything actually changed before invalidating the query on the frontend
         //        This would be more of an optimization, but is friendlier to the frontend

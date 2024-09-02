@@ -44,9 +44,14 @@ export const RequestorPage = () => {
     // Routes panel
     state: { routes },
     setRoutes,
+    setRoutesAndMiddleware,
     setServiceBaseUrl,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     getActiveRoute,
+
+    // NOTE - This returns middleware that might fire for the current route
+    //        It's used to inject additional context to the ai request generation feature
+    getMatchingMiddleware,
 
     // Requestor input
     // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
@@ -96,6 +101,7 @@ export const RequestorPage = () => {
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes({
     setRoutes,
+    setRoutesAndMiddleware,
     setServiceBaseUrl,
   });
 
@@ -184,6 +190,7 @@ export const RequestorPage = () => {
     setIgnoreAiInputsBanner,
   } = useAi(
     selectedRoute,
+    getMatchingMiddleware(),
     history,
     {
       setBody,
