@@ -252,7 +252,7 @@ export const RequestorPage = () => {
       groupId: "requestor-page-main-panel",
       initialGroupSize: getMainSectionHeight(),
       minPixelSize: 200,
-      dimension: "height"
+      dimension: "height",
     });
 
   const requestContent = (

@@ -246,9 +246,9 @@ function ResponseSummary({
   const url = isRequestorActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(
-      response?.app_requests?.requestUrl ?? "",
-      response?.app_requests?.requestQueryParams ?? undefined,
-    );
+        response?.app_requests?.requestUrl ?? "",
+        response?.app_requests?.requestQueryParams ?? undefined,
+      );
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
