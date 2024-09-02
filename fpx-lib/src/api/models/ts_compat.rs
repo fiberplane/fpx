@@ -4,7 +4,7 @@ use opentelemetry_proto::tonic::trace::v1::Status;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeScriptCompatSpan {
     pub span_id: Option<String>,
@@ -26,7 +26,7 @@ impl From<crate::data::models::Span> for TypeScriptCompatSpan {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeScriptCompatTrace {
     pub trace_id: String,
@@ -40,9 +40,9 @@ pub struct TypeScriptCompatOtelSpan {
     pub parent_span_id: Option<String>,
 
     pub name: String,
-    pub trace_state: String,
-    pub flags: u32,
-    pub kind: SpanKind,
+    pub trace_state: Option<String>,
+    pub flags: Option<u32>,
+    pub kind: Option<SpanKind>,
 
     pub scope_name: Option<String>,
     pub scope_version: Option<String>,
@@ -69,9 +69,9 @@ impl From<crate::api::models::otel::Span> for TypeScriptCompatOtelSpan {
             span_id: span.span_id,
             parent_span_id: span.parent_span_id,
             name: span.name,
-            trace_state: span.trace_state,
-            flags: span.flags,
-            kind: span.kind,
+            trace_state: Some(span.trace_state),
+            flags: Some(span.flags),
+            kind: Some(span.kind),
             scope_name: span.scope_name,
             scope_version: span.scope_version,
             start_time: span.start_time,
@@ -87,7 +87,7 @@ impl From<crate::api::models::otel::Span> for TypeScriptCompatOtelSpan {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default, PartialEq)]
-pub struct TypeScriptCompatAttributeMap(BTreeMap<String, Option<serde_json::Value>>);
+pub struct TypeScriptCompatAttributeMap(pub BTreeMap<String, Option<serde_json::Value>>);
 
 impl From<AttributeMap> for TypeScriptCompatAttributeMap {
     fn from(attr_map: AttributeMap) -> Self {
