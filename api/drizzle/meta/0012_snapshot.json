@@ -1,8 +1,8 @@
 {
-  "id": "23a98404-c1e4-4121-969b-2704150dcfac",
-  "prevId": "cee1e0f6-1736-488e-8d3e-6243c83d5ae1",
   "version": "6",
   "dialect": "sqlite",
+  "id": "cd5bd8ef-be05-4fd5-a1b5-f5b9769b882a",
+  "prevId": "cee1e0f6-1736-488e-8d3e-6243c83d5ae1",
   "tables": {
     "app_requests": {
       "name": "app_requests",
@@ -181,15 +181,15 @@
         "app_responses_request_id_app_requests_id_fk": {
           "name": "app_responses_request_id_app_requests_id_fk",
           "tableFrom": "app_responses",
+          "tableTo": "app_requests",
           "columnsFrom": [
             "request_id"
           ],
-          "tableTo": "app_requests",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -233,6 +233,14 @@
           "notNull": false,
           "autoincrement": false,
           "default": false
+        },
+        "registration_order": {
+          "name": "registration_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": -1
         },
         "route_origin": {
           "name": "route_origin",
@@ -473,8 +481,8 @@
   },
   "enums": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
+    "tables": {},
+    "columns": {}
   }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE `app_routes` ADD `registration_order` integer DEFAULT -1;

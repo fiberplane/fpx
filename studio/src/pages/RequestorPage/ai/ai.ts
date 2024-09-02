@@ -29,6 +29,7 @@ type FormSetters = {
 
 export function useAi(
   selectedRoute: ProbedRoute | null,
+  matchingMiddleware: ProbedRoute[] | null,
   requestHistory: Array<Requestornator>,
   formSetters: FormSetters,
   body: RequestorBody,
@@ -63,7 +64,13 @@ export function useAi(
   }, [requestHistory]);
 
   const { isFetching: isLoadingParameters, refetch: generateRequestData } =
-    useAiRequestData(selectedRoute, bodyType, recentHistory, testingPersona);
+    useAiRequestData(
+      selectedRoute,
+      matchingMiddleware,
+      bodyType,
+      recentHistory,
+      testingPersona,
+    );
 
   const fillInRequest = useCallback(() => {
     generateRequestData().then(({ data, isError, error }) => {
