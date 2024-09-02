@@ -8,7 +8,7 @@
     "build:fpx-studio": "pnpm run clean:fpx-studio && pnpm run build:api && pnpm run build:frontend",
     "build:api": "pnpm --filter @fiberplane/studio build",
     "build:www": "pnpm --filter www build",
-    "build:frontend": "pnpm --filter @fiberplane/studio-frontend build && cp -r frontend/dist/* api/dist",
+    "build:frontend": "pnpm --filter @fiberplane/studio-frontend build && cp -r studio/dist/* api/dist",
     "dev:api": "pnpm --filter @fiberplane/studio dev",
     "dev:www": "pnpm --filter www dev",
     "dev:frontend": "pnpm --filter @fiberplane/studio-frontend dev",
@@ -32,6 +32,6 @@
     "pkg-pr-new": "^0.0.20",
     "rimraf": "^5.0.7",
     "typescript": "^5.5.4",
-    "wrangler": "^3.62.0"
+    "wrangler": "^3.73.0"
   }
 }

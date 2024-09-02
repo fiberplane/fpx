@@ -1,0 +1,78 @@
+---
+title: Getting Past “Ampersand-Driven Development” in Rust
+description: A little mental model for ownership and borrowing
+slug: getting-past-ampersand-driven-development-in-rust
+date: 2023-03-09
+author: Evan Schwartz
+tags:
+  - Rust
+  - Engineering
+---
+
+import { Image } from "astro:assets";
+
+I heard the phrase “ampersand-driven development” in a [talk by Tad Lispy](https://www.youtube.com/watch?v=lsnksAMpUvM), and it immediately captured the experience of a new Rust developer randomly inserting ampersands to appease the Rust compiler.
+
+This blog post describes a little mental model I used to explain to someone new to Rust the difference between `&`, `&mut`, owned values, `Rc`s, and `Arc`s. I hope that you or other aspiring Rustaceans find it helpful!
+
+## References (`&variable`)
+
+Let’s start off with ampersands. The dreaded ampersand. You see it all over the place in Rust – and if you try writing some Rust code for the first time, it will likely be less than 10 minutes before the Rust compiler annoyingly or helpfully tells you that you need to put an ampersand somewhere.
+
+Imagine we have a simple function that calculates the length of a string. This function needs to look at the string. But does it need permission to modify it? No. When the length function is finished, should we drop the string from memory? No. This means the length function needs only read-access and it only needs a temporary view of the string rather than a permanent version.
+
+This is what the `&variable` notation means in Rust. Think of a little child lending a favorite toy to another kid saying: **“You can look, but you can’t touch. And when you’re done, I want it back.”** This is a _shared reference_.
+
+![Picture of crab](@/assets/blog/2023-03-09-img01-crab.png)
+
+## Mutable References (`&mut variable`)
+
+Now how about `&mut` variable?
+
+Instead of our string length function, let’s imagine a function that prepends “hello “ to a given string. In this case, we do want the function to modify the value it’s given. In this case, we need the &mut or a _mutable reference_.
+
+Think of our little child lending a coloring book to a friend to color in one page: **“you can look and touch – but when you’re done, I still want it back.”**
+
+![Picture of drawed crab](@/assets/blog/2023-03-09-img02-crab-drawing.png)
+
+**Mutable References are Exclusive**
+Here’s a good place to explain one of the subtle but very clever parts about Rust.
+
+If someone (or really some part of your code) has a mutable reference to some value, the Rust compiler makes sure that absolutely no one else can have a reference to it. Why? So that if you’re looking at some value you think is immutable, you don’t have someone else unexpectedly changing it while you’re in the middle of using it (how confusing would that be for the string length function we mentioned above?).
+
+The other implication of this is that if anyone has even a single immutable reference to a value, we can’t change it or give out a mutable reference.
+
+## Owned Values (`variable`)
+
+Next, we’ll talk about owned values.
+
+Another clever part about Rust is how it figures out when values should be forgotten or dropped from memory. When a function is done, all of the values declared within it are dropped or automatically cleaned up.
+
+Well, that's not quite true. If we think about the string length function once more, we don’t want the string to be completely forgotten when the length function is finished. Same with the prepend hello function. In these cases, only the references to the value will be cleaned up but the actual value won’t be forgotten.
+
+How about when we insert something into a `HashMap`? In this case, we want our given string input to become part of the `HashMap`. We want the value to be owned by the `HashMap`.
+
+Think about a little kid giving away one of their toys: **“here you can have it. You can do anything you want with it, and I don’t need it back. Enjoy!”** (The imagined kid would need to be quite mature for this to be a believable scene.)
+
+## Reference-Counted Pointers (`Rc` and `Arc`)
+
+Two other types of values we have in Rust are `Rc` and `Arc`.
+
+For an `Rc`, think of decorations such as balloons at a kid’s birthday party. While everyone is there, we want everyone to see but not touch the decorations. And we want the decorations to stay up until the very last kid leaves the party. But as soon as the last one leaves, we can immediately start cleaning up the decorations. This is an `Rc`, or reference counted pointer.
+
+The `Rc` keeps track of how many people (or parts of the code) are looking at it and keeps the value around until the moment when the last reference is dropped.
+
+If you’re working with async or multi-threaded code, you’ll use an `Arc`, or atomically reference counted pointer, but it’s the same idea as an `Rc`.
+
+**Everyone can look at the decorations, and we’ll clean them up as soon as the party is over**.
+
+## Conclusion
+
+As a final summary, you can think of these questions to know which type of value to reach for:
+![Table](@/assets/blog/2023-03-09-img03-table.png)
+
+Ampersands are one of the scariest or least familiar parts when coming to Rust from a higher-level language like Typescript. But I promise that after some practice, it’ll feel much more intuitive when writing code to know whether a function should take a mutable or immutable reference, or to know whether some other library’s function will likely want a reference or owned value. Without the need for ampersand-driven development.
+
+For more details, you can also take a look at the Rust language doc sections on [References and Borrowing](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html) and [What is Ownership](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html)?.
+
+[Evan Schwartz](https://github.com/emschwartz) is a Principal Rust Engineer at Fiberplane. He is the creator of [Autometrics](https://github.com/autometrics-dev/autometrics-rs), a new crate that makes it easy to understand the error rate, latency, and production usage of any function in your code.

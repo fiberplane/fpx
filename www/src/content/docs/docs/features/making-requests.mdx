@@ -5,19 +5,19 @@ sidebar:
   order: 1
 ---
 
-import { Image } from 'astro:assets';
-import { Aside } from '@astrojs/starlight/components';
-import { LinkCard } from '@astrojs/starlight/components';
-import { Card } from '@astrojs/starlight/components';
-import Button from '@/components/Button.astro';
+import { Image } from "astro:assets";
+import { Aside } from "@astrojs/starlight/components";
+import { LinkCard } from "@astrojs/starlight/components";
+import { Card } from "@astrojs/starlight/components";
+import Button from "@/components/Button.astro";
 
-import FirstRequest from '@/assets/making-requests--make-request.gif';
-import CreateGoose from '@/assets/making-requests--create-goose.png';
-import CurlRequest from '@/assets/making-requests--curl.png';
-import BodySelector from '@/assets/making-requests--body-type.png';
-import FormBodyExample from '@/assets/making-requests--body-type-form-data.png';
-import RequestHistory from '@/assets/making-requests--history.png';
-import CustomRoutes from '@/assets/making-requests--custom-routes.png';
+import FirstRequest from "@/assets/making-requests--make-request.gif";
+import CreateGoose from "@/assets/making-requests--create-goose.png";
+import CurlRequest from "@/assets/making-requests--curl.png";
+import BodySelector from "@/assets/making-requests--body-type.png";
+import FormBodyExample from "@/assets/making-requests--body-type-form-data.png";
+import RequestHistory from "@/assets/making-requests--history.png";
+import CustomRoutes from "@/assets/making-requests--custom-routes.png";
 
 Requests. Everybody loves a good HTTP request. Right? Don't they? Surely they do.
 
@@ -25,7 +25,6 @@ Fiberplane Studio makes it easy to fire off requests against your API.
 Once you're up and running locally, the first page you see in Studio leaves you a single click away from making your first request.
 
 <Image src={FirstRequest} alt="First request" />
-
 
 ## Your First Request
 
@@ -77,15 +76,14 @@ In the routes panel, click the `+` button and select "Custom Route". Add the url
 
 <Image src={CustomRoutes} alt="Custom routes" />
 
-
 ### Importing OpenAPI Specs
 
 If you have an OpenAPI spec handy, you can also import it by clicking the `+` button. All your routes will be automatically added to the sidebar.
 
 <Aside>
-OpenAPI support is experimental right now, so if you encounter any issues, please let us know on [GitHub](https://github.com/fiberplane/fpx/issues).
+  OpenAPI support is experimental right now, so if you encounter any issues,
+  please let us know on [GitHub](https://github.com/fiberplane/fpx/issues).
 </Aside>
-
 
 ## Copy as cURL
 

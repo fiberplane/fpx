@@ -23,6 +23,7 @@ const MizuOrphanLogSchema = z.object({
   service: z.string().nullish(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  relatedSpanId: z.string().nullish(),
 });
 
 export type MizuOrphanLog = z.infer<typeof MizuOrphanLogSchema>;

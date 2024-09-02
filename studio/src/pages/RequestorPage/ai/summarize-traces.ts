@@ -2,6 +2,7 @@ import {
   FPX_REQUEST_HANDLER_FILE,
   FPX_REQUEST_HANDLER_SOURCE_CODE,
 } from "@/constants";
+import { fetchSourceLocation } from "@/queries";
 import {
   getErrorEvents,
   getRequestMethod,
@@ -11,8 +12,7 @@ import {
   getResponseHeaders,
   getStatusCode,
   getString,
-} from "@/pages/RequestDetailsPage/v2/otel-helpers";
-import { fetchSourceLocation } from "@/queries";
+} from "@/utils";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";

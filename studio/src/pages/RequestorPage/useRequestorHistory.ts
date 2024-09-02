@@ -51,7 +51,7 @@ export function useRequestorHistory({
     if (allRequests) {
       const cloned = [...allRequests];
       cloned.sort(sortRequestornatorsDescending);
-      return cloned.slice(0, 4);
+      return cloned;
     }
     return [];
   }, [allRequests]);
@@ -89,6 +89,14 @@ export function useRequestorHistory({
 
         // NOTE - Helps us set path parameters correctly
         handleSelectRoute(matchedRoute.route, pathParams);
+
+        // @ts-expect-error - We don't handle ALL methods well yet
+        if (matchedRoute.route.method === "ALL") {
+          // TODO - Add based off of method of trace...
+          if (isRequestMethod(match.app_requests.requestMethod)) {
+            setMethod(match.app_requests.requestMethod);
+          }
+        }
 
         // Reset the path to the *exact* path of the request, instead of the route pattern
         const queryParams = match.app_requests.requestQueryParams ?? {};

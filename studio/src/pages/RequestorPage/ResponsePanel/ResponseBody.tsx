@@ -1,10 +1,10 @@
+import { CodeMirrorJsonEditor, SubSectionHeading } from "@/components/Timeline";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { SubSectionHeading } from "@/pages/RequestDetailsPage/v2/shared";
 import { cn, isJson, noop, safeParseJson } from "@/utils";
 import {
   CaretDownIcon,
@@ -13,7 +13,6 @@ import {
   QuestionMarkIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import { CodeMirrorJsonEditor } from "../Editors";
 import type { Requestornator } from "../queries";
 import {
   type RequestorActiveResponse,
@@ -66,7 +65,12 @@ export function ResponseBody({
         >
           {headersSlot}
           <CollapsibleBodyContainer>
-            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+            <CodeMirrorJsonEditor
+              value={prettyBody}
+              readOnly
+              onChange={noop}
+              minHeight="0"
+            />
           </CollapsibleBodyContainer>
         </div>
       );
@@ -109,7 +113,12 @@ export function ResponseBody({
         >
           {headersSlot}
           <CollapsibleBodyContainer>
-            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
+            <CodeMirrorJsonEditor
+              value={prettyBody}
+              readOnly
+              onChange={noop}
+              minHeight="0"
+            />
           </CollapsibleBodyContainer>
         </div>
       );
