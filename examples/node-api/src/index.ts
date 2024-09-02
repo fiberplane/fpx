@@ -13,6 +13,16 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
+app.get("/function", (c) => {
+  helloFunction();
+  console.log(helloFunction, "that was a function");
+  return c.text("Hello function!");
+});
+
+function helloFunction() {
+  console.log("Hello function!");
+}
+
 app.post("/json", async (c) => {
   const body = await c.req.json();
   console.log("json body", body);
