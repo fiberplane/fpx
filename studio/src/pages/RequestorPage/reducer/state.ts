@@ -5,10 +5,11 @@ import {
 } from "../KeyValueForm";
 import { ProbedRouteSchema } from "../queries";
 import { RequestMethodSchema, RequestTypeSchema } from "../types";
-import { addContentTypeHeader } from "./reducers";
+// import { addContentTypeHeader } from "./reducers";
 import { RequestorBodySchema } from "./request-body";
 import { isCurrentSessionState } from "./session-persistence-key";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
+import { updateContentTypeHeader } from "./reducers";
 
 const RequestorResponseBodySchema = z.discriminatedUnion("type", [
   z.object({
@@ -123,12 +124,58 @@ export const RequestorStateSchema = z.object({
   ),
 });
 
+// export type RequestorState = {
+//   /** All routes */
+//   routes: ProbedRoute[];
+//   /** Indicates which route to highlight in the routes panel */
+//   selectedRoute: ProbedRoute | null;
+
+//   // Request form
+//   /** Base URL for requests */
+//   serviceBaseUrl: string;
+//   /** Path input */
+//   path: string;
+//   /** Method input */
+//   RequestMethod;
+//   /** Request type input */
+//   RequestType;
+//   /** Body */
+//   body: RequestorBody;
+//   /** Path parameters and their corresponding values */
+//   pathParams: KeyValueParameter[];
+//   /** Query parameters to be sent with the request */
+//   queryParams: KeyValueParameter[];
+//   /** Headers to be sent with the request */
+//   requestHeaders: KeyValueParameter[];
+
+//   // Websocket messages form
+//   /** Websocket message */
+//   websocketMessage: string;
+
+//   // Tabs
+//   /** The tab to show in the requests panel */
+//   activeRequestsPanelTab: RequestsPanelTab;
+//   /** The tabs to show in the requests panel */
+//   visibleRequestsPanelTabs: RequestsPanelTab[];
+
+//   /** The tab to show in the response panel */
+//   activeResponsePanelTab: ResponsePanelTab;
+//   /** The tabs to show in the response panel */
+//   visibleResponsePanelTabs: ResponsePanelTab[];
+
+//   /** The trace id to show in the response panel */
+//   activeHistoryResponseTraceId: string | null;
+
+//   /** The response to show in the response panel */
+//   activeResponse: RequestorActiveResponse | null;
+// };
+
 export type RequestorState = z.infer<typeof RequestorStateSchema>;
 
 export type RequestorBody = RequestorState["body"];
 export type RequestBodyType = RequestorBody["type"];
 
-export const initialState: RequestorState = addContentTypeHeader({
+export const initialState: RequestorState = {
   routes: [],
   selectedRoute: null,
   path: "/",
@@ -156,7 +203,9 @@ export const initialState: RequestorState = addContentTypeHeader({
   activeHistoryResponseTraceId: null,
 
   activeResponse: null,
-});
+};
+
+updateContentTypeHeader(initialState);
 
 /**
  * Initializer for the reducer's state that attempts to load the UI state from local storage

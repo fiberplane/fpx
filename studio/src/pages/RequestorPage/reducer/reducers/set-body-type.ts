@@ -1,5 +1,6 @@
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
-import type { RequestBodyType, RequestorState } from "../state";
+import { RequestResponseSlice } from "../../store/slices/types";
+import type { RequestBodyType, } from "../state";
 
 /**
  * This reducer is responsible for setting the body type of the request.
@@ -8,7 +9,7 @@ import type { RequestBodyType, RequestorState } from "../state";
  * We have big plans for this reducer function. Big plans.
  */
 export function setBodyTypeReducer(
-  state: RequestorState,
+  state: RequestResponseSlice,
   {
     type: newBodyType,
     isMultipart,
@@ -16,52 +17,54 @@ export function setBodyTypeReducer(
     type: RequestBodyType;
     isMultipart?: boolean;
   },
-): RequestorState {
+): void {
   const oldBodyValue = state.body.value;
   const oldBodyType = state.body.type;
   // Handle the case where the body type is the same, but the multipart flag is different
   if (oldBodyType === newBodyType) {
     // HACK - Refactor
     if (state.body.type === "form-data") {
-      return {
-        ...state,
-        body: {
-          ...state.body,
-          isMultipart: !!isMultipart,
-        },
-      };
+      // return {
+      //   ...state,
+      //   body: {
+      //     ...state.body,
+      //     isMultipart: !!isMultipart,
+      //   },
+      // };
+      state.body.isMultipart = !!isMultipart;
     }
-    return state;
+    // return state;
+    return;
   }
 
   // Handle the case where the body type is changing to form-data, so we want to clear the body value
   if (newBodyType === "form-data") {
-    return {
-      ...state,
-      body: {
-        type: newBodyType,
-        isMultipart: !!isMultipart,
-        value: enforceFormDataTerminalDraftParameter([]),
-      },
+    state.body = {
+      type: newBodyType,
+      isMultipart: !!isMultipart,
+      value: enforceFormDataTerminalDraftParameter([]),
     };
+    return;
   }
 
   // Handle the case where the body type is changing to file, so we want to clear the body value and make it undefined
   if (newBodyType === "file") {
-    return {
-      ...state,
-      body: { type: newBodyType, value: undefined },
-    };
+    // return {
+    //   ...state,
+    state.body = { type: newBodyType, value: undefined };
+    // };
+    return;
   }
 
   // At this point, we know the next body type is going to be text or json, soooo
   // Let's handle the case where the body type is changing to text or json,
   // meaning we want to clear the body value and make it an empty string
   if (oldBodyType === "form-data") {
-    return {
-      ...state,
-      body: { type: newBodyType, value: "" },
-    };
+    // return {
+    // ...state,
+    state.body = { type: newBodyType, value: "" };//,
+    // };
+    return;
   }
 
   // HACK - These new few lines makes things clearer for typescript, but are a nightmare to read and reason about, i'm so sorry
@@ -69,8 +72,8 @@ export function setBodyTypeReducer(
     Array.isArray(oldBodyValue) || oldBodyValue instanceof File;
   const newBodyValue = isNonTextOldBody ? "" : oldBodyValue;
 
-  return {
-    ...state,
-    body: { type: newBodyType, value: newBodyValue },
-  };
+  // return {
+  // ...state,
+  state.body = { type: newBodyType, value: newBodyValue };//,
+  // };
 }

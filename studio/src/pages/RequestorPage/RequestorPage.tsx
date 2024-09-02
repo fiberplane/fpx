@@ -16,16 +16,20 @@ import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
-import { RoutesPanel } from "./RoutesPanel";
+import { RoutesPanel } from "./NavigationPanel/RoutesPanel";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
-import { useRequestor } from "./reducer";
+// import { useRequestor } from "./reducer";
+import { useRequestorStore } from "./store";
 import { useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
+import { _getActiveRoute, addBaseUrl } from "./reducer/reducer";
+import { useHandler } from "@fiberplane/hooks";
+import { RequestsPanelTab, ResponsePanelTab } from "./reducer";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -37,28 +41,35 @@ function getMainSectionWidth() {
 export const RequestorPage = () => {
   const { toast } = useToast();
 
-  const requestorState = useRequestor();
+  const requestorState = useRequestorStore();
   // @ts-expect-error - This is helpful for debugging, soz
   globalThis.requestorState = requestorState;
   const {
     // Routes panel
-    state: { routes },
+    // state: { 
+    routes,
+    selectedRoute,
+    // },
     setRoutes,
     setServiceBaseUrl,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-    getActiveRoute,
+    // getActiveRoute,
 
     // Requestor input
     // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-    state: { path, method, requestType },
+    // state: { 
+    path, method, requestType, serviceBaseUrl,
+    // },
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
-    getIsInDraftMode,
-    addServiceUrlIfBarePath,
-    removeServiceUrlFromPath,
+    // getIsInDraftMode,
+    // addServiceUrlIfBarePath,
+    // addBaseUrl,
 
     // Request panel
-    state: { pathParams, queryParams, requestHeaders, body },
+    // state: { 
+    pathParams, queryParams, requestHeaders, body,
+    // },
     setPathParams,
     updatePathParamValues,
     clearPathParams,
@@ -68,30 +79,85 @@ export const RequestorPage = () => {
     handleRequestBodyTypeChange,
 
     // Request panel - Websocket message form
-    state: { websocketMessage },
+    websocketMessage,
     setWebsocketMessage,
 
     // Requests Panel tabs
-    state: { activeRequestsPanelTab },
+    activeRequestsPanelTab,
     setActiveRequestsPanelTab,
-    shouldShowRequestTab,
+    visibleRequestsPanelTabs,
+    // shouldShowRequestTab,
 
     // Response Panel tabs
-    state: { activeResponsePanelTab },
+    activeResponsePanelTab,
+    visibleResponsePanelTabs,
     setActiveResponsePanelTab,
-    shouldShowResponseTab,
+    // shouldShowResponseTab,
 
     // Response Panel response body
-    state: { activeResponse },
+    activeResponse,
     setActiveResponse,
 
     // History (WIP)
-    state: { activeHistoryResponseTraceId },
+    activeHistoryResponseTraceId,
     showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
   } = requestorState;
 
-  const selectedRoute = getActiveRoute();
+  const getIsInDraftMode = useCallback((): boolean => {
+    return !selectedRoute;
+  }, [selectedRoute]);
+
+
+  const shouldShowRequestTab = useCallback(
+    (tab: RequestsPanelTab): boolean => {
+      return visibleRequestsPanelTabs.includes(tab);
+    },
+    [visibleRequestsPanelTabs],
+  );
+
+  const shouldShowResponseTab = useCallback(
+    (tab: ResponsePanelTab): boolean => {
+      return visibleResponsePanelTabs.includes(tab);
+    },
+    [visibleResponsePanelTabs],
+  );
+
+
+  const removeServiceUrlFromPath = useCallback((path: string) => {
+    // return removeBaseUrl(serviceBaseUrl, path);
+    // TODO - make this work again (this should do something with the serviceBaseUrl from the store)
+    return path;
+  }, [
+    // serviceBaseUrl
+  ]);
+
+  // TODO - this should be a selector
+  const getActiveRoute = useHandler(() => {
+    selectedRoute ?? {
+      path: "state.path",
+      method: "GET", //state.method,
+      requestType: "http",// state.requestType,
+      handler: "",
+      handlerType: "route",
+      currentlyRegistered: false,
+      routeOrigin: "custom",
+      isDraft: true,
+    }
+  });
+
+  // TODO - this should be a thunk
+  const addServiceUrlIfBarePath = useCallback(
+    (path: string) => {
+      return addBaseUrl(serviceBaseUrl, path, {
+        requestType: requestType,
+      });
+    },
+    [serviceBaseUrl, requestType],
+  );
+
+
+  // const selectedRoute = getActiveRoute();
 
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes({

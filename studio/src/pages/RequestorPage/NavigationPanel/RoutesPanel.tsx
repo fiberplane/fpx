@@ -7,15 +7,15 @@ import {
   TrashIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import { RequestorHistory } from "./RequestorHistory";
+import { RequestorHistory } from "../RequestorHistory";
 import {
   type ProbedRoute,
   type Requestornator,
   useDeleteRoute,
-} from "./queries";
-import { AddRouteButton } from "./routes";
-import { BACKGROUND_LAYER } from "./styles";
-import { isWsRequest } from "./types";
+} from "../queries";
+import { AddRouteButton } from "../routes";
+import { BACKGROUND_LAYER } from "../styles";
+import { isWsRequest } from "../types";
 
 type RoutesPanelProps = {
   routes?: ProbedRoute[];
@@ -111,8 +111,6 @@ export function RoutesPanel({
   return (
     <div
       className={cn(
-        BACKGROUND_LAYER,
-        "px-4 overflow-hidden border rounded-md",
         "h-full",
         "flex",
         "flex-col",
