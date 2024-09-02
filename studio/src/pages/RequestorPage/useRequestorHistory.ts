@@ -20,7 +20,7 @@ import {
 import { sortRequestornatorsDescending } from "./utils";
 
 type RequestorHistoryHookArgs = {
-  routes: ProbedRoute[];
+  // routes: ProbedRoute[];
   handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
   setPath: (path: string) => void;
   setMethod: (method: RequestMethodInputValue) => void;
@@ -32,7 +32,7 @@ type RequestorHistoryHookArgs = {
 };
 
 export function useRequestorHistory({
-  routes,
+  // routes,
   handleSelectRoute,
   setPath,
   setMethod,
@@ -44,12 +44,15 @@ export function useRequestorHistory({
   const {
     sessionHistory: sessionHistoryTraceIds,
     recordRequestInSessionHistory,
+    routes,
   } = useRequestorStore(
-    ({ sessionHistory, recordRequestInSessionHistory }) => ({
+    ({ sessionHistory, recordRequestInSessionHistory, routes }) => ({
       sessionHistory,
       recordRequestInSessionHistory,
+      routes,
     }),
   );
+
   // const {
   //   sessionHistory: sessionHistoryTraceIds,
   //   recordRequestInSessionHistory,

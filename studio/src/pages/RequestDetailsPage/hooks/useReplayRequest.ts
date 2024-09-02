@@ -9,6 +9,7 @@ import {
   getRequestUrl,
 } from "@/utils";
 import { useCallback, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export function useReplayRequest({ span }: { span?: OtelSpan }) {
   const method = span ? getRequestMethod(span) : "GET";
@@ -99,8 +100,12 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
     return span ? getRequestQueryParams(span) : null;
   }, [span]);
 
-  const { clearResponseBodyFromHistory, setActiveResponse } =
-    useRequestorStore();
+  const { clearResponseBodyFromHistory, setActiveResponse } = useRequestorStore(
+    useShallow(({ clearResponseBodyFromHistory, setActiveResponse }) => ({
+      clearResponseBodyFromHistory,
+      setActiveResponse,
+    })),
+  );
 
   const { mutate: makeRequest, isPending: isReplaying } = useMakeProxiedRequest(
     {

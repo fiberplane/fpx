@@ -20,17 +20,23 @@ import {
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useShallow } from "zustand/react/shallow";
 import { RouteItem } from "./NavigationPanel/RoutesPanel";
 import type { ProbedRoute } from "./queries";
 import { AddRoutesDialog } from "./routes/AddRouteButton";
+import { useRequestorStore } from "./store";
 
 type RoutesComboboxProps = {
-  routes?: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
 };
 
 export function RoutesCombobox(props: RoutesComboboxProps) {
+  const { routes } = useRequestorStore(
+    useShallow(({ routes }) => ({
+      routes,
+    })),
+  );
   const [openRoutesDialog, setOpenRoutesDialog] = React.useState(false);
   const isLg = useIsLgScreen();
   useHotkeys("c", (e) => {
@@ -41,7 +47,7 @@ export function RoutesCombobox(props: RoutesComboboxProps) {
   });
 
   const [openApi, setOpenApi] = React.useState(false);
-  const { selectedRoute, routes, handleRouteClick } = props;
+  const { selectedRoute, handleRouteClick } = props;
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState<string | undefined>(
     selectedRoute ? `${selectedRoute.method}-${selectedRoute.path}` : undefined,

@@ -1,13 +1,14 @@
+// import { SessionHistoryContext } from "./RequestorSessionHistoryContext";
+import { useShallow } from "zustand/react/shallow";
 // import { useContext } from "react";
 import { useRequestorStore } from "../store";
-// import { SessionHistoryContext } from "./RequestorSessionHistoryContext";
 
 export const useSessionHistory = () => {
   return useRequestorStore(
-    ({ sessionHistory, recordRequestInSessionHistory }) => ({
+    useShallow(({ sessionHistory, recordRequestInSessionHistory }) => ({
       sessionHistory,
       recordRequestInSessionHistory,
-    }),
+    })),
   );
   // const context = useContext(SessionHistoryContext);
   // if (!context) {

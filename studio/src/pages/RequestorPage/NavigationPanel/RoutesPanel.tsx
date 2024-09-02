@@ -3,17 +3,19 @@ import { cn, getHttpMethodTextColor } from "@/utils";
 import {
   CaretDownIcon,
   CaretRightIcon,
-  ClockIcon,
+  // ClockIcon,
   TrashIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import { RequestorHistory } from "../RequestorHistory";
+import { useShallow } from "zustand/react/shallow";
+// import { RequestorHistory } from "../RequestorHistory";
 import {
   type ProbedRoute,
-  type Requestornator,
+  // type Requestornator,
   useDeleteRoute,
 } from "../queries";
 import { AddRouteButton } from "../routes";
+import { useRequestorStore } from "../store";
 import { isWsRequest } from "../types";
 
 type RoutesPanelProps = {
@@ -21,20 +23,27 @@ type RoutesPanelProps = {
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
   deleteDraftRoute?: () => void;
-  history: Array<Requestornator>;
-  loadHistoricalRequest: (traceId: string) => void;
-  removeServiceUrlFromPath: (path: string) => string;
+  // history: Array<Requestornator>;
+  // loadHistoricalRequest: (traceId: string) => void;
+  // removeServiceUrlFromPath: (path: string) => string;
 };
 
 export function RoutesPanel({
-  routes,
+  // routes,
   selectedRoute,
   handleRouteClick,
   deleteDraftRoute,
-  history,
-  loadHistoricalRequest,
-  removeServiceUrlFromPath,
+  // history,
+  // loadHistoricalRequest,
+  // removeServiceUrlFromPath,
 }: RoutesPanelProps) {
+  const { routes } = useRequestorStore(
+    useShallow(({ routes }) => ({
+      routes,
+    })),
+    // shallow,
+  );
+
   const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
     return routes?.some((r) => !r.currentlyRegistered) ?? false;
   }, [routes]);
@@ -93,19 +102,19 @@ export function RoutesPanel({
     return filteredRoutes?.filter((r) => r.isDraft) ?? [];
   }, [filteredRoutes]);
 
-  const hasAnyHistory = useMemo(() => {
-    return history.length > 0;
-  }, [history]);
+  // const hasAnyHistory = useMemo(() => {
+  //   return history.length > 0;
+  // }, [history]);
 
-  const filteredHistory = useMemo(() => {
-    const cleanFilter = filterValue.trim().toLowerCase();
-    if (cleanFilter.length < 3 && history) {
-      return history;
-    }
-    return history?.filter((r) =>
-      r.app_requests?.requestUrl?.includes(filterValue),
-    );
-  }, [filterValue, history]);
+  // const filteredHistory = useMemo(() => {
+  //   const cleanFilter = filterValue.trim().toLowerCase();
+  //   if (cleanFilter.length < 3 && history) {
+  //     return history;
+  //   }
+  //   return history?.filter((r) =>
+  //     r.app_requests?.requestUrl?.includes(filterValue),
+  //   );
+  // }, [filterValue, history]);
 
   return (
     <div className={cn("h-full", "flex", "flex-col")}>
@@ -124,14 +133,14 @@ export function RoutesPanel({
         </div>
       </div>
       <div className="overflow-y-auto relative">
-        {hasAnyHistory && (
+        {/* {hasAnyHistory && (
           <HistorySection
             history={filteredHistory}
             loadHistoricalRequest={loadHistoricalRequest}
             removeServiceUrlFromPath={removeServiceUrlFromPath}
           />
         )}
-
+ */}
         {hasAnyDraftRoutes && (
           <RoutesSection
             title="Draft routes"
@@ -180,53 +189,53 @@ export function RoutesPanel({
   );
 }
 
-type HistorySectionProps = {
-  history: Array<Requestornator>;
-  loadHistoricalRequest: (traceId: string) => void;
-  removeServiceUrlFromPath: (path: string) => string;
-};
+// type HistorySectionProps = {
+//   history: Array<Requestornator>;
+//   loadHistoricalRequest: (traceId: string) => void;
+//   removeServiceUrlFromPath: (path: string) => string;
+// };
 
-function HistorySection({
-  history,
-  loadHistoricalRequest,
-  removeServiceUrlFromPath,
-}: HistorySectionProps) {
-  const [showHistorySection, setShowHistorySection] = useState(false);
-  const ShowHistorySectionIcon = showHistorySection
-    ? CaretDownIcon
-    : CaretRightIcon;
+// function HistorySection({
+//   history,
+//   loadHistoricalRequest,
+//   removeServiceUrlFromPath,
+// }: HistorySectionProps) {
+//   const [showHistorySection, setShowHistorySection] = useState(false);
+//   const ShowHistorySectionIcon = showHistorySection
+//     ? CaretDownIcon
+//     : CaretRightIcon;
 
-  return (
-    <>
-      <div className="font-medium text-sm flex items-center mb-2 mt-4">
-        <div
-          className="flex items-center w-full cursor-pointer"
-          onKeyUp={(e) => {
-            if (e.key === "Enter") {
-              setShowHistorySection((current) => !current);
-            }
-          }}
-          onClick={() => {
-            setShowHistorySection((current) => !current);
-          }}
-        >
-          <ShowHistorySectionIcon className="h-4 w-4 cursor-pointer text-muted-foreground" />
-          <span className="flex items-center text-muted-foreground">
-            <ClockIcon className="h-3 w-3 mx-1.5 cursor-pointer" />
-            History
-          </span>
-        </div>
-      </div>
-      {showHistorySection && (
-        <RequestorHistory
-          history={history}
-          loadHistoricalRequest={loadHistoricalRequest}
-          removeServiceUrlFromPath={removeServiceUrlFromPath}
-        />
-      )}
-    </>
-  );
-}
+//   return (
+//     <>
+//       <div className="font-medium text-sm flex items-center mb-2 mt-4">
+//         <div
+//           className="flex items-center w-full cursor-pointer"
+//           onKeyUp={(e) => {
+//             if (e.key === "Enter") {
+//               setShowHistorySection((current) => !current);
+//             }
+//           }}
+//           onClick={() => {
+//             setShowHistorySection((current) => !current);
+//           }}
+//         >
+//           <ShowHistorySectionIcon className="h-4 w-4 cursor-pointer text-muted-foreground" />
+//           <span className="flex items-center text-muted-foreground">
+//             <ClockIcon className="h-3 w-3 mx-1.5 cursor-pointer" />
+//             History
+//           </span>
+//         </div>
+//       </div>
+//       {showHistorySection && (
+//         <RequestorHistory
+//           history={history}
+//           loadHistoricalRequest={loadHistoricalRequest}
+//           removeServiceUrlFromPath={removeServiceUrlFromPath}
+//         />
+//       )}
+//     </>
+//   );
+// }
 
 type RoutesSectionProps = {
   title: string;

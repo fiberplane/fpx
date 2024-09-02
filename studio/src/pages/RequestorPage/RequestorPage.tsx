@@ -45,11 +45,11 @@ export const RequestorPage = () => {
   const {
     // Routes panel
     // state: {
-    routes,
+    // routes,
     selectedRoute,
     // },
-    setRoutes,
-    setServiceBaseUrl,
+    // setRoutes,
+    // setServiceBaseUrl,
     selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     // getActiveRoute,
 
@@ -164,10 +164,12 @@ export const RequestorPage = () => {
   const activeRoute = useActiveRoute();
 
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
-  useRoutes({
-    setRoutes,
-    setServiceBaseUrl,
-  });
+  useRoutes(
+    // {
+    // setRoutes,
+    // setServiceBaseUrl,
+    // }
+  );
 
   // NOTE - Use this to test overflow of requests panel
   // useEffect(() => {
@@ -182,9 +184,9 @@ export const RequestorPage = () => {
     history,
     sessionHistory,
     recordRequestInSessionHistory,
-    loadHistoricalRequest,
+    // loadHistoricalRequest,
   } = useRequestorHistory({
-    routes,
+    // routes,
     handleSelectRoute,
     setPath: handlePathInputChange,
     setMethod: handleMethodChange,
@@ -383,7 +385,7 @@ export const RequestorPage = () => {
         )}
       >
         <RoutesCombobox
-          routes={routes}
+          // routes={routes}
           selectedRoute={selectedRoute}
           handleRouteClick={handleSelectRoute}
         />
@@ -404,12 +406,12 @@ export const RequestorPage = () => {
               defaultSize={(320 / width) * 100}
             >
               <RoutesPanel
-                routes={routes}
+                // routes={routes}
                 selectedRoute={selectedRoute}
                 handleRouteClick={handleSelectRoute}
-                history={history}
-                loadHistoricalRequest={loadHistoricalRequest}
-                removeServiceUrlFromPath={removeServiceUrlFromPath}
+                // history={history}
+                // loadHistoricalRequest={loadHistoricalRequest}
+                // removeServiceUrlFromPath={removeServiceUrlFromPath}
               />
             </ResizablePanel>
             <ResizableHandle
