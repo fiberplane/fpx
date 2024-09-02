@@ -1,0 +1,294 @@
+---
+title: A Deep Dive Into Fiberplane’s Operational Transformation
+slug: a-deep-dive-into-fiberplane-s-operational-transformation
+description: How Fiberplane Notebooks implement Operational Transformation
+date: 2024-02-26
+author: Arend van Beelen
+tags:
+  - Company
+  - Community
+  - DevOps
+---
+
+## Introduction
+
+Previously, I’ve written about [why we use Operational Transformation at Fiberplane](https://fiberplane.com/blog/why-we-at-fiberplane-use-operational-transformation-instead-of-crdt). It’s a complex technology that allows multiple people to edit the same content simultaneously. If you’re not familiar with it yet, I would suggest reading that post first, so you have a bit of an understanding of what it can do.
+
+Today, I will explore our implementation a bit more in-depth, so that you get an understanding of not only how things work, but why things work the way they do.
+
+If you’re not a programmer, but are simply interested in Operational Transformation and some of the lingo surrounding it, the next section is also for you. After that I’ll switch gears and really dig into our implementation, and I’ll assume familiarity with [notebook interfaces](https://en.wikipedia.org/wiki/Notebook_interface) and [client-server architectures](https://en.wikipedia.org/wiki/Client%E2%80%93server_model).
+
+## A Primer on Terminology
+
+Operational Transformation (OT) is a complex technology, and I will be using quite a bit of specific terminology in this post. Some of those you may have an intuitive understanding of, while others may sound foreign to you. To make sure we’re on the same page, I’ll quickly run through the main terminology with some examples.
+
+### Strings
+
+For any non-programmers reading this, a string is essentially a piece of text, without any formatting or other fancy things. `"one three five"` is a string, and we’ll use it as a starting point for examples going forward. This particular string has 14 characters, because we count the spaces as well. We have to be exact in how we count things, or subtle bugs (or not so subtle bugs) may occur!
+
+Note the quotes are not part of the string itself, we use those to indicate where the string starts and ends when it’s inside other code.
+
+### Operations
+
+If someone takes the string `"one three five"` and wants to turn this into `"one two three five"`, they need to apply an _operation_ to do so. An operation may look like this:
+
+```rust
+ReplaceTextOperation {
+    offset: 4,
+    old_text: "",
+    new_text: "two "
+}
+```
+
+There’s already a few things of note here:
+
+- We only wanted to insert the text `"two "`, but we also specified an empty string `("")` with text to remove. This allows us to use a single type of operation for insertion, replacement and removal of text.
+- We specified the offset where we want the operation to be applied. We will see in a bit why these offsets are so important.
+
+### Application
+
+The process of _applying_ an operation to go from one state to another is called _application_.
+In these examples we’re using a single string as an example of the state, but in reality we use much more complex data structures, of course. Whenever we introduce new data structures, discovering the best way to apply operations is often a fun challenge 🙂
+
+### Inversion
+
+For the algorithm to work correctly, we must be able to invert every operation. If we invert the above replace text operation, we would get the following inverted operation:
+
+```rust
+ReplaceTextOperation {
+    offset: 4,
+    old_text: "two ",
+    new_text: ""
+}
+```
+
+Intuitively, the result of the inversion process is an operation that allows you to undo the original operation.
+
+### Transformation
+
+Now we get to the heart of the algorithm. Let’s assume Bob wants to insert `"four "` into `"one three five"`. He can do so using this operation:
+
+```rust
+ReplaceTextOperation {
+    offset: 10,
+    old_text: "",
+    new_text: "four "
+}
+```
+
+But unbeknownst to him, Alice has already turned the string into `"one two three five"`. If Bob were to still apply his operation at offset 10, the end result would be far from what he intended! This is a conflict.
+
+To resolve the conflict, Bob needs to transform his operation so it becomes:
+
+```rust
+ReplaceTextOperation {
+    offset: 14,
+    old_text: "",
+    new_text: "four "
+}
+```
+
+The OT algorithm does exactly this: It takes one operation, called the successor, then looks at another operation that precedes it (the predecessor), and transforms the successor in such a way that the end result is still what the author of the successor intended.
+
+### Convergence
+
+When two operations can be applied in either order while keeping the end result the same, we say they converge. Operations that don’t conflict always converge, but those that do need transformation to maintain convergence.
+
+Sometimes it is (near) impossible to decide on a consistent end result that would reflect the intent of all parties involved. In situations like that, we may opt to drop an operation. Dropping an operation is really a last resort, since it may discard a user’s changes. Whenever this happens, it’s called non-convergence, and we try to avoid this wherever we can.
+
+There’s one situation where dropping an operation is acceptable, and also doesn’t lead to non-convergence: When two parties try to apply the exact same operation. After all, when two users perform the same action, unbeknownst of one another, their most likely expectation is that the operation is only performed once. So we can safely drop one. And because the operations were the same anyway, order is also irrelevant here.
+
+## Fiberplane OT
+
+With most of the terminology out of the way, you hopefully have some understanding of the basic building blocks it takes to implement Operational Transformation. At Fiberplane, we have built the OT implementation for our Notebooks from scratch, using Rust. It’s not open-source, since it sits at the heart of our notebook engine, but you can freely have a peak at the [operation types that we use](https://github.com/fiberplane/fiberplane/blob/main/fiberplane-models/src/notebooks/operations.rs). There, you’ll find a `ReplaceTextOperation` type among many others. It looks quite like the example I’ve been using thus far, though it has a bunch of extra fields to indicate where the operation should be applied.
+
+### Cell IDs
+
+So far, I had only used an `offset` field within the operation to identify where in a string a replacement should occur. But our notebooks consist of many types of cells, many of which can also have text. So replace text operations also carry a `cell_id` that identifies in which cell we’re currently editing the text.
+
+💡 When two replace text operations use different cell IDs, they always converge. This is because editing the text of disjoint cells will never conflict.
+
+### Fields
+
+Some cell types even have multiple fields of text. For those situations, we use a field called `field`. For instance, table cells even have M x N fields, where M is the number of rows and N is the number of columns. To identify which table field someone is typing in, we use the format `{row_id};{column_id}`.
+
+💡 Why not use a row_index instead of a row_id, you ask? row_index could have worked as well, since we can transform it the same way we can transform offset for text operations. The reason we use row_id over row_index is that an ID remains stable when other rows are inserted or removed. So unlike an index, an ID is less likely to need transformation. And that’s easier for us.
+
+### Multi-Cell Selections
+
+Sometimes, users select text that starts in one cell and ends in another. If they hit Space when they have a selection like that, all the text from the start of their selection up to the end of the cell, any cells between the starting cell and the ending cell, and the text from the start of the ending cell up to the end of the selection, all of it will be replaced by a single space.
+
+For operations like that, we use the `ReplaceCellsOperations`. It can insert cells, remove cells, and replace ranges that span cells.
+
+The trickiest parts to understand about the replace cells operations are the fields called `split_offset` and `merge_offset`:
+
+- The split offset is the offset at which the first cell in the operation gets split: Everything before the split offset is retained, while the rest is replaced.
+- The merge offset is the offset at which the last cell in the operation gets merged together: Everything before the merge offset is replaced, while the rest is retained.
+
+#### Example
+
+**cells before:**
+
+```rust
+[
+    TextCell { id: "cell_one", content: "one" },
+    TextCell { id: "cell_two", content: "two" },
+    TextCell { id: "cell_three", content: "three" },
+]
+```
+
+**Operation:**
+
+```rust
+ReplaceCellsOperation {
+    new_cells: [TextCell { id: "cell_one", content: " " }],
+    old_cells: [
+        TextCell { id: "cell_one", content: "e" },
+        TextCell { id: "cell_two", content: "two" },
+        TextCell { id: "cell_three", content: "" }
+    ],
+    split_offset: 2,
+    merge_offset: 0
+}
+```
+
+**Cells afer:**
+
+```rust
+[
+    TextCell { id: "cell_one", content: "on three" },
+]
+```
+
+The final content of "cell_one" ends up being "on three". The first two characters ("on") were the cell’s original content before it got split (the split offset is 2). Then follows the content from the new_cells as specified in the operation, which happened to be only a single space. And finally we merge in the remainder of the last cell, which was the entire word "three", because the merge offset is 0.
+
+💡Pay special note to how the content fields in the operation’s old_cells appear to be truncated. This is because they only include the text after the split offset, and up to the merge offset.
+
+### Rich-Text Transformation
+
+o other interesting fields you’ll find on the `ReplaceTextOperation` in our actual data models are the `old_formatting` and the `new_formatting`. I’ve written before about our [custom rich-text editor](https://fiberplane.com/blog/creating-a-rich-text-editor-using-rust-and-react), but in short: Many of our notebook cell types have a `formatting` field that apply formatting to their text. Or in other words: they turn plain text into rich text.
+
+Our data type for formatting looks like this:
+
+```rust
+type Formatting = Vec<AnnotationWithOffset>;
+
+struct AnnotationWithOffset {
+    annotation: Annotation,
+    offset: u32,
+}
+
+enum Annotation {
+    StartBold,
+    EndBold,
+    StartItalics,
+    EndItalics,
+    StartLink { url: String },
+    EndLink,
+    /* more like these... */
+}
+```
+
+Whenever formatting is included in operations, it is important to keep in mind that the offsets we include in the operation are relative to the offset specified there, rather than the start of the cell.
+
+#### Example
+
+**Cell before:**
+
+```rust
+TextCell {
+    id: "cell_one",
+    content: "one two three",
+    formatting: []
+}
+```
+
+**Operation:**
+
+```rust
+ReplaceTextOperation {
+    cell_id: "cell_one",
+    offset: 4,
+    old_text: "two",
+    old_formatting: [],
+    new_text: "TWO",
+    new_formatting: [
+        AnnotationWithOffset { annotation: Annotation::StartBold, offset: 0 },
+        AnnotationWithOffset { annotation: Annotation::EndBold, offset: 3 }
+    ]
+}
+```
+
+**Cell after:**
+
+```rust
+TextCell {
+    id: "cell_one",
+    content: "one TWO three",
+    formatting: [
+        AnnotationWithOffset { annotation: Annotation::StartBold, offset: 4 },
+        AnnotationWithOffset { annotation: Annotation::EndBold, offset: 7 }
+    ]
+}
+```
+
+As you can see, the offsets in the resulting cell aren’t the same offsets as were in the operation. They’re calculated using the operation’s offset + each annotation’s offset.
+
+💡We currently don’t have any operations that can alter the formatting without including the text. Of course, nothing prevents an operation from specifying new_text and old_text that are identical to one another.
+
+💡What happens if the operation hadn’t specified an EndBold annotation, you ask? Well, then all the text that followed the operation would’ve become bold as well. To keep the complexity of the OT engine in check, we explicitly don’t consider it an OT responsibility to fix the semantics of the annotations. Instead, those concerns are handled by our editor.
+
+## Resolving Conflicts At Identical Offsets
+
+Previously, I mentioned that we try to avoid non-convergence wherever we can. One edge case where this becomes particularly interesting is, what if two people try to insert text at exactly the same offset? Consider the following two operations from Alice and Bob:
+
+**Alice:**
+
+```rust
+ReplaceTextOperation {
+    offset: 0,
+    old_text: "",
+    new_text: "two "
+}
+```
+
+**Bob:**
+
+```rust
+ReplaceTextOperation {
+    offset: 0,
+    old_text: "",
+    new_text: "three "
+}
+```
+
+If we want these operations to converge, we have to pick one that will go first, and transform the other. What will the end result be? Should it be "two three ", or "three two "?
+
+Whenever we are faced with a decision like this, we simply sort the operations by their content using lexicographical order. One is always bigger than the other, because identical operations get dropped. So in this case `"three two "` is the winner, because `"three"` comes lexicographically before `"two"`.
+
+## Rebasing
+
+At this point, you’ve seen the building blocks of the OT algorithm, as well as some of the capabilities of things we can do with our OT engine. Now I have one final topic that should hopefully help to connect some of the dots of how all of this comes together in our implementation.
+
+Whenever someone is typing in a Fiberplane Notebook, the client continuously generates operations that reflect the user’s intention. Those operations are immediately applied to their local client, so they can see their changes instantly. With a slight delay, and some batching under the hood (as well as operation _merging_ — because we really don’t need every individual character typed to be an independent operation), the client sends those operations to our servers.
+
+Whenever one or more operations are sent, the client also tells the server which revision it assigned to those operations. Revisions are simple integers, so whenever a client is on revision X, the next operation it applies gets revision X + 1. If the server was still on revision X, it will accept the operation (after validation — I really could’ve made this post quite a bit longer still 😛) and send an `Ack` message back to the client. All is good.
+
+But if the server had already accepted a revision X + 1 from another client, the server will send a `Reject` message to the later client, and it becomes the client’s responsibility to _rebase_.
+
+💡Rebasing could also be done on the server, and it would solve a potential issue with starvation of clients. Starvation can happen when a client gets continuously rejected because other clients are always faster than it. In practice, this hasn’t been an issue for us yet, which is why we opted for the simpler solution for now.
+
+The term rebasing is directly influenced by [Git](https://git-scm.com/book/en/v2/Git-Branching-Rebasing), because it follows the same basic idea. For a Fiberplane client, rebasing involves the following steps:
+
+- It first reverts all its locally-applied operations, so it gets back into a state that is consistent with the server. Reverting is done by _inverting_ its local operations, then _applying_ those inverted operations. This is why in our implementation every operation must be invertible.
+- Then it applies the latest operations from the server. This “pulls” its state from an older point in time to the latest revision.
+- Then it _transforms_ its local operations with the newly received operations.
+- Finally, it reapplies its now-transformed local operations.
+
+After the rebase process, the client can attempt to resubmit its transformed operations. Hopefully, if no other clients were ahead of it again, the server would now acknowledge them, and all is good again.
+
+## Wrapping up
+
+That concludes todays’s deep dive into Fiberplane’s OT implementation. There’s certainly some more topics that could be covered on this subject as well, but hopefully I’ve given you both an understanding of the major parts, as well as some of the challenges you might encounter if you were to implement OT yourself.
+
+Thanks for reading!

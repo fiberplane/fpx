@@ -1,0 +1,63 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content";
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+
+interface Props {
+  entry: CollectionEntry<"blog">;
+}
+
+export async function getStaticPaths() {
+  const blogEntries = await getCollection("blog");
+  return blogEntries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+// 2. For your template, you can get the entry directly from the prop
+const { entry } = Astro.props;
+const { Content, headings } = await entry.render();
+---
+
+<StarlightPage
+  frontmatter={{
+    title: entry.data.title,
+    description: entry.data.description,
+    head: [
+      // HACK - a little trip to YIKEA here, but I needed to override the width
+      // for the blog without reimplementing the whole thing
+      {
+        tag: "style",
+        content: `:root { --sl-content-width: 700px !important; }`,
+      },
+    ],
+    template: "splash",
+  }}
+  headings={headings}
+>
+  <div class="blog-meta">
+    by {entry.data.author} on {
+      new Date(entry.data.date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    }
+  </div>
+  <div class="blog-content">
+    <Content />
+  </div>
+</StarlightPage>
+
+<style>
+  .blog-meta {
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .blog-content {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    justify-content: center;
+  }
+</style>
