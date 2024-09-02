@@ -18,9 +18,9 @@ fn parse_time_nanos(nanos: u64) -> time::OffsetDateTime {
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct Span {
-    pub trace_id: String,
-    pub span_id: String,
-    pub parent_span_id: Option<String>,
+    pub trace_id: HexEncodedId,
+    pub span_id: HexEncodedId,
+    pub parent_span_id: Option<HexEncodedId>,
 
     pub name: String,
     pub trace_state: String,
@@ -75,14 +75,16 @@ impl Span {
                     let parent_span_id = if span.parent_span_id.is_empty() {
                         None
                     } else {
-                        Some(hex::encode(span.parent_span_id))
+                        // .unwrap is safe because we literally encode them in the exact same line as hex
+                        Some(HexEncodedId::new(hex::encode(span.parent_span_id)).unwrap())
                     };
 
                     let events: Vec<_> = span.events.into_iter().map(Into::into).collect();
                     let links: Vec<_> = span.links.into_iter().map(Into::into).collect();
 
-                    let trace_id = hex::encode(span.trace_id);
-                    let span_id = hex::encode(span.span_id);
+                    // .unwrap is safe because we literally encode them in the exact same line as hex
+                    let trace_id = HexEncodedId::new(hex::encode(span.trace_id)).unwrap();
+                    let span_id = HexEncodedId::new(hex::encode(span.span_id)).unwrap();
 
                     let name = span.name;
                     let trace_state = span.trace_state;
@@ -349,7 +351,7 @@ impl TraceSummary {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SpanSummary {
     /// The span id.
-    pub span_id: String,
+    pub span_id: HexEncodedId,
 
     /// The name of the span.
     pub name: String,

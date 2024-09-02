@@ -1,4 +1,5 @@
 use super::{AttributeMap, AttributeValue, SpanEvent, SpanKind};
+use crate::data::models::HexEncodedId;
 use opentelemetry_proto::tonic::trace::v1::span::Link;
 use opentelemetry_proto::tonic::trace::v1::Status;
 use serde::{Deserialize, Serialize};
@@ -35,9 +36,9 @@ pub struct TypeScriptCompatTrace {
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct TypeScriptCompatOtelSpan {
-    pub trace_id: String,
-    pub span_id: String,
-    pub parent_span_id: Option<String>,
+    pub trace_id: HexEncodedId,
+    pub span_id: HexEncodedId,
+    pub parent_span_id: Option<HexEncodedId>,
 
     pub name: String,
     pub trace_state: String,

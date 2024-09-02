@@ -26,8 +26,8 @@ async fn span_successful() {
 
     let now = time::OffsetDateTime::now_utc();
     let inner_span: fpx_lib::api::models::Span = fpx_lib::api::models::Span {
-        trace_id: trace_id.clone().into_inner(),
-        span_id: span_id.clone().into_inner(),
+        trace_id: trace_id.clone(),
+        span_id: span_id.clone(),
         parent_span_id: None,
         name: String::from("Test span"),
         kind: SpanKind::Internal,
