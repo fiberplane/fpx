@@ -3,7 +3,7 @@ import {
   enforceTerminalDraftParameter,
 } from "../../KeyValueForm";
 import { isDraftParameter } from "../../KeyValueForm/data";
-import { RequestResponseSlice } from "../../store/slices/types";
+import type { RequestResponseSlice } from "../../store/slices/types";
 import type { RequestorBody, RequestorState } from "../state";
 
 /**
@@ -41,7 +41,7 @@ export function updateContentTypeHeader(state: RequestResponseSlice) {
   // return {
   // ...state,
   state.requestHeaders = enforceTerminalDraftParameter(nextHeaders);
-  // , 
+  // ,
   // };
 }
 
@@ -110,9 +110,9 @@ function getUpdateOperation(
   if (!canHaveBody) {
     return currentContentTypeHeader
       ? {
-        type: "remove",
-        value: currentContentTypeHeader,
-      }
+          type: "remove",
+          value: currentContentTypeHeader,
+        }
       : null;
   }
 

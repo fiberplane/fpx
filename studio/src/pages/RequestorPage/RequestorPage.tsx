@@ -10,26 +10,26 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { RoutesPanel } from "./NavigationPanel/RoutesPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
-import { RoutesPanel } from "./NavigationPanel/RoutesPanel";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
+import type { RequestsPanelTab, ResponsePanelTab } from "./reducer";
+import { _getActiveRoute, addBaseUrl } from "./reducer/reducer";
+import { useRoutes } from "./routes";
 // import { useRequestor } from "./reducer";
 import { useRequestorStore } from "./store";
-import { useRoutes } from "./routes";
 import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
-import { _getActiveRoute, addBaseUrl } from "./reducer/reducer";
-import { useHandler } from "@fiberplane/hooks";
-import { RequestsPanelTab, ResponsePanelTab } from "./reducer";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -46,7 +46,7 @@ export const RequestorPage = () => {
   globalThis.requestorState = requestorState;
   const {
     // Routes panel
-    // state: { 
+    // state: {
     routes,
     selectedRoute,
     // },
@@ -57,8 +57,11 @@ export const RequestorPage = () => {
 
     // Requestor input
     // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-    // state: { 
-    path, method, requestType, serviceBaseUrl,
+    // state: {
+    path,
+    method,
+    requestType,
+    serviceBaseUrl,
     // },
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
@@ -67,8 +70,11 @@ export const RequestorPage = () => {
     // addBaseUrl,
 
     // Request panel
-    // state: { 
-    pathParams, queryParams, requestHeaders, body,
+    // state: {
+    pathParams,
+    queryParams,
+    requestHeaders,
+    body,
     // },
     setPathParams,
     updatePathParamValues,
@@ -108,7 +114,6 @@ export const RequestorPage = () => {
     return !selectedRoute;
   }, [selectedRoute]);
 
-
   const shouldShowRequestTab = useCallback(
     (tab: RequestsPanelTab): boolean => {
       return visibleRequestsPanelTabs.includes(tab);
@@ -123,14 +128,16 @@ export const RequestorPage = () => {
     [visibleResponsePanelTabs],
   );
 
-
-  const removeServiceUrlFromPath = useCallback((path: string) => {
-    // return removeBaseUrl(serviceBaseUrl, path);
-    // TODO - make this work again (this should do something with the serviceBaseUrl from the store)
-    return path;
-  }, [
-    // serviceBaseUrl
-  ]);
+  const removeServiceUrlFromPath = useCallback(
+    (path: string) => {
+      // return removeBaseUrl(serviceBaseUrl, path);
+      // TODO - make this work again (this should do something with the serviceBaseUrl from the store)
+      return path;
+    },
+    [
+      // serviceBaseUrl
+    ],
+  );
 
   // TODO - this should be a selector
   // const getActiveRoute = useHandler(() => {
@@ -155,7 +162,6 @@ export const RequestorPage = () => {
     },
     [serviceBaseUrl, requestType],
   );
-
 
   // const selectedRoute = getActiveRoute();
 

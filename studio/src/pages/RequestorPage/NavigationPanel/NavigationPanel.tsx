@@ -1,15 +1,19 @@
 import { cn } from "@/utils";
+import { useRequestorStore } from "../store"; // We'll create this Zustand store
 import { BACKGROUND_LAYER } from "../styles";
 import { RoutesPanel } from "./RoutesPanel"; // Assuming this component exists
-import { useRequestorStore } from "../store"; // We'll create this Zustand store
 
 export function NavigationPanel() {
-  const routes = useRequestorStore(state => state.routes);
-  const selectedRoute = useRequestorStore(state => state.selectedRoute);
-  const handleRouteClick = useRequestorStore(state => state.selectRoute);
-  const history = useRequestorStore(state => state.history);
-  const loadHistoricalRequest = useRequestorStore(state => state.loadHistoricalRequest);
-  const removeServiceUrlFromPath = useRequestorStore(state => state.removeServiceUrlFromPath);
+  const routes = useRequestorStore((state) => state.routes);
+  const selectedRoute = useRequestorStore((state) => state.selectedRoute);
+  const handleRouteClick = useRequestorStore((state) => state.selectRoute);
+  const history = useRequestorStore((state) => state.history);
+  const loadHistoricalRequest = useRequestorStore(
+    (state) => state.loadHistoricalRequest,
+  );
+  const removeServiceUrlFromPath = useRequestorStore(
+    (state) => state.removeServiceUrlFromPath,
+  );
 
   return (
     <div

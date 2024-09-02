@@ -1,30 +1,28 @@
-import { StateCreator } from 'zustand';
-import { RequestsPanelTab, ResponsePanelTab } from '../../reducer/tabs';
-import { TabsSlice } from './types';
-
+import type { StateCreator } from "zustand";
+import type { RequestsPanelTab, ResponsePanelTab } from "../../reducer/tabs";
+import type { TabsSlice } from "./types";
 
 export const tabsSlice: StateCreator<
   TabsSlice,
-  [
-    ['zustand/immer', never],
-    ['zustand/devtools', never]
-  ]
+  [["zustand/immer", never], ["zustand/devtools", never]]
 > = (set) => ({
-  activeRequestsPanelTab: 'params',
-  visibleRequestsPanelTabs: ['params', 'headers'],
-  activeResponsePanelTab: 'response',
-  visibleResponsePanelTabs: ['response', 'debug'],
+  activeRequestsPanelTab: "params",
+  visibleRequestsPanelTabs: ["params", "headers"],
+  activeResponsePanelTab: "response",
+  visibleResponsePanelTabs: ["response", "debug"],
   // ... initial state ...
-  setActiveRequestsPanelTab: (tab) => set((state) => {
-    if (isRequestsPanelTab(tab)) {
-      state.activeRequestsPanelTab = tab;
-    }
-  }),
-  setActiveResponsePanelTab: (tab) => set((state) => {
-    if (isResponsePanelTab(tab)) {
-      state.activeResponsePanelTab = tab;
-    }
-  }),
+  setActiveRequestsPanelTab: (tab) =>
+    set((state) => {
+      if (isRequestsPanelTab(tab)) {
+        state.activeRequestsPanelTab = tab;
+      }
+    }),
+  setActiveResponsePanelTab: (tab) =>
+    set((state) => {
+      if (isResponsePanelTab(tab)) {
+        state.activeResponsePanelTab = tab;
+      }
+    }),
 });
 
 // Helper functions

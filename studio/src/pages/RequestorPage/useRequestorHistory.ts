@@ -11,13 +11,13 @@ import {
   useFetchRequestorRequests,
 } from "./queries";
 import { findMatchedRoute } from "./routes";
+import { useRequestorStore } from "./store";
 import {
   type RequestMethodInputValue,
   isRequestMethod,
   isWsRequest,
 } from "./types";
 import { sortRequestornatorsDescending } from "./utils";
-import { useRequestorStore } from "./store";
 
 type RequestorHistoryHookArgs = {
   routes: ProbedRoute[];
@@ -41,10 +41,15 @@ export function useRequestorHistory({
   setQueryParams,
   showResponseBodyFromHistory,
 }: RequestorHistoryHookArgs) {
-  const { sessionHistory: sessionHistoryTraceIds, recordRequestInSessionHistory } = useRequestorStore(({ sessionHistory, recordRequestInSessionHistory }) => ({
-    sessionHistory,
+  const {
+    sessionHistory: sessionHistoryTraceIds,
     recordRequestInSessionHistory,
-  }))
+  } = useRequestorStore(
+    ({ sessionHistory, recordRequestInSessionHistory }) => ({
+      sessionHistory,
+      recordRequestInSessionHistory,
+    }),
+  );
   // const {
   //   sessionHistory: sessionHistoryTraceIds,
   //   recordRequestInSessionHistory,

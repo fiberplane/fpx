@@ -5,11 +5,11 @@ import {
 } from "../KeyValueForm";
 import { ProbedRouteSchema } from "../queries";
 import { RequestMethodSchema, RequestTypeSchema } from "../types";
+import { updateContentTypeHeader } from "./reducers";
 // import { addContentTypeHeader } from "./reducers";
 import { RequestorBodySchema } from "./request-body";
 import { isCurrentSessionState } from "./session-persistence-key";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
-import { updateContentTypeHeader } from "./reducers";
 
 const RequestorResponseBodySchema = z.discriminatedUnion("type", [
   z.object({

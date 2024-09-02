@@ -3,7 +3,7 @@ import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
 import type { KeyValueParameter } from "../KeyValueForm";
 // import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import type { ProbedRoute } from "../queries";
-import { findMatchedRoute } from "../routes";
+import type { findMatchedRoute } from "../routes";
 import {
   type RequestMethod,
   // type RequestMethodInputValue,
@@ -12,14 +12,14 @@ import {
 } from "../types";
 // import { useSaveUiState } from "./persistence";
 import {
-  //  addContentTypeHeaderToState, 
-  setBodyTypeReducer
+  //  addContentTypeHeaderToState,
+  setBodyTypeReducer,
 } from "./reducers";
-import {
-  type RequestBodyType,
-  type RequestorActiveResponse,
-  type RequestorBody,
-  type RequestorState,
+import type {
+  RequestBodyType,
+  RequestorActiveResponse,
+  RequestorBody,
+  RequestorState,
   // createInitialState,
   // initialState,
 } from "./state";
@@ -840,9 +840,9 @@ export const addBaseUrl = (
     requestType,
     forceChangeHost,
   }: { requestType?: RequestType; forceChangeHost?: boolean } = {
-      requestType: "http",
-      forceChangeHost: false,
-    },
+    requestType: "http",
+    forceChangeHost: false,
+  },
 ) => {
   // NOTE - This is necessary to allow the user to type new base urls... even though we replace the base url whenever they switch routes
   if (pathHasValidBaseUrl(path) && !forceChangeHost) {

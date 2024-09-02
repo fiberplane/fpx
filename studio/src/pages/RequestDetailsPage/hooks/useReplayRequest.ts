@@ -99,7 +99,8 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
     return span ? getRequestQueryParams(span) : null;
   }, [span]);
 
-  const { clearResponseBodyFromHistory, setActiveResponse } = useRequestorStore();
+  const { clearResponseBodyFromHistory, setActiveResponse } =
+    useRequestorStore();
 
   const { mutate: makeRequest, isPending: isReplaying } = useMakeProxiedRequest(
     {

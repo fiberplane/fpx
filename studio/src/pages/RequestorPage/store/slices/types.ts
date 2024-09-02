@@ -1,8 +1,17 @@
-import { KeyValueParameter } from "../../KeyValueForm";
-import { ProbedRoute } from "../../queries";
-import { RequestBodyType, RequestorBody, RequestsPanelTab, ResponsePanelTab } from "../../reducer";
-import { RequestorActiveResponse } from "../../reducer/state";
-import { RequestMethod, RequestMethodInputValue, RequestType } from "../../types";
+import type { KeyValueParameter } from "../../KeyValueForm";
+import type { ProbedRoute } from "../../queries";
+import type {
+  RequestBodyType,
+  RequestorBody,
+  RequestsPanelTab,
+  ResponsePanelTab,
+} from "../../reducer";
+import type { RequestorActiveResponse } from "../../reducer/state";
+import type {
+  RequestMethod,
+  RequestMethodInputValue,
+  RequestType,
+} from "../../types";
 
 type RequestorTraceId = string;
 
@@ -24,7 +33,10 @@ export interface RequestResponseSlice {
   setQueryParams: (queryParams: KeyValueParameter[]) => void;
   setRequestHeaders: (headers: KeyValueParameter[]) => void;
   setBody: (body: undefined | string | RequestorBody) => void;
-  handleRequestBodyTypeChange: (requestBodyType: RequestBodyType, isMultipart?: boolean) => void;
+  handleRequestBodyTypeChange: (
+    requestBodyType: RequestBodyType,
+    isMultipart?: boolean,
+  ) => void;
   // removeServiceUrlFromPath: (path: string) => string;
 
   /** Response related state */
@@ -61,4 +73,7 @@ export interface WebsocketSlice {
   setWebsocketMessage: (websocketMessage: string | undefined) => void;
 }
 
-export type Store = RequestResponseSlice & RoutesSlice & TabsSlice & WebsocketSlice;
+export type Store = RequestResponseSlice &
+  RoutesSlice &
+  TabsSlice &
+  WebsocketSlice;

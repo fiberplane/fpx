@@ -1,6 +1,6 @@
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
-import { RequestResponseSlice } from "../../store/slices/types";
-import type { RequestBodyType, } from "../state";
+import type { RequestResponseSlice } from "../../store/slices/types";
+import type { RequestBodyType } from "../state";
 
 /**
  * This reducer is responsible for setting the body type of the request.
@@ -62,7 +62,7 @@ export function setBodyTypeReducer(
   if (oldBodyType === "form-data") {
     // return {
     // ...state,
-    state.body = { type: newBodyType, value: "" };//,
+    state.body = { type: newBodyType, value: "" }; //,
     // };
     return;
   }
@@ -74,6 +74,6 @@ export function setBodyTypeReducer(
 
   // return {
   // ...state,
-  state.body = { type: newBodyType, value: newBodyValue };//,
+  state.body = { type: newBodyType, value: newBodyValue }; //,
   // };
 }

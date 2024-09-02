@@ -109,13 +109,7 @@ export function RoutesPanel({
   }, [filterValue, history]);
 
   return (
-    <div
-      className={cn(
-        "h-full",
-        "flex",
-        "flex-col",
-      )}
-    >
+    <div className={cn("h-full", "flex", "flex-col")}>
       <div>
         <h2 className="flex items-center justify-between rounded cursor-pointer text-base h-12">
           Routes

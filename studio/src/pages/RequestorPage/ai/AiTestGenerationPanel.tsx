@@ -11,13 +11,13 @@ import {
 import { useMemo, useState } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type {
-  // ProbedRoute, 
-  Requestornator
+  // ProbedRoute,
+  Requestornator,
 } from "../queries";
 import { findMatchedRoute } from "../routes";
+import { useActiveRoute } from "../store";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
-import { useActiveRoute } from "../store";
 
 export function AiTestGenerationPanel({
   history,

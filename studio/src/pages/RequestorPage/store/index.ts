@@ -1,16 +1,16 @@
-import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
-import { memoize } from 'proxy-memoize';
-// import { routesSlice } from './slices/routesSlice';
-import { websocketSlice } from './slices/websocketSlice';
-import { tabsSlice } from './slices/tabsSlice';
+import { memoize } from "proxy-memoize";
+import { create } from "zustand";
+import { devtools, persist } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
+import { _getActiveRoute } from "../reducer/reducer";
+import { initialState } from "../reducer/state";
+import { requestResponseSlice } from "./slices/requestResponseSlice";
+import { routesSlice } from "./slices/routesSlice";
+import { tabsSlice } from "./slices/tabsSlice";
 // import { responseSlice, ResponseSlice } from './slices/responseSlice';
-import { Store } from './slices/types';
-import { routesSlice } from './slices/routesSlice';
-import { requestResponseSlice } from './slices/requestResponseSlice';
-import { initialState } from '../reducer/state';
-import { _getActiveRoute } from '../reducer/reducer';
+import type { Store } from "./slices/types";
+// import { routesSlice } from './slices/routesSlice';
+import { websocketSlice } from "./slices/websocketSlice";
 // import { createInitialState } from '../reducer/state';
 
 // ... existing imports ...
@@ -19,25 +19,23 @@ export type RequestorState = Store;
 export const useRequestorStore = create<RequestorState>()(
   devtools(
     persist(
-      immer(
-        (...a) => ({
-          ...routesSlice(...a),
-          ...websocketSlice(...a),
-          ...tabsSlice(...a),
-          ...requestResponseSlice(...a),
-          initialState,
-        })
-      ),
+      immer((...a) => ({
+        ...routesSlice(...a),
+        ...websocketSlice(...a),
+        ...tabsSlice(...a),
+        ...requestResponseSlice(...a),
+        initialState,
+      })),
       {
-        name: 'requestor-storage',
+        name: "requestor-storage",
         partialize: (state) => ({
           serviceBaseUrl: state.serviceBaseUrl,
           // Add other properties you want to persist
         }),
-      }
+      },
     ),
-    { name: 'RequestorStore' }
-  )
+    { name: "RequestorStore" },
+  ),
 );
 
 const getActiveRoute = memoize(_getActiveRoute);
@@ -56,7 +54,6 @@ export function useActiveRoute() {
 // import { ProbedRoute } from '../queries';
 // import { addBaseUrl, extractMatchedPathParams, extractPathParams, mapPathParamKey, removeBaseUrl } from '../reducer/reducer';
 // import { enforceFormDataTerminalDraftParameter } from '../FormDataForm';
-
 
 // export type RequestorState = {
 //   /** All routes */
@@ -103,8 +100,6 @@ export function useActiveRoute() {
 //   /** The response to show in the response panel */
 //   activeResponse: RequestorActiveResponse | null;
 // };
-
-
 
 // type RequestorStore = RequestorState & {
 //   setRoutes: (routes: ProbedRoute[]) => void;
