@@ -14,11 +14,13 @@ import {
 } from "../../reducer/tabs";
 import { findMatchedRoute } from "../../routes";
 import type { RequestMethod } from "../../types";
-import type { RoutesSlice } from "./types";
+import type { RoutesSlice, Store } from "./types";
 
 export const routesSlice: StateCreator<
-  RoutesSlice,
-  [["zustand/immer", never], ["zustand/devtools", never]]
+  Store,
+  [["zustand/immer", never], ["zustand/devtools", never]],
+  [],
+  RoutesSlice
 > = (set) => ({
   routes: [],
   selectedRoute: null,

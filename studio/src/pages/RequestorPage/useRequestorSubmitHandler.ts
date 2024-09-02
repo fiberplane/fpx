@@ -2,7 +2,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCallback } from "react";
 import type { KeyValueParameter } from "./KeyValueForm";
 import type { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
-import type { RequestorBody, RequestorState, useRequestor } from "./reducer";
+import type { RequestorBody, RequestorState } from "./reducer";
 import { isWsRequest } from "./types";
 
 export function useRequestorSubmitHandler({
@@ -19,9 +19,7 @@ export function useRequestorSubmitHandler({
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addServiceUrlIfBarePath: ReturnType<
-    typeof useRequestor
-  >["addServiceUrlIfBarePath"];
+  addServiceUrlIfBarePath: (url: string) => string;
   selectedRoute: ProbedRoute | null;
   body: RequestorBody;
   path: string;

@@ -5,7 +5,7 @@ import {
 } from "../KeyValueForm";
 import { ProbedRouteSchema } from "../queries";
 import { RequestMethodSchema, RequestTypeSchema } from "../types";
-import { updateContentTypeHeader } from "./reducers";
+// import { updateContentTypeHeader } from "./reducers";
 // import { addContentTypeHeader } from "./reducers";
 import { RequestorBodySchema } from "./request-body";
 import { isCurrentSessionState } from "./session-persistence-key";
@@ -205,7 +205,7 @@ export const initialState: RequestorState = {
   activeResponse: null,
 };
 
-updateContentTypeHeader(initialState);
+// updateContentTypeHeader(initialState);
 
 /**
  * Initializer for the reducer's state that attempts to load the UI state from local storage

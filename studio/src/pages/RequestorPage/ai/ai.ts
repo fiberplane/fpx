@@ -11,7 +11,6 @@ import {
 import type { ProbedRoute, Requestornator } from "../queries";
 import type { RequestorBody } from "../reducer";
 import { isRequestorBodyType } from "../reducer/request-body";
-import { useRequestorStore } from "../store";
 import { useAiRequestData } from "./generate-request-data";
 
 export const FRIENDLY = "Friendly" as const;

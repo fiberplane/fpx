@@ -1,6 +1,6 @@
 // import { useCallback, useReducer } from "react";
-import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
-import type { KeyValueParameter } from "../KeyValueForm";
+// import { enforceFormDataTerminalDraftParameter } from "../FormDataForm";
+// import type { KeyValueParameter } from "../KeyValueForm";
 // import { enforceTerminalDraftParameter } from "../KeyValueForm/hooks";
 import type { ProbedRoute } from "../queries";
 import type { findMatchedRoute } from "../routes";
@@ -11,26 +11,26 @@ import {
   isWsRequest,
 } from "../types";
 // import { useSaveUiState } from "./persistence";
-import {
-  //  addContentTypeHeaderToState,
-  setBodyTypeReducer,
-} from "./reducers";
+// import {
+//   //  addContentTypeHeaderToState,
+//   setBodyTypeReducer,
+// } from "./reducers";
 import type {
-  RequestBodyType,
-  RequestorActiveResponse,
-  RequestorBody,
+  // RequestBodyType,
+  // RequestorActiveResponse,
+  // RequestorBody,
   RequestorState,
   // createInitialState,
   // initialState,
 } from "./state";
-import {
-  type RequestsPanelTab,
-  type ResponsePanelTab,
-  getVisibleRequestPanelTabs,
-  getVisibleResponsePanelTabs,
-  // isRequestsPanelTab,
-  // isResponsePanelTab,
-} from "./tabs";
+// import {
+//   type RequestsPanelTab,
+//   type ResponsePanelTab,
+//   getVisibleRequestPanelTabs,
+//   getVisibleResponsePanelTabs,
+//   // isRequestsPanelTab,
+//   // isResponsePanelTab,
+// } from "./tabs";
 
 export const _getActiveRoute = (state: RequestorState): ProbedRoute => {
   return (
@@ -47,25 +47,25 @@ export const _getActiveRoute = (state: RequestorState): ProbedRoute => {
   );
 };
 
-const SET_ROUTES = "SET_ROUTES" as const;
-const SET_SERVICE_BASE_URL = "SET_SERVICE_BASE_URL" as const;
-const PATH_UPDATE = "PATH_UPDATE" as const;
-const METHOD_UPDATE = "METHOD_UPDATE" as const;
-const SELECT_ROUTE = "SELECT_ROUTE" as const;
-const SET_PATH_PARAMS = "SET_PATH_PARAMS" as const;
-const REPLACE_PATH_PARAM_VALUES = "REPLACE_PATH_PARAM_VALUES" as const;
-const CLEAR_PATH_PARAMS = "CLEAR_PATH_PARAMS" as const;
-const SET_QUERY_PARAMS = "SET_QUERY_PARAMS" as const;
-const SET_HEADERS = "SET_HEADERS" as const;
-const SET_BODY = "SET_BODY" as const;
-const CLEAR_BODY = "CLEAR_BODY" as const;
-const SET_BODY_TYPE = "SET_BODY_TYPE" as const;
-const SET_WEBSOCKET_MESSAGE = "SET_WEBSOCKET_MESSAGE" as const;
-const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
-const CLEAR_HISTORICAL_REQUEST = "CLEAR_HISTORICAL_REQUEST" as const;
-const SET_ACTIVE_RESPONSE = "SET_ACTIVE_RESPONSE" as const;
-const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
-const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
+// const SET_ROUTES = "SET_ROUTES" as const;
+// const SET_SERVICE_BASE_URL = "SET_SERVICE_BASE_URL" as const;
+// const PATH_UPDATE = "PATH_UPDATE" as const;
+// const METHOD_UPDATE = "METHOD_UPDATE" as const;
+// const SELECT_ROUTE = "SELECT_ROUTE" as const;
+// const SET_PATH_PARAMS = "SET_PATH_PARAMS" as const;
+// const REPLACE_PATH_PARAM_VALUES = "REPLACE_PATH_PARAM_VALUES" as const;
+// const CLEAR_PATH_PARAMS = "CLEAR_PATH_PARAMS" as const;
+// const SET_QUERY_PARAMS = "SET_QUERY_PARAMS" as const;
+// const SET_HEADERS = "SET_HEADERS" as const;
+// const SET_BODY = "SET_BODY" as const;
+// const CLEAR_BODY = "CLEAR_BODY" as const;
+// const SET_BODY_TYPE = "SET_BODY_TYPE" as const;
+// const SET_WEBSOCKET_MESSAGE = "SET_WEBSOCKET_MESSAGE" as const;
+// const LOAD_HISTORICAL_REQUEST = "LOAD_HISTORICAL_REQUEST" as const;
+// const CLEAR_HISTORICAL_REQUEST = "CLEAR_HISTORICAL_REQUEST" as const;
+// const SET_ACTIVE_RESPONSE = "SET_ACTIVE_RESPONSE" as const;
+// const SET_ACTIVE_REQUESTS_PANEL_TAB = "SET_ACTIVE_REQUESTS_PANEL_TAB" as const;
+// const SET_ACTIVE_RESPONSE_PANEL_TAB = "SET_ACTIVE_RESPONSE_PANEL_TAB" as const;
 
 // type RequestorAction =
 //   | {

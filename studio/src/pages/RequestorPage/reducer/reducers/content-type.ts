@@ -4,7 +4,7 @@ import {
 } from "../../KeyValueForm";
 import { isDraftParameter } from "../../KeyValueForm/data";
 import type { RequestResponseSlice } from "../../store/slices/types";
-import type { RequestorBody, RequestorState } from "../state";
+import type { RequestorBody } from "../state";
 
 /**
  * This makes sure to synchronize the content type header with the body type.

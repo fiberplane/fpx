@@ -1,8 +1,5 @@
 import type { StateCreator } from "zustand";
-import { Store, type WebsocketSlice } from "./types";
-// import { RequestorState } from '../index';
-// import { devtools } from 'zustand/middleware';
-// import { immer } from 'zustand/middleware/immer';
+import type { WebsocketSlice } from "./types";
 
 export const websocketSlice: StateCreator<
   WebsocketSlice,

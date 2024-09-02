@@ -14,7 +14,6 @@ import {
   useDeleteRoute,
 } from "../queries";
 import { AddRouteButton } from "../routes";
-import { BACKGROUND_LAYER } from "../styles";
 import { isWsRequest } from "../types";
 
 type RoutesPanelProps = {

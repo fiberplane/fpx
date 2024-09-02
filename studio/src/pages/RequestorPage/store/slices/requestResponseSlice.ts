@@ -14,11 +14,13 @@ import {
   updateContentTypeHeader,
 } from "../../reducer/reducers";
 import { findMatchedRoute } from "../../routes";
-import type { RequestResponseSlice } from "./types";
+import type { RequestResponseSlice, Store } from "./types";
 
 export const requestResponseSlice: StateCreator<
-  RequestResponseSlice,
-  [["zustand/immer", never], ["zustand/devtools", never]]
+  Store,
+  [["zustand/immer", never], ["zustand/devtools", never]],
+  [],
+  RequestResponseSlice
 > = (set, get) => ({
   serviceBaseUrl: "http://localhost:8787",
   path: "",

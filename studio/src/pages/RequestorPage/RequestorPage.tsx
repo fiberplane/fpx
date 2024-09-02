@@ -10,7 +10,6 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RoutesPanel } from "./NavigationPanel/RoutesPanel";
@@ -23,8 +22,7 @@ import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import type { RequestsPanelTab, ResponsePanelTab } from "./reducer";
 import { _getActiveRoute, addBaseUrl } from "./reducer/reducer";
 import { useRoutes } from "./routes";
-// import { useRequestor } from "./reducer";
-import { useRequestorStore } from "./store";
+import { useActiveRoute, useRequestorStore } from "./store";
 import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
@@ -163,7 +161,7 @@ export const RequestorPage = () => {
     [serviceBaseUrl, requestType],
   );
 
-  // const selectedRoute = getActiveRoute();
+  const activeRoute = useActiveRoute();
 
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes({
@@ -198,7 +196,7 @@ export const RequestorPage = () => {
   });
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
-    { path, method, route: selectedRoute?.path },
+    { path, method, route: activeRoute.path },
     sessionHistory,
     activeHistoryResponseTraceId,
   );
@@ -356,7 +354,7 @@ export const RequestorPage = () => {
       shouldShowResponseTab={shouldShowResponseTab}
       isLoading={isRequestorRequesting}
       websocketState={websocketState}
-      requestType={selectedRoute?.requestType}
+      requestType={activeRoute.requestType}
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
       removeServiceUrlFromPath={removeServiceUrlFromPath}
@@ -435,7 +433,7 @@ export const RequestorPage = () => {
             )}
           >
             <RequestorInput
-              requestType={selectedRoute?.requestType}
+              requestType={activeRoute.requestType}
               method={method}
               handleMethodChange={handleMethodChange}
               path={path}
