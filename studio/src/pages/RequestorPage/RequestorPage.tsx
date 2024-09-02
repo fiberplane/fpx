@@ -34,6 +34,10 @@ function getMainSectionWidth() {
   return window.innerWidth - 400;
 }
 
+function getMainSectionHeight() {
+  return window.innerHeight - 150;
+}
+
 export const RequestorPage = () => {
   const { toast } = useToast();
 
@@ -245,9 +249,10 @@ export const RequestorPage = () => {
     usePanelConstraints({
       // Change the groupId to `""` on small screens because we're not rendering
       // the resizable panel group
-      groupId: isSmallScreen ? "" : "requestor-page-main-panel",
-      initialGroupSize: width,
-      minPixelSize: 300,
+      groupId: "requestor-page-main-panel",
+      initialGroupSize: getMainSectionHeight(),
+      minPixelSize: 200,
+      dimension: "height"
     });
 
   const requestContent = (
@@ -389,7 +394,7 @@ export const RequestorPage = () => {
               </>
             ) : (
               <ResizablePanelGroup
-                direction={isSmallScreen ? "vertical" : "horizontal"}
+                direction={"vertical"}
                 id="requestor-page-main-panel"
                 autoSaveId="requestor-page-main-panel"
                 className={cn(
@@ -406,11 +411,6 @@ export const RequestorPage = () => {
                   order={1}
                   className="relative"
                   id="request-panel"
-                  defaultSize={
-                    width < 624 || requestPanelMinSize === undefined
-                      ? undefined
-                      : Math.max(requestPanelMinSize, 33)
-                  }
                   minSize={requestPanelMinSize}
                   maxSize={requestPanelMaxSize}
                 >

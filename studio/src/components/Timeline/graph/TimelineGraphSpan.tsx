@@ -56,13 +56,11 @@ export const TimelineGraphSpan: React.FC<{
             "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-0 absolute",
           )}
           style={{ width: lineWidth, marginLeft: lineOffset }}
-          title={`${span.start_time} - ${span.end_time}`}
+          title={`duration: ${formatDuration(span.start_time, span.end_time)}`}
+
         >
           <div className={"h-0.5 min-w-0.5 bg-blue-500 w-full"} />
         </div>
-      </div>
-      <div className="text-gray-400 text-xs w-12 px-2">
-        {formatDuration(span.start_time, span.end_time)}
       </div>
     </a>
   );
