@@ -1,6 +1,6 @@
 use crate::data::LibsqlStore;
 use fpx_lib::api::models::{AttributeMap, SpanKind};
-use fpx_lib::data::models::Span;
+use fpx_lib::data::models::{HexEncodedId, Span};
 use fpx_lib::data::Store;
 use test_log::test;
 
@@ -21,19 +21,19 @@ async fn span_successful() {
         .await
         .expect("unable to create transaction");
 
-    let trace_id = String::from("2b76e003e3cff12e054bcd0ca6879ee4");
-    let span_id = String::from("a6c0ed7c2f81e7c8");
+    let trace_id = HexEncodedId::new("2b76e003e3cff12e054bcd0ca6879ee4").unwrap();
+    let span_id = HexEncodedId::new("a6c0ed7c2f81e7c8").unwrap();
 
     let now = time::OffsetDateTime::now_utc();
     let inner_span: fpx_lib::api::models::Span = fpx_lib::api::models::Span {
-        trace_id: trace_id.clone(),
-        span_id: span_id.clone(),
+        trace_id: trace_id.clone().into_inner(),
+        span_id: span_id.clone().into_inner(),
         parent_span_id: None,
         name: String::from("Test span"),
         kind: SpanKind::Internal,
         start_time: now,
         end_time: now,
-        trace_state: String::from(""),
+        trace_state: String::new(),
         flags: 0,
         scope_name: None,
         scope_version: None,

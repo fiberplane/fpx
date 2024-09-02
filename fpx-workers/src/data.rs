@@ -1,4 +1,5 @@
 use axum::async_trait;
+use fpx_lib::data::models::HexEncodedId;
 use fpx_lib::data::sql::SqlBuilder;
 use fpx_lib::data::{models, DbError, Result, Store, Transaction};
 use serde::Deserialize;
@@ -83,13 +84,13 @@ impl Store for D1Store {
     async fn span_get(
         &self,
         _tx: &Transaction,
-        trace_id: &str,
-        span_id: &str,
+        trace_id: &HexEncodedId,
+        span_id: &HexEncodedId,
     ) -> Result<models::Span> {
         SendFuture::new(async {
             self.fetch_one(
                 self.sql_builder.span_get(),
-                &[trace_id.into(), span_id.into()],
+                &[trace_id.as_inner().into(), span_id.as_inner().into()],
             )
             .await
         })
@@ -99,11 +100,14 @@ impl Store for D1Store {
     async fn span_list_by_trace(
         &self,
         _tx: &Transaction,
-        trace_id: &str,
+        trace_id: &HexEncodedId,
     ) -> Result<Vec<models::Span>> {
         SendFuture::new(async {
-            self.fetch_all(self.sql_builder.span_list_by_trace(), &[trace_id.into()])
-                .await
+            self.fetch_all(
+                self.sql_builder.span_list_by_trace(),
+                &[trace_id.as_inner().into()],
+            )
+            .await
         })
         .await
     }
@@ -146,7 +150,7 @@ impl Store for D1Store {
         &self,
         _tx: &Transaction,
         // Future improvement could hold sort fields, limits, etc
-    ) -> Result<Vec<fpx_lib::data::models::Trace>> {
+    ) -> Result<Vec<models::Trace>> {
         SendFuture::new(async {
             let traces = self
                 .fetch_all(self.sql_builder.traces_list(None), &[])
@@ -158,12 +162,16 @@ impl Store for D1Store {
     }
 
     /// Delete all spans with a specific trace_id.
-    async fn span_delete_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<Option<u64>> {
+    async fn span_delete_by_trace(
+        &self,
+        _tx: &Transaction,
+        trace_id: &HexEncodedId,
+    ) -> Result<Option<u64>> {
         SendFuture::new(async {
             let prepared_statement = self
                 .database
                 .prepare(self.sql_builder.span_delete_by_trace())
-                .bind(&[trace_id.into()])
+                .bind(&[trace_id.as_inner().into()])
                 .map_err(|err| DbError::InternalError(err.to_string()))?;
 
             let results = prepared_statement
@@ -188,14 +196,14 @@ impl Store for D1Store {
     async fn span_delete(
         &self,
         _tx: &Transaction,
-        trace_id: &str,
-        span_id: &str,
+        trace_id: &HexEncodedId,
+        span_id: &HexEncodedId,
     ) -> Result<Option<u64>> {
         SendFuture::new(async {
             let prepared_statement = self
                 .database
                 .prepare(self.sql_builder.span_delete())
-                .bind(&[trace_id.into(), span_id.into()])
+                .bind(&[trace_id.as_inner().into(), span_id.as_inner().into()])
                 .map_err(|err| DbError::InternalError(err.to_string()))?;
 
             let results = prepared_statement

@@ -74,15 +74,27 @@ impl From<api::models::Span> for Span {
 pub struct HexEncodedId(pub String);
 
 impl HexEncodedId {
-    fn new(input: impl Into<String>) -> Result<HexEncodedId, hex::FromHexError> {
+    pub fn new(input: impl Into<String>) -> Result<HexEncodedId, hex::FromHexError> {
         let id = HexEncodedId(input.into());
         id.validate()?;
 
         Ok(id)
     }
 
-    fn validate(&self) -> Result<(), hex::FromHexError> {
+    pub fn validate(&self) -> Result<(), hex::FromHexError> {
         hex::decode(&self.0).map(|_| ())
+    }
+
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+
+    pub fn as_inner(&self) -> &str {
+        &self.0
+    }
+
+    pub fn as_mut(&mut self) -> &mut str {
+        &mut self.0
     }
 }
 
@@ -101,7 +113,7 @@ impl FromStr for HexEncodedId {
 }
 
 impl Deref for HexEncodedId {
-    type Target = String;
+    type Target = str;
 
     fn deref(&self) -> &Self::Target {
         &self.0
