@@ -1,6 +1,5 @@
 import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
 import { useRequestor } from "@/pages/RequestorPage/reducer";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 import {
   getRequestBody,
   getRequestHeaders,
@@ -8,6 +7,7 @@ import {
   getRequestQueryParams,
   getRequestUrl,
 } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useCallback, useMemo } from "react";
 
 export function useReplayRequest({ span }: { span?: OtelSpan }) {
@@ -148,7 +148,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
 
   if (!span) {
     return {
-      replay: () => { },
+      replay: () => {},
       isReplaying: false,
     };
   }

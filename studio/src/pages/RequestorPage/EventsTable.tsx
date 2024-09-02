@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import type { OtelEvent } from "@fiberplane/fpx-types";
 import { getString, truncateWithEllipsis } from "@/utils";
+import type { OtelEvent } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 
 export function EventsTable({ events }: { events?: OtelEvent[] }) {

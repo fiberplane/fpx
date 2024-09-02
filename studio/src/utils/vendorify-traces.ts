@@ -1,8 +1,8 @@
 import { CF_BINDING_TYPE } from "@/constants";
 import type { MizuOrphanLog } from "@/queries";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { z } from "zod";
 import { getRequestBody, getRequestUrl, getString } from "./otel-helpers";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
 

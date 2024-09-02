@@ -1,3 +1,4 @@
+import { useOtelTrace } from "@/queries";
 import {
   getRequestMethod,
   getRequestUrl,
@@ -7,7 +8,6 @@ import {
   isErrorLogEvent,
   isFetchSpan,
 } from "@/utils";
-import { useOtelTrace } from "@/queries";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";

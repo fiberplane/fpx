@@ -1,9 +1,9 @@
 import { type CloudflareVendorInfo, isCloudflareD1VendorInfo } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { CloudflareAISpan } from "./CloudflareAISpan";
 import { CloudflareD1Span } from "./CloudflareD1Span";
 import { CloudflareKVSpan } from "./CloudflareKVSpan";
 import { CloudflareR2Span } from "./CloudflareR2Span";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 /**
  * Render information about a Span originating from a Cloudflare Binding

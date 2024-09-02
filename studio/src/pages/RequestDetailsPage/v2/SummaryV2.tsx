@@ -9,7 +9,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 import {
   cn,
   getPathWithSearch,
@@ -19,6 +18,7 @@ import {
   getStatusCode,
   getString,
 } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import {
   SEMATTRS_EXCEPTION_MESSAGE,
   SEMATTRS_EXCEPTION_TYPE,

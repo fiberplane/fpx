@@ -1,11 +1,11 @@
 import { CF_BINDING_RESULT } from "@/constants";
 import { type CloudflareD1VendorInfo, getString, noop } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { CollapsibleSubSection } from "../../../shared";
 import { CodeMirrorSqlEditor } from "../../CodeMirrorEditor";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 /**
  * The D1 span is rendered a little differently.

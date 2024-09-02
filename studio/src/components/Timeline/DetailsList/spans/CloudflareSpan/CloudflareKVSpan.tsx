@@ -1,11 +1,11 @@
 import { CF_BINDING_METHOD, CF_BINDING_RESULT } from "@/constants";
 import { getString } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { KeyValueTable } from "../../KeyValueTableV2";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
 import { CfBindingOverview, KeyBadge } from "./shared";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 /**
  * Cloudflare KV has the following methods:

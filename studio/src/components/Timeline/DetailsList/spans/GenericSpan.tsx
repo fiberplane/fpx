@@ -6,6 +6,7 @@ import {
   getString,
   isCloudflareVendorInfo,
 } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { useTimelineIcon } from "../../hooks";
 import { SectionHeading } from "../../shared";
@@ -13,7 +14,6 @@ import { SubSection, SubSectionHeading } from "../../shared";
 import { formatDuration, getCloudflareSpanName } from "../../utils";
 import { KeyValueTable } from "../KeyValueTableV2";
 import { CloudflareSpan } from "./CloudflareSpan";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 export function GenericSpan({
   span,

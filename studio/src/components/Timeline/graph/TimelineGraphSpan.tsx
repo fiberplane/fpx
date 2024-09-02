@@ -1,8 +1,8 @@
 import { type VendorInfo, cn } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useTimelineContext } from "../context";
 import { useTimelineIcon, useTimelineTitle } from "../hooks";
 import { formatDuration } from "../utils";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 export const TimelineGraphSpan: React.FC<{
   span: OtelSpan;

@@ -3,7 +3,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { RequestMethod } from "@/components/Timeline";
 import { Status } from "@/components/ui/status";
-import type { OtelTrace } from "@fiberplane/fpx-types";
 import {
   getRequestMethod,
   getRequestPath,
@@ -11,6 +10,7 @@ import {
   isFpxRequestSpan,
   isFpxTraceError,
 } from "@/utils";
+import type { OtelTrace } from "@fiberplane/fpx-types";
 import { Link } from "react-router-dom";
 import { Timestamp } from "../RequestDetailsPage/Timestamp";
 

@@ -1,8 +1,8 @@
 import { type MizuOrphanLog, isMizuOrphanLog } from "@/queries";
 import { type VendorInfo, isCloudflareVendorInfo } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { getTypeIcon } from "../utils";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 type IconOptions = {
   vendorInfo?: VendorInfo;

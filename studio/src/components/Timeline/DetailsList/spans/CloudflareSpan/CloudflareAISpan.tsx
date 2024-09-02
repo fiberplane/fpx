@@ -1,11 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { CF_BINDING_RESULT } from "@/constants";
 import { getString } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
 import { CfBindingOverview } from "./shared";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 /**
  * The AI binding, as of writing, only has a `run` method.

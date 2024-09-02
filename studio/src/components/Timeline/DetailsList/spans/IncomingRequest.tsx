@@ -10,6 +10,7 @@ import {
   isSensitiveEnvVar,
 } from "@/utils";
 import { getMatchedRoute, getRequestMethod, getRequestUrl } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { useTimelineIcon } from "../../hooks";
 import {
@@ -20,7 +21,6 @@ import {
 } from "../../shared";
 import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
 import { TextOrJsonViewer } from "../TextJsonViewer";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 
 export function IncomingRequest({ span }: { span: OtelSpan }) {
   const id = span.span_id;

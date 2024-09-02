@@ -1,5 +1,4 @@
 import { Status } from "@/components/ui/status";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 import { SENSITIVE_HEADERS, cn, getHttpMethodTextColor, noop } from "@/utils";
 import {
   getRequestBody,
@@ -17,6 +16,7 @@ import {
   isNeonVendorInfo,
   isOpenAIVendorInfo,
 } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { format } from "sql-formatter";

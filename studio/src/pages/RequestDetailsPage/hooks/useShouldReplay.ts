@@ -1,10 +1,10 @@
-import type { OtelTrace } from "@fiberplane/fpx-types";
 import {
   getRequestHeaders,
   getRequestMethod,
   getString,
   isFpxRequestSpan,
 } from "@/utils";
+import type { OtelTrace } from "@fiberplane/fpx-types";
 
 export function useShouldReplay(trace: OtelTrace | null): boolean {
   if (!trace || trace?.spans?.length === 0) {

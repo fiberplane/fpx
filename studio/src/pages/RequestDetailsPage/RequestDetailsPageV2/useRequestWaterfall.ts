@@ -1,10 +1,10 @@
 import type { MizuOrphanLog } from "@/queries";
-import type { OtelSpan } from "@fiberplane/fpx-types";
 import {
   type SpanWithVendorInfo,
   type Waterfall,
   getVendorInfo,
 } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 
 export function useRequestWaterfall(
