@@ -11,13 +11,13 @@ export function getFromEnv(honoEnv: unknown, key: string) {
 }
 
 /**
- * Helper to get the env object to use for accessing and recording env vars.
+ * Return `process.env` if we're in Node.js, otherwise `honoEnv`
  *
- * In Node.js, the `env` object passed to `app.fetch` is different from the env object in other runtimes.
- * This helper will return the appropriate env object to use for accessing and recording env vars.
+ * Used to get the env object for accessing and recording env vars.
+ * This eixsts because in Node.js, the `env` object passed to `app.fetch` is different from the env object in other runtimes.
  *
  * @param honoEnv - The env object from the `app.fetch` method.
- * @returns - True if we should fallback to process.env, false otherwise.
+ * @returns - `process.env` if we're in Node.js, otherwise `honoEnv`.
  */
 export function getNodeSafeEnv(honoEnv: unknown) {
   const hasProcessEnv = runtimeHasProcessEnv();

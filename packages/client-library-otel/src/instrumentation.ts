@@ -107,10 +107,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           // NOTE - We do *not* want to have a default for the FPX_ENDPOINT,
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
-          const endpoint =
-            typeof env === "object" && env !== null
-              ? getFromEnv(env, ENV_FPX_ENDPOINT)
-              : null;
+          const endpoint = getFromEnv(env, ENV_FPX_ENDPOINT);
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
           const FPX_LOG_LEVEL = libraryDebugMode
