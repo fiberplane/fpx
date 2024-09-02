@@ -10,26 +10,31 @@ import {
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import type { ProbedRoute, Requestornator } from "../queries";
+import type {
+  // ProbedRoute, 
+  Requestornator
+} from "../queries";
 import { findMatchedRoute } from "../routes";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
+import { useActiveRoute } from "../store";
 
 export function AiTestGenerationPanel({
   history,
   toggleAiTestGenerationPanel,
-  getActiveRoute,
+  // getActiveRoute,
   removeServiceUrlFromPath,
 }: {
   history: Array<Requestornator>;
   toggleAiTestGenerationPanel: () => void;
-  getActiveRoute: () => ProbedRoute;
+  // getActiveRoute: () => ProbedRoute;
   removeServiceUrlFromPath: (path: string) => string;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
+  const activeRoute = useActiveRoute();
   const lastMatchingRequest = useMemo<Requestornator | null>(() => {
-    const activeRoute = getActiveRoute();
+    // const activeRoute = getActiveRoute();
 
     const match = history.find((response) => {
       const path = parsePathFromRequestUrl(response.app_requests?.requestUrl);
@@ -58,7 +63,7 @@ export function AiTestGenerationPanel({
     });
 
     return match ?? null;
-  }, [getActiveRoute, history, removeServiceUrlFromPath]);
+  }, [activeRoute, history, removeServiceUrlFromPath]);
 
   const [userInput, setUserInput] = useState("");
 

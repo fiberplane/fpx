@@ -4,7 +4,7 @@ import {
   type KeyValueParameter,
   createKeyValueParameters,
 } from "./KeyValueForm";
-import { useSessionHistory } from "./RequestorSessionHistoryContext";
+// import { useSessionHistory } from "./RequestorSessionHistoryContext";
 import {
   type ProbedRoute,
   type Requestornator,
@@ -17,6 +17,7 @@ import {
   isWsRequest,
 } from "./types";
 import { sortRequestornatorsDescending } from "./utils";
+import { useRequestorStore } from "./store";
 
 type RequestorHistoryHookArgs = {
   routes: ProbedRoute[];
@@ -40,10 +41,15 @@ export function useRequestorHistory({
   setQueryParams,
   showResponseBodyFromHistory,
 }: RequestorHistoryHookArgs) {
-  const {
-    sessionHistory: sessionHistoryTraceIds,
+  const { sessionHistory: sessionHistoryTraceIds, recordRequestInSessionHistory } = useRequestorStore(({ sessionHistory, recordRequestInSessionHistory }) => ({
+    sessionHistory,
     recordRequestInSessionHistory,
-  } = useSessionHistory();
+  }))
+  // const {
+  //   sessionHistory: sessionHistoryTraceIds,
+  //   recordRequestInSessionHistory,
+  // } = useSessionHistory();
+
   const { data: allRequests } = useFetchRequestorRequests();
 
   // Keep a history of recent requests and responses

@@ -12,7 +12,7 @@ import { Toaster } from "./components/ui/toaster";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import {
   RequestorPage,
-  RequestorSessionHistoryProvider,
+  // RequestorSessionHistoryProvider,
 } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -20,29 +20,27 @@ import { SettingsPage } from "./pages/SettingsPage";
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <RequestorSessionHistoryProvider>
-        <Router>
-          <TooltipProvider>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Redirect />} />
-                <Route path="/requests" element={<RequestsPage />} />
-                <Route
-                  path="/requests/otel/:traceId"
-                  element={<RequestDetailsPage />}
-                />
-                <Route
-                  path="/requests/:traceId"
-                  element={<RequestDetailsPage />}
-                />
-                <Route path="/requestor" element={<RequestorPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-              </Routes>
-            </Layout>
-            <Toaster />
-          </TooltipProvider>
-        </Router>
-      </RequestorSessionHistoryProvider>
+      <Router>
+        <TooltipProvider>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Redirect />} />
+              <Route path="/requests" element={<RequestsPage />} />
+              <Route
+                path="/requests/otel/:traceId"
+                element={<RequestDetailsPage />}
+              />
+              <Route
+                path="/requests/:traceId"
+                element={<RequestDetailsPage />}
+              />
+              <Route path="/requestor" element={<RequestorPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Routes>
+          </Layout>
+          <Toaster />
+        </TooltipProvider>
+      </Router>
     </QueryClientProvider>
   );
 }

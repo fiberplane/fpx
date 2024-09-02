@@ -4,6 +4,8 @@ import { RequestBodyType, RequestorBody, RequestsPanelTab, ResponsePanelTab } fr
 import { RequestorActiveResponse } from "../../reducer/state";
 import { RequestMethod, RequestMethodInputValue, RequestType } from "../../types";
 
+type RequestorTraceId = string;
+
 export interface RequestResponseSlice {
   serviceBaseUrl: string;
   path: string;
@@ -32,6 +34,10 @@ export interface RequestResponseSlice {
   showResponseBodyFromHistory: (traceId: string) => void;
   clearResponseBodyFromHistory: () => void;
   setActiveResponse: (response: RequestorActiveResponse | null) => void;
+
+  /** Session history related state */
+  sessionHistory: RequestorTraceId[];
+  recordRequestInSessionHistory: (traceId: RequestorTraceId) => void;
 }
 
 export interface RoutesSlice {

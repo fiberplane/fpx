@@ -64,6 +64,7 @@ export const routesSlice: StateCreator<
     // Add content type header (you might want to move this to a separate function)
     updateContentTypeHeader(state);
   }),
+
 });
 
 // Helper functions

@@ -12,6 +12,7 @@ import type { ProbedRoute, Requestornator } from "../queries";
 import type { RequestorBody } from "../reducer";
 import { isRequestorBodyType } from "../reducer/request-body";
 import { useAiRequestData } from "./generate-request-data";
+import { useRequestorStore } from "../store";
 
 export const FRIENDLY = "Friendly" as const;
 export const HOSTILE = "QA" as const;
@@ -35,6 +36,21 @@ export function useAi(
 ) {
   const { toast } = useToast();
   const isAiEnabled = useAiEnabled();
+
+  // const { 
+  //   selectedRoute,
+  //    history: requestHistory,
+  //     formSetters,
+  //      body
+  //     } = useRequestorStore((
+  //   { selectedRoute, history, formSetters, body }) => (
+  //   {
+  //     selectedRoute,
+  //     history,
+  //     formSetters,
+  //     body,
+  //   }
+  // ));
 
   const { ignoreAiInputsBanner, setIgnoreAiInputsBanner } =
     useIgnoreAiGeneratedInputsBanner();

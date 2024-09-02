@@ -1,2 +1,2 @@
-export { RequestorSessionHistoryProvider } from "./RequestorSessionHistoryContext";
+// export { RequestorSessionHistoryProvider } from "./RequestorSessionHistoryContext";
 export { useSessionHistory } from "./hooks";

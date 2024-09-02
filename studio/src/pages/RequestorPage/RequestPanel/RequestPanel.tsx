@@ -88,6 +88,8 @@ export function RequestPanel(props: RequestPanelProps) {
     sendWebsocketMessage,
   } = props;
 
+  // console.log('queryParams', queryParams);
+
   const { toast } = useToast();
 
   const shouldShowBody = shouldShowRequestTab("body");

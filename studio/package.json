@@ -52,6 +52,7 @@
     "highlight-words-core": "^1.2.2",
     "hono": "^4.4.8",
     "immer": "^10.1.1",
+    "proxy-memoize": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-highlight-words": "^0.20.0",

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
+import { memoize } from 'proxy-memoize';
 // import { routesSlice } from './slices/routesSlice';
 import { websocketSlice } from './slices/websocketSlice';
 import { tabsSlice } from './slices/tabsSlice';
@@ -8,11 +9,13 @@ import { tabsSlice } from './slices/tabsSlice';
 import { Store } from './slices/types';
 import { routesSlice } from './slices/routesSlice';
 import { requestResponseSlice } from './slices/requestResponseSlice';
+import { initialState } from '../reducer/state';
+import { _getActiveRoute } from '../reducer/reducer';
+// import { createInitialState } from '../reducer/state';
 
 // ... existing imports ...
 
 export type RequestorState = Store;
-
 export const useRequestorStore = create<RequestorState>()(
   devtools(
     persist(
@@ -22,6 +25,7 @@ export const useRequestorStore = create<RequestorState>()(
           ...websocketSlice(...a),
           ...tabsSlice(...a),
           ...requestResponseSlice(...a),
+          initialState,
         })
       ),
       {
@@ -35,6 +39,12 @@ export const useRequestorStore = create<RequestorState>()(
     { name: 'RequestorStore' }
   )
 );
+
+const getActiveRoute = memoize(_getActiveRoute);
+
+export function useActiveRoute() {
+  return useRequestorStore(getActiveRoute);
+}
 
 // import {create } from 'zustand';
 // import { RequestBodyType, RequestorActiveResponse, RequestorBody, createInitialState, initialState } from '../reducer/state';

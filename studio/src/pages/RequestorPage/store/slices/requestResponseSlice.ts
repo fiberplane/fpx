@@ -133,7 +133,7 @@ export const requestResponseSlice: StateCreator<
   }),
 
   // TODO - change the function ref when the serviceBaseUrl is updated
-  removeServiceUrlFromPath: (path) => removeBaseUrl(get().serviceBaseUrl, path),
+  removeServiceUrlFromPath: (path: string) => removeBaseUrl(get().serviceBaseUrl, path),
 
   activeHistoryResponseTraceId: null,
   activeResponse: null,
@@ -147,6 +147,14 @@ export const requestResponseSlice: StateCreator<
   setActiveResponse: (response) => set((state) => {
     state.activeResponse = response;
   }),
+
+
+  /** Session history related state */
+  sessionHistory: [],
+  recordRequestInSessionHistory: (traceId: string) => set((state) => {
+    state.sessionHistory.push(traceId);
+  }),
+
 
 });
 

@@ -133,18 +133,18 @@ export const RequestorPage = () => {
   ]);
 
   // TODO - this should be a selector
-  const getActiveRoute = useHandler(() => {
-    selectedRoute ?? {
-      path: "state.path",
-      method: "GET", //state.method,
-      requestType: "http",// state.requestType,
-      handler: "",
-      handlerType: "route",
-      currentlyRegistered: false,
-      routeOrigin: "custom",
-      isDraft: true,
-    }
-  });
+  // const getActiveRoute = useHandler(() => {
+  //   return selectedRoute ?? {
+  //     path: "state.path",
+  //     method: "GET", //state.method,
+  //     requestType: "http",// state.requestType,
+  //     handler: "",
+  //     handlerType: "route",
+  //     currentlyRegistered: false,
+  //     routeOrigin: "custom",
+  //     isDraft: true,
+  //   }
+  // });
 
   // TODO - this should be a thunk
   const addServiceUrlIfBarePath = useCallback(
@@ -491,7 +491,7 @@ export const RequestorPage = () => {
                         toggleAiTestGenerationPanel={
                           toggleAiTestGenerationPanel
                         }
-                        getActiveRoute={getActiveRoute}
+                        // getActiveRoute={getActiveRoute}
                         removeServiceUrlFromPath={removeServiceUrlFromPath}
                       />
                     </ResizablePanel>
