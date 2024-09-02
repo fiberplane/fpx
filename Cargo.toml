@@ -6,7 +6,6 @@ members = [
 	"fpx-workers",
 	"fpx-macros",
 	"xtask",
-	"zed-extension",
 ]
 default-members = ["fpx"]
 
