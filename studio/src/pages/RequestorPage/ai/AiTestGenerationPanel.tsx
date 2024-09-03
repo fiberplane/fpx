@@ -10,9 +10,7 @@ import {
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import type {
-  Requestornator,
-} from "../queries";
+import type { Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
 import { useActiveRoute, useServiceBaseUrl } from "../store";
 import { ContextEntry } from "./AiTestGenerationDrawer";

@@ -10,9 +10,7 @@ import {
 import Layout from "./Layout";
 import { Toaster } from "./components/ui/toaster";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
-import {
-  RequestorPage,
-} from "./pages/RequestorPage";
+import { RequestorPage } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
