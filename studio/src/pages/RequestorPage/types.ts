@@ -30,3 +30,18 @@ export type RequestType = z.infer<typeof RequestTypeSchema>;
 
 export const isWsRequest = (requestType: RequestType) =>
   WEBSOCKETS_ENABLED && requestType === "websocket";
+
+export const ProbedRouteSchema = z.object({
+  path: z.string(),
+  method: RequestMethodSchema,
+  handler: z.string(),
+  handlerType: z.enum(["route", "middleware"]),
+  currentlyRegistered: z.boolean(),
+  routeOrigin: z.enum(["discovered", "custom", "open_api"]),
+  openApiSpec: z.string().optional(),
+  requestType: RequestTypeSchema,
+  // NOTE - Added on the frontend, not stored in DB
+  isDraft: z.boolean().optional(),
+});
+
+export type ProbedRoute = z.infer<typeof ProbedRouteSchema>;

@@ -170,32 +170,32 @@ function OpenApiForm({
 
       const submissionRoutes: Route[] = schema.paths
         ? Object.entries(schema.paths).flatMap(
-            ([path, pathObj]: [string, PathObject]) => {
-              // destructure the params so we don't include them
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { parameters, ...pathObjWithoutParams } = pathObj;
-              return Object.entries(pathObjWithoutParams).map(
-                ([method, operation]: [string, OperationObject]) => {
-                  const seen = new WeakSet();
-                  return {
-                    path: path.replace(/{(.*?)}/g, ":$1"),
-                    method: method.toUpperCase(),
-                    handlerType: "route" as const,
-                    routeOrigin: "open_api" as const,
-                    openApiSpec: JSON.stringify(operation, (_key, value) => {
-                      if (typeof value === "object" && value !== null) {
-                        if (seen.has(value)) {
-                          return "[Circular]";
-                        }
-                        seen.add(value);
+          ([path, pathObj]: [string, PathObject]) => {
+            // destructure the params so we don't include them
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { parameters, ...pathObjWithoutParams } = pathObj;
+            return Object.entries(pathObjWithoutParams).map(
+              ([method, operation]: [string, OperationObject]) => {
+                const seen = new WeakSet();
+                return {
+                  path: path.replace(/{(.*?)}/g, ":$1"),
+                  method: method.toUpperCase(),
+                  handlerType: "route" as const,
+                  routeOrigin: "open_api" as const,
+                  openApiSpec: JSON.stringify(operation, (_key, value) => {
+                    if (typeof value === "object" && value !== null) {
+                      if (seen.has(value)) {
+                        return "[Circular]";
                       }
-                      return value;
-                    }),
-                  };
-                },
-              );
-            },
-          )
+                      seen.add(value);
+                    }
+                    return value;
+                  }),
+                };
+              },
+            );
+          },
+        )
         : [];
 
       addRoutes(submissionRoutes);

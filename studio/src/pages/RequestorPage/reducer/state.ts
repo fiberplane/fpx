@@ -3,8 +3,11 @@ import {
   KeyValueParameterSchema,
   enforceTerminalDraftParameter,
 } from "../KeyValueForm";
-import { ProbedRouteSchema } from "../queries";
-import { RequestMethodSchema, RequestTypeSchema } from "../types";
+import {
+  RequestMethodSchema,
+  RequestTypeSchema,
+  ProbedRouteSchema,
+} from "../types";
 // import { updateContentTypeHeader } from "./reducers";
 // import { addContentTypeHeader } from "./reducers";
 import { RequestorBodySchema } from "./request-body";
