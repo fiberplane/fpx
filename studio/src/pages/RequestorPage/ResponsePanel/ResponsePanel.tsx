@@ -35,9 +35,6 @@ import {
 } from "./Websocket";
 
 type Props = {
-  activeResponsePanelTab: ResponsePanelTab;
-  setActiveResponsePanelTab: (tab: string) => void;
-  shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   tracedResponse?: Requestornator;
   isLoading: boolean;
   websocketState: WebSocketState;
@@ -46,20 +43,37 @@ type Props = {
 };
 
 export const ResponsePanel = memo(function ResponsePanel({
-  activeResponsePanelTab,
-  setActiveResponsePanelTab,
-  shouldShowResponseTab,
   tracedResponse,
   isLoading,
   websocketState,
   openAiTestGenerationPanel,
   isAiTestGenerationPanelOpen,
 }: Props) {
-  const { activeResponse } = useRequestorStore(
-    useShallow(({ activeResponse }) => ({
-      activeResponse,
-    })),
+  const {
+    activeResponse,
+    visibleResponsePanelTabs,
+    activeResponsePanelTab,
+    setActiveResponsePanelTab,
+  } = useRequestorStore(
+    useShallow(
+      ({
+        activeResponse,
+        visibleResponsePanelTabs,
+        activeResponsePanelTab,
+        setActiveResponsePanelTab,
+      }) => ({
+        activeResponse,
+        visibleResponsePanelTabs,
+        activeResponsePanelTab,
+        setActiveResponsePanelTab,
+      }),
+    ),
   );
+
+  const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
+    return visibleResponsePanelTabs.includes(tab);
+  };
+
   const { requestType } = useActiveRoute();
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
 

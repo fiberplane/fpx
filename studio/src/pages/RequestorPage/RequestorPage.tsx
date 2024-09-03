@@ -20,7 +20,6 @@ import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
-import type { RequestsPanelTab, ResponsePanelTab } from "./reducer";
 import { _getActiveRoute } from "./reducer/reducer";
 import { useRoutes } from "./routes";
 import { useActiveRoute, useRequestorStore } from "./store";
@@ -40,195 +39,8 @@ function getMainSectionWidth() {
 export const RequestorPage = () => {
   const { toast } = useToast();
 
-  const {
-    // Request panel - Websocket message form
-    websocketMessage,
-    setWebsocketMessage,
-
-    // Requests Panel tabs
-    activeRequestsPanelTab,
-    setActiveRequestsPanelTab,
-    visibleRequestsPanelTabs,
-
-    // Response Panel tabs
-    activeResponsePanelTab,
-    visibleResponsePanelTabs,
-    setActiveResponsePanelTab,
-
-    // Response Panel response body
-    setActiveResponse,
-
-    // History (WIP)
-    activeHistoryResponseTraceId,
-    clearResponseBodyFromHistory,
-  } = useRequestorStore(
-    useShallow(
-      ({
-        // Request panel - Websocket message form
-        websocketMessage,
-        setWebsocketMessage,
-
-        // Requests Panel tabs
-        activeRequestsPanelTab,
-        setActiveRequestsPanelTab,
-        visibleRequestsPanelTabs,
-
-        // Response Panel tabs
-        activeResponsePanelTab,
-        visibleResponsePanelTabs,
-        setActiveResponsePanelTab,
-
-        // Response Panel response body
-        setActiveResponse,
-
-        // History (WIP)
-        activeHistoryResponseTraceId,
-        clearResponseBodyFromHistory,
-      }) => ({
-        // Request panel - Websocket message form
-        websocketMessage,
-        setWebsocketMessage,
-
-        // Requests Panel tabs
-        activeRequestsPanelTab,
-        setActiveRequestsPanelTab,
-        visibleRequestsPanelTabs,
-
-        // Response Panel tabs
-        activeResponsePanelTab,
-        visibleResponsePanelTabs,
-        setActiveResponsePanelTab,
-
-        // Response Panel response body
-        setActiveResponse,
-
-        // History (WIP)
-        activeHistoryResponseTraceId,
-        clearResponseBodyFromHistory,
-      }),
-    ),
-  );
-
-  // const {
-  //   // Routes panel
-  //   // state: {
-  //   // routes,
-  //   selectedRoute,
-  //   // },
-  //   // setRoutes,
-  //   // setServiceBaseUrl,
-  //   selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-  //   // getActiveRoute,
-
-  //   // Requestor input
-  //   // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-  //   // state: {
-  //   path,
-  //   method,
-  //   requestType,
-  //   serviceBaseUrl,
-  //   // },
-  //   updatePath: handlePathInputChange,
-  //   updateMethod: handleMethodChange,
-  //   // getIsInDraftMode,
-  //   // addServiceUrlIfBarePath,
-  //   // addBaseUrl,
-
-  //   // Request panel
-  //   // state: {
-  //   pathParams,
-  //   queryParams,
-  //   requestHeaders,
-  //   body,
-  //   // },
-  //   setPathParams,
-  //   updatePathParamValues,
-  //   clearPathParams,
-  //   setQueryParams,
-  //   setRequestHeaders,
-  //   setBody,
-  //   handleRequestBodyTypeChange,
-
-  //   // Request panel - Websocket message form
-  //   websocketMessage,
-  //   setWebsocketMessage,
-
-  //   // Requests Panel tabs
-  //   activeRequestsPanelTab,
-  //   setActiveRequestsPanelTab,
-  //   visibleRequestsPanelTabs,
-  //   // shouldShowRequestTab,
-
-  //   // Response Panel tabs
-  //   activeResponsePanelTab,
-  //   visibleResponsePanelTabs,
-  //   setActiveResponsePanelTab,
-  //   // shouldShowResponseTab,
-
-  //   // Response Panel response body
-  //   activeResponse,
-  //   setActiveResponse,
-
-  //   // History (WIP)
-  //   activeHistoryResponseTraceId,
-  //   showResponseBodyFromHistory,
-  //   clearResponseBodyFromHistory,
-  // } = requestorState;
-
-  // const getIsInDraftMode = useCallback((): boolean => {
-  //   return !selectedRoute;
-  // }, [selectedRoute]);
-
-  const shouldShowRequestTab = useCallback(
-    (tab: RequestsPanelTab): boolean => {
-      return visibleRequestsPanelTabs.includes(tab);
-    },
-    [visibleRequestsPanelTabs],
-  );
-
-  const shouldShowResponseTab = useCallback(
-    (tab: ResponsePanelTab): boolean => {
-      return visibleResponsePanelTabs.includes(tab);
-    },
-    [visibleResponsePanelTabs],
-  );
-
-  // const removeServiceUrlFromPath = useCallback(
-  //   (path: string) => {
-  //     // return removeBaseUrl(serviceBaseUrl, path);
-  //     // TODO - make this work again (this should do something with the serviceBaseUrl from the store)
-  //     return path;
-  //   },
-  //   [
-  //     // serviceBaseUrl
-  //   ],
-  // );
-
-  // TODO - this should be a selector
-  // const getActiveRoute = useHandler(() => {
-  //   return selectedRoute ?? {
-  //     path: "state.path",
-  //     method: "GET", //state.method,
-  //     requestType: "http",// state.requestType,
-  //     handler: "",
-  //     handlerType: "route",
-  //     currentlyRegistered: false,
-  //     routeOrigin: "custom",
-  //     isDraft: true,
-  //   }
-  // });
-
-  // TODO - this should be a thunk
-
-  // const activeRoute = useActiveRoute();
-
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
-  useRoutes(
-    // {
-    // setRoutes,
-    // setServiceBaseUrl,
-    // }
-  );
+  useRoutes();
 
   // NOTE - Use this to test overflow of requests panel
   // useEffect(() => {
@@ -239,27 +51,14 @@ export const RequestorPage = () => {
   //   );
   // }, []);
 
-  const {
-    history,
-    sessionHistory,
-    recordRequestInSessionHistory,
-  } =
+  const { history, sessionHistory, recordRequestInSessionHistory } =
     useRequestorHistory();
 
-  // The hook below uses this param as a useCallback
-  // dependency
-  // const requestInputs = useMemo(() => (
-  //   { path, method, route: activeRoute.path }
-  // ), [path, method, activeRoute.path])
-
-  const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
-    // requestInputs,
-    sessionHistory,
-    activeHistoryResponseTraceId,
-  );
+  const mostRecentRequestornatorForRoute =
+    useMostRecentRequestornator(sessionHistory);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
-    useMakeProxiedRequest({ clearResponseBodyFromHistory, setActiveResponse });
+    useMakeProxiedRequest();
 
   // WIP - Allows us to connect to a websocket and send messages through it
   const {
@@ -300,9 +99,7 @@ export const RequestorPage = () => {
     showAiGeneratedInputsBanner,
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
-  } = useAi(
-    history,
-  );
+  } = useAi(history);
 
   useHotkeys(
     "mod+g",
@@ -353,11 +150,6 @@ export const RequestorPage = () => {
 
   const requestContent = (
     <RequestPanel
-      activeRequestsPanelTab={activeRequestsPanelTab}
-      setActiveRequestsPanelTab={setActiveRequestsPanelTab}
-      shouldShowRequestTab={shouldShowRequestTab}
-      websocketMessage={websocketMessage}
-      setWebsocketMessage={setWebsocketMessage}
       aiEnabled={aiEnabled}
       isLoadingParameters={isLoadingParameters}
       fillInRequest={fillInRequest}
@@ -374,9 +166,6 @@ export const RequestorPage = () => {
   const responseContent = (
     <ResponsePanel
       tracedResponse={mostRecentRequestornatorForRoute}
-      activeResponsePanelTab={activeResponsePanelTab}
-      setActiveResponsePanelTab={setActiveResponsePanelTab}
-      shouldShowResponseTab={shouldShowResponseTab}
       isLoading={isRequestorRequesting}
       websocketState={websocketState}
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
@@ -520,13 +309,14 @@ export default RequestorPage;
  * When you select a route from the route side panel,
  * this will look for the most recent request made against that route.
  */
-function useMostRecentRequestornator(
-  all: Requestornator[],
-  activeHistoryResponseTraceId: string | null,
-) {
+function useMostRecentRequestornator(all: Requestornator[]) {
   const { path: routePath } = useActiveRoute();
-  const { path, method } = useRequestorStore(
-    useShallow(({ path, method }) => ({ path, method })),
+  const { path, method, activeHistoryResponseTraceId } = useRequestorStore(
+    useShallow(({ path, method, activeHistoryResponseTraceId }) => ({
+      path,
+      method,
+      activeHistoryResponseTraceId,
+    })),
   );
   return useMemo<Requestornator | undefined>(() => {
     if (activeHistoryResponseTraceId) {

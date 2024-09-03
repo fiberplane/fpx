@@ -2,16 +2,14 @@ import { PROBED_ROUTES_KEY } from "@/queries";
 import { validate } from "@scalar/openapi-parser";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
+import { useShallow } from "zustand/react/shallow";
 import { reduceFormDataParameters } from "./FormDataForm";
 import {
   type KeyValueParameter,
   reduceKeyValueParameters,
 } from "./KeyValueForm";
-import type {
-  RequestorActiveResponse,
-  RequestorBody,
-  RequestorResponseBody,
-} from "./reducer/state";
+import type { RequestorBody, RequestorResponseBody } from "./reducer/state";
+import { useRequestorStore } from "./store";
 import { RequestMethodSchema, RequestTypeSchema } from "./types";
 
 export const ProbedRouteSchema = z.object({
@@ -156,13 +154,13 @@ export type MakeProxiedRequestQueryFn = ReturnType<
   typeof useMakeProxiedRequest
 >["mutate"];
 
-export function useMakeProxiedRequest({
-  clearResponseBodyFromHistory,
-  setActiveResponse,
-}: {
-  clearResponseBodyFromHistory: () => void;
-  setActiveResponse: (response: RequestorActiveResponse | null) => void;
-}) {
+export function useMakeProxiedRequest() {
+  const { clearResponseBodyFromHistory, setActiveResponse } = useRequestorStore(
+    useShallow(({ clearResponseBodyFromHistory, setActiveResponse }) => ({
+      clearResponseBodyFromHistory,
+      setActiveResponse,
+    })),
+  );
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: makeProxiedRequest,

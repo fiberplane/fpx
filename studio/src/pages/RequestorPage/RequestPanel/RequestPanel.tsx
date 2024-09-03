@@ -21,27 +21,6 @@ import { useShallow } from "zustand/react/shallow";
 import { useRequestorStore } from "../store";
 
 type RequestPanelProps = {
-  activeRequestsPanelTab: RequestsPanelTab;
-  setActiveRequestsPanelTab: (tab: string) => void;
-  // method: RequestMethod;
-  // path: string;
-  // shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
-  // body: RequestorBody;
-  // FIXME
-  // setBody: (body: undefined | string | RequestorBody) => void;
-  // handleRequestBodyTypeChange: (
-  //   contentType: RequestBodyType,
-  //   isMultipart?: boolean,
-  // ) => void;
-  // pathParams: KeyValueParameter[];
-  // queryParams: KeyValueParameter[];
-  // setPathParams: (params: KeyValueParameter[]) => void;
-  // clearPathParams: () => void;
-  // setQueryParams: (params: KeyValueParameter[]) => void;
-  // setRequestHeaders: (headers: KeyValueParameter[]) => void;
-  // requestHeaders: KeyValueParameter[];
-  websocketMessage: string;
-  setWebsocketMessage: (message: string | undefined) => void;
   aiEnabled: boolean;
   isLoadingParameters: boolean;
   fillInRequest: () => void;
@@ -58,23 +37,6 @@ export const RequestPanel = memo(function RequestPanel(
   props: RequestPanelProps,
 ) {
   const {
-    // handleRequestBodyTypeChange,
-    activeRequestsPanelTab,
-    setActiveRequestsPanelTab,
-    // shouldShowRequestTab,
-    // body,
-    // path,
-    // method,
-    // setBody,
-    // pathParams,
-    // queryParams,
-    // requestHeaders,
-    // setPathParams,
-    // clearPathParams,
-    // setQueryParams,
-    // setRequestHeaders,
-    websocketMessage,
-    setWebsocketMessage,
     aiEnabled,
     isLoadingParameters,
     fillInRequest,
@@ -100,6 +62,10 @@ export const RequestPanel = memo(function RequestPanel(
     setPathParams,
     clearPathParams,
     handleRequestBodyTypeChange,
+    activeRequestsPanelTab,
+    setActiveRequestsPanelTab,
+    websocketMessage,
+    setWebsocketMessage,
   } = useRequestorStore(
     useShallow(
       ({
@@ -115,6 +81,10 @@ export const RequestPanel = memo(function RequestPanel(
         setPathParams,
         clearPathParams,
         handleRequestBodyTypeChange,
+        activeRequestsPanelTab,
+        setActiveRequestsPanelTab,
+        websocketMessage,
+        setWebsocketMessage,
       }) => ({
         path,
         body,
@@ -128,6 +98,10 @@ export const RequestPanel = memo(function RequestPanel(
         setPathParams,
         clearPathParams,
         handleRequestBodyTypeChange,
+        activeRequestsPanelTab,
+        setActiveRequestsPanelTab,
+        websocketMessage,
+        setWebsocketMessage,
       }),
     ),
   );
