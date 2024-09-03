@@ -54,7 +54,6 @@ export const TimelineGraphLog: React.FC<{
           <div className="h-1.5 w-1.5 bg-blue-500 rounded-full" />
         </div>
       </div>
-      <div className="ml-auto text-gray-400 text-xs w-12 px-2" />
     </a>
   );
 };
