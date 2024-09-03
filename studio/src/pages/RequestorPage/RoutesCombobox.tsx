@@ -22,19 +22,19 @@ import { cn } from "@/utils";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { RouteItem } from "./NavigationPanel/RoutesPanel";
-import type { ProbedRoute } from "./queries";
 import { AddRoutesDialog } from "./routes/AddRouteButton";
 import { useRequestorStore } from "./store";
 
-type RoutesComboboxProps = {
-  selectedRoute: ProbedRoute | null;
-  handleRouteClick: (route: ProbedRoute) => void;
-};
 
-export const RoutesCombobox = React.memo(function RoutesCombobox(props: RoutesComboboxProps) {
-  const { routes } = useRequestorStore(
-    useShallow(({ routes }) => ({
+export const RoutesCombobox = React.memo(function RoutesCombobox() {
+  const { routes, selectedRoute, selectRoute: handleRouteClick } = useRequestorStore(
+    useShallow(({ routes,
+      selectedRoute,
+      selectRoute,
+    }) => ({
       routes,
+      selectedRoute,
+      selectRoute,
     })),
   );
   const [openRoutesDialog, setOpenRoutesDialog] = React.useState(false);
@@ -47,7 +47,6 @@ export const RoutesCombobox = React.memo(function RoutesCombobox(props: RoutesCo
   });
 
   const [openApi, setOpenApi] = React.useState(false);
-  const { selectedRoute, handleRouteClick } = props;
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState<string | undefined>(
     selectedRoute ? `${selectedRoute.method}-${selectedRoute.path}` : undefined,

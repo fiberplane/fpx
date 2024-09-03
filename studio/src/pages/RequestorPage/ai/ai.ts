@@ -15,70 +15,74 @@ import { useAiRequestData } from "./generate-request-data";
 import { useShallow } from "zustand/react/shallow";
 import { useRequestorStore } from "../store";
 import { useHandler } from "@fiberplane/hooks";
+import { useAddServiceUrlIfBarePath } from "../store/useAddServiceUrlIfBarePath";
 
 export const FRIENDLY = "Friendly" as const;
 export const HOSTILE = "QA" as const;
 
 export type AiTestingPersona = "Friendly" | "QA";
 
-type FormSetters = {
-  setBody: (body: string | RequestorBody) => void;
-  setQueryParams: (params: KeyValueParameter[]) => void;
-  setRequestHeaders: (params: KeyValueParameter[]) => void;
-  setPath: (path: string) => void;
-  updatePathParamValues: (pathParams: { key: string; value: string }[]) => void;
-  // addServiceUrlIfBarePath: (path: string) => string;
-};
+// type FormSetters = {
+//   setBody: (body: string | RequestorBody) => void;
+//   setQueryParams: (params: KeyValueParameter[]) => void;
+//   setRequestHeaders: (params: KeyValueParameter[]) => void;
+//   setPath: (path: string) => void;
+//   updatePathParamValues: (pathParams: { key: string; value: string }[]) => void;
+//   // addServiceUrlIfBarePath: (path: string) => string;
+// };
 
 export function useAi(
-  selectedRoute: ProbedRoute | null,
+  // selectedRoute: ProbedRoute | null,
   requestHistory: Array<Requestornator>,
   // formSetters: FormSetters,
-  body: RequestorBody,
+  // body: RequestorBody,
 ) {
   const { toast } = useToast();
   const isAiEnabled = useAiEnabled();
-
+  const addServiceUrlIfBarePath = useAddServiceUrlIfBarePath();
   const {
-  //   selectedRoute,
-  //    history: requestHistory,
-  //     formSetters,
-  //      body
-  setBody,
-  setQueryParams,
-  updatePath: setPath,
-  setRequestHeaders,
-  updatePathParamValues,
-  // addServiceUrlIfBarePath,
-      } = useRequestorStore(
-    useShallow((
-      { 
-        
+    //   selectedRoute,
+    //    history: requestHistory,
+    //     formSetters,
+    //      body
+    setBody,
+    setQueryParams,
+    updatePath: setPath,
+    setRequestHeaders,
+    updatePathParamValues,
+    body,
+    selectedRoute,
+    // addServiceUrlIfBarePath,
+  } = useRequestorStore(
+    useShallow(
+      ({
         setBody,
         setQueryParams,
         updatePath,
         setRequestHeaders,
         updatePathParamValues,
-        addServiceUrlIfBarePath,
-    // selectedRoute, history, formSetters, body 
-      }
-    ) => (
-      {
+        body,
+        selectedRoute,
+        // addServiceUrlIfBarePath,
+        // selectedRoute, history, formSetters, body
+      }) => ({
         setBody,
         setQueryParams,
         updatePath,
         setRequestHeaders,
         updatePathParamValues,
-        addServiceUrlIfBarePath,
-    
-      }
-  //   {
-  //     selectedRoute,
-  //     history,
-  //     formSetters,
-  //     body,
-  //   }
-  ));
+        body,
+        selectedRoute,
+        // addServiceUrlIfBarePath,
+      }),
+      //   {
+      //     selectedRoute,
+      //     history,
+      //     formSetters,
+      //     body,
+      //   }
+    ),
+  );
 
   const { ignoreAiInputsBanner, setIgnoreAiInputsBanner } =
     useIgnoreAiGeneratedInputsBanner();
@@ -87,12 +91,12 @@ export function useAi(
     useState(false);
 
   // const {
-    // setBody,
-    // setQueryParams,
-    // setPath,
-    // setRequestHeaders,
-    // updatePathParamValues,
-    // addServiceUrlIfBarePath,
+  // setBody,
+  // setQueryParams,
+  // setPath,
+  // setRequestHeaders,
+  // updatePathParamValues,
+  // addServiceUrlIfBarePath,
   // } = formSetters;
 
   const bodyType = body.type;

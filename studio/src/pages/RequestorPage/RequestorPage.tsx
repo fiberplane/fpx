@@ -44,11 +44,11 @@ export const RequestorPage = () => {
     // Routes panel
     // state: {
     // routes,
-    selectedRoute,
+    // selectedRoute,
     // },
     // setRoutes,
     // setServiceBaseUrl,
-    selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+    // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
     // getActiveRoute,
 
     // Requestor input
@@ -56,7 +56,7 @@ export const RequestorPage = () => {
     // state: {
     path,
     method,
-    requestType,
+    // requestType,
     // serviceBaseUrl,
     // },
     updatePath: handlePathInputChange,
@@ -109,7 +109,7 @@ export const RequestorPage = () => {
       // Routes panel
       // state: {
       // routes,
-      selectedRoute,
+      // selectedRoute,
       // },
       // setRoutes,
       // setServiceBaseUrl,
@@ -173,11 +173,11 @@ export const RequestorPage = () => {
       // Routes panel
       // state: {
       // routes,
-      selectedRoute,
+      // selectedRoute,
       // },
       // setRoutes,
       // setServiceBaseUrl,
-      selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+      // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
       // getActiveRoute,
 
       // Requestor input
@@ -236,8 +236,6 @@ export const RequestorPage = () => {
     })
   ));
 
-  // @ts-expect-error - This is helpful for debugging, soz
-  // globalThis.requestorState = requestorState;
   // const {
   //   // Routes panel
   //   // state: {
@@ -304,9 +302,9 @@ export const RequestorPage = () => {
   //   clearResponseBodyFromHistory,
   // } = requestorState;
 
-  const getIsInDraftMode = useCallback((): boolean => {
-    return !selectedRoute;
-  }, [selectedRoute]);
+  // const getIsInDraftMode = useCallback((): boolean => {
+  //   return !selectedRoute;
+  // }, [selectedRoute]);
 
   const shouldShowRequestTab = useCallback(
     (tab: RequestsPanelTab): boolean => {
@@ -413,18 +411,18 @@ export const RequestorPage = () => {
 
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
-    body,
+    // body,
     // addServiceUrlIfBarePath,
-    path,
-    method,
-    pathParams,
-    queryParams,
-    requestHeaders,
+    // path,
+    // method,
+    // pathParams,
+    // queryParams,
+    // requestHeaders,
     makeRequest,
     connectWebsocket,
     recordRequestInSessionHistory,
-    selectedRoute,
-    requestType,
+    // selectedRoute,
+    // requestType,
   });
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -452,17 +450,17 @@ export const RequestorPage = () => {
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
   } = useAi(
-    selectedRoute,
+    // selectedRoute,
     history,
-    {
-      setBody,
-      setQueryParams,
-      setPath: handlePathInputChange,
-      setRequestHeaders,
-      updatePathParamValues,
-      // addServiceUrlIfBarePath,
-    },
-    body,
+    // {
+    //   setBody,
+    //   setQueryParams,
+    //   setPath: handlePathInputChange,
+    //   setRequestHeaders,
+    //   updatePathParamValues,
+    //   // addServiceUrlIfBarePath,
+    // },
+    // body,
   );
 
   useHotkeys(
@@ -582,9 +580,9 @@ export const RequestorPage = () => {
         )}
       >
         <RoutesCombobox
-          // routes={routes}
-          selectedRoute={selectedRoute}
-          handleRouteClick={handleSelectRoute}
+        // routes={routes}
+        // selectedRoute={selectedRoute}
+        // handleRouteClick={handleSelectRoute}
         />
       </div>
       <ResizablePanelGroup
@@ -632,17 +630,17 @@ export const RequestorPage = () => {
             )}
           >
             <RequestorInput
-              requestType={activeRoute.requestType}
-              method={method}
-              handleMethodChange={handleMethodChange}
-              path={path}
-              handlePathInputChange={handlePathInputChange}
+              // requestType={activeRoute.requestType}
+              // method={method}
+              // handleMethodChange={handleMethodChange}
+              // path={path}
+              // handlePathInputChange={handlePathInputChange}
               onSubmit={onSubmit}
               disconnectWebsocket={disconnectWebsocket}
               isRequestorRequesting={isRequestorRequesting}
               formRef={formRef}
               websocketState={websocketState}
-              getIsInDraftMode={getIsInDraftMode}
+            // getIsInDraftMode={getIsInDraftMode}
             />
             {isSmallScreen ? (
               <>

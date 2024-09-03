@@ -6,35 +6,69 @@ import type { RequestorBody, RequestorState } from "./reducer";
 import { isWsRequest } from "./types";
 import { useHandler } from "@fiberplane/hooks";
 import { useAddServiceUrlIfBarePath } from "./store/useAddServiceUrlIfBarePath";
+import { useRequestorStore } from "./store";
+import { useShallow } from "zustand/react/shallow";
 
 export function useRequestorSubmitHandler({
-  requestType,
-  selectedRoute,
-  body,
-  path,
-  // addServiceUrlIfBarePath,
-  method,
-  pathParams,
-  queryParams,
-  requestHeaders,
+  // requestType,
+  // selectedRoute,
+  // body,
+  // path,
+  // method,
+  // pathParams,
+  // queryParams,
+  // requestHeaders,
   makeRequest,
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
   // addServiceUrlIfBarePath: (url: string) => string;
-  selectedRoute: ProbedRoute | null;
-  body: RequestorBody;
-  path: string;
-  method: string;
-  pathParams: KeyValueParameter[];
-  queryParams: KeyValueParameter[];
-  requestHeaders: KeyValueParameter[];
+  // selectedRoute: ProbedRoute | null;
+  // body: RequestorBody;
+  // path: string;
+  // method: string;
+  // pathParams: KeyValueParameter[];
+  // queryParams: KeyValueParameter[];
+  // requestHeaders: KeyValueParameter[];
   makeRequest: MakeProxiedRequestQueryFn;
   connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
-  requestType: RequestorState["requestType"];
+  // requestType: RequestorState["requestType"];
 }) {
   const { toast } = useToast();
+
+  const {
+    selectedRoute,
+    body,
+    path,
+    method,
+    pathParams,
+    queryParams,
+    requestHeaders,
+    requestType,
+  } = useRequestorStore(
+    useShallow(
+      ({
+        selectedRoute,
+        body,
+        path,
+        method,
+        pathParams,
+        queryParams,
+        requestHeaders,
+        requestType,
+      }) => ({
+        selectedRoute,
+        body,
+        path,
+        method,
+        pathParams,
+        queryParams,
+        requestHeaders,
+        requestType,
+      }),
+    ),
+  );
 
   const addServiceUrlIfBarePath = useAddServiceUrlIfBarePath();
   return useHandler((e: React.FormEvent<HTMLFormElement>) => {

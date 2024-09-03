@@ -1,25 +1,25 @@
 import { removeQueryParams } from "@/utils";
 import { useMemo } from "react";
 import {
-  type KeyValueParameter,
+  // type KeyValueParameter,
   createKeyValueParameters,
 } from "./KeyValueForm";
 // import { useSessionHistory } from "./RequestorSessionHistoryContext";
 import {
-  type ProbedRoute,
+  // type ProbedRoute,
   type Requestornator,
   useFetchRequestorRequests,
 } from "./queries";
 import { findMatchedRoute } from "./routes";
 import { useRequestorStore } from "./store";
 import {
-  type RequestMethodInputValue,
+  // type RequestMethodInputValue,
   isRequestMethod,
   isWsRequest,
 } from "./types";
 import { sortRequestornatorsDescending } from "./utils";
 import { useShallow } from "zustand/react/shallow";
-import { set } from "date-fns";
+// import { set } from "date-fns";
 import { useHandler } from "@fiberplane/hooks";
 
 // type RequestorHistoryHookArgs = {
@@ -128,16 +128,20 @@ export function useRequestorHistory(
       );
 
       if (matchedRoute) {
-        const pathParamsObject = match.app_requests.requestPathParams ?? {};
-        const pathParams = createKeyValueParameters(
-          Object.entries(pathParamsObject).map(([key, value]) => ({
-            key,
-            value,
-          })),
-        );
+        // const pathParamsObject = match.app_requests.requestPathParams ?? {};
+        // const pathParams = createKeyValueParameters(
+        //   Object.entries(pathParamsObject).map(([key, value]) => ({
+        //     key,
+        //     value,
+        //   })),
+        // );
 
+        // TODO - Handle path params
         // NOTE - Helps us set path parameters correctly
-        handleSelectRoute(matchedRoute.route, pathParams);
+        handleSelectRoute(
+          matchedRoute.route,
+          // pathParams
+        );
 
         // @ts-expect-error - We don't handle ALL methods well yet
         if (matchedRoute.route.method === "ALL") {
