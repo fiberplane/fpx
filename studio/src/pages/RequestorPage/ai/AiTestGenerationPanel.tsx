@@ -15,27 +15,22 @@ import type {
   Requestornator,
 } from "../queries";
 import { findMatchedRoute } from "../routes";
-import { useActiveRoute } from "../store";
+import { useActiveRoute, useServiceBaseUrl } from "../store";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
 
 export function AiTestGenerationPanel({
   history,
   toggleAiTestGenerationPanel,
-  // getActiveRoute,
-  removeServiceUrlFromPath,
 }: {
   history: Array<Requestornator>;
   toggleAiTestGenerationPanel: () => void;
-  // getActiveRoute: () => ProbedRoute;
-  removeServiceUrlFromPath: (path: string) => string;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
   const activeRoute = useActiveRoute();
+  const { removeServiceUrlFromPath } = useServiceBaseUrl();
   const lastMatchingRequest = useMemo<Requestornator | null>(() => {
-    // const activeRoute = getActiveRoute();
-
     const match = history.find((response) => {
       const path = parsePathFromRequestUrl(response.app_requests?.requestUrl);
 
@@ -54,7 +49,7 @@ export function AiTestGenerationPanel({
         return true;
       }
 
-      // HACK - For requesets against non-detected routes, we can search for the exact request url...
+      // HACK - For requests against non-detected routes, we can search for the exact request url...
       if (response.app_requests?.requestUrl === activeRoute.path) {
         return true;
       }

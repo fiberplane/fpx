@@ -24,7 +24,7 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../reducer/state";
-import { useActiveRoute, useRequestorStore } from "../store";
+import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
 import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
@@ -35,40 +35,35 @@ import {
 } from "./Websocket";
 
 type Props = {
-  // activeResponse: RequestorActiveResponse | null;
   activeResponsePanelTab: ResponsePanelTab;
   setActiveResponsePanelTab: (tab: string) => void;
   shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   tracedResponse?: Requestornator;
   isLoading: boolean;
-  // requestType: RequestType;
   websocketState: WebSocketState;
   openAiTestGenerationPanel: () => void;
   isAiTestGenerationPanelOpen: boolean;
-  removeServiceUrlFromPath: (url: string) => string;
 };
 
 export const ResponsePanel = memo(function ResponsePanel({
-  // activeResponse,
   activeResponsePanelTab,
   setActiveResponsePanelTab,
   shouldShowResponseTab,
   tracedResponse,
   isLoading,
-  // requestType,
   websocketState,
   openAiTestGenerationPanel,
   isAiTestGenerationPanelOpen,
-  removeServiceUrlFromPath,
 }: Props) {
-  // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
   const { activeResponse } = useRequestorStore(
     useShallow(({ activeResponse }) => ({
       activeResponse,
     })),
   );
   const { requestType } = useActiveRoute();
+  const { removeServiceUrlFromPath } = useServiceBaseUrl();
 
+  // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
   const responseToRender = activeResponse ?? tracedResponse;
   const isFailure = isRequestorActiveResponse(responseToRender)
     ? responseToRender.isFailure

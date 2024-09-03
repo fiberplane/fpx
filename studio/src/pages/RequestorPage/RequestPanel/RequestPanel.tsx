@@ -8,10 +8,7 @@ import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { AiTestingPersona } from "../ai";
-import type {
-  RequestorBody,
-  RequestsPanelTab,
-} from "../reducer";
+import type { RequestorBody, RequestsPanelTab } from "../reducer";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";

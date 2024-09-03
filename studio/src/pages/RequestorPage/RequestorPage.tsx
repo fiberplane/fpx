@@ -193,16 +193,16 @@ export const RequestorPage = () => {
     [visibleResponsePanelTabs],
   );
 
-  const removeServiceUrlFromPath = useCallback(
-    (path: string) => {
-      // return removeBaseUrl(serviceBaseUrl, path);
-      // TODO - make this work again (this should do something with the serviceBaseUrl from the store)
-      return path;
-    },
-    [
-      // serviceBaseUrl
-    ],
-  );
+  // const removeServiceUrlFromPath = useCallback(
+  //   (path: string) => {
+  //     // return removeBaseUrl(serviceBaseUrl, path);
+  //     // TODO - make this work again (this should do something with the serviceBaseUrl from the store)
+  //     return path;
+  //   },
+  //   [
+  //     // serviceBaseUrl
+  //   ],
+  // );
 
   // TODO - this should be a selector
   // const getActiveRoute = useHandler(() => {
@@ -388,7 +388,6 @@ export const RequestorPage = () => {
       activeRequestsPanelTab={activeRequestsPanelTab}
       setActiveRequestsPanelTab={setActiveRequestsPanelTab}
       shouldShowRequestTab={shouldShowRequestTab}
-      // handleRequestBodyTypeChange={handleRequestBodyTypeChange}
       websocketMessage={websocketMessage}
       setWebsocketMessage={setWebsocketMessage}
       aiEnabled={aiEnabled}
@@ -406,7 +405,6 @@ export const RequestorPage = () => {
 
   const responseContent = (
     <ResponsePanel
-      // activeResponse={activeResponse}
       tracedResponse={mostRecentRequestornatorForRoute}
       activeResponsePanelTab={activeResponsePanelTab}
       setActiveResponsePanelTab={setActiveResponsePanelTab}
@@ -415,7 +413,6 @@ export const RequestorPage = () => {
       websocketState={websocketState}
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
-      removeServiceUrlFromPath={removeServiceUrlFromPath}
     />
   );
 
@@ -554,7 +551,7 @@ export const RequestorPage = () => {
                           toggleAiTestGenerationPanel
                         }
                         // getActiveRoute={getActiveRoute}
-                        removeServiceUrlFromPath={removeServiceUrlFromPath}
+                        // removeServiceUrlFromPath={removeServiceUrlFromPath}
                       />
                     </ResizablePanel>
                   </>
