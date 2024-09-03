@@ -25,7 +25,7 @@ type RequestPanelProps = {
   setActiveRequestsPanelTab: (tab: string) => void;
   // method: RequestMethod;
   // path: string;
-  shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
+  // shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
   // body: RequestorBody;
   // FIXME
   // setBody: (body: undefined | string | RequestorBody) => void;
@@ -61,7 +61,7 @@ export const RequestPanel = memo(function RequestPanel(
     // handleRequestBodyTypeChange,
     activeRequestsPanelTab,
     setActiveRequestsPanelTab,
-    shouldShowRequestTab,
+    // shouldShowRequestTab,
     // body,
     // path,
     // method,
@@ -132,6 +132,16 @@ export const RequestPanel = memo(function RequestPanel(
     ),
   );
   const { toast } = useToast();
+
+  const { visibleRequestsPanelTabs } = useRequestorStore(
+    useShallow(({ visibleRequestsPanelTabs }) => ({
+      visibleRequestsPanelTabs,
+    })),
+  );
+
+  const shouldShowRequestTab = (tab: RequestsPanelTab): boolean => {
+    return visibleRequestsPanelTabs.includes(tab);
+  };
 
   const shouldShowBody = shouldShowRequestTab("body");
   const shouldShowMessages = shouldShowRequestTab("messages");

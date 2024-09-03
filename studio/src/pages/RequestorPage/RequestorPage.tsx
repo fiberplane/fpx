@@ -243,21 +243,8 @@ export const RequestorPage = () => {
     history,
     sessionHistory,
     recordRequestInSessionHistory,
-    // loadHistoricalRequest,
   } =
-    useRequestorHistory(
-      // {
-      // routes,
-      // handleSelectRoute,
-      // setPath: handlePathInputChange,
-      // setMethod: handleMethodChange,
-      // setPathParams,
-      // setBody,
-      // setQueryParams,
-      // setRequestHeaders,
-      // showResponseBodyFromHistory,
-      // }
-    );
+    useRequestorHistory();
 
   // The hook below uses this param as a useCallback
   // dependency
@@ -284,18 +271,9 @@ export const RequestorPage = () => {
 
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
-    // body,
-    // addServiceUrlIfBarePath,
-    // path,
-    // method,
-    // pathParams,
-    // queryParams,
-    // requestHeaders,
     makeRequest,
     connectWebsocket,
     recordRequestInSessionHistory,
-    // selectedRoute,
-    // requestType,
   });
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -323,17 +301,7 @@ export const RequestorPage = () => {
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
   } = useAi(
-    // selectedRoute,
     history,
-    // {
-    //   setBody,
-    //   setQueryParams,
-    //   setPath: handlePathInputChange,
-    //   setRequestHeaders,
-    //   updatePathParamValues,
-    //   // addServiceUrlIfBarePath,
-    // },
-    // body,
   );
 
   useHotkeys(
@@ -437,11 +405,7 @@ export const RequestorPage = () => {
           "lg:hidden",
         )}
       >
-        <RoutesCombobox
-        // routes={routes}
-        // selectedRoute={selectedRoute}
-        // handleRouteClick={handleSelectRoute}
-        />
+        <RoutesCombobox />
       </div>
       <ResizablePanelGroup
         direction="horizontal"
@@ -458,14 +422,7 @@ export const RequestorPage = () => {
               maxSize={maxSize}
               defaultSize={(320 / width) * 100}
             >
-              <RoutesPanel
-              // routes={routes}
-              // selectedRoute={selectedRoute}
-              // handleRouteClick={handleSelectRoute}
-              // history={history}
-              // loadHistoricalRequest={loadHistoricalRequest}
-              // removeServiceUrlFromPath={removeServiceUrlFromPath}
-              />
+              <RoutesPanel />
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
@@ -488,17 +445,11 @@ export const RequestorPage = () => {
             )}
           >
             <RequestorInput
-              // requestType={activeRoute.requestType}
-              // method={method}
-              // handleMethodChange={handleMethodChange}
-              // path={path}
-              // handlePathInputChange={handlePathInputChange}
               onSubmit={onSubmit}
               disconnectWebsocket={disconnectWebsocket}
               isRequestorRequesting={isRequestorRequesting}
               formRef={formRef}
               websocketState={websocketState}
-              // getIsInDraftMode={getIsInDraftMode}
             />
             {isSmallScreen ? (
               <>
@@ -550,8 +501,6 @@ export const RequestorPage = () => {
                         toggleAiTestGenerationPanel={
                           toggleAiTestGenerationPanel
                         }
-                        // getActiveRoute={getActiveRoute}
-                        // removeServiceUrlFromPath={removeServiceUrlFromPath}
                       />
                     </ResizablePanel>
                   </>
