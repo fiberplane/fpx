@@ -9,8 +9,10 @@ use std::collections::BTreeMap;
 pub struct TypeScriptCompatSpan {
     pub span_id: Option<String>,
     pub trace_id: Option<String>,
-    pub created_at: time::OffsetDateTime,
-    pub updated_at: time::OffsetDateTime,
+    // HACK: We're reporting these fields in the following format: "createdAt":"2024-09-03 08:40:45"
+    // commenting out for now
+    // pub created_at: time::OffsetDateTime,
+    // pub updated_at: time::OffsetDateTime,
     pub parsed_payload: TypeScriptCompatOtelSpan,
 }
 
@@ -19,8 +21,8 @@ impl From<crate::data::models::Span> for TypeScriptCompatSpan {
         Self {
             span_id: Some(span.span_id),
             trace_id: Some(span.trace_id),
-            created_at: span.end_time.into(),
-            updated_at: span.end_time.into(),
+            // created_at: span.end_time.into(),
+            // updated_at: span.end_time.into(),
             parsed_payload: span.inner.0.into(),
         }
     }
