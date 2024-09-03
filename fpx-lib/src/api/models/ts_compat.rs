@@ -96,7 +96,7 @@ impl From<AttributeMap> for TypeScriptCompatAttributeMap {
         let result = attr_map
             .0
             .into_iter()
-            .map(|(key, value)| (key, value.map(Into::into)))
+            .map(|(key, value)| (key, value.map(|v| v.into())))
             .collect();
 
         TypeScriptCompatAttributeMap(result)
