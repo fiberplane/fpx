@@ -103,7 +103,5 @@ export function useRoutes() {
   return {
     isError,
     isLoading,
-    // routes,
-    // activeRoutesAndMiddleware,
   };
 }

@@ -20,36 +20,21 @@ import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
 import { useActiveRoute, useRequestorStore } from "./store";
 import {
-  // type RequestMethod,
-  // type RequestMethodInputValue,
-  // type RequestType,
   isWsRequest,
 } from "./types";
 import type { WebSocketState } from "./useMakeWebsocketRequest";
 
 type RequestInputProps = {
-  // method: RequestMethod;
-  // handleMethodChange: (method: RequestMethodInputValue) => void;
-  // path?: string;
-  // handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
   formRef: React.RefObject<HTMLFormElement>;
-  // requestType: RequestType;
   websocketState: WebSocketState;
   disconnectWebsocket: () => void;
-  // getIsInDraftMode: () => boolean;
 };
 
 export function RequestorInput({
-  // getIsInDraftMode,
-  // method,
-  // handleMethodChange,
-  // path,
-  // handlePathInputChange,
   onSubmit,
   isRequestorRequesting,
-  // requestType,
   formRef,
   websocketState,
   disconnectWebsocket,
