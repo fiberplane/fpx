@@ -4,7 +4,7 @@ use opentelemetry_proto::tonic::trace::v1::Status;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TypeScriptCompatSpan {
     pub span_id: Option<String>,
