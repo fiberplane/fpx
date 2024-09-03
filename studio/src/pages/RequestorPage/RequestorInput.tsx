@@ -102,7 +102,7 @@ export function RequestorInput({
           onChange={(e) => {
             handlePathInputChange(e.target.value);
           }}
-          className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
+          className="flex-grow text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
         />
       </div>
       <div className="flex items-center space-x-2 px-2 py-0">
