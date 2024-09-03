@@ -67,7 +67,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         value={value}
         placeholder="value"
         onChange={(e) => onChangeValue(e.target.value)}
-        className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none"
+        className="h-8 min-width-28 w-auto bg-transparent shadow-none px-2 py-0 text-sm border-none"
       />
       <div
         className={cn("ml-1 flex invisible", {
