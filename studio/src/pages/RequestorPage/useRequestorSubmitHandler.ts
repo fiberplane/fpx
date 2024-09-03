@@ -4,13 +4,15 @@ import type { KeyValueParameter } from "./KeyValueForm";
 import type { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
 import type { RequestorBody, RequestorState } from "./reducer";
 import { isWsRequest } from "./types";
+import { useHandler } from "@fiberplane/hooks";
+import { useAddServiceUrlIfBarePath } from "./store/useAddServiceUrlIfBarePath";
 
 export function useRequestorSubmitHandler({
   requestType,
   selectedRoute,
   body,
   path,
-  addServiceUrlIfBarePath,
+  // addServiceUrlIfBarePath,
   method,
   pathParams,
   queryParams,
@@ -19,7 +21,7 @@ export function useRequestorSubmitHandler({
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addServiceUrlIfBarePath: (url: string) => string;
+  // addServiceUrlIfBarePath: (url: string) => string;
   selectedRoute: ProbedRoute | null;
   body: RequestorBody;
   path: string;
@@ -33,98 +35,83 @@ export function useRequestorSubmitHandler({
   requestType: RequestorState["requestType"];
 }) {
   const { toast } = useToast();
-  return useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
 
-      if (isWsRequest(requestType)) {
-        const url = addServiceUrlIfBarePath(path);
-        connectWebsocket(url);
-        toast({
-          description: "Connecting to websocket",
-        });
-        return;
-      }
+  const addServiceUrlIfBarePath = useAddServiceUrlIfBarePath();
+  return useHandler((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-      // TODO - Make it clear in the UI that we're auto-adding this header
-      const contentTypeHeader = getContentTypeHeader(body);
-      const contentLength = getContentLength(body);
-      const modifiedHeaders = [
-        contentTypeHeader
-          ? {
-              key: "Content-Type",
-              value: contentTypeHeader,
-              enabled: true,
-              id: "fpx-content-type",
-            }
-          : null,
-        contentLength !== null
-          ? {
-              key: "Content-Length",
-              value: contentLength,
-              enabled: true,
-              id: "fpx-content-length",
-            }
-          : null,
-        ...requestHeaders,
-      ].filter(Boolean) as KeyValueParameter[];
+    if (isWsRequest(requestType)) {
+      const url = addServiceUrlIfBarePath(path);
+      connectWebsocket(url);
+      toast({
+        description: "Connecting to websocket",
+      });
+      return;
+    }
 
-      // TODO - Check me
-      if (isWsRequest(requestType)) {
-        const url = addServiceUrlIfBarePath(path);
-        connectWebsocket(url);
-        toast({
-          description: "Connecting to websocket",
-        });
-        return;
-      }
+    // TODO - Make it clear in the UI that we're auto-adding this header
+    const contentTypeHeader = getContentTypeHeader(body);
+    const contentLength = getContentLength(body);
+    const modifiedHeaders = [
+      contentTypeHeader
+        ? {
+            key: "Content-Type",
+            value: contentTypeHeader,
+            enabled: true,
+            id: "fpx-content-type",
+          }
+        : null,
+      contentLength !== null
+        ? {
+            key: "Content-Length",
+            value: contentLength,
+            enabled: true,
+            id: "fpx-content-length",
+          }
+        : null,
+      ...requestHeaders,
+    ].filter(Boolean) as KeyValueParameter[];
 
-      makeRequest(
-        {
-          addServiceUrlIfBarePath,
-          path,
-          method,
-          body,
-          headers: modifiedHeaders,
-          pathParams,
-          queryParams,
-          route: selectedRoute?.path,
+    // TODO - Check me
+    if (isWsRequest(requestType)) {
+      const url = addServiceUrlIfBarePath(path);
+      connectWebsocket(url);
+      toast({
+        description: "Connecting to websocket",
+      });
+      return;
+    }
+
+    makeRequest(
+      {
+        addServiceUrlIfBarePath,
+        path,
+        method,
+        body,
+        headers: modifiedHeaders,
+        pathParams,
+        queryParams,
+        route: selectedRoute?.path,
+      },
+      {
+        onSuccess(data) {
+          const traceId = data?.traceId;
+          if (traceId && typeof traceId === "string") {
+            recordRequestInSessionHistory(traceId);
+          } else {
+            console.error(
+              "RequestorPage: onSuccess: traceId is not a string",
+              data,
+            );
+          }
         },
-        {
-          onSuccess(data) {
-            const traceId = data?.traceId;
-            if (traceId && typeof traceId === "string") {
-              recordRequestInSessionHistory(traceId);
-            } else {
-              console.error(
-                "RequestorPage: onSuccess: traceId is not a string",
-                data,
-              );
-            }
-          },
-          onError(error) {
-            // TODO - Show Toast
-            console.error("Submit error!", error);
-          },
+        onError(error) {
+          // TODO - Show Toast
+          console.error("Submit error!", error);
         },
-      );
-    },
-    [
-      requestType,
-      body,
-      requestHeaders,
-      makeRequest,
-      addServiceUrlIfBarePath,
-      path,
-      method,
-      pathParams,
-      queryParams,
-      connectWebsocket,
-      toast,
-      recordRequestInSessionHistory,
-      selectedRoute,
-    ],
-  );
+      },
+    );
+  });
 }
 
 function getContentTypeHeader(body: RequestorBody): string | null {

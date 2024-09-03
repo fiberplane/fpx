@@ -18,39 +18,74 @@ import {
   isWsRequest,
 } from "./types";
 import { sortRequestornatorsDescending } from "./utils";
+import { useShallow } from "zustand/react/shallow";
+import { set } from "date-fns";
+import { useHandler } from "@fiberplane/hooks";
 
-type RequestorHistoryHookArgs = {
-  // routes: ProbedRoute[];
-  handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
-  setPath: (path: string) => void;
-  setMethod: (method: RequestMethodInputValue) => void;
-  setBody: (body: string | undefined) => void;
-  setPathParams: (headers: KeyValueParameter[]) => void;
-  setQueryParams: (params: KeyValueParameter[]) => void;
-  setRequestHeaders: (headers: KeyValueParameter[]) => void;
-  showResponseBodyFromHistory: (traceId: string) => void;
-};
+// type RequestorHistoryHookArgs = {
+//   // routes: ProbedRoute[];
+//   // handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
+//   // setPath: (path: string) => void;
+//   // setMethod: (method: RequestMethodInputValue) => void;
+//   // setBody: (body: string | undefined) => void;
+//   // setPathParams: (headers: KeyValueParameter[]) => void;
+//   // setQueryParams: (params: KeyValueParameter[]) => void;
+//   // setRequestHeaders: (headers: KeyValueParameter[]) => void;
+//   // showResponseBodyFromHistory: (traceId: string) => void;
+// };
 
-export function useRequestorHistory({
+export function useRequestorHistory(
+  // {
   // routes,
-  handleSelectRoute,
-  setPath,
-  setMethod,
-  setRequestHeaders,
-  setBody,
-  setQueryParams,
-  showResponseBodyFromHistory,
-}: RequestorHistoryHookArgs) {
+  // handleSelectRoute,
+  // setPath,
+  // setMethod,
+  // setRequestHeaders,
+  // setBody,
+  // setQueryParams,
+  // showResponseBodyFromHistory,
+  // }: RequestorHistoryHookArgs
+) {
   const {
     sessionHistory: sessionHistoryTraceIds,
     recordRequestInSessionHistory,
     routes,
+    selectRoute: handleSelectRoute,
+    updatePath: setPath,
+    updateMethod: setMethod,
+    setRequestHeaders,
+    setQueryParams,
+    setBody,
+    showResponseBodyFromHistory,
+    // updatePath: handlePathInputChange,
   } = useRequestorStore(
-    ({ sessionHistory, recordRequestInSessionHistory, routes }) => ({
-      sessionHistory,
-      recordRequestInSessionHistory,
-      routes,
-    }),
+    useShallow(
+      ({
+        sessionHistory,
+        recordRequestInSessionHistory,
+        routes,
+        selectRoute,
+        updatePath,
+        setBody,
+        setQueryParams,
+        updateMethod,
+        setRequestHeaders,
+        showResponseBodyFromHistory,
+        // updatePath,
+      }) => ({
+        sessionHistory,
+        recordRequestInSessionHistory,
+        routes,
+        selectRoute,
+        updatePath,
+        setBody,
+        setQueryParams,
+        updateMethod,
+        setRequestHeaders,
+        showResponseBodyFromHistory,
+        // updatePath,
+      }),
+    ),
   );
 
   // const {
@@ -71,7 +106,7 @@ export function useRequestorHistory({
   }, [allRequests]);
 
   // This feels wrong... but it's a way to load a past request back into the UI
-  const loadHistoricalRequest = (traceId: string) => {
+  const loadHistoricalRequest = useHandler((traceId: string) => {
     recordRequestInSessionHistory(traceId);
     showResponseBodyFromHistory(traceId);
     const match = history.find((r) => r.app_responses?.traceId === traceId);
@@ -195,7 +230,7 @@ export function useRequestorHistory({
         );
       }
     }
-  };
+  });
 
   // Keep a local history of requests that the user has made in the UI
   // This should be a subset of the full history

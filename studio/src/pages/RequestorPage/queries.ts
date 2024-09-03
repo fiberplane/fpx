@@ -143,11 +143,12 @@ export function useDeleteRoute() {
 
   return mutation;
 }
+const fetchQuery = () => fetch("/v0/all-requests").then((r) => r.json());
 
 export function useFetchRequestorRequests() {
   return useQuery({
     queryKey: [REQUESTOR_REQUESTS_KEY],
-    queryFn: () => fetch("/v0/all-requests").then((r) => r.json()),
+    queryFn: fetchQuery,
   });
 }
 

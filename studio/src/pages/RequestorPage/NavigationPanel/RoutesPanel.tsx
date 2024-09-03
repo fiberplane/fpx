@@ -19,9 +19,9 @@ import { useRequestorStore } from "../store";
 import { isWsRequest } from "../types";
 
 type RoutesPanelProps = {
-  routes?: ProbedRoute[];
-  selectedRoute: ProbedRoute | null;
-  handleRouteClick: (route: ProbedRoute) => void;
+  // routes?: ProbedRoute[];
+  // selectedRoute: ProbedRoute | null;
+  // handleRouteClick: (route: ProbedRoute) => void;
   deleteDraftRoute?: () => void;
   // history: Array<Requestornator>;
   // loadHistoricalRequest: (traceId: string) => void;
@@ -30,18 +30,19 @@ type RoutesPanelProps = {
 
 export function RoutesPanel({
   // routes,
-  selectedRoute,
-  handleRouteClick,
+  // selectedRoute,
+  // handleRouteClick,
   deleteDraftRoute,
   // history,
   // loadHistoricalRequest,
   // removeServiceUrlFromPath,
 }: RoutesPanelProps) {
-  const { routes } = useRequestorStore(
-    useShallow(({ routes }) => ({
+  const { routes, selectedRoute, selectRoute: handleRouteClick } = useRequestorStore(
+    useShallow(({ routes, selectedRoute, selectRoute }) => ({
       routes,
+      selectedRoute,
+      selectRoute,
     })),
-    // shallow,
   );
 
   const hasAnyPreviouslyDetectedRoutes = useMemo(() => {

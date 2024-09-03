@@ -20,7 +20,7 @@ import { RoutesCombobox } from "./RoutesCombobox";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import type { RequestsPanelTab, ResponsePanelTab } from "./reducer";
-import { _getActiveRoute, addBaseUrl } from "./reducer/reducer";
+import { _getActiveRoute, } from "./reducer/reducer";
 import { useRoutes } from "./routes";
 import { useActiveRoute, useRequestorStore } from "./store";
 import { BACKGROUND_LAYER } from "./styles";
@@ -57,7 +57,7 @@ export const RequestorPage = () => {
     path,
     method,
     requestType,
-    serviceBaseUrl,
+    // serviceBaseUrl,
     // },
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
@@ -102,7 +102,7 @@ export const RequestorPage = () => {
 
     // History (WIP)
     activeHistoryResponseTraceId,
-    showResponseBodyFromHistory,
+    // showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
   } = useRequestorStore(useShallow(
     ({
@@ -167,7 +167,7 @@ export const RequestorPage = () => {
 
       // History (WIP)
       activeHistoryResponseTraceId,
-      showResponseBodyFromHistory,
+      // showResponseBodyFromHistory,
       clearResponseBodyFromHistory,
     }) => ({
       // Routes panel
@@ -231,7 +231,7 @@ export const RequestorPage = () => {
 
       // History (WIP)
       activeHistoryResponseTraceId,
-      showResponseBodyFromHistory,
+      // showResponseBodyFromHistory,
       clearResponseBodyFromHistory,
     })
   ));
@@ -348,14 +348,6 @@ export const RequestorPage = () => {
   // });
 
   // TODO - this should be a thunk
-  const addServiceUrlIfBarePath = useCallback(
-    (path: string) => {
-      return addBaseUrl(serviceBaseUrl, path, {
-        requestType: requestType,
-      });
-    },
-    [serviceBaseUrl, requestType],
-  );
 
   const activeRoute = useActiveRoute();
 
@@ -381,20 +373,29 @@ export const RequestorPage = () => {
     sessionHistory,
     recordRequestInSessionHistory,
     // loadHistoricalRequest,
-  } = useRequestorHistory({
-    // routes,
-    handleSelectRoute,
-    setPath: handlePathInputChange,
-    setMethod: handleMethodChange,
-    setPathParams,
-    setBody,
-    setQueryParams,
-    setRequestHeaders,
-    showResponseBodyFromHistory,
-  });
+  } = useRequestorHistory(
+      // {
+      // routes,
+      // handleSelectRoute,
+      // setPath: handlePathInputChange,
+      // setMethod: handleMethodChange,
+      // setPathParams,
+
+      // setBody,
+      // setQueryParams,
+      // setRequestHeaders,
+      // showResponseBodyFromHistory,
+      // }
+    );
+
+  // The hook below uses this param as a useCallback 
+  // dependency
+  const requestInputs = useMemo(() => (
+    { path, method, route: activeRoute.path }
+  ), [path, method, activeRoute.path])
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
-    { path, method, route: activeRoute.path },
+    requestInputs,
     sessionHistory,
     activeHistoryResponseTraceId,
   );
@@ -413,7 +414,7 @@ export const RequestorPage = () => {
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
     body,
-    addServiceUrlIfBarePath,
+    // addServiceUrlIfBarePath,
     path,
     method,
     pathParams,
@@ -459,7 +460,7 @@ export const RequestorPage = () => {
       setPath: handlePathInputChange,
       setRequestHeaders,
       updatePathParamValues,
-      addServiceUrlIfBarePath,
+      // addServiceUrlIfBarePath,
     },
     body,
   );
@@ -602,9 +603,9 @@ export const RequestorPage = () => {
               defaultSize={(320 / width) * 100}
             >
               <RoutesPanel
-                // routes={routes}
-                selectedRoute={selectedRoute}
-                handleRouteClick={handleSelectRoute}
+              // routes={routes}
+              // selectedRoute={selectedRoute}
+              // handleRouteClick={handleSelectRoute}
               // history={history}
               // loadHistoricalRequest={loadHistoricalRequest}
               // removeServiceUrlFromPath={removeServiceUrlFromPath}

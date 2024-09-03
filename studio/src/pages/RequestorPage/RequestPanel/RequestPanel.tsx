@@ -3,7 +3,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
-import type { Dispatch, SetStateAction } from "react";
+import { memo, type Dispatch, type SetStateAction } from "react";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm, type KeyValueParameter } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -57,7 +57,7 @@ type RequestPanelProps = {
   sendWebsocketMessage: (message: string) => void;
 };
 
-export function RequestPanel(props: RequestPanelProps) {
+export const RequestPanel = memo(function RequestPanel(props: RequestPanelProps) {
   const {
     handleRequestBodyTypeChange,
     activeRequestsPanelTab,
@@ -309,7 +309,7 @@ export function RequestPanel(props: RequestPanelProps) {
       />
     </Tabs>
   );
-}
+});
 
 type PanelSectionHeaderProps = {
   title: string;

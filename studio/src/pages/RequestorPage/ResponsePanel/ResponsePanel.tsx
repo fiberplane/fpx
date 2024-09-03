@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -46,7 +46,7 @@ type Props = {
   removeServiceUrlFromPath: (url: string) => string;
 };
 
-export function ResponsePanel({
+export const ResponsePanel = memo(function ResponsePanel({
   activeResponse,
   activeResponsePanelTab,
   setActiveResponsePanelTab,
@@ -197,7 +197,7 @@ export function ResponsePanel({
       </div>
     </div>
   );
-}
+});
 
 /**
  * Helper component for handling loading/failure/empty states in tab content
@@ -246,9 +246,9 @@ function ResponseSummary({
   const url = isRequestorActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(
-        response?.app_requests?.requestUrl ?? "",
-        response?.app_requests?.requestQueryParams ?? undefined,
-      );
+      response?.app_requests?.requestUrl ?? "",
+      response?.app_requests?.requestQueryParams ?? undefined,
+    );
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />

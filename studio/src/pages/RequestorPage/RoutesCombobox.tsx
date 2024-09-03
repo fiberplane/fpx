@@ -31,7 +31,7 @@ type RoutesComboboxProps = {
   handleRouteClick: (route: ProbedRoute) => void;
 };
 
-export function RoutesCombobox(props: RoutesComboboxProps) {
+export const RoutesCombobox = React.memo(function RoutesCombobox(props: RoutesComboboxProps) {
   const { routes } = useRequestorStore(
     useShallow(({ routes }) => ({
       routes,
@@ -123,4 +123,4 @@ export function RoutesCombobox(props: RoutesComboboxProps) {
       />
     </>
   );
-}
+});
