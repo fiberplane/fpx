@@ -3,7 +3,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
-import { memo, type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, memo } from "react";
 import { FormDataForm } from "../FormDataForm";
 import { KeyValueForm } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -21,8 +21,8 @@ import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
 import { CodeMirrorJsonEditor } from "@/components/Timeline";
-import { useRequestorStore } from "../store";
 import { useShallow } from "zustand/react/shallow";
+import { useRequestorStore } from "../store";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
@@ -58,7 +58,9 @@ type RequestPanelProps = {
   sendWebsocketMessage: (message: string) => void;
 };
 
-export const RequestPanel = memo(function RequestPanel(props: RequestPanelProps) {
+export const RequestPanel = memo(function RequestPanel(
+  props: RequestPanelProps,
+) {
   const {
     handleRequestBodyTypeChange,
     activeRequestsPanelTab,
@@ -90,21 +92,46 @@ export const RequestPanel = memo(function RequestPanel(props: RequestPanelProps)
   } = props;
 
   const {
-    path, body, method, setBody,
-    pathParams, queryParams, requestHeaders,
-    setRequestHeaders, setQueryParams, setPathParams,
-    clearPathParams
-  } = useRequestorStore(useShallow(({
-    path, body, method, setBody,
-    pathParams, queryParams, requestHeaders,
-    setRequestHeaders, setQueryParams, setPathParams,
-    clearPathParams
-  }) => ({
-    path, body, method, setBody,
-    pathParams, queryParams, requestHeaders,
-    setRequestHeaders, setQueryParams, setPathParams,
-    clearPathParams
-  })))
+    path,
+    body,
+    method,
+    setBody,
+    pathParams,
+    queryParams,
+    requestHeaders,
+    setRequestHeaders,
+    setQueryParams,
+    setPathParams,
+    clearPathParams,
+  } = useRequestorStore(
+    useShallow(
+      ({
+        path,
+        body,
+        method,
+        setBody,
+        pathParams,
+        queryParams,
+        requestHeaders,
+        setRequestHeaders,
+        setQueryParams,
+        setPathParams,
+        clearPathParams,
+      }) => ({
+        path,
+        body,
+        method,
+        setBody,
+        pathParams,
+        queryParams,
+        requestHeaders,
+        setRequestHeaders,
+        setQueryParams,
+        setPathParams,
+        clearPathParams,
+      }),
+    ),
+  );
   const { toast } = useToast();
 
   const shouldShowBody = shouldShowRequestTab("body");

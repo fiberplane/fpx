@@ -12,6 +12,7 @@ import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useShallow } from "zustand/react/shallow";
 import { RoutesPanel } from "./NavigationPanel/RoutesPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -20,7 +21,7 @@ import { RoutesCombobox } from "./RoutesCombobox";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import type { RequestsPanelTab, ResponsePanelTab } from "./reducer";
-import { _getActiveRoute, } from "./reducer/reducer";
+import { _getActiveRoute } from "./reducer/reducer";
 import { useRoutes } from "./routes";
 import { useActiveRoute, useRequestorStore } from "./store";
 import { BACKGROUND_LAYER } from "./styles";
@@ -28,7 +29,6 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
-import { useShallow } from "zustand/react/shallow";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -104,137 +104,139 @@ export const RequestorPage = () => {
     activeHistoryResponseTraceId,
     // showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
-  } = useRequestorStore(useShallow(
-    ({
-      // Routes panel
-      // state: {
-      // routes,
-      // selectedRoute,
-      // },
-      // setRoutes,
-      // setServiceBaseUrl,
-      // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-      // getActiveRoute,
+  } = useRequestorStore(
+    useShallow(
+      ({
+        // Routes panel
+        // state: {
+        // routes,
+        // selectedRoute,
+        // },
+        // setRoutes,
+        // setServiceBaseUrl,
+        // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+        // getActiveRoute,
 
-      // Requestor input
-      // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-      // state: {
-      path,
-      method,
-      requestType,
-      serviceBaseUrl,
-      // },
-      updatePath: handlePathInputChange,
-      updateMethod: handleMethodChange,
-      // getIsInDraftMode,
-      // addServiceUrlIfBarePath,
-      // addBaseUrl,
+        // Requestor input
+        // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
+        // state: {
+        path,
+        method,
+        requestType,
+        serviceBaseUrl,
+        // },
+        updatePath: handlePathInputChange,
+        updateMethod: handleMethodChange,
+        // getIsInDraftMode,
+        // addServiceUrlIfBarePath,
+        // addBaseUrl,
 
-      // Request panel
-      // state: {
-      pathParams,
-      queryParams,
-      requestHeaders,
-      body,
-      // },
-      setPathParams,
-      updatePathParamValues,
-      clearPathParams,
-      setQueryParams,
-      setRequestHeaders,
-      setBody,
-      handleRequestBodyTypeChange,
+        // Request panel
+        // state: {
+        pathParams,
+        queryParams,
+        requestHeaders,
+        body,
+        // },
+        setPathParams,
+        updatePathParamValues,
+        clearPathParams,
+        setQueryParams,
+        setRequestHeaders,
+        setBody,
+        handleRequestBodyTypeChange,
 
-      // Request panel - Websocket message form
-      websocketMessage,
-      setWebsocketMessage,
+        // Request panel - Websocket message form
+        websocketMessage,
+        setWebsocketMessage,
 
-      // Requests Panel tabs
-      activeRequestsPanelTab,
-      setActiveRequestsPanelTab,
-      visibleRequestsPanelTabs,
-      // shouldShowRequestTab,
+        // Requests Panel tabs
+        activeRequestsPanelTab,
+        setActiveRequestsPanelTab,
+        visibleRequestsPanelTabs,
+        // shouldShowRequestTab,
 
-      // Response Panel tabs
-      activeResponsePanelTab,
-      visibleResponsePanelTabs,
-      setActiveResponsePanelTab,
-      // shouldShowResponseTab,
+        // Response Panel tabs
+        activeResponsePanelTab,
+        visibleResponsePanelTabs,
+        setActiveResponsePanelTab,
+        // shouldShowResponseTab,
 
-      // Response Panel response body
-      activeResponse,
-      setActiveResponse,
+        // Response Panel response body
+        activeResponse,
+        setActiveResponse,
 
-      // History (WIP)
-      activeHistoryResponseTraceId,
-      // showResponseBodyFromHistory,
-      clearResponseBodyFromHistory,
-    }) => ({
-      // Routes panel
-      // state: {
-      // routes,
-      // selectedRoute,
-      // },
-      // setRoutes,
-      // setServiceBaseUrl,
-      // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-      // getActiveRoute,
+        // History (WIP)
+        activeHistoryResponseTraceId,
+        // showResponseBodyFromHistory,
+        clearResponseBodyFromHistory,
+      }) => ({
+        // Routes panel
+        // state: {
+        // routes,
+        // selectedRoute,
+        // },
+        // setRoutes,
+        // setServiceBaseUrl,
+        // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+        // getActiveRoute,
 
-      // Requestor input
-      // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-      // state: {
-      path,
-      method,
-      requestType,
-      serviceBaseUrl,
-      // },
-      updatePath: handlePathInputChange,
-      updateMethod: handleMethodChange,
-      // getIsInDraftMode,
-      // addServiceUrlIfBarePath,
-      // addBaseUrl,
+        // Requestor input
+        // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
+        // state: {
+        path,
+        method,
+        requestType,
+        serviceBaseUrl,
+        // },
+        updatePath: handlePathInputChange,
+        updateMethod: handleMethodChange,
+        // getIsInDraftMode,
+        // addServiceUrlIfBarePath,
+        // addBaseUrl,
 
-      // Request panel
-      // state: {
-      pathParams,
-      queryParams,
-      requestHeaders,
-      body,
-      // },
-      setPathParams,
-      updatePathParamValues,
-      clearPathParams,
-      setQueryParams,
-      setRequestHeaders,
-      setBody,
-      handleRequestBodyTypeChange,
+        // Request panel
+        // state: {
+        pathParams,
+        queryParams,
+        requestHeaders,
+        body,
+        // },
+        setPathParams,
+        updatePathParamValues,
+        clearPathParams,
+        setQueryParams,
+        setRequestHeaders,
+        setBody,
+        handleRequestBodyTypeChange,
 
-      // Request panel - Websocket message form
-      websocketMessage,
-      setWebsocketMessage,
+        // Request panel - Websocket message form
+        websocketMessage,
+        setWebsocketMessage,
 
-      // Requests Panel tabs
-      activeRequestsPanelTab,
-      setActiveRequestsPanelTab,
-      visibleRequestsPanelTabs,
-      // shouldShowRequestTab,
+        // Requests Panel tabs
+        activeRequestsPanelTab,
+        setActiveRequestsPanelTab,
+        visibleRequestsPanelTabs,
+        // shouldShowRequestTab,
 
-      // Response Panel tabs
-      activeResponsePanelTab,
-      visibleResponsePanelTabs,
-      setActiveResponsePanelTab,
-      // shouldShowResponseTab,
+        // Response Panel tabs
+        activeResponsePanelTab,
+        visibleResponsePanelTabs,
+        setActiveResponsePanelTab,
+        // shouldShowResponseTab,
 
-      // Response Panel response body
-      activeResponse,
-      setActiveResponse,
+        // Response Panel response body
+        activeResponse,
+        setActiveResponse,
 
-      // History (WIP)
-      activeHistoryResponseTraceId,
-      // showResponseBodyFromHistory,
-      clearResponseBodyFromHistory,
-    })
-  ));
+        // History (WIP)
+        activeHistoryResponseTraceId,
+        // showResponseBodyFromHistory,
+        clearResponseBodyFromHistory,
+      }),
+    ),
+  );
 
   // const {
   //   // Routes panel
@@ -371,14 +373,14 @@ export const RequestorPage = () => {
     sessionHistory,
     recordRequestInSessionHistory,
     // loadHistoricalRequest,
-  } = useRequestorHistory(
+  } =
+    useRequestorHistory(
       // {
       // routes,
       // handleSelectRoute,
       // setPath: handlePathInputChange,
       // setMethod: handleMethodChange,
       // setPathParams,
-
       // setBody,
       // setQueryParams,
       // setRequestHeaders,
@@ -386,7 +388,7 @@ export const RequestorPage = () => {
       // }
     );
 
-  // The hook below uses this param as a useCallback 
+  // The hook below uses this param as a useCallback
   // dependency
   // const requestInputs = useMemo(() => (
   //   { path, method, route: activeRoute.path }
@@ -628,7 +630,7 @@ export const RequestorPage = () => {
               isRequestorRequesting={isRequestorRequesting}
               formRef={formRef}
               websocketState={websocketState}
-            // getIsInDraftMode={getIsInDraftMode}
+              // getIsInDraftMode={getIsInDraftMode}
             />
             {isSmallScreen ? (
               <>

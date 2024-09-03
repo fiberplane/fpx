@@ -8,14 +8,17 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { cn, isMac } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import {
   FilePlusIcon,
   MixerHorizontalIcon,
   TriangleRightIcon,
 } from "@radix-ui/react-icons";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useShallow } from "zustand/react/shallow";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
+import { useActiveRoute, useRequestorStore } from "./store";
 import {
   // type RequestMethod,
   // type RequestMethodInputValue,
@@ -23,9 +26,6 @@ import {
   isWsRequest,
 } from "./types";
 import type { WebSocketState } from "./useMakeWebsocketRequest";
-import { useActiveRoute, useRequestorStore } from "./store";
-import { useShallow } from "zustand/react/shallow";
-import { useHandler } from "@fiberplane/hooks";
 
 type RequestInputProps = {
   // method: RequestMethod;
@@ -56,28 +56,23 @@ export function RequestorInput({
 }: RequestInputProps) {
   const { toast } = useToast();
 
-  const {
-    requestType,
-  } = useActiveRoute();
+  const { requestType } = useActiveRoute();
 
-  const { isInDraftMode,
-    method, path, updatePath: handlePathInputChange,
-    updateMethod: handleMethodChange } = useRequestorStore(
-      useShallow(
-        ({
-          selectedRoute,
-          method,
-          path,
-          updatePath,
-          updateMethod,
-        }) => ({
-          isInDraftMode: !selectedRoute,
-          method,
-          path,
-          updatePath,
-          updateMethod,
-        })
-      ));
+  const {
+    isInDraftMode,
+    method,
+    path,
+    updatePath: handlePathInputChange,
+    updateMethod: handleMethodChange,
+  } = useRequestorStore(
+    useShallow(({ selectedRoute, method, path, updatePath, updateMethod }) => ({
+      isInDraftMode: !selectedRoute,
+      method,
+      path,
+      updatePath,
+      updateMethod,
+    })),
+  );
   const isWsConnected = websocketState.isConnected;
 
   const { mutate: addRoutes } = useAddRoutes();

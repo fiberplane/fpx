@@ -1,17 +1,17 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { errorHasMessage, isJson } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
+import { useShallow } from "zustand/react/shallow";
 import { createFormDataParameter } from "../FormDataForm/data";
 import { createKeyValueParameters } from "../KeyValueForm";
 import type { Requestornator } from "../queries";
 import type { RequestorBody } from "../reducer";
 import { isRequestorBodyType } from "../reducer/request-body";
-import { useAiRequestData } from "./generate-request-data";
-import { useShallow } from "zustand/react/shallow";
 import { useRequestorStore, useServiceBaseUrl } from "../store";
-import { useHandler } from "@fiberplane/hooks";
+import { useAiRequestData } from "./generate-request-data";
 
 export const FRIENDLY = "Friendly" as const;
 export const HOSTILE = "QA" as const;

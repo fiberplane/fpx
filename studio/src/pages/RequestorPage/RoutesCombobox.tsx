@@ -25,13 +25,13 @@ import { RouteItem } from "./NavigationPanel/RoutesPanel";
 import { AddRoutesDialog } from "./routes/AddRouteButton";
 import { useRequestorStore } from "./store";
 
-
 export const RoutesCombobox = React.memo(function RoutesCombobox() {
-  const { routes, selectedRoute, selectRoute: handleRouteClick } = useRequestorStore(
-    useShallow(({ routes,
-      selectedRoute,
-      selectRoute,
-    }) => ({
+  const {
+    routes,
+    selectedRoute,
+    selectRoute: handleRouteClick,
+  } = useRequestorStore(
+    useShallow(({ routes, selectedRoute, selectRoute }) => ({
       routes,
       selectedRoute,
       selectRoute,

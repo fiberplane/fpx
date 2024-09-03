@@ -37,7 +37,11 @@ export function RoutesPanel({
   // loadHistoricalRequest,
   // removeServiceUrlFromPath,
 }: RoutesPanelProps) {
-  const { routes, selectedRoute, selectRoute: handleRouteClick } = useRequestorStore(
+  const {
+    routes,
+    selectedRoute,
+    selectRoute: handleRouteClick,
+  } = useRequestorStore(
     useShallow(({ routes, selectedRoute, selectRoute }) => ({
       routes,
       selectedRoute,

@@ -14,6 +14,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import { memo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { Method, StatusCode } from "../RequestorHistory";
 import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -23,6 +24,7 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../reducer/state";
+import { useActiveRoute, useRequestorStore } from "../store";
 import { type RequestType, isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
@@ -31,8 +33,6 @@ import {
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
-import { useActiveRoute, useRequestorStore } from "../store";
-import { useShallow } from "zustand/react/shallow";
 
 type Props = {
   // activeResponse: RequestorActiveResponse | null;
@@ -62,11 +62,11 @@ export const ResponsePanel = memo(function ResponsePanel({
   removeServiceUrlFromPath,
 }: Props) {
   // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
-  const { activeResponse } = useRequestorStore(useShallow(({
-    activeResponse
-  }) => ({
-    activeResponse
-  })));
+  const { activeResponse } = useRequestorStore(
+    useShallow(({ activeResponse }) => ({
+      activeResponse,
+    })),
+  );
   const { requestType } = useActiveRoute();
 
   const responseToRender = activeResponse ?? tracedResponse;
@@ -254,9 +254,9 @@ function ResponseSummary({
   const url = isRequestorActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(
-      response?.app_requests?.requestUrl ?? "",
-      response?.app_requests?.requestQueryParams ?? undefined,
-    );
+        response?.app_requests?.requestUrl ?? "",
+        response?.app_requests?.requestQueryParams ?? undefined,
+      );
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
