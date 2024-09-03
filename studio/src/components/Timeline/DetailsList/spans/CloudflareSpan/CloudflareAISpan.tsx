@@ -1,11 +1,11 @@
 import { Badge } from "@/components/ui/badge";
-import { CF_BINDING_RESULT } from "@/constants";
+import { CF_BINDING_ERROR, CF_BINDING_RESULT } from "@/constants";
 import type { OtelSpan } from "@/queries";
 import { getString } from "@/utils";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
-import { CfBindingOverview } from "./shared";
+import { CfBindingOverview, CfResultAndError } from "./shared";
 
 /**
  * The AI binding, as of writing, only has a `run` method.
@@ -16,6 +16,7 @@ export function CloudflareAISpan({ span }: { span: OtelSpan }) {
   const args = getString(span.attributes.args);
   const runAiArgs = useCloudflareAiArgs(args);
   const result = getString(span.attributes[CF_BINDING_RESULT]);
+  const error = getString(span.attributes[CF_BINDING_ERROR]);
 
   return (
     <div className="text-xs py-2">
@@ -39,9 +40,7 @@ export function CloudflareAISpan({ span }: { span: OtelSpan }) {
             <CloudflareAiArgs args={runAiArgs.options} />
           </CollapsibleSubSection>
         )}
-        <CollapsibleSubSection heading="Result" defaultCollapsed={true}>
-          <TextOrJsonViewer text={result} collapsed={true} />
-        </CollapsibleSubSection>
+        <CfResultAndError result={result} error={error} />
       </div>
     </div>
   );
