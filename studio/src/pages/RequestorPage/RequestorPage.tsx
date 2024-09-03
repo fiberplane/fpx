@@ -180,7 +180,7 @@ export const RequestorPage = () => {
     <div
       className={cn(
         // It's critical the parent has a fixed height for our grid layout to work
-        "h-[calc(100vh-64px)]",
+        "h-[calc(100vh-40px)]",
         "flex",
         "flex-col",
         "gap-2",

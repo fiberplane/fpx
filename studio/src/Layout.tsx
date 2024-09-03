@@ -12,7 +12,7 @@ import { cn } from "./utils";
 const Branding = () => {
   return (
     <div>
-      <FpxIcon height="32px" width="32px" />
+      <FpxIcon height="20px" width="20px" />
     </div>
   );
 };
@@ -30,7 +30,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
-      <nav className="flex gap-4 sm:gap-4 py-4 sm:py-0 justify-between items-center h-[64px] border-b">
+      <nav className="flex gap-4 sm:gap-4 py-4 sm:py-0 justify-between items-center h-[38px] border-b">
         <div className="sticky top-0 flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent md:px-6 py-2 text-sm">
           <Branding />
           <div className="ml-2">
@@ -47,30 +47,30 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
               <WebhoncBadge />
             </div>
           )}
-          <div className="flex items-center gap-0 border-l px-1">
-            <Button variant="ghost" size="icon">
+          <div className="flex items-center border-l gap-1 px-1">
+            <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
               <a
                 href="https://github.com/fiberplane/fpx"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <GitHubLogoIcon className="w-4 h-4" />
+                <GitHubLogoIcon className="w-3.5 h-3.5" />
               </a>
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
               <a
                 href="https://discord.com/invite/cqdY6SpfVR"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <DiscordLogoIcon className="w-4 h-4" />
+                <DiscordLogoIcon className="w-3.5 h-3.5" />
               </a>
             </Button>
           </div>
         </div>
       </nav>
       <main
-        className={cn("md:gap-8", "overflow-hidden", "h-[calc(100vh-64px)]")}
+        className={cn("md:gap-8", "overflow-hidden", "h-[calc(100vh-40px)]")}
       >
         {children}
       </main>
@@ -83,7 +83,7 @@ const HeaderNavLink = (props: ComponentProps<typeof NavLink>) => {
     <NavLink
       {...props}
       className={({ isActive }) =>
-        `rounded ${isActive ? "bg-muted" : ""} inline-block py-2 px-4 hover:underline`
+        `rounded ${isActive ? "bg-muted" : ""} inline-block py-1 px-2 hover:underline text-xs`
       }
     />
   );
