@@ -54,30 +54,30 @@ export const RequestorPage = () => {
     // Requestor input
     // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
     // state: {
-    path,
-    method,
+    // path,
+    // method,
     // requestType,
     // serviceBaseUrl,
     // },
-    updatePath: handlePathInputChange,
-    updateMethod: handleMethodChange,
+    // updatePath: handlePathInputChange,
+    // updateMethod: handleMethodChange,
     // getIsInDraftMode,
     // addServiceUrlIfBarePath,
     // addBaseUrl,
 
     // Request panel
     // state: {
-    pathParams,
-    queryParams,
-    requestHeaders,
-    body,
+    // pathParams,
+    // queryParams,
+    // requestHeaders,
+    // body,
     // },
-    setPathParams,
-    updatePathParamValues,
-    clearPathParams,
-    setQueryParams,
-    setRequestHeaders,
-    setBody,
+    // setPathParams,
+    // updatePathParamValues,
+    // clearPathParams,
+    // setQueryParams,
+    // setRequestHeaders,
+    // setBody,
     handleRequestBodyTypeChange,
 
     // Request panel - Websocket message form
@@ -97,7 +97,7 @@ export const RequestorPage = () => {
     // shouldShowResponseTab,
 
     // Response Panel response body
-    activeResponse,
+    // activeResponse,
     setActiveResponse,
 
     // History (WIP)
@@ -113,7 +113,7 @@ export const RequestorPage = () => {
       // },
       // setRoutes,
       // setServiceBaseUrl,
-      selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
+      // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
       // getActiveRoute,
 
       // Requestor input
@@ -388,12 +388,12 @@ export const RequestorPage = () => {
 
   // The hook below uses this param as a useCallback 
   // dependency
-  const requestInputs = useMemo(() => (
-    { path, method, route: activeRoute.path }
-  ), [path, method, activeRoute.path])
+  // const requestInputs = useMemo(() => (
+  //   { path, method, route: activeRoute.path }
+  // ), [path, method, activeRoute.path])
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
-    requestInputs,
+    // requestInputs,
     sessionHistory,
     activeHistoryResponseTraceId,
   );
@@ -515,18 +515,7 @@ export const RequestorPage = () => {
       activeRequestsPanelTab={activeRequestsPanelTab}
       setActiveRequestsPanelTab={setActiveRequestsPanelTab}
       shouldShowRequestTab={shouldShowRequestTab}
-      path={path}
-      method={method}
-      body={body}
-      setBody={setBody}
       handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-      pathParams={pathParams}
-      queryParams={queryParams}
-      requestHeaders={requestHeaders}
-      setPathParams={setPathParams}
-      clearPathParams={clearPathParams}
-      setQueryParams={setQueryParams}
-      setRequestHeaders={setRequestHeaders}
       websocketMessage={websocketMessage}
       setWebsocketMessage={setWebsocketMessage}
       aiEnabled={aiEnabled}
@@ -544,14 +533,13 @@ export const RequestorPage = () => {
 
   const responseContent = (
     <ResponsePanel
-      activeResponse={activeResponse}
+      // activeResponse={activeResponse}
       tracedResponse={mostRecentRequestornatorForRoute}
       activeResponsePanelTab={activeResponsePanelTab}
       setActiveResponsePanelTab={setActiveResponsePanelTab}
       shouldShowResponseTab={shouldShowResponseTab}
       isLoading={isRequestorRequesting}
       websocketState={websocketState}
-      requestType={activeRoute.requestType}
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
       removeServiceUrlFromPath={removeServiceUrlFromPath}
@@ -714,10 +702,13 @@ export default RequestorPage;
  * this will look for the most recent request made against that route.
  */
 function useMostRecentRequestornator(
-  requestInputs: { path: string; method: string; route?: string },
   all: Requestornator[],
   activeHistoryResponseTraceId: string | null,
 ) {
+  const { path: routePath } = useActiveRoute();
+  const { path, method } = useRequestorStore(
+    useShallow(({ path, method }) => ({ path, method })),
+  );
   return useMemo<Requestornator | undefined>(() => {
     if (activeHistoryResponseTraceId) {
       return all.find(
@@ -728,8 +719,8 @@ function useMostRecentRequestornator(
 
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestRoute === requestInputs.route &&
-        r?.app_requests?.requestMethod === requestInputs.method,
+        r?.app_requests?.requestRoute === routePath &&
+        r?.app_requests?.requestMethod === method,
     );
 
     // Descending sort by updatedAt
@@ -746,14 +737,14 @@ function useMostRecentRequestornator(
     //        perhaps because we made a request to a service we are not explicitly monitoring
     const matchingResponsesFallback = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestUrl === requestInputs.path &&
-        r?.app_requests?.requestMethod === requestInputs.method,
+        r?.app_requests?.requestUrl === path &&
+        r?.app_requests?.requestMethod === method,
     );
 
     matchingResponsesFallback?.sort(sortRequestornatorsDescending);
 
     return matchingResponsesFallback?.[0];
-  }, [all, requestInputs, activeHistoryResponseTraceId]);
+  }, [all, routePath, method, path, activeHistoryResponseTraceId]);
 }
 
 export const Title = (props: { children: React.ReactNode }) => (

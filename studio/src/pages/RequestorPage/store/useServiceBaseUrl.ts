@@ -1,8 +1,8 @@
 import { useShallow } from "zustand/react/shallow";
-import { addBaseUrl } from "../reducer/reducer";
+import { addBaseUrl, removeBaseUrl } from "../reducer/reducer";
 import type { RequestType } from "../types";
 import { useRequestorStore } from ".";
-import { useCallback } from "react";
+import { useHandler } from "@fiberplane/hooks";
 
 const addServiceUrlIfBarePath = (
   serviceBaseUrl: string,
@@ -14,7 +14,7 @@ const addServiceUrlIfBarePath = (
   });
 };
 
-export const useAddServiceUrlIfBarePath = () => {
+export const useServiceBaseUrl = () => {
   const { requestType, serviceBaseUrl } = useRequestorStore(
     useShallow(({ requestType, serviceBaseUrl }) => ({
       requestType,
@@ -22,9 +22,13 @@ export const useAddServiceUrlIfBarePath = () => {
     })),
   );
 
-  return useCallback(
-    (path: string) =>
+  return {
+    serviceBaseUrl,
+    addServiceUrlIfBarePath: useHandler((path: string) =>
       addServiceUrlIfBarePath(serviceBaseUrl, path, requestType),
-    [serviceBaseUrl, requestType],
-  );
+    ),
+    removeServiceUrlFromPath: useHandler((path: string) => {
+      return removeBaseUrl(serviceBaseUrl, path);
+    }),
+  };
 };

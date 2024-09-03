@@ -1,21 +1,17 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { errorHasMessage, isJson } from "@/utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { createFormDataParameter } from "../FormDataForm/data";
-import {
-  type KeyValueParameter,
-  createKeyValueParameters,
-} from "../KeyValueForm";
-import type { ProbedRoute, Requestornator } from "../queries";
+import { createKeyValueParameters } from "../KeyValueForm";
+import type { Requestornator } from "../queries";
 import type { RequestorBody } from "../reducer";
 import { isRequestorBodyType } from "../reducer/request-body";
 import { useAiRequestData } from "./generate-request-data";
 import { useShallow } from "zustand/react/shallow";
-import { useRequestorStore } from "../store";
+import { useRequestorStore, useServiceBaseUrl } from "../store";
 import { useHandler } from "@fiberplane/hooks";
-import { useAddServiceUrlIfBarePath } from "../store/useAddServiceUrlIfBarePath";
 
 export const FRIENDLY = "Friendly" as const;
 export const HOSTILE = "QA" as const;
@@ -39,7 +35,7 @@ export function useAi(
 ) {
   const { toast } = useToast();
   const isAiEnabled = useAiEnabled();
-  const addServiceUrlIfBarePath = useAddServiceUrlIfBarePath();
+  const { addServiceUrlIfBarePath } = useServiceBaseUrl();
   const {
     //   selectedRoute,
     //    history: requestHistory,

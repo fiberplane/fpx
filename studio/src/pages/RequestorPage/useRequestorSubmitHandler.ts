@@ -5,7 +5,7 @@ import type { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
 import type { RequestorBody, RequestorState } from "./reducer";
 import { isWsRequest } from "./types";
 import { useHandler } from "@fiberplane/hooks";
-import { useAddServiceUrlIfBarePath } from "./store/useAddServiceUrlIfBarePath";
+import { useServiceBaseUrl } from "./store/useServiceBaseUrl";
 import { useRequestorStore } from "./store";
 import { useShallow } from "zustand/react/shallow";
 
@@ -70,7 +70,7 @@ export function useRequestorSubmitHandler({
     ),
   );
 
-  const addServiceUrlIfBarePath = useAddServiceUrlIfBarePath();
+  const { addServiceUrlIfBarePath } = useServiceBaseUrl();
   return useHandler((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 

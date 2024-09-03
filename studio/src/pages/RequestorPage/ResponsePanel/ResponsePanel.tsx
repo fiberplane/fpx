@@ -31,15 +31,17 @@ import {
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
+import { useActiveRoute, useRequestorStore } from "../store";
+import { useShallow } from "zustand/react/shallow";
 
 type Props = {
-  activeResponse: RequestorActiveResponse | null;
+  // activeResponse: RequestorActiveResponse | null;
   activeResponsePanelTab: ResponsePanelTab;
   setActiveResponsePanelTab: (tab: string) => void;
   shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   tracedResponse?: Requestornator;
   isLoading: boolean;
-  requestType: RequestType;
+  // requestType: RequestType;
   websocketState: WebSocketState;
   openAiTestGenerationPanel: () => void;
   isAiTestGenerationPanelOpen: boolean;
@@ -47,21 +49,27 @@ type Props = {
 };
 
 export const ResponsePanel = memo(function ResponsePanel({
-  activeResponse,
+  // activeResponse,
   activeResponsePanelTab,
   setActiveResponsePanelTab,
   shouldShowResponseTab,
   tracedResponse,
   isLoading,
-  requestType,
+  // requestType,
   websocketState,
   openAiTestGenerationPanel,
   isAiTestGenerationPanelOpen,
   removeServiceUrlFromPath,
 }: Props) {
   // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
-  const responseToRender = activeResponse ?? tracedResponse;
+  const { activeResponse } = useRequestorStore(useShallow(({
+    activeResponse
+  }) => ({
+    activeResponse
+  })));
+  const { requestType } = useActiveRoute();
 
+  const responseToRender = activeResponse ?? tracedResponse;
   const isFailure = isRequestorActiveResponse(responseToRender)
     ? responseToRender.isFailure
     : responseToRender?.app_responses?.isFailure;

@@ -5,7 +5,7 @@ import { cn } from "@/utils";
 import { EraserIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { memo, type Dispatch, type SetStateAction } from "react";
 import { FormDataForm } from "../FormDataForm";
-import { KeyValueForm, type KeyValueParameter } from "../KeyValueForm";
+import { KeyValueForm } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { AiTestingPersona } from "../ai";
 import type {
@@ -13,7 +13,6 @@ import type {
   RequestorBody,
   RequestsPanelTab,
 } from "../reducer";
-import type { RequestMethod } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { AiDropDownMenu } from "./AiDropDownMenu";
 import { AIGeneratedInputsBanner } from "./AiGeneratedInputsBanner";
@@ -22,27 +21,29 @@ import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
 import { CodeMirrorJsonEditor } from "@/components/Timeline";
+import { useRequestorStore } from "../store";
+import { useShallow } from "zustand/react/shallow";
 
 type RequestPanelProps = {
   activeRequestsPanelTab: RequestsPanelTab;
   setActiveRequestsPanelTab: (tab: string) => void;
-  method: RequestMethod;
-  path: string;
+  // method: RequestMethod;
+  // path: string;
   shouldShowRequestTab: (tab: RequestsPanelTab) => boolean;
-  body: RequestorBody;
+  // body: RequestorBody;
   // FIXME
-  setBody: (body: undefined | string | RequestorBody) => void;
+  // setBody: (body: undefined | string | RequestorBody) => void;
   handleRequestBodyTypeChange: (
     contentType: RequestBodyType,
     isMultipart?: boolean,
   ) => void;
-  pathParams: KeyValueParameter[];
-  queryParams: KeyValueParameter[];
-  setPathParams: (params: KeyValueParameter[]) => void;
-  clearPathParams: () => void;
-  setQueryParams: (params: KeyValueParameter[]) => void;
-  setRequestHeaders: (headers: KeyValueParameter[]) => void;
-  requestHeaders: KeyValueParameter[];
+  // pathParams: KeyValueParameter[];
+  // queryParams: KeyValueParameter[];
+  // setPathParams: (params: KeyValueParameter[]) => void;
+  // clearPathParams: () => void;
+  // setQueryParams: (params: KeyValueParameter[]) => void;
+  // setRequestHeaders: (headers: KeyValueParameter[]) => void;
+  // requestHeaders: KeyValueParameter[];
   websocketMessage: string;
   setWebsocketMessage: (message: string | undefined) => void;
   aiEnabled: boolean;
@@ -63,17 +64,17 @@ export const RequestPanel = memo(function RequestPanel(props: RequestPanelProps)
     activeRequestsPanelTab,
     setActiveRequestsPanelTab,
     shouldShowRequestTab,
-    body,
-    path,
-    method,
-    setBody,
-    pathParams,
-    queryParams,
-    requestHeaders,
-    setPathParams,
-    clearPathParams,
-    setQueryParams,
-    setRequestHeaders,
+    // body,
+    // path,
+    // method,
+    // setBody,
+    // pathParams,
+    // queryParams,
+    // requestHeaders,
+    // setPathParams,
+    // clearPathParams,
+    // setQueryParams,
+    // setRequestHeaders,
     websocketMessage,
     setWebsocketMessage,
     aiEnabled,
@@ -88,6 +89,22 @@ export const RequestPanel = memo(function RequestPanel(props: RequestPanelProps)
     sendWebsocketMessage,
   } = props;
 
+  const {
+    path, body, method, setBody,
+    pathParams, queryParams, requestHeaders,
+    setRequestHeaders, setQueryParams, setPathParams,
+    clearPathParams
+  } = useRequestorStore(useShallow(({
+    path, body, method, setBody,
+    pathParams, queryParams, requestHeaders,
+    setRequestHeaders, setQueryParams, setPathParams,
+    clearPathParams
+  }) => ({
+    path, body, method, setBody,
+    pathParams, queryParams, requestHeaders,
+    setRequestHeaders, setQueryParams, setPathParams,
+    clearPathParams
+  })))
   const { toast } = useToast();
 
   const shouldShowBody = shouldShowRequestTab("body");
