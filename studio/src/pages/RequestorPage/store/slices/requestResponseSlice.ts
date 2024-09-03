@@ -195,12 +195,3 @@ export const requestResponseSlice: StateCreator<
       state.sessionHistory.push(traceId);
     }),
 });
-
-// // Helper functions
-// function setBodyTypeReducer(state: RequestorState, { type, isMultipart }: { type: RequestBodyType; isMultipart?: boolean }) {
-//   // Implementation
-// }
-
-// function addContentTypeHeader(state: RequestorState) {
-//   // Implementation
-// }

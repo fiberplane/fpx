@@ -1,13 +1,9 @@
 import { useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { type ProbedRoute, useProbedRoutes } from "../queries";
+import { useProbedRoutes } from "../queries";
 import { useRequestorStore } from "../store";
+import type { ProbedRoute } from "../types";
 import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
-
-// type UseRoutesOptions = {
-//   setRoutes: (routes: ProbedRoute[]) => void;
-//   setServiceBaseUrl: (serviceBaseUrl: string) => void;
-// };
 
 /**
  * Suuuuper hacky way to check if a route is using the standard Hono
@@ -43,11 +39,7 @@ const filterRoutes = (routes: ProbedRoute[]) => {
   });
 };
 
-export function useRoutes(
-  // {
-  // setServiceBaseUrl }:
-  // UseRoutesOptions
-) {
+export function useRoutes() {
   const { setRoutes, setServiceBaseUrl } = useRequestorStore(
     useShallow(({ setRoutes, setServiceBaseUrl }) => ({
       setRoutes,

@@ -1,5 +1,4 @@
 import type { KeyValueParameter } from "../../KeyValueForm";
-import type { ProbedRoute } from "../../queries";
 import type {
   RequestBodyType,
   RequestorBody,
@@ -7,6 +6,7 @@ import type {
   ResponsePanelTab,
 } from "../../reducer";
 import type { RequestorActiveResponse } from "../../reducer/state";
+import type { ProbedRoute } from "../../types";
 import type {
   RequestMethod,
   RequestMethodInputValue,

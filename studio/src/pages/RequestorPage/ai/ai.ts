@@ -18,29 +18,11 @@ export const HOSTILE = "QA" as const;
 
 export type AiTestingPersona = "Friendly" | "QA";
 
-// type FormSetters = {
-//   setBody: (body: string | RequestorBody) => void;
-//   setQueryParams: (params: KeyValueParameter[]) => void;
-//   setRequestHeaders: (params: KeyValueParameter[]) => void;
-//   setPath: (path: string) => void;
-//   updatePathParamValues: (pathParams: { key: string; value: string }[]) => void;
-//   // addServiceUrlIfBarePath: (path: string) => string;
-// };
-
-export function useAi(
-  // selectedRoute: ProbedRoute | null,
-  requestHistory: Array<Requestornator>,
-  // formSetters: FormSetters,
-  // body: RequestorBody,
-) {
+export function useAi(requestHistory: Array<Requestornator>) {
   const { toast } = useToast();
   const isAiEnabled = useAiEnabled();
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
   const {
-    //   selectedRoute,
-    //    history: requestHistory,
-    //     formSetters,
-    //      body
     setBody,
     setQueryParams,
     updatePath: setPath,
@@ -48,7 +30,6 @@ export function useAi(
     updatePathParamValues,
     body,
     selectedRoute,
-    // addServiceUrlIfBarePath,
   } = useRequestorStore(
     useShallow(
       ({
@@ -59,8 +40,6 @@ export function useAi(
         updatePathParamValues,
         body,
         selectedRoute,
-        // addServiceUrlIfBarePath,
-        // selectedRoute, history, formSetters, body
       }) => ({
         setBody,
         setQueryParams,
@@ -69,14 +48,7 @@ export function useAi(
         updatePathParamValues,
         body,
         selectedRoute,
-        // addServiceUrlIfBarePath,
       }),
-      //   {
-      //     selectedRoute,
-      //     history,
-      //     formSetters,
-      //     body,
-      //   }
     ),
   );
 
@@ -85,15 +57,6 @@ export function useAi(
 
   const [showAiGeneratedInputsBanner, setShowAiGeneratedInputsBanner] =
     useState(false);
-
-  // const {
-  // setBody,
-  // setQueryParams,
-  // setPath,
-  // setRequestHeaders,
-  // updatePathParamValues,
-  // addServiceUrlIfBarePath,
-  // } = formSetters;
 
   const bodyType = body.type;
 

@@ -10,13 +10,12 @@ import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 // import { RequestorHistory } from "../RequestorHistory";
 import {
-  type ProbedRoute,
   // type Requestornator,
   useDeleteRoute,
 } from "../queries";
 import { AddRouteButton } from "../routes";
 import { useRequestorStore } from "../store";
-import { isWsRequest } from "../types";
+import { type ProbedRoute, isWsRequest } from "../types";
 
 type RoutesPanelProps = {
   // routes?: ProbedRoute[];

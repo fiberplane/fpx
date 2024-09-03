@@ -10,13 +10,11 @@ import { useServiceBaseUrl } from "./store";
 type RequestorHistoryProps = {
   history: Array<Requestornator>;
   loadHistoricalRequest: (traceId: string) => void;
-  // removeServiceUrlFromPath: (path: string) => string;
 };
 
 export function RequestorHistory({
   history,
   loadHistoricalRequest,
-  // removeServiceUrlFromPath,
 }: RequestorHistoryProps) {
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
   return (

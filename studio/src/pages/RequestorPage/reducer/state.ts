@@ -4,9 +4,9 @@ import {
   enforceTerminalDraftParameter,
 } from "../KeyValueForm";
 import {
+  ProbedRouteSchema,
   RequestMethodSchema,
   RequestTypeSchema,
-  ProbedRouteSchema,
 } from "../types";
 // import { updateContentTypeHeader } from "./reducers";
 // import { addContentTypeHeader } from "./reducers";

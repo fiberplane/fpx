@@ -1,18 +1,9 @@
 import { removeQueryParams } from "@/utils";
-// import { set } from "date-fns";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
-import {
-  // type KeyValueParameter,
-  createKeyValueParameters,
-} from "./KeyValueForm";
-// import { useSessionHistory } from "./RequestorSessionHistoryContext";
-import {
-  // type ProbedRoute,
-  type Requestornator,
-  useFetchRequestorRequests,
-} from "./queries";
+import { createKeyValueParameters } from "./KeyValueForm";
+import { type Requestornator, useFetchRequestorRequests } from "./queries";
 import { findMatchedRoute } from "./routes";
 import { useRequestorStore } from "./store";
 import {
@@ -22,30 +13,7 @@ import {
 } from "./types";
 import { sortRequestornatorsDescending } from "./utils";
 
-// type RequestorHistoryHookArgs = {
-//   // routes: ProbedRoute[];
-//   // handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
-//   // setPath: (path: string) => void;
-//   // setMethod: (method: RequestMethodInputValue) => void;
-//   // setBody: (body: string | undefined) => void;
-//   // setPathParams: (headers: KeyValueParameter[]) => void;
-//   // setQueryParams: (params: KeyValueParameter[]) => void;
-//   // setRequestHeaders: (headers: KeyValueParameter[]) => void;
-//   // showResponseBodyFromHistory: (traceId: string) => void;
-// };
-
-export function useRequestorHistory(
-  // {
-  // routes,
-  // handleSelectRoute,
-  // setPath,
-  // setMethod,
-  // setRequestHeaders,
-  // setBody,
-  // setQueryParams,
-  // showResponseBodyFromHistory,
-  // }: RequestorHistoryHookArgs
-) {
+export function useRequestorHistory() {
   const {
     sessionHistory: sessionHistoryTraceIds,
     recordRequestInSessionHistory,
@@ -57,7 +25,6 @@ export function useRequestorHistory(
     setQueryParams,
     setBody,
     showResponseBodyFromHistory,
-    // updatePath: handlePathInputChange,
   } = useRequestorStore(
     useShallow(
       ({
@@ -71,7 +38,6 @@ export function useRequestorHistory(
         updateMethod,
         setRequestHeaders,
         showResponseBodyFromHistory,
-        // updatePath,
       }) => ({
         sessionHistory,
         recordRequestInSessionHistory,
@@ -83,15 +49,9 @@ export function useRequestorHistory(
         updateMethod,
         setRequestHeaders,
         showResponseBodyFromHistory,
-        // updatePath,
       }),
     ),
   );
-
-  // const {
-  //   sessionHistory: sessionHistoryTraceIds,
-  //   recordRequestInSessionHistory,
-  // } = useSessionHistory();
 
   const { data: allRequests } = useFetchRequestorRequests();
 

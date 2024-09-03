@@ -1,6 +1,6 @@
 import { PROBED_ROUTES_KEY } from "@/queries";
 import { useQuery } from "@tanstack/react-query";
-import type { ProbedRoute } from "..";
+import type { ProbedRoute } from "../../types";
 
 type ProbedRoutesResponse = {
   baseUrl: string;

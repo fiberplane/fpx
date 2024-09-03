@@ -1,5 +1,4 @@
 import type { StateCreator } from "zustand";
-import type { ProbedRoute } from "../../queries";
 import {
   addBaseUrl,
   extractMatchedPathParams,
@@ -13,7 +12,7 @@ import {
   getVisibleResponsePanelTabs,
 } from "../../reducer/tabs";
 import { findMatchedRoute } from "../../routes";
-import type { RequestMethod } from "../../types";
+import type { ProbedRoute, RequestMethod } from "../../types";
 import type { RoutesSlice, Store } from "./types";
 
 export const routesSlice: StateCreator<
@@ -83,32 +82,22 @@ export const routesSlice: StateCreator<
     }),
 });
 
+const SUPPORTED_METHODS: Array<RequestMethod> = [
+  "GET",
+  "POST",
+  "PUT",
+  "DELETE",
+  "OPTIONS",
+  "PATCH",
+  "HEAD",
+];
 // Helper functions
 function probedRouteToInputMethod(route: ProbedRoute): RequestMethod {
-  const method = route.method.toUpperCase();
-  switch (method) {
-    case "GET":
-    case "POST":
-    case "PUT":
-    case "DELETE":
-    case "OPTIONS":
-    case "PATCH":
-    case "HEAD":
-      return method;
-    default:
-      return "GET";
+  const method = route.method.toUpperCase() as RequestMethod;
+  // Validate that the method is supported
+  if (SUPPORTED_METHODS.includes(method)) {
+    return method;
   }
+
+  return "GET";
 }
-
-// // You'll need to implement these functions or import them from the appropriate files
-// function getVisibleRequestPanelTabs(params: { requestType: RequestType; method: RequestMethod }) {
-//   // Implementation
-// }
-
-// function getVisibleResponsePanelTabs(params: { requestType: RequestType }) {
-//   // Implementation
-// }
-
-// function addContentTypeHeader(state: RequestorState) {
-//   // Implementation
-// }
