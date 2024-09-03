@@ -39,13 +39,26 @@ const filterRoutes = (routes: ProbedRoute[]) => {
   });
 };
 
+/**
+ * Filter the routes and middleware that are currently registered.
+ */
+const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
+  return routesAndMiddleware.filter((r) => {
+    return r.currentlyRegistered;
+  });
+};
+
 export function useRoutes() {
-  const { setRoutes, setServiceBaseUrl } = useRequestorStore(
-    useShallow(({ setRoutes, setServiceBaseUrl }) => ({
-      setRoutes,
-      setServiceBaseUrl,
-    })),
-  );
+  const { setRoutes, setServiceBaseUrl, setRoutesAndMiddleware } =
+    useRequestorStore(
+      useShallow(
+        ({ setRoutes, setServiceBaseUrl, setRoutesAndMiddleware }) => ({
+          setRoutes,
+          setServiceBaseUrl,
+          setRoutesAndMiddleware,
+        }),
+      ),
+    );
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
@@ -61,12 +74,18 @@ export function useRoutes() {
     );
   }, [routesAndMiddleware]);
 
+  const activeRoutesAndMiddleware = useMemo(() => {
+    const activeRoutes = filterActive(routesAndMiddleware?.routes ?? []);
+    activeRoutes.sort((a, b) => b.registrationOrder - a.registrationOrder);
+    return activeRoutes;
+  }, [routesAndMiddleware]);
+
   // HACK - Antipattern, add serviceBaseUrl to the reducer based off of external changes
   // HACK - Defaults to localhost:8787 if not set
   const serviceBaseUrl =
     routesAndMiddleware?.baseUrl ?? "http://localhost:8787";
   useEffect(() => {
-    console.log("setting serviceBaseUrl", serviceBaseUrl);
+    console.debug("setting serviceBaseUrl", serviceBaseUrl);
     setServiceBaseUrl(serviceBaseUrl);
   }, [serviceBaseUrl, setServiceBaseUrl]);
 
@@ -76,9 +95,15 @@ export function useRoutes() {
     setRoutes(routes);
   }, [routes, setRoutes]);
 
+  // HACK - Antipattern, add routes and middleware to the reducer based off of external changes
+  useEffect(() => {
+    setRoutesAndMiddleware(activeRoutesAndMiddleware);
+  }, [activeRoutesAndMiddleware, setRoutesAndMiddleware]);
+
   return {
     isError,
     isLoading,
     // routes,
+    // activeRoutesAndMiddleware,
   };
 }

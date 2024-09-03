@@ -199,7 +199,7 @@ export const ResponsePanel = memo(function ResponsePanel({
                         ) : (
                           <CaretRightIcon className="w-4 h-4 cursor-pointer" />
                         )}
-                        Timeline
+                        Logs & Events
                       </SubSectionHeading>
                     </CollapsibleTrigger>
                     <CollapsibleContent>

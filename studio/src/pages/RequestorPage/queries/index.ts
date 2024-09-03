@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
+export const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
     z.string(),
     z.number(),
@@ -11,7 +11,7 @@ const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
   ]),
 );
 
-type JsonSchemaType = z.infer<typeof JsonSchema>;
+export type JsonSchemaType = z.infer<typeof JsonSchema>;
 
 // TODO - Use validation schema
 export type Requestornator = {

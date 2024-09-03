@@ -84,11 +84,13 @@ export function RoutesPanel({
   }, [filteredRoutes]);
 
   const detectedRoutes = useMemo(() => {
-    return (
+    const detected =
       filteredRoutes?.filter(
         (r) => r.routeOrigin === "discovered" && r.currentlyRegistered,
-      ) ?? []
-    );
+      ) ?? [];
+    // NOTE - This preserves the order the routes were registered in the Hono api
+    detected.sort((a, b) => a.registrationOrder - b.registrationOrder);
+    return detected;
   }, [filteredRoutes]);
 
   const openApiRoutes = useMemo(() => {

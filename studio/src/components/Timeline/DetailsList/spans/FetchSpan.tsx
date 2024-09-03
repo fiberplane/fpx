@@ -64,7 +64,7 @@ export function FetchSpan({
   const url = getRequestUrl(span);
 
   const { component, title } = useVendorSpecificSection(vendorInfo) ?? {};
-  const icon = useTimelineIcon(span);
+  const icon = useTimelineIcon(span, { vendorInfo });
   return (
     <GenericFetchSpan
       icon={icon}

@@ -9,30 +9,13 @@ import { useServiceBaseUrl } from "./store/useServiceBaseUrl";
 import { isWsRequest } from "./types";
 
 export function useRequestorSubmitHandler({
-  // requestType,
-  // selectedRoute,
-  // body,
-  // path,
-  // method,
-  // pathParams,
-  // queryParams,
-  // requestHeaders,
   makeRequest,
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  // addServiceUrlIfBarePath: (url: string) => string;
-  // selectedRoute: ProbedRoute | null;
-  // body: RequestorBody;
-  // path: string;
-  // method: string;
-  // pathParams: KeyValueParameter[];
-  // queryParams: KeyValueParameter[];
-  // requestHeaders: KeyValueParameter[];
   makeRequest: MakeProxiedRequestQueryFn;
   connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
-  // requestType: RequestorState["requestType"];
 }) {
   const { toast } = useToast();
 
@@ -72,19 +55,11 @@ export function useRequestorSubmitHandler({
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
   return useHandler((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (isWsRequest(requestType)) {
-      const url = addServiceUrlIfBarePath(path);
-      connectWebsocket(url);
-      toast({
-        description: "Connecting to websocket",
-      });
-      return;
-    }
-
     // TODO - Make it clear in the UI that we're auto-adding this header
-    const contentTypeHeader = getContentTypeHeader(body);
-    const contentLength = getContentLength(body);
+    const canHaveBody =
+      !isWsRequest(requestType) && !["GET", "DELETE"].includes(method);
+    const contentTypeHeader = canHaveBody ? getContentTypeHeader(body) : null;
+    const contentLength = canHaveBody ? getContentLength(body) : null;
     const modifiedHeaders = [
       contentTypeHeader
         ? {
@@ -105,7 +80,6 @@ export function useRequestorSubmitHandler({
       ...requestHeaders,
     ].filter(Boolean) as KeyValueParameter[];
 
-    // TODO - Check me
     if (isWsRequest(requestType)) {
       const url = addServiceUrlIfBarePath(path);
       connectWebsocket(url);
@@ -147,6 +121,8 @@ export function useRequestorSubmitHandler({
   });
 }
 
+// NOTE - This logic is partly duplicated in `reducer/reducers/content-type.ts`
+//        We should refactor to share this logic
 function getContentTypeHeader(body: RequestorBody): string | null {
   switch (body.type) {
     case "json":
@@ -162,8 +138,11 @@ function getContentTypeHeader(body: RequestorBody): string | null {
       }
       return "application/x-www-form-urlencoded";
     }
-    case "file":
-      return "application/octet-stream";
+    case "file": {
+      const file = body.value;
+      // TODO - What if file is undefined?
+      return file?.type ?? "application/octet-stream";
+    }
     default:
       return "text/plain";
   }

@@ -17,7 +17,7 @@ export function findMatchedRoute(
   requestType: "http" | "websocket",
 ): MatchedRouteResult {
   if (pathname && method) {
-    const smartMatch = findSmartRouterMatches(
+    const smartMatch = findFirstSmartRouterMatch(
       routes,
       pathname,
       method,
@@ -46,9 +46,24 @@ export function findMatchedRoute(
 }
 
 /**
- * Prototype of doing route matching in the browser with Hono itself
+ * Return the first matching route (or middleware!) from the smart router
  */
-export function findSmartRouterMatches(
+export function findFirstSmartRouterMatch(
+  routes: ProbedRoute[],
+  pathname: string,
+  method: string,
+  requestType: "http" | "websocket",
+) {
+  return (
+    findAllSmartRouterMatches(routes, pathname, method, requestType)?.[0] ??
+    null
+  );
+}
+
+/**
+ * Returns all matching routes (or middleware!) from the smart router
+ */
+export function findAllSmartRouterMatches(
   routes: ProbedRoute[],
   pathname: string,
   method: string,
@@ -111,7 +126,7 @@ export function findSmartRouterMatches(
       return 0;
     });
 
-    return routeMatches[0];
+    return routeMatches;
   } catch (e) {
     console.error("Error matching routes", e);
     return null;

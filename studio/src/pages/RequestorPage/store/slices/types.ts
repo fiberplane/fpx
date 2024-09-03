@@ -57,6 +57,10 @@ export interface RoutesSlice {
   selectedRoute: ProbedRoute | null;
   setRoutes: (routes: ProbedRoute[]) => void;
   selectRoute: (route: ProbedRoute) => void;
+
+  routesAndMiddleware: ProbedRoute[];
+  getMatchingMiddleware: () => null | ProbedRoute[];
+  setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
 }
 
 export interface TabsSlice {

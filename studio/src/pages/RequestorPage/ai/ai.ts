@@ -30,6 +30,7 @@ export function useAi(requestHistory: Array<Requestornator>) {
     updatePathParamValues,
     body,
     selectedRoute,
+    getMatchingMiddleware,
   } = useRequestorStore(
     useShallow(
       ({
@@ -40,6 +41,7 @@ export function useAi(requestHistory: Array<Requestornator>) {
         updatePathParamValues,
         body,
         selectedRoute,
+        getMatchingMiddleware,
       }) => ({
         setBody,
         setQueryParams,
@@ -48,6 +50,7 @@ export function useAi(requestHistory: Array<Requestornator>) {
         updatePathParamValues,
         body,
         selectedRoute,
+        getMatchingMiddleware,
       }),
     ),
   );
@@ -70,7 +73,13 @@ export function useAi(requestHistory: Array<Requestornator>) {
   }, [requestHistory]);
 
   const { isFetching: isLoadingParameters, refetch: generateRequestData } =
-    useAiRequestData(selectedRoute, bodyType, recentHistory, testingPersona);
+    useAiRequestData(
+      selectedRoute,
+      getMatchingMiddleware(),
+      bodyType,
+      recentHistory,
+      testingPersona,
+    );
 
   const fillInRequest = useHandler(() => {
     generateRequestData().then(({ data, isError, error }) => {

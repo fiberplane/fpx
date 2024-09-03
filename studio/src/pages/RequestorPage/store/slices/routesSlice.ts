@@ -4,6 +4,7 @@ import {
   extractMatchedPathParams,
   extractPathParams,
   mapPathParamKey,
+  pathHasValidBaseUrl,
   removeBaseUrl,
 } from "../../reducer/reducer";
 import { updateContentTypeHeader } from "../../reducer/reducers";
@@ -11,7 +12,7 @@ import {
   getVisibleRequestPanelTabs,
   getVisibleResponsePanelTabs,
 } from "../../reducer/tabs";
-import { findMatchedRoute } from "../../routes";
+import { findAllSmartRouterMatches, findMatchedRoute } from "../../routes";
 import type { ProbedRoute, RequestMethod } from "../../types";
 import type { RoutesSlice, Store } from "./types";
 
@@ -20,7 +21,7 @@ export const routesSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]],
   [],
   RoutesSlice
-> = (set) => ({
+> = (set, get) => ({
   routes: [],
   selectedRoute: null,
 
@@ -80,6 +81,81 @@ export const routesSlice: StateCreator<
       // Add content type header (you might want to move this to a separate function)
       updateContentTypeHeader(state);
     }),
+
+  routesAndMiddleware: [],
+  setRoutesAndMiddleware: (routesAndMiddleware) =>
+    set((state) => {
+      state.routesAndMiddleware = routesAndMiddleware;
+    }),
+
+  getMatchingMiddleware: () => {
+    const state = get();
+    // const path = state.path;
+    // const method = state.method;
+    // const requestType = state.requestType;
+    // const route
+    const {
+      path,
+      method,
+      requestType,
+      serviceBaseUrl,
+      routes,
+      routesAndMiddleware,
+    } = state;
+
+    const canMatchMiddleware =
+      !pathHasValidBaseUrl(path) || path.startsWith(serviceBaseUrl);
+
+    // NOTE - We can only match middleware for the service we're monitoring anyhow
+    //        If someone is making a request to jsonplaceholder, we don't wanna
+    //        match middleware that might fire for an internal goose api call
+    if (!canMatchMiddleware) {
+      return null;
+    }
+
+    const matchedRoute = findMatchedRoute(
+      routes,
+      removeBaseUrl(serviceBaseUrl, path),
+      method,
+      requestType,
+    )?.route;
+
+    if (!matchedRoute) {
+      return null;
+    }
+
+    const indexOfMatchedRoute = matchedRoute
+      ? routesAndMiddleware.indexOf(matchedRoute)
+      : -1;
+
+    const registeredHandlersBeforeRoute =
+      indexOfMatchedRoute > -1
+        ? routesAndMiddleware.slice(indexOfMatchedRoute)
+        : [];
+
+    const filteredMiddleware = registeredHandlersBeforeRoute.filter(
+      (r) => r.handlerType === "middleware",
+    );
+
+    const middlewareMatches = findAllSmartRouterMatches(
+      filteredMiddleware,
+      removeBaseUrl(state.serviceBaseUrl, path),
+      method,
+      requestType,
+    );
+
+    // console.log("all routes and middleware", state.routesAndMiddleware);
+    // console.log("filtered middleware (before route)", filteredMiddleware);
+    // console.log("middlewareMatches", middlewareMatches ?? "NOOOOO MATCHES YO");
+
+    const middleware = [];
+    for (const m of middlewareMatches ?? []) {
+      if (m?.route && m.route?.handlerType === "middleware") {
+        middleware.push(m.route);
+      }
+    }
+    return middleware;
+  },
 });
 
 const SUPPORTED_METHODS: Array<RequestMethod> = [

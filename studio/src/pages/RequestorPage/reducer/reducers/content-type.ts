@@ -66,6 +66,8 @@ function removeHeader(
   return currentHeaders.filter((p) => p.id !== header.id);
 }
 
+// NOTE - This logic is partly duplicated in `useRequestorSubmitHandler`
+//        We should refactor to share this logic
 function mapBodyToContentType(body: RequestorBody) {
   if (body.type === "form-data" && body.isMultipart) {
     return "multipart/form-data";
@@ -74,10 +76,9 @@ function mapBodyToContentType(body: RequestorBody) {
     return "application/x-www-form-urlencoded";
   }
 
-  // TODO - Sniff the file extension, this could otherwise be very very annoying
-  //        if we keep resetting their content type header when it's already set to like "application/iamge"
+  // NOTE - Uses the mime type of the file, but falls back to application/octet-stream
   if (body.type === "file") {
-    return "application/octet-stream";
+    return body.value?.type ?? "application/octet-stream";
   }
 
   if (body.type === "json") {
@@ -132,12 +133,6 @@ function getUpdateOperation(
       return null;
     }
 
-    // If the body is a file, we don't want to add the content type header, in order to give the user the ability to set the content type themselves
-    // If the user doesn't define a content type, fetch will just add application/octet-stream
-    if (currentBody.type === "file") {
-      return null;
-    }
-
     // Add the content type header
     return {
       type: "add",
@@ -169,18 +164,6 @@ function getUpdateOperation(
       type: "remove",
       value: currentContentTypeHeader,
     };
-  }
-
-  if (currentBody.type === "file") {
-    if (
-      currentContentTypeHeader.value?.startsWith("text/") ||
-      currentContentTypeHeader.value?.startsWith("application/json")
-    ) {
-      return {
-        type: "remove",
-        value: currentContentTypeHeader,
-      };
-    }
   }
 
   // Update the content type header

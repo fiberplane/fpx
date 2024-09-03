@@ -21,6 +21,8 @@ import type {
   InitParam,
   InputParam,
 } from "../types";
+import { getNodeSafeEnv } from "./env";
+import { safelySerializeJSON } from "./json";
 
 // There are so many different types of headers
 // and we want to support all of them so we can
@@ -40,13 +42,24 @@ export function headersToObject(headers: PossibleHeaders) {
 }
 
 /**
- * HELPER
+ * Helper to get the request attributes for the root request.
+ *
+ * Requires that we have a cloned request, so we can get the body and headers
+ * without consuming the original request.
  */
-export async function getRootRequestAttributes(request: Request, env: unknown) {
-  let attributes: Attributes = {
-    // NOTE - We should not do this in production
-    [FPX_REQUEST_ENV]: JSON.stringify(env),
-  };
+export async function getRootRequestAttributes(
+  request: Request,
+  honoEnv: unknown,
+) {
+  let attributes: Attributes = {};
+
+  // HACK - We need to account for the fact that the Hono `env` is different across runtimes
+  //        If process.env is available, we use that, otherwise we use the `env` object from the Hono runtime
+  const env = getNodeSafeEnv(honoEnv);
+  if (env) {
+    // NOTE - We should not *ever* do this in production
+    attributes[FPX_REQUEST_ENV] = safelySerializeJSON(env);
+  }
 
   if (request.body) {
     const bodyAttr = await formatRootRequestBody(request);

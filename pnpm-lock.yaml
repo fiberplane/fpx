@@ -184,6 +184,25 @@ importers:
         specifier: ^3.73.0
         version: 3.73.0(@cloudflare/workers-types@4.20240821.1)
 
+  examples/node-api:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      '@hono/node-server':
+        specifier: ^1.12.2
+        version: 1.12.2(hono@4.5.9)
+      hono:
+        specifier: ^4.5.9
+        version: 4.5.9
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.14.15
+      tsx:
+        specifier: ^4.7.1
+        version: 4.17.0
+
   packages/client-library-otel:
     dependencies:
       '@opentelemetry/api':
@@ -1668,6 +1687,12 @@ packages:
   '@hono/node-server@1.12.0':
     resolution: {integrity: sha512-e6oHjNiErRxsZRZBmc2KucuvY3btlO/XPncIpP2X75bRdTilF9GLjm3NHvKKunpJbbJJj31/FoPTksTf8djAVw==}
     engines: {node: '>=18.14.1'}
+
+  '@hono/node-server@1.12.2':
+    resolution: {integrity: sha512-xjzhqhSWUE/OhN0g3KCNVzNsQMlFUAL+/8GgPUr3TKcU7cvgZVBGswFofJ8WwGEHTqobzze1lDpGJl9ZNckDhA==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@hono/zod-validator@0.2.2':
     resolution: {integrity: sha512-dSDxaPV70Py8wuIU2QNpoVEIOSzSXZ/6/B/h4xA7eOMz7+AarKTSGV8E6QwrdcCbBLkpqfJ4Q2TmBO0eP1tCBQ==}
@@ -8345,6 +8370,10 @@ snapshots:
   '@floating-ui/utils@0.2.7': {}
 
   '@hono/node-server@1.12.0': {}
+
+  '@hono/node-server@1.12.2(hono@4.5.9)':
+    dependencies:
+      hono: 4.5.9
 
   '@hono/zod-validator@0.2.2(hono@4.5.5)(zod@3.23.8)':
     dependencies:

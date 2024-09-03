@@ -60,7 +60,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         placeholder="name"
         readOnly={!onChangeKey}
         onChange={(e) => onChangeKey?.(e.target.value)}
-        className="w-24 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none"
+        className="w-28 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none"
       />
       <Input
         type="text"

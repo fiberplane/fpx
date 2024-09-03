@@ -77,6 +77,9 @@ export type RequestorActiveResponse = z.infer<
 
 export const RequestorStateSchema = z.object({
   routes: z.array(ProbedRouteSchema).describe("All routes"),
+  routesAndMiddleware: z
+    .array(ProbedRouteSchema)
+    .describe("All routes and middleware"),
   selectedRoute: ProbedRouteSchema.nullable().describe(
     "Indicates which route to highlight in the routes panel",
   ),
@@ -180,6 +183,7 @@ export type RequestBodyType = RequestorBody["type"];
 
 export const initialState: RequestorState = {
   routes: [],
+  routesAndMiddleware: [],
   selectedRoute: null,
   path: "/",
   serviceBaseUrl: "http://localhost:8787",
