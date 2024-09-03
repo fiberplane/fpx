@@ -412,6 +412,10 @@ function requestorReducer(
           },
         });
       }
+      // When the user adds a file, we want to use the file's type as the content type header
+      if (nextBody.type === "file") {
+        return addContentTypeHeader({ ...state, body: nextBody });
+      }
       return { ...state, body: nextBody };
     }
     case CLEAR_BODY: {
