@@ -60,8 +60,26 @@ pub struct TypeScriptCompatOtelSpan {
     pub resource_attributes: Option<TypeScriptCompatAttributeMap>,
 
     pub status: Option<Status>,
-    pub events: Vec<SpanEvent>,
+    pub events: Vec<TypeScriptCompatSpanEvent>,
     pub links: Vec<Link>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct TypeScriptCompatSpanEvent {
+    pub name: String,
+    #[serde(with = "time::serde::rfc3339")]
+    pub timestamp: time::OffsetDateTime,
+    pub attributes: TypeScriptCompatAttributeMap,
+}
+
+impl From<SpanEvent> for TypeScriptCompatSpanEvent {
+    fn from(event: SpanEvent) -> Self {
+        Self {
+            name: event.name,
+            timestamp: event.timestamp,
+            attributes: event.attributes.into(),
+        }
+    }
 }
 
 impl From<crate::api::models::otel::Span> for TypeScriptCompatOtelSpan {
@@ -82,7 +100,7 @@ impl From<crate::api::models::otel::Span> for TypeScriptCompatOtelSpan {
             scope_attributes: span.scope_attributes.map(Into::into),
             resource_attributes: span.resource_attributes.map(Into::into),
             status: span.status,
-            events: span.events,
+            events: span.events.into_iter().map(Into::into).collect(),
             links: span.links,
         }
     }
