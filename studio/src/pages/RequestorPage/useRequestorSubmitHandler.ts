@@ -131,6 +131,8 @@ export function useRequestorSubmitHandler({
   );
 }
 
+// NOTE - This logic is partly duplicated in `reducer/reducers/content-type.ts`
+//        We should refactor to share this logic
 function getContentTypeHeader(body: RequestorBody): string | null {
   switch (body.type) {
     case "json":
@@ -146,8 +148,11 @@ function getContentTypeHeader(body: RequestorBody): string | null {
       }
       return "application/x-www-form-urlencoded";
     }
-    case "file":
-      return "application/octet-stream";
+    case "file": {
+      const file = body.value;
+      // TODO - What if file is undefined?
+      return file?.type ?? "application/octet-stream";
+    }
     default:
       return "text/plain";
   }
