@@ -1,5 +1,5 @@
 import { useHandler } from "@fiberplane/hooks";
-import { useCallback, useReducer, useRef } from "react";
+import { useReducer, useRef } from "react";
 
 // Define action types
 const WEBSOCKET_CONNECTING = "WEBSOCKET_CONNECTING";

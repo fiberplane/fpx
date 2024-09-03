@@ -25,7 +25,7 @@ import {
   isRequestorActiveResponse,
 } from "../reducer/state";
 import { useActiveRoute, useRequestorStore } from "../store";
-import { type RequestType, isWsRequest } from "../types";
+import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
 import {

@@ -41,45 +41,6 @@ export const RequestorPage = () => {
   const { toast } = useToast();
 
   const {
-    // Routes panel
-    // state: {
-    // routes,
-    // selectedRoute,
-    // },
-    // setRoutes,
-    // setServiceBaseUrl,
-    // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-    // getActiveRoute,
-
-    // Requestor input
-    // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-    // state: {
-    // path,
-    // method,
-    // requestType,
-    // serviceBaseUrl,
-    // },
-    // updatePath: handlePathInputChange,
-    // updateMethod: handleMethodChange,
-    // getIsInDraftMode,
-    // addServiceUrlIfBarePath,
-    // addBaseUrl,
-
-    // Request panel
-    // state: {
-    // pathParams,
-    // queryParams,
-    // requestHeaders,
-    // body,
-    // },
-    // setPathParams,
-    // updatePathParamValues,
-    // clearPathParams,
-    // setQueryParams,
-    // setRequestHeaders,
-    // setBody,
-    handleRequestBodyTypeChange,
-
     // Request panel - Websocket message form
     websocketMessage,
     setWebsocketMessage,
@@ -88,64 +49,21 @@ export const RequestorPage = () => {
     activeRequestsPanelTab,
     setActiveRequestsPanelTab,
     visibleRequestsPanelTabs,
-    // shouldShowRequestTab,
 
     // Response Panel tabs
     activeResponsePanelTab,
     visibleResponsePanelTabs,
     setActiveResponsePanelTab,
-    // shouldShowResponseTab,
 
     // Response Panel response body
-    // activeResponse,
     setActiveResponse,
 
     // History (WIP)
     activeHistoryResponseTraceId,
-    // showResponseBodyFromHistory,
     clearResponseBodyFromHistory,
   } = useRequestorStore(
     useShallow(
       ({
-        // Routes panel
-        // state: {
-        // routes,
-        // selectedRoute,
-        // },
-        // setRoutes,
-        // setServiceBaseUrl,
-        // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-        // getActiveRoute,
-
-        // Requestor input
-        // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-        // state: {
-        path,
-        method,
-        requestType,
-        serviceBaseUrl,
-        // },
-        updatePath: handlePathInputChange,
-        updateMethod: handleMethodChange,
-        // getIsInDraftMode,
-        // addServiceUrlIfBarePath,
-        // addBaseUrl,
-
-        // Request panel
-        // state: {
-        pathParams,
-        queryParams,
-        requestHeaders,
-        body,
-        // },
-        setPathParams,
-        updatePathParamValues,
-        clearPathParams,
-        setQueryParams,
-        setRequestHeaders,
-        setBody,
-        handleRequestBodyTypeChange,
-
         // Request panel - Websocket message form
         websocketMessage,
         setWebsocketMessage,
@@ -154,62 +72,19 @@ export const RequestorPage = () => {
         activeRequestsPanelTab,
         setActiveRequestsPanelTab,
         visibleRequestsPanelTabs,
-        // shouldShowRequestTab,
 
         // Response Panel tabs
         activeResponsePanelTab,
         visibleResponsePanelTabs,
         setActiveResponsePanelTab,
-        // shouldShowResponseTab,
 
         // Response Panel response body
-        activeResponse,
         setActiveResponse,
 
         // History (WIP)
         activeHistoryResponseTraceId,
-        // showResponseBodyFromHistory,
         clearResponseBodyFromHistory,
       }) => ({
-        // Routes panel
-        // state: {
-        // routes,
-        // selectedRoute,
-        // },
-        // setRoutes,
-        // setServiceBaseUrl,
-        // selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-        // getActiveRoute,
-
-        // Requestor input
-        // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-        // state: {
-        path,
-        method,
-        requestType,
-        serviceBaseUrl,
-        // },
-        updatePath: handlePathInputChange,
-        updateMethod: handleMethodChange,
-        // getIsInDraftMode,
-        // addServiceUrlIfBarePath,
-        // addBaseUrl,
-
-        // Request panel
-        // state: {
-        pathParams,
-        queryParams,
-        requestHeaders,
-        body,
-        // },
-        setPathParams,
-        updatePathParamValues,
-        clearPathParams,
-        setQueryParams,
-        setRequestHeaders,
-        setBody,
-        handleRequestBodyTypeChange,
-
         // Request panel - Websocket message form
         websocketMessage,
         setWebsocketMessage,
@@ -218,21 +93,17 @@ export const RequestorPage = () => {
         activeRequestsPanelTab,
         setActiveRequestsPanelTab,
         visibleRequestsPanelTabs,
-        // shouldShowRequestTab,
 
         // Response Panel tabs
         activeResponsePanelTab,
         visibleResponsePanelTabs,
         setActiveResponsePanelTab,
-        // shouldShowResponseTab,
 
         // Response Panel response body
-        activeResponse,
         setActiveResponse,
 
         // History (WIP)
         activeHistoryResponseTraceId,
-        // showResponseBodyFromHistory,
         clearResponseBodyFromHistory,
       }),
     ),
@@ -349,7 +220,7 @@ export const RequestorPage = () => {
 
   // TODO - this should be a thunk
 
-  const activeRoute = useActiveRoute();
+  // const activeRoute = useActiveRoute();
 
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes(
@@ -517,7 +388,7 @@ export const RequestorPage = () => {
       activeRequestsPanelTab={activeRequestsPanelTab}
       setActiveRequestsPanelTab={setActiveRequestsPanelTab}
       shouldShowRequestTab={shouldShowRequestTab}
-      handleRequestBodyTypeChange={handleRequestBodyTypeChange}
+      // handleRequestBodyTypeChange={handleRequestBodyTypeChange}
       websocketMessage={websocketMessage}
       setWebsocketMessage={setWebsocketMessage}
       aiEnabled={aiEnabled}

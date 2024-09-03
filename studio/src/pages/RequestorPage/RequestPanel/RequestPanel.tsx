@@ -9,7 +9,6 @@ import { KeyValueForm } from "../KeyValueForm";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { AiTestingPersona } from "../ai";
 import type {
-  RequestBodyType,
   RequestorBody,
   RequestsPanelTab,
 } from "../reducer";
@@ -33,10 +32,10 @@ type RequestPanelProps = {
   // body: RequestorBody;
   // FIXME
   // setBody: (body: undefined | string | RequestorBody) => void;
-  handleRequestBodyTypeChange: (
-    contentType: RequestBodyType,
-    isMultipart?: boolean,
-  ) => void;
+  // handleRequestBodyTypeChange: (
+  //   contentType: RequestBodyType,
+  //   isMultipart?: boolean,
+  // ) => void;
   // pathParams: KeyValueParameter[];
   // queryParams: KeyValueParameter[];
   // setPathParams: (params: KeyValueParameter[]) => void;
@@ -62,7 +61,7 @@ export const RequestPanel = memo(function RequestPanel(
   props: RequestPanelProps,
 ) {
   const {
-    handleRequestBodyTypeChange,
+    // handleRequestBodyTypeChange,
     activeRequestsPanelTab,
     setActiveRequestsPanelTab,
     shouldShowRequestTab,
@@ -103,6 +102,7 @@ export const RequestPanel = memo(function RequestPanel(
     setQueryParams,
     setPathParams,
     clearPathParams,
+    handleRequestBodyTypeChange,
   } = useRequestorStore(
     useShallow(
       ({
@@ -117,6 +117,7 @@ export const RequestPanel = memo(function RequestPanel(
         setQueryParams,
         setPathParams,
         clearPathParams,
+        handleRequestBodyTypeChange,
       }) => ({
         path,
         body,
@@ -129,6 +130,7 @@ export const RequestPanel = memo(function RequestPanel(
         setQueryParams,
         setPathParams,
         clearPathParams,
+        handleRequestBodyTypeChange,
       }),
     ),
   );

@@ -1,10 +1,9 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useHandler } from "@fiberplane/hooks";
-import { useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { KeyValueParameter } from "./KeyValueForm";
-import type { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
-import type { RequestorBody, RequestorState } from "./reducer";
+import type { MakeProxiedRequestQueryFn } from "./queries";
+import type { RequestorBody } from "./reducer";
 import { useRequestorStore } from "./store";
 import { useServiceBaseUrl } from "./store/useServiceBaseUrl";
 import { isWsRequest } from "./types";
