@@ -254,9 +254,7 @@ export const RequestorPage = () => {
                 id="requestor-page-main-panel"
                 autoSaveId="requestor-page-main-panel"
                 className={cn(
-                  BACKGROUND_LAYER,
                   "rounded-md",
-                  "border",
                   // HACK - This defensively prevents overflow from getting too excessive,
                   //        In the case where the inner content expands beyond the parent
                   "max-w-screen",
@@ -265,15 +263,23 @@ export const RequestorPage = () => {
               >
                 <ResizablePanel
                   order={1}
-                  className="relative"
+                  className={cn(BACKGROUND_LAYER, "relative", "rounded-md")}
                   id="request-panel"
                   minSize={requestPanelMinSize}
                   maxSize={requestPanelMaxSize}
                 >
                   {requestContent}
                 </ResizablePanel>
-                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-                <ResizablePanel id="response-panel" order={4} minSize={10}>
+                <ResizableHandle
+                  hitAreaMargins={{ coarse: 20, fine: 10 }}
+                  className="bg-transparent m-1 rounded-md"
+                />
+                <ResizablePanel
+                  id="response-panel"
+                  order={4}
+                  minSize={10}
+                  className={cn(BACKGROUND_LAYER, "rounded-md", "border")}
+                >
                   {responseContent}
                 </ResizablePanel>
                 {isAiTestGenerationPanelOpen && !isSmallScreen && (

@@ -64,10 +64,10 @@ export function RequestBodyTypeDropdown({
                 variant="secondary"
                 role="combobox"
                 aria-expanded={open}
-                className="pl-3 disabled:pointer-events-auto"
+                className="pl-3 disabled:pointer-events-auto text-xs h-6"
                 disabled={isDisabled}
               >
-                <CaretSortIcon className="w-4 h-4 mr-1" />
+                <CaretSortIcon className="w-3 h-3 mr-1" />
                 {bodyTypeLabel}
               </Button>
             </PopoverTrigger>
@@ -101,6 +101,7 @@ export function RequestBodyTypeDropdown({
                 <CommandItem
                   key={type.value}
                   value={type.value}
+                  className="text-xs"
                   onSelect={(currentValue) => {
                     handleRequestBodyTypeChange(
                       currentValue as RequestBodyType,

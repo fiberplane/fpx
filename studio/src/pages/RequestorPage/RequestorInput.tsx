@@ -105,7 +105,7 @@ export function RequestorInput({
           className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
         />
       </div>
-      <div className="flex items-center space-x-2 p-2">
+      <div className="flex items-center space-x-2 px-2 py-0">
         {canSaveDraftRoute && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -155,7 +155,7 @@ export function RequestorInput({
               }}
               disabled={isRequestorRequesting}
               variant={isWsConnected ? "destructive" : "default"}
-              className={cn("p-2 md:p-2.5")}
+              className={cn("p-2 md:px-2.5 py-1 h-auto")}
             >
               <span className="hidden md:inline">
                 {isWsRequest(requestType)

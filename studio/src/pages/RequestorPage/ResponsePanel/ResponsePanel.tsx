@@ -266,6 +266,7 @@ function ResponseSummary({
             "font-mono",
             "whitespace-nowrap",
             "overflow-ellipsis",
+            "text-xs",
             "ml-2",
             "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
           )}
