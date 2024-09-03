@@ -49,8 +49,10 @@ export function useRequestorSubmitHandler({
       }
 
       // TODO - Make it clear in the UI that we're auto-adding this header
-      const contentTypeHeader = getContentTypeHeader(body);
-      const contentLength = getContentLength(body);
+      const canHaveBody =
+        !isWsRequest(requestType) && !["GET", "DELETE"].includes(method);
+      const contentTypeHeader = canHaveBody ? getContentTypeHeader(body) : null;
+      const contentLength = canHaveBody ? getContentLength(body) : null;
       const modifiedHeaders = [
         contentTypeHeader
           ? {
