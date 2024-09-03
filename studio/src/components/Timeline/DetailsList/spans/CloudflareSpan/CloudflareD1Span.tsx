@@ -5,7 +5,6 @@ import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { CollapsibleSubSection } from "../../../shared";
 import { CodeMirrorSqlEditor } from "../../CodeMirrorEditor";
-import { TextOrJsonViewer } from "../../TextJsonViewer";
 import { CfResultAndError } from "./shared";
 
 /**

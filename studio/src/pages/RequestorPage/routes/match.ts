@@ -1,3 +1,4 @@
+import type { ParamIndexMap, ParamStash } from "hono/router";
 import { RegExpRouter } from "hono/router/reg-exp-router";
 import { SmartRouter } from "hono/router/smart-router";
 import { TrieRouter } from "hono/router/trie-router";
@@ -23,6 +24,7 @@ export function findMatchedRoute(
       method,
       requestType,
     );
+
     if (smartMatch?.route) {
       return {
         route: smartMatch.route,
@@ -104,9 +106,10 @@ export function findAllSmartRouterMatches(
 
     const routeMatches = matches.map((match) => {
       const handler = match[0];
+      const pathParams = match[1];
       return {
         route: functionHandlerLookupTable.get(handler as () => void),
-        pathParams: match[1],
+        pathParams,
       };
     });
 
@@ -153,6 +156,9 @@ const isMatchResultEmpty = <R extends SmartRouter<T>, T>(
   }
 };
 
+/**
+ * Transforms a route match result into an array of matches with path parameter values
+ */
 const unpackMatches = <R extends SmartRouter<T>, T>(
   result: ReturnType<R["match"]>,
 ) => {
@@ -160,7 +166,14 @@ const unpackMatches = <R extends SmartRouter<T>, T>(
   if (result.length === 2) {
     for (const m of result[0]) {
       if (m[0] !== undefined) {
-        matches.push(m);
+        const handler = m[0];
+        const paramIndexMap = m[1];
+        const paramStash = result[1];
+        const pathParams = paramIndexMapToObject(paramIndexMap, paramStash);
+        matches.push([handler, pathParams] as [
+          unknown,
+          Record<string, string>,
+        ]);
       }
     }
   }
@@ -172,4 +185,19 @@ const unpackMatches = <R extends SmartRouter<T>, T>(
     }
   }
   return matches;
+};
+
+const paramIndexMapToObject = (
+  paramIndexMap: ParamIndexMap,
+  paramStash: ParamStash,
+): Record<string, string> => {
+  return Object.fromEntries(
+    Object.entries(paramIndexMap).map(([key, value]) => {
+      // For a RegExpRouter, the paramStash is the result of a regex match
+      // and the values are the indices of the parsed values in the match
+      // so we need to map the indices to the actual values
+      const actualValue = paramStash?.[value];
+      return [key, actualValue];
+    }),
+  );
 };
