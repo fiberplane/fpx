@@ -18,6 +18,8 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
+} from "../reducer/state";
+import { TextOrJsonViewer } from "@/components/Timeline/DetailsList/TextJsonViewer";
 
 export function ResponseBody({
   headersSlot,
@@ -65,12 +67,7 @@ export function ResponseBody({
         >
           {headersSlot}
           <CollapsibleBodyContainer>
-            <CodeMirrorJsonEditor
-              value={prettyBody}
-              readOnly
-              onChange={noop}
-              minHeight="0"
-            />
+            <TextOrJsonViewer text={prettyBody} collapsed={false} />
           </CollapsibleBodyContainer>
         </div>
       );
