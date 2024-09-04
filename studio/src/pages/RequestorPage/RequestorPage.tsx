@@ -250,49 +250,44 @@ export const RequestorPage = () => {
               </>
             ) : (
               <ResizablePanelGroup
-                direction={isLgScreen ? "horizontal" : "vertical"}
+                direction="vertical"
                 id="requestor-page-main-panel"
                 autoSaveId="requestor-page-main-panel"
-                className={cn(
-                  "rounded-md",
-                  // HACK - This defensively prevents overflow from getting too excessive,
-                  //        In the case where the inner content expands beyond the parent
-                  "max-w-screen",
-                  "max-h-full",
-                  // "gap-1",
-                )}
               >
                 <ResizablePanel
-                  order={1}
-                  className={cn(BACKGROUND_LAYER, "relative")}
-                  id="request-panel"
-                  minSize={requestPanelMinSize}
-                  maxSize={requestPanelMaxSize}
+                  defaultSize={isAiTestGenerationPanelOpen ? 50 : 100}
                 >
-                  {requestContent}
-                </ResizablePanel>
-                <ResizableHandle
-                  hitAreaMargins={{ coarse: 20, fine: 10 }}
-                  className="bg-transparent"
-                />
-                <ResizablePanel
-                  id="response-panel"
-                  order={4}
-                  minSize={10}
-                  className={cn(BACKGROUND_LAYER)}
-                >
-                  {responseContent}
-                </ResizablePanel>
-                {isAiTestGenerationPanelOpen && !isSmallScreen && (
-                  <>
+                  <ResizablePanelGroup
+                    direction={isLgScreen ? "horizontal" : "vertical"}
+                    id="requestor-page-request-panel-group"
+                    autoSaveId="requestor-page-request-panel-group"
+                    className={cn(
+                      "rounded-md",
+                      // HACK - This defensively prevents overflow from getting too excessive,
+                      //        In the case where the inner content expands beyond the parent
+                      "max-w-screen",
+                      "max-h-full",
+                      // "gap-1",
+                    )}
+                  >
+                    <ResizablePanel
+                      order={1}
+                      className={cn(BACKGROUND_LAYER, "relative")}
+                      id="request-panel"
+                      minSize={requestPanelMinSize}
+                      maxSize={requestPanelMaxSize}
+                    >
+                      {requestContent}
+                    </ResizablePanel>
                     <ResizableHandle
                       hitAreaMargins={{ coarse: 20, fine: 10 }}
                       className="bg-transparent"
                     />
                     <ResizablePanel
-                      order={3}
-                      id="ai-panel"
-                      className={cn(BACKGROUND_LAYER, "rounded-md", "border")}
+                      id="response-panel"
+                      order={4}
+                      minSize={10}
+                      className={cn(BACKGROUND_LAYER)}
                     >
                       <AiTestGenerationPanel
                         // TODO - Only use history for recent matching route
@@ -301,9 +296,41 @@ export const RequestorPage = () => {
                           toggleAiTestGenerationPanel
                         }
                       />
+                      {responseContent}
                     </ResizablePanel>
-                  </>
-                )}
+                  </ResizablePanelGroup>
+                </ResizablePanel>
+                <ResizablePanel>
+                  {isAiTestGenerationPanelOpen && !isSmallScreen && (
+                    <>
+                      <ResizableHandle
+                        hitAreaMargins={{ coarse: 20, fine: 10 }}
+                        className="bg-transparent"
+                      />
+                      <ResizablePanel
+                        order={3}
+                        id="ai-panel"
+                        className={cn(
+                          BACKGROUND_LAYER,
+                          "rounded-md",
+                          "border",
+                          "h-full",
+                          "mt-2",
+                        )}
+                      >
+                        <AiTestGenerationPanel
+                          // TODO - Only use history for recent matching route
+                          history={history}
+                          toggleAiTestGenerationPanel={
+                            toggleAiTestGenerationPanel
+                          }
+                          getActiveRoute={getActiveRoute}
+                          removeServiceUrlFromPath={removeServiceUrlFromPath}
+                        />
+                      </ResizablePanel>
+                    </>
+                  )}
+                </ResizablePanel>
               </ResizablePanelGroup>
             )}
           </div>
