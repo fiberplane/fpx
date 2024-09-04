@@ -64,10 +64,6 @@ export function RoutesPanel() {
     );
   }, [filteredRoutes]);
 
-  const draftRoutes = useMemo(() => {
-    return filteredRoutes?.filter((r) => r.isDraft) ?? [];
-  }, [filteredRoutes]);
-
   return (
     <div className={cn("h-full", "flex", "flex-col")}>
       <div>
