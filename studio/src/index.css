@@ -60,6 +60,11 @@
     width: 100%;
   }
 
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-gray-600) transparent;
+  }
+
   *::-webkit-scrollbar {
     @apply h-3.5 w-3.5;
   }
@@ -69,11 +74,11 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    @apply h-14 rounded-lg border-4 border-solid border-transparent bg-clip-content bg-[#505050];
+    @apply h-14 rounded-lg border-4 border-solid border-transparent bg-clip-content bg-gray-600;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    @apply bg-[#707070];
+    @apply bg-gray-600;
   }
 
   *::-webkit-scrollbar-corner {
