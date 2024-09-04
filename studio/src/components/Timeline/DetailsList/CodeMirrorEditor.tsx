@@ -4,8 +4,10 @@ import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
 import { sql } from "@codemirror/lang-sql";
 import { duotoneDark } from "@uiw/codemirror-theme-duotone";
+// import { gutter } from "@codemirror/gutter";
 
-import CodeMirror, { EditorView } from "@uiw/react-codemirror";
+import CodeMirror, { EditorView, Extension, gutter } from "@uiw/react-codemirror";
+import { useState } from "react";
 
 type CodeMirrorEditorProps = {
   height?: string;
@@ -15,6 +17,7 @@ type CodeMirrorEditorProps = {
   readOnly?: boolean;
   value?: string;
   onChange: (value?: string) => void;
+  placeholder?: string;
 };
 
 const customTheme = EditorView.theme({
@@ -22,6 +25,21 @@ const customTheme = EditorView.theme({
     fontSize: "14px",
     // HACK
     background: "transparent !important",
+  },
+});
+
+const inputTheme = EditorView.theme({
+  "&": {
+    fontSize: "14px",
+    // HACK
+    background: "transparent !important",
+  },
+  ".cm-gutters": {
+    borderColor: "transparent",
+    backgroundColor: "transparent",
+  },
+  ".cm-cursor": {
+    borderLeftColor: "white",
   },
 });
 
@@ -93,5 +111,59 @@ export function CodeMirrorSqlEditor(props: CodeMirrorSqlEditorProps) {
       onChange={onChange}
       theme={[duotoneDark, customTheme]}
     />
+  );
+}
+
+
+
+export function CodeMirrorInput(props: CodeMirrorEditorProps) {
+  const { value, onChange, minHeight = "24px", maxHeight = "0", placeholder } = props;
+
+  // State to manage focus
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Dynamic height based on focus state
+  const dynamicHeight = isFocused ? "auto" : minHeight;
+
+  return (
+    <div
+      className="codemirror-container"
+      style={{
+        width: "160px", // fixed width
+        height: dynamicHeight, // dynamic height based on focus
+        overflow: isFocused ? "auto" : "hidden", // show scroll when focused, hide when not
+        whiteSpace: isFocused ? "normal" : "nowrap", // change to ellipsis on blur
+        textOverflow: isFocused ? "clip" : "ellipsis",
+        cursor: "text", // show text cursor when hovering
+      }}
+    >
+      <CodeMirror
+        value={value}
+        height={dynamicHeight} // dynamic height
+        // maxHeight={maxHeight}
+        minHeight={minHeight}
+        onChange={onChange}
+        theme={[inputTheme]}
+        extensions={[
+          gutter({ class: "hidden border-none" }),
+          EditorView.lineWrapping
+        ].filter(Boolean) as Extension[]}
+        onFocus={() => setIsFocused(true)}  // Set focus to true
+        onBlur={() => setIsFocused(false)}  // Set focus to false
+        basicSetup={{
+          lineNumbers: false,
+          foldKeymap: true,
+          foldGutter: false,
+          highlightActiveLine: false,
+          highlightSelectionMatches: false,
+          closeBrackets: false,
+          // autocompletion: true,
+          rectangularSelection: false,
+          // crosshairCursor: false,
+          
+        }}
+        placeholder={placeholder}
+      />
+    </div>
   );
 }

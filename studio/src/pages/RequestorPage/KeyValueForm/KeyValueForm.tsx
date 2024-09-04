@@ -3,8 +3,6 @@ import { Input } from "@/components/ui/input";
 import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { EditorView } from "@codemirror/view";
-import CodeMirror from "@uiw/react-codemirror";
 import {
   createChangeEnabled,
   createChangeKey,
@@ -16,6 +14,7 @@ import type {
   KeyValueParameter,
 } from "./types";
 import "./styles.css";
+import { CodeMirrorInput } from "@/components/Timeline/DetailsList/CodeMirrorEditor";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];
@@ -233,61 +232,3 @@ const DynamicInput: React.FC<DynamicInputProps> = ({
     </div>
   );
 };
-
-
-
-type CodeMirrorEditorProps = {
-  height?: string;
-  minHeight?: string;
-  maxHeight?: string;
-  value?: string;
-  onChange: (value?: string) => void;
-  placeholder?: string;
-};
-
-const customTheme = EditorView.theme({
-  "&": {
-    fontSize: "14px",
-    background: "transparent !important", // HACK to make the editor transparent
-  },
-});
-
-function CodeMirrorInput(props: CodeMirrorEditorProps) {
-  const { value, onChange, minHeight = "30px", maxHeight = "200px", placeholder } = props;
-
-  // State to manage focus
-  const [isFocused, setIsFocused] = useState(false);
-
-  // Dynamic height based on focus state
-  const dynamicHeight = isFocused ? "auto" : minHeight;
-
-  return (
-    <div
-      className="codemirror-container"
-      style={{
-        width: "80px", // fixed width
-        height: dynamicHeight, // dynamic height based on focus
-        overflow: isFocused ? "auto" : "hidden", // show scroll when focused, hide when not
-        whiteSpace: isFocused ? "normal" : "nowrap", // change to ellipsis on blur
-        textOverflow: isFocused ? "clip" : "ellipsis",
-        cursor: "text", // show text cursor when hovering
-      }}
-    >
-      <CodeMirror
-        value={value}
-        height={dynamicHeight} // dynamic height
-        maxHeight={maxHeight}
-        minHeight={minHeight}
-        extensions={[]} // No language extensions for plain text
-        onChange={onChange}
-        theme={[customTheme]}
-        onFocus={() => setIsFocused(true)}  // Set focus to true
-        onBlur={() => setIsFocused(false)}  // Set focus to false
-        // basicSetup={{
-        //   lineWrapping: true, // Enable line wrapping when focused
-        // }}
-        placeholder={placeholder}
-      />
-    </div>
-  );
-}
