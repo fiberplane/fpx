@@ -154,6 +154,10 @@ export const requestResponseSlice: StateCreator<
             value: nextBodyValue,
           };
           updateContentTypeHeaderInState(state);
+        } else if (body.type === "file") {
+          // When the user adds a file, we want to use the file's type as the content type header
+          state.body = body;
+          updateContentTypeHeaderInState(state);
         } else {
           state.body = body;
         }
