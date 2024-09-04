@@ -5,10 +5,8 @@ import { type ProbedRoute, isWsRequest } from "../../types";
 
 export function RouteItem({
   route,
-  deleteDraftRoute,
 }: {
   route: ProbedRoute;
-  deleteDraftRoute?: () => void;
 }) {
   const { mutate: deleteRoute } = useDeleteRoute();
   const canDeleteRoute =
@@ -35,11 +33,7 @@ export function RouteItem({
               className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hover:pointer-events-auto invisible group-hover:visible"
               onClick={(e) => {
                 e.stopPropagation();
-                if (route.isDraft) {
-                  deleteDraftRoute?.();
-                } else {
-                  deleteRoute({ path: route.path, method: route.method });
-                }
+                deleteRoute({ path: route.path, method: route.method });
               }}
             />
           </div>

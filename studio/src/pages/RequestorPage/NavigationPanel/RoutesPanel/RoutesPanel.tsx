@@ -5,11 +5,7 @@ import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import { RoutesSection } from "./RoutesSection";
 
-type RoutesPanelProps = {
-  deleteDraftRoute?: () => void;
-};
-
-export function RoutesPanel({ deleteDraftRoute }: RoutesPanelProps) {
+export function RoutesPanel() {
   const {
     routes,
     selectedRoute,
@@ -99,7 +95,6 @@ export function RoutesPanel({ deleteDraftRoute }: RoutesPanelProps) {
             routes={draftRoutes ?? []}
             selectedRoute={selectedRoute}
             handleRouteClick={handleRouteClick}
-            deleteDraftRoute={deleteDraftRoute}
           />
         )}
 

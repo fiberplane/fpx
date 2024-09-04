@@ -9,12 +9,10 @@ type RoutesSectionProps = {
   routes: ProbedRoute[];
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
-  deleteDraftRoute?: () => void;
 };
 
 export function RoutesSection(props: RoutesSectionProps) {
-  const { title, routes, selectedRoute, handleRouteClick, deleteDraftRoute } =
-    props;
+  const { title, routes, selectedRoute, handleRouteClick } = props;
 
   const [showRoutesSection, setShowRoutesSection] = useState(true);
   const ShowRoutesSectionIcon = showRoutesSection
@@ -56,7 +54,7 @@ export function RoutesSection(props: RoutesSectionProps) {
                 },
               )}
             >
-              <RouteItem route={route} deleteDraftRoute={deleteDraftRoute} />
+              <RouteItem route={route} />
             </div>
           ))}
         </div>

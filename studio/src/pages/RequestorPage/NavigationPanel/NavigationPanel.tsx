@@ -2,12 +2,7 @@ import { cn } from "@/utils";
 import { BACKGROUND_LAYER } from "../styles";
 import { RoutesPanel } from "./RoutesPanel";
 
-type Props = {
-  deleteDraftRoute?: () => void;
-};
-
-export function NavigationPanel(props: Props) {
-
+export function NavigationPanel() {
   return (
     <div
       className={cn(
@@ -18,9 +13,7 @@ export function NavigationPanel(props: Props) {
         "flex-col",
       )}
     >
-      <RoutesPanel
-        deleteDraftRoute={props.deleteDraftRoute}
-      />
+      <RoutesPanel />
     </div>
   );
 }
