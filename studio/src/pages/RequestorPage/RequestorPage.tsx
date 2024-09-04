@@ -250,7 +250,7 @@ export const RequestorPage = () => {
               </>
             ) : (
               <ResizablePanelGroup
-                direction={"vertical"}
+                direction={isLgScreen ? "horizontal" : "vertical"}
                 id="requestor-page-main-panel"
                 autoSaveId="requestor-page-main-panel"
                 className={cn(
@@ -259,12 +259,12 @@ export const RequestorPage = () => {
                   //        In the case where the inner content expands beyond the parent
                   "max-w-screen",
                   "max-h-full",
-                  "gap-1",
+                  // "gap-1",
                 )}
               >
                 <ResizablePanel
                   order={1}
-                  className={cn(BACKGROUND_LAYER, "relative", "rounded-md")}
+                  className={cn(BACKGROUND_LAYER, "relative")}
                   id="request-panel"
                   minSize={requestPanelMinSize}
                   maxSize={requestPanelMaxSize}
@@ -279,7 +279,7 @@ export const RequestorPage = () => {
                   id="response-panel"
                   order={4}
                   minSize={10}
-                  className={cn(BACKGROUND_LAYER, "rounded-md", "border")}
+                  className={cn(BACKGROUND_LAYER)}
                 >
                   {responseContent}
                 </ResizablePanel>

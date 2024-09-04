@@ -328,7 +328,7 @@ export function PanelSectionHeader({
   return (
     <div
       className={cn(
-        "uppercase text-gray-400 text-xs mb-2 flex items-center gap-2",
+        "uppercase justify-between text-gray-400 text-xs mb-2 flex items-center",
         className,
       )}
     >
