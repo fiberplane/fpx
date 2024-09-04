@@ -6,11 +6,22 @@ import type { ProbedRoute } from "../queries";
 
 type MatchedRouteResult = {
   route: ProbedRoute;
-  pathParamValues?:
+  pathParams?:
     | Record<string, string | string[]>
     | Record<string, string | number>;
 } | null;
 
+/**
+ * Looks for a single matching route given the pathname, method, and request type
+ * Precedence:
+ * - First checks registered routes
+ * - Then checks unregistered routes
+ * @param routes
+ * @param pathname
+ * @param method
+ * @param requestType
+ * @returns
+ */
 export function findMatchedRoute(
   routes: ProbedRoute[],
   pathname: string | undefined,
@@ -18,52 +29,61 @@ export function findMatchedRoute(
   requestType: "http" | "websocket",
 ): MatchedRouteResult {
   const registeredRoutes = routes.filter((r) => r.currentlyRegistered);
-  const unregisteredRoutes = routes.filter((r) => !r.currentlyRegistered);
+  const registeredMatch = findMatchedRouteHelper(
+    registeredRoutes,
+    pathname,
+    method,
+    requestType,
+  );
 
+  if (registeredMatch) {
+    return registeredMatch;
+  }
+
+  const unregisteredRoutes = routes.filter((r) => !r.currentlyRegistered);
+  const unregisteredMatch = findMatchedRouteHelper(
+    unregisteredRoutes,
+    pathname,
+    method,
+    requestType,
+  );
+
+  if (unregisteredMatch) {
+    return unregisteredMatch;
+  }
+
+  return null;
+}
+
+/**
+ * Looks for a single matching route
+ * If the router throws an error when matching, we return the first registered route that matches exactly on:
+ * - pathname
+ * - method
+ * - requestType
+ */
+function findMatchedRouteHelper(
+  routes: ProbedRoute[],
+  pathname: string | undefined,
+  method: string | undefined,
+  requestType: "http" | "websocket",
+) {
   if (pathname && method) {
     // HACK - First search registered routes, then search unregistered routes
     const smartMatch = findFirstSmartRouterMatch(
-      registeredRoutes,
+      routes,
       pathname,
       method,
       requestType,
     );
 
     if (smartMatch?.route) {
-      return {
-        route: smartMatch.route,
-        pathParamValues: smartMatch.pathParams,
-      };
-    }
-
-    const unregisteredSmartMatch = findFirstSmartRouterMatch(
-      unregisteredRoutes,
-      pathname,
-      method,
-      requestType,
-    );
-
-    if (unregisteredSmartMatch?.route) {
-      return {
-        route: unregisteredSmartMatch.route,
-        pathParamValues: unregisteredSmartMatch.pathParams,
-      };
+      return smartMatch;
     }
   }
 
   // HACK - This is a backup in case the smart router throws an error
-  for (const route of registeredRoutes) {
-    if (
-      route.path === pathname &&
-      route.method === method &&
-      route.requestType === requestType
-    ) {
-      return { route };
-    }
-  }
-
-  // HACK - This is a backup in case the smart router throws an error
-  for (const route of unregisteredRoutes) {
+  for (const route of routes) {
     if (
       route.path === pathname &&
       route.method === method &&
