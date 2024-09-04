@@ -1,4 +1,5 @@
 import { CodeMirrorJsonEditor, SubSectionHeading } from "@/components/Timeline";
+import { TextOrJsonViewer } from "@/components/Timeline/DetailsList/TextJsonViewer";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -19,7 +20,6 @@ import {
   isRequestorActiveResponse,
 } from "../store/types";
 } from "../reducer/state";
-import { TextOrJsonViewer } from "@/components/Timeline/DetailsList/TextJsonViewer";
 
 export function ResponseBody({
   headersSlot,
