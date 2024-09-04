@@ -40,15 +40,14 @@ export function useRequestorStore<T extends Store, K extends keyof Store>(
   ...items: Array<keyof Store>
 ): Pick<T, K> {
   const obj = useRequestorStoreRaw(
-    useShallow((state) =>
-      items.reduce(
-        (acc, item) => {
-          acc[item as K] = state[item] as T[K];
-          return acc;
-        },
-        {} as Pick<T, K>,
-      ),
-    ),
+    useShallow((state) => {
+      const result = {} as Pick<T, K>;
+      for (const item of items) {
+        result[item as K] = state[item] as T[K];
+      }
+
+      return result;
+    }),
   );
   return obj as Pick<T, K>;
 }
