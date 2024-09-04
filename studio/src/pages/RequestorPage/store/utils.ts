@@ -92,7 +92,7 @@ export function mapPathParamKey(key: string) {
 export function extractMatchedPathParams(
   matchedRoute: ReturnType<typeof findMatchedRoute>,
 ) {
-  return Object.entries(matchedRoute?.pathParamValues ?? {}).map(
+  return Object.entries(matchedRoute?.pathParams ?? {}).map(
     ([key, value]) => {
       const nextValue = value === `:${key}` ? "" : value;
       return {
