@@ -61,10 +61,10 @@ describe("findSmartRouterMatch", () => {
 
 describe("findFirstSmartRouterMatch - registered routes precedence", () => {
   const routes: ProbedRoute[] = [
+    // Unregesterd route - should not be matched first
     toRoute("/test/:k", "GET", "http", false, -1),
+    // Registered route - should be matched first
     toRoute("/test/:key", "GET", "http", true, 1),
-    toRoute("/users/:userId", "GET", "http", false, -1),
-    toRoute("/users/:userId", "GET", "http", false, -1),
   ];
 
   it("should return registered route with higher precedence", () => {
@@ -73,7 +73,6 @@ describe("findFirstSmartRouterMatch - registered routes precedence", () => {
     expect(match?.route?.path).toBe("/test/:key");
   });
 });
-
 
 // describe("findMatchedRoute", () => {
 //   const routes: ProbedRoute[] = [

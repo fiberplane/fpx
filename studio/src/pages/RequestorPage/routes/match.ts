@@ -16,14 +16,14 @@ type MatchedRouteResult = {
  * Precedence should always occur as follows:
  * - First checks registered routes
  * - Then checks unregistered routes
- * 
+ *
  * As of writing, precedence is enforced via sorting the routes (in a helper function for finding smart router matches)
- * 
+ *
  * If the router throws an error when matching, we return the first route that matches exactly on:
  * - pathname
  * - method
  * - requestType
- * 
+ *
  * @param routes
  * @param pathname
  * @param method
@@ -88,7 +88,7 @@ export function findAllSmartRouterMatches(
   requestType: "http" | "websocket",
 ) {
   // HACK - Sort routes by registration, then registration order so that registered routes match first
-  const routes = [...unsortedRoutes]
+  const routes = [...unsortedRoutes];
   routes.sort((a, b) => {
     const aIsRegistered = a.currentlyRegistered;
     const bIsRegistered = b.currentlyRegistered;
