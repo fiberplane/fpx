@@ -1,19 +1,21 @@
 import type { ProbedRoute } from "../queries";
 import type { RequestMethod, RequestType } from "../types";
-import { findFirstSmartRouterMatch } from "./match";
+import { findFirstSmartRouterMatch, findMatchedRoute } from "./match";
 
 const toRoute = (
   path: string,
   method: RequestMethod,
   requestType: RequestType,
+  currentlyRegistered = false,
+  registrationOrder = -1,
 ) => ({
   path,
   method,
   requestType,
   handler: "",
   handlerType: "route" as const,
-  currentlyRegistered: false,
-  registrationOrder: -1,
+  currentlyRegistered,
+  registrationOrder,
   routeOrigin: "custom" as const,
   isDraft: false,
 });
@@ -31,7 +33,6 @@ describe("findSmartRouterMatch", () => {
 
   it("should return a match for the given pathname and method", () => {
     const match = findFirstSmartRouterMatch(routes, "/test", "GET", "http");
-    console.log("/test match", match);
     expect(match).toBeTruthy();
   });
 
@@ -55,6 +56,22 @@ describe("findSmartRouterMatch", () => {
     });
   });
 });
+
+describe("findMatchedRoute - registered routes precedence", () => {
+  const routes: ProbedRoute[] = [
+    toRoute("/test/:k", "GET", "http", false, -1),
+    toRoute("/test/:key", "GET", "http", true, 1),
+    toRoute("/users/:userId", "GET", "http", false, -1),
+    toRoute("/users/:userId", "GET", "http", false, -1),
+  ];
+
+  it("should return registered route with higher precedence", () => {
+    const match = findMatchedRoute(routes, "/test/123", "GET", "http");
+    expect(match).toBeTruthy();
+    expect(match?.route?.path).toBe("/test/:key");
+  });
+});
+
 
 // describe("findMatchedRoute", () => {
 //   const routes: ProbedRoute[] = [
