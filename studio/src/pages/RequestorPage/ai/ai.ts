@@ -4,7 +4,6 @@ import { errorHasMessage, isJson } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { useShallow } from "zustand/react/shallow";
 import { createFormDataParameter } from "../FormDataForm/data";
 import { createKeyValueParameters } from "../KeyValueForm";
 import type { Requestornator } from "../queries";
@@ -32,27 +31,14 @@ export function useAi(requestHistory: Array<Requestornator>) {
     selectedRoute,
     getMatchingMiddleware,
   } = useRequestorStore(
-    useShallow(
-      ({
-        setBody,
-        setQueryParams,
-        updatePath,
-        setRequestHeaders,
-        updatePathParamValues,
-        body,
-        selectedRoute,
-        getMatchingMiddleware,
-      }) => ({
-        setBody,
-        setQueryParams,
-        updatePath,
-        setRequestHeaders,
-        updatePathParamValues,
-        body,
-        selectedRoute,
-        getMatchingMiddleware,
-      }),
-    ),
+    "setBody",
+    "setQueryParams",
+    "updatePath",
+    "setRequestHeaders",
+    "updatePathParamValues",
+    "body",
+    "selectedRoute",
+    "getMatchingMiddleware",
   );
 
   const { ignoreAiInputsBanner, setIgnoreAiInputsBanner } =

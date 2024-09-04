@@ -1,6 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useHandler } from "@fiberplane/hooks";
-import { useShallow } from "zustand/react/shallow";
 import type { KeyValueParameter } from "./KeyValueForm";
 import type { MakeProxiedRequestQueryFn } from "./queries";
 import type { RequestorBody } from "./store";
@@ -29,27 +28,14 @@ export function useRequestorSubmitHandler({
     requestHeaders,
     requestType,
   } = useRequestorStore(
-    useShallow(
-      ({
-        selectedRoute,
-        body,
-        path,
-        method,
-        pathParams,
-        queryParams,
-        requestHeaders,
-        requestType,
-      }) => ({
-        selectedRoute,
-        body,
-        path,
-        method,
-        pathParams,
-        queryParams,
-        requestHeaders,
-        requestType,
-      }),
-    ),
+    "selectedRoute",
+    "body",
+    "path",
+    "method",
+    "pathParams",
+    "queryParams",
+    "requestHeaders",
+    "requestType",
   );
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();

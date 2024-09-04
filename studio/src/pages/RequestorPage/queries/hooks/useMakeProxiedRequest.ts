@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useShallow } from "zustand/react/shallow";
 import { reduceFormDataParameters } from "../../FormDataForm";
 import {
   type KeyValueParameter,
@@ -15,10 +14,8 @@ export type MakeProxiedRequestQueryFn = ReturnType<
 
 export function useMakeProxiedRequest() {
   const { clearResponseBodyFromHistory, setActiveResponse } = useRequestorStore(
-    useShallow(({ clearResponseBodyFromHistory, setActiveResponse }) => ({
-      clearResponseBodyFromHistory,
-      setActiveResponse,
-    })),
+    "clearResponseBodyFromHistory",
+    "setActiveResponse",
   );
 
   const queryClient = useQueryClient();

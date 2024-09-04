@@ -17,7 +17,6 @@ import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
 import { CodeMirrorJsonEditor } from "@/components/Timeline";
-import { useShallow } from "zustand/react/shallow";
 import { useRequestorStore } from "../store";
 
 type RequestPanelProps = {
@@ -66,52 +65,27 @@ export const RequestPanel = memo(function RequestPanel(
     setActiveRequestsPanelTab,
     websocketMessage,
     setWebsocketMessage,
+    visibleRequestsPanelTabs,
   } = useRequestorStore(
-    useShallow(
-      ({
-        path,
-        body,
-        method,
-        setBody,
-        pathParams,
-        queryParams,
-        requestHeaders,
-        setRequestHeaders,
-        setQueryParams,
-        setPathParams,
-        clearPathParams,
-        handleRequestBodyTypeChange,
-        activeRequestsPanelTab,
-        setActiveRequestsPanelTab,
-        websocketMessage,
-        setWebsocketMessage,
-      }) => ({
-        path,
-        body,
-        method,
-        setBody,
-        pathParams,
-        queryParams,
-        requestHeaders,
-        setRequestHeaders,
-        setQueryParams,
-        setPathParams,
-        clearPathParams,
-        handleRequestBodyTypeChange,
-        activeRequestsPanelTab,
-        setActiveRequestsPanelTab,
-        websocketMessage,
-        setWebsocketMessage,
-      }),
-    ),
+    "path",
+    "body",
+    "method",
+    "setBody",
+    "pathParams",
+    "queryParams",
+    "requestHeaders",
+    "setRequestHeaders",
+    "setQueryParams",
+    "setPathParams",
+    "clearPathParams",
+    "handleRequestBodyTypeChange",
+    "activeRequestsPanelTab",
+    "setActiveRequestsPanelTab",
+    "websocketMessage",
+    "setWebsocketMessage",
+    "visibleRequestsPanelTabs",
   );
   const { toast } = useToast();
-
-  const { visibleRequestsPanelTabs } = useRequestorStore(
-    useShallow(({ visibleRequestsPanelTabs }) => ({
-      visibleRequestsPanelTabs,
-    })),
-  );
 
   const shouldShowRequestTab = (tab: RequestsPanelTab): boolean => {
     return visibleRequestsPanelTabs.includes(tab);

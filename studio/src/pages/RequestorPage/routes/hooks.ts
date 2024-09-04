@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import { useShallow } from "zustand/react/shallow";
 import { useProbedRoutes } from "../queries";
 import { useRequestorStore } from "../store";
 import type { ProbedRoute } from "../types";
@@ -51,13 +50,9 @@ const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
 export function useRoutes() {
   const { setRoutes, setServiceBaseUrl, setRoutesAndMiddleware } =
     useRequestorStore(
-      useShallow(
-        ({ setRoutes, setServiceBaseUrl, setRoutesAndMiddleware }) => ({
-          setRoutes,
-          setServiceBaseUrl,
-          setRoutesAndMiddleware,
-        }),
-      ),
+      "setRoutes",
+      "setServiceBaseUrl",
+      "setRoutesAndMiddleware",
     );
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {

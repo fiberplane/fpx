@@ -20,7 +20,6 @@ import {
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useShallow } from "zustand/react/shallow";
 import { RouteItem } from "./NavigationPanel";
 import { AddRoutesDialog } from "./routes/AddRouteButton";
 import { useRequestorStore } from "./store";
@@ -30,13 +29,7 @@ export const RoutesCombobox = React.memo(function RoutesCombobox() {
     routes,
     selectedRoute,
     selectRoute: handleRouteClick,
-  } = useRequestorStore(
-    useShallow(({ routes, selectedRoute, selectRoute }) => ({
-      routes,
-      selectedRoute,
-      selectRoute,
-    })),
-  );
+  } = useRequestorStore("routes", "selectedRoute", "selectRoute");
   const [openRoutesDialog, setOpenRoutesDialog] = React.useState(false);
   const isLg = useIsLgScreen();
   useHotkeys("c", (e) => {

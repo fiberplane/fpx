@@ -1,16 +1,11 @@
 import { removeQueryParams } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
-import { useShallow } from "zustand/react/shallow";
 import { createKeyValueParameters } from "./KeyValueForm";
 import { type Requestornator, useFetchRequestorRequests } from "./queries";
 import { findMatchedRoute } from "./routes";
 import { useRequestorStore } from "./store";
-import {
-  // type RequestMethodInputValue,
-  isRequestMethod,
-  isWsRequest,
-} from "./types";
+import { isRequestMethod, isWsRequest } from "./types";
 import { sortRequestornatorsDescending } from "./utils";
 
 export function useRequestorHistory() {
@@ -26,31 +21,16 @@ export function useRequestorHistory() {
     setBody,
     showResponseBodyFromHistory,
   } = useRequestorStore(
-    useShallow(
-      ({
-        sessionHistory,
-        recordRequestInSessionHistory,
-        routes,
-        selectRoute,
-        updatePath,
-        setBody,
-        setQueryParams,
-        updateMethod,
-        setRequestHeaders,
-        showResponseBodyFromHistory,
-      }) => ({
-        sessionHistory,
-        recordRequestInSessionHistory,
-        routes,
-        selectRoute,
-        updatePath,
-        setBody,
-        setQueryParams,
-        updateMethod,
-        setRequestHeaders,
-        showResponseBodyFromHistory,
-      }),
-    ),
+    "sessionHistory",
+    "recordRequestInSessionHistory",
+    "routes",
+    "selectRoute",
+    "updatePath",
+    "setBody",
+    "setQueryParams",
+    "updateMethod",
+    "setRequestHeaders",
+    "showResponseBodyFromHistory",
   );
 
   const { data: allRequests } = useFetchRequestorRequests();

@@ -12,7 +12,6 @@ import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useShallow } from "zustand/react/shallow";
 import { RoutesPanel } from "./NavigationPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -311,11 +310,9 @@ export default RequestorPage;
 function useMostRecentRequestornator(all: Requestornator[]) {
   const { path: routePath } = useActiveRoute();
   const { path, method, activeHistoryResponseTraceId } = useRequestorStore(
-    useShallow(({ path, method, activeHistoryResponseTraceId }) => ({
-      path,
-      method,
-      activeHistoryResponseTraceId,
-    })),
+    "path",
+    "method",
+    "activeHistoryResponseTraceId",
   );
   return useMemo<Requestornator | undefined>(() => {
     if (activeHistoryResponseTraceId) {

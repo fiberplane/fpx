@@ -14,7 +14,6 @@ import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
 import { memo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 import { Method, StatusCode } from "../RequestorHistory";
 import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -55,19 +54,10 @@ export const ResponsePanel = memo(function ResponsePanel({
     activeResponsePanelTab,
     setActiveResponsePanelTab,
   } = useRequestorStore(
-    useShallow(
-      ({
-        activeResponse,
-        visibleResponsePanelTabs,
-        activeResponsePanelTab,
-        setActiveResponsePanelTab,
-      }) => ({
-        activeResponse,
-        visibleResponsePanelTabs,
-        activeResponsePanelTab,
-        setActiveResponsePanelTab,
-      }),
-    ),
+    "activeResponse",
+    "visibleResponsePanelTabs",
+    "activeResponsePanelTab",
+    "setActiveResponsePanelTab",
   );
 
   const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
@@ -263,9 +253,9 @@ function ResponseSummary({
   const url = isRequestorActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(
-        response?.app_requests?.requestUrl ?? "",
-        response?.app_requests?.requestQueryParams ?? undefined,
-      );
+      response?.app_requests?.requestUrl ?? "",
+      response?.app_requests?.requestQueryParams ?? undefined,
+    );
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />

@@ -14,10 +14,11 @@ import { tabsSlice } from "./slices/tabsSlice";
 import type { Store } from "./slices/types";
 import { websocketSlice } from "./slices/websocketSlice";
 import { _getActiveRoute } from "./utils";
+import { useShallow } from "zustand/react/shallow";
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
 
 export type RequestorState = Store;
-export const useRequestorStore = create<RequestorState>()(
+export const useRequestorStoreRaw = create<RequestorState>()(
   devtools(
     immer((...a) => ({
       ...routesSlice(...a),
@@ -32,5 +33,22 @@ export const useRequestorStore = create<RequestorState>()(
 const getActiveRoute = memoize(_getActiveRoute);
 
 export function useActiveRoute() {
-  return useRequestorStore(getActiveRoute);
+  return useRequestorStoreRaw(useShallow(getActiveRoute));
+}
+
+export function useRequestorStore<T extends Store, K extends keyof Store>(
+  ...items: Array<keyof Store>
+): Pick<T, K> {
+  const obj = useRequestorStoreRaw(
+    useShallow((state) =>
+      items.reduce(
+        (acc, item) => {
+          acc[item as K] = state[item] as T[K];
+          return acc;
+        },
+        {} as Pick<T, K>,
+      ),
+    ),
+  );
+  return obj as Pick<T, K>;
 }

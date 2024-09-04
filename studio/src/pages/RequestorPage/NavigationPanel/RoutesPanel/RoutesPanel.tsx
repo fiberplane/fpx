@@ -1,7 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
 import { useMemo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import { RoutesSection } from "./RoutesSection";
@@ -16,11 +15,9 @@ export function RoutesPanel({ deleteDraftRoute }: RoutesPanelProps) {
     selectedRoute,
     selectRoute: handleRouteClick,
   } = useRequestorStore(
-    useShallow(({ routes, selectedRoute, selectRoute }) => ({
-      routes,
-      selectedRoute,
-      selectRoute,
-    })),
+    "routes",
+    "selectedRoute",
+    "selectRoute",
   );
 
   const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
