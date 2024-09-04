@@ -14,11 +14,7 @@ export function RoutesPanel({ deleteDraftRoute }: RoutesPanelProps) {
     routes,
     selectedRoute,
     selectRoute: handleRouteClick,
-  } = useRequestorStore(
-    "routes",
-    "selectedRoute",
-    "selectRoute",
-  );
+  } = useRequestorStore("routes", "selectedRoute", "selectRoute");
 
   const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
     return routes?.some((r) => !r.currentlyRegistered) ?? false;

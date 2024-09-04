@@ -18,7 +18,11 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
-import { useActiveRoute, useRequestorStore, useRequestorStoreRaw } from "./store";
+import {
+  useActiveRoute,
+  useRequestorStore,
+  useRequestorStoreRaw,
+} from "./store";
 import { isWsRequest } from "./types";
 import type { WebSocketState } from "./useMakeWebsocketRequest";
 
@@ -46,12 +50,7 @@ export function RequestorInput({
     path,
     updatePath: handlePathInputChange,
     updateMethod: handleMethodChange,
-  } = useRequestorStore(
-    "method",
-    "path",
-    "updatePath",
-    "updateMethod",
-  );
+  } = useRequestorStore("method", "path", "updatePath", "updateMethod");
 
   // Use the low level store hook to get whether we are in draft mode
   const isInDraftMode = useRequestorStoreRaw(
