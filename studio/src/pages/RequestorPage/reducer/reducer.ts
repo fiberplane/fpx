@@ -891,16 +891,14 @@ function mapPathParamKey(key: string) {
 function extractMatchedPathParams(
   matchedRoute: ReturnType<typeof findMatchedRoute>,
 ) {
-  return Object.entries(matchedRoute?.pathParamValues ?? {}).map(
-    ([key, value]) => {
-      const nextValue = value === `:${key}` ? "" : value;
-      return {
-        ...mapPathParamKey(key),
-        value: nextValue,
-        enabled: !!nextValue,
-      };
-    },
-  );
+  return Object.entries(matchedRoute?.pathParams ?? {}).map(([key, value]) => {
+    const nextValue = value === `:${key}` ? "" : value;
+    return {
+      ...mapPathParamKey(key),
+      value: nextValue,
+      enabled: !!nextValue,
+    };
+  });
 }
 
 /**
