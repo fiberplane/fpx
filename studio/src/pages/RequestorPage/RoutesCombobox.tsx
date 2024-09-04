@@ -21,7 +21,7 @@ import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
-import { RouteItem } from "./NavigationPanel/RoutesPanel";
+import { RouteItem } from "./NavigationPanel";
 import { useRequestorStore } from "./reducer";
 import { AddRoutesDialog } from "./routes/AddRouteButton";
 
