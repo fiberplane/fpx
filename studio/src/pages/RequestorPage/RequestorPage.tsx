@@ -12,7 +12,7 @@ import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { RoutesPanel } from "./NavigationPanel";
+import { NavigationPanel } from "./NavigationPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
@@ -214,7 +214,7 @@ export const RequestorPage = () => {
               maxSize={maxSize}
               defaultSize={(320 / width) * 100}
             >
-              <RoutesPanel />
+              <NavigationPanel />
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
