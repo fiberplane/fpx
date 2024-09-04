@@ -6,15 +6,15 @@ import {
   mapPathParamKey,
   pathHasValidBaseUrl,
   removeBaseUrl,
-} from "../../reducer/reducer";
-import { updateContentTypeHeaderInState } from "../../reducer/reducers";
+} from "../reducer";
 import {
   getVisibleRequestPanelTabs,
   getVisibleResponsePanelTabs,
-} from "../../reducer/tabs";
+} from "../tabs";
 import { findAllSmartRouterMatches, findMatchedRoute } from "../../routes";
 import type { ProbedRoute, RequestMethod } from "../../types";
 import type { RoutesSlice, Store } from "./types";
+import { updateContentTypeHeaderInState } from "../content-type";
 
 export const routesSlice: StateCreator<
   Store,

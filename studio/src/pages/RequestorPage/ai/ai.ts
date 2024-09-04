@@ -10,7 +10,7 @@ import { createKeyValueParameters } from "../KeyValueForm";
 import type { Requestornator } from "../queries";
 import type { RequestorBody } from "../reducer";
 import { isRequestorBodyType } from "../reducer/request-body";
-import { useRequestorStore, useServiceBaseUrl } from "../store";
+import { useRequestorStore, useServiceBaseUrl } from "../reducer";
 import { useAiRequestData } from "./generate-request-data";
 
 export const FRIENDLY = "Friendly" as const;

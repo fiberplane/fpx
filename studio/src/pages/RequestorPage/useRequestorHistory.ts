@@ -5,7 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 import { createKeyValueParameters } from "./KeyValueForm";
 import { type Requestornator, useFetchRequestorRequests } from "./queries";
 import { findMatchedRoute } from "./routes";
-import { useRequestorStore } from "./store";
+import { useRequestorStore } from "./reducer";
 import {
   // type RequestMethodInputValue,
   isRequestMethod,

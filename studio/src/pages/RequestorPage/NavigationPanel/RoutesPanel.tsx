@@ -14,7 +14,7 @@ import {
   useDeleteRoute,
 } from "../queries";
 import { AddRouteButton } from "../routes";
-import { useRequestorStore } from "../store";
+import { useRequestorStore } from "../reducer";
 import { type ProbedRoute, isWsRequest } from "../types";
 
 type RoutesPanelProps = {

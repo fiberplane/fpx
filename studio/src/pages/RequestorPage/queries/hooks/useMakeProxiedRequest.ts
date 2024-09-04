@@ -6,7 +6,7 @@ import {
   reduceKeyValueParameters,
 } from "../../KeyValueForm";
 import type { RequestorBody, RequestorResponseBody } from "../../reducer";
-import { useRequestorStore } from "../../store";
+import { useRequestorStore } from "../../reducer";
 import { REQUESTOR_REQUESTS_KEY } from "./constants";
 
 export type MakeProxiedRequestQueryFn = ReturnType<

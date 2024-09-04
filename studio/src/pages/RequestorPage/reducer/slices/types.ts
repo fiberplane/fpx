@@ -4,8 +4,8 @@ import type {
   RequestorBody,
   RequestsPanelTab,
   ResponsePanelTab,
-} from "../../reducer";
-import type { RequestorActiveResponse } from "../../reducer/state";
+} from "..";
+import type { RequestorActiveResponse } from "../types";
 import type { ProbedRoute } from "../../types";
 import type {
   RequestMethod,

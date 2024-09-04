@@ -18,7 +18,7 @@ import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
 import { CodeMirrorJsonEditor } from "@/components/Timeline";
 import { useShallow } from "zustand/react/shallow";
-import { useRequestorStore } from "../store";
+import { useRequestorStore } from "../reducer";
 
 type RequestPanelProps = {
   aiEnabled: boolean;

@@ -23,7 +23,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { RouteItem } from "./NavigationPanel/RoutesPanel";
 import { AddRoutesDialog } from "./routes/AddRouteButton";
-import { useRequestorStore } from "./store";
+import { useRequestorStore } from "./reducer";
 
 export const RoutesCombobox = React.memo(function RoutesCombobox() {
   const {

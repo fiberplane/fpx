@@ -1,7 +1,7 @@
 import type { findMatchedRoute } from "../routes";
 import type { ProbedRoute } from "../types";
 import { type RequestMethod, type RequestType, isWsRequest } from "../types";
-import type { RequestorState } from "./state";
+import type { RequestorState } from "./types";
 
 export const _getActiveRoute = (state: RequestorState): ProbedRoute => {
   return (

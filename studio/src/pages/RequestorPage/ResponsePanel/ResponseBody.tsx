@@ -17,7 +17,7 @@ import type { Requestornator } from "../queries";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../reducer/state";
+} from "../reducer/types";
 
 export function ResponseBody({
   headersSlot,

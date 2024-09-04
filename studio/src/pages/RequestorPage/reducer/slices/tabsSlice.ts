@@ -1,5 +1,5 @@
 import type { StateCreator } from "zustand";
-import type { RequestsPanelTab, ResponsePanelTab } from "../../reducer/tabs";
+import type { RequestsPanelTab, ResponsePanelTab } from "..";
 import type { TabsSlice } from "./types";
 
 export const tabsSlice: StateCreator<

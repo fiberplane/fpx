@@ -4,8 +4,8 @@ import { useShallow } from "zustand/react/shallow";
 import type { KeyValueParameter } from "./KeyValueForm";
 import type { MakeProxiedRequestQueryFn } from "./queries";
 import type { RequestorBody } from "./reducer";
-import { useRequestorStore } from "./store";
-import { useServiceBaseUrl } from "./store/useServiceBaseUrl";
+import { useRequestorStore } from "./reducer";
+import { useServiceBaseUrl } from "./reducer/useServiceBaseUrl";
 import { isWsRequest } from "./types";
 
 export function useRequestorSubmitHandler({

@@ -1,10 +1,10 @@
 import {
   type KeyValueParameter,
   enforceTerminalDraftParameter,
-} from "../../KeyValueForm";
-import { isDraftParameter } from "../../KeyValueForm/data";
-import type { RequestResponseSlice } from "../../store/slices/types";
-import type { RequestorBody } from "../state";
+} from "../KeyValueForm";
+import { isDraftParameter } from "../KeyValueForm/data";
+import type { RequestResponseSlice } from "./slices/types";
+import type { RequestorBody } from "./types";
 
 /**
  * This makes sure to synchronize the content type header with the body type.

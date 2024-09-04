@@ -1,7 +1,7 @@
 import { useHandler } from "@fiberplane/hooks";
 import { useShallow } from "zustand/react/shallow";
 import { useRequestorStore } from ".";
-import { addBaseUrl, removeBaseUrl } from "../reducer/reducer";
+import { addBaseUrl, removeBaseUrl } from "./reducer";
 import type { RequestType } from "../types";
 
 const addServiceUrlIfBarePath = (

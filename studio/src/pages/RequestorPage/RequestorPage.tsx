@@ -21,7 +21,7 @@ import { RoutesCombobox } from "./RoutesCombobox";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import { useRoutes } from "./routes";
-import { useActiveRoute, useRequestorStore } from "./store";
+import { useActiveRoute, useRequestorStore } from "./reducer";
 import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";

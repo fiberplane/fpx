@@ -8,11 +8,9 @@ import {
   extractPathParams,
   mapPathParamKey,
   removeBaseUrl,
-} from "../../reducer/reducer";
-import {
-  setBodyTypeInState,
-  updateContentTypeHeaderInState,
-} from "../../reducer/reducers";
+} from "../reducer";
+import { setBodyTypeInState } from "../set-body-type";
+import { updateContentTypeHeaderInState } from "../content-type";
 import { findMatchedRoute } from "../../routes";
 import type { RequestResponseSlice, Store } from "./types";
 

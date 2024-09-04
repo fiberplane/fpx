@@ -12,7 +12,7 @@ import { useMemo, useState } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
-import { useActiveRoute, useServiceBaseUrl } from "../store";
+import { useActiveRoute, useServiceBaseUrl } from "../reducer";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
 
