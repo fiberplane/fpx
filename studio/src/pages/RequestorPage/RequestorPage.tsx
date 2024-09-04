@@ -407,7 +407,7 @@ export const RequestorPage = () => {
                       BACKGROUND_LAYER,
                       "rounded-md",
                       "border",
-
+                      "flex-1"
                     )
                   }>{responseContent}
                 </div>
