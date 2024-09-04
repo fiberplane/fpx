@@ -389,8 +389,28 @@ export const RequestorPage = () => {
             />
             {isSmallScreen ? (
               <>
-                {requestContent}
-                {responseContent}
+                <div
+                  className={
+                    cn(
+                      // Needs "relative" to constrain absolute position of bottom toolbar
+                      "relative",
+                      BACKGROUND_LAYER,
+                      "rounded-md",
+                      "border",
+
+                    )
+                  }>
+                  {requestContent}</div>
+                <div
+                  className={
+                    cn(
+                      BACKGROUND_LAYER,
+                      "rounded-md",
+                      "border",
+
+                    )
+                  }>{responseContent}
+                </div>
               </>
             ) : (
               <ResizablePanelGroup
