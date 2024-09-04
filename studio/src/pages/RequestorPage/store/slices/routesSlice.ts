@@ -90,10 +90,6 @@ export const routesSlice: StateCreator<
 
   getMatchingMiddleware: () => {
     const state = get();
-    // const path = state.path;
-    // const method = state.method;
-    // const requestType = state.requestType;
-    // const route
     const {
       path,
       method,
@@ -128,6 +124,11 @@ export const routesSlice: StateCreator<
       ? routesAndMiddleware.indexOf(matchedRoute)
       : -1;
 
+    // NOTE - `routesAndMiddleware` is already filtered for all registered handlers
+    //        and sorted in descending order by registration order.
+    //        (So the last element is the most recently registered)
+    //        This is why we can just slice the array from the matched route
+    //        index onwards and only check for matching middleware.
     const registeredHandlersBeforeRoute =
       indexOfMatchedRoute > -1
         ? routesAndMiddleware.slice(indexOfMatchedRoute)
@@ -143,10 +144,6 @@ export const routesSlice: StateCreator<
       method,
       requestType,
     );
-
-    // console.log("all routes and middleware", state.routesAndMiddleware);
-    // console.log("filtered middleware (before route)", filteredMiddleware);
-    // console.log("middlewareMatches", middlewareMatches ?? "NOOOOO MATCHES YO");
 
     const middleware = [];
     for (const m of middlewareMatches ?? []) {
