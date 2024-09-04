@@ -264,12 +264,7 @@ export const RequestorPage = () => {
               >
                 <ResizablePanel
                   order={1}
-                  className={cn(
-                    BACKGROUND_LAYER,
-                    "relative",
-                    "rounded-md",
-                    "border",
-                  )}
+                  className={cn(BACKGROUND_LAYER, "relative", "rounded-md")}
                   id="request-panel"
                   minSize={requestPanelMinSize}
                   maxSize={requestPanelMaxSize}
