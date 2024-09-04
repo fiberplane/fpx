@@ -88,35 +88,8 @@ export function findAllSmartRouterMatches(
   requestType: "http" | "websocket",
 ) {
   // HACK - Sort with registered routes first, then unregistered routes
-  // - for registered routes:
-  //   - `registrationOrder` (ascending)
-  // - for unregistered routes:
-  //   - `isDraft` status (`false` before `true`)
-  const routes = [...unsortedRoutes];
-  routes.sort((a, b) => {
-    const aIsRegistered = a.currentlyRegistered;
-    const bIsRegistered = b.currentlyRegistered;
-    const aIsDraft = a.isDraft;
-    const bIsDraft = b.isDraft;
-
-    // First, sort by registration status
-    if (aIsRegistered !== bIsRegistered) {
-      return aIsRegistered ? -1 : 1;
-    }
-
-    // Then, If registration status is the same, sort by draft status
-    if (aIsDraft !== bIsDraft) {
-      return aIsDraft ? 1 : -1;
-    }
-
-    // Then, sort by registration order
-    if (aIsRegistered && bIsRegistered) {
-      return a.registrationOrder - b.registrationOrder;
-    }
-
-    // If both registration and draft status are the same, sort by registration order
-    return a.registrationOrder - b.registrationOrder;
-  });
+  //        Look at the sortRoutesForMatching function for more details
+  const routes = sortRoutesForMatching(unsortedRoutes);
 
   // HACK - We need to be able to associate route handlers back to the ProbedRoute definition
   const functionHandlerLookupTable: Map<() => void, ProbedRoute> = new Map();
@@ -186,6 +159,47 @@ const isMatchResultEmpty = <R extends SmartRouter<T>, T>(
     });
   }
 };
+
+/**
+ * Sorts routes for matching, with registered routes first, then unregistered routes
+ *
+ * - for registered routes:
+ *   - `registrationOrder` (ascending)
+ * - for unregistered routes:
+ *   - `isDraft` status (`false` before `true`)
+ *
+ * @NOTE - Creates a new array, does not mutate the input
+ */
+function sortRoutesForMatching(unsortedRoutes: ProbedRoute[]) {
+  const routes = [...unsortedRoutes];
+
+  routes.sort((a, b) => {
+    const aIsRegistered = a.currentlyRegistered;
+    const bIsRegistered = b.currentlyRegistered;
+    const aIsDraft = a.isDraft;
+    const bIsDraft = b.isDraft;
+
+    // First, sort by registration status
+    if (aIsRegistered !== bIsRegistered) {
+      return aIsRegistered ? -1 : 1;
+    }
+
+    // Then, If registration status is the same, sort by draft status
+    if (aIsDraft !== bIsDraft) {
+      return aIsDraft ? 1 : -1;
+    }
+
+    // Then, sort by registration order
+    if (aIsRegistered && bIsRegistered) {
+      return a.registrationOrder - b.registrationOrder;
+    }
+
+    // If both registration and draft status are the same, sort by registration order
+    return a.registrationOrder - b.registrationOrder;
+  });
+
+  return routes;
+}
 
 /**
  * Transforms a route match result into an array of matches with path parameter values
