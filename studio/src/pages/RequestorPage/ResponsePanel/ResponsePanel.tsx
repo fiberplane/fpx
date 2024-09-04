@@ -119,9 +119,10 @@ export const ResponsePanel = memo(function ResponsePanel({
                 onClick={openAiTestGenerationPanel}
                 className={cn(
                   isAiTestGenerationPanelOpen && "opacity-50 bg-slate-900",
+                  "h-6 w-6",
                 )}
               >
-                <RobotIcon className="h-4 w-4 cursor-pointer" />
+                <RobotIcon className="h-3 w-3 cursor-pointer" />
               </Button>
             </div>
           </CustomTabsList>

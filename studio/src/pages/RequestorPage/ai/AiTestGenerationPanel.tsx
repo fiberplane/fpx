@@ -72,8 +72,9 @@ export function AiTestGenerationPanel({
               variant="ghost"
               size="icon"
               onClick={toggleAiTestGenerationPanel}
+              className="h-6 w-6"
             >
-              <Cross1Icon className="h-3.5 w-3.5 cursor-pointer" />
+              <Cross1Icon className="h-3 w-3 cursor-pointer" />
             </Button>
           </div>
         </CustomTabsList>
@@ -112,10 +113,7 @@ export function AiTestGenerationPanel({
               </div>
             </div>
             <div className="mt-4 flex flex-row justify-end px-2">
-              <Button
-                className="text-white"
-                onClick={() => copyToClipboard(prompt)}
-              >
+              <Button onClick={() => copyToClipboard(prompt)}>
                 <CopyIcon className="h-4 w-4 mr-2" />{" "}
                 {isCopied ? "Copied!" : "Copy Prompt"}
               </Button>

@@ -259,6 +259,7 @@ export const RequestorPage = () => {
                   //        In the case where the inner content expands beyond the parent
                   "max-w-screen",
                   "max-h-full",
+                  "gap-1",
                 )}
               >
                 <ResizablePanel
@@ -277,7 +278,7 @@ export const RequestorPage = () => {
                 </ResizablePanel>
                 <ResizableHandle
                   hitAreaMargins={{ coarse: 20, fine: 10 }}
-                  className="bg-transparent m-1 rounded-md"
+                  className="bg-transparent"
                 />
                 <ResizablePanel
                   id="response-panel"
@@ -291,8 +292,13 @@ export const RequestorPage = () => {
                   <>
                     <ResizableHandle
                       hitAreaMargins={{ coarse: 20, fine: 10 }}
+                      className="bg-transparent"
                     />
-                    <ResizablePanel order={3} id="ai-panel">
+                    <ResizablePanel
+                      order={3}
+                      id="ai-panel"
+                      className={cn(BACKGROUND_LAYER, "rounded-md", "border")}
+                    >
                       <AiTestGenerationPanel
                         // TODO - Only use history for recent matching route
                         history={history}
