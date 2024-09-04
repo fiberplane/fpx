@@ -42,7 +42,12 @@ export const ProbedRouteSchema = z.object({
   openApiSpec: z.string().optional(),
   requestType: RequestTypeSchema,
   // NOTE - Added on the frontend, not stored in DB
-  isDraft: z.boolean().optional(),
+  isDraft: z
+    .boolean()
+    .optional()
+    .describe(
+      "Added on the frontend, not stored in DB. This is only true when the user is typing a path, and none of the routes in the sidebar match.",
+    ),
 });
 
 export type ProbedRoute = z.infer<typeof ProbedRouteSchema>;

@@ -16,10 +16,6 @@ export function RoutesPanel() {
     return routes?.some((r) => !r.currentlyRegistered) ?? false;
   }, [routes]);
 
-  const hasAnyDraftRoutes = useMemo(() => {
-    return routes?.some((r) => r.isDraft) ?? false;
-  }, [routes]);
-
   const hasAnyUserAddedRoutes = useMemo(() => {
     return (
       routes?.some((r) => r.routeOrigin === "custom" && !r.isDraft) ?? false
@@ -89,15 +85,6 @@ export function RoutesPanel() {
         </div>
       </div>
       <div className="overflow-y-auto relative">
-        {hasAnyDraftRoutes && (
-          <RoutesSection
-            title="Draft routes"
-            routes={draftRoutes ?? []}
-            selectedRoute={selectedRoute}
-            handleRouteClick={handleRouteClick}
-          />
-        )}
-
         {hasAnyUserAddedRoutes && (
           <RoutesSection
             title="Custom routes"
