@@ -87,7 +87,11 @@ export function findAllSmartRouterMatches(
   method: string,
   requestType: "http" | "websocket",
 ) {
-  // HACK - Sort routes by registration, then registration order so that registered routes match first
+  // HACK - Sort with registered routes first, then unregistered routes
+  // - for registered routes:
+  //   - `registrationOrder` (ascending)
+  // - for unregistered routes:
+  //   - `isDraft` status (`false` before `true`)
   const routes = [...unsortedRoutes];
   routes.sort((a, b) => {
     const aIsRegistered = a.currentlyRegistered;
