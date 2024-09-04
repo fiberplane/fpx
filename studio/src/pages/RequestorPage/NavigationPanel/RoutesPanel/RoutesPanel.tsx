@@ -2,8 +2,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
 import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useRequestorStore } from "../../reducer";
 import { AddRouteButton } from "../../routes";
+import { useRequestorStore } from "../../store";
 import { RoutesSection } from "./RoutesSection";
 
 type RoutesPanelProps = {

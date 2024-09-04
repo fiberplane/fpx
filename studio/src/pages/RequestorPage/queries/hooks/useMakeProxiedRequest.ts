@@ -5,8 +5,8 @@ import {
   type KeyValueParameter,
   reduceKeyValueParameters,
 } from "../../KeyValueForm";
-import type { RequestorBody, RequestorResponseBody } from "../../reducer";
-import { useRequestorStore } from "../../reducer";
+import type { RequestorBody, RequestorResponseBody } from "../../store";
+import { useRequestorStore } from "../../store";
 import { REQUESTOR_REQUESTS_KEY } from "./constants";
 
 export type MakeProxiedRequestQueryFn = ReturnType<

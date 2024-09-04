@@ -5,7 +5,7 @@ import {
   truncatePathWithEllipsis,
 } from "@/utils";
 import type { Requestornator } from "./queries";
-import { useServiceBaseUrl } from "./reducer";
+import { useServiceBaseUrl } from "./store";
 
 type RequestorHistoryProps = {
   history: Array<Requestornator>;

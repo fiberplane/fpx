@@ -18,7 +18,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
-import { useActiveRoute, useRequestorStore } from "./reducer";
+import { useActiveRoute, useRequestorStore } from "./store";
 import { isWsRequest } from "./types";
 import type { WebSocketState } from "./useMakeWebsocketRequest";
 

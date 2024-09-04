@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useProbedRoutes } from "../queries";
-import { useRequestorStore } from "../reducer";
+import { useRequestorStore } from "../store";
 import type { ProbedRoute } from "../types";
 import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
 

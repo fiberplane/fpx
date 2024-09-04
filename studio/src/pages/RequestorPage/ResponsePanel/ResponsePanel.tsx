@@ -19,16 +19,12 @@ import { Method, StatusCode } from "../RequestorHistory";
 import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
-import type { ResponsePanelTab } from "../reducer";
-import {
-  useActiveRoute,
-  useRequestorStore,
-  useServiceBaseUrl,
-} from "../reducer";
+import type { ResponsePanelTab } from "../store";
+import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../reducer/types";
+} from "../store/types";
 import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";

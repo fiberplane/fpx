@@ -8,9 +8,9 @@ import { useShallow } from "zustand/react/shallow";
 import { createFormDataParameter } from "../FormDataForm/data";
 import { createKeyValueParameters } from "../KeyValueForm";
 import type { Requestornator } from "../queries";
-import type { RequestorBody } from "../reducer";
-import { useRequestorStore, useServiceBaseUrl } from "../reducer";
-import { isRequestorBodyType } from "../reducer/request-body";
+import type { RequestorBody } from "../store";
+import { useRequestorStore, useServiceBaseUrl } from "../store";
+import { isRequestorBodyType } from "../store/request-body";
 import { useAiRequestData } from "./generate-request-data";
 
 export const FRIENDLY = "Friendly" as const;
