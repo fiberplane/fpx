@@ -13,8 +13,8 @@ import {
   // type Requestornator,
   useDeleteRoute,
 } from "../queries";
-import { AddRouteButton } from "../routes";
 import { useRequestorStore } from "../reducer";
+import { AddRouteButton } from "../routes";
 import { type ProbedRoute, isWsRequest } from "../types";
 
 type RoutesPanelProps = {

@@ -22,8 +22,8 @@ import { cn } from "@/utils";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { RouteItem } from "./NavigationPanel/RoutesPanel";
-import { AddRoutesDialog } from "./routes/AddRouteButton";
 import { useRequestorStore } from "./reducer";
+import { AddRoutesDialog } from "./routes/AddRouteButton";
 
 export const RoutesCombobox = React.memo(function RoutesCombobox() {
   const {

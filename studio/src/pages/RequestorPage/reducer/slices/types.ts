@@ -1,17 +1,17 @@
-import type { KeyValueParameter } from "../../KeyValueForm";
 import type {
   RequestBodyType,
   RequestorBody,
   RequestsPanelTab,
   ResponsePanelTab,
 } from "..";
-import type { RequestorActiveResponse } from "../types";
+import type { KeyValueParameter } from "../../KeyValueForm";
 import type { ProbedRoute } from "../../types";
 import type {
   RequestMethod,
   RequestMethodInputValue,
   RequestType,
 } from "../../types";
+import type { RequestorActiveResponse } from "../types";
 
 type RequestorTraceId = string;
 

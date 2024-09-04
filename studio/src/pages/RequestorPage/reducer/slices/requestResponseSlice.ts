@@ -2,6 +2,8 @@ import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
 import type { KeyValueParameter } from "../../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
+import { findMatchedRoute } from "../../routes";
+import { updateContentTypeHeaderInState } from "../content-type";
 import {
   addBaseUrl,
   extractMatchedPathParams,
@@ -10,8 +12,6 @@ import {
   removeBaseUrl,
 } from "../reducer";
 import { setBodyTypeInState } from "../set-body-type";
-import { updateContentTypeHeaderInState } from "../content-type";
-import { findMatchedRoute } from "../../routes";
 import type { RequestResponseSlice, Store } from "./types";
 
 export const requestResponseSlice: StateCreator<

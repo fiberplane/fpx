@@ -21,10 +21,14 @@ import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
 import type { ResponsePanelTab } from "../reducer";
 import {
+  useActiveRoute,
+  useRequestorStore,
+  useServiceBaseUrl,
+} from "../reducer";
+import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../reducer/types";
-import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../reducer";
 import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
@@ -263,9 +267,9 @@ function ResponseSummary({
   const url = isRequestorActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(
-      response?.app_requests?.requestUrl ?? "",
-      response?.app_requests?.requestQueryParams ?? undefined,
-    );
+        response?.app_requests?.requestUrl ?? "",
+        response?.app_requests?.requestQueryParams ?? undefined,
+      );
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
