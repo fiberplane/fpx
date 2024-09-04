@@ -25,8 +25,17 @@ export const useRequestorStore = create<RequestorState>()(
       {
         name: "requestor-storage",
         partialize: (state) => ({
-          serviceBaseUrl: state.serviceBaseUrl,
-          // Add other properties you want to persist
+          path: state.path,
+          method: state.method,
+          requestType: state.requestType,
+          pathParams: state.pathParams,
+          queryParams: state.queryParams,
+          requestHeaders: state.requestHeaders,
+          body: state.body,
+          activeRequestsPanelTab: state.activeRequestsPanelTab,
+          visibleRequestsPanelTabs: state.visibleRequestsPanelTabs,
+          activeResponsePanelTab: state.activeResponsePanelTab,
+          visibleResponsePanelTabs: state.visibleResponsePanelTabs,
         }),
       },
     ),

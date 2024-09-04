@@ -7,7 +7,7 @@ import {
   pathHasValidBaseUrl,
   removeBaseUrl,
 } from "../../reducer/reducer";
-import { updateContentTypeHeader } from "../../reducer/reducers";
+import { updateContentTypeHeaderInState } from "../../reducer/reducers";
 import {
   getVisibleRequestPanelTabs,
   getVisibleResponsePanelTabs,
@@ -79,7 +79,7 @@ export const routesSlice: StateCreator<
         : state.visibleResponsePanelTabs[0];
 
       // Add content type header (you might want to move this to a separate function)
-      updateContentTypeHeader(state);
+      updateContentTypeHeaderInState(state);
     }),
 
   routesAndMiddleware: [],

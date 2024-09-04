@@ -21,7 +21,7 @@ import type { RequestorBody } from "../state";
  *
  * - If the body is a text, we want to set/update the content type to text/plain
  */
-export function updateContentTypeHeader(state: RequestResponseSlice) {
+export function updateContentTypeHeaderInState(state: RequestResponseSlice) {
   const currentHeaders = state.requestHeaders;
   const currentContentTypeHeader = getCurrentContentType(state);
 
@@ -38,11 +38,7 @@ export function updateContentTypeHeader(state: RequestResponseSlice) {
     nextHeaders = removeHeader(currentHeaders, updateOperation.value);
   }
 
-  // return {
-  // ...state,
   state.requestHeaders = enforceTerminalDraftParameter(nextHeaders);
-  // ,
-  // };
 }
 
 function addHeader(

@@ -8,7 +8,7 @@ import type { RequestBodyType } from "../state";
  * It's messy, but it's its own function! SO we can start testing it. Some day.
  * We have big plans for this reducer function. Big plans.
  */
-export function setBodyTypeReducer(
+export function setBodyTypeInState(
   state: RequestResponseSlice,
   {
     type: newBodyType,

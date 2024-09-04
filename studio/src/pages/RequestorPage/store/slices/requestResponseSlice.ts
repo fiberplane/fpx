@@ -10,8 +10,8 @@ import {
   removeBaseUrl,
 } from "../../reducer/reducer";
 import {
-  setBodyTypeReducer,
-  updateContentTypeHeader,
+  setBodyTypeInState,
+  updateContentTypeHeaderInState,
 } from "../../reducer/reducers";
 import { findMatchedRoute } from "../../routes";
 import type { RequestResponseSlice, Store } from "./types";
@@ -155,7 +155,7 @@ export const requestResponseSlice: StateCreator<
             isMultipart: shouldForceMultipart || body.isMultipart,
             value: nextBodyValue,
           };
-          updateContentTypeHeader(state);
+          updateContentTypeHeaderInState(state);
         } else {
           state.body = body;
         }
@@ -164,8 +164,8 @@ export const requestResponseSlice: StateCreator<
 
   handleRequestBodyTypeChange: (requestBodyType, isMultipart) =>
     set((state) => {
-      setBodyTypeReducer(state, { type: requestBodyType, isMultipart });
-      updateContentTypeHeader(state);
+      setBodyTypeInState(state, { type: requestBodyType, isMultipart });
+      updateContentTypeHeaderInState(state);
     }),
 
   // TODO - change the function ref when the serviceBaseUrl is updated
