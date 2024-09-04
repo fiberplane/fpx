@@ -13,17 +13,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
-import type { ResponsePanelTab } from "../reducer";
+import type { ResponsePanelTab } from "../store";
+import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../reducer/state";
-import { type RequestType, isWsRequest } from "../types";
+} from "../store/types";
+import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
 import {
@@ -33,35 +34,41 @@ import {
 } from "./Websocket";
 
 type Props = {
-  activeResponse: RequestorActiveResponse | null;
-  activeResponsePanelTab: ResponsePanelTab;
-  setActiveResponsePanelTab: (tab: string) => void;
-  shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   tracedResponse?: Requestornator;
   isLoading: boolean;
-  requestType: RequestType;
   websocketState: WebSocketState;
   openAiTestGenerationPanel: () => void;
   isAiTestGenerationPanelOpen: boolean;
-  removeServiceUrlFromPath: (url: string) => string;
 };
 
-export function ResponsePanel({
-  activeResponse,
-  activeResponsePanelTab,
-  setActiveResponsePanelTab,
-  shouldShowResponseTab,
+export const ResponsePanel = memo(function ResponsePanel({
   tracedResponse,
   isLoading,
-  requestType,
   websocketState,
   openAiTestGenerationPanel,
   isAiTestGenerationPanelOpen,
-  removeServiceUrlFromPath,
 }: Props) {
+  const {
+    activeResponse,
+    visibleResponsePanelTabs,
+    activeResponsePanelTab,
+    setActiveResponsePanelTab,
+  } = useRequestorStore(
+    "activeResponse",
+    "visibleResponsePanelTabs",
+    "activeResponsePanelTab",
+    "setActiveResponsePanelTab",
+  );
+
+  const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
+    return visibleResponsePanelTabs.includes(tab);
+  };
+
+  const { requestType } = useActiveRoute();
+  const { removeServiceUrlFromPath } = useServiceBaseUrl();
+
   // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
   const responseToRender = activeResponse ?? tracedResponse;
-
   const isFailure = isRequestorActiveResponse(responseToRender)
     ? responseToRender.isFailure
     : responseToRender?.app_responses?.isFailure;
@@ -197,7 +204,7 @@ export function ResponsePanel({
       </div>
     </div>
   );
-}
+});
 
 /**
  * Helper component for handling loading/failure/empty states in tab content

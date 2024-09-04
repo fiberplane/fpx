@@ -19,7 +19,7 @@ import {
 import { cn } from "@/utils";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import type { RequestBodyType, RequestorBody } from "../../reducer";
+import type { RequestBodyType, RequestorBody } from "../../store";
 
 type RequestBodyTypeOption = {
   value: RequestBodyType;

@@ -1,12 +1,8 @@
 import { useEffect, useMemo } from "react";
-import { type ProbedRoute, useProbedRoutes } from "../queries";
+import { useProbedRoutes } from "../queries";
+import { useRequestorStore } from "../store";
+import type { ProbedRoute } from "../types";
 import { WEBSOCKETS_ENABLED } from "../webSocketFeatureFlag";
-
-type UseRoutesOptions = {
-  setRoutes: (routes: ProbedRoute[]) => void;
-  setRoutesAndMiddleware: (routesAndMiddleware: ProbedRoute[]) => void;
-  setServiceBaseUrl: (serviceBaseUrl: string) => void;
-};
 
 /**
  * Suuuuper hacky way to check if a route is using the standard Hono
@@ -51,11 +47,13 @@ const filterActive = (routesAndMiddleware: ProbedRoute[]) => {
   });
 };
 
-export function useRoutes({
-  setRoutes,
-  setRoutesAndMiddleware,
-  setServiceBaseUrl,
-}: UseRoutesOptions) {
+export function useRoutes() {
+  const { setRoutes, setServiceBaseUrl, setRoutesAndMiddleware } =
+    useRequestorStore(
+      "setRoutes",
+      "setServiceBaseUrl",
+      "setRoutesAndMiddleware",
+    );
   const { data: routesAndMiddleware, isLoading, isError } = useProbedRoutes();
   const routes = useMemo(() => {
     const routes = filterRoutes(routesAndMiddleware?.routes ?? []);
@@ -100,7 +98,5 @@ export function useRoutes({
   return {
     isError,
     isLoading,
-    routes,
-    activeRoutesAndMiddleware,
   };
 }

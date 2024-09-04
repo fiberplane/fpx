@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ProbedRoute, Requestornator } from "../queries";
-import type { RequestBodyType } from "../reducer";
+import type { Requestornator } from "../queries";
+import type { RequestBodyType } from "../store";
+import type { ProbedRoute } from "../types";
 import { simplifyHistoryEntry } from "./utils";
 
 const fetchAiRequestData = (

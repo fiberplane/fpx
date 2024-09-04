@@ -1,5 +1,4 @@
 import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
-import { useRequestor } from "@/pages/RequestorPage/reducer";
 import type { OtelSpan } from "@/queries";
 import {
   getRequestBody,
@@ -99,14 +98,8 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
     return span ? getRequestQueryParams(span) : null;
   }, [span]);
 
-  const { clearResponseBodyFromHistory, setActiveResponse } = useRequestor();
-
-  const { mutate: makeRequest, isPending: isReplaying } = useMakeProxiedRequest(
-    {
-      clearResponseBodyFromHistory,
-      setActiveResponse,
-    },
-  );
+  const { mutate: makeRequest, isPending: isReplaying } =
+    useMakeProxiedRequest();
 
   const replay = useCallback(
     (e: React.FormEvent<HTMLButtonElement>) => {

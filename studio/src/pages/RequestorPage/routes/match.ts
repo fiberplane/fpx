@@ -2,7 +2,7 @@ import type { ParamIndexMap, ParamStash } from "hono/router";
 import { RegExpRouter } from "hono/router/reg-exp-router";
 import { SmartRouter } from "hono/router/smart-router";
 import { TrieRouter } from "hono/router/trie-router";
-import type { ProbedRoute } from "../queries";
+import type { ProbedRoute } from "../types";
 
 type MatchedRouteResult = {
   route: ProbedRoute;

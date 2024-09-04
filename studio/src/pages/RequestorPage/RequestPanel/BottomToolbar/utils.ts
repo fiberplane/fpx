@@ -1,4 +1,4 @@
-import type { RequestorState } from "../../reducer";
+import type { RequestorState } from "../../store";
 
 /**
  * Get the value of the request body, if any. It doesn't support multi-part

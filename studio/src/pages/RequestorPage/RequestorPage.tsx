@@ -12,15 +12,15 @@ import { useIsLgScreen, useIsSmScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { NavigationPanel } from "./NavigationPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
-import { RoutesPanel } from "./RoutesPanel";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
-import { useRequestor } from "./reducer";
 import { useRoutes } from "./routes";
+import { useActiveRoute, useRequestorStore } from "./store";
 import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
@@ -41,73 +41,8 @@ function getMainSectionHeight() {
 export const RequestorPage = () => {
   const { toast } = useToast();
 
-  const requestorState = useRequestor();
-  // @ts-expect-error - This is helpful for debugging, soz
-  globalThis.requestorState = requestorState;
-  const {
-    // Routes panel
-    state: { routes },
-    setRoutes,
-    setRoutesAndMiddleware,
-    setServiceBaseUrl,
-    selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-    getActiveRoute,
-
-    // NOTE - This returns middleware that might fire for the current route
-    //        It's used to inject additional context to the ai request generation feature
-    getMatchingMiddleware,
-
-    // Requestor input
-    // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-    state: { path, method, requestType },
-    updatePath: handlePathInputChange,
-    updateMethod: handleMethodChange,
-    getIsInDraftMode,
-    addServiceUrlIfBarePath,
-    removeServiceUrlFromPath,
-
-    // Request panel
-    state: { pathParams, queryParams, requestHeaders, body },
-    setPathParams,
-    updatePathParamValues,
-    clearPathParams,
-    setQueryParams,
-    setRequestHeaders,
-    setBody,
-    handleRequestBodyTypeChange,
-
-    // Request panel - Websocket message form
-    state: { websocketMessage },
-    setWebsocketMessage,
-
-    // Requests Panel tabs
-    state: { activeRequestsPanelTab },
-    setActiveRequestsPanelTab,
-    shouldShowRequestTab,
-
-    // Response Panel tabs
-    state: { activeResponsePanelTab },
-    setActiveResponsePanelTab,
-    shouldShowResponseTab,
-
-    // Response Panel response body
-    state: { activeResponse },
-    setActiveResponse,
-
-    // History (WIP)
-    state: { activeHistoryResponseTraceId },
-    showResponseBodyFromHistory,
-    clearResponseBodyFromHistory,
-  } = requestorState;
-
-  const selectedRoute = getActiveRoute();
-
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
-  useRoutes({
-    setRoutes,
-    setRoutesAndMiddleware,
-    setServiceBaseUrl,
-  });
+  useRoutes();
 
   // NOTE - Use this to test overflow of requests panel
   // useEffect(() => {
@@ -118,31 +53,14 @@ export const RequestorPage = () => {
   //   );
   // }, []);
 
-  const {
-    history,
-    sessionHistory,
-    recordRequestInSessionHistory,
-    loadHistoricalRequest,
-  } = useRequestorHistory({
-    routes,
-    handleSelectRoute,
-    setPath: handlePathInputChange,
-    setMethod: handleMethodChange,
-    setPathParams,
-    setBody,
-    setQueryParams,
-    setRequestHeaders,
-    showResponseBodyFromHistory,
-  });
+  const { history, sessionHistory, recordRequestInSessionHistory } =
+    useRequestorHistory();
 
-  const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
-    { path, method, route: selectedRoute?.path },
-    sessionHistory,
-    activeHistoryResponseTraceId,
-  );
+  const mostRecentRequestornatorForRoute =
+    useMostRecentRequestornator(sessionHistory);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
-    useMakeProxiedRequest({ clearResponseBodyFromHistory, setActiveResponse });
+    useMakeProxiedRequest();
 
   // WIP - Allows us to connect to a websocket and send messages through it
   const {
@@ -154,18 +72,9 @@ export const RequestorPage = () => {
 
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
-    body,
-    addServiceUrlIfBarePath,
-    path,
-    method,
-    pathParams,
-    queryParams,
-    requestHeaders,
     makeRequest,
     connectWebsocket,
     recordRequestInSessionHistory,
-    selectedRoute,
-    requestType,
   });
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -192,20 +101,7 @@ export const RequestorPage = () => {
     showAiGeneratedInputsBanner,
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
-  } = useAi(
-    selectedRoute,
-    getMatchingMiddleware(),
-    history,
-    {
-      setBody,
-      setQueryParams,
-      setPath: handlePathInputChange,
-      setRequestHeaders,
-      updatePathParamValues,
-      addServiceUrlIfBarePath,
-    },
-    body,
-  );
+  } = useAi(history);
 
   useHotkeys(
     "mod+g",
@@ -257,23 +153,6 @@ export const RequestorPage = () => {
 
   const requestContent = (
     <RequestPanel
-      activeRequestsPanelTab={activeRequestsPanelTab}
-      setActiveRequestsPanelTab={setActiveRequestsPanelTab}
-      shouldShowRequestTab={shouldShowRequestTab}
-      path={path}
-      method={method}
-      body={body}
-      setBody={setBody}
-      handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-      pathParams={pathParams}
-      queryParams={queryParams}
-      requestHeaders={requestHeaders}
-      setPathParams={setPathParams}
-      clearPathParams={clearPathParams}
-      setQueryParams={setQueryParams}
-      setRequestHeaders={setRequestHeaders}
-      websocketMessage={websocketMessage}
-      setWebsocketMessage={setWebsocketMessage}
       aiEnabled={aiEnabled}
       isLoadingParameters={isLoadingParameters}
       fillInRequest={fillInRequest}
@@ -289,17 +168,11 @@ export const RequestorPage = () => {
 
   const responseContent = (
     <ResponsePanel
-      activeResponse={activeResponse}
       tracedResponse={mostRecentRequestornatorForRoute}
-      activeResponsePanelTab={activeResponsePanelTab}
-      setActiveResponsePanelTab={setActiveResponsePanelTab}
-      shouldShowResponseTab={shouldShowResponseTab}
       isLoading={isRequestorRequesting}
       websocketState={websocketState}
-      requestType={selectedRoute?.requestType}
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
-      removeServiceUrlFromPath={removeServiceUrlFromPath}
     />
   );
 
@@ -324,11 +197,7 @@ export const RequestorPage = () => {
           "lg:hidden",
         )}
       >
-        <RoutesCombobox
-          routes={routes}
-          selectedRoute={selectedRoute}
-          handleRouteClick={handleSelectRoute}
-        />
+        <RoutesCombobox />
       </div>
       <ResizablePanelGroup
         direction="horizontal"
@@ -345,14 +214,7 @@ export const RequestorPage = () => {
               maxSize={maxSize}
               defaultSize={(320 / width) * 100}
             >
-              <RoutesPanel
-                routes={routes}
-                selectedRoute={selectedRoute}
-                handleRouteClick={handleSelectRoute}
-                history={history}
-                loadHistoricalRequest={loadHistoricalRequest}
-                removeServiceUrlFromPath={removeServiceUrlFromPath}
-              />
+              <NavigationPanel />
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
@@ -375,17 +237,11 @@ export const RequestorPage = () => {
             )}
           >
             <RequestorInput
-              requestType={selectedRoute?.requestType}
-              method={method}
-              handleMethodChange={handleMethodChange}
-              path={path}
-              handlePathInputChange={handlePathInputChange}
               onSubmit={onSubmit}
               disconnectWebsocket={disconnectWebsocket}
               isRequestorRequesting={isRequestorRequesting}
               formRef={formRef}
               websocketState={websocketState}
-              getIsInDraftMode={getIsInDraftMode}
             />
             {isSmallScreen ? (
               <>
@@ -432,8 +288,6 @@ export const RequestorPage = () => {
                         toggleAiTestGenerationPanel={
                           toggleAiTestGenerationPanel
                         }
-                        getActiveRoute={getActiveRoute}
-                        removeServiceUrlFromPath={removeServiceUrlFromPath}
                       />
                     </ResizablePanel>
                   </>
@@ -453,11 +307,13 @@ export default RequestorPage;
  * When you select a route from the route side panel,
  * this will look for the most recent request made against that route.
  */
-function useMostRecentRequestornator(
-  requestInputs: { path: string; method: string; route?: string },
-  all: Requestornator[],
-  activeHistoryResponseTraceId: string | null,
-) {
+function useMostRecentRequestornator(all: Requestornator[]) {
+  const { path: routePath } = useActiveRoute();
+  const { path, method, activeHistoryResponseTraceId } = useRequestorStore(
+    "path",
+    "method",
+    "activeHistoryResponseTraceId",
+  );
   return useMemo<Requestornator | undefined>(() => {
     if (activeHistoryResponseTraceId) {
       return all.find(
@@ -468,8 +324,8 @@ function useMostRecentRequestornator(
 
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestRoute === requestInputs.route &&
-        r?.app_requests?.requestMethod === requestInputs.method,
+        r?.app_requests?.requestRoute === routePath &&
+        r?.app_requests?.requestMethod === method,
     );
 
     // Descending sort by updatedAt
@@ -486,14 +342,14 @@ function useMostRecentRequestornator(
     //        perhaps because we made a request to a service we are not explicitly monitoring
     const matchingResponsesFallback = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestUrl === requestInputs.path &&
-        r?.app_requests?.requestMethod === requestInputs.method,
+        r?.app_requests?.requestUrl === path &&
+        r?.app_requests?.requestMethod === method,
     );
 
     matchingResponsesFallback?.sort(sortRequestornatorsDescending);
 
     return matchingResponsesFallback?.[0];
-  }, [all, requestInputs, activeHistoryResponseTraceId]);
+  }, [all, routePath, method, path, activeHistoryResponseTraceId]);
 }
 
 export const Title = (props: { children: React.ReactNode }) => (

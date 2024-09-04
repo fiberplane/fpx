@@ -8,61 +8,62 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { cn, isMac } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import {
   FilePlusIcon,
   MixerHorizontalIcon,
   TriangleRightIcon,
 } from "@radix-ui/react-icons";
-import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useShallow } from "zustand/react/shallow";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
 import {
-  type RequestMethod,
-  type RequestMethodInputValue,
-  type RequestType,
-  isWsRequest,
-} from "./types";
+  useActiveRoute,
+  useRequestorStore,
+  useRequestorStoreRaw,
+} from "./store";
+import { isWsRequest } from "./types";
 import type { WebSocketState } from "./useMakeWebsocketRequest";
 
 type RequestInputProps = {
-  method: RequestMethod;
-  handleMethodChange: (method: RequestMethodInputValue) => void;
-  path?: string;
-  handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
   formRef: React.RefObject<HTMLFormElement>;
-  requestType: RequestType;
   websocketState: WebSocketState;
   disconnectWebsocket: () => void;
-  getIsInDraftMode: () => boolean;
 };
 
 export function RequestorInput({
-  getIsInDraftMode,
-  method,
-  handleMethodChange,
-  path,
-  handlePathInputChange,
   onSubmit,
   isRequestorRequesting,
-  requestType,
   formRef,
   websocketState,
   disconnectWebsocket,
 }: RequestInputProps) {
   const { toast } = useToast();
 
+  const { requestType } = useActiveRoute();
+
+  const {
+    method,
+    path,
+    updatePath: handlePathInputChange,
+    updateMethod: handleMethodChange,
+  } = useRequestorStore("method", "path", "updatePath", "updateMethod");
+
+  // Use the low level store hook to get whether we are in draft mode
+  const isInDraftMode = useRequestorStoreRaw(
+    useShallow(({ selectedRoute }) => !selectedRoute),
+  );
+
   const isWsConnected = websocketState.isConnected;
 
   const { mutate: addRoutes } = useAddRoutes();
 
-  const canSaveDraftRoute = useMemo(() => {
-    return !!path && getIsInDraftMode();
-  }, [path, getIsInDraftMode]);
+  const canSaveDraftRoute = !!path && isInDraftMode;
 
-  const handleAddRoute = useCallback(() => {
+  const handleAddRoute = useHandler(() => {
     if (canSaveDraftRoute) {
       addRoutes({
         method: requestType === "websocket" ? "GET" : method,
@@ -76,11 +77,11 @@ export function RequestorInput({
         description: "Added new route",
       });
     }
-  }, [addRoutes, canSaveDraftRoute, method, path, requestType, toast]);
+  });
 
   useHotkeys("mod+s", handleAddRoute, {
     enableOnFormTags: ["INPUT"],
-    preventDefault: getIsInDraftMode(),
+    preventDefault: isInDraftMode,
   });
 
   return (

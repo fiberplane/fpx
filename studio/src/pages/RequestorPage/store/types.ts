@@ -1,13 +1,11 @@
 import { z } from "zod";
+import { KeyValueParameterSchema } from "../KeyValueForm";
 import {
-  KeyValueParameterSchema,
-  enforceTerminalDraftParameter,
-} from "../KeyValueForm";
-import { ProbedRouteSchema } from "../queries";
-import { RequestMethodSchema, RequestTypeSchema } from "../types";
-import { addContentTypeHeader } from "./reducers";
+  ProbedRouteSchema,
+  RequestMethodSchema,
+  RequestTypeSchema,
+} from "../types";
 import { RequestorBodySchema } from "./request-body";
-import { isCurrentSessionState } from "./session-persistence-key";
 import { RequestsPanelTabSchema, ResponsePanelTabSchema } from "./tabs";
 
 const RequestorResponseBodySchema = z.discriminatedUnion("type", [
@@ -130,96 +128,3 @@ export type RequestorState = z.infer<typeof RequestorStateSchema>;
 
 export type RequestorBody = RequestorState["body"];
 export type RequestBodyType = RequestorBody["type"];
-
-export const initialState: RequestorState = addContentTypeHeader({
-  routes: [],
-  routesAndMiddleware: [],
-  selectedRoute: null,
-  path: "/",
-  serviceBaseUrl: "http://localhost:8787",
-  method: "GET",
-  requestType: "http",
-
-  pathParams: [],
-  queryParams: enforceTerminalDraftParameter([]),
-  requestHeaders: enforceTerminalDraftParameter([]),
-  body: {
-    type: "json",
-    value: "",
-  },
-
-  websocketMessage: "",
-
-  activeRequestsPanelTab: "params",
-  visibleRequestsPanelTabs: ["params", "headers"],
-
-  activeResponsePanelTab: "response",
-  visibleResponsePanelTabs: ["response", "debug"],
-
-  // HACK - This is used to force us to show a response body for a request loaded from history
-  activeHistoryResponseTraceId: null,
-
-  activeResponse: null,
-});
-
-/**
- * Initializer for the reducer's state that attempts to load the UI state from local storage
- * If the UI state is not found, it returns the default initial state
- */
-export const createInitialState = (initial: RequestorState) => {
-  const savedState = loadUiStateFromLocalStorage();
-  return savedState ? { ...initial, ...savedState } : initial;
-};
-
-/**
- * A subset of the RequestorState that is saved to local storage.
- * We don't save things like `routes` since that could be crufty,
- * and will be refetched when the page reloads anyhow
- */
-export const SavedRequestorStateSchema = RequestorStateSchema.pick({
-  path: true,
-  method: true,
-  requestType: true,
-  pathParams: true,
-  queryParams: true,
-  requestHeaders: true,
-  body: true,
-  activeRequestsPanelTab: true,
-  visibleRequestsPanelTabs: true,
-  activeResponsePanelTab: true,
-  visibleResponsePanelTabs: true,
-});
-
-export type SavedRequestorState = z.infer<typeof SavedRequestorStateSchema>;
-
-const isSavedRequestorState = (
-  state: unknown,
-): state is SavedRequestorState => {
-  const result = SavedRequestorStateSchema.safeParse(state);
-  if (!result.success) {
-    console.error(
-      "SavedRequestorState validation failed:",
-      result.error.format(),
-    );
-  }
-  return result.success;
-};
-
-export const LOCAL_STORAGE_KEY = "requestorUiState";
-
-function loadUiStateFromLocalStorage(): SavedRequestorState | null {
-  const possibleUiState = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (!possibleUiState) {
-    return null;
-  }
-
-  try {
-    const uiState = JSON.parse(possibleUiState);
-    if (isSavedRequestorState(uiState) && isCurrentSessionState(uiState)) {
-      return uiState;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}

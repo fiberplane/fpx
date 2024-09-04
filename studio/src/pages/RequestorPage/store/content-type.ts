@@ -1,9 +1,10 @@
 import {
   type KeyValueParameter,
   enforceTerminalDraftParameter,
-} from "../../KeyValueForm";
-import { isDraftParameter } from "../../KeyValueForm/data";
-import type { RequestorBody, RequestorState } from "../state";
+} from "../KeyValueForm";
+import { isDraftParameter } from "../KeyValueForm/data";
+import type { RequestResponseSlice } from "./slices/types";
+import type { RequestorBody } from "./types";
 
 /**
  * This makes sure to synchronize the content type header with the body type.
@@ -20,7 +21,7 @@ import type { RequestorBody, RequestorState } from "../state";
  *
  * - If the body is a text, we want to set/update the content type to text/plain
  */
-export function addContentTypeHeader(state: RequestorState): RequestorState {
+export function updateContentTypeHeaderInState(state: RequestResponseSlice) {
   const currentHeaders = state.requestHeaders;
   const currentContentTypeHeader = getCurrentContentType(state);
 
@@ -37,10 +38,7 @@ export function addContentTypeHeader(state: RequestorState): RequestorState {
     nextHeaders = removeHeader(currentHeaders, updateOperation.value);
   }
 
-  return {
-    ...state,
-    requestHeaders: enforceTerminalDraftParameter(nextHeaders),
-  };
+  state.requestHeaders = enforceTerminalDraftParameter(nextHeaders);
 }
 
 function addHeader(
@@ -89,7 +87,7 @@ function mapBodyToContentType(body: RequestorBody) {
   return "text/plain";
 }
 
-function getCurrentContentType(state: RequestorState) {
+function getCurrentContentType(state: RequestResponseSlice) {
   const currentContentType = state.requestHeaders.find(
     (header) => header.key?.toLowerCase() === "content-type",
   );
@@ -100,7 +98,7 @@ function getCurrentContentType(state: RequestorState) {
 }
 
 function getUpdateOperation(
-  state: RequestorState,
+  state: RequestResponseSlice,
   currentContentTypeHeader: KeyValueParameter | null,
 ) {
   const canHaveBody = state.method !== "GET" && state.method !== "HEAD";
