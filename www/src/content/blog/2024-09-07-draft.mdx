@@ -82,7 +82,7 @@ For our application, we want to receive events related to [stars](https://docs.g
 * Replay Events: Inspect and resend payloads for testing.
 
 
-TODO: IMG/GIF Studio with Webhook
+![Studio replay webhook request](@/assets/blog/2024-09-07-img04.png)
 
 
 ### Handling webhook events and payload
@@ -262,9 +262,16 @@ Now the project is set up to track our open-source engagement across different r
 This very simple application example demonstrates that we often need to include various calls to third-party services. 
 During development, it can be tricky to pinpoint where an error occurs, and often the application log is the only option available.
 
-When using Hono, you can leverage Fiberplane's client library, which instruments the application based on OpenTelemetry. 
-This allows you to use Fiberplane Studio, which not only displays your endpoints and helps you make requests or replay your webhook but also captures the call chain (traces) among different integrations. 
-This brings everything together on one page and makes it easier to detect errors.
+When using Hono, you can leverage Fiberplane's client library, which instruments the application based on [OpenTelemetry](https://opentelemetry.io/). 
+This allows you to use Fiberplane Studio, which not only displays your endpoints and helps you make requests or replay your webhook but also captures the call chain (traces) among different integrations.
+
+![Studio timeline](@/assets/blog/2024-09-07-img02.png)
+
+The picture above shows Fiberplane studio with the timeline of the different calls (trace) that happen within your application. 
+Addionally it is also possible to get details about single calls (Spans). This brings everything together on one page and makes it easier to detect errors.
+
+![Studio timeline + details](@/assets/blog/2024-09-07-img03.png)
+
 
 If you like to use Fiberplane's instrumentation you can import the Hono Fiberplane client:
 
@@ -281,8 +288,6 @@ Once instrument you can spin up the Fiberplane studio next to your application
 bunx @fiberplane/studio@beta
 ```
 
-
-TODO: TRACE Picture
 
 ## What's next?
 Today, we covered Webhook and API integration in Hono using third-party libraries.
