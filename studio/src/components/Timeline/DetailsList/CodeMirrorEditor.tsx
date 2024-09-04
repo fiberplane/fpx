@@ -1,3 +1,4 @@
+import { cn } from "@/utils";
 import "./CodeMirrorEditorCssOverrides.css";
 
 import { javascript } from "@codemirror/lang-javascript";
@@ -6,7 +7,11 @@ import { sql } from "@codemirror/lang-sql";
 import { duotoneDark } from "@uiw/codemirror-theme-duotone";
 // import { gutter } from "@codemirror/gutter";
 
-import CodeMirror, { EditorView, Extension, gutter } from "@uiw/react-codemirror";
+import CodeMirror, {
+  EditorView,
+  Extension,
+  gutter,
+} from "@uiw/react-codemirror";
 import { useState } from "react";
 
 type CodeMirrorEditorProps = {
@@ -114,10 +119,30 @@ export function CodeMirrorSqlEditor(props: CodeMirrorSqlEditorProps) {
   );
 }
 
-
+// Hacky extension to modify the editor to look like an input,
+// and truncate text (when not focused)
+const inputTrucateExtension = EditorView.theme({
+  ".cm-scroller": {
+    overflow: "hidden !important",
+    maxWidth: "100% !important",
+  },
+  ".cm-content": {
+    whiteSpace: "nowrap !important",
+    overflow: "hidden !important",
+    textOverflow: "ellipsis !important",
+    width: "100% !important",
+    flexBasis: "auto !important", // Override the inline flex-basis
+  },
+  ".cm-line": {
+    display: "block !important",
+    textOverflow: "ellipsis !important",
+    overflow: "hidden !important",
+    width: "100% !important",
+  },
+});
 
 export function CodeMirrorInput(props: CodeMirrorEditorProps) {
-  const { value, onChange, minHeight = "24px", maxHeight = "0", placeholder } = props;
+  const { value, onChange, minHeight = "28px", placeholder } = props;
 
   // State to manage focus
   const [isFocused, setIsFocused] = useState(false);
@@ -127,7 +152,11 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
 
   return (
     <div
-      className="codemirror-container"
+      className={cn("rounded border", "focus-visible:outline-none", {
+        "border border-blue-500 ring-2 ring-blue-300": isFocused,
+        "border border-gray-600": !isFocused,
+        // "text-ellipsis whitespace-nowrap": !isFocused,
+      })}
       style={{
         width: "160px", // fixed width
         height: dynamicHeight, // dynamic height based on focus
@@ -146,10 +175,10 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
         theme={[inputTheme]}
         extensions={[
           gutter({ class: "hidden border-none" }),
-          EditorView.lineWrapping
-        ].filter(Boolean) as Extension[]}
-        onFocus={() => setIsFocused(true)}  // Set focus to true
-        onBlur={() => setIsFocused(false)}  // Set focus to false
+          isFocused ? EditorView.lineWrapping : inputTrucateExtension,
+        ]}
+        onFocus={() => setIsFocused(true)} // Set focus to true
+        onBlur={() => setIsFocused(false)} // Set focus to false
         basicSetup={{
           lineNumbers: false,
           foldKeymap: true,
@@ -160,7 +189,6 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
           // autocompletion: true,
           rectangularSelection: false,
           // crosshairCursor: false,
-          
         }}
         placeholder={placeholder}
       />
