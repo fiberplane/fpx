@@ -4,14 +4,14 @@ import type { KeyValueParameter } from "../../KeyValueForm";
 import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import { findMatchedRoute } from "../../routes";
 import { updateContentTypeHeaderInState } from "../content-type";
+import { setBodyTypeInState } from "../set-body-type";
 import {
   addBaseUrl,
   extractMatchedPathParams,
   extractPathParams,
   mapPathParamKey,
   removeBaseUrl,
-} from "../reducer";
-import { setBodyTypeInState } from "../set-body-type";
+} from "../utils";
 import type { RequestResponseSlice, Store } from "./types";
 
 export const requestResponseSlice: StateCreator<

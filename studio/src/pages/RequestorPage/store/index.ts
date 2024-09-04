@@ -8,12 +8,12 @@ import { memoize } from "proxy-memoize";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import { _getActiveRoute } from "./reducer";
 import { requestResponseSlice } from "./slices/requestResponseSlice";
 import { routesSlice } from "./slices/routesSlice";
 import { tabsSlice } from "./slices/tabsSlice";
 import type { Store } from "./slices/types";
 import { websocketSlice } from "./slices/websocketSlice";
+import { _getActiveRoute } from "./utils";
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
 
 export type RequestorState = Store;

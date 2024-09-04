@@ -3,17 +3,17 @@ import { findAllSmartRouterMatches, findMatchedRoute } from "../../routes";
 import type { ProbedRoute, RequestMethod } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import {
+  getVisibleRequestPanelTabs,
+  getVisibleResponsePanelTabs,
+} from "../tabs";
+import {
   addBaseUrl,
   extractMatchedPathParams,
   extractPathParams,
   mapPathParamKey,
   pathHasValidBaseUrl,
   removeBaseUrl,
-} from "../reducer";
-import {
-  getVisibleRequestPanelTabs,
-  getVisibleResponsePanelTabs,
-} from "../tabs";
+} from "../utils";
 import type { RoutesSlice, Store } from "./types";
 
 export const routesSlice: StateCreator<
