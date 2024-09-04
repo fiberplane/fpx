@@ -390,26 +390,25 @@ export const RequestorPage = () => {
             {isSmallScreen ? (
               <>
                 <div
-                  className={
-                    cn(
-                      // Needs "relative" to constrain absolute position of bottom toolbar
-                      "relative",
-                      BACKGROUND_LAYER,
-                      "rounded-md",
-                      "border",
-
-                    )
-                  }>
-                  {requestContent}</div>
+                  className={cn(
+                    // Needs "relative" to constrain absolute position of bottom toolbar
+                    "relative",
+                    BACKGROUND_LAYER,
+                    "rounded-md",
+                    "border",
+                  )}
+                >
+                  {requestContent}
+                </div>
                 <div
-                  className={
-                    cn(
-                      BACKGROUND_LAYER,
-                      "rounded-md",
-                      "border",
-                      "flex-1"
-                    )
-                  }>{responseContent}
+                  className={cn(
+                    BACKGROUND_LAYER,
+                    "rounded-md",
+                    "border",
+                    "flex-1",
+                  )}
+                >
+                  {responseContent}
                 </div>
               </>
             ) : (
