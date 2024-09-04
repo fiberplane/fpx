@@ -17,9 +17,13 @@ export function findMatchedRoute(
   method: string | undefined,
   requestType: "http" | "websocket",
 ): MatchedRouteResult {
+  const registeredRoutes = routes.filter((r) => r.currentlyRegistered);
+  const unregisteredRoutes = routes.filter((r) => !r.currentlyRegistered);
+
   if (pathname && method) {
+    // HACK - First search registered routes, then search unregistered routes
     const smartMatch = findFirstSmartRouterMatch(
-      routes,
+      registeredRoutes,
       pathname,
       method,
       requestType,
@@ -31,10 +35,35 @@ export function findMatchedRoute(
         pathParamValues: smartMatch.pathParams,
       };
     }
+
+    const unregisteredSmartMatch = findFirstSmartRouterMatch(
+      unregisteredRoutes,
+      pathname,
+      method,
+      requestType,
+    );
+
+    if (unregisteredSmartMatch?.route) {
+      return {
+        route: unregisteredSmartMatch.route,
+        pathParamValues: unregisteredSmartMatch.pathParams,
+      };
+    }
   }
 
   // HACK - This is a backup in case the smart router throws an error
-  for (const route of routes) {
+  for (const route of registeredRoutes) {
+    if (
+      route.path === pathname &&
+      route.method === method &&
+      route.requestType === requestType
+    ) {
+      return { route };
+    }
+  }
+
+  // HACK - This is a backup in case the smart router throws an error
+  for (const route of unregisteredRoutes) {
     if (
       route.path === pathname &&
       route.method === method &&
