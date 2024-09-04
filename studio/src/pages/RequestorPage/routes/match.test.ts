@@ -49,10 +49,12 @@ describe("findSmartRouterMatch", () => {
 
   it("should return a match for the given pathname and method", () => {
     const match = findFirstSmartRouterMatch(routes, "/users/1", "GET", "http");
-    expect(match).toMatchObject({
-      path: "/users/:userId",
-      method: "GET",
-      isWs: false,
+    expect(match).toBeTruthy();
+    expect(match?.route).toBeDefined();
+    expect(match?.route?.method).toBe("GET");
+    expect(match?.route?.path).toBe("/users/:userId");
+    expect(match?.pathParams).toMatchObject({
+      userId: "1",
     });
   });
 });
