@@ -37,8 +37,6 @@ export interface RequestResponseSlice {
     requestBodyType: RequestBodyType,
     isMultipart?: boolean,
   ) => void;
-  // removeServiceUrlFromPath: (path: string) => string;
-
   /** Response related state */
   activeHistoryResponseTraceId: string | null;
   activeResponse: RequestorActiveResponse | null;
