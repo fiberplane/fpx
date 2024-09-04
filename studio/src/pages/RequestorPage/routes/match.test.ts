@@ -1,6 +1,6 @@
 import type { ProbedRoute } from "../queries";
 import type { RequestMethod, RequestType } from "../types";
-import { findFirstSmartRouterMatch, findMatchedRoute } from "./match";
+import { findFirstSmartRouterMatch } from "./match";
 
 const toRoute = (
   path: string,
@@ -59,7 +59,7 @@ describe("findSmartRouterMatch", () => {
   });
 });
 
-describe("findMatchedRoute - registered routes precedence", () => {
+describe("findFirstSmartRouterMatch - registered routes precedence", () => {
   const routes: ProbedRoute[] = [
     toRoute("/test/:k", "GET", "http", false, -1),
     toRoute("/test/:key", "GET", "http", true, 1),
@@ -68,7 +68,7 @@ describe("findMatchedRoute - registered routes precedence", () => {
   ];
 
   it("should return registered route with higher precedence", () => {
-    const match = findMatchedRoute(routes, "/test/123", "GET", "http");
+    const match = findFirstSmartRouterMatch(routes, "/test/123", "GET", "http");
     expect(match).toBeTruthy();
     expect(match?.route?.path).toBe("/test/:key");
   });

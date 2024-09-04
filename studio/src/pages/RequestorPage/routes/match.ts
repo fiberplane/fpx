@@ -13,9 +13,17 @@ type MatchedRouteResult = {
 
 /**
  * Looks for a single matching route given the pathname, method, and request type
- * Precedence:
+ * Precedence should always occur as follows:
  * - First checks registered routes
  * - Then checks unregistered routes
+ * 
+ * As of writing, precedence is enforced via sorting the routes (in a helper function for finding smart router matches)
+ * 
+ * If the router throws an error when matching, we return the first route that matches exactly on:
+ * - pathname
+ * - method
+ * - requestType
+ * 
  * @param routes
  * @param pathname
  * @param method
@@ -28,48 +36,7 @@ export function findMatchedRoute(
   method: string | undefined,
   requestType: "http" | "websocket",
 ): MatchedRouteResult {
-  const registeredRoutes = routes.filter((r) => r.currentlyRegistered);
-  const registeredMatch = findMatchedRouteHelper(
-    registeredRoutes,
-    pathname,
-    method,
-    requestType,
-  );
-
-  if (registeredMatch) {
-    return registeredMatch;
-  }
-
-  const unregisteredRoutes = routes.filter((r) => !r.currentlyRegistered);
-  const unregisteredMatch = findMatchedRouteHelper(
-    unregisteredRoutes,
-    pathname,
-    method,
-    requestType,
-  );
-
-  if (unregisteredMatch) {
-    return unregisteredMatch;
-  }
-
-  return null;
-}
-
-/**
- * Looks for a single matching route
- * If the router throws an error when matching, we return the first registered route that matches exactly on:
- * - pathname
- * - method
- * - requestType
- */
-function findMatchedRouteHelper(
-  routes: ProbedRoute[],
-  pathname: string | undefined,
-  method: string | undefined,
-  requestType: "http" | "websocket",
-) {
   if (pathname && method) {
-    // HACK - First search registered routes, then search unregistered routes
     const smartMatch = findFirstSmartRouterMatch(
       routes,
       pathname,
@@ -78,7 +45,7 @@ function findMatchedRouteHelper(
     );
 
     if (smartMatch?.route) {
-      return smartMatch;
+      return { route: smartMatch.route, pathParams: smartMatch.pathParams };
     }
   }
 
@@ -115,11 +82,38 @@ export function findFirstSmartRouterMatch(
  * Returns all matching routes (or middleware!) from the smart router
  */
 export function findAllSmartRouterMatches(
-  routes: ProbedRoute[],
+  unsortedRoutes: ProbedRoute[],
   pathname: string,
   method: string,
   requestType: "http" | "websocket",
 ) {
+  // HACK - Sort routes by registration, then registration order so that registered routes match first
+  const routes = [...unsortedRoutes]
+  routes.sort((a, b) => {
+    const aIsRegistered = a.currentlyRegistered;
+    const bIsRegistered = b.currentlyRegistered;
+    const aIsDraft = a.isDraft;
+    const bIsDraft = b.isDraft;
+
+    // First, sort by registration status
+    if (aIsRegistered !== bIsRegistered) {
+      return aIsRegistered ? -1 : 1;
+    }
+
+    // Then, If registration status is the same, sort by draft status
+    if (aIsDraft !== bIsDraft) {
+      return aIsDraft ? 1 : -1;
+    }
+
+    // Then, sort by registration order
+    if (aIsRegistered && bIsRegistered) {
+      return a.registrationOrder - b.registrationOrder;
+    }
+
+    // If both registration and draft status are the same, sort by registration order
+    return a.registrationOrder - b.registrationOrder;
+  });
+
   // HACK - We need to be able to associate route handlers back to the ProbedRoute definition
   const functionHandlerLookupTable: Map<() => void, ProbedRoute> = new Map();
 
@@ -160,22 +154,6 @@ export function findAllSmartRouterMatches(
         route: functionHandlerLookupTable.get(handler as () => void),
         pathParams,
       };
-    });
-
-    // Sort draft routes after non-draft routes
-    routeMatches.sort((a, b) => {
-      const aIsDraft = !!a?.route?.isDraft;
-      const bIsDraft = !!b?.route?.isDraft;
-      if (aIsDraft && bIsDraft) {
-        return 0;
-      }
-      if (aIsDraft) {
-        return 1;
-      }
-      if (bIsDraft) {
-        return -1;
-      }
-      return 0;
     });
 
     return routeMatches;
