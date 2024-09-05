@@ -58,7 +58,7 @@ app.get("/v1/traces", async (ctx) => {
   const response: TraceListResponse = traces.map(({ traceId, spans }) => ({
     traceId,
     startTime: spans[0].inner.start_time,
-    endTime: spans[spans.length].inner.end_time,
+    endTime: spans[spans.length - 1].inner.end_time,
     spans: spans.map(({ inner }) => OtelSpanSchema.parse(inner)),
   }));
 

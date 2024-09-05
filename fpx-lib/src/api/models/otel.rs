@@ -7,6 +7,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use strum::AsRefStr;
+use tracing::info;
 
 fn parse_time_nanos(nanos: u64) -> time::OffsetDateTime {
     // NOTE: this should not happen any time soon, so we should be able to
@@ -254,7 +255,7 @@ impl From<Vec<KeyValue>> for AttributeMap {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
 pub enum AttributeValue {
     StringValue(String),
     BoolValue(bool),
