@@ -48,7 +48,7 @@ export function RequestorTimeline(props: Props) {
           <>
             <ResizablePanel
               minSize={minSize}
-              defaultSize={33}
+              defaultSize={25}
               order={0}
               id="graph"
             >
