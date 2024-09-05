@@ -2,7 +2,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod otel;
-pub mod ts_compat;
 
 pub use otel::*;
 
