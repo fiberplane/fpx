@@ -43,8 +43,8 @@ export function RequestorTimeline({ traceId, togglePanel }: Props) {
   });
 
   return (
-    <Tabs defaultValue="timeline">
-      <CustomTabsList className="sticky">
+    <Tabs defaultValue="timeline" className="h-full">
+      <CustomTabsList>
         <CustomTabTrigger value="timeline">Timeline</CustomTabTrigger>
         <div className="flex-grow flex justify-end">
           <Button
@@ -57,42 +57,43 @@ export function RequestorTimeline({ traceId, togglePanel }: Props) {
           </Button>
         </div>
       </CustomTabsList>
-      <CustomTabsContent value="timeline" className="">
-        <div className="w-full">
-          <TimelineProvider>
-            <ResizablePanelGroup
-              direction="horizontal"
-              id="requestor-timeline"
-              className=""
-            >
-              {!isSmallScreen && (
-                <>
-                  <ResizablePanel
-                    minSize={minSize}
-                    defaultSize={25}
-                    order={0}
-                    id="graph"
-                  >
-                    <Content className="pr-3 sticky top-0">
-                      <TimelineGraph
-                        waterfall={waterfall}
-                        minStart={minStart}
-                        duration={duration}
-                        activeId=""
-                      />
-                    </Content>
-                  </ResizablePanel>
-                  <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-                </>
-              )}
-              <ResizablePanel className="max-h-full" order={1} id="details">
-                <Content className="overflow-y-scroll h-fit">
-                  <TimelineListDetails waterfall={waterfall} />
-                </Content>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </TimelineProvider>
-        </div>
+      <CustomTabsContent
+        value="timeline"
+        className="overflow-hidden md:overflow-hidden"
+      >
+        <TimelineProvider>
+          <ResizablePanelGroup
+            direction="horizontal"
+            id="requestor-timeline"
+            className="h-full"
+          >
+            {!isSmallScreen && (
+              <>
+                <ResizablePanel
+                  minSize={minSize}
+                  defaultSize={25}
+                  order={0}
+                  id="graph"
+                >
+                  <Content className="pr-3 sticky top-0">
+                    <TimelineGraph
+                      waterfall={waterfall}
+                      minStart={minStart}
+                      duration={duration}
+                      activeId=""
+                    />
+                  </Content>
+                </ResizablePanel>
+                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
+              </>
+            )}
+            <ResizablePanel className="" order={1} id="details">
+              <Content className="overflow-y-auto h-full">
+                <TimelineListDetails waterfall={waterfall} />
+              </Content>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </TimelineProvider>
       </CustomTabsContent>
     </Tabs>
   );
