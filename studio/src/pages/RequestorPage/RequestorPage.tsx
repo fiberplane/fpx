@@ -242,80 +242,80 @@ export const RequestorPage = () => {
               formRef={formRef}
               websocketState={websocketState}
             />
-              <ResizablePanelGroup
-                direction="vertical"
-                id="requestor-page-main-panel"
-                autoSaveId="requestor-page-main-panel"
+            <ResizablePanelGroup
+              direction="vertical"
+              id="requestor-page-main-panel"
+              autoSaveId="requestor-page-main-panel"
+            >
+              <ResizablePanel
+                defaultSize={isAiTestGenerationPanelOpen ? 50 : 100}
               >
-                <ResizablePanel
-                  defaultSize={isAiTestGenerationPanelOpen ? 50 : 100}
+                <ResizablePanelGroup
+                  direction={isLgScreen ? "horizontal" : "vertical"}
+                  id="requestor-page-request-panel-group"
+                  autoSaveId="requestor-page-request-panel-group"
+                  className={cn(
+                    "rounded-md",
+                    // HACK - This defensively prevents overflow from getting too excessive,
+                    //        In the case where the inner content expands beyond the parent
+                    "max-w-screen",
+                    "max-h-full",
+                    // "gap-1",
+                  )}
                 >
-                  <ResizablePanelGroup
-                    direction={isLgScreen ? "horizontal" : "vertical"}
-                    id="requestor-page-request-panel-group"
-                    autoSaveId="requestor-page-request-panel-group"
-                    className={cn(
-                      "rounded-md",
-                      // HACK - This defensively prevents overflow from getting too excessive,
-                      //        In the case where the inner content expands beyond the parent
-                      "max-w-screen",
-                      "max-h-full",
-                      // "gap-1",
-                    )}
+                  <ResizablePanel
+                    order={1}
+                    className={cn(BACKGROUND_LAYER, "relative")}
+                    id="request-panel"
+                    minSize={requestPanelMinSize}
+                    maxSize={requestPanelMaxSize}
                   >
-                    <ResizablePanel
-                      order={1}
-                      className={cn(BACKGROUND_LAYER, "relative")}
-                      id="request-panel"
-                      minSize={requestPanelMinSize}
-                      maxSize={requestPanelMaxSize}
-                    >
-                      {requestContent}
-                    </ResizablePanel>
+                    {requestContent}
+                  </ResizablePanel>
+                  <ResizableHandle
+                    hitAreaMargins={{ coarse: 20, fine: 10 }}
+                    className="bg-transparent"
+                  />
+                  <ResizablePanel
+                    id="response-panel"
+                    order={4}
+                    minSize={10}
+                    className={cn(BACKGROUND_LAYER)}
+                  >
+                    {responseContent}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              </ResizablePanel>
+              <ResizablePanel>
+                {isAiTestGenerationPanelOpen && (
+                  <>
                     <ResizableHandle
                       hitAreaMargins={{ coarse: 20, fine: 10 }}
                       className="bg-transparent"
                     />
                     <ResizablePanel
-                      id="response-panel"
-                      order={4}
-                      minSize={10}
-                      className={cn(BACKGROUND_LAYER)}
+                      order={3}
+                      id="ai-panel"
+                      className={cn(
+                        BACKGROUND_LAYER,
+                        "rounded-md",
+                        "border",
+                        "h-full",
+                        "mt-2",
+                      )}
                     >
-                      {responseContent}
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
-                </ResizablePanel>
-                <ResizablePanel>
-                  {isAiTestGenerationPanelOpen && (
-                    <>
-                      <ResizableHandle
-                        hitAreaMargins={{ coarse: 20, fine: 10 }}
-                        className="bg-transparent"
+                      <AiTestGenerationPanel
+                        // TODO - Only use history for recent matching route
+                        history={history}
+                        toggleAiTestGenerationPanel={
+                          toggleAiTestGenerationPanel
+                        }
                       />
-                      <ResizablePanel
-                        order={3}
-                        id="ai-panel"
-                        className={cn(
-                          BACKGROUND_LAYER,
-                          "rounded-md",
-                          "border",
-                          "h-full",
-                          "mt-2",
-                        )}
-                      >
-                        <AiTestGenerationPanel
-                          // TODO - Only use history for recent matching route
-                          history={history}
-                          toggleAiTestGenerationPanel={
-                            toggleAiTestGenerationPanel
-                          }
-                        />
-                      </ResizablePanel>
-                    </>
-                  )}
-                </ResizablePanel>
-              </ResizablePanelGroup>
+                    </ResizablePanel>
+                  </>
+                )}
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
