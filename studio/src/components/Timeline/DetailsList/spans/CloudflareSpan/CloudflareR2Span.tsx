@@ -1,10 +1,14 @@
-import { CF_BINDING_METHOD, CF_BINDING_RESULT } from "@/constants";
+import {
+  CF_BINDING_ERROR,
+  CF_BINDING_METHOD,
+  CF_BINDING_RESULT,
+} from "@/constants";
 import { getString } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
-import { CfBindingOverview, KeyBadge } from "./shared";
+import { CfBindingOverview, CfResultAndError, KeyBadge } from "./shared";
 
 /**
  * Cloudflare R2 has the following methods:
@@ -24,6 +28,7 @@ export function CloudflareR2Span({ span }: { span: OtelSpan }) {
   const args = getString(span.attributes.args);
   const r2Args = useCloudflareR2Args(args, method);
   const result = getString(span.attributes[CF_BINDING_RESULT]);
+  const error = getString(span.attributes[CF_BINDING_ERROR]);
   return (
     <div className="text-xs py-2">
       <CfBindingOverview span={span}>
@@ -35,9 +40,7 @@ export function CloudflareR2Span({ span }: { span: OtelSpan }) {
             <CloudflareR2Args args={r2Args.options} />
           </CollapsibleSubSection>
         )}
-        <CollapsibleSubSection heading="Result">
-          <TextOrJsonViewer text={result} collapsed={true} />
-        </CollapsibleSubSection>
+        <CfResultAndError result={result} error={error} />
       </div>
     </div>
   );

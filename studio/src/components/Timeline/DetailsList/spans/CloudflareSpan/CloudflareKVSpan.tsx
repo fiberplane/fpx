@@ -1,4 +1,8 @@
-import { CF_BINDING_METHOD, CF_BINDING_RESULT } from "@/constants";
+import {
+  CF_BINDING_ERROR,
+  CF_BINDING_METHOD,
+  CF_BINDING_RESULT,
+} from "@/constants";
 import { getString } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
@@ -20,6 +24,7 @@ export function CloudflareKVSpan({ span }: { span: OtelSpan }) {
   const args = getString(span.attributes.args);
   const kvArgs = useCloudflareKVArgs(args, method);
   const result = getString(span.attributes[CF_BINDING_RESULT]);
+  const error = getString(span.attributes[CF_BINDING_ERROR]);
   return (
     <div className="text-xs py-2">
       <CfBindingOverview span={span}>
@@ -33,11 +38,22 @@ export function CloudflareKVSpan({ span }: { span: OtelSpan }) {
             </div>
           </CollapsibleSubSection>
         ) : null}
+        {/*
+         * NOTE - The result looks bad if we don't add some additional padding.
+         *        That's why we're not using the CfResultAndError component here.
+         */}
         <CollapsibleSubSection heading="Result" defaultCollapsed={true}>
           <div className="pl-6 mt-1">
-            <TextOrJsonViewer text={result} collapsed={true} />
+            <TextOrJsonViewer text={result} collapsed={false} />
           </div>
         </CollapsibleSubSection>
+        {error && (
+          <CollapsibleSubSection heading="Error" defaultCollapsed={true}>
+            <div className="pl-6 mt-1">
+              <TextOrJsonViewer text={error} collapsed={false} />
+            </div>
+          </CollapsibleSubSection>
+        )}
       </div>
     </div>
   );

@@ -1,15 +1,35 @@
+import type { ParamIndexMap, ParamStash } from "hono/router";
 import { RegExpRouter } from "hono/router/reg-exp-router";
 import { SmartRouter } from "hono/router/smart-router";
 import { TrieRouter } from "hono/router/trie-router";
-import type { ProbedRoute } from "../queries";
+import type { ProbedRoute } from "../types";
 
 type MatchedRouteResult = {
   route: ProbedRoute;
-  pathParamValues?:
+  pathParams?:
     | Record<string, string | string[]>
     | Record<string, string | number>;
 } | null;
 
+/**
+ * Looks for a single matching route given the pathname, method, and request type
+ * Precedence should always occur as follows:
+ * - First checks registered routes
+ * - Then checks unregistered routes
+ *
+ * As of writing, precedence is enforced via sorting the routes (in a helper function for finding smart router matches)
+ *
+ * If the router throws an error when matching, we return the first route that matches exactly on:
+ * - pathname
+ * - method
+ * - requestType
+ *
+ * @param routes
+ * @param pathname
+ * @param method
+ * @param requestType
+ * @returns
+ */
 export function findMatchedRoute(
   routes: ProbedRoute[],
   pathname: string | undefined,
@@ -23,11 +43,9 @@ export function findMatchedRoute(
       method,
       requestType,
     );
+
     if (smartMatch?.route) {
-      return {
-        route: smartMatch.route,
-        pathParamValues: smartMatch.pathParams,
-      };
+      return { route: smartMatch.route, pathParams: smartMatch.pathParams };
     }
   }
 
@@ -64,11 +82,15 @@ export function findFirstSmartRouterMatch(
  * Returns all matching routes (or middleware!) from the smart router
  */
 export function findAllSmartRouterMatches(
-  routes: ProbedRoute[],
+  unsortedRoutes: ProbedRoute[],
   pathname: string,
   method: string,
   requestType: "http" | "websocket",
 ) {
+  // HACK - Sort with registered routes first, then unregistered routes
+  //        Look at the sortRoutesForMatching function for more details
+  const routes = sortRoutesForMatching(unsortedRoutes);
+
   // HACK - We need to be able to associate route handlers back to the ProbedRoute definition
   const functionHandlerLookupTable: Map<() => void, ProbedRoute> = new Map();
 
@@ -104,26 +126,11 @@ export function findAllSmartRouterMatches(
 
     const routeMatches = matches.map((match) => {
       const handler = match[0];
+      const pathParams = match[1];
       return {
         route: functionHandlerLookupTable.get(handler as () => void),
-        pathParams: match[1],
+        pathParams,
       };
-    });
-
-    // Sort draft routes after non-draft routes
-    routeMatches.sort((a, b) => {
-      const aIsDraft = !!a?.route?.isDraft;
-      const bIsDraft = !!b?.route?.isDraft;
-      if (aIsDraft && bIsDraft) {
-        return 0;
-      }
-      if (aIsDraft) {
-        return 1;
-      }
-      if (bIsDraft) {
-        return -1;
-      }
-      return 0;
     });
 
     return routeMatches;
@@ -153,6 +160,50 @@ const isMatchResultEmpty = <R extends SmartRouter<T>, T>(
   }
 };
 
+/**
+ * Sorts routes for matching, with registered routes first, then unregistered routes
+ *
+ * - for registered routes:
+ *   - `registrationOrder` (ascending)
+ * - for unregistered routes:
+ *   - `isDraft` status (`false` before `true`)
+ *
+ * @NOTE - Creates a new array, does not mutate the input
+ */
+function sortRoutesForMatching(unsortedRoutes: ProbedRoute[]) {
+  const routes = [...unsortedRoutes];
+
+  routes.sort((a, b) => {
+    const aIsRegistered = a.currentlyRegistered;
+    const bIsRegistered = b.currentlyRegistered;
+    const aIsDraft = a.isDraft;
+    const bIsDraft = b.isDraft;
+
+    // First, sort by registration status
+    if (aIsRegistered !== bIsRegistered) {
+      return aIsRegistered ? -1 : 1;
+    }
+
+    // Then, If registration status is the same, sort by draft status
+    if (aIsDraft !== bIsDraft) {
+      return aIsDraft ? 1 : -1;
+    }
+
+    // Then, sort by registration order
+    if (aIsRegistered && bIsRegistered) {
+      return a.registrationOrder - b.registrationOrder;
+    }
+
+    // If both registration and draft status are the same, sort by registration order
+    return a.registrationOrder - b.registrationOrder;
+  });
+
+  return routes;
+}
+
+/**
+ * Transforms a route match result into an array of matches with path parameter values
+ */
 const unpackMatches = <R extends SmartRouter<T>, T>(
   result: ReturnType<R["match"]>,
 ) => {
@@ -160,7 +211,14 @@ const unpackMatches = <R extends SmartRouter<T>, T>(
   if (result.length === 2) {
     for (const m of result[0]) {
       if (m[0] !== undefined) {
-        matches.push(m);
+        const handler = m[0];
+        const paramIndexMap = m[1];
+        const paramStash = result[1];
+        const pathParams = paramIndexMapToObject(paramIndexMap, paramStash);
+        matches.push([handler, pathParams] as [
+          unknown,
+          Record<string, string>,
+        ]);
       }
     }
   }
@@ -172,4 +230,19 @@ const unpackMatches = <R extends SmartRouter<T>, T>(
     }
   }
   return matches;
+};
+
+const paramIndexMapToObject = (
+  paramIndexMap: ParamIndexMap,
+  paramStash: ParamStash,
+): Record<string, string> => {
+  return Object.fromEntries(
+    Object.entries(paramIndexMap).map(([key, value]) => {
+      // For a RegExpRouter, the paramStash is the result of a regex match
+      // and the values are the indices of the parsed values in the match
+      // so we need to map the indices to the actual values
+      const actualValue = paramStash?.[value];
+      return [key, actualValue];
+    }),
+  );
 };

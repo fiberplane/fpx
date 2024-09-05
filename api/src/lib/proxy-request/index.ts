@@ -140,7 +140,7 @@ export async function handleSuccessfulRequest(
       .extend({
         headers: z.instanceof(Headers),
         status: z.number(),
-        body: z.instanceof(ReadableStream),
+        body: z.instanceof(ReadableStream).nullable(),
         traceId: z.string().optional(),
       })
       .transform(async ({ headers, status }) => {

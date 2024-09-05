@@ -1,7 +1,9 @@
+import { CollapsibleSubSection } from "@/components/Timeline/shared";
 import { Badge } from "@/components/ui/badge";
 import { CF_BINDING_METHOD, CF_BINDING_NAME } from "@/constants";
 import { cn, getString } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
+import { TextOrJsonViewer } from "../../TextJsonViewer";
 
 export function CfBindingOverview({
   span,
@@ -18,6 +20,29 @@ export function CfBindingOverview({
       </Badge>
       {children}
     </div>
+  );
+}
+
+export function CfResultAndError({
+  result,
+  error,
+}: {
+  result: string;
+  error: string;
+}) {
+  return (
+    <>
+      {result && (
+        <CollapsibleSubSection heading="Result" defaultCollapsed={true}>
+          <TextOrJsonViewer text={result} collapsed={false} />
+        </CollapsibleSubSection>
+      )}
+      {error && (
+        <CollapsibleSubSection heading="Error" defaultCollapsed={true}>
+          <TextOrJsonViewer text={error} collapsed={false} />
+        </CollapsibleSubSection>
+      )}
+    </>
   );
 }
 

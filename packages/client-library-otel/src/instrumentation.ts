@@ -9,6 +9,11 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
+import {
+  ENV_FPX_ENDPOINT,
+  ENV_FPX_LOG_LEVEL,
+  ENV_FPX_SERVICE_NAME,
+} from "./constants";
 import { getLogger } from "./logger";
 import { measure } from "./measure";
 import {
@@ -21,6 +26,7 @@ import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
 import {
+  getFromEnv,
   getRequestAttributes,
   getResponseAttributes,
   getRootRequestAttributes,
@@ -81,7 +87,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           request: Request,
           // Name this "rawEnv" because we coerce it below into something that's easier to work with
           rawEnv: HonoLikeEnv,
-          executionContext: ExecutionContext | undefined,
+          executionContext?: ExecutionContext,
         ) {
           // Merge the default config with the user's config
           const {
@@ -101,13 +107,14 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           // NOTE - We do *not* want to have a default for the FPX_ENDPOINT,
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
-          const endpoint =
-            typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
+          const endpoint = getFromEnv(env, ENV_FPX_ENDPOINT);
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
-          const FPX_LOG_LEVEL = libraryDebugMode ? "debug" : env?.FPX_LOG_LEVEL;
+          const FPX_LOG_LEVEL = libraryDebugMode
+            ? "debug"
+            : getFromEnv(env, ENV_FPX_LOG_LEVEL);
           const logger = getLogger(FPX_LOG_LEVEL);
-          // NOTE - This should only log if the FPX_LOG_LEVEL is debug
+          // NOTE - This should only log if the FPX_LOG_LEVEL is "debug"
           logger.debug("Library debug mode is enabled");
 
           if (!isEnabled) {
@@ -123,7 +130,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
 
-          const serviceName = env?.FPX_SERVICE_NAME ?? "unknown";
+          const serviceName =
+            getFromEnv(env, ENV_FPX_SERVICE_NAME) ?? "unknown";
 
           // Patch all functions we want to monitor in the runtime
           if (monitorCfBindings) {
@@ -218,11 +226,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           try {
             return await context.with(activeContext, async () => {
-              return await measuredFetch(
-                newRequest,
-                env as HonoLikeEnv,
-                proxyExecutionCtx,
-              );
+              return await measuredFetch(newRequest, rawEnv, proxyExecutionCtx);
             });
           } finally {
             // Make sure all promises are resolved before sending data to the server

@@ -1,134 +1,114 @@
 import { useToast } from "@/components/ui/use-toast";
-import { useCallback } from "react";
+import { useHandler } from "@fiberplane/hooks";
 import type { KeyValueParameter } from "./KeyValueForm";
-import type { MakeProxiedRequestQueryFn, ProbedRoute } from "./queries";
-import type { RequestorBody, RequestorState, useRequestor } from "./reducer";
+import type { MakeProxiedRequestQueryFn } from "./queries";
+import type { RequestorBody } from "./store";
+import { useRequestorStore } from "./store";
+import { useServiceBaseUrl } from "./store/useServiceBaseUrl";
 import { isWsRequest } from "./types";
 
 export function useRequestorSubmitHandler({
-  requestType,
-  selectedRoute,
-  body,
-  path,
-  addServiceUrlIfBarePath,
-  method,
-  pathParams,
-  queryParams,
-  requestHeaders,
   makeRequest,
   connectWebsocket,
   recordRequestInSessionHistory,
 }: {
-  addServiceUrlIfBarePath: ReturnType<
-    typeof useRequestor
-  >["addServiceUrlIfBarePath"];
-  selectedRoute: ProbedRoute | null;
-  body: RequestorBody;
-  path: string;
-  method: string;
-  pathParams: KeyValueParameter[];
-  queryParams: KeyValueParameter[];
-  requestHeaders: KeyValueParameter[];
   makeRequest: MakeProxiedRequestQueryFn;
   connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
-  requestType: RequestorState["requestType"];
 }) {
   const { toast } = useToast();
-  return useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
 
-      if (isWsRequest(requestType)) {
-        const url = addServiceUrlIfBarePath(path);
-        connectWebsocket(url);
-        toast({
-          description: "Connecting to websocket",
-        });
-        return;
-      }
-
-      // TODO - Make it clear in the UI that we're auto-adding this header
-      const contentTypeHeader = getContentTypeHeader(body);
-      const contentLength = getContentLength(body);
-      const modifiedHeaders = [
-        contentTypeHeader
-          ? {
-              key: "Content-Type",
-              value: contentTypeHeader,
-              enabled: true,
-              id: "fpx-content-type",
-            }
-          : null,
-        contentLength !== null
-          ? {
-              key: "Content-Length",
-              value: contentLength,
-              enabled: true,
-              id: "fpx-content-length",
-            }
-          : null,
-        ...requestHeaders,
-      ].filter(Boolean) as KeyValueParameter[];
-
-      // TODO - Check me
-      if (isWsRequest(requestType)) {
-        const url = addServiceUrlIfBarePath(path);
-        connectWebsocket(url);
-        toast({
-          description: "Connecting to websocket",
-        });
-        return;
-      }
-
-      makeRequest(
-        {
-          addServiceUrlIfBarePath,
-          path,
-          method,
-          body,
-          headers: modifiedHeaders,
-          pathParams,
-          queryParams,
-          route: selectedRoute?.path,
-        },
-        {
-          onSuccess(data) {
-            const traceId = data?.traceId;
-            if (traceId && typeof traceId === "string") {
-              recordRequestInSessionHistory(traceId);
-            } else {
-              console.error(
-                "RequestorPage: onSuccess: traceId is not a string",
-                data,
-              );
-            }
-          },
-          onError(error) {
-            // TODO - Show Toast
-            console.error("Submit error!", error);
-          },
-        },
-      );
-    },
-    [
-      requestType,
-      body,
-      requestHeaders,
-      makeRequest,
-      addServiceUrlIfBarePath,
-      path,
-      method,
-      pathParams,
-      queryParams,
-      connectWebsocket,
-      toast,
-      recordRequestInSessionHistory,
-      selectedRoute,
-    ],
+  const {
+    selectedRoute,
+    body,
+    path,
+    method,
+    pathParams,
+    queryParams,
+    requestHeaders,
+    requestType,
+  } = useRequestorStore(
+    "selectedRoute",
+    "body",
+    "path",
+    "method",
+    "pathParams",
+    "queryParams",
+    "requestHeaders",
+    "requestType",
   );
+
+  const { addServiceUrlIfBarePath } = useServiceBaseUrl();
+  return useHandler((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // TODO - Make it clear in the UI that we're auto-adding this header
+    const canHaveBody =
+      !isWsRequest(requestType) && !["GET", "DELETE"].includes(method);
+    const contentTypeHeader = canHaveBody ? getContentTypeHeader(body) : null;
+    const contentLength = canHaveBody ? getContentLength(body) : null;
+    const modifiedHeaders = [
+      contentTypeHeader
+        ? {
+            key: "Content-Type",
+            value: contentTypeHeader,
+            enabled: true,
+            id: "fpx-content-type",
+          }
+        : null,
+      contentLength !== null
+        ? {
+            key: "Content-Length",
+            value: contentLength,
+            enabled: true,
+            id: "fpx-content-length",
+          }
+        : null,
+      ...requestHeaders,
+    ].filter(Boolean) as KeyValueParameter[];
+
+    if (isWsRequest(requestType)) {
+      const url = addServiceUrlIfBarePath(path);
+      connectWebsocket(url);
+      toast({
+        description: "Connecting to websocket",
+      });
+      return;
+    }
+
+    makeRequest(
+      {
+        addServiceUrlIfBarePath,
+        path,
+        method,
+        body,
+        headers: modifiedHeaders,
+        pathParams,
+        queryParams,
+        route: selectedRoute?.path,
+      },
+      {
+        onSuccess(data) {
+          const traceId = data?.traceId;
+          if (traceId && typeof traceId === "string") {
+            recordRequestInSessionHistory(traceId);
+          } else {
+            console.error(
+              "RequestorPage: onSuccess: traceId is not a string",
+              data,
+            );
+          }
+        },
+        onError(error) {
+          // TODO - Show Toast
+          console.error("Submit error!", error);
+        },
+      },
+    );
+  });
 }
 
+// NOTE - This logic is partly duplicated in `reducer/reducers/content-type.ts`
+//        We should refactor to share this logic
 function getContentTypeHeader(body: RequestorBody): string | null {
   switch (body.type) {
     case "json":
@@ -144,8 +124,11 @@ function getContentTypeHeader(body: RequestorBody): string | null {
       }
       return "application/x-www-form-urlencoded";
     }
-    case "file":
-      return "application/octet-stream";
+    case "file": {
+      const file = body.value;
+      // TODO - What if file is undefined?
+      return file?.type ?? "application/octet-stream";
+    }
     default:
       return "text/plain";
   }

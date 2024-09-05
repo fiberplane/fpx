@@ -5,18 +5,18 @@ import {
   truncatePathWithEllipsis,
 } from "@/utils";
 import type { Requestornator } from "./queries";
+import { useServiceBaseUrl } from "./store";
 
 type RequestorHistoryProps = {
   history: Array<Requestornator>;
   loadHistoricalRequest: (traceId: string) => void;
-  removeServiceUrlFromPath: (path: string) => string;
 };
 
 export function RequestorHistory({
   history,
   loadHistoricalRequest,
-  removeServiceUrlFromPath,
 }: RequestorHistoryProps) {
+  const { removeServiceUrlFromPath } = useServiceBaseUrl();
   return (
     <>
       {!history.length && (
@@ -149,6 +149,7 @@ export function StatusCode({
         "rounded-md",
         "px-2",
         "py-1",
+        "text-xs",
         "bg-opacity-30",
         "font-sans",
         isGreen && ["text-green-400", "bg-green-800"],

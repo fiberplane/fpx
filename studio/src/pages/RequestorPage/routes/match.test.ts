@@ -1,19 +1,20 @@
-import type { ProbedRoute } from "../queries";
-import type { RequestMethod, RequestType } from "../types";
+import type { ProbedRoute, RequestMethod, RequestType } from "../types";
 import { findFirstSmartRouterMatch } from "./match";
 
 const toRoute = (
   path: string,
   method: RequestMethod,
   requestType: RequestType,
+  currentlyRegistered = false,
+  registrationOrder = -1,
 ) => ({
   path,
   method,
   requestType,
   handler: "",
   handlerType: "route" as const,
-  currentlyRegistered: false,
-  registrationOrder: -1,
+  currentlyRegistered,
+  registrationOrder,
   routeOrigin: "custom" as const,
   isDraft: false,
 });
@@ -31,7 +32,6 @@ describe("findSmartRouterMatch", () => {
 
   it("should return a match for the given pathname and method", () => {
     const match = findFirstSmartRouterMatch(routes, "/test", "GET", "http");
-    console.log("/test match", match);
     expect(match).toBeTruthy();
   });
 
@@ -48,11 +48,28 @@ describe("findSmartRouterMatch", () => {
 
   it("should return a match for the given pathname and method", () => {
     const match = findFirstSmartRouterMatch(routes, "/users/1", "GET", "http");
-    expect(match).toMatchObject({
-      path: "/users/:userId",
-      method: "GET",
-      isWs: false,
+    expect(match).toBeTruthy();
+    expect(match?.route).toBeDefined();
+    expect(match?.route?.method).toBe("GET");
+    expect(match?.route?.path).toBe("/users/:userId");
+    expect(match?.pathParams).toMatchObject({
+      userId: "1",
     });
+  });
+});
+
+describe("findFirstSmartRouterMatch - registered routes precedence", () => {
+  const routes: ProbedRoute[] = [
+    // Unregesterd route - should not be matched first
+    toRoute("/test/:k", "GET", "http", false, -1),
+    // Registered route - should be matched first
+    toRoute("/test/:key", "GET", "http", true, 1),
+  ];
+
+  it("should return registered route with higher precedence", () => {
+    const match = findFirstSmartRouterMatch(routes, "/test/123", "GET", "http");
+    expect(match).toBeTruthy();
+    expect(match?.route?.path).toBe("/test/:key");
   });
 });
 

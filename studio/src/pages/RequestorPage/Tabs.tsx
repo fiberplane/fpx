@@ -4,7 +4,7 @@ import type * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as React from "react";
 import type { ComponentProps } from "react";
 
-const TAB_HEIGHT = "h-12";
+const TAB_HEIGHT = "h-8";
 
 export const CustomTabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -31,7 +31,7 @@ export function CustomTabTrigger(props: ComponentProps<typeof TabsTrigger>) {
         "text-left",
         TAB_HEIGHT,
         "ml-2",
-        "text-sm",
+        "text-xs",
         "font-normal",
         "border-b",
         "border-transparent",

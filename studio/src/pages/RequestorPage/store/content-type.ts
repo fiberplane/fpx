@@ -1,9 +1,10 @@
 import {
   type KeyValueParameter,
   enforceTerminalDraftParameter,
-} from "../../KeyValueForm";
-import { isDraftParameter } from "../../KeyValueForm/data";
-import type { RequestorBody, RequestorState } from "../state";
+} from "../KeyValueForm";
+import { isDraftParameter } from "../KeyValueForm/data";
+import type { RequestResponseSlice } from "./slices/types";
+import type { RequestorBody } from "./types";
 
 /**
  * This makes sure to synchronize the content type header with the body type.
@@ -20,7 +21,7 @@ import type { RequestorBody, RequestorState } from "../state";
  *
  * - If the body is a text, we want to set/update the content type to text/plain
  */
-export function addContentTypeHeader(state: RequestorState): RequestorState {
+export function updateContentTypeHeaderInState(state: RequestResponseSlice) {
   const currentHeaders = state.requestHeaders;
   const currentContentTypeHeader = getCurrentContentType(state);
 
@@ -37,10 +38,7 @@ export function addContentTypeHeader(state: RequestorState): RequestorState {
     nextHeaders = removeHeader(currentHeaders, updateOperation.value);
   }
 
-  return {
-    ...state,
-    requestHeaders: enforceTerminalDraftParameter(nextHeaders),
-  };
+  state.requestHeaders = enforceTerminalDraftParameter(nextHeaders);
 }
 
 function addHeader(
@@ -64,6 +62,8 @@ function removeHeader(
   return currentHeaders.filter((p) => p.id !== header.id);
 }
 
+// NOTE - This logic is partly duplicated in `useRequestorSubmitHandler`
+//        We should refactor to share this logic
 function mapBodyToContentType(body: RequestorBody) {
   if (body.type === "form-data" && body.isMultipart) {
     return "multipart/form-data";
@@ -72,10 +72,9 @@ function mapBodyToContentType(body: RequestorBody) {
     return "application/x-www-form-urlencoded";
   }
 
-  // TODO - Sniff the file extension, this could otherwise be very very annoying
-  //        if we keep resetting their content type header when it's already set to like "application/iamge"
+  // NOTE - Uses the mime type of the file, but falls back to application/octet-stream
   if (body.type === "file") {
-    return "application/octet-stream";
+    return body.value?.type ?? "application/octet-stream";
   }
 
   if (body.type === "json") {
@@ -88,7 +87,7 @@ function mapBodyToContentType(body: RequestorBody) {
   return "text/plain";
 }
 
-function getCurrentContentType(state: RequestorState) {
+function getCurrentContentType(state: RequestResponseSlice) {
   const currentContentType = state.requestHeaders.find(
     (header) => header.key?.toLowerCase() === "content-type",
   );
@@ -99,7 +98,7 @@ function getCurrentContentType(state: RequestorState) {
 }
 
 function getUpdateOperation(
-  state: RequestorState,
+  state: RequestResponseSlice,
   currentContentTypeHeader: KeyValueParameter | null,
 ) {
   const canHaveBody = state.method !== "GET" && state.method !== "HEAD";
@@ -127,12 +126,6 @@ function getUpdateOperation(
     // HACK - Avoid adding the content type header when the body is multipart form-data
     //        We don't want to mess up the form boundary added by fetch (it will cause errors)
     if (currentBody.type === "form-data" && currentBody.isMultipart) {
-      return null;
-    }
-
-    // If the body is a file, we don't want to add the content type header, in order to give the user the ability to set the content type themselves
-    // If the user doesn't define a content type, fetch will just add application/octet-stream
-    if (currentBody.type === "file") {
       return null;
     }
 
@@ -167,18 +160,6 @@ function getUpdateOperation(
       type: "remove",
       value: currentContentTypeHeader,
     };
-  }
-
-  if (currentBody.type === "file") {
-    if (
-      currentContentTypeHeader.value?.startsWith("text/") ||
-      currentContentTypeHeader.value?.startsWith("application/json")
-    ) {
-      return {
-        type: "remove",
-        value: currentContentTypeHeader,
-      };
-    }
   }
 
   // Update the content type header

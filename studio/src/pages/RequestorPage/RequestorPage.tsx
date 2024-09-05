@@ -8,19 +8,19 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
-import { useIsLgScreen, useIsSmScreen } from "@/hooks";
+import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { NavigationPanel } from "./NavigationPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
-import { RoutesPanel } from "./RoutesPanel";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
-import { useRequestor } from "./reducer";
 import { useRoutes } from "./routes";
+import { useActiveRoute, useRequestorStore } from "./store";
 import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
@@ -34,76 +34,15 @@ function getMainSectionWidth() {
   return window.innerWidth - 400;
 }
 
+function getMainSectionHeight() {
+  return window.innerHeight - 150;
+}
+
 export const RequestorPage = () => {
   const { toast } = useToast();
 
-  const requestorState = useRequestor();
-  // @ts-expect-error - This is helpful for debugging, soz
-  globalThis.requestorState = requestorState;
-  const {
-    // Routes panel
-    state: { routes },
-    setRoutes,
-    setRoutesAndMiddleware,
-    setServiceBaseUrl,
-    selectRoute: handleSelectRoute, // TODO - Rename, just not sure to what
-    getActiveRoute,
-
-    // NOTE - This returns middleware that might fire for the current route
-    //        It's used to inject additional context to the ai request generation feature
-    getMatchingMiddleware,
-
-    // Requestor input
-    // NOTE - `requestType` is an internal property used to determine if we're making a websocket request or not
-    state: { path, method, requestType },
-    updatePath: handlePathInputChange,
-    updateMethod: handleMethodChange,
-    getIsInDraftMode,
-    addServiceUrlIfBarePath,
-    removeServiceUrlFromPath,
-
-    // Request panel
-    state: { pathParams, queryParams, requestHeaders, body },
-    setPathParams,
-    updatePathParamValues,
-    clearPathParams,
-    setQueryParams,
-    setRequestHeaders,
-    setBody,
-    handleRequestBodyTypeChange,
-
-    // Request panel - Websocket message form
-    state: { websocketMessage },
-    setWebsocketMessage,
-
-    // Requests Panel tabs
-    state: { activeRequestsPanelTab },
-    setActiveRequestsPanelTab,
-    shouldShowRequestTab,
-
-    // Response Panel tabs
-    state: { activeResponsePanelTab },
-    setActiveResponsePanelTab,
-    shouldShowResponseTab,
-
-    // Response Panel response body
-    state: { activeResponse },
-    setActiveResponse,
-
-    // History (WIP)
-    state: { activeHistoryResponseTraceId },
-    showResponseBodyFromHistory,
-    clearResponseBodyFromHistory,
-  } = requestorState;
-
-  const selectedRoute = getActiveRoute();
-
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
-  useRoutes({
-    setRoutes,
-    setRoutesAndMiddleware,
-    setServiceBaseUrl,
-  });
+  useRoutes();
 
   // NOTE - Use this to test overflow of requests panel
   // useEffect(() => {
@@ -114,31 +53,14 @@ export const RequestorPage = () => {
   //   );
   // }, []);
 
-  const {
-    history,
-    sessionHistory,
-    recordRequestInSessionHistory,
-    loadHistoricalRequest,
-  } = useRequestorHistory({
-    routes,
-    handleSelectRoute,
-    setPath: handlePathInputChange,
-    setMethod: handleMethodChange,
-    setPathParams,
-    setBody,
-    setQueryParams,
-    setRequestHeaders,
-    showResponseBodyFromHistory,
-  });
+  const { history, sessionHistory, recordRequestInSessionHistory } =
+    useRequestorHistory();
 
-  const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
-    { path, method, route: selectedRoute?.path },
-    sessionHistory,
-    activeHistoryResponseTraceId,
-  );
+  const mostRecentRequestornatorForRoute =
+    useMostRecentRequestornator(sessionHistory);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
-    useMakeProxiedRequest({ clearResponseBodyFromHistory, setActiveResponse });
+    useMakeProxiedRequest();
 
   // WIP - Allows us to connect to a websocket and send messages through it
   const {
@@ -150,18 +72,9 @@ export const RequestorPage = () => {
 
   // Send a request when we submit the form
   const onSubmit = useRequestorSubmitHandler({
-    body,
-    addServiceUrlIfBarePath,
-    path,
-    method,
-    pathParams,
-    queryParams,
-    requestHeaders,
     makeRequest,
     connectWebsocket,
     recordRequestInSessionHistory,
-    selectedRoute,
-    requestType,
   });
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -188,20 +101,7 @@ export const RequestorPage = () => {
     showAiGeneratedInputsBanner,
     setShowAiGeneratedInputsBanner,
     setIgnoreAiInputsBanner,
-  } = useAi(
-    selectedRoute,
-    getMatchingMiddleware(),
-    history,
-    {
-      setBody,
-      setQueryParams,
-      setPath: handlePathInputChange,
-      setRequestHeaders,
-      updatePathParamValues,
-      addServiceUrlIfBarePath,
-    },
-    body,
-  );
+  } = useAi(history);
 
   useHotkeys(
     "mod+g",
@@ -231,7 +131,6 @@ export const RequestorPage = () => {
   );
 
   const width = getMainSectionWidth();
-  const isSmallScreen = useIsSmScreen();
   const isLgScreen = useIsLgScreen();
 
   const { minSize, maxSize } = usePanelConstraints({
@@ -245,30 +144,14 @@ export const RequestorPage = () => {
     usePanelConstraints({
       // Change the groupId to `""` on small screens because we're not rendering
       // the resizable panel group
-      groupId: isSmallScreen ? "" : "requestor-page-main-panel",
-      initialGroupSize: width,
-      minPixelSize: 300,
+      groupId: "requestor-page-main-panel",
+      initialGroupSize: getMainSectionHeight(),
+      minPixelSize: 200,
+      dimension: "height",
     });
 
   const requestContent = (
     <RequestPanel
-      activeRequestsPanelTab={activeRequestsPanelTab}
-      setActiveRequestsPanelTab={setActiveRequestsPanelTab}
-      shouldShowRequestTab={shouldShowRequestTab}
-      path={path}
-      method={method}
-      body={body}
-      setBody={setBody}
-      handleRequestBodyTypeChange={handleRequestBodyTypeChange}
-      pathParams={pathParams}
-      queryParams={queryParams}
-      requestHeaders={requestHeaders}
-      setPathParams={setPathParams}
-      clearPathParams={clearPathParams}
-      setQueryParams={setQueryParams}
-      setRequestHeaders={setRequestHeaders}
-      websocketMessage={websocketMessage}
-      setWebsocketMessage={setWebsocketMessage}
       aiEnabled={aiEnabled}
       isLoadingParameters={isLoadingParameters}
       fillInRequest={fillInRequest}
@@ -284,17 +167,11 @@ export const RequestorPage = () => {
 
   const responseContent = (
     <ResponsePanel
-      activeResponse={activeResponse}
       tracedResponse={mostRecentRequestornatorForRoute}
-      activeResponsePanelTab={activeResponsePanelTab}
-      setActiveResponsePanelTab={setActiveResponsePanelTab}
-      shouldShowResponseTab={shouldShowResponseTab}
       isLoading={isRequestorRequesting}
       websocketState={websocketState}
-      requestType={selectedRoute?.requestType}
       openAiTestGenerationPanel={toggleAiTestGenerationPanel}
       isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
-      removeServiceUrlFromPath={removeServiceUrlFromPath}
     />
   );
 
@@ -302,7 +179,7 @@ export const RequestorPage = () => {
     <div
       className={cn(
         // It's critical the parent has a fixed height for our grid layout to work
-        "h-[calc(100vh-64px)]",
+        "h-[calc(100vh-40px)]",
         "flex",
         "flex-col",
         "gap-2",
@@ -319,11 +196,7 @@ export const RequestorPage = () => {
           "lg:hidden",
         )}
       >
-        <RoutesCombobox
-          routes={routes}
-          selectedRoute={selectedRoute}
-          handleRouteClick={handleSelectRoute}
-        />
+        <RoutesCombobox />
       </div>
       <ResizablePanelGroup
         direction="horizontal"
@@ -340,14 +213,7 @@ export const RequestorPage = () => {
               maxSize={maxSize}
               defaultSize={(320 / width) * 100}
             >
-              <RoutesPanel
-                routes={routes}
-                selectedRoute={selectedRoute}
-                handleRouteClick={handleSelectRoute}
-                history={history}
-                loadHistoricalRequest={loadHistoricalRequest}
-                removeServiceUrlFromPath={removeServiceUrlFromPath}
-              />
+              <NavigationPanel />
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
@@ -365,81 +231,91 @@ export const RequestorPage = () => {
               "h-[calc(100%-0.6rem)]",
               "lg:h-full",
               "relative",
-              "overflow-scroll",
-              "sm:overflow-hidden",
+              // "overflow-scroll",
+              "overflow-hidden",
             )}
           >
             <RequestorInput
-              requestType={selectedRoute?.requestType}
-              method={method}
-              handleMethodChange={handleMethodChange}
-              path={path}
-              handlePathInputChange={handlePathInputChange}
               onSubmit={onSubmit}
               disconnectWebsocket={disconnectWebsocket}
               isRequestorRequesting={isRequestorRequesting}
               formRef={formRef}
               websocketState={websocketState}
-              getIsInDraftMode={getIsInDraftMode}
             />
-            {isSmallScreen ? (
-              <>
-                {requestContent}
-                {responseContent}
-              </>
-            ) : (
-              <ResizablePanelGroup
-                direction={isSmallScreen ? "vertical" : "horizontal"}
-                id="requestor-page-main-panel"
-                autoSaveId="requestor-page-main-panel"
-                className={cn(
-                  BACKGROUND_LAYER,
-                  "rounded-md",
-                  "border",
-                  // HACK - This defensively prevents overflow from getting too excessive,
-                  //        In the case where the inner content expands beyond the parent
-                  "max-w-screen",
-                  "max-h-full",
-                )}
+            <ResizablePanelGroup
+              direction="vertical"
+              id="requestor-page-main-panel"
+              autoSaveId="requestor-page-main-panel"
+            >
+              <ResizablePanel
+                defaultSize={isAiTestGenerationPanelOpen ? 50 : 100}
               >
-                <ResizablePanel
-                  order={1}
-                  className="relative"
-                  id="request-panel"
-                  defaultSize={
-                    width < 624 || requestPanelMinSize === undefined
-                      ? undefined
-                      : Math.max(requestPanelMinSize, 33)
-                  }
-                  minSize={requestPanelMinSize}
-                  maxSize={requestPanelMaxSize}
+                <ResizablePanelGroup
+                  direction={isLgScreen ? "horizontal" : "vertical"}
+                  id="requestor-page-request-panel-group"
+                  autoSaveId="requestor-page-request-panel-group"
+                  className={cn(
+                    "rounded-md",
+                    // HACK - This defensively prevents overflow from getting too excessive,
+                    //        In the case where the inner content expands beyond the parent
+                    "max-w-screen",
+                    "max-h-full",
+                    // "gap-1",
+                  )}
                 >
-                  {requestContent}
-                </ResizablePanel>
-                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-                <ResizablePanel id="response-panel" order={4} minSize={10}>
-                  {responseContent}
-                </ResizablePanel>
-                {isAiTestGenerationPanelOpen && !isSmallScreen && (
+                  <ResizablePanel
+                    order={1}
+                    className={cn(BACKGROUND_LAYER, "relative")}
+                    id="request-panel"
+                    minSize={requestPanelMinSize}
+                    maxSize={requestPanelMaxSize}
+                  >
+                    {requestContent}
+                  </ResizablePanel>
+                  <ResizableHandle
+                    hitAreaMargins={{ coarse: 20, fine: 10 }}
+                    className="bg-transparent"
+                  />
+                  <ResizablePanel
+                    id="response-panel"
+                    order={4}
+                    minSize={10}
+                    className={cn(BACKGROUND_LAYER)}
+                  >
+                    {responseContent}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              </ResizablePanel>
+              <ResizablePanel>
+                {isAiTestGenerationPanelOpen && (
                   <>
                     <ResizableHandle
                       hitAreaMargins={{ coarse: 20, fine: 10 }}
+                      className="bg-transparent"
                     />
-                    <ResizablePanel order={3} id="ai-panel">
+                    <ResizablePanel
+                      order={3}
+                      id="ai-panel"
+                      className={cn(
+                        BACKGROUND_LAYER,
+                        "rounded-md",
+                        "border",
+                        "h-full",
+                        "mt-2",
+                      )}
+                    >
                       <AiTestGenerationPanel
                         // TODO - Only use history for recent matching route
                         history={history}
                         toggleAiTestGenerationPanel={
                           toggleAiTestGenerationPanel
                         }
-                        getActiveRoute={getActiveRoute}
-                        removeServiceUrlFromPath={removeServiceUrlFromPath}
                       />
                     </ResizablePanel>
                   </>
                 )}
-              </ResizablePanelGroup>
-            )}
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -453,11 +329,13 @@ export default RequestorPage;
  * When you select a route from the route side panel,
  * this will look for the most recent request made against that route.
  */
-function useMostRecentRequestornator(
-  requestInputs: { path: string; method: string; route?: string },
-  all: Requestornator[],
-  activeHistoryResponseTraceId: string | null,
-) {
+function useMostRecentRequestornator(all: Requestornator[]) {
+  const { path: routePath } = useActiveRoute();
+  const { path, method, activeHistoryResponseTraceId } = useRequestorStore(
+    "path",
+    "method",
+    "activeHistoryResponseTraceId",
+  );
   return useMemo<Requestornator | undefined>(() => {
     if (activeHistoryResponseTraceId) {
       return all.find(
@@ -468,8 +346,8 @@ function useMostRecentRequestornator(
 
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestRoute === requestInputs.route &&
-        r?.app_requests?.requestMethod === requestInputs.method,
+        r?.app_requests?.requestRoute === routePath &&
+        r?.app_requests?.requestMethod === method,
     );
 
     // Descending sort by updatedAt
@@ -486,14 +364,14 @@ function useMostRecentRequestornator(
     //        perhaps because we made a request to a service we are not explicitly monitoring
     const matchingResponsesFallback = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestUrl === requestInputs.path &&
-        r?.app_requests?.requestMethod === requestInputs.method,
+        r?.app_requests?.requestUrl === path &&
+        r?.app_requests?.requestMethod === method,
     );
 
     matchingResponsesFallback?.sort(sortRequestornatorsDescending);
 
     return matchingResponsesFallback?.[0];
-  }, [all, requestInputs, activeHistoryResponseTraceId]);
+  }, [all, routePath, method, path, activeHistoryResponseTraceId]);
 }
 
 export const Title = (props: { children: React.ReactNode }) => (
@@ -504,8 +382,8 @@ pace-x-6 h-12"
     <h1
       className="inline-flex items-center justify-center whitespace-nowrap rounded-md ring-offset-background transition-
 all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-ev
-ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm font-normal border-b border-transparent font-medium tex
-t-gray-100 shadow-none bg-inherit rounded-none border-blue-500"
+ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm border-b border-transparent font-medium tex
+t-gray-100 shadow-none bg-inherit border-blue-500"
     >
       {props.children}
     </h1>
