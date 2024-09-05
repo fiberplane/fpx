@@ -59,7 +59,7 @@ const NavItem = ({ item }: { item: MergedListItem }) => {
   return (
     <Link
       to={{
-        pathname: `/requestor/otel/${getId(item)}`,
+        pathname: `/requestor/${item.type}/${getId(item)}`,
         search: params.toString(),
       }}
       className={cn(

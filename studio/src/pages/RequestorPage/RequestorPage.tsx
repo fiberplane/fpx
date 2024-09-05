@@ -7,27 +7,15 @@ import {
   ResizablePanelGroup,
   usePanelConstraints,
 } from "@/components/ui/resizable";
-import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { RequestDetailsPageV2 } from "../RequestDetailsPage/RequestDetailsPageV2";
 import { NavigationPanel } from "./NavigationPanel";
-import { RequestPanel } from "./RequestPanel";
-import { RequestorInput } from "./RequestorInput";
 import { RequestorPageContent } from "./RequestorPageContent";
-import { ResponsePanel } from "./ResponsePanel";
-import { RoutesCombobox } from "./RoutesCombobox";
-import { AiTestGenerationPanel, useAi } from "./ai";
-import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import { useRoutes } from "./routes";
-import { useActiveRoute, useRequestorStore } from "./store";
-import { BACKGROUND_LAYER } from "./styles";
-import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
-import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
-import { sortRequestornatorsDescending } from "./utils";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -37,7 +25,7 @@ function getMainSectionWidth() {
 }
 
 export const RequestorPage = () => {
-  const { id } = useParams();
+  const { id, requestType } = useParams();
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
 
@@ -59,10 +47,10 @@ export const RequestorPage = () => {
 
   const hasHistory = history.length > 0;
   useEffect(() => {
-    if (id && hasHistory) {
+    if (id && hasHistory && requestType === "request") {
       loadHistoricalRequest(id);
     }
-  }, [id, loadHistoricalRequest, hasHistory]);
+  }, [id, loadHistoricalRequest, hasHistory, requestType]);
 
   const width = getMainSectionWidth();
   const isLgScreen = useIsLgScreen();
@@ -111,23 +99,15 @@ export const RequestorPage = () => {
           </>
         )}
         <ResizablePanel id="main" order={1}>
-          <RequestorPageContent
-            // onSubmit={onSubmit}
-            // disconnectWebsocket={disconnectWebsocket}
-            // isRequestorRequesting={isRequestorRequesting}
-            // formRef={formRef}
-            // websocketState={websocketState}
-            // isLgScreen={isLgScreen}
-            // requestPanelMinSize={requestPanelMinSize}
-            // requestPanelMaxSize={requestPanelMaxSize}
-            // requestContent={requestContent}
-            // responseContent={responseContent}
-            // isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
-            // toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
-            history={history}
-            sessionHistory={sessionHistory}
-            recordRequestInSessionHistory={recordRequestInSessionHistory}
-          />
+          {requestType === "history" && !!id ? (
+            <RequestDetailsPageV2 traceId={id} />
+          ) : (
+            <RequestorPageContent
+              history={history}
+              sessionHistory={sessionHistory}
+              recordRequestInSessionHistory={recordRequestInSessionHistory}
+            />
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
@@ -135,19 +115,3 @@ export const RequestorPage = () => {
 };
 
 export default RequestorPage;
-
-export const Title = (props: { children: React.ReactNode }) => (
-  <div
-    className="inline-flex items-center bg-muted p-1 text-muted-foreground w-full justify-start rounded-none border-b s
-pace-x-6 h-12"
-  >
-    <h1
-      className="inline-flex items-center justify-center whitespace-nowrap rounded-md ring-offset-background transition-
-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-ev
-ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm border-b border-transparent font-medium tex
-t-gray-100 shadow-none bg-inherit border-blue-500"
-    >
-      {props.children}
-    </h1>
-  </div>
-);

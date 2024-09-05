@@ -7,7 +7,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { type RefObject, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -21,30 +21,12 @@ import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
 
 interface RequestorPageContentProps {
-  // onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-  // disconnectWebsocket: () => void;
-  // isRequestorRequesting: boolean;
-  // formRef: RefObject<HTMLFormElement>;
-  // websocketState: any; // Replace 'any' with the correct type
-  // requestContent: React.ReactNode;
-  // responseContent: React.ReactNode;
-  // isAiTestGenerationPanelOpen: boolean;
-  // toggleAiTestGenerationPanel: () => void;
   history: Requestornator[]; // Replace 'any[]' with the correct type
   sessionHistory: Requestornator[];
   recordRequestInSessionHistory: (traceId: string) => void;
 }
 
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
-  // onSubmit,
-  // disconnectWebsocket,
-  // isRequestorRequesting,
-  // formRef,
-  // // websocketState,
-  // requestContent,
-  // responseContent,
-  // isAiTestGenerationPanelOpen,
-  // toggleAiTestGenerationPanel,
   history,
   sessionHistory,
   recordRequestInSessionHistory,
