@@ -15,6 +15,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { NavigationPanel } from "./NavigationPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
+import { RequestorTimeline } from "./RequestorTimeline";
 import { ResponsePanel } from "./ResponsePanel";
 import { RoutesCombobox } from "./RoutesCombobox";
 import { AiTestGenerationPanel, useAi } from "./ai";
@@ -22,12 +23,11 @@ import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import { useRoutes } from "./routes";
 import { useActiveRoute, useRequestorStore } from "./store";
 import { BACKGROUND_LAYER } from "./styles";
+import type { Panels } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
-import { RequestorTimeline } from "./RequestorTimeline";
-import type { Panels } from "./types";
 
 /**
  * Estimate the size of the main section based on the window width

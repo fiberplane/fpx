@@ -5,6 +5,7 @@ import {
   extractWaterfallTimeStats,
 } from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
+import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -14,12 +15,11 @@ import {
 import { useIsSmScreen } from "@/hooks";
 import { useOtelTrace } from "@/queries";
 import { cn } from "@/utils";
-import type { ReactNode } from "react";
-import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
-import { Button } from "@/components/ui/button";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { Tabs } from "@radix-ui/react-tabs";
-import { CustomTabsList, CustomTabTrigger, CustomTabsContent } from "./Tabs";
+import type { ReactNode } from "react";
+import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import type { Panels } from "./types";
 
 type Props = {

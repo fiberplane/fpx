@@ -13,9 +13,9 @@ import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
 import { useActiveRoute, useServiceBaseUrl } from "../store";
+import type { Panels } from "../types";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
-import type { Panels } from "../types";
 
 export function AiTestGenerationPanel({
   history,
