@@ -141,7 +141,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
 
   if (!span) {
     return {
-      replay: () => { },
+      replay: () => {},
       isReplaying: false,
     };
   }
