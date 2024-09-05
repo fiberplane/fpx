@@ -71,6 +71,7 @@
   },
   "devDependencies": {
     "@darkobits/vite-plugin-favicons": "^0.3.2",
+    "@iconify/react": "^5.0.2",
     "@types/node": "^20.12.12",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
