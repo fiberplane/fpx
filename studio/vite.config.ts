@@ -12,7 +12,7 @@ export default defineConfig({
       include: "**/*.svg",
     }),
     faviconsPlugin({
-      icons: { favicons: { source: "src/assets/fp.svg" } },
+      icons: { favicons: { source: "src/assets/fpx.svg" } },
     }),
   ],
   resolve: {
