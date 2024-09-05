@@ -12,7 +12,7 @@ import {
 import { useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import type { Requestornator } from "../../queries";
-import { useServiceBaseUrl } from "../../store";
+import { useRequestorStore, useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
 
 export function RequestsPanel() {
@@ -51,7 +51,11 @@ export function RequestsPanel() {
 
 const NavItem = ({ item }: { item: MergedListItem }) => {
   const [params] = useSearchParams();
-  const { id } = useParams();
+  const { activeHistoryResponseTraceId } = useRequestorStore(
+    "activeHistoryResponseTraceId",
+  );
+  const { id = activeHistoryResponseTraceId } = useParams();
+
   return (
     <Link
       to={{
@@ -102,57 +106,12 @@ function getSpan(trace: OtelTrace) {
   );
 }
 
-// const columns: ColumnDef<MergedListItem>[] = [
-//   {
-//     accessorKey: "status",
-//     header: "Status",
-//     meta: {
-//       headerClassName: "w-[10px",
-//       cellClassName: "font-mono",
-//     },
-//     cell: ({ row }) => {
-//       const code = row.original.type === "request" ? Number.parseInt(
-//         row.original.data.app_responses.responseStatusCode
-//       ) :
-//         getStatusCode(getSpan(row.original.data));
-//       return <Status statusCode={code} />
-//     },
-//   },
-//   {
-//     accessorKey: "method",
-//     header: "Method",
-//     meta: {
-//       headerClassName: "w-20",
-//       cellClassName: "font-mono",
-//     },
-//     cell: ({ row }) => {
-//       const method = row.original.type === "request" ? row.original.data.app_requests.requestMethod :
-//         getRequestMethod(getSpan(row.original.data));
-//       return <RequestMethod method={method} />
-//     },
-//   },
-//   {
-//     accessorKey: "path",
-//     header: "Path",
-//     cell: ({ row }) => (<PathCell item={row.original} />),
-//     // },
-//     // {
-//     //   accessorKey: "updated",
-//     //   header: "Updated",
-//     //   cell: ({ row }) => {
-//     //     const updated = row.original.type === "request" ? row.original.data.app_requests.updatedAt :
-//     //       new Date(getSpan(row.original.data).start_time).toLocaleString();
-//     //     return <Timestamp date={updated} />;
-//     //   },
-//   }
-// ];
-
 const PathCell = ({ item }: { item: MergedListItem }) => {
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
   const path =
     item.type === "request"
       ? removeServiceUrlFromPath(item.data.app_requests.requestUrl)
-      : getRequestUrl(getSpan(item.data));
+      : removeServiceUrlFromPath(getRequestUrl(getSpan(item.data)));
 
   return <div>{path}</div>;
 };
@@ -182,6 +141,7 @@ type MergedListItem =
       type: "history";
       data: OtelTrace;
     };
+
 // Combine the history with traces by creating a new list that contains the history as well
 // as traces that are not in the history. The new list should be sorted by the timestamp of the request.
 // and contain a type property to distinguish between history and traces

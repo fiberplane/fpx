@@ -27,6 +27,7 @@ export function useRequestorSubmitHandler({
     queryParams,
     requestHeaders,
     requestType,
+    showResponseBodyFromHistory,
   } = useRequestorStore(
     "selectedRoute",
     "body",
@@ -36,6 +37,7 @@ export function useRequestorSubmitHandler({
     "queryParams",
     "requestHeaders",
     "requestType",
+    "showResponseBodyFromHistory",
   );
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
@@ -91,6 +93,7 @@ export function useRequestorSubmitHandler({
           const traceId = data?.traceId;
           if (traceId && typeof traceId === "string") {
             recordRequestInSessionHistory(traceId);
+            showResponseBodyFromHistory(traceId);
           } else {
             console.error(
               "RequestorPage: onSuccess: traceId is not a string",
