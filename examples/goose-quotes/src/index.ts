@@ -1,11 +1,18 @@
 import { Hono } from "hono";
 
-import { instrument } from "@fiberplane/hono-otel";
+import { instrument, measure } from "@fiberplane/hono-otel";
 import { neon } from "@neondatabase/serverless";
 import { asc, eq, ilike } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 
 import { geese } from "./db/schema";
+import {
+  createGoose,
+  getAllGeese,
+  getGooseById,
+  updateGoose,
+  getGeeseByLanguage,
+} from "./db/client";
 
 import { upgradeWebSocket } from "hono/cloudflare-workers";
 import { OpenAI } from "openai";
@@ -26,6 +33,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.get("/", (c) => {
   const { shouldHonk } = c.req.query();
   const honk = typeof shouldHonk !== "undefined" ? "Honk honk!" : "";
+  console.log(`Home page accessed. Honk: ${honk}`);
   return c.text(`Hello Goose Quotes! ${honk}`.trim());
 });
 
@@ -39,22 +47,27 @@ app.get("/api/geese", async (c) => {
   const db = drizzle(sql);
 
   const name = c.req.query("name");
-
-  console.log("not searching");
+  console.log({ action: "search_geese", name });
 
   if (!name) {
-    return c.json(await db.select().from(geese));
+    const allGeese = await measure("getAllGeese", () => getAllGeese(db))();
+    console.log({ action: "get_all_geese", count: allGeese.length });
+    return c.json(allGeese);
   }
 
-  console.log("searching for", name);
+  const searchResults = await measure("searchGeese", () =>
+    db
+      .select()
+      .from(geese)
+      .where(ilike(geese.name, `%${name}%`))
+      .orderBy(asc(geese.name)),
+  )();
 
-  const searchResults = await db
-    .select()
-    .from(geese)
-    .where(ilike(geese.name, `%${name}%`))
-    .orderBy(asc(geese.name));
-
-  console.log("found", searchResults.length, "results");
+  console.log({
+    action: "search_geese_results",
+    count: searchResults.length,
+    name,
+  });
 
   return c.json(searchResults);
 });
@@ -72,26 +85,20 @@ app.post("/api/geese", async (c) => {
     await c.req.json();
   const description = `A person named ${name} who talks like a Goose`;
 
-  const created = await db
-    .insert(geese)
-    .values({
+  console.log(`Creating new goose: ${name}`);
+
+  const created = await measure("createGoose", () =>
+    createGoose(db, {
       name,
       description,
       isFlockLeader,
       programmingLanguage,
       motivations,
       location,
-    })
-    .returning({
-      id: geese.id,
-      name: geese.name,
-      description: geese.description,
-      isFlockLeader: geese.isFlockLeader,
-      programmingLanguage: geese.programmingLanguage,
-      motivations: geese.motivations,
-      location: geese.location,
-    });
-  return c.json(created?.[0]);
+    }),
+  )();
+  console.log({ action: "create_goose", id: created[0].id, name });
+  return c.json(created);
 });
 
 /**
@@ -103,9 +110,10 @@ app.post("/api/geese/:id/generate", async (c) => {
 
   const id = c.req.param("id");
 
-  const goose = (await db.select().from(geese).where(eq(geese.id, +id)))?.[0];
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
 
   if (!goose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
@@ -117,35 +125,44 @@ app.post("/api/geese/:id/generate", async (c) => {
     fetch: globalThis.fetch,
   });
 
-  const response = await openaiClient.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "system",
-        content: trimPrompt(`
-            You are a goose. You are a very smart goose. You are part goose, part AI. You are a GooseAI.
-            You are also influenced heavily by the work of ${gooseName}.
+  console.log(`Generating quotes for goose: ${gooseName}`);
 
-            Always respond without preamble. If I ask for a list, give me a newline-separated list. That's it.
-            Don't number it. Don't bullet it. Just newline it.
+  const response = await measure("generateQuotes", () =>
+    openaiClient.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: trimPrompt(`
+              You are a goose. You are a very smart goose. You are part goose, part AI. You are a GooseAI.
+              You are also influenced heavily by the work of ${gooseName}.
 
-            Never forget to Honk. A lot.
-        `),
-      },
-      {
-        role: "user",
-        content: trimPrompt(`
-            Reimagine five famous quotes by ${gooseName}, except with significant goose influence.
-        `),
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: 2048,
-  });
+              Always respond without preamble. If I ask for a list, give me a newline-separated list. That's it.
+              Don't number it. Don't bullet it. Just newline it.
+
+              Never forget to Honk. A lot.
+          `),
+        },
+        {
+          role: "user",
+          content: trimPrompt(`
+              Reimagine five famous quotes by ${gooseName}, except with significant goose influence.
+          `),
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 2048,
+    }),
+  )();
 
   const quotes = response.choices[0].message.content
     ?.split("\n")
     .filter((quote) => quote.length > 0);
+  console.log({
+    action: "generate_quotes",
+    gooseName,
+    quoteCount: quotes?.length,
+  });
   return c.json({ name: goose.name, quotes });
 });
 
@@ -157,10 +174,13 @@ app.get("/api/geese/flock-leaders", async (c) => {
   const sql = neon(c.env.DATABASE_URL);
   const db = drizzle(sql);
 
-  const flockLeaders = await db
-    .select()
-    .from(geese)
-    .where(eq(geese.isFlockLeader, true));
+  console.log("Fetching flock leaders");
+
+  const flockLeaders = await measure("getFlockLeaders", () =>
+    db.select().from(geese).where(eq(geese.isFlockLeader, true)),
+  )();
+
+  console.log(`Found ${flockLeaders.length} flock leaders`);
 
   return c.json(flockLeaders);
 });
@@ -174,12 +194,16 @@ app.get("/api/geese/:id", async (c) => {
 
   const id = c.req.param("id");
 
-  const goose = (await db.select().from(geese).where(eq(geese.id, +id)))?.[0];
+  console.log(`Fetching goose with id: ${id}`);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
 
   if (!goose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
+  console.log(`Found goose: ${goose.name}`);
   return c.json(goose);
 });
 
@@ -192,9 +216,10 @@ app.post("/api/geese/:id/bio", async (c) => {
 
   const id = c.req.param("id");
 
-  const goose = (await db.select().from(geese).where(eq(geese.id, +id)))?.[0];
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
 
   if (!goose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
@@ -206,45 +231,48 @@ app.post("/api/geese/:id/bio", async (c) => {
     location,
   } = goose;
 
+  console.log(`Generating bio for goose: ${gooseName}`);
+
   const openaiClient = new OpenAI({
     apiKey: c.env.OPENAI_API_KEY,
     fetch: globalThis.fetch,
   });
 
-  const response = await openaiClient.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: trimPrompt(`
-            You are a professional bio writer. Your task is to generate a compelling and engaging bio for a goose.
-        `),
-      },
-      {
-        role: "user",
-        content: trimPrompt(`
-            Generate a bio for a goose named ${gooseName} with the following details:
-            Description: ${description}
-            Programming Language: ${programmingLanguage}
-            Motivations: ${motivations}
-            Location: ${location}
-        `),
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: 2048,
-  });
+  const response = await measure("generateBio", () =>
+    openaiClient.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: trimPrompt(`
+              You are a professional bio writer. Your task is to generate a compelling and engaging bio for a goose.
+          `),
+        },
+        {
+          role: "user",
+          content: trimPrompt(`
+              Generate a bio for a goose named ${gooseName} with the following details:
+              Description: ${description}
+              Programming Language: ${programmingLanguage}
+              Motivations: ${motivations}
+              Location: ${location}
+          `),
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 2048,
+    }),
+  )();
 
   const bio = response.choices[0].message.content;
 
   // Update the goose with the generated bio
-  const updatedGoose = await db
-    .update(geese)
-    .set({ bio })
-    .where(eq(geese.id, +id))
-    .returning();
+  const updatedGoose = await measure("updateGoose", () =>
+    updateGoose(db, +id, { bio }),
+  )();
 
-  return c.json(updatedGoose[0]);
+  console.log(`Bio generated and updated for goose: ${gooseName}`);
+  return c.json(updatedGoose);
 });
 
 /**
@@ -255,12 +283,14 @@ app.post("/api/geese/:id/honk", async (c) => {
   const db = drizzle(sql);
 
   const id = c.req.param("id");
-  const goose = (await db.select().from(geese).where(eq(geese.id, +id)))?.[0];
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
 
   if (!goose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
+  console.log(`Honk received for goose: ${goose.name}`);
   return c.json({ message: `Honk honk! ${goose.name} honks back at you!` });
 });
 
@@ -274,14 +304,18 @@ app.patch("/api/geese/:id", async (c) => {
   const id = c.req.param("id");
   const { name } = await c.req.json();
 
-  const goose = (
-    await db.update(geese).set({ name }).where(eq(geese.id, +id)).returning()
-  )?.[0];
+  console.log(`Updating goose ${id} with new name: ${name}`);
+
+  const goose = await measure("updateGoose", () =>
+    updateGoose(db, +id, { name }),
+  )();
 
   if (!goose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
+  console.log(`Goose ${id} updated successfully`);
   return c.json(goose);
 });
 
@@ -294,11 +328,15 @@ app.get("/api/geese/language/:language", async (c) => {
 
   const language = c.req.param("language");
 
-  const geeseByLanguage = await db
-    .select()
-    .from(geese)
-    .where(ilike(geese.programmingLanguage, `%${language}%`));
+  console.log(`Fetching geese with programming language: ${language}`);
 
+  const geeseByLanguage = await measure("getGeeseByLanguage", () =>
+    getGeeseByLanguage(db, language),
+  )();
+
+  console.log(
+    `Found ${geeseByLanguage.length} geese for language: ${language}`,
+  );
   return c.json(geeseByLanguage);
 });
 
@@ -312,18 +350,18 @@ app.patch("/api/geese/:id/motivations", async (c) => {
   const id = c.req.param("id");
   const { motivations } = await c.req.json();
 
-  const updatedGoose = (
-    await db
-      .update(geese)
-      .set({ motivations })
-      .where(eq(geese.id, +id))
-      .returning()
-  )?.[0];
+  console.log(`Updating motivations for goose ${id}`);
+
+  const updatedGoose = await measure("updateGoose", () =>
+    updateGoose(db, +id, { motivations }),
+  )();
 
   if (!updatedGoose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
+  console.log(`Motivations updated for goose ${id}`);
   return c.json(updatedGoose);
 });
 
@@ -332,9 +370,10 @@ app.post("/api/geese/:id/change-name-url-form", async (c) => {
   const db = drizzle(sql);
 
   const id = c.req.param("id");
-  const [goose] = await db.select().from(geese).where(eq(geese.id, +id));
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
 
   if (!goose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
@@ -342,15 +381,16 @@ app.post("/api/geese/:id/change-name-url-form", async (c) => {
   const name = form.get("name");
 
   if (!name) {
+    console.error("Name is required for changing goose name");
     return c.json({ message: "Name is required" }, 400);
   }
 
-  const [updatedGoose] = await db
-    .update(geese)
-    .set({ name })
-    .where(eq(geese.id, +id))
-    .returning();
+  console.log(`Changing name of goose ${id} to ${name}`);
+  const updatedGoose = await measure("updateGoose", () =>
+    updateGoose(db, +id, { name }),
+  )();
 
+  console.log(`Name changed for goose ${id}`);
   return c.json(updatedGoose, 200);
 });
 
@@ -363,16 +403,18 @@ app.post("/api/geese/:id/avatar", async (c) => {
 
   const id = c.req.param("id");
 
-  const [goose] = await db.select().from(geese).where(eq(geese.id, +id));
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
 
   if (!goose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
   const { avatar, avatarName } = await c.req.parseBody();
-  console.log({ avatarName }, "is the avatar name");
+  console.log({ action: "update_avatar", gooseId: id, avatarName });
   // Validate the avatar is a file
   if (!(avatar instanceof File)) {
+    console.error(`Invalid avatar type for goose ${id}: ${typeof avatar}`);
     return c.json(
       { message: "Avatar must be a file", actualType: typeof avatar },
       422,
@@ -382,6 +424,7 @@ app.post("/api/geese/:id/avatar", async (c) => {
   // Validate the avatar is a JPEG, PNG, or GIF
   const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
   if (!allowedTypes.includes(avatar.type)) {
+    console.error(`Invalid avatar file type for goose ${id}: ${avatar.type}`);
     return c.json({ message: "Avatar must be a JPEG, PNG, or GIF image" }, 422);
   }
 
@@ -390,16 +433,19 @@ app.post("/api/geese/:id/avatar", async (c) => {
 
   // Save the avatar to the bucket
   const bucketKey = `goose-${id}-avatar-${Date.now()}.${fileExtension}`;
-  await c.env.GOOSE_AVATARS.put(bucketKey, avatar.stream(), {
-    httpMetadata: { contentType: avatar.type },
-  });
+  await measure("uploadAvatar", () =>
+    c.env.GOOSE_AVATARS.put(bucketKey, avatar.stream(), {
+      httpMetadata: { contentType: avatar.type },
+    }),
+  )();
 
-  const [updatedGoose] = await db
-    .update(geese)
-    .set({ avatar: bucketKey })
-    .where(eq(geese.id, +id))
-    .returning();
+  console.log(`Avatar uploaded for goose ${id}: ${bucketKey}`);
 
+  const updatedGoose = await measure("updateGoose", () =>
+    updateGoose(db, +id, { avatar: bucketKey }),
+  )();
+
+  console.log(`Avatar updated for goose ${id}`);
   return c.json(updatedGoose);
 });
 
@@ -412,24 +458,32 @@ app.get("/api/geese/:id/avatar", async (c) => {
 
   const id = c.req.param("id");
 
-  const [goose] = await db.select().from(geese).where(eq(geese.id, +id));
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
 
   if (!goose) {
+    console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
   const avatarKey = goose.avatar;
 
   if (!avatarKey) {
+    console.warn(`Goose ${id} has no avatar`);
     return c.json({ message: "Goose has no avatar" }, 404);
   }
 
-  const avatar = await c.env.GOOSE_AVATARS.get(avatarKey);
+  console.log(`Fetching avatar for goose ${id}: ${avatarKey}`);
+
+  const avatar = await measure("getAvatar", () =>
+    c.env.GOOSE_AVATARS.get(avatarKey),
+  )();
 
   if (!avatar) {
+    console.error(`Avatar not found for goose ${id}: ${avatarKey}`);
     return c.json({ message: "Goose avatar not found" }, 404);
   }
 
+  console.log(`Avatar retrieved for goose ${id}`);
   const responseHeaders = mapR2HttpMetadataToHeaders(avatar.httpMetadata);
   return new Response(avatar.body, {
     headers: responseHeaders,
@@ -442,7 +496,9 @@ app.get("/api/geese/:id/avatar", async (c) => {
  * For all methods, print "Honk honk!"
  */
 app.all("/always-honk/:echo?", (c) => {
-  return c.text(`Honk honk! ${c.req.param("echo") ?? ""}`);
+  const echo = c.req.param("echo");
+  console.log(`Always honk endpoint called with echo: ${echo}`);
+  return c.text(`Honk honk! ${echo ?? ""}`);
 });
 
 app.get(
@@ -454,13 +510,14 @@ app.get(
         const sql = neon(c.env.DATABASE_URL);
         const db = drizzle(sql);
 
+        console.log(`WebSocket message received: ${type}`);
+
         switch (type) {
           case "GET_GEESE":
-            db.select()
-              .from(geese)
-              .then((geese) => {
-                ws.send(JSON.stringify({ type: "GEESE", payload: geese }));
-              });
+            measure("getAllGeese", () => getAllGeese(db))().then((geese) => {
+              console.log(`Sending ${geese.length} geese over WebSocket`);
+              ws.send(JSON.stringify({ type: "GEESE", payload: geese }));
+            });
             break;
           case "CREATE_GOOSE": {
             const {
@@ -472,38 +529,30 @@ app.get(
             } = payload;
             const description = `A person named ${name} who talks like a Goose`;
 
-            db.insert(geese)
-              .values({
+            console.log(`Creating new goose via WebSocket: ${name}`);
+            measure("createGoose", () =>
+              createGoose(db, {
                 name,
                 description,
                 isFlockLeader,
                 programmingLanguage,
                 motivations,
                 location,
-              })
-              .returning({
-                id: geese.id,
-                name: geese.name,
-                description: geese.description,
-                isFlockLeader: geese.isFlockLeader,
-                programmingLanguage: geese.programmingLanguage,
-                motivations: geese.motivations,
-                location: geese.location,
-              })
-              .then((newGoose) => {
-                ws.send(
-                  JSON.stringify({ type: "NEW_GOOSE", payload: newGoose[0] }),
-                );
-              });
+              }),
+            )().then((newGoose) => {
+              console.log(`New goose created via WebSocket: ${newGoose[0].id}`);
+              ws.send(JSON.stringify({ type: "NEW_GOOSE", payload: newGoose }));
+            });
             break;
           }
           // ... (handle other message types)
           default:
+            console.warn(`Unknown WebSocket message type: ${type}`);
             break;
         }
       },
       onClose: () => {
-        console.log("Connection closed");
+        console.log("WebSocket connection closed");
       },
     };
   }),
