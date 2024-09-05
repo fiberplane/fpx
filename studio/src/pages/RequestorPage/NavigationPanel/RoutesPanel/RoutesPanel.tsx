@@ -1,16 +1,31 @@
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
+import type { ProbedRoute } from "../../types";
 import { RoutesSection } from "./RoutesSection";
 
 export function RoutesPanel() {
-  const {
-    routes,
-    selectedRoute,
-    selectRoute: handleRouteClick,
-  } = useRequestorStore("routes", "selectedRoute", "selectRoute");
+  const { routes, selectedRoute, selectRoute } = useRequestorStore(
+    "routes",
+    "selectedRoute",
+    "selectRoute",
+  );
+
+  const navigate = useNavigate();
+
+  const handleRouteClick = useHandler((route: ProbedRoute) => {
+    navigate(
+      {
+        pathname: "/requestor/",
+      },
+      { replace: true },
+    );
+    selectRoute(route);
+  });
 
   const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
     return routes?.some((r) => !r.currentlyRegistered) ?? false;
@@ -70,7 +85,7 @@ export function RoutesPanel() {
         <div className="flex items-center space-x-2 pb-3">
           <Input
             className="text-sm"
-            placeholder="Search routes"
+            placeholder="Search"
             value={filterValue}
             onChange={(e) => setFilterValue(e.target.value)}
           />

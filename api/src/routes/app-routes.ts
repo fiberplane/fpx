@@ -135,6 +135,13 @@ app.delete("/v0/app-routes/:method/:path", async (ctx) => {
   return ctx.json(createdRoute?.[0]);
 });
 
+app.delete("/v0/app-requests/", async (ctx) => {
+  const db = ctx.get("db");
+  await db.delete(appResponses);
+  await db.delete(appRequests);
+  return ctx.text("OK");
+});
+
 app.get("/v0/all-requests", async (ctx) => {
   const db = ctx.get("db");
   const requests = await db
@@ -270,6 +277,8 @@ app.all(
       requestQueryParams,
       requestBody,
       requestRoute,
+      updatedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     };
 
     const insertResult = await db

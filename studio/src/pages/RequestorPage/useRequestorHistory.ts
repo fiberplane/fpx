@@ -50,6 +50,7 @@ export function useRequestorHistory() {
     recordRequestInSessionHistory(traceId);
     showResponseBodyFromHistory(traceId);
     const match = history.find((r) => r.app_responses?.traceId === traceId);
+    console.log("loadHistorical", match, traceId);
     if (match) {
       const method = match.app_requests.requestMethod;
       let routePattern = match.app_requests.requestRoute;
@@ -66,6 +67,8 @@ export function useRequestorHistory() {
         method,
         requestType,
       );
+
+      console.log("matchedRoute", matchedRoute);
 
       if (matchedRoute) {
         // const pathParamsObject = match.app_requests.requestPathParams ?? {};

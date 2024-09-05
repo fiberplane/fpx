@@ -10,8 +10,9 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useParams } from "react-router-dom";
 import { NavigationPanel } from "./NavigationPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -41,6 +42,7 @@ function getMainSectionHeight() {
 export const RequestorPage = () => {
   const { toast } = useToast();
 
+  const { id } = useParams();
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
 
@@ -53,8 +55,21 @@ export const RequestorPage = () => {
   //   );
   // }, []);
 
-  const { history, sessionHistory, recordRequestInSessionHistory } =
-    useRequestorHistory();
+  const {
+    history,
+    sessionHistory,
+    recordRequestInSessionHistory,
+    loadHistoricalRequest,
+  } = useRequestorHistory();
+
+  const hasHistory = history.length > 0;
+  console.log("hasHistory", history);
+  useEffect(() => {
+    if (id && hasHistory) {
+      console.log("id", id);
+      loadHistoricalRequest(id);
+    }
+  }, [id, loadHistoricalRequest, hasHistory]);
 
   const mostRecentRequestornatorForRoute =
     useMostRecentRequestornator(sessionHistory);
