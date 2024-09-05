@@ -30,6 +30,7 @@ function TimelineListDetailsComponent({
             "hover:bg-primary/10 hover:border-blue-500 hover:rounded-l-none",
             "data-[highlighted=true]:bg-primary/10",
             "relative after:absolute after:bottom-[-4px] after:bg-muted-foreground/30 after:w-full after:h-px last:after:h-0",
+            "h-full",
           )}
           data-highlighted={highlightedSpanId === getId(item)}
         >
