@@ -15,13 +15,14 @@ import { findMatchedRoute } from "../routes";
 import { useActiveRoute, useServiceBaseUrl } from "../store";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
+import type { Panels } from "../types";
 
 export function AiTestGenerationPanel({
   history,
-  toggleAiTestGenerationPanel,
+  togglePanel,
 }: {
   history: Array<Requestornator>;
-  toggleAiTestGenerationPanel: () => void;
+  togglePanel: (panelName: keyof Panels) => void;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
@@ -71,7 +72,7 @@ export function AiTestGenerationPanel({
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleAiTestGenerationPanel}
+              onClick={() => togglePanel("aiTestGeneration")}
               className="h-6 w-6"
             >
               <Cross1Icon className="h-3 w-3 cursor-pointer" />

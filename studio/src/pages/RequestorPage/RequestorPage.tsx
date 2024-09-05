@@ -26,6 +26,8 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
+import { RequestorTimeline } from "./RequestorTimeline";
+import type { Panels } from "./types";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -123,12 +125,22 @@ export const RequestorPage = () => {
     },
   );
 
-  const [isAiTestGenerationPanelOpen, setIsAiTestGenerationPanelOpen] =
-    useState(false);
-  const toggleAiTestGenerationPanel = useCallback(
-    () => setIsAiTestGenerationPanelOpen((current) => !current),
-    [],
-  );
+  const traceId = mostRecentRequestornatorForRoute?.app_responses?.traceId;
+
+  const [openPanels, setOpenPanels] = useState<Panels>({
+    aiTestGeneration: "closed",
+    timeline: "closed",
+  });
+
+  const togglePanel = useCallback((panelName: keyof Panels) => {
+    setOpenPanels((prev) => ({
+      ...prev,
+      [panelName]: prev[panelName] === "open" ? "closed" : "open",
+    }));
+  }, []);
+
+  const openPanelCount = Object.values(openPanels).filter(Boolean).length;
+  const panelSize = 100 / openPanelCount;
 
   const width = getMainSectionWidth();
   const isLgScreen = useIsLgScreen();
@@ -170,8 +182,8 @@ export const RequestorPage = () => {
       tracedResponse={mostRecentRequestornatorForRoute}
       isLoading={isRequestorRequesting}
       websocketState={websocketState}
-      openAiTestGenerationPanel={toggleAiTestGenerationPanel}
-      isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
+      openPanels={openPanels}
+      togglePanel={togglePanel}
     />
   );
 
@@ -247,9 +259,7 @@ export const RequestorPage = () => {
               id="requestor-page-main-panel"
               autoSaveId="requestor-page-main-panel"
             >
-              <ResizablePanel
-                defaultSize={isAiTestGenerationPanelOpen ? 50 : 100}
-              >
+              <ResizablePanel defaultSize={panelSize}>
                 <ResizablePanelGroup
                   direction={isLgScreen ? "horizontal" : "vertical"}
                   id="requestor-page-request-panel-group"
@@ -286,35 +296,58 @@ export const RequestorPage = () => {
                   </ResizablePanel>
                 </ResizablePanelGroup>
               </ResizablePanel>
-              <ResizablePanel>
-                {isAiTestGenerationPanelOpen && (
-                  <>
-                    <ResizableHandle
-                      hitAreaMargins={{ coarse: 20, fine: 10 }}
-                      className="bg-transparent"
+              {openPanels.timeline === "open" && traceId && (
+                <>
+                  <ResizableHandle
+                    hitAreaMargins={{ coarse: 20, fine: 10 }}
+                    className="bg-transparent"
+                  />
+                  <ResizablePanel
+                    order={2}
+                    id="timeline-panel"
+                    className={cn(
+                      BACKGROUND_LAYER,
+                      "rounded-md",
+                      "border",
+                      "h-full",
+                      "mt-2",
+                    )}
+                  >
+                    <RequestorTimeline
+                      traceId={traceId}
+                      togglePanel={togglePanel}
                     />
-                    <ResizablePanel
-                      order={3}
-                      id="ai-panel"
-                      className={cn(
-                        BACKGROUND_LAYER,
-                        "rounded-md",
-                        "border",
-                        "h-full",
-                        "mt-2",
-                      )}
-                    >
-                      <AiTestGenerationPanel
-                        // TODO - Only use history for recent matching route
-                        history={history}
-                        toggleAiTestGenerationPanel={
-                          toggleAiTestGenerationPanel
-                        }
-                      />
-                    </ResizablePanel>
-                  </>
-                )}
-              </ResizablePanel>
+                  </ResizablePanel>
+                </>
+              )}
+              {/*
+               <ResizablePanel> </ResizablePanel>
+              */}
+              {openPanels.aiTestGeneration === "open" && (
+                <>
+                  <ResizableHandle
+                    hitAreaMargins={{ coarse: 20, fine: 10 }}
+                    className="bg-transparent"
+                  />
+                  <ResizablePanel
+                    order={3}
+                    id="ai-panel"
+                    className={cn(
+                      BACKGROUND_LAYER,
+                      "rounded-md",
+                      "border",
+                      "h-full",
+                      "mt-2",
+                    )}
+                  >
+                    <AiTestGenerationPanel
+                      // TODO - Only use history for recent matching route
+                      history={history}
+                      togglePanel={togglePanel}
+                    />
+                  </ResizablePanel>
+                </>
+              )}
             </ResizablePanelGroup>
           </div>
         </ResizablePanel>
