@@ -22,9 +22,9 @@ pub struct Span {
     pub parent_span_id: Option<String>,
 
     pub name: String,
-    pub trace_state: String,
-    pub flags: u32,
-    pub kind: SpanKind,
+    pub trace_state: Option<String>,
+    pub flags: Option<u32>,
+    pub kind: Option<SpanKind>,
 
     pub scope_name: Option<String>,
     pub scope_version: Option<String>,
@@ -65,7 +65,7 @@ impl Span {
                 let scope_attributes = scope_span.scope.map(|scope| scope.attributes.into());
 
                 for span in scope_span.spans {
-                    let kind = span.kind().into();
+                    let kind = Some(span.kind().into());
                     let attributes = span.attributes.into();
 
                     let start_time = parse_time_nanos(span.start_time_unix_nano);
@@ -84,8 +84,8 @@ impl Span {
                     let span_id = hex::encode(span.span_id);
 
                     let name = span.name;
-                    let trace_state = span.trace_state;
-                    let flags = span.flags;
+                    let trace_state = Some(span.trace_state);
+                    let flags = Some(span.flags);
 
                     let span = Self {
                         trace_id,
