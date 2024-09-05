@@ -1,14 +1,17 @@
 import type { MizuOrphanLog } from "@/queries";
 import {
   cn,
+  isJson,
   objectHasName,
   objectHasStack,
   renderFullLogMessage,
 } from "@/utils";
 import { useTimelineIcon } from "../hooks";
 import { SubSectionHeading } from "../shared";
-import { getColorForLevel } from "../utils";
+import { getBgColorForLevel, getTextColorForLevel } from "../utils";
 import { StackTrace } from "./StackTrace";
+import { Icon } from "@iconify/react";
+import { TextOrJsonViewer } from "./TextJsonViewer";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const id = log.id;
@@ -27,9 +30,11 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const description = getDescription(message ?? "", log.args);
   // TODO - Get stack from the span!
   const stack = objectHasStack(message) ? message.stack : null;
-  const icon = useTimelineIcon(log, {
-    colorOverride: getColorForLevel(log.level),
-  });
+  const textColorLevel = getTextColorForLevel(level);
+  const bgColorLevel = getBgColorForLevel(level);
+  // const icon = useTimelineIcon(log, {
+  //   colorOverride: getColorForLevel(log.level),
+  // });
 
   const hasDescription = !!description;
 
@@ -50,16 +55,19 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   return (
     <div
       id={id?.toString()}
-      className="overflow-x-auto overflow-y-hidden max-w-full"
+      className={cn(
+        "overflow-x-auto overflow-y-hidden max-w-full px-2",
+        bgColorLevel,
+      )}
     >
-      <div className={cn("grid gap-2 grid-cols-[auto_1fr_auto] items-center")}>
-        {icon}
+      <div className={cn("grid gap-1 grid-cols-[auto_1fr_auto] items-center")}>
+        <Icon icon="lucide:terminal" className={textColorLevel} />
         {topContent}
 
         <SubSectionHeading
           className={cn(
             "font-semibold text-sm flex items-center gap-2",
-            getColorForLevel(log.level),
+            textColorLevel,
           )}
         >
           {heading}
@@ -67,15 +75,15 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
       </div>
 
       {hasDescription && contentsType === "multi-arg-log" && (
-        <LogContents className="px-2 text-xs" fullLogArgs={contents} />
+        <LogContents className="text-xs" fullLogArgs={contents} />
       )}
 
       {hasDescription && contentsType === "json" && (
-        <LogContents className="px-2 text-xs" fullLogArgs={contents} />
+        <LogContents className="text-xs" fullLogArgs={contents} />
       )}
 
       {stack && (
-        <div className="mt-2 max-h-[200px] overflow-y-auto text-gray-400 text-xs">
+        <div className="max-h-[200px] overflow-y-auto text-gray-400 text-xs">
           <StackTrace stackTrace={stack} />
         </div>
       )}

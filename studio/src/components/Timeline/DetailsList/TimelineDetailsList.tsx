@@ -25,7 +25,7 @@ function TimelineListDetailsComponent({
           onMouseEnter={() => setHighlightedSpanId(getId(item))}
           onMouseLeave={() => setHighlightedSpanId(null)}
           className={cn(
-            "p-2 max-w-full overflow-hidden",
+            "max-w-full overflow-hidden",
             "border-l-2 border-transparent rounded-sm transition-all bg-transparent",
             "hover:bg-primary/10 hover:border-blue-500 hover:rounded-l-none",
             "data-[highlighted=true]:bg-primary/10",
