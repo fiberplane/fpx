@@ -1,17 +1,14 @@
 import type { MizuOrphanLog } from "@/queries";
 import {
   cn,
-  isJson,
   objectHasName,
   objectHasStack,
   renderFullLogMessage,
 } from "@/utils";
-import { useTimelineIcon } from "../hooks";
 import { SubSectionHeading } from "../shared";
 import { getBgColorForLevel, getTextColorForLevel } from "../utils";
 import { StackTrace } from "./StackTrace";
 import { Icon } from "@iconify/react";
-import { TextOrJsonViewer } from "./TextJsonViewer";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const id = log.id;
