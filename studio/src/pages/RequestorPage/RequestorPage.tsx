@@ -311,6 +311,7 @@ export const RequestorPage = () => {
                       "border",
                       "h-full",
                       "mt-2",
+                      "overflow-y-scroll",
                     )}
                   >
                     <RequestorTimeline

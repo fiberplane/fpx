@@ -44,7 +44,7 @@ export function RequestorTimeline({ traceId, togglePanel }: Props) {
 
   return (
     <Tabs defaultValue="timeline">
-      <CustomTabsList>
+      <CustomTabsList className="sticky">
         <CustomTabTrigger value="timeline">Timeline</CustomTabTrigger>
         <div className="flex-grow flex justify-end">
           <Button
@@ -86,7 +86,7 @@ export function RequestorTimeline({ traceId, togglePanel }: Props) {
                 </>
               )}
               <ResizablePanel className="max-h-full" order={1} id="details">
-                <Content className="overflow-auto h-fit">
+                <Content className="overflow-y-scroll h-fit">
                   <TimelineListDetails waterfall={waterfall} />
                 </Content>
               </ResizablePanel>
