@@ -19,7 +19,6 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
-} from "../reducer/state";
 
 export function ResponseBody({
   headersSlot,

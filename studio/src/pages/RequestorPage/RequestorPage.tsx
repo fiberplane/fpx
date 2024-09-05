@@ -131,7 +131,6 @@ export const RequestorPage = () => {
   );
 
   const width = getMainSectionWidth();
-  const isSmallScreen = useIsSmScreen();
   const isLgScreen = useIsLgScreen();
 
   const { minSize, maxSize } = usePanelConstraints({
@@ -232,8 +231,8 @@ export const RequestorPage = () => {
               "h-[calc(100%-0.6rem)]",
               "lg:h-full",
               "relative",
-              "overflow-scroll",
-              "sm:overflow-hidden",
+              // "overflow-scroll",
+              "overflow-hidden",
             )}
           >
             <RequestorInput
@@ -243,12 +242,6 @@ export const RequestorPage = () => {
               formRef={formRef}
               websocketState={websocketState}
             />
-            {isSmallScreen ? (
-              <>
-                {requestContent}
-                {responseContent}
-              </>
-            ) : (
               <ResizablePanelGroup
                 direction="vertical"
                 id="requestor-page-main-panel"
@@ -289,19 +282,12 @@ export const RequestorPage = () => {
                       minSize={10}
                       className={cn(BACKGROUND_LAYER)}
                     >
-                      <AiTestGenerationPanel
-                        // TODO - Only use history for recent matching route
-                        history={history}
-                        toggleAiTestGenerationPanel={
-                          toggleAiTestGenerationPanel
-                        }
-                      />
                       {responseContent}
                     </ResizablePanel>
                   </ResizablePanelGroup>
                 </ResizablePanel>
                 <ResizablePanel>
-                  {isAiTestGenerationPanelOpen && !isSmallScreen && (
+                  {isAiTestGenerationPanelOpen && (
                     <>
                       <ResizableHandle
                         hitAreaMargins={{ coarse: 20, fine: 10 }}
@@ -324,15 +310,12 @@ export const RequestorPage = () => {
                           toggleAiTestGenerationPanel={
                             toggleAiTestGenerationPanel
                           }
-                          getActiveRoute={getActiveRoute}
-                          removeServiceUrlFromPath={removeServiceUrlFromPath}
                         />
                       </ResizablePanel>
                     </>
                   )}
                 </ResizablePanel>
               </ResizablePanelGroup>
-            )}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -399,8 +382,8 @@ pace-x-6 h-12"
     <h1
       className="inline-flex items-center justify-center whitespace-nowrap rounded-md ring-offset-background transition-
 all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-ev
-ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm font-normal border-b border-transparent font-medium tex
-t-gray-100 shadow-none bg-inherit rounded-none border-blue-500"
+ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm border-b border-transparent font-medium tex
+t-gray-100 shadow-none bg-inherit border-blue-500"
     >
       {props.children}
     </h1>

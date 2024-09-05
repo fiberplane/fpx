@@ -105,13 +105,7 @@ export const ResponsePanel = memo(function ResponsePanel({
           {shouldShowMessages && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
-          <div
-            className={cn(
-              // Hide this button on mobile, and rely on the button + drawer pattern instead
-              "max-sm:hidden",
-              "flex-grow sm:flex justify-end",
-            )}
-          >
+          <div className="flex-grow flex justify-end">
             <Button
               variant={isAiTestGenerationPanelOpen ? "outline" : "ghost"}
               size="icon"

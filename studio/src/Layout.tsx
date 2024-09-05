@@ -30,8 +30,8 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
-      <nav className="flex gap-4 sm:gap-4 py-4 sm:py-0 justify-between items-center h-[38px] border-b">
-        <div className="sticky top-0 flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent md:px-6 py-2 text-sm">
+      <nav className="flex gap-4 sm:gap-4 py-2 sm:py-2 justify-between items-center border-b">
+        <div className="sticky top-0 flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent md:px-6 text-sm">
           <Branding />
           <div className="ml-2">
             <div className="flex items-center gap-2 text-sm">

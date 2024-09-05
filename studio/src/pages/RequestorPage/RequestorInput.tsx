@@ -14,6 +14,7 @@ import {
   MixerHorizontalIcon,
   TriangleRightIcon,
 } from "@radix-ui/react-icons";
+import { Icon } from "@iconify/react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
@@ -167,7 +168,10 @@ export function RequestorInput({
               {isWsRequest(requestType) ? (
                 <MixerHorizontalIcon className="md:hidden w-6 h-6" />
               ) : (
-                <TriangleRightIcon className="md:hidden w-6 h-6" />
+                <Icon
+                  icon="lucide:send-horizontal"
+                  className="w-4 h-4 md:hidden"
+                />
               )}
             </Button>
           </TooltipTrigger>
