@@ -5,14 +5,14 @@ import { neon } from "@neondatabase/serverless";
 import { asc, eq, ilike } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 
-import { geese } from "./db/schema";
 import {
   createGoose,
   getAllGeese,
+  getGeeseByLanguage,
   getGooseById,
   updateGoose,
-  getGeeseByLanguage,
 } from "./db/client";
+import { geese } from "./db/schema";
 
 import { upgradeWebSocket } from "hono/cloudflare-workers";
 import { OpenAI } from "openai";

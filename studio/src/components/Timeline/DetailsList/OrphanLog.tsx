@@ -5,10 +5,10 @@ import {
   objectHasStack,
   renderFullLogMessage,
 } from "@/utils";
+import { Icon } from "@iconify/react";
 import { SubSectionHeading } from "../shared";
 import { getBgColorForLevel, getTextColorForLevel } from "../utils";
 import { StackTrace } from "./StackTrace";
-import { Icon } from "@iconify/react";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const id = log.id;

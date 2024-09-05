@@ -1,29 +1,29 @@
-import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import { cn } from "@/utils";
-import type { Panels } from "../types";
-import { Tabs } from "@radix-ui/react-tabs";
-import { Button } from "@/components/ui/button";
-import { Cross1Icon } from "@radix-ui/react-icons";
-import { CustomTabsList, CustomTabTrigger, CustomTabsContent } from "../Tabs";
-import { useOtelTrace } from "@/queries";
 import {
   getBgColorForLevel,
   getTextColorForLevel,
 } from "@/components/Timeline/utils";
+import { Button } from "@/components/ui/button";
 import {
   Table,
-  TableHeader,
-  TableRow,
-  TableHead,
   TableBody,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import { useOtelTrace } from "@/queries";
+import { cn } from "@/utils";
+import { Cross1Icon } from "@radix-ui/react-icons";
+import { Tabs } from "@radix-ui/react-tabs";
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
+import type { Panels } from "../types";
 
 type OrphanLog = {
   traceId: string;
