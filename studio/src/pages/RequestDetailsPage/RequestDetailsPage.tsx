@@ -1,3 +1,4 @@
+import { useHandler } from "@fiberplane/hooks";
 import { useParams } from "react-router-dom";
 import { EmptyState } from "./EmptyState";
 import { RequestDetailsPageV2 } from "./RequestDetailsPageV2";
@@ -12,7 +13,16 @@ export function RequestDetailsPage() {
     return <EmptyState />;
   }
 
-  return <RequestDetailsPageV2 traceId={traceId} />;
+  const generateLinkToTrace = useHandler((traceId: string) => {
+    return `/requests/otel/${traceId}`;
+  });
+
+  return (
+    <RequestDetailsPageV2
+      traceId={traceId}
+      generateLinkToTrace={generateLinkToTrace}
+    />
+  );
 }
 
 export type TocItem = {

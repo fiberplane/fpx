@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/resizable";
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
-import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useCallback, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { RequestDetailsPageV2 } from "../RequestDetailsPage/RequestDetailsPageV2";
 import { NavigationPanel } from "./NavigationPanel";
 import { RequestorPageContent } from "./RequestorPageContent";
@@ -62,6 +62,15 @@ export const RequestorPage = () => {
     minimalGroupSize: 944,
   });
 
+  const [searchParams] = useSearchParams();
+  const generateLinkToTrace = useCallback(
+    (traceId: string) => {
+      const search = searchParams.toString();
+      return `/requestor/request/${traceId}${search ? `?${search}` : ""}`;
+    },
+    [searchParams],
+  );
+
   return (
     <div
       className={cn(
@@ -100,12 +109,17 @@ export const RequestorPage = () => {
         )}
         <ResizablePanel id="main" order={1}>
           {requestType === "history" && !!id ? (
-            <RequestDetailsPageV2 traceId={id} />
+            <RequestDetailsPageV2
+              traceId={id}
+              paginationHidden
+              generateLinkToTrace={generateLinkToTrace}
+            />
           ) : (
             <RequestorPageContent
               history={history}
               sessionHistory={sessionHistory}
               recordRequestInSessionHistory={recordRequestInSessionHistory}
+              traceId={id}
             />
           )}
         </ResizablePanel>

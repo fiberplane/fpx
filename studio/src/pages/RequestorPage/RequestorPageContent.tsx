@@ -24,17 +24,21 @@ interface RequestorPageContentProps {
   history: Requestornator[]; // Replace 'any[]' with the correct type
   sessionHistory: Requestornator[];
   recordRequestInSessionHistory: (traceId: string) => void;
+  traceId?: string;
 }
 
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
   history,
   sessionHistory,
   recordRequestInSessionHistory,
+  traceId,
 }) => {
   const { toast } = useToast();
 
-  const mostRecentRequestornatorForRoute =
-    useMostRecentRequestornator(sessionHistory);
+  const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
+    sessionHistory,
+    traceId,
+  );
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
@@ -233,18 +237,22 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
  * When you select a route from the route side panel,
  * this will look for the most recent request made against that route.
  */
-function useMostRecentRequestornator(all: Requestornator[]) {
+function useMostRecentRequestornator(
+  all: Requestornator[],
+  overrideTraceId: string | null = null,
+) {
   const { path: routePath } = useActiveRoute();
   const { path, method, activeHistoryResponseTraceId } = useRequestorStore(
     "path",
     "method",
     "activeHistoryResponseTraceId",
   );
+
+  const traceId = overrideTraceId ?? activeHistoryResponseTraceId;
   return useMemo<Requestornator | undefined>(() => {
-    if (activeHistoryResponseTraceId) {
+    if (traceId) {
       return all.find(
-        (r: Requestornator) =>
-          r?.app_responses?.traceId === activeHistoryResponseTraceId,
+        (r: Requestornator) => r?.app_responses?.traceId === traceId,
       );
     }
 
@@ -275,7 +283,7 @@ function useMostRecentRequestornator(all: Requestornator[]) {
     matchingResponsesFallback?.sort(sortRequestornatorsDescending);
 
     return matchingResponsesFallback?.[0];
-  }, [all, routePath, method, path, activeHistoryResponseTraceId]);
+  }, [all, routePath, method, path, traceId]);
 }
 
 function getMainSectionHeight() {

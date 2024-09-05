@@ -40,6 +40,7 @@ export function RequestDetailsPageContentV2({
   pagination,
   spans,
   orphanLogs = EMPTY_LIST,
+  generateLinkToTrace,
 }: {
   traceId: string;
   spans: Array<OtelSpan>;
@@ -50,6 +51,7 @@ export function RequestDetailsPageContentV2({
     handlePrevTrace: () => void;
     handleNextTrace: () => void;
   };
+  generateLinkToTrace: (traceId: string) => string;
 }) {
   const currentTrace = {
     traceId,
@@ -108,7 +110,7 @@ export function RequestDetailsPageContentV2({
           {!isMostRecentTrace && (
             <Link
               className="text-blue-600 pr-4 text-sm inline-flex items-center gap-1.5"
-              to={`/requests/otel/${mostRecentTraceId}`}
+              to={generateLinkToTrace(mostRecentTraceId)}
             >
               Jump to latest
               <ArrowTopRightIcon className="w-3.5 h-3.5" />

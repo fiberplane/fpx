@@ -59,7 +59,6 @@ export const ResponsePanel = memo(function ResponsePanel({
     "activeResponsePanelTab",
     "setActiveResponsePanelTab",
   );
-
   const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
     return visibleResponsePanelTabs.includes(tab);
   };
