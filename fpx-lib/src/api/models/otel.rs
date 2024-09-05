@@ -292,6 +292,7 @@ impl From<opentelemetry_proto::tonic::common::v1::ArrayValue> for AttributeValue
 
 /// A trace contains a summary of its traces.
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TraceSummary {
     /// The trace id
     pub trace_id: String,
