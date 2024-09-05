@@ -28,6 +28,7 @@ import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorHistory } from "./useRequestorHistory";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
+import { LogsTable } from "./LogsTable";
 
 /**
  * Estimate the size of the main section based on the window width
@@ -130,6 +131,7 @@ export const RequestorPage = () => {
   const [openPanels, setOpenPanels] = useState<Panels>({
     aiTestGeneration: "closed",
     timeline: "closed",
+    logs: "closed",
   });
 
   const togglePanel = useCallback((panelName: keyof Panels) => {
@@ -320,9 +322,27 @@ export const RequestorPage = () => {
                   </ResizablePanel>
                 </>
               )}
-              {/*
-               <ResizablePanel> </ResizablePanel>
-              */}
+              {openPanels.logs === "open" && traceId && (
+                <>
+                  <ResizableHandle
+                    hitAreaMargins={{ coarse: 20, fine: 10 }}
+                    className="bg-transparent"
+                  />
+                  <ResizablePanel
+                    id="logs"
+                    order={3}
+                    className={cn(
+                      BACKGROUND_LAYER,
+                      "h-full",
+                      "mt-2",
+                      "rounded-md",
+                      "border",
+                    )}
+                  >
+                    <LogsTable traceId={traceId} togglePanel={togglePanel} />
+                  </ResizablePanel>
+                </>
+              )}
               {openPanels.aiTestGeneration === "open" && (
                 <>
                   <ResizableHandle
