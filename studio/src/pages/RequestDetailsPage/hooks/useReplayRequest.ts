@@ -9,11 +9,10 @@ import {
 } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export function useReplayRequest({ span }: { span?: OtelSpan }) {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
   const method = span ? getRequestMethod(span) : "GET";
 
   const pathWithSearch = useMemo<string>(() => {
