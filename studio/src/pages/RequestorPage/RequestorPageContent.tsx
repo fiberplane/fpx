@@ -142,10 +142,10 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
     usePanelConstraints({
       // Change the groupId to `""` on small screens because we're not rendering
       // the resizable panel group
-      groupId: "requestor-page-main-panel",
-      initialGroupSize: getMainSectionHeight(),
+      groupId: "requestor-page-request-panel-group",
+      initialGroupSize: getMainSectionWidth(),
       minPixelSize: 200,
-      dimension: "height",
+      dimension: "width",
     });
 
   return (
@@ -167,11 +167,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
         formRef={formRef}
         websocketState={websocketState}
       />
-      <ResizablePanelGroup
-        direction="vertical"
-        id="requestor-page-main-panel"
-        autoSaveId="requestor-page-main-panel"
-      >
+      <ResizablePanelGroup direction="vertical" id="requestor-page-main-panel">
         <ResizablePanel defaultSize={isAiTestGenerationPanelOpen ? 50 : 100}>
           <ResizablePanelGroup
             direction={isLgScreen ? "horizontal" : "vertical"}
@@ -286,6 +282,9 @@ function useMostRecentRequestornator(
   }, [all, routePath, method, path, traceId]);
 }
 
-function getMainSectionHeight() {
-  return window.innerHeight - 150;
+/**
+ * Estimate the size of the main section based on the window width
+ */
+function getMainSectionWidth() {
+  return window.innerWidth - 400;
 }

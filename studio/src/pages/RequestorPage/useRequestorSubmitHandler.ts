@@ -6,6 +6,7 @@ import type { RequestorBody } from "./store";
 import { useRequestorStore } from "./store";
 import { useServiceBaseUrl } from "./store/useServiceBaseUrl";
 import { isWsRequest } from "./types";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 export function useRequestorSubmitHandler({
   makeRequest,
@@ -18,6 +19,10 @@ export function useRequestorSubmitHandler({
 }) {
   const { toast } = useToast();
 
+  const { id } = useParams();
+  const urlHasId = !!id;
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
   const {
     selectedRoute,
     body,
@@ -41,6 +46,7 @@ export function useRequestorSubmitHandler({
   );
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
+  const { activeHistoryResponseTraceId } = useRequestorStore();
   return useHandler((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // TODO - Make it clear in the UI that we're auto-adding this header
@@ -66,7 +72,12 @@ export function useRequestorSubmitHandler({
           }
         : null,
       ...requestHeaders,
-    ].filter(Boolean) as KeyValueParameter[];
+    ].filter(
+      (element) =>
+        element &&
+        element.key.toLowerCase() !== "x-fpx-trace-id" &&
+        element.value !== activeHistoryResponseTraceId,
+    ) as KeyValueParameter[];
 
     if (isWsRequest(requestType)) {
       const url = addServiceUrlIfBarePath(path);
@@ -91,6 +102,16 @@ export function useRequestorSubmitHandler({
       {
         onSuccess(data) {
           const traceId = data?.traceId;
+
+          // If there's an id, we're navigating to a specific request
+          // otherwise the newest trace will automatically be shown
+          if (urlHasId) {
+            navigate({
+              pathname: `/requestor/requests/${traceId}`,
+              search: params.toString(),
+            });
+          }
+
           if (traceId && typeof traceId === "string") {
             recordRequestInSessionHistory(traceId);
             showResponseBodyFromHistory(traceId);

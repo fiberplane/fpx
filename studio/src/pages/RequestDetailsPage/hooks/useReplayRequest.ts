@@ -9,10 +9,11 @@ import {
 } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export function useReplayRequest({ span }: { span?: OtelSpan }) {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const method = span ? getRequestMethod(span) : "GET";
 
   const pathWithSearch = useMemo<string>(() => {
@@ -75,7 +76,6 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
 
     return filterReplayHeaders(headers);
   }, [requestHeaders, filterReplayHeaders]);
-
   const replayBody = useMemo(() => {
     const body = span ? getRequestBody(span) : undefined;
     try {
@@ -106,6 +106,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
 
   const replay = useHandler((e: React.FormEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
     return makeRequest(
       {
         addServiceUrlIfBarePath: (replayPath) => replayBaseUrl + replayPath,
@@ -124,7 +125,10 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
       },
       {
         onSuccess(response) {
-          navigate(`/requestor/request/${response.traceId}`);
+          navigate({
+            pathname: `/requestor/requests/${response.traceId}`,
+            search: "?filter-tab=requests",
+          });
         },
         onError(error) {
           console.error("Error replaying request", error);
