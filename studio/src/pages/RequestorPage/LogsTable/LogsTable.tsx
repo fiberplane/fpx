@@ -177,7 +177,10 @@ function TableContent({ columns, data }: TableProps) {
           })
         ) : (
           <TableRow>
-            <TableCell colSpan={columns.length} className="h-24 text-center">
+            <TableCell
+              colSpan={columns.length}
+              className="h-24 text-center font-mono text-muted-foreground"
+            >
               No logs found.
             </TableCell>
           </TableRow>
