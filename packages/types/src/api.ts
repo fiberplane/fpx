@@ -1,10 +1,10 @@
 import type { OtelSpan } from "./otel.js";
 
-export type TraceListResponse = Array<{
+export type TraceSummary = {
   traceId: string;
-  startTime: Date;
-  endTime: Date;
   spans: Array<OtelSpan>;
-}>;
+};
+
+export type TraceListResponse = Array<TraceSummary>;
 
 export type TraceDetailSpansResponse = Array<OtelSpan>;

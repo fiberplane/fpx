@@ -296,14 +296,6 @@ pub struct TraceSummary {
     /// The trace id
     pub trace_id: String,
 
-    /// Start of the first span
-    #[serde(with = "time::serde::rfc3339")]
-    pub start_time: time::OffsetDateTime,
-
-    /// End of the last span
-    #[serde(with = "time::serde::rfc3339")]
-    pub end_time: time::OffsetDateTime,
-
     /// The spans that are part of this trace
     pub spans: Vec<Span>,
 }
@@ -314,19 +306,9 @@ impl TraceSummary {
             return None;
         }
 
-        // Find the first start and the last end time. Note: unwrap is safe here
-        // since we check that there is at least 1 span present.
-        let start_time = spans.iter().map(|span| span.start_time).min().unwrap();
-        let end_time = spans.iter().map(|span| span.end_time).max().unwrap();
-
         let spans = spans.into_iter().map(Into::into).collect();
 
-        Some(Self {
-            trace_id,
-            start_time: start_time.into(),
-            end_time: end_time.into(),
-            spans,
-        })
+        Some(Self { trace_id, spans })
     }
 }
 
