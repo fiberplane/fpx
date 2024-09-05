@@ -8,7 +8,7 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
-import { useIsLgScreen, useIsSmScreen } from "@/hooks";
+import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -131,7 +131,6 @@ export const RequestorPage = () => {
   );
 
   const width = getMainSectionWidth();
-  const isSmallScreen = useIsSmScreen();
   const isLgScreen = useIsLgScreen();
 
   const { minSize, maxSize } = usePanelConstraints({
@@ -180,7 +179,7 @@ export const RequestorPage = () => {
     <div
       className={cn(
         // It's critical the parent has a fixed height for our grid layout to work
-        "h-[calc(100vh-64px)]",
+        "h-[calc(100vh-40px)]",
         "flex",
         "flex-col",
         "gap-2",
@@ -232,8 +231,8 @@ export const RequestorPage = () => {
               "h-[calc(100%-0.6rem)]",
               "lg:h-full",
               "relative",
-              "overflow-scroll",
-              "sm:overflow-hidden",
+              // "overflow-scroll",
+              "overflow-hidden",
             )}
           >
             <RequestorInput
@@ -243,45 +242,68 @@ export const RequestorPage = () => {
               formRef={formRef}
               websocketState={websocketState}
             />
-            {isSmallScreen ? (
-              <>
-                {requestContent}
-                {responseContent}
-              </>
-            ) : (
-              <ResizablePanelGroup
-                direction={"vertical"}
-                id="requestor-page-main-panel"
-                autoSaveId="requestor-page-main-panel"
-                className={cn(
-                  BACKGROUND_LAYER,
-                  "rounded-md",
-                  "border",
-                  // HACK - This defensively prevents overflow from getting too excessive,
-                  //        In the case where the inner content expands beyond the parent
-                  "max-w-screen",
-                  "max-h-full",
-                )}
+            <ResizablePanelGroup
+              direction="vertical"
+              id="requestor-page-main-panel"
+              autoSaveId="requestor-page-main-panel"
+            >
+              <ResizablePanel
+                defaultSize={isAiTestGenerationPanelOpen ? 50 : 100}
               >
-                <ResizablePanel
-                  order={1}
-                  className="relative"
-                  id="request-panel"
-                  minSize={requestPanelMinSize}
-                  maxSize={requestPanelMaxSize}
+                <ResizablePanelGroup
+                  direction={isLgScreen ? "horizontal" : "vertical"}
+                  id="requestor-page-request-panel-group"
+                  autoSaveId="requestor-page-request-panel-group"
+                  className={cn(
+                    "rounded-md",
+                    // HACK - This defensively prevents overflow from getting too excessive,
+                    //        In the case where the inner content expands beyond the parent
+                    "max-w-screen",
+                    "max-h-full",
+                    // "gap-1",
+                  )}
                 >
-                  {requestContent}
-                </ResizablePanel>
-                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-                <ResizablePanel id="response-panel" order={4} minSize={10}>
-                  {responseContent}
-                </ResizablePanel>
-                {isAiTestGenerationPanelOpen && !isSmallScreen && (
+                  <ResizablePanel
+                    order={1}
+                    className={cn(BACKGROUND_LAYER, "relative")}
+                    id="request-panel"
+                    minSize={requestPanelMinSize}
+                    maxSize={requestPanelMaxSize}
+                  >
+                    {requestContent}
+                  </ResizablePanel>
+                  <ResizableHandle
+                    hitAreaMargins={{ coarse: 20, fine: 10 }}
+                    className="bg-transparent"
+                  />
+                  <ResizablePanel
+                    id="response-panel"
+                    order={4}
+                    minSize={10}
+                    className={cn(BACKGROUND_LAYER)}
+                  >
+                    {responseContent}
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              </ResizablePanel>
+              <ResizablePanel>
+                {isAiTestGenerationPanelOpen && (
                   <>
                     <ResizableHandle
                       hitAreaMargins={{ coarse: 20, fine: 10 }}
+                      className="bg-transparent"
                     />
-                    <ResizablePanel order={3} id="ai-panel">
+                    <ResizablePanel
+                      order={3}
+                      id="ai-panel"
+                      className={cn(
+                        BACKGROUND_LAYER,
+                        "rounded-md",
+                        "border",
+                        "h-full",
+                        "mt-2",
+                      )}
+                    >
                       <AiTestGenerationPanel
                         // TODO - Only use history for recent matching route
                         history={history}
@@ -292,8 +314,8 @@ export const RequestorPage = () => {
                     </ResizablePanel>
                   </>
                 )}
-              </ResizablePanelGroup>
-            )}
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -360,8 +382,8 @@ pace-x-6 h-12"
     <h1
       className="inline-flex items-center justify-center whitespace-nowrap rounded-md ring-offset-background transition-
 all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-ev
-ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm font-normal border-b border-transparent font-medium tex
-t-gray-100 shadow-none bg-inherit rounded-none border-blue-500"
+ents-none disabled:opacity-50 py-2 px-0 text-left h-12 ml-2 text-sm border-b border-transparent font-medium tex
+t-gray-100 shadow-none bg-inherit border-blue-500"
     >
       {props.children}
     </h1>

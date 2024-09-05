@@ -9,11 +9,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { cn, isMac } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
-import {
-  FilePlusIcon,
-  MixerHorizontalIcon,
-  TriangleRightIcon,
-} from "@radix-ui/react-icons";
+import { Icon } from "@iconify/react";
+import { FilePlusIcon, MixerHorizontalIcon } from "@radix-ui/react-icons";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
@@ -102,10 +99,10 @@ export function RequestorInput({
           onChange={(e) => {
             handlePathInputChange(e.target.value);
           }}
-          className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
+          className="flex-grow text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
         />
       </div>
-      <div className="flex items-center space-x-2 p-2">
+      <div className="flex items-center space-x-2 px-2 py-0">
         {canSaveDraftRoute && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -155,7 +152,7 @@ export function RequestorInput({
               }}
               disabled={isRequestorRequesting}
               variant={isWsConnected ? "destructive" : "default"}
-              className={cn("p-2 md:p-2.5")}
+              className={cn("p-2 md:px-2.5 py-1 h-auto")}
             >
               <span className="hidden md:inline">
                 {isWsRequest(requestType)
@@ -167,7 +164,10 @@ export function RequestorInput({
               {isWsRequest(requestType) ? (
                 <MixerHorizontalIcon className="md:hidden w-6 h-6" />
               ) : (
-                <TriangleRightIcon className="md:hidden w-6 h-6" />
+                <Icon
+                  icon="lucide:send-horizontal"
+                  className="w-4 h-4 md:hidden"
+                />
               )}
             </Button>
           </TooltipTrigger>

@@ -149,6 +149,7 @@ export function StatusCode({
         "rounded-md",
         "px-2",
         "py-1",
+        "text-xs",
         "bg-opacity-30",
         "font-sans",
         isGreen && ["text-green-400", "bg-green-800"],

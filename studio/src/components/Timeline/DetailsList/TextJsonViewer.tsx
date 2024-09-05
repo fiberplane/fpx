@@ -4,7 +4,7 @@ import { nordTheme } from "@uiw/react-json-view/nord";
 
 export function TextOrJsonViewer({
   text,
-  collapsed,
+  collapsed = true,
   textMaxPreviewLength,
   textMaxPreviewLines,
 }: {

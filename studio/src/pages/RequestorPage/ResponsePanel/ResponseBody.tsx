@@ -1,4 +1,5 @@
 import { CodeMirrorJsonEditor, SubSectionHeading } from "@/components/Timeline";
+import { TextOrJsonViewer } from "@/components/Timeline/DetailsList/TextJsonViewer";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -65,12 +66,7 @@ export function ResponseBody({
         >
           {headersSlot}
           <CollapsibleBodyContainer>
-            <CodeMirrorJsonEditor
-              value={prettyBody}
-              readOnly
-              onChange={noop}
-              minHeight="0"
-            />
+            <TextOrJsonViewer text={prettyBody} collapsed={false} />
           </CollapsibleBodyContainer>
         </div>
       );

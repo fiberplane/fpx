@@ -162,7 +162,7 @@ export const RequestPanel = memo(function RequestPanel(
           setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
         />
         <PanelSectionHeader
-          title="Query parameters"
+          title="Query"
           handleClearData={() => {
             setQueryParams([]);
           }}
@@ -176,7 +176,7 @@ export const RequestPanel = memo(function RequestPanel(
         {pathParams.length > 0 ? (
           <>
             <PanelSectionHeader
-              title="Path parameters"
+              title="Path"
               handleClearData={clearPathParams}
               className="mt-4"
             />
@@ -328,7 +328,7 @@ export function PanelSectionHeader({
   return (
     <div
       className={cn(
-        "uppercase text-gray-400 text-sm mb-2 flex items-center justify-between",
+        "uppercase justify-between text-gray-400 text-xs mb-2 flex items-center",
         className,
       )}
     >
