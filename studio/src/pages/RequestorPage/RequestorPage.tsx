@@ -8,7 +8,7 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
-import { useIsLgScreen, useIsSmScreen } from "@/hooks";
+import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";

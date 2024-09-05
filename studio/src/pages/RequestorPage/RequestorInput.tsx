@@ -10,11 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn, isMac } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
-import {
-  FilePlusIcon,
-  MixerHorizontalIcon,
-  TriangleRightIcon,
-} from "@radix-ui/react-icons";
+import { FilePlusIcon, MixerHorizontalIcon } from "@radix-ui/react-icons";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
