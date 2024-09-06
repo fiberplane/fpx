@@ -32,6 +32,10 @@ export function App() {
                 element={<RequestDetailsPage />}
               />
               <Route path="/requestor" element={<RequestorPage />} />
+              <Route
+                path="/requestor/:requestType/:id"
+                element={<RequestorPage />}
+              />
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </Layout>

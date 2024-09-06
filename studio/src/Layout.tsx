@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
 import type { ComponentProps } from "react";
@@ -32,13 +33,11 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
       <nav className="flex gap-4 sm:gap-4 py-2 sm:py-2 justify-between items-center border-b">
         <div className="sticky top-0 flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent md:px-6 text-sm">
-          <Branding />
+          <HeaderNavLink to="/requestor">
+            <Branding />
+          </HeaderNavLink>
           <div className="ml-2">
-            <div className="flex items-center gap-2 text-sm">
-              <HeaderNavLink to="/requestor">Routes</HeaderNavLink>
-              <HeaderNavLink to="/requests">Requests</HeaderNavLink>
-              <HeaderNavLink to="/settings">Settings</HeaderNavLink>
-            </div>
+            <div className="flex items-center gap-2 text-sm" />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -48,6 +47,9 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             </div>
           )}
           <div className="flex items-center border-l gap-1 px-1">
+            <HeaderNavLink to="/settings">
+              <Icon icon="lucide:settings" />
+            </HeaderNavLink>
             <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
               <a
                 href="https://github.com/fiberplane/fpx"
