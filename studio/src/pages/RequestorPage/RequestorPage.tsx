@@ -87,7 +87,6 @@ export const RequestorPage = () => {
       <ResizablePanelGroup
         direction="horizontal"
         id="requestor-page-main"
-        autoSaveId="requestor-page-main"
         className="w-full"
       >
         {isLgScreen && (
@@ -119,7 +118,7 @@ export const RequestorPage = () => {
               history={history}
               sessionHistory={sessionHistory}
               recordRequestInSessionHistory={recordRequestInSessionHistory}
-              traceId={id}
+              overrideTraceId={id}
             />
           )}
         </ResizablePanel>
