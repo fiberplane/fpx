@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
 import type { ComponentProps } from "react";
@@ -8,7 +9,6 @@ import { Button } from "./components/ui/button";
 import { useWebsocketQueryInvalidation } from "./hooks";
 import { useProxyRequestsEnabled } from "./hooks/useProxyRequestsEnabled";
 import { cn } from "./utils";
-import { Icon } from "@iconify/react";
 
 const Branding = () => {
   return (
@@ -37,8 +37,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             <Branding />
           </HeaderNavLink>
           <div className="ml-2">
-            <div className="flex items-center gap-2 text-sm">
-            </div>
+            <div className="flex items-center gap-2 text-sm" />
           </div>
         </div>
         <div className="flex items-center gap-2">

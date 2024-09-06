@@ -1,9 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import { useSearchParams } from "react-router-dom";
+import { BACKGROUND_LAYER } from "../styles";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
-import { BACKGROUND_LAYER } from "../styles";
 
 const FILTER_TAB_KEY = "filter-tab";
 const TAB_KEYS = ["routes", "requests"] as const;
