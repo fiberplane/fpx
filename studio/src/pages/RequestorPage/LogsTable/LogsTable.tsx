@@ -1,7 +1,4 @@
-import {
-  getBgColorForLevel,
-  getTextColorForLevel,
-} from "@/components/Timeline/utils";
+import { getBgColorForLevel } from "@/components/Timeline/utils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
