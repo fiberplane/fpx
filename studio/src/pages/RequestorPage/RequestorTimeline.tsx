@@ -44,7 +44,7 @@ export function RequestorTimeline({ traceId, togglePanel }: Props) {
 
   return (
     <Tabs defaultValue="timeline" className="h-full">
-      <CustomTabsList>
+      <CustomTabsList className="sticky top-0 z-10">
         <CustomTabTrigger value="timeline">Timeline</CustomTabTrigger>
         <div className="flex-grow flex justify-end">
           <Button
