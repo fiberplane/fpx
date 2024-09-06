@@ -2,7 +2,7 @@ import type { MizuOrphanLog } from "@/queries";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import { useTimelineContext } from "../context";
-import { useTimelineIcon, useTimelineTitle } from "../hooks";
+import { useTimelineTitle } from "../hooks";
 import { getBgColorForLevel, getTextColorForLevel } from "../utils";
 
 export const TimelineGraphLog: React.FC<{
