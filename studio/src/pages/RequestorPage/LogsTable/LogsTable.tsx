@@ -51,6 +51,7 @@ export function LogsTable({ traceId, togglePanel }: Props) {
       accessorKey: "level",
       header: "",
       maxSize: 5,
+      size: 5,
       cell: ({ row }) => {
         return (
           <div
@@ -68,8 +69,8 @@ export function LogsTable({ traceId, togglePanel }: Props) {
     {
       accessorKey: "timestamp",
       header: "Timestamp",
-      maxSize: 80,
-      size: 60,
+      maxSize: 145,
+      size: 145,
       cell: ({ row }) => (
         <span className="font-mono text-xs text-nowrap">
           {new Date(row.original.timestamp)
@@ -82,6 +83,7 @@ export function LogsTable({ traceId, togglePanel }: Props) {
     {
       accessorKey: "message",
       header: "Message",
+      size: Number.MAX_SAFE_INTEGER,
       cell: ({ row }) => {
         return (
           <div className="" role="button" tabIndex={0}>
