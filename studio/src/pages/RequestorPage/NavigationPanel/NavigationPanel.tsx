@@ -1,9 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import { useSearchParams } from "react-router-dom";
-import { BACKGROUND_LAYER } from "../styles";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
+import { BACKGROUND_LAYER } from "../styles";
 
 const FILTER_TAB_KEY = "filter-tab";
 const TAB_KEYS = ["routes", "requests"] as const;
@@ -30,10 +30,12 @@ export function NavigationPanel() {
         "h-full",
         "flex",
         "flex-col",
+        "pt-4",
       )}
     >
       <Tabs
         value={tab}
+        className="h-full"
         onValueChange={(tabValue) =>
           setParams(
             (value) => {
@@ -48,10 +50,10 @@ export function NavigationPanel() {
           <TabsTrigger value="routes">Routes</TabsTrigger>
           <TabsTrigger value="requests">Requests</TabsTrigger>
         </TabsList>
-        <TabsContent value="routes">
+        <TabsContent value="routes" className="h-full pt-4">
           <RoutesPanel />
         </TabsContent>
-        <TabsContent value="requests">
+        <TabsContent value="requests" className="h-full pt-4">
           <RequestsPanel />
         </TabsContent>
       </Tabs>

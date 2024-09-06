@@ -31,7 +31,7 @@ export function RequestsPanel() {
   });
 
   return (
-    <div>
+    <div className="grid grid-rows-[min-content_auto] h-full gap-7">
       <div className="flex items-center space-x-2 pb-3">
         <Input
           className="text-sm"
@@ -41,6 +41,11 @@ export function RequestsPanel() {
         />
       </div>
       <div className="overflow-y-auto relative">
+        {filteredItems.length === 0 && (
+          <div className="flex items-center justify-center h-full w-full">
+            <p className="text-sm text-muted-foreground">No requests found</p>
+          </div>
+        )}
         {filteredItems.map((item) => (
           <NavItem key={getId(item)} item={item} />
         ))}
@@ -63,7 +68,7 @@ const NavItem = ({ item }: { item: MergedListItem }) => {
         search: params.toString(),
       }}
       className={cn(
-        "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-2 rounded cursor-pointer",
+        "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-1.5 rounded cursor-pointer",
         {
           "bg-muted": id === getId(item),
         },
