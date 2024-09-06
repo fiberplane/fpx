@@ -52,61 +52,32 @@ export function LogsTable({ traceId, togglePanel }: Props) {
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const columns: ColumnDef<OrphanLog>[] = [
-    // {
-    //   accessorKey: "level",
-    //   header: "",
-    //   maxSize: 5,
-    //   size: 5,
-    //   cell: ({ row }) => {
-    //     return (
-    //       <div
-    //         className={cn("w-1.5 h-full rounded-full", {
-    //           "bg-red-700": row.original.level === "error",
-    //           "bg-yellow-700": row.original.level === "warn",
-    //           "bg-blue-700": row.original.level === "info",
-    //           "bg-muted": row.original.level === "debug",
-    //         })}
-    //         title={row.original.level.toUpperCase()}
-    //       />
-    //     );
-    //   },
-    // },
     {
       accessorKey: "timestamp",
       header: "Timestamp",
       cell: ({ row }) => {
         const isExpanded = expandedRowId === row.original.id;
         return (
-          <div className="flex gap-1 justify-between h-full">
-            <div className="grid gap-4 text-right">
-              <div className="font-mono text-xs text-nowrap whitespace-nowrap">
-                {new Date(row.original.timestamp)
-                  .toISOString()
-                  .replace("T", " ")
-                  .replace("Z", "")}
-              </div>
-              {isExpanded && (
-                <p className="text-xs font-mono">
-                  level:{" "}
-                  <span
-                    className={cn(
-                      "uppercase",
-                      getTextColorForLevel(row.original.level),
-                    )}
-                  >
-                    {row.original.level}
-                  </span>
-                </p>
-              )}
+          <div className="grid gap-4 text-right">
+            <div className="font-mono text-xs text-nowrap whitespace-nowrap">
+              {new Date(row.original.timestamp)
+                .toISOString()
+                .replace("T", " ")
+                .replace("Z", "")}
             </div>
-            <div
-              className={cn("inline-block h-full w-1.5 rounded-full", {
-                "bg-red-700": row.original.level === "error",
-                "bg-yellow-700": row.original.level === "warn",
-                "bg-blue-700": row.original.level === "info",
-                "bg-muted": row.original.level === "debug",
-              })}
-            />
+            {isExpanded && (
+              <p className="text-xs font-mono">
+                level:{" "}
+                <span
+                  className={cn(
+                    "uppercase",
+                    getTextColorForLevel(row.original.level),
+                  )}
+                >
+                  {row.original.level}
+                </span>
+              </p>
+            )}
           </div>
         );
       },
