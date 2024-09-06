@@ -215,7 +215,6 @@ export const RequestorPage = () => {
       <ResizablePanelGroup
         direction="horizontal"
         id="requestor-page-main"
-        autoSaveId="requestor-page-main"
         className="w-full"
       >
         {isLgScreen && (
@@ -259,13 +258,11 @@ export const RequestorPage = () => {
             <ResizablePanelGroup
               direction="vertical"
               id="requestor-page-main-panel"
-              autoSaveId="requestor-page-main-panel"
             >
               <ResizablePanel defaultSize={panelSize}>
                 <ResizablePanelGroup
                   direction={isLgScreen ? "horizontal" : "vertical"}
                   id="requestor-page-request-panel-group"
-                  autoSaveId="requestor-page-request-panel-group"
                   className={cn(
                     "rounded-md",
                     // HACK - This defensively prevents overflow from getting too excessive,
