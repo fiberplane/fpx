@@ -51,6 +51,26 @@ export function LogsTable({ traceId, togglePanel }: Props) {
 
   const columns: ColumnDef<OrphanLog>[] = [
     {
+      accessorKey: "level",
+      header: "",
+      maxSize: 30,
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center justify-center">
+            <div
+              className={cn("w-1.5 h-6 rounded-full", {
+                "bg-red-700": row.original.level === "error",
+                "bg-yellow-700": row.original.level === "warn",
+                "bg-blue-700": row.original.level === "info",
+                "bg-muted": row.original.level === "debug",
+              })}
+              title={row.original.level.toUpperCase()}
+            />
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "timestamp",
       header: "Timestamp",
       maxSize: 80,
@@ -62,19 +82,6 @@ export function LogsTable({ traceId, togglePanel }: Props) {
             .replace("Z", "")}
         </span>
       ),
-    },
-    {
-      accessorKey: "level",
-      header: "Level",
-      maxSize: 30,
-      cell: ({ row }) => {
-        const textColor = getTextColorForLevel(row.original.level);
-        return (
-          <span className={cn("font-mono text-xs", textColor)}>
-            {row.original.level.toUpperCase()}
-          </span>
-        );
-      },
     },
     {
       accessorKey: "message",
@@ -137,7 +144,7 @@ function TableContent({ columns, data }: TableProps) {
               return (
                 <TableHead
                   key={header.id}
-                  className="text-left text-xs font-mono"
+                  className={cn("text-left text-xs font-mono")}
                   style={{ width: header.getSize() }}
                 >
                   {header.isPlaceholder
