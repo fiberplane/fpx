@@ -52,53 +52,61 @@ export function LogsTable({ traceId, togglePanel }: Props) {
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const columns: ColumnDef<OrphanLog>[] = [
-    {
-      accessorKey: "level",
-      header: "",
-      maxSize: 5,
-      size: 5,
-      cell: ({ row }) => {
-        return (
-          <div
-            className={cn("w-1.5 h-full rounded-full", {
-              "bg-red-700": row.original.level === "error",
-              "bg-yellow-700": row.original.level === "warn",
-              "bg-blue-700": row.original.level === "info",
-              "bg-muted": row.original.level === "debug",
-            })}
-            title={row.original.level.toUpperCase()}
-          />
-        );
-      },
-    },
+    // {
+    //   accessorKey: "level",
+    //   header: "",
+    //   maxSize: 5,
+    //   size: 5,
+    //   cell: ({ row }) => {
+    //     return (
+    //       <div
+    //         className={cn("w-1.5 h-full rounded-full", {
+    //           "bg-red-700": row.original.level === "error",
+    //           "bg-yellow-700": row.original.level === "warn",
+    //           "bg-blue-700": row.original.level === "info",
+    //           "bg-muted": row.original.level === "debug",
+    //         })}
+    //         title={row.original.level.toUpperCase()}
+    //       />
+    //     );
+    //   },
+    // },
     {
       accessorKey: "timestamp",
       header: "Timestamp",
-      maxSize: 145,
-      size: 145,
       cell: ({ row }) => {
         const isExpanded = expandedRowId === row.original.id;
         return (
-          <div className="grid justify-between h-full text-right">
-            <span className="font-mono text-xs text-nowrap max-w-fit whitespace-nowrap">
-              {new Date(row.original.timestamp)
-                .toISOString()
-                .replace("T", " ")
-                .replace("Z", "")}
-            </span>
-            {isExpanded && (
-              <p className="text-xs font-mono">
-                level:{" "}
-                <span
-                  className={cn(
-                    "uppercase",
-                    getTextColorForLevel(row.original.level),
-                  )}
-                >
-                  {row.original.level}
-                </span>
-              </p>
-            )}
+          <div className="flex gap-1 justify-between h-full">
+            <div className="grid gap-4 text-right">
+              <div className="font-mono text-xs text-nowrap whitespace-nowrap">
+                {new Date(row.original.timestamp)
+                  .toISOString()
+                  .replace("T", " ")
+                  .replace("Z", "")}
+              </div>
+              {isExpanded && (
+                <p className="text-xs font-mono">
+                  level:{" "}
+                  <span
+                    className={cn(
+                      "uppercase",
+                      getTextColorForLevel(row.original.level),
+                    )}
+                  >
+                    {row.original.level}
+                  </span>
+                </p>
+              )}
+            </div>
+            <div
+              className={cn("inline-block h-full w-1.5 rounded-full", {
+                "bg-red-700": row.original.level === "error",
+                "bg-yellow-700": row.original.level === "warn",
+                "bg-blue-700": row.original.level === "info",
+                "bg-muted": row.original.level === "debug",
+              })}
+            />
           </div>
         );
       },
@@ -106,18 +114,17 @@ export function LogsTable({ traceId, togglePanel }: Props) {
     {
       accessorKey: "message",
       header: "Message",
-      size: Number.MAX_SAFE_INTEGER,
       cell: ({ row }) => {
         const isExpanded = expandedRowId === row.original.id;
         return (
-          <div className="">
-            <div
-              className={cn("font-mono text-xs overflow-x-hidden", {
-                truncate: !isExpanded,
-              })}
-            >
-              {row.original.message}
-            </div>
+          <div
+            className={cn("font-mono text-xs", {
+              "text-ellipsis overflow-hidden": !isExpanded,
+              "whitespace-nowrap": !isExpanded,
+              "w-full": !isExpanded,
+            })}
+          >
+            {row.original.message}
           </div>
         );
       },
@@ -139,14 +146,11 @@ export function LogsTable({ traceId, togglePanel }: Props) {
           </Button>
         </div>
       </CustomTabsList>
-      <CustomTabsContent
-        value="logs"
-        className="overflow-hidden md:overflow-hidden px-0 h-full"
-      >
+      <CustomTabsContent value="logs" className="overflow-hidden">
         {/* @ts-expect-error: TODO: fix the log levels that are reported as strings but need to be string unions */}
         <TableContent
-          columns={columns}
           data={logs}
+          columns={columns}
           expandedRowId={expandedRowId}
           setExpandedRowId={setExpandedRowId}
         />
@@ -174,7 +178,7 @@ function TableContent({
     getCoreRowModel: getCoreRowModel(),
   });
   return (
-    <Table className="border-separate border-spacing-y-1">
+    <Table className="border-separate border-spacing-y-1 table-fixed w-full">
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
@@ -182,11 +186,9 @@ function TableContent({
               return (
                 <TableHead
                   key={header.id}
-                  className={cn("text-left text-xs font-mono")}
-                  style={{
-                    width: header.getSize(),
-                    minWidth: header.getSize(),
-                  }}
+                  className={cn("text-left text-xs font-mono", {
+                    "w-[180px]": header.column.id === "timestamp",
+                  })}
                 >
                   {header.isPlaceholder
                     ? null
@@ -209,9 +211,12 @@ function TableContent({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={cn("cursor-pointer", bgColor, "hover:bg-muted", {
-                  "bg-muted": isExpanded,
-                })}
+                className={cn(
+                  "cursor-pointer",
+                  bgColor,
+                  "hover:bg-muted",
+                  "px-2",
+                )}
                 onClick={() =>
                   setExpandedRowId(isExpanded ? null : row.original.id)
                 }
@@ -219,8 +224,9 @@ function TableContent({
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    className={cn("py-1 px-2")}
-                    style={{ minWidth: cell.column.getSize() }}
+                    className={cn("align-top", {
+                      "w-[180px]": cell.column.id === "timestamp",
+                    })}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
