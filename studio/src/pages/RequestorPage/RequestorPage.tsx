@@ -12,6 +12,7 @@ import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { LogsTable } from "./LogsTable";
 import { NavigationPanel } from "./NavigationPanel";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
@@ -130,6 +131,7 @@ export const RequestorPage = () => {
   const [openPanels, setOpenPanels] = useState<Panels>({
     aiTestGeneration: "closed",
     timeline: "closed",
+    logs: "closed",
   });
 
   const togglePanel = useCallback((panelName: keyof Panels) => {
@@ -213,7 +215,6 @@ export const RequestorPage = () => {
       <ResizablePanelGroup
         direction="horizontal"
         id="requestor-page-main"
-        autoSaveId="requestor-page-main"
         className="w-full"
       >
         {isLgScreen && (
@@ -257,13 +258,11 @@ export const RequestorPage = () => {
             <ResizablePanelGroup
               direction="vertical"
               id="requestor-page-main-panel"
-              autoSaveId="requestor-page-main-panel"
             >
               <ResizablePanel defaultSize={panelSize}>
                 <ResizablePanelGroup
                   direction={isLgScreen ? "horizontal" : "vertical"}
                   id="requestor-page-request-panel-group"
-                  autoSaveId="requestor-page-request-panel-group"
                   className={cn(
                     "rounded-md",
                     // HACK - This defensively prevents overflow from getting too excessive,
@@ -320,9 +319,27 @@ export const RequestorPage = () => {
                   </ResizablePanel>
                 </>
               )}
-              {/*
-               <ResizablePanel> </ResizablePanel>
-              */}
+              {openPanels.logs === "open" && traceId && (
+                <>
+                  <ResizableHandle
+                    hitAreaMargins={{ coarse: 20, fine: 10 }}
+                    className="bg-transparent"
+                  />
+                  <ResizablePanel
+                    id="logs"
+                    order={3}
+                    className={cn(
+                      BACKGROUND_LAYER,
+                      "h-full",
+                      "mt-2",
+                      "rounded-md",
+                      "border",
+                    )}
+                  >
+                    <LogsTable traceId={traceId} togglePanel={togglePanel} />
+                  </ResizablePanel>
+                </>
+              )}
               {openPanels.aiTestGeneration === "open" && (
                 <>
                   <ResizableHandle

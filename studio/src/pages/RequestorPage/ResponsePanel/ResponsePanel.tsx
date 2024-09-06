@@ -99,6 +99,19 @@ export const ResponsePanel = memo(function ResponsePanel({
               variant={openPanels.timeline === "open" ? "outline" : "ghost"}
               size="icon"
               disabled={!traceId}
+              onClick={() => togglePanel("logs")}
+              className={cn(
+                openPanels.timeline === "open" && "opacity-50 bg-slate-900",
+                "h-6 w-6",
+              )}
+              title="Show logs from the request-response lifecycle"
+            >
+              <Icon icon="lucide:logs" className="cursor-pointer h-4 w-4" />
+            </Button>
+            <Button
+              variant={openPanels.timeline === "open" ? "outline" : "ghost"}
+              size="icon"
+              disabled={!traceId}
               onClick={() => togglePanel("timeline")}
               className={cn(
                 openPanels.timeline === "open" && "opacity-50 bg-slate-900",

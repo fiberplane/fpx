@@ -41,7 +41,7 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       height={height}
       maxHeight={maxHeight}
       minHeight={minHeight}
-      extensions={[json()]}
+      extensions={[EditorView.lineWrapping, json()]}
       onChange={onChange}
       theme={[duotoneDark, customTheme]}
       readOnly={readOnly}
@@ -83,7 +83,7 @@ export function CodeMirrorSqlEditor(props: CodeMirrorSqlEditorProps) {
       minHeight={minHeight}
       maxHeight={maxHeight}
       readOnly={readOnly}
-      extensions={[sql()]}
+      extensions={[EditorView.lineWrapping, sql()]}
       onChange={onChange}
       theme={[duotoneDark, customTheme]}
     />
