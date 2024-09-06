@@ -118,8 +118,8 @@ export function LogsTable({ traceId, togglePanel }: Props) {
         </div>
       </CustomTabsList>
       <CustomTabsContent value="logs" className="overflow-hidden">
-        {/* @ts-expect-error: TODO: fix the log levels that are reported as strings but need to be string unions */}
         <TableContent
+          //  @ts-expect-error: TODO: fix the log levels that are reported as strings but need to be string unions
           data={logs}
           columns={columns}
           expandedRowId={expandedRowId}
