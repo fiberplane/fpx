@@ -1,14 +1,14 @@
 //! Shared library for interacting with the fpx.toml configuration file.
 //!
 //! - root directory is the directory in which the fpx.toml and the .fpx
-//! directory are stored. fpx should not check outside of this directory.
+//!   directory are stored. fpx should not check outside of this directory.
 
 use anyhow::Result;
 use serde::Deserialize;
 use std::{env, fs::read_to_string, path::PathBuf};
 use tracing::{debug, error};
 
-#[derive(Debug, Clone, Deserialize, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Hash, PartialEq, Eq, Default)]
 pub struct FpxConfig {
     /// The port on which the API server should listen.
     pub listen_port: Option<u32>,
