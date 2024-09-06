@@ -1,4 +1,7 @@
-import { getBgColorForLevel } from "@/components/Timeline/utils";
+import {
+  getBgColorForLevel,
+  getTextColorForLevel,
+} from "@/components/Timeline/utils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -21,6 +24,7 @@ import {
 import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Panels } from "../types";
+import { useState } from "react";
 
 type OrphanLog = {
   traceId: string;
@@ -45,6 +49,7 @@ type Props = {
 export function LogsTable({ traceId, togglePanel }: Props) {
   const { data: spans } = useOtelTrace(traceId);
   const logs = useOrphanLogs(traceId, spans ?? []);
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
   const columns: ColumnDef<OrphanLog>[] = [
     {
@@ -55,7 +60,7 @@ export function LogsTable({ traceId, togglePanel }: Props) {
       cell: ({ row }) => {
         return (
           <div
-            className={cn("w-1.5 h-6 rounded-full", {
+            className={cn("w-1.5 h-full rounded-full", {
               "bg-red-700": row.original.level === "error",
               "bg-yellow-700": row.original.level === "warn",
               "bg-blue-700": row.original.level === "info",
@@ -71,23 +76,46 @@ export function LogsTable({ traceId, togglePanel }: Props) {
       header: "Timestamp",
       maxSize: 145,
       size: 145,
-      cell: ({ row }) => (
-        <span className="font-mono text-xs text-nowrap max-w-fit">
-          {new Date(row.original.timestamp)
-            .toISOString()
-            .replace("T", " ")
-            .replace("Z", "")}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const isExpanded = expandedRowId === row.original.id;
+        return (
+          <div className="grid justify-between h-full text-right">
+            <span className="font-mono text-xs text-nowrap max-w-fit whitespace-nowrap">
+              {new Date(row.original.timestamp)
+                .toISOString()
+                .replace("T", " ")
+                .replace("Z", "")}
+            </span>
+            {isExpanded && (
+              <p className="text-xs font-mono">
+                level:{" "}
+                <span
+                  className={cn(
+                    "uppercase",
+                    getTextColorForLevel(row.original.level),
+                  )}
+                >
+                  {row.original.level}
+                </span>
+              </p>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "message",
       header: "Message",
       size: Number.MAX_SAFE_INTEGER,
       cell: ({ row }) => {
+        const isExpanded = expandedRowId === row.original.id;
         return (
-          <div className="" role="button" tabIndex={0}>
-            <div className="font-mono text-xs truncate">
+          <div className="">
+            <div
+              className={cn("font-mono text-xs overflow-x-hidden", {
+                truncate: !isExpanded,
+              })}
+            >
               {row.original.message}
             </div>
           </div>
@@ -116,7 +144,12 @@ export function LogsTable({ traceId, togglePanel }: Props) {
         className="overflow-hidden md:overflow-hidden px-0 h-full"
       >
         {/* @ts-expect-error: TODO: fix the log levels that are reported as strings but need to be string unions */}
-        <TableContent columns={columns} data={logs} />
+        <TableContent
+          columns={columns}
+          data={logs}
+          expandedRowId={expandedRowId}
+          setExpandedRowId={setExpandedRowId}
+        />
       </CustomTabsContent>
     </Tabs>
   );
@@ -125,16 +158,23 @@ export function LogsTable({ traceId, togglePanel }: Props) {
 type TableProps = {
   columns: ColumnDef<OrphanLog>[];
   data: OrphanLog[];
+  expandedRowId: number | null;
+  setExpandedRowId: (id: number | null) => void;
 };
 
-function TableContent({ columns, data }: TableProps) {
+function TableContent({
+  columns,
+  data,
+  expandedRowId,
+  setExpandedRowId,
+}: TableProps) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
   return (
-    <Table className="border-separate border-spacing-y-1 h-full overflow-x-hidden">
+    <Table className="border-separate border-spacing-y-1">
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
@@ -142,8 +182,11 @@ function TableContent({ columns, data }: TableProps) {
               return (
                 <TableHead
                   key={header.id}
-                  className={cn("text-left text-xs font-mono max-w-fit")}
-                  style={{ width: header.getSize() }}
+                  className={cn("text-left text-xs font-mono")}
+                  style={{
+                    width: header.getSize(),
+                    minWidth: header.getSize(),
+                  }}
                 >
                   {header.isPlaceholder
                     ? null
@@ -161,19 +204,24 @@ function TableContent({ columns, data }: TableProps) {
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map((row) => {
             const bgColor = getBgColorForLevel(row.original.level);
+            const isExpanded = expandedRowId === row.original.id;
             return (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={cn(
-                  "cursor-pointer",
-                  // "border-l-2 border-b-0 border-transparent",
-                  bgColor,
-                  "hover:bg-muted",
-                )}
+                className={cn("cursor-pointer", bgColor, "hover:bg-muted", {
+                  "bg-muted": isExpanded,
+                })}
+                onClick={() =>
+                  setExpandedRowId(isExpanded ? null : row.original.id)
+                }
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="py-1 px-2 max-w-fit">
+                  <TableCell
+                    key={cell.id}
+                    className={cn("py-1 px-2")}
+                    style={{ minWidth: cell.column.getSize() }}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -184,7 +232,7 @@ function TableContent({ columns, data }: TableProps) {
           <TableRow>
             <TableCell
               colSpan={columns.length}
-              className="h-24 text-center font-mono text-muted-foreground max-w-fit"
+              className="h-24 text-center font-mono text-muted-foreground"
             >
               No logs found.
             </TableCell>
