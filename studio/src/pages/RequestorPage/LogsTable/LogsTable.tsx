@@ -21,10 +21,10 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { useState } from "react";
 import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Panels } from "../types";
-import { useState } from "react";
 
 type OrphanLog = {
   traceId: string;

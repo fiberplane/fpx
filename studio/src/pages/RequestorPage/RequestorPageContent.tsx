@@ -9,19 +9,19 @@ import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { LogsTable } from "./LogsTable";
 import { RequestPanel } from "./RequestPanel";
 import { RequestorInput } from "./RequestorInput";
+import { RequestorTimeline } from "./RequestorTimeline";
 import { ResponsePanel } from "./ResponsePanel";
 import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import { useActiveRoute, useRequestorStore } from "./store";
 import { BACKGROUND_LAYER } from "./styles";
+import type { Panels } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
-import type { Panels } from "./types";
-import { LogsTable } from "./LogsTable";
-import { RequestorTimeline } from "./RequestorTimeline";
 
 interface RequestorPageContentProps {
   history: Requestornator[]; // Replace 'any[]' with the correct type
