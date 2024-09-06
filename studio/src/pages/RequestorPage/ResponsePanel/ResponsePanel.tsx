@@ -95,12 +95,12 @@ export const ResponsePanel = memo(function ResponsePanel({
           )}
           <div className="flex-grow flex justify-end">
             <Button
-              variant={openPanels.timeline === "open" ? "outline" : "ghost"}
+              variant={openPanels.logs === "open" ? "outline" : "ghost"}
               size="icon"
               disabled={!traceId}
               onClick={() => togglePanel("logs")}
               className={cn(
-                openPanels.timeline === "open" && "opacity-50 bg-slate-900",
+                openPanels.logs === "open" && "opacity-50 bg-slate-900",
                 "h-6 w-6",
               )}
               title="Show logs from the request-response lifecycle"

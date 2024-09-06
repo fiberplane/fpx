@@ -19,26 +19,36 @@ import { BACKGROUND_LAYER } from "./styles";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
+import type { Panels } from "./types";
+import { LogsTable } from "./LogsTable";
+import { RequestorTimeline } from "./RequestorTimeline";
 
 interface RequestorPageContentProps {
   history: Requestornator[]; // Replace 'any[]' with the correct type
   sessionHistory: Requestornator[];
   recordRequestInSessionHistory: (traceId: string) => void;
-  traceId?: string;
+  overrideTraceId?: string;
 }
 
-export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
-  history,
-  sessionHistory,
-  recordRequestInSessionHistory,
-  traceId,
-}) => {
+export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
+  props,
+) => {
+  const {
+    history,
+    recordRequestInSessionHistory,
+    overrideTraceId,
+    sessionHistory,
+  } = props;
+
   const { toast } = useToast();
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
     sessionHistory,
-    traceId,
+    overrideTraceId,
   );
+
+  const traceId =
+    overrideTraceId ?? mostRecentRequestornatorForRoute?.app_responses?.traceId;
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
@@ -104,12 +114,18 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
     },
   );
 
-  const [isAiTestGenerationPanelOpen, setIsAiTestGenerationPanelOpen] =
-    useState(false);
-  const toggleAiTestGenerationPanel = useCallback(
-    () => setIsAiTestGenerationPanelOpen((current) => !current),
-    [],
-  );
+  const [openPanels, setOpenPanels] = useState<Panels>({
+    timeline: "closed",
+    aiTestGeneration: "closed",
+    logs: "closed",
+  });
+
+  const togglePanel = useCallback((panelName: keyof Panels) => {
+    setOpenPanels((current) => ({
+      ...current,
+      [panelName]: current[panelName] === "open" ? "closed" : "open",
+    }));
+  }, []);
 
   const isLgScreen = useIsLgScreen();
 
@@ -133,8 +149,8 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
       tracedResponse={mostRecentRequestornatorForRoute}
       isLoading={isRequestorRequesting}
       websocketState={websocketState}
-      openAiTestGenerationPanel={toggleAiTestGenerationPanel}
-      isAiTestGenerationPanelOpen={isAiTestGenerationPanelOpen}
+      openPanels={openPanels}
+      togglePanel={togglePanel}
     />
   );
 
@@ -168,7 +184,10 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
         websocketState={websocketState}
       />
       <ResizablePanelGroup direction="vertical" id="requestor-page-main-panel">
-        <ResizablePanel defaultSize={isAiTestGenerationPanelOpen ? 50 : 100}>
+        <ResizablePanel
+          // defaultSize={panelSize}
+          order={0}
+        >
           <ResizablePanelGroup
             direction={isLgScreen ? "horizontal" : "vertical"}
             id="requestor-page-request-panel-group"
@@ -198,32 +217,72 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = ({
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>
-        <ResizablePanel>
-          {isAiTestGenerationPanelOpen && (
-            <>
-              <ResizableHandle
-                hitAreaMargins={{ coarse: 20, fine: 10 }}
-                className="bg-transparent"
+        {openPanels.timeline === "open" && traceId && (
+          <>
+            <ResizableHandle
+              hitAreaMargins={{ coarse: 20, fine: 10 }}
+              className="bg-transparent"
+            />
+            <ResizablePanel
+              order={2}
+              id="logs-panel"
+              className={cn(
+                BACKGROUND_LAYER,
+                "rounded-md",
+                "border",
+                "h-full",
+                "mt-2",
+              )}
+            >
+              <RequestorTimeline togglePanel={togglePanel} traceId={traceId} />
+            </ResizablePanel>
+          </>
+        )}
+        {openPanels.logs === "open" && traceId && (
+          <>
+            <ResizableHandle
+              hitAreaMargins={{ coarse: 20, fine: 10 }}
+              className="bg-transparent"
+            />
+            <ResizablePanel
+              order={3}
+              id="logs-panel"
+              className={cn(
+                BACKGROUND_LAYER,
+                "rounded-md",
+                "border",
+                "h-full",
+                "mt-2",
+              )}
+            >
+              <LogsTable togglePanel={togglePanel} traceId={traceId} />
+            </ResizablePanel>
+          </>
+        )}
+        {openPanels.aiTestGeneration === "open" && (
+          <>
+            <ResizableHandle
+              hitAreaMargins={{ coarse: 20, fine: 10 }}
+              className="bg-transparent"
+            />
+            <ResizablePanel
+              order={4}
+              id="ai-panel"
+              className={cn(
+                BACKGROUND_LAYER,
+                "rounded-md",
+                "border",
+                "h-full",
+                "mt-2",
+              )}
+            >
+              <AiTestGenerationPanel
+                history={history}
+                togglePanel={togglePanel}
               />
-              <ResizablePanel
-                order={3}
-                id="ai-panel"
-                className={cn(
-                  BACKGROUND_LAYER,
-                  "rounded-md",
-                  "border",
-                  "h-full",
-                  "mt-2",
-                )}
-              >
-                <AiTestGenerationPanel
-                  history={history}
-                  toggleAiTestGenerationPanel={toggleAiTestGenerationPanel}
-                />
-              </ResizablePanel>
-            </>
-          )}
-        </ResizablePanel>
+            </ResizablePanel>
+          </>
+        )}
       </ResizablePanelGroup>
     </div>
   );

@@ -118,7 +118,7 @@ export const RequestorPage = () => {
               history={history}
               sessionHistory={sessionHistory}
               recordRequestInSessionHistory={recordRequestInSessionHistory}
-              traceId={id}
+              overrideTraceId={id}
             />
           )}
         </ResizablePanel>
