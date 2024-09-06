@@ -68,7 +68,12 @@ jobs:
       # Building
 
       - name: Build api, frontend, and client library
-        run: pnpm --filter=studio --filter=api --filter=@fiberplane/hono-otel build
+        run: |
+          pnpm \
+            --filter=@fiberplane/studio-frontend \
+            --filter=@fiberplane/studio \
+            --filter=@fiberplane/hono-otel \
+            build
 
       # Release a preview version
 
