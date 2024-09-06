@@ -1,6 +1,6 @@
-use crate::find_fpx_dir;
 use anyhow::Result;
 use clap::Subcommand;
+use fpx_lib::config::FpxConfig;
 
 mod database;
 
@@ -27,7 +27,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
 }
 
 pub async fn handle_fpx_directory_command() -> Result<()> {
-    let fpx_directory = find_fpx_dir();
+    let fpx_directory = FpxConfig::find_root_directory();
     match fpx_directory {
         Some(path) => eprintln!("Fpx directory found: {}", path.display()),
         None => eprintln!("Fpx directory not found"),

@@ -6,6 +6,9 @@ authors = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 
+[features]
+config = ["toml"]
+
 [lib]
 
 [dependencies]
@@ -46,6 +49,7 @@ tower-http = { version = "0.5", default-features = false, features = [
     "decompression-gzip",
 ] }
 tower = { version = "0.4", default-features = false }
+toml = { version = "0.8", default-features = false, optional = true }
 tracing = { version = "0.1", default-features = false, features = [
     "attributes",
 ] }

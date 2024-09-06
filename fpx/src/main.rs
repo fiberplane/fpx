@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use fpx_lib::config::FpxConfig;
 use opentelemetry::trace::TracerProvider;
 use opentelemetry::KeyValue;
 use opentelemetry_otlp::WithExportConfig;
@@ -7,7 +8,7 @@ use opentelemetry_sdk::trace::Config;
 use opentelemetry_sdk::{runtime, Resource};
 use std::env;
 use std::path::PathBuf;
-use tracing::{error, trace};
+use tracing::trace;
 use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -101,9 +102,9 @@ async fn initialize_fpx_dir(override_path: &Option<PathBuf>) -> Result<PathBuf> 
             trace!(fpx_directory = ?path, "Using override path for fpx directory");
             path.to_path_buf()
         }
-        None => match find_fpx_dir() {
+        None => match FpxConfig::find_root_directory() {
             Some(path) => {
-                trace!(fpx_directory = ?path, "Found fpx directory in a parent directory");
+                trace!(fpx_directory = ?path, "Found root directory in the current or a parent directory");
                 path
             }
             None => {
@@ -121,28 +122,4 @@ async fn initialize_fpx_dir(override_path: &Option<PathBuf>) -> Result<PathBuf> 
         .with_context(|| format!("Failed to create fpx working directory: {:?}", path))?;
 
     Ok(path)
-}
-
-/// Find the fpx directory in the current directory or any parent directories.
-/// This returns [`None`] if no fpx directory is found.
-///
-/// Any directory that is named `.fpx` is considered the fpx directory.
-fn find_fpx_dir() -> Option<PathBuf> {
-    let Ok(cwd) = env::current_dir() else {
-        error!("Failed to get current directory");
-        return None;
-    };
-
-    let mut dir = Some(cwd);
-    while let Some(inner_dir) = dir {
-        let fpx_dir = inner_dir.join(".fpx");
-
-        if fpx_dir.is_dir() {
-            return Some(fpx_dir);
-        }
-
-        dir = inner_dir.parent().map(Into::into);
-    }
-
-    None
 }
