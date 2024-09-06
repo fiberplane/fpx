@@ -72,7 +72,7 @@ export function LogsTable({ traceId, togglePanel }: Props) {
       maxSize: 145,
       size: 145,
       cell: ({ row }) => (
-        <span className="font-mono text-xs text-nowrap">
+        <span className="font-mono text-xs text-nowrap max-w-fit">
           {new Date(row.original.timestamp)
             .toISOString()
             .replace("T", " ")
@@ -142,7 +142,7 @@ function TableContent({ columns, data }: TableProps) {
               return (
                 <TableHead
                   key={header.id}
-                  className={cn("text-left text-xs font-mono")}
+                  className={cn("text-left text-xs font-mono max-w-fit")}
                   style={{ width: header.getSize() }}
                 >
                   {header.isPlaceholder
@@ -173,7 +173,7 @@ function TableContent({ columns, data }: TableProps) {
                 )}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="py-1 px-2">
+                  <TableCell key={cell.id} className="py-1 px-2 max-w-fit">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -184,7 +184,7 @@ function TableContent({ columns, data }: TableProps) {
           <TableRow>
             <TableCell
               colSpan={columns.length}
-              className="h-24 text-center font-mono text-muted-foreground overflow-x-hidden"
+              className="h-24 text-center font-mono text-muted-foreground max-w-fit"
             >
               No logs found.
             </TableCell>
