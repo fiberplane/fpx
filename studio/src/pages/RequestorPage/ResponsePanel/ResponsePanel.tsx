@@ -1,5 +1,4 @@
 import RobotIcon from "@/assets/Robot.svg";
-import { CollapsibleKeyValueTableV2 } from "@/components/Timeline";
 import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
