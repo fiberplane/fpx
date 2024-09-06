@@ -1,5 +1,6 @@
 import RobotIcon from "@/assets/Robot.svg";
 import { CollapsibleKeyValueTableV2 } from "@/components/Timeline";
+import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
@@ -23,7 +24,6 @@ import {
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
-import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 
 type Props = {
   tracedResponse?: Requestornator;
