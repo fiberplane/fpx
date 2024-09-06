@@ -1,4 +1,4 @@
-import { getBgColorForLevel } from "@/components/Timeline/utils";}
+import { getBgColorForLevel } from "@/components/Timeline/utils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -50,20 +50,18 @@ export function LogsTable({ traceId, togglePanel }: Props) {
     {
       accessorKey: "level",
       header: "",
-      maxSize: 30,
+      maxSize: 5,
       cell: ({ row }) => {
         return (
-          <div className="flex items-center justify-center">
-            <div
-              className={cn("w-1.5 h-6 rounded-full", {
-                "bg-red-700": row.original.level === "error",
-                "bg-yellow-700": row.original.level === "warn",
-                "bg-blue-700": row.original.level === "info",
-                "bg-muted": row.original.level === "debug",
-              })}
-              title={row.original.level.toUpperCase()}
-            />
-          </div>
+          <div
+            className={cn("w-1.5 h-6 rounded-full", {
+              "bg-red-700": row.original.level === "error",
+              "bg-yellow-700": row.original.level === "warn",
+              "bg-blue-700": row.original.level === "info",
+              "bg-muted": row.original.level === "debug",
+            })}
+            title={row.original.level.toUpperCase()}
+          />
         );
       },
     },
@@ -71,6 +69,7 @@ export function LogsTable({ traceId, togglePanel }: Props) {
       accessorKey: "timestamp",
       header: "Timestamp",
       maxSize: 80,
+      size: 60,
       cell: ({ row }) => (
         <span className="font-mono text-xs text-nowrap">
           {new Date(row.original.timestamp)
@@ -85,7 +84,7 @@ export function LogsTable({ traceId, togglePanel }: Props) {
       header: "Message",
       cell: ({ row }) => {
         return (
-          <div className="cursor-pointer" role="button" tabIndex={0}>
+          <div className="" role="button" tabIndex={0}>
             <div className="font-mono text-xs truncate">
               {row.original.message}
             </div>
@@ -112,7 +111,7 @@ export function LogsTable({ traceId, togglePanel }: Props) {
       </CustomTabsList>
       <CustomTabsContent
         value="logs"
-        className="overflow-hidden md:overflow-hidden px-0"
+        className="overflow-hidden md:overflow-hidden px-0 h-full"
       >
         {/* @ts-expect-error: TODO: fix the log levels that are reported as strings but need to be string unions */}
         <TableContent columns={columns} data={logs} />
@@ -133,7 +132,7 @@ function TableContent({ columns, data }: TableProps) {
     getCoreRowModel: getCoreRowModel(),
   });
   return (
-    <Table className="border-separate border-spacing-y-1">
+    <Table className="border-separate border-spacing-y-1 h-full overflow-x-hidden">
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
@@ -183,7 +182,7 @@ function TableContent({ columns, data }: TableProps) {
           <TableRow>
             <TableCell
               colSpan={columns.length}
-              className="h-24 text-center font-mono text-muted-foreground"
+              className="h-24 text-center font-mono text-muted-foreground overflow-x-hidden"
             >
               No logs found.
             </TableCell>
