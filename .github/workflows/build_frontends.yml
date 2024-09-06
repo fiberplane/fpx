@@ -67,8 +67,8 @@ jobs:
 
       # Building
 
-      - name: Build all workspaces
-        run: pnpm --recursive build
+      - name: Build api, frontend, and client library
+        run: pnpm --filter=studio --filter=api --filter=@fiberplane/hono-otel build
 
       # Release a preview version
 
