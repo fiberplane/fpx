@@ -3,12 +3,20 @@ import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
 import type { ComponentProps } from "react";
 import { NavLink } from "react-router-dom";
-import FpxIcon from "./assets/fpx.svg";
-import { WebhoncBadge } from "./components/WebhoncBadge";
-import { Button } from "./components/ui/button";
-import { useWebsocketQueryInvalidation } from "./hooks";
-import { useProxyRequestsEnabled } from "./hooks/useProxyRequestsEnabled";
-import { cn } from "./utils";
+import FpxIcon from "../assets/fpx.svg";
+import { WebhoncBadge } from "../components/WebhoncBadge";
+import { Button } from "../components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "../components/ui/dialog";
+import { useWebsocketQueryInvalidation } from "../hooks";
+import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
+import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
+import { cn } from "../utils";
+import { SidePanel } from "./SidePanel";
 
 const Branding = () => {
   return (
@@ -33,6 +41,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
       <nav className="flex gap-4 sm:gap-4 py-2 sm:py-2 justify-between items-center border-b">
         <div className="sticky top-0 flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent md:px-6 text-sm">
+          <SidePanel />
           <HeaderNavLink to="/requestor">
             <Branding />
           </HeaderNavLink>
@@ -40,6 +49,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             <div className="flex items-center gap-2 text-sm" />
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           {shouldShowProxyRequests && (
             <div className="ml-2">
@@ -47,9 +57,19 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             </div>
           )}
           <div className="flex items-center border-l gap-1 px-1">
-            <HeaderNavLink to="/settings">
-              <Icon icon="lucide:settings" />
-            </HeaderNavLink>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
+                  <Icon icon="lucide:settings" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[100vw] w-[800px] h-[90vh] max-h-[500px] grid-rows-[auto_1fr]">
+                <DialogTitle>Settings</DialogTitle>
+                <div className="h-full pr-1 overflow-hidden">
+                  <SettingsPage />
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
               <a
                 href="https://github.com/fiberplane/fpx"
