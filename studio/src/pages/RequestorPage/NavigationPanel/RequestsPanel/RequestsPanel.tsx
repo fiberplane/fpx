@@ -68,7 +68,7 @@ const NavItem = ({ item }: { item: MergedListItem }) => {
         search: params.toString(),
       }}
       className={cn(
-        "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-1.5 rounded cursor-pointer",
+        "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-1.5 rounded cursor-pointer items-center",
         {
           "bg-muted": id === getId(item),
         },
@@ -93,15 +93,6 @@ const getId = (item: MergedListItem) => {
     : item.data.traceId;
 };
 
-/**
-         <DataTable
-          columns={columns}
-          data={filteredItems ?? []}
-        // handleRowClick={handleRowClick}
-        // getPaginationRowModel={getPaginationRowModel<OtelTrace>}
-        />
- */
-
 function getSpan(trace: OtelTrace) {
   return (
     trace.spans.find(
@@ -118,7 +109,7 @@ const PathCell = ({ item }: { item: MergedListItem }) => {
       ? removeServiceUrlFromPath(item.data.app_requests.requestUrl)
       : removeServiceUrlFromPath(getRequestUrl(getSpan(item.data)));
 
-  return <div>{path}</div>;
+  return <div className="text-sm font-mono">{path}</div>;
 };
 
 const StatusCell = ({ item }: { item: MergedListItem }) => {
@@ -134,7 +125,7 @@ const MethodCell = ({ item }: { item: MergedListItem }) => {
     item.type === "request"
       ? item.data.app_requests.requestMethod
       : getRequestMethod(getSpan(item.data));
-  return <RequestMethod method={method} />;
+  return <RequestMethod method={method} className="text-xs font-mono" />;
 };
 
 type MergedListItem =

@@ -1,5 +1,5 @@
 import RobotIcon from "@/assets/Robot.svg";
-import { CollapsibleKeyValueTableV2 } from "@/components/Timeline";
+import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
@@ -93,6 +93,15 @@ export const ResponsePanel = memo(function ResponsePanel({
           {shouldShowMessages && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
+          <CustomTabTrigger value="headers">
+            Headers
+            {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+              <span className="ml-1 text-gray-400 font-mono text-xs">
+                ({Object.keys(responseHeaders).length})
+              </span>
+            )}
+          </CustomTabTrigger>
+
           <div className="flex-grow flex justify-end">
             <Button
               variant={openPanels.logs === "open" ? "outline" : "ghost"}
@@ -119,7 +128,7 @@ export const ResponsePanel = memo(function ResponsePanel({
               title="Show timeline of the response"
             >
               <Icon
-                icon="lucide:list-tree"
+                icon="lucide:chart-gantt"
                 className="cursor-pointer h-4 w-4"
               />
             </Button>
@@ -179,20 +188,20 @@ export const ResponsePanel = memo(function ResponsePanel({
           >
             <div className={cn("grid grid-rows-[auto_1fr]")}>
               <ResponseBody
-                headersSlot={
-                  <CollapsibleKeyValueTableV2
-                    sensitiveKeys={SENSITIVE_HEADERS}
-                    title="Headers"
-                    keyValue={responseHeaders ?? {}}
-                    className="mb-0.5 pb-2"
-                  />
-                }
                 response={responseToRender}
                 // HACK - To support absolutely positioned bottom toolbar
                 className={cn(showBottomToolbar && "pb-2")}
               />
             </div>
           </TabContentInner>
+        </CustomTabsContent>
+        <CustomTabsContent value="headers">
+          {responseHeaders && (
+            <KeyValueTable
+              sensitiveKeys={SENSITIVE_HEADERS}
+              keyValue={responseHeaders}
+            />
+          )}
         </CustomTabsContent>
       </Tabs>
     </div>
