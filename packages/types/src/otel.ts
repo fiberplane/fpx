@@ -41,7 +41,7 @@ export type OtelAttributes = z.infer<typeof OtelAttributesSchema>;
 
 const OtelEventSchema = z.object({
   name: z.string(),
-  timestamp: z.string(), // ISO 8601 format
+  timestamp: z.coerce.date(), // ISO 8601 format
   attributes: OtelAttributesSchema,
 });
 
