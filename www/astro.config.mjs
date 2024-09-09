@@ -44,6 +44,7 @@ export default defineConfig({
         Pagination: "@/components/Pagination.astro",
         ThemeProvider: "@/components/ThemeProvider.astro",
         Sidebar: "@/components/Sidebar.astro",
+        Hero: "@/components/Hero.astro",
       },
       customCss: ["@/main.css"],
       expressiveCode: {

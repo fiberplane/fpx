@@ -1,0 +1,75 @@
+---
+import type { Props } from "@astrojs/starlight/props";
+
+const { data } = Astro.props.entry;
+const { title = data.title, tagline, image, actions = [] } = data.hero || {};
+---
+
+<section>
+  <header>
+    <h1>{title}</h1>
+    <p>{tagline}</p>
+  </header>
+</section>
+
+<style>
+  :root {
+    --sl-content-width: 102rem !important;
+  }
+
+  section {
+    position: relative;
+    isolation: isolate;
+    height: 54rem;
+    border-radius: 20px;
+    background-image: linear-gradient(180deg, rgb(248 250 252), #f5f8fa);
+
+    & > * {
+      z-index: 2;
+    }
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    header {
+      display: grid;
+      gap: 2rem;
+      align-content: center;
+      color: black;
+
+      h1 {
+        font-size: 70px;
+        line-height: 1;
+        text-wrap: balance;
+      }
+
+      p {
+        /* TODO: Add Inter-Tight font & update font size & line height */
+        font-size: 32px;
+        line-height: 1.2;
+        font-weight: 500;
+        text-wrap: pretty;
+      }
+    }
+
+    &::before {
+      --hero-background-image-size: 32px;
+      --hero-background-image-position: calc(
+        var(--hero-background-image-size) / 2
+      );
+
+      z-index: 1;
+      content: "";
+      position: absolute;
+      border-radius: 20px;
+      inset: 0;
+      background-image: radial-gradient(
+        rgb(207 212 216 / 0.5) 3px,
+        transparent 0
+      );
+      background-size: var(--hero-background-image-size)
+        var(--hero-background-image-size);
+      background-position: top center;
+    }
+  }
+</style>
