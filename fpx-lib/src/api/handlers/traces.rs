@@ -24,7 +24,7 @@ pub async fn ts_compat_traces_list_handler(
         let spans = store.span_list_by_trace(&tx, &trace.trace_id).await?;
 
         result.push(TypeScriptCompatTrace {
-            trace_id: trace.trace_id.0.clone(),
+            trace_id: trace.trace_id.into_inner(),
             spans: spans.iter().map(|span| span.clone().into()).collect(),
         });
     }

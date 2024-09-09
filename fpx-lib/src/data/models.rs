@@ -71,7 +71,7 @@ impl From<api::models::Span> for Span {
 }
 
 #[derive(Clone, Debug, Serialize, PartialEq)]
-pub struct HexEncodedId(pub String);
+pub struct HexEncodedId(String);
 
 impl HexEncodedId {
     pub fn new(input: impl Into<String>) -> Result<HexEncodedId, hex::FromHexError> {

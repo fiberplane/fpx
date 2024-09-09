@@ -90,7 +90,7 @@ impl Store for D1Store {
         SendFuture::new(async {
             self.fetch_one(
                 self.sql_builder.span_get(),
-                &[trace_id.as_inner().into(), span_id.as_inner().into()],
+                &[trace_id.into(), span_id.into()],
             )
             .await
         })
@@ -103,11 +103,8 @@ impl Store for D1Store {
         trace_id: &HexEncodedId,
     ) -> Result<Vec<models::Span>> {
         SendFuture::new(async {
-            self.fetch_all(
-                self.sql_builder.span_list_by_trace(),
-                &[trace_id.as_inner().into()],
-            )
-            .await
+            self.fetch_all(self.sql_builder.span_list_by_trace(), &[trace_id.into()])
+                .await
         })
         .await
     }
@@ -119,15 +116,15 @@ impl Store for D1Store {
     ) -> Result<models::Span, DbError> {
         SendFuture::new(async {
             let parent_span = match span.parent_span_id {
-                Some(val) => val.0.into(),
+                Some(val) => val.into_inner().into(),
                 None => JsValue::null(),
             };
 
             self.fetch_one(
                 self.sql_builder.span_create(),
                 &[
-                    span.trace_id.0.into(),
-                    span.span_id.0.into(),
+                    span.trace_id.into(),
+                    span.span_id.into(),
                     parent_span,
                     span.name.into(),
                     span.kind.into(),
@@ -171,7 +168,7 @@ impl Store for D1Store {
             let prepared_statement = self
                 .database
                 .prepare(self.sql_builder.span_delete_by_trace())
-                .bind(&[trace_id.as_inner().into()])
+                .bind(&[trace_id.into()])
                 .map_err(|err| DbError::InternalError(err.to_string()))?;
 
             let results = prepared_statement
@@ -203,7 +200,7 @@ impl Store for D1Store {
             let prepared_statement = self
                 .database
                 .prepare(self.sql_builder.span_delete())
-                .bind(&[trace_id.as_inner().into(), span_id.as_inner().into()])
+                .bind(&[trace_id.into(), span_id.into()])
                 .map_err(|err| DbError::InternalError(err.to_string()))?;
 
             let results = prepared_statement
