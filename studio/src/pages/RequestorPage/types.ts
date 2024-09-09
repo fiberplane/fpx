@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { WEBSOCKETS_ENABLED } from "./webSocketFeatureFlag";
 
+export type PanelState = "open" | "closed";
+
+export type Panels = {
+  timeline: PanelState;
+  aiTestGeneration: PanelState;
+  logs: PanelState;
+};
+
 export const RequestMethodSchema = z.enum([
   "GET",
   "POST",

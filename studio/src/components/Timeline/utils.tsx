@@ -93,7 +93,22 @@ export const getTypeIcon = (type: string, colorOverride = "") => {
   }
 };
 
-export function getColorForLevel(level: string) {
+// NOTE: can't use a generic *-yellow-500 because transparency modifiers are
+// resolved before the color is applied and tailwind borks
+export function getBgColorForLevel(level: string) {
+  switch (level) {
+    case "info":
+      return "bg-muted/50";
+    case "warn":
+      return "bg-yellow-500/10";
+    case "error":
+      return "bg-red-500/10";
+    default:
+      return "bg-gray-500/10";
+  }
+}
+
+export function getTextColorForLevel(level: string) {
   switch (level) {
     case "info":
       return "text-muted-foreground";

@@ -1,5 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useHandler } from "@fiberplane/hooks";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { KeyValueParameter } from "./KeyValueForm";
 import type { MakeProxiedRequestQueryFn } from "./queries";
 import type { RequestorBody } from "./store";
@@ -18,6 +19,10 @@ export function useRequestorSubmitHandler({
 }) {
   const { toast } = useToast();
 
+  const { id } = useParams();
+  const urlHasId = !!id;
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
   const {
     selectedRoute,
     body,
@@ -27,6 +32,7 @@ export function useRequestorSubmitHandler({
     queryParams,
     requestHeaders,
     requestType,
+    showResponseBodyFromHistory,
   } = useRequestorStore(
     "selectedRoute",
     "body",
@@ -36,9 +42,11 @@ export function useRequestorSubmitHandler({
     "queryParams",
     "requestHeaders",
     "requestType",
+    "showResponseBodyFromHistory",
   );
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
+  const { activeHistoryResponseTraceId } = useRequestorStore();
   return useHandler((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // TODO - Make it clear in the UI that we're auto-adding this header
@@ -64,7 +72,12 @@ export function useRequestorSubmitHandler({
           }
         : null,
       ...requestHeaders,
-    ].filter(Boolean) as KeyValueParameter[];
+    ].filter(
+      (element) =>
+        element &&
+        element.key.toLowerCase() !== "x-fpx-trace-id" &&
+        element.value !== activeHistoryResponseTraceId,
+    ) as KeyValueParameter[];
 
     if (isWsRequest(requestType)) {
       const url = addServiceUrlIfBarePath(path);
@@ -89,8 +102,19 @@ export function useRequestorSubmitHandler({
       {
         onSuccess(data) {
           const traceId = data?.traceId;
+
+          // If there's an id, we're navigating to a specific request
+          // otherwise the newest trace will automatically be shown
+          if (urlHasId) {
+            navigate({
+              pathname: `/requestor/requests/${traceId}`,
+              search: params.toString(),
+            });
+          }
+
           if (traceId && typeof traceId === "string") {
             recordRequestInSessionHistory(traceId);
+            showResponseBodyFromHistory(traceId);
           } else {
             console.error(
               "RequestorPage: onSuccess: traceId is not a string",

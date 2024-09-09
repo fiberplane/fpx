@@ -1,0 +1,1 @@
+export { LogsTable } from "./LogsTable";

@@ -7,12 +7,11 @@ import {
   Routes,
   useNavigate,
 } from "react-router-dom";
-import Layout from "./Layout";
+import { Layout } from "./Layout";
 import { Toaster } from "./components/ui/toaster";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import { RequestorPage } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
-import { SettingsPage } from "./pages/SettingsPage";
 
 export function App() {
   return (
@@ -32,7 +31,10 @@ export function App() {
                 element={<RequestDetailsPage />}
               />
               <Route path="/requestor" element={<RequestorPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
+              <Route
+                path="/requestor/:requestType/:id"
+                element={<RequestorPage />}
+              />
             </Routes>
           </Layout>
           <Toaster />

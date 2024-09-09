@@ -27,7 +27,11 @@ export const getVisibleRequestPanelTabs = (route: {
   return ["params", "headers", "body"];
 };
 
-export const ResponsePanelTabSchema = z.enum(["response", "messages", "debug"]);
+export const ResponsePanelTabSchema = z.enum([
+  "response",
+  "messages",
+  "headers",
+]);
 
 export type ResponsePanelTab = z.infer<typeof ResponsePanelTabSchema>;
 
@@ -39,7 +43,7 @@ export const getVisibleResponsePanelTabs = (route: {
   requestType: RequestType;
 }): ResponsePanelTab[] => {
   if (route.requestType === "websocket") {
-    return ["response", "messages", "debug"];
+    return ["response", "messages", "headers"];
   }
-  return ["response", "debug"];
+  return ["response", "headers"];
 };

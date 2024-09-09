@@ -7,9 +7,12 @@ import {
   getRequestUrl,
 } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
+import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function useReplayRequest({ span }: { span?: OtelSpan }) {
+  const navigate = useNavigate();
   const method = span ? getRequestMethod(span) : "GET";
 
   const pathWithSearch = useMemo<string>(() => {
@@ -72,7 +75,6 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
 
     return filterReplayHeaders(headers);
   }, [requestHeaders, filterReplayHeaders]);
-
   const replayBody = useMemo(() => {
     const body = span ? getRequestBody(span) : undefined;
     try {
@@ -101,43 +103,38 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
   const { mutate: makeRequest, isPending: isReplaying } =
     useMakeProxiedRequest();
 
-  const replay = useCallback(
-    (e: React.FormEvent<HTMLButtonElement>) => {
-      e.preventDefault();
-      return makeRequest(
-        {
-          addServiceUrlIfBarePath: (replayPath) => replayBaseUrl + replayPath,
-          body: canHaveRequestBody ? replayBody : { type: "text" },
-          headers: replayHeaders,
-          method,
-          path: replayPath,
-          queryParams: Object.entries(requestQueryParams ?? {}).map(
-            ([key, value]) => ({
-              id: key,
-              key,
-              value,
-              enabled: true,
-            }),
-          ),
+  const replay = useHandler((e: React.FormEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    return makeRequest(
+      {
+        addServiceUrlIfBarePath: (replayPath) => replayBaseUrl + replayPath,
+        body: canHaveRequestBody ? replayBody : { type: "text" },
+        headers: replayHeaders,
+        method,
+        path: replayPath,
+        queryParams: Object.entries(requestQueryParams ?? {}).map(
+          ([key, value]) => ({
+            id: key,
+            key,
+            value,
+            enabled: true,
+          }),
+        ),
+      },
+      {
+        onSuccess(response) {
+          navigate({
+            pathname: `/requestor/requests/${response.traceId}`,
+            search: "?filter-tab=requests",
+          });
         },
-        {
-          onError(error) {
-            console.error("Error replaying request", error);
-          },
+        onError(error) {
+          console.error("Error replaying request", error);
         },
-      );
-    },
-    [
-      canHaveRequestBody,
-      makeRequest,
-      method,
-      replayBaseUrl,
-      replayPath,
-      replayBody,
-      replayHeaders,
-      requestQueryParams,
-    ],
-  );
+      },
+    );
+  });
 
   if (!span) {
     return {

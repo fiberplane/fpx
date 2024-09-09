@@ -1,21 +1,12 @@
 import RobotIcon from "@/assets/Robot.svg";
-import {
-  CollapsibleKeyValueTableV2,
-  SubSectionHeading,
-} from "@/components/Timeline";
+import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
-import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
-import { memo, useState } from "react";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
-import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
 import type { ResponsePanelTab } from "../store";
@@ -24,7 +15,7 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
-import { isWsRequest } from "../types";
+import { type Panels, isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
 import {
@@ -37,16 +28,16 @@ type Props = {
   tracedResponse?: Requestornator;
   isLoading: boolean;
   websocketState: WebSocketState;
-  openAiTestGenerationPanel: () => void;
-  isAiTestGenerationPanelOpen: boolean;
+  openPanels: Panels;
+  togglePanel: (panelName: keyof Panels & {}) => void;
 };
 
 export const ResponsePanel = memo(function ResponsePanel({
   tracedResponse,
   isLoading,
   websocketState,
-  openAiTestGenerationPanel,
-  isAiTestGenerationPanelOpen,
+  openPanels,
+  togglePanel,
 }: Props) {
   const {
     activeResponse,
@@ -59,7 +50,6 @@ export const ResponsePanel = memo(function ResponsePanel({
     "activeResponsePanelTab",
     "setActiveResponsePanelTab",
   );
-
   const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
     return visibleResponsePanelTabs.includes(tab);
   };
@@ -82,8 +72,6 @@ export const ResponsePanel = memo(function ResponsePanel({
   const shouldShowMessages = shouldShowResponseTab("messages");
   const traceId = tracedResponse?.app_responses.traceId;
 
-  const [isOpen, setIsOpen] = useState(true);
-
   return (
     <div className="overflow-x-hidden overflow-y-auto h-full relative">
       <Tabs
@@ -105,15 +93,57 @@ export const ResponsePanel = memo(function ResponsePanel({
           {shouldShowMessages && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
+          <CustomTabTrigger value="headers">
+            Headers
+            {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+              <span className="ml-1 text-gray-400 font-mono text-xs">
+                ({Object.keys(responseHeaders).length})
+              </span>
+            )}
+          </CustomTabTrigger>
+
           <div className="flex-grow flex justify-end">
             <Button
-              variant={isAiTestGenerationPanelOpen ? "outline" : "ghost"}
+              variant={openPanels.logs === "open" ? "outline" : "ghost"}
               size="icon"
-              onClick={openAiTestGenerationPanel}
+              disabled={!traceId}
+              onClick={() => togglePanel("logs")}
               className={cn(
-                isAiTestGenerationPanelOpen && "opacity-50 bg-slate-900",
+                openPanels.logs === "open" && "opacity-50 bg-slate-900",
                 "h-6 w-6",
               )}
+              title="Show logs from the request-response lifecycle"
+            >
+              <Icon icon="lucide:logs" className="cursor-pointer h-4 w-4" />
+            </Button>
+            <Button
+              variant={openPanels.timeline === "open" ? "outline" : "ghost"}
+              size="icon"
+              disabled={!traceId}
+              onClick={() => togglePanel("timeline")}
+              className={cn(
+                openPanels.timeline === "open" && "opacity-50 bg-slate-900",
+                "h-6 w-6",
+              )}
+              title="Show timeline of the response"
+            >
+              <Icon
+                icon="lucide:chart-gantt"
+                className="cursor-pointer h-4 w-4"
+              />
+            </Button>
+            <Button
+              variant={
+                openPanels.aiTestGeneration === "open" ? "outline" : "ghost"
+              }
+              size="icon"
+              onClick={() => togglePanel("aiTestGeneration")}
+              className={cn(
+                openPanels.aiTestGeneration === "open" &&
+                  "opacity-50 bg-slate-900",
+                "h-6 w-6",
+              )}
+              title="Show test prompt generator"
             >
               <RobotIcon className="h-3 w-3 cursor-pointer" />
             </Button>
@@ -158,41 +188,20 @@ export const ResponsePanel = memo(function ResponsePanel({
           >
             <div className={cn("grid grid-rows-[auto_1fr]")}>
               <ResponseBody
-                headersSlot={
-                  <CollapsibleKeyValueTableV2
-                    sensitiveKeys={SENSITIVE_HEADERS}
-                    title="Headers"
-                    keyValue={responseHeaders ?? {}}
-                    className="mb-0.5 pb-2"
-                  />
-                }
                 response={responseToRender}
                 // HACK - To support absolutely positioned bottom toolbar
                 className={cn(showBottomToolbar && "pb-2")}
               />
-              {traceId && (
-                <Collapsible
-                  open={isOpen}
-                  onOpenChange={setIsOpen}
-                  className="pl-0 border-t pt-2.5 mt-0.5"
-                >
-                  <CollapsibleTrigger asChild className="mb-2">
-                    <SubSectionHeading className="flex items-center gap-2 cursor-pointer">
-                      {isOpen ? (
-                        <CaretDownIcon className="w-4 h-4 cursor-pointer" />
-                      ) : (
-                        <CaretRightIcon className="w-4 h-4 cursor-pointer" />
-                      )}
-                      Logs & Events
-                    </SubSectionHeading>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <RequestorTimeline traceId={traceId} />
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
             </div>
           </TabContentInner>
+        </CustomTabsContent>
+        <CustomTabsContent value="headers">
+          {responseHeaders && (
+            <KeyValueTable
+              sensitiveKeys={SENSITIVE_HEADERS}
+              keyValue={responseHeaders}
+            />
+          )}
         </CustomTabsContent>
       </Tabs>
     </div>

@@ -75,7 +75,13 @@ export interface WebsocketSlice {
   setWebsocketMessage: (websocketMessage: string | undefined) => void;
 }
 
+export interface UISlice {
+  sidePanelOpen: boolean;
+  setSidePanelOpen: (sidePanelOpen: boolean) => void;
+}
+
 export type Store = RequestResponseSlice &
   RoutesSlice &
   TabsSlice &
-  WebsocketSlice;
+  WebsocketSlice &
+  UISlice;

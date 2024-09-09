@@ -5,6 +5,7 @@ import {
   extractWaterfallTimeStats,
 } from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
+import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -14,15 +15,19 @@ import {
 import { useIsSmScreen } from "@/hooks";
 import { useOtelTrace } from "@/queries";
 import { cn } from "@/utils";
+import { Cross1Icon } from "@radix-ui/react-icons";
+import { Tabs } from "@radix-ui/react-tabs";
 import type { ReactNode } from "react";
 import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
+import type { Panels } from "./types";
 
 type Props = {
   traceId: string;
+  togglePanel: (panelName: keyof Panels) => void;
 };
 
-export function RequestorTimeline(props: Props) {
-  const { traceId } = props;
+export function RequestorTimeline({ traceId, togglePanel }: Props) {
   const { data: spans } = useOtelTrace(traceId);
 
   const orphanLogs = useOrphanLogs(traceId, spans ?? []);
@@ -38,39 +43,59 @@ export function RequestorTimeline(props: Props) {
   });
 
   return (
-    <TimelineProvider>
-      <ResizablePanelGroup
-        direction="horizontal"
-        id="requestor-timeline"
-        className=""
+    <Tabs defaultValue="timeline" className="h-full">
+      <CustomTabsList className="sticky top-0 z-10">
+        <CustomTabTrigger value="timeline">Timeline</CustomTabTrigger>
+        <div className="flex-grow flex justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => togglePanel("timeline")}
+            className="h-6 w-6"
+          >
+            <Cross1Icon className="h-3 w-3 cursor-pointer" />
+          </Button>
+        </div>
+      </CustomTabsList>
+      <CustomTabsContent
+        value="timeline"
+        className="overflow-hidden md:overflow-hidden"
       >
-        {!isSmallScreen && (
-          <>
-            <ResizablePanel
-              minSize={minSize}
-              defaultSize={33}
-              order={0}
-              id="graph"
-            >
-              <Content className="pr-3 sticky top-0">
-                <TimelineGraph
-                  waterfall={waterfall}
-                  minStart={minStart}
-                  duration={duration}
-                  activeId=""
-                />
+        <TimelineProvider>
+          <ResizablePanelGroup
+            direction="horizontal"
+            id="requestor-timeline"
+            className="h-full"
+          >
+            {!isSmallScreen && (
+              <>
+                <ResizablePanel
+                  minSize={minSize}
+                  defaultSize={25}
+                  order={0}
+                  id="graph"
+                >
+                  <Content className="pr-3 sticky top-0">
+                    <TimelineGraph
+                      waterfall={waterfall}
+                      minStart={minStart}
+                      duration={duration}
+                      activeId=""
+                    />
+                  </Content>
+                </ResizablePanel>
+                <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
+              </>
+            )}
+            <ResizablePanel className="" order={1} id="details">
+              <Content className="overflow-y-auto h-full">
+                <TimelineListDetails waterfall={waterfall} />
               </Content>
             </ResizablePanel>
-            <ResizableHandle hitAreaMargins={{ coarse: 20, fine: 10 }} />
-          </>
-        )}
-        <ResizablePanel className="max-h-full" order={1} id="details">
-          <Content className="overflow-auto h-fit">
-            <TimelineListDetails waterfall={waterfall} />
-          </Content>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </TimelineProvider>
+          </ResizablePanelGroup>
+        </TimelineProvider>
+      </CustomTabsContent>
+    </Tabs>
   );
 }
 
