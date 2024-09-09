@@ -124,10 +124,7 @@ impl Store for LibsqlStore {
     ) -> Result<Span> {
         let span = self
             .connection
-            .query(
-                &self.sql_builder.span_get(),
-                (trace_id.as_inner(), span_id.as_inner()),
-            )
+            .query(&self.sql_builder.span_get(), (trace_id, span_id))
             .await?
             .fetch_one()
             .await?;
@@ -142,10 +139,7 @@ impl Store for LibsqlStore {
     ) -> Result<Vec<Span>> {
         let spans = self
             .connection
-            .query(
-                &self.sql_builder.span_list_by_trace(),
-                params!(trace_id.as_inner()),
-            )
+            .query(&self.sql_builder.span_list_by_trace(), params!(trace_id))
             .await?
             .fetch_all()
             .await?;
@@ -159,9 +153,9 @@ impl Store for LibsqlStore {
             .query(
                 &self.sql_builder.span_create(),
                 params!(
-                    span.trace_id.0,
-                    span.span_id.0,
-                    span.parent_span_id.map(|parent_span_id| parent_span_id.0),
+                    span.trace_id,
+                    span.span_id,
+                    span.parent_span_id,
                     span.name,
                     span.kind,
                     span.start_time,
@@ -204,10 +198,7 @@ impl Store for LibsqlStore {
     ) -> Result<Option<u64>> {
         let rows_affected = self
             .connection
-            .execute(
-                &self.sql_builder.span_delete_by_trace(),
-                params!(trace_id.as_inner()),
-            )
+            .execute(&self.sql_builder.span_delete_by_trace(), params!(trace_id))
             .await?;
 
         Ok(Some(rows_affected))
@@ -222,10 +213,7 @@ impl Store for LibsqlStore {
     ) -> Result<Option<u64>> {
         let rows_affected = self
             .connection
-            .execute(
-                &self.sql_builder.span_delete(),
-                params!(trace_id.as_inner(), span_id.as_inner()),
-            )
+            .execute(&self.sql_builder.span_delete(), params!(trace_id, span_id))
             .await?;
 
         Ok(Some(rows_affected))

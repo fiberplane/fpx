@@ -75,16 +75,14 @@ impl Span {
                     let parent_span_id = if span.parent_span_id.is_empty() {
                         None
                     } else {
-                        // .unwrap is safe because we literally encode them in the exact same line as hex
-                        Some(HexEncodedId::new(hex::encode(span.parent_span_id)).unwrap())
+                        Some(span.parent_span_id.into())
                     };
 
                     let events: Vec<_> = span.events.into_iter().map(Into::into).collect();
                     let links: Vec<_> = span.links.into_iter().map(Into::into).collect();
 
-                    // .unwrap is safe because we literally encode them in the exact same line as hex
-                    let trace_id = HexEncodedId::new(hex::encode(span.trace_id)).unwrap();
-                    let span_id = HexEncodedId::new(hex::encode(span.span_id)).unwrap();
+                    let trace_id = span.trace_id.into();
+                    let span_id = span.span_id.into();
 
                     let name = span.name;
                     let trace_state = span.trace_state;

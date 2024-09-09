@@ -120,6 +120,41 @@ impl Deref for HexEncodedId {
     }
 }
 
+impl From<Vec<u8>> for HexEncodedId {
+    fn from(value: Vec<u8>) -> Self {
+        // .unwrap() is safe because we literally encode it to hex in the exact same line
+        Self::new(hex::encode(value)).unwrap()
+    }
+}
+
+#[cfg(feature = "libsql")]
+impl From<HexEncodedId> for libsql::Value {
+    fn from(value: HexEncodedId) -> Self {
+        value.into_inner().into()
+    }
+}
+
+#[cfg(feature = "libsql")]
+impl From<&HexEncodedId> for libsql::Value {
+    fn from(value: &HexEncodedId) -> Self {
+        value.as_inner().into()
+    }
+}
+
+#[cfg(feature = "wasm-bindgen")]
+impl From<HexEncodedId> for wasm_bindgen::JsValue {
+    fn from(value: HexEncodedId) -> Self {
+        (&value).into()
+    }
+}
+
+#[cfg(feature = "wasm-bindgen")]
+impl From<&HexEncodedId> for wasm_bindgen::JsValue {
+    fn from(value: &HexEncodedId) -> Self {
+        wasm_bindgen::JsValue::from_str(value.as_inner())
+    }
+}
+
 struct HexEncodedIdVisitor;
 
 impl<'de> Visitor<'de> for HexEncodedIdVisitor {
