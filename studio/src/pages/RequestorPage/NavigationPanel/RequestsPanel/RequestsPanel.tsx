@@ -131,13 +131,13 @@ const MethodCell = ({ item }: { item: MergedListItem }) => {
 
 type MergedListItem =
   | {
-    type: "request";
-    data: Requestornator;
-  }
+      type: "request";
+      data: Requestornator;
+    }
   | {
-    type: "history";
-    data: OtelTrace;
-  };
+      type: "history";
+      data: OtelTrace;
+    };
 
 // Combine the history with traces by creating a new list that contains the history as well
 // as traces that are not in the history. The new list should be sorted by the timestamp of the request.
