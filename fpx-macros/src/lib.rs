@@ -1,8 +1,8 @@
 use attribute_derive::FromAttr;
+use manyhow::{manyhow, Emitter, ErrorMessage};
 use proc_macro::TokenStream;
-use proc_macro_error::{abort_call_site, proc_macro_error};
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput, Expr};
+use syn::{Data, DeriveInput, Expr};
 
 #[derive(FromAttr)]
 #[attribute(ident = api_error)]
@@ -11,27 +11,31 @@ struct ApiErrorAttribute {
     status_code: Expr,
 }
 
+#[manyhow]
 #[proc_macro_derive(ApiError, attributes(api_error))]
-#[proc_macro_error]
-pub fn derive_api_error(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
+pub fn derive_api_error(input: TokenStream, emitter: &mut Emitter) -> manyhow::Result<TokenStream> {
+    let input: DeriveInput = syn::parse(input)?;
 
     let Data::Enum(data) = &input.data else {
-        abort_call_site!("`ApiError` derive is only supported on enums");
+        emitter.emit(ErrorMessage::call_site(
+            "`ApiError` derive is only supported on enums",
+        ));
+        return Err(emitter.into_result().unwrap_err());
     };
 
     let struct_ident = &input.ident;
     let mut variants = vec![];
 
     if data.variants.is_empty() {
-        return (quote! {
+        return Ok((quote! {
+            #[automatically_derived]
             impl crate::api::errors::ApiError for #struct_ident {
                 fn status_code(&self) -> http::StatusCode {
                     http::StatusCode::INTERNAL_SERVER_ERROR
                 }
             }
         })
-        .into();
+        .into());
     }
 
     for variant in &data.variants {
@@ -45,7 +49,8 @@ pub fn derive_api_error(input: TokenStream) -> TokenStream {
         });
     }
 
-    (quote! {
+    Ok((quote! {
+        #[automatically_derived]
         impl crate::api::errors::ApiError for #struct_ident {
             fn status_code(&self) -> http::StatusCode {
                 match self {
@@ -54,5 +59,5 @@ pub fn derive_api_error(input: TokenStream) -> TokenStream {
             }
         }
     })
-    .into()
+    .into())
 }

@@ -1,3 +1,4 @@
+use crate::data::models::HexEncodedId;
 use opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest;
 use opentelemetry_proto::tonic::common::v1::{any_value, KeyValue, KeyValueList};
 use opentelemetry_proto::tonic::trace::v1::span::{Event, Link};
@@ -17,9 +18,9 @@ fn parse_time_nanos(nanos: u64) -> time::OffsetDateTime {
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct Span {
-    pub trace_id: String,
-    pub span_id: String,
-    pub parent_span_id: Option<String>,
+    pub trace_id: HexEncodedId,
+    pub span_id: HexEncodedId,
+    pub parent_span_id: Option<HexEncodedId>,
 
     pub name: String,
     pub trace_state: Option<String>,
@@ -74,14 +75,14 @@ impl Span {
                     let parent_span_id = if span.parent_span_id.is_empty() {
                         None
                     } else {
-                        Some(hex::encode(span.parent_span_id))
+                        Some(span.parent_span_id.into())
                     };
 
                     let events: Vec<_> = span.events.into_iter().map(Into::into).collect();
                     let links: Vec<_> = span.links.into_iter().map(Into::into).collect();
 
-                    let trace_id = hex::encode(span.trace_id);
-                    let span_id = hex::encode(span.span_id);
+                    let trace_id = span.trace_id.into();
+                    let span_id = span.span_id.into();
 
                     let name = span.name;
                     let trace_state = Some(span.trace_state);
@@ -295,14 +296,17 @@ impl From<opentelemetry_proto::tonic::common::v1::ArrayValue> for AttributeValue
 #[serde(rename_all = "camelCase")]
 pub struct TraceSummary {
     /// The trace id
-    pub trace_id: String,
+    pub trace_id: HexEncodedId,
 
     /// The spans that are part of this trace
     pub spans: Vec<Span>,
 }
 
 impl TraceSummary {
-    pub fn from_spans(trace_id: String, spans: Vec<crate::data::models::Span>) -> Option<Self> {
+    pub fn from_spans(
+        trace_id: HexEncodedId,
+        spans: Vec<crate::data::models::Span>,
+    ) -> Option<Self> {
         if spans.is_empty() {
             return None;
         }
