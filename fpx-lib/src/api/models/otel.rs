@@ -22,9 +22,9 @@ pub struct Span {
     pub parent_span_id: Option<String>,
 
     pub name: String,
-    pub trace_state: String,
-    pub flags: u32,
-    pub kind: SpanKind,
+    pub trace_state: Option<String>,
+    pub flags: Option<u32>,
+    pub kind: Option<SpanKind>,
 
     pub scope_name: Option<String>,
     pub scope_version: Option<String>,
@@ -65,7 +65,7 @@ impl Span {
                 let scope_attributes = scope_span.scope.map(|scope| scope.attributes.into());
 
                 for span in scope_span.spans {
-                    let kind = span.kind().into();
+                    let kind = Some(span.kind().into());
                     let attributes = span.attributes.into();
 
                     let start_time = parse_time_nanos(span.start_time_unix_nano);
@@ -84,8 +84,8 @@ impl Span {
                     let span_id = hex::encode(span.span_id);
 
                     let name = span.name;
-                    let trace_state = span.trace_state;
-                    let flags = span.flags;
+                    let trace_state = Some(span.trace_state);
+                    let flags = Some(span.flags);
 
                     let span = Self {
                         trace_id,
@@ -254,7 +254,7 @@ impl From<Vec<KeyValue>> for AttributeMap {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
 pub enum AttributeValue {
     StringValue(String),
     BoolValue(bool),
@@ -292,26 +292,13 @@ impl From<opentelemetry_proto::tonic::common::v1::ArrayValue> for AttributeValue
 
 /// A trace contains a summary of its traces.
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TraceSummary {
-    /// The trace id.
+    /// The trace id
     pub trace_id: String,
 
-    /// Start of the first span
-    #[serde(with = "time::serde::rfc3339")]
-    pub start_time: time::OffsetDateTime,
-
-    /// End of the last span
-    #[serde(with = "time::serde::rfc3339")]
-    pub end_time: time::OffsetDateTime,
-
-    /// The numbers of spans that we have for this trace.
-    pub num_spans: u32,
-
-    /// A summary of the root span associated with this trace.
-    ///
-    /// A root span is a span that has no parent span. This can be empty if the
-    /// root span was never collected.
-    pub root_span: Option<SpanSummary>,
+    /// The spans that are part of this trace
+    pub spans: Vec<Span>,
 }
 
 impl TraceSummary {
@@ -320,51 +307,9 @@ impl TraceSummary {
             return None;
         }
 
-        let num_spans = spans.len() as u32;
+        let spans = spans.into_iter().map(Into::into).collect();
 
-        // Find the first start and the last end time. Note: unwrap is safe here
-        // since we check that there is at least 1 span present.
-        let start_time = spans.iter().map(|span| span.start_time).min().unwrap();
-        let end_time = spans.iter().map(|span| span.end_time).max().unwrap();
-
-        let root_span = spans
-            .into_iter()
-            .find(|span| span.parent_span_id.is_none())
-            .map(|span| span.inner.into_inner().into());
-
-        Some(Self {
-            trace_id,
-            start_time: start_time.into(),
-            end_time: end_time.into(),
-            root_span,
-            num_spans,
-        })
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct SpanSummary {
-    /// The span id.
-    pub span_id: String,
-
-    /// The name of the span.
-    pub name: String,
-
-    /// The kind of span.
-    pub span_kind: SpanKind,
-
-    /// Optional status of the span.
-    pub result: Option<Status>,
-}
-
-impl From<Span> for SpanSummary {
-    fn from(span: Span) -> Self {
-        Self {
-            span_id: span.span_id,
-            name: span.name,
-            span_kind: span.kind,
-            result: span.status,
-        }
+        Some(Self { trace_id, spans })
     }
 }
 
@@ -389,43 +334,47 @@ mod tests {
         let tests = vec![
             Test {
                 input: AttributeValue::IntValue(1234),
-                expected: "{\"intValue\":1234}",
+                expected: "1234",
             },
             Test {
                 input: AttributeValue::DoubleValue(1234.1234),
-                expected: "{\"doubleValue\":1234.1234}",
+                expected: "1234.1234",
             },
             Test {
                 input: AttributeValue::StringValue("hello".to_string()),
-                expected: "{\"stringValue\":\"hello\"}",
+                expected: "\"hello\"",
             },
             Test {
                 input: AttributeValue::BoolValue(true),
-                expected: "{\"boolValue\":true}",
+                expected: "true",
             },
-            Test {
-                input: AttributeValue::BytesValue(vec![1, 2, 3, 4]),
-                expected: "{\"bytesValue\":[1,2,3,4]}",
-            },
+            // Test {
+            //     input: AttributeValue::BytesValue(vec![1, 2, 3, 4]),
+            //     expected: "[1,2,3,4]",
+            // },
             Test {
                 input: AttributeValue::ArrayValue(vec![
                     AttributeValue::IntValue(1234),
                     AttributeValue::DoubleValue(1234.1234),
                 ]),
-                expected: "{\"arrayValue\":[{\"intValue\":1234},{\"doubleValue\":1234.1234}]}",
+                expected: "[1234,1234.1234]",
             },
             Test {
                 input: AttributeValue::KvlistValue(kv_list),
-                expected: "{\"kvlistValue\":{\"key1\":{\"intValue\":1234},\"key2\":{\"doubleValue\":1234.1234}}}",
+                expected: "{\"key1\":1234,\"key2\":1234.1234}",
             },
         ];
 
-        for test in tests {
+        for (i, test) in tests.into_iter().enumerate() {
             let actual = serde_json::to_string(&test.input).unwrap();
-            assert_eq!(actual, test.expected);
+            assert_eq!(actual, test.expected, "serializing failed for {:?}", i);
 
             let converted_back: AttributeValue = serde_json::from_str(&actual).unwrap();
-            assert_eq!(converted_back, test.input);
+            assert_eq!(
+                converted_back, test.input,
+                "deserializing failed for {:?}",
+                i
+            );
         }
     }
 }

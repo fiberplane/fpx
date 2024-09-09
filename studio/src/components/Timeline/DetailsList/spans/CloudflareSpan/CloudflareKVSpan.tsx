@@ -3,8 +3,8 @@ import {
   CF_BINDING_METHOD,
   CF_BINDING_RESULT,
 } from "@/constants";
-import type { OtelSpan } from "@/queries";
 import { getString } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { KeyValueTable } from "../../KeyValueTableV2";

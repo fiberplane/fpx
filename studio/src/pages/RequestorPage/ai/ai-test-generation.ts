@@ -1,4 +1,4 @@
-import { type OtelSpans, useOtelTrace } from "@/queries";
+import { useOtelTrace } from "@/queries";
 import {
   getRequestMethod,
   getRequestUrl,
@@ -9,6 +9,7 @@ import {
   isFetchSpan,
 } from "@/utils";
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import type { Requestornator } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
@@ -98,9 +99,9 @@ function cleanPrompt(prompt: string) {
 
 // NOTE - This only focuses on exceptions! Will need to improve it in the future
 // TODO - Also add error logs or fetch errors
-function serializeTraceForLLM(trace: OtelSpans) {
-  const events = trace.flatMap((span) => span.events);
-  const exceptions = events.filter((event) => event.name === "exception");
+function serializeTraceForLLM(trace: Array<OtelSpan>) {
+  const events = trace.flatMap((span) => span.events ?? []);
+  const exceptions = events.filter((event) => event?.name === "exception");
   const exceptionsContext = exceptions.reduce(
     (result, exception) => {
       result.push(

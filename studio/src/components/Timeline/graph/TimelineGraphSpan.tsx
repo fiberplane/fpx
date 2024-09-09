@@ -1,5 +1,5 @@
-import type { OtelSpan } from "@/queries";
 import { type VendorInfo, cn } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useTimelineContext } from "../context";
 import { useTimelineIcon, useTimelineTitle } from "../hooks";
 import { formatDuration } from "../utils";
@@ -56,7 +56,7 @@ export const TimelineGraphSpan: React.FC<{
             "h-2.5 border-l-2 border-r-2 border-blue-500 flex items-center min-w-0 absolute",
           )}
           style={{ width: lineWidth, marginLeft: lineOffset }}
-          title={`duration: ${formatDuration(span.start_time, span.end_time)}`}
+          title={`duration: ${formatDuration(span.start_time.toString(), span.end_time.toString())}`}
         >
           <div className={"h-0.5 min-w-0.5 bg-blue-500 w-full"} />
         </div>

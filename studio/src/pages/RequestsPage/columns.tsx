@@ -3,7 +3,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { RequestMethod } from "@/components/Timeline";
 import { Status } from "@/components/ui/status";
-import type { OtelTrace } from "@/queries";
 import {
   getRequestMethod,
   getRequestPath,
@@ -11,6 +10,7 @@ import {
   isFpxRequestSpan,
   isFpxTraceError,
 } from "@/utils";
+import type { OtelTrace } from "@fiberplane/fpx-types";
 import { Link } from "react-router-dom";
 import { Timestamp } from "../RequestDetailsPage/Timestamp";
 
@@ -129,7 +129,7 @@ export const columns: ColumnDef<OtelTrace>[] = [
       if (!startTime) {
         return <span>—</span>;
       }
-      return <Timestamp date={startTime} />;
+      return <Timestamp date={startTime.toString()} />;
     },
     meta: {
       // NOTE - This is how to hide a cell depending on breakpoint!

@@ -1,4 +1,3 @@
-import type { OtelSpan } from "@/queries";
 import {
   SENSITIVE_HEADERS,
   cn,
@@ -11,6 +10,7 @@ import {
   isSensitiveEnvVar,
 } from "@/utils";
 import { getMatchedRoute, getRequestMethod, getRequestUrl } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { useTimelineIcon } from "../../hooks";
 import {

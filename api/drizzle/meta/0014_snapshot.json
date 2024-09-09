@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "cf7990f9-0720-4897-b0c5-449511f37c63",
-  "prevId": "cd5bd8ef-be05-4fd5-a1b5-f5b9769b882a",
+  "id": "5897188d-e0e3-45b6-9023-532b91137314",
+  "prevId": "cf7990f9-0720-4897-b0c5-449511f37c63",
   "tables": {
     "app_requests": {
       "name": "app_requests",
@@ -377,42 +377,26 @@
     "otel_spans": {
       "name": "otel_spans",
       "columns": {
+        "inner": {
+          "name": "inner",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "span_id": {
           "name": "span_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "trace_id": {
           "name": "trace_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "parsed_payload": {
-          "name": "parsed_payload",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(CURRENT_TIMESTAMP)"
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -480,6 +464,8 @@
   "_meta": {
     "schemas": {},
     "tables": {},
-    "columns": {}
+    "columns": {
+      "\"otel_spans\".\"parsed_payload\"": "\"otel_spans\".\"inner\""
+    }
   }
 }

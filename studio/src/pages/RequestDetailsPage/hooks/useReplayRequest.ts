@@ -1,5 +1,4 @@
 import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
-import type { OtelSpan } from "@/queries";
 import {
   getRequestBody,
   getRequestHeaders,
@@ -7,6 +6,7 @@ import {
   getRequestQueryParams,
   getRequestUrl,
 } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";

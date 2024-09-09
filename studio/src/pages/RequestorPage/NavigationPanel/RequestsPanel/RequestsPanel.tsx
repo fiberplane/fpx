@@ -1,7 +1,7 @@
 import { RequestMethod } from "@/components/Timeline";
 import { Input } from "@/components/ui/input";
 import { Status } from "@/components/ui/status";
-import { type OtelTrace, useOtelTraces } from "@/queries";
+import { useOtelTraces } from "@/queries";
 import {
   cn,
   getRequestMethod,
@@ -9,6 +9,7 @@ import {
   getRequestUrl,
   getStatusCode,
 } from "@/utils";
+import type { OtelTrace } from "@fiberplane/fpx-types";
 import { useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import type { Requestornator } from "../../queries";

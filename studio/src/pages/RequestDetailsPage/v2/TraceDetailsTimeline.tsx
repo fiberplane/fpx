@@ -3,6 +3,7 @@ import {
   extractWaterfallTimeStats,
 } from "@/components/Timeline";
 import { type Waterfall, cn } from "@/utils";
+import type React from "react";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 

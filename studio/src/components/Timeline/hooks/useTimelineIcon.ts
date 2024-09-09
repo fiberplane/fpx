@@ -1,5 +1,6 @@
-import { type MizuOrphanLog, type OtelSpan, isMizuOrphanLog } from "@/queries";
+import { type MizuOrphanLog, isMizuOrphanLog } from "@/queries";
 import { type VendorInfo, isCloudflareVendorInfo } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { getTypeIcon } from "../utils";
 

@@ -1,5 +1,5 @@
-import type { OtelTrace } from "@/queries";
 import { getRequestPath, isFpxRequestSpan } from "@/utils";
+import type { OtelTrace } from "@fiberplane/fpx-types";
 
 export function useMostRecentRequest(
   currentTrace: OtelTrace,

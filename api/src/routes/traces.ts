@@ -1,5 +1,10 @@
+import {
+  OtelSpanSchema,
+  type TraceDetailSpansResponse,
+  type TraceListResponse,
+} from "@fiberplane/fpx-types";
 import type { IExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import * as schema from "../db/schema.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
@@ -22,21 +27,20 @@ app.get("/v1/traces", async (ctx) => {
 
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
-    const response = await fetch(`${fpxWorker.baseUrl}/ts-compat/v1/traces`);
+    const response = await fetch(`${fpxWorker.baseUrl}/v1/traces`);
     const json = await response.json();
     return ctx.json(json);
   }
 
-  const spans = await db
-    .select()
-    .from(otelSpans)
-    .where(and(sql`parsed_payload->>'scope_name' = 'fpx-tracer'`))
-    .orderBy(desc(otelSpans.createdAt));
+  const spans = await db.query.otelSpans.findMany({
+    where: sql`inner->>'scope_name' = 'fpx-tracer'`,
+    orderBy: desc(sql`inner->>'end_time'`),
+  });
 
   const traceMap = new Map<string, Array<(typeof spans)[0]>>();
 
   for (const span of spans) {
-    const traceId = span.traceId;
+    const traceId = span.inner.trace_id;
     if (!traceId) {
       continue;
     }
@@ -51,7 +55,12 @@ app.get("/v1/traces", async (ctx) => {
     spans,
   }));
 
-  return ctx.json(traces);
+  const response: TraceListResponse = traces.map(({ traceId, spans }) => ({
+    traceId,
+    spans: spans.map(({ inner }) => OtelSpanSchema.parse(inner)),
+  }));
+
+  return ctx.json(response);
 });
 
 /**
@@ -67,7 +76,7 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
   const fpxWorker = await getSetting(db, "fpxWorkerProxy");
   if (fpxWorker?.enabled && fpxWorker.baseUrl) {
     const response = await fetch(
-      `${fpxWorker.baseUrl}/ts-compat/v1/traces/${traceId}/spans`,
+      `${fpxWorker.baseUrl}/v1/traces/${traceId}/spans`,
     );
     const json = await response.json();
     return ctx.json(json);
@@ -78,11 +87,16 @@ app.get("/v1/traces/:traceId/spans", async (ctx) => {
     .from(otelSpans)
     .where(
       and(
-        sql`parsed_payload->>'scope_name' = 'fpx-tracer'`,
-        eq(otelSpans.traceId, traceId),
+        sql`inner->>'scope_name' = 'fpx-tracer'`,
+        sql`inner->>'trace_id' = ${traceId}`,
       ),
     );
-  return ctx.json(traces);
+
+  const response: TraceDetailSpansResponse = traces.map(({ inner }) =>
+    OtelSpanSchema.parse(inner),
+  );
+
+  return ctx.json(response);
 });
 
 app.post("/v1/traces/delete-all-hack", async (ctx) => {
@@ -112,14 +126,15 @@ app.post("/v1/traces", async (ctx) => {
   }
 
   try {
-    const tracesPayload = (await fromCollectorRequest(body)).map((span) => ({
-      rawPayload: body,
-      parsedPayload: span,
-      spanId: span.span_id,
-      traceId: span.trace_id,
-    }));
+    const tracesPayload = (await fromCollectorRequest(body)).map(
+      (span) =>
+        ({
+          inner: OtelSpanSchema.parse(span),
+          spanId: span.span_id,
+          traceId: span.trace_id,
+        }) satisfies typeof otelSpans.$inferInsert,
+    );
 
-    // TODO - Find a way to use a type guard
     try {
       await db.insert(otelSpans).values(tracesPayload);
     } catch (error) {

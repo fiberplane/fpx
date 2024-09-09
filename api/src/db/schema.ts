@@ -1,3 +1,4 @@
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { relations, sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -155,15 +156,10 @@ const CallerLocationSchema = z.object({
   column: z.string(),
 });
 
-// TODO: Make a better schema for this
-//       And add a separate schema for the raw spans from the exporter
-//       Inspo: https://github.com/wperron/sqliteexporter/blob/main/migrations/20240120195122_init.up.sql
 export const otelSpans = sqliteTable("otel_spans", {
-  spanId: text("span_id"),
-  traceId: text("trace_id"),
-  parsedPayload: text("parsed_payload", { mode: "json" }),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  inner: text("inner", { mode: "json" }).$type<OtelSpan>().notNull(),
+  spanId: text("span_id").notNull(),
+  traceId: text("trace_id").notNull(),
 });
 
 export const newMizuLogSchema = createInsertSchema(mizuLogs);

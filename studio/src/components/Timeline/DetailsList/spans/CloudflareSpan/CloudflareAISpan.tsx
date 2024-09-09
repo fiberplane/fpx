@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { CF_BINDING_ERROR, CF_BINDING_RESULT } from "@/constants";
-import type { OtelSpan } from "@/queries";
 import { getString } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { CollapsibleSubSection } from "../../../shared";
 import { TextOrJsonViewer } from "../../TextJsonViewer";

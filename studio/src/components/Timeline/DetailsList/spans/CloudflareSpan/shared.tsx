@@ -1,8 +1,8 @@
 import { CollapsibleSubSection } from "@/components/Timeline/shared";
 import { Badge } from "@/components/ui/badge";
 import { CF_BINDING_METHOD, CF_BINDING_NAME } from "@/constants";
-import type { OtelSpan } from "@/queries";
 import { cn, getString } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
 
 export function CfBindingOverview({

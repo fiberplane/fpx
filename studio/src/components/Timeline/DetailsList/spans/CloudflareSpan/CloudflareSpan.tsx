@@ -1,5 +1,5 @@
-import type { OtelSpan } from "@/queries";
 import { type CloudflareVendorInfo, isCloudflareD1VendorInfo } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { CloudflareAISpan } from "./CloudflareAISpan";
 import { CloudflareD1Span } from "./CloudflareD1Span";
 import { CloudflareKVSpan } from "./CloudflareKVSpan";

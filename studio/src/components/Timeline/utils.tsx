@@ -8,8 +8,8 @@ import HonoLogo from "@/assets/HonoLogo.svg";
 import NeonLogo from "@/assets/NeonLogo.svg";
 import OpenAiLogo from "@/assets/OpenAILogo.svg";
 import { CF_BINDING_METHOD, SpanKind } from "@/constants";
-import type { OtelSpan } from "@/queries";
 import { type CloudflareVendorInfo, type Waterfall, getString } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 import { formatDistanceStrict } from "date-fns";
 
