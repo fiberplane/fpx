@@ -61,10 +61,6 @@ pub async fn traces_get_handler(
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum TraceGetError {
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidTraceId,
-
     #[api_error(status_code = StatusCode::NOT_FOUND)]
     #[error("Trace was not found")]
     NotFound,
@@ -93,11 +89,7 @@ pub async fn traces_delete_handler(
 #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
-pub enum TraceDeleteError {
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidTraceId,
-}
+pub enum TraceDeleteError {}
 
 impl From<DbError> for ApiServerError<TraceDeleteError> {
     fn from(err: DbError) -> Self {

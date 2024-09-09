@@ -25,6 +25,7 @@ pub fn derive_api_error(input: TokenStream) -> TokenStream {
 
     if data.variants.is_empty() {
         return (quote! {
+            #[automatically_derived]
             impl crate::api::errors::ApiError for #struct_ident {
                 fn status_code(&self) -> http::StatusCode {
                     http::StatusCode::INTERNAL_SERVER_ERROR
@@ -46,6 +47,7 @@ pub fn derive_api_error(input: TokenStream) -> TokenStream {
     }
 
     (quote! {
+        #[automatically_derived]
         impl crate::api::errors::ApiError for #struct_ident {
             fn status_code(&self) -> http::StatusCode {
                 match self {

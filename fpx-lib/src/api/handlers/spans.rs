@@ -29,14 +29,6 @@ pub enum SpanGetError {
     #[api_error(status_code = StatusCode::NOT_FOUND)]
     #[error("Span not found")]
     SpanNotFound,
-
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidTraceId,
-
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Span ID is invalid")]
-    InvalidSpanId,
 }
 
 impl From<DbError> for ApiServerError<SpanGetError> {
@@ -67,11 +59,7 @@ pub async fn span_list_handler(
 #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
-pub enum SpanListError {
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidTraceId,
-}
+pub enum SpanListError {}
 
 impl From<DbError> for ApiServerError<SpanListError> {
     fn from(err: DbError) -> Self {
@@ -95,15 +83,7 @@ pub async fn span_delete_handler(
 #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
-pub enum SpanDeleteError {
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidTraceId,
-
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidSpanId,
-}
+pub enum SpanDeleteError {}
 
 impl From<DbError> for ApiServerError<SpanDeleteError> {
     fn from(err: DbError) -> Self {
