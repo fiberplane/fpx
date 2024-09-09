@@ -52,7 +52,7 @@ export const TimelineGraphLog: React.FC<{
         <div
           className="h-2.5 items-center min-w-1"
           style={{ marginLeft: lineOffset }}
-          title={log.timestamp}
+          title={log.timestamp.toString()}
         >
           <div className="h-1.5 w-1.5 bg-blue-500 rounded-full" />
         </div>
