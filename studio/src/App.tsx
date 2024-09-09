@@ -35,7 +35,6 @@ export function App() {
                 path="/requestor/:requestType/:id"
                 element={<RequestorPage />}
               />
-              {/* <Route path="/settings" element={<SettingsPage />} /> */}
             </Routes>
           </Layout>
           <Toaster />
