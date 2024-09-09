@@ -3,7 +3,6 @@ import { useKeySequence } from "@/hooks/useKeySequence";
 import { cn } from "@/utils";
 import React, { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { BACKGROUND_LAYER } from "../styles";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
 
@@ -51,15 +50,18 @@ export function NavigationPanel() {
   useKeySequence(["g", "a"], () => setTab("requests"));
 
   return (
-    <div
-      className={cn(
-        BACKGROUND_LAYER,
-        "px-4 overflow-hidden border rounded-md",
-        "h-full",
-        "flex",
-        "flex-col",
-        "pt-4",
-      )}
+    <Tabs
+      value={tab}
+      className="h-full"
+      onValueChange={(tabValue) =>
+        setParams(
+          (value) => {
+            value.set(FILTER_TAB_KEY, tabValue);
+            return value;
+          },
+          { replace: true },
+        )
+      }
     >
       <Tabs
         value={tab}

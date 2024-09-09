@@ -12,7 +12,7 @@ import { cn } from "@/utils";
 import { useCallback, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { RequestDetailsPageV2 } from "../RequestDetailsPage/RequestDetailsPageV2";
-import { NavigationPanel } from "./NavigationPanel";
+import { NavigationFrame, NavigationPanel } from "./NavigationPanel";
 import { RequestorPageContent } from "./RequestorPageContent";
 import { useRoutes } from "./routes";
 import { useRequestorHistory } from "./useRequestorHistory";
@@ -97,7 +97,9 @@ export const RequestorPage = () => {
               maxSize={maxSize}
               defaultSize={(320 / width) * 100}
             >
-              <NavigationPanel />
+              <NavigationFrame>
+                <NavigationPanel />
+              </NavigationFrame>
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
