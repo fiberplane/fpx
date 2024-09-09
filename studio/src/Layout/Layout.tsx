@@ -1,4 +1,11 @@
 import { Icon } from "@iconify/react";
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTrigger,
+  Root,
+} from "@radix-ui/react-dialog";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
 import type { ComponentProps } from "react";
@@ -6,12 +13,7 @@ import { NavLink } from "react-router-dom";
 import FpxIcon from "../assets/fpx.svg";
 import { WebhoncBadge } from "../components/WebhoncBadge";
 import { Button } from "../components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "../components/ui/dialog";
+import { DialogTitle } from "../components/ui/dialog";
 import { useWebsocketQueryInvalidation } from "../hooks";
 import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
 import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
@@ -57,19 +59,38 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
             </div>
           )}
           <div className="flex items-center border-l gap-1 px-1">
-            <Dialog>
+            <Root>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
                   <Icon icon="lucide:settings" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[100vw] w-[800px] h-[90vh] max-h-[500px] grid-rows-[auto_1fr]">
-                <DialogTitle>Settings</DialogTitle>
-                <div className="h-full pr-1 overflow-hidden">
-                  <SettingsPage />
+              <DialogContent className="fixed top-0 left-0 w-full h-full z-50">
+                <div className="h-full grid bg-background items-start justify-center">
+                  <div className="pr-1 overflow-hidden w-full lg:max-w-[1060px] md:max-w-[1100px] grid grid-rows-[auto_1fr]">
+                    <div className="flex justify-between items-center px-8 pr-8 lg:px-12 lg:pr-10 pt-6">
+                      <DialogTitle>Settings</DialogTitle>
+                      <DialogClose asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="p-0.5 w-6 h-6"
+                        >
+                          <Icon icon="lucide:x" />
+                        </Button>
+                      </DialogClose>
+                    </div>
+                    <div>
+                      <DialogDescription className="px-8 pr-8 lg:px-12 lg:pr-10 pt-6 text-sm text-muted-foreground">
+                        Manage your settings and preferences.
+                      </DialogDescription>
+
+                      <SettingsPage />
+                    </div>
+                  </div>
                 </div>
               </DialogContent>
-            </Dialog>
+            </Root>
             <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
               <a
                 href="https://github.com/fiberplane/fpx"
