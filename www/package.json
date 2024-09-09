@@ -13,10 +13,12 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.2",
+    "@astrojs/check": "^0.9.3",
     "@astrojs/markdown-remark": "^5.2.0",
-    "@astrojs/starlight": "^0.25.4",
-    "astro": "^4.13.2",
+    "@astrojs/starlight": "^0.26.1",
+    "@iconify-json/lucide": "^1.1.208",
+    "astro": "^4.14.5",
+    "astro-icon": "^1.1.1",
     "rehype-autolink-headings": "^7.1.0",
     "rollup": "^4.20.0",
     "sharp": "^0.32.5",
@@ -28,6 +30,6 @@
     "@biomejs/biome": "1.8.3",
     "prettier": "^3.3.3",
     "prettier-plugin-astro": "^0.14.1",
-    "wrangler": "^3.70.0"
+    "wrangler": "^3.73.0"
   }
 }

@@ -3,7 +3,7 @@ title: Client Library
 description: An OpenTelemetry client library for Hono that integrates with Fiberplane Studio
 ---
 
-import { Aside, LinkCard } from '@astrojs/starlight/components';
+import { Aside, LinkCard } from "@astrojs/starlight/components";
 import PackageManagers from "@/components/PackageManagers.astro";
 
 The Fiberplane Studio client library integrates with the [Hono](https://hono.dev/) web framework to send [OpenTelemetry traces](https://opentelemetry.io/docs/concepts/signals/traces/) to Fiberplane Studio, and give you rich application context while you're developing.
@@ -22,15 +22,19 @@ The install process is nothing novel. To install the client library in your Hono
 <PackageManagers pkg="@fiberplane/hono-otel" />
 
 <Aside type="caution">
-Fiberplane Studio and client library currently only support Hono running on Cloudflare Workers runtime. If you are using Node.js, Deno, or Bun, you can still use Fiberplane Studio, but you will not get the same features as the client library. You can upvote any of the [respective issues here](https://github.com/fiberplane/fpx/issues/192) to help us prioritize the development.
+  Fiberplane Studio and client library currently only support Hono running on
+  Cloudflare Workers runtime. If you are using Node.js, Deno, or Bun, you can
+  still use Fiberplane Studio, but you will not get the same features as the
+  client library. You can upvote any of the [respective issues
+  here](https://github.com/fiberplane/fpx/issues/192) to help us prioritize the
+  development.
 </Aside>
-
 
 ## Usage within Hono
 
 Below is an example of how to integrate the client library in a Hono app:
 
-```ts {2,8} title="index.ts"
+```ts ins={2,8} title="index.ts"
 import { Hono } from "hono";
 import { instrument } from "@fiberplane/hono-otel";
 
@@ -45,7 +49,7 @@ export default instrument(app);
 
 The `measure` function from the client library allows you to create custom spans for any function within your application, enabling more granular tracing.
 
-```ts {6-10} title="index.ts"
+```ts ins={6-10} title="index.ts"
 import { instrument, measure } from "@fiberplane/hono-otel";
 
 const app = new Hono();
@@ -88,7 +92,7 @@ By default, `instrument` will change the behavior of `fetch` and `console.*` met
 
 You can disable these features by setting the following configuration parameters to `false`:
 
-```js {9-14} title="index.ts"
+```js ins={9-14} title="index.ts"
 import { Hono } from "hono";
 import { instrument } from "@fiberplane/hono-otel";
 

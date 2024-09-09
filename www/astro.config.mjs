@@ -1,10 +1,17 @@
 import { rehypeHeadingIds } from "@astrojs/markdown-remark";
 import starlight from "@astrojs/starlight";
+import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 // https://astro.build/config
 export default defineConfig({
+  redirects: {
+    "/docs": "/docs/get-started",
+  },
+  experimental: {
+    contentIntellisense: true,
+  },
   integrations: [
     starlight({
       logo: {
@@ -36,6 +43,7 @@ export default defineConfig({
         Header: "@/components/Header.astro",
         Pagination: "@/components/Pagination.astro",
         ThemeProvider: "@/components/ThemeProvider.astro",
+        Sidebar: "@/components/Sidebar.astro",
       },
       customCss: ["@/main.css"],
       expressiveCode: {
@@ -45,6 +53,10 @@ export default defineConfig({
         },
       },
     }),
+    // NOTE: if we ever go to server rendering or hybrid rendering,
+    // we'll need to specify manually which icon sets to include
+    // https://github.com/natemoo-re/astro-icon?tab=readme-ov-file#configinclude
+    icon(),
   ],
   markdown: {
     rehypePlugins: [

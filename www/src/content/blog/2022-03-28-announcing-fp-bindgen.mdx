@@ -1,0 +1,43 @@
+---
+title: Announcing fp-bindgen
+description: Release of open-source library fp-bingen
+slug: announcing-fp-bindgen
+date: 2022-03-28
+author: Arend van Beelen
+tags:
+  - WebAssembly
+  - Rust
+  - OpenSource
+  - WASM
+---
+
+## fp-bindgen — a bindings generator for full-stack WASM plugins
+
+Today, we’re announcing the release of a library for generating bindings for full-stack WASM plugins: [fp-bindgen](https://github.com/fiberplane/fp-bindgen). Full-stack WASM plugins are plugins that can run both on the client and the server. fp-bindgen makes it easy to author these plugins, and provides the tooling for hosting them. We’ve been using fp-bindgen internally for the past several months and feel it has matured to a point where others may benefit from it as well.
+
+## What fp-bindgen offers us
+
+At Fiberplane, we are avid users of WebAssembly. We use it for our Fiberplane Providers, as well as for most of the core logic that powers our Fiberplane Studio product. As such, we needed a first-class tool for authoring and hosting WebAssembly plugins that ticked all of our boxes:
+
+- Can be used both inside browsers as well as from Rust-based host environments
+- Works well with our [Rust-centered workflow](https://blog.fiberplane.com/why-we-use-rust/)
+- Offers good performance
+
+## Why we built our own bindings generator
+
+fp-bindgen is not the only tool to offer WebAssembly bindings. However, we do believe it is more flexible and production-ready than any of the alternatives, thanks to the following advantages:
+
+- Support for multiple host environments (Rust/Wasmer and TypeScript)
+- Allows specifying custom protocol definitions
+- Protocols can integrate arbitrary Rust types
+- Stable [ABI](https://en.wikipedia.org/wiki/Application_binary_interface) thanks to MessagePack encoding
+
+## Why you might want to use fp-bindgen
+
+- Do you want to integrate WebAssembly plugins into your product or service?
+- Do you want to share Rust code between your backend and your frontend?
+- Do you want to run Rust code in a secure sandbox?
+
+If you answered any of these questions with Yes, fp-bindgen might be for you. It’s open-source and available on [GitHub](https://github.com/fiberplane/fp-bindgen).
+
+If there’s anything you would like to discuss, feel free to join our [Discord](https://discord.gg/cqdY6SpfVR).

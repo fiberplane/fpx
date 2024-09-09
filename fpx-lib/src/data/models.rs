@@ -50,7 +50,7 @@ impl From<api::models::Span> for Span {
         let span_id = span.span_id.clone();
         let parent_span_id = span.parent_span_id.clone();
         let name = span.name.clone();
-        let kind = span.kind.clone();
+        let kind = span.kind.clone().unwrap_or(SpanKind::Unspecified);
         let start_time = span.start_time.into();
         let end_time = span.end_time.into();
         let inner = Json(span);

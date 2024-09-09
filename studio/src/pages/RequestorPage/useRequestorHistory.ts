@@ -1,49 +1,38 @@
 import { removeQueryParams } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
-import {
-  type KeyValueParameter,
-  createKeyValueParameters,
-} from "./KeyValueForm";
-import { useSessionHistory } from "./RequestorSessionHistoryContext";
-import {
-  type ProbedRoute,
-  type Requestornator,
-  useFetchRequestorRequests,
-} from "./queries";
+import { createKeyValueParameters } from "./KeyValueForm";
+import { type Requestornator, useFetchRequestorRequests } from "./queries";
 import { findMatchedRoute } from "./routes";
-import {
-  type RequestMethodInputValue,
-  isRequestMethod,
-  isWsRequest,
-} from "./types";
+import { useRequestorStore } from "./store";
+import { isRequestMethod, isWsRequest } from "./types";
 import { sortRequestornatorsDescending } from "./utils";
 
-type RequestorHistoryHookArgs = {
-  routes: ProbedRoute[];
-  handleSelectRoute: (r: ProbedRoute, pathParams?: KeyValueParameter[]) => void;
-  setPath: (path: string) => void;
-  setMethod: (method: RequestMethodInputValue) => void;
-  setBody: (body: string | undefined) => void;
-  setPathParams: (headers: KeyValueParameter[]) => void;
-  setQueryParams: (params: KeyValueParameter[]) => void;
-  setRequestHeaders: (headers: KeyValueParameter[]) => void;
-  showResponseBodyFromHistory: (traceId: string) => void;
-};
-
-export function useRequestorHistory({
-  routes,
-  handleSelectRoute,
-  setPath,
-  setMethod,
-  setRequestHeaders,
-  setBody,
-  setQueryParams,
-  showResponseBodyFromHistory,
-}: RequestorHistoryHookArgs) {
+export function useRequestorHistory() {
   const {
     sessionHistory: sessionHistoryTraceIds,
     recordRequestInSessionHistory,
-  } = useSessionHistory();
+    routes,
+    selectRoute: handleSelectRoute,
+    updatePath: setPath,
+    updateMethod: setMethod,
+    setRequestHeaders,
+    setQueryParams,
+    setBody,
+    showResponseBodyFromHistory,
+  } = useRequestorStore(
+    "sessionHistory",
+    "recordRequestInSessionHistory",
+    "routes",
+    "selectRoute",
+    "updatePath",
+    "setBody",
+    "setQueryParams",
+    "updateMethod",
+    "setRequestHeaders",
+    "showResponseBodyFromHistory",
+  );
+
   const { data: allRequests } = useFetchRequestorRequests();
 
   // Keep a history of recent requests and responses
@@ -51,13 +40,13 @@ export function useRequestorHistory({
     if (allRequests) {
       const cloned = [...allRequests];
       cloned.sort(sortRequestornatorsDescending);
-      return cloned.slice(0, 4);
+      return cloned;
     }
     return [];
   }, [allRequests]);
 
   // This feels wrong... but it's a way to load a past request back into the UI
-  const loadHistoricalRequest = (traceId: string) => {
+  const loadHistoricalRequest = useHandler((traceId: string) => {
     recordRequestInSessionHistory(traceId);
     showResponseBodyFromHistory(traceId);
     const match = history.find((r) => r.app_responses?.traceId === traceId);
@@ -79,16 +68,20 @@ export function useRequestorHistory({
       );
 
       if (matchedRoute) {
-        const pathParamsObject = match.app_requests.requestPathParams ?? {};
-        const pathParams = createKeyValueParameters(
-          Object.entries(pathParamsObject).map(([key, value]) => ({
-            key,
-            value,
-          })),
-        );
+        // const pathParamsObject = match.app_requests.requestPathParams ?? {};
+        // const pathParams = createKeyValueParameters(
+        //   Object.entries(pathParamsObject).map(([key, value]) => ({
+        //     key,
+        //     value,
+        //   })),
+        // );
 
+        // TODO - Handle path params
         // NOTE - Helps us set path parameters correctly
-        handleSelectRoute(matchedRoute.route, pathParams);
+        handleSelectRoute(
+          matchedRoute.route,
+          // pathParams
+        );
 
         // @ts-expect-error - We don't handle ALL methods well yet
         if (matchedRoute.route.method === "ALL") {
@@ -181,7 +174,7 @@ export function useRequestorHistory({
         );
       }
     }
-  };
+  });
 
   // Keep a local history of requests that the user has made in the UI
   // This should be a subset of the full history

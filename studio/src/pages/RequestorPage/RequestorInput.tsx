@@ -8,61 +8,59 @@ import {
 } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { cn, isMac } from "@/utils";
-import {
-  FilePlusIcon,
-  MixerHorizontalIcon,
-  TriangleRightIcon,
-} from "@radix-ui/react-icons";
-import { useCallback, useMemo } from "react";
+import { useHandler } from "@fiberplane/hooks";
+import { Icon } from "@iconify/react";
+import { FilePlusIcon, MixerHorizontalIcon } from "@radix-ui/react-icons";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useShallow } from "zustand/react/shallow";
 import { RequestMethodCombobox } from "./RequestMethodCombobox";
 import { useAddRoutes } from "./queries";
 import {
-  type RequestMethod,
-  type RequestMethodInputValue,
-  type RequestType,
-  isWsRequest,
-} from "./types";
+  useActiveRoute,
+  useRequestorStore,
+  useRequestorStoreRaw,
+} from "./store";
+import { isWsRequest } from "./types";
 import type { WebSocketState } from "./useMakeWebsocketRequest";
 
 type RequestInputProps = {
-  method: RequestMethod;
-  handleMethodChange: (method: RequestMethodInputValue) => void;
-  path?: string;
-  handlePathInputChange: (newPath: string) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isRequestorRequesting?: boolean;
   formRef: React.RefObject<HTMLFormElement>;
-  requestType: RequestType;
   websocketState: WebSocketState;
   disconnectWebsocket: () => void;
-  getIsInDraftMode: () => boolean;
 };
 
 export function RequestorInput({
-  getIsInDraftMode,
-  method,
-  handleMethodChange,
-  path,
-  handlePathInputChange,
   onSubmit,
   isRequestorRequesting,
-  requestType,
   formRef,
   websocketState,
   disconnectWebsocket,
 }: RequestInputProps) {
   const { toast } = useToast();
 
+  const { requestType } = useActiveRoute();
+
+  const {
+    method,
+    path,
+    updatePath: handlePathInputChange,
+    updateMethod: handleMethodChange,
+  } = useRequestorStore("method", "path", "updatePath", "updateMethod");
+
+  // Use the low level store hook to get whether we are in draft mode
+  const isInDraftMode = useRequestorStoreRaw(
+    useShallow(({ selectedRoute }) => !selectedRoute),
+  );
+
   const isWsConnected = websocketState.isConnected;
 
   const { mutate: addRoutes } = useAddRoutes();
 
-  const canSaveDraftRoute = useMemo(() => {
-    return !!path && getIsInDraftMode();
-  }, [path, getIsInDraftMode]);
+  const canSaveDraftRoute = !!path && isInDraftMode;
 
-  const handleAddRoute = useCallback(() => {
+  const handleAddRoute = useHandler(() => {
     if (canSaveDraftRoute) {
       addRoutes({
         method: requestType === "websocket" ? "GET" : method,
@@ -76,11 +74,11 @@ export function RequestorInput({
         description: "Added new route",
       });
     }
-  }, [addRoutes, canSaveDraftRoute, method, path, requestType, toast]);
+  });
 
   useHotkeys("mod+s", handleAddRoute, {
     enableOnFormTags: ["INPUT"],
-    preventDefault: getIsInDraftMode(),
+    preventDefault: isInDraftMode,
   });
 
   return (
@@ -101,10 +99,10 @@ export function RequestorInput({
           onChange={(e) => {
             handlePathInputChange(e.target.value);
           }}
-          className="flex-grow w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
+          className="flex-grow text-xs w-full bg-transparent font-mono border-none shadow-none focus:ring-0 ml-0"
         />
       </div>
-      <div className="flex items-center space-x-2 p-2">
+      <div className="flex items-center space-x-2 px-2 py-0">
         {canSaveDraftRoute && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -154,7 +152,7 @@ export function RequestorInput({
               }}
               disabled={isRequestorRequesting}
               variant={isWsConnected ? "destructive" : "default"}
-              className={cn("p-2 md:p-2.5")}
+              className={cn("p-2 md:px-2.5 py-1 h-auto")}
             >
               <span className="hidden md:inline">
                 {isWsRequest(requestType)
@@ -166,7 +164,10 @@ export function RequestorInput({
               {isWsRequest(requestType) ? (
                 <MixerHorizontalIcon className="md:hidden w-6 h-6" />
               ) : (
-                <TriangleRightIcon className="md:hidden w-6 h-6" />
+                <Icon
+                  icon="lucide:send-horizontal"
+                  className="w-4 h-4 md:hidden"
+                />
               )}
             </Button>
           </TooltipTrigger>

@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { type OtelSpan, OtelSpanSchema } from "@fiberplane/fpx-types";
 import type {
   ESpanKind,
   EStatusCode,
@@ -87,8 +88,8 @@ type MizuSpan = {
  */
 export async function fromCollectorRequest(
   tracesData: IExportTraceServiceRequest,
-) {
-  const result: Array<MizuSpan> = [];
+): Promise<Array<OtelSpan>> {
+  const result: Array<OtelSpan> = [];
 
   for (const resourceSpan of tracesData.resourceSpans ?? []) {
     const resourceAttributes = resourceSpan.resource
@@ -133,7 +134,7 @@ export async function fromCollectorRequest(
         const name = span.name;
         const traceState = span.traceState;
 
-        const spanInstance = {
+        const spanInstance = OtelSpanSchema.parse({
           trace_id: traceId,
           span_id: spanId,
           parent_span_id: parentSpanId,
@@ -150,7 +151,7 @@ export async function fromCollectorRequest(
           status: span.status ? mapStatus(span.status) : undefined,
           events,
           links,
-        };
+        } satisfies MizuSpan);
 
         result.push(spanInstance);
       }

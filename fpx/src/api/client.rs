@@ -116,11 +116,7 @@ impl ApiClient {
         trace_id: impl AsRef<str>,
         span_id: impl AsRef<str>,
     ) -> Result<models::Span, ApiClientError<SpanGetError>> {
-        let path = format!(
-            "api/traces/{}/spans/{}",
-            trace_id.as_ref(),
-            span_id.as_ref()
-        );
+        let path = format!("v1/traces/{}/spans/{}", trace_id.as_ref(), span_id.as_ref());
 
         self.do_req(Method::GET, path, api_result).await
     }
@@ -130,7 +126,7 @@ impl ApiClient {
         &self,
         trace_id: impl AsRef<str>,
     ) -> Result<Vec<models::Span>, ApiClientError<SpanGetError>> {
-        let path = format!("api/traces/{}/spans", trace_id.as_ref());
+        let path = format!("v1/traces/{}/spans", trace_id.as_ref());
 
         self.do_req(Method::GET, path, api_result).await
     }
@@ -140,7 +136,7 @@ impl ApiClient {
         &self,
         trace_id: impl AsRef<str>,
     ) -> Result<models::TraceSummary, ApiClientError<TraceGetError>> {
-        let path = format!("api/traces/{}", trace_id.as_ref());
+        let path = format!("v1/traces/{}", trace_id.as_ref());
 
         self.do_req(Method::GET, path, api_result).await
     }
@@ -149,7 +145,7 @@ impl ApiClient {
     pub async fn trace_list(
         &self,
     ) -> Result<Vec<models::TraceSummary>, ApiClientError<TraceGetError>> {
-        let path = "api/traces";
+        let path = "v1/traces";
 
         self.do_req(Method::GET, path, api_result).await
     }
@@ -159,7 +155,7 @@ impl ApiClient {
         &self,
         trace_id: impl AsRef<str>,
     ) -> Result<(), ApiClientError<TraceGetError>> {
-        let path = format!("api/traces/{}", trace_id.as_ref());
+        let path = format!("v1/traces/{}", trace_id.as_ref());
 
         self.do_req(Method::DELETE, path, no_body).await
     }
@@ -169,11 +165,7 @@ impl ApiClient {
         trace_id: impl AsRef<str>,
         span_id: impl AsRef<str>,
     ) -> Result<(), ApiClientError<TraceGetError>> {
-        let path = format!(
-            "api/traces/{}/spans/{}",
-            trace_id.as_ref(),
-            span_id.as_ref()
-        );
+        let path = format!("v1/traces/{}/spans/{}", trace_id.as_ref(), span_id.as_ref());
 
         self.do_req(Method::DELETE, path, no_body).await
     }

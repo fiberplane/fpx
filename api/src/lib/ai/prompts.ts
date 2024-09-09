@@ -6,6 +6,27 @@ export const getSystemPrompt = (persona: string) => {
     : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT;
 };
 
+function formatMiddleware(
+  middleware?: {
+    handler: string;
+    method: string;
+    path: string;
+  }[],
+) {
+  // HACK - Filter out react renderer middleware
+  const filteredMiddleware = middleware?.filter(
+    (m) => !/function reactRenderer/i.test(m?.handler),
+  );
+
+  if (!filteredMiddleware || filteredMiddleware.length === 0) {
+    return "NO MIDDLEWARE";
+  }
+
+  return filteredMiddleware
+    .map((m) => `<middleware>${m.handler}</middleware>`)
+    .join("\n");
+}
+
 export const invokeRequestGenerationPrompt = async ({
   persona,
   method,
@@ -13,6 +34,7 @@ export const invokeRequestGenerationPrompt = async ({
   handler,
   history,
   openApiSpec,
+  middleware,
 }: {
   persona: string;
   method: string;
@@ -20,6 +42,11 @@ export const invokeRequestGenerationPrompt = async ({
   handler: string;
   history?: Array<string>;
   openApiSpec?: string;
+  middleware?: {
+    handler: string;
+    method: string;
+    path: string;
+  }[];
 }) => {
   const promptTemplate =
     persona === "QA" ? qaTesterPrompt : friendlyTesterPrompt;
@@ -29,6 +56,7 @@ export const invokeRequestGenerationPrompt = async ({
     handler,
     history: history?.join("\n") ?? "NO HISTORY",
     openApiSpec: openApiSpec ?? "NO OPENAPI SPEC",
+    middleware: formatMiddleware(middleware),
   });
   const userPrompt = userPromptInterface.value;
   return userPrompt;
@@ -56,6 +84,9 @@ The request you make should be a {method} request to route: {path}
 Here is the OpenAPI spec for the handler:
 {openApiSpec}
 
+Here is the middleware that will be applied to the request:
+{middleware}
+
 Here is the code for the handler:
 {handler}
 
@@ -78,6 +109,9 @@ The request you make should be a {method} request to route: {path}
 
 Here is the OpenAPI spec for the handler:
 {openApiSpec}
+
+Here is the middleware that will be applied to the request:
+{middleware}
 
 Here is the code for the handler:
 {handler}

@@ -6,14 +6,14 @@ sidebar:
 ---
 
 import { Image } from "astro:assets";
-import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif"
-import fpxGenAiSettingsEnable from "@/assets/gen-ai-requests--settings-enable.png"
-import fpxGenAiSettingsProvider from "@/assets/gen-ai-requests--settings-provider.png"
-import fpxGenAiSettingsBaseUrl from "@/assets/gen-ai-requests--settings-baseurl.png"
-import fpxGenAiHostile from "@/assets/gen-ai-requests--hostile.png"
+import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif";
+import fpxGenAiSettingsEnable from "@/assets/gen-ai-requests--settings-enable.png";
+import fpxGenAiSettingsProvider from "@/assets/gen-ai-requests--settings-provider.png";
+import fpxGenAiSettingsBaseUrl from "@/assets/gen-ai-requests--settings-baseurl.png";
+import fpxGenAiHostile from "@/assets/gen-ai-requests--hostile.png";
 
 import Button from "@/components/Button.astro";
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 Generating sample request data is a common and often tedious task in API development.
 
@@ -66,27 +66,26 @@ First, we need to enable AI features in Studio. Head on over to the Settings pag
 
 Toggle "Enable Request Autofill", and then configure the AI provider and model you want to use.
 
-<Image src={fpxGenAiSettingsEnable} alt="Settings Page - Enable AI Request Autofill" />
+<Image
+  src={fpxGenAiSettingsEnable}
+  alt="Settings Page - Enable AI Request Autofill"
+/>
 
 As of writing, Studio supports both OpenAI and Anthropic as LLM providers, and allows selection of the following models:
 
 <Tabs syncKey="aiProvider">
   <TabItem label="Anthropic">
-    - Claude 3.5 Sonnet
-    - Claude 3 Opus
-    - Claude 3 Sonnet
-    - Claude 3 Haiku
+    - Claude 3.5 Sonnet - Claude 3 Opus - Claude 3 Sonnet - Claude 3 Haiku
   </TabItem>
-  <TabItem label="OpenAI">
-    - GPT-4o
-    - GPT-4o Mini
-    - GPT-4 Turbo
-  </TabItem>
+  <TabItem label="OpenAI">- GPT-4o - GPT-4o Mini - GPT-4 Turbo</TabItem>
 </Tabs>
 
 You can select the provider and model once you've enabled AI Request Autofill.
 
-<Image src={fpxGenAiSettingsProvider} alt="Settings Page - Select AI Provider" />
+<Image
+  src={fpxGenAiSettingsProvider}
+  alt="Settings Page - Select AI Provider"
+/>
 
 Once you've selected the provider and model, fill in your API key and click "Save". You're ready to go!
 

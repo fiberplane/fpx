@@ -6,6 +6,7 @@ import {
   SpanStatusCode,
   trace,
 } from "@opentelemetry/api";
+import type { FpxLogger } from "./logger";
 
 export type MeasureOptions<
   /**
@@ -61,6 +62,12 @@ export type MeasureOptions<
   checkResult?: (
     result: RESULT,
   ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
+
+  /**
+   * Optional logger module to use for logging on errors, etc.
+   * Similar to passing `console`. Should be an object with methods `debug`, `info`, `warn`, `error`.
+   */
+  logger?: FpxLogger;
 };
 
 /**
@@ -104,6 +111,7 @@ export function measure<R, A extends unknown[]>(
   const onSuccess = isOptions ? nameOrOptions.onSuccess : undefined;
   const onError = isOptions ? nameOrOptions.onError : undefined;
   const checkResult = isOptions ? nameOrOptions.checkResult : undefined;
+  const logger = isOptions ? nameOrOptions.logger : undefined;
 
   return (...args: A): R => {
     function handleActiveSpan(span: Span): R {
@@ -114,8 +122,15 @@ export function measure<R, A extends unknown[]>(
       if (onStart) {
         try {
           onStart(span, args);
-        } catch {
-          // swallow error
+        } catch (error) {
+          if (logger) {
+            const errorMessage =
+              error instanceof Error ? error.message : "Unknown error";
+            logger.warn(
+              `Error in onStart while measuring ${name}:`,
+              errorMessage,
+            );
+          }
         }
       }
 
@@ -144,9 +159,15 @@ export function measure<R, A extends unknown[]>(
               } else {
                 resolve(returnValue);
               }
-            } catch (_error) {
-              // swallow error
-              // console.debug("Error in onSuccess", _error);
+            } catch (error) {
+              if (logger) {
+                const errorMessage =
+                  error instanceof Error ? error.message : "Unknown error";
+                logger.warn(
+                  `Error in onSuccess while measuring ${name}:`,
+                  errorMessage,
+                );
+              }
               resolve(returnValue);
             }
           });

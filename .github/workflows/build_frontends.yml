@@ -57,10 +57,23 @@ jobs:
       - name: Typecheck all workspaces
         run: pnpm --recursive typecheck
 
+      # Testing
+
+      - name: Test Studio API
+        run: pnpm --filter @fiberplane/studio test
+
+      - name: Test Studio Frontend
+        run: pnpm --filter @fiberplane/studio-frontend test
+
       # Building
 
-      - name: Build all workspaces
-        run: pnpm --recursive build
+      - name: Build api, frontend, and client library
+        run: |
+          pnpm \
+            --filter=@fiberplane/studio-frontend \
+            --filter=@fiberplane/studio \
+            --filter=@fiberplane/hono-otel \
+            build
 
       # Release a preview version
 

@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { RequestorState } from "../../reducer";
+import type { RequestorState } from "../../store";
 import { getBodyValue } from "./utils";
 
 export type CopyAsCurlProps = Pick<
@@ -70,13 +70,13 @@ export function CopyAsCurl({
           variant="secondary"
           size="icon"
           type="button"
-          className="disabled:pointer-events-auto"
+          className="disabled:pointer-events-auto h-auto"
           disabled={isUnsupportedBodyType}
         >
           {isCopied ? (
-            <CheckIcon className="w-5 h-5" />
+            <CheckIcon className="w-4 h-4" />
           ) : (
-            <CopyIcon className="w-4 h-4" />
+            <CopyIcon className="w-3 h-3" />
           )}
         </Button>
       </TooltipTrigger>
