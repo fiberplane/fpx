@@ -1,5 +1,6 @@
 ---
 import type { Props } from "@astrojs/starlight/props";
+import { Image } from "astro:assets";
 
 const { data } = Astro.props.entry;
 const { title = data.title, tagline, image, actions = [] } = data.hero || {};
@@ -10,9 +11,17 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
     <h1>{title}</h1>
     <p>{tagline}</p>
   </header>
+
+  <figure>
+    <Image src={image.file} alt="Screenshot of FPX Studio" />
+  </figure>
 </section>
 
 <style>
+  /*
+    Hacky solution for now, need to dive into Starlight on how to do this
+    properly
+  */
   :root {
     --sl-content-width: 102rem !important;
   }
@@ -20,6 +29,9 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
   section {
     position: relative;
     isolation: isolate;
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(2, 1fr);
     height: 54rem;
     border-radius: 20px;
     background-image: linear-gradient(180deg, rgb(248 250 252), #f5f8fa);
@@ -28,14 +40,12 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
       z-index: 2;
     }
 
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-
     header {
       display: grid;
       gap: 2rem;
       align-content: center;
       color: black;
+      margin-inline: 6rem;
 
       h1 {
         font-size: 70px;
@@ -52,8 +62,25 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
       }
     }
 
+    figure {
+      --figure-block-padding: 4rem;
+
+      position: relative;
+      padding-block: var(--figure-block-padding);
+
+      img {
+        position: absolute;
+        left: 0;
+        height: calc(100% - var(--figure-block-padding) * 2);
+        width: auto;
+        border-radius: 20px;
+        object-fit: contain;
+        box-shadow: 0px 5.553px 26.51px 0px rgb(0 0 0 / 0.55);
+      }
+    }
+
     &::before {
-      --hero-background-image-size: 32px;
+      --hero-background-image-size: 2rem;
       --hero-background-image-position: calc(
         var(--hero-background-image-size) / 2
       );
