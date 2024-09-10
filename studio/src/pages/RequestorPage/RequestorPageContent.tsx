@@ -5,7 +5,7 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
-import { useIsLgScreen } from "@/hooks";
+import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -94,6 +94,21 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     setIgnoreAiInputsBanner,
   } = useAi(history);
 
+  const [openPanels, setOpenPanels] = useState<Panels>({
+    timeline: "closed",
+    aiTestGeneration: "closed",
+    logs: "closed",
+  });
+
+  const togglePanel = useCallback((panelName: keyof Panels) => {
+    setOpenPanels((current) => ({
+      ...current,
+      [panelName]: current[panelName] === "open" ? "closed" : "open",
+    }));
+  }, []);
+
+  const isLgScreen = useIsLgScreen();
+
   useHotkeys(
     "mod+g",
     (e) => {
@@ -114,20 +129,31 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     },
   );
 
-  const [openPanels, setOpenPanels] = useState<Panels>({
-    timeline: "closed",
-    aiTestGeneration: "closed",
-    logs: "closed",
-  });
+  useKeySequence(
+    ["g", "l"],
+    () => {
+      togglePanel("logs");
+    },
+    { description: "Open logs panel" },
+  );
 
-  const togglePanel = useCallback((panelName: keyof Panels) => {
-    setOpenPanels((current) => ({
-      ...current,
-      [panelName]: current[panelName] === "open" ? "closed" : "open",
-    }));
-  }, []);
+  useKeySequence(
+    ["g", "t"],
+    () => {
+      togglePanel("timeline");
+    },
+    { description: "Open timeline panel" },
+  );
 
-  const isLgScreen = useIsLgScreen();
+  useKeySequence(
+    ["g", "i"],
+    () => {
+      togglePanel("aiTestGeneration");
+    },
+    {
+      description: "Open AI assistant panel",
+    },
+  );
 
   const requestContent = (
     <RequestPanel

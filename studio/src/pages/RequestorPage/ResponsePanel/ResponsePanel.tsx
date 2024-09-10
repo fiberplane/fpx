@@ -1,10 +1,13 @@
 import RobotIcon from "@/assets/Robot.svg";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -103,50 +106,95 @@ export const ResponsePanel = memo(function ResponsePanel({
           </CustomTabTrigger>
 
           <div className="flex-grow flex justify-end">
-            <Button
-              variant={openPanels.logs === "open" ? "outline" : "ghost"}
-              size="icon"
-              disabled={!traceId}
-              onClick={() => togglePanel("logs")}
-              className={cn(
-                openPanels.logs === "open" && "opacity-50 bg-slate-900",
-                "h-6 w-6",
-              )}
-              title="Show logs from the request-response lifecycle"
-            >
-              <Icon icon="lucide:logs" className="cursor-pointer h-4 w-4" />
-            </Button>
-            <Button
-              variant={openPanels.timeline === "open" ? "outline" : "ghost"}
-              size="icon"
-              disabled={!traceId}
-              onClick={() => togglePanel("timeline")}
-              className={cn(
-                openPanels.timeline === "open" && "opacity-50 bg-slate-900",
-                "h-6 w-6",
-              )}
-              title="Show timeline of the response"
-            >
-              <Icon
-                icon="lucide:chart-gantt"
-                className="cursor-pointer h-4 w-4"
-              />
-            </Button>
-            <Button
-              variant={
-                openPanels.aiTestGeneration === "open" ? "outline" : "ghost"
-              }
-              size="icon"
-              onClick={() => togglePanel("aiTestGeneration")}
-              className={cn(
-                openPanels.aiTestGeneration === "open" &&
-                  "opacity-50 bg-slate-900",
-                "h-6 w-6",
-              )}
-              title="Show test prompt generator"
-            >
-              <RobotIcon className="h-3 w-3 cursor-pointer" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={openPanels.logs === "open" ? "outline" : "ghost"}
+                  size="icon"
+                  disabled={!traceId}
+                  onClick={() => togglePanel("logs")}
+                  className={cn(
+                    openPanels.logs === "open" && "opacity-50 bg-slate-900",
+                    "h-6 w-6",
+                  )}
+                >
+                  <Icon icon="lucide:logs" className="cursor-pointer h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+                align="center"
+              >
+                <p>Toggle logs</p>
+                <div className="flex gap-1">
+                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                  <span className="text-xs font-mono">then</span>
+                  <KeyboardShortcutKey>L</KeyboardShortcutKey>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={openPanels.timeline === "open" ? "outline" : "ghost"}
+                  size="icon"
+                  disabled={!traceId}
+                  onClick={() => togglePanel("timeline")}
+                  className={cn(
+                    openPanels.timeline === "open" && "opacity-50 bg-slate-900",
+                    "h-6 w-6",
+                  )}
+                >
+                  <Icon
+                    icon="lucide:chart-gantt"
+                    className="cursor-pointer h-4 w-4"
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+                align="center"
+              >
+                <p>Toggle timeline</p>
+                <div className="flex gap-1 items-center">
+                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                  <span className="text-xs font-mono">then</span>
+                  <KeyboardShortcutKey>T</KeyboardShortcutKey>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={
+                    openPanels.aiTestGeneration === "open" ? "outline" : "ghost"
+                  }
+                  size="icon"
+                  onClick={() => togglePanel("aiTestGeneration")}
+                  className={cn(
+                    openPanels.aiTestGeneration === "open" &&
+                      "opacity-50 bg-slate-900",
+                    "h-6 w-6",
+                  )}
+                >
+                  <RobotIcon className="h-3 w-3 cursor-pointer" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+                align="center"
+              >
+                <p>Toggle AI test panel</p>
+                <div className="flex gap-1 items-center">
+                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                  <span className="text-xs font-mono">then</span>
+                  <KeyboardShortcutKey>I</KeyboardShortcutKey>
+                </div>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CustomTabsList>
         <CustomTabsContent value="messages">

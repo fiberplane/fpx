@@ -1,5 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useKeySequence } from "@/hooks/useKeySequence";
 import { cn } from "@/utils";
+import React, { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { BACKGROUND_LAYER } from "../styles";
 import { RequestsPanel } from "./RequestsPanel";
@@ -22,6 +24,32 @@ export function NavigationPanel() {
   const [params, setParams] = useSearchParams();
   const tab = getTab(params);
 
+  const tabRefs = useMemo(() => {
+    return TAB_KEYS.reduce(
+      (acc, key) => {
+        acc[key] = React.createRef<HTMLButtonElement>();
+        return acc;
+      },
+      {} as Record<NavigationTab, React.RefObject<HTMLButtonElement>>,
+    );
+  }, []);
+
+  const setTab = useCallback(
+    (newTab: NavigationTab) => {
+      setParams(
+        (value) => {
+          value.set(FILTER_TAB_KEY, newTab);
+          return value;
+        },
+        { replace: true },
+      );
+    },
+    [setParams],
+  );
+
+  useKeySequence(["g", "r"], () => setTab("routes"));
+  useKeySequence(["g", "a"], () => setTab("requests"));
+
   return (
     <div
       className={cn(
@@ -36,19 +64,14 @@ export function NavigationPanel() {
       <Tabs
         value={tab}
         className="h-full"
-        onValueChange={(tabValue) =>
-          setParams(
-            (value) => {
-              value.set(FILTER_TAB_KEY, tabValue);
-              return value;
-            },
-            { replace: true },
-          )
-        }
+        onValueChange={(tabValue: string) => setTab(tabValue as NavigationTab)}
       >
         <TabsList className="w-full grid grid-cols-2">
-          <TabsTrigger value="routes">Routes</TabsTrigger>
-          <TabsTrigger value="requests">Requests</TabsTrigger>
+          {TAB_KEYS.map((tabKey) => (
+            <TabsTrigger key={tabKey} ref={tabRefs[tabKey]} value={tabKey}>
+              {tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}
+            </TabsTrigger>
+          ))}
         </TabsList>
         <TabsContent value="routes" className="h-full pt-4">
           <RoutesPanel />
