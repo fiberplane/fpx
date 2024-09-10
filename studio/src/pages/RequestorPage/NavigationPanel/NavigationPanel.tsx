@@ -1,11 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useKeySequence } from "@/hooks/useKeySequence";
 import { cn } from "@/utils";
+import React, { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { BACKGROUND_LAYER } from "../styles";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
-import { useKeySequence } from "@/hooks/useKeySequence";
-import React, { useCallback, useMemo } from "react";
 
 const FILTER_TAB_KEY = "filter-tab";
 const TAB_KEYS = ["routes", "requests"] as const;

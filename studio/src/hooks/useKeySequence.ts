@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useInputFocusDetection } from "@/hooks";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type KeySequenceOptions = {
   enabled?: boolean;
