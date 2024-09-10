@@ -68,8 +68,7 @@ const defaultConfig = {
   monitor: {
     fetch: true,
     logging: true,
-    // NOTE - We don't proxy Cloudflare bindings by default yet because it's still experimental, and we don't have fancy UI for it yet in the Studio
-    cfBindings: false,
+    cfBindings: true,
   },
 };
 
