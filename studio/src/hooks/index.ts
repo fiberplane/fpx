@@ -8,3 +8,4 @@ export { useWebsocketQueryInvalidation } from "./useWebsocketQueryInvalidation.t
 export { useCopyToClipboard } from "./useCopyToClipboard.ts";
 export { useKeySequence } from "./useKeySequence.ts";
 export { useInputFocusDetection } from "./useInputFocusDetection.ts";
+export { useLatest } from "./useLatest.ts";
