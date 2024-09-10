@@ -1,10 +1,13 @@
 import RobotIcon from "@/assets/Robot.svg";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -23,9 +26,6 @@ import {
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
-import { TooltipTrigger } from "@radix-ui/react-tooltip";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 
 type Props = {
   tracedResponse?: Requestornator;
