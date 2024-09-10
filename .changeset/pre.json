@@ -1,0 +1,12 @@
+{
+  "mode": "pre",
+  "tag": "canary",
+  "initialVersions": {
+    "@fiberplane/studio": "0.8.0",
+    "@fiberplane/hono-otel": "0.2.0-beta.2",
+    "@fiberplane/fpx-types": "0.0.6",
+    "@fiberplane/studio-frontend": "0.0.0",
+    "www": "0.0.1"
+  },
+  "changesets": []
+}
