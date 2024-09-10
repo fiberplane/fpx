@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useInputFocusDetection } from "@/hooks";
 
 type KeySequenceOptions = {
   enabled?: boolean;
@@ -12,6 +13,8 @@ export function useKeySequence(
   options?: KeySequenceOptions,
 ) {
   const { enabled = true, timeout = 2000 } = options ?? {};
+
+  const { isInputFocused } = useInputFocusDetection();
 
   const [ref, setRef] = useState<HTMLElement | null>(null);
   const [keySequence, setKeySequence] = useState<string[]>([]);
@@ -70,7 +73,7 @@ export function useKeySequence(
   }, [keySequence, timeout]);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || isInputFocused) {
       return;
     }
 
@@ -80,7 +83,7 @@ export function useKeySequence(
     return () => {
       domNode.removeEventListener("keydown", handleKeyPress);
     };
-  }, [ref, handleKeyPress, enabled]);
+  }, [ref, handleKeyPress, enabled, isInputFocused]);
 
   return setRef;
 }
