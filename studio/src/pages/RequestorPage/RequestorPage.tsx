@@ -83,7 +83,6 @@ export const RequestorPage = () => {
         "lg:gap-4",
       )}
     >
-      {/* ... existing code ... */}
       <ResizablePanelGroup
         direction="horizontal"
         id="requestor-page-main"
