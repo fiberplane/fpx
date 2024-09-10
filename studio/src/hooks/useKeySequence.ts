@@ -1,89 +1,87 @@
 import { useInputFocusDetection } from "@/hooks";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useHandler } from "@fiberplane/hooks";
+import { useEffect, useRef, useState } from "react";
+import { useLatest } from "./useLatest";
 
 type KeySequenceOptions = {
-  enabled?: boolean;
+  isEnabled?: boolean;
   description?: string;
-  timeout?: number;
+  timeoutMs?: number;
 };
 
+/**
+ * Hook that allows you to define a key sequence and execute a callback when it is matched.
+ *
+ * @param targetKeySequence - The sequence of keys to match.
+ * @param onSequenceMatched - The callback to execute when the sequence is matched.
+ * @param options - Optional configuration options.
+ * @returns A ref setter that can be used to scope the listener to a specific
+ * element (default: the key sequence is scoped to the document).
+ */
 export function useKeySequence(
-  sequence: string[],
-  callback: () => void,
+  targetKeySequence: string[],
+  onSequenceMatched: () => void,
   options?: KeySequenceOptions,
 ) {
-  const { enabled = true, timeout = 2000 } = options ?? {};
+  const { isEnabled = true, timeoutMs = 2000 } = options ?? {};
 
   const { isInputFocused } = useInputFocusDetection();
 
-  const [ref, setRef] = useState<HTMLElement | null>(null);
-  const [keySequence, setKeySequence] = useState<string[]>([]);
+  const [listenerElement, setListenerElement] = useState<HTMLElement | null>(
+    null,
+  );
+  const [_currentKeySequence, setCurrentKeySequence] = useState<string[]>([]);
 
-  const timeoutRef = useRef<number | NodeJS.Timeout | undefined>(undefined);
-  const callbackRef = useRef(callback);
-  const sequenceRef = useRef(sequence);
+  const timeoutIdRef = useRef<number | NodeJS.Timeout>();
 
-  // ensure that the callback and sequence are updated when they change
-  useEffect(() => {
-    sequenceRef.current = sequence;
-  }, [sequence]);
+  const onSequenceMatchedRef = useLatest(onSequenceMatched);
 
-  useEffect(() => {
-    callbackRef.current = callback;
-  }, [callback]);
+  const resetKeySequence = useHandler(() => {
+    setCurrentKeySequence([]);
+  });
 
   // create and persist the callback across re-renders
-  const handleKeyPress = useCallback((event: Event) => {
+  const handleKeyPress = useHandler((event: Event) => {
     if (!(event instanceof KeyboardEvent)) {
       return;
     }
 
-    setKeySequence((prevKeySequence) => {
-      const updatedSequence = [...prevKeySequence, event.key].slice(
-        -sequenceRef.current.length,
+    setCurrentKeySequence((prevSequence) => {
+      const updatedSequence = [...prevSequence, event.key].slice(
+        -targetKeySequence.length,
       );
+
+      // Check if the updated sequence matches the target sequence
+      if (updatedSequence.join("") === targetKeySequence.join("")) {
+        onSequenceMatchedRef.current();
+        return []; // Reset sequence after successful match
+      }
 
       return updatedSequence;
     });
-  }, []);
 
-  useEffect(() => {
-    if (keySequence.join("") === sequenceRef.current.join("")) {
-      callbackRef.current();
-      setKeySequence([]);
+    // Reset timeout on each key press
+    if (timeoutIdRef.current) {
+      clearTimeout(timeoutIdRef.current);
     }
-  }, [keySequence]);
+    timeoutIdRef.current = setTimeout(resetKeySequence, timeoutMs);
+  });
 
   useEffect(() => {
-    const resetSequence = () => setKeySequence([]);
-
-    if (keySequence.length > 0) {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      timeoutRef.current = setTimeout(resetSequence, timeout);
-    }
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [keySequence, timeout]);
-
-  useEffect(() => {
-    if (!enabled || isInputFocused) {
+    if (!isEnabled || isInputFocused) {
       return;
     }
 
-    const domNode = ref ?? document;
+    const domNode = listenerElement ?? document;
 
     domNode.addEventListener("keydown", handleKeyPress);
     return () => {
       domNode.removeEventListener("keydown", handleKeyPress);
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+      }
     };
-  }, [ref, handleKeyPress, enabled, isInputFocused]);
+  }, [listenerElement, handleKeyPress, isEnabled, isInputFocused]);
 
-  return setRef;
+  return setListenerElement;
 }
