@@ -52,7 +52,7 @@
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
     "figlet": "^1.7.0",
-    "hono": "^4.3.7",
+    "hono": "^4.5.11",
     "minimatch": "^10.0.1",
     "openai": "^4.47.1",
     "source-map": "^0.7.4",

@@ -37,7 +37,7 @@ importers:
         version: 1.12.0
       '@hono/zod-validator':
         specifier: ^0.2.2
-        version: 0.2.2(hono@4.5.5)(zod@3.23.8)
+        version: 0.2.2(hono@4.5.11)(zod@3.23.8)
       '@iarna/toml':
         specifier: ^2.2.5
         version: 2.2.5
@@ -72,8 +72,8 @@ importers:
         specifier: ^1.7.0
         version: 1.7.0
       hono:
-        specifier: ^4.3.7
-        version: 4.5.5
+        specifier: ^4.5.11
+        version: 4.5.11
       minimatch:
         specifier: ^10.0.1
         version: 10.0.1
@@ -4709,6 +4709,10 @@ packages:
   highlight-words-core@1.2.2:
     resolution: {integrity: sha512-BXUKIkUuh6cmmxzi5OIbUJxrG8OAk2MqoL1DtO3Wo9D2faJg2ph5ntyuQeLqaHJmzER6H5tllCDA9ZnNe9BVGg==}
 
+  hono@4.5.11:
+    resolution: {integrity: sha512-62FcjLPtjAFwISVBUshryl+vbHOjg8rE4uIK/dxyR8GpLztunZpwFmfEvmJCUI7xoGh/Sr3CGCDPCmYxVw7wUQ==}
+    engines: {node: '>=16.0.0'}
+
   hono@4.5.5:
     resolution: {integrity: sha512-fXBXHqaVfimWofbelLXci8pZyIwBMkDIwCa4OwZvK+xVbEyYLELVP4DfbGaj1aEM6ZY3hHgs4qLvCO2ChkhgQw==}
     engines: {node: '>=16.0.0'}
@@ -8310,6 +8314,11 @@ snapshots:
     dependencies:
       hono: 4.5.9
 
+  '@hono/zod-validator@0.2.2(hono@4.5.11)(zod@3.23.8)':
+    dependencies:
+      hono: 4.5.11
+      zod: 3.23.8
+
   '@hono/zod-validator@0.2.2(hono@4.5.5)(zod@3.23.8)':
     dependencies:
       hono: 4.5.5
@@ -11586,6 +11595,8 @@ snapshots:
       js-tokens: 3.0.2
 
   highlight-words-core@1.2.2: {}
+
+  hono@4.5.11: {}
 
   hono@4.5.5: {}
 
