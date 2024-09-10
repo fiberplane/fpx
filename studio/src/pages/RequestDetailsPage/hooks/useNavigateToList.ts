@@ -1,6 +1,6 @@
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
-import { useInputFocusDetection } from "./useInputFocusDetection";
+import { useInputFocusDetection } from "@/hooks";
 
 export function useEscapeToList() {
   const navigate = useNavigate();

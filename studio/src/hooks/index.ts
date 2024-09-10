@@ -7,3 +7,4 @@ export { useRealtimeService } from "./useRealtimeService.ts";
 export { useWebsocketQueryInvalidation } from "./useWebsocketQueryInvalidation.ts";
 export { useCopyToClipboard } from "./useCopyToClipboard.ts";
 export { useKeySequence } from "./useKeySequence.ts";
+export { useInputFocusDetection } from "./useInputFocusDetection.ts";
