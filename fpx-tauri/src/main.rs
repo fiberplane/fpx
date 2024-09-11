@@ -3,8 +3,12 @@
 
 use clap::Parser;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::{env, fs::File, io::Read, path::PathBuf, sync::Mutex};
-use tauri::{AppHandle, Manager, State, Window, WindowBuilder, WindowEvent, WindowUrl};
+use tauri::{AppHandle, Manager, Runtime, State, Window, WindowBuilder, WindowEvent, WindowUrl};
+use tauri_plugin_store::{with_store, StoreBuilder, StoreCollection};
+
+const STORE_PATH: &str = "store.bin";
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -27,14 +31,76 @@ enum OpenProjectError {
 }
 
 #[tauri::command]
-fn open_project(
-    window: Window,
+fn list_recent_projects<R: Runtime>(
+    app: AppHandle<R>,
+    stores: State<'_, StoreCollection<R>>,
+) -> Vec<String> {
+    if let Ok(recent_projects) = with_store(app, stores, STORE_PATH, |store| {
+        if let Some(value) = store.get("recent_projects") {
+            if let Value::Array(arr) = value {
+                // Try to collect the elements as Vec<String>
+                let vec_of_strings: Vec<String> = arr
+                    .iter()
+                    .filter_map(|item| {
+                        // Try to convert each element into a string
+                        item.as_str().map(|s| s.to_string())
+                    })
+                    .collect();
+
+                return Ok(vec_of_strings);
+            }
+        }
+
+        Ok(vec![])
+    }) {
+        return recent_projects;
+    }
+
+    vec![]
+}
+
+#[tauri::command]
+fn open_project<R: Runtime>(
     path: &str,
+    window: Window,
     state: State<'_, Mutex<AppState>>,
-    app: AppHandle,
+    app: AppHandle<R>,
+    stores: State<'_, StoreCollection<R>>,
 ) -> Result<Project, OpenProjectError> {
+    with_store(app.clone(), stores, STORE_PATH, |store| {
+        let recents = match store.get("recent_projects") {
+            Some(value) => {
+                match value {
+                    Value::Array(arr) => {
+                        // Try to collect the elements as Vec<String>
+                        let vec_of_strings: Vec<String> = arr
+                            .iter()
+                            .filter_map(|item| {
+                                // Try to convert each element into a string
+                                item.as_str().map(|s| s.to_string())
+                            })
+                            .collect();
+
+                        vec_of_strings
+                    }
+                    _ => vec![],
+                }
+            }
+            None => vec![],
+        };
+
+        println!("{:?}", store.get("recent_projects"));
+        store
+            .insert("recent_projects".into(), recents.into())
+            .unwrap();
+
+        store.save()
+    })
+    .unwrap();
+
     let path = format!("{}/fpx.toml", path);
-    let mut file = File::open(path).expect("file not found");
+
+    let mut file = File::open(path.clone()).expect("file not found");
     let mut contents = String::new();
     file.read_to_string(&mut contents).expect("can't read file");
 
@@ -66,12 +132,14 @@ fn open_project(
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .setup(move |app| {
+            StoreBuilder::new(app.handle(), STORE_PATH.parse()?).build();
             app.manage(Mutex::new(AppState::default()));
             Ok(())
         })
-        .plugin(tauri_plugin_window_state::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![open_project])
+        .invoke_handler(tauri::generate_handler![open_project, list_recent_projects])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

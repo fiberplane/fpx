@@ -25,6 +25,7 @@ tauri = { version = "1.7.2", features = [
   "shell-all",
 ] }
 tauri-plugin-window-state = "0.1.0"
+tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 toml = "0.7.3"
 
 [features]
