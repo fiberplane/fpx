@@ -536,9 +536,6 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.17.3
         version: 8.20.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tauri-apps/api':
-        specifier: ^1.6.0
-        version: 1.6.0
       '@types/highlight-words-core':
         specifier: ^1.2.3
         version: 1.2.3
@@ -7471,7 +7468,7 @@ snapshots:
       '@babel/traverse': 7.25.3
       '@babel/types': 7.25.2
       convert-source-map: 2.0.0
-      debug: 4.3.6(supports-color@5.5.0)
+      debug: 4.3.6
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -7578,7 +7575,7 @@ snapshots:
       '@babel/parser': 7.25.3
       '@babel/template': 7.25.0
       '@babel/types': 7.25.2
-      debug: 4.3.6(supports-color@5.5.0)
+      debug: 4.3.6
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -10276,7 +10273,7 @@ snapshots:
 
   capnp-ts@0.7.0:
     dependencies:
-      debug: 4.3.6(supports-color@5.5.0)
+      debug: 4.3.6
       tslib: 2.6.3
     transitivePeerDependencies:
       - supports-color
@@ -10515,6 +10512,10 @@ snapshots:
       '@babel/runtime': 7.25.4
 
   date-fns@3.6.0: {}
+
+  debug@4.3.6:
+    dependencies:
+      ms: 2.1.2
 
   debug@4.3.6(supports-color@5.5.0):
     dependencies:
@@ -14036,7 +14037,7 @@ snapshots:
   vite-node@1.6.0(@types/node@20.14.15):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.6(supports-color@5.5.0)
+      debug: 4.3.6
       pathe: 1.1.2
       picocolors: 1.0.1
       vite: 5.4.0(@types/node@20.14.15)
@@ -14064,7 +14065,7 @@ snapshots:
 
   vite-tsconfig-paths@4.3.2(typescript@5.5.4)(vite@5.4.0(@types/node@20.14.15)):
     dependencies:
-      debug: 4.3.6(supports-color@5.5.0)
+      debug: 4.3.6
       globrex: 0.1.2
       tsconfck: 3.1.1(typescript@5.5.4)
     optionalDependencies:
@@ -14095,7 +14096,7 @@ snapshots:
       '@vitest/utils': 1.6.0
       acorn-walk: 8.3.3
       chai: 4.5.0
-      debug: 4.3.6(supports-color@5.5.0)
+      debug: 4.3.6
       execa: 8.0.1
       local-pkg: 0.5.0
       magic-string: 0.30.11

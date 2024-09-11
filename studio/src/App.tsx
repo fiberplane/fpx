@@ -16,14 +16,12 @@ import {
 } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { Tauri } from "./components/Tauri";
 
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RequestorSessionHistoryProvider>
         <Router>
-          <Tauri />
           <TooltipProvider>
             <Layout>
               <Routes>
