@@ -13,6 +13,7 @@ type Project = {
 };
 
 export function App() {
+  const [error, setError] = useState<string | undefined>();
   const [recentProjects, setRecentProjects] = useState<RecentProjects>([]);
 
   const handleOpen = useCallback((path?: string) => {
@@ -26,9 +27,14 @@ export function App() {
         }));
 
       if (selected) {
-        await invoke<Project>("open_project", {
-          path: selected,
-        });
+        try {
+          await invoke<Project>("open_project", {
+            path: selected,
+          });
+        } catch (e) {
+          // TODO: Handle type share
+          setError(e as string);
+        }
       }
     })();
   }, []);
@@ -42,6 +48,7 @@ export function App() {
 
   return (
     <div className="flex flex-col w-screen h-screen p-4">
+      {error && <div className="bg-orange-800 rounded p-4">{error}</div>}
       <Card className="p-4 flex flex-col gap-8 w-full h-full">
         <strong>Recent projects</strong>
         <div className="flex flex-col gap-4">

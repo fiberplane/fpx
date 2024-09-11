@@ -12,5 +12,7 @@ pub struct Project {
 
 #[derive(Serialize)]
 pub enum OpenProjectError {
-    Err,
+    InvalidConfig,
+    FileDoesNotExist,
+    FailedToOpenFile,
 }
