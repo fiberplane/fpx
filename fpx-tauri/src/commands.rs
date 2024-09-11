@@ -40,7 +40,36 @@ pub fn open_project<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
 ) -> Result<Project, OpenProjectError> {
-    with_store(app.clone(), stores, STORE_PATH, |store| {
+    let config_path = format!("{}/fpx.toml", path);
+
+    let mut file = File::open(config_path.clone())?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    let project = toml::from_str::<Project>(&contents)?;
+    let mut state = state.lock().expect("failed to get lock on state");
+    state.project = Some(project.clone());
+
+    let generated_url = format!("http://localhost:{}", &project.listen_port);
+
+    let project_window = WindowBuilder::new(
+        &app,
+        "studio",
+        WindowUrl::External(generated_url.parse().unwrap()),
+    )
+    .title("fpx")
+    .build()
+    .expect("failed to build project window");
+
+    window.hide().unwrap();
+
+    project_window.on_window_event(move |event| {
+        if let WindowEvent::CloseRequested { .. } = event {
+            window.show().unwrap();
+        }
+    });
+
+    with_store(app, stores, STORE_PATH, |store| {
         let recents = match store.get(RECENT_PROJECTS_STORE_KEY) {
             Some(Value::Array(arr)) => {
                 let vec_of_strings: Vec<String> = arr
@@ -61,42 +90,5 @@ pub fn open_project<R: Runtime>(
     })
     .unwrap();
 
-    let path = format!("{}/fpx.toml", path);
-
-    if let Ok(mut file) = File::open(path.clone()) {
-        let mut contents = String::new();
-        if file.read_to_string(&mut contents).is_ok() {
-            if let Ok(project) = toml::from_str::<Project>(&contents) {
-                let mut state = state.lock().expect("failed to get lock on state");
-                state.project = Some(project.clone());
-
-                let generated_url = format!("http://localhost:{}", &project.listen_port);
-
-                let project_window = WindowBuilder::new(
-                    &app,
-                    "studio",
-                    WindowUrl::External(generated_url.parse().unwrap()),
-                )
-                .title("fpx")
-                .build()
-                .expect("failed to build project window");
-
-                window.hide().unwrap();
-
-                project_window.on_window_event(move |event| {
-                    if let WindowEvent::CloseRequested { .. } = event {
-                        window.show().unwrap();
-                    }
-                });
-
-                Ok(project)
-            } else {
-                Err(OpenProjectError::InvalidConfig)
-            }
-        } else {
-            Err(OpenProjectError::FailedToOpenFile)
-        }
-    } else {
-        Err(OpenProjectError::FileDoesNotExist)
-    }
+    Ok(project)
 }

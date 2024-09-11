@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::io;
 
 #[derive(Default)]
 pub struct AppState {
@@ -12,7 +13,18 @@ pub struct Project {
 
 #[derive(Serialize)]
 pub enum OpenProjectError {
-    InvalidConfig,
-    FileDoesNotExist,
-    FailedToOpenFile,
+    ConfigError,
+    FileError,
+}
+
+impl From<toml::de::Error> for OpenProjectError {
+    fn from(_error: toml::de::Error) -> Self {
+        Self::ConfigError
+    }
+}
+
+impl From<io::Error> for OpenProjectError {
+    fn from(_error: io::Error) -> Self {
+        Self::FileError
+    }
 }
