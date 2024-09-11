@@ -10,27 +10,25 @@ import {
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import type { ProbedRoute, Requestornator } from "../queries";
+import type { Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
+import { useActiveRoute, useServiceBaseUrl } from "../store";
+import type { Panels } from "../types";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
 
 export function AiTestGenerationPanel({
   history,
-  toggleAiTestGenerationPanel,
-  getActiveRoute,
-  removeServiceUrlFromPath,
+  togglePanel,
 }: {
   history: Array<Requestornator>;
-  toggleAiTestGenerationPanel: () => void;
-  getActiveRoute: () => ProbedRoute;
-  removeServiceUrlFromPath: (path: string) => string;
+  togglePanel: (panelName: keyof Panels) => void;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
+  const activeRoute = useActiveRoute();
+  const { removeServiceUrlFromPath } = useServiceBaseUrl();
   const lastMatchingRequest = useMemo<Requestornator | null>(() => {
-    const activeRoute = getActiveRoute();
-
     const match = history.find((response) => {
       const path = parsePathFromRequestUrl(response.app_requests?.requestUrl);
 
@@ -49,7 +47,7 @@ export function AiTestGenerationPanel({
         return true;
       }
 
-      // HACK - For requesets against non-detected routes, we can search for the exact request url...
+      // HACK - For requests against non-detected routes, we can search for the exact request url...
       if (response.app_requests?.requestUrl === activeRoute.path) {
         return true;
       }
@@ -58,7 +56,7 @@ export function AiTestGenerationPanel({
     });
 
     return match ?? null;
-  }, [getActiveRoute, history, removeServiceUrlFromPath]);
+  }, [activeRoute, history, removeServiceUrlFromPath]);
 
   const [userInput, setUserInput] = useState("");
 
@@ -74,9 +72,10 @@ export function AiTestGenerationPanel({
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleAiTestGenerationPanel}
+              onClick={() => togglePanel("aiTestGeneration")}
+              className="h-6 w-6"
             >
-              <Cross1Icon className="h-3.5 w-3.5 cursor-pointer" />
+              <Cross1Icon className="h-3 w-3 cursor-pointer" />
             </Button>
           </div>
         </CustomTabsList>
@@ -115,10 +114,7 @@ export function AiTestGenerationPanel({
               </div>
             </div>
             <div className="mt-4 flex flex-row justify-end px-2">
-              <Button
-                className="text-white"
-                onClick={() => copyToClipboard(prompt)}
-              >
+              <Button onClick={() => copyToClipboard(prompt)}>
                 <CopyIcon className="h-4 w-4 mr-2" />{" "}
                 {isCopied ? "Copied!" : "Copy Prompt"}
               </Button>

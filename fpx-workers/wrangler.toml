@@ -9,7 +9,7 @@ class_name = "WebSocketHibernationServer"
 [[d1_databases]]
 binding = "DB"
 database_name = "DB"
-database_id = "c6a49b5e-b1c9-4cee-8c91-3440c5bd3233"
+database_id = "34c863ae-42ac-4cbe-9446-d5b6b274eb2c"
 
 [build]
 command = "cargo install -q worker-build && worker-build --release"

@@ -95,5 +95,11 @@ function transformLogMessage(message: unknown) {
     return errorToJson(message);
   }
 
+  // NOTE - Functions are not serializable, so we stringify them.
+  //        Otherwise, we could end up with a `null` value in the attributes!
+  if (typeof message === "function") {
+    return message?.toString() ?? "";
+  }
+
   return message;
 }

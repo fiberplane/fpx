@@ -1,10 +1,11 @@
+import { CodeMirrorJsonEditor, SubSectionHeading } from "@/components/Timeline";
+import { TextOrJsonViewer } from "@/components/Timeline/DetailsList/TextJsonViewer";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { SubSectionHeading } from "@/pages/RequestDetailsPage/v2/shared";
 import { cn, isJson, noop, safeParseJson } from "@/utils";
 import {
   CaretDownIcon,
@@ -13,19 +14,16 @@ import {
   QuestionMarkIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import { CodeMirrorJsonEditor } from "../Editors";
 import type { Requestornator } from "../queries";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../reducer/state";
+} from "../store/types";
 
 export function ResponseBody({
-  headersSlot,
   response,
   className,
 }: {
-  headersSlot?: React.ReactNode;
   response?: Requestornator | RequestorActiveResponse;
   className?: string;
 }) {
@@ -49,10 +47,7 @@ export function ResponseBody({
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          {headersSlot}
-          <CollapsibleBodyContainer>
-            <ResponseBodyText body={body.value} className={className} />
-          </CollapsibleBodyContainer>
+          <ResponseBodyText body={body.value} className={className} />
         </div>
       );
     }
@@ -64,10 +59,7 @@ export function ResponseBody({
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          {headersSlot}
-          <CollapsibleBodyContainer>
-            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
-          </CollapsibleBodyContainer>
+          <TextOrJsonViewer text={prettyBody} collapsed={false} />
         </div>
       );
     }
@@ -78,7 +70,6 @@ export function ResponseBody({
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          {headersSlot}
           <CollapsibleBodyContainer>
             <ResponseBodyBinary body={body} />
           </CollapsibleBodyContainer>
@@ -88,12 +79,10 @@ export function ResponseBody({
 
     // TODO - Stylize
     if (body?.type === "unknown") {
-      return (
-        <UnknownResponse headersSlot={headersSlot} className={className} />
-      );
+      return <UnknownResponse className={className} />;
     }
 
-    return <UnknownResponse headersSlot={headersSlot} className={className} />;
+    return <UnknownResponse className={className} />;
   }
 
   if (!isRequestorActiveResponse(response)) {
@@ -107,10 +96,12 @@ export function ResponseBody({
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          {headersSlot}
-          <CollapsibleBodyContainer>
-            <CodeMirrorJsonEditor value={prettyBody} readOnly onChange={noop} />
-          </CollapsibleBodyContainer>
+          <CodeMirrorJsonEditor
+            value={prettyBody}
+            readOnly
+            onChange={noop}
+            minHeight="0"
+          />
         </div>
       );
     }
@@ -120,10 +111,7 @@ export function ResponseBody({
 
     return (
       <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
-        {headersSlot}
-        <CollapsibleBodyContainer>
-          <ResponseBodyText body={body ?? ""} className={className} />
-        </CollapsibleBodyContainer>
+        <ResponseBodyText body={body ?? ""} className={className} />
       </div>
     );
   }
@@ -131,14 +119,11 @@ export function ResponseBody({
 
 function UnknownResponse({
   className,
-  headersSlot,
 }: {
-  headersSlot: React.ReactNode;
   className?: string;
 }) {
   return (
     <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
-      {headersSlot}
       <CollapsibleBodyContainer>
         <div className="text-gray-400 py-20 flex flex-col items-center justify-center gap-4">
           <QuestionMarkIcon className="h-8 w-8" />

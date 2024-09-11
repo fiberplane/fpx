@@ -40,7 +40,7 @@ export type HonoResponse = Awaited<HonoFetchResult>;
 export type HonoLikeFetch = (
   request: Request,
   env: HonoLikeEnv,
-  executionContext: ExecutionContext | undefined,
+  executionContext?: ExecutionContext,
 ) => HonoFetchResult;
 // type HonoLikeFetch = Hono["fetch"];
 

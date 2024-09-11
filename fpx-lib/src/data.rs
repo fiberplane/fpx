@@ -1,3 +1,4 @@
+use crate::data::models::HexEncodedId;
 use crate::events::ServerEvents;
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -48,14 +49,14 @@ pub trait Store: Send + Sync {
     async fn span_get(
         &self,
         tx: &Transaction,
-        trace_id: &str,
-        span_id: &str,
+        trace_id: &HexEncodedId,
+        span_id: &HexEncodedId,
     ) -> Result<models::Span>;
 
     async fn span_list_by_trace(
         &self,
         tx: &Transaction,
-        trace_id: &str,
+        trace_id: &HexEncodedId,
     ) -> Result<Vec<models::Span>>;
 
     async fn span_create(&self, tx: &Transaction, span: models::Span) -> Result<models::Span>;
@@ -71,13 +72,17 @@ pub trait Store: Send + Sync {
     ) -> Result<Vec<models::Trace>>;
 
     /// Delete all spans with a specific trace_id.
-    async fn span_delete_by_trace(&self, tx: &Transaction, trace_id: &str) -> Result<Option<u64>>;
+    async fn span_delete_by_trace(
+        &self,
+        tx: &Transaction,
+        trace_id: &HexEncodedId,
+    ) -> Result<Option<u64>>;
 
     /// Delete a single span.
     async fn span_delete(
         &self,
         tx: &Transaction,
-        trace_id: &str,
-        span_id: &str,
+        trace_id: &HexEncodedId,
+        span_id: &HexEncodedId,
     ) -> Result<Option<u64>>;
 }

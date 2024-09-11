@@ -52,10 +52,36 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     overflow: hidden;
     height: 100%;
     width: 100%;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-gray-600) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    @apply h-3.5 w-3.5;
+  }
+
+  *::-webkit-scrollbar-track {
+    @apply rounded-lg;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply h-14 rounded-lg border-4 border-solid border-transparent bg-clip-content bg-gray-600;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-600;
+  }
+
+  *::-webkit-scrollbar-corner {
+    @apply hidden;
   }
 }

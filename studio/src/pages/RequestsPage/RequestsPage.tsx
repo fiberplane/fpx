@@ -2,13 +2,14 @@ import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { type OtelTrace, useOtelTraces } from "@/queries";
+import { useOtelTraces } from "@/queries";
 import { cn } from "@/utils";
+import { isFpxTraceError } from "@/utils";
+import type { OtelTrace } from "@fiberplane/fpx-types";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { type Row, getPaginationRowModel } from "@tanstack/react-table";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { isFpxTraceError } from "../RequestDetailsPage/v2/otel-helpers";
 import { columns } from "./columns";
 
 type LevelFilter = "all" | "error" | "warning" | "info" | "debug";

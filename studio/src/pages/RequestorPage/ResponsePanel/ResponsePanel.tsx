@@ -1,22 +1,24 @@
 import RobotIcon from "@/assets/Robot.svg";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
-import { ArrowTopRightIcon } from "@radix-ui/react-icons";
-import { Link } from "react-router-dom";
-import { CollapsibleKeyValueTableV2 } from "../../RequestDetailsPage/v2/KeyValueTableV2";
-import { FpxDetails } from "../FpxDetails";
+import { Icon } from "@iconify/react/dist/iconify.js";
+import { TooltipTrigger } from "@radix-ui/react-tooltip";
+import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import { AiTestGenerationDrawer } from "../ai";
 import type { Requestornator } from "../queries";
-import type { ResponsePanelTab } from "../reducer";
+import type { ResponsePanelTab } from "../store";
+import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../reducer/state";
-import { type RequestType, isWsRequest } from "../types";
+} from "../store/types";
+import { type Panels, isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
 import {
@@ -26,82 +28,173 @@ import {
 } from "./Websocket";
 
 type Props = {
-  activeResponse: RequestorActiveResponse | null;
-  activeResponsePanelTab: ResponsePanelTab;
-  setActiveResponsePanelTab: (tab: string) => void;
-  shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   tracedResponse?: Requestornator;
   isLoading: boolean;
-  requestType: RequestType;
   websocketState: WebSocketState;
-  openAiTestGenerationPanel: () => void;
-  isAiTestGenerationPanelOpen: boolean;
+  openPanels: Panels;
+  togglePanel: (panelName: keyof Panels & {}) => void;
 };
 
-export function ResponsePanel({
-  activeResponse,
-  activeResponsePanelTab,
-  setActiveResponsePanelTab,
-  shouldShowResponseTab,
+export const ResponsePanel = memo(function ResponsePanel({
   tracedResponse,
   isLoading,
-  requestType,
   websocketState,
-  openAiTestGenerationPanel,
-  isAiTestGenerationPanelOpen,
+  openPanels,
+  togglePanel,
 }: Props) {
+  const {
+    activeResponse,
+    visibleResponsePanelTabs,
+    activeResponsePanelTab,
+    setActiveResponsePanelTab,
+  } = useRequestorStore(
+    "activeResponse",
+    "visibleResponsePanelTabs",
+    "activeResponsePanelTab",
+    "setActiveResponsePanelTab",
+  );
+  const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
+    return visibleResponsePanelTabs.includes(tab);
+  };
+
+  const { requestType } = useActiveRoute();
+  const { removeServiceUrlFromPath } = useServiceBaseUrl();
+
   // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
   const responseToRender = activeResponse ?? tracedResponse;
-
   const isFailure = isRequestorActiveResponse(responseToRender)
     ? responseToRender.isFailure
     : responseToRender?.app_responses?.isFailure;
 
-  // FIXME - This should actually look if the trace exists in the database
-  //         Since a trace ID will still be created even if we request a non-existent route OR against a service that doesn't exist
-  const hasTraceId = isRequestorActiveResponse(responseToRender)
-    ? !!responseToRender?.traceId
-    : !!responseToRender?.app_responses?.traceId;
-
   const showBottomToolbar = !!responseToRender;
-  const disableGoToTraceButton = !hasTraceId;
 
   const responseHeaders = isRequestorActiveResponse(responseToRender)
     ? responseToRender.responseHeaders
     : responseToRender?.app_responses?.responseHeaders;
 
   const shouldShowMessages = shouldShowResponseTab("messages");
+  const traceId = tracedResponse?.app_responses.traceId;
 
   return (
-    <div className="overflow-hidden h-full relative">
+    <div className="overflow-x-hidden overflow-y-auto h-full relative">
       <Tabs
         value={activeResponsePanelTab}
         onValueChange={setActiveResponsePanelTab}
-        className="grid grid-rows-[auto_1fr] h-full overflow-hidden"
+        className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
       >
         <CustomTabsList>
-          <CustomTabTrigger value="response">Response</CustomTabTrigger>
+          <CustomTabTrigger value="response" className="flex items-center">
+            {responseToRender ? (
+              <ResponseSummary
+                response={responseToRender}
+                transformUrl={removeServiceUrlFromPath}
+              />
+            ) : (
+              "Response"
+            )}
+          </CustomTabTrigger>
           {shouldShowMessages && (
             <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
           )}
-          <CustomTabTrigger value="debug">Debug</CustomTabTrigger>
-          <div
-            className={cn(
-              // Hide this button on mobile, and rely on the button + drawer pattern instead
-              "max-sm:hidden",
-              "flex-grow sm:flex justify-end",
+          <CustomTabTrigger value="headers">
+            Headers
+            {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+              <span className="ml-1 text-gray-400 font-mono text-xs">
+                ({Object.keys(responseHeaders).length})
+              </span>
             )}
-          >
-            <Button
-              variant={isAiTestGenerationPanelOpen ? "outline" : "ghost"}
-              size="icon"
-              onClick={openAiTestGenerationPanel}
-              className={cn(
-                isAiTestGenerationPanelOpen && "opacity-50 bg-slate-900",
-              )}
-            >
-              <RobotIcon className="h-4 w-4 cursor-pointer" />
-            </Button>
+          </CustomTabTrigger>
+
+          <div className="flex-grow flex justify-end">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={openPanels.logs === "open" ? "outline" : "ghost"}
+                  size="icon"
+                  disabled={!traceId}
+                  onClick={() => togglePanel("logs")}
+                  className={cn(
+                    openPanels.logs === "open" && "opacity-50 bg-slate-900",
+                    "h-6 w-6",
+                  )}
+                >
+                  <Icon icon="lucide:logs" className="cursor-pointer h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+                align="center"
+              >
+                <p>Toggle logs</p>
+                <div className="flex gap-1">
+                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                  <span className="text-xs font-mono">then</span>
+                  <KeyboardShortcutKey>L</KeyboardShortcutKey>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={openPanels.timeline === "open" ? "outline" : "ghost"}
+                  size="icon"
+                  disabled={!traceId}
+                  onClick={() => togglePanel("timeline")}
+                  className={cn(
+                    openPanels.timeline === "open" && "opacity-50 bg-slate-900",
+                    "h-6 w-6",
+                  )}
+                >
+                  <Icon
+                    icon="lucide:chart-gantt"
+                    className="cursor-pointer h-4 w-4"
+                  />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+                align="center"
+              >
+                <p>Toggle timeline</p>
+                <div className="flex gap-1 items-center">
+                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                  <span className="text-xs font-mono">then</span>
+                  <KeyboardShortcutKey>T</KeyboardShortcutKey>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={
+                    openPanels.aiTestGeneration === "open" ? "outline" : "ghost"
+                  }
+                  size="icon"
+                  onClick={() => togglePanel("aiTestGeneration")}
+                  className={cn(
+                    openPanels.aiTestGeneration === "open" &&
+                      "opacity-50 bg-slate-900",
+                    "h-6 w-6",
+                  )}
+                >
+                  <RobotIcon className="h-3 w-3 cursor-pointer" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+                align="center"
+              >
+                <p>Toggle AI test panel</p>
+                <div className="flex gap-1 items-center">
+                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                  <span className="text-xs font-mono">then</span>
+                  <KeyboardShortcutKey>I</KeyboardShortcutKey>
+                </div>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </CustomTabsList>
         <CustomTabsContent value="messages">
@@ -118,7 +211,7 @@ export function ResponsePanel({
             <WebsocketMessages websocketState={websocketState} />
           </TabContentInner>
         </CustomTabsContent>
-        <CustomTabsContent value="response">
+        <CustomTabsContent value="response" className="h-full">
           <TabContentInner
             isLoading={isLoading}
             isEmpty={!responseToRender}
@@ -141,88 +234,27 @@ export function ResponsePanel({
               )
             }
           >
-            <div className={cn("h-full grid grid-rows-[auto_1fr]")}>
-              <ResponseSummary response={responseToRender} />
+            <div className={cn("grid grid-rows-[auto_1fr]")}>
               <ResponseBody
-                headersSlot={
-                  <CollapsibleKeyValueTableV2
-                    sensitiveKeys={SENSITIVE_HEADERS}
-                    title="Headers"
-                    keyValue={responseHeaders ?? {}}
-                    className="mb-2"
-                  />
-                }
                 response={responseToRender}
                 // HACK - To support absolutely positioned bottom toolbar
-                className={cn(showBottomToolbar && "pb-16")}
+                className={cn(showBottomToolbar && "pb-2")}
               />
-              {showBottomToolbar && (
-                <BottomToolbar
-                  response={tracedResponse}
-                  disableGoToTraceButton={disableGoToTraceButton}
-                />
-              )}
             </div>
           </TabContentInner>
         </CustomTabsContent>
-        <CustomTabsContent value="debug">
-          <TabContentInner
-            isLoading={isLoading}
-            isEmpty={!tracedResponse}
-            isFailure={!!isFailure}
-            FailState={<FailedRequest response={tracedResponse} />}
-            EmptyState={<NoResponse />}
-          >
-            <div className={cn("h-full")}>
-              <FpxDetails
-                response={tracedResponse}
-                // HACK - Allows for absolute positioned toolbar
-                className={cn(showBottomToolbar && "pb-16")}
-              />
-              {showBottomToolbar && (
-                <BottomToolbar
-                  response={tracedResponse}
-                  disableGoToTraceButton={disableGoToTraceButton}
-                />
-              )}
-            </div>
-          </TabContentInner>
+        <CustomTabsContent value="headers">
+          {responseHeaders && (
+            <KeyValueTable
+              sensitiveKeys={SENSITIVE_HEADERS}
+              keyValue={responseHeaders}
+            />
+          )}
         </CustomTabsContent>
       </Tabs>
     </div>
   );
-}
-
-// TODO - When there's no matching trace, don't allow the user to go to trace details
-const BottomToolbar = ({
-  response,
-  disableGoToTraceButton,
-}: { response?: Requestornator | null; disableGoToTraceButton: boolean }) => {
-  const traceId = response?.app_responses?.traceId;
-
-  return (
-    <div className="flex justify-end gap-2 h-12 absolute w-full bottom-0 right-0 px-3 pt-1 backdrop-blur-sm">
-      <div className="sm:hidden">
-        <AiTestGenerationDrawer history={response ? [response] : null} />
-      </div>
-      <Link
-        to={`/requests/otel/${traceId}`}
-        className={cn(disableGoToTraceButton && "pointer-events-none")}
-      >
-        <Button variant="secondary" disabled={disableGoToTraceButton}>
-          {disableGoToTraceButton ? (
-            "Cannot Find Trace"
-          ) : (
-            <>
-              Go to Trace Details
-              <ArrowTopRightIcon className="h-3.5 w-3.5 ml-1" />
-            </>
-          )}
-        </Button>
-      </Link>
-    </div>
-  );
-};
+});
 
 /**
  * Helper component for handling loading/failure/empty states in tab content
@@ -257,7 +289,11 @@ function TabContentInner({
 
 function ResponseSummary({
   response,
-}: { response?: Requestornator | RequestorActiveResponse }) {
+  transformUrl = (url: string) => url,
+}: {
+  response?: Requestornator | RequestorActiveResponse;
+  transformUrl?: (url: string) => string;
+}) {
   const status = isRequestorActiveResponse(response)
     ? response?.responseStatusCode
     : response?.app_responses?.responseStatusCode;
@@ -271,7 +307,7 @@ function ResponseSummary({
         response?.app_requests?.requestQueryParams ?? undefined,
       );
   return (
-    <div className="flex items-center mb-4 space-x-2 text-sm">
+    <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />
       <div>
         <Method method={method ?? "—"} />
@@ -280,11 +316,12 @@ function ResponseSummary({
             "font-mono",
             "whitespace-nowrap",
             "overflow-ellipsis",
+            "text-xs",
             "ml-2",
             "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
           )}
         >
-          {url}
+          {transformUrl(url ?? "")}
         </span>
       </div>
     </div>

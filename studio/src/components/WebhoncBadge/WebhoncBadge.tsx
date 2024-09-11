@@ -14,7 +14,7 @@ export function WebhoncBadge() {
 
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <Button
           className={cn(
             "rounded-xl flex items-center text-sm gap-2 cursor-pointer h-7",

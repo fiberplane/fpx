@@ -13,6 +13,6 @@ proc-macro = true
 
 [dependencies]
 attribute-derive = "0.10.1"
-syn = { version = "2.0.76", features = ["full"] }
-proc-macro-error = "1.0.4"
+manyhow = "0.11.4"
 quote = "1.0.37"
+syn = { version = "2.0.77", features = ["full"] }

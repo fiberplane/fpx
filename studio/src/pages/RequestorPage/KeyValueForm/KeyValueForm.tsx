@@ -60,14 +60,14 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         placeholder="name"
         readOnly={!onChangeKey}
         onChange={(e) => onChangeKey?.(e.target.value)}
-        className="w-24 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none"
+        className="w-28 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none"
       />
       <Input
         type="text"
         value={value}
         placeholder="value"
         onChange={(e) => onChangeValue(e.target.value)}
-        className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none"
+        className="h-8 w-full bg-transparent shadow-none px-2 py-0 text-sm border-none"
       />
       <div
         className={cn("ml-1 flex invisible", {

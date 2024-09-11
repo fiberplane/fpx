@@ -10,6 +10,8 @@ import {
 } from "@radix-ui/react-tooltip";
 
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+import { TimelineListDetails, TimelineProvider } from "@/components/Timeline";
+import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
@@ -17,8 +19,9 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import type { MizuOrphanLog } from "@/queries";
-import { type OtelSpan, useOtelTraces } from "@/queries/traces-otel";
+import { useOtelTraces } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Link } from "react-router-dom";
@@ -28,17 +31,8 @@ import {
   useReplayRequest,
   useShouldReplay,
 } from "../hooks";
-import { TraceDetailsTimeline, TraceDetailsV2 } from "../v2";
+import { TraceDetailsTimeline } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
-import type { getVendorInfo } from "../v2/vendorify-traces";
-import { useRequestWaterfall } from "./useRequestWaterfall";
-
-export type SpanWithVendorInfo = {
-  span: OtelSpan;
-  vendorInfo: ReturnType<typeof getVendorInfo>;
-};
-
-export type Waterfall = Array<SpanWithVendorInfo | MizuOrphanLog>;
 
 const EMPTY_LIST: Array<MizuOrphanLog> = [];
 
@@ -47,6 +41,7 @@ export function RequestDetailsPageContentV2({
   pagination,
   spans,
   orphanLogs = EMPTY_LIST,
+  generateLinkToTrace,
 }: {
   traceId: string;
   spans: Array<OtelSpan>;
@@ -57,6 +52,7 @@ export function RequestDetailsPageContentV2({
     handlePrevTrace: () => void;
     handleNextTrace: () => void;
   };
+  generateLinkToTrace: (traceId: string) => string;
 }) {
   const currentTrace = {
     traceId,
@@ -67,7 +63,7 @@ export function RequestDetailsPageContentV2({
   const { isMostRecentTrace, traceId: mostRecentTraceId } =
     useMostRecentRequest(currentTrace, traces);
 
-  const { rootSpan, waterfall } = useRequestWaterfall(spans, orphanLogs);
+  const { rootSpan, waterfall } = useAsWaterfall(spans, orphanLogs);
 
   const shouldReplay = useShouldReplay(currentTrace);
 
@@ -115,7 +111,7 @@ export function RequestDetailsPageContentV2({
           {!isMostRecentTrace && (
             <Link
               className="text-blue-600 pr-4 text-sm inline-flex items-center gap-1.5"
-              to={`/requests/otel/${mostRecentTraceId}`}
+              to={generateLinkToTrace(mostRecentTraceId)}
             >
               Jump to latest
               <ArrowTopRightIcon className="w-3.5 h-3.5" />
@@ -204,40 +200,42 @@ export function RequestDetailsPageContentV2({
           )}
         </div>
       </div>
-      <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
-        <SummaryV2 requestSpan={rootSpan.span} />
-        <div className="min-w-0 overflow-hidden w-full lg:hidden">
-          <TraceDetailsTimeline waterfall={waterfall} />
+      <TimelineProvider>
+        <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
+          <SummaryV2 requestSpan={rootSpan.span} />
+          <div className="min-w-0 overflow-hidden w-full lg:hidden">
+            <TraceDetailsTimeline waterfall={waterfall} />
+          </div>
+          <ResizablePanelGroup
+            direction="horizontal"
+            className={cn("grid grid-rows-[auto_1fr] w-full border-t")}
+          >
+            <ResizablePanel
+              defaultSize={20}
+              className={cn(
+                "hidden",
+                "lg:block lg:sticky lg:top-4 self-start",
+                "min-w-[300px]",
+                "xl:min-w-[260px]",
+                "2xl:min-w-[320px]",
+              )}
+            >
+              <TraceDetailsTimeline waterfall={waterfall} className="lg:pt-0" />
+            </ResizablePanel>
+            <ResizableHandle className="max-lg:hidden" />
+            <ResizablePanel
+              className={cn(
+                "grid items-center gap-4 overflow-x-auto relative",
+                "w-full",
+                "lg:items-start",
+                "lg:p-4",
+              )}
+            >
+              <TimelineListDetails waterfall={waterfall} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
-        <ResizablePanelGroup
-          direction="horizontal"
-          className={cn("grid grid-rows-[auto_1fr] w-full border-t")}
-        >
-          <ResizablePanel
-            defaultSize={20}
-            className={cn(
-              "hidden",
-              "lg:block lg:sticky lg:top-4 self-start",
-              "min-w-[300px]",
-              "xl:min-w-[260px]",
-              "2xl:min-w-[320px]",
-            )}
-          >
-            <TraceDetailsTimeline waterfall={waterfall} className="lg:pt-0" />
-          </ResizablePanel>
-          <ResizableHandle className="max-lg:hidden" />
-          <ResizablePanel
-            className={cn(
-              "grid items-center gap-4 overflow-x-auto relative",
-              "w-full",
-              "lg:items-start",
-              "lg:p-4",
-            )}
-          >
-            <TraceDetailsV2 waterfall={waterfall} />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+      </TimelineProvider>
     </div>
   );
 }

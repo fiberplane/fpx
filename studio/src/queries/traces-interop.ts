@@ -14,15 +14,16 @@ const CallerLocationSchema = z.object({
 const MizuOrphanLogSchema = z.object({
   id: z.number(),
   traceId: z.string(),
-  timestamp: z.string(),
+  timestamp: z.coerce.date(),
   level: z.string(), // TODO - use enum from db schema?
   message: z.union([z.string(), z.null()]),
   args: z.array(z.unknown()), // NOTE - arguments passed to console.*
   callerLocation: CallerLocationSchema.nullish(),
   ignored: z.boolean().nullish(),
   service: z.string().nullish(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  relatedSpanId: z.string().nullish(),
 });
 
 export type MizuOrphanLog = z.infer<typeof MizuOrphanLogSchema>;

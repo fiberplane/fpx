@@ -1,8 +1,8 @@
-import { type MizuOrphanLog, type OtelSpan, isMizuOrphanLog } from "@/queries";
-import type { OtelEvent } from "@/queries/traces-otel";
+import { type MizuOrphanLog, isMizuOrphanLog } from "@/queries";
 import { safeParseJson } from "@/utils";
+import { getString } from "@/utils";
+import type { OtelEvent, OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
-import { getString } from "../v2/otel-helpers";
 
 export function useOrphanLogs(traceId: string, spans: Array<OtelSpan>) {
   // NOTE - Flatten out events into orphan logs to allow the UI to render them
@@ -20,7 +20,12 @@ export function useOrphanLogs(traceId: string, spans: Array<OtelSpan>) {
             }
             // TODO - Use a more deterministic ID - preferably string that includes the trace+span+event_index
             const logId = Math.floor(Math.random() * 1000000);
-            const orphanLog = convertEventToOrphanLog(traceId, logId, event);
+            const orphanLog = convertEventToOrphanLog(
+              traceId,
+              logId,
+              event,
+              span.span_id,
+            );
             // HACK - We want to be sure that we construct a valid orphan log, otherwise the UI will break
             if (isMizuOrphanLog(orphanLog)) {
               orphans.push(orphanLog);
@@ -44,7 +49,8 @@ function convertEventToOrphanLog(
   traceId: string,
   logId: number,
   event: OtelEvent,
-) {
+  spanId: string,
+): MizuOrphanLog {
   const argsAsString = getString(event.attributes.arguments);
   const parsedArgs = argsAsString ? safeParseJson(argsAsString) : [];
 
@@ -57,5 +63,6 @@ function convertEventToOrphanLog(
     message: getString(event.attributes.message),
     createdAt: event.timestamp,
     updatedAt: event.timestamp,
+    relatedSpanId: spanId,
   };
 }

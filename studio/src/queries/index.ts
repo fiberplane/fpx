@@ -19,10 +19,4 @@ export {
   isMizuOrphanLog,
 } from "./traces-interop";
 
-export {
-  type OtelSpan,
-  type OtelSpans,
-  type OtelTrace,
-  useOtelTrace,
-  useOtelTraces,
-} from "./traces-otel";
+export { useOtelTrace, useOtelTraces } from "./traces-otel";

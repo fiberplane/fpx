@@ -1,0 +1,204 @@
+---
+// The file is mostly copied from the original sidebar component
+// in @astrojs/starlight
+
+import { Badge } from "@astrojs/starlight/components";
+import { Icon } from "astro-icon/components";
+// NOTE: bit of a hacky way to ge the types for the sidebar because Starlight
+// doesn't export them in its types'
+import type {
+  Link,
+  SidebarEntry,
+} from "node_modules/@astrojs/starlight/utils/navigation";
+
+/** Turn the nested tree structure of a sidebar into a flat list of all the links. */
+function flattenSidebar(sidebar: SidebarEntry[]): Link[] {
+  return sidebar.flatMap((entry) =>
+    entry.type === "group" ? flattenSidebar(entry.entries) : entry,
+  );
+}
+
+interface Props {
+  sublist: SidebarEntry[];
+  nested?: boolean;
+}
+
+// TODO: this is hardcoded for each group for now but we should effectively extend the
+// Starlight configuration to allow to define the custom icons for each group
+function resolveGroupIcon(label: string): string {
+  const groupIcons: Record<string, string> = {
+    Quickstart: "lucide:rocket",
+    Components: "lucide:component",
+    Features: "lucide:hammer",
+  };
+
+  if (!(label in groupIcons)) {
+    return "lucide:file-text";
+  }
+
+  return groupIcons[label];
+}
+
+const { sublist, nested } = Astro.props;
+---
+
+<ul class:list={{ "top-level": !nested }}>
+  {
+    sublist.map((entry) => (
+      <li>
+        {entry.type === "link" ? (
+          <a
+            href={entry.href}
+            aria-current={entry.isCurrent && "page"}
+            class:list={[{ large: !nested }, entry.attrs.class]}
+            {...entry.attrs}
+          >
+            <span>{entry.label}</span>
+            {entry.badge && (
+              <Badge
+                variant={entry.badge.variant}
+                class={entry.badge.class}
+                text={entry.badge.text}
+              />
+            )}
+          </a>
+        ) : (
+          <details
+            open={
+              flattenSidebar(entry.entries).some((i) => i.isCurrent) ||
+              !entry.collapsed
+            }
+          >
+            <summary>
+              <div class="group-label">
+                <Icon
+                  name={resolveGroupIcon(entry.label)}
+                  stroke-width="1"
+                />{" "}
+                <!-- <Icon name={resolveGroupIcon(entry.label)} /> -->
+                <span class="large">{entry.label}</span>
+                {entry.badge && (
+                  <Badge
+                    variant={entry.badge.variant}
+                    class={entry.badge.class}
+                    text={entry.badge.text}
+                  />
+                )}
+              </div>
+              <Icon name="lucide:chevron-right" class="caret" size="1.25rem" />
+            </summary>
+            <Astro.self sublist={entry.entries} nested />
+          </details>
+        )}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  ul {
+    --sl-sidebar-item-padding-inline: 0.5rem;
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    overflow-wrap: anywhere;
+  }
+
+  ul ul li {
+    margin-inline-start: var(--sl-sidebar-item-padding-inline);
+    border-inline-start: 1px solid var(--sl-color-hairline-light);
+    padding-inline-start: var(--sl-sidebar-item-padding-inline);
+  }
+
+  .large {
+    font-size: var(--sl-text-lg);
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+
+  .top-level > li + li {
+    margin-top: 0.75rem;
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    vertical-align: middle;
+    justify-content: space-between;
+    padding: 0.2em var(--sl-sidebar-item-padding-inline);
+    line-height: 1.4;
+    cursor: pointer;
+    user-select: none;
+  }
+  summary::marker,
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .caret {
+    transition: transform 0.2s ease-in-out;
+    flex-shrink: 0;
+  }
+  :global([dir="rtl"]) .caret {
+    transform: rotateZ(180deg);
+  }
+  [open] > summary .caret {
+    transform: rotateZ(90deg);
+  }
+
+  a {
+    display: block;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    color: var(--sl-color-gray-2);
+    padding: 0.3em var(--sl-sidebar-item-padding-inline);
+    line-height: 1.4;
+  }
+
+  a:hover,
+  a:focus {
+    color: var(--sl-color-white);
+  }
+
+  [aria-current="page"],
+  [aria-current="page"]:hover,
+  [aria-current="page"]:focus {
+    font-weight: 600;
+    color: var(--sl-color-text-invert);
+    background-color: var(--sl-color-text-accent);
+  }
+
+  a > *:not(:last-child),
+  .group-label > *:not(:last-child) {
+    margin-inline-end: 0.25em;
+  }
+
+  .group-label {
+    display: flex;
+    align-items: center;
+  }
+
+  .group-label :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+  }
+
+  svg :global([stroke-width="2"]) {
+    stroke-width: 1.5;
+  }
+
+  @media (min-width: 50rem) {
+    .top-level > li + li {
+      margin-top: 0.5rem;
+    }
+    .large {
+      font-size: var(--sl-text-base);
+    }
+    a {
+      font-size: var(--sl-text-sm);
+    }
+  }
+</style>

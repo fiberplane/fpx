@@ -1,5 +1,6 @@
 use crate::api::errors::{ApiServerError, CommonError};
-use crate::api::models::{ts_compat::TypeScriptCompatSpan, Span};
+use crate::api::models::Span;
+use crate::data::models::HexEncodedId;
 use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
 use axum::Json;
@@ -12,13 +13,9 @@ use tracing::error;
 #[tracing::instrument(skip_all)]
 pub async fn span_get_handler(
     State(store): State<BoxedStore>,
-    Path((trace_id, span_id)): Path<(String, String)>,
+    Path((trace_id, span_id)): Path<(HexEncodedId, HexEncodedId)>,
 ) -> Result<Json<Span>, ApiServerError<SpanGetError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidTraceId))?;
-    hex::decode(&span_id).map_err(|_| ApiServerError::ServiceError(SpanGetError::InvalidSpanId))?;
 
     let span = store.span_get(&tx, &trace_id, &span_id).await?;
 
@@ -32,14 +29,6 @@ pub enum SpanGetError {
     #[api_error(status_code = StatusCode::NOT_FOUND)]
     #[error("Span not found")]
     SpanNotFound,
-
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidTraceId,
-
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Span ID is invalid")]
-    InvalidSpanId,
 }
 
 impl From<DbError> for ApiServerError<SpanGetError> {
@@ -55,30 +44,11 @@ impl From<DbError> for ApiServerError<SpanGetError> {
 }
 
 #[tracing::instrument(skip_all)]
-pub async fn ts_compat_span_list_handler(
-    State(store): State<BoxedStore>,
-    Path(trace_id): Path<String>,
-) -> Result<Json<Vec<TypeScriptCompatSpan>>, ApiServerError<SpanListError>> {
-    let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
-
-    let spans = store.span_list_by_trace(&tx, &trace_id).await?;
-    let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
-
-    Ok(Json(spans))
-}
-
-#[tracing::instrument(skip_all)]
 pub async fn span_list_handler(
     State(store): State<BoxedStore>,
-    Path(trace_id): Path<String>,
+    Path(trace_id): Path<HexEncodedId>,
 ) -> Result<Json<Vec<Span>>, ApiServerError<SpanListError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanListError::InvalidTraceId))?;
 
     let spans = store.span_list_by_trace(&tx, &trace_id).await?;
     let spans: Vec<_> = spans.into_iter().map(Into::into).collect();
@@ -89,11 +59,7 @@ pub async fn span_list_handler(
 #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
-pub enum SpanListError {
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidTraceId,
-}
+pub enum SpanListError {}
 
 impl From<DbError> for ApiServerError<SpanListError> {
     fn from(err: DbError) -> Self {
@@ -105,14 +71,9 @@ impl From<DbError> for ApiServerError<SpanListError> {
 #[tracing::instrument(skip_all)]
 pub async fn span_delete_handler(
     State(store): State<BoxedStore>,
-    Path((trace_id, span_id)): Path<(String, String)>,
+    Path((trace_id, span_id)): Path<(HexEncodedId, HexEncodedId)>,
 ) -> Result<StatusCode, ApiServerError<SpanDeleteError>> {
     let tx = store.start_readonly_transaction().await?;
-
-    hex::decode(&trace_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanDeleteError::InvalidTraceId))?;
-    hex::decode(&span_id)
-        .map_err(|_| ApiServerError::ServiceError(SpanDeleteError::InvalidSpanId))?;
 
     store.span_delete(&tx, &trace_id, &span_id).await?;
 
@@ -122,15 +83,7 @@ pub async fn span_delete_handler(
 #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
-pub enum SpanDeleteError {
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidTraceId,
-
-    #[api_error(status_code = StatusCode::BAD_REQUEST)]
-    #[error("Trace ID is invalid")]
-    InvalidSpanId,
-}
+pub enum SpanDeleteError {}
 
 impl From<DbError> for ApiServerError<SpanDeleteError> {
     fn from(err: DbError) -> Self {

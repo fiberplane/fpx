@@ -1,15 +1,19 @@
 import { Steps } from "@astrojs/starlight/components";
+import PackageManagers from "@/components/PackageManagers.astro";
 
 ## Quickstart
 
 <Steps>
 1. Create a Hono API 🔥
 
-    ```sh
-    npm create hono@latest
-    ```
+    <PackageManagers type="create" pkg="hono@latest" />
 
-2. Add `@fiberplane/hono-otel` with two lines of code (only Cloudflare Workers runtime is supported at the moment)
+2. Install `@fiberplane/hono-otel`
+
+   {" "}
+   <PackageManagers pkg="@fiberplane/hono-otel" />
+
+   Add `@fiberplane/hono-otel` with two lines of code (only Cloudflare Workers runtime is supported at the moment)
 
    ```ts ins={"Import the instrument function":2-3} ins={"Wrap your application with instrument":8-9}
    import { Hono } from "hono";
@@ -24,8 +28,7 @@ import { Steps } from "@astrojs/starlight/components";
    ```
 
 3. Launch FPX in your API directory
-   ```sh
-   npx @fiberplane/studio@latest
-   ```
+
+	<PackageManagers type="exec" pkg="@fiberplane/studio" />
 
 </Steps>
