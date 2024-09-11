@@ -1,3 +1,4 @@
+import { useIsLgScreen } from "@/hooks";
 import { Icon } from "@iconify/react";
 import {
   DialogClose,
@@ -15,7 +16,6 @@ import {
 } from "../pages/RequestorPage/NavigationPanel";
 import { useRequestorStore } from "../pages/RequestorPage/store";
 import { cn } from "../utils";
-import { useIsLgScreen } from "@/hooks";
 
 export function FloatingSidePanel() {
   const { sidePanelOpen, setSidePanelOpen } = useRequestorStore(

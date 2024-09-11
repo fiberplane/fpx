@@ -1,3 +1,4 @@
+import { useRequestorStore } from "@/pages/RequestorPage/store";
 import { Icon } from "@iconify/react";
 import {
   DialogClose,
@@ -9,6 +10,7 @@ import {
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
 import type { ComponentProps } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "../assets/fpx.svg";
 import { WebhoncBadge } from "../components/WebhoncBadge";
@@ -18,8 +20,6 @@ import { useWebsocketQueryInvalidation } from "../hooks";
 import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
 import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
 import { cn } from "../utils";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
-import { useHotkeys } from "react-hotkeys-hook";
 import { FloatingSidePanel } from "./FloatingSidePanel";
 
 const Branding = () => {
