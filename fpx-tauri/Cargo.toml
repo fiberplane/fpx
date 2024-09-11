@@ -14,10 +14,18 @@ rust-version = "1.60"
 tauri-build = { version = "1.5.4", features = [] }
 
 [dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true, features = ["derive", "env"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { version = "1.7.2", features = [ "http-all", "shell-all"] }
+tauri = { version = "1.7.2", features = [
+  "path-all",
+  "dialog-open",
+  "http-all",
+  "shell-all",
+] }
 tauri-plugin-window-state = "0.1.0"
+toml = "0.7.3"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

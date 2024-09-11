@@ -1,4 +1,5 @@
 packages:
+  - "desktop"
   - "studio"
   - "api"
   - "packages/*"

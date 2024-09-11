@@ -1,9 +1,9 @@
 {
   "build": {
-    "beforeBuildCommand": "pnpm build:fpx-studio",
-    "beforeDevCommand": "pnpm run dev:api & pnpm run dev:frontend",
-    "devPath": "http://localhost:5173",
-    "distDir": "../studio/dist"
+    "beforeBuildCommand": "pnpm build:fpx-desktop",
+    "beforeDevCommand": "pnpm run dev:desktop",
+    "devPath": "http://localhost:5174",
+    "distDir": "../desktop/dist"
   },
   "package": {
     "productName": "fpx-tauri",
@@ -11,6 +11,12 @@
   },
   "tauri": {
     "allowlist": {
+      "dialog": {
+        "open": true
+      },
+      "path": {
+        "all": true
+      },
       "shell": {
         "all": true
       },
@@ -59,6 +65,7 @@
     },
     "windows": [
       {
+        "focus": false,
         "fullscreen": false,
         "height": 600,
         "resizable": true,
