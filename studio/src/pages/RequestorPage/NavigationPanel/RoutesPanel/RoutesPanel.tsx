@@ -127,14 +127,17 @@ export function RoutesPanel() {
       switch (event.key) {
         case "Enter": {
           if (isInputFocused && filteredRoutes.length > 0) {
-            setSelectedRouteIndex(activeRouteIndex);
-            const activeRouteElement = document.getElementById(
-              `#route-${activeRouteIndex}`,
+            setSelectedRouteIndex(0);
+            const firstRouteElement = document.getElementById(
+              `route-${selectedRouteIndex}`,
             );
-            if (activeRouteElement) {
-              activeRouteElement.focus();
+            if (firstRouteElement) {
+              firstRouteElement.focus();
             }
-          } else if (
+            break;
+          }
+
+          if (
             selectedRouteIndex !== null &&
             filteredRoutes[selectedRouteIndex]
           ) {

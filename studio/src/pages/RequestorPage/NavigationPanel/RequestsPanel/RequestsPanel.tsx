@@ -104,11 +104,16 @@ export function RequestsPanel() {
         case "Enter": {
           if (isInputFocused && filteredItems.length > 0) {
             setSelectedIndex(0);
-            const firstItemElement = document.getElementById("#item-0");
+            const firstItemElement = document.getElementById(
+              `item-${selectedIndex}`,
+            );
             if (firstItemElement) {
               firstItemElement.focus();
             }
-          } else if (selectedIndex !== -1 && filteredItems[selectedIndex]) {
+            break;
+          }
+
+          if (selectedIndex !== -1 && filteredItems[selectedIndex]) {
             handleItemSelect(filteredItems[selectedIndex]);
           }
           break;
