@@ -27,9 +27,9 @@ import { useRequestorStore } from "./store";
 export const RoutesCombobox = React.memo(function RoutesCombobox() {
   const {
     routes,
-    selectedRoute,
-    selectRoute: handleRouteClick,
-  } = useRequestorStore("routes", "selectedRoute", "selectRoute");
+    activeRoute: selectedRoute,
+    setActiveRoute: handleRouteClick,
+  } = useRequestorStore("routes", "activeRoute", "setActiveRoute");
   const [openRoutesDialog, setOpenRoutesDialog] = React.useState(false);
   const isLg = useIsLgScreen();
   useHotkeys("c", (e) => {
@@ -92,7 +92,7 @@ export const RoutesCombobox = React.memo(function RoutesCombobox() {
                         setOpen(false);
                       }}
                     >
-                      <RouteItem route={route} />
+                      <RoutesItem route={route} />
                       <CheckIcon
                         className={cn(
                           "ml-auto h-4 w-4",

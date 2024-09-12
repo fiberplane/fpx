@@ -28,7 +28,7 @@ export function useAi(requestHistory: Array<Requestornator>) {
     setRequestHeaders,
     updatePathParamValues,
     body,
-    selectedRoute,
+    activeRoute,
     getMatchingMiddleware,
   } = useRequestorStore(
     "setBody",
@@ -37,7 +37,7 @@ export function useAi(requestHistory: Array<Requestornator>) {
     "setRequestHeaders",
     "updatePathParamValues",
     "body",
-    "selectedRoute",
+    "activeRoute",
     "getMatchingMiddleware",
   );
 
@@ -60,7 +60,7 @@ export function useAi(requestHistory: Array<Requestornator>) {
 
   const { isFetching: isLoadingParameters, refetch: generateRequestData } =
     useAiRequestData(
-      selectedRoute,
+      activeRoute,
       getMatchingMiddleware(),
       bodyType,
       recentHistory,

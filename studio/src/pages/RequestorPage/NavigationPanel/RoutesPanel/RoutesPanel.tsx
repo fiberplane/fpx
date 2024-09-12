@@ -9,10 +9,10 @@ import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
 
 export function RoutesPanel() {
-  const { routes, selectedRoute, selectRoute } = useRequestorStore(
+  const { routes, activeRoute, setActiveRoute } = useRequestorStore(
     "routes",
-    "selectedRoute",
-    "selectRoute",
+    "activeRoute",
+    "setActiveRoute",
   );
 
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export function RoutesPanel() {
       },
       { replace: true },
     );
-    selectRoute(route);
+    setActiveRoute(route);
   });
 
   const hasAnyUserAddedRoutes = useMemo(() => {
@@ -80,7 +80,7 @@ export function RoutesPanel() {
           <AddRouteButton />
         </div>
       </div>
-      {/* TODO - resolve when routes overflow */}
+      {/* TODO: resolve when routes overflow */}
       <div className="overflow-y-auto h-full relative">
         {hasAnyUserAddedRoutes && (
           <RoutesSection title="Custom routes">
@@ -89,7 +89,7 @@ export function RoutesPanel() {
                 key={index}
                 index={index}
                 route={route}
-                selectedRoute={selectedRoute}
+                activeRoute={activeRoute}
                 handleRouteClick={handleRouteClick}
               />
             ))}
@@ -102,7 +102,7 @@ export function RoutesPanel() {
               key={index}
               index={index}
               route={route}
-              selectedRoute={selectedRoute}
+              activeRoute={activeRoute}
               handleRouteClick={handleRouteClick}
             />
           ))}
@@ -115,7 +115,7 @@ export function RoutesPanel() {
                 key={index}
                 index={index}
                 route={route}
-                selectedRoute={selectedRoute}
+                activeRoute={activeRoute}
                 handleRouteClick={handleRouteClick}
               />
             ))}

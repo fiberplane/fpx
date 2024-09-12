@@ -54,10 +54,10 @@ export const requestResponseSlice: StateCreator<
         : extractPathParams(path).map(mapPathParamKey);
 
       state.path = path;
-      state.selectedRoute = nextSelectedRoute;
+      state.activeRoute = nextSelectedRoute;
       state.pathParams = nextPathParams;
       state.activeHistoryResponseTraceId =
-        state.selectedRoute === nextSelectedRoute
+        state.activeRoute === nextSelectedRoute
           ? state.activeHistoryResponseTraceId
           : null;
     }),
@@ -82,7 +82,7 @@ export const requestResponseSlice: StateCreator<
           return accPath.replace(`:${param.key}`, param.value || param.key);
         }
         return accPath;
-      }, state.selectedRoute?.path ?? state.path);
+      }, state.activeRoute?.path ?? state.path);
 
       state.path = addBaseUrl(state.serviceBaseUrl, nextPath);
       state.pathParams = pathParams;

@@ -24,7 +24,7 @@ export function useRequestorSubmitHandler({
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const {
-    selectedRoute,
+    activeRoute,
     body,
     path,
     method,
@@ -34,7 +34,7 @@ export function useRequestorSubmitHandler({
     requestType,
     showResponseBodyFromHistory,
   } = useRequestorStore(
-    "selectedRoute",
+    "activeRoute",
     "body",
     "path",
     "method",
@@ -97,7 +97,7 @@ export function useRequestorSubmitHandler({
         headers: modifiedHeaders,
         pathParams,
         queryParams,
-        route: selectedRoute?.path,
+        route: activeRoute?.path,
       },
       {
         onSuccess(data) {

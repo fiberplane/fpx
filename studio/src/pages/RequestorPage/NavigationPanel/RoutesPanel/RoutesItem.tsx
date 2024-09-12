@@ -6,12 +6,12 @@ import { type ProbedRoute, isWsRequest } from "../../types";
 type RoutesItemProps = {
   index: number;
   route: ProbedRoute;
-  selectedRoute: ProbedRoute | null;
+  activeRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
 };
 
 export function RoutesItem(props: RoutesItemProps) {
-  const { index, route, selectedRoute, handleRouteClick } = props;
+  const { index, route, activeRoute, handleRouteClick } = props;
   const { mutate: deleteRoute } = useDeleteRoute();
   const canDeleteRoute =
     route.routeOrigin === "custom" ||
@@ -28,12 +28,12 @@ export function RoutesItem(props: RoutesItemProps) {
           handleRouteClick(route);
         }
       }}
-      data-state-active={selectedRoute === route}
+      data-state-active={activeRoute === route}
       className={cn(
         "flex items-center py-1 pl-5 pr-2 rounded cursor-pointer font-mono text-sm",
         {
-          "bg-muted": selectedRoute === route,
-          "hover:bg-muted": selectedRoute !== route,
+          "bg-muted": activeRoute === route,
+          "hover:bg-muted": activeRoute !== route,
         },
       )}
     >
