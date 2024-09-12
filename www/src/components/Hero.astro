@@ -12,18 +12,24 @@ if (image && "file" in image) {
 ---
 
 <section>
-  <header>
-    <h1>{title}</h1>
-    <p>{tagline}</p>
-  </header>
+  <div class="hero-content">
+    <header>
+      <h1>{title}</h1>
+      <p>{tagline}</p>
+    </header>
 
-  <figure>
-    {
-      heroImage && (
-        <Image src={heroImage} alt="Screenshot of FPX Studio" data-hero-image />
-      )
-    }
-  </figure>
+    <figure>
+      {
+        heroImage && (
+          <Image
+            src={heroImage}
+            alt="Screenshot of FPX Studio"
+            data-hero-image
+          />
+        )
+      }
+    </figure>
+  </div>
 </section>
 
 <script>
@@ -47,6 +53,10 @@ if (image && "file" in image) {
   }
 
   section {
+    container: hero-container / inline-size;
+  }
+
+  .hero-content {
     position: relative;
     isolation: isolate;
     display: grid;
@@ -131,6 +141,55 @@ if (image && "file" in image) {
       background-size: var(--hero-background-image-size)
         var(--hero-background-image-size);
       background-position: top center;
+    }
+
+    @container hero-container (width <= 1440px) {
+      header {
+        margin-inline: 4rem;
+
+        h1 {
+          font-size: clamp(34px, 5cqi, 70px);
+        }
+
+        p {
+          font-size: clamp(18px, 2.5cqi, 32px);
+        }
+      }
+    }
+
+    @container hero-container (width <= 1152px) {
+      header {
+        margin-inline: 2rem 0;
+      }
+    }
+
+    /* WIP */
+    @container hero-container (width < 1024px) {
+      &.hero-content {
+        grid-template-columns: 1fr;
+        align-content: start;
+        padding-block-start: 3rem;
+        height: auto;
+        margin-inline: calc(var(--sl-content-pad-x) * -1);
+        padding-inline: var(--sl-nav-pad-x);
+        border-radius: 0;
+      }
+
+      header {
+        margin-inline: 0;
+      }
+
+      figure {
+        --figure-block-padding: 2rem 4rem;
+
+        img {
+          position: static;
+          height: auto;
+          width: 100%;
+          border-radius: 8px;
+          translate: var(--sl-nav-pad-x) 0;
+        }
+      }
     }
   }
 </style>
