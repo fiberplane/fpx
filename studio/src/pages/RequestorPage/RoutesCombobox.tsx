@@ -20,7 +20,7 @@ import {
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useHotkeys } from "react-hotkeys-hook";
-import { RouteItem } from "./NavigationPanel";
+import { RoutesItem } from "./NavigationPanel";
 import { AddRoutesDialog } from "./routes/AddRouteButton";
 import { useRequestorStore } from "./store";
 

@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
-import { RoutesItem } from "./RoutesItem";
 import type { ProbedRoute } from "../../types";
+import { RoutesItem } from "./RoutesItem";
 
 export function RoutesPanel() {
   const { routes, selectedRoute, selectRoute } = useRequestorStore(
