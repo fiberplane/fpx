@@ -1,10 +1,13 @@
 [advisories]
-ignore = []
+ignore = [
+    "RUSTSEC-2024-0370", # unmaintained - proc-macro-error
+]
 yanked = "deny"
 
 [licenses]
 allow = [
     "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
     "BSD-3-Clause",
     "ISC",
     "MIT",
@@ -36,7 +39,9 @@ deny = []
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = []
+allow-git = [
+    "https://github.com/tauri-apps/plugins-workspace"
+]
 
 [sources.allow-org]
 github = []
