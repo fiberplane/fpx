@@ -1,12 +1,14 @@
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
+import { useInputFocusDetection } from "@/hooks";
 
 export function RoutesPanel() {
   const { routes, activeRoute, setActiveRoute } = useRequestorStore(
@@ -16,6 +18,8 @@ export function RoutesPanel() {
   );
 
   const navigate = useNavigate();
+
+  const { isInputFocused, blurActiveInput } = useInputFocusDetection();
 
   const handleRouteClick = useHandler((route: ProbedRoute) => {
     navigate(
@@ -67,15 +71,105 @@ export function RoutesPanel() {
     );
   }, [filteredRoutes]);
 
+  const defaultSelectedRouteIndex = useMemo(() => {
+    return (
+      filteredRoutes?.findIndex(
+        (r) => r.path === activeRoute?.path && r.method === activeRoute.method,
+      ) ?? 0
+    );
+  }, [filteredRoutes, activeRoute]);
+
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(
+    defaultSelectedRouteIndex,
+  );
+
+  const selecteableRoutes = useMemo(
+    () => [...userAddedRoutes, ...detectedRoutes, ...openApiRoutes],
+    [userAddedRoutes, detectedRoutes, openApiRoutes],
+  );
+
+  const getNextRouteIndex = (currentIndex: number, direction: 1 | -1) => {
+    let nextIndex = currentIndex + direction;
+    if (nextIndex < 0) {
+      nextIndex = selecteableRoutes.length - 1;
+    } else if (nextIndex >= selecteableRoutes.length) {
+      nextIndex = 0;
+    }
+    return nextIndex;
+  };
+
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useHotkeys(["j", "k", "ArrowDown", "ArrowUp", "/"], (event) => {
+    event.preventDefault();
+    switch (event.key) {
+      case "j":
+      case "ArrowDown":
+        setSelectedRouteIndex((prevIndex) =>
+          getNextRouteIndex(prevIndex ?? -1, 1),
+        );
+        break;
+      case "k":
+      case "ArrowUp":
+        setSelectedRouteIndex((prevIndex) =>
+          getNextRouteIndex(prevIndex ?? selecteableRoutes.length, -1),
+        );
+        break;
+
+      case "/": {
+        if (searchRef.current) {
+          searchRef.current.focus();
+          setSelectedRouteIndex(null);
+        }
+        break;
+      }
+    }
+  });
+
+  useHotkeys(
+    ["Escape", "Enter"],
+    (event) => {
+      switch (event.key) {
+        case "Enter": {
+          if (isInputFocused && selecteableRoutes.length > 0) {
+            setSelectedRouteIndex(0);
+            const firstRouteElement = document.getElementById("#route-0");
+            if (firstRouteElement) {
+              firstRouteElement.focus();
+            }
+          } else if (
+            selectedRouteIndex !== null &&
+            selecteableRoutes[selectedRouteIndex]
+          ) {
+            handleRouteClick(selecteableRoutes[selectedRouteIndex]);
+          }
+          break;
+        }
+
+        case "Escape": {
+          if (isInputFocused) {
+            blurActiveInput();
+          } else if (filterValue) {
+            setFilterValue("");
+          }
+          break;
+        }
+      }
+    },
+    { enableOnFormTags: ["input"] },
+  );
+
   return (
     <div className={cn("h-full", "flex", "flex-col")}>
       <div>
         <div className="flex items-center space-x-2 pb-3">
           <Input
+            ref={searchRef}
             className="text-sm"
-            placeholder="Search"
+            placeholder={`Search (hit ${"/"} to focus)`}
             value={filterValue}
             onChange={(e) => setFilterValue(e.target.value)}
+            onFocus={() => setSelectedRouteIndex(null)}
           />
           <AddRouteButton />
         </div>
@@ -90,7 +184,9 @@ export function RoutesPanel() {
                 index={index}
                 route={route}
                 activeRoute={activeRoute}
+                selectedRoute={selectedRouteIndex === index ? route : null}
                 handleRouteClick={handleRouteClick}
+                setSelectedRouteIndex={setSelectedRouteIndex}
               />
             ))}
           </RoutesSection>
@@ -100,10 +196,16 @@ export function RoutesPanel() {
           {detectedRoutes?.map((route, index) => (
             <RoutesItem
               key={index}
-              index={index}
+              index={userAddedRoutes.length + index}
               route={route}
+              selectedRoute={
+                selectedRouteIndex === userAddedRoutes.length + index
+                  ? route
+                  : null
+              }
               activeRoute={activeRoute}
               handleRouteClick={handleRouteClick}
+              setSelectedRouteIndex={setSelectedRouteIndex}
             />
           ))}
         </RoutesSection>
@@ -113,10 +215,17 @@ export function RoutesPanel() {
             {openApiRoutes?.map((route, index) => (
               <RoutesItem
                 key={index}
-                index={index}
+                index={userAddedRoutes.length + detectedRoutes.length + index}
                 route={route}
+                selectedRoute={
+                  selectedRouteIndex ===
+                  userAddedRoutes.length + detectedRoutes.length + index
+                    ? route
+                    : null
+                }
                 activeRoute={activeRoute}
                 handleRouteClick={handleRouteClick}
+                setSelectedRouteIndex={setSelectedRouteIndex}
               />
             ))}
           </RoutesSection>
@@ -135,7 +244,7 @@ export function RoutesSection(props: RoutesSectionProps) {
   const { title, children } = props;
 
   return (
-    <section className="mt-4">
+    <section className="p-2">
       <div>
         <h4 className="font-medium font-mono uppercase text-xs text-muted-foreground">
           {title}
