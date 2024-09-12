@@ -4,6 +4,11 @@ import { Image } from "astro:assets";
 
 const { data } = Astro.props.entry;
 const { title = data.title, tagline, image, actions = [] } = data.hero || {};
+
+let heroImage: ImageMetadata | undefined;
+if (image && "file" in image) {
+  heroImage = image.file;
+}
 ---
 
 <section>
@@ -13,14 +18,29 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
   </header>
 
   <figure>
-    <Image src={image.file} alt="Screenshot of FPX Studio" />
+    {
+      heroImage && (
+        <Image src={heroImage} alt="Screenshot of FPX Studio" data-hero-image />
+      )
+    }
   </figure>
 </section>
+
+<script>
+  const heroImage = document.querySelector("[data-hero-image]");
+  if (heroImage && heroImage instanceof HTMLImageElement) {
+    heroImage.onload = () => {
+      console.log("Hero image loaded");
+      heroImage.classList.add("is-loaded");
+    };
+  }
+</script>
 
 <style>
   /*
     Hacky solution for now, need to dive into Starlight on how to do this
-    properly
+    properly. This breaks the documentations page though, so a proper solution
+    is needed.
   */
   :root {
     --sl-content-width: 102rem !important;
@@ -47,6 +67,7 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
       color: black;
       margin-inline: 6rem;
 
+      /* TODO: Add Geist font from fontsource.com */
       h1 {
         font-size: 70px;
         line-height: 1;
@@ -55,6 +76,7 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
 
       p {
         /* TODO: Add Inter-Tight font & update font size & line height */
+        /* fontsource.com */
         font-size: 32px;
         line-height: 1.2;
         font-weight: 500;
@@ -76,6 +98,18 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
         border-radius: 20px;
         object-fit: contain;
         box-shadow: 0px 5.553px 26.51px 0px rgb(0 0 0 / 0.55);
+
+        /* Rudimentary entry animations for now, add some sprinkles */
+        opacity: 0;
+        translate: 0 24px;
+        transition:
+          opacity 0.5s,
+          translate 0.5s;
+
+        &.is-loaded {
+          opacity: 1;
+          translate: 0 0;
+        }
       }
     }
 
@@ -91,7 +125,7 @@ const { title = data.title, tagline, image, actions = [] } = data.hero || {};
       border-radius: 20px;
       inset: 0;
       background-image: radial-gradient(
-        rgb(207 212 216 / 0.5) 3px,
+        rgb(207 212 216 / 0.4) 3px,
         transparent 0
       );
       background-size: var(--hero-background-image-size)
