@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import fpxScreenshot1 from "@/assets/fpx-screenshot-1.png";
 import fpxScreenshot2 from "@/assets/fpx-screenshot-2.png";
+import fpxHeroScreenshot from "@/assets/fpx-hero-screenshot.png";
 import { Content } from "@/content/landing/index.mdx";
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 ---
@@ -12,7 +13,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
     template: "splash",
     hero: {
       title: "Test and debug your Hono API",
-      image: { file: fpxScreenshot2 },
+      image: { file: fpxHeroScreenshot },
       tagline:
         "Fiberplane helps you build, test and debug your API with the full context of your source code and runtime behavior.",
       actions: [
