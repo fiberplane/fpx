@@ -54,7 +54,7 @@ export const CustomTabsContent = React.forwardRef<
   <TabsContent
     ref={ref}
     {...props}
-    // the default tabIndex of 0 causes the tab to be focused which, considering how 
+    // the default tabIndex of 0 causes the tab to be focused which, considering how
     // we use this component is not desirable
     tabIndex={-1}
     className={cn(
