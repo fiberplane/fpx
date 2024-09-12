@@ -5,7 +5,7 @@ import type { RequestorState } from "./types";
 
 export const _getActiveRoute = (state: RequestorState): ProbedRoute => {
   return (
-    state.selectedRoute ?? {
+    state.activeRoute ?? {
       path: state.path,
       method: state.method,
       requestType: state.requestType,

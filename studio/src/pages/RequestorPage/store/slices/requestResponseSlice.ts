@@ -48,16 +48,16 @@ export const requestResponseSlice: StateCreator<
         state.method,
         state.requestType,
       );
-      const nextSelectedRoute = matchedRoute ? matchedRoute.route : null;
+      const nextActiveRoute = matchedRoute ? matchedRoute.route : null;
       const nextPathParams = matchedRoute
         ? extractMatchedPathParams(matchedRoute)
         : extractPathParams(path).map(mapPathParamKey);
 
       state.path = path;
-      state.activeRoute = nextSelectedRoute;
+      state.activeRoute = nextActiveRoute;
       state.pathParams = nextPathParams;
       state.activeHistoryResponseTraceId =
-        state.activeRoute === nextSelectedRoute
+        state.activeRoute === nextActiveRoute
           ? state.activeHistoryResponseTraceId
           : null;
     }),
@@ -71,7 +71,7 @@ export const requestResponseSlice: StateCreator<
       state.requestType = requestType;
 
       // Update other state properties based on the new method and request type
-      // (e.g., selectedRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
+      // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
       // You might want to move some of this logic to separate functions or slices
     }),
 
