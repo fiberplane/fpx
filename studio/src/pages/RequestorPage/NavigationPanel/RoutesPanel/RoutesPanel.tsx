@@ -71,28 +71,23 @@ export function RoutesPanel() {
     );
   }, [filteredRoutes]);
 
-  const defaultSelectedRouteIndex = useMemo(() => {
+  const activeRouteIndex = useMemo(() => {
     return (
       filteredRoutes?.findIndex(
         (r) => r.path === activeRoute?.path && r.method === activeRoute.method,
-      ) ?? 0
+      ) ?? -1
     );
   }, [filteredRoutes, activeRoute]);
 
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(
-    defaultSelectedRouteIndex,
-  );
-
-  const selecteableRoutes = useMemo(
-    () => [...userAddedRoutes, ...detectedRoutes, ...openApiRoutes],
-    [userAddedRoutes, detectedRoutes, openApiRoutes],
+    null,
   );
 
   const getNextRouteIndex = (currentIndex: number, direction: 1 | -1) => {
     let nextIndex = currentIndex + direction;
     if (nextIndex < 0) {
-      nextIndex = selecteableRoutes.length - 1;
-    } else if (nextIndex >= selecteableRoutes.length) {
+      nextIndex = filteredRoutes.length - 1;
+    } else if (nextIndex >= filteredRoutes.length) {
       nextIndex = 0;
     }
     return nextIndex;
@@ -106,13 +101,13 @@ export function RoutesPanel() {
       case "j":
       case "ArrowDown":
         setSelectedRouteIndex((prevIndex) =>
-          getNextRouteIndex(prevIndex ?? -1, 1),
+          getNextRouteIndex(prevIndex ?? activeRouteIndex, 1),
         );
         break;
       case "k":
       case "ArrowUp":
         setSelectedRouteIndex((prevIndex) =>
-          getNextRouteIndex(prevIndex ?? selecteableRoutes.length, -1),
+          getNextRouteIndex(prevIndex ?? activeRouteIndex, -1),
         );
         break;
 
@@ -131,17 +126,19 @@ export function RoutesPanel() {
     (event) => {
       switch (event.key) {
         case "Enter": {
-          if (isInputFocused && selecteableRoutes.length > 0) {
-            setSelectedRouteIndex(0);
-            const firstRouteElement = document.getElementById("#route-0");
-            if (firstRouteElement) {
-              firstRouteElement.focus();
+          if (isInputFocused && filteredRoutes.length > 0) {
+            setSelectedRouteIndex(activeRouteIndex);
+            const activeRouteElement = document.getElementById(
+              `#route-${activeRouteIndex}`,
+            );
+            if (activeRouteElement) {
+              activeRouteElement.focus();
             }
           } else if (
             selectedRouteIndex !== null &&
-            selecteableRoutes[selectedRouteIndex]
+            filteredRoutes[selectedRouteIndex]
           ) {
-            handleRouteClick(selecteableRoutes[selectedRouteIndex]);
+            handleRouteClick(filteredRoutes[selectedRouteIndex]);
           }
           break;
         }
