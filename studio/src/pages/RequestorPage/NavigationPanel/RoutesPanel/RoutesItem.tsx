@@ -1,8 +1,8 @@
 import { cn, getHttpMethodTextColor } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
+import { useEffect, useRef } from "react";
 import { useDeleteRoute } from "../../queries";
 import { type ProbedRoute, isWsRequest } from "../../types";
-import { useRef, useEffect } from "react";
 
 type RoutesItemProps = {
   index: number;

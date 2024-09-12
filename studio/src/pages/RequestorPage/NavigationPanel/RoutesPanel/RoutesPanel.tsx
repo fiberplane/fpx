@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { useInputFocusDetection } from "@/hooks";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo, useRef, useState } from "react";
@@ -8,7 +9,6 @@ import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
-import { useInputFocusDetection } from "@/hooks";
 
 export function RoutesPanel() {
   const { routes, activeRoute, setActiveRoute } = useRequestorStore(

@@ -1,6 +1,7 @@
 import { RequestMethod } from "@/components/Timeline";
 import { Input } from "@/components/ui/input";
 import { Status } from "@/components/ui/status";
+import { useInputFocusDetection } from "@/hooks";
 import { useOtelTraces } from "@/queries";
 import {
   cn,
@@ -10,18 +11,17 @@ import {
   getStatusCode,
 } from "@/utils";
 import type { OtelTrace } from "@fiberplane/fpx-types";
-import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import {
   Link,
+  useNavigate,
   useParams,
   useSearchParams,
-  useNavigate,
 } from "react-router-dom";
 import type { Requestornator } from "../../queries";
 import { useRequestorStore, useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
-import { useHotkeys } from "react-hotkeys-hook";
-import { useInputFocusDetection } from "@/hooks";
 
 export function RequestsPanel() {
   const { history } = useRequestorHistory();
