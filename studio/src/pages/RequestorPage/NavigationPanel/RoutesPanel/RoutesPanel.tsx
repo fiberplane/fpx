@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
+import { RoutesItem } from "./RoutesItem";
 import type { ProbedRoute } from "../../types";
-import { RoutesSection } from "./RoutesSection";
 
 export function RoutesPanel() {
   const { routes, selectedRoute, selectRoute } = useRequestorStore(
@@ -27,10 +27,6 @@ export function RoutesPanel() {
     selectRoute(route);
   });
 
-  const hasAnyPreviouslyDetectedRoutes = useMemo(() => {
-    return routes?.some((r) => !r.currentlyRegistered) ?? false;
-  }, [routes]);
-
   const hasAnyUserAddedRoutes = useMemo(() => {
     return (
       routes?.some((r) => r.routeOrigin === "custom" && !r.isDraft) ?? false
@@ -49,14 +45,6 @@ export function RoutesPanel() {
     }
     return routes?.filter((r) => r.path.includes(filterValue));
   }, [filterValue, routes]);
-
-  const prevDetectedRoutes = useMemo(() => {
-    return (
-      filteredRoutes?.filter(
-        (r) => r.routeOrigin === "discovered" && !r.currentlyRegistered,
-      ) ?? []
-    );
-  }, [filteredRoutes]);
 
   const detectedRoutes = useMemo(() => {
     const detected =
@@ -92,41 +80,68 @@ export function RoutesPanel() {
           <AddRouteButton />
         </div>
       </div>
-      <div className="overflow-y-auto relative">
+      {/* TODO - resolve when routes overflow */}
+      <div className="overflow-y-auto h-full relative">
         {hasAnyUserAddedRoutes && (
-          <RoutesSection
-            title="Custom routes"
-            routes={userAddedRoutes ?? []}
-            selectedRoute={selectedRoute}
-            handleRouteClick={handleRouteClick}
-          />
+          <RoutesSection title="Custom routes">
+            {userAddedRoutes?.map((route, index) => (
+              <RoutesItem
+                key={index}
+                index={index}
+                route={route}
+                selectedRoute={selectedRoute}
+                handleRouteClick={handleRouteClick}
+              />
+            ))}
+          </RoutesSection>
         )}
 
-        <RoutesSection
-          title="Detected in app"
-          routes={detectedRoutes}
-          selectedRoute={selectedRoute}
-          handleRouteClick={handleRouteClick}
-        />
-
-        {hasAnyPreviouslyDetectedRoutes && (
-          <RoutesSection
-            title="Previously detected routes"
-            routes={prevDetectedRoutes}
-            selectedRoute={selectedRoute}
-            handleRouteClick={handleRouteClick}
-          />
-        )}
+        <RoutesSection title="Detected in app">
+          {detectedRoutes?.map((route, index) => (
+            <RoutesItem
+              key={index}
+              index={index}
+              route={route}
+              selectedRoute={selectedRoute}
+              handleRouteClick={handleRouteClick}
+            />
+          ))}
+        </RoutesSection>
 
         {hasAnyOpenApiRoutes && (
-          <RoutesSection
-            title="OpenAPI"
-            routes={openApiRoutes ?? []}
-            selectedRoute={selectedRoute}
-            handleRouteClick={handleRouteClick}
-          />
+          <RoutesSection title="OpenAPI">
+            {openApiRoutes?.map((route, index) => (
+              <RoutesItem
+                key={index}
+                index={index}
+                route={route}
+                selectedRoute={selectedRoute}
+                handleRouteClick={handleRouteClick}
+              />
+            ))}
+          </RoutesSection>
         )}
       </div>
     </div>
+  );
+}
+
+type RoutesSectionProps = {
+  title: string;
+  children: React.ReactNode;
+};
+
+export function RoutesSection(props: RoutesSectionProps) {
+  const { title, children } = props;
+
+  return (
+    <section className="mt-4">
+      <div>
+        <h4 className="font-medium font-mono uppercase text-xs text-muted-foreground">
+          {title}
+        </h4>
+      </div>
+      <div className="space-y-0.5 overflow-y-auto mt-4">{children}</div>
+    </section>
   );
 }
