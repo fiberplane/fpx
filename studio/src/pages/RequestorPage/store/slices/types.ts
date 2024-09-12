@@ -52,9 +52,9 @@ export interface RequestResponseSlice {
 
 export interface RoutesSlice {
   routes: ProbedRoute[];
-  selectedRoute: ProbedRoute | null;
+  activeRoute: ProbedRoute | null;
   setRoutes: (routes: ProbedRoute[]) => void;
-  selectRoute: (route: ProbedRoute) => void;
+  setActiveRoute: (route: ProbedRoute) => void;
 
   routesAndMiddleware: ProbedRoute[];
   getMatchingMiddleware: () => null | ProbedRoute[];

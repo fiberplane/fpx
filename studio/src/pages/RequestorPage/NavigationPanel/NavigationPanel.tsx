@@ -1,9 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useKeySequence } from "@/hooks/useKeySequence";
-import { cn } from "@/utils";
 import React, { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { BACKGROUND_LAYER } from "../styles";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
 
@@ -36,50 +34,37 @@ export function NavigationPanel() {
 
   const setTab = useCallback(
     (newTab: NavigationTab) => {
-      setParams(
-        (value) => {
-          value.set(FILTER_TAB_KEY, newTab);
-          return value;
-        },
-        { replace: true },
-      );
+      setParams({ [FILTER_TAB_KEY]: newTab }, { replace: true });
     },
     [setParams],
   );
 
-  useKeySequence(["g", "r"], () => setTab("routes"));
-  useKeySequence(["g", "a"], () => setTab("requests"));
+  useKeySequence(["g", "r"], () => {
+    setTab("routes");
+  });
+  useKeySequence(["g", "a"], () => {
+    setTab("requests");
+  });
 
   return (
-    <div
-      className={cn(
-        BACKGROUND_LAYER,
-        "px-4 overflow-hidden border rounded-md",
-        "h-full",
-        "flex",
-        "flex-col",
-        "pt-4",
-      )}
+    <Tabs
+      value={tab}
+      className="h-full"
+      onValueChange={(tabValue: string) => setTab(tabValue as NavigationTab)}
     >
-      <Tabs
-        value={tab}
-        className="h-full"
-        onValueChange={(tabValue: string) => setTab(tabValue as NavigationTab)}
-      >
-        <TabsList className="w-full grid grid-cols-2">
-          {TAB_KEYS.map((tabKey) => (
-            <TabsTrigger key={tabKey} ref={tabRefs[tabKey]} value={tabKey}>
-              {tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <TabsContent value="routes" className="h-full pt-4">
-          <RoutesPanel />
-        </TabsContent>
-        <TabsContent value="requests" className="h-full pt-4">
-          <RequestsPanel />
-        </TabsContent>
-      </Tabs>
-    </div>
+      <TabsList className="w-full grid grid-cols-2">
+        {TAB_KEYS.map((tabKey) => (
+          <TabsTrigger key={tabKey} ref={tabRefs[tabKey]} value={tabKey}>
+            {tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      <TabsContent value="routes" className="h-full pt-4">
+        <RoutesPanel />
+      </TabsContent>
+      <TabsContent value="requests" className="h-full pt-4">
+        <RequestsPanel />
+      </TabsContent>
+    </Tabs>
   );
 }

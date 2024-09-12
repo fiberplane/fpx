@@ -54,6 +54,9 @@ export const CustomTabsContent = React.forwardRef<
   <TabsContent
     ref={ref}
     {...props}
+    // the default tabIndex of 0 causes the tab to be focused which, considering how
+    // we use this component is not desirable
+    tabIndex={-1}
     className={cn(
       "px-3 py-2 data-[state=active]:h-full data-[state=inactive]:hidden",
       "md:overflow-y-auto max-h-full",

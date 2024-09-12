@@ -51,7 +51,7 @@ export function RequestorInput({
 
   // Use the low level store hook to get whether we are in draft mode
   const isInDraftMode = useRequestorStoreRaw(
-    useShallow(({ selectedRoute }) => !selectedRoute),
+    useShallow(({ activeRoute }) => !activeRoute),
   );
 
   const isWsConnected = websocketState.isConnected;

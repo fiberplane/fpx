@@ -74,7 +74,7 @@ export const RequestorStateSchema = z.object({
   routesAndMiddleware: z
     .array(ProbedRouteSchema)
     .describe("All routes and middleware"),
-  selectedRoute: ProbedRouteSchema.nullable().describe(
+  activeRoute: ProbedRouteSchema.nullable().describe(
     "Indicates which route to highlight in the routes panel",
   ),
 

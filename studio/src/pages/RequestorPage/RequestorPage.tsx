@@ -12,9 +12,10 @@ import { cn } from "@/utils";
 import { useCallback, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { RequestDetailsPageV2 } from "../RequestDetailsPage/RequestDetailsPageV2";
-import { NavigationPanel } from "./NavigationPanel";
+import { NavigationFrame, NavigationPanel } from "./NavigationPanel";
 import { RequestorPageContent } from "./RequestorPageContent";
 import { useRoutes } from "./routes";
+import { useRequestorStore } from "./store";
 import { useRequestorHistory } from "./useRequestorHistory";
 
 /**
@@ -28,6 +29,11 @@ export const RequestorPage = () => {
   const { id, requestType } = useParams();
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
+
+  const { sidePanelOpen } = useRequestorStore(
+    "sidePanelOpen",
+    "setSidePanelOpen",
+  );
 
   // NOTE - Use this to test overflow of requests panel
   // useEffect(() => {
@@ -88,7 +94,7 @@ export const RequestorPage = () => {
         id="requestor-page-main"
         className="w-full"
       >
-        {isLgScreen && (
+        {isLgScreen && sidePanelOpen && (
           <>
             <ResizablePanel
               id="routes"
@@ -97,7 +103,9 @@ export const RequestorPage = () => {
               maxSize={maxSize}
               defaultSize={(320 / width) * 100}
             >
-              <NavigationPanel />
+              <NavigationFrame>
+                <NavigationPanel />
+              </NavigationFrame>
             </ResizablePanel>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}

@@ -23,7 +23,7 @@ export const routesSlice: StateCreator<
   RoutesSlice
 > = (set, get) => ({
   routes: [],
-  selectedRoute: null,
+  activeRoute: null,
 
   setRoutes: (routes) =>
     set((state) => {
@@ -39,16 +39,16 @@ export const routesSlice: StateCreator<
         : extractPathParams(state.path).map(mapPathParamKey);
 
       state.routes = routes;
-      state.selectedRoute = nextSelectedRoute;
+      state.activeRoute = nextSelectedRoute;
       state.pathParams = nextPathParams;
     }),
 
-  selectRoute: (route) =>
+  setActiveRoute: (route) =>
     set((state) => {
       const nextMethod = probedRouteToInputMethod(route);
       const nextRequestType = route.requestType;
 
-      state.selectedRoute = route;
+      state.activeRoute = route;
       state.path = addBaseUrl(state.serviceBaseUrl, route.path, {
         requestType: nextRequestType,
       });

@@ -1,3 +1,4 @@
+import { useRequestorStore } from "@/pages/RequestorPage/store";
 import { Icon } from "@iconify/react";
 import {
   DialogClose,
@@ -9,6 +10,7 @@ import {
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
 import type { ComponentProps } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "../assets/fpx.svg";
 import { WebhoncBadge } from "../components/WebhoncBadge";
@@ -18,7 +20,7 @@ import { useWebsocketQueryInvalidation } from "../hooks";
 import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
 import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
 import { cn } from "../utils";
-import { SidePanel } from "./SidePanel";
+import { FloatingSidePanel } from "./FloatingSidePanel";
 
 const Branding = () => {
   return (
@@ -43,7 +45,8 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
       <nav className="flex gap-4 sm:gap-4 py-2 sm:py-2 justify-between items-center border-b">
         <div className="sticky top-0 flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent md:px-6 text-sm">
-          <SidePanel />
+          <SidePanelTrigger />
+          <FloatingSidePanel />
           <HeaderNavLink to="/requestor">
             <Branding />
           </HeaderNavLink>
@@ -129,6 +132,28 @@ const HeaderNavLink = (props: ComponentProps<typeof NavLink>) => {
         `rounded ${isActive ? "bg-muted" : ""} inline-block py-1 px-2 hover:underline text-xs`
       }
     />
+  );
+};
+
+const SidePanelTrigger = () => {
+  const { sidePanelOpen, setSidePanelOpen } = useRequestorStore(
+    "sidePanelOpen",
+    "setSidePanelOpen",
+  );
+
+  useHotkeys("mod+b", () => {
+    setSidePanelOpen(!sidePanelOpen);
+  });
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="p-0.5 w-6 h-6"
+      onClick={() => setSidePanelOpen(!sidePanelOpen)}
+    >
+      <Icon icon={`lucide:panel-left-${sidePanelOpen ? "close" : "open"}`} />
+    </Button>
   );
 };
 
