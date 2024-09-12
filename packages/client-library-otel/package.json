@@ -47,9 +47,9 @@
     "build:types": "tsc --project tsconfig.json",
     "build:alias": "tsc-alias -p tsconfig.json -f",
     "build:swc": "cd src && swc . -d ../dist --source-maps",
-    "start-sample": "wrangler dev sample/index.ts",
+    "dev": "wrangler dev sample/index.ts",
     "prepublishOnly": "pnpm run build",
     "clean": "rimraf dist",
-    "dev": "nodemon --watch src --ext ts,js,json --exec \"pnpm run build\""
+    "watch": "nodemon --watch src --ext ts,js,json --exec \"pnpm run build\""
   }
 }
