@@ -1,10 +1,6 @@
 import { QueryClientProvider, queryClient } from "@/queries";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import {
-  Route,
-  BrowserRouter as Router,
-  Routes,
-} from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Layout } from "./Layout";
 import { Toaster } from "./components/ui/toaster";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";

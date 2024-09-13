@@ -8,8 +8,16 @@ import {
   Root,
 } from "@radix-ui/react-dialog";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarTrigger,
+} from "@radix-ui/react-menubar";
 import type React from "react";
-import { useRef, useState, type ComponentProps } from "react";
+import { type ComponentProps, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "../assets/fpx.svg";
@@ -21,14 +29,6 @@ import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
 import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
 import { cn } from "../utils";
 import { FloatingSidePanel } from "./FloatingSidePanel";
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  MenubarTrigger,
-} from "@radix-ui/react-menubar";
 
 function Branding() {
   return (
