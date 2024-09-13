@@ -24,7 +24,6 @@ import {
 import type React from "react";
 import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import FpxIcon from "../assets/fpx.svg";
 import { WebhoncBadge } from "../components/WebhoncBadge";
 import { Button } from "../components/ui/button";
 import { DialogPortal, DialogTitle } from "../components/ui/dialog";
@@ -33,14 +32,6 @@ import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
 import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
 import { cn } from "../utils";
 import { FloatingSidePanel } from "./FloatingSidePanel";
-
-function Branding() {
-  return (
-    <div>
-      <FpxIcon height="20px" width="20px" />
-    </div>
-  );
-}
 
 export function Layout({ children }: { children?: React.ReactNode }) {
   useWebsocketQueryInvalidation();
