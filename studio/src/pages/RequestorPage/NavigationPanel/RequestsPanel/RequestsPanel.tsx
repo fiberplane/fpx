@@ -79,11 +79,10 @@ export function RequestsPanel() {
     return nextIndex;
   };
 
-  useHotkeys(["j", "k", "ArrowDown", "ArrowUp", "/"], (event) => {
+  useHotkeys(["j", "k", "/"], (event) => {
     event.preventDefault();
     switch (event.key) {
       case "j":
-      case "ArrowDown":
         setSelectedItemId((prevId) => {
           const currentIndex = filteredItems.findIndex(
             (item) => getId(item) === prevId,
@@ -93,7 +92,6 @@ export function RequestsPanel() {
         });
         break;
       case "k":
-      case "ArrowUp":
         setSelectedItemId((prevId) => {
           const currentIndex = filteredItems.findIndex(
             (item) => getId(item) === prevId,
@@ -209,39 +207,6 @@ const NavItem = memo(
       }
     }, [isSelected]);
 
-    const handleClick = useCallback(
-      (e: React.MouseEvent) => {
-        e.preventDefault();
-        onSelect();
-      },
-      [onSelect],
-    );
-
-    const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          onSelect();
-        }
-      },
-      [onSelect],
-    );
-
-    const linkClassName = useMemo(
-      () =>
-        cn(
-          "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-1.5 rounded cursor-pointer items-center",
-          "focus:outline-none",
-          {
-            "bg-muted": id === getId(item),
-            "hover:bg-muted": id !== getId(item),
-            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
-              id !== getId(item) && isSelected,
-          },
-        ),
-      [id, item, isSelected],
-    );
-
     return (
       <Link
         ref={itemRef}
@@ -249,9 +214,26 @@ const NavItem = memo(
           pathname: `/${item.type}/${getId(item)}`,
           search: searchParams.toString(),
         }}
-        className={linkClassName}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
+        className={cn(
+          "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
+          "focus:outline-none",
+          {
+            "bg-muted": id === getId(item),
+            "hover:bg-muted": id !== getId(item),
+            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
+              id !== getId(item) && isSelected,
+          },
+        )}
+        onClick={(e: React.MouseEvent) => {
+          e.preventDefault();
+          onSelect();
+        }}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSelect();
+          }
+        }}
         data-state-active={id === getId(item)}
         data-state-selected={isSelected}
         id={`item-${getId(item)}`}
