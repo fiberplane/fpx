@@ -1,6 +1,7 @@
 import { useInputFocusDetection } from "@/hooks";
 import { useCallback, useEffect, useRef } from "react";
 import { useLatest } from "./useLatest";
+import { useHandler } from "@fiberplane/hooks";
 
 type KeySequenceOptions = {
   isEnabled?: boolean;
@@ -32,13 +33,18 @@ export function useKeySequence(
 
   const onSequenceMatchedRef = useLatest(onSequenceMatched);
 
-  const resetKeySequence = useCallback(() => {
+  const resetKeySequence = useHandler(() => {
     currentKeySequenceRef.current = [];
-  }, []);
+  });
 
   const handleKeyPress = useCallback(
     (event: Event) => {
       if (!(event instanceof KeyboardEvent)) {
+        return;
+      }
+      const domNode = listenerElementRef.current ?? document;
+
+      if (event.target && !domNode.contains(event.target as Node)) {
         return;
       }
 
@@ -67,20 +73,18 @@ export function useKeySequence(
       return;
     }
 
-    const domNode = listenerElementRef.current ?? document;
-
-    domNode.addEventListener("keydown", handleKeyPress);
+    document.addEventListener("keydown", handleKeyPress);
     return () => {
-      domNode.removeEventListener("keydown", handleKeyPress);
+      document.removeEventListener("keydown", handleKeyPress);
       if (timeoutIdRef.current) {
         clearTimeout(timeoutIdRef.current);
       }
     };
   }, [isEnabled, isInputFocused, handleKeyPress]);
 
-  const setListenerElement = useCallback((element: HTMLElement | null) => {
+  const setListenerElement = useHandler((element: HTMLElement | null) => {
     listenerElementRef.current = element;
-  }, []);
+  });
 
   return setListenerElement;
 }
