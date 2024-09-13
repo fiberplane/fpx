@@ -1,11 +1,9 @@
 import { QueryClientProvider, queryClient } from "@/queries";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { type ReactNode, useEffect } from "react";
 import {
   Route,
   BrowserRouter as Router,
   Routes,
-  useNavigate,
 } from "react-router-dom";
 import { Layout } from "./Layout";
 import { Toaster } from "./components/ui/toaster";
