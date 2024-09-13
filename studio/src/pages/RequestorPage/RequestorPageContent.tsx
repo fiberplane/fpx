@@ -94,7 +94,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     setIgnoreAiInputsBanner,
   } = useAi(history);
 
-
   const isLgScreen = useIsLgScreen();
 
   const { logsPanel, timelinePanel, aiPanel, togglePanel } = useRequestorStore(
@@ -295,9 +294,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
                 "mt-2",
               )}
             >
-              <AiTestGenerationPanel
-                history={history}
-              />
+              <AiTestGenerationPanel history={history} />
             </ResizablePanel>
           </>
         )}

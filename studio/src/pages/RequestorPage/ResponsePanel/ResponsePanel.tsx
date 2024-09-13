@@ -100,7 +100,6 @@ export const ResponsePanel = memo(function ResponsePanel({
               </span>
             )}
           </CustomTabTrigger>
-
         </CustomTabsList>
         <CustomTabsContent value="messages">
           <TabContentInner

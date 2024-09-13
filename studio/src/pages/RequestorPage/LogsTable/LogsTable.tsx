@@ -24,8 +24,8 @@ import {
 import { useState } from "react";
 import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import type { Panels } from "../types";
 import { useRequestorStore } from "../store";
+import type { Panels } from "../types";
 
 type OrphanLog = {
   traceId: string;

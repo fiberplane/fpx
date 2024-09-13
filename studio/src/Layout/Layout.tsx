@@ -1,3 +1,9 @@
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
 import { Icon } from "@iconify/react";
 import {
@@ -27,12 +33,6 @@ import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
 import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
 import { cn } from "../utils";
 import { FloatingSidePanel } from "./FloatingSidePanel";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 
 function Branding() {
   return (
@@ -104,7 +104,10 @@ function BottomBar() {
                   "h-6 w-6",
                 )}
               >
-                <Icon icon="lucide:square-terminal" className="cursor-pointer h-4 w-4" />
+                <Icon
+                  icon="lucide:square-terminal"
+                  className="cursor-pointer h-4 w-4"
+                />
               </Button>
             </TooltipTrigger>
             <TooltipContent
