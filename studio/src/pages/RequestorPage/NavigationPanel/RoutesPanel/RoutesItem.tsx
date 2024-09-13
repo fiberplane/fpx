@@ -46,11 +46,12 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       onClick={() => handleRouteClick(route)}
       onFocus={() => setSelectedRouteIndex(index)}
       onBlur={() => setSelectedRouteIndex(null)}
+      onMouseEnter={() => setSelectedRouteIndex(null)}
       data-state-active={isActive}
       data-state-selected={isSelected}
       tabIndex={0}
       className={cn(
-        "flex items-center ml-1 mr-2 py-1 rounded cursor-pointer font-mono text-sm w-full",
+        "flex items-center px-2 py-1 rounded cursor-pointer font-mono text-sm text-left w-full",
         "focus:outline-none",
         {
           "bg-muted": isActive,
