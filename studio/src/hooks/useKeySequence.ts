@@ -1,7 +1,7 @@
 import { useInputFocusDetection } from "@/hooks";
+import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useEffect, useRef } from "react";
 import { useLatest } from "./useLatest";
-import { useHandler } from "@fiberplane/hooks";
 
 type KeySequenceOptions = {
   isEnabled?: boolean;

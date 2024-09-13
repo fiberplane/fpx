@@ -163,9 +163,7 @@ export function RoutesPanel() {
   );
 
   return (
-    <div
-      className={cn("h-full", "flex", "flex-col")}
-    >
+    <div className={cn("h-full", "flex", "flex-col")}>
       <div>
         <div className="flex items-center space-x-2 pb-3">
           <Input

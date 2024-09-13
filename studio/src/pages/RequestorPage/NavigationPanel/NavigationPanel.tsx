@@ -1,11 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useKeySequence } from "@/hooks/useKeySequence";
-import { useSearchParams } from "react-router-dom";
-import { RequestsPanel } from "./RequestsPanel";
-import { RoutesPanel } from "./RoutesPanel";
 import { useHandler } from "@fiberplane/hooks";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useSearchParams } from "react-router-dom";
 import { useRequestorStore } from "../store";
+import { RequestsPanel } from "./RequestsPanel";
+import { RoutesPanel } from "./RoutesPanel";
 
 const FILTER_TAB_KEY = "filter-tab";
 const TAB_KEYS = ["routes", "requests"] as const;
@@ -36,7 +36,6 @@ export function NavigationPanel() {
   useKeySequence(["g", "a"], () => {
     setTab("requests");
   });
-
 
   return (
     <Tabs
