@@ -1,9 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useKeySequence } from "@/hooks/useKeySequence";
-import React, { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
+import { useHandler } from "@fiberplane/hooks";
+import { useHotkeys } from "react-hotkeys-hook";
+import { useRequestorStore } from "../store";
 
 const FILTER_TAB_KEY = "filter-tab";
 const TAB_KEYS = ["routes", "requests"] as const;
@@ -22,22 +24,11 @@ export function NavigationPanel() {
   const [params, setParams] = useSearchParams();
   const tab = getTab(params);
 
-  const tabRefs = useMemo(() => {
-    return TAB_KEYS.reduce(
-      (acc, key) => {
-        acc[key] = React.createRef<HTMLButtonElement>();
-        return acc;
-      },
-      {} as Record<NavigationTab, React.RefObject<HTMLButtonElement>>,
-    );
-  }, []);
+  const { togglePanel } = useRequestorStore("togglePanel");
 
-  const setTab = useCallback(
-    (newTab: NavigationTab) => {
-      setParams({ [FILTER_TAB_KEY]: newTab }, { replace: true });
-    },
-    [setParams],
-  );
+  const setTab = useHandler((newTab: NavigationTab) => {
+    setParams({ [FILTER_TAB_KEY]: newTab }, { replace: true });
+  });
 
   useKeySequence(["g", "r"], () => {
     setTab("routes");
@@ -45,6 +36,7 @@ export function NavigationPanel() {
   useKeySequence(["g", "a"], () => {
     setTab("requests");
   });
+
 
   return (
     <Tabs
@@ -54,15 +46,15 @@ export function NavigationPanel() {
     >
       <TabsList className="w-full grid grid-cols-2">
         {TAB_KEYS.map((tabKey) => (
-          <TabsTrigger key={tabKey} ref={tabRefs[tabKey]} value={tabKey}>
+          <TabsTrigger key={tabKey} value={tabKey}>
             {tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}
           </TabsTrigger>
         ))}
       </TabsList>
-      <TabsContent value="routes" className="pt-4">
+      <TabsContent value="routes" className="h-[calc(100%-40px)] pt-4">
         <RoutesPanel />
       </TabsContent>
-      <TabsContent value="requests" className="pt-4">
+      <TabsContent value="requests" className="h-[calc(100%-40px)] pt-4">
         <RequestsPanel />
       </TabsContent>
     </Tabs>
