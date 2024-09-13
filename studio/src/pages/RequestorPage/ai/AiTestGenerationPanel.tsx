@@ -12,19 +12,17 @@ import { useMemo, useState } from "react";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
-import { useActiveRoute, useServiceBaseUrl } from "../store";
-import type { Panels } from "../types";
+import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
 
 export function AiTestGenerationPanel({
   history,
-  togglePanel,
 }: {
   history: Array<Requestornator>;
-  togglePanel: (panelName: keyof Panels) => void;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
+  const { togglePanel } = useRequestorStore("togglePanel");
 
   const activeRoute = useActiveRoute();
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
@@ -72,7 +70,7 @@ export function AiTestGenerationPanel({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => togglePanel("aiTestGeneration")}
+              onClick={() => togglePanel("aiPanel")}
               className="h-6 w-6"
             >
               <Cross1Icon className="h-3 w-3 cursor-pointer" />

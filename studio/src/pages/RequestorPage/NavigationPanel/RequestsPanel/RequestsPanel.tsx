@@ -11,7 +11,7 @@ import {
   getStatusCode,
 } from "@/utils";
 import type { OtelTrace } from "@fiberplane/fpx-types";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import {
   Link,
@@ -45,9 +45,12 @@ export function RequestsPanel() {
   );
   const { id = activeHistoryResponseTraceId } = useParams();
 
-  const [selectedIndex, setSelectedIndex] = useState<number>(() => {
-    const activeIndex = filteredItems.findIndex((item) => getId(item) === id);
-    return activeIndex !== -1 ? activeIndex : 0;
+  const activeIndex = useMemo(() => {
+    return filteredItems.findIndex((item) => getId(item) === id);
+  }, [filteredItems, id]);
+
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(() => {
+    return activeIndex !== -1 ? getId(filteredItems[activeIndex]) : null;
   });
 
   const navigate = useNavigate();
@@ -57,7 +60,7 @@ export function RequestsPanel() {
   const handleItemSelect = useCallback(
     (item: MergedListItem) => {
       navigate({
-        pathname: `/requestor/${item.type}/${getId(item)}`,
+        pathname: `/${item.type}/${getId(item)}`,
         search: searchParams.toString(),
       });
     },
@@ -76,21 +79,31 @@ export function RequestsPanel() {
     return nextIndex;
   };
 
-  useHotkeys(["j", "k", "ArrowDown", "ArrowUp", "/"], (event) => {
+  useHotkeys(["j", "k", "/"], (event) => {
     event.preventDefault();
     switch (event.key) {
       case "j":
-      case "ArrowDown":
-        setSelectedIndex((prevIndex) => getNextItemIndex(prevIndex, 1));
+        setSelectedItemId((prevId) => {
+          const currentIndex = filteredItems.findIndex(
+            (item) => getId(item) === prevId,
+          );
+          const nextIndex = getNextItemIndex(currentIndex, 1);
+          return getId(filteredItems[nextIndex]);
+        });
         break;
       case "k":
-      case "ArrowUp":
-        setSelectedIndex((prevIndex) => getNextItemIndex(prevIndex, -1));
+        setSelectedItemId((prevId) => {
+          const currentIndex = filteredItems.findIndex(
+            (item) => getId(item) === prevId,
+          );
+          const nextIndex = getNextItemIndex(currentIndex, -1);
+          return getId(filteredItems[nextIndex]);
+        });
         break;
       case "/": {
         if (searchRef.current) {
           searchRef.current.focus();
-          setSelectedIndex(-1);
+          setSelectedItemId(null);
         }
         break;
       }
@@ -103,9 +116,9 @@ export function RequestsPanel() {
       switch (event.key) {
         case "Enter": {
           if (isInputFocused && filteredItems.length > 0) {
-            setSelectedIndex(0);
+            setSelectedItemId(getId(filteredItems[0]));
             const firstItemElement = document.getElementById(
-              `item-${selectedIndex}`,
+              `item-${getId(filteredItems[0])}`,
             );
             if (firstItemElement) {
               firstItemElement.focus();
@@ -113,8 +126,13 @@ export function RequestsPanel() {
             break;
           }
 
-          if (selectedIndex !== -1 && filteredItems[selectedIndex]) {
-            handleItemSelect(filteredItems[selectedIndex]);
+          if (selectedItemId !== null) {
+            const selectedItem = filteredItems.find(
+              (item) => getId(item) === selectedItemId,
+            );
+            if (selectedItem) {
+              handleItemSelect(selectedItem);
+            }
           }
           break;
         }
@@ -122,9 +140,14 @@ export function RequestsPanel() {
         case "Escape": {
           if (isInputFocused) {
             blurActiveInput();
-          } else if (filterValue) {
-            setFilterValue("");
+            break;
           }
+          if (filterValue) {
+            setFilterValue("");
+            break;
+          }
+
+          setSelectedItemId(id);
           break;
         }
       }
@@ -149,13 +172,11 @@ export function RequestsPanel() {
             <p className="text-sm text-muted-foreground">No requests found</p>
           </div>
         )}
-        {filteredItems.map((item, index) => (
+        {filteredItems.map((item) => (
           <NavItem
             key={getId(item)}
             item={item}
-            index={index}
-            selectedIndex={selectedIndex}
-            setSelectedIndex={setSelectedIndex}
+            isSelected={getId(item) === selectedItemId}
             onSelect={() => handleItemSelect(item)}
             searchParams={searchParams}
           />
@@ -167,78 +188,69 @@ export function RequestsPanel() {
 
 type NavItemProps = {
   item: MergedListItem;
-  index: number;
-  selectedIndex: number;
-  setSelectedIndex: (index: number) => void;
+  isSelected: boolean;
   onSelect: () => void;
   searchParams: URLSearchParams;
 };
 
-const NavItem = ({
-  item,
-  index,
-  selectedIndex,
-  setSelectedIndex,
-  onSelect,
-  searchParams,
-}: NavItemProps) => {
-  const { activeHistoryResponseTraceId } = useRequestorStore(
-    "activeHistoryResponseTraceId",
-  );
-  const { id = activeHistoryResponseTraceId } = useParams();
-  const itemRef = useRef<HTMLAnchorElement>(null);
+const NavItem = memo(
+  ({ item, isSelected, onSelect, searchParams }: NavItemProps) => {
+    const { activeHistoryResponseTraceId } = useRequestorStore(
+      "activeHistoryResponseTraceId",
+    );
+    const { id = activeHistoryResponseTraceId } = useParams();
+    const itemRef = useRef<HTMLAnchorElement>(null);
 
-  const isSelected = index === selectedIndex;
+    useEffect(() => {
+      if (isSelected && itemRef.current) {
+        itemRef.current.focus();
+      }
+    }, [isSelected]);
 
-  useEffect(() => {
-    if (isSelected && itemRef.current) {
-      itemRef.current.focus();
-    }
-  }, [isSelected]);
-
-  return (
-    <Link
-      ref={itemRef}
-      to={{
-        pathname: `/requestor/${item.type}/${getId(item)}`,
-        search: searchParams.toString(),
-      }}
-      className={cn(
-        "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-1.5 rounded cursor-pointer items-center",
-        "focus:outline-none focus:ring-1 focus:ring-blue-500",
-        {
-          "bg-muted": id === getId(item),
-          "hover:bg-muted": id !== getId(item),
-          "ring-1 bg-muted ring-blue-500": id !== getId(item) && isSelected,
-        },
-      )}
-      onClick={(e) => {
-        e.preventDefault();
-        onSelect();
-      }}
-      onFocus={() => setSelectedIndex(index)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
+    return (
+      <Link
+        ref={itemRef}
+        to={{
+          pathname: `/${item.type}/${getId(item)}`,
+          search: searchParams.toString(),
+        }}
+        className={cn(
+          "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
+          "focus:outline-none",
+          {
+            "bg-muted": id === getId(item),
+            "hover:bg-muted": id !== getId(item),
+            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
+              id !== getId(item) && isSelected,
+          },
+        )}
+        onClick={(e: React.MouseEvent) => {
           e.preventDefault();
           onSelect();
-        }
-      }}
-      data-state-active={id === getId(item)}
-      data-state-selected={isSelected}
-      id={`item-${index}`}
-    >
-      <div>
-        <StatusCell item={item} />
-      </div>
-      <div>
-        <MethodCell item={item} />
-      </div>
-      <div>
-        <PathCell item={item} />
-      </div>
-    </Link>
-  );
-};
+        }}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSelect();
+          }
+        }}
+        data-state-active={id === getId(item)}
+        data-state-selected={isSelected}
+        id={`item-${getId(item)}`}
+      >
+        <div>
+          <StatusCell item={item} />
+        </div>
+        <div>
+          <MethodCell item={item} />
+        </div>
+        <div>
+          <PathCell item={item} />
+        </div>
+      </Link>
+    );
+  },
+);
 
 const getId = (item: MergedListItem) => {
   return item.type === "request"
@@ -262,7 +274,11 @@ const PathCell = ({ item }: { item: MergedListItem }) => {
       ? removeServiceUrlFromPath(item.data.app_requests.requestUrl)
       : removeServiceUrlFromPath(getRequestUrl(getSpan(item.data)));
 
-  return <div className="text-sm font-mono">{path}</div>;
+  return (
+    <div className="text-sm font-mono overflow-hidden text-ellipsis whitespace-nowrap">
+      {path}
+    </div>
+  );
 };
 
 const StatusCell = ({ item }: { item: MergedListItem }) => {

@@ -107,7 +107,7 @@ export function useRequestorSubmitHandler({
           // otherwise the newest trace will automatically be shown
           if (urlHasId) {
             navigate({
-              pathname: `/requestor/requests/${traceId}`,
+              pathname: `/requests/${traceId}`,
               search: params.toString(),
             });
           }

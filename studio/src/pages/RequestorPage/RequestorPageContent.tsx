@@ -7,7 +7,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { LogsTable } from "./LogsTable";
 import { RequestPanel } from "./RequestPanel";
@@ -18,7 +18,6 @@ import { AiTestGenerationPanel, useAi } from "./ai";
 import { type Requestornator, useMakeProxiedRequest } from "./queries";
 import { useActiveRoute, useRequestorStore } from "./store";
 import { BACKGROUND_LAYER } from "./styles";
-import type { Panels } from "./types";
 import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
 import { sortRequestornatorsDescending } from "./utils";
@@ -94,20 +93,14 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     setIgnoreAiInputsBanner,
   } = useAi(history);
 
-  const [openPanels, setOpenPanels] = useState<Panels>({
-    timeline: "closed",
-    aiTestGeneration: "closed",
-    logs: "closed",
-  });
-
-  const togglePanel = useCallback((panelName: keyof Panels) => {
-    setOpenPanels((current) => ({
-      ...current,
-      [panelName]: current[panelName] === "open" ? "closed" : "open",
-    }));
-  }, []);
-
   const isLgScreen = useIsLgScreen();
+
+  const { logsPanel, timelinePanel, aiPanel, togglePanel } = useRequestorStore(
+    "togglePanel",
+    "logsPanel",
+    "timelinePanel",
+    "aiPanel",
+  );
 
   useHotkeys(
     "mod+g",
@@ -132,7 +125,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   useKeySequence(
     ["g", "l"],
     () => {
-      togglePanel("logs");
+      togglePanel("logsPanel");
     },
     { description: "Open logs panel" },
   );
@@ -140,7 +133,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   useKeySequence(
     ["g", "t"],
     () => {
-      togglePanel("timeline");
+      togglePanel("timelinePanel");
     },
     { description: "Open timeline panel" },
   );
@@ -148,7 +141,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   useKeySequence(
     ["g", "i"],
     () => {
-      togglePanel("aiTestGeneration");
+      togglePanel("aiPanel");
     },
     {
       description: "Open AI assistant panel",
@@ -175,8 +168,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       tracedResponse={mostRecentRequestornatorForRoute}
       isLoading={isRequestorRequesting}
       websocketState={websocketState}
-      openPanels={openPanels}
-      togglePanel={togglePanel}
     />
   );
 
@@ -243,7 +234,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>
-        {openPanels.timeline === "open" && traceId && (
+        {timelinePanel === "open" && (
           <>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
@@ -260,11 +251,11 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
                 "mt-2",
               )}
             >
-              <RequestorTimeline togglePanel={togglePanel} traceId={traceId} />
+              <RequestorTimeline traceId={traceId} />
             </ResizablePanel>
           </>
         )}
-        {openPanels.logs === "open" && traceId && (
+        {logsPanel === "open" && (
           <>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
@@ -281,11 +272,11 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
                 "mt-2",
               )}
             >
-              <LogsTable togglePanel={togglePanel} traceId={traceId} />
+              <LogsTable traceId={traceId} />
             </ResizablePanel>
           </>
         )}
-        {openPanels.aiTestGeneration === "open" && (
+        {aiPanel === "open" && (
           <>
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 10 }}
@@ -302,10 +293,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
                 "mt-2",
               )}
             >
-              <AiTestGenerationPanel
-                history={history}
-                togglePanel={togglePanel}
-              />
+              <AiTestGenerationPanel history={history} />
             </ResizablePanel>
           </>
         )}

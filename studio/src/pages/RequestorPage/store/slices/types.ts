@@ -76,9 +76,14 @@ export interface WebsocketSlice {
 }
 
 export interface UISlice {
-  sidePanelOpen: boolean;
-  setSidePanelOpen: (sidePanelOpen: boolean) => void;
+  sidePanel: PanelState;
+  logsPanel: PanelState;
+  timelinePanel: PanelState;
+  aiPanel: PanelState;
+  togglePanel: (panelName: Exclude<keyof UISlice, "togglePanel">) => void;
 }
+
+export type PanelState = "open" | "closed";
 
 export type Store = RequestResponseSlice &
   RoutesSlice &

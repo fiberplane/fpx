@@ -24,7 +24,7 @@ export function RoutesPanel() {
   const handleRouteClick = useHandler((route: ProbedRoute) => {
     navigate(
       {
-        pathname: "/requestor/",
+        pathname: "/",
       },
       { replace: true },
     );
@@ -47,7 +47,7 @@ export function RoutesPanel() {
     if (cleanFilter.length < 3 && routes) {
       return routes;
     }
-    return routes?.filter((r) => r.path.includes(filterValue));
+    return routes?.filter((r) => r.path.toLowerCase().includes(cleanFilter));
   }, [filterValue, routes]);
 
   const detectedRoutes = useMemo(() => {
@@ -71,13 +71,15 @@ export function RoutesPanel() {
     );
   }, [filteredRoutes]);
 
+  const allRoutes = useMemo(() => {
+    return [...userAddedRoutes, ...detectedRoutes, ...openApiRoutes];
+  }, [userAddedRoutes, detectedRoutes, openApiRoutes]);
+
   const activeRouteIndex = useMemo(() => {
-    return (
-      filteredRoutes?.findIndex(
-        (r) => r.path === activeRoute?.path && r.method === activeRoute.method,
-      ) ?? -1
+    return allRoutes.findIndex(
+      (r) => r.path === activeRoute?.path && r.method === activeRoute.method,
     );
-  }, [filteredRoutes, activeRoute]);
+  }, [allRoutes, activeRoute]);
 
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(
     null,
@@ -86,8 +88,8 @@ export function RoutesPanel() {
   const getNextRouteIndex = (currentIndex: number, direction: 1 | -1) => {
     let nextIndex = currentIndex + direction;
     if (nextIndex < 0) {
-      nextIndex = filteredRoutes.length - 1;
-    } else if (nextIndex >= filteredRoutes.length) {
+      nextIndex = allRoutes.length - 1;
+    } else if (nextIndex >= allRoutes.length) {
       nextIndex = 0;
     }
     return nextIndex;
@@ -95,17 +97,15 @@ export function RoutesPanel() {
 
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useHotkeys(["j", "k", "ArrowDown", "ArrowUp", "/"], (event) => {
+  useHotkeys(["j", "k", "/"], (event) => {
     event.preventDefault();
     switch (event.key) {
       case "j":
-      case "ArrowDown":
         setSelectedRouteIndex((prevIndex) =>
           getNextRouteIndex(prevIndex ?? activeRouteIndex, 1),
         );
         break;
       case "k":
-      case "ArrowUp":
         setSelectedRouteIndex((prevIndex) =>
           getNextRouteIndex(prevIndex ?? activeRouteIndex, -1),
         );
@@ -126,7 +126,7 @@ export function RoutesPanel() {
     (event) => {
       switch (event.key) {
         case "Enter": {
-          if (isInputFocused && filteredRoutes.length > 0) {
+          if (isInputFocused && allRoutes.length > 0) {
             setSelectedRouteIndex(0);
             const firstRouteElement = document.getElementById(
               `route-${selectedRouteIndex}`,
@@ -137,11 +137,8 @@ export function RoutesPanel() {
             break;
           }
 
-          if (
-            selectedRouteIndex !== null &&
-            filteredRoutes[selectedRouteIndex]
-          ) {
-            handleRouteClick(filteredRoutes[selectedRouteIndex]);
+          if (selectedRouteIndex !== null && allRoutes[selectedRouteIndex]) {
+            handleRouteClick(allRoutes[selectedRouteIndex]);
           }
           break;
         }
@@ -149,9 +146,15 @@ export function RoutesPanel() {
         case "Escape": {
           if (isInputFocused) {
             blurActiveInput();
-          } else if (filterValue) {
-            setFilterValue("");
+            break;
           }
+
+          if (filterValue) {
+            setFilterValue("");
+            break;
+          }
+
+          setSelectedRouteIndex(null);
           break;
         }
       }
@@ -166,7 +169,7 @@ export function RoutesPanel() {
           <Input
             ref={searchRef}
             className="text-sm"
-            placeholder={`Search (hit ${"/"} to focus)`}
+            placeholder="Search (hit / to focus)"
             value={filterValue}
             onChange={(e) => setFilterValue(e.target.value)}
             onFocus={() => setSelectedRouteIndex(null)}
@@ -174,7 +177,6 @@ export function RoutesPanel() {
           <AddRouteButton />
         </div>
       </div>
-      {/* TODO: resolve when routes overflow */}
       <div className="overflow-y-auto h-full relative">
         {hasAnyUserAddedRoutes && (
           <RoutesSection title="Custom routes">
@@ -244,13 +246,13 @@ export function RoutesSection(props: RoutesSectionProps) {
   const { title, children } = props;
 
   return (
-    <section className="p-2">
-      <div>
-        <h4 className="font-medium font-mono uppercase text-xs text-muted-foreground">
-          {title}
-        </h4>
+    <section className="p-2 w-full">
+      <h4 className="font-medium font-mono uppercase text-xs text-muted-foreground">
+        {title}
+      </h4>
+      <div className="space-y-0.5 overflow-y-auto mt-4 w-full overflow-x-hidden">
+        {children}
       </div>
-      <div className="space-y-0.5 overflow-y-auto mt-4">{children}</div>
     </section>
   );
 }
