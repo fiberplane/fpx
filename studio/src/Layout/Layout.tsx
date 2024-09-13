@@ -12,6 +12,7 @@ import {
   DialogDescription,
   Root,
 } from "@radix-ui/react-dialog";
+import FpLogo from "@/assets/fp-logo.svg";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Menubar,
@@ -48,6 +49,15 @@ export function Layout({ children }: { children?: React.ReactNode }) {
   );
 }
 
+function Branding() {
+  return (
+    <div className="flex items-center gap-2 overflow-hidden">
+      <FpLogo className="w-4 h-4 text-muted-foreground/60 [&>path]:text-muted"/>
+      <span className="text-sm text-muted-foreground/60">Fiberplane</span>
+    </div>
+  );
+}
+
 function BottomBar() {
   const shouldShowProxyRequests = useProxyRequestsEnabled();
 
@@ -71,9 +81,10 @@ function BottomBar() {
             settingsOpen={settingsOpen}
             setSettingsOpen={setSettingsOpen}
           />
-          <div className="ml-2">
-            <div className="flex items-center gap-2 text-sm" />
-          </div>
+          <Branding />
+          {/* <div className="ml-2"> */}
+          {/*   <div className="flex items-center gap-2 text-sm" /> */}
+          {/* </div> */}
         </div>
 
         <div className="flex items-center gap-2">
