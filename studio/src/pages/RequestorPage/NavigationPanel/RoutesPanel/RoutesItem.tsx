@@ -55,7 +55,8 @@ export function RoutesItem(props: RoutesItemProps) {
         {
           "bg-muted": isActive,
           "hover:bg-muted": !isActive,
-          "focus:ring-inset focus:ring-1 focus:ring-blue-500 bg-muted": isSelected,
+          "focus:ring-inset focus:ring-1 focus:ring-blue-500 bg-muted":
+            isSelected,
         },
       )}
       id={`route-${index}`}

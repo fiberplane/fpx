@@ -217,7 +217,8 @@ const NavItem = ({
         {
           "bg-muted": id === getId(item),
           "hover:bg-muted": id !== getId(item),
-          "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-inset": id !== getId(item) && isSelected,
+          "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-inset":
+            id !== getId(item) && isSelected,
         },
       )}
       onClick={(e) => {
@@ -270,7 +271,11 @@ const PathCell = ({ item }: { item: MergedListItem }) => {
       ? removeServiceUrlFromPath(item.data.app_requests.requestUrl)
       : removeServiceUrlFromPath(getRequestUrl(getSpan(item.data)));
 
-  return <div className="text-sm font-mono overflow-hidden text-ellipsis whitespace-nowrap">{path}</div>;
+  return (
+    <div className="text-sm font-mono overflow-hidden text-ellipsis whitespace-nowrap">
+      {path}
+    </div>
+  );
 };
 
 const StatusCell = ({ item }: { item: MergedListItem }) => {
