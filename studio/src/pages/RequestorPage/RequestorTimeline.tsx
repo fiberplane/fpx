@@ -26,6 +26,7 @@ type Props = {
   traceId?: string;
 };
 
+//TODO: add a better empty state
 export function RequestorTimeline({ traceId = "" }: Props) {
   const { data: spans } = useOtelTrace(traceId);
 

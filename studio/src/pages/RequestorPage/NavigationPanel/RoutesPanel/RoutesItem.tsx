@@ -1,6 +1,6 @@
 import { cn, getHttpMethodTextColor } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useDeleteRoute } from "../../queries";
 import { type ProbedRoute, isWsRequest } from "../../types";
 
@@ -13,7 +13,7 @@ type RoutesItemProps = {
   setSelectedRouteIndex: (index: number | null) => void;
 };
 
-export function RoutesItem(props: RoutesItemProps) {
+export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
   const {
     index,
     route,
@@ -82,4 +82,4 @@ export function RoutesItem(props: RoutesItemProps) {
       )}
     </button>
   );
-}
+});

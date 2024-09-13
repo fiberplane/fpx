@@ -11,7 +11,7 @@ import {
   getStatusCode,
 } from "@/utils";
 import type { OtelTrace } from "@fiberplane/fpx-types";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import {
   Link,
@@ -49,8 +49,8 @@ export function RequestsPanel() {
     return filteredItems.findIndex((item) => getId(item) === id);
   }, [filteredItems, id]);
 
-  const [selectedIndex, setSelectedIndex] = useState<number>(() => {
-    return activeIndex !== -1 ? activeIndex : 0;
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(() => {
+    return activeIndex !== -1 ? getId(filteredItems[activeIndex]) : null;
   });
 
   const navigate = useNavigate();
@@ -84,16 +84,28 @@ export function RequestsPanel() {
     switch (event.key) {
       case "j":
       case "ArrowDown":
-        setSelectedIndex((prevIndex) => getNextItemIndex(prevIndex, 1));
+        setSelectedItemId((prevId) => {
+          const currentIndex = filteredItems.findIndex(
+            (item) => getId(item) === prevId,
+          );
+          const nextIndex = getNextItemIndex(currentIndex, 1);
+          return getId(filteredItems[nextIndex]);
+        });
         break;
       case "k":
       case "ArrowUp":
-        setSelectedIndex((prevIndex) => getNextItemIndex(prevIndex, -1));
+        setSelectedItemId((prevId) => {
+          const currentIndex = filteredItems.findIndex(
+            (item) => getId(item) === prevId,
+          );
+          const nextIndex = getNextItemIndex(currentIndex, -1);
+          return getId(filteredItems[nextIndex]);
+        });
         break;
       case "/": {
         if (searchRef.current) {
           searchRef.current.focus();
-          setSelectedIndex(-1);
+          setSelectedItemId(null);
         }
         break;
       }
@@ -106,9 +118,9 @@ export function RequestsPanel() {
       switch (event.key) {
         case "Enter": {
           if (isInputFocused && filteredItems.length > 0) {
-            setSelectedIndex(0);
+            setSelectedItemId(getId(filteredItems[0]));
             const firstItemElement = document.getElementById(
-              `item-${selectedIndex}`,
+              `item-${getId(filteredItems[0])}`,
             );
             if (firstItemElement) {
               firstItemElement.focus();
@@ -116,8 +128,13 @@ export function RequestsPanel() {
             break;
           }
 
-          if (selectedIndex !== -1 && filteredItems[selectedIndex]) {
-            handleItemSelect(filteredItems[selectedIndex]);
+          if (selectedItemId !== null) {
+            const selectedItem = filteredItems.find(
+              (item) => getId(item) === selectedItemId,
+            );
+            if (selectedItem) {
+              handleItemSelect(selectedItem);
+            }
           }
           break;
         }
@@ -132,7 +149,7 @@ export function RequestsPanel() {
             break;
           }
 
-          setSelectedIndex(activeIndex);
+          setSelectedItemId(id);
           break;
         }
       }
@@ -157,13 +174,11 @@ export function RequestsPanel() {
             <p className="text-sm text-muted-foreground">No requests found</p>
           </div>
         )}
-        {filteredItems.map((item, index) => (
+        {filteredItems.map((item) => (
           <NavItem
             key={getId(item)}
             item={item}
-            index={index}
-            selectedIndex={selectedIndex}
-            setSelectedIndex={setSelectedIndex}
+            isSelected={getId(item) === selectedItemId}
             onSelect={() => handleItemSelect(item)}
             searchParams={searchParams}
           />
@@ -175,79 +190,85 @@ export function RequestsPanel() {
 
 type NavItemProps = {
   item: MergedListItem;
-  index: number;
-  selectedIndex: number;
-  setSelectedIndex: (index: number) => void;
+  isSelected: boolean;
   onSelect: () => void;
   searchParams: URLSearchParams;
 };
 
-const NavItem = ({
-  item,
-  index,
-  selectedIndex,
-  setSelectedIndex,
-  onSelect,
-  searchParams,
-}: NavItemProps) => {
-  const { activeHistoryResponseTraceId } = useRequestorStore(
-    "activeHistoryResponseTraceId",
-  );
-  const { id = activeHistoryResponseTraceId } = useParams();
-  const itemRef = useRef<HTMLAnchorElement>(null);
+const NavItem = memo(
+  ({ item, isSelected, onSelect, searchParams }: NavItemProps) => {
+    const { activeHistoryResponseTraceId } = useRequestorStore(
+      "activeHistoryResponseTraceId",
+    );
+    const { id = activeHistoryResponseTraceId } = useParams();
+    const itemRef = useRef<HTMLAnchorElement>(null);
 
-  const isSelected = index === selectedIndex;
+    useEffect(() => {
+      if (isSelected && itemRef.current) {
+        itemRef.current.focus();
+      }
+    }, [isSelected]);
 
-  useEffect(() => {
-    if (isSelected && itemRef.current) {
-      itemRef.current.focus();
-    }
-  }, [isSelected]);
-
-  return (
-    <Link
-      ref={itemRef}
-      to={{
-        pathname: `/${item.type}/${getId(item)}`,
-        search: searchParams.toString(),
-      }}
-      className={cn(
-        "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-1.5 rounded cursor-pointer items-center",
-        "focus:outline-none",
-        {
-          "bg-muted": id === getId(item),
-          "hover:bg-muted": id !== getId(item),
-          "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
-            id !== getId(item) && isSelected,
-        },
-      )}
-      onClick={(e) => {
+    const handleClick = useCallback(
+      (e: React.MouseEvent) => {
         e.preventDefault();
         onSelect();
-      }}
-      onFocus={() => setSelectedIndex(index)}
-      onKeyDown={(e) => {
+      },
+      [onSelect],
+    );
+
+    const handleKeyDown = useCallback(
+      (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
           e.preventDefault();
           onSelect();
         }
-      }}
-      data-state-active={id === getId(item)}
-      data-state-selected={isSelected}
-      id={`item-${index}`}
-    >
-      <div>
-        <StatusCell item={item} />
-      </div>
-      <div>
-        <MethodCell item={item} />
-      </div>
-      <div>
-        <PathCell item={item} />
-      </div>
-    </Link>
-  );
-};
+      },
+      [onSelect],
+    );
+
+    const linkClassName = useMemo(
+      () =>
+        cn(
+          "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-1.5 rounded cursor-pointer items-center",
+          "focus:outline-none",
+          {
+            "bg-muted": id === getId(item),
+            "hover:bg-muted": id !== getId(item),
+            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
+              id !== getId(item) && isSelected,
+          },
+        ),
+      [id, item, isSelected],
+    );
+
+    return (
+      <Link
+        ref={itemRef}
+        to={{
+          pathname: `/${item.type}/${getId(item)}`,
+          search: searchParams.toString(),
+        }}
+        className={linkClassName}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        data-state-active={id === getId(item)}
+        data-state-selected={isSelected}
+        id={`item-${getId(item)}`}
+      >
+        <div>
+          <StatusCell item={item} />
+        </div>
+        <div>
+          <MethodCell item={item} />
+        </div>
+        <div>
+          <PathCell item={item} />
+        </div>
+      </Link>
+    );
+  },
+);
 
 const getId = (item: MergedListItem) => {
   return item.type === "request"

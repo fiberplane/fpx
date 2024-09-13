@@ -59,10 +59,10 @@ export function NavigationPanel() {
           </TabsTrigger>
         ))}
       </TabsList>
-      <TabsContent value="routes" className="h-full pt-4">
+      <TabsContent value="routes" className="pt-4">
         <RoutesPanel />
       </TabsContent>
-      <TabsContent value="requests" className="h-full pt-4">
+      <TabsContent value="requests" className="pt-4">
         <RequestsPanel />
       </TabsContent>
     </Tabs>

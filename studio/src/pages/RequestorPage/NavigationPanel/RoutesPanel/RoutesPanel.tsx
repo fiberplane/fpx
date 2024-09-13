@@ -172,7 +172,7 @@ export function RoutesPanel() {
           <Input
             ref={searchRef}
             className="text-sm"
-            placeholder={`Search (hit ${"/"} to focus)`}
+            placeholder="Search (hit / to focus)"
             value={filterValue}
             onChange={(e) => setFilterValue(e.target.value)}
             onFocus={() => setSelectedRouteIndex(null)}
