@@ -30,10 +30,7 @@ export function App() {
                 element={<RequestDetailsPage />}
               />
               <Route path="/" element={<RequestorPage />} />
-              <Route
-                path="/:requestType/:id"
-                element={<RequestorPage />}
-              />
+              <Route path="/:requestType/:id" element={<RequestorPage />} />
             </Routes>
           </Layout>
           <Toaster />
