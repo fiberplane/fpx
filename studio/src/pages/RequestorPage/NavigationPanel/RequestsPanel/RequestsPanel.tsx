@@ -217,7 +217,7 @@ const NavItem = ({
         {
           "bg-muted": id === getId(item),
           "hover:bg-muted": id !== getId(item),
-          "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-inset":
+          "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
             id !== getId(item) && isSelected,
         },
       )}
