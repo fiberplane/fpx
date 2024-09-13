@@ -1,6 +1,5 @@
 import { useInputFocusDetection } from "@/hooks";
-import { useHandler } from "@fiberplane/hooks";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useLatest } from "./useLatest";
 
 type KeySequenceOptions = {
@@ -27,52 +26,48 @@ export function useKeySequence(
 
   const { isInputFocused } = useInputFocusDetection();
 
-  const [listenerElement, setListenerElement] = useState<HTMLElement | null>(
-    null,
-  );
-  const [_currentKeySequence, setCurrentKeySequence] = useState<string[]>([]);
-
+  const listenerElementRef = useRef<HTMLElement | null>(null);
+  const currentKeySequenceRef = useRef<string[]>([]);
   const timeoutIdRef = useRef<number | NodeJS.Timeout>();
 
   const onSequenceMatchedRef = useLatest(onSequenceMatched);
 
-  const resetKeySequence = useHandler(() => {
-    setCurrentKeySequence([]);
-  });
+  const resetKeySequence = useCallback(() => {
+    currentKeySequenceRef.current = [];
+  }, []);
 
-  // create and persist the callback across re-renders
-  const handleKeyPress = useHandler((event: Event) => {
-    if (!(event instanceof KeyboardEvent)) {
-      return;
-    }
-
-    setCurrentKeySequence((prevSequence) => {
-      const updatedSequence = [...prevSequence, event.key].slice(
-        -targetKeySequence.length,
-      );
-
-      // Check if the updated sequence matches the target sequence
-      if (updatedSequence.join("") === targetKeySequence.join("")) {
-        onSequenceMatchedRef.current();
-        return []; // Reset sequence after successful match
+  const handleKeyPress = useCallback(
+    (event: Event) => {
+      if (!(event instanceof KeyboardEvent)) {
+        return;
       }
 
-      return updatedSequence;
-    });
+      currentKeySequenceRef.current = [
+        ...currentKeySequenceRef.current,
+        event.key,
+      ].slice(-targetKeySequence.length);
 
-    // Reset timeout on each key press
-    if (timeoutIdRef.current) {
-      clearTimeout(timeoutIdRef.current);
-    }
-    timeoutIdRef.current = setTimeout(resetKeySequence, timeoutMs);
-  });
+      if (
+        currentKeySequenceRef.current.join("") === targetKeySequence.join("")
+      ) {
+        onSequenceMatchedRef.current();
+        currentKeySequenceRef.current = [];
+      }
+
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+      }
+      timeoutIdRef.current = setTimeout(resetKeySequence, timeoutMs);
+    },
+    [targetKeySequence, timeoutMs, resetKeySequence, onSequenceMatchedRef],
+  );
 
   useEffect(() => {
     if (!isEnabled || isInputFocused) {
       return;
     }
 
-    const domNode = listenerElement ?? document;
+    const domNode = listenerElementRef.current ?? document;
 
     domNode.addEventListener("keydown", handleKeyPress);
     return () => {
@@ -81,7 +76,11 @@ export function useKeySequence(
         clearTimeout(timeoutIdRef.current);
       }
     };
-  }, [listenerElement, handleKeyPress, isEnabled, isInputFocused]);
+  }, [isEnabled, isInputFocused, handleKeyPress]);
+
+  const setListenerElement = useCallback((element: HTMLElement | null) => {
+    listenerElementRef.current = element;
+  }, []);
 
   return setListenerElement;
 }
