@@ -31,16 +31,12 @@ type Props = {
   tracedResponse?: Requestornator;
   isLoading: boolean;
   websocketState: WebSocketState;
-  openPanels: Panels;
-  togglePanel: (panelName: keyof Panels & {}) => void;
 };
 
 export const ResponsePanel = memo(function ResponsePanel({
   tracedResponse,
   isLoading,
   websocketState,
-  openPanels,
-  togglePanel,
 }: Props) {
   const {
     activeResponse,
@@ -105,97 +101,6 @@ export const ResponsePanel = memo(function ResponsePanel({
             )}
           </CustomTabTrigger>
 
-          <div className="flex-grow flex justify-end">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={openPanels.logs === "open" ? "outline" : "ghost"}
-                  size="icon"
-                  disabled={!traceId}
-                  onClick={() => togglePanel("logs")}
-                  className={cn(
-                    openPanels.logs === "open" && "opacity-50 bg-slate-900",
-                    "h-6 w-6",
-                  )}
-                >
-                  <Icon icon="lucide:logs" className="cursor-pointer h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
-                align="center"
-              >
-                <p>Toggle logs</p>
-                <div className="flex gap-1">
-                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
-                  <span className="text-xs font-mono">then</span>
-                  <KeyboardShortcutKey>L</KeyboardShortcutKey>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={openPanels.timeline === "open" ? "outline" : "ghost"}
-                  size="icon"
-                  disabled={!traceId}
-                  onClick={() => togglePanel("timeline")}
-                  className={cn(
-                    openPanels.timeline === "open" && "opacity-50 bg-slate-900",
-                    "h-6 w-6",
-                  )}
-                >
-                  <Icon
-                    icon="lucide:chart-gantt"
-                    className="cursor-pointer h-4 w-4"
-                  />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
-                align="center"
-              >
-                <p>Toggle timeline</p>
-                <div className="flex gap-1 items-center">
-                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
-                  <span className="text-xs font-mono">then</span>
-                  <KeyboardShortcutKey>T</KeyboardShortcutKey>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={
-                    openPanels.aiTestGeneration === "open" ? "outline" : "ghost"
-                  }
-                  size="icon"
-                  onClick={() => togglePanel("aiTestGeneration")}
-                  className={cn(
-                    openPanels.aiTestGeneration === "open" &&
-                      "opacity-50 bg-slate-900",
-                    "h-6 w-6",
-                  )}
-                >
-                  <RobotIcon className="h-3 w-3 cursor-pointer" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
-                align="center"
-              >
-                <p>Toggle AI test panel</p>
-                <div className="flex gap-1 items-center">
-                  <KeyboardShortcutKey>G</KeyboardShortcutKey>
-                  <span className="text-xs font-mono">then</span>
-                  <KeyboardShortcutKey>I</KeyboardShortcutKey>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </div>
         </CustomTabsList>
         <CustomTabsContent value="messages">
           <TabContentInner

@@ -20,15 +20,16 @@ import { Tabs } from "@radix-ui/react-tabs";
 import type { ReactNode } from "react";
 import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
-import type { Panels } from "./types";
+import { useRequestorStore } from "./store";
 
 type Props = {
   traceId: string;
-  togglePanel: (panelName: keyof Panels) => void;
 };
 
-export function RequestorTimeline({ traceId, togglePanel }: Props) {
+export function RequestorTimeline({ traceId }: Props) {
   const { data: spans } = useOtelTrace(traceId);
+
+  const { togglePanel } = useRequestorStore("togglePanel");
 
   const orphanLogs = useOrphanLogs(traceId, spans ?? []);
   const { waterfall } = useAsWaterfall(spans ?? [], orphanLogs);
@@ -50,7 +51,7 @@ export function RequestorTimeline({ traceId, togglePanel }: Props) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => togglePanel("timeline")}
+            onClick={() => togglePanel("timelinePanel")}
             className="h-6 w-6"
           >
             <Cross1Icon className="h-3 w-3 cursor-pointer" />

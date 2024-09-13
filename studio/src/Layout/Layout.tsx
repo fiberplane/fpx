@@ -4,7 +4,6 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
-  DialogTrigger,
   Root,
 } from "@radix-ui/react-dialog";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
@@ -17,9 +16,8 @@ import {
   MenubarTrigger,
 } from "@radix-ui/react-menubar";
 import type React from "react";
-import { type ComponentProps, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { NavLink } from "react-router-dom";
 import FpxIcon from "../assets/fpx.svg";
 import { WebhoncBadge } from "../components/WebhoncBadge";
 import { Button } from "../components/ui/button";
@@ -29,6 +27,12 @@ import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
 import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
 import { cn } from "../utils";
 import { FloatingSidePanel } from "./FloatingSidePanel";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 
 function Branding() {
   return (
@@ -41,10 +45,6 @@ function Branding() {
 export function Layout({ children }: { children?: React.ReactNode }) {
   useWebsocketQueryInvalidation();
 
-  const shouldShowProxyRequests = useProxyRequestsEnabled();
-
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
       <main
@@ -53,42 +53,147 @@ export function Layout({ children }: { children?: React.ReactNode }) {
         {children}
       </main>
 
-      <nav className="gap-4 bg-muted/50 pb-2 pt-1">
-        <div className="flex justify-between px-3 items-center">
-          <div className="flex items-center gap-2 sm:static sm:h-auto border-0 bg-transparent text-sm">
-            <SidePanelTrigger />
-            <SettingsMenu setSettingsOpen={setSettingsOpen} />
-            <FloatingSidePanel />
-            <SettingsScreen
-              settingsOpen={settingsOpen}
-              setSettingsOpen={setSettingsOpen}
-            />
-            <div className="ml-2">
-              <div className="flex items-center gap-2 text-sm" />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {shouldShowProxyRequests && (
-              <div className="ml-2">
-                <WebhoncBadge />
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <BottomBar />
     </div>
   );
 }
 
+function BottomBar() {
+  const shouldShowProxyRequests = useProxyRequestsEnabled();
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const { logsPanel, timelinePanel, aiPanel, togglePanel } = useRequestorStore(
+    "togglePanel",
+    "logsPanel",
+    "timelinePanel",
+    "aiPanel",
+  );
+
+  return (
+    <nav className="gap-4 bg-muted/50 pb-2 pt-1">
+      <div className="flex justify-between px-3 items-center">
+        <div className="flex items-center gap-2 sm:static sm:h-auto border-0 bg-transparent text-sm">
+          <SidePanelTrigger />
+          <SettingsMenu setSettingsOpen={setSettingsOpen} />
+          <FloatingSidePanel />
+          <SettingsScreen
+            settingsOpen={settingsOpen}
+            setSettingsOpen={setSettingsOpen}
+          />
+          <div className="ml-2">
+            <div className="flex items-center gap-2 text-sm" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {shouldShowProxyRequests && (
+            <div className="ml-2">
+              <WebhoncBadge />
+            </div>
+          )}
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={logsPanel === "open" ? "outline" : "ghost"}
+                size="icon"
+                onClick={() => togglePanel("logsPanel")}
+                className={cn(
+                  logsPanel === "open" && "opacity-50 bg-slate-900",
+                  "h-6 w-6",
+                )}
+              >
+                <Icon icon="lucide:square-terminal" className="cursor-pointer h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+              align="center"
+            >
+              <p>Toggle logs</p>
+              <div className="flex gap-1">
+                <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                <span className="text-xs font-mono">then</span>
+                <KeyboardShortcutKey>L</KeyboardShortcutKey>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={timelinePanel === "open" ? "outline" : "ghost"}
+                size="icon"
+                onClick={() => togglePanel("timelinePanel")}
+                className={cn(
+                  timelinePanel === "open" && "opacity-50 bg-slate-900",
+                  "h-6 w-6",
+                )}
+              >
+                <Icon
+                  icon="lucide:align-start-vertical"
+                  className="cursor-pointer h-4 w-4"
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+              align="center"
+            >
+              <p>Toggle timeline</p>
+              <div className="flex gap-1 items-center">
+                <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                <span className="text-xs font-mono">then</span>
+                <KeyboardShortcutKey>T</KeyboardShortcutKey>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={aiPanel === "open" ? "outline" : "ghost"}
+                size="icon"
+                onClick={() => togglePanel("aiPanel")}
+                className={cn(
+                  aiPanel === "open" && "opacity-50 bg-slate-900",
+                  "h-6 w-6",
+                )}
+              >
+                <Icon
+                  icon="lucide:sparkles"
+                  className="cursor-pointer h-4 w-4"
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
+              align="center"
+            >
+              <p>Toggle AI test panel</p>
+              <div className="flex gap-1 items-center">
+                <KeyboardShortcutKey>G</KeyboardShortcutKey>
+                <span className="text-xs font-mono">then</span>
+                <KeyboardShortcutKey>I</KeyboardShortcutKey>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
 function SidePanelTrigger() {
-  const { sidePanelOpen, setSidePanelOpen } = useRequestorStore(
-    "sidePanelOpen",
-    "setSidePanelOpen",
+  const { sidePanel, togglePanel } = useRequestorStore(
+    "sidePanel",
+    "togglePanel",
   );
 
   useHotkeys("mod+b", () => {
-    setSidePanelOpen(!sidePanelOpen);
+    togglePanel("sidePanel");
   });
 
   return (
@@ -96,9 +201,11 @@ function SidePanelTrigger() {
       variant="ghost"
       size="icon"
       className="p-0.5 w-6 h-6"
-      onClick={() => setSidePanelOpen(!sidePanelOpen)}
+      onClick={() => togglePanel("sidePanel")}
     >
-      <Icon icon={`lucide:panel-left-${sidePanelOpen ? "close" : "open"}`} />
+      <Icon
+        icon={`lucide:panel-left-${sidePanel === "open" ? "close" : "open"}`}
+      />
     </Button>
   );
 }

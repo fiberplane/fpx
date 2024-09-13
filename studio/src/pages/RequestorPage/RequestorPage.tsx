@@ -30,10 +30,7 @@ export const RequestorPage = () => {
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
 
-  const { sidePanelOpen } = useRequestorStore(
-    "sidePanelOpen",
-    "setSidePanelOpen",
-  );
+  const { sidePanel } = useRequestorStore("sidePanel");
 
   // NOTE - Use this to test overflow of requests panel
   // useEffect(() => {
@@ -94,7 +91,7 @@ export const RequestorPage = () => {
         id="requestor-page-main"
         className="w-full"
       >
-        {isLgScreen && sidePanelOpen && (
+        {isLgScreen && sidePanel === "open" && (
           <>
             <ResizablePanel
               id="routes"

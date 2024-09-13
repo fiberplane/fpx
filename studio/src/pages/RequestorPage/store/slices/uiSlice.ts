@@ -7,7 +7,13 @@ export const uiSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]]
 > = (set) => {
   return {
-    sidePanelOpen: isLgScreen(),
-    setSidePanelOpen: (sidePanelOpen) => set({ sidePanelOpen }),
+    sidePanel: isLgScreen() ? "open" : "closed",
+    logsPanel: "closed",
+    timelinePanel: "closed",
+    aiPanel: "closed",
+    togglePanel: (panelName) =>
+      set((state) => ({
+        [panelName]: state[panelName] === "open" ? "closed" : "open",
+      })),
   };
 };
