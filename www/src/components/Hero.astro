@@ -1,6 +1,6 @@
 ---
-import type { Props } from "@astrojs/starlight/props";
 import { Image } from "astro:assets";
+import type { Props } from "@astrojs/starlight/props";
 
 const { data } = Astro.props.entry;
 const { title = data.title, tagline, image, actions = [] } = data.hero || {};

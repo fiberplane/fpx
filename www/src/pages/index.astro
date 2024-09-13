@@ -29,7 +29,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   }}
 >
   <main class="container">
-    <div class="main-content">
+    <div class="content-grid">
       <div class="cards-content">
         <header>
           <h2>Prototype faster, ship better APIs</h2>
@@ -154,11 +154,11 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   }
 
   ul {
+    display: grid;
+    gap: 20px;
     list-style: none;
     padding: 0;
     margin: 0;
-    display: grid;
-    gap: 20px;
   }
 
   li {
@@ -183,22 +183,29 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
   }
 
   @container getting-started-container (width >= 1024px) {
-    .main-content {
+    .content-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 2rem;
+      margin-block-start: 2rem;
     }
 
     .cards-content {
       display: grid;
       gap: 2rem;
       align-content: start;
+      margin-block-start: 1rem;
+    }
+
+    ul {
+      gap: 30px;
     }
   }
 
   @container getting-started-container (width >= 1280px) {
-    .main-content {
+    .content-grid {
       padding-inline: 4rem;
+      gap: 4rem;
     }
   }
 </style>
