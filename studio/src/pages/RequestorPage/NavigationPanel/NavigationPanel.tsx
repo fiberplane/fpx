@@ -1,9 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useKeySequence } from "@/hooks/useKeySequence";
 import { useHandler } from "@fiberplane/hooks";
-import { useHotkeys } from "react-hotkeys-hook";
 import { useSearchParams } from "react-router-dom";
-import { useRequestorStore } from "../store";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
 
@@ -23,8 +21,6 @@ function getTab(searchParams: URLSearchParams): NavigationTab {
 export function NavigationPanel() {
   const [params, setParams] = useSearchParams();
   const tab = getTab(params);
-
-  const { togglePanel } = useRequestorStore("togglePanel");
 
   const setTab = useHandler((newTab: NavigationTab) => {
     setParams({ [FILTER_TAB_KEY]: newTab }, { replace: true });
