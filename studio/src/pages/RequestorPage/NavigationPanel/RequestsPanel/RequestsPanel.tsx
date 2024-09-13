@@ -45,8 +45,11 @@ export function RequestsPanel() {
   );
   const { id = activeHistoryResponseTraceId } = useParams();
 
+  const activeIndex = useMemo(() => {
+    return filteredItems.findIndex((item) => getId(item) === id);
+  }, [filteredItems, id]);
+
   const [selectedIndex, setSelectedIndex] = useState<number>(() => {
-    const activeIndex = filteredItems.findIndex((item) => getId(item) === id);
     return activeIndex !== -1 ? activeIndex : 0;
   });
 
@@ -122,9 +125,14 @@ export function RequestsPanel() {
         case "Escape": {
           if (isInputFocused) {
             blurActiveInput();
-          } else if (filterValue) {
-            setFilterValue("");
+            break;
           }
+          if (filterValue) {
+            setFilterValue("");
+            break;
+          }
+
+          setSelectedIndex(activeIndex);
           break;
         }
       }
@@ -205,11 +213,11 @@ const NavItem = ({
       }}
       className={cn(
         "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted p-1.5 rounded cursor-pointer items-center",
-        "focus:outline-none focus:ring-1 focus:ring-blue-500",
+        "focus:outline-none",
         {
           "bg-muted": id === getId(item),
           "hover:bg-muted": id !== getId(item),
-          "ring-1 bg-muted ring-blue-500": id !== getId(item) && isSelected,
+          "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-inset": id !== getId(item) && isSelected,
         },
       )}
       onClick={(e) => {
@@ -262,7 +270,7 @@ const PathCell = ({ item }: { item: MergedListItem }) => {
       ? removeServiceUrlFromPath(item.data.app_requests.requestUrl)
       : removeServiceUrlFromPath(getRequestUrl(getSpan(item.data)));
 
-  return <div className="text-sm font-mono">{path}</div>;
+  return <div className="text-sm font-mono overflow-hidden text-ellipsis whitespace-nowrap">{path}</div>;
 };
 
 const StatusCell = ({ item }: { item: MergedListItem }) => {

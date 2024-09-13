@@ -149,9 +149,15 @@ export function RoutesPanel() {
         case "Escape": {
           if (isInputFocused) {
             blurActiveInput();
-          } else if (filterValue) {
-            setFilterValue("");
+            break;
           }
+
+          if (filterValue) {
+            setFilterValue("");
+            break;
+          }
+
+          setSelectedRouteIndex(null);
           break;
         }
       }
@@ -244,13 +250,11 @@ export function RoutesSection(props: RoutesSectionProps) {
   const { title, children } = props;
 
   return (
-    <section className="p-2">
-      <div>
-        <h4 className="font-medium font-mono uppercase text-xs text-muted-foreground">
-          {title}
-        </h4>
-      </div>
-      <div className="space-y-0.5 overflow-y-auto mt-4">{children}</div>
+    <section className="p-2 w-full">
+      <h4 className="font-medium font-mono uppercase text-xs text-muted-foreground">
+        {title}
+      </h4>
+      <div className="space-y-0.5 overflow-y-auto mt-4 w-full overflow-x-hidden">{children}</div>
     </section>
   );
 }

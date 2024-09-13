@@ -10,7 +10,7 @@ type RoutesItemProps = {
   activeRoute: ProbedRoute | null;
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
-  setSelectedRouteIndex: (index: number) => void;
+  setSelectedRouteIndex: (index: number | null) => void;
 };
 
 export function RoutesItem(props: RoutesItemProps) {
@@ -45,16 +45,17 @@ export function RoutesItem(props: RoutesItemProps) {
       type="button"
       onClick={() => handleRouteClick(route)}
       onFocus={() => setSelectedRouteIndex(index)}
+      onBlur={() => setSelectedRouteIndex(null)}
       data-state-active={isActive}
       data-state-selected={isSelected}
       tabIndex={0}
       className={cn(
-        "flex items-center py-1 pl-5 pr-2 rounded cursor-pointer font-mono text-sm w-full",
-        "focus:outline-none focus:ring-1 focus:ring-blue-500",
+        "flex items-center ml-1 mr-2 py-1 rounded cursor-pointer font-mono text-sm w-full",
+        "focus:outline-none",
         {
           "bg-muted": isActive,
           "hover:bg-muted": !isActive,
-          "ring-1 bg-muted ring-blue-500": !isActive && isSelected,
+          "focus:ring-inset focus:ring-1 focus:ring-blue-500 bg-muted": isSelected,
         },
       )}
       id={`route-${index}`}
