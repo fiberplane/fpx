@@ -43,7 +43,6 @@ export function Layout({ children }: { children?: React.ReactNode }) {
       >
         {children}
       </main>
-
       <BottomBar />
     </div>
   );
@@ -87,17 +86,17 @@ function BottomBar() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant={logsPanel === "open" ? "outline" : "ghost"}
+                variant="ghost"
                 size="icon"
                 onClick={() => togglePanel("logsPanel")}
-                className={cn(
-                  logsPanel === "open" && "opacity-50 bg-slate-900",
-                  "h-6 w-6",
-                )}
+                className={cn("h-6 w-6")}
               >
                 <Icon
                   icon="lucide:square-terminal"
-                  className="cursor-pointer h-4 w-4"
+                  className={cn(
+                    "cursor-pointer h-4 w-4",
+                    logsPanel === "open" && "text-blue-500",
+                  )}
                 />
               </Button>
             </TooltipTrigger>
@@ -117,17 +116,19 @@ function BottomBar() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant={timelinePanel === "open" ? "outline" : "ghost"}
+                variant="ghost"
                 size="icon"
                 onClick={() => togglePanel("timelinePanel")}
                 className={cn(
-                  timelinePanel === "open" && "opacity-50 bg-slate-900",
                   "h-6 w-6",
                 )}
               >
                 <Icon
                   icon="lucide:align-start-vertical"
-                  className="cursor-pointer h-4 w-4"
+                  className={cn(
+                    "cursor-pointer h-4 w-4",
+                    timelinePanel === "open" && "text-blue-500",
+                  )}
                 />
               </Button>
             </TooltipTrigger>
@@ -147,17 +148,19 @@ function BottomBar() {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant={aiPanel === "open" ? "outline" : "ghost"}
+                variant="ghost"
                 size="icon"
                 onClick={() => togglePanel("aiPanel")}
                 className={cn(
-                  aiPanel === "open" && "opacity-50 bg-slate-900",
                   "h-6 w-6",
                 )}
               >
                 <Icon
                   icon="lucide:sparkles"
-                  className="cursor-pointer h-4 w-4"
+                  className={cn(
+                    "cursor-pointer h-4 w-4",
+                    aiPanel === "open" && "text-blue-500",
+                  )}
                 />
               </Button>
             </TooltipTrigger>
