@@ -125,7 +125,7 @@ export function useReplayRequest({ span }: { span?: OtelSpan }) {
       {
         onSuccess(response) {
           navigate({
-            pathname: `/requestor/requests/${response.traceId}`,
+            pathname: `/requests/${response.traceId}`,
             search: "?filter-tab=requests",
           });
         },

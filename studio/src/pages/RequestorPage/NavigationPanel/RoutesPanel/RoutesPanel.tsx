@@ -24,7 +24,7 @@ export function RoutesPanel() {
   const handleRouteClick = useHandler((route: ProbedRoute) => {
     navigate(
       {
-        pathname: "/requestor/",
+        pathname: "/",
       },
       { replace: true },
     );

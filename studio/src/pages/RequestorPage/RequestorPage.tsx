@@ -72,7 +72,7 @@ export const RequestorPage = () => {
   const generateLinkToTrace = useCallback(
     (traceId: string) => {
       const search = searchParams.toString();
-      return `/requestor/request/${traceId}${search ? `?${search}` : ""}`;
+      return `/request/${traceId}${search ? `?${search}` : ""}`;
     },
     [searchParams],
   );

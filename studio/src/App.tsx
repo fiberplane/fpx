@@ -20,7 +20,6 @@ export function App() {
         <TooltipProvider>
           <Layout>
             <Routes>
-              <Route path="/" element={<Redirect />} />
               <Route path="/requests" element={<RequestsPage />} />
               <Route
                 path="/requests/otel/:traceId"
@@ -30,9 +29,9 @@ export function App() {
                 path="/requests/:traceId"
                 element={<RequestDetailsPage />}
               />
-              <Route path="/requestor" element={<RequestorPage />} />
+              <Route path="/" element={<RequestorPage />} />
               <Route
-                path="/requestor/:requestType/:id"
+                path="/:requestType/:id"
                 element={<RequestorPage />}
               />
             </Routes>
@@ -45,12 +44,3 @@ export function App() {
 }
 
 export default App;
-
-function Redirect({ to = "/requestor" }: { to?: string }): ReactNode {
-  const navigate = useNavigate();
-  useEffect(() => {
-    navigate(to);
-  }, [to, navigate]);
-
-  return null;
-}

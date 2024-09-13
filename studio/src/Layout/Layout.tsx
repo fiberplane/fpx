@@ -47,7 +47,7 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
         <div className="sticky top-0 flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent md:px-6 text-sm">
           <SidePanelTrigger />
           <FloatingSidePanel />
-          <HeaderNavLink to="/requestor">
+          <HeaderNavLink to="/">
             <Branding />
           </HeaderNavLink>
           <div className="ml-2">

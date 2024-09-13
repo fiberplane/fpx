@@ -57,7 +57,7 @@ export function RequestsPanel() {
   const handleItemSelect = useCallback(
     (item: MergedListItem) => {
       navigate({
-        pathname: `/requestor/${item.type}/${getId(item)}`,
+        pathname: `/${item.type}/${getId(item)}`,
         search: searchParams.toString(),
       });
     },
@@ -200,7 +200,7 @@ const NavItem = ({
     <Link
       ref={itemRef}
       to={{
-        pathname: `/requestor/${item.type}/${getId(item)}`,
+        pathname: `/${item.type}/${getId(item)}`,
         search: searchParams.toString(),
       }}
       className={cn(
