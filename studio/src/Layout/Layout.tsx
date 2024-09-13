@@ -119,9 +119,7 @@ function BottomBar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => togglePanel("timelinePanel")}
-                className={cn(
-                  "h-6 w-6",
-                )}
+                className={cn("h-6 w-6")}
               >
                 <Icon
                   icon="lucide:align-start-vertical"
@@ -151,9 +149,7 @@ function BottomBar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => togglePanel("aiPanel")}
-                className={cn(
-                  "h-6 w-6",
-                )}
+                className={cn("h-6 w-6")}
               >
                 <Icon
                   icon="lucide:sparkles"
