@@ -23,10 +23,10 @@ import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { useRequestorStore } from "./store";
 
 type Props = {
-  traceId: string;
+  traceId?: string;
 };
 
-export function RequestorTimeline({ traceId }: Props) {
+export function RequestorTimeline({ traceId = "" }: Props) {
   const { data: spans } = useOtelTrace(traceId);
 
   const { togglePanel } = useRequestorStore("togglePanel");

@@ -13,7 +13,6 @@ import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
 import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
-import type { Panels } from "../types";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
 

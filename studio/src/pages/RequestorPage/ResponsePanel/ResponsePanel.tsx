@@ -1,13 +1,7 @@
-import RobotIcon from "@/assets/Robot.svg";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent } from "@/components/ui/tooltip";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import { TooltipTrigger } from "@radix-ui/react-tooltip";
 import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -18,7 +12,7 @@ import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
 } from "../store/types";
-import { type Panels, isWsRequest } from "../types";
+import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
 import {
@@ -69,7 +63,6 @@ export const ResponsePanel = memo(function ResponsePanel({
     : responseToRender?.app_responses?.responseHeaders;
 
   const shouldShowMessages = shouldShowResponseTab("messages");
-  const traceId = tracedResponse?.app_responses.traceId;
 
   return (
     <div className="overflow-x-hidden overflow-y-auto h-full relative">

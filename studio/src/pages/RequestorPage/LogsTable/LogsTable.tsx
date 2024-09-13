@@ -25,7 +25,6 @@ import { useState } from "react";
 import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { useRequestorStore } from "../store";
-import type { Panels } from "../types";
 
 type OrphanLog = {
   traceId: string;
@@ -43,10 +42,11 @@ type OrphanLog = {
 };
 
 type Props = {
-  traceId: string;
+  traceId?: string;
 };
 
-export function LogsTable({ traceId }: Props) {
+//TODO: add a better empty state
+export function LogsTable({ traceId = "" }: Props) {
   const { data: spans } = useOtelTrace(traceId);
   const { togglePanel } = useRequestorStore("togglePanel");
   const logs = useOrphanLogs(traceId, spans ?? []);
