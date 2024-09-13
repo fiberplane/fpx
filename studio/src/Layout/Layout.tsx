@@ -9,7 +9,7 @@ import {
 } from "@radix-ui/react-dialog";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import type React from "react";
-import type { ComponentProps } from "react";
+import { useRef, useState, type ComponentProps } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { NavLink } from "react-router-dom";
 import FpxIcon from "../assets/fpx.svg";
@@ -21,25 +21,29 @@ import { useProxyRequestsEnabled } from "../hooks/useProxyRequestsEnabled";
 import { SettingsPage } from "../pages/SettingsPage/SettingsPage";
 import { cn } from "../utils";
 import { FloatingSidePanel } from "./FloatingSidePanel";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarTrigger,
+} from "@radix-ui/react-menubar";
 
-const Branding = () => {
+function Branding() {
   return (
     <div>
       <FpxIcon height="20px" width="20px" />
     </div>
   );
-};
+}
 
-export const Layout: React.FC<{ children?: React.ReactNode }> = ({
-  children,
-}) => {
-  // Will add new fpx-requests as they come in by refetching
-  // In the future, we'll want to build a better ux around this (not auto refresh the table)
-  //
-  // This should be used only at the top level of the app to avoid unnecessary re-renders
+export function Layout({ children }: { children?: React.ReactNode }) {
   useWebsocketQueryInvalidation();
 
   const shouldShowProxyRequests = useProxyRequestsEnabled();
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/30 max-w-128 overflow-hidden">
@@ -49,69 +53,35 @@ export const Layout: React.FC<{ children?: React.ReactNode }> = ({
         {children}
       </main>
 
-      <nav className="flex gap-4 sm:gap-4 bg-muted/50 pb-2 pt-1 justify-between items-center border-b">
-        <div className="flex items-center gap-2 px-4 sm:static sm:h-auto border-0 bg-transparent md:px-6 text-sm">
-          <SidePanelTrigger />
-          <FloatingSidePanel />
-          <HeaderNavLink to="/">
-            <Branding />
-          </HeaderNavLink>
-          <div className="ml-2">
-            <div className="flex items-center gap-2 text-sm" />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {shouldShowProxyRequests && (
+      <nav className="gap-4 bg-muted/50 pb-2 pt-1">
+        <div className="flex justify-between px-3 items-center">
+          <div className="flex items-center gap-2 sm:static sm:h-auto border-0 bg-transparent text-sm">
+            <SidePanelTrigger />
+            <SettingsMenu setSettingsOpen={setSettingsOpen} />
+            <FloatingSidePanel />
+            <SettingsScreen
+              settingsOpen={settingsOpen}
+              setSettingsOpen={setSettingsOpen}
+            />
             <div className="ml-2">
-              <WebhoncBadge />
+              <div className="flex items-center gap-2 text-sm" />
             </div>
-          )}
-          <div className="flex items-center gap-1 px-1">
-            <Root>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
-                  <Icon icon="lucide:settings" />
-                </Button>
-              </DialogTrigger>
-            </Root>
-            {/* <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6"> */}
-            {/*   <a */}
-            {/*     href="https://github.com/fiberplane/fpx" */}
-            {/*     target="_blank" */}
-            {/*     rel="noopener noreferrer" */}
-            {/*   > */}
-            {/*     <GitHubLogoIcon className="w-3.5 h-3.5" /> */}
-            {/*   </a> */}
-            {/* </Button> */}
-            {/* <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6"> */}
-            {/*   <a */}
-            {/*     href="https://discord.com/invite/cqdY6SpfVR" */}
-            {/*     target="_blank" */}
-            {/*     rel="noopener noreferrer" */}
-            {/*   > */}
-            {/*     <DiscordLogoIcon className="w-3.5 h-3.5" /> */}
-            {/*   </a> */}
-            {/* </Button> */}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {shouldShowProxyRequests && (
+              <div className="ml-2">
+                <WebhoncBadge />
+              </div>
+            )}
           </div>
         </div>
       </nav>
     </div>
   );
-};
+}
 
-const HeaderNavLink = (props: ComponentProps<typeof NavLink>) => {
-  return (
-    <NavLink
-      {...props}
-      className={({ isActive }) =>
-        `rounded ${isActive ? "bg-muted" : ""} inline-block py-1 px-2 hover:underline text-xs`
-      }
-    />
-  );
-};
-
-const SidePanelTrigger = () => {
+function SidePanelTrigger() {
   const { sidePanelOpen, setSidePanelOpen } = useRequestorStore(
     "sidePanelOpen",
     "setSidePanelOpen",
@@ -131,7 +101,89 @@ const SidePanelTrigger = () => {
       <Icon icon={`lucide:panel-left-${sidePanelOpen ? "close" : "open"}`} />
     </Button>
   );
-};
+}
+
+function MenuItemLink({
+  href,
+  icon,
+  children,
+}: { href: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <MenubarItem className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500">
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2"
+      >
+        {icon}
+        {children}
+      </a>
+    </MenubarItem>
+  );
+}
+
+function SettingsMenu({
+  setSettingsOpen,
+}: { setSettingsOpen: (open: boolean) => void }) {
+  const menuBarTriggerRef = useRef<HTMLButtonElement>(null);
+  const [menuOpen, setMenuOpen] = useState<true | undefined>(undefined);
+
+  useHotkeys("shift+?", () => {
+    setMenuOpen(true);
+    if (menuBarTriggerRef.current) {
+      menuBarTriggerRef.current.click();
+    }
+  });
+
+  return (
+    <Menubar className="p-0">
+      <MenubarMenu>
+        <MenubarTrigger
+          ref={menuBarTriggerRef}
+          className="w-6 h-6 p-0.5 rounded-md hover:bg-muted flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+          <Icon icon="lucide:settings" />
+        </MenubarTrigger>
+        <MenubarContent
+          onEscapeKeyDown={() => setMenuOpen(undefined)}
+          onInteractOutside={() => setMenuOpen(undefined)}
+          forceMount={menuOpen}
+          className="z-50 min-w-[200px] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md grid gap-1 data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+        >
+          <MenuItemLink
+            href="https://fiberplane.com/docs/get-started"
+            icon={<Icon icon="lucide:book-open" />}
+          >
+            Docs
+          </MenuItemLink>
+          <MenuItemLink
+            href="https://github.com/fiberplane/fpx"
+            icon={<GitHubLogoIcon className="w-3.5 h-3.5" />}
+          >
+            GitHub
+          </MenuItemLink>
+          <MenuItemLink
+            href="https://discord.com/invite/cqdY6SpfVR"
+            icon={<DiscordLogoIcon className="w-3.5 h-3.5" />}
+          >
+            Discord
+          </MenuItemLink>
+          <MenubarSeparator className="h-px bg-muted" />
+          <MenubarItem
+            className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <div className="flex items-center gap-2">
+              <Icon icon="lucide:settings-2" />
+              Settings
+            </div>
+          </MenubarItem>
+        </MenubarContent>
+      </MenubarMenu>
+    </Menubar>
+  );
+}
 
 function SettingsScreen({
   settingsOpen,
