@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { getRuntime } from "./utils/index.ts";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api";
 
 const runtime = getRuntime();
 
