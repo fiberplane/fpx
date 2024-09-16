@@ -18,9 +18,9 @@ import { useRequestorStore } from "../pages/RequestorPage/store";
 import { cn } from "../utils";
 
 export function FloatingSidePanel() {
-  const { sidePanelOpen, setSidePanelOpen } = useRequestorStore(
-    "sidePanelOpen",
-    "setSidePanelOpen",
+  const { sidePanel, togglePanel } = useRequestorStore(
+    "sidePanel",
+    "togglePanel",
     "path",
   );
 
@@ -28,7 +28,10 @@ export function FloatingSidePanel() {
 
   return (
     <aside>
-      <Root open={!isLgScreen && sidePanelOpen} onOpenChange={setSidePanelOpen}>
+      <Root
+        open={!isLgScreen && sidePanel === "open"}
+        onOpenChange={() => togglePanel("sidePanel")}
+      >
         <DialogPortal>
           <DialogOverlay className="fixed top-0 left-0 w-full h-full bg-black/40" />
           <DialogContent

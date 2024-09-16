@@ -1,7 +1,7 @@
 {
   "name": "@fiberplane/fpx-types",
   "description": "Shared types and schemas for fpx",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "exports": {
     ".": "./dist/index.js"

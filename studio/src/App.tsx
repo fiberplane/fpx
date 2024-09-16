@@ -1,12 +1,6 @@
 import { QueryClientProvider, queryClient } from "@/queries";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-import { type ReactNode, useEffect } from "react";
-import {
-  Route,
-  BrowserRouter as Router,
-  Routes,
-  useNavigate,
-} from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Layout } from "./Layout";
 import { Toaster } from "./components/ui/toaster";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
@@ -20,7 +14,6 @@ export function App() {
         <TooltipProvider>
           <Layout>
             <Routes>
-              <Route path="/" element={<Redirect />} />
               <Route path="/requests" element={<RequestsPage />} />
               <Route
                 path="/requests/otel/:traceId"
@@ -30,11 +23,8 @@ export function App() {
                 path="/requests/:traceId"
                 element={<RequestDetailsPage />}
               />
-              <Route path="/requestor" element={<RequestorPage />} />
-              <Route
-                path="/requestor/:requestType/:id"
-                element={<RequestorPage />}
-              />
+              <Route path="/" element={<RequestorPage />} />
+              <Route path="/:requestType/:id" element={<RequestorPage />} />
             </Routes>
           </Layout>
           <Toaster />
@@ -45,12 +35,3 @@ export function App() {
 }
 
 export default App;
-
-function Redirect({ to = "/requestor" }: { to?: string }): ReactNode {
-  const navigate = useNavigate();
-  useEffect(() => {
-    navigate(to);
-  }, [to, navigate]);
-
-  return null;
-}

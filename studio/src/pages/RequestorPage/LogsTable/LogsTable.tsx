@@ -24,7 +24,7 @@ import {
 import { useState } from "react";
 import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import type { Panels } from "../types";
+import { useRequestorStore } from "../store";
 
 type OrphanLog = {
   traceId: string;
@@ -42,12 +42,13 @@ type OrphanLog = {
 };
 
 type Props = {
-  traceId: string;
-  togglePanel: (panelName: keyof Panels) => void;
+  traceId?: string;
 };
 
-export function LogsTable({ traceId, togglePanel }: Props) {
+//TODO: add a better empty state
+export function LogsTable({ traceId = "" }: Props) {
   const { data: spans } = useOtelTrace(traceId);
+  const { togglePanel } = useRequestorStore("togglePanel");
   const logs = useOrphanLogs(traceId, spans ?? []);
   const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
 
@@ -110,7 +111,7 @@ export function LogsTable({ traceId, togglePanel }: Props) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => togglePanel("logs")}
+            onClick={() => togglePanel("logsPanel")}
             className="h-6 w-6"
           >
             <Cross1Icon className="h-3 w-3 cursor-pointer" />
