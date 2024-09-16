@@ -2,8 +2,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use std::{fs::read_to_string, sync::Mutex};
 use tauri::State;
+
+#[derive(Serialize, Deserialize, Clone)]
+struct Config {
+    port: u16,
+}
 
 #[tauri::command]
 fn get_current_workspace(state: State<'_, AppState>) -> Option<Workspace> {
@@ -12,7 +17,10 @@ fn get_current_workspace(state: State<'_, AppState>) -> Option<Workspace> {
 
 #[tauri::command]
 fn open_workspace_by_path(path: String, state: State<'_, AppState>) -> Workspace {
-    let workspace = Workspace::new(path);
+    let content = read_to_string(format!("{}/fpx.toml", path)).unwrap();
+    let config: Config = toml::from_str(&content).unwrap();
+
+    let workspace = Workspace::new(path, config);
     state.set_workspace(workspace.clone());
 
     workspace
@@ -38,11 +46,12 @@ fn main() {
 #[derive(Serialize, Clone)]
 struct Workspace {
     path: String,
+    config: Config,
 }
 
 impl Workspace {
-    fn new(path: String) -> Self {
-        Self { path }
+    fn new(path: String, config: Config) -> Self {
+        Self { path, config }
     }
 }
 

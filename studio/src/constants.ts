@@ -1,3 +1,8 @@
+export type Runtime = "tauri" | "browser";
+
+const isTauri = "__TAURI__" in window;
+export const RUNTIME: Runtime = isTauri ? "tauri" : "browser";
+
 /**
  * SEMATTRS_* are constants that should actually be exposed by the Samantic Conventions package
  * but are not. These are the ones that are used in the frontend and the client library.
