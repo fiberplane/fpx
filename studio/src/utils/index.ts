@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
 export * from "./screen-size";
+export * from "./tauri";
 export * from "./vendorify-traces";
 export * from "./otel-helpers";
 export { renderFullLogMessage } from "./render-log-message";

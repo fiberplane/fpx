@@ -1,26 +1,21 @@
-import type { Workspace } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
-import { invoke } from "@tauri-apps/api";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { WorkspaceSelector } from "./components/WorkspaceSelector";
 import { Button } from "./components/ui/button";
 import { RUNTIME } from "./constants";
+import { getCurrentWorkspace } from "./utils";
 
-async function getCurrentWorkspace() {
-  return await invoke<Workspace | undefined>("get_current_workspace");
-}
-
-type DesktopProviderProps = {
+type RuntimeProviderProps = {
   children: ReactNode;
 };
 
-export function RuntimeProvider({ children }: DesktopProviderProps) {
+export function RuntimeProvider({ children }: RuntimeProviderProps) {
   const [workspace, setWorkspace] =
     useState<Awaited<ReturnType<typeof getCurrentWorkspace>>>();
 
   const closeWorkspace = useHandler(() => {
-    invoke("close_workspace");
+    closeWorkspace();
     setWorkspace(undefined);
   });
 
@@ -30,7 +25,7 @@ export function RuntimeProvider({ children }: DesktopProviderProps) {
     }
   }, [workspace]);
 
-  if (RUNTIME === "browser") {
+  if (RUNTIME !== "tauri") {
     return children;
   }
 

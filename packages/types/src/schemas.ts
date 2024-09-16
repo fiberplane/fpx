@@ -82,6 +82,15 @@ export const ConfigSchema = z.object({ port: z.number().int().gte(0) });
 
 export type Config = z.infer<typeof ConfigSchema>;
 
+export const OpenWorkspaceByPathErrorSchema = z.enum([
+  "ConfigFileMissing",
+  "InvalidConfiguration",
+]);
+
+export type OpenWorkspaceByPathError = z.infer<
+  typeof OpenWorkspaceByPathErrorSchema
+>;
+
 export const WorkspaceSchema = z.object({ config: z.any(), path: z.string() });
 
 export type Workspace = z.infer<typeof WorkspaceSchema>;

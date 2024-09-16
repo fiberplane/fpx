@@ -21,6 +21,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
         schema_for!(ClientMessage),
         schema_for!(ServerMessage),
         schema_for!(fpx_app::models::workspace::Config),
+        schema_for!(fpx_app::models::workspace::OpenWorkspaceByPathError),
         schema_for!(fpx_app::models::workspace::Workspace),
     ]);
 

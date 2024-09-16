@@ -1,18 +1,13 @@
-import type { Workspace } from "@fiberplane/fpx-types";
+import { openWorkspace } from "@/utils";
+import type {
+  OpenWorkspaceByPathError,
+  Workspace,
+} from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
-import { invoke } from "@tauri-apps/api";
 import { open } from "@tauri-apps/api/dialog";
 import { appDataDir } from "@tauri-apps/api/path";
 import { useState } from "react";
 import { Button } from "../ui/button";
-
-type OpenWorkspaceByPathError = "ConfigFileMissing" | "InvalidConfiguration";
-
-async function openWorkspace(path: string) {
-  return await invoke<Workspace | undefined>("open_workspace_by_path", {
-    path,
-  });
-}
 
 type WorkspaceSelectorProps = {
   setWorkspace: (workspace: Workspace) => void;
