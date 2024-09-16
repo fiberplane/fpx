@@ -59,7 +59,6 @@ const inputBaseStylesExtension = EditorView.theme({
     // HACK - Using tailwind `text-sm` values
     fontSize: "0.875rem",
     lineHeight: "1.25rem",
-    // letterSpacing: "0.025em",
   },
   ".cm-scroller": {
     overflow: "hidden !important",
@@ -71,17 +70,15 @@ const inputBaseStylesExtension = EditorView.theme({
 // (This is used when the editor/input is not in focus)
 const inputTrucateExtension = EditorView.theme({
   ".cm-content": {
-    whiteSpace: "nowrap !important",
-    overflow: "hidden !important",
-    textOverflow: "ellipsis !important",
-    width: "100% !important",
-    flexBasis: "auto !important", // Override the inline flex-basis
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    width: "100%",
   },
   ".cm-line": {
-    display: "block !important",
-    textOverflow: "ellipsis !important",
-    overflow: "hidden !important",
-    width: "100% !important",
+    textOverflow: "ellipsis",
+    overflow: "hidden",
+    width: "100%",
   },
 });
 
@@ -111,19 +108,15 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
 
   return (
     <div
-      className={cn("rounded border box-border", "focus-visible:outline-none", {
+      className={cn("rounded border border-transparent", "focus-visible:outline-none", {
         "border border-blue-600": isFocused,
         // HACK - This prevents a "jump" for the placeholder or input text when clicking on the input
         "border-l border-transparent": !isFocused,
-        // "h-[28px]": !isFocused,
       })}
       style={style}
     >
       <CodeMirror
         value={value}
-        height={dynamicHeight}
-        // maxHeight={maxHeight}
-        minHeight={minHeight}
         onChange={onChange}
         theme={[inputTheme]}
         extensions={[
