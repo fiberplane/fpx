@@ -1,0 +1,235 @@
+---
+import { Image } from "astro:assets";
+import { LinkButton } from "@astrojs/starlight/components";
+import type { Props } from "@astrojs/starlight/props";
+
+const { data } = Astro.props.entry;
+const { title = data.title, tagline, image, actions = [] } = data.hero || {};
+
+let heroImage: ImageMetadata | undefined;
+if (image && "file" in image) {
+  heroImage = image.file;
+}
+---
+
+<section>
+  <div class="hero-content">
+    <header>
+      <h1>{title}</h1>
+      <p>{tagline}</p>
+
+      <div class="button-group">
+        {
+          actions.map(
+            ({
+              attrs: { class: className, ...attrs } = {},
+              icon,
+              link: href,
+              text,
+              variant,
+            }) => (
+              <LinkButton
+                {href}
+                {variant}
+                class="link-button"
+                icon={icon?.name}
+                class:list={[className]}
+                {...attrs}
+              >
+                {text}
+                {icon?.html && <Fragment set:html={icon.html} />}
+              </LinkButton>
+            )
+          )
+        }
+      </div>
+    </header>
+
+    <figure>
+      {
+        heroImage && (
+          <Image
+            src={heroImage}
+            alt="Screenshot of FPX Studio"
+            height="736"
+            widths={[1024, 1248]}
+            sizes="(max-width: 1024px) 1024px, 1248px"
+            data-hero-image
+          />
+        )
+      }
+    </figure>
+  </div>
+</section>
+
+<script is:inline>
+  const heroImage = document.querySelector("[data-hero-image]");
+  if (heroImage && heroImage instanceof HTMLImageElement) {
+    heroImage.onload = () => {
+      console.log("Hero image loaded");
+      heroImage.classList.add("is-loaded");
+    };
+  }
+</script>
+
+<style>
+  html[data-has-hero] body {
+    --sl-content-width: 102rem;
+  }
+
+  section {
+    container: hero-container / inline-size;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .link-button {
+    border-radius: var(--border-radius);
+
+    &.secondary {
+      background-color: white;
+    }
+  }
+
+  .hero-content {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat(2, 1fr);
+    height: 54rem;
+    border-radius: 20px;
+    background-image: linear-gradient(180deg, rgb(248 250 252), #f5f8fa);
+
+    & > * {
+      z-index: 2;
+    }
+
+    header {
+      display: grid;
+      gap: 2rem;
+      align-content: center;
+      color: black;
+      margin-inline: 6rem;
+
+      /* TODO: Add Geist font from fontsource.com */
+      h1 {
+        font-size: 70px;
+        line-height: 1;
+        text-wrap: balance;
+      }
+
+      p {
+        /* TODO: Add Inter-Tight font & update font size & line height */
+        /* fontsource.com */
+        font-size: 32px;
+        line-height: 1.2;
+        font-weight: 500;
+        text-wrap: pretty;
+      }
+    }
+
+    figure {
+      --figure-block-padding: 4rem;
+
+      position: relative;
+      padding-block: var(--figure-block-padding);
+
+      img {
+        position: absolute;
+        left: 0;
+        height: calc(100% - var(--figure-block-padding) * 2);
+        width: auto;
+        border-radius: 20px;
+        object-fit: contain;
+        box-shadow: 0px 5.553px 26.51px 0px rgb(0 0 0 / 0.55);
+
+        /* Rudimentary entry animations for now, add some sprinkles */
+        opacity: 0;
+        translate: 0 24px;
+        transition:
+          opacity 0.5s,
+          translate 0.5s;
+
+        &.is-loaded {
+          opacity: 1;
+          translate: 0 0;
+        }
+      }
+    }
+
+    &::before {
+      --hero-background-image-size: 2rem;
+      --hero-background-image-position: calc(
+        var(--hero-background-image-size) / 2
+      );
+
+      z-index: 1;
+      content: "";
+      position: absolute;
+      border-radius: 20px;
+      inset: 0;
+      background-image: radial-gradient(
+        rgb(207 212 216 / 0.4) 3px,
+        transparent 0
+      );
+      background-size: var(--hero-background-image-size)
+        var(--hero-background-image-size);
+      background-position: top center;
+    }
+
+    @container hero-container (width <= 1440px) {
+      header {
+        margin-inline: 4rem;
+
+        h1 {
+          font-size: clamp(34px, 5cqi, 70px);
+        }
+
+        p {
+          font-size: clamp(18px, 2.5cqi, 32px);
+        }
+      }
+    }
+
+    @container hero-container (width <= 1152px) {
+      header {
+        margin-inline: 2rem 0;
+      }
+    }
+
+    @container hero-container (width < 1024px) {
+      &.hero-content {
+        grid-template-columns: 1fr;
+        align-content: start;
+        padding-block-start: 3rem;
+        height: auto;
+        margin-inline: calc(var(--sl-content-pad-x) * -1);
+        padding-inline: var(--sl-nav-pad-x);
+        border-radius: 0;
+      }
+
+      .button-group {
+        justify-content: center;
+      }
+
+      header {
+        margin-inline: 0;
+      }
+
+      figure {
+        --figure-block-padding: 2rem;
+        height: 80cqi;
+
+        img {
+          height: calc(100% - var(--figure-block-padding) * 2);
+          border-radius: 8px;
+          translate: var(--sl-nav-pad-x) 0;
+        }
+      }
+    }
+  }
+</style>
