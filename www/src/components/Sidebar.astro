@@ -2,9 +2,22 @@
 import type { Props } from "@astrojs/starlight/props";
 
 import MobileMenuFooter from "@astrojs/starlight/components/MobileMenuFooter.astro";
+import type { SidebarEntry } from "node_modules/@astrojs/starlight/utils/navigation";
 import SidebarSublist from "./SidebarSublist.astro";
 
-const { sidebar } = Astro.props;
+const { sidebar: sidebarAndNav } = Astro.props;
+
+const [sidebar, nav] = sidebarAndNav.reduce<[SidebarEntry[], SidebarEntry[]]>(
+  ([sidebar, nav], item: SidebarEntry) => {
+    if (item.label === "nav") {
+      nav.push(item);
+    } else {
+      sidebar.push(item);
+    }
+    return [sidebar, nav];
+  },
+  [[], []],
+);
 ---
 
 <SidebarSublist sublist={sidebar} />
