@@ -17,7 +17,7 @@ watch_dir = [
     "src",
     "migrations",
     "Cargo.toml",
-    "../fpx-lib",
+    "../fpx",
     "../fpx-macros",
     "../Cargo.toml",
     "../Cargo.lock",

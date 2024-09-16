@@ -8,6 +8,17 @@ export * from "./otel-helpers";
 export { renderFullLogMessage } from "./render-log-message";
 export { truncateWithEllipsis } from "./truncate";
 
+export type Runtime = "tauri" | "browser";
+
+export function getRuntime(): Runtime {
+  // @ts-expect-error
+  if (window.__TAURI_INTERNALS__) {
+    return "tauri";
+  }
+
+  return "browser";
+}
+
 export function formatDate(d: Date | string) {
   return format(new Date(d), "HH:mm:ss.SSS");
 }

@@ -1,4 +1,4 @@
-use fpx_lib::api::models::ServerMessage;
+use fpx::api::models::ServerMessage;
 use tracing::error;
 use worker::*;
 

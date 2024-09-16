@@ -6,10 +6,10 @@
 
 use super::errors::ApiClientError;
 use anyhow::Result;
-use fpx_lib::api::handlers::spans::SpanGetError;
-use fpx_lib::api::handlers::traces::TraceGetError;
-use fpx_lib::api::models;
-use fpx_lib::otel::HeaderMapInjector;
+use fpx::api::handlers::spans::SpanGetError;
+use fpx::api::handlers::traces::TraceGetError;
+use fpx::api::models;
+use fpx::otel::HeaderMapInjector;
 use http::{HeaderMap, Method, StatusCode};
 use opentelemetry::propagation::TextMapPropagator;
 use opentelemetry_sdk::propagation::TraceContextPropagator;

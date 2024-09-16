@@ -1,0 +1,83 @@
+[package]
+name = "fpx-cli"
+version = { workspace = true }
+edition = "2021"
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+
+[features]
+embed-studio = [] # When enabled it will embed Studio from frontend/dist
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { version = "0.1" }
+axum = { workspace = true, default-features = false, features = [
+    "http1",
+    "query",
+    "tokio",
+    "tracing",
+    "ws",
+] }
+clap = { workspace = true, features = ["derive", "env"] }
+bytes = { version = "1.6" }
+futures-util = { version = "0.3" }
+fpx-macros = { version = "0.1.0", path = "../fpx-macros" }
+fpx = { version = "0.1.0", path = "../fpx", features = ["libsql"] }
+hex = { version = "0.4" }
+http = { version = "1.1" }
+http-body-util = { version = "0.1" }
+include_dir = { version = "0.7.3" }
+libsql = { version = "0.5", default-features = false, features = [
+    "core",
+    "serde",
+] }
+once_cell = { version = "1.19" }
+opentelemetry = { version = "0.24" }
+opentelemetry_sdk = { version = "0.24", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.17", features = [
+    "http-json",
+    "reqwest-client",
+    "reqwest-rustls-webpki-roots",
+] }
+opentelemetry-proto = { version = "0.7", features = [
+    "gen-tonic-messages",
+    "with-serde",
+    "with-schemars",
+] }
+rand = { version = "0.8.5" }
+reqwest = { version = "0.12", default-features = false, features = [
+    "charset",
+    "http2",
+    "rustls-tls",
+    "json",
+] }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+strum = { version = "0.26", features = ["derive"] }
+serde_with = { version = "3.8.1" }
+thiserror = { version = "1.0" }
+time = { version = "0.3.17", features = ["serde-human-readable"] }
+tokio = { version = "1.40", features = ["rt-multi-thread", "signal", "fs"] }
+tokio-tungstenite = { version = "0.21", features = [
+    "rustls-tls-webpki-roots",
+] } # This should be kept the same as whatever Axum has
+toml = { version = "0.8" }
+tonic = { version = "0.12" }
+tower = { version = "0.4" }
+tracing = { version = "0.1" }
+tracing-opentelemetry = { version = "0.25" }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+url = { version = "2.5" }
+prost = { version = "0.13" }
+
+[target.'cfg(windows)'.dependencies]
+libsql = { version = "0.5", default-features = false, features = [
+    "core",
+    "serde",
+    "replication",
+] }
+
+[dev-dependencies]
+test-log = { version = "0.2", default-features = false, features = ["trace"] }
