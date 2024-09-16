@@ -3,5 +3,5 @@
   "extends": ["../biome.jsonc"],
   "files": {
     "ignore": ["dist", "node_modules", "src/*.ts.example"],
-  },
+  }
 }
