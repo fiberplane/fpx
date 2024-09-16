@@ -108,20 +108,36 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
 
   return (
     <div
-      className={cn("rounded border border-transparent", "focus-visible:outline-none", {
-        "border border-blue-600": isFocused,
-        // HACK - This prevents a "jump" for the placeholder or input text when clicking on the input
-        "border-l border-transparent": !isFocused,
-      })}
+      className={cn(
+        "rounded border border-transparent",
+        "focus-visible:outline-none",
+        {
+          "border border-blue-600": isFocused,
+          // HACK - This prevents a "jump" for the placeholder or input text when clicking on the input
+          "border-l border-transparent": !isFocused,
+        },
+      )}
       style={style}
     >
       <CodeMirror
         value={value}
         onChange={onChange}
+        height={dynamicHeight}
         theme={[inputTheme]}
         extensions={[
           hiddenGutterExtension,
           inputBaseStylesExtension,
+          EditorView.lineWrapping,
+          // NOTE: This is the CSS added by lineWrapping:
+          /**
+           ".cm-lineWrapping": {
+              whiteSpace_fallback: "pre-wrap", // For IE
+              whiteSpace: "break-spaces",
+              wordBreak: "break-word", // For Safari, which doesn't support overflow-wrap: anywhere
+              overflowWrap: "anywhere",
+              flexShrink: 1
+            },
+           */
           isFocused ? EditorView.lineWrapping : inputTrucateExtension,
         ]}
         onFocus={() => setIsFocused(true)} // Set focus to true

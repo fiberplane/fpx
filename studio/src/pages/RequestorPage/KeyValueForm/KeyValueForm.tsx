@@ -43,7 +43,11 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
   const [isHovering, setIsHovering] = useState(false);
   return (
     <div
-      className="flex items-center space-x-0 rounded p-0"
+      className={cn(
+        "flex items-center space-x-0 rounded p-0",
+        // HACK - To prevent too much of a jump when focusing the inputs
+        "min-h-[30px]",
+      )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
