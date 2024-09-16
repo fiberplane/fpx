@@ -4,7 +4,7 @@ import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { CollapsibleSubSection } from "../../../shared";
-import { CodeMirrorSqlEditor } from "../../CodeMirrorEditor";
+import { CodeMirrorSqlEditor } from "../../CodeMirrorEditor/CodeMirrorEditor";
 import { CfResultAndError } from "./shared";
 
 /**

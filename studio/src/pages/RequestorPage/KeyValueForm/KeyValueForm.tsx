@@ -57,20 +57,16 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         }}
       />
       <CodeMirrorInput
-        // type="text"
+        width="160px"
         value={key}
         placeholder="name"
-        // className="w-28 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none"
-        // readOnly={!onChangeKey}
+        readOnly={!onChangeKey}
         onChange={(value) => onChangeKey?.(value ?? "")}
-        // className="w-28 h-8 bg-transparent shadow-none text-sm border-none"
       />
-      <Input
-        type="text"
+      <CodeMirrorInput
         value={value}
         placeholder="value"
-        onChange={(e) => onChangeValue(e.target.value)}
-        className="h-8 w-full bg-transparent shadow-none px-2 py-0 text-sm border-none"
+        onChange={(value) => onChangeValue(value ?? "")}
       />
       <div
         className={cn("ml-1 flex invisible", {

@@ -3,6 +3,6 @@ export {
   CodeMirrorSqlEditor,
   CodeMirrorJsonEditor,
   CodeMirrorTypescriptEditor,
-} from "./CodeMirrorEditor";
+} from "./CodeMirrorEditor/CodeMirrorEditor";
 export { TimelineListDetails } from "./TimelineDetailsList";
 export { BodyViewerV2 } from "./BodyViewerV2";
