@@ -35,8 +35,14 @@ const currentPath = Astro.url.pathname;
   }
 
   nav {
-    display: flex;
-    gap: 1rem;
+    display: none;
+  }
+
+  @media (min-width: 800px) {
+    nav {
+      display: flex;
+      gap: 1rem;
+    }
   }
 
   nav a {
