@@ -23,8 +23,7 @@ const blog = defineCollection({
   }),
 });
 
-const changelog = defineCollection({
-  type: "content",
+const changelog = defineCollection({ type: "content",
   schema: z.object({
     date: z.coerce.date(),
     version: z.string(),

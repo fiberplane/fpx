@@ -71,11 +71,7 @@ const { sublist, nested } = Astro.props;
           >
             <summary>
               <div class="group-label">
-                <Icon
-                  name={resolveGroupIcon(entry.label)}
-                  stroke-width="1"
-                />{" "}
-                <!-- <Icon name={resolveGroupIcon(entry.label)} /> -->
+                <Icon name={resolveGroupIcon(entry.label)} stroke-width="1" />{" "}
                 <span class="large">{entry.label}</span>
                 {entry.badge && (
                   <Badge
