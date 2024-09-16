@@ -9,7 +9,7 @@ import { duotoneDark } from "@uiw/codemirror-theme-duotone";
 
 import CodeMirror, {
   EditorView,
-  Extension,
+  // Extension,
   gutter,
 } from "@uiw/react-codemirror";
 import { useState } from "react";
@@ -181,14 +181,23 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
         onBlur={() => setIsFocused(false)} // Set focus to false
         basicSetup={{
           lineNumbers: false,
-          foldKeymap: true,
           foldGutter: false,
+          dropCursor: false,
+          allowMultipleSelections: false,
+          indentOnInput: false,
+          bracketMatching: false,
+          closeBrackets: false,
+          autocompletion: false,
+          rectangularSelection: false,
           highlightActiveLine: false,
           highlightSelectionMatches: false,
-          closeBrackets: false,
-          // autocompletion: true,
-          rectangularSelection: false,
-          // crosshairCursor: false,
+          closeBracketsKeymap: false,
+          defaultKeymap: false,
+          searchKeymap: false,
+          historyKeymap: false,
+          foldKeymap: false,
+          completionKeymap: false,
+          lintKeymap: false,
         }}
         placeholder={placeholder}
       />
