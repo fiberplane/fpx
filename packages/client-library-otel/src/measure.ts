@@ -43,7 +43,10 @@ export type MeasureOptions<
    *
    * This way you can do things like add additional attributes to the span
    */
-  onSuccess?: (span: Span, result: RESULT) => void;
+  onSuccess?: (
+    span: Span,
+    result: RESULT,
+  ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
 
   /**
    * This is an advanced feature in cases where you don't want the open telemetry spans
@@ -133,7 +136,6 @@ export function measure<A extends unknown[], R>(
   return (...args: A): R => {
     function handleActiveSpan(span: Span): R {
       let shouldEndSpan = true;
-      // let pendingPromiseChain: Promise<R> | undefined;
 
       if (onStart) {
         try {
@@ -151,7 +153,6 @@ export function measure<A extends unknown[], R>(
       }
 
       try {
-        // console.log("span", span.spanContext().spanId, name);
         const returnValue = fn(...args);
         if (isGenerator(fn)) {
           shouldEndSpan = false;
@@ -345,7 +346,6 @@ function handleSyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
         }
       }),
     ),
-    // ,
     return: context.bind(active, function returnFunction(value: TReturn) {
       try {
         const result = iterable.return(value);
@@ -426,7 +426,6 @@ function handleAsyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
         },
       ),
     ),
-    // ,
     return: context.bind(active, async function returnFunction(value: TReturn) {
       try {
         const result = await iterable.return(value);
