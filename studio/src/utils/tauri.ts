@@ -1,4 +1,6 @@
 import type { Workspace } from "@fiberplane/fpx-types";
+import { open } from "@tauri-apps/api/dialog";
+import { appDataDir } from "@tauri-apps/api/path";
 import { invoke } from "@tauri-apps/api";
 
 export async function openWorkspace(path: string) {
@@ -13,4 +15,32 @@ export async function getCurrentWorkspace() {
 
 export async function closeWorkspace() {
   return await invoke("close_workspace");
+}
+
+export async function showOpenWorkspaceDialog() {
+  const selected = await handleDirectorySelection();
+  if (!selected) {
+    return;
+  }
+
+  return await openWorkspace(selected);
+}
+
+async function handleDirectorySelection() {
+  const selected = await open({
+    directory: true,
+    multiple: false,
+    defaultPath: await appDataDir(),
+  });
+
+  if (Array.isArray(selected)) {
+    if (selected.length > 0) {
+      const [first] = selected;
+      if (first) {
+        return first;
+      }
+    }
+  } else if (selected !== null) {
+    return selected;
+  }
 }

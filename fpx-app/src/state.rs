@@ -1,7 +1,8 @@
 use crate::models::workspace::Workspace;
+use schemars::JsonSchema;
 use std::sync::Mutex;
 
-#[derive(Default)]
+#[derive(JsonSchema, Default)]
 pub struct AppState {
     workspace: Mutex<Option<Workspace>>,
 }

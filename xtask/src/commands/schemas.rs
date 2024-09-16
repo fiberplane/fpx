@@ -20,6 +20,7 @@ pub async fn handle_command(args: Args) -> Result<()> {
     let schemas = Vec::from([
         schema_for!(ClientMessage),
         schema_for!(ServerMessage),
+        schema_for!(fpx_app::state::AppState),
         schema_for!(fpx_app::models::workspace::Config),
         schema_for!(fpx_app::models::workspace::OpenWorkspaceByPathError),
         schema_for!(fpx_app::models::workspace::Workspace),
