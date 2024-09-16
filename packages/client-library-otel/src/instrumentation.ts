@@ -217,20 +217,14 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
                   : responsePromise;
 
                 const attributesResponse = response.clone();
-                const newResponse = response;
 
                 const updateSpan = async (response: Response) => {
                   const attributes = await getResponseAttributes(response);
                   span.setAttributes(attributes);
-                  console.log(
-                    "attributes",
-                    attributes["fpx.http.response.body"],
-                  );
                   span.end();
                 };
 
                 promiseStore.add(updateSpan(attributesResponse));
-                return newResponse;
               },
               checkResult: async (result) => {
                 const r = await result;
@@ -245,7 +239,13 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
 
           try {
             return await context.with(activeContext, async () => {
-              return await measuredFetch(newRequest, rawEnv, proxyExecutionCtx);
+              const r = await measuredFetch(
+                newRequest,
+                rawEnv,
+                proxyExecutionCtx,
+              );
+              console.log("r", r);
+              return r;
             });
           } finally {
             // Make sure all promises are resolved before sending data to the server

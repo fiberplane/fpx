@@ -29,7 +29,6 @@ export function patchFetch() {
           const attributeResponse = response.clone();
           const attributes = await getResponseAttributes(attributeResponse);
           span.setAttributes(attributes);
-          return response;
         },
       },
       original,
