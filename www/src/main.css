@@ -75,7 +75,7 @@ nav.sidebar a:hover {
 }
 
 nav.sidebar details > ul > li {
-	margin-inline-start: 1rem;
+  margin-inline-start: 1rem;
 }
 
 /* nav.sidebar .top-level li {
