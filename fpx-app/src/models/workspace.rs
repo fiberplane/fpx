@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(JsonSchema, Serialize, Clone)]
 pub struct Workspace {
-    pub path: String,
+    path: String,
     config: Config,
 }
 
