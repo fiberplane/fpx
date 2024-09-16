@@ -1222,7 +1222,6 @@ dependencies = [
  "hex",
  "http 1.1.0",
  "http-body-util",
- "include_dir",
  "libsql",
  "once_cell",
  "opentelemetry",
@@ -1264,6 +1263,7 @@ dependencies = [
  "hex",
  "http 1.1.0",
  "http-body-util",
+ "include_dir",
  "libsql",
  "opentelemetry",
  "opentelemetry-proto",
@@ -1299,12 +1299,15 @@ name = "fpx-tauri"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "axum 0.7.5",
+ "fpx-lib",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-store",
  "tauri-plugin-window-state",
+ "tokio",
  "toml 0.7.8",
 ]
 

@@ -2,7 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use models::AppState;
-use std::{env, sync::Mutex};
+use std::env;
+use std::sync::Mutex;
 use tauri::Manager;
 use tauri_plugin_store::StoreBuilder;
 
@@ -23,6 +24,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::list_recent_projects,
             commands::open_project,
+            commands::start_server,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

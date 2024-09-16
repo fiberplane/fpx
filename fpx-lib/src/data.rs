@@ -1,16 +1,16 @@
 use crate::data::models::HexEncodedId;
-use crate::events::ServerEvents;
 use async_trait::async_trait;
 use std::sync::Arc;
 use thiserror::Error;
 
+#[cfg(feature = "libsql")]
+pub mod libsql;
 pub mod models;
 pub mod sql;
 pub mod util;
 
 pub type Result<T, E = DbError> = anyhow::Result<T, E>;
 
-pub type BoxedEvents = Arc<dyn ServerEvents>;
 pub type BoxedStore = Arc<dyn Store>;
 
 #[derive(Clone, Default, Debug)]
@@ -35,7 +35,7 @@ pub enum DbError {
 
     #[cfg(feature = "libsql")]
     #[error("Internal database error occurred: {0}")]
-    LibsqlError(#[from] libsql::Error),
+    LibsqlError(#[from] ::libsql::Error),
 }
 
 #[async_trait]

@@ -1,8 +1,8 @@
+use crate::data::models::{HexEncodedId, Span};
+use crate::data::sql::SqlBuilder;
+use crate::data::{DbError, Result, Store, Transaction};
 use anyhow::Context;
 use async_trait::async_trait;
-use fpx_lib::data::models::{HexEncodedId, Span};
-use fpx_lib::data::sql::SqlBuilder;
-use fpx_lib::data::{DbError, Result, Store, Transaction};
 use libsql::{params, Builder, Connection};
 use std::fmt::Display;
 use std::path::Path;
@@ -11,10 +11,9 @@ use tracing::trace;
 use util::RowsExt;
 
 mod migrations;
-mod util;
-
 #[cfg(test)]
 mod tests;
+mod util;
 
 pub enum DataPath<'a> {
     InMemory,
@@ -179,7 +178,7 @@ impl Store for LibsqlStore {
         &self,
         _tx: &Transaction,
         // Future improvement could hold sort fields, limits, etc
-    ) -> Result<Vec<fpx_lib::data::models::Trace>> {
+    ) -> Result<Vec<crate::data::models::Trace>> {
         let traces = self
             .connection
             .query(&self.sql_builder.traces_list(None), ())

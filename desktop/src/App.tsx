@@ -5,8 +5,23 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "./components/ui/button";
 import { Card } from "./components/ui/card";
 import { cn } from "./utils";
+import { listen } from "@tauri-apps/api/event";
 
 type RecentProjects = Array<string>;
+
+type Idable<T> = {
+  id: string;
+  inner: T;
+};
+
+type EventMessage = {
+  type: string;
+  details: EventMessageDetails;
+};
+
+type EventMessageDetails = {
+  newSpans: Array<[string, string]>;
+};
 
 type Project = {
   listen_port: number;
@@ -15,6 +30,31 @@ type Project = {
 export function App() {
   const [error, setError] = useState<string | undefined>();
   const [recentProjects, setRecentProjects] = useState<RecentProjects>([]);
+
+  const [eventMessage, setEventMessage] = useState<Array<Idable<EventMessage>>>(
+    [],
+  );
+
+  useEffect(() => {
+    listen<EventMessage>("api_message", (message) => {
+      const id_message2: Idable<EventMessage> = {
+        id: Math.random().toString(36).substring(7),
+        inner: message.payload,
+      };
+      setEventMessage((event_messages) => [...event_messages, id_message2]);
+    });
+  }, []);
+
+  const handleStart = useCallback(() => {
+    (async () => {
+      try {
+        await invoke("start_server");
+      } catch (e) {
+        // TODO: Handle type share
+        setError(e as string);
+      }
+    })();
+  }, []);
 
   const handleOpen = useCallback((path?: string) => {
     (async () => {
@@ -49,6 +89,19 @@ export function App() {
   return (
     <div className="flex flex-col w-screen h-screen p-4">
       {error && <div className="bg-orange-800 rounded p-4">{error}</div>}
+      <Card className="p-4 flex flex-col gap-8 w-full h-full">
+        <Button onClick={() => handleStart()}>Start server</Button>
+      </Card>
+      <Card className="p-4 flex flex-col gap-8 w-full h-full">
+        {eventMessage.map((event_message) => (
+          <p key={event_message.id}>
+            {event_message.inner.type}:{" "}
+            {event_message.inner.details.newSpans.map(
+              ([trace_id, span_id]) => trace_id + " -  " + span_id,
+            )}
+          </p>
+        ))}
+      </Card>
       <Card className="p-4 flex flex-col gap-8 w-full h-full">
         <strong>Recent projects</strong>
         <div className="flex flex-col gap-4">

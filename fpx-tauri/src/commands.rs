@@ -1,11 +1,16 @@
-use crate::{
-    models::{AppState, OpenProjectError, Project},
-    STORE_PATH,
-};
+use crate::models::{AppState, OpenProjectError, Project};
+use crate::STORE_PATH;
+use fpx_lib::data::libsql::LibsqlStore;
+use fpx_lib::events::memory::InMemoryEvents;
+use fpx_lib::service::Service;
+use fpx_lib::{api, events};
 use serde_json::Value;
-use std::{fs::File, io::Read, sync::Mutex};
+use std::sync::{Arc, Mutex};
+use std::{fs::File, io::Read};
+use tauri::async_runtime::spawn;
 use tauri::{AppHandle, Runtime, State, Window, WindowBuilder, WindowEvent, WindowUrl};
 use tauri_plugin_store::{with_store, StoreCollection};
+use tokio::sync::broadcast::error::RecvError;
 
 const RECENT_PROJECTS_STORE_KEY: &str = "recent_projects";
 
@@ -91,4 +96,54 @@ pub fn open_project<R: Runtime>(
     .unwrap();
 
     Ok(project)
+}
+
+#[tauri::command]
+pub fn start_server(window: Window) -> Result<(), ()> {
+    spawn(async {
+        let store: LibsqlStore = LibsqlStore::in_memory().await.unwrap();
+        LibsqlStore::migrate(&store).await.unwrap();
+        let store = Arc::new(store);
+
+        // Create a shared events struct, which allows events to be send to
+        // WebSocket connections.
+        let events = InMemoryEvents::new();
+        let events = Arc::new(events);
+
+        let mut reader = events.subscribe();
+        spawn(async move {
+            loop {
+                match reader.recv().await {
+                    Ok(message) => {
+                        window.emit("api_message", message).expect("emit failed");
+                    }
+                    Err(RecvError::Lagged(i)) => eprintln!("Lagged: {}", i),
+                    Err(RecvError::Closed) => break,
+                }
+            }
+        });
+
+        let service = Service::new(store.clone(), events.clone());
+
+        let app = api::Builder::new()
+            .enable_compression()
+            .build(service.clone(), store.clone());
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:6767")
+            .await
+            .unwrap();
+
+        // info!(
+        //     api_listen_address = ?listener.local_addr().context("Failed to get local address")?,
+        //     grpc_listen_address = ?args.grpc_listen_address,
+        //     "Starting server",
+        // );
+
+        let api_server = axum::serve(listener, app);
+
+        if let Err(err) = api_server.await {
+            eprintln!("Server error: {:?}", err);
+        };
+    });
+    Ok(())
 }

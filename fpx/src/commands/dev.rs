@@ -1,8 +1,8 @@
-use crate::data::LibsqlStore;
-use crate::events::InMemoryEvents;
 use crate::grpc::GrpcService;
 use crate::initialize_fpx_dir;
 use anyhow::{Context, Result};
+use fpx_lib::data::libsql::LibsqlStore;
+use fpx_lib::events::memory::InMemoryEvents;
 use fpx_lib::{api, service};
 use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::TraceServiceServer;
 use std::future::IntoFuture;

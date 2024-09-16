@@ -1,4 +1,4 @@
-use fpx_lib::data::{DbError, Result};
+use crate::data::{DbError, Result};
 use libsql::{de, Rows};
 use serde::de::DeserializeOwned;
 

@@ -6,7 +6,8 @@ use tracing::{debug, trace};
 
 // NOTE: We should probably create our own include, which will store it sorted,
 //       as an array, and with just the name and sql as the expected types.
-static MIGRATIONS: Dir<'_> = include_dir::include_dir!("$CARGO_MANIFEST_DIR/src/data/migrations");
+static MIGRATIONS: Dir<'_> =
+    include_dir::include_dir!("$CARGO_MANIFEST_DIR/src/data/libsql/migrations");
 
 static MIGRATIONS_BOOTSTRAP: &str = "
 CREATE TABLE _fpx_migrations  (
