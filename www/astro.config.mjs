@@ -38,6 +38,14 @@ export default defineConfig({
           label: "Features",
           autogenerate: { directory: "docs/features" },
         },
+        {
+          label: "nav",
+          items: [
+            { link: "/changelog", label: "Changelog" },
+            { link: "/blog", label: "Blog" },
+            { link: "/docs", label: "Docs" },
+          ],
+        },
       ],
       components: {
         Header: "@/components/Header.astro",

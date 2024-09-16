@@ -23,7 +23,16 @@ const blog = defineCollection({
   }),
 });
 
+const changelog = defineCollection({
+	type: "content",
+	schema: z.object({
+		date: z.coerce.date(),
+		version: z.string(),
+	}),
+});
+
 export const collections = {
   docs,
   blog,
+  changelog
 };
