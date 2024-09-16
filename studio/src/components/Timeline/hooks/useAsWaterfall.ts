@@ -39,6 +39,17 @@ export function useAsWaterfall(
         if ("span" in b && b?.span?.name === "request") {
           return 1;
         }
+
+        // If the time stamp is the same, sort on span_id/parent_span_id
+        // TODO: improve further sorting.
+        if ("span" in a && "span" in b) {
+          if (a.span.span_id === b.span.parent_span_id) {
+            return -1;
+          }
+          if (b.span.span_id === a.span.parent_span_id) {
+            return 1;
+          }
+        }
       }
       return new Date(timeA).getTime() - new Date(timeB).getTime();
     });

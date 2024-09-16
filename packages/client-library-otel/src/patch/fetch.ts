@@ -24,11 +24,12 @@ export function patchFetch() {
         onStart: (span, [input, init]) => {
           span.setAttributes(getRequestAttributes(input, init));
         },
-        onSuccess: async (span, response) => {
-          const attributes = await getResponseAttributes(
-            (await response).clone(),
-          );
+        onSuccess: async (span, responsePromise) => {
+          const response = await responsePromise;
+          const attributeResponse = response.clone();
+          const attributes = await getResponseAttributes(attributeResponse);
           span.setAttributes(attributes);
+          return response;
         },
       },
       original,

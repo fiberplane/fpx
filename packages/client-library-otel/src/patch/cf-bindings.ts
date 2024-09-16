@@ -158,6 +158,7 @@ function proxyD1Binding(o: object, bindingName: string) {
             },
             onSuccess: (span, result) => {
               addResultAttribute(span, result);
+              return result;
             },
             onError: handleError,
           },

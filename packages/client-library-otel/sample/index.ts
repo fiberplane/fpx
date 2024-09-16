@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { stream } from "hono/streaming";
 import { instrument, measure } from "../src";
 
 const app = new Hono();
@@ -46,6 +47,57 @@ const delayedError = measure("delayedError", async () => {
 app.get("/error", async () => {
   await sleep(5);
   await delayedError();
+});
+
+// This is an async generator function (and so returns an async iterator)
+const generateRelaxedWelcome = measure("relaxedWelcome", async function* () {
+  await sleep(500);
+  yield "hello! ";
+  await sleep(500);
+  yield "Hono ";
+  await sleep(500);
+  yield "is ";
+  await sleep(500);
+  yield "awesome";
+});
+
+app.get("/stream", async (c) => {
+  c.header("Content-Type", "text/plain");
+  return stream(c, async (stream) => {
+    const result = generateRelaxedWelcome();
+
+    for await (const content of result) {
+      await stream.write(content);
+    }
+  });
+});
+
+const fibonacci = measure(
+  "fibonacci",
+  function* (arg: number): Generator<number> {
+    let a = 1;
+    let b = 1;
+    for (let i = 0; i < arg; i++) {
+      yield a;
+      [a, b] = [b, a + b];
+    }
+  },
+);
+// Example usage:
+app.get("/fibonacci/:count", (c) => {
+  const count = Number.parseInt(c.req.param("count"), 10);
+
+  const result = fibonacci(count);
+  const values = Array.from(result);
+
+  return c.text(`Fibonacci sequence (${count} numbers): ${values.join(", ")}`);
+});
+
+app.get("/quick", async (c) => {
+  c.header("Content-Type", "text/plain");
+  return stream(c, async (stream) => {
+    stream.write("ok");
+  });
 });
 
 export default instrument(app);

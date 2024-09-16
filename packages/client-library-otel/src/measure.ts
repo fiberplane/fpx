@@ -4,9 +4,11 @@ import {
   type Span,
   type SpanKind,
   SpanStatusCode,
+  context,
   trace,
 } from "@opentelemetry/api";
 import type { FpxLogger } from "./logger";
+import { isPromise } from "./utils";
 
 export type MeasureOptions<
   /**
@@ -41,10 +43,23 @@ export type MeasureOptions<
    *
    * This way you can do things like add additional attributes to the span
    */
-  onSuccess?: (
-    span: Span,
-    result: RESULT,
-  ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
+  onSuccess?: (span: Span, result: RESULT) => void;
+
+  /**
+   * This is an advanced feature in cases where you don't want the open telemetry spans
+   * to be ended automatically.
+   *
+   * Some disclaimers: this can only be used in combination with promises and with an onSuccess
+   *  handler. This handler should call span.end() at some point. If you want the on success
+   * handler to trigger another async function you may want to use waitUntil to prevent the
+   * worker from terminating before the traces/spans are finished & send to the server
+   *
+   * How this is currently used;:
+   * We're using it to show the duration of a request in case it's being streamed back to
+   * the client. In those cases the response is returned early while work is still being done.
+   *
+   */
+  endSpanManually?: boolean;
 
   /**
    * Allows you to specify a function that will be called when the span ends
@@ -90,12 +105,12 @@ export function measure<T, A extends unknown[]>(
  * @param options param name and spanKind
  * @param fn
  */
-export function measure<R, A extends unknown[]>(
+export function measure<A extends unknown[], R>(
   options: MeasureOptions<A, R, R>,
   fn: (...args: A) => R,
 ): (...args: A) => R;
 
-export function measure<R, A extends unknown[]>(
+export function measure<A extends unknown[], R>(
   nameOrOptions: string | MeasureOptions<A, R, R>,
   fn: (...args: A) => R,
 ): (...args: A) => R {
@@ -112,20 +127,21 @@ export function measure<R, A extends unknown[]>(
   const onError = isOptions ? nameOrOptions.onError : undefined;
   const checkResult = isOptions ? nameOrOptions.checkResult : undefined;
   const logger = isOptions ? nameOrOptions.logger : undefined;
+  const endSpanManually =
+    (isOptions ? nameOrOptions.endSpanManually : undefined) || false;
 
   return (...args: A): R => {
     function handleActiveSpan(span: Span): R {
       let shouldEndSpan = true;
-
-      let pendingPromiseChain: Promise<R> | undefined;
+      // let pendingPromiseChain: Promise<R> | undefined;
 
       if (onStart) {
         try {
           onStart(span, args);
         } catch (error) {
           if (logger) {
-            const errorMessage =
-              error instanceof Error ? error.message : "Unknown error";
+            const errorMessage = formatException(convertToException(error));
+
             logger.warn(
               `Error in onStart while measuring ${name}:`,
               errorMessage,
@@ -135,49 +151,50 @@ export function measure<R, A extends unknown[]>(
       }
 
       try {
+        // console.log("span", span.spanContext().spanId, name);
         const returnValue = fn(...args);
+        if (isGenerator(fn)) {
+          shouldEndSpan = false;
+          type Result = ReturnType<typeof fn>;
+          return handleSyncIterator(span, returnValue as Result) as R;
+        }
+
+        if (isAsyncGenerator(fn)) {
+          shouldEndSpan = false;
+          type Result = ReturnType<typeof fn>;
+          return handleAsyncIterator(span, returnValue as Result) as R;
+        }
+
         if (isPromise<R>(returnValue)) {
           shouldEndSpan = false;
           return handlePromise<R>(span, returnValue, {
             onSuccess,
             onError,
             checkResult,
+            endSpanManually,
           }) as R;
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
 
-        // HACK - `onSuccess` can be async, so we need to wait for it to finish before ending the span (in the finally clause)
         if (onSuccess) {
-          pendingPromiseChain = new Promise((resolve) => {
-            try {
-              const onSuccessResult = onSuccess(span, returnValue);
-              if (onSuccessResult instanceof Promise) {
-                onSuccessResult.then(() => {
-                  resolve(returnValue);
-                });
-              } else {
-                resolve(returnValue);
-              }
-            } catch (error) {
-              if (logger) {
-                const errorMessage =
-                  error instanceof Error ? error.message : "Unknown error";
-                logger.warn(
-                  `Error in onSuccess while measuring ${name}:`,
-                  errorMessage,
-                );
-              }
-              resolve(returnValue);
+          try {
+            onSuccess(span, returnValue);
+          } catch (error) {
+            if (logger) {
+              const errorMessage = formatException(convertToException(error));
+              logger.warn(
+                `Error in onSuccess while measuring ${name}:`,
+                errorMessage,
+              );
             }
-          });
+          }
         }
 
         return returnValue;
       } catch (error) {
-        const sendError: Exception =
-          error instanceof Error ? error : "Unknown error occurred";
-        span.recordException(sendError);
+        const exception: Exception = convertToException(error);
+        span.recordException(exception);
 
         if (onError) {
           try {
@@ -189,13 +206,8 @@ export function measure<R, A extends unknown[]>(
 
         throw error;
       } finally {
-        if (pendingPromiseChain) {
-          pendingPromiseChain.then(() => {
-            if (shouldEndSpan) {
-              span.end();
-            }
-          });
-        } else if (shouldEndSpan) {
+        if (shouldEndSpan) {
+          console.log("span end", name);
           span.end();
         }
       }
@@ -220,10 +232,10 @@ async function handlePromise<T>(
   promise: Promise<T>,
   options: Pick<
     MeasureOptions<unknown[], T, Promise<T>>,
-    "onSuccess" | "onError" | "checkResult"
+    "onSuccess" | "onError" | "checkResult" | "endSpanManually"
   >,
 ): Promise<T> {
-  const { onSuccess, onError, checkResult } = options;
+  const { onSuccess, onError, checkResult, endSpanManually = false } = options;
   try {
     const result = await Promise.resolve(promise);
 
@@ -232,13 +244,12 @@ async function handlePromise<T>(
         await checkResult(result);
       } catch (error) {
         // recordException only accepts Error objects or strings
-        const sendError: Exception =
-          error instanceof Error ? error : "Unknown error occured";
-        span.recordException(sendError);
+        const exception = convertToException(error);
+        span.recordException(exception);
 
         if (onError) {
           try {
-            await onError(span, sendError);
+            await onError(span, exception);
           } catch {
             // swallow error
           }
@@ -249,6 +260,10 @@ async function handlePromise<T>(
             await onSuccess(span, result);
           } catch {
             // swallow error
+          } finally {
+            if (!endSpanManually) {
+              span.end();
+            }
           }
         }
 
@@ -268,15 +283,9 @@ async function handlePromise<T>(
     return result;
   } catch (error) {
     try {
-      // recordException only accepts Error objects or strings
-      const sendError: Exception =
-        error instanceof Error ? error : "Unknown error occured";
-      span.recordException(sendError);
-
-      const message =
-        typeof sendError === "string"
-          ? sendError
-          : sendError.message || "Unknown error occured";
+      const exception = convertToException(error);
+      span.recordException(exception);
+      const message = formatException(exception);
       span.setStatus({
         code: SpanStatusCode.ERROR,
         message,
@@ -296,10 +305,196 @@ async function handlePromise<T>(
     // Rethrow the error
     throw error;
   } finally {
-    span.end();
+    if (!endSpanManually || !onSuccess) {
+      span.end();
+    }
   }
 }
 
-function isPromise<T>(value: unknown): value is Promise<T> {
-  return value instanceof Promise;
+/**
+ * Handles synchronous iterators (generators).
+ * Measures the time until the generator is fully consumed.
+ */
+function handleSyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
+  span: Span,
+  iterable: Generator<T, TReturn, TNext>,
+): Generator<T, TReturn, TNext> {
+  const active = context.active();
+  return {
+    next: context.bind(
+      active,
+      measure("iterator.next", function nextFunction(...args: [] | [TNext]) {
+        try {
+          const result = iterable.next(...args);
+          if (result.done) {
+            span.setStatus({ code: SpanStatusCode.OK });
+            span.end();
+          }
+
+          return result;
+        } catch (error) {
+          const exception = convertToException(error);
+          span.recordException(exception);
+          const message = formatException(exception);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message,
+          });
+          span.end();
+          throw error;
+        }
+      }),
+    ),
+    // ,
+    return: context.bind(active, function returnFunction(value: TReturn) {
+      try {
+        const result = iterable.return(value);
+        span.setStatus({
+          code: SpanStatusCode.OK,
+        });
+        return result;
+      } catch (error) {
+        const exception = convertToException(error);
+        span.recordException(exception);
+        const message = formatException(exception);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message,
+        });
+        throw error;
+      } finally {
+        span.end();
+      }
+    }),
+    throw: context.bind(active, function throwFunction(error: unknown) {
+      try {
+        if (iterable.throw) {
+          return iterable.throw(error);
+        }
+        throw error;
+      } finally {
+        const exception = convertToException(error);
+        span.recordException(exception);
+        const message = formatException(exception);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message,
+        });
+        span.end();
+      }
+    }),
+    [Symbol.iterator]() {
+      return this;
+    },
+  };
+}
+
+/**
+ * Handles asynchronous iterators (async generators).
+ * Measures the time until the async generator is fully consumed.
+ */
+function handleAsyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
+  span: Span,
+  iterable: AsyncGenerator<T, TReturn, TNext>,
+): AsyncGenerator<T, TReturn, TNext> {
+  const active = context.active();
+  return {
+    next: context.bind(
+      active,
+      measure(
+        "iterator.next",
+        async function nextFunction(...args: [] | [TNext]) {
+          try {
+            const result = await iterable.next(...args);
+            if (result.done) {
+              span.setStatus({ code: SpanStatusCode.OK });
+              span.end();
+            }
+
+            return result;
+          } catch (error) {
+            const exception = convertToException(error);
+            span.recordException(exception);
+            const message = formatException(exception);
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message,
+            });
+            span.end();
+            throw error;
+          }
+        },
+      ),
+    ),
+    // ,
+    return: context.bind(active, async function returnFunction(value: TReturn) {
+      try {
+        const result = await iterable.return(value);
+        span.setStatus({
+          code: SpanStatusCode.OK,
+        });
+        return result;
+      } catch (error) {
+        const exception = convertToException(error);
+        span.recordException(exception);
+        const message = formatException(exception);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message,
+        });
+        throw error;
+      } finally {
+        span.end();
+      }
+    }),
+    throw: context.bind(active, async function throwFunction(error: unknown) {
+      try {
+        return await iterable.throw(error);
+      } finally {
+        const exception = convertToException(error);
+        span.recordException(exception);
+        const message = formatException(exception);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message,
+        });
+        span.end();
+      }
+    }),
+    [Symbol.asyncIterator]() {
+      return this;
+    },
+  };
+}
+
+function convertToException(error: unknown) {
+  return error instanceof Error ? error : "Unknown error occurred";
+}
+
+function formatException(exception: Exception) {
+  return typeof exception === "string"
+    ? exception
+    : exception.message || "Unknown error occurred";
+}
+
+const GeneratorFunction = Object.getPrototypeOf(function* () {}).constructor;
+function isGenerator<T = unknown, TReturn = unknown, TNext = unknown>(
+  fn: unknown,
+): fn is (...args: unknown[]) => Generator<T, TReturn, TNext> {
+  return fn instanceof GeneratorFunction;
+}
+
+const AsyncGeneratorFunction = Object.getPrototypeOf(
+  async function* () {},
+).constructor;
+/**
+ * Type guard to check if a function is an async generator.
+ *
+ * @param fn - The function to be checked
+ * @returns true if the function is an async generator, otherwise false
+ */
+function isAsyncGenerator<T = unknown, TReturn = unknown, TNext = unknown>(
+  fn: unknown,
+): fn is (...args: unknown[]) => AsyncGenerator<T, TReturn, TNext> {
+  return fn instanceof AsyncGeneratorFunction;
 }

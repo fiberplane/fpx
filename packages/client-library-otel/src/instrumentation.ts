@@ -22,6 +22,7 @@ import {
   patchFetch,
   patchWaitUntil,
 } from "./patch";
+import { PromiseStore } from "./promiseStore";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
@@ -30,6 +31,7 @@ import {
   getRequestAttributes,
   getResponseAttributes,
   getRootRequestAttributes,
+  isPromise,
 } from "./utils";
 
 /**
@@ -148,10 +150,10 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             endpoint,
           });
 
+          const promiseStore = new PromiseStore();
           // Enable tracing for waitUntil
-          const patched = executionContext && patchWaitUntil(executionContext);
-          const promises = patched?.promises ?? [];
-          const proxyExecutionCtx = patched?.proxyContext ?? executionContext;
+          const proxyExecutionCtx =
+            executionContext && patchWaitUntil(executionContext, promiseStore);
 
           const activeContext = propagateFpxTraceId(request);
 
@@ -206,11 +208,29 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
                 };
                 span.setAttributes(requestAttributes);
               },
-              onSuccess: async (span, response) => {
-                const attributes = await getResponseAttributes(
-                  (await response).clone(),
-                );
-                span.setAttributes(attributes);
+              endSpanManually: true,
+              onSuccess: async (span, responsePromise) => {
+                span.addEvent("first-response");
+
+                const response = isPromise(responsePromise)
+                  ? await responsePromise
+                  : responsePromise;
+
+                const attributesResponse = response.clone();
+                const newResponse = response;
+
+                const updateSpan = async (response: Response) => {
+                  const attributes = await getResponseAttributes(response);
+                  span.setAttributes(attributes);
+                  console.log(
+                    "attributes",
+                    attributes["fpx.http.response.body"],
+                  );
+                  span.end();
+                };
+
+                promiseStore.add(updateSpan(attributesResponse));
+                return newResponse;
               },
               checkResult: async (result) => {
                 const r = await result;
@@ -231,7 +251,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             // Make sure all promises are resolved before sending data to the server
             if (proxyExecutionCtx) {
               proxyExecutionCtx.waitUntil(
-                Promise.allSettled(promises).finally(() => {
+                promiseStore.allSettled().finally(() => {
                   return provider.forceFlush();
                 }),
               );
