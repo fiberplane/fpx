@@ -74,7 +74,11 @@ nav.sidebar a:hover {
   color: var(--sl-color-accent);
 }
 
-nav.sidebar .top-level li {
+nav.sidebar details > ul > li {
+	margin-inline-start: 1rem;
+}
+
+/* nav.sidebar .top-level li {
   padding-inline-start: 0;
   margin-inline-start: 0;
   border-inline-start: none;
@@ -96,7 +100,7 @@ nav.sidebar ul ul .group-label span.large {
   text-transform: none;
   font-size: var(--sl-text-base);
   font-weight: normal;
-}
+} */
 
 nav.sidebar a[aria-current="page"],
 nav.sidebar a[aria-current="page"]:hover,
