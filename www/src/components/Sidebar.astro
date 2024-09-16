@@ -13,14 +13,14 @@ const [sidebar, nav] = sidebarAndNav.reduce<[SidebarEntry[], NavEntry[]]>(
   ([sidebar, nav], item: SidebarEntry) => {
     if (item.label === "nav" && item.type === "group" && "entries" in item) {
       nav = item.entries.filter(
-        (entry): entry is NavEntry => entry.type === "link",
+        (entry): entry is NavEntry => entry.type === "link"
       );
     } else {
       sidebar.push(item);
     }
     return [sidebar, nav];
   },
-  [[], []],
+  [[], []]
 );
 ---
 

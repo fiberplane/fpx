@@ -9,7 +9,7 @@ type NavEntry = SidebarEntry & { type: "link" };
 
 const { sidebar } = Astro.props;
 const nav = sidebar.find(
-  (entry) => entry.type === "group" && entry.label === "nav",
+  (entry) => entry.type === "group" && entry.label === "nav"
 ) as { entries: NavEntry[] } | undefined;
 const navEntries = nav?.entries || [];
 ---

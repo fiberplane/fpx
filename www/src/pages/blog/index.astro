@@ -4,7 +4,7 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 
 const postsUnsorted = await getCollection("blog");
 const postsSortedByDateDesc = postsUnsorted.toSorted(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
 );
 ---
 
@@ -14,8 +14,8 @@ const postsSortedByDateDesc = postsUnsorted.toSorted(
     description: "Fiberplane likes to write sometimes",
     template: "splash",
     hero: {
-      title: "Fiberplane blog",
-    },
+      title: "Fiberplane blog"
+    }
   }}
 >
   <ul class="blog-post-list">
@@ -29,7 +29,7 @@ const postsSortedByDateDesc = postsUnsorted.toSorted(
             {new Date(post.data.date).toLocaleDateString("en-US", {
               year: "numeric",
               month: "short",
-              day: "numeric",
+              day: "numeric"
             })}
           </span>
         </li>

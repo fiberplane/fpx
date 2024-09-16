@@ -26,7 +26,7 @@ if (image && "file" in image) {
               icon,
               link: href,
               text,
-              variant,
+              variant
             }) => (
               <LinkButton
                 {href}
@@ -39,7 +39,7 @@ if (image && "file" in image) {
                 {text}
                 {icon?.html && <Fragment set:html={icon.html} />}
               </LinkButton>
-            ),
+            )
           )
         }
       </div>

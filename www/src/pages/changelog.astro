@@ -7,12 +7,12 @@ const changelogEntries = await Promise.all(
   changelogEntriesUnsorted
     .sort(
       (a, b) =>
-        new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+        new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
     )
     .map(async (entry) => ({
       ...entry,
-      content: await entry.render(),
-    })),
+      content: await entry.render()
+    }))
 );
 ---
 
@@ -21,7 +21,7 @@ const changelogEntries = await Promise.all(
     title: "Changelog",
     description: "Fiberplane Studio changelog",
     template: "doc",
-    tableOfContents: false,
+    tableOfContents: false
   }}
 >
   {
@@ -32,7 +32,7 @@ const changelogEntries = await Promise.all(
             {entry.data.date.toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
-              day: "numeric",
+              day: "numeric"
             })}
           </h2>
           <entry.content.Content />
