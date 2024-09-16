@@ -45,6 +45,10 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       onChange={onChange}
       theme={[duotoneDark, customTheme]}
       readOnly={readOnly}
+      basicSetup={{
+        // Turn off searching the input via cmd+g and cmd+f
+        searchKeymap: false,
+      }}
     />
   );
 }
