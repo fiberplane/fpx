@@ -4,6 +4,9 @@ import { invoke } from "@tauri-apps/api";
 import { open } from "@tauri-apps/api/dialog";
 import { appDataDir } from "@tauri-apps/api/path";
 import { Button } from "../ui/button";
+import { useState } from "react";
+
+type OpenWorkspaceByPathError = "ConfigFileMissing" | "InvalidConfiguration";
 
 async function openWorkspace(path: string) {
   return await invoke<Workspace | undefined>("open_workspace_by_path", {
@@ -16,6 +19,24 @@ type WorkspaceSelectorProps = {
 };
 
 export function WorkspaceSelector({ setWorkspace }: WorkspaceSelectorProps) {
+  const [error, setError] = useState<OpenWorkspaceByPathError | undefined>();
+
+  const openFile = useHandler(async (path: string) => {
+    try {
+      const workspace = await openWorkspace(path);
+      if (workspace) {
+        setWorkspace(workspace);
+      }
+    } catch (error) {
+      switch (error) {
+        case "ConfigFileMissing":
+        case "InvalidConfiguration":
+          setError(error);
+          break;
+      }
+    }
+  });
+
   const handleOpen = useHandler(() => {
     (async () => {
       const selected = await open({
@@ -28,26 +49,18 @@ export function WorkspaceSelector({ setWorkspace }: WorkspaceSelectorProps) {
         if (selected.length > 0) {
           const [first] = selected;
           if (first) {
-            const workspace = await openWorkspace(first);
-            if (workspace) {
-              setWorkspace(workspace);
-            }
+            openFile(first);
           }
         }
-      } else if (selected === null) {
-        //
-      } else {
-        const workspace = await openWorkspace(selected);
-        if (workspace) {
-          setWorkspace(workspace);
-        }
-        // user selected a single directory
+      } else if (selected !== null) {
+        openFile(selected);
       }
     })();
   });
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center">
+    <div className="w-screen h-screen flex flex-col items-center justify-center">
+      {error}
       <Button onClick={handleOpen}>Open</Button>
     </div>
   );

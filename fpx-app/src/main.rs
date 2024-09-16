@@ -16,14 +16,23 @@ fn get_current_workspace(state: State<'_, AppState>) -> Option<Workspace> {
 }
 
 #[tauri::command]
-fn open_workspace_by_path(path: String, state: State<'_, AppState>) -> Workspace {
-    let content = read_to_string(format!("{}/fpx.toml", path)).unwrap();
-    let config: Config = toml::from_str(&content).unwrap();
+fn open_workspace_by_path(
+    path: String,
+    state: State<'_, AppState>,
+) -> Result<Workspace, OpenWorkspaceByPathError> {
+    match read_to_string(format!("{}/fpx.toml", path)) {
+        Ok(content) => {
+            if let Ok(config) = toml::from_str::<Config>(&content) {
+                let workspace = Workspace::new(path, config);
+                state.set_workspace(workspace.clone());
 
-    let workspace = Workspace::new(path, config);
-    state.set_workspace(workspace.clone());
-
-    workspace
+                Ok(workspace)
+            } else {
+                Err(OpenWorkspaceByPathError::InvalidConfiguration)
+            }
+        }
+        Err(_) => Err(OpenWorkspaceByPathError::ConfigFileMissing),
+    }
 }
 
 #[tauri::command]
@@ -54,11 +63,10 @@ impl Workspace {
         Self { path, config }
     }
 }
-
-#[derive(Serialize, Deserialize, Default)]
-enum WorkspaceError {
-    #[default]
-    Error,
+#[derive(Serialize)]
+enum OpenWorkspaceByPathError {
+    ConfigFileMissing,
+    InvalidConfiguration,
 }
 
 #[derive(Default)]
