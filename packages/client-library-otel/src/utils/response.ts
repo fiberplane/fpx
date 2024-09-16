@@ -1,5 +1,3 @@
-// import { GlobalResponse } from "../types";
-
 export function cloneResponse(response: Response) {
   const [a = null, b = null] = response.body ? response.body.tee() : [];
 
