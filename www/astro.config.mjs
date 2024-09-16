@@ -1,4 +1,6 @@
 import { rehypeHeadingIds } from "@astrojs/markdown-remark";
+import partytown from "@astrojs/partytown";
+import sitemap from "@astrojs/sitemap";
 import starlight from "@astrojs/starlight";
 import icon from "astro-icon";
 import { defineConfig } from "astro/config";
@@ -6,6 +8,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://fiberplane.com",
   redirects: {
     "/docs": "/docs/get-started",
   },
@@ -39,6 +42,28 @@ export default defineConfig({
           autogenerate: { directory: "docs/features" },
         },
       ],
+      head: [
+        {
+          tag: "script",
+          attrs: {
+            type: "text/partytown",
+            src: "https://www.googletagmanager.com/gtag/js?id=G-FMRLG4PY3L",
+            async: true,
+          },
+        },
+        {
+          tag: "script",
+          attrs: {
+            type: "text/partytown",
+          },
+          content: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-FMRLG4PY3L');
+          `,
+        },
+      ],
       components: {
         Header: "@/components/Header.astro",
         Pagination: "@/components/Pagination.astro",
@@ -58,6 +83,12 @@ export default defineConfig({
     // we'll need to specify manually which icon sets to include
     // https://github.com/natemoo-re/astro-icon?tab=readme-ov-file#configinclude
     icon(),
+    sitemap(),
+    partytown({
+      config: {
+        forward: ["dataLayer.push"],
+      },
+    }),
   ],
   markdown: {
     rehypePlugins: [
