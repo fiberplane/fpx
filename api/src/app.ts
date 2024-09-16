@@ -9,6 +9,7 @@ import logger from "./logger.js";
 
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
+import deflector from "./routes/deflector.js";
 import inference from "./routes/inference.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
@@ -58,6 +59,7 @@ export function createApp(
   app.route("/", source);
   app.route("/", appRoutes);
   app.route("/", settings);
+  app.route("/", deflector);
 
   return app;
 }

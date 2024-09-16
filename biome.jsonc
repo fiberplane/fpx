@@ -95,13 +95,16 @@
       ".astro",
 
       // ignore all tsconfig.json files
-      "tsconfig.json"
+      "tsconfig.json",
 
       // Rust code related
       // This caused biome to ignore the entire fpx folder
       // commenting out for now as we still want to find a way to
       // skip Rust code in biome
       // "fpx/*.*"
+
+      // python venv
+      ".venv"
     ]
   }
 }

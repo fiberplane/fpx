@@ -1,10 +1,10 @@
-# Automagically install & update npm dependencies when package.json changes
+# Automagically install & update pnpm dependencies when package.json changes
 local_resource(
     "node_modules",
-    labels=["api", "frontend"],
-    deps=["package.json", "api/package.json", "frontend/package.json"],
+    labels=["api", "studio"],
+    deps=["package.json", "api/package.json", "studio/package.json"],
     dir=".",
-    cmd="npm install",
+    cmd="pnpm install",
 )
 
 # Ensure the api/dist directory exists
@@ -14,22 +14,31 @@ local_resource(
     cmd="mkdir api/dist || true",
 )
 
-# Build & serve the frontend
 local_resource(
-    "frontend-build",
-    labels=["frontend"],
-    cmd="npm run clean:frontend && npm run build:frontend",
-    deps=["frontend/src"],
+    "packages-build",
+    labels=["studio"],
+    cmd="pnpm --filter @fiberplane/fpx-types build && pnpm --filter @fiberplane/fpx-utils build && pnpm --filter @fiberplane/hono-otel build",
+    deps=["packages"],
+    ignore=["packages/*/dist"],
+)
+
+# Build & serve the studio
+local_resource(
+    "studio-build",
+    labels=["studio"],
+    cmd="pnpm clean:frontend && pnpm build:frontend",
+    deps=["studio/src"],
     resource_deps=["node_modules", "api-dist"],
 )
 
 local_resource(
-    "frontend-serve",
-    labels=["frontend"],
+    "studio-serve",
+    labels=["studio"],
     deps=["studio/src"],
     resource_deps=["node_modules", "api-dist"],
-    serve_cmd="npm run dev",
+    serve_cmd="pnpm dev",
     serve_dir="studio",
+    auto_init=False,
     trigger_mode=TRIGGER_MODE_MANUAL,
 )
 
@@ -38,7 +47,7 @@ local_resource(
     "db-generate",
     labels=["api"],
     dir="api",
-    cmd="npm run db:generate",
+    cmd="pnpm db:generate",
     deps=["api/drizzle.config.ts"],
 )
 
@@ -46,7 +55,7 @@ local_resource(
     "db-migrate",
     labels=["api"],
     dir="api",
-    cmd="npm run db:migrate",
+    cmd="pnpm db:migrate",
     deps=["api/migrate.ts"],
 )
 
@@ -55,6 +64,36 @@ local_resource(
     "api",
     labels=["api"],
     resource_deps=["node_modules", "db-generate", "db-migrate"],
-    serve_cmd="npm run dev",
+    serve_cmd="pnpm dev",
     serve_dir="api",
+)
+
+local_resource(
+    "reset-db",
+    labels=["api"],
+    cmd="rm fpx.db",
+    dir="api",
+    auto_init=False,
+    trigger_mode=TRIGGER_MODE_MANUAL,
+)
+
+local_resource(
+    "format",
+    labels=["api", "studio"],
+    cmd="pnpm format",
+    auto_init=False,
+    trigger_mode=TRIGGER_MODE_MANUAL,
+)
+
+
+# Examples
+
+local_resource(
+    "examples-node-api",
+    dir="examples/node-api",
+    labels=["examples"],
+    serve_dir="examples/node-api",
+    serve_cmd="pnpm dev",
+    auto_init=False,
+    trigger_mode=TRIGGER_MODE_MANUAL,
 )

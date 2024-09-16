@@ -70,6 +70,7 @@ export const SettingsSchema = z.object({
   openaiBaseUrl: z.string().optional(),
   openaiModel: OpenAiModelSchema.optional(),
   proxyBaseUrl: z.string().optional(),
+  proxyDeflectorEnabled: z.boolean().optional(),
   proxyRequestsEnabled: z.boolean().optional(),
   webhoncConnectionId: z.string().optional(),
 });
