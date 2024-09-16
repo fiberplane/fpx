@@ -15,7 +15,7 @@ import {
   ENV_FPX_SERVICE_NAME,
 } from "./constants";
 import { getLogger } from "./logger";
-import { measure } from "./measure";
+import { isAsyncGeneratorValue, isGeneratorValue, measure } from "./measure";
 import {
   patchCloudflareBindings,
   patchConsole,
@@ -238,15 +238,9 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           );
 
           try {
-            return await context.with(activeContext, async () => {
-              const r = await measuredFetch(
-                newRequest,
-                rawEnv,
-                proxyExecutionCtx,
-              );
-              console.log("r", r);
-              return r;
-            });
+            return await context.with(activeContext, () =>
+              measuredFetch(newRequest, rawEnv, proxyExecutionCtx),
+            );
           } finally {
             // Make sure all promises are resolved before sending data to the server
             if (proxyExecutionCtx) {

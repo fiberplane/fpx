@@ -154,25 +154,25 @@ export function measure<A extends unknown[], R>(
 
       try {
         const returnValue = fn(...args);
-        if (isGenerator(fn)) {
-          shouldEndSpan = false;
-          type Result = ReturnType<typeof fn>;
-          return handleSyncIterator(span, returnValue as Result) as R;
-        }
 
-        if (isAsyncGenerator(fn)) {
+        if (isGeneratorValue(returnValue)) {
           shouldEndSpan = false;
-          type Result = ReturnType<typeof fn>;
-          return handleAsyncIterator(span, returnValue as Result) as R;
+          return handleSyncIterator(span, returnValue) as R;
         }
-
         if (isPromise<R>(returnValue)) {
           shouldEndSpan = false;
-          return handlePromise<R>(span, returnValue, {
-            onSuccess,
-            onError,
-            checkResult,
-            endSpanManually,
+          return returnValue.then((value) => {
+            if (isAsyncGeneratorValue(value)) {
+              shouldEndSpan = false;
+              return handleAsyncIterator(span, value) as R;
+            }
+
+            return handlePromise<R>(span, returnValue, {
+              onSuccess,
+              onError,
+              checkResult,
+              endSpanManually,
+            });
           }) as R;
         }
 
@@ -208,7 +208,6 @@ export function measure<A extends unknown[], R>(
         throw error;
       } finally {
         if (shouldEndSpan) {
-          console.log("span end", name);
           span.end();
         }
       }
@@ -476,24 +475,35 @@ function formatException(exception: Exception) {
     : exception.message || "Unknown error occurred";
 }
 
-const GeneratorFunction = Object.getPrototypeOf(function* () {}).constructor;
-function isGenerator<T = unknown, TReturn = unknown, TNext = unknown>(
-  fn: unknown,
-): fn is (...args: unknown[]) => Generator<T, TReturn, TNext> {
-  return fn instanceof GeneratorFunction;
+// const GeneratorFunction = Object.getPrototypeOf(function* () {}).constructor;
+export function isGeneratorValue<
+  T = unknown,
+  TReturn = unknown,
+  TNext = unknown,
+>(value: unknown): value is Generator<T, TReturn, TNext> {
+  return (
+    value !== null && typeof value === "object" && Symbol.iterator in value
+  );
+  // return Object.getPrototypeOf(fn).constructor.name === "GeneratorFunction";
 }
 
-const AsyncGeneratorFunction = Object.getPrototypeOf(
-  async function* () {},
-).constructor;
+// const AsyncGeneratorFunction = Object.getPrototypeOf(
+//   async function* () {},
+// ).constructor;
+
 /**
  * Type guard to check if a function is an async generator.
  *
  * @param fn - The function to be checked
  * @returns true if the function is an async generator, otherwise false
  */
-function isAsyncGenerator<T = unknown, TReturn = unknown, TNext = unknown>(
-  fn: unknown,
-): fn is (...args: unknown[]) => AsyncGenerator<T, TReturn, TNext> {
-  return fn instanceof AsyncGeneratorFunction;
+export function isAsyncGeneratorValue<
+  T = unknown,
+  TReturn = unknown,
+  TNext = unknown,
+>(value: unknown): value is AsyncGenerator<T, TReturn, TNext> {
+  return (
+    value !== null && typeof value === "object" && Symbol.asyncIterator in value
+  );
+  // return fn instanceof AsyncGeneratorFunction;
 }
