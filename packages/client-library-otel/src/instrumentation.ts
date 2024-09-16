@@ -15,7 +15,7 @@ import {
   ENV_FPX_SERVICE_NAME,
 } from "./constants";
 import { getLogger } from "./logger";
-import { isAsyncGeneratorValue, isGeneratorValue, measure } from "./measure";
+import { measure } from "./measure";
 import {
   patchCloudflareBindings,
   patchConsole,
