@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import { LinkButton } from "@astrojs/starlight/components";
 import type { Props } from "@astrojs/starlight/props";
 
 const { data } = Astro.props.entry;
@@ -16,6 +17,32 @@ if (image && "file" in image) {
     <header>
       <h1>{title}</h1>
       <p>{tagline}</p>
+
+      <div class="button-group">
+        {
+          actions.map(
+            ({
+              attrs: { class: className, ...attrs } = {},
+              icon,
+              link: href,
+              text,
+              variant,
+            }) => (
+              <LinkButton
+                {href}
+                {variant}
+                class="link-button"
+                icon={icon?.name}
+                class:list={[className]}
+                {...attrs}
+              >
+                {text}
+                {icon?.html && <Fragment set:html={icon.html} />}
+              </LinkButton>
+            )
+          )
+        }
+      </div>
     </header>
 
     <figure>
@@ -35,7 +62,7 @@ if (image && "file" in image) {
   </div>
 </section>
 
-<script>
+<script is:inline>
   const heroImage = document.querySelector("[data-hero-image]");
   if (heroImage && heroImage instanceof HTMLImageElement) {
     heroImage.onload = () => {
@@ -46,17 +73,25 @@ if (image && "file" in image) {
 </script>
 
 <style>
-  /*
-    Hacky solution for now, need to dive into Starlight on how to do this
-    properly. This breaks the documentations page though, so a proper solution
-    is needed.
-  */
-  :root {
-    --sl-content-width: 102rem !important;
+  html[data-has-hero] body {
+    --sl-content-width: 102rem;
   }
 
   section {
     container: hero-container / inline-size;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .link-button {
+    border-radius: var(--border-radius);
+
+    &.secondary {
+      background-color: white;
+    }
   }
 
   .hero-content {
@@ -166,7 +201,6 @@ if (image && "file" in image) {
       }
     }
 
-    /* WIP */
     @container hero-container (width < 1024px) {
       &.hero-content {
         grid-template-columns: 1fr;
@@ -178,17 +212,20 @@ if (image && "file" in image) {
         border-radius: 0;
       }
 
+      .button-group {
+        justify-content: center;
+      }
+
       header {
         margin-inline: 0;
       }
 
       figure {
-        --figure-block-padding: 2rem 4rem;
+        --figure-block-padding: 2rem;
+        height: 80cqi;
 
         img {
-          position: static;
-          height: auto;
-          width: 100%;
+          height: calc(100% - var(--figure-block-padding) * 2);
           border-radius: 8px;
           translate: var(--sl-nav-pad-x) 0;
         }

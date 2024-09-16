@@ -19,11 +19,20 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
           link: "docs/get-started",
           icon: "right-arrow",
           variant: "primary",
-          attrs: {
-            // HACK: just need the button to behave but don't want to rewrite the whole splash template
-            style: "border-radius: var(--border-radius);",
-          },
         },
+        // Once we have a demo vid we can uncomment this and link to a video
+        // service site. It'd be nice to have something within the site with the
+        // updated designs.
+        // {
+        //   text: "Watch demo",
+        //   link: "...",
+        //   icon: "youtube",
+        //   variant: "secondary",
+        //   attrs: {
+        //     target: "_blank",
+        //     rel: "noopener",
+        //   },
+        // },
       ],
     },
   }}
