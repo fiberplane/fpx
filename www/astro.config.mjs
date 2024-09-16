@@ -56,21 +56,21 @@ export default defineConfig({
           attrs: {
             type: "text/partytown",
             src: "https://www.googletagmanager.com/gtag/js?id=G-FMRLG4PY3L",
-            async: true,
-          },
+            async: true
+          }
         },
         {
           tag: "script",
           attrs: {
-            type: "text/partytown",
+            type: "text/partytown"
           },
           content: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', 'G-FMRLG4PY3L');
-          `,
-        },
+          `
+        }
       ],
       components: {
         Header: "@/components/Header.astro",
@@ -94,9 +94,9 @@ export default defineConfig({
     sitemap(),
     partytown({
       config: {
-        forward: ["dataLayer.push"],
-      },
-    }),
+        forward: ["dataLayer.push"]
+      }
+    })
   ],
   markdown: {
     rehypePlugins: [
