@@ -17,7 +17,7 @@
     "@astrojs/markdown-remark": "^5.2.0",
     "@astrojs/partytown": "^2.1.2",
     "@astrojs/sitemap": "^3.1.6",
-    "@astrojs/starlight": "^0.26.1",
+    "@astrojs/starlight": "^0.27.1",
     "@iconify-json/lucide": "^1.1.208",
     "astro": "^4.15.6",
     "astro-icon": "^1.1.1",
