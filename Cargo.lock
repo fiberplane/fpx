@@ -1244,6 +1244,7 @@ dependencies = [
 name = "fpx-app"
 version = "0.1.0"
 dependencies = [
+ "schemars",
  "serde",
  "serde_json",
  "tauri",
@@ -6351,6 +6352,7 @@ dependencies = [
  "anyhow",
  "clap",
  "fpx",
+ "fpx-app",
  "schemars",
  "serde",
  "serde_json",

@@ -1,11 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
+import { RuntimeProvider } from "./RuntimeProvider";
 import "./index.css";
-import { getRuntime } from "./utils/index.ts";
-import { invoke } from "@tauri-apps/api";
-
-const runtime = getRuntime();
 
 const root = document.getElementById("root");
 if (!root) {
@@ -14,37 +11,8 @@ if (!root) {
 
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
-    {runtime === "tauri" && <Tauri />}
-    <App />
+    <RuntimeProvider>
+      <App />
+    </RuntimeProvider>
   </React.StrictMode>,
 );
-
-function Tauri() {
-  const [name, setName] = React.useState("");
-  const [response, setResponse] = React.useState("");
-
-  const onClick = React.useCallback(() => {
-    (async () => {
-      const res = await invoke<string>("greet", { name });
-      setResponse(res);
-    })();
-  }, [name]);
-
-  return (
-    <div>
-      {response ? (
-        response
-      ) : (
-        <>
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <button type="button" onClick={onClick}>
-            Click
-          </button>
-        </>
-      )}
-    </div>
-  );
-}

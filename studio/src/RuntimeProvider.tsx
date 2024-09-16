@@ -1,3 +1,4 @@
+import type { Workspace } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { invoke } from "@tauri-apps/api";
 import type { ReactNode } from "react";
@@ -5,15 +6,6 @@ import { useEffect, useState } from "react";
 import { WorkspaceSelector } from "./components/WorkspaceSelector";
 import { Button } from "./components/ui/button";
 import { RUNTIME } from "./constants";
-
-export type Config = {
-  port: number;
-};
-
-export type Workspace = {
-  path: string;
-  config: Config;
-};
 
 async function getCurrentWorkspace() {
   return await invoke<Workspace | undefined>("get_current_workspace");

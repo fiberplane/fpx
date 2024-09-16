@@ -77,3 +77,11 @@ export const ServerMessageSchema = z
   .describe("Messages that are send from the server to the client.");
 
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
+
+export const ConfigSchema = z.object({ port: z.number().int().gte(0) });
+
+export type Config = z.infer<typeof ConfigSchema>;
+
+export const WorkspaceSchema = z.object({ config: z.any(), path: z.string() });
+
+export type Workspace = z.infer<typeof WorkspaceSchema>;

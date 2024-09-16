@@ -1,10 +1,10 @@
-import type { Workspace } from "@/RuntimeProvider";
+import type { Workspace } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { invoke } from "@tauri-apps/api";
 import { open } from "@tauri-apps/api/dialog";
 import { appDataDir } from "@tauri-apps/api/path";
-import { Button } from "../ui/button";
 import { useState } from "react";
+import { Button } from "../ui/button";
 
 type OpenWorkspaceByPathError = "ConfigFileMissing" | "InvalidConfiguration";
 

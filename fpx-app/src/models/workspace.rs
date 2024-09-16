@@ -1,12 +1,13 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Clone)]
+#[derive(JsonSchema, Serialize, Clone)]
 pub struct Workspace {
     pub path: String,
     config: Config,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(JsonSchema, Serialize, Deserialize, Clone)]
 pub struct Config {
     port: u16,
 }
@@ -16,7 +17,7 @@ impl Workspace {
         Self { path, config }
     }
 }
-#[derive(Serialize)]
+#[derive(JsonSchema, Serialize)]
 pub enum OpenWorkspaceByPathError {
     ConfigFileMissing,
     InvalidConfiguration,

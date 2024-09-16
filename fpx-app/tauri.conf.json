@@ -3,7 +3,7 @@
     "beforeBuildCommand": "pnpm build:fpx-studio",
     "beforeDevCommand": "pnpm dev:api & pnpm dev:frontend",
     "devPath": "http://localhost:5173",
-    "distDir": "../desktop/dist"
+    "distDir": "../studio/dist"
   },
   "package": {
     "productName": "fpx-tauri",
