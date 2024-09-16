@@ -10,7 +10,7 @@ export async function getStaticPaths() {
   const blogEntries = await getCollection("blog");
   return blogEntries.map((entry) => ({
     params: { slug: entry.slug },
-    props: { entry },
+    props: { entry }
   }));
 }
 // 2. For your template, you can get the entry directly from the prop
@@ -27,10 +27,10 @@ const { Content, headings } = await entry.render();
       // for the blog without reimplementing the whole thing
       {
         tag: "style",
-        content: `:root { --sl-content-width: 700px !important; }`,
-      },
+        content: `:root { --sl-content-width: 700px !important; }`
+      }
     ],
-    template: "splash",
+    template: "splash"
   }}
   headings={headings}
 >
@@ -39,7 +39,7 @@ const { Content, headings } = await entry.render();
       new Date(entry.data.date).toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
-        day: "numeric",
+        day: "numeric"
       })
     }
   </div>
