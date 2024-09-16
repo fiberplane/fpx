@@ -45,6 +45,12 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       onChange={onChange}
       theme={[duotoneDark, customTheme]}
       readOnly={readOnly}
+      basicSetup={{
+        // Turn off searching the input via cmd+g and cmd+f
+        searchKeymap: false,
+        // Investigate: Remap the default keymap: https://codemirror.net/docs/ref/#commands.defaultKeymap
+        //              This will allow us to do things like cmd+enter to submit a payload
+      }}
     />
   );
 }
