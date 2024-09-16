@@ -119,6 +119,15 @@ export function CodeMirrorSqlEditor(props: CodeMirrorSqlEditorProps) {
   );
 }
 
+const inputBaseStylesExtension = EditorView.theme({
+  ".cm-placeholder": {
+    color: "hsl(var(--muted-foreground))",
+    // HACK - Using tailwind `text-sm`
+    fontSize: "0.875rem !important",
+    lineHeight: "1.25rem !important",
+  },
+});
+
 // Hacky extension to modify the editor to look like an input,
 // and truncate text (when not focused)
 const inputTrucateExtension = EditorView.theme({
@@ -139,7 +148,31 @@ const inputTrucateExtension = EditorView.theme({
     overflow: "hidden !important",
     width: "100% !important",
   },
+
 });
+
+const CODE_MIRROR_BASIC_SETUP = {
+  lineNumbers: false,
+  foldGutter: false,
+  dropCursor: false,
+  allowMultipleSelections: false,
+  indentOnInput: false,
+  bracketMatching: false,
+  closeBrackets: false,
+  autocompletion: false,
+  rectangularSelection: false,
+  highlightActiveLine: false,
+  highlightSelectionMatches: false,
+  closeBracketsKeymap: false,
+  defaultKeymap: false,
+  searchKeymap: false,
+  historyKeymap: false,
+  foldKeymap: false,
+  completionKeymap: false,
+  lintKeymap: false,
+}
+
+const hiddenGutterExtension = gutter({ class: "hidden border-none" });
 
 export function CodeMirrorInput(props: CodeMirrorEditorProps) {
   const { value, onChange, minHeight = "28px", placeholder } = props;
@@ -152,10 +185,10 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
 
   return (
     <div
-      className={cn("rounded border", "focus-visible:outline-none", {
-        "border border-blue-500 ring-2 ring-blue-300": isFocused,
-        "border border-gray-600": !isFocused,
-        // "text-ellipsis whitespace-nowrap": !isFocused,
+      className={cn("rounded ", "focus-visible:outline-none", {
+        "border border-blue-600": isFocused,
+        // HACK - This prevents a "jump" for the placeholder or input text when clicking on the input
+        "border-l border-transparent": !isFocused
       })}
       style={{
         width: "160px", // fixed width
@@ -168,37 +201,19 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
     >
       <CodeMirror
         value={value}
-        height={dynamicHeight} // dynamic height
+        height={dynamicHeight}
         // maxHeight={maxHeight}
         minHeight={minHeight}
         onChange={onChange}
         theme={[inputTheme]}
         extensions={[
-          gutter({ class: "hidden border-none" }),
+          hiddenGutterExtension,
+          inputBaseStylesExtension,
           isFocused ? EditorView.lineWrapping : inputTrucateExtension,
         ]}
         onFocus={() => setIsFocused(true)} // Set focus to true
         onBlur={() => setIsFocused(false)} // Set focus to false
-        basicSetup={{
-          lineNumbers: false,
-          foldGutter: false,
-          dropCursor: false,
-          allowMultipleSelections: false,
-          indentOnInput: false,
-          bracketMatching: false,
-          closeBrackets: false,
-          autocompletion: false,
-          rectangularSelection: false,
-          highlightActiveLine: false,
-          highlightSelectionMatches: false,
-          closeBracketsKeymap: false,
-          defaultKeymap: false,
-          searchKeymap: false,
-          historyKeymap: false,
-          foldKeymap: false,
-          completionKeymap: false,
-          lintKeymap: false,
-        }}
+        basicSetup={CODE_MIRROR_BASIC_SETUP}
         placeholder={placeholder}
       />
     </div>
