@@ -86,7 +86,14 @@ const inputTrucateExtension = EditorView.theme({
 const hiddenGutterExtension = gutter({ class: "hidden border-none" });
 
 export function CodeMirrorInput(props: CodeMirrorEditorProps) {
-  const { value, onChange, placeholder, width, minHeight = "28px" } = props;
+  const {
+    value,
+    onChange,
+    placeholder,
+    width,
+    minHeight = "28px",
+    readOnly,
+  } = props;
 
   // State to manage focus
   const [isFocused, setIsFocused] = useState(false);
@@ -125,6 +132,7 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
         height={dynamicHeight}
         theme={[inputTheme]}
         indentWithTab={false}
+        readOnly={readOnly}
         extensions={[
           hiddenGutterExtension,
           inputBaseStylesExtension,
