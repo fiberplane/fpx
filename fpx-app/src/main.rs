@@ -3,10 +3,13 @@
 
 use state::AppState;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder};
+use tauri_plugin_store::StoreBuilder;
 
 mod commands;
 mod models;
 mod state;
+
+const STORE_PATH: &str = "fpx.bin";
 
 fn main() {
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
@@ -18,8 +21,11 @@ fn main() {
         .add_submenu(submenu);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
         .manage(AppState::default())
         .setup(|app| {
+            StoreBuilder::new(app.handle(), STORE_PATH.parse()?).build();
+
             let window = WindowBuilder::new(
                 app,
                 "main-window".to_string(),
@@ -44,6 +50,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::workspace::close_workspace,
             commands::workspace::get_current_workspace,
+            commands::workspace::list_recent_workspaces,
             commands::workspace::open_workspace_by_path,
         ])
         .run(tauri::generate_context!())

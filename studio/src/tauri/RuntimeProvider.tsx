@@ -15,6 +15,7 @@ import { WorkspaceShell } from "./WorkspaceShell";
 import {
   closeWorkspace,
   getCurrentWorkspace,
+  openWorkspace,
   showOpenWorkspaceDialog,
 } from "./utils";
 
@@ -28,6 +29,7 @@ type Runtime =
       state: AppState;
       requestCloseWorkspace: () => void;
       requestOpenWorkspaceDialog: () => void;
+      requestOpenWorkspaceByPath: (path: string) => void;
     }
   | { type: "unknown" };
 
@@ -45,6 +47,11 @@ export function RuntimeProvider({ children }: RuntimeProviderProps) {
 function TauriRuntime({ children }: RuntimeProviderProps) {
   const [workspace, setWorkspace] = useState<Workspace | undefined>();
   const [error, setError] = useState<OpenWorkspaceByPathError | undefined>();
+
+  const handleOpenWorkspaceByPath = useHandler(async (path: string) => {
+    const workspace = await openWorkspace(path);
+    setWorkspace(workspace);
+  });
 
   const handleOpenDialogRequested = useHandler(() => {
     showOpenWorkspaceDialog()
@@ -103,6 +110,7 @@ function TauriRuntime({ children }: RuntimeProviderProps) {
         state: { workspace },
         requestCloseWorkspace: handleCloseWorkspace,
         requestOpenWorkspaceDialog: handleOpenDialogRequested,
+        requestOpenWorkspaceByPath: handleOpenWorkspaceByPath,
       }}
     >
       {component}
