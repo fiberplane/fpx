@@ -19,6 +19,7 @@ tauri = { version = "1.8.0", features = [
   "http-all",
   "config-toml",
 ] }
+tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 toml = "0.8.19"
 
 [features]
