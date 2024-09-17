@@ -80,13 +80,8 @@ jobs:
           paths=$(echo '${{ steps.tauri.outputs.artifactPaths }}' | jq -c -r '.[]')
 
           for artifact in $paths; do
-            if [[ -f $artifact ]]; then
-              echo "Moving $artifact"
-              mv $artifact artifacts
-            else
-              echo "Artifact not found: $artifact"
-              ls -la $artifact
-            fi
+            echo "Moving $artifact"
+            mv $artifact artifacts
           done
 
       - name: Upload artifact
