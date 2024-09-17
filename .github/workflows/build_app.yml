@@ -1,0 +1,64 @@
+# Build the fpx app. This will only be published as a build artifact.
+---
+name: Build app
+on:
+  # Allow manual trigger
+  workflow_dispatch:
+
+  # Run on every push to main
+  push:
+    branches: ["main", "tauri-main"]
+
+jobs:
+  build-app:
+    name: Create binary for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    # permissions:
+    #   id-token: write
+    #   contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest-8-cores
+            target: aarch64-unknown-linux-gnu
+          - os: ubuntu-latest-8-cores
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy
+          target: ${{ matrix.target }}
+          rustflags: "" # Do not fail on warnings, so reset the default value to empty
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: "--target ${{ matrix.target }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fpx_${{ matrix.target }}
+          path: target/release/fpx
+          if-no-files-found: error
+          retention-days: 7
