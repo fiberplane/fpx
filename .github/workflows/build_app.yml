@@ -7,7 +7,7 @@ on:
 
   # Run on every push to main
   push:
-    branches: ["main", "tauri-main"]
+    branches: ["main", "tauri-main", "tauri-ci"]
 
 jobs:
   build-app:
