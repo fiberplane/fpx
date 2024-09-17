@@ -16,7 +16,7 @@ import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
-import { CodeMirrorJsonEditor } from "@/components/Timeline";
+import { CodeMirrorJsonEditor } from "@/components/CodeMirrorEditor";
 import { useRequestorStore } from "../store";
 
 type RequestPanelProps = {

@@ -1,4 +1,4 @@
-import { CodeMirrorInput } from "@/components/Timeline/DetailsList/CodeMirrorEditor";
+import { CodeMirrorInput } from "@/components/CodeMirrorEditor";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
