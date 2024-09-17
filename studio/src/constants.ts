@@ -1,6 +1,6 @@
 export type Runtime = "tauri" | "browser";
 
-const isTauri = "__TAURI__" in window;
+const isTauri = "__TAURI_INTERNALS__" in window;
 export const RUNTIME: Runtime = isTauri ? "tauri" : "browser";
 
 /**
