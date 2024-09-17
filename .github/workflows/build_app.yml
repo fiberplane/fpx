@@ -37,6 +37,12 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest-8-cores'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
       - name: Setup node
         uses: actions/setup-node@v4
         with:
