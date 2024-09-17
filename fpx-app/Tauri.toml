@@ -4,6 +4,7 @@ identifier = "com.fiberplane.fpx"
 devUrl = "http://localhost:5173"
 beforeBuildCommand = "pnpm build:fpx-studio"
 beforeDevCommand = "pnpm dev:api & pnpm dev:frontend"
+frontendDist = "../studio/dist"
 
 [bundle]
 active = true
