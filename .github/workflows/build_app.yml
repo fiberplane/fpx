@@ -22,8 +22,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest-8-cores
-            target: aarch64-unknown-linux-gnu
+          # - os: ubuntu-latest-8-cores
+          #   target: aarch64-unknown-linux-gnu
           - os: ubuntu-latest-8-cores
             target: x86_64-unknown-linux-gnu
           - os: macos-latest
