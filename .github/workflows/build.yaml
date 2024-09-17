@@ -62,6 +62,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fpx_${{ matrix.target }}
-          path: target/release/fpx
+          path: target/release/fpx-cli
           if-no-files-found: error
           retention-days: 7
