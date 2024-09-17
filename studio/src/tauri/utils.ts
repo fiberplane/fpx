@@ -3,6 +3,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { appDataDir } from "@tauri-apps/api/path";
 
+export async function listRecentWorkspaces() {
+  return await invoke<Array<string>>("list_recent_workspaces");
+}
+
 export async function openWorkspace(path: string) {
   return await invoke<Workspace | undefined>("open_workspace_by_path", {
     path,

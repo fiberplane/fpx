@@ -4,18 +4,27 @@
 use state::AppState;
 use tauri::menu::{MenuBuilder, MenuId, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, WebviewWindowBuilder};
+use tauri::{Manager, Wry};
+use tauri_plugin_store::StoreCollection;
 
 mod commands;
 mod models;
 mod state;
 
 const MAIN_WINDOW_ID: &str = "main-window";
+const STORE_PATH: &str = "fpx.bin";
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .manage(AppState::default())
         .setup(|app| {
+            app.handle()
+                .try_state::<StoreCollection<Wry>>()
+                .ok_or("Store not found")
+                .unwrap();
+
             let quit = MenuItemBuilder::new("Quit").id("quit").build(app).unwrap();
             let open = MenuItemBuilder::new("Open workspace")
                 .id("open")
@@ -61,6 +70,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::workspace::close_workspace,
             commands::workspace::get_current_workspace,
+            commands::workspace::list_recent_workspaces,
             commands::workspace::open_workspace_by_path,
         ])
         .run(tauri::generate_context!())
