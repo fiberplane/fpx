@@ -32,14 +32,15 @@ export const RequestorPage = () => {
 
   const { sidePanel } = useRequestorStore("sidePanel");
 
-  // NOTE - Use this to test overflow of requests panel
+  // NOTE - Uncomment this to test overflow of requests panel
+  // const { setQueryParams } = useRequestorStore("setQueryParams");
   // useEffect(() => {
   //   setQueryParams(
   //     createKeyValueParameters(
   //       Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
   //     ),
   //   );
-  // }, []);
+  // }, [setQueryParams]);
 
   const {
     history,
