@@ -26,16 +26,21 @@ jobs:
           #   target: aarch64-unknown-linux-gnu
           - os: ubuntu-latest-8-cores
             target: x86_64-unknown-linux-gnu
+            bundles: appimage
           - os: macos-latest
             target: aarch64-apple-darwin
+            bundles: app, dmg
           - os: macos-latest
             target: x86_64-apple-darwin
+            bundles: app, dmg
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
+
+      # Steps required for our project, or our dependencies (like Tauri)
 
       - name: Install dependencies (Linux)
         if: matrix.os == 'ubuntu-latest-8-cores'
@@ -60,29 +65,41 @@ jobs:
           target: ${{ matrix.target }}
           rustflags: "" # Do not fail on warnings, so reset the default value to empty
 
+      - name: Install tauri-cli
+        run: cargo install tauri-cli@2.0.0-rc.16
+
+      # Steps related to our project
+
       - name: Install dependencies
         run: pnpm install
 
       - name: Build fiberplane/fpx-types
         run: pnpm run build:types
 
-      - name: Build fpx app
-        uses: tauri-apps/tauri-action@v0
-        id: tauri
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: "--target ${{ matrix.target }} --ci"
-
-      - name: Prepare artifacts
+      - name: Build fpx-app
         run: |
-          mkdir artifacts
-          paths=$(echo '${{ steps.tauri.outputs.artifactPaths }}' | jq -c -r '.[]')
+          cargo tauri build \
+            --ci \
+            --target ${{ matrix.target }} \
+            --bundles ${{ matrix.bundles }}
 
-          for artifact in $paths; do
-            echo "Moving $artifact"
-            mv $artifact artifacts
-          done
+      # - name: Build fpx app
+      #   uses: tauri-apps/tauri-action@v0
+      #   id: tauri
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     args: "--target ${{ matrix.target }} --ci"
+
+      # - name: Prepare artifacts
+      #   run: |
+      #     mkdir artifacts
+      #     paths=$(echo '${{ steps.tauri.outputs.artifactPaths }}' | jq -c -r '.[]')
+
+      #     for artifact in $paths; do
+      #       echo "Moving $artifact"
+      #       mv $artifact artifacts
+      #     done
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -90,4 +107,4 @@ jobs:
           name: fpx_${{ matrix.target }}
           if-no-files-found: error
           retention-days: 7
-          path: artifacts
+          path: target/release/
