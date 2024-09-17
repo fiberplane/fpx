@@ -1,5 +1,4 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
