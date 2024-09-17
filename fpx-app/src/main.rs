@@ -2,41 +2,58 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use state::AppState;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowBuilder};
+use tauri::menu::{MenuBuilder, MenuId, MenuItemBuilder, SubmenuBuilder};
+use tauri::{Emitter, WebviewWindowBuilder};
 
 mod commands;
 mod models;
 mod state;
 
-fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let open = CustomMenuItem::new("open".to_string(), "Open");
-    let submenu = Submenu::new("File", Menu::new().add_item(quit).add_item(open));
-    let menu = Menu::new()
-        .add_native_item(MenuItem::Copy)
-        .add_item(CustomMenuItem::new("hide", "Hide"))
-        .add_submenu(submenu);
+const MAIN_WINDOW_ID: &str = "main-window";
 
+fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(AppState::default())
         .setup(|app| {
-            let window = WindowBuilder::new(
+            let quit = MenuItemBuilder::new("Quit").id("quit").build(app).unwrap();
+            let open = MenuItemBuilder::new("Open workspace")
+                .id("open")
+                .build(app)
+                .unwrap();
+
+            let app_menu = SubmenuBuilder::new(app, "App")
+                .item(&open)
+                .separator()
+                .item(&quit)
+                .build()
+                .unwrap();
+
+            let menu = MenuBuilder::new(app).items(&[&app_menu]).build().unwrap();
+
+            app.set_menu(menu).unwrap();
+
+            let window = WebviewWindowBuilder::new(
                 app,
-                "main-window".to_string(),
-                tauri::WindowUrl::App("index.html".into()),
+                MAIN_WINDOW_ID.to_string(),
+                tauri::WebviewUrl::App("index.html".into()),
             )
-            .menu(menu)
+            .title("fpx")
             .build()?;
 
             let window_ = window.clone();
-            window.on_menu_event(move |event| match event.menu_item_id() {
-                "quit" => {
-                    std::process::exit(0);
+            window.on_menu_event(move |_app, event| {
+                let MenuId(id) = event.id();
+
+                match id.as_str() {
+                    "quit" => {
+                        std::process::exit(0);
+                    }
+                    "open" => {
+                        window_.emit("request-open-dialog", "").unwrap();
+                    }
+                    _ => {}
                 }
-                "open" => {
-                    window_.emit("request-open-dialog", "").unwrap();
-                }
-                _ => {}
             });
 
             Ok(())
