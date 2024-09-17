@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
-import { RuntimeProvider } from "./RuntimeProvider";
+import { RuntimeProvider } from "./tauri";
 import "./index.css";
 
 const root = document.getElementById("root");
@@ -10,9 +10,9 @@ if (!root) {
 }
 
 ReactDOM.createRoot(root).render(
-  <React.StrictMode>
-    <RuntimeProvider>
+  <RuntimeProvider>
+    <React.StrictMode>
       <App />
-    </RuntimeProvider>
-  </React.StrictMode>,
+    </React.StrictMode>
+  </RuntimeProvider>,
 );

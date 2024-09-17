@@ -78,14 +78,37 @@ export const ServerMessageSchema = z
 
 export type ServerMessage = z.infer<typeof ServerMessageSchema>;
 
+export const AppStateSchema = z.object({
+  workspace: z.union([z.any(), z.null()]).optional(),
+});
+
+export type AppState = z.infer<typeof AppStateSchema>;
+
 export const ConfigSchema = z.object({ port: z.number().int().gte(0) });
 
 export type Config = z.infer<typeof ConfigSchema>;
 
-export const OpenWorkspaceByPathErrorSchema = z.enum([
-  "ConfigFileMissing",
-  "InvalidConfiguration",
-]);
+export const OpenWorkspaceByPathErrorSchema = z.any().superRefine((x, ctx) => {
+  const schemas = [
+    z.object({ path: z.string(), type: z.literal("ConfigFileMissing") }),
+    z.object({ message: z.string(), type: z.literal("InvalidConfiguration") }),
+  ];
+  const errors = schemas.reduce<z.ZodError[]>(
+    (errors, schema) =>
+      ((result) => (result.error ? [...errors, result.error] : errors))(
+        schema.safeParse(x),
+      ),
+    [],
+  );
+  if (schemas.length - errors.length !== 1) {
+    ctx.addIssue({
+      path: ctx.path,
+      code: "invalid_union",
+      unionErrors: errors,
+      message: "Invalid input: Should pass single schema",
+    });
+  }
+});
 
 export type OpenWorkspaceByPathError = z.infer<
   typeof OpenWorkspaceByPathErrorSchema
