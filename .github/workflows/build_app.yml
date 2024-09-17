@@ -29,10 +29,10 @@ jobs:
             bundles: appimage
           - os: macos-latest
             target: aarch64-apple-darwin
-            bundles: "app, dmg"
+            bundles: app, dmg
           - os: macos-latest
             target: x86_64-apple-darwin
-            bundles: "app, dmg"
+            bundles: app, dmg
 
     steps:
       - uses: actions/checkout@v4
@@ -80,8 +80,8 @@ jobs:
         run: |
           cargo tauri build \
             --ci \
-            --target ${{ matrix.target }} \
-            --bundles ${{ matrix.bundles }}
+            --target "${{ matrix.target }}" \
+            --bundles "${{ matrix.bundles }}"
 
       # - name: Build fpx app
       #   uses: tauri-apps/tauri-action@v0
@@ -107,4 +107,4 @@ jobs:
           name: fpx_${{ matrix.target }}
           if-no-files-found: error
           retention-days: 7
-          path: target/release/
+          path: target/release/bundle
