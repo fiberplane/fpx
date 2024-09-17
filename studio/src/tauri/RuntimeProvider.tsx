@@ -25,12 +25,12 @@ type RuntimeProviderProps = {
 
 type Runtime =
   | {
-    type: "tauri";
-    state: AppState;
-    requestCloseWorkspace: () => void;
-    requestOpenWorkspaceDialog: () => void;
-    requestOpenWorkspaceByPath: (path: string) => void;
-  }
+      type: "tauri";
+      state: AppState;
+      requestCloseWorkspace: () => void;
+      requestOpenWorkspaceDialog: () => void;
+      requestOpenWorkspaceByPath: (path: string) => void;
+    }
   | { type: "unknown" };
 
 export const RuntimeContext = createContext<Runtime | null>(null);
