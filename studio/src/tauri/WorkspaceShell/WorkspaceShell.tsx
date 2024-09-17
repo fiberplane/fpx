@@ -1,7 +1,7 @@
-import type { Workspace } from "@fiberplane/fpx-types";
-import { useContext, type ReactNode } from "react";
-import { RuntimeContext } from "../RuntimeProvider";
 import { Button } from "@/components/ui/button";
+import type { Workspace } from "@fiberplane/fpx-types";
+import { type ReactNode, useContext } from "react";
+import { RuntimeContext } from "../RuntimeProvider";
 
 type WorkspaceShellProps = {
   children: ReactNode;

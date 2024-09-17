@@ -1,7 +1,7 @@
 import type { Workspace } from "@fiberplane/fpx-types";
+import { invoke } from "@tauri-apps/api";
 import { open } from "@tauri-apps/api/dialog";
 import { appDataDir } from "@tauri-apps/api/path";
-import { invoke } from "@tauri-apps/api";
 
 export async function openWorkspace(path: string) {
   return await invoke<Workspace | undefined>("open_workspace_by_path", {

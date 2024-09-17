@@ -14,8 +14,8 @@ import {
   getCurrentWorkspace,
   showOpenWorkspaceDialog,
 } from "../utils";
-import { WorkspaceSelector } from "./WorkspaceSelector";
 import { WorkspaceOpenError } from "./WorkspaceOpenError";
+import { WorkspaceSelector } from "./WorkspaceSelector";
 import { WorkspaceShell } from "./WorkspaceShell";
 
 type RuntimeProviderProps = {
@@ -24,11 +24,11 @@ type RuntimeProviderProps = {
 
 type Runtime =
   | {
-    type: "tauri";
-    state: AppState;
-    requestCloseWorkspace: () => void;
-    requestOpenWorkspaceDialog: () => void;
-  }
+      type: "tauri";
+      state: AppState;
+      requestCloseWorkspace: () => void;
+      requestOpenWorkspaceDialog: () => void;
+    }
   | { type: "unknown" };
 
 export const RuntimeContext = createContext<Runtime | null>(null);
