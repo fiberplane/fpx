@@ -23,7 +23,7 @@ import { format } from "sql-formatter";
 import { useTimelineIcon } from "../../hooks";
 import { CollapsibleSubSection, SectionHeading } from "../../shared";
 import { SubSection, SubSectionHeading } from "../../shared";
-import { CodeMirrorSqlEditor } from "../CodeMirrorEditor/CodeMirrorEditor";
+import { CodeMirrorSqlEditor } from "../CodeMirrorEditor";
 import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 

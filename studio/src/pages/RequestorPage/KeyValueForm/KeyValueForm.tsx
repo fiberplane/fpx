@@ -1,3 +1,4 @@
+import { CodeMirrorInput } from "@/components/Timeline/DetailsList/CodeMirrorEditor";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
@@ -12,8 +13,6 @@ import type {
   ChangeKeyValueParametersHandler,
   KeyValueParameter,
 } from "./types";
-import "./styles.css";
-import { CodeMirrorInput } from "@/components/Timeline/DetailsList/CodeMirrorEditor";
 
 type Props = {
   keyValueParameters: KeyValueParameter[];
@@ -42,11 +41,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
   const [isHovering, setIsHovering] = useState(false);
   return (
     <div
-      className={cn(
-        "flex items-center space-x-0 rounded p-0",
-        // HACK - To prevent too much of a jump when focusing the inputs
-        "min-h-[30px]",
-      )}
+      className={cn("flex items-center space-x-0 rounded p-0")}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >

@@ -15,7 +15,6 @@ type CodeMirrorEditorProps = {
   readOnly?: boolean;
   value?: string;
   onChange: (value?: string) => void;
-  placeholder?: string;
 };
 
 const customTheme = EditorView.theme({
