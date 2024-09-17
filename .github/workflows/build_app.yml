@@ -81,8 +81,11 @@ jobs:
 
           for artifact in $paths; do
             if [[ -f $artifact ]]; then
-              echo "Uploading $artifact"
+              echo "Moving $artifact"
               mv $artifact artifacts
+            else
+              echo "Artifact not found: $artifact"
+              ls -la $artifact
             fi
           done
 
