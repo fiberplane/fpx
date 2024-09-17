@@ -54,6 +54,9 @@ jobs:
           target: ${{ matrix.target }}
           rustflags: "" # Do not fail on warnings, so reset the default value to empty
 
+      - name: pnpm install
+        run: pnpm install
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
