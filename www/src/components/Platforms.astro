@@ -32,14 +32,14 @@ const {
   frame = "code",
   icons = true,
   platforms,
-  title = undefined,
+  title = undefined
 } = Astro.props;
 const singlePlatform = platforms?.length === 1 ? platforms[0] : undefined;
 const ecFrame = frame === "terminal" ? "terminal" : "code";
 
 function getTabItemProps(platform: Platform) {
   const props: ComponentProps<typeof TabItem> = {
-    label: PLATFORMS[PLATFORM_KEYS.indexOf(platform)],
+    label: PLATFORMS[PLATFORM_KEYS.indexOf(platform)]
   };
   const icon = getIcon(platform) as ComponentProps<typeof TabItem>["icon"];
   if (icons && icon) {

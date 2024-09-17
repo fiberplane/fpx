@@ -5,11 +5,16 @@ sidebar:
   order: 9999
 ---
 
-import { FileTree, Aside, Steps, Card, LinkCard } from "@astrojs/starlight/components";
+import {
+  FileTree,
+  Aside,
+  Steps,
+  Card,
+  LinkCard
+} from "@astrojs/starlight/components";
 import Button from "@/components/Button.astro";
 
 This is a little cheatsheet for using Starlight for documenting Fiberplane features on our website.
-
 
 ### Adding a new page
 
@@ -22,28 +27,12 @@ See if it fits under any existing docs pages - long docs pages are **good**. The
 To add another page, create a new file in the `src/content/docs/docs` folder.
 
 <FileTree>
-- astro.config.mjs
-- package.json
-- README.md
-- ...
-- public/  (e.g: file assets, plain text - not images!)
-- src/
-	- assets/ images that need to be optimized by Astro
-	- components/ our custom reusable components
-	- pages/
-	- content/
-		- landing/
-		- blog/
-		- docs/
-			- docs/
-				- get-started.mdx
-				- components/
-					- client-library.mdx
-				- features/
-					- making-requests.mdx
-					- generating-with-ai.mdx
-					- **new-page.mdx**
-					- ...
+  - astro.config.mjs - package.json - README.md - ... - public/ (e.g: file
+  assets, plain text - not images!) - src/ - assets/ images that need to be
+  optimized by Astro - components/ our custom reusable components - pages/ -
+  content/ - landing/ - blog/ - docs/ - docs/ - get-started.mdx - components/ -
+  client-library.mdx - features/ - making-requests.mdx - generating-with-ai.mdx
+  - **new-page.mdx** - ...
 </FileTree>
 
 The Sidebar will be populated automatically. If not you can configure it in the `astro.config.mjs` file.
@@ -64,16 +53,13 @@ title: Using Starlight # (required)
 description: A short description of the page # page will build without this but you should include it
 sidebar: # all optional but you might want to configure it sometimes
   hidden: false # (optional) default is false you can hide it if you want
-  order: 5  # the order of the sidebar items (alphabetical otherwise
+  order: 5 # the order of the sidebar items (alphabetical otherwise
   label: Getting started with Starlight # default is the title but you can change it
-
 ---
-
 
 # My heading <!-- don't use h1s -->
 
 My documentation page content
-
 ```
 
 See full [frontmatter reference](https://starlight.astro.build/reference/frontmatter) for more information.
@@ -87,6 +73,8 @@ Builtin components can be imported from `@astrojs/starlight/components` and our 
 ```mdx
 import { Aside, Steps } from "@astrojs/starlight/components";
 import { Button } from "@/components/Button.astro";
+
+;
 ```
 
 We'll highlight a few with some best practices.
@@ -137,7 +125,6 @@ app.get("/another-route", (c) => {
   return c.text("Another route!");
 });
 
-
 export default instrument(app);
 ```
 
@@ -147,16 +134,17 @@ Full reference of the Expressive Code component can be found [here](https://expr
 
 Anytime you have multistep instructions, use the `<Steps>` component to render them as opposed to adding a list number in a heading.
 
-
 <Steps>
 1. Step 1
 
-	nested things here
+    nested things here
+
 2. Step 2
 
-	```sh
-	rm -rf /
-	```
+   ```sh
+   rm -rf /
+   ```
+
 3. #### Step 3 (can also be a heading)
 
 </Steps>
@@ -200,7 +188,8 @@ Feel free to tweak the `Button.astro` component and color vars in the css files 
 ### Adding images
 
 <Aside type="caution" title="Avoid product screenshots when you can">
-  **Product** screenshots are great for demonstrating features, but they can become outdated quickly. Use screenshots sparingly.
+  **Product** screenshots are great for demonstrating features, but they can
+  become outdated quickly. Use screenshots sparingly.
 </Aside>
 
 To add an image to a page, first put it in the `src/assets` folder.
@@ -215,12 +204,12 @@ You can also use the Astro Image component:
 
 ```mdx title="src/my-new-docs-page.mdx"
 import { Image } from "astro:assets";
-import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif"
+import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif";
 
 <Image src={fpxGenAiGenerateBody} alt="Generate a request body with AI" />
 ```
 
-***
+---
 
 If you're on a `mac` (_shoutout Tim 🍎_), use [CleanShot X](https://cleanshot.com/) to take screenshots.
 
@@ -232,7 +221,8 @@ A few things to keep in mind:
 - Use opacity to highlight or call out certain elements
 
 <Aside type="tip" title="GIFs are large">
-  You can record gifs, but even when Astro optimizes them, they are still large files that a long time to load on the website.
+  You can record gifs, but even when Astro optimizes them, they are still large
+  files that a long time to load on the website.
 </Aside>
 
 We still haven't defined specific, consistent styles for images in our docs, so for now, use your best judgement on making screenshots look good.
