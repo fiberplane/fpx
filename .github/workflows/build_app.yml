@@ -54,8 +54,11 @@ jobs:
           target: ${{ matrix.target }}
           rustflags: "" # Do not fail on warnings, so reset the default value to empty
 
-      - name: pnpm install
+      - name: Install dependencies
         run: pnpm install
+
+      - name: Build fiberplane/fpx-types
+        run: pnpm run build:types
 
       - uses: tauri-apps/tauri-action@v0
         env:
