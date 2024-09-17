@@ -10,7 +10,7 @@ repository = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive", "env"] }
 fpx = { version = "0.1.0", path = "../fpx" }
-fpx-app = { path = "../fpx-app" }
+fpx-app = { version = "0.1.0", path = "../fpx-app" }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
