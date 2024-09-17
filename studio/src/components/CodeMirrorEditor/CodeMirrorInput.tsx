@@ -11,6 +11,7 @@ const inputTheme = EditorView.theme({
     fontSize: "0.875rem",
     lineHeight: "1.25rem",
   },
+  // Hide the gutters
   ".cm-gutters": {
     borderColor: "transparent",
     backgroundColor: "transparent",
@@ -60,8 +61,8 @@ const inputBaseStylesExtension = EditorView.theme({
   },
 });
 
-// Extension to truncate text that overflows
-// We only want ot use this when the editor is *not* focused
+// Extension to truncate text that overflows with an ellipsis
+// We only want to use this when the editor is *not* focused
 const inputTrucateExtension = EditorView.theme({
   ".cm-content": {
     whiteSpace: "nowrap",
@@ -76,9 +77,10 @@ const inputTrucateExtension = EditorView.theme({
   },
 });
 
-// Extension for readonly mode, which makes the editor's cursor transparent,
+// Extension for special styling in readonly mode, which makes the editor's cursor transparent,
 // but uses a pointer cursor when the user hovers over the input,
-// to indicate that you can click on it to expand it (in case the path parameter is truncated)
+// to indicate that you can click on it to expand it (in case the path parameter is truncated).
+// As of writing, this is only used for the path parameter *key* input.
 const readonlyExtension = EditorView.theme({
   ".cm-cursor": {
     borderLeftColor: "transparent !important",
@@ -124,7 +126,6 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
     return [
       hiddenGutterExtension,
       inputBaseStylesExtension,
-      //
       /**
        * NOTE: This is the CSS added by lineWrapping:
        
@@ -149,11 +150,8 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
         "rounded border border-transparent",
         "focus-visible:outline-none",
         {
-          "border border-blue-600": isFocused && !readOnly,
-          "border border-gray-600/50": isFocused && readOnly,
-          // HACK - This prevents a horizontal "jump" for the placeholder or input text when clicking on the input
-          // NOTE - There are still issues with vertical jumping on focus :(
-          "border-l border-transparent": !isFocused,
+          "border-blue-600": isFocused && !readOnly,
+          "border-gray-600/50": isFocused && readOnly,
         },
       )}
       style={style}
@@ -162,11 +160,11 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
         value={value}
         onChange={onChange}
         theme={[inputTheme]}
-        indentWithTab={false}
+        indentWithTab={false} // Allows us to skip to the next input when the user presses "tab"
         readOnly={readOnly}
         extensions={extensions}
-        onFocus={() => setIsFocused(true)} // Set focus to true
-        onBlur={() => setIsFocused(false)} // Set focus to false
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         basicSetup={CODE_MIRROR_BASIC_SETUP_DISABLE_ALL}
         placeholder={placeholder}
       />
