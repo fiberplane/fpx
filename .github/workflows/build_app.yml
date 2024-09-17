@@ -29,10 +29,10 @@ jobs:
             bundles: appimage
           - os: macos-latest
             target: aarch64-apple-darwin
-            bundles: app, dmg
+            bundles: "app, dmg"
           - os: macos-latest
             target: x86_64-apple-darwin
-            bundles: app, dmg
+            bundles: "app, dmg"
 
     steps:
       - uses: actions/checkout@v4
