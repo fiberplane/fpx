@@ -1,7 +1,7 @@
 import type { Workspace } from "@fiberplane/fpx-types";
 import { invoke } from "@tauri-apps/api/core";
-import { open } from "@tauri-apps/plugin-dialog";
 import { appDataDir } from "@tauri-apps/api/path";
+import { open } from "@tauri-apps/plugin-dialog";
 
 export async function listRecentWorkspaces() {
   return await invoke<Array<string>>("list_recent_workspaces");
