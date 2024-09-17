@@ -107,4 +107,4 @@ jobs:
           name: fpx_${{ matrix.target }}
           if-no-files-found: error
           retention-days: 7
-          path: target/release/bundle
+          path: target/${{ matrix.target }}/release/bundle
