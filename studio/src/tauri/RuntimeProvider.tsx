@@ -9,14 +9,14 @@ import { listen } from "@tauri-apps/api/event";
 import type { ReactNode } from "react";
 import { createContext, useEffect, useState } from "react";
 import { RUNTIME } from "../constants";
+import { WorkspaceOpenError } from "./WorkspaceOpenError";
+import { WorkspaceSelector } from "./WorkspaceSelector";
+import { WorkspaceShell } from "./WorkspaceShell";
 import {
   closeWorkspace,
   getCurrentWorkspace,
   showOpenWorkspaceDialog,
-} from "../utils";
-import { WorkspaceOpenError } from "./WorkspaceOpenError";
-import { WorkspaceSelector } from "./WorkspaceSelector";
-import { WorkspaceShell } from "./WorkspaceShell";
+} from "./utils";
 
 type RuntimeProviderProps = {
   children: ReactNode;
