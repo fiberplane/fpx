@@ -74,11 +74,22 @@ jobs:
         with:
           args: "--target ${{ matrix.target }} --ci"
 
+      - name: Prepare artifacts
+        run: |
+          mkdir artifacts
+          paths=$(echo '${{ steps.tauri.outputs.artifactPaths }}' | jq -c -r '.[]')
+
+          for artifact in $paths; do
+            if [[ -f $artifact ]]; then
+              echo "Uploading $artifact"
+              mv $artifact artifacts
+            fi
+          done
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: fpx_${{ matrix.target }}
           if-no-files-found: error
           retention-days: 7
-          path: |
-            ${{ join( fromJSON(steps.tauri.outputs.artifactPaths), '\n' ) }}
+          path: artifacts
