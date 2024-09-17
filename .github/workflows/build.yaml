@@ -1,7 +1,6 @@
 # Test and build the project.
 ---
-name: Build
-
+name: Build cli
 on:
   # Allow manual trigger
   workflow_dispatch:
@@ -12,23 +11,17 @@ on:
 
   # Run on every push to main
   push:
-    branches: ["main"]
+    branches: ["main", "tauri-main"]
 
 jobs:
   build:
+    name: Create binary for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest-8-cores
-
-    name: Create binary for ${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
-    env:
-      CARGO: cargo
-      TARGET_FLAGS: ""
-      TARGET_DIR: ../target
-      RUST_BACKTRACE: 1
+          - os: ubuntu-latest-8-cores
+            target: x86_64-unknown-linux-gnu
 
     permissions:
       id-token: write

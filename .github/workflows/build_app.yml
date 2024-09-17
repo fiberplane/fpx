@@ -5,9 +5,13 @@ on:
   # Allow manual trigger
   workflow_dispatch:
 
+  # Run on every pull request
+  pull_request:
+    branches: ["*"]
+
   # Run on every push to main
   push:
-    branches: ["main", "tauri-main", "tauri-ci"]
+    branches: ["main", "tauri-main"]
 
 jobs:
   build-app:
@@ -22,8 +26,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - os: ubuntu-latest-8-cores
-          #   target: aarch64-unknown-linux-gnu
           - os: ubuntu-latest-8-cores
             target: x86_64-unknown-linux-gnu
             bundles: appimage
@@ -48,15 +50,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 9
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "pnpm"
 
       - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -72,9 +76,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+        env:
+          CI: true
 
-      - name: Build fiberplane/fpx-types
-        run: pnpm run build:types
+      - name: Build shared types
+        run: pnpm build:types
 
       - name: Build fpx-app
         run: |
@@ -82,24 +88,6 @@ jobs:
             --ci \
             --target "${{ matrix.target }}" \
             --bundles "${{ matrix.bundles }}"
-
-      # - name: Build fpx app
-      #   uses: tauri-apps/tauri-action@v0
-      #   id: tauri
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     args: "--target ${{ matrix.target }} --ci"
-
-      # - name: Prepare artifacts
-      #   run: |
-      #     mkdir artifacts
-      #     paths=$(echo '${{ steps.tauri.outputs.artifactPaths }}' | jq -c -r '.[]')
-
-      #     for artifact in $paths; do
-      #       echo "Moving $artifact"
-      #       mv $artifact artifacts
-      #     done
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
