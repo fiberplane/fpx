@@ -78,6 +78,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fpx_${{ matrix.target }}
-          path: ${{ join(fromJSON(steps.tauri.outputs.artifactPaths), '\n') }}
+          path: ${{ fromJSON(steps.tauri.outputs.artifactPaths) }}
           if-no-files-found: error
           retention-days: 7
