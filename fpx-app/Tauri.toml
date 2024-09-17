@@ -7,7 +7,7 @@ beforeDevCommand = "pnpm dev:api & pnpm dev:frontend"
 
 [bundle]
 active = true
-icon = ["../fpx.svg"]
+icon = ["./icons/Square310x310Logo.png"]
 
 [app.security]
 capabilities = ["workspace-capability"]
