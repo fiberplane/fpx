@@ -1,6 +1,6 @@
-import { cn } from "@/utils";
 import "./CodeMirrorEditorCssOverrides.css";
 
+import { cn } from "@/utils";
 import CodeMirror, { EditorView, gutter } from "@uiw/react-codemirror";
 import { useMemo, useState } from "react";
 
@@ -124,6 +124,7 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
         onChange={onChange}
         height={dynamicHeight}
         theme={[inputTheme]}
+        indentWithTab={false}
         extensions={[
           hiddenGutterExtension,
           inputBaseStylesExtension,
