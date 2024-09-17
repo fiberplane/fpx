@@ -337,15 +337,17 @@ export function PanelSectionHeader({
       {children}
 
       {handleClearData && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
           title="Clear data"
           onClick={handleClearData}
           tabIndex={0}
         >
           <EraserIcon />
-        </button>
+        </Button>
       )}
     </div>
   );
