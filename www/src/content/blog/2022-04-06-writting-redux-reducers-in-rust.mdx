@@ -83,7 +83,7 @@ We still have regular Redux reducers in TypeScript, as not all of our state slic
 ```typescript
 export default function reducer(
   state = initialState,
-  action: Action,
+  action: Action
 ): StateWithSideEffects<State> {
   const result = reducerBridge(action); // This calls the Rust reducer.
   state = stateUpdateReducer(state, result.stateUpdate);

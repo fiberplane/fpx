@@ -8,13 +8,13 @@ import { Icon } from "astro-icon/components";
 // doesn't export them in its types'
 import type {
   Link,
-  SidebarEntry,
+  SidebarEntry
 } from "node_modules/@astrojs/starlight/utils/navigation";
 
 /** Turn the nested tree structure of a sidebar into a flat list of all the links. */
 function flattenSidebar(sidebar: SidebarEntry[]): Link[] {
   return sidebar.flatMap((entry) =>
-    entry.type === "group" ? flattenSidebar(entry.entries) : entry,
+    entry.type === "group" ? flattenSidebar(entry.entries) : entry
   );
 }
 
@@ -29,7 +29,7 @@ function resolveGroupIcon(label: string): string {
   const groupIcons: Record<string, string> = {
     Quickstart: "lucide:rocket",
     Components: "lucide:component",
-    Features: "lucide:hammer",
+    Features: "lucide:hammer"
   };
 
   if (!(label in groupIcons)) {
@@ -71,11 +71,7 @@ const { sublist, nested } = Astro.props;
           >
             <summary>
               <div class="group-label">
-                <Icon
-                  name={resolveGroupIcon(entry.label)}
-                  stroke-width="1"
-                />{" "}
-                <!-- <Icon name={resolveGroupIcon(entry.label)} /> -->
+                <Icon name={resolveGroupIcon(entry.label)} stroke-width="1" />{" "}
                 <span class="large">{entry.label}</span>
                 {entry.badge && (
                   <Badge
