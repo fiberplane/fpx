@@ -1479,6 +1479,7 @@ dependencies = [
  "thiserror",
  "time",
  "tokio",
+ "toml 0.8.19",
  "tower",
  "tower-http 0.5.2",
  "tracing",
@@ -1491,6 +1492,7 @@ dependencies = [
 name = "fpx-app"
 version = "0.1.0"
 dependencies = [
+ "fpx",
  "schemars",
  "serde",
  "serde_json",
@@ -1498,7 +1500,6 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-dialog",
  "tauri-plugin-store",
- "toml 0.8.19",
 ]
 
 [[package]]

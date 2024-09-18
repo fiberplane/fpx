@@ -1,7 +1,8 @@
-use crate::models::workspace::{Config, OpenWorkspaceByPathError, Workspace};
+use crate::models::workspace::{OpenWorkspaceByPathError, Workspace};
 use crate::state::AppState;
 use crate::STORE_PATH;
-use std::fs::read_to_string;
+use fpx::config::FpxConfig;
+use std::path::PathBuf;
 use tauri::{AppHandle, Runtime, State};
 use tauri_plugin_store::{with_store, StoreCollection};
 
@@ -42,13 +43,12 @@ pub fn open_workspace_by_path<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
 ) -> Result<Workspace, OpenWorkspaceByPathError> {
-    let content = read_to_string(format!("{}/fpx.toml", path))
-        .map_err(|_| OpenWorkspaceByPathError::ConfigFileMissing { path: path.clone() })?;
-
-    let config: Config =
-        toml::from_str(&content).map_err(|err| OpenWorkspaceByPathError::InvalidConfiguration {
-            message: format!("{}", err),
-        })?;
+    let path_buf = PathBuf::from(path.clone());
+    let (config, _config_path) = match FpxConfig::load(Some(path_buf)) {
+        Ok(Some(result)) => result,
+        Ok(None) => return Err(OpenWorkspaceByPathError::ConfigFileMissing { path: path.clone() }),
+        Err(err) => panic!("Failed to load configuration: {}", err),
+    };
 
     let workspace = Workspace::new(path.clone(), config);
     state.set_workspace(workspace.clone());
