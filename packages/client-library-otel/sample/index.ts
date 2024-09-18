@@ -67,8 +67,6 @@ const generateRelaxedWelcome = measure("relaxedWelcome", rawRelaxedWelcome);
 app.get("/stream", async (c) => {
   c.header("Content-Type", "text/plain");
   return stream(c, async (stream) => {
-    const raw = rawRelaxedWelcome();
-    console.log("raw", raw, isPromise(raw));
     const result = generateRelaxedWelcome();
 
     for await (const content of result) {

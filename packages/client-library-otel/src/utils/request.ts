@@ -245,8 +245,6 @@ async function tryGetResponseBodyAsText(
     }
   } catch {
     // swallow error
-    // } catch (error) {
-    // console.error("Failed to read response.body", error);
   }
 
   return null;
