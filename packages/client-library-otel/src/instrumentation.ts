@@ -209,12 +209,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
                 span.setAttributes(requestAttributes);
               },
               endSpanManually: true,
-              onSuccess: async (span, responsePromise) => {
+              onSuccess: async (span, response) => {
                 span.addEvent("first-response");
-
-                const response = isPromise(responsePromise)
-                  ? await responsePromise
-                  : responsePromise;
 
                 const attributesResponse = response.clone();
 

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { stream } from "hono/streaming";
 import { instrument, measure } from "../src";
+import { isPromise } from "../src/utils";
 
 const app = new Hono();
 
@@ -49,8 +50,7 @@ app.get("/error", async () => {
   await delayedError();
 });
 
-// This is an async generator function (and so returns an async iterator)
-const generateRelaxedWelcome = measure("relaxedWelcome", async function* () {
+async function* rawRelaxedWelcome() {
   await sleep(500);
   yield "hello! ";
   await sleep(500);
@@ -59,11 +59,16 @@ const generateRelaxedWelcome = measure("relaxedWelcome", async function* () {
   yield "is ";
   await sleep(500);
   yield "awesome";
-});
+}
+
+// This is an async generator function (and so returns an async iterator)
+const generateRelaxedWelcome = measure("relaxedWelcome", rawRelaxedWelcome);
 
 app.get("/stream", async (c) => {
   c.header("Content-Type", "text/plain");
   return stream(c, async (stream) => {
+    const raw = rawRelaxedWelcome();
+    console.log("raw", raw, isPromise(raw));
     const result = generateRelaxedWelcome();
 
     for await (const content of result) {

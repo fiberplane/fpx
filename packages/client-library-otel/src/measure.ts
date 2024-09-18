@@ -16,15 +16,9 @@ export type MeasureOptions<
    */
   ARGS,
   /**
-   * The return type of the function being measured
-   * (awaited result if the return value is a promise)
+   * The return type of the function being measured. This could be a value including a promise or a(n) (async) generator
    */
   RESULT,
-  /**
-   * The raw return type of the function being measured
-   * (it is used to determine if the onSuccess function can be async)
-   */
-  RAW_RESULT,
 > = {
   name: string;
   /**
@@ -45,8 +39,8 @@ export type MeasureOptions<
    */
   onSuccess?: (
     span: Span,
-    result: RESULT,
-  ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
+    result: ExtractInnerResult<RESULT>,
+  ) => RESULT extends Promise<unknown> ? Promise<void> | void : void;
 
   /**
    * This is an advanced feature in cases where you don't want the open telemetry spans
@@ -78,8 +72,12 @@ export type MeasureOptions<
    * in the span and will not be thrown.
    */
   checkResult?: (
-    result: RESULT,
-  ) => RAW_RESULT extends Promise<unknown> ? Promise<void> | void : void;
+    result: ExtractInnerResult<RESULT>,
+  ) => RESULT extends Promise<unknown>
+    ? Promise<void> | void
+    : RESULT extends AsyncGenerator<unknown, unknown, unknown>
+      ? Promise<void> | void
+      : void;
 
   /**
    * Optional logger module to use for logging on errors, etc.
@@ -87,6 +85,18 @@ export type MeasureOptions<
    */
   logger?: FpxLogger;
 };
+
+type ExtractInnerResult<TYPE> = TYPE extends Generator<
+  infer T,
+  infer TReturn,
+  unknown
+>
+  ? T | TReturn
+  : TYPE extends AsyncGenerator<infer T, infer TReturn, unknown>
+    ? T | TReturn
+    : TYPE extends Promise<infer R>
+      ? R
+      : TYPE;
 
 /**
  * Wraps a function in a span, measuring the time it takes to execute
@@ -108,33 +118,30 @@ export function measure<T, A extends unknown[]>(
  * @param options param name and spanKind
  * @param fn
  */
-export function measure<A extends unknown[], R>(
-  options: MeasureOptions<A, R, R>,
-  fn: (...args: A) => R,
-): (...args: A) => R;
+export function measure<ARGS extends unknown[], RESULT>(
+  options: MeasureOptions<ARGS, RESULT>,
+  fn: (...args: ARGS) => RESULT,
+): (...args: ARGS) => RESULT;
 
-export function measure<A extends unknown[], R>(
-  nameOrOptions: string | MeasureOptions<A, R, R>,
-  fn: (...args: A) => R,
-): (...args: A) => R {
+export function measure<ARGS extends unknown[], RESULT>(
+  nameOrOptions: string | MeasureOptions<ARGS, RESULT>,
+  fn: (...args: ARGS) => RESULT,
+): (...args: ARGS) => RESULT {
   const isOptions = typeof nameOrOptions === "object";
   const name: string = isOptions ? nameOrOptions.name : nameOrOptions;
-  const spanKind: SpanKind | undefined = isOptions
-    ? nameOrOptions.spanKind
-    : undefined;
-  const attributes: Attributes | undefined = isOptions
-    ? nameOrOptions.attributes
-    : undefined;
-  const onStart = isOptions ? nameOrOptions.onStart : undefined;
-  const onSuccess = isOptions ? nameOrOptions.onSuccess : undefined;
-  const onError = isOptions ? nameOrOptions.onError : undefined;
-  const checkResult = isOptions ? nameOrOptions.checkResult : undefined;
-  const logger = isOptions ? nameOrOptions.logger : undefined;
-  const endSpanManually =
-    (isOptions ? nameOrOptions.endSpanManually : undefined) || false;
+  const {
+    onStart,
+    onSuccess,
+    onError,
+    checkResult,
+    logger,
+    endSpanManually,
+    attributes,
+    spanKind,
+  } = isOptions ? nameOrOptions : ({} as MeasureOptions<ARGS, RESULT>);
 
-  return (...args: A): R => {
-    function handleActiveSpan(span: Span): R {
+  return (...args: ARGS): RESULT => {
+    function handleActiveSpan(span: Span): RESULT {
       let shouldEndSpan = true;
 
       if (onStart) {
@@ -157,30 +164,48 @@ export function measure<A extends unknown[], R>(
 
         if (isGeneratorValue(returnValue)) {
           shouldEndSpan = false;
-          return handleSyncIterator(span, returnValue) as R;
+          return handleSyncIterator(span, returnValue) as RESULT;
         }
-        if (isPromise<R>(returnValue)) {
-          shouldEndSpan = false;
-          return returnValue.then((value) => {
-            if (isAsyncGeneratorValue(value)) {
-              shouldEndSpan = false;
-              return handleAsyncIterator(span, value) as R;
-            }
 
-            return handlePromise<R>(span, returnValue, {
+        if (isAsyncGeneratorValue(returnValue)) {
+          shouldEndSpan = false;
+          const handlerOptions = {
+            endSpanManually,
+            onSuccess,
+            checkResult,
+            onError,
+          };
+
+          return handleAsyncIterator(
+            span,
+            returnValue as AsyncGenerator<
+              ExtractInnerResult<RESULT>,
+              ExtractInnerResult<RESULT>,
+              unknown
+            >,
+            handlerOptions,
+          ) as RESULT;
+        }
+
+        if (isPromise<ExtractInnerResult<RESULT>>(returnValue)) {
+          shouldEndSpan = false;
+          return handlePromise(
+            span,
+            returnValue as Promise<ExtractInnerResult<RESULT>>,
+            {
               onSuccess,
               onError,
               checkResult,
               endSpanManually,
-            });
-          }) as R;
+            },
+          ) as RESULT;
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
 
         if (onSuccess) {
           try {
-            onSuccess(span, returnValue);
+            onSuccess(span, returnValue as ExtractInnerResult<RESULT>);
           } catch (error) {
             if (logger) {
               const errorMessage = formatException(convertToException(error));
@@ -227,17 +252,17 @@ export function measure<A extends unknown[], R>(
  *
  * @returns the promise
  */
-async function handlePromise<T>(
+async function handlePromise<T extends Promise<unknown>>(
   span: Span,
-  promise: Promise<T>,
+  resultPromise: T,
   options: Pick<
-    MeasureOptions<unknown[], T, Promise<T>>,
+    MeasureOptions<unknown[], T>,
     "onSuccess" | "onError" | "checkResult" | "endSpanManually"
   >,
-): Promise<T> {
+) {
   const { onSuccess, onError, checkResult, endSpanManually = false } = options;
   try {
-    const result = await Promise.resolve(promise);
+    const result = (await resultPromise) as ExtractInnerResult<T>;
 
     if (checkResult) {
       try {
@@ -267,7 +292,7 @@ async function handlePromise<T>(
           }
         }
 
-        return result;
+        return result as ExtractInnerResult<T>;
       }
     }
 
@@ -395,8 +420,34 @@ function handleSyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
 function handleAsyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
   span: Span,
   iterable: AsyncGenerator<T, TReturn, TNext>,
+  options: Pick<
+    MeasureOptions<unknown[], AsyncGenerator<T, TReturn, TNext>>,
+    "onSuccess" | "onError" | "checkResult" | "endSpanManually"
+  >,
 ): AsyncGenerator<T, TReturn, TNext> {
+  const { checkResult, endSpanManually, onError, onSuccess } = options;
+
   const active = context.active();
+  function handleError(error: unknown) {
+    const exception = convertToException(error);
+    span.recordException(exception);
+    const message = formatException(exception);
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message,
+    });
+
+    if (onError) {
+      try {
+        onError(span, error);
+      } catch {
+        // swallow error
+      }
+    }
+
+    span.end();
+  }
+
   return {
     next: context.bind(
       active,
@@ -406,20 +457,27 @@ function handleAsyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
           try {
             const result = await iterable.next(...args);
             if (result.done) {
-              span.setStatus({ code: SpanStatusCode.OK });
-              span.end();
+              try {
+                if (checkResult) {
+                  await checkResult(result.value);
+                }
+
+                if (!endSpanManually) {
+                  span.setStatus({ code: SpanStatusCode.OK });
+                  span.end();
+                }
+
+                if (onSuccess) {
+                  await onSuccess(span, result.value);
+                }
+              } catch (error) {
+                handleError(error);
+              }
             }
 
             return result;
           } catch (error) {
-            const exception = convertToException(error);
-            span.recordException(exception);
-            const message = formatException(exception);
-            span.setStatus({
-              code: SpanStatusCode.ERROR,
-              message,
-            });
-            span.end();
+            handleError(error);
             throw error;
           }
         },
@@ -428,35 +486,36 @@ function handleAsyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
     return: context.bind(active, async function returnFunction(value: TReturn) {
       try {
         const result = await iterable.return(value);
-        span.setStatus({
-          code: SpanStatusCode.OK,
-        });
+        if (result.done) {
+          try {
+            if (checkResult) {
+              checkResult(result.value);
+            }
+
+            if (!endSpanManually) {
+              span.setStatus({ code: SpanStatusCode.OK });
+              span.end();
+            }
+
+            if (onSuccess) {
+              onSuccess(span, result.value);
+            }
+          } catch (error) {
+            handleError(error);
+          }
+        }
+
         return result;
       } catch (error) {
-        const exception = convertToException(error);
-        span.recordException(exception);
-        const message = formatException(exception);
-        span.setStatus({
-          code: SpanStatusCode.ERROR,
-          message,
-        });
+        handleError(error);
         throw error;
-      } finally {
-        span.end();
       }
     }),
     throw: context.bind(active, async function throwFunction(error: unknown) {
       try {
         return await iterable.throw(error);
       } finally {
-        const exception = convertToException(error);
-        span.recordException(exception);
-        const message = formatException(exception);
-        span.setStatus({
-          code: SpanStatusCode.ERROR,
-          message,
-        });
-        span.end();
+        handleError(error);
       }
     }),
     [Symbol.asyncIterator]() {
@@ -484,12 +543,7 @@ export function isGeneratorValue<
   return (
     value !== null && typeof value === "object" && Symbol.iterator in value
   );
-  // return Object.getPrototypeOf(fn).constructor.name === "GeneratorFunction";
 }
-
-// const AsyncGeneratorFunction = Object.getPrototypeOf(
-//   async function* () {},
-// ).constructor;
 
 /**
  * Type guard to check if a function is an async generator.
@@ -505,5 +559,4 @@ export function isAsyncGeneratorValue<
   return (
     value !== null && typeof value === "object" && Symbol.asyncIterator in value
   );
-  // return fn instanceof AsyncGeneratorFunction;
 }
