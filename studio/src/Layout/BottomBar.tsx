@@ -79,27 +79,17 @@ export function BottomBar() {
                 onClick={() => togglePanel("logsPanel")}
                 className={cn("h-6 w-6")}
               >
-                {hasErrorLogs ? (
-                  <IconWithNotification
-                    id="icon-with-error-notification"
-                    icon="lucide:square-terminal"
-                    notificationPosition="top-right"
-                    notificationColor="bg-red-700"
-                    className={cn(
-                      "cursor-pointer h-4 w-4",
-                      logsPanel === "open" && "text-blue-500",
-                    )}
-                  />
-                ) : (
-                  <Icon
-                    id="icon"
-                    icon="lucide:square-terminal"
-                    className={cn(
-                      "cursor-pointer h-4 w-4",
-                      logsPanel === "open" && "text-blue-500",
-                    )}
-                  />
-                )}
+                <IconWithNotification
+                  id="icon-with-error-notification"
+                  icon="lucide:square-terminal"
+                  notificationPosition="top-right"
+                  notificationColor="bg-red-700"
+                  showNotification={hasErrorLogs}
+                  className={cn(
+                    "cursor-pointer h-4 w-4",
+                    logsPanel === "open" && "text-blue-500",
+                  )}
+                />
               </Button>
             </TooltipTrigger>
             <TooltipContent
