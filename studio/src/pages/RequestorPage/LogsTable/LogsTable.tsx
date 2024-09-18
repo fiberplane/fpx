@@ -1,107 +1,27 @@
+import React, { useState } from "react";
 import {
   getBgColorForLevel,
   getTextColorForLevel,
 } from "@/components/Timeline/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import type { MizuOrphanLog } from "@/queries";
 import { useOtelTrace } from "@/queries";
-import { cn } from "@/utils";
+import { cn, safeParseJson } from "@/utils";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { Tabs } from "@radix-ui/react-tabs";
-import {
-  type ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { useState } from "react";
 import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { useRequestorStore } from "../store";
-
-type OrphanLog = {
-  traceId: string;
-  id: number;
-  timestamp: string;
-  level: "error" | "warn" | "info" | "debug";
-  message: string | null;
-  args: unknown[];
-  createdAt: string;
-  updatedAt: string;
-  callerLocation?: { file: string; line: string; column: string } | null;
-  ignored?: boolean | null;
-  service?: string | null;
-  relatedSpanId?: string | null;
-};
+import { LogsEmptyState } from "./Empty";
 
 type Props = {
   traceId?: string;
 };
 
-//TODO: add a better empty state
 export function LogsTable({ traceId = "" }: Props) {
   const { data: spans } = useOtelTrace(traceId);
   const { togglePanel } = useRequestorStore("togglePanel");
   const logs = useOrphanLogs(traceId, spans ?? []);
-  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
-
-  const columns: ColumnDef<OrphanLog>[] = [
-    {
-      accessorKey: "timestamp",
-      header: "Timestamp",
-      cell: ({ row }) => {
-        const isExpanded = expandedRowId === row.original.id;
-        return (
-          <div className="grid gap-4 text-right">
-            <div className="font-mono text-xs text-nowrap whitespace-nowrap">
-              {new Date(row.original.timestamp)
-                .toISOString()
-                .replace("T", " ")
-                .replace("Z", "")}
-            </div>
-            {isExpanded && (
-              <p className="text-xs font-mono">
-                level:{" "}
-                <span
-                  className={cn(
-                    "uppercase",
-                    getTextColorForLevel(row.original.level),
-                  )}
-                >
-                  {row.original.level}
-                </span>
-              </p>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "message",
-      header: "Message",
-      cell: ({ row }) => {
-        const isExpanded = expandedRowId === row.original.id;
-        return (
-          <div
-            className={cn("font-mono text-xs", {
-              "text-ellipsis overflow-hidden": !isExpanded,
-              "whitespace-nowrap": !isExpanded,
-              "w-full": !isExpanded,
-            })}
-          >
-            {row.original.message}
-          </div>
-        );
-      },
-    },
-  ];
 
   return (
     <Tabs defaultValue="logs" className="h-full">
@@ -119,104 +39,121 @@ export function LogsTable({ traceId = "" }: Props) {
         </div>
       </CustomTabsList>
       <CustomTabsContent value="logs" className="overflow-hidden">
-        <TableContent
-          //  @ts-expect-error: TODO: fix the log levels that are reported as strings but need to be string unions
-          data={logs}
-          columns={columns}
-          expandedRowId={expandedRowId}
-          setExpandedRowId={setExpandedRowId}
-        />
+        <LogsGrid logs={logs} />
       </CustomTabsContent>
     </Tabs>
   );
 }
 
-type TableProps = {
-  columns: ColumnDef<OrphanLog>[];
-  data: OrphanLog[];
-  expandedRowId: number | null;
-  setExpandedRowId: (id: number | null) => void;
+type LogsGridProps = {
+  logs: MizuOrphanLog[];
 };
 
-function TableContent({
-  columns,
-  data,
-  expandedRowId,
-  setExpandedRowId,
-}: TableProps) {
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+function LogsGrid({ logs }: LogsGridProps) {
+  if (logs.length === 0) {
+    return <LogsEmptyState />;
+  }
+
   return (
-    <Table className="border-separate border-spacing-y-1 table-fixed w-full">
-      <TableHeader>
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => {
-              return (
-                <TableHead
-                  key={header.id}
-                  className={cn("text-left text-xs font-mono", {
-                    "w-[180px]": header.column.id === "timestamp",
-                  })}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </TableHead>
-              );
-            })}
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody>
-        {table.getRowModel().rows?.length ? (
-          table.getRowModel().rows.map((row) => {
-            const bgColor = getBgColorForLevel(row.original.level);
-            const isExpanded = expandedRowId === row.original.id;
-            return (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className={cn(
-                  "cursor-pointer",
-                  bgColor,
-                  "hover:bg-muted",
-                  "px-2",
-                )}
-                onClick={() =>
-                  setExpandedRowId(isExpanded ? null : row.original.id)
-                }
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={cn("align-top", {
-                      "w-[180px]": cell.column.id === "timestamp",
-                    })}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            );
-          })
-        ) : (
-          <TableRow>
-            <TableCell
-              colSpan={columns.length}
-              className="h-24 text-center font-mono text-muted-foreground"
-            >
-              No logs found.
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <div className="space-y-1">
+      {logs.map((log) => (
+        <LogRow key={log.id} log={log} />
+      ))}
+    </div>
   );
+}
+
+type LogRowProps = {
+  log: MizuOrphanLog;
+};
+
+function LogRow({ log }: LogRowProps) {
+  const bgColor = getBgColorForLevel(log.level);
+  const textColor = getTextColorForLevel(log.level);
+  const [isExpanded, setIsExpanded] = useState(false);
+  // we don't want the focus ring to be visible when the user is selecting the row with the mouse
+  const [isMouseSelected, setIsMouseSelected] = useState(false);
+
+  return (
+    <details
+      className={cn(isExpanded ? "rounded-t-xl" : "rounded-xl", bgColor)}
+      onToggle={(e) => setIsExpanded(e.currentTarget.open)}
+      onMouseDown={() => setIsMouseSelected(true)}
+      onBlur={() => setIsMouseSelected(false)}
+    >
+      <summary
+        className={cn(
+          "cursor-pointer px-2 py-1 flex items-center",
+          "hover:bg-muted",
+          !isMouseSelected &&
+            "focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-inset",
+          isExpanded ? "rounded-t-xl" : "rounded-xl",
+        )}
+      >
+        <div
+          className={`w-2 h-2 mr-2 flex-shrink-0 rounded-[15%] ${getIconColor(log.level)}`}
+        />
+        <div className="font-mono text-xs flex-grow truncate">
+          {log.message}
+        </div>
+        <div className="font-mono text-xs text-right whitespace-nowrap ml-2">
+          {formatTimestamp(log.timestamp)}
+        </div>
+      </summary>
+      <div className="p-2 font-mono text-xs text-muted-foreground relative">
+        {/*
+      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-500" />
+        */}
+        <div className="pl-4">
+          <p>
+            Level: <span className={textColor}>{log.level.toUpperCase()}</span>
+          </p>
+          {log.service && <p>Service: {log.service}</p>}
+          {log.callerLocation && (
+            <p>
+              Location: {log.callerLocation.file}:{log.callerLocation.line}:
+              {log.callerLocation.column}
+            </p>
+          )}
+          {log.message && (
+            <div className="flex gap-2">
+              <p>Message:</p>
+              <p className="text-foreground break-words">
+                {safeParseJson(log.message) ? (
+                  <pre className="whitespace-pre-wrap">
+                    {JSON.stringify(JSON.parse(log.message), null, 2)}
+                  </pre>
+                ) : (
+                  log.message
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </details>
+  );
+}
+
+function getIconColor(level: MizuOrphanLog["level"]) {
+  switch (level) {
+    case "error":
+      return "bg-red-500";
+    case "warn":
+      return "bg-yellow-500";
+    case "info":
+      return "bg-blue-500";
+    case "debug":
+      return "bg-green-500";
+    default:
+      return "bg-gray-500";
+  }
+}
+
+function formatTimestamp(timestamp: Date) {
+  return timestamp.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 }
