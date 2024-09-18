@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { useInputFocusDetection } from "@/hooks";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
+import { Icon } from "@iconify/react";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +10,6 @@ import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
-import { Icon } from "@iconify/react";
 
 export function RoutesPanel() {
   const { routes } = useRequestorStore("routes");
