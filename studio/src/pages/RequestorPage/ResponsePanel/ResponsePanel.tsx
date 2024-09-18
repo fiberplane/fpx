@@ -2,6 +2,7 @@ import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
+import { Icon } from "@iconify/react";
 import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -20,7 +21,6 @@ import {
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
-import { Icon } from "@iconify/react";
 
 type Props = {
   tracedResponse?: Requestornator;
