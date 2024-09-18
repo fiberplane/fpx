@@ -1,5 +1,6 @@
 import {
   boolean,
+  integer,
   jsonb,
   pgTable,
   serial,
@@ -17,6 +18,7 @@ export const geese = pgTable("geese", {
   location: text("location"),
   bio: text("bio"),
   avatar: text("avatar"),
+  honks: integer("honks").default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

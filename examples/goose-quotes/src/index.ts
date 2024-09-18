@@ -290,8 +290,19 @@ app.post("/api/geese/:id/honk", async (c) => {
     return c.json({ message: "Goose not found" }, 404);
   }
 
-  console.log(`Honk received for goose: ${goose.name}`);
-  return c.json({ message: `Honk honk! ${goose.name} honks back at you!` });
+  const currentHonks = goose.honks || 0;
+
+  const updatedGoose = await measure("updateGoose", () =>
+    updateGoose(db, +id, { honks: currentHonks + 1 }),
+  )();
+
+  console.log(
+    `Honk received for goose: ${goose.name}. New honk count: ${updatedGoose.honks}`,
+  );
+  return c.json({
+    message: `Honk honk! ${goose.name} honks back at you!`,
+    honks: updatedGoose.honks,
+  });
 });
 
 /**
@@ -302,21 +313,35 @@ app.patch("/api/geese/:id", async (c) => {
   const db = drizzle(sql);
 
   const id = c.req.param("id");
-  const { name } = await c.req.json();
+  const updateData = await c.req.json();
 
-  console.log(`Updating goose ${id} with new name: ${name}`);
+  console.log(`Updating goose ${id} with data:`, updateData);
 
-  const goose = await measure("updateGoose", () =>
-    updateGoose(db, +id, { name }),
-  )();
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
 
   if (!goose) {
     console.warn(`Goose not found: ${id}`);
     return c.json({ message: "Goose not found" }, 404);
   }
 
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
   console.log(`Goose ${id} updated successfully`);
-  return c.json(goose);
+  return c.json(updatedGoose);
 });
 
 /**
