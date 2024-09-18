@@ -164,7 +164,7 @@ export function measure<ARGS extends unknown[], RESULT>(
 
         if (isGeneratorValue(returnValue)) {
           shouldEndSpan = false;
-          return handleSyncIterator(span, returnValue) as RESULT;
+          return handleGenerator(span, returnValue) as RESULT;
         }
 
         if (isAsyncGeneratorValue(returnValue)) {
@@ -176,7 +176,7 @@ export function measure<ARGS extends unknown[], RESULT>(
             onError,
           };
 
-          return handleAsyncIterator(
+          return handleAsyncGenerator(
             span,
             returnValue as AsyncGenerator<
               ExtractInnerResult<RESULT>,
@@ -340,10 +340,35 @@ async function handlePromise<T extends Promise<unknown>>(
  * Handles synchronous iterators (generators).
  * Measures the time until the generator is fully consumed.
  */
-function handleSyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
+function handleGenerator<T = unknown, TReturn = unknown, TNext = unknown>(
   span: Span,
   iterable: Generator<T, TReturn, TNext>,
+  options: Pick<
+    MeasureOptions<unknown[], Generator<T, TReturn, TNext>>,
+    "onSuccess" | "onError" | "checkResult" | "endSpanManually"
+  >,
 ): Generator<T, TReturn, TNext> {
+  const { checkResult, endSpanManually, onError, onSuccess } = options;
+  function handleError(error: unknown) {
+    const exception = convertToException(error);
+    span.recordException(exception);
+    const message = formatException(exception);
+    span.setStatus({
+      code: SpanStatusCode.ERROR,
+      message,
+    });
+
+    if (onError) {
+      try {
+        onError(span, error);
+      } catch {
+        // swallow error
+      }
+    }
+
+    span.end();
+  }
+
   const active = context.active();
   return {
     next: context.bind(
@@ -352,20 +377,27 @@ function handleSyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
         try {
           const result = iterable.next(...args);
           if (result.done) {
-            span.setStatus({ code: SpanStatusCode.OK });
-            span.end();
+            try {
+              if (checkResult) {
+                checkResult(result.value);
+              }
+
+              if (!endSpanManually) {
+                span.setStatus({ code: SpanStatusCode.OK });
+                span.end();
+              }
+
+              if (onSuccess) {
+                onSuccess(span, result.value);
+              }
+            } catch (error) {
+              handleError(error);
+            }
           }
 
           return result;
         } catch (error) {
-          const exception = convertToException(error);
-          span.recordException(exception);
-          const message = formatException(exception);
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message,
-          });
-          span.end();
+          handleError(error);
           throw error;
         }
       }),
@@ -373,38 +405,36 @@ function handleSyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
     return: context.bind(active, function returnFunction(value: TReturn) {
       try {
         const result = iterable.return(value);
-        span.setStatus({
-          code: SpanStatusCode.OK,
-        });
+        if (result.done) {
+          try {
+            if (checkResult) {
+              checkResult(result.value);
+            }
+
+            if (!endSpanManually) {
+              span.setStatus({ code: SpanStatusCode.OK });
+              span.end();
+            }
+
+            if (onSuccess) {
+              onSuccess(span, result.value);
+            }
+          } catch (error) {
+            handleError(error);
+          }
+        }
+
         return result;
       } catch (error) {
-        const exception = convertToException(error);
-        span.recordException(exception);
-        const message = formatException(exception);
-        span.setStatus({
-          code: SpanStatusCode.ERROR,
-          message,
-        });
+        handleError(error);
         throw error;
-      } finally {
-        span.end();
       }
     }),
     throw: context.bind(active, function throwFunction(error: unknown) {
       try {
-        if (iterable.throw) {
-          return iterable.throw(error);
-        }
-        throw error;
+        return iterable.throw(error);
       } finally {
-        const exception = convertToException(error);
-        span.recordException(exception);
-        const message = formatException(exception);
-        span.setStatus({
-          code: SpanStatusCode.ERROR,
-          message,
-        });
-        span.end();
+        handleError(error);
       }
     }),
     [Symbol.iterator]() {
@@ -417,7 +447,7 @@ function handleSyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
  * Handles asynchronous iterators (async generators).
  * Measures the time until the async generator is fully consumed.
  */
-function handleAsyncIterator<T = unknown, TReturn = unknown, TNext = unknown>(
+function handleAsyncGenerator<T = unknown, TReturn = unknown, TNext = unknown>(
   span: Span,
   iterable: AsyncGenerator<T, TReturn, TNext>,
   options: Pick<
