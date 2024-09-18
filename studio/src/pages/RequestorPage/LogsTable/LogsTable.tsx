@@ -3,16 +3,6 @@ import {
   getTextColorForLevel,
 } from "@/components/Timeline/utils";
 import { Button } from "@/components/ui/button";
-import type { MizuOrphanLog } from "@/queries";
-import { useOtelTrace } from "@/queries";
-import { cn, safeParseJson } from "@/utils";
-import { Cross1Icon, CopyIcon } from "@radix-ui/react-icons";
-import { Tabs } from "@radix-ui/react-tabs";
-import { useState } from "react";
-import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
-import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import { useRequestorStore } from "../store";
-import { LogsEmptyState } from "./Empty";
 import {
   Tooltip,
   TooltipContent,
@@ -20,6 +10,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCopyToClipboard } from "@/hooks";
+import type { MizuOrphanLog } from "@/queries";
+import { useOtelTrace } from "@/queries";
+import { cn, safeParseJson } from "@/utils";
+import { CopyIcon, Cross1Icon } from "@radix-ui/react-icons";
+import { Tabs } from "@radix-ui/react-tabs";
+import { useState } from "react";
+import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
+import { useRequestorStore } from "../store";
+import { LogsEmptyState } from "./Empty";
 
 type Props = {
   traceId?: string;
