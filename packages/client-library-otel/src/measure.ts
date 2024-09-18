@@ -164,7 +164,22 @@ export function measure<ARGS extends unknown[], RESULT>(
 
         if (isGeneratorValue(returnValue)) {
           shouldEndSpan = false;
-          return handleGenerator(span, returnValue) as RESULT;
+          const handlerOptions = {
+            endSpanManually,
+            onSuccess,
+            checkResult,
+            onError,
+          };
+
+          return handleGenerator(
+            span,
+            returnValue as Generator<
+              ExtractInnerResult<RESULT>,
+              ExtractInnerResult<RESULT>,
+              unknown
+            >,
+            handlerOptions,
+          ) as RESULT;
         }
 
         if (isAsyncGeneratorValue(returnValue)) {
