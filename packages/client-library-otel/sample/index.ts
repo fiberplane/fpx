@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { stream } from "hono/streaming";
 import { instrument, measure } from "../src";
-import { isPromise } from "../src/utils";
 
 const app = new Hono();
 
