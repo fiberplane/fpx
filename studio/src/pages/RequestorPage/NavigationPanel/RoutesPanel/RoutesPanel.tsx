@@ -9,10 +9,20 @@ import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
+import { Icon } from "@iconify/react";
 
 export function RoutesPanel() {
-  const { routes, activeRoute, setActiveRoute } = useRequestorStore(
-    "routes",
+  const { routes } = useRequestorStore("routes");
+
+  return (
+    <div className={cn("h-full", "flex", "flex-col")}>
+      <RoutesPanelInner routes={routes} />
+    </div>
+  );
+}
+
+function RoutesPanelInner({ routes }: { routes: ProbedRoute[] }) {
+  const { activeRoute, setActiveRoute } = useRequestorStore(
     "activeRoute",
     "setActiveRoute",
   );
@@ -32,42 +42,38 @@ export function RoutesPanel() {
   });
 
   const hasAnyUserAddedRoutes = useMemo(() => {
-    return (
-      routes?.some((r) => r.routeOrigin === "custom" && !r.isDraft) ?? false
-    );
+    return routes.some((r) => r.routeOrigin === "custom" && !r.isDraft);
   }, [routes]);
 
   const hasAnyOpenApiRoutes = useMemo(() => {
-    return routes?.some((r) => r.routeOrigin === "open_api") ?? false;
+    return routes.some((r) => r.routeOrigin === "open_api");
   }, [routes]);
 
   const [filterValue, setFilterValue] = useState("");
   const filteredRoutes = useMemo(() => {
     const cleanFilter = filterValue.trim().toLowerCase();
-    if (cleanFilter.length < 3 && routes) {
+    if (cleanFilter.length < 3) {
       return routes;
     }
-    return routes?.filter((r) => r.path.toLowerCase().includes(cleanFilter));
+    return routes.filter((r) => r.path.toLowerCase().includes(cleanFilter));
   }, [filterValue, routes]);
 
   const detectedRoutes = useMemo(() => {
-    const detected =
-      filteredRoutes?.filter(
-        (r) => r.routeOrigin === "discovered" && r.currentlyRegistered,
-      ) ?? [];
+    const detected = filteredRoutes.filter(
+      (r) => r.routeOrigin === "discovered" && r.currentlyRegistered,
+    );
     // NOTE - This preserves the order the routes were registered in the Hono api
     detected.sort((a, b) => a.registrationOrder - b.registrationOrder);
     return detected;
   }, [filteredRoutes]);
 
   const openApiRoutes = useMemo(() => {
-    return filteredRoutes?.filter((r) => r.routeOrigin === "open_api") ?? [];
+    return filteredRoutes.filter((r) => r.routeOrigin === "open_api");
   }, [filteredRoutes]);
 
   const userAddedRoutes = useMemo(() => {
-    return (
-      filteredRoutes?.filter((r) => r.routeOrigin === "custom" && !r.isDraft) ??
-      []
+    return filteredRoutes.filter(
+      (r) => r.routeOrigin === "custom" && !r.isDraft,
     );
   }, [filteredRoutes]);
 
@@ -126,7 +132,10 @@ export function RoutesPanel() {
     (event) => {
       switch (event.key) {
         case "Enter": {
-          if (isInputFocused && allRoutes.length > 0) {
+          if (
+            document.activeElement === searchRef.current &&
+            allRoutes.length > 0
+          ) {
             setSelectedRouteIndex(0);
             const firstRouteElement = document.getElementById(
               `route-${selectedRouteIndex}`,
@@ -163,7 +172,7 @@ export function RoutesPanel() {
   );
 
   return (
-    <div className={cn("h-full", "flex", "flex-col")}>
+    <>
       <div>
         <div className="flex items-center space-x-2 pb-3">
           <Input
@@ -180,7 +189,7 @@ export function RoutesPanel() {
       <div className="overflow-y-auto h-full relative">
         {hasAnyUserAddedRoutes && (
           <RoutesSection title="Custom routes">
-            {userAddedRoutes?.map((route, index) => (
+            {userAddedRoutes.map((route, index) => (
               <RoutesItem
                 key={index}
                 index={index}
@@ -195,7 +204,7 @@ export function RoutesPanel() {
         )}
 
         <RoutesSection title="Detected in app">
-          {detectedRoutes?.map((route, index) => (
+          {detectedRoutes.map((route, index) => (
             <RoutesItem
               key={index}
               index={userAddedRoutes.length + index}
@@ -214,7 +223,7 @@ export function RoutesPanel() {
 
         {hasAnyOpenApiRoutes && (
           <RoutesSection title="OpenAPI">
-            {openApiRoutes?.map((route, index) => (
+            {openApiRoutes.map((route, index) => (
               <RoutesItem
                 key={index}
                 index={userAddedRoutes.length + detectedRoutes.length + index}
@@ -232,6 +241,73 @@ export function RoutesPanel() {
             ))}
           </RoutesSection>
         )}
+        {allRoutes.length === 0 && <EmptyState />}
+      </div>
+    </>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center text-gray-300">
+      <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
+        <div className="rounded-lg p-2 bg-muted mb-2">
+          <Icon
+            icon="lucide:book-copy"
+            className="w-12 h-12 text-gray-400 stroke-1"
+          />
+        </div>
+        <h2 className="text-lg font-normal mb-2">No routes detected</h2>
+        <div className="text-gray-400 text-left text-sm flex flex-col gap-4">
+          <p className="text-gray-400 mb-4 text-sm">
+            To enable route auto-detection:
+          </p>
+          <ol className="mb-4 flex flex-col gap-2">
+            <li>
+              1. Install and add the client library:
+              <code className="block mt-1 bg-gray-800 p-1 rounded">
+                npm i @fiberplane/hono-otel
+              </code>
+            </li>
+            <li className="mt-2">
+              2. Set{" "}
+              <code className="bg-gray-800 p-1 rounded">FPX_ENDPOINT</code>{" "}
+              environment variable to:
+              <code className="block mt-1 bg-gray-800 p-1 rounded">
+                http://localhost:8788/v1/traces
+              </code>
+            </li>
+            <li className="mt-2">
+              3. Restart your application and Fiberplane Studio
+            </li>
+          </ol>
+          <p className="text-gray-400 text-sm">
+            If routes are still not detected:
+          </p>
+          <ul className="text-left text-sm text-gray-400">
+            <li>
+              - Ask for help on{" "}
+              <a
+                href="https://discord.com/invite/cqdY6SpfVR"
+                className="underline"
+              >
+                Discord
+              </a>
+            </li>
+            <li>
+              - File an issue on{" "}
+              <a
+                href="https://github.com/fiberplane/fpx/issues"
+                className="underline"
+              >
+                Github
+              </a>
+            </li>
+          </ul>
+          <p className="text-gray-400 text-sm">
+            Or you can simply add a route manually by clicking the + button
+          </p>
+        </div>
       </div>
     </div>
   );
