@@ -4,8 +4,16 @@ name: Build node packages
 on:
   pull_request:
     branches: ["*"]
+    paths: 
+      - "api/**"
+      - "packages/client-library-otel/**"
+      - "studio/**"
   push:
     branches: ["main", "release-*"]
+    paths: 
+      - "api/**"
+      - "packages/client-library-otel/**"
+      - "studio/**"
 
 env:
   CARGO_TERM_COLOR: always
