@@ -31,7 +31,6 @@ import {
   getRequestAttributes,
   getResponseAttributes,
   getRootRequestAttributes,
-  isPromise,
 } from "./utils";
 
 /**
