@@ -6,13 +6,20 @@ import { Button } from "@/components/ui/button";
 import type { MizuOrphanLog } from "@/queries";
 import { useOtelTrace } from "@/queries";
 import { cn, safeParseJson } from "@/utils";
-import { Cross1Icon } from "@radix-ui/react-icons";
+import { Cross1Icon, CopyIcon } from "@radix-ui/react-icons";
 import { Tabs } from "@radix-ui/react-tabs";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { useRequestorStore } from "../store";
 import { LogsEmptyState } from "./Empty";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useCopyToClipboard } from "@/hooks";
 
 type Props = {
   traceId?: string;
@@ -73,6 +80,7 @@ function LogRow({ log }: LogRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   // we don't want the focus ring to be visible when the user is selecting the row with the mouse
   const [isMouseSelected, setIsMouseSelected] = useState(false);
+  const { isCopied, copyToClipboard } = useCopyToClipboard();
 
   return (
     <details
@@ -129,6 +137,26 @@ function LogRow({ log }: LogRowProps) {
               </p>
             </div>
           )}
+        </div>
+        <div className="mt-2 flex justify-start">
+          <TooltipProvider>
+            <Tooltip open={isCopied}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  title="Copy log message"
+                  onClick={() => copyToClipboard(log.message ?? "")}
+                  className="flex items-center gap-1"
+                >
+                  <CopyIcon className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Message copied</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </details>
