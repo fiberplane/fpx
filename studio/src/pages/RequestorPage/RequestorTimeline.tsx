@@ -15,13 +15,13 @@ import {
 import { useIsSmScreen } from "@/hooks";
 import { useOtelTrace } from "@/queries";
 import { cn } from "@/utils";
+import { Icon } from "@iconify/react";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { Tabs } from "@radix-ui/react-tabs";
 import type { ReactNode } from "react";
 import { useOrphanLogs } from "../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "./Tabs";
 import { useRequestorStore } from "./store";
-import { Icon } from "@iconify/react";
 
 type Props = {
   traceId?: string;
