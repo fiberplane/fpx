@@ -9,13 +9,13 @@ import {
   DialogTitle,
   Root,
 } from "@radix-ui/react-dialog";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   NavigationFrame,
   NavigationPanel,
-} from "../pages/RequestorPage/NavigationPanel";
-import { useRequestorStore } from "../pages/RequestorPage/store";
-import { cn } from "../utils";
+} from "@/pages/RequestorPage/NavigationPanel";
+import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { cn } from "@/utils";
 
 export function FloatingSidePanel() {
   const { sidePanel, togglePanel } = useRequestorStore(
