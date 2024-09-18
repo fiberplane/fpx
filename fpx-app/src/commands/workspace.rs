@@ -1,4 +1,4 @@
-use crate::models::workspace::{OpenWorkspaceByPathError, Workspace};
+use crate::models::workspace::{OpenWorkspaceError, Workspace};
 use crate::state::AppState;
 use crate::STORE_PATH;
 use fpx::config::{FpxConfig, FpxConfigError};
@@ -40,19 +40,17 @@ pub fn open_workspace_by_path<R: Runtime>(
     state: State<'_, AppState>,
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
-) -> Result<Workspace, OpenWorkspaceByPathError> {
+) -> Result<Workspace, OpenWorkspaceError> {
     let path_buf = PathBuf::from(path.clone());
     let config = match FpxConfig::load(Some(path_buf)) {
         Ok((config, _config_path)) => config,
         Err(err) => {
             return Err(match err {
-                FpxConfigError::FileNotFound(path_buf) => {
-                    OpenWorkspaceByPathError::ConfigFileMissing {
-                        path: path_buf.to_string_lossy().to_string(),
-                    }
-                }
+                FpxConfigError::FileNotFound(path_buf) => OpenWorkspaceError::ConfigFileMissing {
+                    path: path_buf.to_string_lossy().to_string(),
+                },
                 FpxConfigError::InvalidFpxConfig { message, .. } => {
-                    OpenWorkspaceByPathError::InvalidConfiguration { message }
+                    OpenWorkspaceError::InvalidConfiguration { message }
                 }
                 FpxConfigError::RootDirectoryNotFound => {
                     unreachable!("FpxConfig::load takes a path, so this cannot occur")

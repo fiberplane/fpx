@@ -16,7 +16,7 @@ impl Workspace {
 
 #[derive(JsonSchema, Deserialize, Serialize)]
 #[serde(tag = "type")]
-pub enum OpenWorkspaceByPathError {
+pub enum OpenWorkspaceError {
     ConfigFileMissing { path: String },
     InvalidConfiguration { message: String },
 }

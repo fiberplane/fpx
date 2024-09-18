@@ -10,16 +10,16 @@ pub struct AppState {
 impl AppState {
     pub fn set_workspace(&self, workspace: Workspace) {
         let mut workspace_lock = self.workspace.lock().unwrap();
-        *workspace_lock = Some(workspace);
+        workspace_lock.replace(workspace);
     }
 
     pub fn close_workspace(&self) {
         let mut workspace_lock = self.workspace.lock().unwrap();
-        *workspace_lock = None;
+        workspace_lock.take();
     }
 
     pub fn get_workspace(&self) -> Option<Workspace> {
         let workspace_lock = self.workspace.lock().unwrap();
-        workspace_lock.as_ref().map(|workspace| workspace.clone())
+        workspace_lock.as_ref().cloned()
     }
 }
