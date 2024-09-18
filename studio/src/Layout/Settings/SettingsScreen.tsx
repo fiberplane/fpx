@@ -3,11 +3,11 @@ import { SettingsPage } from "@/pages/SettingsPage";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import {
   Dialog,
-  DialogPortal,
-  DialogContent,
-  DialogTitle,
   DialogClose,
+  DialogContent,
   DialogDescription,
+  DialogPortal,
+  DialogTitle,
 } from "@radix-ui/react-dialog";
 
 export function SettingsScreen({

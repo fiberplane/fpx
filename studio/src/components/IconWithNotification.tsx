@@ -1,6 +1,6 @@
-import type React from "react";
-import { Icon, type IconProps } from "@iconify/react";
 import { cn } from "@/utils";
+import { Icon, type IconProps } from "@iconify/react";
+import type React from "react";
 
 interface IconWithNotificationProps extends IconProps {
   notificationColor?: string;

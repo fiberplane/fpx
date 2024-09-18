@@ -1,12 +1,12 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { GitHubLogoIcon, DiscordLogoIcon } from "@radix-ui/react-icons";
+import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Menubar,
-  MenubarMenu,
-  MenubarTrigger,
   MenubarContent,
-  MenubarSeparator,
   MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarTrigger,
 } from "@radix-ui/react-menubar";
 import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";

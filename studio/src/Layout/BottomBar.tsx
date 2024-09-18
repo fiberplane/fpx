@@ -1,23 +1,23 @@
 import IconWithNotification from "@/components/IconWithNotification";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import { Button } from "@/components/ui/button";
 import { WebhoncBadge } from "@/components/WebhoncBadge";
+import { Button } from "@/components/ui/button";
 import { useProxyRequestsEnabled } from "@/hooks/useProxyRequestsEnabled";
+import { useOrphanLogs } from "@/pages/RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useOtelTrace } from "@/queries";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
+  TooltipTrigger,
 } from "@radix-ui/react-tooltip";
-import { useState, useEffect } from "react";
-import { FloatingSidePanel } from "./SidePanel";
+import { useEffect, useState } from "react";
 import { Branding } from "./Branding";
 import { SettingsMenu, SettingsScreen } from "./Settings";
+import { FloatingSidePanel } from "./SidePanel";
 import { SidePanelTrigger } from "./SidePanel";
-import { useOrphanLogs } from "@/pages/RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
-import { useOtelTrace } from "@/queries";
 
 export function BottomBar() {
   const shouldShowProxyRequests = useProxyRequestsEnabled();

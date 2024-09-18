@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   getBgColorForLevel,
   getTextColorForLevel,
@@ -9,6 +8,7 @@ import { useOtelTrace } from "@/queries";
 import { cn, safeParseJson } from "@/utils";
 import { Cross1Icon } from "@radix-ui/react-icons";
 import { Tabs } from "@radix-ui/react-tabs";
+import React, { useState } from "react";
 import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { useRequestorStore } from "../store";
