@@ -81,8 +81,7 @@ export const RequestorPage = () => {
         "flex",
         "flex-col",
         "gap-2",
-        "py-4 px-2",
-        "sm:px-4 sm:py-3",
+        "p-2",
         "lg:gap-4",
       )}
     >
