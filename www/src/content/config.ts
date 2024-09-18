@@ -27,7 +27,8 @@ const changelog = defineCollection({
   type: "content",
   schema: z.object({
     date: z.coerce.date(),
-    version: z.string()
+    version: z.string(),
+    draft: z.boolean().optional()
   })
 });
 
