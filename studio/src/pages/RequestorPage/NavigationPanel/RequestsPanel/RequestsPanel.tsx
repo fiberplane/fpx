@@ -22,13 +22,24 @@ import {
 import type { Requestornator } from "../../queries";
 import { useRequestorStore, useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+import { Icon } from "@iconify/react";
 
 export function RequestsPanel() {
   const { history } = useRequestorHistory();
   const { data: traces = [] } = useOtelTraces();
   const items = useMemo(() => mergeLists(history, traces), [history, traces]);
 
+  return (
+    <div className={cn("h-full", "flex", "flex-col")}>
+      <RequestsPanelInner items={items} />
+    </div>
+  );
+}
+
+function RequestsPanelInner({ items }: { items: MergedListItem[] }) {
   const [filterValue, setFilterValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       if (item.type === "request") {
@@ -156,22 +167,38 @@ export function RequestsPanel() {
   );
 
   return (
-    <div className="grid grid-rows-[min-content_auto] h-full gap-7">
-      <div className="flex items-center space-x-2 pb-3">
-        <Input
-          ref={searchRef}
-          className="text-sm"
-          placeholder={`Search requests (hit "/" to focus)`}
-          value={filterValue}
-          onChange={(e) => setFilterValue(e.target.value)}
-        />
-      </div>
-      <div className="overflow-y-auto relative">
-        {filteredItems.length === 0 && (
-          <div className="flex items-center justify-center h-full w-full">
-            <p className="text-sm text-muted-foreground">No requests found</p>
+    <>
+      <div>
+        <div className="flex items-center space-x-2 pb-3">
+          <div className="relative flex-grow">
+            <Input
+              ref={searchRef}
+              className={cn(
+                "text-sm",
+                isFocused || filterValue ? "pl-2" : "pl-24",
+              )}
+              value={filterValue}
+              onChange={(e) => setFilterValue(e.target.value)}
+              onFocus={() => {
+                setSelectedItemId(null);
+                setIsFocused(true);
+              }}
+              onBlur={() => setIsFocused(false)}
+            />
+            {!isFocused && !filterValue && (
+              <div className="absolute left-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                <span className="text-muted-foreground text-xs">Type</span>
+                <KeyboardShortcutKey>/</KeyboardShortcutKey>
+                <span className="text-muted-foreground text-xs">
+                  to search requests
+                </span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+      </div>
+      <div className="overflow-y-auto h-full relative">
+        {filteredItems.length === 0 && <EmptyState />}
         {filteredItems.map((item) => (
           <NavItem
             key={getId(item)}
@@ -182,9 +209,60 @@ export function RequestsPanel() {
           />
         ))}
       </div>
-    </div>
+    </>
   );
 }
+
+const EmptyState = memo(function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center text-gray-300 h-full">
+      <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
+        <div className="rounded-lg p-2 bg-muted mb-2">
+          <Icon
+            icon="lucide:clock"
+            className="w-12 h-12 text-gray-400 stroke-1"
+          />
+        </div>
+        <h2 className="text-lg font-normal mb-4">No requests recorded</h2>
+        <div className="text-gray-400 text-left text-sm flex flex-col gap-4">
+          <ol className="flex flex-col gap-2">
+            <li>
+              1. Make sure your app is running and connected to the Fiberplane
+              Studio using the client library
+            </li>
+            <li className="mt-2">
+              2. Send an API request to one your app's endpoints
+            </li>
+            <li className="mt-2">3. Requests will appear here automatically</li>
+          </ol>
+          <p className="text-gray-400 text-sm">
+            If requests are still not appearing:
+          </p>
+          <ul className="text-left text-sm text-gray-400">
+            <li>
+              - Ask for help on{" "}
+              <a
+                href="https://discord.com/invite/cqdY6SpfVR"
+                className="underline"
+              >
+                Discord
+              </a>
+            </li>
+            <li>
+              - File an issue on{" "}
+              <a
+                href="https://github.com/fiberplane/fpx/issues"
+                className="underline"
+              >
+                Github
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 type NavItemProps = {
   item: MergedListItem;

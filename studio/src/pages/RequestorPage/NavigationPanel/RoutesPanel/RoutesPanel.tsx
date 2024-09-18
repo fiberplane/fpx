@@ -3,13 +3,14 @@ import { useInputFocusDetection } from "@/hooks";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
-import { useMemo, useRef, useState } from "react";
+import { memo, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 
 export function RoutesPanel() {
   const { routes } = useRequestorStore("routes");
@@ -50,6 +51,7 @@ function RoutesPanelInner({ routes }: { routes: ProbedRoute[] }) {
   }, [routes]);
 
   const [filterValue, setFilterValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const filteredRoutes = useMemo(() => {
     const cleanFilter = filterValue.trim().toLowerCase();
     if (cleanFilter.length < 3) {
@@ -175,14 +177,31 @@ function RoutesPanelInner({ routes }: { routes: ProbedRoute[] }) {
     <>
       <div>
         <div className="flex items-center space-x-2 pb-3">
-          <Input
-            ref={searchRef}
-            className="text-sm"
-            placeholder="Search (hit / to focus)"
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-            onFocus={() => setSelectedRouteIndex(null)}
-          />
+          <div className="relative flex-grow">
+            <Input
+              ref={searchRef}
+              className={cn(
+                "text-sm",
+                isFocused || filterValue ? "pl-2" : "pl-24",
+              )}
+              value={filterValue}
+              onChange={(e) => setFilterValue(e.target.value)}
+              onFocus={() => {
+                setSelectedRouteIndex(null);
+                setIsFocused(true);
+              }}
+              onBlur={() => setIsFocused(false)}
+            />
+            {!isFocused && !filterValue && (
+              <div className="absolute left-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                <span className="text-muted-foreground text-xs">Type</span>
+                <KeyboardShortcutKey>/</KeyboardShortcutKey>
+                <span className="text-muted-foreground text-xs">
+                  to search routes
+                </span>
+              </div>
+            )}
+          </div>
           <AddRouteButton />
         </div>
       </div>
@@ -247,9 +266,9 @@ function RoutesPanelInner({ routes }: { routes: ProbedRoute[] }) {
   );
 }
 
-function EmptyState() {
+const EmptyState = memo(function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center text-gray-300">
+    <div className="flex flex-col items-center justify-center text-gray-300 h-full">
       <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
         <div className="rounded-lg p-2 bg-muted mb-2">
           <Icon
@@ -257,25 +276,31 @@ function EmptyState() {
             className="w-12 h-12 text-gray-400 stroke-1"
           />
         </div>
-        <h2 className="text-lg font-normal mb-2">No routes detected</h2>
-        <div className="text-gray-400 text-left text-sm flex flex-col gap-4">
+        <h2 className="text-lg font-normal mb-4">No routes detected</h2>
+        <div className="text-gray-400 text-left text-sm flex flex-col gap-2">
           <p className="text-gray-400 mb-4 text-sm">
             To enable route auto-detection:
           </p>
           <ol className="mb-4 flex flex-col gap-2">
             <li>
               1. Install and add the client library:
-              <code className="block mt-1 bg-gray-800 p-1 rounded">
+              <code className="block mt-1 bg-gray-800 p-1 pl-2 rounded">
                 npm i @fiberplane/hono-otel
               </code>
+              Read more about using the client library on the{" "}
+              <a
+                className="underline"
+                href="https://fiberplane.com/docs/get-started"
+              >
+                docs
+              </a>
             </li>
             <li className="mt-2">
-              2. Set{" "}
-              <code className="bg-gray-800 p-1 rounded">FPX_ENDPOINT</code>{" "}
-              environment variable to:
-              <code className="block mt-1 bg-gray-800 p-1 rounded">
+              2. Set <code>FPX_ENDPOINT</code> environment variable to:
+              <code className="block mt-1 bg-gray-800 p-1 pl-2 rounded">
                 http://localhost:8788/v1/traces
               </code>
+              in the <code>.dev.vars</code> file in your project
             </li>
             <li className="mt-2">
               3. Restart your application and Fiberplane Studio
@@ -311,7 +336,7 @@ function EmptyState() {
       </div>
     </div>
   );
-}
+});
 
 type RoutesSectionProps = {
   title: string;
