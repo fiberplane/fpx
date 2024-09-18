@@ -1,3 +1,4 @@
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Input } from "@/components/ui/input";
 import { useInputFocusDetection } from "@/hooks";
 import { cn } from "@/utils";
@@ -10,7 +11,6 @@ import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 
 export function RoutesPanel() {
   const { routes } = useRequestorStore("routes");

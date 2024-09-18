@@ -1,3 +1,4 @@
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { RequestMethod } from "@/components/Timeline";
 import { Input } from "@/components/ui/input";
 import { Status } from "@/components/ui/status";
@@ -11,6 +12,7 @@ import {
   getStatusCode,
 } from "@/utils";
 import type { OtelTrace } from "@fiberplane/fpx-types";
+import { Icon } from "@iconify/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import {
@@ -22,8 +24,6 @@ import {
 import type { Requestornator } from "../../queries";
 import { useRequestorStore, useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import { Icon } from "@iconify/react";
 
 export function RequestsPanel() {
   const { history } = useRequestorHistory();
