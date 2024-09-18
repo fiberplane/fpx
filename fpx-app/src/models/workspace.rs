@@ -13,6 +13,7 @@ impl Workspace {
         Self { path, config }
     }
 }
+
 #[derive(JsonSchema, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub enum OpenWorkspaceByPathError {

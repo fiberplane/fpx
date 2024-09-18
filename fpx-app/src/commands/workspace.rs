@@ -14,7 +14,7 @@ pub fn list_recent_workspaces<R: Runtime>(
     stores: State<'_, StoreCollection<R>>,
 ) -> Vec<String> {
     with_store(app, stores, STORE_PATH, |store| {
-        let result = store
+        let recent_projects = store
             .get(RECENT_WORKSPACES_STORE_KEY)
             .and_then(|val| {
                 val.as_array().map(|arr| {
@@ -25,7 +25,7 @@ pub fn list_recent_workspaces<R: Runtime>(
             })
             .unwrap_or_default();
 
-        Ok(result)
+        Ok(recent_projects)
     })
     .unwrap_or_default()
 }
