@@ -16,12 +16,11 @@ pub fn list_recent_workspaces<R: Runtime>(
     with_store(app, stores, STORE_PATH, |store| {
         let recent_projects = store
             .get(RECENT_WORKSPACES_STORE_KEY)
-            .and_then(|val| {
-                val.as_array().map(|arr| {
-                    arr.iter()
-                        .filter_map(|item| item.as_str().map(|s| s.to_string()))
-                        .collect()
-                })
+            .and_then(|val| val.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|item| item.as_str().map(|s| s.to_string()))
+                    .collect()
             })
             .unwrap_or_default();
 
@@ -55,14 +54,11 @@ pub fn open_workspace_by_path<R: Runtime>(
     with_store(app, stores, STORE_PATH, |store| {
         let mut recents: Vec<String> = store
             .get(RECENT_WORKSPACES_STORE_KEY)
-            .and_then(|value| {
-                value.as_array().map(|arr| {
-                    arr.iter()
-                        .filter_map(|item| {
-                            item.as_str().filter(|s| s == &path).map(|s| s.to_string())
-                        })
-                        .collect()
-                })
+            .and_then(|value| value.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|item| item.as_str().filter(|s| s == &path).map(|s| s.to_string()))
+                    .collect()
             })
             .unwrap_or_default();
 
