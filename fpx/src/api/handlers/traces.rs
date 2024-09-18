@@ -52,7 +52,7 @@ pub async fn traces_get_handler(
     // Retrieve all the spans that are associated with the trace
     let spans = store.span_list_by_trace(&tx, &trace_id).await?;
 
-    let trace = TraceSummary::from_spans(trace_id.into(), spans).ok_or(TraceGetError::NotFound)?;
+    let trace = TraceSummary::from_spans(trace_id, spans).ok_or(TraceGetError::NotFound)?;
 
     Ok(Json(trace))
 }
