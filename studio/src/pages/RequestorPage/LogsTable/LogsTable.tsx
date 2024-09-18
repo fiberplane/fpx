@@ -45,28 +45,18 @@ export function LogsTable({ traceId = "" }: Props) {
           </Button>
         </div>
       </CustomTabsList>
-      <CustomTabsContent value="logs" className="overflow-hidden">
-        <LogsGrid logs={logs} />
+      <CustomTabsContent value="logs" className="overflow-y-scroll">
+        {logs.length === 0 ? (
+          <LogsEmptyState />
+        ) : (
+          <div className="space-y-1">
+            {logs.map((log) => (
+              <LogRow key={log.id} log={log} />
+            ))}
+          </div>
+        )}
       </CustomTabsContent>
     </Tabs>
-  );
-}
-
-type LogsGridProps = {
-  logs: MizuOrphanLog[];
-};
-
-function LogsGrid({ logs }: LogsGridProps) {
-  if (logs.length === 0) {
-    return <LogsEmptyState />;
-  }
-
-  return (
-    <div className="space-y-1">
-      {logs.map((log) => (
-        <LogRow key={log.id} log={log} />
-      ))}
-    </div>
   );
 }
 
