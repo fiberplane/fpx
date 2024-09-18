@@ -240,10 +240,31 @@ async function tryGetResponseBodyAsText(
   }
 
   try {
-    return await response.text();
+    if (response.body) {
+      return await streamToString(response.body as ReadableStream);
+    }
   } catch {
-    return null;
+    // swallow error
   }
+
+  return null;
+}
+
+// Helper function to convert a ReadableStream to a string
+async function streamToString(stream: ReadableStream) {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let result = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    result += decoder.decode(value, { stream: true });
+    if (done) {
+      break;
+    }
+  }
+
+  return result;
 }
 
 export async function getResponseAttributes(
@@ -255,6 +276,7 @@ export async function getResponseAttributes(
   };
 
   const responseText = await tryGetResponseBodyAsText(response);
+
   if (responseText) {
     attributes[FPX_RESPONSE_BODY] = responseText;
   }

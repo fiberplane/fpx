@@ -22,6 +22,7 @@ import {
   patchFetch,
   patchWaitUntil,
 } from "./patch";
+import { PromiseStore } from "./promiseStore";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
@@ -148,10 +149,10 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             endpoint,
           });
 
+          const promiseStore = new PromiseStore();
           // Enable tracing for waitUntil
-          const patched = executionContext && patchWaitUntil(executionContext);
-          const promises = patched?.promises ?? [];
-          const proxyExecutionCtx = patched?.proxyContext ?? executionContext;
+          const proxyExecutionCtx =
+            executionContext && patchWaitUntil(executionContext, promiseStore);
 
           const activeContext = propagateFpxTraceId(request);
 
@@ -206,11 +207,19 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
                 };
                 span.setAttributes(requestAttributes);
               },
+              endSpanManually: true,
               onSuccess: async (span, response) => {
-                const attributes = await getResponseAttributes(
-                  (await response).clone(),
-                );
-                span.setAttributes(attributes);
+                span.addEvent("first-response");
+
+                const attributesResponse = response.clone();
+
+                const updateSpan = async (response: Response) => {
+                  const attributes = await getResponseAttributes(response);
+                  span.setAttributes(attributes);
+                  span.end();
+                };
+
+                promiseStore.add(updateSpan(attributesResponse));
               },
               checkResult: async (result) => {
                 const r = await result;
@@ -224,14 +233,14 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           );
 
           try {
-            return await context.with(activeContext, async () => {
-              return await measuredFetch(newRequest, rawEnv, proxyExecutionCtx);
-            });
+            return await context.with(activeContext, () =>
+              measuredFetch(newRequest, rawEnv, proxyExecutionCtx),
+            );
           } finally {
             // Make sure all promises are resolved before sending data to the server
             if (proxyExecutionCtx) {
               proxyExecutionCtx.waitUntil(
-                Promise.allSettled(promises).finally(() => {
+                promiseStore.allSettled().finally(() => {
                   return provider.forceFlush();
                 }),
               );

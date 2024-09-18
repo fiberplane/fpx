@@ -4,7 +4,7 @@
   "author": "Fiberplane<info@fiberplane.com>",
   "type": "module",
   "main": "dist/index.js",
-  "version": "0.2.0-beta.2",
+  "version": "0.3.0-beta.1",
   "dependencies": {
     "@opentelemetry/api": "~1.9.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.52.1",
@@ -22,7 +22,7 @@
     "@swc/core": "^1.5.22",
     "@swc/plugin-transform-imports": "^2.0.4",
     "hono": "^4.3.9",
-    "nodemon": "^3.1.4",
+    "nodemon": "^3.1.5",
     "rimraf": "^6.0.1",
     "tsc-alias": "^1.8.10",
     "typescript": "^5.4.5"
