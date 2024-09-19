@@ -1,7 +1,7 @@
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/utils";
-import { forwardRef, useState, useRef } from "react";
+import { forwardRef, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type SearchProps = {
