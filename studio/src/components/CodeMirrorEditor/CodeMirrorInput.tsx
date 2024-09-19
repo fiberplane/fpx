@@ -99,7 +99,18 @@ type CodeMirrorEditorProps = {
   value?: string;
   onChange: (value?: string) => void;
   placeholder?: string;
+  onSubmit?: () => void;
 };
+
+const preventNewlineInFirefox = keymap.of([
+  {
+    key: "Enter",
+    run: (_view) => {
+      // Do nothingggg and don't bubble up the event
+      return true;
+    },
+  },
+]);
 
 // Extension that blurs the editor when the user presses "Escape"
 const escapeKeymap = keymap.of([
@@ -112,8 +123,21 @@ const escapeKeymap = keymap.of([
   },
 ]);
 
+const submitKeymap = (onSubmit: (() => void) | undefined) =>
+  keymap.of([
+    {
+      key: "Mod-Enter",
+      run: (_view) => {
+        if (onSubmit) {
+          onSubmit();
+        }
+        return true;
+      },
+    },
+  ]);
+
 export function CodeMirrorInput(props: CodeMirrorEditorProps) {
-  const { value, onChange, placeholder, width, readOnly } = props;
+  const { value, onChange, placeholder, width, readOnly, onSubmit } = props;
 
   const [isFocused, setIsFocused] = useState(false);
 
@@ -135,6 +159,7 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
 
   const extensions = useMemo(() => {
     return [
+      preventNewlineInFirefox,
       escapeKeymap,
       hiddenGutterExtension,
       inputBaseStylesExtension,
@@ -153,8 +178,9 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
       EditorView.lineWrapping,
       readOnly ? readonlyExtension : noopExtension,
       isFocused ? noopExtension : inputTrucateExtension,
+      submitKeymap(onSubmit),
     ];
-  }, [isFocused, readOnly]);
+  }, [isFocused, readOnly, onSubmit]);
 
   return (
     <div
