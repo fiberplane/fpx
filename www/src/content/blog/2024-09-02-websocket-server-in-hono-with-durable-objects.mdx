@@ -1,6 +1,7 @@
 ---
 title: Creating a Websocket server in Hono with Durable Objects
 description: Webhooks over the wires
+slug: creating-websocket-server-hono-durable-objects
 date: 2024-09-02
 author: Laurynas Keturakis
 tags:
@@ -42,7 +43,7 @@ We are going to build a simple Webhook inspection service, a similar/simplified 
 
 In order to do that we will set up a basic Cloudflare Worker, powered by Hono, that will connect to a Durable Object instance and allow for Websocket connectivity from the client.
 
-You will find all of the code from this article in this GitHub repository.
+You will find all of the code from this article in this [GitHub repository](https://github.com/fiberplane/fpx).
 
 ## Walkthrough
 
@@ -74,18 +75,17 @@ project/
 
 ### Initial setup
 
-In our `index.ts`  file let’s set up a basic Hono project.
+In our `index.ts` file let’s set up a basic Hono project.
 
 ```tsx
 // src/index.ts
-import { Hono } from "hono"
+import { Hono } from "hono";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
-app.get("/", (c) => c.text("Hello Cloudflare Workers!"))
+app.get("/", (c) => c.text("Hello Cloudflare Workers!"));
 
-export default app
-
+export default app;
 ```
 
 ### Set up Durable Objects in `wrangler.toml`
@@ -120,21 +120,20 @@ Continuing our “Durable Objects are just JavaScript/TypeScript classes” them
 
 ```tsx
 // src/receiver.ts
-import { DurableObject } from "cloudflare:workers"
+import { DurableObject } from "cloudflare:workers";
 
 // 1. Make sure the class name corresponds exactly with the one
 // added in wrangler.toml earlier
 export class WebhookReceiver extends DurableObject {
-	constructor(ctx: DurableObjectState, env: CloudflareBindings) {
-		super(ctx, env)
-	}
-	// 2. This fetch method serves as a communication layer between the Worker
-	// and the Durable Object
-	async fetch(request: Request) {
-		return new Response("Hello world from a Durable Object");
-	}
+  constructor(ctx: DurableObjectState, env: CloudflareBindings) {
+    super(ctx, env);
+  }
+  // 2. This fetch method serves as a communication layer between the Worker
+  // and the Durable Object
+  async fetch(request: Request) {
+    return new Response("Hello world from a Durable Object");
+  }
 }
-
 ```
 
 We can then update our Hono-powered Worker to link the two together. First we need to add a line:
@@ -143,7 +142,6 @@ We can then update our Hono-powered Worker to link the two together. First we ne
 // src/index.ts
 // ...
 export { WebhookReceiver } from "./receiver";
-
 ```
 
 so that our Cloudflare runtime is aware of the newly-created Durable Object.
@@ -157,19 +155,18 @@ import { Hono } from "hono";
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 app.get("/", (c) => {
-	return c.text("Hello Hono!");
+  return c.text("Hello Hono!");
 });
 
 app.get("/ws", async (c) => {
-	const id = c.env.WEBHOOK_RECEIVER.idFromName("default")
-	const stub = c.env.WEBHOOK_RECEIVER.get(id)
-	return stub.fetch(c.req.raw)
+  const id = c.env.WEBHOOK_RECEIVER.idFromName("default");
+  const stub = c.env.WEBHOOK_RECEIVER.get(id);
+  return stub.fetch(c.req.raw);
 });
 
 export { WebhookReceiver } from "./receiver";
 
 export default app;
-
 ```
 
 Notice how we’re instantiating a `WebhookReceiver` ”stub” inside the `/ws` handler. A “stub” is effectively a client Object that our Worker will use to communicate with the `WebhookReceiver`.
@@ -194,31 +191,30 @@ import { Hono } from "hono";
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 app.get("/", (c) => {
-	return c.text("Hello Hono!");
+  return c.text("Hello Hono!");
 });
 
 app.get("/ws", async (c) => {
-	// Reject requests that don't require upgrade
-	if (c.req.header("upgrade") !== "websocket") {
-		return c.text("Expected Upgrade: websocket", 426);
-	}
-	// This ensures we always get the same stub no matter how many
-	// times the /receiver-connect route is called
-	const id = c.env.WEBHOOK_RECEIVER.idFromName("default")
-	const stub = c.env.WEBHOOK_RECEIVER.get(id)
+  // Reject requests that don't require upgrade
+  if (c.req.header("upgrade") !== "websocket") {
+    return c.text("Expected Upgrade: websocket", 426);
+  }
+  // This ensures we always get the same stub no matter how many
+  // times the /receiver-connect route is called
+  const id = c.env.WEBHOOK_RECEIVER.idFromName("default");
+  const stub = c.env.WEBHOOK_RECEIVER.get(id);
 
-	return stub.fetch(c.req.raw)
+  return stub.fetch(c.req.raw);
 });
 
 export { WebhookReceiver } from "./receiver";
 
 export default app;
-
 ```
 
 ### Websocket Hibernation API
 
-Now in our `WebhookReceiver` ’s `fetch`  method let’s add some logic that will;
+Now in our `WebhookReceiver` ’s `fetch` method let’s add some logic that will;
 
 - Create a Websocket connection client-server pair
 - Store the connection in a new Set `connections`
@@ -238,37 +234,41 @@ Here's what we have in our `receiver.ts` so far:
 import { DurableObject } from "cloudflare:workers";
 
 export class WebhookReceiver extends DurableObject<CloudflareBindings> {
-	connections: Set<WebSocket>;
+  connections: Set<WebSocket>;
 
-	constructor(ctx: DurableObjectState, env: CloudflareBindings) {
-		super(ctx, env);
-		this.connections = new Set<WebSocket>();
-	}
+  constructor(ctx: DurableObjectState, env: CloudflareBindings) {
+    super(ctx, env);
+    this.connections = new Set<WebSocket>();
+  }
 
-	async fetch(req: Request) {
-		const websocketPair = new WebSocketPair();
-		const [client, server] = Object.values(websocketPair);
+  async fetch(req: Request) {
+    const websocketPair = new WebSocketPair();
+    const [client, server] = Object.values(websocketPair);
 
-		this.ctx.acceptWebSocket(server)
-		this.connections.add(client);
+    this.ctx.acceptWebSocket(server);
+    this.connections.add(client);
 
-		return new Response(null, {
-			status: 101,
-			webSocket: client,
-		})
-	}
+    return new Response(null, {
+      status: 101,
+      webSocket: client
+    });
+  }
 
-	webSocketError(ws: WebSocket, error: unknown) {
-		console.error("webSocketError", error);
-		this.connections.delete(ws);
-	}
+  webSocketError(ws: WebSocket, error: unknown) {
+    console.error("webSocketError", error);
+    this.connections.delete(ws);
+  }
 
-	webSocketClose(ws: WebSocket, _code: number, _reason: string, _wasClean: boolean) {
-		console.log("webSocketClose, connections", this.connections);
-		this.connections.delete(ws);
-	}
+  webSocketClose(
+    ws: WebSocket,
+    _code: number,
+    _reason: string,
+    _wasClean: boolean
+  ) {
+    console.log("webSocketClose, connections", this.connections);
+    this.connections.delete(ws);
+  }
 }
-
 ```
 
 Having both Worker and Durable Object in place, you can now try running the application (`wrangler dev`) and connecting to the Websocket route `/ws` with a Websocket client like [`websocat`](https://github.com/vi/websocat): `websocat --verbose ws://localhost:8787/ws`
@@ -287,7 +287,7 @@ You should see a response like this indicating that the connection has been esta
 
 ### Adding receiver listening route
 
-Now that we have our basic Websocket connection working, let's send some information down the wire.  In our main Worker file `src/index.ts` let's add another route that will be our request listener: `/receiver-listener/*`. Any time a request hits this route, we want to capture its information (method, path, and body), serialize it, and send it to each connected Websocket client.
+Now that we have our basic Websocket connection working, let's send some information down the wire. In our main Worker file `src/index.ts` let's add another route that will be our request listener: `/receiver-listener/*`. Any time a request hits this route, we want to capture its information (method, path, and body), serialize it, and send it to each connected Websocket client.
 
 ```tsx
 import { Hono } from "hono";
@@ -295,43 +295,42 @@ import { Hono } from "hono";
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
 app.get("/", (c) => {
-	return c.text("Hello Hono!");
+  return c.text("Hello Hono!");
 });
 
 app.get("/ws", async (c) => {
-	if (c.req.header("upgrade") !== "websocket") {
-		return c.text("Expected Upgrade: websocket", 426);
-	}
+  if (c.req.header("upgrade") !== "websocket") {
+    return c.text("Expected Upgrade: websocket", 426);
+  }
 
-	const id = c.env.WEBHOOK_RECEIVER.idFromName("default")
-	const stub = c.env.WEBHOOK_RECEIVER.get(id)
+  const id = c.env.WEBHOOK_RECEIVER.idFromName("default");
+  const stub = c.env.WEBHOOK_RECEIVER.get(id);
 
-	return stub.fetch(c.req.raw)
+  return stub.fetch(c.req.raw);
 });
 
 app.all("/receiver-listen/*", async (c) => {
-	const method = c.req.method;
-	const path = c.req.path;
-	const body = await c.req.text()
+  const method = c.req.method;
+  const path = c.req.path;
+  const body = await c.req.text();
 
-	const received = {
-		method,
-		path,
-		body
-	}
+  const received = {
+    method,
+    path,
+    body
+  };
 
-	const id = c.env.WEBHOOK_RECEIVER.idFromName("default")
-	const stub = c.env.WEBHOOK_RECEIVER.get(id)
+  const id = c.env.WEBHOOK_RECEIVER.idFromName("default");
+  const stub = c.env.WEBHOOK_RECEIVER.get(id);
 
-	await stub.broadcast(JSON.stringify(received));
+  await stub.broadcast(JSON.stringify(received));
 
-	return c.text("OK");
-})
+  return c.text("OK");
+});
 
 export { WebhookReceiver } from "./receiver";
 
 export default app;
-
 ```
 
 This code will work but there is one thing we can improve here. In both routes we're executing the same logic that creates the connection with the Durable Object. We can lift that into a [middleware](https://hono.dev/docs/guides/middleware#middleware) and essentially make it available to all routes at the same time. Here's the updated code for `src/index.ts`.
@@ -343,56 +342,58 @@ import { instrument, measure } from "@fiberplane/hono-otel";
 
 // we define another object called Variables that we can pass to the Hono app
 type Variables = {
-	receiver: DurableObjectStub<WebhookReceiver>;
+  receiver: DurableObjectStub<WebhookReceiver>;
 };
 
-const app = new Hono<{ Bindings: CloudflareBindings, Variables: Variables }>();
+const app = new Hono<{ Bindings: CloudflareBindings; Variables: Variables }>();
 
 // we create the stub connection earlier on in the process and assign
 // it to a dedicated variable
 app.use("*", async (c, next) => {
-	const id = c.env.WEBHOOK_RECEIVER.idFromName("default");
-	const stub = c.env.WEBHOOK_RECEIVER.get(id);
-	c.set("receiver", stub);
-	await next();
-})
+  const id = c.env.WEBHOOK_RECEIVER.idFromName("default");
+  const stub = c.env.WEBHOOK_RECEIVER.get(id);
+  c.set("receiver", stub);
+  await next();
+});
 
 app.get("/", (c) => {
-	return c.text("Hello Hono!");
+  return c.text("Hello Hono!");
 });
 
 app.get("/ws", async (c) => {
-	if (c.req.header("upgrade") !== "websocket") {
-		return c.text("Not a websocket request", 426);
-	}
+  if (c.req.header("upgrade") !== "websocket") {
+    return c.text("Not a websocket request", 426);
+  }
 
-	const stub = c.get("receiver");
-	return stub.fetch(c.req.raw)
+  const stub = c.get("receiver");
+  return stub.fetch(c.req.raw);
 });
 
 app.all("/receiver-listen/*", async (c) => {
-	const method = c.req.method;
-	const path = c.req.path;
-	const body = await c.req.text()
+  const method = c.req.method;
+  const path = c.req.path;
+  const body = await c.req.text();
 
-	const received = {
-		method,
-		path,
-		body
-	}
+  const received = {
+    method,
+    path,
+    body
+  };
 
-	const stub = c.get("receiver");
+  const stub = c.get("receiver");
 
-	const measuredBroadcast = measure("broadcast", async () => await stub.broadcast(JSON.stringify(received)));
-	await measuredBroadcast();
+  const measuredBroadcast = measure(
+    "broadcast",
+    async () => await stub.broadcast(JSON.stringify(received))
+  );
+  await measuredBroadcast();
 
-	return c.text("OK");
-})
+  return c.text("OK");
+});
 
 export { WebhookReceiver };
 
 export default instrument(app);
-
 ```
 
 ### Websocket Hibernation gotchas
@@ -405,48 +406,52 @@ Here's our final receiver Durable Object:
 
 ```tsx
 export class WebhookReceiver extends DurableObject<CloudflareBindings> {
-	connections: Set<WebSocket>;
+  connections: Set<WebSocket>;
 
-	constructor(ctx: DurableObjectState, env: CloudflareBindings) {
-		super(ctx, env);
-		this.connections = new Set<WebSocket>();
+  constructor(ctx: DurableObjectState, env: CloudflareBindings) {
+    super(ctx, env);
+    this.connections = new Set<WebSocket>();
 
-		const websockets = this.ctx.getWebSockets();
+    const websockets = this.ctx.getWebSockets();
 
-		for (const ws of websockets) {
-			this.connections.add(ws);
-		}
-	}
+    for (const ws of websockets) {
+      this.connections.add(ws);
+    }
+  }
 
-	async fetch(req: Request) {
-		const websocketPair = new WebSocketPair();
-		const [client, server] = Object.values(websocketPair);
+  async fetch(req: Request) {
+    const websocketPair = new WebSocketPair();
+    const [client, server] = Object.values(websocketPair);
 
-		this.ctx.acceptWebSocket(server)
-		this.connections.add(client);
+    this.ctx.acceptWebSocket(server);
+    this.connections.add(client);
 
-		console.log("fetch, connections", this.connections);
-		return new Response(null, {
-			status: 101,
-			webSocket: client,
-		})
-	}
+    console.log("fetch, connections", this.connections);
+    return new Response(null, {
+      status: 101,
+      webSocket: client
+    });
+  }
 
-	webSocketError(ws: WebSocket, error: unknown) {
-		this.connections.delete(ws);
-	}
+  webSocketError(ws: WebSocket, error: unknown) {
+    this.connections.delete(ws);
+  }
 
-	webSocketClose(ws: WebSocket, _code: number, _reason: string, _wasClean: boolean) {
-		this.connections.delete(ws);
-	}
+  webSocketClose(
+    ws: WebSocket,
+    _code: number,
+    _reason: string,
+    _wasClean: boolean
+  ) {
+    this.connections.delete(ws);
+  }
 
-	async broadcast(message: string) {
-		for (const connection of this.connections) {
-			connection.send(message);
-		}
-	}
+  async broadcast(message: string) {
+    for (const connection of this.connections) {
+      connection.send(message);
+    }
+  }
 }
-
 ```
 
 ### Recap
@@ -462,22 +467,22 @@ If everything went well, by the end of this you should have a small service that
 
 1. You can connect and establish a Websocket connection with on route `/ws` :
 
-    ```tsx
-    websocat -v ws://localhost:8787/ws
-    ```
+   ```tsx
+   websocat -v ws://localhost:8787/ws
+   ```
 
 2. Send a request against the `/receiver-listen` route and have the request details mirrored in the screen you’ve connected in the previous step:
 
-    ```tsx
-    curl localhost:8787/receiver-listen -X POST -d '{"key": "value"}'
-    ```
+   ```tsx
+   curl localhost:8787/receiver-listen -X POST -d '{"key": "value"}'
+   ```
 
-    ```tsx
-    ; websocat -v ws://localhost:8787/ws
-    [INFO  websocat::lints] Auto-inserting the line mode
-    [INFO  websocat::stdio_threaded_peer] get_stdio_peer (threaded)
-    [INFO  websocat::ws_client_peer] get_ws_client_peer
-    [INFO  websocat::net_peer] Connected to TCP [::1]:8787
-    [INFO  websocat::ws_client_peer] Connected to ws
-    {"method":"POST","path":"/receiver-listen","body":"{\"key\": \"value\"}"}
-    ```
+   ```tsx
+   ; websocat -v ws://localhost:8787/ws
+   [INFO  websocat::lints] Auto-inserting the line mode
+   [INFO  websocat::stdio_threaded_peer] get_stdio_peer (threaded)
+   [INFO  websocat::ws_client_peer] get_ws_client_peer
+   [INFO  websocat::net_peer] Connected to TCP [::1]:8787
+   [INFO  websocat::ws_client_peer] Connected to ws
+   {"method":"POST","path":"/receiver-listen","body":"{\"key\": \"value\"}"}
+   ```

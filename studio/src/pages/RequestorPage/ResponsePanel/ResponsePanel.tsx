@@ -1,29 +1,19 @@
-import RobotIcon from "@/assets/Robot.svg";
-import {
-  CollapsibleKeyValueTableV2,
-  SubSectionHeading,
-} from "@/components/Timeline";
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
-import { CaretDownIcon, CaretRightIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { Icon } from "@iconify/react";
+import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
-import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
-import type { ResponsePanelTab } from "../reducer";
+import type { ResponsePanelTab } from "../store";
+import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../reducer/state";
-import { type RequestType, isWsRequest } from "../types";
+} from "../store/types";
+import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
 import {
@@ -33,35 +23,36 @@ import {
 } from "./Websocket";
 
 type Props = {
-  activeResponse: RequestorActiveResponse | null;
-  activeResponsePanelTab: ResponsePanelTab;
-  setActiveResponsePanelTab: (tab: string) => void;
-  shouldShowResponseTab: (tab: ResponsePanelTab) => boolean;
   tracedResponse?: Requestornator;
   isLoading: boolean;
-  requestType: RequestType;
   websocketState: WebSocketState;
-  openAiTestGenerationPanel: () => void;
-  isAiTestGenerationPanelOpen: boolean;
-  removeServiceUrlFromPath: (url: string) => string;
 };
 
-export function ResponsePanel({
-  activeResponse,
-  activeResponsePanelTab,
-  setActiveResponsePanelTab,
-  shouldShowResponseTab,
+export const ResponsePanel = memo(function ResponsePanel({
   tracedResponse,
   isLoading,
-  requestType,
   websocketState,
-  openAiTestGenerationPanel,
-  isAiTestGenerationPanelOpen,
-  removeServiceUrlFromPath,
 }: Props) {
+  const {
+    activeResponse,
+    visibleResponsePanelTabs,
+    activeResponsePanelTab,
+    setActiveResponsePanelTab,
+  } = useRequestorStore(
+    "activeResponse",
+    "visibleResponsePanelTabs",
+    "activeResponsePanelTab",
+    "setActiveResponsePanelTab",
+  );
+  const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
+    return visibleResponsePanelTabs.includes(tab);
+  };
+
+  const { requestType } = useActiveRoute();
+  const { removeServiceUrlFromPath } = useServiceBaseUrl();
+
   // NOTE - If we have a "raw" response, we want to render that, so we can (e.g.,) show binary data
   const responseToRender = activeResponse ?? tracedResponse;
-
   const isFailure = isRequestorActiveResponse(responseToRender)
     ? responseToRender.isFailure
     : responseToRender?.app_responses?.isFailure;
@@ -73,131 +64,95 @@ export function ResponsePanel({
     : responseToRender?.app_responses?.responseHeaders;
 
   const shouldShowMessages = shouldShowResponseTab("messages");
-  const traceId = tracedResponse?.app_responses.traceId;
-
-  const [isOpen, setIsOpen] = useState(true);
 
   return (
     <div className="overflow-x-hidden overflow-y-auto h-full relative">
-      <div className="h-full">
-        <Tabs
-          value={activeResponsePanelTab}
-          onValueChange={setActiveResponsePanelTab}
-          className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
-        >
-          <CustomTabsList>
-            <CustomTabTrigger value="response" className="flex items-center">
-              {responseToRender ? (
-                <ResponseSummary
-                  response={responseToRender}
-                  transformUrl={removeServiceUrlFromPath}
-                />
-              ) : (
-                "Response"
-              )}
-            </CustomTabTrigger>
-            {shouldShowMessages && (
-              <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
+      <Tabs
+        value={activeResponsePanelTab}
+        onValueChange={setActiveResponsePanelTab}
+        className="grid grid-rows-[auto_1fr] overflow-hidden h-full"
+      >
+        <CustomTabsList>
+          <CustomTabTrigger value="response" className="flex items-center">
+            {responseToRender ? (
+              <ResponseSummary
+                response={responseToRender}
+                transformUrl={removeServiceUrlFromPath}
+              />
+            ) : (
+              "Response"
             )}
-            <div
-              className={cn(
-                // Hide this button on mobile, and rely on the button + drawer pattern instead
-                "max-sm:hidden",
-                "flex-grow sm:flex justify-end",
-              )}
-            >
-              <Button
-                variant={isAiTestGenerationPanelOpen ? "outline" : "ghost"}
-                size="icon"
-                onClick={openAiTestGenerationPanel}
-                className={cn(
-                  isAiTestGenerationPanelOpen && "opacity-50 bg-slate-900",
-                )}
-              >
-                <RobotIcon className="h-4 w-4 cursor-pointer" />
-              </Button>
+          </CustomTabTrigger>
+          {shouldShowMessages && (
+            <CustomTabTrigger value="messages">Messages</CustomTabTrigger>
+          )}
+          <CustomTabTrigger value="headers">
+            Headers
+            {responseHeaders && Object.keys(responseHeaders).length > 1 && (
+              <span className="ml-1 text-gray-400 font-mono text-xs">
+                ({Object.keys(responseHeaders).length})
+              </span>
+            )}
+          </CustomTabTrigger>
+        </CustomTabsList>
+        <CustomTabsContent value="messages">
+          <TabContentInner
+            isLoading={websocketState.isConnecting}
+            isEmpty={
+              !websocketState.isConnected && !websocketState.isConnecting
+            }
+            isFailure={websocketState.hasError}
+            LoadingState={<LoadingResponseBody />}
+            FailState={<FailedWebsocket />}
+            EmptyState={<NoWebsocketConnection />}
+          >
+            <WebsocketMessages websocketState={websocketState} />
+          </TabContentInner>
+        </CustomTabsContent>
+        <CustomTabsContent value="response" className="h-full">
+          <TabContentInner
+            isLoading={isLoading}
+            isEmpty={!responseToRender}
+            isFailure={
+              isWsRequest(requestType) ? websocketState.hasError : !!isFailure
+            }
+            LoadingState={<LoadingResponseBody />}
+            FailState={
+              isWsRequest(requestType) ? (
+                <FailedWebsocket />
+              ) : (
+                <FailedRequest response={tracedResponse} />
+              )
+            }
+            EmptyState={
+              isWsRequest(requestType) ? (
+                <NoWebsocketConnection />
+              ) : (
+                <NoResponse />
+              )
+            }
+          >
+            <div className={cn("grid grid-rows-[auto_1fr]")}>
+              <ResponseBody
+                response={responseToRender}
+                // HACK - To support absolutely positioned bottom toolbar
+                className={cn(showBottomToolbar && "pb-2")}
+              />
             </div>
-          </CustomTabsList>
-          <CustomTabsContent value="messages">
-            <TabContentInner
-              isLoading={websocketState.isConnecting}
-              isEmpty={
-                !websocketState.isConnected && !websocketState.isConnecting
-              }
-              isFailure={websocketState.hasError}
-              LoadingState={<LoadingResponseBody />}
-              FailState={<FailedWebsocket />}
-              EmptyState={<NoWebsocketConnection />}
-            >
-              <WebsocketMessages websocketState={websocketState} />
-            </TabContentInner>
-          </CustomTabsContent>
-          <CustomTabsContent value="response" className="h-full">
-            <TabContentInner
-              isLoading={isLoading}
-              isEmpty={!responseToRender}
-              isFailure={
-                isWsRequest(requestType) ? websocketState.hasError : !!isFailure
-              }
-              LoadingState={<LoadingResponseBody />}
-              FailState={
-                isWsRequest(requestType) ? (
-                  <FailedWebsocket />
-                ) : (
-                  <FailedRequest response={tracedResponse} />
-                )
-              }
-              EmptyState={
-                isWsRequest(requestType) ? (
-                  <NoWebsocketConnection />
-                ) : (
-                  <NoResponse />
-                )
-              }
-            >
-              <div className={cn("grid grid-rows-[auto_1fr]")}>
-                <ResponseBody
-                  headersSlot={
-                    <CollapsibleKeyValueTableV2
-                      sensitiveKeys={SENSITIVE_HEADERS}
-                      title="Headers"
-                      keyValue={responseHeaders ?? {}}
-                      className="mb-0.5 pb-2"
-                    />
-                  }
-                  response={responseToRender}
-                  // HACK - To support absolutely positioned bottom toolbar
-                  className={cn(showBottomToolbar && "pb-2")}
-                />
-                {traceId && (
-                  <Collapsible
-                    open={isOpen}
-                    onOpenChange={setIsOpen}
-                    className="pl-0 border-t pt-2.5 mt-0.5"
-                  >
-                    <CollapsibleTrigger asChild className="mb-2">
-                      <SubSectionHeading className="flex items-center gap-2 cursor-pointer">
-                        {isOpen ? (
-                          <CaretDownIcon className="w-4 h-4 cursor-pointer" />
-                        ) : (
-                          <CaretRightIcon className="w-4 h-4 cursor-pointer" />
-                        )}
-                        Timeline
-                      </SubSectionHeading>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <RequestorTimeline traceId={traceId} />
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
-              </div>
-            </TabContentInner>
-          </CustomTabsContent>
-        </Tabs>
-      </div>
+          </TabContentInner>
+        </CustomTabsContent>
+        <CustomTabsContent value="headers">
+          {responseHeaders && (
+            <KeyValueTable
+              sensitiveKeys={SENSITIVE_HEADERS}
+              keyValue={responseHeaders}
+            />
+          )}
+        </CustomTabsContent>
+      </Tabs>
     </div>
   );
-}
+});
 
 /**
  * Helper component for handling loading/failure/empty states in tab content
@@ -259,6 +214,7 @@ function ResponseSummary({
             "font-mono",
             "whitespace-nowrap",
             "overflow-ellipsis",
+            "text-xs",
             "ml-2",
             "pt-0.5", // HACK - to adjust baseline of mono font to look good next to sans
           )}
@@ -272,12 +228,20 @@ function ResponseSummary({
 
 function NoResponse() {
   return (
-    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
-      <div className="text-md text-white text-center">
-        Enter a URL and hit send to see a response
-      </div>
-      <div className="mt-1 sm:mt-2 text-ms text-gray-400 text-center font-light">
-        Or load a past request from your history
+    <div className="flex flex-col items-center justify-center text-gray-300 h-full">
+      <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
+        <div className="rounded-lg p-2 bg-muted mb-2">
+          <Icon
+            icon="lucide:send"
+            className="w-12 h-12 text-gray-400 stroke-1"
+          />
+        </div>
+        <h2 className="text-lg font-normal mb-2">
+          Enter a URL and hit Send to see a response
+        </h2>
+        <div className="text-gray-400 text-left text-sm flex flex-col gap-2">
+          <p>Or load a past request from your history</p>
+        </div>
       </div>
     </div>
   );

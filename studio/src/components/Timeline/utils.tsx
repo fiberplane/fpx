@@ -8,8 +8,8 @@ import HonoLogo from "@/assets/HonoLogo.svg";
 import NeonLogo from "@/assets/NeonLogo.svg";
 import OpenAiLogo from "@/assets/OpenAILogo.svg";
 import { CF_BINDING_METHOD, SpanKind } from "@/constants";
-import type { OtelSpan } from "@/queries";
 import { type CloudflareVendorInfo, type Waterfall, getString } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { CommitIcon, PaperPlaneIcon, TimerIcon } from "@radix-ui/react-icons";
 import { formatDistanceStrict } from "date-fns";
 
@@ -93,7 +93,22 @@ export const getTypeIcon = (type: string, colorOverride = "") => {
   }
 };
 
-export function getColorForLevel(level: string) {
+// NOTE: can't use a generic *-yellow-500 because transparency modifiers are
+// resolved before the color is applied and tailwind borks
+export function getBgColorForLevel(level: string) {
+  switch (level) {
+    case "info":
+      return "bg-muted/50";
+    case "warn":
+      return "bg-yellow-500/10";
+    case "error":
+      return "bg-red-500/10";
+    default:
+      return "bg-gray-500/10";
+  }
+}
+
+export function getTextColorForLevel(level: string) {
   switch (level) {
     case "info":
       return "text-muted-foreground";

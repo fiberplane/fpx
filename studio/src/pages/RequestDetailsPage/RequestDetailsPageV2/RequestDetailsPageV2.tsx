@@ -8,8 +8,12 @@ import { useOrphanLogs } from "./useOrphanLogs";
 
 export function RequestDetailsPageV2({
   traceId,
+  paginationHidden = false,
+  generateLinkToTrace,
 }: {
   traceId: string;
+  paginationHidden?: boolean;
+  generateLinkToTrace: (traceId: string) => string;
 }) {
   const { data: traces } = useOtelTraces();
   const { data: spans, isPending, error } = useOtelTrace(traceId);
@@ -29,7 +33,7 @@ export function RequestDetailsPageV2({
         return "";
       }
 
-      return `/requests/otel/${traces[index].traceId}`;
+      return generateLinkToTrace(traces[index].traceId);
     },
   });
 
@@ -53,7 +57,8 @@ export function RequestDetailsPageV2({
       traceId={traceId}
       spans={spans}
       orphanLogs={orphanLogs}
-      pagination={pagination}
+      pagination={paginationHidden ? undefined : pagination}
+      generateLinkToTrace={generateLinkToTrace}
     />
   );
 }

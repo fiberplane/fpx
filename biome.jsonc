@@ -92,6 +92,7 @@
 
       // Client library and website related
       "dist",
+      "www/",
       ".astro",
 
       // ignore all tsconfig.json files

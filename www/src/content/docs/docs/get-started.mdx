@@ -4,10 +4,12 @@ description: How to get started with Fiberplane Studio
 ---
 
 import PackageManagers from "@/components/PackageManagers.astro";
+import Platforms from "@/components/Platforms.astro";
 import { Aside, Steps, LinkCard } from "@astrojs/starlight/components";
+import getStartedHonoRawCode from "./get-started-cf.ts.example?raw";
+import getStartedNodeRawCode from "./get-started-node.ts.example?raw";
 
 Fiberplane Studio is a local debugging companion designed to help you to build, test, and develop [Hono](https://hono.dev) APIs.
-
 
 <Steps>
 1. ### Set up a Hono project
@@ -20,7 +22,7 @@ Fiberplane Studio is a local debugging companion designed to help you to build, 
 
     <PackageManagers type="create" pkg="honc@latest" />
 
-2. ### Add the Fiberplane Studio client
+2.  ### Add the Fiberplane Studio client
 
     Install the Studio client library in your Hono project. The client library will report traces to the local Fiberplane Studio and give you rich application context while you're developing.
 
@@ -28,35 +30,30 @@ Fiberplane Studio is a local debugging companion designed to help you to build, 
 
     Add the client library to `index.ts`
 
-    ```typescript title="index.ts"
-    import { Hono } from "hono";
-    import { instrument } from "@fiberplane/hono-otel";
-
-    const app = new Hono<{ Bindings: Bindings }>();
-
-    app.get("/", (c) => {
-      return c.text("Hello Hono!");
-    });
-
-    export default instrument(app);
-    ```
-
+    <Platforms
+      platforms={["cf-worker", "node"]}
+      title="index.ts"
+      code={[getStartedHonoRawCode, getStartedNodeRawCode]}
+    />
 
     <Aside type="caution">
-    Fiberplane Studio and client library currently only support Hono running on Cloudflare Workers runtime. If you are using Node.js, Deno, or Bun, you can still use Fiberplane Studio, but you will not get the same features as the client library. You can upvote any of the [respective issues here](https://github.com/fiberplane/fpx/issues/192) to help us prioritize the development.
+      Fiberplane Studio and the client library only support Hono on Cloudflare
+      Workers and Node.js. You can upvote support for Bun and Deno on [their
+      respective issues here](https://github.com/fiberplane/fpx/issues/192) to
+      help us prioritize development.
     </Aside>
 
-3. ### Launch Fiberplane Studio
-    In a new terminal window start Fiberplane Studio from your project directory:
+3.  ### Launch Fiberplane Studio
 
-    <PackageManagers type="exec" pkg="@fiberplane/studio" />
+        In a new terminal window start Fiberplane Studio from your project directory:
 
-    Finally, start (or restart) your application, and you're ready to go!
+        <PackageManagers type="exec" pkg="@fiberplane/studio" />
+
+        Finally, start (or restart) your application, and you're ready to go!
+
 </Steps>
 
-
 ## Next steps
-
 
 <LinkCard
   title="Learn about the client library"
@@ -76,10 +73,14 @@ Fiberplane Studio is a local debugging companion designed to help you to build, 
   href="/docs/features/inspect-traces"
 />
 
-{/*<LinkCard title="Generate requests with AI" description="Use language models to generate request data to test your API" href="/docs/features/generating-with-ai" />*/}
+<LinkCard
+  title="Generate requests with AI"
+  description="Use language models to generate request data to test your API"
+  href="/docs/features/generating-with-ai"
+/>
 
-{/*<LinkCard
+<LinkCard
   title="Test webhooks"
   description="Inspect incoming webhooks and forward them to your API using the Studio"
   href="/docs/features/webhooks"
-/>*/}
+/>

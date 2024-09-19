@@ -9,6 +9,11 @@ import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import type { ExecutionContext } from "hono";
 // TODO figure out we can use something else
 import { AsyncLocalStorageContextManager } from "./async-hooks";
+import {
+  ENV_FPX_ENDPOINT,
+  ENV_FPX_LOG_LEVEL,
+  ENV_FPX_SERVICE_NAME,
+} from "./constants";
 import { getLogger } from "./logger";
 import { measure } from "./measure";
 import {
@@ -17,10 +22,12 @@ import {
   patchFetch,
   patchWaitUntil,
 } from "./patch";
+import { PromiseStore } from "./promiseStore";
 import { propagateFpxTraceId } from "./propagation";
 import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
 import {
+  getFromEnv,
   getRequestAttributes,
   getResponseAttributes,
   getRootRequestAttributes,
@@ -62,8 +69,7 @@ const defaultConfig = {
   monitor: {
     fetch: true,
     logging: true,
-    // NOTE - We don't proxy Cloudflare bindings by default yet because it's still experimental, and we don't have fancy UI for it yet in the Studio
-    cfBindings: false,
+    cfBindings: true,
   },
 };
 
@@ -81,7 +87,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           request: Request,
           // Name this "rawEnv" because we coerce it below into something that's easier to work with
           rawEnv: HonoLikeEnv,
-          executionContext: ExecutionContext | undefined,
+          executionContext?: ExecutionContext,
         ) {
           // Merge the default config with the user's config
           const {
@@ -101,13 +107,14 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           // NOTE - We do *not* want to have a default for the FPX_ENDPOINT,
           //        so that people won't accidentally deploy to production with our middleware and
           //        start sending data to the default url.
-          const endpoint =
-            typeof env === "object" && env !== null ? env.FPX_ENDPOINT : null;
+          const endpoint = getFromEnv(env, ENV_FPX_ENDPOINT);
           const isEnabled = !!endpoint && typeof endpoint === "string";
 
-          const FPX_LOG_LEVEL = libraryDebugMode ? "debug" : env?.FPX_LOG_LEVEL;
+          const FPX_LOG_LEVEL = libraryDebugMode
+            ? "debug"
+            : getFromEnv(env, ENV_FPX_LOG_LEVEL);
           const logger = getLogger(FPX_LOG_LEVEL);
-          // NOTE - This should only log if the FPX_LOG_LEVEL is debug
+          // NOTE - This should only log if the FPX_LOG_LEVEL is "debug"
           logger.debug("Library debug mode is enabled");
 
           if (!isEnabled) {
@@ -123,7 +130,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
 
-          const serviceName = env?.FPX_SERVICE_NAME ?? "unknown";
+          const serviceName =
+            getFromEnv(env, ENV_FPX_SERVICE_NAME) ?? "unknown";
 
           // Patch all functions we want to monitor in the runtime
           if (monitorCfBindings) {
@@ -141,10 +149,10 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             endpoint,
           });
 
+          const promiseStore = new PromiseStore();
           // Enable tracing for waitUntil
-          const patched = executionContext && patchWaitUntil(executionContext);
-          const promises = patched?.promises ?? [];
-          const proxyExecutionCtx = patched?.proxyContext ?? executionContext;
+          const proxyExecutionCtx =
+            executionContext && patchWaitUntil(executionContext, promiseStore);
 
           const activeContext = propagateFpxTraceId(request);
 
@@ -199,11 +207,19 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
                 };
                 span.setAttributes(requestAttributes);
               },
+              endSpanManually: true,
               onSuccess: async (span, response) => {
-                const attributes = await getResponseAttributes(
-                  (await response).clone(),
-                );
-                span.setAttributes(attributes);
+                span.addEvent("first-response");
+
+                const attributesResponse = response.clone();
+
+                const updateSpan = async (response: Response) => {
+                  const attributes = await getResponseAttributes(response);
+                  span.setAttributes(attributes);
+                  span.end();
+                };
+
+                promiseStore.add(updateSpan(attributesResponse));
               },
               checkResult: async (result) => {
                 const r = await result;
@@ -217,18 +233,14 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           );
 
           try {
-            return await context.with(activeContext, async () => {
-              return await measuredFetch(
-                newRequest,
-                env as HonoLikeEnv,
-                proxyExecutionCtx,
-              );
-            });
+            return await context.with(activeContext, () =>
+              measuredFetch(newRequest, rawEnv, proxyExecutionCtx),
+            );
           } finally {
             // Make sure all promises are resolved before sending data to the server
             if (proxyExecutionCtx) {
               proxyExecutionCtx.waitUntil(
-                Promise.allSettled(promises).finally(() => {
+                promiseStore.allSettled().finally(() => {
                   return provider.forceFlush();
                 }),
               );

@@ -16,6 +16,6 @@ clap = { version = "4.0", features = ["derive", "env"] }
 schemars = "0.8.21"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
-tokio = { version = "1.37", features = ["rt-multi-thread", "signal"] }
+tokio = { version = "1.40", features = ["rt-multi-thread", "signal"] }
 tracing = { version = "0.1" }
 url = { version = "2.5" }

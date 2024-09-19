@@ -1,5 +1,6 @@
 import { CF_BINDING_TYPE } from "@/constants";
-import type { MizuOrphanLog, OtelSpan } from "@/queries";
+import type { MizuOrphanLog } from "@/queries";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { z } from "zod";
 import { getRequestBody, getRequestUrl, getString } from "./otel-helpers";
 

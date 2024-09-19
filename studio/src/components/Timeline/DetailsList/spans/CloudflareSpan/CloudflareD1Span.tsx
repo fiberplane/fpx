@@ -1,11 +1,11 @@
-import { CF_BINDING_RESULT } from "@/constants";
-import type { OtelSpan } from "@/queries";
+import { CF_BINDING_ERROR, CF_BINDING_RESULT } from "@/constants";
 import { type CloudflareD1VendorInfo, getString, noop } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { CollapsibleSubSection } from "../../../shared";
 import { CodeMirrorSqlEditor } from "../../CodeMirrorEditor";
-import { TextOrJsonViewer } from "../../TextJsonViewer";
+import { CfResultAndError } from "./shared";
 
 /**
  * The D1 span is rendered a little differently.
@@ -29,6 +29,7 @@ export function CloudflareD1Span({
   }, [vendorInfo]);
 
   const result = getString(span.attributes[CF_BINDING_RESULT]);
+  const error = getString(span.attributes[CF_BINDING_ERROR]);
 
   return (
     <div className="text-xs py-2 space-y-2">
@@ -39,9 +40,7 @@ export function CloudflareD1Span({
           readOnly={true}
         />
       </CollapsibleSubSection>
-      <CollapsibleSubSection heading="Result" defaultCollapsed={true}>
-        <TextOrJsonViewer text={result} collapsed={true} />
-      </CollapsibleSubSection>
+      <CfResultAndError result={result} error={error} />
     </div>
   );
 }

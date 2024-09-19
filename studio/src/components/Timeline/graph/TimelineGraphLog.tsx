@@ -1,8 +1,9 @@
 import type { MizuOrphanLog } from "@/queries";
 import { cn } from "@/utils";
+import { Icon } from "@iconify/react";
 import { useTimelineContext } from "../context";
-import { useTimelineIcon, useTimelineTitle } from "../hooks";
-import { getColorForLevel } from "../utils";
+import { useTimelineTitle } from "../hooks";
+import { getBgColorForLevel, getTextColorForLevel } from "../utils";
 
 export const TimelineGraphLog: React.FC<{
   log: MizuOrphanLog;
@@ -13,9 +14,8 @@ export const TimelineGraphLog: React.FC<{
   const left =
     ((new Date(log.timestamp).getTime() - startTime) / duration) * 100;
   const lineOffset = `calc(${left.toFixed(4)}% - ${3 * 0.0625}rem)`;
-  const icon = useTimelineIcon(log, {
-    colorOverride: getColorForLevel(log.level),
-  });
+  const colorTextLevel = getTextColorForLevel(log.level);
+  const colorBgLevel = getBgColorForLevel(log.level);
   const title = useTimelineTitle(log);
   const { setHighlightedSpanId, highlightedSpanId } = useTimelineContext();
 
@@ -29,6 +29,7 @@ export const TimelineGraphLog: React.FC<{
         "transition-all",
         "cursor-pointer",
         "data-[highlighted=true]:bg-primary/10",
+        colorBgLevel,
       )}
       data-highlighted={highlightedSpanId === `${log.id}`}
       href={`#${log.id}`}
@@ -39,7 +40,9 @@ export const TimelineGraphLog: React.FC<{
           : undefined
       }
     >
-      <div className={cn(icon ? "mr-2" : "mr-0")}>{icon}</div>
+      <div className={cn("mr-2")}>
+        <Icon icon="lucide:terminal" className={cn(colorTextLevel)} />
+      </div>
       <div className="flex flex-col w-20 overflow-hidden">
         <div className="font-mono font-normal text-xs truncate text-gray-200">
           {title}
@@ -49,12 +52,11 @@ export const TimelineGraphLog: React.FC<{
         <div
           className="h-2.5 items-center min-w-1"
           style={{ marginLeft: lineOffset }}
-          title={log.timestamp}
+          title={log.timestamp.toString()}
         >
           <div className="h-1.5 w-1.5 bg-blue-500 rounded-full" />
         </div>
       </div>
-      <div className="ml-auto text-gray-400 text-xs w-12 px-2" />
     </a>
   );
 };

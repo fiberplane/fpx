@@ -16,7 +16,8 @@
     "clean:api": "rimraf api/dist",
     "clean:frontend": "rimraf studio/dist",
     "format": "biome check . --write",
-    "lint": "pnpm --recursive lint"
+    "lint": "pnpm --recursive lint",
+    "typecheck": "pnpm --recursive typecheck"
   },
   "repository": {
     "type": "git",

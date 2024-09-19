@@ -14,13 +14,13 @@ export function WebhoncBadge() {
 
   return (
     <Tooltip>
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <Button
           className={cn(
-            "rounded-xl flex items-center text-sm gap-2 cursor-pointer h-7",
+            "rounded-xl flex items-center text-sm gap-2 cursor-pointer h-7 bg-transparent hover:bg-muted",
             {
-              "bg-green-950/60 hover:bg-green-900/60 text-green-400": !!url,
-              "bg-muted/20 text-muted-foreground": !url,
+              "text-green-400": !!url,
+              "text-muted-foreground": !url,
             },
           )}
           onClick={() => url && copyToClipboard(url)}
@@ -35,9 +35,11 @@ export function WebhoncBadge() {
           ) : (
             <Link2Icon className="w-4 h-4" />
           )}
-          <span>
+          <span className="flex items-center gap-1">
             Public URL
-            <span className="max-sm:hidden">{url ? " active" : ""}</span>
+            <span className="max-sm:hidden">
+              {url ? (isCopied ? " copied" : " active") : ""}
+            </span>
           </span>
         </Button>
       </TooltipTrigger>

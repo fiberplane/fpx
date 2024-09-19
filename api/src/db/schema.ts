@@ -1,52 +1,36 @@
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { relations, sql } from "drizzle-orm";
-import {
-  integer,
-  primaryKey,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const appRoutes = sqliteTable(
-  "app_routes",
-  {
-    path: text("path", { mode: "text" }),
-    method: text("method", { mode: "text" }),
-    // The text of the function serving the request
-    handler: text("handler", { mode: "text" }),
-    // In practice, handler_type is either "route" or "middleware" - I didn't feel like defining an enum
-    handlerType: text("handler_type", { mode: "text" }),
-    // A flag that indicates if this route is currently registered or the result of an old probe
-    currentlyRegistered: integer("currentlyRegistered", {
-      mode: "boolean",
-    }).default(false),
-    // A flag for route type that indicated if the route was added manually by user or by probe
-    routeOrigin: text("route_origin", {
-      mode: "text",
-      enum: ["discovered", "custom", "open_api"],
-    }).default("discovered"),
-    // serialized OpenAPI spec for AI prompting
-    openApiSpec: text("openapi_spec", { mode: "text" }),
-    requestType: text("request_type", {
-      mode: "text",
-      enum: ["http", "websocket"],
-    }).default("http"),
-  },
-  (table) => {
-    return {
-      id: primaryKey({
-        name: "id",
-        columns: [
-          table.method,
-          table.path,
-          table.handlerType,
-          table.routeOrigin,
-        ],
-      }),
-    };
-  },
-);
+export const appRoutes = sqliteTable("app_routes", {
+  id: integer("id", { mode: "number" }).primaryKey(),
+  path: text("path", { mode: "text" }),
+  method: text("method", { mode: "text" }),
+  // The text of the function serving the request
+  handler: text("handler", { mode: "text" }),
+  // In practice, handler_type is either "route" or "middleware" - I didn't feel like defining an enum
+  handlerType: text("handler_type", { mode: "text" }),
+  // A flag that indicates if this route is currently registered or the result of an old probe
+  currentlyRegistered: integer("currentlyRegistered", {
+    mode: "boolean",
+  }).default(false),
+  registrationOrder: integer("registration_order", {
+    mode: "number",
+  }).default(-1),
+  // A flag for route type that indicated if the route was added manually by user or by probe
+  routeOrigin: text("route_origin", {
+    mode: "text",
+    enum: ["discovered", "custom", "open_api"],
+  }).default("discovered"),
+  // serialized OpenAPI spec for AI prompting
+  openApiSpec: text("openapi_spec", { mode: "text" }),
+  requestType: text("request_type", {
+    mode: "text",
+    enum: ["http", "websocket"],
+  }).default("http"),
+});
 
 export const appRoutesSelectSchema = createSelectSchema(appRoutes);
 export const appRoutesInsertSchema = createInsertSchema(appRoutes);
@@ -172,15 +156,10 @@ const CallerLocationSchema = z.object({
   column: z.string(),
 });
 
-// TODO: Make a better schema for this
-//       And add a separate schema for the raw spans from the exporter
-//       Inspo: https://github.com/wperron/sqliteexporter/blob/main/migrations/20240120195122_init.up.sql
 export const otelSpans = sqliteTable("otel_spans", {
-  spanId: text("span_id"),
-  traceId: text("trace_id"),
-  parsedPayload: text("parsed_payload", { mode: "json" }),
-  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
-  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  inner: text("inner", { mode: "json" }).$type<OtelSpan>().notNull(),
+  spanId: text("span_id").notNull(),
+  traceId: text("trace_id").notNull(),
 });
 
 export const newMizuLogSchema = createInsertSchema(mizuLogs);

@@ -46,6 +46,9 @@ const TabsContent = React.forwardRef<
       className,
     )}
     {...props}
+    // NOTE: this is to avoid the focus ring on the tab content as we often want to
+    // more explicitly control the focus
+    tabIndex={-1}
   />
 ));
 TabsContent.displayName = TabsPrimitive.Content.displayName;

@@ -115,10 +115,10 @@ export const useTimelineTitle = (waterfallItem: Waterfall[0]) => {
 
     const message = waterfallItem.message
       ? safeParseJson(waterfallItem.message)
-      : "log";
+      : `log.${waterfallItem.level}`;
     return (
       <div className="font-mono font-normal text-xs truncate text-gray-200">
-        {typeof message === "string" ? message : "log"}
+        {typeof message === "string" ? message : `log.${waterfallItem.level}`}
       </div>
     );
   }, [waterfallItem]);

@@ -9,12 +9,12 @@ import {
   FPX_RESPONSE_BODY,
   SpanKind,
 } from "@/constants";
-import type { OtelSpan } from "@/queries";
 import type {
   OtelAttributes,
   OtelEvent,
+  OtelSpan,
   OtelTrace,
-} from "@/queries/traces-otel";
+} from "@fiberplane/fpx-types";
 
 export const isErrorLogEvent = (event: OtelEvent) => {
   return event.name === "log" && getString(event.attributes.level) === "error";
@@ -29,11 +29,11 @@ const isErrorEvent = (event: OtelEvent) => {
 };
 
 export const hasErrorEvent = (span: OtelSpan) => {
-  return span.events.some(isErrorEvent);
+  return span.events?.some(isErrorEvent);
 };
 
 export const getErrorEvents = (span: OtelSpan) => {
-  return span.events.filter(isErrorEvent);
+  return span.events?.filter(isErrorEvent) ?? [];
 };
 
 export function isFpxRequestSpan(span: OtelSpan) {

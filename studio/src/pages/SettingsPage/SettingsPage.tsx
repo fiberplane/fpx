@@ -112,7 +112,7 @@ function SettingsLayout({ settings }: { settings: Settings }) {
           {FPX_WORKER_PROXY_TAB}
         </TabsTrigger>
       </TabsList>
-      <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll">
+      <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll pr-3">
         <TabsContent className="m-0" value={AI_TAB}>
           <AISettingsForm settings={settings} />
         </TabsContent>

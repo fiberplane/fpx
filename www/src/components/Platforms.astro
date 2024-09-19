@@ -1,0 +1,64 @@
+---
+// biome-ignore lint/style/useImportType: Biome is confused by astro
+import { Code, TabItem, Tabs } from "@astrojs/starlight/components";
+import type { ComponentProps } from "astro/types";
+
+const PLATFORM_KEYS = ["cf-worker", "node", "bun"] as const;
+const PLATFORMS = ["Cloudflare", "Node.js", "Bun"] as const;
+
+function getIcon(platform: Platform) {
+  switch (platform) {
+    case "node":
+      return "node";
+    case "bun":
+      return "bun";
+    case "cf-worker":
+      return "cloudflare";
+  }
+}
+
+type Platform = (typeof PLATFORM_KEYS)[number];
+
+type Props = {
+  code: string[];
+  frame?: "none" | "terminal";
+  icons?: boolean;
+  platforms?: Platform[];
+  title?: string | undefined;
+};
+
+const {
+  code,
+  frame = "code",
+  icons = true,
+  platforms,
+  title = undefined
+} = Astro.props;
+const singlePlatform = platforms?.length === 1 ? platforms[0] : undefined;
+const ecFrame = frame === "terminal" ? "terminal" : "code";
+
+function getTabItemProps(platform: Platform) {
+  const props: ComponentProps<typeof TabItem> = {
+    label: PLATFORMS[PLATFORM_KEYS.indexOf(platform)]
+  };
+  const icon = getIcon(platform) as ComponentProps<typeof TabItem>["icon"];
+  if (icons && icon) {
+    props.icon = icon;
+  }
+  return props;
+}
+---
+
+{
+  singlePlatform ? (
+    <Code code={code[0]} lang="ts" {title} frame={ecFrame} />
+  ) : (
+    <Tabs syncKey="starlight-hono-platforms">
+      {platforms?.map((platform, index) => (
+        <TabItem {...getTabItemProps(platform)}>
+          <Code code={code[index]} lang="ts" {title} frame={ecFrame} />
+        </TabItem>
+      ))}
+    </Tabs>
+  )
+}

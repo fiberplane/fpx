@@ -1,6 +1,6 @@
 use anyhow::Context;
 use async_trait::async_trait;
-use fpx_lib::data::models::Span;
+use fpx_lib::data::models::{HexEncodedId, Span};
 use fpx_lib::data::sql::SqlBuilder;
 use fpx_lib::data::{DbError, Result, Store, Transaction};
 use libsql::{params, Builder, Connection};
@@ -116,7 +116,12 @@ impl Store for LibsqlStore {
         Ok(())
     }
 
-    async fn span_get(&self, _tx: &Transaction, trace_id: &str, span_id: &str) -> Result<Span> {
+    async fn span_get(
+        &self,
+        _tx: &Transaction,
+        trace_id: &HexEncodedId,
+        span_id: &HexEncodedId,
+    ) -> Result<Span> {
         let span = self
             .connection
             .query(&self.sql_builder.span_get(), (trace_id, span_id))
@@ -127,7 +132,11 @@ impl Store for LibsqlStore {
         Ok(span)
     }
 
-    async fn span_list_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<Vec<Span>> {
+    async fn span_list_by_trace(
+        &self,
+        _tx: &Transaction,
+        trace_id: &HexEncodedId,
+    ) -> Result<Vec<Span>> {
         let spans = self
             .connection
             .query(&self.sql_builder.span_list_by_trace(), params!(trace_id))
@@ -182,7 +191,11 @@ impl Store for LibsqlStore {
     }
 
     /// Delete all spans with a specific trace_id.
-    async fn span_delete_by_trace(&self, _tx: &Transaction, trace_id: &str) -> Result<Option<u64>> {
+    async fn span_delete_by_trace(
+        &self,
+        _tx: &Transaction,
+        trace_id: &HexEncodedId,
+    ) -> Result<Option<u64>> {
         let rows_affected = self
             .connection
             .execute(&self.sql_builder.span_delete_by_trace(), params!(trace_id))
@@ -195,8 +208,8 @@ impl Store for LibsqlStore {
     async fn span_delete(
         &self,
         _tx: &Transaction,
-        trace_id: &str,
-        span_id: &str,
+        trace_id: &HexEncodedId,
+        span_id: &HexEncodedId,
     ) -> Result<Option<u64>> {
         let rows_affected = self
             .connection

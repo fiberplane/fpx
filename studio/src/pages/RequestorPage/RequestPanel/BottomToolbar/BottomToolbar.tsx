@@ -1,3 +1,4 @@
+import { cn } from "@/utils";
 import { CopyAsCurl, type CopyAsCurlProps } from "./CopyAsCurl";
 import {
   RequestBodyTypeDropdown,
@@ -18,7 +19,12 @@ export function BottomToolbar({
   const isDropdownDisabled = method === "GET" || method === "HEAD";
 
   return (
-    <div className="flex justify-between gap-2 absolute bottom-0 w-full p-2 backdrop-blur-sm border-t">
+    <div
+      className={cn(
+        "bg-muted",
+        "flex justify-between absolute bottom-0 w-full border-t",
+      )}
+    >
       <RequestBodyTypeDropdown
         requestBody={body}
         handleRequestBodyTypeChange={handleRequestBodyTypeChange}

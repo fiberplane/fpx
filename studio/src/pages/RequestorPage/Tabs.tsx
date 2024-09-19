@@ -4,7 +4,7 @@ import type * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as React from "react";
 import type { ComponentProps } from "react";
 
-const TAB_HEIGHT = "h-12";
+const TAB_HEIGHT = "h-8";
 
 export const CustomTabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -31,7 +31,7 @@ export function CustomTabTrigger(props: ComponentProps<typeof TabsTrigger>) {
         "text-left",
         TAB_HEIGHT,
         "ml-2",
-        "text-sm",
+        "text-xs",
         "font-normal",
         "border-b",
         "border-transparent",
@@ -54,6 +54,9 @@ export const CustomTabsContent = React.forwardRef<
   <TabsContent
     ref={ref}
     {...props}
+    // the default tabIndex of 0 causes the tab to be focused which, considering how
+    // we use this component is not desirable
+    tabIndex={-1}
     className={cn(
       "px-3 py-2 data-[state=active]:h-full data-[state=inactive]:hidden",
       "md:overflow-y-auto max-h-full",

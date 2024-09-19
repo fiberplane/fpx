@@ -1,12 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { SpanStatus } from "@/constants";
-import type { OtelSpan } from "@/queries";
 import {
   type VendorInfo,
   getNumber,
   getString,
   isCloudflareVendorInfo,
 } from "@/utils";
+import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { useTimelineIcon } from "../../hooks";
 import { SectionHeading } from "../../shared";
@@ -54,7 +54,10 @@ export function GenericSpan({
             </>
           )}
           <div className="text-gray-400 text-xs w-12 px-2">
-            {formatDuration(span.start_time, span.end_time)}
+            {formatDuration(
+              span.start_time.toString(),
+              span.end_time.toString(),
+            )}
           </div>
         </div>
       </SectionHeading>
