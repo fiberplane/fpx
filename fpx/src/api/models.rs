@@ -2,6 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod otel;
+pub mod settings;
 
 pub use otel::*;
 

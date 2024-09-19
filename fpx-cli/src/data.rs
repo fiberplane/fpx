@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use anyhow::Context;
 use async_trait::async_trait;
 use fpx::data::models::{HexEncodedId, Span};
@@ -7,7 +8,10 @@ use libsql::{params, Builder, Connection};
 use std::fmt::Display;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::trace;
+use http_body_util::BodyExt;
+use serde_json::Map;
+use tracing::{error, trace};
+use fpx::api::models::settings::Settings;
 use util::RowsExt;
 
 mod migrations;
@@ -217,5 +221,59 @@ impl Store for LibsqlStore {
             .await?;
 
         Ok(Some(rows_affected))
+    }
+
+    async fn settings_upsert(&self, _tx: &Transaction, settings: Settings) -> Result<Settings> {
+        let mut result: Map<String, serde_json::Value> = Map::new();
+
+        // .unwrap is safe as the Settings `Serialize` impl cannot fail as it is derived with the `Serialize` macro
+        let serde_json::Value::Object(map) = serde_json::to_value(settings).map_err(|_| DbError::FailedSerialize)? else {
+            unreachable!("settings is a object so it will always serialize into a Value::Object as well")
+        };
+
+        for (key, value) in map {
+            let value = serde_json::to_string(&value).map_err(|_| DbError::FailedSerialize)?;
+
+            let inserted_value: String = self
+                .connection
+                .query(
+                    &self.sql_builder.settings_insert(),
+                    params!(
+                        key.clone(),
+                        value
+                    ),
+                )
+                .await?
+                .fetch_one()
+                .await?;
+
+            result.insert(key, serde_json::from_str(&inserted_value).map_err(|err| {
+                error!(?err, "failed to serialize from upserted db value");
+                DbError::FailedSerialize
+            })?);
+        }
+
+        serde_json::from_value(serde_json::Value::Object(result)).map_err(|err| {
+            error!(?err, "failed to serialize from upserted db value collection");
+            DbError::FailedSerialize
+        })
+    }
+
+    async fn settings_get(&self, _tx: &Transaction) -> Result<Settings> {
+        let traces: Vec<(String, String)> = self
+            .connection
+            .query(&self.sql_builder.settings_get(), ())
+            .await?
+            .fetch_all()
+            .await?;
+
+        let result: Map<String, serde_json::Value> = traces.into_iter()
+            .map(|(key, value)| (key, serde_json::from_str(&value).expect("db should not contain invalid data"))) // we need better error handling at some point here
+            .collect();
+
+        serde_json::from_value(serde_json::Value::Object(result)).map_err(|err| {
+            error!(?err, "failed to serialize from db values");
+            DbError::FailedSerialize
+        })
     }
 }

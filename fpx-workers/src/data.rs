@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use axum::async_trait;
 use fpx::data::models::HexEncodedId;
 use fpx::data::sql::SqlBuilder;
@@ -7,6 +8,7 @@ use std::sync::Arc;
 use wasm_bindgen::JsValue;
 use worker::send::SendFuture;
 use worker::{D1Database, D1ResultMeta};
+use fpx::api::models::settings::Settings;
 
 pub struct D1Store {
     database: Arc<D1Database>,
@@ -219,5 +221,13 @@ impl Store for D1Store {
             }
         })
         .await
+    }
+
+    async fn settings_upsert(&self, tx: &Transaction, settings: Settings) -> Result<Settings> {
+        todo!()
+    }
+
+    async fn settings_get(&self, tx: &Transaction) -> Result<Settings> {
+        todo!()
     }
 }
