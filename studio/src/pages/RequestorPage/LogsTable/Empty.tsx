@@ -6,7 +6,7 @@ export function LogsEmptyState() {
       <div className="p-8 rounded-lg flex flex-col items-center max-w-md text-center">
         <div className="rounded-lg p-2 bg-muted mb-2">
           <Icon
-            icon="lucide:logs"
+            icon="lucide:square-terminal"
             strokeWidth="1px"
             className="w-12 h-12 text-gray-400 stroke-1"
           />

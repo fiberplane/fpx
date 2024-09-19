@@ -2,6 +2,7 @@ import { KeyValueTable } from "@/components/Timeline/DetailsList/KeyValueTableV2
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/ui/tabs";
 import { SENSITIVE_HEADERS, cn, parsePathFromRequestUrl } from "@/utils";
+import { Icon } from "@iconify/react";
 import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
@@ -227,12 +228,20 @@ function ResponseSummary({
 
 function NoResponse() {
   return (
-    <div className="h-full pb-8 sm:pb-20 md:pb-32 flex flex-col items-center justify-center p-4">
-      <div className="text-md text-white text-center">
-        Enter a URL and hit send to see a response
-      </div>
-      <div className="mt-1 sm:mt-2 text-ms text-gray-400 text-center font-light">
-        Or load a past request from your history
+    <div className="flex flex-col items-center justify-center text-gray-300 h-full">
+      <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
+        <div className="rounded-lg p-2 bg-muted mb-2">
+          <Icon
+            icon="lucide:send"
+            className="w-12 h-12 text-gray-400 stroke-1"
+          />
+        </div>
+        <h2 className="text-lg font-normal mb-2">
+          Enter a URL and hit Send to see a response
+        </h2>
+        <div className="text-gray-400 text-left text-sm flex flex-col gap-2">
+          <p>Or load a past request from your history</p>
+        </div>
       </div>
     </div>
   );
