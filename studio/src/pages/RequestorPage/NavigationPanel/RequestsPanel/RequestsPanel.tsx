@@ -30,14 +30,6 @@ export function RequestsPanel() {
   const { data: traces = [] } = useOtelTraces();
   const items = useMemo(() => mergeLists(history, traces), [history, traces]);
 
-  return (
-    <div className={cn("h-full", "flex", "flex-col")}>
-      <RequestsPanelInner items={items} />
-    </div>
-  );
-}
-
-function RequestsPanelInner({ items }: { items: MergedListItem[] }) {
   const [filterValue, setFilterValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const filteredItems = useMemo(() => {
@@ -167,7 +159,7 @@ function RequestsPanelInner({ items }: { items: MergedListItem[] }) {
   );
 
   return (
-    <>
+    <div className={cn("h-full", "flex", "flex-col")}>
       <div>
         <div className="flex items-center space-x-2 pb-3">
           <div className="relative flex-grow">
@@ -209,11 +201,11 @@ function RequestsPanelInner({ items }: { items: MergedListItem[] }) {
           />
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
-const EmptyState = memo(function EmptyState() {
+function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center text-gray-300 h-full">
       <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
@@ -262,7 +254,7 @@ const EmptyState = memo(function EmptyState() {
       </div>
     </div>
   );
-});
+}
 
 type NavItemProps = {
   item: MergedListItem;

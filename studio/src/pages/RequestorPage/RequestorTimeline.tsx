@@ -43,38 +43,6 @@ export function RequestorTimeline({ traceId = "" }: Props) {
   });
 
   return (
-    <RequestorTimelineInner
-      traceId={traceId}
-      togglePanel={togglePanel}
-      waterfall={waterfall}
-      minStart={minStart}
-      duration={duration}
-      isSmallScreen={isSmallScreen}
-      minSize={minSize ?? 0}
-    />
-  );
-}
-
-type InnerProps = {
-  traceId: string;
-  togglePanel: (panelName: "timelinePanel") => void;
-  waterfall: ReturnType<typeof useAsWaterfall>["waterfall"];
-  minStart: number;
-  duration: number;
-  isSmallScreen: boolean;
-  minSize: number;
-};
-
-function RequestorTimelineInner({
-  traceId,
-  togglePanel,
-  waterfall,
-  minStart,
-  duration,
-  isSmallScreen,
-  minSize,
-}: InnerProps) {
-  return (
     <Tabs defaultValue="timeline" className="h-full">
       <CustomTabsList className="sticky top-0 z-10">
         <CustomTabTrigger value="timeline">Timeline</CustomTabTrigger>
@@ -105,7 +73,7 @@ function RequestorTimelineInner({
               {!isSmallScreen && (
                 <>
                   <ResizablePanel
-                    minSize={minSize}
+                    minSize={minSize ?? 0}
                     defaultSize={25}
                     order={0}
                     id="graph"

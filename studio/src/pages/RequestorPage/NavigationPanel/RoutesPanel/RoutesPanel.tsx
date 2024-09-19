@@ -13,17 +13,8 @@ import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
 
 export function RoutesPanel() {
-  const { routes } = useRequestorStore("routes");
-
-  return (
-    <div className={cn("h-full", "flex", "flex-col")}>
-      <RoutesPanelInner routes={routes} />
-    </div>
-  );
-}
-
-function RoutesPanelInner({ routes }: { routes: ProbedRoute[] }) {
-  const { activeRoute, setActiveRoute } = useRequestorStore(
+  const { routes, activeRoute, setActiveRoute } = useRequestorStore(
+    "routes",
     "activeRoute",
     "setActiveRoute",
   );
@@ -174,7 +165,7 @@ function RoutesPanelInner({ routes }: { routes: ProbedRoute[] }) {
   );
 
   return (
-    <>
+    <div className={cn("h-full", "flex", "flex-col")}>
       <div>
         <div className="flex items-center space-x-2 pb-3">
           <div className="relative flex-grow">
@@ -262,11 +253,11 @@ function RoutesPanelInner({ routes }: { routes: ProbedRoute[] }) {
         )}
         {allRoutes.length === 0 && <EmptyState />}
       </div>
-    </>
+    </div>
   );
 }
 
-const EmptyState = memo(function EmptyState() {
+function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center text-gray-300 h-full">
       <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
@@ -336,7 +327,7 @@ const EmptyState = memo(function EmptyState() {
       </div>
     </div>
   );
-});
+}
 
 type RoutesSectionProps = {
   title: string;
