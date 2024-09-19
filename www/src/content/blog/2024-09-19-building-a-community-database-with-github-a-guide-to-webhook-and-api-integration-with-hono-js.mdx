@@ -1,13 +1,13 @@
 ---
 title: "Building a community database with GitHub : A guide to Webhook and API integration with hono.js"
 subtitle:
-slug: building-a-community-database-with-gitHub-webhook-and-api-integration-with-honojs
+slug: building-a-community-database-with-github-webhook-and-api-integration-with-honojs
 description: A post about the Hono github tracker application. Explaining how to integrate
 date: 2024-09-19
 author: Oscar van Zijverden and Nele Uhlemann
 tags:
   - Hono.js
-  - Gihthub
+  - GitHub
   - Webhooks
   - TypeScript
   - API Integrations
@@ -24,10 +24,10 @@ The example application uses [GitHub Webhooks](https://docs.github.com/en/webhoo
 Additionally, it leverages the [GitHub API](https://docs.github.com/en/rest?latest) to retrieve detailed information about users who interact with our repositories.
 The application stores the information in a Database.
 
-![Set-up diagramm](@/assets/blog/2024-09-07-img01.png)
+![Set-up diagram](@/assets/blog/2024-09-07-img01.png)
 
 We’ll cover setting up your local environment to handle webhook events and processing the payload in a TypeScript application.
-Our exmaple is built with the [HONC](https://www.honc.dev) stack. The stack consists [Hono.js](https://hono.dev/) as the web framework, a PostgreSQL Serverless database ([Neon](https://neon.tech/home)), the ORM [Drizzle](https://orm.drizzle.team/),
+Our example is built with the [HONC](https://www.honc.dev) stack. The stack consists [Hono.js](https://hono.dev/) as the web framework, a PostgreSQL Serverless database ([Neon](https://neon.tech/home)), the ORM [Drizzle](https://orm.drizzle.team/),
 and the setup to run as a [Cloudflare Worker](https://workers.cloudflare.com/).
 
 The full project code is available on [GitHub](https://github.com/oscarvz/hono-github-tracker).
@@ -286,7 +286,7 @@ export default instrument(app);
 Once instrumented you can spin up the Fiberplane studio next to your application
 
 ```shell
-bunx @fiberplane/studio@beta
+bunx @fiberplane/studio@latest
 ```
 
 ## What's next?
