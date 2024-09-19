@@ -1,6 +1,4 @@
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { RequestMethod } from "@/components/Timeline";
-import { Input } from "@/components/ui/input";
 import { Status } from "@/components/ui/status";
 import { useInputFocusDetection } from "@/hooks";
 import { useOtelTraces } from "@/queries";
@@ -24,6 +22,7 @@ import {
 import type { Requestornator } from "../../queries";
 import { useRequestorStore, useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
+import { Search } from "../Search";
 
 export function RequestsPanel() {
   const { history } = useRequestorHistory();
@@ -31,7 +30,6 @@ export function RequestsPanel() {
   const items = useMemo(() => mergeLists(history, traces), [history, traces]);
 
   const [filterValue, setFilterValue] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       if (item.type === "request") {
@@ -162,31 +160,17 @@ export function RequestsPanel() {
     <div className={cn("h-full", "flex", "flex-col")}>
       <div>
         <div className="flex items-center space-x-2 pb-3">
-          <div className="relative flex-grow">
-            <Input
-              ref={searchRef}
-              className={cn(
-                "text-sm",
-                isFocused || filterValue ? "pl-2" : "pl-24",
-              )}
-              value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-              onFocus={() => {
-                setSelectedItemId(null);
-                setIsFocused(true);
-              }}
-              onBlur={() => setIsFocused(false)}
-            />
-            {!isFocused && !filterValue && (
-              <div className="absolute left-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                <span className="text-muted-foreground text-xs">Type</span>
-                <KeyboardShortcutKey>/</KeyboardShortcutKey>
-                <span className="text-muted-foreground text-xs">
-                  to search requests
-                </span>
-              </div>
-            )}
-          </div>
+          <Search
+            ref={searchRef}
+            value={filterValue}
+            onChange={setFilterValue}
+            onFocus={() => {
+              setSelectedItemId(null);
+            }}
+            placeholder="requests"
+            onItemSelect={() => {}}
+            itemCount={filteredItems.length}
+          />
         </div>
       </div>
       <div className="overflow-y-auto h-full relative">

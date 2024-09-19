@@ -1,16 +1,14 @@
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import { Input } from "@/components/ui/input";
-import { useInputFocusDetection } from "@/hooks";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
-import { memo, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
 import { AddRouteButton } from "../../routes";
 import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
+import { Search } from "../Search";
 
 export function RoutesPanel() {
   const { routes, activeRoute, setActiveRoute } = useRequestorStore(
@@ -20,8 +18,6 @@ export function RoutesPanel() {
   );
 
   const navigate = useNavigate();
-
-  const { isInputFocused, blurActiveInput } = useInputFocusDetection();
 
   const handleRouteClick = useHandler((route: ProbedRoute) => {
     navigate(
@@ -42,7 +38,6 @@ export function RoutesPanel() {
   }, [routes]);
 
   const [filterValue, setFilterValue] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
   const filteredRoutes = useMemo(() => {
     const cleanFilter = filterValue.trim().toLowerCase();
     if (cleanFilter.length < 3) {
@@ -120,79 +115,27 @@ export function RoutesPanel() {
     }
   });
 
-  useHotkeys(
-    ["Escape", "Enter"],
-    (event) => {
-      switch (event.key) {
-        case "Enter": {
-          if (
-            document.activeElement === searchRef.current &&
-            allRoutes.length > 0
-          ) {
-            setSelectedRouteIndex(0);
-            const firstRouteElement = document.getElementById(
-              `route-${selectedRouteIndex}`,
-            );
-            if (firstRouteElement) {
-              firstRouteElement.focus();
-            }
-            break;
-          }
-
-          if (selectedRouteIndex !== null && allRoutes[selectedRouteIndex]) {
-            handleRouteClick(allRoutes[selectedRouteIndex]);
-          }
-          break;
-        }
-
-        case "Escape": {
-          if (isInputFocused) {
-            blurActiveInput();
-            break;
-          }
-
-          if (filterValue) {
-            setFilterValue("");
-            break;
-          }
-
-          setSelectedRouteIndex(null);
-          break;
-        }
-      }
-    },
-    { enableOnFormTags: ["input"] },
-  );
+  const handleItemSelect = (index: number) => {
+    if (allRoutes[index]) {
+      handleRouteClick(allRoutes[index]);
+    }
+  };
 
   return (
     <div className={cn("h-full", "flex", "flex-col")}>
       <div>
         <div className="flex items-center space-x-2 pb-3">
-          <div className="relative flex-grow">
-            <Input
-              ref={searchRef}
-              className={cn(
-                "text-sm",
-                isFocused || filterValue ? "pl-2" : "pl-24",
-              )}
-              value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-              onFocus={() => {
-                setSelectedRouteIndex(null);
-                setIsFocused(true);
-              }}
-              onBlur={() => setIsFocused(false)}
-            />
-            {!isFocused && !filterValue && (
-              <div className="absolute left-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                <span className="text-muted-foreground text-xs">Type</span>
-                <KeyboardShortcutKey>/</KeyboardShortcutKey>
-                <span className="text-muted-foreground text-xs">
-                  to search routes
-                </span>
-              </div>
-            )}
-          </div>
+          <Search
+            ref={searchRef}
+            value={filterValue}
+            onChange={setFilterValue}
+            onFocus={() => {
+              setSelectedRouteIndex(null);
+            }}
+            placeholder="routes"
+            onItemSelect={handleItemSelect}
+            itemCount={allRoutes.length}
+          />
           <AddRouteButton />
         </div>
       </div>
