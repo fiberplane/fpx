@@ -27,7 +27,7 @@ The application stores the information in a Database.
 
 
 We’ll cover setting up your local environment to handle webhook events and processing the payload in a TypeScript application.
-Our exmaple is build with the [HONC](https://www.honc.dev) stack. The stack consists [Hono.js](https://hono.dev/) as the web framework, a PostgreSQL database ([Neon](https://neon.tech/home)), the ORM [Drizzle](https://orm.drizzle.team/),
+Our exmaple is built with the [HONC](https://www.honc.dev) stack. The stack consists [Hono.js](https://hono.dev/) as the web framework, a PostgreSQL Serverless database ([Neon](https://neon.tech/home)), the ORM [Drizzle](https://orm.drizzle.team/),
 and the setup to run as a [Cloudflare Worker](https://workers.cloudflare.com/). 
 
 
@@ -282,7 +282,7 @@ export default instrument(app);
 
 ```
 
-Once instrument you can spin up the Fiberplane studio next to your application
+Once instrumented you can spin up the Fiberplane studio next to your application
 
 ```shell
 bunx @fiberplane/studio@beta
