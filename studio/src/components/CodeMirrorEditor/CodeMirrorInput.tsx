@@ -1,7 +1,7 @@
 import "./CodeMirrorEditorCssOverrides.css";
 
 import { cn } from "@/utils";
-import CodeMirror, { EditorView, gutter } from "@uiw/react-codemirror";
+import CodeMirror, { EditorView, gutter, keymap } from "@uiw/react-codemirror";
 import { useMemo, useState } from "react";
 
 const inputTheme = EditorView.theme({
@@ -101,6 +101,17 @@ type CodeMirrorEditorProps = {
   placeholder?: string;
 };
 
+// Extension that blurs the editor when the user presses "Escape"
+const escapeKeymap = keymap.of([
+  {
+    key: "Escape",
+    run: (view) => {
+      view.contentDOM.blur();
+      return true;
+    },
+  },
+]);
+
 export function CodeMirrorInput(props: CodeMirrorEditorProps) {
   const { value, onChange, placeholder, width, readOnly } = props;
 
@@ -124,6 +135,7 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
 
   const extensions = useMemo(() => {
     return [
+      escapeKeymap,
       hiddenGutterExtension,
       inputBaseStylesExtension,
       /**
