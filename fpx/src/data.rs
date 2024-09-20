@@ -1,9 +1,9 @@
+use crate::api::models::settings::Settings;
 use crate::data::models::HexEncodedId;
 use crate::events::ServerEvents;
 use async_trait::async_trait;
 use std::sync::Arc;
 use thiserror::Error;
-use crate::api::models::settings::Settings;
 
 pub mod models;
 pub mod sql;
@@ -90,14 +90,7 @@ pub trait Store: Send + Sync {
         span_id: &HexEncodedId,
     ) -> Result<Option<u64>>;
 
-    async fn settings_upsert(
-        &self,
-        tx: &Transaction,
-        settings: Settings
-    ) -> Result<Settings>;
+    async fn settings_upsert(&self, tx: &Transaction, settings: Settings) -> Result<Settings>;
 
-    async fn settings_get(
-        &self,
-        tx: &Transaction,
-    ) -> Result<Settings>;
+    async fn settings_get(&self, tx: &Transaction) -> Result<Settings>;
 }

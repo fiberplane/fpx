@@ -1,15 +1,15 @@
 use axum::async_trait;
+use fpx::api::models::settings::Settings;
 use fpx::data::models::HexEncodedId;
 use fpx::data::sql::SqlBuilder;
 use fpx::data::{models, DbError, Result, Store, Transaction};
 use serde::Deserialize;
-use std::sync::Arc;
 use serde_json::Map;
+use std::sync::Arc;
 use tracing::error;
 use wasm_bindgen::JsValue;
 use worker::send::SendFuture;
 use worker::{D1Database, D1ResultMeta};
-use fpx::api::models::settings::Settings;
 
 pub struct D1Store {
     database: Arc<D1Database>,
@@ -231,35 +231,54 @@ impl Store for D1Store {
             for (key, value) in settings.into_map()? {
                 let value = serde_json::to_string(&value).map_err(|_| DbError::FailedSerialize)?;
 
-                let inserted_value: String = self.fetch_one(self.sql_builder.settings_insert(),
-                &[key.clone().into(), value.into()])
+                let inserted_value: String = self
+                    .fetch_one(
+                        self.sql_builder.settings_insert(),
+                        &[key.clone().into(), value.into()],
+                    )
                     .await?;
 
-                result.insert(key, serde_json::from_str(&inserted_value).map_err(|err| {
-                    error!(?err, "failed to serialize from upserted db value");
-                    DbError::FailedSerialize
-                })?);
+                result.insert(
+                    key,
+                    serde_json::from_str(&inserted_value).map_err(|err| {
+                        error!(?err, "failed to serialize from upserted db value");
+                        DbError::FailedSerialize
+                    })?,
+                );
             }
 
             serde_json::from_value(serde_json::Value::Object(result)).map_err(|err| {
-                error!(?err, "failed to serialize from upserted db value collection");
+                error!(
+                    ?err,
+                    "failed to serialize from upserted db value collection"
+                );
                 DbError::FailedSerialize
             })
-        }).await
+        })
+        .await
     }
 
     async fn settings_get(&self, _tx: &Transaction) -> Result<Settings> {
         SendFuture::new(async {
-            let settings: Vec<(String, String)> = self.fetch_all(&self.sql_builder.settings_get(), &[]).await?;
+            let settings: Vec<(String, String)> = self
+                .fetch_all(&self.sql_builder.settings_get(), &[])
+                .await?;
 
-            let result: Map<String, serde_json::Value> = settings.into_iter()
-                .map(|(key, value)| (key, serde_json::from_str(&value).expect("db should not contain invalid data"))) // we need better error handling at some point here
+            let result: Map<String, serde_json::Value> = settings
+                .into_iter()
+                .map(|(key, value)| {
+                    (
+                        key,
+                        serde_json::from_str(&value).expect("db should not contain invalid data"),
+                    )
+                }) // we need better error handling at some point here
                 .collect();
 
             serde_json::from_value(serde_json::Value::Object(result)).map_err(|err| {
                 error!(?err, "failed to serialize from db values");
                 DbError::FailedSerialize
             })
-        }).await
+        })
+        .await
     }
 }

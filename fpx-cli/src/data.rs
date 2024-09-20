@@ -1,15 +1,15 @@
 use anyhow::Context;
 use async_trait::async_trait;
+use fpx::api::models::settings::Settings;
 use fpx::data::models::{HexEncodedId, Span};
 use fpx::data::sql::SqlBuilder;
 use fpx::data::{DbError, Result, Store, Transaction};
 use libsql::{params, Builder, Connection};
+use serde_json::Map;
 use std::fmt::Display;
 use std::path::Path;
 use std::sync::Arc;
-use serde_json::Map;
 use tracing::{error, trace};
-use fpx::api::models::settings::Settings;
 use util::RowsExt;
 
 mod migrations;
@@ -231,23 +231,26 @@ impl Store for LibsqlStore {
                 .connection
                 .query(
                     &self.sql_builder.settings_insert(),
-                    params!(
-                        key.clone(),
-                        value
-                    ),
+                    params!(key.clone(), value),
                 )
                 .await?
                 .fetch_one()
                 .await?;
 
-            result.insert(key, serde_json::from_str(&inserted_value).map_err(|err| {
-                error!(?err, "failed to serialize from upserted db value");
-                DbError::FailedSerialize
-            })?);
+            result.insert(
+                key,
+                serde_json::from_str(&inserted_value).map_err(|err| {
+                    error!(?err, "failed to serialize from upserted db value");
+                    DbError::FailedSerialize
+                })?,
+            );
         }
 
         serde_json::from_value(serde_json::Value::Object(result)).map_err(|err| {
-            error!(?err, "failed to serialize from upserted db value collection");
+            error!(
+                ?err,
+                "failed to serialize from upserted db value collection"
+            );
             DbError::FailedSerialize
         })
     }
@@ -260,8 +263,14 @@ impl Store for LibsqlStore {
             .fetch_all()
             .await?;
 
-        let result: Map<String, serde_json::Value> = settings.into_iter()
-            .map(|(key, value)| (key, serde_json::from_str(&value).expect("db should not contain invalid data"))) // we need better error handling at some point here
+        let result: Map<String, serde_json::Value> = settings
+            .into_iter()
+            .map(|(key, value)| {
+                (
+                    key,
+                    serde_json::from_str(&value).expect("db should not contain invalid data"),
+                )
+            }) // we need better error handling at some point here
             .collect();
 
         serde_json::from_value(serde_json::Value::Object(result)).map_err(|err| {

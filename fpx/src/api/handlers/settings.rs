@@ -1,12 +1,12 @@
+use crate::api::errors::{ApiServerError, CommonError};
+use crate::api::models::settings::Settings;
+use crate::data::{BoxedStore, DbError};
 use axum::extract::State;
 use axum::Json;
-use crate::data::{BoxedStore, DbError};
+use fpx_macros::ApiError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::{debug, error};
-use fpx_macros::ApiError;
-use crate::api::errors::{ApiServerError, CommonError};
-use crate::api::models::settings::Settings;
 
 #[tracing::instrument(skip_all)]
 pub async fn settings_get(
@@ -34,8 +34,8 @@ impl From<DbError> for ApiServerError<SettingsGetError> {
 #[tracing::instrument(skip_all)]
 pub async fn settings_upsert(
     State(store): State<BoxedStore>,
-    Json(mut json): Json<Settings>
-) -> Result<Json<Settings>, ApiServerError<SettingsUpsertError>>{
+    Json(mut json): Json<Settings>,
+) -> Result<Json<Settings>, ApiServerError<SettingsUpsertError>> {
     if !json.ai_enabled.unwrap_or_default() {
         json.openai_api_key = None;
         json.anthropic_api_key = None;
