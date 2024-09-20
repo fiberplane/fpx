@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useKeySequence } from "@/hooks";
-import { useActiveTraceId } from "@/hooks";
 import { cn } from "@/utils";
 import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";

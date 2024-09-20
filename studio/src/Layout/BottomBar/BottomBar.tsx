@@ -1,7 +1,6 @@
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { WebhoncBadge } from "@/components/WebhoncBadge";
 import { Button } from "@/components/ui/button";
-import { useActiveTraceId } from "@/hooks";
 import { useProxyRequestsEnabled } from "@/hooks/useProxyRequestsEnabled";
 import {
   useRequestorStore,
