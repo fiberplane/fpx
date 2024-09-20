@@ -5,7 +5,7 @@ import type { OtelSpan } from "@fiberplane/fpx-types";
 const EMPTY_LIST: OtelSpan[] = [];
 export function LogsLabel(props: { traceId?: string }) {
   const { traceId } = props;
-  console.log("hasTraceID", !!traceId);
+
   return (
     <div>
       logs

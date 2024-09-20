@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useKeySequence } from "@/hooks";
-import { useActiveTraceId } from "@/hooks/useActiveTraceId";
+import { useActiveTraceId } from "@/hooks";
 import { cn } from "@/utils";
 import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -53,17 +53,30 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     overrideTraceId,
   );
 
+  // This is the preferred traceId to show in the UI
+  // It is either the traceId from the url or a recent traceId from the session history
   const traceId =
     overrideTraceId ?? mostRecentRequestornatorForRoute?.app_responses?.traceId;
 
-  const activeTraceId = useActiveTraceId();
+  const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
+    useRequestorStore(
+      "setActiveHistoryResponseTraceId",
+      "activeHistoryResponseTraceId",
+    );
   const navigate = useNavigate();
-  // console.log('traceId', traceId ?? null, activeTraceId, traceId ?? null === activeTraceId);
+
   useEffect(() => {
-    if (traceId && traceId !== activeTraceId) {
+    if (traceId && traceId !== activeHistoryResponseTraceId) {
+      setActiveHistoryResponseTraceId(traceId);
       navigate(generateLinkToTrace(traceId), { replace: true });
     }
-  }, [traceId, activeTraceId, generateLinkToTrace, navigate]);
+  }, [
+    traceId,
+    activeHistoryResponseTraceId,
+    generateLinkToTrace,
+    navigate,
+    setActiveHistoryResponseTraceId,
+  ]);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();

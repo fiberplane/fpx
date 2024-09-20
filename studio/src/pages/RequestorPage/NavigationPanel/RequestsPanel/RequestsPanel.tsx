@@ -1,7 +1,7 @@
 import { RequestMethod } from "@/components/Timeline";
 import { Status } from "@/components/ui/status";
 import { useInputFocusDetection } from "@/hooks";
-import { useActiveTraceId } from "@/hooks/useActiveTraceId";
+import { useActiveTraceId } from "@/hooks";
 import { useOtelTraces } from "@/queries";
 import {
   cn,
@@ -14,11 +14,7 @@ import type { OtelTrace } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import {
-  Link,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { Requestornator } from "../../queries";
 import { useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
@@ -165,7 +161,7 @@ export function RequestsPanel() {
               setSelectedItemId(null);
             }}
             placeholder="requests"
-            onItemSelect={() => { }}
+            onItemSelect={() => {}}
             itemCount={filteredItems.length}
           />
         </div>
@@ -347,13 +343,13 @@ const MethodCell = ({ item }: { item: MergedListItem }) => {
 
 type MergedListItem =
   | {
-    type: "request";
-    data: Requestornator;
-  }
+      type: "request";
+      data: Requestornator;
+    }
   | {
-    type: "history";
-    data: OtelTrace;
-  };
+      type: "history";
+      data: OtelTrace;
+    };
 
 // Combine the history with traces by creating a new list that contains the history as well
 // as traces that are not in the history. The new list should be sorted by the timestamp of the request.

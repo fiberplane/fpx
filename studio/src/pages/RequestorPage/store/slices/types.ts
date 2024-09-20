@@ -39,6 +39,8 @@ export interface RequestResponseSlice {
   ) => void;
   /** Response related state */
   activeHistoryResponseTraceId: string | null;
+  setActiveHistoryResponseTraceId: (traceId: string | null) => void;
+
   activeResponse: RequestorActiveResponse | null;
 
   showResponseBodyFromHistory: (traceId: string) => void;

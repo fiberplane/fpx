@@ -1,7 +1,7 @@
 import IconWithNotification from "@/components/IconWithNotification";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
-import { useOrphanLogs } from "@/hooks";
+import { useActiveTraceId, useOrphanLogs } from "@/hooks";
 import {
   useRequestorStore,
   useRequestorStoreRaw,
@@ -15,7 +15,9 @@ import {
 } from "@radix-ui/react-tooltip";
 import { useShallow } from "zustand/react/shallow";
 
-export function LogsToggle({ traceId }: { traceId?: string | null }) {
+export function LogsToggle() {
+  const traceId = useActiveTraceId();
+  console.log("traceId", traceId);
   if (traceId) {
     return <ToggleWithTraceId traceId={traceId} />;
   }
@@ -30,6 +32,7 @@ function ToggleWithoutTraceId() {
 function ToggleWithTraceId({ traceId }: { traceId: string }) {
   const { data: spans } = useOtelTrace(traceId);
   const logs = useOrphanLogs(traceId, spans ?? []);
+  console.log("traceId", traceId, "logs", logs);
   const errorCount = logs.filter((log) => log.level === "error").length;
   return <LogsToggleContent errorCount={errorCount} />;
 }

@@ -1,7 +1,7 @@
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { WebhoncBadge } from "@/components/WebhoncBadge";
 import { Button } from "@/components/ui/button";
-import { useActiveTraceId } from "@/hooks/useActiveTraceId";
+import { useActiveTraceId } from "@/hooks";
 import { useProxyRequestsEnabled } from "@/hooks/useProxyRequestsEnabled";
 import {
   useRequestorStore,
@@ -36,21 +36,9 @@ export function BottomBar() {
     }),
   );
 
-  const traceId = useActiveTraceId();
-  // const { data: spans } = useOtelTrace(traceId);
-  // const logs = useOrphanLogs(traceId, spans ?? []);
-
-  // const hasErrorLogs = logs.some((log) => log.level === "error");
-
-  // const logsPanel = (activeBottomPanel === "logsPanel") ? "open" : "closed";
   const timelinePanel =
     activeBottomPanel === "timelinePanel" ? "open" : "closed";
   const aiPanel = activeBottomPanel === "aiPanel" ? "open" : "closed";
-  // useEffect(() => {
-  //   if (hasErrorLogs && logsPanel !== "open") {
-  //     togglePanel("logsPanel");
-  //   }
-  // }, [hasErrorLogs, logsPanel, togglePanel]);
 
   return (
     <nav className="gap-4 bg-muted/50 py-2">
@@ -73,7 +61,7 @@ export function BottomBar() {
             </div>
           )}
 
-          <LogsToggle traceId={traceId} />
+          <LogsToggle />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
