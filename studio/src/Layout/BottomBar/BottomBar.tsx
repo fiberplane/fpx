@@ -1,10 +1,8 @@
-import IconWithNotification from "@/components/IconWithNotification";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { WebhoncBadge } from "@/components/WebhoncBadge";
 import { Button } from "@/components/ui/button";
 import { useProxyRequestsEnabled } from "@/hooks/useProxyRequestsEnabled";
-import { useOrphanLogs } from "@/pages/RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
-import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { useRequestorStore, useRequestorStoreRaw } from "@/pages/RequestorPage/store";
 import { useOtelTrace } from "@/queries";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -14,10 +12,14 @@ import {
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
 import { useEffect, useState } from "react";
-import { Branding } from "./Branding";
-import { SettingsMenu, SettingsScreen } from "./Settings";
-import { FloatingSidePanel } from "./SidePanel";
-import { SidePanelTrigger } from "./SidePanel";
+import { Branding } from "../Branding";
+import { SettingsMenu, SettingsScreen } from "../Settings";
+import { FloatingSidePanel } from "../SidePanel";
+import { SidePanelTrigger } from "../SidePanel";
+import { useShallow } from "zustand/react/shallow";
+import { useOrphanLogs } from "@/hooks";
+import { LogsToggle } from "./LogsToggle";
+import { useActiveTraceId } from "@/hooks/useActiveTraceId";
 
 export function BottomBar() {
   const shouldShowProxyRequests = useProxyRequestsEnabled();
@@ -25,30 +27,28 @@ export function BottomBar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const {
-    logsPanel,
-    timelinePanel,
-    aiPanel,
     togglePanel,
-    activeHistoryResponseTraceId,
   } = useRequestorStore(
     "togglePanel",
-    "logsPanel",
-    "timelinePanel",
-    "aiPanel",
-    "activeHistoryResponseTraceId",
   );
+  const activeBottomPanel = useRequestorStoreRaw(useShallow(state => {
+    return state.bottomPanelIndex !== undefined ? state.bottomPanels[state.bottomPanelIndex] : undefined;
+  }))
 
-  const traceId = activeHistoryResponseTraceId ?? "";
-  const { data: spans } = useOtelTrace(traceId);
-  const logs = useOrphanLogs(traceId, spans ?? []);
+  const traceId = useActiveTraceId();
+  // const { data: spans } = useOtelTrace(traceId);
+  // const logs = useOrphanLogs(traceId, spans ?? []);
 
-  const hasErrorLogs = logs.some((log) => log.level === "error");
+  // const hasErrorLogs = logs.some((log) => log.level === "error");
 
-  useEffect(() => {
-    if (hasErrorLogs && logsPanel !== "open") {
-      togglePanel("logsPanel");
-    }
-  }, [hasErrorLogs, logsPanel, togglePanel]);
+  // const logsPanel = (activeBottomPanel === "logsPanel") ? "open" : "closed";
+  const timelinePanel = (activeBottomPanel === "timelinePanel") ? "open" : "closed";
+  const aiPanel = (activeBottomPanel === "aiPanel") ? "open" : "closed";
+  // useEffect(() => {
+  //   if (hasErrorLogs && logsPanel !== "open") {
+  //     togglePanel("logsPanel");
+  //   }
+  // }, [hasErrorLogs, logsPanel, togglePanel]);
 
   return (
     <nav className="gap-4 bg-muted/50 py-2">
@@ -71,40 +71,7 @@ export function BottomBar() {
             </div>
           )}
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => togglePanel("logsPanel")}
-                className={cn("h-6 w-6")}
-              >
-                <IconWithNotification
-                  id="icon-with-error-notification"
-                  icon="lucide:square-terminal"
-                  notificationPosition="top-right"
-                  notificationColor="bg-red-700"
-                  showNotification={hasErrorLogs}
-                  className={cn(
-                    "cursor-pointer h-4 w-4",
-                    logsPanel === "open" && "text-blue-500",
-                  )}
-                />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="bottom"
-              className="bg-slate-900 text-white px-2 py-1.5 text-sm flex gap-2 items-center"
-              align="center"
-            >
-              <p>Toggle logs</p>
-              <div className="flex gap-1">
-                <KeyboardShortcutKey>G</KeyboardShortcutKey>
-                <span className="text-xs font-mono">then</span>
-                <KeyboardShortcutKey>L</KeyboardShortcutKey>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          <LogsToggle traceId={traceId} />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

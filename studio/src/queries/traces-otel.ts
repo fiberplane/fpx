@@ -11,6 +11,9 @@ import { MIZU_TRACES_KEY } from "./queries";
 export const TRACES_KEY = "otelTrace";
 
 export function useOtelTrace(traceId: string) {
+  if (traceId === "") {
+    console.log("got me a traceID", traceId);
+  }
   return useQuery({
     queryKey: [TRACES_KEY, traceId],
     queryFn: fetchOtelTrace,

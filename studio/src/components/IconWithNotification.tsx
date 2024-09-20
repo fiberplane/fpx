@@ -6,10 +6,10 @@ interface IconWithNotificationProps extends IconProps {
   notificationColor?: string;
   notificationSize?: number;
   notificationPosition?:
-    | "top-right"
-    | "top-left"
-    | "bottom-right"
-    | "bottom-left";
+  | "top-right"
+  | "top-left"
+  | "bottom-right"
+  | "bottom-left";
   notificationContent?: string | number;
   showNotification?: boolean;
 }
@@ -30,7 +30,7 @@ const IconWithNotification: React.FC<IconWithNotificationProps> = ({
           className={cn(
             notificationColor,
             "shadow-sm",
-            "absolute flex justify-center items-center text-[7px]",
+            "absolute flex justify-center items-center text-[7px] leading-[1.5em]",
             "px-[2px] font-bold rounded-[50%]",
             `min-w-[${notificationSize}px] h-[${notificationSize}px]`,
             notificationPosition === "top-right" && "-top-1 -right-1",

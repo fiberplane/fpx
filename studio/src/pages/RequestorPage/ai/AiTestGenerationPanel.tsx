@@ -1,18 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { Tabs } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useCopyToClipboard } from "@/hooks";
 import { parsePathFromRequestUrl } from "@/utils";
 import {
   CopyIcon,
-  Cross1Icon,
   ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import type { Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
-import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
+import { useActiveRoute, useServiceBaseUrl } from "../store";
 import { ContextEntry } from "./AiTestGenerationDrawer";
 import { usePrompt } from "./ai-test-generation";
 
@@ -22,7 +19,6 @@ export function AiTestGenerationPanel({
   history: Array<Requestornator>;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
-  const { togglePanel } = useRequestorStore("togglePanel");
 
   const activeRoute = useActiveRoute();
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
@@ -62,64 +58,46 @@ export function AiTestGenerationPanel({
 
   return (
     <div className="overflow-hidden h-full relative border-l">
-      <Tabs defaultValue="ai-prompt">
-        <CustomTabsList>
-          <CustomTabTrigger value="ai-prompt">AI Prompt</CustomTabTrigger>
-
-          <div className="flex-grow flex justify-end">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => togglePanel("aiPanel")}
-              className="h-6 w-6"
-            >
-              <Cross1Icon className="h-3 w-3 cursor-pointer" />
-            </Button>
+      <div className="w-full">
+        <h3 className="">Close the Loop</h3>
+        <div className="text-sm text-muted-foreground py-2">
+          Describe the problem you encountered or a test you wish to write.
+          FPX will create a context-rich prompt that you can copy-paste into
+          your favorite Copilot or LLM.
+        </div>
+        <div className="mt-2">
+          <div className="">
+            <div className="text-sm text-gray-200">Context</div>
+            {lastMatchingRequest ? (
+              <ContextEntry response={lastMatchingRequest} />
+            ) : (
+              <div className="text-sm text-muted-foreground py-2 rounded border px-3 mt-2 flex items-center gap-2">
+                <ExclamationTriangleIcon className="h-4 w-4 mr-2" /> No
+                matching request context found
+              </div>
+            )}
           </div>
-        </CustomTabsList>
-        <CustomTabsContent value="ai-prompt" className="">
-          <div className="w-full">
-            <h3 className="">Close the Loop</h3>
-            <div className="text-sm text-muted-foreground py-2">
-              Describe the problem you encountered or a test you wish to write.
-              FPX will create a context-rich prompt that you can copy-paste into
-              your favorite Copilot or LLM.
-            </div>
+          <div className="mt-4">
+            <div className="text-sm text-gray-200">Description</div>
             <div className="mt-2">
-              <div className="">
-                <div className="text-sm text-gray-200">Context</div>
-                {lastMatchingRequest ? (
-                  <ContextEntry response={lastMatchingRequest} />
-                ) : (
-                  <div className="text-sm text-muted-foreground py-2 rounded border px-3 mt-2 flex items-center gap-2">
-                    <ExclamationTriangleIcon className="h-4 w-4 mr-2" /> No
-                    matching request context found
-                  </div>
-                )}
-              </div>
-              <div className="mt-4">
-                <div className="text-sm text-gray-200">Description</div>
-                <div className="mt-2">
-                  <Textarea
-                    value={userInput}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    className="w-full"
-                    placeholder={
-                      'Example: "I expected to get a 404, but the api returned a 500"'
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-row justify-end px-2">
-              <Button onClick={() => copyToClipboard(prompt)}>
-                <CopyIcon className="h-4 w-4 mr-2" />{" "}
-                {isCopied ? "Copied!" : "Copy Prompt"}
-              </Button>
+              <Textarea
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                className="w-full"
+                placeholder={
+                  'Example: "I expected to get a 404, but the api returned a 500"'
+                }
+              />
             </div>
           </div>
-        </CustomTabsContent>
-      </Tabs>
+        </div>
+        <div className="mt-4 flex flex-row justify-end px-2">
+          <Button onClick={() => copyToClipboard(prompt)}>
+            <CopyIcon className="h-4 w-4 mr-2" />{" "}
+            {isCopied ? "Copied!" : "Copy Prompt"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

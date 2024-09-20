@@ -77,11 +77,24 @@ export interface WebsocketSlice {
 
 export interface UISlice {
   sidePanel: PanelState;
-  logsPanel: PanelState;
-  timelinePanel: PanelState;
-  aiPanel: PanelState;
-  togglePanel: (panelName: Exclude<keyof UISlice, "togglePanel">) => void;
+  // logsPanel: PanelState;
+  // timelinePanel: PanelState;
+  // aiPanel: PanelState;
+  bottomPanels: BOTTOM_PANEL_NAMES[];
+  bottomPanelIndex: undefined | number;
+  setBottomPanelIndex(index: number | undefined): void;
+  togglePanel: (
+    panelName: Exclude<keyof UISlice, "togglePanel"> | BOTTOM_PANEL_NAMES,
+  ) => void;
 }
+
+export type BOTTOM_PANEL_NAMES = "logsPanel" | "timelinePanel" | "aiPanel";
+
+export const validBottomPanelNames: BOTTOM_PANEL_NAMES[] = [
+  "logsPanel",
+  "timelinePanel",
+  "aiPanel",
+];
 
 export type PanelState = "open" | "closed";
 

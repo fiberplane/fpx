@@ -1,177 +1,43 @@
-import {
-  getBgColorForLevel,
-  getTextColorForLevel,
-} from "@/components/Timeline/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useCopyToClipboard } from "@/hooks";
-import type { MizuOrphanLog } from "@/queries";
-import { useOtelTrace } from "@/queries";
-import { cn, safeParseJson } from "@/utils";
-import { CopyIcon, Cross1Icon } from "@radix-ui/react-icons";
-import { Tabs } from "@radix-ui/react-tabs";
-import { useState } from "react";
-import { useOrphanLogs } from "../../RequestDetailsPage/RequestDetailsPageV2/useOrphanLogs";
-import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import { useRequestorStore } from "../store";
+import { useOrphanLogs } from "@/hooks";
+import { type MizuOrphanLog, useOtelTrace } from "@/queries";
 import { LogsEmptyState } from "./Empty";
+import { LogRow } from "./LogsTableRow";
 
 type Props = {
   traceId?: string;
 };
 
-export function LogsTable({ traceId = "" }: Props) {
+const EMPTY_LIST: MizuOrphanLog[] = [];
+
+export function LogsTable({ traceId }: Props) {
+  if (!traceId) {
+    return <LogsTableContent logs={EMPTY_LIST} />;
+  }
+
+  return <LogsTableWithTraceId traceId={traceId} />;
+
+}
+
+const LogsTableWithTraceId = ({ traceId }: { traceId: string }) => {
   const { data: spans } = useOtelTrace(traceId);
-  const { togglePanel } = useRequestorStore("togglePanel");
   const logs = useOrphanLogs(traceId, spans ?? []);
 
-  return (
-    <Tabs defaultValue="logs" className="h-full">
-      <CustomTabsList>
-        <CustomTabTrigger value="logs">Logs ({logs.length})</CustomTabTrigger>
-        <div className="flex-grow flex justify-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => togglePanel("logsPanel")}
-            className="h-6 w-6"
-          >
-            <Cross1Icon className="h-3 w-3 cursor-pointer" />
-          </Button>
-        </div>
-      </CustomTabsList>
-      <CustomTabsContent value="logs" className="overflow-y-scroll">
-        {logs.length === 0 ? (
-          <LogsEmptyState />
-        ) : (
-          <div className="space-y-1">
-            {logs.map((log) => (
-              <LogRow key={log.id} log={log} />
-            ))}
-          </div>
-        )}
-      </CustomTabsContent>
-    </Tabs>
-  );
+  return <LogsTableContent logs={logs} />;
 }
 
-type LogRowProps = {
-  log: MizuOrphanLog;
-};
-
-function LogRow({ log }: LogRowProps) {
-  const bgColor = getBgColorForLevel(log.level);
-  const textColor = getTextColorForLevel(log.level);
-  const [isExpanded, setIsExpanded] = useState(false);
-  // we don't want the focus ring to be visible when the user is selecting the row with the mouse
-  const [isMouseSelected, setIsMouseSelected] = useState(false);
-  const { isCopied, copyToClipboard } = useCopyToClipboard();
+function LogsTableContent({ logs }: { logs: MizuOrphanLog[] }) {
 
   return (
-    <details
-      className={cn(isExpanded ? "rounded-t-xl" : "rounded-xl", bgColor)}
-      onToggle={(e) => setIsExpanded(e.currentTarget.open)}
-      onMouseDown={() => setIsMouseSelected(true)}
-      onBlur={() => setIsMouseSelected(false)}
-    >
-      <summary
-        className={cn(
-          "cursor-pointer px-2 py-1 flex items-center",
-          "hover:bg-muted",
-          !isMouseSelected &&
-            "focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-inset",
-          isExpanded ? "rounded-t-xl" : "rounded-xl",
-        )}
-      >
-        <div
-          className={`w-2 h-2 mr-2 flex-shrink-0 rounded-[15%] ${getIconColor(log.level)}`}
-        />
-        <div className="font-mono text-xs flex-grow truncate">
-          {log.message}
+    <div className="overflow-y-scroll">
+      {logs.length === 0 ? (
+        <LogsEmptyState />
+      ) : (
+        <div className="space-y-1">
+          {logs.map((log) => (
+            <LogRow key={log.id} log={log} />
+          ))}
         </div>
-        <div className="font-mono text-xs text-right whitespace-nowrap ml-2">
-          {formatTimestamp(log.timestamp)}
-        </div>
-      </summary>
-      <div className="p-2 font-mono text-xs text-muted-foreground relative">
-        {/*
-      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-500" />
-        */}
-        <div className="pl-4">
-          <p>
-            Level: <span className={textColor}>{log.level.toUpperCase()}</span>
-          </p>
-          {log.service && <p>Service: {log.service}</p>}
-          {log.callerLocation && (
-            <p>
-              Location: {log.callerLocation.file}:{log.callerLocation.line}:
-              {log.callerLocation.column}
-            </p>
-          )}
-          {log.message && (
-            <div className="flex gap-2">
-              <p>Message:</p>
-              <p className="text-foreground break-words">
-                {safeParseJson(log.message) ? (
-                  <pre className="whitespace-pre-wrap">
-                    {JSON.stringify(JSON.parse(log.message), null, 2)}
-                  </pre>
-                ) : (
-                  log.message
-                )}
-              </p>
-            </div>
-          )}
-        </div>
-        <div className="mt-2 flex justify-start">
-          <TooltipProvider>
-            <Tooltip open={isCopied}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  title="Copy log message"
-                  onClick={() => copyToClipboard(log.message ?? "")}
-                  className="flex items-center gap-1"
-                >
-                  <CopyIcon className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Message copied</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      </div>
-    </details>
+      )}
+    </div>
   );
-}
-
-function getIconColor(level: MizuOrphanLog["level"]) {
-  switch (level) {
-    case "error":
-      return "bg-red-500";
-    case "warn":
-      return "bg-yellow-500";
-    case "info":
-      return "bg-blue-500";
-    case "debug":
-      return "bg-green-500";
-    default:
-      return "bg-gray-500";
-  }
-}
-
-function formatTimestamp(timestamp: Date) {
-  return timestamp.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
 }

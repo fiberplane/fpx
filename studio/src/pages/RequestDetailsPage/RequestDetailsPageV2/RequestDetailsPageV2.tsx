@@ -4,7 +4,7 @@ import { EmptyState } from "../EmptyState";
 import { SkeletonLoader } from "../SkeletonLoader";
 import { usePagination } from "../hooks";
 import { RequestDetailsPageContentV2 } from "./RequestDetailsPageV2Content";
-import { useOrphanLogs } from "./useOrphanLogs";
+import { useOrphanLogs } from "@/hooks";
 
 export function RequestDetailsPageV2({
   traceId,
