@@ -173,13 +173,15 @@ export function CodeMirrorInput(props: CodeMirrorInputProps) {
         "rounded border border-transparent",
         // Show a text cursor on hover
         "cursor-text",
+        // Show truncated text when not focused
+        "overflow-hidden whitespace-nowrap text-ellipsis",
+        // Show expanded text when focused
+        "focus-within:overflow-visible focus-within:whitespace-normal focus-within:text-clip",
+        // Show colorful border when focused
         {
-          "border-blue-600": isFocused && !readOnly,
-          "border-gray-600/50": isFocused && readOnly,
+          "focus-within:border-blue-600": !readOnly,
+          "focus-within:border-gray-600/50": readOnly,
         },
-        isFocused ? "overflow-visible" : "overflow-hidden",
-        isFocused ? "whitespace-normal" : "whitespace-nowrap",
-        isFocused ? "text-clip" : "text-ellipsis",
         className,
       )}
     >
