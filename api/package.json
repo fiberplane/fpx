@@ -22,6 +22,8 @@
     "db:drop": "drizzle-kit drop",
     "db:seed": "tsx scripts/seed.ts",
     "db:studio": "drizzle-kit studio",
+    "expand-function": "tsx src/lib/expand-function/expand-function-smoke-test.ts",
+    "expand-function:debug": "node --inspect-brk -r tsx/cjs src/lib/expand-function/expand-function-smoke-test.ts",
     "build": "pnpm run db:generate && tsc",
     "format": "biome check . --write",
     "lint": "biome lint .",

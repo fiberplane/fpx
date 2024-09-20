@@ -1,0 +1,13 @@
+{
+  "name": "app",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts"
+  },
+  "dependencies": {
+    "hono": "^4.5.9"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240821.1",
+    "wrangler": "^3.73.0"
+  }
+}

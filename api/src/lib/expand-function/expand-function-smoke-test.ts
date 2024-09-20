@@ -1,13 +1,23 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import util from "node:util";
 import { expandFunction } from "./expand-function.js";
 import { getTSServer } from "./tsserver/server.js";
 
-const projectRoot = path.resolve(__dirname, "../app");
-const srcPath = path.resolve(__dirname, "../app/src");
+// Shim __filename and __dirname since we're using esm
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// biome-ignore lint/correctness/noUnusedVariables: This is a smoke testing file
-const functionWithConstant = `(c) => {
+const projectRoot = path.resolve(
+  __dirname,
+  "../../../../examples/test-static-analysis",
+);
+const srcPath = path.resolve(
+  __dirname,
+  "../../../../examples/test-static-analysis/src",
+);
+
+const _functionWithConstant = `(c) => {
   const auth = c.req.header("Authorization");
   if (auth && PASSPHRASES.includes(auth)) {
     return c.text("Hello Hono!");
@@ -15,8 +25,7 @@ const functionWithConstant = `(c) => {
   return c.text("Unauthorized", 401);
 }`.trim();
 
-// biome-ignore lint/correctness/noUnusedVariables: This is a smoke testing file
-const functionWithHelper = `(c) => {
+const _functionWithHelper = `(c) => {
   const shouldSayHello = helperFunction(c.req);
   return c.text(shouldSayHello ? "Hello Helper Function!" : "Helper Function");
 }`.trim();
