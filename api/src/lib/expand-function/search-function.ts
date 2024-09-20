@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
+import logger from "../../logger.js";
 
 export type FunctionOutOfScopeIdentifiers = Array<{
   /** The name of the constant or utility in the code */
@@ -25,7 +26,10 @@ type SearchFunctionResult = {
   identifiers: FunctionOutOfScopeIdentifiers;
 };
 
-export function searchForFunction(dirPath: string, searchString: string) {
+export function searchForFunction(
+  dirPath: string,
+  searchString: string,
+): SearchFunctionResult | null {
   const files = fs.readdirSync(dirPath);
 
   for (const file of files) {
@@ -33,7 +37,14 @@ export function searchForFunction(dirPath: string, searchString: string) {
     const stats = fs.statSync(filePath);
 
     if (stats.isDirectory()) {
-      searchForFunction(filePath, searchString);
+      // Skip hidden directories and node_modules
+      if (file.startsWith(".") || file === "node_modules") {
+        continue;
+      }
+      const result = searchForFunction(filePath, searchString);
+      if (result) {
+        return result;
+      }
     } else if (
       stats.isFile() &&
       (file.endsWith(".ts") || file.endsWith(".tsx"))
@@ -52,7 +63,7 @@ function searchFile(
   filePath: string,
   searchString: string,
 ): SearchFunctionResult | null {
-  console.debug("[debug] Searching file:", filePath);
+  logger.debug("[debug] Searching file:", filePath);
   const sourceFile = ts.createSourceFile(
     filePath,
     fs.readFileSync(filePath, "utf-8"),
@@ -66,12 +77,12 @@ function searchFile(
     const isFunction =
       ts.isFunctionDeclaration(node) || ts.isArrowFunction(node);
     // if (isFunction) {
-    //   console.log("matched function node:", node);
-    //   console.log(node?.getText());
+    //   logger.log("matched function node:", node);
+    //   logger.log(node?.getText());
     // }
     // Look for the matching function definition
     if (isFunction && node?.getText() === searchString) {
-      console.debug("[debug] matched function we were looking for!");
+      logger.debug("[debug] matched function we were looking for!");
       const { line: startLine, character: startColumn } =
         sourceFile.getLineAndCharacterOfPosition(node.getStart());
       const { line: endLine, character: endColumn } =
@@ -158,7 +169,7 @@ function searchFile(
         });
       });
 
-      console.log("identifiers", identifiers);
+      logger.debug("identifiers", identifiers);
 
       result = {
         file: filePath,

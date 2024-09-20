@@ -109,3 +109,11 @@ describe("expandFunction", () => {
     });
   });
 });
+
+/**
+ * TODO - Test for this (shouldHonk should be considered local scope)
+ * 
+  const { shouldHonk } = c.req.query();
+  const honk = typeof shouldHonk !== "undefined" ? "Honk honk!" : "";
+
+ */

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import type ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
+import logger from "../../../logger.js";
 import { getFileUri } from "./utils.js";
 
 export async function openFile(
@@ -19,7 +20,7 @@ export async function openFile(
     },
   });
 
-  console.debug("[debug] Opened document:", fileUri);
+  logger.debug("[debug] Opened document:", fileUri);
 }
 
 export async function getDefinition(
@@ -37,7 +38,7 @@ export async function getDefinition(
   );
 
   if (identifierName) {
-    console.debug(
+    logger.debug(
       `[debug] TS Lang Server definition response for ${identifierName}:`,
       JSON.stringify(definitionResponse, null, 2),
     );
