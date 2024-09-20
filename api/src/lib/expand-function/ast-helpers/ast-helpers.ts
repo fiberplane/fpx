@@ -47,7 +47,7 @@ export function getDefinitionText(node: ts.Node, sourceFile: ts.SourceFile) {
     return node.parent.initializer.getText(sourceFile);
   }
 
-  return "Unable to determine value";
+  return undefined;
 }
 
 export function findNodeAtPosition(
@@ -78,7 +78,8 @@ function positionInNode(
   );
 }
 
-// TODO - Move to ast helpers...
+// NOTE - Takes a definition from the typescript language server
+//        and returns the node and source file
 //
 // biome-ignore lint/suspicious/noExplicitAny: We don't have a type for the definition response yet
 export function definitionToNode(definition: any) {

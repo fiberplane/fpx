@@ -37,7 +37,7 @@ export type ExpandedFunctionContext = Array<{
       start: { line: number; character: number };
       end: { line: number; character: number };
     };
-    text: string;
+    text: string | undefined;
   };
 }>;
 
