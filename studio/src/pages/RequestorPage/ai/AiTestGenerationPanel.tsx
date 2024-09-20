@@ -2,10 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useCopyToClipboard } from "@/hooks";
 import { parsePathFromRequestUrl } from "@/utils";
-import {
-  CopyIcon,
-  ExclamationTriangleIcon,
-} from "@radix-ui/react-icons";
+import { CopyIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import type { Requestornator } from "../queries";
 import { findMatchedRoute } from "../routes";
@@ -61,9 +58,9 @@ export function AiTestGenerationPanel({
       <div className="w-full">
         <h3 className="">Close the Loop</h3>
         <div className="text-sm text-muted-foreground py-2">
-          Describe the problem you encountered or a test you wish to write.
-          FPX will create a context-rich prompt that you can copy-paste into
-          your favorite Copilot or LLM.
+          Describe the problem you encountered or a test you wish to write. FPX
+          will create a context-rich prompt that you can copy-paste into your
+          favorite Copilot or LLM.
         </div>
         <div className="mt-2">
           <div className="">
@@ -72,8 +69,8 @@ export function AiTestGenerationPanel({
               <ContextEntry response={lastMatchingRequest} />
             ) : (
               <div className="text-sm text-muted-foreground py-2 rounded border px-3 mt-2 flex items-center gap-2">
-                <ExclamationTriangleIcon className="h-4 w-4 mr-2" /> No
-                matching request context found
+                <ExclamationTriangleIcon className="h-4 w-4 mr-2" /> No matching
+                request context found
               </div>
             )}
           </div>

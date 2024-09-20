@@ -2,8 +2,8 @@ import { isLgScreen } from "@/utils";
 import type { StateCreator } from "zustand";
 import {
   type BOTTOM_PANEL_NAMES,
-  validBottomPanelNames,
   type UISlice,
+  validBottomPanelNames,
 } from "./types";
 
 export const uiSlice: StateCreator<

@@ -1,37 +1,38 @@
+import IconWithNotification from "@/components/IconWithNotification";
+import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
+import { Button } from "@/components/ui/button";
+import { useOrphanLogs } from "@/hooks";
+import {
+  useRequestorStore,
+  useRequestorStoreRaw,
+} from "@/pages/RequestorPage/store";
+import { useOtelTrace } from "@/queries";
+import { cn } from "@/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
-import IconWithNotification from "@/components/IconWithNotification";
-import { Button } from "@/components/ui/button";
-import { useRequestorStore, useRequestorStoreRaw } from "@/pages/RequestorPage/store";
-import { cn } from "@/utils";
 import { useShallow } from "zustand/react/shallow";
-import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import { useOtelTrace } from "@/queries";
-import { useOrphanLogs } from "@/hooks";
 
 export function LogsToggle({ traceId }: { traceId?: string | null }) {
   if (traceId) {
-    return <ToggleWithTraceId traceId={traceId} />
+    return <ToggleWithTraceId traceId={traceId} />;
   }
 
   return <ToggleWithoutTraceId />;
 }
 
 function ToggleWithoutTraceId() {
-  return <LogsToggleContent hasErrorLogs={false} />;
+  return <LogsToggleContent errorCount={0} />;
 }
-
 
 function ToggleWithTraceId({ traceId }: { traceId: string }) {
   const { data: spans } = useOtelTrace(traceId);
   const logs = useOrphanLogs(traceId, spans ?? []);
   const errorCount = logs.filter((log) => log.level === "error").length;
-  return <LogsToggleContent errorCount={errorCount} />
+  return <LogsToggleContent errorCount={errorCount} />;
 }
-
 
 function LogsToggleContent({ errorCount = 0 }: { errorCount: number }) {
   const { togglePanel } = useRequestorStore("togglePanel");
@@ -53,10 +54,9 @@ function LogsToggleContent({ errorCount = 0 }: { errorCount: number }) {
             notificationContent={errorCount}
             showNotification={errorCount > 0}
             notificationSize={10}
-            className={cn(
-              "cursor-pointer h-4 w-4",
-              { "text-blue-500": logsPanelVisible, }
-            )}
+            className={cn("cursor-pointer h-4 w-4", {
+              "text-blue-500": logsPanelVisible,
+            })}
           />
         </Button>
       </TooltipTrigger>
@@ -73,12 +73,16 @@ function LogsToggleContent({ errorCount = 0 }: { errorCount: number }) {
         </div>
       </TooltipContent>
     </Tooltip>
-
-  )
+  );
 }
 
 function useLogsPanelVisible() {
-  return useRequestorStoreRaw(useShallow(state => {
-    return state.bottomPanelIndex !== undefined && state.bottomPanels[state.bottomPanelIndex] === "logsPanel";
-  }))
+  return useRequestorStoreRaw(
+    useShallow((state) => {
+      return (
+        state.bottomPanelIndex !== undefined &&
+        state.bottomPanels[state.bottomPanelIndex] === "logsPanel"
+      );
+    }),
+  );
 }

@@ -12,11 +12,11 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useIsSmScreen } from "@/hooks";
+import { useOrphanLogs } from "@/hooks";
 import { useOtelTrace } from "@/queries";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import type { ReactNode } from "react";
-import { useOrphanLogs } from "@/hooks";
 
 type Props = {
   traceId?: string;
@@ -101,7 +101,9 @@ function TimelineEmptyState() {
 }
 
 const Content = (props: { className?: string; children: ReactNode }) => (
-  <div className={cn("mt-2 px-3  first:pl-0 py-2 min-h-[10rem]", props.className)}>
+  <div
+    className={cn("mt-2 px-3  first:pl-0 py-2 min-h-[10rem]", props.className)}
+  >
     {props.children}
   </div>
 );

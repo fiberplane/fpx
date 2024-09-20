@@ -6,9 +6,12 @@ import {
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useKeySequence } from "@/hooks";
+import { useActiveTraceId } from "@/hooks/useActiveTraceId";
 import { cn } from "@/utils";
 import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useNavigate } from "react-router-dom";
+import { useShallow } from "zustand/react/shallow";
 import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
@@ -18,12 +21,9 @@ import { useRequestorStore, useRequestorStoreRaw } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
 import { useMakeWebsocketRequest } from "../useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
+import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
 import { useMostRecentRequestornator } from "./useMostRecentRequestornator";
 import { getMainSectionWidth } from "./util";
-import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
-import { useShallow } from "zustand/react/shallow";
-import { useActiveTraceId } from "@/hooks/useActiveTraceId";
-import { useNavigate } from "react-router-dom";
 
 interface RequestorPageContentProps {
   history: Requestornator[]; // Replace 'any[]' with the correct type
@@ -112,9 +112,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const { togglePanel } = useRequestorStore(
-    "togglePanel",
-  );
+  const { togglePanel } = useRequestorStore("togglePanel");
 
   useHotkeys(
     "mod+g",
@@ -195,7 +193,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       dimension: "width",
     });
 
-
   // const visiblePanels = useMemo(() => ([
   //   aiPanel && 'AI_PANEL' as const,
   //   logsPanel && 'LOGS_PANEL' as const,
@@ -203,16 +200,15 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   // ]).filter(Boolean),
   //   [aiPanel, logsPanel, timelinePanel]
   // );
-  const bottomPanelVisible = useRequestorStoreRaw(useShallow((state) => {
-    return state.bottomPanelIndex !== undefined;
-  }))
+  const bottomPanelVisible = useRequestorStoreRaw(
+    useShallow((state) => {
+      return state.bottomPanelIndex !== undefined;
+    }),
+  );
 
-
-  const bottomPanel = bottomPanelVisible ?
-    <RequestorPageContentBottomPanel
-      traceId={traceId}
-      history={history}
-    /> : null;
+  const bottomPanel = bottomPanelVisible ? (
+    <RequestorPageContentBottomPanel traceId={traceId} history={history} />
+  ) : null;
 
   return (
     <div
@@ -234,10 +230,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         websocketState={websocketState}
       />
       <ResizablePanelGroup direction="vertical" id="content-panels">
-        <ResizablePanel
-          order={0}
-          id="top-panels"
-        >
+        <ResizablePanel order={0} id="top-panels">
           <ResizablePanelGroup
             direction={isLgScreen ? "horizontal" : "vertical"}
             id="requestor-page-request-panel-group"
@@ -272,23 +265,18 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
               hitAreaMargins={{ coarse: 20, fine: 20 }}
               className="mb-2 h-0"
 
-            // className="bg-transparent"
+              // className="bg-transparent"
             />
-            <ResizablePanel
-              order={2}
-              id="bottom-panel"
-            >
+            <ResizablePanel order={2} id="bottom-panel">
               <div
-                className={
-                  cn(
-                    //         BACKGROUND_LAYER,
-                    "rounded-md",
-                    "border",
-                    "h-full",
-                    "mt-2",
-                    BACKGROUND_LAYER
-                  )
-                }
+                className={cn(
+                  //         BACKGROUND_LAYER,
+                  "rounded-md",
+                  "border",
+                  "h-full",
+                  "mt-2",
+                  BACKGROUND_LAYER,
+                )}
               >
                 {bottomPanel}
               </div>

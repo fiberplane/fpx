@@ -24,7 +24,10 @@ export function App() {
                 element={<RequestDetailsPage />}
               />
               <Route path="/" element={<RequestorPage />} />
-              <Route path="/:requestType/:traceId" element={<RequestorPage />} />
+              <Route
+                path="/:requestType/:traceId"
+                element={<RequestorPage />}
+              />
             </Routes>
           </Layout>
           <Toaster />

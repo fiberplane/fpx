@@ -1,9 +1,12 @@
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { WebhoncBadge } from "@/components/WebhoncBadge";
 import { Button } from "@/components/ui/button";
+import { useActiveTraceId } from "@/hooks/useActiveTraceId";
 import { useProxyRequestsEnabled } from "@/hooks/useProxyRequestsEnabled";
-import { useRequestorStore, useRequestorStoreRaw } from "@/pages/RequestorPage/store";
-import { useOtelTrace } from "@/queries";
+import {
+  useRequestorStore,
+  useRequestorStoreRaw,
+} from "@/pages/RequestorPage/store";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import {
@@ -11,29 +14,27 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { Branding } from "../Branding";
 import { SettingsMenu, SettingsScreen } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
-import { useShallow } from "zustand/react/shallow";
-import { useOrphanLogs } from "@/hooks";
 import { LogsToggle } from "./LogsToggle";
-import { useActiveTraceId } from "@/hooks/useActiveTraceId";
 
 export function BottomBar() {
   const shouldShowProxyRequests = useProxyRequestsEnabled();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const {
-    togglePanel,
-  } = useRequestorStore(
-    "togglePanel",
+  const { togglePanel } = useRequestorStore("togglePanel");
+  const activeBottomPanel = useRequestorStoreRaw(
+    useShallow((state) => {
+      return state.bottomPanelIndex !== undefined
+        ? state.bottomPanels[state.bottomPanelIndex]
+        : undefined;
+    }),
   );
-  const activeBottomPanel = useRequestorStoreRaw(useShallow(state => {
-    return state.bottomPanelIndex !== undefined ? state.bottomPanels[state.bottomPanelIndex] : undefined;
-  }))
 
   const traceId = useActiveTraceId();
   // const { data: spans } = useOtelTrace(traceId);
@@ -42,8 +43,9 @@ export function BottomBar() {
   // const hasErrorLogs = logs.some((log) => log.level === "error");
 
   // const logsPanel = (activeBottomPanel === "logsPanel") ? "open" : "closed";
-  const timelinePanel = (activeBottomPanel === "timelinePanel") ? "open" : "closed";
-  const aiPanel = (activeBottomPanel === "aiPanel") ? "open" : "closed";
+  const timelinePanel =
+    activeBottomPanel === "timelinePanel" ? "open" : "closed";
+  const aiPanel = activeBottomPanel === "aiPanel" ? "open" : "closed";
   // useEffect(() => {
   //   if (hasErrorLogs && logsPanel !== "open") {
   //     togglePanel("logsPanel");

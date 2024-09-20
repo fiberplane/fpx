@@ -15,7 +15,6 @@ export function LogsTable({ traceId }: Props) {
   }
 
   return <LogsTableWithTraceId traceId={traceId} />;
-
 }
 
 const LogsTableWithTraceId = ({ traceId }: { traceId: string }) => {
@@ -23,10 +22,9 @@ const LogsTableWithTraceId = ({ traceId }: { traceId: string }) => {
   const logs = useOrphanLogs(traceId, spans ?? []);
 
   return <LogsTableContent logs={logs} />;
-}
+};
 
 function LogsTableContent({ logs }: { logs: MizuOrphanLog[] }) {
-
   return (
     <div className="overflow-y-scroll">
       {logs.length === 0 ? (

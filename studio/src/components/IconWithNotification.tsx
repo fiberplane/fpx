@@ -6,10 +6,10 @@ interface IconWithNotificationProps extends IconProps {
   notificationColor?: string;
   notificationSize?: number;
   notificationPosition?:
-  | "top-right"
-  | "top-left"
-  | "bottom-right"
-  | "bottom-left";
+    | "top-right"
+    | "top-left"
+    | "bottom-right"
+    | "bottom-left";
   notificationContent?: string | number;
   showNotification?: boolean;
 }

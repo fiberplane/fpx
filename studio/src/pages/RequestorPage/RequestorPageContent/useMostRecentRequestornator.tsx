@@ -1,8 +1,7 @@
-import { useMemo, } from "react";
+import { useMemo } from "react";
 import type { Requestornator } from "../queries";
 import { useActiveRoute, useRequestorStore } from "../store";
 import { sortRequestornatorsDescending } from "../utils";
-
 
 /**
  * When you select a route from the route side panel,

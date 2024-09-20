@@ -1,1 +1,1 @@
-export { BottomBar } from "./BottomBar"
+export { BottomBar } from "./BottomBar";

@@ -41,7 +41,12 @@ export const TimelineGraphLog: React.FC<{
       }
     >
       <div className={cn("mr-2")}>
-        <Icon icon="lucide:terminal" className={cn(colorTextLevel)} width={16} height={16} />
+        <Icon
+          icon="lucide:terminal"
+          className={cn(colorTextLevel)}
+          width={16}
+          height={16}
+        />
       </div>
       <div className="flex flex-col w-20 overflow-hidden">
         <div className="font-mono font-normal text-xs truncate text-gray-200">

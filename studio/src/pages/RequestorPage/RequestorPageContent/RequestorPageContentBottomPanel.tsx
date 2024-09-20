@@ -1,15 +1,15 @@
-import { Icon } from "@iconify/react"
-import { Tabs, } from "@/components/ui/tabs";
-import { cn } from "@/utils";
-import { CustomTabsContent, CustomTabsList, CustomTabTrigger } from "../Tabs";
-import { useRequestorStore } from "../store";
-import { LogsTable } from "../LogsTable";
-import { AiTestGenerationPanel } from "../ai";
-import { RequestorTimeline } from "../RequestorTimeline";
-import type { Requestornator } from "../queries";
-import type { BOTTOM_PANEL_NAMES } from "../store/slices/types";
 import { Button } from "@/components/ui/button";
+import { Tabs } from "@/components/ui/tabs";
+import { cn } from "@/utils";
+import { Icon } from "@iconify/react";
+import { LogsTable } from "../LogsTable";
 import { LogsLabel } from "../LogsTable";
+import { RequestorTimeline } from "../RequestorTimeline";
+import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
+import { AiTestGenerationPanel } from "../ai";
+import type { Requestornator } from "../queries";
+import { useRequestorStore } from "../store";
+import type { BOTTOM_PANEL_NAMES } from "../store/slices/types";
 
 interface RequestorPageContentBottomPanelProps {
   traceId?: string;
@@ -21,25 +21,26 @@ const RequestorPageContentBottomPanel: React.FC<
 > = (props: RequestorPageContentBottomPanelProps) => {
   const { traceId, history } = props;
 
-  const { bottomPanels, bottomPanelIndex,
-    setBottomPanelIndex } =
+  const { bottomPanels, bottomPanelIndex, setBottomPanelIndex } =
     useRequestorStore(
       "bottomPanels",
       "bottomPanelIndex",
       "togglePanel",
       "setBottomPanelIndex",
     );
-  const activePanel = bottomPanelIndex !== undefined
-    ? bottomPanels[bottomPanelIndex]
-    : undefined;
+  const activePanel =
+    bottomPanelIndex !== undefined ? bottomPanels[bottomPanelIndex] : undefined;
 
   const renderTab = (panel: string) => {
-
     const [label] = panel.split("Panel");
 
     return (
       <CustomTabTrigger key={label} value={panel}>
-        {label === "logs" ? <LogsLabel traceId={traceId} /> : <div className="capitalize">{label}</div>}
+        {label === "logs" ? (
+          <LogsLabel traceId={traceId} />
+        ) : (
+          <div className="capitalize">{label}</div>
+        )}
       </CustomTabTrigger>
     );
   };
@@ -51,7 +52,7 @@ const RequestorPageContentBottomPanel: React.FC<
         onValueChange={(value) => {
           const index = bottomPanels.indexOf(value as BOTTOM_PANEL_NAMES);
           if (index !== -1) {
-            console.log('value', value, index, bottomPanels);
+            console.log("value", value, index, bottomPanels);
             setBottomPanelIndex(index);
           }
         }}
@@ -72,11 +73,9 @@ const RequestorPageContentBottomPanel: React.FC<
             variant="ghost"
             size="icon"
             className={cn("h-6 w-6", "float-right")}
-
           >
             <Icon icon="lucide:x" />
           </Button>
-
         </CustomTabsList>
         <CustomTabsContent value="aiPanel">
           <AiTestGenerationPanel history={history} />
@@ -88,7 +87,7 @@ const RequestorPageContentBottomPanel: React.FC<
           <RequestorTimeline traceId={traceId} />
         </CustomTabsContent>
       </Tabs>
-    </div >
+    </div>
   );
 };
 

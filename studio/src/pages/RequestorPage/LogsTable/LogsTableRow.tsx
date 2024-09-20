@@ -39,7 +39,7 @@ export function LogRow({ log }: LogRowProps) {
           "cursor-pointer px-2 py-1 flex items-center",
           "hover:bg-muted",
           !isMouseSelected &&
-          "focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-inset",
+            "focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-inset",
           isExpanded ? "rounded-t-xl" : "rounded-xl",
         )}
       >

@@ -1,1 +1,1 @@
-export { RequestorPageContent } from "./RequestorPageContent"
+export { RequestorPageContent } from "./RequestorPageContent";

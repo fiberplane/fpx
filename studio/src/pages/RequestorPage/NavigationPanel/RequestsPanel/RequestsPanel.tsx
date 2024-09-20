@@ -1,6 +1,7 @@
 import { RequestMethod } from "@/components/Timeline";
 import { Status } from "@/components/ui/status";
 import { useInputFocusDetection } from "@/hooks";
+import { useActiveTraceId } from "@/hooks/useActiveTraceId";
 import { useOtelTraces } from "@/queries";
 import {
   cn,
@@ -16,11 +17,10 @@ import { useHotkeys } from "react-hotkeys-hook";
 import {
   Link,
   useNavigate,
-  useParams,
   useSearchParams,
 } from "react-router-dom";
 import type { Requestornator } from "../../queries";
-import { useRequestorStore, useServiceBaseUrl } from "../../store";
+import { useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
 import { Search } from "../Search";
 
@@ -41,10 +41,7 @@ export function RequestsPanel() {
     });
   }, [items, filterValue]);
 
-  const { activeHistoryResponseTraceId } = useRequestorStore(
-    "activeHistoryResponseTraceId",
-  );
-  const { id = activeHistoryResponseTraceId } = useParams();
+  const id = useActiveTraceId();
 
   const activeIndex = useMemo(() => {
     return filteredItems.findIndex((item) => getId(item) === id);
@@ -168,7 +165,7 @@ export function RequestsPanel() {
               setSelectedItemId(null);
             }}
             placeholder="requests"
-            onItemSelect={() => {}}
+            onItemSelect={() => { }}
             itemCount={filteredItems.length}
           />
         </div>
@@ -249,10 +246,7 @@ type NavItemProps = {
 
 const NavItem = memo(
   ({ item, isSelected, onSelect, searchParams }: NavItemProps) => {
-    const { activeHistoryResponseTraceId } = useRequestorStore(
-      "activeHistoryResponseTraceId",
-    );
-    const { id = activeHistoryResponseTraceId } = useParams();
+    const id = useActiveTraceId();
     const itemRef = useRef<HTMLAnchorElement>(null);
 
     useEffect(() => {
@@ -353,13 +347,13 @@ const MethodCell = ({ item }: { item: MergedListItem }) => {
 
 type MergedListItem =
   | {
-      type: "request";
-      data: Requestornator;
-    }
+    type: "request";
+    data: Requestornator;
+  }
   | {
-      type: "history";
-      data: OtelTrace;
-    };
+    type: "history";
+    data: OtelTrace;
+  };
 
 // Combine the history with traces by creating a new list that contains the history as well
 // as traces that are not in the history. The new list should be sorted by the timestamp of the request.
