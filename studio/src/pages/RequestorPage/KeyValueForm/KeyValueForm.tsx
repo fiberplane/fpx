@@ -55,13 +55,14 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
         }}
       />
       <CodeMirrorInput
-        width="160px"
+        className="w-[140px]"
         value={key}
         placeholder="name"
         readOnly={!onChangeKey}
         onChange={(value) => onChangeKey?.(value ?? "")}
       />
       <CodeMirrorInput
+        className="w-[calc(100%-140px)]"
         value={value}
         placeholder="value"
         onChange={(value) => onChangeValue(value ?? "")}

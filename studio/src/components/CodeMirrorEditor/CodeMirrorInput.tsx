@@ -93,9 +93,9 @@ const readonlyExtension = EditorView.theme({
 // Hide the gutter on the code mirror instance
 const hiddenGutterExtension = gutter({ class: "hidden border-none" });
 
-type CodeMirrorEditorProps = {
+type CodeMirrorInputProps = {
   readOnly?: boolean;
-  width?: string;
+  className?: string;
   value?: string;
   onChange: (value?: string) => void;
   placeholder?: string;
@@ -136,8 +136,8 @@ const submitKeymap = (onSubmit: (() => void) | undefined) =>
     },
   ]);
 
-export function CodeMirrorInput(props: CodeMirrorEditorProps) {
-  const { value, onChange, placeholder, width, readOnly, onSubmit } = props;
+export function CodeMirrorInput(props: CodeMirrorInputProps) {
+  const { value, onChange, placeholder, className, readOnly, onSubmit } = props;
 
   const [isFocused, setIsFocused] = useState(false);
 
@@ -171,8 +171,7 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
       className={cn(
         "h-auto",
         "rounded border border-transparent",
-        "focus-visible:outline-none",
-        // Show a text cursor when the input is hovered upon
+        // Show a text cursor on hover
         "cursor-text",
         {
           "border-blue-600": isFocused && !readOnly,
@@ -181,13 +180,8 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
         isFocused ? "overflow-visible" : "overflow-hidden",
         isFocused ? "whitespace-normal" : "whitespace-nowrap",
         isFocused ? "text-clip" : "text-ellipsis",
+        className,
       )}
-      style={{
-        // if specified, the width should be a fixed width, otherwise we take up full width
-        // can't use tailwind classes with px specified widths, since the px value is dynamic,
-        // and tailwind's jit can't pick up on it
-        width: width ?? "100%",
-      }}
     >
       <CodeMirror
         value={value}
