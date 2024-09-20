@@ -12,15 +12,17 @@ export function useRequestorSubmitHandler({
   makeRequest,
   connectWebsocket,
   recordRequestInSessionHistory,
+  generateLinkToTrace,
 }: {
   makeRequest: MakeProxiedRequestQueryFn;
   connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
+  generateLinkToTrace: (traceId: string) => string;
 }) {
   const { toast } = useToast();
 
   const { id } = useParams();
-  const urlHasId = !!id;
+  // const urlHasId = !!id;
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const {
@@ -32,7 +34,7 @@ export function useRequestorSubmitHandler({
     queryParams,
     requestHeaders,
     requestType,
-    showResponseBodyFromHistory,
+    // showResponseBodyFromHistory,
   } = useRequestorStore(
     "activeRoute",
     "body",
@@ -42,11 +44,12 @@ export function useRequestorSubmitHandler({
     "queryParams",
     "requestHeaders",
     "requestType",
-    "showResponseBodyFromHistory",
+    // "showResponseBodyFromHistory",
   );
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
   const { activeHistoryResponseTraceId } = useRequestorStore();
+
   return useHandler((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // TODO - Make it clear in the UI that we're auto-adding this header
@@ -103,18 +106,24 @@ export function useRequestorSubmitHandler({
         onSuccess(data) {
           const traceId = data?.traceId;
 
-          // If there's an id, we're navigating to a specific request
-          // otherwise the newest trace will automatically be shown
-          if (urlHasId) {
-            navigate({
-              pathname: `/requests/${traceId}`,
-              search: params.toString(),
-            });
-          }
+          // // If there's an id, we're navigating to a specific request
+          // // otherwise the newest trace will automatically be shown
+          // if (urlHasId) {
+          //   navigate({
+          //     pathname: `/requests/${traceId}`,
+          //     search: params.toString(),
+          //   });
+          // }
 
           if (traceId && typeof traceId === "string") {
+            navigate(
+              {
+                pathname: generateLinkToTrace(traceId),
+                search: params.toString(),
+              },
+              { replace: true },
+            );
             recordRequestInSessionHistory(traceId);
-            showResponseBodyFromHistory(traceId);
           } else {
             console.error(
               "RequestorPage: onSuccess: traceId is not a string",

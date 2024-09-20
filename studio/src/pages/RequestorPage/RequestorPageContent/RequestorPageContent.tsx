@@ -7,7 +7,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
@@ -23,12 +23,15 @@ import { getMainSectionWidth } from "./util";
 import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
 import { useShallow } from "zustand/react/shallow";
 import { useActiveTraceId } from "@/hooks/useActiveTraceId";
+import { useNavigate } from "react-router-dom";
 
 interface RequestorPageContentProps {
   history: Requestornator[]; // Replace 'any[]' with the correct type
+  historyLoading: boolean;
   sessionHistory: Requestornator[];
   recordRequestInSessionHistory: (traceId: string) => void;
   overrideTraceId?: string;
+  generateLinkToTrace: (traceId: string) => string;
 }
 
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
@@ -39,6 +42,8 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     recordRequestInSessionHistory,
     overrideTraceId,
     sessionHistory,
+    historyLoading,
+    generateLinkToTrace,
   } = props;
 
   const { toast } = useToast();
@@ -52,7 +57,13 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     overrideTraceId ?? mostRecentRequestornatorForRoute?.app_responses?.traceId;
 
   const activeTraceId = useActiveTraceId();
-  console.log('traceId', traceId ?? null, activeTraceId, traceId ?? null === activeTraceId);
+  const navigate = useNavigate();
+  // console.log('traceId', traceId ?? null, activeTraceId, traceId ?? null === activeTraceId);
+  useEffect(() => {
+    if (traceId && traceId !== activeTraceId) {
+      navigate(generateLinkToTrace(traceId), { replace: true });
+    }
+  }, [traceId, activeTraceId, generateLinkToTrace, navigate]);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
@@ -70,6 +81,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     makeRequest,
     connectWebsocket,
     recordRequestInSessionHistory,
+    generateLinkToTrace,
   });
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -168,7 +180,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const responseContent = (
     <ResponsePanel
       tracedResponse={mostRecentRequestornatorForRoute}
-      isLoading={isRequestorRequesting}
+      isLoading={isRequestorRequesting || historyLoading}
       websocketState={websocketState}
     />
   );

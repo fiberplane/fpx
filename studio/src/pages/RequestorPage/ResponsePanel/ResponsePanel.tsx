@@ -65,6 +65,7 @@ export const ResponsePanel = memo(function ResponsePanel({
 
   const shouldShowMessages = shouldShowResponseTab("messages");
 
+  console.log('isLoading', isLoading, responseToRender)
   return (
     <div className="overflow-x-hidden overflow-y-auto h-full relative">
       <Tabs
@@ -201,9 +202,9 @@ function ResponseSummary({
   const url = isRequestorActiveResponse(response)
     ? response?.requestUrl
     : parsePathFromRequestUrl(
-        response?.app_requests?.requestUrl ?? "",
-        response?.app_requests?.requestQueryParams ?? undefined,
-      );
+      response?.app_requests?.requestUrl ?? "",
+      response?.app_requests?.requestQueryParams ?? undefined,
+    );
   return (
     <div className="flex items-center space-x-2 text-sm">
       <StatusCode status={status ?? "—"} isFailure={!status} />

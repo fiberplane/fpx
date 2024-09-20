@@ -44,6 +44,7 @@ export const RequestorPage = () => {
   const {
     history,
     sessionHistory,
+    isLoading,
     recordRequestInSessionHistory,
     loadHistoricalRequest,
   } = useRequestorHistory();
@@ -119,9 +120,11 @@ export const RequestorPage = () => {
           ) : (
             <RequestorPageContent
               history={history}
+              historyLoading={isLoading}
               sessionHistory={sessionHistory}
               recordRequestInSessionHistory={recordRequestInSessionHistory}
               overrideTraceId={id}
+              generateLinkToTrace={generateLinkToTrace}
             />
           )}
         </ResizablePanel>
