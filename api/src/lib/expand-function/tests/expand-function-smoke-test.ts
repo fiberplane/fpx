@@ -1,8 +1,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import util from "node:util";
-import { expandFunction } from "./expand-function.js";
-import { getTSServer } from "./tsserver/server.js";
+import { expandFunction } from "../expand-function.js";
+import { getTSServer } from "../tsserver/server.js";
 
 // Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
@@ -10,12 +10,9 @@ const __dirname = path.dirname(__filename);
 
 const projectRoot = path.resolve(
   __dirname,
-  "../../../../examples/test-static-analysis",
+  "../../../../../examples/test-static-analysis",
 );
-const srcPath = path.resolve(
-  __dirname,
-  "../../../../examples/test-static-analysis/src",
-);
+const srcPath = path.join(projectRoot, "src");
 
 const _functionWithConstant = `(c) => {
   const auth = c.req.header("Authorization");
