@@ -105,8 +105,9 @@ type CodeMirrorInputProps = {
 const preventNewlineInFirefox = keymap.of([
   {
     key: "Enter",
-    run: (_view) => {
-      // Do nothingggg and don't bubble up the event
+    run: () => {
+      // Do nothingggg and don't bubble up the keyboard event
+      // (Returning `true` means "we handled this keyboard event, don't bother delegating it to other extensions or the DOM")
       return true;
     },
   },
