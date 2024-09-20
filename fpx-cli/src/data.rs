@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use anyhow::Context;
 use async_trait::async_trait;
 use fpx::data::models::{HexEncodedId, Span};
@@ -8,7 +7,6 @@ use libsql::{params, Builder, Connection};
 use std::fmt::Display;
 use std::path::Path;
 use std::sync::Arc;
-use http_body_util::BodyExt;
 use serde_json::Map;
 use tracing::{error, trace};
 use fpx::api::models::settings::Settings;
@@ -226,12 +224,7 @@ impl Store for LibsqlStore {
     async fn settings_upsert(&self, _tx: &Transaction, settings: Settings) -> Result<Settings> {
         let mut result: Map<String, serde_json::Value> = Map::new();
 
-        // .unwrap is safe as the Settings `Serialize` impl cannot fail as it is derived with the `Serialize` macro
-        let serde_json::Value::Object(map) = serde_json::to_value(settings).map_err(|_| DbError::FailedSerialize)? else {
-            unreachable!("settings is a object so it will always serialize into a Value::Object as well")
-        };
-
-        for (key, value) in map {
+        for (key, value) in settings.into_map()? {
             let value = serde_json::to_string(&value).map_err(|_| DbError::FailedSerialize)?;
 
             let inserted_value: String = self
@@ -260,14 +253,14 @@ impl Store for LibsqlStore {
     }
 
     async fn settings_get(&self, _tx: &Transaction) -> Result<Settings> {
-        let traces: Vec<(String, String)> = self
+        let settings: Vec<(String, String)> = self
             .connection
             .query(&self.sql_builder.settings_get(), ())
             .await?
             .fetch_all()
             .await?;
 
-        let result: Map<String, serde_json::Value> = traces.into_iter()
+        let result: Map<String, serde_json::Value> = settings.into_iter()
             .map(|(key, value)| (key, serde_json::from_str(&value).expect("db should not contain invalid data"))) // we need better error handling at some point here
             .collect();
 

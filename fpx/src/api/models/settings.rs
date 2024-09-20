@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use crate::data::DbError;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -46,6 +48,15 @@ pub struct Settings {
     pub proxy_base_url: Option<String>,
     pub proxy_requests_enabled: Option<bool>,
     pub webhonc_connection_id: Option<String>
+}
+
+impl Settings {
+    pub fn into_map(self) -> Result<serde_json::Map<String, Value>, DbError> {
+        match serde_json::to_value(self).map_err(|_| DbError::FailedSerialize)? {
+            Value::Object(map) => Ok(map),
+            _ => unreachable!("settings is a object so it will always serialize into a Value::Object as well")
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
