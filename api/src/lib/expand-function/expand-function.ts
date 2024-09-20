@@ -1,4 +1,5 @@
 import ts from "typescript";
+import logger from "../../logger.js";
 import {
   definitionToNode,
   getDefinitionText,
@@ -89,7 +90,7 @@ async function extractContext(
   // 3. Populating the context array with relevant information
 
   if (!identifiers?.length) {
-    console.debug(
+    logger.debug(
       "[debug] No out of scope identifiers found in function, skipping context extraction",
     );
     return [];
@@ -119,7 +120,7 @@ async function extractContext(
         const { node, sourceFile, definitionFilePath } =
           definitionToNode(definition);
 
-        console.debug(`[debug] AST node for ${identifier.name}:`, node);
+        logger.debug(`[debug] AST node for ${identifier.name}:`, node);
 
         // If there's a node, we can try to extract the value of the definition
         if (node) {
@@ -148,7 +149,7 @@ async function extractContext(
               continue;
             }
 
-            console.warn(`Failed to follow import for ${identifier.name}`);
+            logger.warn(`Failed to follow import for ${identifier.name}`);
           }
 
           const valueText = getDefinitionText(node, sourceFile);
@@ -164,25 +165,25 @@ async function extractContext(
             },
           };
 
-          console.debug(
+          logger.debug(
             `[debug] context entry for ${identifier.name}`,
             contextEntry,
           );
 
           context.push(contextEntry);
         } else {
-          console.warn(
+          logger.warn(
             `AST parsing found no definition found for ${identifier.name} in ${definitionFilePath}`,
           );
         }
       } else {
-        console.warn(
+        logger.warn(
           `TSServer found no definition found for ${identifier.name}`,
         );
       }
     }
   } catch (error) {
-    console.error("Error querying TSServer:", error);
+    logger.error("Error querying TSServer:", error);
   }
 
   return context;

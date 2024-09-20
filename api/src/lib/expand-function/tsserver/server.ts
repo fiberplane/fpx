@@ -4,9 +4,10 @@ import {
   StreamMessageWriter,
   createMessageConnection,
 } from "vscode-jsonrpc/node.js";
+import logger from "../../../logger.js";
 
 export async function getTSServer(pathToProject: string) {
-  console.log(`Initializing TS Server for project: ${pathToProject}`);
+  logger.debug(`Initializing TS Server for project: ${pathToProject}`);
 
   const tsServer = spawn("npx", ["typescript-language-server", "--stdio"]);
 
@@ -17,7 +18,7 @@ export async function getTSServer(pathToProject: string) {
   // });
 
   tsServer.stderr.on("data", (data) => {
-    console.error(`tsServer stderr: ${data.toString()}`);
+    logger.error(`tsServer stderr: ${data.toString()}`);
   });
 
   const connection = createMessageConnection(
@@ -28,12 +29,14 @@ export async function getTSServer(pathToProject: string) {
   connection.listen();
 
   tsServer.on("close", (code) => {
-    console.log(`tsServer process exited with code ${code}`);
+    logger.debug(`tsServer process exited with code ${code}`);
   });
 
   try {
     const rootUri = `file://${pathToProject.replace(/\\/g, "/")}`;
-    console.log(`Initializing with rootUri: ${rootUri}`);
+    logger.debug(
+      `Initializing typescript language server with rootUri: ${rootUri}`,
+    );
 
     const _response = await connection.sendRequest("initialize", {
       processId: process.pid,
@@ -49,8 +52,8 @@ export async function getTSServer(pathToProject: string) {
       },
     });
 
-    console.log("Initialization response:");
-    // console.debug('Initialization response:', JSON.stringify(_response, null, 2));
+    logger.debug("Initialization response:");
+    // logger.debug('Initialization response:', JSON.stringify(_response, null, 2));
 
     await connection.sendNotification("initialized");
 
@@ -64,7 +67,7 @@ export async function getTSServer(pathToProject: string) {
 
     return connection;
   } catch (error) {
-    console.error("Error initializing TS Server:", error);
+    logger.error("Error initializing TS Server:", error);
     throw error;
   }
 }

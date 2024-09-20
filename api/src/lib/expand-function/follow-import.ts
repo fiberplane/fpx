@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
+import logger from "../../logger.js";
 import { getDefinitionText } from "./ast-helpers/index.js";
 import { getFileUri, openFile } from "./tsserver/index.js";
 
@@ -15,7 +16,7 @@ export async function followImport(
   const importPath = (importNode.moduleSpecifier as ts.StringLiteral).text;
   let resolvedPath: string;
 
-  console.debug(`[debug] Import path: ${importPath}`);
+  logger.debug(`[debug] Import path: ${importPath}`);
 
   // TODO - Handle typescript config's aliased imports (`@/...`)
   if (importPath.startsWith(".")) {
@@ -29,7 +30,7 @@ export async function followImport(
     return null;
   }
 
-  console.debug(`[debug] Resolved import path: ${resolvedPath}`);
+  logger.debug(`[debug] Resolved import path: ${resolvedPath}`);
 
   // Add .ts extension if not present
   // TODO - Handle .tsx files, js files, etc.
@@ -38,7 +39,7 @@ export async function followImport(
   }
 
   if (!fs.existsSync(resolvedPath)) {
-    console.warn(`Could not resolve import path: ${resolvedPath}`);
+    logger.warn(`Could not resolve import path: ${resolvedPath}`);
     return null;
   }
 
@@ -78,7 +79,7 @@ export async function followImport(
     }
 
     if (identifierToFind) {
-      console.debug(
+      logger.debug(
         `[debug] Identifier to find in file we're importing from: ${identifierToFind}`,
       );
       const importedNode = findExportedDeclaration(
