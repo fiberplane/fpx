@@ -11,6 +11,7 @@ type GenerateRequestOptions = {
   method: string;
   path: string;
   handler: string;
+  handlerContext?: string;
   history?: Array<string>;
   openApiSpec?: string;
   middleware?: {
@@ -35,6 +36,7 @@ export async function generateRequestWithOpenAI({
   method,
   path,
   handler,
+  handlerContext,
   history,
   openApiSpec,
   middleware,
@@ -47,6 +49,7 @@ export async function generateRequestWithOpenAI({
     `method: ${method}`,
     `path: ${path}`,
     `handler: ${handler}`,
+    `handlerContext: ${handlerContext}`,
     `openApiSpec: ${openApiSpec}`,
     `middleware: ${middleware}`,
   );
@@ -56,6 +59,7 @@ export async function generateRequestWithOpenAI({
     method,
     path,
     handler,
+    handlerContext,
     history,
     openApiSpec,
     middleware,
