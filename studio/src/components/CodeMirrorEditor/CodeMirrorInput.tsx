@@ -141,22 +141,6 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
 
   const [isFocused, setIsFocused] = useState(false);
 
-  const style = useMemo(
-    () => ({
-      // if specified, the width should be a fixed width, otherwise we take up full width
-      width: width ?? "100%",
-      height: "auto",
-      // show overflown content when focused, hide when not
-      overflow: isFocused ? "auto" : "hidden",
-      // change to ellipsis text truncation on blur
-      whiteSpace: isFocused ? "normal" : "nowrap",
-      textOverflow: isFocused ? "clip" : "ellipsis",
-      // show text cursor when hovering
-      cursor: "text",
-    }),
-    [width, isFocused],
-  );
-
   const extensions = useMemo(() => {
     return [
       preventNewlineInFirefox,
@@ -185,14 +169,25 @@ export function CodeMirrorInput(props: CodeMirrorEditorProps) {
   return (
     <div
       className={cn(
+        "h-auto",
         "rounded border border-transparent",
         "focus-visible:outline-none",
+        // Show a text cursor when the input is hovered upon
+        "cursor-text",
         {
           "border-blue-600": isFocused && !readOnly,
           "border-gray-600/50": isFocused && readOnly,
         },
+        isFocused ? "overflow-visible" : "overflow-hidden",
+        isFocused ? "whitespace-normal" : "whitespace-nowrap",
+        isFocused ? "text-clip" : "text-ellipsis",
       )}
-      style={style}
+      style={{
+        // if specified, the width should be a fixed width, otherwise we take up full width
+        // can't use tailwind classes with px specified widths, since the px value is dynamic,
+        // and tailwind's jit can't pick up on it
+        width: width ?? "100%",
+      }}
     >
       <CodeMirror
         value={value}
