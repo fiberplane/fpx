@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { expandFunction } from "./expand-function.js";
+import { expandFunction } from "../expand-function.js";
 
 // Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
@@ -9,12 +9,9 @@ const __dirname = path.dirname(__filename);
 // Resolve the path and analyze the 'src' directory
 const projectRoot = path.resolve(
   __dirname,
-  "../../../../examples/test-static-analysis",
+  "../../../../../examples/test-static-analysis",
 );
-const srcPath = path.resolve(
-  __dirname,
-  "../../../../examples/test-static-analysis/src",
-);
+const srcPath = path.join(projectRoot, "src");
 
 // A function in `<root>/app/src/index.ts` that has a constant identifier that is out of scope
 const functionWithConstant = `(c) => {
