@@ -8,6 +8,7 @@ export async function generateRequestWithAiProvider({
   method,
   path,
   handler,
+  handlerContext,
   history,
   openApiSpec,
   middleware,
@@ -17,6 +18,7 @@ export async function generateRequestWithAiProvider({
   method: string;
   path: string;
   handler: string;
+  handlerContext?: string;
   history?: string[];
   openApiSpec?: string;
   middleware?: {
@@ -43,6 +45,7 @@ export async function generateRequestWithAiProvider({
       method,
       path,
       handler,
+      handlerContext,
       history,
       openApiSpec,
       middleware,
@@ -67,6 +70,7 @@ export async function generateRequestWithAiProvider({
       method,
       path,
       handler,
+      handlerContext,
       history,
       openApiSpec,
       middleware,

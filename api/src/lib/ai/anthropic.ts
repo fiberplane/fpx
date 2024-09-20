@@ -19,6 +19,7 @@ type GenerateRequestOptions = {
   handler: string;
   baseUrl?: string;
   history?: Array<string>;
+  handlerContext?: string;
   openApiSpec?: string;
   middleware?: {
     handler: string;
@@ -42,6 +43,7 @@ export async function generateRequestWithAnthropic({
   method,
   path,
   handler,
+  handlerContext,
   history,
   openApiSpec,
   middleware,
@@ -54,6 +56,7 @@ export async function generateRequestWithAnthropic({
     `method: ${method}`,
     `path: ${path}`,
     `handler: ${handler}`,
+    `handlerContext: ${handlerContext}`,
     `openApiSpec: ${openApiSpec}`,
     `middleware: ${middleware}`,
   );
@@ -63,6 +66,7 @@ export async function generateRequestWithAnthropic({
     method,
     path,
     handler,
+    handlerContext,
     history,
     openApiSpec,
     middleware,
