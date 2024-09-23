@@ -79,9 +79,6 @@ export interface WebsocketSlice {
 
 export interface UISlice {
   sidePanel: PanelState;
-  // logsPanel: PanelState;
-  // timelinePanel: PanelState;
-  // aiPanel: PanelState;
   bottomPanels: BOTTOM_PANEL_NAMES[];
   bottomPanelIndex: undefined | number;
   setBottomPanelIndex(index: number | undefined): void;

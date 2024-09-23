@@ -205,13 +205,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       dimension: "width",
     });
 
-  // const visiblePanels = useMemo(() => ([
-  //   aiPanel && 'AI_PANEL' as const,
-  //   logsPanel && 'LOGS_PANEL' as const,
-  //   timelinePanel && 'TIMELINE_PANEL' as const
-  // ]).filter(Boolean),
-  //   [aiPanel, logsPanel, timelinePanel]
-  // );
   const bottomPanelVisible = useRequestorStoreRaw(
     useShallow((state) => {
       return state.bottomPanelIndex !== undefined;
@@ -276,13 +269,10 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
             <ResizableHandle
               hitAreaMargins={{ coarse: 20, fine: 20 }}
               className="mb-2 h-0"
-
-              // className="bg-transparent"
             />
             <ResizablePanel order={2} id="bottom-panel">
               <div
                 className={cn(
-                  //         BACKGROUND_LAYER,
                   "rounded-md",
                   "border",
                   "h-full",
@@ -299,67 +289,3 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     </div>
   );
 };
-
-// {timelinePanel === "open" && (
-//   <>
-//     <ResizableHandle
-//       hitAreaMargins={{ coarse: 20, fine: 10 }}
-//       className="bg-transparent"
-//     />
-//     <ResizablePanel
-//       order={2}
-//       id="logs-panel"
-//       className={cn(
-//         BACKGROUND_LAYER,
-//         "rounded-md",
-//         "border",
-//         "h-full",
-//         "mt-2",
-//       )}
-//     >
-//       <RequestorTimeline traceId={traceId} />
-//     </ResizablePanel>
-//   </>
-// )}
-// {logsPanel === "open" && (
-//   <>
-//     <ResizableHandle
-//       hitAreaMargins={{ coarse: 20, fine: 10 }}
-//       className="bg-transparent"
-//     />
-//     <ResizablePanel
-//       order={3}
-//       id="logs-panel"
-//       className={cn(
-//         BACKGROUND_LAYER,
-//         "rounded-md",
-//         "border",
-//         "h-full",
-//         "mt-2",
-//       )}
-//     >
-//       <LogsTable traceId={traceId} />
-//     </ResizablePanel>
-//   </>
-// )}
-// {aiPanel === "open" && (
-//   <>
-//     <ResizableHandle
-//       hitAreaMargins={{ coarse: 20, fine: 10 }}
-//       className="bg-transparent"
-//     />
-//     <ResizablePanel
-//       order={4}
-//       id="ai-panel"
-//       className={cn(
-//         BACKGROUND_LAYER,
-//         "rounded-md",
-//         "border",
-//         "h-full",
-//         "mt-2",
-//       )}
-//     >
-//       <AiTestGenerationPanel history={history} />
-//     </ResizablePanel>
-//   </>
-// )}
