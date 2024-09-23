@@ -1,8 +1,4 @@
 import * as ts from "typescript";
-import type { MessageConnection } from "vscode-jsonrpc";
-import { getFileUri, getTextDocumentDefinition } from "./tsserver/index.js";
-
-import logger from "../../logger.js";
 
 export interface OutOfScopeIdentifier {
   /** The name of the identifier used but not declared within the function */
@@ -89,51 +85,4 @@ export function analyzeOutOfScopeIdentifiers(
     type: "unknown",
     position,
   }));
-}
-
-/**
- * Checks if an identifier is an expected global of the runtime.
- *
- * @param connection - The TypeScript language server connection.
- * @param identifier - The OutOfScopeIdentifier to check.
- * @param sourceFile - The TypeScript SourceFile object containing the identifier.
- * @returns A boolean indicating whether the identifier is an expected global.
- */
-export async function isExpectedGlobal(
-  connection: MessageConnection,
-  identifier: OutOfScopeIdentifier,
-  filePath: string,
-  // sourceFile: ts.SourceFile
-): Promise<boolean> {
-  const fileUri = getFileUri(filePath);
-  // const fileUri = getFileUri(sourceFile.fileName);
-
-  try {
-    const definition = await getTextDocumentDefinition(
-      connection,
-      fileUri,
-      identifier.position,
-      identifier.name,
-    );
-
-    if (definition) {
-      // If the definition is in a .d.ts file and it's not in the project's node_modules,
-      // it's likely a global definition
-      // HACK - This could break if the user has a custom .d.ts file in their project
-      if (
-        definition.uri.endsWith(".d.ts") &&
-        !definition.uri.includes("node_modules")
-      ) {
-        logger.debug(
-          `[debug] ${identifier.name} is likely a global (defined in ${definition.uri})`,
-        );
-        return true;
-      }
-    }
-
-    return false;
-  } catch (error) {
-    logger.error(`Error checking if ${identifier.name} is a global:`, error);
-    return false;
-  }
 }

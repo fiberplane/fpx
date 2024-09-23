@@ -5,13 +5,11 @@ import {
   getDefinitionText,
   getParentImportDeclaration,
 } from "./ast-helpers/index.js";
-import { contextForImport, followImport } from "./follow-import.js";
-import { isExpectedGlobal } from "./identifier-analyzer.js";
+import { contextForImport } from "./imports/index.js";
 import {
   type FunctionOutOfScopeIdentifiers,
   searchForFunction,
 } from "./search-function.js";
-import {} from "./tsserver/commands.js";
 import {
   getFileUri,
   getTSServer,
