@@ -4,7 +4,35 @@ import * as ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
 import logger from "../../logger.js";
 import { getDefinitionText } from "./ast-helpers/index.js";
+import type { OutOfScopeIdentifier } from "./identifier-analyzer.js";
 import { getFileUri, openFile } from "./tsserver/index.js";
+
+export async function contextForImport(
+  tsserver: MessageConnection,
+  _projectRoot: string, // TODO - Use this to resolve node module imports
+  currentFilePath: string,
+  importNode: ts.ImportDeclaration,
+  identifierNode: ts.Node,
+  identifier: OutOfScopeIdentifier,
+) {
+  const importedDefinition = await followImport(
+    tsserver,
+    _projectRoot,
+    currentFilePath,
+    importNode,
+    identifierNode,
+  );
+  if (importedDefinition) {
+    return {
+      name: identifier.name,
+      type: identifier.type,
+      position: identifier.position,
+      definition: importedDefinition,
+    };
+  }
+
+  return null;
+}
 
 /**
  * Follows an import to the file it imports and returns the definition of the
