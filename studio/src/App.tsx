@@ -13,7 +13,11 @@ export const REQUEST_DETAILS_TRACE_ROUTE = "/requests/:traceId";
 export const ROOT_ROUTE = "/";
 export const REQUESTOR_TRACE_ROUTE = "/:requestType/:traceId";
 
-export const TRACE_ID_ROUTES = [REQUEST_DETAILS_OTEL_ROUTE, REQUEST_DETAILS_TRACE_ROUTE, REQUESTOR_TRACE_ROUTE];
+export const TRACE_ID_ROUTES = [
+  REQUEST_DETAILS_OTEL_ROUTE,
+  REQUEST_DETAILS_TRACE_ROUTE,
+  REQUESTOR_TRACE_ROUTE,
+];
 
 export function App() {
   return (
@@ -32,10 +36,7 @@ export function App() {
                 element={<RequestDetailsPage />}
               />
               <Route path={ROOT_ROUTE} element={<RequestorPage />} />
-              <Route
-                path={REQUESTOR_TRACE_ROUTE}
-                element={<RequestorPage />}
-              />
+              <Route path={REQUESTOR_TRACE_ROUTE} element={<RequestorPage />} />
             </Routes>
           </Layout>
           <Toaster />

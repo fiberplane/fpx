@@ -13,11 +13,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
+import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+/**
+ * Toggle for logs panel.
+ */
 export function LogsToggle() {
   const traceId = useActiveTraceId();
-  console.log("traceId", traceId);
+
   if (traceId) {
     return <ToggleWithTraceId traceId={traceId} />;
   }
@@ -26,20 +30,37 @@ export function LogsToggle() {
 }
 
 function ToggleWithoutTraceId() {
-  return <LogsToggleContent errorCount={0} />;
+  return <LogsToggleContent errorCount={0} warningCount={0} />;
 }
 
 function ToggleWithTraceId({ traceId }: { traceId: string }) {
   const { data: spans } = useOtelTrace(traceId);
   const logs = useOrphanLogs(traceId, spans ?? []);
-  console.log("traceId", traceId, "logs", logs);
-  const errorCount = logs.filter((log) => log.level === "error").length;
-  return <LogsToggleContent errorCount={errorCount} />;
+  const { error: errorCount, warn: warningCount } = useMemo(() => {
+    return {
+      error: logs.filter((log) => log.level === "error").length,
+      warn: logs.filter((log) => log.level === "warn").length,
+    };
+  }, [logs]);
+
+  return (
+    <LogsToggleContent errorCount={errorCount} warningCount={warningCount} />
+  );
 }
 
-function LogsToggleContent({ errorCount = 0 }: { errorCount: number }) {
+function LogsToggleContent({
+  errorCount = 0,
+  warningCount = 0,
+}: { errorCount?: number; warningCount?: number }) {
   const { togglePanel } = useRequestorStore("togglePanel");
   const logsPanelVisible = useLogsPanelVisible();
+  const notificationColor =
+    errorCount > 0
+      ? "bg-red-700"
+      : warningCount > 0
+        ? "bg-orange-300"
+        : "bg-gray-500";
+  const count = errorCount || warningCount;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -53,9 +74,9 @@ function LogsToggleContent({ errorCount = 0 }: { errorCount: number }) {
             id="icon-with-error-notification"
             icon="lucide:square-terminal"
             notificationPosition="top-right"
-            notificationColor="bg-red-700"
-            notificationContent={errorCount}
-            showNotification={errorCount > 0}
+            notificationColor={notificationColor}
+            notificationContent={" "}
+            showNotification={count > 0}
             notificationSize={10}
             className={cn("cursor-pointer h-4 w-4", {
               "text-blue-500": logsPanelVisible,
