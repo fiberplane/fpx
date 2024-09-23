@@ -1,3 +1,4 @@
+import { CodeMirrorSqlEditor } from "@/components/CodeMirrorEditor";
 import { Status } from "@/components/ui/status";
 import { SENSITIVE_HEADERS, cn, getHttpMethodTextColor, noop } from "@/utils";
 import {
@@ -23,7 +24,6 @@ import { format } from "sql-formatter";
 import { useTimelineIcon } from "../../hooks";
 import { CollapsibleSubSection, SectionHeading } from "../../shared";
 import { SubSection, SubSectionHeading } from "../../shared";
-import { CodeMirrorSqlEditor } from "../CodeMirrorEditor";
 import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 

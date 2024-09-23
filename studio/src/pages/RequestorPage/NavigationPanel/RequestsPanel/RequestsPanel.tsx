@@ -1,5 +1,4 @@
 import { RequestMethod } from "@/components/Timeline";
-import { Input } from "@/components/ui/input";
 import { Status } from "@/components/ui/status";
 import { useInputFocusDetection } from "@/hooks";
 import { useOtelTraces } from "@/queries";
@@ -11,6 +10,7 @@ import {
   getStatusCode,
 } from "@/utils";
 import type { OtelTrace } from "@fiberplane/fpx-types";
+import { Icon } from "@iconify/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import {
@@ -22,6 +22,7 @@ import {
 import type { Requestornator } from "../../queries";
 import { useRequestorStore, useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
+import { Search } from "../Search";
 
 export function RequestsPanel() {
   const { history } = useRequestorHistory();
@@ -156,22 +157,24 @@ export function RequestsPanel() {
   );
 
   return (
-    <div className="grid grid-rows-[min-content_auto] h-full gap-7">
-      <div className="flex items-center space-x-2 pb-3">
-        <Input
-          ref={searchRef}
-          className="text-sm"
-          placeholder={`Search requests (hit "/" to focus)`}
-          value={filterValue}
-          onChange={(e) => setFilterValue(e.target.value)}
-        />
+    <div className={cn("h-full", "flex", "flex-col")}>
+      <div>
+        <div className="flex items-center space-x-2 pb-3">
+          <Search
+            ref={searchRef}
+            value={filterValue}
+            onChange={setFilterValue}
+            onFocus={() => {
+              setSelectedItemId(null);
+            }}
+            placeholder="requests"
+            onItemSelect={() => {}}
+            itemCount={filteredItems.length}
+          />
+        </div>
       </div>
-      <div className="overflow-y-auto relative">
-        {filteredItems.length === 0 && (
-          <div className="flex items-center justify-center h-full w-full">
-            <p className="text-sm text-muted-foreground">No requests found</p>
-          </div>
-        )}
+      <div className="overflow-y-auto h-full relative">
+        {filteredItems.length === 0 && <EmptyState />}
         {filteredItems.map((item) => (
           <NavItem
             key={getId(item)}
@@ -181,6 +184,57 @@ export function RequestsPanel() {
             searchParams={searchParams}
           />
         ))}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center text-gray-300 h-full">
+      <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
+        <div className="rounded-lg p-2 bg-muted mb-2">
+          <Icon
+            icon="lucide:clock"
+            className="w-12 h-12 text-gray-400 stroke-1"
+          />
+        </div>
+        <h2 className="text-lg font-normal mb-4">No requests recorded</h2>
+        <div className="text-gray-400 text-left text-sm flex flex-col gap-4">
+          <ol className="flex flex-col gap-2">
+            <li>
+              1. Make sure your app is running and connected to the Fiberplane
+              Studio using the client library
+            </li>
+            <li className="mt-2">
+              2. Send an API request to one your app's endpoints
+            </li>
+            <li className="mt-2">3. Requests will appear here automatically</li>
+          </ol>
+          <p className="text-gray-400 text-sm">
+            If requests are still not appearing:
+          </p>
+          <ul className="text-left text-sm text-gray-400">
+            <li>
+              - Ask for help on{" "}
+              <a
+                href="https://discord.com/invite/cqdY6SpfVR"
+                className="underline"
+              >
+                Discord
+              </a>
+            </li>
+            <li>
+              - File an issue on{" "}
+              <a
+                href="https://github.com/fiberplane/fpx/issues"
+                className="underline"
+              >
+                Github
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

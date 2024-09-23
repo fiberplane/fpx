@@ -1,5 +1,5 @@
+import { CodeMirrorInput } from "@/components/CodeMirrorEditor";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { cn, noop } from "@/utils";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
@@ -41,7 +41,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
   const [isHovering, setIsHovering] = useState(false);
   return (
     <div
-      className="flex items-center space-x-0 rounded p-0"
+      className={cn("flex items-center space-x-0 rounded p-0")}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -54,20 +54,18 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
           return handler();
         }}
       />
-      <Input
-        type="text"
+      <CodeMirrorInput
+        className="w-[140px]"
         value={key}
         placeholder="name"
         readOnly={!onChangeKey}
-        onChange={(e) => onChangeKey?.(e.target.value)}
-        className="w-28 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none"
+        onChange={(value) => onChangeKey?.(value ?? "")}
       />
-      <Input
-        type="text"
+      <CodeMirrorInput
+        className="w-[calc(100%-140px)]"
         value={value}
         placeholder="value"
-        onChange={(e) => onChangeValue(e.target.value)}
-        className="h-8 w-full bg-transparent shadow-none px-2 py-0 text-sm border-none"
+        onChange={(value) => onChangeValue(value ?? "")}
       />
       <div
         className={cn("ml-1 flex invisible", {

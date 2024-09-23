@@ -32,14 +32,15 @@ export const RequestorPage = () => {
 
   const { sidePanel } = useRequestorStore("sidePanel");
 
-  // NOTE - Use this to test overflow of requests panel
+  // NOTE - Uncomment this to test overflow of requests panel
+  // const { setQueryParams } = useRequestorStore("setQueryParams");
   // useEffect(() => {
   //   setQueryParams(
   //     createKeyValueParameters(
   //       Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
   //     ),
   //   );
-  // }, []);
+  // }, [setQueryParams]);
 
   const {
     history,
@@ -81,8 +82,7 @@ export const RequestorPage = () => {
         "flex",
         "flex-col",
         "gap-2",
-        "py-4 px-2",
-        "sm:px-4 sm:py-3",
+        "p-2",
         "lg:gap-4",
       )}
     >

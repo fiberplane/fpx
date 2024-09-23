@@ -1,0 +1,300 @@
+---
+title: "Building a community database with GitHub : A guide to Webhook and API integration with hono.js"
+subtitle:
+slug: building-a-community-database-with-github-webhook-and-api-integration-with-honojs
+description: A post about the Hono github tracker application. Explaining how to integrate
+date: 2024-09-19
+author: Oscar van Zijverden and Nele Uhlemann
+tags:
+  - Hono.js
+  - GitHub
+  - Webhooks
+  - TypeScript
+  - API Integrations
+  - Cloudflare Workers
+---
+
+import { Image } from "astro:assets";
+
+Integrating with third-party services to retrieve and process data is a fundamental aspect of application development.
+When using direct communication over http(s) or grpc, there are two ways how to retrieve data from third party applications: API calls and Webhooks.
+
+This post explains how to develop a community tracker application that receives data from webhooks and API calls. The application captures open-source community engagement on GitHub repositories.
+The example application uses [GitHub Webhooks](https://docs.github.com/en/webhooks/about-webhooks) to track specific user interactions on GitHub repositories.
+Additionally, it leverages the [GitHub API](https://docs.github.com/en/rest?latest) to retrieve detailed information about users who interact with our repositories.
+The application stores the information in a Database.
+
+![Set-up diagram](@/assets/blog/2024-09-07-img01.png)
+
+We’ll cover setting up your local environment to handle webhook events and processing the payload in a TypeScript application.
+Our example is built with the [HONC](https://www.honc.dev) stack. The stack consists [Hono.js](https://hono.dev/) as the web framework, a PostgreSQL Serverless database ([Neon](https://neon.tech/home)), the ORM [Drizzle](https://orm.drizzle.team/),
+and the setup to run as a [Cloudflare Worker](https://workers.cloudflare.com/).
+
+The full project code is available on [GitHub](https://github.com/oscarvz/hono-github-tracker).
+
+## Integrating Webhooks
+
+The first integration utilizes webhooks, where external services push data directly to your endpoint in response to specific events.
+In this case, the third-party provider controls the timing and delivery of the data.
+While your application must validate the incoming information, handling errors and implementing retries can be more complex.
+Nonetheless, webhooks are particularly beneficial for receiving event-driven data without the need for continuous polling, ensuring more efficient and timely updates.
+
+### Setting Up Your Application to Receive Webhook Events
+
+The first step is to define an endpoint in your application to receive webhook calls from third-party services.
+In our example, we'll set up this route using Hono for our application’s API:
+
+```typescript ins={6} title="index.ts"
+import { Hono } from "hono";
+import api from "./api";
+
+const app = new Hono<HonoEnv>();
+
+app.route("/api", api);
+
+export default instrument(app);
+```
+
+We define the `/ghwh` endpoint in the API, which will handle events from GitHub Webhooks:
+
+```typescript title="api/index.ts"
+api.post("/ghwh", async (c) => {
+  // Handle incoming webhook payload here
+});
+```
+
+### Proxing Localhost for Webhook Development
+
+Since you can’t directly point GitHub’s webhook to your localhost, you need to proxy your localhost to an external address.
+Tools like [smee.io](https://smee.io/) or [VS Code](https://code.visualstudio.com/docs/editor/port-forwarding) can facilitate this.
+[Fiberplane Studio](https://fiberplane.com/docs/features/webhooks/) is another tool that allows you to define a proxy and inspect and replay webhook events during development.
+Fiberplane is already set up in our project. If you have cloned the repo you can start it by running `bun studio` in your terminal.
+
+Now you can use the generated URL as address for the thrid party application webhook. Be sure to include the `/api/ghwh` endpoint in the proxied URL.
+GitHub Webhooks allow you to specify the events that should trigger the webhook.
+For our application, we want to receive events related to [stars](https://docs.github.com/en/webhooks/webhook-events-and-payloads#star), [watch](https://docs.github.com/en/webhooks/webhook-events-and-payloads#watch), and [issues](https://docs.github.com/en/webhooks/webhook-events-and-payloads#issues).
+
+- Set Up Proxy: Use tools like smee.io or Fiberplane Studio.
+- Configure Webhook in the third party application
+- Trigger event from third party application
+- Replay Events: Inspect and resend payloads for testing.
+
+![Studio replay webhook request](@/assets/blog/2024-09-07-img04.png)
+
+### Handling webhook events and payload
+
+With the endpoint you’ve designed for your application, it’s important to ensure that only authorized webhooks can access it.
+Additionally, make sure to verify the payload before processing to maintain data integrity and security.
+In TypeScript, define types or interfaces that accurately represent the payload structure to take advantage of static typing.
+
+Leverage third-party libraries that simplify both payload verification and processing.
+Using these tools can streamline integration and align with best practices.
+
+For GitHub Webhooks, you can use [Octokit Webhooks](https://github.com/octokit/webhooks).
+
+#### GitHub Webhook Middleware
+
+To keep our code modular, Hono allows us to define custom middleware.
+In our application, we create a custom middleware for receiving and verifying webhooks using Octokit's Webhooks library.
+
+When creating a Webhooks instance, Octokit can accept a secret as a parameter to ensure the webhook's authentication.
+
+```typescript title="middleware/githubWebhooksMiddleware.ts"
+function getWebhooksInstance(secret: string) {
+  if (!webhooks) {
+    webhooks = new Webhooks({ secret });
+  }
+
+  return webhooks;
+}
+```
+
+This secret can be set in GitHub when [creating the webhook](https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries).
+In your Hono application, you should include the `GITHUB_WEBHOOK_SECRET` in the `.dev.vars` file.
+
+When creating the middleware with the Webhooks instance, Hono passes in the context, allowing you to access the secret from the `.dev.vars` file:
+
+```typescript
+const secret = c.env.GITHUB_WEBHOOK_SECRET;
+```
+
+Further, the code extracts information from the received headers (`x-github-delivery`, `x-hub-signature-256`, `x-github-event`) and the payload.
+Octokit provides the `verifyAndReceive` function for webhooks, which takes the extracted information as parameters to verify and receive the webhook event.
+
+Although Octokit provides types for all existing events, it doesn't offer types for events along with their actions.
+GitHub webhooks not only specify the event type, but each event can also have different actions. For example, the star event can have the actions `created` and `deleted`.
+The corresponding event name (`x-github-event`) sent to the webhook will be `star.created` or `star.deleted`.
+We need to ensure in a type-safe way that the received event is valid.
+
+Therefore, we define the following (maybe a little bit hacky solution) in our type.ts:
+
+```typescript title:"type.ts"
+export type WebhookEventName = Parameters<
+  InstanceType<typeof Webhooks>["verifyAndReceive"]
+>[number]["name"];
+
+export function isWebhookEventName(
+  header: string | undefined
+): header is WebhookEventName {
+  return !!header;
+}
+```
+
+In our Webhook Middleware the complete block then looks like this:
+
+```typescript {10-27} title="middleware/githubWebhooksMiddleware.ts"
+export const githubWebhooksMiddleware = createMiddleware<HonoEnv, "/ghws">(
+  async (c, next) => {
+    const secret = c.env.GITHUB_WEBHOOK_SECRET;
+    const webhooks = getWebhooksInstance(secret);
+
+    c.set("webhooks", webhooks);
+
+    await next();
+
+    const id = c.req.header("x-github-delivery");
+    const signature = c.req.header("x-hub-signature-256");
+    const name = c.req.header("x-github-event");
+
+    const isEventName = isWebhookEventName(name);
+    if (!(id && isEventName && signature)) {
+      return c.text("Invalid request", 403);
+    }
+
+    const payload = await c.req.text();
+
+    try {
+      await webhooks.verifyAndReceive({
+        id,
+        name,
+        signature,
+        payload
+      });
+      return c.text("Webhook received & verified", 201);
+    } catch (error) {
+      return c.text(`Failed to verify Github Webhook request: ${error}`, 400);
+    }
+  }
+);
+```
+
+### Usage of Github Webhook Middleware
+
+For our endpoint, we can now use the middleware to obtain an instance of a GitHub Webhook when we receive a request.
+The middleware ensures that the request is authenticated and verifies both the request and its payload.
+Additionally, we can use the Octokit `on` method to listen only to the events and actions that are of interest to us.
+These can be defined in an array, as shown in the code below:
+
+```typescript title="api/index.ts"
+webhooks.on(
+    ["issues.opened", "star.created", "watch.started"],
+    async ({ payload, name }) => {
+```
+
+## Integrating API calls
+
+The next step in our application involves making direct calls to the third-party service's endpoint from our application, where the code manages the request.
+This approach allows you to implement retries and robust error handling according to your needs.
+
+After receiving an event, we can retrieve the user ID that triggered the event.
+With this information, we can call the GitHub API to obtain more details from the user's public GitHub profile.
+
+It is also best practice to use official and maintained third-party libraries for integration.
+These libraries can assist with payload handling as well as making authenticated requests to the third-party API.
+For the GitHub API we can leverage [Octokit](https://github.com/octokit) to make our requests and handle the payload
+
+### GitHub API Middleware
+
+We create a second custom Hono middleware to handle our requests to the GitHub API.
+This time, authentication takes place on the GitHub side. To create an authenticated Octokit instance, we need to provide a valid [GitHub Access Token](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app).
+It's important to ensure that the token is included in our `.dev.vars` file as `GITHUB_API_TOKEN`.
+
+We can then create a function to fetch the user details using Oktokit requets.
+
+```typescript title="middleware/githubApiMiddleware"
+export const githubApiMiddleware = createMiddleware<HonoEnv, "ghws">(
+  async (c, next) => {
+    const githubToken = c.env.GITHUB_API_TOKEN;
+    const octokit = getOctokitInstance(githubToken);
+
+    const fetchUserById: FetchUserById = async (id) => {
+      try {
+        const { data } = await octokit.request("GET /user/{id}", { id });
+        return data;
+      } catch (error) {
+        throw new Error(`Github API: error fetching user by id: ${error}`);
+      }
+    };
+
+    c.set("fetchUserById", fetchUserById);
+
+    await next();
+  }
+);
+```
+
+### Usage of Github API Middleware
+
+Now we can use the middleware to retrieve user information after receiving an event.
+
+```typescript {2,8} title="api/index.ts"
+const webhooks = c.var.webhooks;
+  const fetchUserById = c.var.fetchUserById;
+
+  webhooks.on(
+    ["issues.opened", "star.created", "watch.started"],
+    async ({ payload, name }) => {
+      const userId = payload.sender.id;
+      const user = await fetchUserById(userId);
+
+```
+
+## Storing information
+
+After obtaining the event information from our webhook and the user information from our API integration, the application stores the data in a database.
+We have defined another middleware in `middleware/db.ts`. In `db/schema.ts`, we define tables for users, events, and repositories.
+
+In our case, we use Neon as the database and provide the valid connection URL in the `dev.vars` file as well.
+
+Make sure to run `bun db:generate` and `bun db:migrate` before running the application to create and migrate the tables.
+
+Now the project is set up to track our open-source engagement across different repositories.
+
+## Outline third-party integration using trace
+
+This very simple application example demonstrates that we often need to include various calls to third-party services.
+During development, it can be tricky to pinpoint where an error occurs, and often the application log is the only option available.
+
+When using Hono, you can leverage Fiberplane's client library, which instruments the application based on [OpenTelemetry](https://opentelemetry.io/).
+This allows you to use Fiberplane Studio, which not only displays your endpoints and helps you make requests or replay your webhook but also captures the call chain (traces) among different integrations.
+
+![Studio timeline](@/assets/blog/2024-09-07-img02.png)
+
+The picture above shows Fiberplane studio with the timeline of the different calls (trace) that happen within your application.
+Addionally it is also possible to get details about single calls (Spans). This brings everything together on one page and makes it easier to detect errors.
+
+![Studio timeline + details](@/assets/blog/2024-09-07-img03.png)
+
+If you like to use Fiberplane's instrumentation you can import the Hono Fiberplane client:
+
+```typescript
+import { instrument } from "@fiberplane/hono-otel";
+
+export default instrument(app);
+```
+
+Once instrumented you can spin up the Fiberplane studio next to your application
+
+```shell
+bunx @fiberplane/studio@latest
+```
+
+## What's next?
+
+Today, we covered Webhook and API integration in Hono using third-party libraries.
+We utilized Hono custom middleware and Octokit to streamline our integration process.
+But this is just the beginning.
+
+Looking ahead, we have developed a prototype for a frontend dashboard that leverages Cloudflare Pages to display information from our database.
+This is just one example of how we can expand the application further.
+Stay tuned for more features as we continue to build and refine our Community tracker application.
