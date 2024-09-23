@@ -4,6 +4,9 @@
  * @returns The file uri (file://<escapedFilePath>)
  */
 export function getFileUri(filePath: string) {
+  if (isFileUri(filePath)) {
+    return filePath;
+  }
   return `file://${escapeFilePath(filePath)}`;
 }
 

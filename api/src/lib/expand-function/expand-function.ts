@@ -11,11 +11,12 @@ import {
   type FunctionOutOfScopeIdentifiers,
   searchForFunction,
 } from "./search-function.js";
-import { getSourceDefinition } from "./tsserver/commands.js";
+import {} from "./tsserver/commands.js";
 import {
-  getDefinition,
   getFileUri,
   getTSServer,
+  getTextDocumentDefinition,
+  getTsSourceDefinition,
   openFile,
 } from "./tsserver/index.js";
 
@@ -120,34 +121,45 @@ async function extractContext(
 
     // Loop through each identifier in the function and find its definition
     for (const identifier of identifiers) {
-      const altDefinition = await getSourceDefinition(
-        connection,
-        funcFileUri,
-        identifier.position,
-        // identifier.name,
+      const [sourceDefinition, textDocumentDefinition] = await Promise.all([
+        getTsSourceDefinition(
+          connection,
+          funcFileUri,
+          identifier.position,
+          identifier.name,
+        ),
+        getTextDocumentDefinition(
+          connection,
+          funcFileUri,
+          identifier.position,
+          identifier.name,
+        ),
+      ]);
+
+      logger.debug(
+        `[debug] ts sourceDefinition for ${identifier.name}:`,
+        JSON.stringify(sourceDefinition, null, 2),
       );
 
       logger.debug(
-        `[debug] altDefinition for ${identifier.name}:`,
-        JSON.stringify(altDefinition, null, 2),
+        `[debug] textDocumentDefinition for ${identifier.name}:`,
+        JSON.stringify(textDocumentDefinition, null, 2),
       );
 
-      const definition = await getDefinition(
-        connection,
-        funcFileUri,
-        identifier.position,
-        identifier.name,
-      );
+      // So, this is a way of filtering out standard globals that are defined in the runtime
+      // We can do this because the textDocumentDefinition will be a .d.ts file, while the sourceDefinition will not be present
+      // This is a bit of a hack, but it works for now
+      if (!sourceDefinition && textDocumentDefinition?.uri?.endsWith(".d.ts")) {
+        logger.debug(
+          `[debug] Skipping ${identifier.name} as it is likely a standard global in the runtime`,
+        );
+        continue;
+      }
 
-      logger.debug(
-        `[debug] definition for ${identifier.name}:`,
-        JSON.stringify(definition, null, 2),
-      );
-
-      if (definition) {
+      if (sourceDefinition) {
         // Find the node at the definition position
         const { node, sourceFile, definitionFilePath } =
-          definitionToNode(definition);
+          definitionToNode(sourceDefinition);
 
         logger.debug(`[debug] AST node for ${identifier.name}:`, node);
 
@@ -188,8 +200,8 @@ async function extractContext(
             type: identifier.type,
             position: identifier.position,
             definition: {
-              uri: definition.uri,
-              range: definition.range,
+              uri: sourceDefinition.uri,
+              range: sourceDefinition.range,
               text: valueText,
             },
           };
