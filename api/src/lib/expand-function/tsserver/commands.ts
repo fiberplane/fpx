@@ -2,6 +2,7 @@ import fs from "node:fs";
 import type ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
 import logger from "../../../logger.js";
+import { type Definition, isDefinitionsArray } from "./types.js";
 import { getFileUri, isFileUri } from "./utils.js";
 
 export async function openFile(
@@ -41,13 +42,8 @@ export async function getTsSourceDefinition(
   connection: MessageConnection,
   filePath: string,
   position: ts.LineAndCharacter,
-  identifierName?: string,
-) {
+): Promise<Definition | null> {
   const fileUri = isFileUri(filePath) ? filePath : getFileUri(filePath);
-
-  logger.debug(
-    `[debug] [identifierName: ${identifierName}] Getting source definition for ${filePath} (${fileUri}) at position ${position}`,
-  );
 
   const sourceDefinition = await executeCommand(
     connection,
@@ -55,17 +51,14 @@ export async function getTsSourceDefinition(
     [fileUri, position],
   );
 
-  if (identifierName) {
-    logger.debug(
-      `[debug] TS Lang Server definition response for ${identifierName}:`,
-      JSON.stringify(sourceDefinition, null, 2),
-    );
+  // INVESTIGATE - When is definitionResponse longer than 1?
+  if (isDefinitionsArray(sourceDefinition)) {
+    return sourceDefinition[0] ?? null;
   }
 
-  // INVESTIGATE - When is definitionResponse longer than 1?
-  if (Array.isArray(sourceDefinition) && sourceDefinition.length > 0) {
-    return sourceDefinition[0];
-  }
+  logger.warn(
+    `[warning] getTsSourceDefinition returned an unexpected, unparseable response: ${sourceDefinition}`,
+  );
 
   return null;
 }
@@ -111,15 +104,13 @@ export async function executeCommand(
  * @param connection - The TypeScript server connection.
  * @param fileUri - The URI of the TypeScript file.
  * @param position - The position in the file to get the definition for.
- * @param identifierName - (Optional) The name of the identifier for logging purposes.
  * @returns The definition location or null if not found.
  */
 export async function getTextDocumentDefinition(
   connection: MessageConnection,
   fileUri: string,
   position: ts.LineAndCharacter,
-  identifierName?: string,
-) {
+): Promise<Definition | null> {
   const definitionResponse = await connection.sendRequest(
     "textDocument/definition",
     {
@@ -128,17 +119,14 @@ export async function getTextDocumentDefinition(
     },
   );
 
-  if (identifierName) {
-    logger.debug(
-      `[debug] TS Lang Server definition response for ${identifierName}:`,
-      JSON.stringify(definitionResponse, null, 2),
-    );
+  // INVESTIGATE - When is definitionResponse longer than 1?
+  if (isDefinitionsArray(definitionResponse)) {
+    return definitionResponse[0] ?? null;
   }
 
-  // INVESTIGATE - When is definitionResponse longer than 1?
-  if (Array.isArray(definitionResponse) && definitionResponse.length > 0) {
-    return definitionResponse[0];
-  }
+  logger.warn(
+    `[warning] getTextDocumentDefinition returned an unexpected, unparseable response: ${definitionResponse}`,
+  );
 
   return null;
 }

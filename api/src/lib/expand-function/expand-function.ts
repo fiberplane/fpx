@@ -5,7 +5,7 @@ import {
   getDefinitionText,
   getParentImportDeclaration,
 } from "./ast-helpers/index.js";
-import { followImport } from "./follow-import.js";
+import { contextForImport, followImport } from "./follow-import.js";
 import { isExpectedGlobal } from "./identifier-analyzer.js";
 import {
   type FunctionOutOfScopeIdentifiers,
@@ -108,32 +108,13 @@ async function extractContext(
     //
     await openFile(connection, filePath);
 
-    for (const identifier of identifiers) {
-      const isGlobal = await isExpectedGlobal(connection, identifier, filePath);
-      if (isGlobal) {
-        console.log(`[debug] ${identifier.name} is a global`);
-      } else {
-        console.log(`[debug] ${identifier.name} is not a global`);
-      }
-    }
-
     const funcFileUri = getFileUri(filePath);
 
     // Loop through each identifier in the function and find its definition
     for (const identifier of identifiers) {
       const [sourceDefinition, textDocumentDefinition] = await Promise.all([
-        getTsSourceDefinition(
-          connection,
-          funcFileUri,
-          identifier.position,
-          identifier.name,
-        ),
-        getTextDocumentDefinition(
-          connection,
-          funcFileUri,
-          identifier.position,
-          identifier.name,
-        ),
+        getTsSourceDefinition(connection, funcFileUri, identifier.position),
+        getTextDocumentDefinition(connection, funcFileUri, identifier.position),
       ]);
 
       logger.debug(
@@ -146,15 +127,20 @@ async function extractContext(
         JSON.stringify(textDocumentDefinition, null, 2),
       );
 
-      // So, this is a way of filtering out standard globals that are defined in the runtime
+      // Here we can filter out standard globals that are defined in the runtime
+      //   (e.g., `console`, `URL`, `Number`, etc.)
       // We can do this because the textDocumentDefinition will be a .d.ts file, while the sourceDefinition will not be present
       // This is a bit of a hack, but it works for now
-      if (!sourceDefinition && textDocumentDefinition?.uri?.endsWith(".d.ts")) {
+      const isStandardGlobal =
+        !sourceDefinition && textDocumentDefinition?.uri?.endsWith(".d.ts");
+      if (isStandardGlobal) {
         logger.debug(
-          `[debug] Skipping ${identifier.name} as it is likely a standard global in the runtime`,
+          `[debug] Skipping expansion of ${identifier.name} as it is likely a standard global in the runtime`,
         );
         continue;
       }
+
+      // TODO - Handle node_modules, add some context about the module that was imported
 
       if (sourceDefinition) {
         // Find the node at the definition position
@@ -166,26 +152,20 @@ async function extractContext(
         // If there's a node, we can try to extract the value of the definition
         if (node) {
           // First, handle the case where it was imported from another file.
-          // TODO - Handle node_modules, add some context about the module that was imported
           const parentImportDeclaration = getParentImportDeclaration(node);
           if (
             parentImportDeclaration &&
             ts.isImportDeclaration(parentImportDeclaration)
           ) {
-            const importedDefinition = await followImport(
+            const contextEntry = await contextForImport(
               connection,
               projectRoot,
               definitionFilePath,
               parentImportDeclaration,
               node,
+              identifier,
             );
-            if (importedDefinition) {
-              const contextEntry = {
-                name: identifier.name,
-                type: identifier.type,
-                position: identifier.position,
-                definition: importedDefinition,
-              };
+            if (contextEntry) {
               context.push(contextEntry);
               continue;
             }
