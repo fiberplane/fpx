@@ -97,7 +97,9 @@ function searchFile(
 
   function visit(node: ts.Node) {
     const isFunction =
-      ts.isFunctionDeclaration(node) || ts.isArrowFunction(node) || ts.isFunctionExpression(node);
+      ts.isFunctionDeclaration(node) ||
+      ts.isArrowFunction(node) ||
+      ts.isFunctionExpression(node);
 
     if (isFunction && node?.getText() === searchString) {
       logger.debug("[debug] matched function we were looking for!");
