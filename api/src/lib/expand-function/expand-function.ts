@@ -115,15 +115,15 @@ async function extractContext(
         getTextDocumentDefinition(connection, funcFileUri, identifier.position),
       ]);
 
-      logger.debug(
-        `[debug] ts sourceDefinition for ${identifier.name}:`,
-        JSON.stringify(sourceDefinition, null, 2),
-      );
+      // logger.debug(
+      //   `[debug] ts sourceDefinition for ${identifier.name}:`,
+      //   JSON.stringify(sourceDefinition, null, 2),
+      // );
 
-      logger.debug(
-        `[debug] textDocumentDefinition for ${identifier.name}:`,
-        JSON.stringify(textDocumentDefinition, null, 2),
-      );
+      // logger.debug(
+      //   `[debug] textDocumentDefinition for ${identifier.name}:`,
+      //   JSON.stringify(textDocumentDefinition, null, 2),
+      // );
 
       // Here we can filter out standard globals that are defined in the runtime
       //   (e.g., `console`, `URL`, `Number`, etc.)
