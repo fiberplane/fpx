@@ -31,7 +31,7 @@ export interface OutOfScopeIdentifier {
  * as "in scope". It only looks at declarations within the function itself.
  */
 export function analyzeOutOfScopeIdentifiers(
-  functionNode: ts.FunctionDeclaration | ts.ArrowFunction,
+  functionNode: ts.FunctionDeclaration | ts.ArrowFunction | ts.FunctionExpression,
   sourceFile: ts.SourceFile,
 ): OutOfScopeIdentifier[] {
   const localDeclarations = new Set<string>();
