@@ -25,10 +25,15 @@ export function getDefinitionText(node: ts.Node, sourceFile: ts.SourceFile) {
     return node.initializer.getText(sourceFile);
   }
 
-  // Function declaration or arrow function
-  // `function f() { ... }`
-  // `(c) => { ... }`
-  if (ts.isFunctionDeclaration(node) || ts.isArrowFunction(node)) {
+  // Function declaration, arrow function, or function expression
+  // Declaration: `function f() { ... }`
+  // Arrow: `(c) => { ... }`
+  // Expression: `const h = function () { ... }` (or e.g., a function passed inline as a callback)
+  if (
+    ts.isFunctionDeclaration(node) ||
+    ts.isArrowFunction(node) ||
+    ts.isFunctionExpression(node)
+  ) {
     return node.getText(sourceFile);
   }
 

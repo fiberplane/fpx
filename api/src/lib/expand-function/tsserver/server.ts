@@ -1,10 +1,12 @@
 import { spawn } from "node:child_process";
 import {
+  type MessageConnection,
   StreamMessageReader,
   StreamMessageWriter,
   createMessageConnection,
 } from "vscode-jsonrpc/node.js";
 import logger from "../../../logger.js";
+import { isPublishDiagnosticsParams } from "./types.js";
 import { getFileUri } from "./utils.js";
 // import path from "node:path";
 
@@ -12,7 +14,8 @@ export async function getTSServer(pathToProject: string) {
   logger.debug(`[debug]Initializing TS Server for project: ${pathToProject}`);
 
   const tsServer = spawn("npx", ["typescript-language-server", "--stdio"], {
-    // NOTE - This will have latency if the user has not yet downloaded typescript-language-server dependency before via npx...
+    // NOTE - This will add quite a bit of startup time if the user has not yet downloaded typescript-language-server dependency before via npx...
+    //        And I haven't tested what that overhead is...
     // NOTE - We *could* run the language server in the project root (via cwd switch), but I think we handle this by initializing the language server
     //        and pointing it to the project root below anyhow.
     // cwd: pathToProject,
@@ -67,45 +70,49 @@ export async function getTSServer(pathToProject: string) {
 
     await connection.sendNotification("initialized");
 
-    // NOTE - Does not implement workspace/configuration messages
-    //
-    // const configResponse = await connection.sendRequest("workspace/configuration", {
-    //   items: [{ scopeUri: rootUri, section: "typescript" }],
-    // });
-
-    // console.log("TS Server Configuration:", configResponse);
-
-    // Listen for diagnostics
-    connection.onNotification("textDocument/publishDiagnostics", (params) => {
-      const { uri, diagnostics } = params;
-      if (diagnostics.length > 0) {
-        console.warn(`Diagnostics for ${uri}:`);
-        // biome-ignore lint/complexity/noForEach: <explanation>
-        diagnostics.forEach((diag) => {
-          console.warn(
-            `- [${diag.severity}] ${diag.message} at ${diag.range.start.line}:${diag.range.start.character}`,
-          );
-        });
-      } else {
-        console.log(`No diagnostics for ${uri}.`);
-      }
-    });
-
-    // Listen for log messages
-    connection.onNotification("window/logMessage", (params) => {
-      const { type, message } = params;
-      console.log(`Log Message [${type}]: ${message}`);
-    });
-
-    // Listen for show messages
-    connection.onNotification("window/showMessage", (params) => {
-      const { type, message } = params;
-      console.log(`Show Message [${type}]: ${message}`);
-    });
+    registerNotificationHandlers(connection);
 
     return { connection, tsServer };
   } catch (error) {
     logger.error("Error initializing TS Server:", error);
     throw error;
   }
+}
+
+function registerNotificationHandlers(connection: MessageConnection) {
+  // Listen for diagnostics
+  connection.onNotification("textDocument/publishDiagnostics", (params) => {
+    if (!isPublishDiagnosticsParams(params)) {
+      logger.debug(
+        "[debug] Received unexpected params for `textDocument/publishDiagnostics`",
+      );
+      return;
+    }
+    const { uri, diagnostics } = params;
+    if (diagnostics.length > 0) {
+      logger.info(`[textDocument/publishDiagnostics] Diagnostics for ${uri}:`);
+      // biome-ignore lint/complexity/noForEach: <explanation>
+      diagnostics.forEach((diag) => {
+        logger.info(
+          `- [${diag.severity}] ${diag.message} at ${diag.range.start.line}:${diag.range.start.character}`,
+        );
+      });
+    } else {
+      logger.debug(
+        `[textDocument/publishDiagnostics] No diagnostics for ${uri}.`,
+      );
+    }
+  });
+
+  // Listen for log messages
+  connection.onNotification("window/logMessage", (params) => {
+    const { type, message } = params;
+    logger.info(`[window/logMessage] Log Message [${type}]: ${message}`);
+  });
+
+  // Listen for show messages
+  connection.onNotification("window/showMessage", (params) => {
+    const { type, message } = params;
+    logger.info(`[window/showMessage] Show Message [${type}]: ${message}`);
+  });
 }
