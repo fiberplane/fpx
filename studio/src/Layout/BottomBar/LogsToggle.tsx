@@ -21,7 +21,6 @@ import { useShallow } from "zustand/react/shallow";
  */
 export function LogsToggle() {
   const traceId = useActiveTraceId();
-
   if (traceId) {
     return <ToggleWithTraceId traceId={traceId} />;
   }
@@ -75,9 +74,7 @@ function LogsToggleContent({
             icon="lucide:square-terminal"
             notificationPosition="top-right"
             notificationColor={notificationColor}
-            notificationContent={" "}
             showNotification={count > 0}
-            notificationSize={10}
             className={cn("cursor-pointer h-4 w-4", {
               "text-blue-500": logsPanelVisible,
             })}

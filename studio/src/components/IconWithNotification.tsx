@@ -4,7 +4,6 @@ import type React from "react";
 
 interface IconWithNotificationProps extends IconProps {
   notificationColor?: string;
-  notificationSize?: number;
   notificationPosition?:
     | "top-right"
     | "top-left"
@@ -16,14 +15,13 @@ interface IconWithNotificationProps extends IconProps {
 
 const IconWithNotification: React.FC<IconWithNotificationProps> = ({
   notificationColor = "bg-red-500",
-  notificationSize = 10,
   notificationPosition = "top-right",
   notificationContent,
   showNotification = true,
   ...iconProps
 }) => {
   return (
-    <div className="relative inline-block">
+    <div className="relative">
       <Icon {...iconProps} />
       {showNotification && (
         <div
@@ -32,7 +30,7 @@ const IconWithNotification: React.FC<IconWithNotificationProps> = ({
             "shadow-sm",
             "absolute flex justify-center items-center text-[7px] leading-[1]",
             "font-bold rounded-full overflow-hidden",
-            `w-[${notificationSize}px] h-[${notificationSize}px]`,
+            "w-[10px] h-[10px]",
             notificationPosition === "top-right" && "-top-1 -right-1",
             notificationPosition === "top-left" && "-top-1 -left-1",
             notificationPosition === "bottom-right" && "-bottom-1 -right-1",
