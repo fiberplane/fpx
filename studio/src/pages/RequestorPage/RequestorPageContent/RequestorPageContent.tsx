@@ -67,7 +67,12 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   useEffect(() => {
     if (traceId && traceId !== activeHistoryResponseTraceId) {
       setActiveHistoryResponseTraceId(traceId);
-      navigate(generateLinkToTrace(traceId), { replace: true });
+      navigate(
+        {
+          pathname: generateLinkToTrace(traceId),
+        },
+        { replace: true },
+      );
     }
   }, [
     traceId,
@@ -245,7 +250,11 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
               order={1}
               className={cn(BACKGROUND_LAYER, "relative")}
               id="request-panel"
-              minSize={requestPanelMinSize}
+              minSize={
+                requestPanelMinSize
+                  ? Math.min(100, requestPanelMinSize)
+                  : undefined
+              }
               maxSize={requestPanelMaxSize}
             >
               {requestContent}
