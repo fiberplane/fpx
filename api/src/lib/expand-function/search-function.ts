@@ -2,15 +2,12 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
 import logger from "../../logger.js";
+import {
+  type OutOfScopeIdentifier,
+  analyzeOutOfScopeIdentifiers,
+} from "./identifier-analyzer.js";
 
-export type FunctionOutOfScopeIdentifiers = Array<{
-  /** The name of the constant or utility in the code */
-  name: string;
-  /** The type of the constant or utility (function, string, etc) */
-  type: string;
-  /** The position of the constant or utility in the code */
-  position: ts.LineAndCharacter;
-}>;
+export type FunctionOutOfScopeIdentifiers = OutOfScopeIdentifier[];
 
 type SearchFunctionResult = {
   /** The file in which the function was found */
@@ -59,6 +56,31 @@ export function searchForFunction(
   return null;
 }
 
+/**
+ * Searches for a function definition in a specific file.
+ *
+ * @param filePath - The absolute path to the file to search.
+ * @param searchString - The exact string representation of the function to search for.
+ *
+ * @returns {SearchFunctionResult | null}
+ *   - If found, returns a SearchFunctionResult object containing:
+ *     - file: The absolute path of the file where the function was found.
+ *     - startLine: The 1-indexed line number where the function definition starts.
+ *     - startColumn: The 1-indexed column number where the function definition starts.
+ *     - endLine: The 1-indexed line number where the function definition ends.
+ *     - endColumn: The 1-indexed column number where the function definition ends.
+ *     - identifiers: An array of FunctionOutOfScopeIdentifiers, each containing:
+ *       - name: The name of the identifier used but not declared within the function.
+ *       - type: Always "unknown" in the current implementation.
+ *       - position: The LineAndCharacter object representing the identifier's position.
+ *   - If not found, returns null.
+ *
+ * @description
+ * This function uses the TypeScript Compiler API to parse the file and search for the function.
+ * It performs an exact match on the function's string representation, including its body.
+ * The search is case-sensitive and whitespace-sensitive.
+ * Out-of-scope identifiers are determined by analyzing variable declarations and usages within the function.
+ */
 function searchFile(
   filePath: string,
   searchString: string,
@@ -76,11 +98,7 @@ function searchFile(
   function visit(node: ts.Node) {
     const isFunction =
       ts.isFunctionDeclaration(node) || ts.isArrowFunction(node);
-    // if (isFunction) {
-    //   logger.log("matched function node:", node);
-    //   logger.log(node?.getText());
-    // }
-    // Look for the matching function definition
+
     if (isFunction && node?.getText() === searchString) {
       logger.debug("[debug] matched function we were looking for!");
       const { line: startLine, character: startColumn } =
@@ -88,88 +106,8 @@ function searchFile(
       const { line: endLine, character: endColumn } =
         sourceFile.getLineAndCharacterOfPosition(node.getEnd());
 
-      const identifiers: FunctionOutOfScopeIdentifiers = [];
-      // const program = ts.createProgram([filePath], {});
-      // const checker = program.getTypeChecker();
-
-      // Now we want to determin all identifiers that are in scope,
-      // and all identifiers that are used but not declared in the current function
-      // We can do this by traversing the AST and collecting declarations and usages
-      const localDeclarations = new Set<string>();
-      const usedIdentifiers = new Map<string, ts.LineAndCharacter>();
-
-      // First pass: recursively collect local declaration
-      //
-      // NOTE - This should not incur a stack overflow, in spite of its recursion,
-      // because the function is not calling itself, it's passing itself to an iterator as a callback
-      ts.forEachChild(node, function collectDeclarations(childNode) {
-        if (
-          ts.isVariableDeclaration(childNode) &&
-          childNode.name.kind === ts.SyntaxKind.Identifier
-        ) {
-          localDeclarations.add(childNode.name.text);
-        }
-        if (
-          ts.isParameter(childNode) &&
-          childNode.name.kind === ts.SyntaxKind.Identifier
-        ) {
-          localDeclarations.add(childNode.name.text);
-        }
-        ts.forEachChild(childNode, collectDeclarations);
-      });
-
-      // Second pass: collect used identifiers
-      // - If it's a property access on a declared local variable, skip it
-      ts.forEachChild(node, function collectIdentifiers(childNode) {
-        if (ts.isIdentifier(childNode)) {
-          // Check if the identifier is part of a property access
-          if (ts.isPropertyAccessExpression(childNode.parent)) {
-            // If it's the property name, skip it
-            if (childNode === childNode.parent.name) {
-              return;
-            }
-            // If it's the expression (left-hand side) and it's a local variable, skip it
-            if (
-              childNode === childNode.parent.expression &&
-              localDeclarations.has(childNode.text)
-            ) {
-              return;
-            }
-            // If it's the expression but not a local variable, include it
-            // Example: Property accesse expression on an out-of-scope variable
-            if (childNode === childNode.parent.expression) {
-              const pos = sourceFile.getLineAndCharacterOfPosition(
-                childNode.getStart(),
-              );
-              usedIdentifiers.set(childNode.text, pos);
-              return;
-            }
-          }
-
-          // If it's not a local declaration and not part of a skipped property access, add it
-          if (!localDeclarations.has(childNode.text)) {
-            const pos = sourceFile.getLineAndCharacterOfPosition(
-              childNode.getStart(),
-            );
-            usedIdentifiers.set(childNode.text, pos);
-          }
-        }
-        ts.forEachChild(childNode, collectIdentifiers);
-      });
-
-      // Add out-of-scope identifiers to context
-      usedIdentifiers.forEach((position, identifier) => {
-        identifiers.push({
-          name: identifier,
-          // We can't reliably get the type without a working symbol table,
-          // which I think would require loading the entire project (all files) in to a
-          // typescript program and using its checker
-          type: "unknown",
-          position,
-        });
-      });
-
-      logger.debug("identifiers", identifiers);
+      // Replace the identifier analysis code with the new helper function
+      const identifiers = analyzeOutOfScopeIdentifiers(node, sourceFile);
 
       result = {
         file: filePath,

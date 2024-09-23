@@ -55,7 +55,7 @@ main().catch((error) => {
 });
 
 export async function tsServerTest() {
-  const connection = await getTSServer(projectRoot);
+  const { connection } = await getTSServer(projectRoot);
   // debugger;
   const fileUri = `file://${path.resolve(projectRoot, "src/index.ts")}`;
   console.log("fileUri", fileUri);

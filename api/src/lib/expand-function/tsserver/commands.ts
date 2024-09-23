@@ -2,7 +2,7 @@ import fs from "node:fs";
 import type ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
 import logger from "../../../logger.js";
-import { getFileUri } from "./utils.js";
+import { getFileUri, isFileUri } from "./utils.js";
 
 export async function openFile(
   connection: MessageConnection,
@@ -21,6 +21,42 @@ export async function openFile(
   });
 
   logger.debug("[debug] Opened document:", fileUri);
+}
+
+// Function to request source definitions
+export async function getSourceDefinition(
+  connection: MessageConnection,
+  filePath: string,
+  position: ts.LineAndCharacter,
+) {
+  const fileUri = isFileUri(filePath) ? filePath : getFileUri(filePath);
+  logger.debug(
+    `[debug] Getting source definition for ${filePath} (${fileUri}) at position ${position}`,
+  );
+  return executeCommand(connection, "_typescript.goToSourceDefinition", [
+    fileUri,
+    position,
+  ]);
+}
+
+export async function executeCommand(
+  connection: MessageConnection,
+  command: string,
+  args: unknown[],
+) {
+  try {
+    const response = await connection.sendRequest("workspace/executeCommand", {
+      command: command,
+      arguments: args,
+    });
+    return response;
+  } catch (error) {
+    logger.error(
+      `Error with 'workspace/executeCommand' for command: ${command} with args: ${JSON.stringify(args, null, 2)}`,
+      error,
+    );
+    return null;
+  }
 }
 
 export async function getDefinition(
