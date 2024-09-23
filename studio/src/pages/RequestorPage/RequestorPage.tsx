@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/resizable";
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { RequestDetailsPageV2 } from "../RequestDetailsPage/RequestDetailsPageV2";
@@ -76,6 +77,14 @@ export const RequestorPage = () => {
     [searchParams],
   );
 
+  const generateNavigation = useHandler((traceId: string) => {
+    const search = searchParams.toString();
+    return {
+      path: `/request/${traceId}/navigation`,
+      search,
+    };
+  });
+
   return (
     <div
       className={cn(
@@ -125,7 +134,7 @@ export const RequestorPage = () => {
               sessionHistory={sessionHistory}
               recordRequestInSessionHistory={recordRequestInSessionHistory}
               overrideTraceId={id}
-              generateLinkToTrace={generateLinkToTrace}
+              generateNavigation={generateNavigation}
             />
           )}
         </ResizablePanel>

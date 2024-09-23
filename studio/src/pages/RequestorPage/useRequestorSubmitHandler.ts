@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useHandler } from "@fiberplane/hooks";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { type To, useNavigate } from "react-router-dom";
 import type { KeyValueParameter } from "./KeyValueForm";
 import type { MakeProxiedRequestQueryFn } from "./queries";
 import type { RequestorBody } from "./store";
@@ -12,17 +12,16 @@ export function useRequestorSubmitHandler({
   makeRequest,
   connectWebsocket,
   recordRequestInSessionHistory,
-  generateLinkToTrace,
+  generateNavigation,
 }: {
   makeRequest: MakeProxiedRequestQueryFn;
   connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
-  generateLinkToTrace: (traceId: string) => string;
+  generateNavigation: (traceId: string) => To;
 }) {
   const { toast } = useToast();
 
   const navigate = useNavigate();
-  const [params] = useSearchParams();
   const {
     activeRoute,
     body,
@@ -102,13 +101,7 @@ export function useRequestorSubmitHandler({
           const traceId = data?.traceId;
 
           if (traceId && typeof traceId === "string") {
-            navigate(
-              {
-                pathname: generateLinkToTrace(traceId),
-                search: params.toString(),
-              },
-              { replace: true },
-            );
+            navigate(generateNavigation(traceId), { replace: true });
             recordRequestInSessionHistory(traceId);
           } else {
             console.error(

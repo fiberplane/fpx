@@ -9,7 +9,7 @@ import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
 import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useNavigate } from "react-router-dom";
+import { type To, useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
@@ -30,7 +30,7 @@ interface RequestorPageContentProps {
   sessionHistory: Requestornator[];
   recordRequestInSessionHistory: (traceId: string) => void;
   overrideTraceId?: string;
-  generateLinkToTrace: (traceId: string) => string;
+  generateNavigation: (traceId: string) => To;
 }
 
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
@@ -42,7 +42,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     overrideTraceId,
     sessionHistory,
     historyLoading,
-    generateLinkToTrace,
+    generateNavigation,
   } = props;
 
   const { toast } = useToast();
@@ -67,17 +67,12 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   useEffect(() => {
     if (traceId && traceId !== activeHistoryResponseTraceId) {
       setActiveHistoryResponseTraceId(traceId);
-      navigate(
-        {
-          pathname: generateLinkToTrace(traceId),
-        },
-        { replace: true },
-      );
+      navigate(generateNavigation(traceId), { replace: true });
     }
   }, [
     traceId,
     activeHistoryResponseTraceId,
-    generateLinkToTrace,
+    generateNavigation,
     navigate,
     setActiveHistoryResponseTraceId,
   ]);
@@ -98,7 +93,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     makeRequest,
     connectWebsocket,
     recordRequestInSessionHistory,
-    generateLinkToTrace,
+    generateNavigation,
   });
 
   const formRef = useRef<HTMLFormElement>(null);
