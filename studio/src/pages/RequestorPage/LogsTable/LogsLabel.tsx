@@ -7,7 +7,7 @@ export function LogsLabel(props: { traceId?: string }) {
   const { traceId } = props;
 
   return (
-    <div>
+    <div className="capitalize">
       logs
       {traceId && (
         <>
