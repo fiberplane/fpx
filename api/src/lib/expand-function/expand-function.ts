@@ -10,6 +10,7 @@ import {
   type FunctionOutOfScopeIdentifiers,
   searchForFunction,
 } from "./search-function.js";
+import { getSourceDefinition } from "./tsserver/commands.js";
 import {
   getDefinition,
   getFileUri,
@@ -97,7 +98,7 @@ async function extractContext(
   }
 
   try {
-    const connection = await getTSServer(projectRoot);
+    const { connection } = await getTSServer(projectRoot);
 
     // Open the document containing the function
     // We do this to get more information on the definitions of the function's out-of-scope identifiers
@@ -108,11 +109,28 @@ async function extractContext(
 
     // Loop through each identifier in the function and find its definition
     for (const identifier of identifiers) {
+      const altDefinition = await getSourceDefinition(
+        connection,
+        funcFileUri,
+        identifier.position,
+        // identifier.name,
+      );
+
+      logger.debug(
+        `[debug] altDefinition for ${identifier.name}:`,
+        JSON.stringify(altDefinition, null, 2),
+      );
+
       const definition = await getDefinition(
         connection,
         funcFileUri,
         identifier.position,
         identifier.name,
+      );
+
+      logger.debug(
+        `[debug] definition for ${identifier.name}:`,
+        JSON.stringify(definition, null, 2),
       );
 
       if (definition) {
