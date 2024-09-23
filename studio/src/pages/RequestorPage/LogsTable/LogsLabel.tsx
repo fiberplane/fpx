@@ -23,7 +23,7 @@ function LogsCount(props: { traceId: string }) {
   const { traceId } = props;
   const { data: spans } = useOtelTrace(traceId);
   const orphanLogs = useOrphanLogs(traceId, spans ?? EMPTY_LIST);
-  console.log("logs count", orphanLogs, spans, traceId);
+
   return (
     <span className="text-xs text-muted-foreground">({orphanLogs.length})</span>
   );

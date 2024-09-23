@@ -18,55 +18,19 @@ export const uiSlice: StateCreator<
       panelName: Exclude<keyof UISlice, "togglePanel"> | BOTTOM_PANEL_NAMES,
     ) =>
       set((state) => {
-        if (isBottomPanelName(panelName)) {
-          const index = state.bottomPanels.indexOf(panelName);
-          if (index !== -1) {
-            if (state.bottomPanelIndex === index) {
-              state.bottomPanelIndex = undefined;
-            } else {
-              state.bottomPanelIndex = index;
-            }
-          }
-          // if (state.bottomPanels.includes(panelName)) {
-          //   state.bottomPanels = state.bottomPanels.filter(
-          //     (name) => name !== panelName,
-          //   );
-
-          //   if (
-          //     state.bottomPanelIndex === undefined ||
-          //     state.bottomPanelIndex >= state.bottomPanels.length
-          //   ) {
-          //     state.bottomPanelIndex = state.bottomPanels.length - 1;
-          //   }
-
-          //   if (state.bottomPanels.length === 0) {
-          //     state.bottomPanelIndex = undefined;
-          //   }
-
-          //   console.log(
-          //     "state.bottomPanels",
-          //     state.bottomPanels,
-          //     state.bottomPanelIndex,
-          //   );
-          // } else {
-          //   state.bottomPanels.push(panelName);
-          //   state.bottomPanelIndex = state.bottomPanels.length - 1;
-          // }
-        } else {
+        if (!isBottomPanelName(panelName)) {
           state[panelName] === "open" ? "closed" : "open";
+          return;
         }
-        // if (panelName === "bottomPanel") {
-        //   state[panelName] = undefined;
-        //   return;
-        // }
-        // console.log(panelName, isBottomPanelName(panelName));
-        // if (isBottomPanelName(panelName)) {
-        //   state.bottomPanel =
-        //     state[panelName] === "open" ? panelName : undefined;
-        // }
-        // if (state.aiPanel === "closed" && state.logsPanel === "closed" && state.timelinePanel === "closed") {
-        //   state.bottomPanel = undefined;
-        // }
+
+        const index = state.bottomPanels.indexOf(panelName);
+        if (index !== -1) {
+          if (state.bottomPanelIndex === index) {
+            state.bottomPanelIndex = undefined;
+          } else {
+            state.bottomPanelIndex = index;
+          }
+        }
       }),
     setBottomPanelIndex(index: number | undefined) {
       set((state) => {
@@ -87,7 +51,6 @@ export const uiSlice: StateCreator<
 };
 
 function isBottomPanelName(element: unknown): element is BOTTOM_PANEL_NAMES {
-  // console.log(validBottomPanelNames, validBottomPanelNames.includes(element));
   return (
     typeof element === "string" &&
     validBottomPanelNames.includes(element as BOTTOM_PANEL_NAMES)

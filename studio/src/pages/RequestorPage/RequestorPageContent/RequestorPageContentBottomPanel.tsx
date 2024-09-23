@@ -52,7 +52,6 @@ const RequestorPageContentBottomPanel: React.FC<
         onValueChange={(value) => {
           const index = bottomPanels.indexOf(value as BOTTOM_PANEL_NAMES);
           if (index !== -1) {
-            console.log("value", value, index, bottomPanels);
             setBottomPanelIndex(index);
           }
         }}
