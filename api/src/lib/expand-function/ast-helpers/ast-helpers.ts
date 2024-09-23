@@ -22,7 +22,10 @@ export function getDefinitionText(node: ts.Node, sourceFile: ts.SourceFile) {
   // `const y = ...`
   // `let x = ...`
   if (ts.isVariableDeclaration(node) && node.initializer) {
-    return node.initializer.getText(sourceFile);
+    return {
+      type: "unknown", // TODO
+      text: node.initializer.getText(sourceFile),
+    };
   }
 
   // Function declaration, arrow function, or function expression
@@ -34,12 +37,18 @@ export function getDefinitionText(node: ts.Node, sourceFile: ts.SourceFile) {
     ts.isArrowFunction(node) ||
     ts.isFunctionExpression(node)
   ) {
-    return node.getText(sourceFile);
+    return {
+      type: "function",
+      text: node.getText(sourceFile),
+    };
   }
 
   // Check if the node is an identifier and if the parent node is a function declaration
   if (ts.isIdentifier(node) && ts.isFunctionDeclaration(node.parent)) {
-    return node.parent.getText(sourceFile);
+    return {
+      type: "function",
+      text: node.parent.getText(sourceFile),
+    };
   }
 
   // Check if the node is an identifier and the parent node is a variable declaration with initializer
@@ -49,7 +58,10 @@ export function getDefinitionText(node: ts.Node, sourceFile: ts.SourceFile) {
     ts.isVariableDeclaration(node.parent) &&
     node.parent.initializer
   ) {
-    return node.parent.initializer.getText(sourceFile);
+    return {
+      type: "unknown", // TODO
+      text: node.parent.initializer.getText(sourceFile),
+    };
   }
 
   return undefined;

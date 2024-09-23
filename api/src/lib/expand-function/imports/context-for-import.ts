@@ -17,6 +17,9 @@ export async function contextForImport(
   identifierNode: ts.Node,
   identifier: OutOfScopeIdentifier,
 ) {
+  logger.info(
+    `[debug] [contextForImport] Going to follow import for identifier: ${identifier.name}`,
+  );
   const importedDefinition = await followImport(
     tsserver,
     _projectRoot,
@@ -27,7 +30,7 @@ export async function contextForImport(
   if (importedDefinition) {
     return {
       name: identifier.name,
-      type: identifier.type,
+      type: importedDefinition.type ?? "unknown",
       position: identifier.position,
       definition: importedDefinition,
     };
@@ -131,10 +134,10 @@ async function followImport(
         identifierToFind,
       );
       if (importedNode) {
-        const definitionText = getDefinitionText(
-          importedNode,
-          importedSourceFile,
-        );
+        const result = getDefinitionText(importedNode, importedSourceFile);
+
+        const definitionText = result?.text;
+        const definitionType = result?.type;
 
         return {
           uri: getFileUri(resolvedPath),
@@ -147,6 +150,7 @@ async function followImport(
             ),
           },
           text: definitionText,
+          type: definitionType,
         };
       }
     }
