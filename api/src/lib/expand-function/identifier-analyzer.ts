@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
-import { getDefinition, getFileUri } from "./tsserver/index.js";
+import { getFileUri, getTextDocumentDefinition } from "./tsserver/index.js";
 
 import logger from "../../logger.js";
 
@@ -109,7 +109,7 @@ export async function isExpectedGlobal(
   // const fileUri = getFileUri(sourceFile.fileName);
 
   try {
-    const definition = await getDefinition(
+    const definition = await getTextDocumentDefinition(
       connection,
       fileUri,
       identifier.position,
