@@ -1,4 +1,5 @@
-import { CodeMirrorJsonEditor, SubSectionHeading } from "@/components/Timeline";
+import { CodeMirrorJsonEditor } from "@/components/CodeMirrorEditor";
+import { SubSectionHeading } from "@/components/Timeline";
 import { TextOrJsonViewer } from "@/components/Timeline/DetailsList/TextJsonViewer";
 import { Button } from "@/components/ui/button";
 import {
