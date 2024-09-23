@@ -3,8 +3,6 @@ import * as ts from "typescript";
 export interface OutOfScopeIdentifier {
   /** The name of the identifier used but not declared within the function */
   name: string;
-  /** The type of the identifier (always "unknown" in the current implementation) */
-  type: string;
   /** The position of the identifier in the code */
   position: ts.LineAndCharacter;
 }
@@ -82,7 +80,6 @@ export function analyzeOutOfScopeIdentifiers(
   // Convert the map to an array of OutOfScopeIdentifier objects
   return Array.from(usedIdentifiers, ([name, position]) => ({
     name,
-    type: "unknown",
     position,
   }));
 }

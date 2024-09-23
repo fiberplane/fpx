@@ -28,8 +28,14 @@ import {
 export type ExpandedFunctionContext = Array<{
   /** The name of the constant or utility in the code */
   name: string;
-  /** The type of the constant or utility (function, string, etc) */
-  type: string;
+  /**
+   * The type of the constant or utility.
+   * This will be used to help determine whether or not to recursively comb
+   * helper utilities to expand context of their utilities, etc.
+   *
+   * For now, "unknown" is a placeholder for other ast nodes we may want to continue expanding.
+   */
+  type: "unknown" | "function";
   /** The position of the constant or utility in the code */
   position: { line: number; character: number };
   definition?: {
@@ -150,6 +156,8 @@ async function extractContext(
         // If there's a node, we can try to extract the value of the definition
         if (node) {
           // First, handle the case where it was imported from another file.
+          // As of writing, we *shouldn't* hit this case, but it's good as a fallback
+          //
           const parentImportDeclaration = getParentImportDeclaration(node);
           if (
             parentImportDeclaration &&
@@ -168,41 +176,43 @@ async function extractContext(
               continue;
             }
 
-            logger.warn(`Failed to follow import for ${identifier.name}`);
+            logger.warn(
+              `[extractContext] Failed to follow import for ${identifier.name}`,
+            );
           }
 
           const valueText = getDefinitionText(node, sourceFile);
 
           const contextEntry = {
             name: identifier.name,
-            type: identifier.type,
+            type: valueText?.type ?? "unknown",
             position: identifier.position,
             definition: {
               uri: sourceDefinition.uri,
               range: sourceDefinition.range,
-              text: valueText,
+              text: valueText?.text,
             },
           };
 
           logger.debug(
-            `[debug] context entry for ${identifier.name}`,
+            `[debug] [extractContext] Context entry for ${identifier.name}`,
             contextEntry,
           );
 
           context.push(contextEntry);
         } else {
           logger.warn(
-            `AST parsing found no definition found for ${identifier.name} in ${definitionFilePath}`,
+            `[extractContext] AST parsing found no definition found for ${identifier.name} in ${definitionFilePath}`,
           );
         }
       } else {
         logger.warn(
-          `TSServer found no definition found for ${identifier.name}`,
+          `[extractContext] TSServer found no definition found for ${identifier.name}`,
         );
       }
     }
   } catch (error) {
-    logger.error("Error querying TSServer:", error);
+    logger.error("[extractContext] Error querying TSServer:", error);
   }
 
   return context;
