@@ -77,6 +77,13 @@ export async function expandFunction(
     searchResult.file,
     searchResult.identifiers,
   );
+
+  // TODO - Recursively expand context of functions' sub-functions
+  //
+  //        Unsure whether should approach this with optimal solution first,
+  //        of creating a "queue" of functions to expand, or just a simple
+  //        recursive approach.
+
   return {
     ...searchResult,
     context,
