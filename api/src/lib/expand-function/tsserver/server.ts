@@ -91,12 +91,11 @@ function registerNotificationHandlers(connection: MessageConnection) {
     const { uri, diagnostics } = params;
     if (diagnostics.length > 0) {
       logger.info(`[textDocument/publishDiagnostics] Diagnostics for ${uri}:`);
-      // biome-ignore lint/complexity/noForEach: <explanation>
-      diagnostics.forEach((diag) => {
+      for (const diag of diagnostics) {
         logger.info(
           `- [${diag.severity}] ${diag.message} at ${diag.range.start.line}:${diag.range.start.character}`,
         );
-      });
+      }
     } else {
       logger.debug(
         `[textDocument/publishDiagnostics] No diagnostics for ${uri}.`,
