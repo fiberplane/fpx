@@ -5,7 +5,7 @@ import logger from "../../logger.js";
 import {
   type OutOfScopeIdentifier,
   analyzeOutOfScopeIdentifiers,
-} from "./identifier-analyzer.js";
+} from "./ast-helpers/index.js";
 
 export type FunctionOutOfScopeIdentifiers = OutOfScopeIdentifier[];
 

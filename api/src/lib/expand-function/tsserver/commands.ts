@@ -3,7 +3,7 @@ import type ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
 import logger from "../../../logger.js";
 import { type Definition, isDefinitionsArray } from "./types.js";
-import { getFileUri, isFileUri } from "./utils.js";
+import { getFileUri } from "./utils.js";
 
 export async function openFile(
   connection: MessageConnection,
@@ -43,7 +43,7 @@ export async function getTsSourceDefinition(
   filePath: string,
   position: ts.LineAndCharacter,
 ): Promise<Definition | null> {
-  const fileUri = isFileUri(filePath) ? filePath : getFileUri(filePath);
+  const fileUri = getFileUri(filePath);
 
   const sourceDefinition = await executeCommand(
     connection,

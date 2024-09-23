@@ -2,10 +2,12 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
-import logger from "../../logger.js";
-import { getDefinitionText } from "./ast-helpers/index.js";
-import type { OutOfScopeIdentifier } from "./identifier-analyzer.js";
-import { getFileUri, openFile } from "./tsserver/index.js";
+import logger from "../../../logger.js";
+import {
+  type OutOfScopeIdentifier,
+  getDefinitionText,
+} from "../ast-helpers/index.js";
+import { getFileUri, openFile } from "../tsserver/index.js";
 
 export async function contextForImport(
   tsserver: MessageConnection,
@@ -48,7 +50,7 @@ export async function contextForImport(
  * - Resolving imports with special ts aliases (e.g. `@/...`)
  * - Handling different file extension for default imports (e.g. .tsx, .js, etc.)
  */
-export async function followImport(
+async function followImport(
   tsserver: MessageConnection,
   _projectRoot: string, // TODO - Use this to resolve node module imports
   currentFilePath: string,
