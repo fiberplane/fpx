@@ -7,26 +7,30 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
-import { useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { LogsTable } from "./LogsTable";
-import { RequestPanel } from "./RequestPanel";
-import { RequestorInput } from "./RequestorInput";
-import { RequestorTimeline } from "./RequestorTimeline";
-import { ResponsePanel } from "./ResponsePanel";
-import { AiTestGenerationPanel, useAi } from "./ai";
-import { type Requestornator, useMakeProxiedRequest } from "./queries";
-import { useActiveRoute, useRequestorStore } from "./store";
-import { BACKGROUND_LAYER } from "./styles";
-import { useMakeWebsocketRequest } from "./useMakeWebsocketRequest";
-import { useRequestorSubmitHandler } from "./useRequestorSubmitHandler";
-import { sortRequestornatorsDescending } from "./utils";
+import { useNavigate } from "react-router-dom";
+import { useShallow } from "zustand/react/shallow";
+import { RequestPanel } from "../RequestPanel";
+import { RequestorInput } from "../RequestorInput";
+import { ResponsePanel } from "../ResponsePanel";
+import { useAi } from "../ai";
+import { type Requestornator, useMakeProxiedRequest } from "../queries";
+import { useRequestorStore, useRequestorStoreRaw } from "../store";
+import { BACKGROUND_LAYER } from "../styles";
+import { useMakeWebsocketRequest } from "../useMakeWebsocketRequest";
+import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
+import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
+import { useMostRecentRequestornator } from "./useMostRecentRequestornator";
+import { getMainSectionWidth } from "./util";
 
 interface RequestorPageContentProps {
   history: Requestornator[]; // Replace 'any[]' with the correct type
+  historyLoading: boolean;
   sessionHistory: Requestornator[];
   recordRequestInSessionHistory: (traceId: string) => void;
   overrideTraceId?: string;
+  generateLinkToTrace: (traceId: string) => string;
 }
 
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
@@ -37,6 +41,8 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     recordRequestInSessionHistory,
     overrideTraceId,
     sessionHistory,
+    historyLoading,
+    generateLinkToTrace,
   } = props;
 
   const { toast } = useToast();
@@ -46,8 +52,30 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     overrideTraceId,
   );
 
+  // This is the preferred traceId to show in the UI
+  // It is either the traceId from the url or a recent traceId from the session history
   const traceId =
     overrideTraceId ?? mostRecentRequestornatorForRoute?.app_responses?.traceId;
+
+  const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
+    useRequestorStore(
+      "setActiveHistoryResponseTraceId",
+      "activeHistoryResponseTraceId",
+    );
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (traceId && traceId !== activeHistoryResponseTraceId) {
+      setActiveHistoryResponseTraceId(traceId);
+      navigate(generateLinkToTrace(traceId), { replace: true });
+    }
+  }, [
+    traceId,
+    activeHistoryResponseTraceId,
+    generateLinkToTrace,
+    navigate,
+    setActiveHistoryResponseTraceId,
+  ]);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
@@ -65,6 +93,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     makeRequest,
     connectWebsocket,
     recordRequestInSessionHistory,
+    generateLinkToTrace,
   });
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -95,12 +124,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const { logsPanel, timelinePanel, aiPanel, togglePanel } = useRequestorStore(
-    "togglePanel",
-    "logsPanel",
-    "timelinePanel",
-    "aiPanel",
-  );
+  const { togglePanel } = useRequestorStore("togglePanel");
 
   useHotkeys(
     "mod+g",
@@ -166,7 +190,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const responseContent = (
     <ResponsePanel
       tracedResponse={mostRecentRequestornatorForRoute}
-      isLoading={isRequestorRequesting}
+      isLoading={isRequestorRequesting || historyLoading}
       websocketState={websocketState}
     />
   );
@@ -180,6 +204,16 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       minPixelSize: 200,
       dimension: "width",
     });
+
+  const bottomPanelVisible = useRequestorStoreRaw(
+    useShallow((state) => {
+      return state.bottomPanelIndex !== undefined;
+    }),
+  );
+
+  const bottomPanel = bottomPanelVisible ? (
+    <RequestorPageContentBottomPanel traceId={traceId} history={history} />
+  ) : null;
 
   return (
     <div
@@ -200,15 +234,11 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         formRef={formRef}
         websocketState={websocketState}
       />
-      <ResizablePanelGroup direction="vertical" id="requestor-page-main-panel">
-        <ResizablePanel
-          // defaultSize={panelSize}
-          order={0}
-        >
+      <ResizablePanelGroup direction="vertical" id="content-panels">
+        <ResizablePanel order={0} id="top-panels">
           <ResizablePanelGroup
             direction={isLgScreen ? "horizontal" : "vertical"}
             id="requestor-page-request-panel-group"
-            autoSaveId="requestor-page-request-panel-group"
             className={cn("rounded-md", "max-w-screen", "max-h-full")}
           >
             <ResizablePanel
@@ -234,66 +264,24 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>
-        {timelinePanel === "open" && (
+        {bottomPanel && (
           <>
             <ResizableHandle
-              hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="bg-transparent"
+              hitAreaMargins={{ coarse: 20, fine: 20 }}
+              className="mb-2 h-0"
             />
-            <ResizablePanel
-              order={2}
-              id="logs-panel"
-              className={cn(
-                BACKGROUND_LAYER,
-                "rounded-md",
-                "border",
-                "h-full",
-                "mt-2",
-              )}
-            >
-              <RequestorTimeline traceId={traceId} />
-            </ResizablePanel>
-          </>
-        )}
-        {logsPanel === "open" && (
-          <>
-            <ResizableHandle
-              hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="bg-transparent"
-            />
-            <ResizablePanel
-              order={3}
-              id="logs-panel"
-              className={cn(
-                BACKGROUND_LAYER,
-                "rounded-md",
-                "border",
-                "h-full",
-                "mt-2",
-              )}
-            >
-              <LogsTable traceId={traceId} />
-            </ResizablePanel>
-          </>
-        )}
-        {aiPanel === "open" && (
-          <>
-            <ResizableHandle
-              hitAreaMargins={{ coarse: 20, fine: 10 }}
-              className="bg-transparent"
-            />
-            <ResizablePanel
-              order={4}
-              id="ai-panel"
-              className={cn(
-                BACKGROUND_LAYER,
-                "rounded-md",
-                "border",
-                "h-full",
-                "mt-2",
-              )}
-            >
-              <AiTestGenerationPanel history={history} />
+            <ResizablePanel order={2} id="bottom-panel">
+              <div
+                className={cn(
+                  "rounded-md",
+                  "border",
+                  "h-full",
+                  "mt-2",
+                  BACKGROUND_LAYER,
+                )}
+              >
+                {bottomPanel}
+              </div>
             </ResizablePanel>
           </>
         )}
@@ -301,63 +289,3 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     </div>
   );
 };
-
-/**
- * When you select a route from the route side panel,
- * this will look for the most recent request made against that route.
- */
-function useMostRecentRequestornator(
-  all: Requestornator[],
-  overrideTraceId: string | null = null,
-) {
-  const { path: routePath } = useActiveRoute();
-  const { path, method, activeHistoryResponseTraceId } = useRequestorStore(
-    "path",
-    "method",
-    "activeHistoryResponseTraceId",
-  );
-
-  const traceId = overrideTraceId ?? activeHistoryResponseTraceId;
-  return useMemo<Requestornator | undefined>(() => {
-    if (traceId) {
-      return all.find(
-        (r: Requestornator) => r?.app_responses?.traceId === traceId,
-      );
-    }
-
-    const matchingResponses = all?.filter(
-      (r: Requestornator) =>
-        r?.app_requests?.requestRoute === routePath &&
-        r?.app_requests?.requestMethod === method,
-    );
-
-    // Descending sort by updatedAt
-    matchingResponses?.sort(sortRequestornatorsDescending);
-
-    const latestMatch = matchingResponses?.[0];
-
-    if (latestMatch) {
-      return latestMatch;
-    }
-
-    // HACK - We can try to match against the exact request URL
-    //        This is a fallback to support the case where the route doesn't exist,
-    //        perhaps because we made a request to a service we are not explicitly monitoring
-    const matchingResponsesFallback = all?.filter(
-      (r: Requestornator) =>
-        r?.app_requests?.requestUrl === path &&
-        r?.app_requests?.requestMethod === method,
-    );
-
-    matchingResponsesFallback?.sort(sortRequestornatorsDescending);
-
-    return matchingResponsesFallback?.[0];
-  }, [all, routePath, method, path, traceId]);
-}
-
-/**
- * Estimate the size of the main section based on the window width
- */
-function getMainSectionWidth() {
-  return window.innerWidth - 400;
-}

@@ -1,6 +1,7 @@
 import { RequestMethod } from "@/components/Timeline";
 import { Status } from "@/components/ui/status";
 import { useInputFocusDetection } from "@/hooks";
+import { useActiveTraceId } from "@/hooks";
 import { useOtelTraces } from "@/queries";
 import {
   cn,
@@ -13,14 +14,9 @@ import type { OtelTrace } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import {
-  Link,
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import type { Requestornator } from "../../queries";
-import { useRequestorStore, useServiceBaseUrl } from "../../store";
+import { useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
 import { Search } from "../Search";
 
@@ -41,10 +37,7 @@ export function RequestsPanel() {
     });
   }, [items, filterValue]);
 
-  const { activeHistoryResponseTraceId } = useRequestorStore(
-    "activeHistoryResponseTraceId",
-  );
-  const { id = activeHistoryResponseTraceId } = useParams();
+  const id = useActiveTraceId();
 
   const activeIndex = useMemo(() => {
     return filteredItems.findIndex((item) => getId(item) === id);
@@ -249,10 +242,7 @@ type NavItemProps = {
 
 const NavItem = memo(
   ({ item, isSelected, onSelect, searchParams }: NavItemProps) => {
-    const { activeHistoryResponseTraceId } = useRequestorStore(
-      "activeHistoryResponseTraceId",
-    );
-    const { id = activeHistoryResponseTraceId } = useParams();
+    const id = useActiveTraceId();
     const itemRef = useRef<HTMLAnchorElement>(null);
 
     useEffect(() => {

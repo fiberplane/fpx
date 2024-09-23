@@ -23,22 +23,21 @@ const IconWithNotification: React.FC<IconWithNotificationProps> = ({
   ...iconProps
 }) => {
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
+    <div className="relative inline-block">
       <Icon {...iconProps} />
       {showNotification && (
         <div
           className={cn(
             notificationColor,
             "shadow-sm",
-            "absolute flex justify-center items-center text-[7px]",
-            "px-[2px] font-bold rounded-[50%]",
-            `min-w-[${notificationSize}px] h-[${notificationSize}px]`,
+            "absolute flex justify-center items-center text-[7px] leading-[1]",
+            "font-bold rounded-full overflow-hidden",
+            `w-[${notificationSize}px] h-[${notificationSize}px]`,
             notificationPosition === "top-right" && "-top-1 -right-1",
             notificationPosition === "top-left" && "-top-1 -left-1",
             notificationPosition === "bottom-right" && "-bottom-1 -right-1",
             notificationPosition === "bottom-left" && "-bottom-1 -left-1",
           )}
-          // style={getNotificationStyle()}
           aria-hidden="true"
         >
           {notificationContent}

@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useHandler } from "@fiberplane/hooks";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { KeyValueParameter } from "./KeyValueForm";
 import type { MakeProxiedRequestQueryFn } from "./queries";
 import type { RequestorBody } from "./store";
@@ -12,15 +12,15 @@ export function useRequestorSubmitHandler({
   makeRequest,
   connectWebsocket,
   recordRequestInSessionHistory,
+  generateLinkToTrace,
 }: {
   makeRequest: MakeProxiedRequestQueryFn;
   connectWebsocket: (wsUrl: string) => void;
   recordRequestInSessionHistory: (traceId: string) => void;
+  generateLinkToTrace: (traceId: string) => string;
 }) {
   const { toast } = useToast();
 
-  const { id } = useParams();
-  const urlHasId = !!id;
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const {
@@ -103,18 +103,16 @@ export function useRequestorSubmitHandler({
         onSuccess(data) {
           const traceId = data?.traceId;
 
-          // If there's an id, we're navigating to a specific request
-          // otherwise the newest trace will automatically be shown
-          if (urlHasId) {
-            navigate({
-              pathname: `/requests/${traceId}`,
-              search: params.toString(),
-            });
-          }
-
           if (traceId && typeof traceId === "string") {
             recordRequestInSessionHistory(traceId);
             showResponseBodyFromHistory(traceId);
+            navigate(
+              {
+                pathname: generateLinkToTrace(traceId),
+                search: params.toString(),
+              },
+              { replace: true },
+            );
           } else {
             console.error(
               "RequestorPage: onSuccess: traceId is not a string",

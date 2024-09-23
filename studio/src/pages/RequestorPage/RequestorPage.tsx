@@ -22,11 +22,11 @@ import { useRequestorHistory } from "./useRequestorHistory";
  * Estimate the size of the main section based on the window width
  */
 function getMainSectionWidth() {
-  return window.innerWidth - 400;
+  return window.innerWidth - 85;
 }
 
 export const RequestorPage = () => {
-  const { id, requestType } = useParams();
+  const { traceId: id, requestType } = useParams();
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
 
@@ -45,6 +45,7 @@ export const RequestorPage = () => {
   const {
     history,
     sessionHistory,
+    isLoading,
     recordRequestInSessionHistory,
     loadHistoricalRequest,
   } = useRequestorHistory();
@@ -60,8 +61,8 @@ export const RequestorPage = () => {
   const isLgScreen = useIsLgScreen();
 
   const { minSize, maxSize } = usePanelConstraints({
-    groupId: "requestor-page-main",
-    initialGroupSize: width + 320,
+    groupId: "main-layout",
+    initialGroupSize: width,
     minPixelSize: 250,
     minimalGroupSize: 944,
   });
@@ -88,7 +89,7 @@ export const RequestorPage = () => {
     >
       <ResizablePanelGroup
         direction="horizontal"
-        id="requestor-page-main"
+        id="main-layout"
         className="w-full"
       >
         {isLgScreen && sidePanel === "open" && (
@@ -120,9 +121,11 @@ export const RequestorPage = () => {
           ) : (
             <RequestorPageContent
               history={history}
+              historyLoading={isLoading}
               sessionHistory={sessionHistory}
               recordRequestInSessionHistory={recordRequestInSessionHistory}
               overrideTraceId={id}
+              generateLinkToTrace={generateLinkToTrace}
             />
           )}
         </ResizablePanel>
