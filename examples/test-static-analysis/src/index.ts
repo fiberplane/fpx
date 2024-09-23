@@ -1,4 +1,5 @@
 import { Hono, type HonoRequest } from "hono";
+import otherRouter from "./other-router";
 import { getAuthHeader } from "./utils";
 
 const app = new Hono();
@@ -25,6 +26,8 @@ app.get("/const-and-helper-out-of-file", (c) => {
   }
   return c.text("Unauthorized", 401);
 });
+
+app.route("/other-router", otherRouter);
 
 export default app;
 

@@ -37,6 +37,12 @@ const functionWithHelperInAnotherFile = `(c) => {
   return c.text("Unauthorized", 401);
 }`.trim();
 
+const functionWithWebStandardGlobals = `(c) => {
+  console.log("Other Router");
+  const url = new URL(c.req.url);
+  return c.text(\`Other Router: \${url}\`);
+}`.trim();
+
 describe("expandFunction", () => {
   describe("single file - app/src/index.ts", () => {
     it("should return the function location and definition of a constant identifier that is out of scope", async () => {
@@ -48,9 +54,9 @@ describe("expandFunction", () => {
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
-      expect(result?.startLine).toBe(8);
+      expect(result?.startLine).toBe(9);
       expect(result?.startColumn).toBe(19);
-      expect(result?.endLine).toBe(14);
+      expect(result?.endLine).toBe(15);
       expect(result?.endColumn).toBe(2);
 
       expect(result?.context?.[0]?.definition?.text).toBe(
@@ -67,9 +73,9 @@ describe("expandFunction", () => {
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
-      expect(result?.startLine).toBe(16);
+      expect(result?.startLine).toBe(17);
       expect(result?.startColumn).toBe(29);
-      expect(result?.endLine).toBe(19);
+      expect(result?.endLine).toBe(20);
       expect(result?.endColumn).toBe(2);
 
       expect(result?.context?.[0]?.definition?.text).toBe(
@@ -90,9 +96,9 @@ describe("expandFunction", () => {
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
-      expect(result?.startLine).toBe(21);
+      expect(result?.startLine).toBe(22);
       expect(result?.startColumn).toBe(42);
-      expect(result?.endLine).toBe(27);
+      expect(result?.endLine).toBe(28);
       expect(result?.endColumn).toBe(2);
 
       expect(result?.context).toEqual(
@@ -106,6 +112,37 @@ describe("expandFunction", () => {
           }),
         ]),
       );
+    });
+  });
+
+  describe("router file - app/src/other-router.ts", () => {
+    it("should not return global web standards like console as out of scope identifiers", async () => {
+      const result = await expandFunction(
+        projectRoot,
+        srcPath,
+        functionWithWebStandardGlobals,
+      );
+
+      expect(result).not.toBeNull();
+      expect(result?.file).toBe(path.resolve(srcPath, "other-router.ts"));
+      expect(result?.startLine).toBe(9);
+      expect(result?.startColumn).toBe(14);
+      expect(result?.endLine).toBe(13);
+      expect(result?.endColumn).toBe(2);
+
+      // Context should be empty - no out of scope identifiers
+      expect(result?.context).toHaveLength(0);
+
+      const doesNotContainConsole = result?.context?.every(
+        (context) => context.name !== "console",
+      );
+      expect(doesNotContainConsole).toBe(true);
+      const doesNotContainLog = result?.context?.every(
+        (context) => context.name !== "log",
+      );
+      expect(doesNotContainLog).toBe(true);
+
+      expect;
     });
   });
 });

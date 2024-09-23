@@ -6,6 +6,7 @@ import {
   getParentImportDeclaration,
 } from "./ast-helpers/index.js";
 import { followImport } from "./follow-import.js";
+import { isExpectedGlobal } from "./identifier-analyzer.js";
 import {
   type FunctionOutOfScopeIdentifiers,
   searchForFunction,
@@ -101,9 +102,19 @@ async function extractContext(
     const { connection } = await getTSServer(projectRoot);
 
     // Open the document containing the function
+    // This makes the TSServer aware of the codebase, and allows us to execute requests
     // We do this to get more information on the definitions of the function's out-of-scope identifiers
-    // INVESTIGATE: Why do we need to open the file here? (Things were failing for me if I didn't do this)
+    //
     await openFile(connection, filePath);
+
+    for (const identifier of identifiers) {
+      const isGlobal = await isExpectedGlobal(connection, identifier, filePath);
+      if (isGlobal) {
+        console.log(`[debug] ${identifier.name} is a global`);
+      } else {
+        console.log(`[debug] ${identifier.name} is not a global`);
+      }
+    }
 
     const funcFileUri = getFileUri(filePath);
 
