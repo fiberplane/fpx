@@ -6,6 +6,20 @@ import logger from "../../logger.js";
 import { getDefinitionText } from "./ast-helpers/index.js";
 import { getFileUri, openFile } from "./tsserver/index.js";
 
+/**
+ * Follows an import to the file it imports and returns the definition of the
+ * identifier it contains.
+ * 
+ * This is WILDLY INCOMPLETE and will fail in many, many cases.
+ * 
+ * I only wrote this helper because I couldn't get the language server to follow 
+ * definitions to other files. (This has since been fixed, as far as I can tell.)
+ * 
+ * If you find yourself needing to use this, consider the following fixes:
+ * 
+ * - Resolving imports with special ts aliases (e.g. `@/...`)
+ * - Handling different file extension for default imports (e.g. .tsx, .js, etc.)
+ */
 export async function followImport(
   tsserver: MessageConnection,
   _projectRoot: string, // TODO - Use this to resolve node module imports
@@ -16,7 +30,7 @@ export async function followImport(
   const importPath = (importNode.moduleSpecifier as ts.StringLiteral).text;
   let resolvedPath: string;
 
-  logger.debug(`[debug] Import path: ${importPath}`);
+  logger.debug(`[debug] [followImport] Import path: ${importPath}`);
 
   // TODO - Handle typescript config's aliased imports (`@/...`)
   if (importPath.startsWith(".")) {
@@ -30,7 +44,7 @@ export async function followImport(
     return null;
   }
 
-  logger.debug(`[debug] Resolved import path: ${resolvedPath}`);
+  logger.debug(`[debug] [followImport] Resolved import path: ${resolvedPath}`);
 
   // Add .ts extension if not present
   // TODO - Handle .tsx files, js files, etc.
@@ -80,7 +94,7 @@ export async function followImport(
 
     if (identifierToFind) {
       logger.debug(
-        `[debug] Identifier to find in file we're importing from: ${identifierToFind}`,
+        `[debug] [followImport] Identifier to find in file we're importing from: ${identifierToFind}`,
       );
       const importedNode = findExportedDeclaration(
         importedSourceFile,
