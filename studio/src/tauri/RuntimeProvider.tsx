@@ -91,6 +91,16 @@ function TauriRuntime({ children }: RuntimeProviderProps) {
     };
   }, [handleOpenDialogRequested]);
 
+  useEffect(() => {
+    const handler = listen<string>(
+      "request-close-workspace",
+      handleCloseWorkspace,
+    );
+    return () => {
+      handler.then((unlisten) => unlisten());
+    };
+  }, [handleCloseWorkspace]);
+
   if (RUNTIME !== "tauri") {
     return children;
   }

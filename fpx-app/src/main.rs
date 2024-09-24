@@ -65,6 +65,19 @@ fn main() {
                 }
             });
 
+            let window_ = window.clone();
+            window.on_window_event(move |event| match event {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    let app_state = window_.state::<AppState>();
+                    if app_state.get_workspace().is_some() {
+                        api.prevent_close();
+                        window_.emit("request-close-workspace", "").unwrap();
+                    }
+                }
+                tauri::WindowEvent::Destroyed => println!("DESTROYED"),
+                _ => {}
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
