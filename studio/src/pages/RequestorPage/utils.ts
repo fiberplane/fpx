@@ -33,8 +33,8 @@ export function traceToRequestornator(
   const { spans, traceId } = trace;
   const rootSpan = spans.find((s) => s.name === "request");
   if (!rootSpan) {
-    // console.log("spans", spans);
-    // throw new Error("Could not find root span for trace");
+    // This trace doesn't have a request span (yet)
+    // This can happen if the trace is still being processed
     return null;
   }
 

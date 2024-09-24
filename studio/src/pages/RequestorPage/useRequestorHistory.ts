@@ -13,8 +13,6 @@ import { sortRequestornatorsDescending, traceToRequestornator } from "./utils";
 const EMPTY_TRACES: TraceListResponse = [];
 export function useRequestorHistory() {
   const {
-    // sessionHistory: sessionHistoryTraceIds,
-    // recordRequestInSessionHistory,
     routes,
     setActiveRoute: handleSelectRoute,
     updatePath: setPath,
@@ -24,8 +22,6 @@ export function useRequestorHistory() {
     setBody,
     showResponseBodyFromHistory,
   } = useRequestorStore(
-    // "sessionHistory",
-    // "recordRequestInSessionHistory",
     "routes",
     "setActiveRoute",
     "updatePath",
@@ -190,27 +186,9 @@ export function useRequestorHistory() {
     }
   });
 
-  // Keep a local history of requests that the user has made in the UI
-  // This should be a subset of the full history
-  // These will be cleared on page reload
-  // const sessionHistory = useMemo(() => {
-  //   return sessionHistoryTraceIds.reduce(
-  //     (matchedRequestornators, traceId) => {
-  //       const match = history.find((r) => r.app_responses?.traceId === traceId);
-  //       if (match) {
-  //         matchedRequestornators.push(match);
-  //       }
-  //       return matchedRequestornators;
-  //     },
-  //     [] as Array<Requestornator>,
-  //   );
-  // }, [history, sessionHistoryTraceIds]);
-
   return {
     history,
-    // sessionHistory,
     isLoading,
-    // recordRequestInSessionHistory,
     loadHistoricalRequest,
   };
 }
