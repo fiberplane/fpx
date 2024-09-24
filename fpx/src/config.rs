@@ -6,10 +6,11 @@
 use anyhow::Result;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::env;
 use std::fs::read_to_string;
 use std::path::PathBuf;
-use tracing::{debug, error};
+use std::{env, ops::Range};
+use thiserror::Error;
+use tracing::error;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq, Default, JsonSchema)]
 pub struct FpxConfig {
@@ -27,27 +28,41 @@ impl FpxConfig {
     /// directory that was used.
     ///
     /// This uses [`Self::find_root_directory`] to determine the root directory
-    /// unless [`override_root`] is set to [`Some`]. If no fpx.toml was found,
-    /// this it will return [`None`].
-    pub fn load(override_root: Option<PathBuf>) -> Result<Option<(Self, PathBuf)>> {
+    /// unless [`override_root`] is set to [`Some`].
+    pub fn load(override_root: Option<PathBuf>) -> Result<(Self, PathBuf), FpxConfigError> {
         let Some(root_dir) = override_root.or_else(find_root_directory) else {
-            debug!("Root directory could not be found");
-            return Ok(None);
+            return Err(FpxConfigError::RootDirectoryNotFound);
         };
 
         let config_file_path = root_dir.join("fpx.toml");
-        if !config_file_path.exists() {
-            // Note it is possible that the file gets deleted right after this
-            // check and before reading it. This can be improved in another PR.
-            debug!("fpx.toml file not found in root directory");
-            return Ok(None);
-        }
 
-        let config_file = read_to_string(&config_file_path)?;
-        let config: FpxConfig = toml::from_str(&config_file).unwrap();
+        // Optimistically try to read the file, if it fails, return an error.
+        let config_file = read_to_string(&config_file_path)
+            .map_err(|_| FpxConfigError::FileNotFound(config_file_path.clone()))?;
 
-        Ok(Some((config, config_file_path)))
+        let config: FpxConfig =
+            toml::from_str(&config_file).map_err(|err| FpxConfigError::InvalidFpxConfig {
+                message: err.message().to_string(),
+                span: err.span(),
+            })?;
+
+        Ok((config, config_file_path))
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq, JsonSchema, Error)]
+pub enum FpxConfigError {
+    #[error("failed to find find root fpx directory")]
+    RootDirectoryNotFound,
+
+    #[error("fpx.toml file not found at {0}")]
+    FileNotFound(PathBuf),
+
+    #[error("invalid fpx.toml configuration: {message}")]
+    InvalidFpxConfig {
+        message: String,
+        span: Option<Range<usize>>,
+    },
 }
 
 /// Search for the root directory of the project. The root directory is

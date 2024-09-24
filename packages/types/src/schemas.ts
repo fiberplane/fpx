@@ -129,3 +129,34 @@ export const FpxConfigSchema = z.object({
 });
 
 export type FpxConfig = z.infer<typeof FpxConfigSchema>;
+
+export const FpxConfigErrorSchema = z.any().superRefine((x, ctx) => {
+  const schemas = [
+    z.object({ FileNotFound: z.string() }).strict(),
+    z
+      .object({
+        InvalidFpxConfig: z.object({
+          message: z.string(),
+          span: z.union([z.any(), z.null()]).optional(),
+        }),
+      })
+      .strict(),
+  ];
+  const errors = schemas.reduce<z.ZodError[]>(
+    (errors, schema) =>
+      ((result) => (result.error ? [...errors, result.error] : errors))(
+        schema.safeParse(x),
+      ),
+    [],
+  );
+  if (schemas.length - errors.length !== 1) {
+    ctx.addIssue({
+      path: ctx.path,
+      code: "invalid_union",
+      unionErrors: errors,
+      message: "Invalid input: Should pass single schema",
+    });
+  }
+});
+
+export type FpxConfigError = z.infer<typeof FpxConfigErrorSchema>;

@@ -1,7 +1,7 @@
 use crate::models::workspace::{OpenWorkspaceByPathError, Workspace};
 use crate::state::AppState;
 use crate::STORE_PATH;
-use fpx::config::FpxConfig;
+use fpx::config::{FpxConfig, FpxConfigError};
 use std::path::PathBuf;
 use tauri::{AppHandle, Runtime, State};
 use tauri_plugin_store::{with_store, StoreCollection};
@@ -42,10 +42,23 @@ pub fn open_workspace_by_path<R: Runtime>(
     stores: State<'_, StoreCollection<R>>,
 ) -> Result<Workspace, OpenWorkspaceByPathError> {
     let path_buf = PathBuf::from(path.clone());
-    let (config, _config_path) = match FpxConfig::load(Some(path_buf)) {
-        Ok(Some(result)) => result,
-        Ok(None) => return Err(OpenWorkspaceByPathError::ConfigFileMissing { path: path.clone() }),
-        Err(err) => panic!("Failed to load configuration: {}", err),
+    let config = match FpxConfig::load(Some(path_buf)) {
+        Ok((config, _config_path)) => config,
+        Err(err) => {
+            return Err(match err {
+                FpxConfigError::FileNotFound(path_buf) => {
+                    OpenWorkspaceByPathError::ConfigFileMissing {
+                        path: path_buf.to_string_lossy().to_string(),
+                    }
+                }
+                FpxConfigError::InvalidFpxConfig { message, .. } => {
+                    OpenWorkspaceByPathError::InvalidConfiguration { message }
+                }
+                FpxConfigError::RootDirectoryNotFound => {
+                    unreachable!("FpxConfig::load takes a path, so this cannot occur")
+                }
+            })
+        }
     };
 
     let workspace = Workspace::new(path.clone(), config);
