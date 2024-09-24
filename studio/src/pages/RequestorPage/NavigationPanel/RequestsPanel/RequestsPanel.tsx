@@ -2,38 +2,23 @@ import { RequestMethod } from "@/components/Timeline";
 import { Status } from "@/components/ui/status";
 import { useInputFocusDetection } from "@/hooks";
 import { useActiveTraceId } from "@/hooks";
-import { useOtelTraces } from "@/queries";
-import {
-  cn,
-  getRequestMethod,
-  getRequestPath,
-  getRequestUrl,
-  getStatusCode,
-} from "@/utils";
-import type { OtelTrace } from "@fiberplane/fpx-types";
+import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, type To, useNavigate, useSearchParams } from "react-router-dom";
 import type { Requestornator } from "../../queries";
 import { useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
 import { Search } from "../Search";
 
 export function RequestsPanel() {
-  const { history } = useRequestorHistory();
-  const { data: traces = [] } = useOtelTraces();
-  const items = useMemo(() => mergeLists(history, traces), [history, traces]);
+  const { history: items } = useRequestorHistory();
 
   const [filterValue, setFilterValue] = useState("");
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      if (item.type === "request") {
-        return item.data.app_requests.requestUrl.includes(filterValue);
-      }
-      return item.data.spans.some((span) =>
-        getRequestPath(span).includes(filterValue),
-      );
+      return item.app_requests.requestUrl.includes(filterValue);
     });
   }, [items, filterValue]);
 
@@ -52,9 +37,9 @@ export function RequestsPanel() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const handleItemSelect = useCallback(
-    (item: MergedListItem) => {
+    (item: Requestornator) => {
       navigate({
-        pathname: `/${item.type}/${getId(item)}`,
+        pathname: `/request/${getId(item)}`,
         search: searchParams.toString(),
       });
     },
@@ -173,8 +158,11 @@ export function RequestsPanel() {
             key={getId(item)}
             item={item}
             isSelected={getId(item) === selectedItemId}
-            onSelect={() => handleItemSelect(item)}
             searchParams={searchParams}
+            to={{
+              pathname: `/request/${getId(item)}`,
+              search: searchParams.toString(),
+            }}
           />
         ))}
       </div>
@@ -234,89 +222,65 @@ function EmptyState() {
 }
 
 type NavItemProps = {
-  item: MergedListItem;
+  item: Requestornator;
   isSelected: boolean;
-  onSelect: () => void;
+  to: To;
   searchParams: URLSearchParams;
 };
 
-const NavItem = memo(
-  ({ item, isSelected, onSelect, searchParams }: NavItemProps) => {
-    const id = useActiveTraceId();
-    const itemRef = useRef<HTMLAnchorElement>(null);
+const NavItem = memo(({ to, item, isSelected }: NavItemProps) => {
+  const id = useActiveTraceId();
+  const itemRef = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    if (isSelected && itemRef.current) {
+      itemRef.current.focus();
+    }
+  }, [isSelected]);
 
-    useEffect(() => {
-      if (isSelected && itemRef.current) {
-        itemRef.current.focus();
-      }
-    }, [isSelected]);
-
-    return (
-      <Link
-        ref={itemRef}
-        to={{
-          pathname: `/${item.type}/${getId(item)}`,
-          search: searchParams.toString(),
-        }}
-        className={cn(
-          "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
-          "focus:outline-none",
-          {
-            "bg-muted": id === getId(item),
-            "hover:bg-muted": id !== getId(item),
-            "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
-              id !== getId(item) && isSelected,
-          },
-        )}
-        onClick={(e: React.MouseEvent) => {
+  return (
+    <Link
+      ref={itemRef}
+      to={to}
+      className={cn(
+        "grid grid-cols-[38px_38px_1fr] gap-2 hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
+        "focus:outline-none",
+        {
+          "bg-muted": id === getId(item),
+          "hover:bg-muted": id !== getId(item),
+          "focus:ring-1 bg-muted focus:ring-blue-500 focus:ring-opacity-25 focus:ring-inset":
+            id !== getId(item) && isSelected,
+        },
+      )}
+      onKeyDown={(e: React.KeyboardEvent<HTMLAnchorElement>) => {
+        if (e.key === "Enter") {
           e.preventDefault();
-          onSelect();
-        }}
-        onKeyDown={(e: React.KeyboardEvent) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            onSelect();
-          }
-        }}
-        data-state-active={id === getId(item)}
-        data-state-selected={isSelected}
-        id={`item-${getId(item)}`}
-      >
-        <div>
-          <StatusCell item={item} />
-        </div>
-        <div>
-          <MethodCell item={item} />
-        </div>
-        <div>
-          <PathCell item={item} />
-        </div>
-      </Link>
-    );
-  },
-);
+          e.currentTarget.click();
+        }
+      }}
+      data-state-active={id === getId(item)}
+      data-state-selected={isSelected}
+      id={`item-${getId(item)}`}
+    >
+      <div>
+        <StatusCell item={item} />
+      </div>
+      <div>
+        <MethodCell item={item} />
+      </div>
+      <div>
+        <PathCell item={item} />
+      </div>
+    </Link>
+  );
+});
 
-const getId = (item: MergedListItem) => {
-  return item.type === "request"
-    ? item.data.app_responses.traceId
-    : item.data.traceId;
+const getId = (item: Requestornator) => {
+  return item.app_responses.traceId || item.app_requests.id.toString();
 };
 
-function getSpan(trace: OtelTrace) {
-  return (
-    trace.spans.find(
-      // (item) => item.span.parent_span_id === null,
-      (item) => item.name === "request",
-    ) || trace.spans[0]
-  );
-}
-
-const PathCell = ({ item }: { item: MergedListItem }) => {
+const PathCell = ({ item }: { item: Requestornator }) => {
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
-  const path =
-    item.type === "request"
-      ? removeServiceUrlFromPath(item.data.app_requests.requestUrl)
-      : removeServiceUrlFromPath(getRequestUrl(getSpan(item.data)));
+  const path = removeServiceUrlFromPath(item.app_requests.requestUrl);
 
   return (
     <div className="text-sm font-mono overflow-hidden text-ellipsis whitespace-nowrap">
@@ -325,60 +289,13 @@ const PathCell = ({ item }: { item: MergedListItem }) => {
   );
 };
 
-const StatusCell = ({ item }: { item: MergedListItem }) => {
-  const code =
-    item.type === "request"
-      ? Number.parseInt(item.data.app_responses.responseStatusCode)
-      : getStatusCode(getSpan(item.data));
+const StatusCell = ({ item }: { item: Requestornator }) => {
+  const code = Number.parseInt(item.app_responses.responseStatusCode);
+
   return <Status statusCode={code} />;
 };
 
-const MethodCell = ({ item }: { item: MergedListItem }) => {
-  const method =
-    item.type === "request"
-      ? item.data.app_requests.requestMethod
-      : getRequestMethod(getSpan(item.data));
+const MethodCell = ({ item }: { item: Requestornator }) => {
+  const method = item.app_requests.requestMethod;
   return <RequestMethod method={method} className="text-xs font-mono" />;
 };
-
-type MergedListItem =
-  | {
-      type: "request";
-      data: Requestornator;
-    }
-  | {
-      type: "history";
-      data: OtelTrace;
-    };
-
-// Combine the history with traces by creating a new list that contains the history as well
-// as traces that are not in the history. The new list should be sorted by the timestamp of the request.
-// and contain a type property to distinguish between history and traces
-function mergeLists(
-  history: Requestornator[],
-  traces: OtelTrace[],
-): Array<MergedListItem> {
-  const mergedList: MergedListItem[] = [
-    ...history.map((item): MergedListItem => ({ type: "request", data: item })),
-    ...traces
-      .filter(
-        (trace) =>
-          !history.some((h) => h.app_responses.traceId === trace.traceId),
-      )
-      .map((item): MergedListItem => {
-        return { type: "history", data: item };
-      }),
-  ];
-
-  return mergedList.sort((a, b) => {
-    const aTime =
-      a.type === "request"
-        ? new Date(a.data.app_requests.updatedAt).getTime()
-        : new Date(a.data.spans[0].start_time).getTime();
-    const bTime =
-      b.type === "request"
-        ? new Date(b.data.app_requests.updatedAt).getTime()
-        : new Date(b.data.spans[0].start_time).getTime();
-    return bTime - aTime; // Sort in descending order (most recent first)
-  });
-}

@@ -1,4 +1,6 @@
+import { useOtelTraces } from "@/queries";
 import { removeQueryParams } from "@/utils";
+import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
 import { createKeyValueParameters } from "./KeyValueForm";
@@ -6,12 +8,13 @@ import { type Requestornator, useFetchRequestorRequests } from "./queries";
 import { findMatchedRoute } from "./routes";
 import { useRequestorStore } from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
-import { sortRequestornatorsDescending } from "./utils";
+import { sortRequestornatorsDescending, traceToRequestornator } from "./utils";
 
+const EMPTY_TRACES: TraceListResponse = [];
 export function useRequestorHistory() {
   const {
-    sessionHistory: sessionHistoryTraceIds,
-    recordRequestInSessionHistory,
+    // sessionHistory: sessionHistoryTraceIds,
+    // recordRequestInSessionHistory,
     routes,
     setActiveRoute: handleSelectRoute,
     updatePath: setPath,
@@ -21,8 +24,8 @@ export function useRequestorHistory() {
     setBody,
     showResponseBodyFromHistory,
   } = useRequestorStore(
-    "sessionHistory",
-    "recordRequestInSessionHistory",
+    // "sessionHistory",
+    // "recordRequestInSessionHistory",
     "routes",
     "setActiveRoute",
     "updatePath",
@@ -34,20 +37,31 @@ export function useRequestorHistory() {
   );
 
   const { data: allRequests, isLoading } = useFetchRequestorRequests();
+  const { data: traces = EMPTY_TRACES } = useOtelTraces();
 
   // Keep a history of recent requests and responses
   const history = useMemo<Array<Requestornator>>(() => {
+    const items: Array<Requestornator> = [];
     if (allRequests) {
-      const cloned = [...allRequests];
-      cloned.sort(sortRequestornatorsDescending);
-      return cloned;
+      items.push(...allRequests);
     }
-    return [];
-  }, [allRequests]);
+
+    for (const trace of traces) {
+      if (!items.find((r) => r.app_responses?.traceId === trace.traceId)) {
+        const convertedTrace = traceToRequestornator(trace);
+        if (convertedTrace) {
+          items.push(convertedTrace);
+        }
+      }
+    }
+
+    items.sort(sortRequestornatorsDescending);
+
+    return items;
+  }, [allRequests, traces]);
 
   // This feels wrong... but it's a way to load a past request back into the UI
   const loadHistoricalRequest = useHandler((traceId: string) => {
-    recordRequestInSessionHistory(traceId);
     showResponseBodyFromHistory(traceId);
     const match = history.find((r) => r.app_responses?.traceId === traceId);
     if (match) {
@@ -179,24 +193,24 @@ export function useRequestorHistory() {
   // Keep a local history of requests that the user has made in the UI
   // This should be a subset of the full history
   // These will be cleared on page reload
-  const sessionHistory = useMemo(() => {
-    return sessionHistoryTraceIds.reduce(
-      (matchedRequestornators, traceId) => {
-        const match = history.find((r) => r.app_responses?.traceId === traceId);
-        if (match) {
-          matchedRequestornators.push(match);
-        }
-        return matchedRequestornators;
-      },
-      [] as Array<Requestornator>,
-    );
-  }, [history, sessionHistoryTraceIds]);
+  // const sessionHistory = useMemo(() => {
+  //   return sessionHistoryTraceIds.reduce(
+  //     (matchedRequestornators, traceId) => {
+  //       const match = history.find((r) => r.app_responses?.traceId === traceId);
+  //       if (match) {
+  //         matchedRequestornators.push(match);
+  //       }
+  //       return matchedRequestornators;
+  //     },
+  //     [] as Array<Requestornator>,
+  //   );
+  // }, [history, sessionHistoryTraceIds]);
 
   return {
     history,
-    sessionHistory,
+    // sessionHistory,
     isLoading,
-    recordRequestInSessionHistory,
+    // recordRequestInSessionHistory,
     loadHistoricalRequest,
   };
 }

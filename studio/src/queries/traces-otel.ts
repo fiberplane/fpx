@@ -1,8 +1,7 @@
 import {
   OtelSpanSchema,
-  type OtelTrace,
-  type TraceDetailSpansResponse,
   type TraceListResponse,
+  TraceListResponseSchema,
 } from "@fiberplane/fpx-types";
 import { type QueryFunctionContext, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -24,17 +23,19 @@ async function fetchOtelTrace(context: QueryFunctionContext<[string, string]>) {
   const response = await fetch(`/v1/traces/${traceId}/spans`, {
     mode: "cors",
   });
-  const json = (await response.json()) as TraceDetailSpansResponse;
+  const json = await response.json();
   return SpansSchema.parse(json);
 }
 
 export function useOtelTraces() {
-  return useQuery({
+  const result = useQuery({
     queryKey: [MIZU_TRACES_KEY],
-    queryFn: async (): Promise<OtelTrace[]> => {
+    queryFn: async (): Promise<TraceListResponse> => {
       const response = await fetch("/v1/traces");
-      const json = (await response.json()) as TraceListResponse;
-      return json;
+      const json = await response.json();
+      return TraceListResponseSchema.parse(json);
     },
   });
+
+  return result;
 }

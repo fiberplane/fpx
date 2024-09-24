@@ -1,3 +1,4 @@
+// import { useOtelTraces } from "@/queries";
 import { useMemo } from "react";
 import type { Requestornator } from "../queries";
 import { useActiveRoute, useRequestorStore } from "../store";
@@ -12,24 +13,30 @@ export function useMostRecentRequestornator(
   overrideTraceId: string | null = null,
 ) {
   const { path: routePath } = useActiveRoute();
-  const { path, method, activeHistoryResponseTraceId } = useRequestorStore(
-    "path",
-    "method",
-    "activeHistoryResponseTraceId",
-  );
+  const { path, method, activeHistoryResponseTraceId, sessionHistory } =
+    useRequestorStore(
+      "path",
+      "method",
+      "activeHistoryResponseTraceId",
+      "sessionHistory",
+    );
 
   const traceId = overrideTraceId ?? activeHistoryResponseTraceId;
   return useMemo<Requestornator | undefined>(() => {
     if (traceId) {
-      return all.find(
+      const result = all.find(
         (r: Requestornator) => r?.app_responses?.traceId === traceId,
       );
+
+      return result;
     }
 
     const matchingResponses = all?.filter(
       (r: Requestornator) =>
-        r?.app_requests?.requestRoute === routePath &&
-        r?.app_requests?.requestMethod === method,
+        r.app_requests?.requestRoute === routePath &&
+        r.app_requests?.requestMethod === method &&
+        r.app_responses.traceId &&
+        sessionHistory.includes(r.app_responses?.traceId),
     );
 
     // Descending sort by updatedAt
@@ -47,11 +54,13 @@ export function useMostRecentRequestornator(
     const matchingResponsesFallback = all?.filter(
       (r: Requestornator) =>
         r?.app_requests?.requestUrl === path &&
-        r?.app_requests?.requestMethod === method,
+        r?.app_requests?.requestMethod === method &&
+        r.app_responses.traceId &&
+        sessionHistory.includes(r.app_responses?.traceId),
     );
 
     matchingResponsesFallback?.sort(sortRequestornatorsDescending);
 
     return matchingResponsesFallback?.[0];
-  }, [all, routePath, method, path, traceId]);
+  }, [all, routePath, method, path, traceId, sessionHistory]);
 }
