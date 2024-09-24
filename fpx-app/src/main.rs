@@ -28,16 +28,19 @@ fn main() {
 
             let quit_app = MenuItemBuilder::new("Quit")
                 .id("quit_app")
+                .accelerator("CmdOrCtrl+Q")
                 .build(app)
                 .unwrap();
 
             let open_workspace = MenuItemBuilder::new("Open workspace")
                 .id("open_workspace")
+                .accelerator("CmdOrCtrl+O")
                 .build(app)
                 .unwrap();
 
             let close_workspace = MenuItemBuilder::new("Close workspace")
                 .id("close_workspace")
+                .accelerator("CmdOrCtrl+W")
                 .build(app)
                 .unwrap();
 
@@ -70,7 +73,12 @@ fn main() {
                         std::process::exit(0);
                     }
                     "close_workspace" => {
-                        window_.emit("request-close-workspace", "").unwrap();
+                        let app_state = window_.state::<AppState>();
+                        if app_state.get_workspace().is_some() {
+                            window_.emit("request-close-workspace", "").unwrap();
+                        } else {
+                            std::process::exit(0);
+                        }
                     }
                     "open_workspace" => {
                         window_.emit("request-open-dialog", "").unwrap();
