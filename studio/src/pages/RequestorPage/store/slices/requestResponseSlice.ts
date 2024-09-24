@@ -196,4 +196,8 @@ export const requestResponseSlice: StateCreator<
     set((state) => {
       state.sessionHistory.push(traceId);
     }),
+  setActiveHistoryResponseTraceId: (traceId: string | null) =>
+    set((state) => {
+      state.activeHistoryResponseTraceId = traceId;
+    }),
 });

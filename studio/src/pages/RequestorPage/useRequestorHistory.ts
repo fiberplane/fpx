@@ -33,7 +33,7 @@ export function useRequestorHistory() {
     "showResponseBodyFromHistory",
   );
 
-  const { data: allRequests } = useFetchRequestorRequests();
+  const { data: allRequests, isLoading } = useFetchRequestorRequests();
 
   // Keep a history of recent requests and responses
   const history = useMemo<Array<Requestornator>>(() => {
@@ -195,6 +195,7 @@ export function useRequestorHistory() {
   return {
     history,
     sessionHistory,
+    isLoading,
     recordRequestInSessionHistory,
     loadHistoricalRequest,
   };

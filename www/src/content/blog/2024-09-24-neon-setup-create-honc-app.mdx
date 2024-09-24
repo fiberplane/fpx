@@ -1,0 +1,51 @@
+---
+title: "Faster Neon setup in create-honc-app"
+description: Create a Hono app with a Neon database and deploy it to Cloudflare Workers in no time
+slug: faster-neon-setup-create-honc-app
+date: 2024-09-24
+author: Laurynas Keturakis
+tags:
+  - Hono.js
+  - Neon
+  - HONC
+  - Postgres
+---
+
+import PackageManagers from "@/components/PackageManagers.astro";
+
+A little while back we introduced the 🪿**HONC** [stack](https://honc.dev) - a modular collection of choice technologies for building lightweight and type-safe data APIs. Along with some example template starters, we shipped a command line tool to help you bootstrap HONC applications in no time: `create-honc-app`.
+
+## TL;DR
+
+We're shipping an upgrade to the `create-honc-app` that will help you wire up your HONC application with a database provider even faster - starting with the [Neon serverless Postgres platform](https://neon.tec).
+
+Select a Neon-based template when using `create-honc-app`, and the CLI will prompt you to authenticate with your Neon account. Once authenticated, you will be able to select any of your projects (or create a new one), select (or create) a database, and the connection string for that database will automatically be populated in the appropriate `.dev.vars` file.
+
+<PackageManagers type="create" pkg="honc-app@latest" />
+
+## What is 🪿HONC again?
+
+Just a quick recap - HONC, stands for:
+
+- **H**ono
+- Drizzle **O**RM
+- **N**eon
+- **C**loudflare
+
+representing:
+
+**Hono**: A lightweight (14kB), fast, and versatile TypeScript framework for building APIs. Similar to Express.js but optimized for performance, Hono runs on any platform that supports web standards, including Cloudflare Workers, Deno, Bun and Node.js. [Hono](https://hono.dev/) offers helpful middleware and has a supportive community.
+
+**ORM (Drizzle)**: [Drizzle ORM](https://orm.drizzle.team/) serves as the type-safe query builder for various relational databases. It bridges the gap between your data and application code without the complexity of a traditional ORM.
+
+**Neon**: A serverless PostgreSQL database that scales seamlessly with your application. [Neon](https://neon.tech) supports modern needs like vector storage for AI apps and JSON data handling. It eliminates the need for complex setups like AWS certifications.
+
+**Cloud(flare)**: [Cloudflare Workers](https://workers.cloudflare.com/) is the recommended deployment platform. It provides a serverless environment that’s globally distributed, allowing your Hono application to run close to your users for improved performance.
+
+## Take it for a spin
+
+Get started with the HONC stack with you preferred package manager and let us know what you build with it. The `create-honc-app` CLI is open source and on [GitHub](https://github.com/fiberplane/create-honc-app).
+
+<PackageManagers type="create" pkg="honc-app@latest" />
+
+🪿 Honc! Honc!
