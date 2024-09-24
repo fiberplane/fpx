@@ -123,6 +123,7 @@ export const SENSITIVE_HEADERS = [
   "cookie",
   "set-cookie",
   "neon-connection-string",
+  "x-fpx-trace-id",
 ];
 
 export function redactSensitiveHeaders(

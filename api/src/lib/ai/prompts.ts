@@ -1,6 +1,11 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
-export const getSystemPrompt = (persona: string) => {
+export const getSystemPrompt = (persona: string, slimPrompt = false) => {
+  if (slimPrompt) {
+    return persona === "QA"
+      ? HOSTILE_SLIM_SYSTEM_PROMPT
+      : FRIENDLY_SLIM_SYSTEM_PROMPT;
+  }
   return persona === "QA"
     ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
     : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT;
@@ -300,6 +305,30 @@ Never add the x-fpx-trace-id header to the request.
 
 Use the tool "make_request". Always respond in valid JSON.
 ***Don't make your responses too long, otherwise we cannot parse your JSON response.***
+`);
+
+const PATH_INSTRUCTION = `
+For example, if you get a route like \`/users/:id\`, you should return a filled-in "path" field,
+like \`/users/1234567890\` and a "pathParams" field like:
+
+{ "path": "/users/1234567890", "pathParams": { "key": ":id", "value": "1234567890" } }
+
+*Remember to keep the colon in the pathParam key!*
+If there are history entries matching current handler, try to use data from them.
+`;
+
+export const FRIENDLY_SLIM_SYSTEM_PROMPT = cleanPrompt(`
+You are a friendly, expert full-stack engineer and an API testing assistant. Please help user to craft requests to route handlers.
+
+${PATH_INSTRUCTION}
+`);
+
+export const HOSTILE_SLIM_SYSTEM_PROMPT = cleanPrompt(`
+You are an expert QA Engineer, a thorough API tester with a generally hostile disposition. Please help user to craft requests to route handlers. 
+
+${PATH_INSTRUCTION}
+
+You should focus on trying to break things. Be clever and creative with test data.  
 `);
 
 /**
