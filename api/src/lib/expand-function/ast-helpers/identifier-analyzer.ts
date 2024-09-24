@@ -44,6 +44,12 @@ export function analyzeOutOfScopeIdentifiers(
       functionNode.getText(),
     );
   }
+
+  // Add function name to local declarations if it exists
+  if (ts.isFunctionDeclaration(functionNode) && functionNode.name) {
+    localDeclarations.add(functionNode.name.text);
+  }
+
   // First pass: collect local declarations
   ts.forEachChild(functionNode, function collectDeclarations(childNode) {
     if (
@@ -63,13 +69,19 @@ export function analyzeOutOfScopeIdentifiers(
     if (ts.isIdentifier(childNode)) {
       if (ts.isPropertyAccessExpression(childNode.parent)) {
         if (childNode === childNode.parent.name) {
-          return; // Skip property names
-        }
-        if (
-          childNode === childNode.parent.expression &&
-          localDeclarations.has(childNode.text)
-        ) {
-          return; // Skip local variables used as base objects
+          // This is the property being accessed
+          const baseObject = childNode.parent.expression;
+          if (
+            ts.isIdentifier(baseObject) &&
+            !localDeclarations.has(baseObject.text)
+          ) {
+            // The base object is out of scope, so we include this property
+            const pos = sourceFile.getLineAndCharacterOfPosition(
+              childNode.getStart(),
+            );
+            usedIdentifiers.set(childNode.text, pos);
+          }
+          return;
         }
       }
 
