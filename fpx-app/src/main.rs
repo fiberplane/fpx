@@ -16,6 +16,7 @@ const STORE_PATH: &str = "fpx.bin";
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .manage(AppState::default())
@@ -66,16 +67,14 @@ fn main() {
             });
 
             let window_ = window.clone();
-            window.on_window_event(move |event| match event {
-                tauri::WindowEvent::CloseRequested { api, .. } => {
+            window.on_window_event(move |event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                     let app_state = window_.state::<AppState>();
                     if app_state.get_workspace().is_some() {
                         api.prevent_close();
                         window_.emit("request-close-workspace", "").unwrap();
                     }
                 }
-                tauri::WindowEvent::Destroyed => println!("DESTROYED"),
-                _ => {}
             });
 
             Ok(())
