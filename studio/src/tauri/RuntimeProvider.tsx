@@ -11,7 +11,6 @@ import { createContext, useEffect, useState } from "react";
 import { RUNTIME } from "../constants";
 import { WorkspaceOpenError } from "./WorkspaceOpenError";
 import { WorkspaceSelector } from "./WorkspaceSelector";
-import { WorkspaceShell } from "./WorkspaceShell";
 import {
   closeWorkspace,
   getCurrentWorkspace,
@@ -101,14 +100,10 @@ function TauriRuntime({ children }: RuntimeProviderProps) {
     };
   }, [handleCloseWorkspace]);
 
-  if (RUNTIME !== "tauri") {
-    return children;
-  }
-
   const component = error ? (
     <WorkspaceOpenError error={error} reset={() => setError(undefined)} />
   ) : workspace ? (
-    <WorkspaceShell workspace={workspace}>{children}</WorkspaceShell>
+    children
   ) : (
     <WorkspaceSelector />
   );
