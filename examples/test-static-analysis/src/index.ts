@@ -1,6 +1,6 @@
 import { Hono, type HonoRequest } from "hono";
 import otherRouter from "./other-router";
-import { getAuthHeader } from "./utils";
+import { getAuthHeader, getRandomHeader } from "./utils";
 
 const app = new Hono();
 
@@ -25,6 +25,14 @@ app.get("/const-and-helper-out-of-file", (c) => {
     return c.text("Hello Hono!");
   }
   return c.text("Unauthorized", 401);
+});
+
+app.get("/const-and-helper-out-of-file-and-sub-helpers", (c) => {
+  const randomHeader = getRandomHeader(c.req);
+  if (randomHeader) {
+    return c.text("What a random header!");
+  }
+  return c.text("No random header", 422);
 });
 
 app.route("/other-router", otherRouter);

@@ -34,10 +34,16 @@ export function analyzeOutOfScopeIdentifiers(
     | ts.ArrowFunction
     | ts.FunctionExpression,
   sourceFile: ts.SourceFile,
+  debug?: boolean,
 ): OutOfScopeIdentifier[] {
   const localDeclarations = new Set<string>();
   const usedIdentifiers = new Map<string, ts.LineAndCharacter>();
-
+  if (debug) {
+    console.log(
+      "[debug] [analyzeOutOfScopeIdentifiers] Analyzing function:",
+      functionNode.getText(),
+    );
+  }
   // First pass: collect local declarations
   ts.forEachChild(functionNode, function collectDeclarations(childNode) {
     if (

@@ -15,7 +15,16 @@ export function getParentImportDeclaration(
   return undefined;
 }
 
-export function getDefinitionText(node: ts.Node, sourceFile: ts.SourceFile) {
+type DefinitionText = {
+  type: "unknown" | "function";
+  text: string;
+  definitionNode?: ts.Node;
+};
+
+export function getDefinitionText(
+  node: ts.Node,
+  sourceFile: ts.SourceFile,
+): DefinitionText | undefined {
   // debugger;
 
   // Check: Variable declaration with initializer
@@ -40,6 +49,7 @@ export function getDefinitionText(node: ts.Node, sourceFile: ts.SourceFile) {
     return {
       type: "function",
       text: node.getText(sourceFile),
+      definitionNode: node,
     };
   }
 
@@ -48,6 +58,7 @@ export function getDefinitionText(node: ts.Node, sourceFile: ts.SourceFile) {
     return {
       type: "function",
       text: node.parent.getText(sourceFile),
+      definitionNode: node.parent,
     };
   }
 

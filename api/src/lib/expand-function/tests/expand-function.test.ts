@@ -37,6 +37,16 @@ const functionWithHelperInAnotherFile = `(c) => {
   return c.text("Unauthorized", 401);
 }`.trim();
 
+// A function in `<root>/app/src/index.ts` that has a helper function that is out of scope and in another file,
+// and the helper function itself has a helper function that is out of scope and in another file
+const functionWithHelperInAnotherFileWithHelperInAnotherFile = `(c) => {
+  const randomHeader = getRandomHeader(c.req);
+  if (randomHeader) {
+    return c.text("What a random header!");
+  }
+  return c.text("No random header", 422);
+}`.trim();
+
 const functionWithWebStandardGlobals = `(c) => {
   console.log("Other Router");
   const url = new URL(c.req.url);
@@ -109,6 +119,37 @@ describe("expandFunction", () => {
   return req.header("Authorization");
 }`.trim(),
             }),
+          }),
+        ]),
+      );
+    });
+
+    it("should recursively expand context for a function identifier that is out of scope", async () => {
+      const result = await expandFunction(
+        projectRoot,
+        srcPath,
+        functionWithHelperInAnotherFileWithHelperInAnotherFile,
+      );
+
+      expect(result).not.toBeNull();
+      expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
+
+      expect(result?.context).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            definition: expect.objectContaining({
+              text: `export function getRandomHeader(req: HonoRequest) {
+  return req.header(RANDOM_HEADER);
+}`.trim(),
+            }),
+            context: expect.arrayContaining([
+              expect.objectContaining({
+                name: "RANDOM_HEADER",
+                definition: expect.objectContaining({
+                  text: `"X-Random"`,
+                }),
+              }),
+            ]),
           }),
         ]),
       );

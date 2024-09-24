@@ -1,6 +1,7 @@
 import ts from "typescript";
 import logger from "../../logger.js";
 import {
+  analyzeOutOfScopeIdentifiers,
   definitionToNode,
   getDefinitionText,
   getParentImportDeclaration,
@@ -25,7 +26,7 @@ import {
 // - expand that code
 // - (todo) REPEAT for each reference's value
 
-export type ExpandedFunctionContext = Array<{
+type ExpandedFunctionContextEntry = {
   /** The name of the constant or utility in the code */
   name: string;
   /**
@@ -46,7 +47,17 @@ export type ExpandedFunctionContext = Array<{
     };
     text: string | undefined;
   };
-}>;
+  /**
+   * Hurrah for recursive types!
+   *
+   * The child context of the constant or utility.
+   * That is, if the constant or utility is a function,
+   * this will contain definitions for any of the function's out-of-scope identifiers.
+   */
+  context?: ExpandedFunctionContext;
+};
+
+export type ExpandedFunctionContext = Array<ExpandedFunctionContextEntry>;
 
 export type ExpandedFunctionResult = {
   /** The file in which the function was found */
@@ -178,6 +189,8 @@ async function extractContext(
               node,
               identifier,
             );
+
+            // TODO - Recurse
             if (contextEntry) {
               context.push(contextEntry);
               continue;
@@ -190,7 +203,7 @@ async function extractContext(
 
           const valueText = getDefinitionText(node, sourceFile);
 
-          const contextEntry = {
+          const contextEntry: ExpandedFunctionContextEntry = {
             name: identifier.name,
             type: valueText?.type ?? "unknown",
             position: identifier.position,
@@ -205,6 +218,32 @@ async function extractContext(
             `[debug] [extractContext] Context entry for ${identifier.name}`,
             contextEntry,
           );
+
+          // Recursively expand context if the identifier is a function
+          if (contextEntry?.type === "function") {
+            // TODO - Check if this is necessary
+            // await openFile(connection, sourceDefinition.uri);
+
+            // @ts-expect-error - I haven't type-narrowed the `node` based off of the valueText.type
+            //                    But just narrowing the node type would work and we could ditch the type property altogether?
+            const functionBody = valueText?.definitionNode?.body ?? node?.body;
+            const functionIdentifiers = analyzeOutOfScopeIdentifiers(
+              functionBody,
+              sourceFile,
+              true,
+            );
+            console.log(
+              `[debug] [extractContext] Analyzed out of scope identifiers for ${identifier.name}`,
+              functionIdentifiers,
+            );
+
+            const subContext = await extractContext(
+              projectRoot,
+              sourceDefinition.uri.replace(/^file:\/\//, ""),
+              functionIdentifiers,
+            );
+            contextEntry.context = subContext;
+          }
 
           context.push(contextEntry);
         } else {
