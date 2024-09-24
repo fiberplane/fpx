@@ -47,6 +47,8 @@ type ExpandedFunctionContextEntry = {
     };
     text: string | undefined;
   };
+  /** The package (in node_modules) that the constant or utility is defined in */
+  package?: string;
   /**
    * Hurrah for recursive types!
    *
@@ -162,14 +164,14 @@ async function extractContext(
         continue;
       }
 
-      // TODO - Handle node_modules, add some context about the module that was imported
-
       if (sourceDefinition) {
         // Find the node at the definition position
         const { node, sourceFile, definitionFilePath } =
           definitionToNode(sourceDefinition);
 
-        logger.debug(`[debug] AST node for ${identifier.name}:`, node);
+        // NOTE - This debug log is quite noisy, but can be helpful
+        //
+        // logger.debug(`[debug] AST node for ${identifier.name}:`, node);
 
         // If there's a node, we can try to extract the value of the definition
         if (node) {
@@ -203,6 +205,29 @@ async function extractContext(
 
           const valueText = getDefinitionText(node, sourceFile);
 
+          // HACK - If we resolved the definition to node_modules,
+          //        we can skip any recursive expansion and just add the import as context for now
+          const isNodeModule =
+            textDocumentDefinition?.uri?.includes("node_modules");
+          if (isNodeModule) {
+            logger.debug(
+              `[debug] ${identifier.name} is likely an installed dependency`,
+            );
+            const contextEntry: ExpandedFunctionContextEntry = {
+              name: identifier.name,
+              type: valueText?.type ?? "unknown",
+              position: identifier.position,
+              definition: {
+                uri: sourceDefinition.uri,
+                range: sourceDefinition.range,
+                text: valueText?.text,
+              },
+              package: extractPackageName(sourceDefinition.uri) ?? undefined,
+            };
+            context.push(contextEntry);
+            continue;
+          }
+
           const contextEntry: ExpandedFunctionContextEntry = {
             name: identifier.name,
             type: valueText?.type ?? "unknown",
@@ -232,8 +257,9 @@ async function extractContext(
               sourceFile,
               true,
             );
-            console.log(
-              `[debug] [extractContext] Analyzed out of scope identifiers for ${identifier.name}`,
+
+            logger.debug(
+              `[debug] [extractContext] Analyzed NESTED out of scope identifiers for ${identifier.name}`,
               functionIdentifiers,
             );
 
@@ -262,4 +288,32 @@ async function extractContext(
   }
 
   return context;
+}
+
+function extractPackageName(uri: string): string | null {
+  try {
+    const url = new URL(uri);
+    const path = decodeURIComponent(url.pathname); // Decode URI components
+
+    const nodeModulesIndex = path.indexOf("node_modules");
+
+    if (nodeModulesIndex === -1) {
+      return null;
+    }
+
+    const packagePath = path.substring(
+      nodeModulesIndex + "node_modules/".length,
+    );
+    const parts = packagePath.split("/");
+
+    // Handle scoped packages
+    if (parts[0].startsWith("@") && parts.length > 1) {
+      return `${parts[0]}/${parts[1]}`;
+    }
+
+    return parts[0];
+  } catch (error) {
+    logger.error("[extractPackageName] Error parsing URI:", uri, error);
+    return null;
+  }
 }
