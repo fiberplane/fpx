@@ -26,16 +26,26 @@ fn main() {
                 .ok_or("Store not found")
                 .unwrap();
 
-            let quit = MenuItemBuilder::new("Quit").id("quit").build(app).unwrap();
-            let open = MenuItemBuilder::new("Open workspace")
-                .id("open")
+            let quit_app = MenuItemBuilder::new("Quit")
+                .id("quit_app")
+                .build(app)
+                .unwrap();
+
+            let open_workspace = MenuItemBuilder::new("Open workspace")
+                .id("open_workspace")
+                .build(app)
+                .unwrap();
+
+            let close_workspace = MenuItemBuilder::new("Close workspace")
+                .id("close_workspace")
                 .build(app)
                 .unwrap();
 
             let app_menu = SubmenuBuilder::new(app, "App")
-                .item(&open)
+                .item(&open_workspace)
+                .item(&close_workspace)
                 .separator()
-                .item(&quit)
+                .item(&quit_app)
                 .build()
                 .unwrap();
 
@@ -56,10 +66,13 @@ fn main() {
                 let MenuId(id) = event.id();
 
                 match id.as_str() {
-                    "quit" => {
+                    "quit_app" => {
                         std::process::exit(0);
                     }
-                    "open" => {
+                    "close_workspace" => {
+                        window_.emit("request-close-workspace", "").unwrap();
+                    }
+                    "open_workspace" => {
                         window_.emit("request-open-dialog", "").unwrap();
                     }
                     _ => {}
