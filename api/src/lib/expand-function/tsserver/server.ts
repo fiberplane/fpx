@@ -22,6 +22,11 @@ export async function getTSServer(pathToProject: string) {
     shell: true,
   });
 
+  // Terminate the language server when the Node.js process exits
+  process.on("exit", () => {
+    tsServer.kill();
+  });
+
   // NOTE - Uncomment to debug raw output of ts-language-server
   //
   // tsServer.stdout.on("data", (data) => {
