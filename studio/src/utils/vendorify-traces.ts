@@ -176,7 +176,7 @@ const isOpenAIFetch = (span: OtelSpan) => {
 };
 
 // TODO - Make this a bit more robust?
-const isNeonFetch = (span: OtelSpan) => {
+export const isNeonFetch = (span: OtelSpan) => {
   return !!span.attributes["http.request.header.neon-connection-string"];
 };
 
@@ -190,7 +190,7 @@ const isAnthropicFetch = (span: OtelSpan) => {
   }
 };
 
-function getNeonSqlQuery(span: OtelSpan) {
+export function getNeonSqlQuery(span: OtelSpan) {
   const body = getRequestBody(span);
   // const body = getString(span.attributes["fpx.request.body"]);
   if (!body) {

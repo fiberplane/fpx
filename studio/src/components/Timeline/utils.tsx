@@ -103,6 +103,9 @@ export function getBgColorForLevel(level: string) {
       return "bg-yellow-500/10";
     case "error":
       return "bg-red-500/10";
+    // FIXME
+    case "neon":
+      return "bg-green-500/10";
     default:
       return "bg-gray-500/10";
   }
