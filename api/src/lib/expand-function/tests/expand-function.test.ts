@@ -174,7 +174,19 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
       expect(result?.endColumn).toBe(2);
 
       // NOTE - `console` maps back to `@cloudflare/workers-types`'s declaration file (.d.ts)
-      //         so our `expandFunction` correctly identifies it a part of the runtime
+      //         so our `expandFunction` correctly identifies it as part of the runtime
+      expect(result?.context).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: "console",
+          }),
+        ]),
+      );
+
+      // NOTE - `log` *SHOULD* map back to `@cloudflare/workers-types`'s declaration file (.d.ts)
+      //         so our `expandFunction` *SHOULD* correctly identifies it as part of the runtime
+      //         If this fails, though, you may need to uncomment the lines below, as depending on the workers-types,
+      //         we might end up mapping `log` to an `index.ts` file.
       expect(result?.context).not.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -186,22 +198,14 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
       // HACK - `log` maps back to workers-types (cloudflare pacakge), but not a `.d.ts` file...
       //         so it's really difficult to detect that it's actually part of the runtime
       //         so we just check that we correctly identify the package name and move on for now
-      expect(result?.context).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            name: "log",
-            package: expect.stringMatching(/^@cloudflare\/workers-types/),
-          }),
-        ]),
-      );
+      // expect(result?.context).toEqual(
+      //   expect.arrayContaining([
+      //     expect.objectContaining({
+      //       name: "log",
+      //       package: expect.stringMatching(/^@cloudflare\/workers-types/),
+      //     }),
+      //   ]),
+      // );
     });
   });
 });
-
-/**
- * TODO - Test for this (shouldHonk should be considered local scope)
- * 
-  const { shouldHonk } = c.req.query();
-  const honk = typeof shouldHonk !== "undefined" ? "Honk honk!" : "";
-
- */
