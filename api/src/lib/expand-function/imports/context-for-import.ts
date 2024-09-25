@@ -25,12 +25,16 @@ export async function contextForImport(
   // the "_typescript.goToSourceDefinition" will return the import declaration.
   // In this case, we can try following the import with another goToSourceDefinition call
   // but this time on the module specifier.
+  //
+  // For now, I'm okay with simply not expanding these imports, but this is something
+  // we will want to handle in the future.
+  //
   // const doubleClickedImportDefinition = await getTsSourceDefinition(
   //   tsserver,
   //   currentFilePath,
   //   identifierNode.getSourceFile().getLineAndCharacterOfPosition(identifierNode.getStart())
   // );
-
+  //
   // console.log("doubleClickedImportDefinition", doubleClickedImportDefinition);
 
   const importedDefinition = await followImport(
