@@ -1,6 +1,12 @@
 import { useOrphanLogs } from "@/hooks";
 import { useOtelTrace } from "@/queries";
-import { getNeonSqlQuery, isNeonFetch } from "@/utils";
+import {
+  getNeonSqlQuery,
+  getResponseBody,
+  isJson,
+  isNeonFetch,
+  safeParseJson,
+} from "@/utils";
 import { useMemo } from "react";
 import { LogsEmptyState } from "./Empty";
 import { LogRow } from "./LogsTableRow";
@@ -29,12 +35,22 @@ const LogsTableWithTraceId = ({ traceId }: { traceId: string }) => {
   const logsWithEvents = useMemo<LogEntry[]>(() => {
     const neonSpans = spans?.filter((span) => isNeonFetch(span));
     const neonEvents: NeonEvent[] =
-      neonSpans?.map((span) => ({
-        id: span.span_id,
-        type: "neon-event",
-        timestamp: span.end_time,
-        sql: getNeonSqlQuery(span),
-      })) ?? [];
+      neonSpans?.map((span) => {
+        const responseBody = getResponseBody(span);
+        const rowCount =
+          responseBody && isJson(responseBody)
+            ? Number.parseInt(safeParseJson(responseBody)?.rowCount ?? "") ??
+              null
+            : null;
+        return {
+          id: span.span_id,
+          type: "neon-event",
+          timestamp: span.end_time,
+          sql: getNeonSqlQuery(span),
+          rowCount,
+          duration: span.end_time.getTime() - span.start_time.getTime(),
+        };
+      }) ?? [];
 
     if (neonEvents?.length) {
       const result = [...logs, ...neonEvents];
@@ -45,6 +61,7 @@ const LogsTableWithTraceId = ({ traceId }: { traceId: string }) => {
 
     return logs;
   }, [logs, spans]);
+
   return <LogsTableContent logs={logsWithEvents} />;
 };
 

@@ -38,10 +38,6 @@ function NeonEventRow({ log }: { log: NeonEvent }) {
   const [isMouseSelected, setIsMouseSelected] = useState(false);
   const { isCopied: isMessageCopied, copyToClipboard: copyMessageToClipboard } =
     useCopyToClipboard();
-  const {
-    isCopied: isArgumentsCopied,
-    copyToClipboard: copyArgumentsToClipboard,
-  } = useCopyToClipboard();
 
   const message = "Neon DB Call";
 
@@ -91,13 +87,25 @@ function NeonEventRow({ log }: { log: NeonEvent }) {
             Level: <span className={textColor}>{log.level.toUpperCase()}</span>
           </p> */}
           <div className="flex gap-2">
+            <p>Duration:</p>
+            <div className="flex justify-start">
+              <p>{log.duration}ms</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <p>Row Count:</p>
+            <div className="flex justify-start">
+              <p>{log.rowCount}</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
             <p>Query:</p>
             <CodeMirrorSqlEditor
               value={queryValue}
               onChange={noop}
               readOnly={true}
             />
-            <div className="-mt-2 flex justify-start">
+            <div className="flex justify-start">
               <TooltipProvider>
                 <Tooltip open={isMessageCopied}>
                   <TooltipTrigger asChild>
