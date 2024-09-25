@@ -1,22 +1,22 @@
 import {
-  TimelineGraph,
+  // TimelineGraph,
   TimelineListDetails,
   TimelineProvider,
   extractWaterfallTimeStats,
 } from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-  usePanelConstraints,
-} from "@/components/ui/resizable";
-import { useIsSmScreen } from "@/hooks";
+// import {
+//   ResizableHandle,
+//   ResizablePanel,
+//   ResizablePanelGroup,
+//   usePanelConstraints,
+// } from "@/components/ui/resizable";
+// import { useIsSmScreen } from "@/hooks";
 import { useOrphanLogs } from "@/hooks";
 import { useOtelTrace } from "@/queries";
-import { cn } from "@/utils";
+// import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
-import type { ReactNode } from "react";
+// import type { ReactNode } from "react";
 
 type Props = {
   traceId?: string;
@@ -27,14 +27,14 @@ export function RequestorTimeline({ traceId = "" }: Props) {
   const orphanLogs = useOrphanLogs(traceId, spans ?? []);
   const { waterfall } = useAsWaterfall(spans ?? [], orphanLogs);
   const { minStart, duration } = extractWaterfallTimeStats(waterfall);
-  const isSmallScreen = useIsSmScreen();
+  // const isSmallScreen = useIsSmScreen();
 
-  const { minSize } = usePanelConstraints({
-    groupId: isSmallScreen ? "" : "requestor-timeline",
-    initialGroupSize: 600,
-    minimalGroupSize: 624,
-    minPixelSize: 300,
-  });
+  // const { minSize } = usePanelConstraints({
+  //   groupId: isSmallScreen ? "" : "requestor-timeline",
+  //   initialGroupSize: 600,
+  //   minimalGroupSize: 624,
+  //   minPixelSize: 300,
+  // });
 
   return (
     <div className="overflow-hidden">
@@ -42,7 +42,7 @@ export function RequestorTimeline({ traceId = "" }: Props) {
         <TimelineEmptyState />
       ) : (
         <TimelineProvider>
-          <ResizablePanelGroup
+          {/* <ResizablePanelGroup
             direction="horizontal"
             id="requestor-timeline"
             className="h-full"
@@ -68,11 +68,15 @@ export function RequestorTimeline({ traceId = "" }: Props) {
               </>
             )}
             <ResizablePanel className="" order={1} id="details">
-              <Content className="overflow-y-auto h-full">
-                <TimelineListDetails waterfall={waterfall} />
-              </Content>
+              <Content className="overflow-y-auto h-full"> */}
+          <TimelineListDetails
+            waterfall={waterfall}
+            minStart={minStart}
+            duration={duration}
+          />
+          {/*</Content>
             </ResizablePanel>
-          </ResizablePanelGroup>
+          </ResizablePanelGroup>*/}
         </TimelineProvider>
       )}
     </div>
@@ -100,10 +104,10 @@ function TimelineEmptyState() {
   );
 }
 
-const Content = (props: { className?: string; children: ReactNode }) => (
-  <div
-    className={cn("mt-2 px-3  first:pl-0 py-2 min-h-[10rem]", props.className)}
-  >
-    {props.children}
-  </div>
-);
+// const Content = (props: { className?: string; children: ReactNode }) => (
+//   <div
+//     className={cn("mt-2 px-3 first:pl-0 py-2 min-h-[10rem]", props.className)}
+//   >
+//     {props.children}
+//   </div>
+// );

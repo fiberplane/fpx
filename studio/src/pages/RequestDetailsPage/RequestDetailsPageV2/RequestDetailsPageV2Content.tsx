@@ -10,7 +10,11 @@ import {
 } from "@radix-ui/react-tooltip";
 
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
-import { TimelineListDetails, TimelineProvider } from "@/components/Timeline";
+import {
+  TimelineListDetails,
+  TimelineProvider,
+  extractWaterfallTimeStats,
+} from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +26,7 @@ import type { MizuOrphanLog } from "@/queries";
 import { useOtelTraces } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Link } from "react-router-dom";
 import { EmptyState } from "../EmptyState";
@@ -64,6 +68,11 @@ export function RequestDetailsPageContentV2({
     useMostRecentRequest(currentTrace, traces);
 
   const { rootSpan, waterfall } = useAsWaterfall(spans, orphanLogs);
+  // const {} = useDuratio
+  const { minStart, duration } = useMemo(
+    () => extractWaterfallTimeStats(waterfall),
+    [waterfall],
+  );
 
   const shouldReplay = useShouldReplay(currentTrace);
 
@@ -231,7 +240,11 @@ export function RequestDetailsPageContentV2({
                 "lg:p-4",
               )}
             >
-              <TimelineListDetails waterfall={waterfall} />
+              <TimelineListDetails
+                waterfall={waterfall}
+                duration={duration}
+                minStart={minStart}
+              />
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

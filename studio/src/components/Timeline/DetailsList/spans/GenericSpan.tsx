@@ -55,8 +55,8 @@ export function GenericSpan({
           )}
           <div className="text-gray-400 text-xs w-12 px-2">
             {formatDuration(
-              span.start_time.toString(),
-              span.end_time.toString(),
+              span.start_time.toISOString(),
+              span.end_time.toISOString(),
             )}
           </div>
         </div>

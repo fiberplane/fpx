@@ -7,18 +7,23 @@ import {
 } from "@/utils";
 import { memo } from "react";
 import { useTimelineContext } from "../context";
+import { DurationIndicator } from "../graph/DurationIndicator";
 import { OrphanLog } from "./OrphanLog";
 import { FetchSpan, GenericSpan, IncomingRequest } from "./spans";
 
 function TimelineListDetailsComponent({
   waterfall,
+  minStart,
+  duration,
 }: {
   waterfall: Waterfall;
+  minStart: number;
+  duration: number;
 }) {
   const { highlightedSpanId, setHighlightedSpanId } = useTimelineContext();
   // TODO: merge spans and orphanLogs
   return (
-    <div className="grid gap-2" id="trace-details-v2">
+    <div className="grid gap-2">
       {waterfall.map((item) => (
         <div
           key={getId(item)}
@@ -27,14 +32,29 @@ function TimelineListDetailsComponent({
           className={cn(
             "max-w-full overflow-hidden",
             "border-l-2 border-transparent rounded-sm transition-all bg-transparent",
-            "hover:bg-primary/10 hover:border-blue-500 hover:rounded-l-none",
             "data-[highlighted=true]:bg-primary/10",
             "relative after:absolute after:bottom-[-4px] after:bg-muted-foreground/30 after:w-full after:h-px last:after:h-0",
-            "h-full",
+            "grid gap-2 bg-muted/50",
           )}
           data-highlighted={highlightedSpanId === getId(item)}
         >
-          <Content item={item} />
+          {!isMizuOrphanLog(item) && (
+            <DurationIndicator
+              itemStartTime={item.span.start_time.getTime()}
+              itemDuration={
+                item.span.end_time.getTime() - item.span.start_time.getTime()
+              }
+              traceDuration={duration}
+              traceStartTime={minStart}
+            />
+          )}
+          <div>
+            <Content
+              item={item}
+              traceDuration={duration}
+              traceStartTime={minStart}
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -42,9 +62,18 @@ function TimelineListDetailsComponent({
 }
 export const TimelineListDetails = memo(TimelineListDetailsComponent);
 
-const Content = ({ item }: { item: Waterfall[0] }) => {
+const Content = ({
+  item,
+  traceDuration,
+  traceStartTime,
+}: { item: Waterfall[0]; traceDuration: number; traceStartTime: number }) => {
   if (isMizuOrphanLog(item)) {
-    return <OrphanLog log={item} key={item.id} />;
+    const marginLeft = `${(((item.timestamp.getTime() - traceStartTime) / traceDuration) * 100).toPrecision(4)}%`;
+    return (
+      <div style={{ marginLeft }}>
+        <OrphanLog log={item} key={item.id} />
+      </div>
+    );
   }
 
   if (isIncomingRequestSpan(item.span)) {
@@ -61,12 +90,15 @@ const Content = ({ item }: { item: Waterfall[0] }) => {
     );
   }
 
+  const marginLeft = `${(((item.span.start_time.getTime() - traceStartTime) / traceDuration) * 100).toPrecision(4)}%`;
   return (
-    <GenericSpan
-      span={item.span}
-      key={item.span.span_id}
-      vendorInfo={item.vendorInfo}
-    />
+    <div style={{ marginLeft }}>
+      <GenericSpan
+        span={item.span}
+        key={item.span.span_id}
+        vendorInfo={item.vendorInfo}
+      />
+    </div>
   );
 };
 

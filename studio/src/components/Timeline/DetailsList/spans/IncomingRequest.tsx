@@ -1,26 +1,28 @@
+// import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
+// import { TextOrJsonViewer } from "../TextJsonViewer";
+import { StatusCode } from "@/pages/RequestorPage/RequestorHistory";
 import {
-  SENSITIVE_HEADERS,
+  // SENSITIVE_HEADERS,
   cn,
   getHttpMethodTextColor,
-  getRequestBody,
-  getRequestEnv,
-  getRequestHeaders,
-  getResponseBody,
-  getResponseHeaders,
-  isSensitiveEnvVar,
+  // getRequestBody,
+  // getRequestEnv,
+  // getRequestHeaders,
+  // getResponseBody,
+  // getResponseHeaders,
+  getStatusCode,
+  // isSensitiveEnvVar,
 } from "@/utils";
 import { getMatchedRoute, getRequestMethod, getRequestUrl } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
-import { useTimelineIcon } from "../../hooks";
+// import { useTimelineIcon } from "../../hooks";
 import {
-  CollapsibleSubSection,
+  // CollapsibleSubSection,
   SectionHeading,
-  SubSection,
-  SubSectionHeading,
+  // SubSection,
+  // SubSectionHeading,
 } from "../../shared";
-import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
-import { TextOrJsonViewer } from "../TextJsonViewer";
 
 export function IncomingRequest({ span }: { span: OtelSpan }) {
   const id = span.span_id;
@@ -34,35 +36,42 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
     return getMatchedRoute(span);
   }, [span]);
 
-  const requestHeaders = useMemo<Record<string, string>>(() => {
-    return getRequestHeaders(span);
+  // const requestHeaders = useMemo<Record<string, string>>(() => {
+  //   return getRequestHeaders(span);
+  // }, [span]);
+
+  // const requestBody = useMemo<string>(() => {
+  //   return getRequestBody(span) ?? "";
+  // }, [span]);
+
+  // const responseHeaders = useMemo<Record<string, string>>(() => {
+  //   return getResponseHeaders(span);
+  // }, [span]);
+
+  // const responseBody = useMemo<string>(() => {
+  //   return getResponseBody(span) ?? "";
+  // }, [span]);
+
+  const responseStatusCode = useMemo(() => {
+    return getStatusCode(span);
   }, [span]);
 
-  const requestBody = useMemo<string>(() => {
-    return getRequestBody(span) ?? "";
-  }, [span]);
-
-  const responseHeaders = useMemo<Record<string, string>>(() => {
-    return getResponseHeaders(span);
-  }, [span]);
-
-  const responseBody = useMemo<string>(() => {
-    return getResponseBody(span) ?? "";
-  }, [span]);
-
-  const icon = useTimelineIcon(span);
-  const requestEnv = getRequestEnv(span);
+  // const icon = useTimelineIcon(span);
+  // const requestEnv = getRequestEnv(span);
 
   return (
     <div id={id}>
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-2">
           <SectionHeading className="flex items-center gap-2 max-lg:mt-2">
-            {icon}
-            Incoming Request
-          </SectionHeading>
+            {/* {icon}
+            Incoming Request */}
+            <StatusCode
+              status={responseStatusCode}
+              isFailure={false}
+              className="text-xs"
+            />
 
-          <div className="flex gap-2">
             <div className="inline-flex gap-2 font-mono py-1 text-xs bg-accent/80 rounded px-1">
               <span className={cn(getHttpMethodTextColor(method))}>
                 {method}
@@ -77,10 +86,27 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
                 </span>
               </div>
             )}
-          </div>
+          </SectionHeading>
+
+          {/* <div className="flex gap-2">
+            <div className="inline-flex gap-2 font-mono py-1 text-xs bg-accent/80 rounded px-1">
+              <span className={cn(getHttpMethodTextColor(method))}>
+                {method}
+              </span>
+              <span className="text-gray-400 font-light">{pathWithSearch}</span>
+            </div>
+            {matchedRoute && (
+              <div className="flex gap-2 p-1 text-xs bg-accent/80 rounded">
+                <span className="text-gray-200 text-xs">Route:</span>
+                <span className="text-gray-400 font-mono inline-block text-xs">
+                  {matchedRoute}
+                </span>
+              </div>
+            )}
+          </div> */}
         </div>
 
-        <div className="px-2">
+        {/* <div className="px-2">
           <SubSectionHeading>Request</SubSectionHeading>
           <div className="">
             <CollapsibleKeyValueTableV2
@@ -134,7 +160,7 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
               </>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
