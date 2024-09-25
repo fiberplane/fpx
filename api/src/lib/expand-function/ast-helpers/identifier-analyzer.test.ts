@@ -233,4 +233,27 @@ describe("analyzeOutOfScopeIdentifiers", () => {
       ]),
     );
   });
+
+  it("should consider destructured variables from in-scope identifiers as local scope", () => {
+    const source = `
+      function test(c) {
+        const { shouldHonk } = c.req.query();
+        const honk = typeof shouldHonk !== "undefined" ? "Honk honk!" : "";
+      }
+    `;
+    const sourceFile = createSourceFile(source);
+    const functionNode = getFunctionNode(sourceFile);
+
+    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+    expect(result).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "c" }),
+        expect.objectContaining({ name: "req" }),
+        expect.objectContaining({ name: "query" }),
+        expect.objectContaining({ name: "shouldHonk" }),
+        expect.objectContaining({ name: "honk" }),
+      ]),
+    );
+  });
 });

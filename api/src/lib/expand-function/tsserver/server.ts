@@ -1,4 +1,14 @@
-import { spawn } from "node:child_process";
+/**
+ * This file contains the TypeScript language server instance and related functions.
+ * It uses the `vscode-jsonrpc` library to create a connection to the language server
+ * and handles the initialization, notification registration, and cleanup.
+ *
+ * Note that the language server is initialized in the user's project directory by spawning a child process,
+ * and running `npx typescript-language-server --stdio`.
+ * We interface with that process via stdin/stdout.
+ */
+
+import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import {
   type MessageConnection,
   StreamMessageReader,
@@ -8,10 +18,33 @@ import {
 import logger from "../../../logger.js";
 import { isPublishDiagnosticsParams } from "./types.js";
 import { getFileUri } from "./utils.js";
-// import path from "node:path";
 
+let tsServerInstance: {
+  connection: MessageConnection;
+  tsServer: ChildProcessWithoutNullStreams;
+} | null = null;
+
+/**
+ * Retrieves the TypeScript language server instance for a given project path.
+ * If an instance already exists, it will be reused to avoid unnecessary initialization.
+ *
+ * @param {string} pathToProject - The path to the project directory.
+ * @returns {Promise<{ connection: MessageConnection; tsServer: ChildProcessWithoutNullStreams }>} The TypeScript language server instance.
+ */
 export async function getTSServer(pathToProject: string) {
-  logger.debug(`[debug]Initializing TS Server for project: ${pathToProject}`);
+  if (tsServerInstance) {
+    logger.debug(
+      `[debug]Reusing existing TS Server instance for project: ${pathToProject}`,
+    );
+    return tsServerInstance;
+  }
+
+  tsServerInstance = await initializeTSServer(pathToProject);
+  return tsServerInstance;
+}
+
+async function initializeTSServer(pathToProject: string) {
+  logger.debug(`[debug] Initializing TS Server for project: ${pathToProject}`);
 
   const tsServer = spawn("npx", ["typescript-language-server", "--stdio"], {
     // NOTE - This will add quite a bit of startup time if the user has not yet downloaded typescript-language-server dependency before via npx...
@@ -84,6 +117,11 @@ export async function getTSServer(pathToProject: string) {
   }
 }
 
+/**
+ * Registers handlers for various notifications from the TypeScript language server.
+ *
+ * @param {MessageConnection} connection - The connection to the TypeScript language server.
+ */
 function registerNotificationHandlers(connection: MessageConnection) {
   // Listen for diagnostics
   connection.onNotification("textDocument/publishDiagnostics", (params) => {
