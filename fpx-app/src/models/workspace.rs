@@ -1,23 +1,20 @@
+use fpx::config::FpxConfig;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(JsonSchema, Serialize, Clone)]
+#[derive(JsonSchema, Deserialize, Serialize, Clone)]
 pub struct Workspace {
     path: String,
-    config: Config,
-}
-
-#[derive(JsonSchema, Serialize, Deserialize, Clone)]
-pub struct Config {
-    port: u16,
+    config: FpxConfig,
 }
 
 impl Workspace {
-    pub fn new(path: String, config: Config) -> Self {
+    pub fn new(path: String, config: FpxConfig) -> Self {
         Self { path, config }
     }
 }
-#[derive(JsonSchema, Serialize)]
+
+#[derive(JsonSchema, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub enum OpenWorkspaceByPathError {
     ConfigFileMissing { path: String },
