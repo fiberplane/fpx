@@ -2,7 +2,7 @@ import { Hono, type HonoRequest } from "hono";
 import otherRouter from "./other-router";
 import { getAuthHeader, getRandomHeader } from "./utils";
 
-const app = new Hono();
+const app = new Hono<{ Bindings: { DB: D1Database } }>();
 
 const PASSPHRASES = ["I am a cat", "I am a dog", "I am a bird"];
 

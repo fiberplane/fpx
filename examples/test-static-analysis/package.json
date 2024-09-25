@@ -4,6 +4,7 @@
     "dev": "wrangler dev src/index.ts"
   },
   "dependencies": {
+    "drizzle-orm": "^0.32.0",
     "hono": "^4.5.9"
   },
   "devDependencies": {

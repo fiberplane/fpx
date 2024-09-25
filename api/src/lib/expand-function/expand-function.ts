@@ -207,8 +207,22 @@ async function extractContext(
 
           // HACK - If we resolved the definition to node_modules,
           //        we can skip any recursive expansion and just add the import as context for now
-          const isNodeModule =
-            textDocumentDefinition?.uri?.includes("node_modules");
+          const isNodeModule = sourceDefinition?.uri?.includes("node_modules");
+
+          // if (identifier.name === "drizzle") {
+          //   console.log("drizzle sourceDefinition", sourceDefinition);
+          //   console.log("drizzle textDocumentDefinition", textDocumentDefinition);
+          //   console.log("drizzle isNodeModule", isNodeModule);
+          // }
+
+          if (identifier.name === "schema") {
+            console.log("schema sourceDefinition", sourceDefinition);
+            console.log(
+              "schema textDocumentDefinition",
+              textDocumentDefinition,
+            );
+          }
+
           if (isNodeModule) {
             logger.debug(
               `[debug] ${identifier.name} is likely an installed dependency`,
@@ -304,6 +318,21 @@ function extractPackageName(uri: string): string | null {
     const packagePath = path.substring(
       nodeModulesIndex + "node_modules/".length,
     );
+
+    // Handle pnpm structure
+    const pnpmIndex = packagePath.indexOf(".pnpm/");
+    if (pnpmIndex !== -1) {
+      const pnpmPath = packagePath.substring(pnpmIndex + ".pnpm/".length);
+      const parts = pnpmPath.split("/");
+
+      // Handle scoped packages
+      if (parts[0].startsWith("@") && parts.length > 1) {
+        return `${parts[0]}/${parts[1]}`;
+      }
+
+      return parts[0];
+    }
+
     const parts = packagePath.split("/");
 
     // Handle scoped packages

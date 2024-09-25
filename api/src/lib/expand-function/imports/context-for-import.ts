@@ -20,6 +20,19 @@ export async function contextForImport(
   logger.info(
     `[debug] [contextForImport] Going to follow import for identifier: ${identifier.name}`,
   );
+
+  // So. Sometimes, for `import * as thing from "./my-module"`,
+  // the "_typescript.goToSourceDefinition" will return the import declaration.
+  // In this case, we can try following the import with another goToSourceDefinition call
+  // but this time on the module specifier.
+  // const doubleClickedImportDefinition = await getTsSourceDefinition(
+  //   tsserver,
+  //   currentFilePath,
+  //   identifierNode.getSourceFile().getLineAndCharacterOfPosition(identifierNode.getStart())
+  // );
+
+  // console.log("doubleClickedImportDefinition", doubleClickedImportDefinition);
+
   const importedDefinition = await followImport(
     tsserver,
     _projectRoot,

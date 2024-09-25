@@ -55,6 +55,13 @@ const functionWithWebStandardGlobals = `(c) => {
   return c.text(\`Other Router: \${url}\`);
 }`.trim();
 
+// A function in `<root>/app/src/other-router.ts` that has a drizzle identifier that is out of scope
+const functionWithDrizzle = `(c) => {
+  const db = drizzle(c.env.DB);
+  const stuff = await db.select().from(schema.stuff);
+  return c.json(stuff);
+}`.trim();
+
 describe("expandFunction: testing on the test-static-analysis project", () => {
   describe("single file - app/src/index.ts", () => {
     it("should return the function location and definition of a constant identifier that is out of scope", async () => {
@@ -168,9 +175,9 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "other-router.ts"));
-      expect(result?.startLine).toBe(9);
+      expect(result?.startLine).toBe(11);
       expect(result?.startColumn).toBe(14);
-      expect(result?.endLine).toBe(13);
+      expect(result?.endLine).toBe(15);
       expect(result?.endColumn).toBe(2);
 
       // NOTE - `console` maps back to `@cloudflare/workers-types`'s declaration file (.d.ts)
@@ -190,7 +197,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
       expect(result?.context).not.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            name: "console",
+            name: "log",
           }),
         ]),
       );
@@ -206,6 +213,68 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
       //     }),
       //   ]),
       // );
+    });
+  });
+
+  describe("drizzle test (external packages)", () => {
+    it("should report drizzle as an out of scope identifier and show its package name", async () => {
+      const result = await expandFunction(
+        projectRoot,
+        srcPath,
+        functionWithDrizzle,
+      );
+
+      expect(result).not.toBeNull();
+      expect(result?.file).toBe(path.resolve(srcPath, "other-router.ts"));
+      expect(result?.startLine).toBe(17);
+      // Start column is 16 because of the `async` keyword at the beginning of the function
+      expect(result?.startColumn).toBe(16);
+      expect(result?.endLine).toBe(21);
+      expect(result?.endColumn).toBe(2);
+
+      expect(result?.context).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: "drizzle",
+            package: expect.stringMatching(/^drizzle-orm/),
+          }),
+        ]),
+      );
+    });
+
+    it("should handle expansion of schema definition (drizzle schema)", async () => {
+      const result = await expandFunction(
+        projectRoot,
+        srcPath,
+        functionWithDrizzle,
+      );
+
+      expect(result).not.toBeNull();
+
+      expect(result?.context).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: "stuff",
+            definition: expect.objectContaining({
+              text: `sqliteTable("stuff", {
+  id: integer("id", { mode: "number" }).primaryKey(),
+  createdAt: text("created_at").notNull().default(sql\`(CURRENT_TIMESTAMP)\`),
+  updatedAt: text("updated_at").notNull().default(sql\`(CURRENT_TIMESTAMP)\`),
+})`.trim(),
+            }),
+            // TODO - Follow definition of sqliteTable and sql
+            // context: expect.arrayContaining([
+            //   expect.objectContaining({
+            //     name: "sqliteTable",
+            //     definition: expect.objectContaining({
+            //       text: "TODO",
+            //       package: expect.stringMatching(/^drizzle-orm/),
+            //     }),
+            //   }),
+            // ]),
+          }),
+        ]),
+      );
     });
   });
 });
