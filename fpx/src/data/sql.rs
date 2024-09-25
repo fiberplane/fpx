@@ -103,4 +103,12 @@ impl SqlBuilder {
     pub fn span_delete(&self) -> String {
         String::from("DELETE FROM spans WHERE trace_id=$1 AND span_id=$2")
     }
+
+    pub fn settings_get(&self) -> String {
+        String::from("SELECT key, value FROM settings")
+    }
+
+    pub fn settings_insert(&self) -> String {
+        String::from("INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT(key) DO UPDATE SET value = excluded.value RETURNING value")
+    }
 }

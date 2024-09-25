@@ -1,3 +1,4 @@
+use crate::api::models::settings::Settings;
 use crate::data::models::HexEncodedId;
 use crate::events::ServerEvents;
 use async_trait::async_trait;
@@ -29,6 +30,9 @@ pub enum DbError {
 
     #[error("failed to deserialize into `T`: {0}")]
     FailedDeserialize(#[from] serde::de::value::Error),
+
+    #[error("failed to serialize into `T`")]
+    FailedSerialize,
 
     #[error("Internal error: {0}")]
     InternalError(String),
@@ -85,4 +89,8 @@ pub trait Store: Send + Sync {
         trace_id: &HexEncodedId,
         span_id: &HexEncodedId,
     ) -> Result<Option<u64>>;
+
+    async fn settings_upsert(&self, tx: &Transaction, settings: Settings) -> Result<Settings>;
+
+    async fn settings_get(&self, tx: &Transaction) -> Result<Settings>;
 }
