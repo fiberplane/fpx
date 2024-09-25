@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/resizable";
 import { useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
+import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { RequestDetailsPageV2 } from "../RequestDetailsPage/RequestDetailsPageV2";
@@ -22,28 +23,30 @@ import { useRequestorHistory } from "./useRequestorHistory";
  * Estimate the size of the main section based on the window width
  */
 function getMainSectionWidth() {
-  return window.innerWidth - 400;
+  return window.innerWidth - 85;
 }
 
 export const RequestorPage = () => {
-  const { id, requestType } = useParams();
+  const { traceId: id, requestType } = useParams();
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
 
   const { sidePanel } = useRequestorStore("sidePanel");
 
-  // NOTE - Use this to test overflow of requests panel
+  // NOTE - Uncomment this to test overflow of requests panel
+  // const { setQueryParams } = useRequestorStore("setQueryParams");
   // useEffect(() => {
   //   setQueryParams(
   //     createKeyValueParameters(
   //       Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
   //     ),
   //   );
-  // }, []);
+  // }, [setQueryParams]);
 
   const {
     history,
     sessionHistory,
+    isLoading,
     recordRequestInSessionHistory,
     loadHistoricalRequest,
   } = useRequestorHistory();
@@ -59,8 +62,8 @@ export const RequestorPage = () => {
   const isLgScreen = useIsLgScreen();
 
   const { minSize, maxSize } = usePanelConstraints({
-    groupId: "requestor-page-main",
-    initialGroupSize: width + 320,
+    groupId: "main-layout",
+    initialGroupSize: width,
     minPixelSize: 250,
     minimalGroupSize: 944,
   });
@@ -74,6 +77,14 @@ export const RequestorPage = () => {
     [searchParams],
   );
 
+  const generateNavigation = useHandler((traceId: string) => {
+    const search = searchParams.toString();
+    return {
+      path: `/request/${traceId}/navigation`,
+      search,
+    };
+  });
+
   return (
     <div
       className={cn(
@@ -81,14 +92,13 @@ export const RequestorPage = () => {
         "flex",
         "flex-col",
         "gap-2",
-        "py-4 px-2",
-        "sm:px-4 sm:py-3",
+        "p-2",
         "lg:gap-4",
       )}
     >
       <ResizablePanelGroup
         direction="horizontal"
-        id="requestor-page-main"
+        id="main-layout"
         className="w-full"
       >
         {isLgScreen && sidePanel === "open" && (
@@ -120,9 +130,11 @@ export const RequestorPage = () => {
           ) : (
             <RequestorPageContent
               history={history}
+              historyLoading={isLoading}
               sessionHistory={sessionHistory}
               recordRequestInSessionHistory={recordRequestInSessionHistory}
               overrideTraceId={id}
+              generateNavigation={generateNavigation}
             />
           )}
         </ResizablePanel>

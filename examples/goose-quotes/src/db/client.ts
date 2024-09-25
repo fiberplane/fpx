@@ -127,7 +127,24 @@ export const updateGoose = async (
   updateData: Partial<typeof geese.$inferInsert>,
 ) => {
   console.log({ action: "updateGoose", id, updateData });
-  return (
-    await db.update(geese).set(updateData).where(eq(geese.id, id)).returning()
-  )[0];
+
+  // Simulate a race condition by splitting the update into two parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      // Introduce a random delay to increase the chance of interleaved updates
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+
+      return db
+        .update(geese)
+        .set({ [key]: value })
+        .where(eq(geese.id, id))
+        .returning();
+    },
+  );
+
+  // Wait for all updates to complete
+  const results = await Promise.all(updatePromises);
+
+  // Return the last result, which may not contain all updates
+  return results[results.length - 1][0];
 };

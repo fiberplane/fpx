@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import { Badge } from "@astrojs/starlight/components";
 
 const changelogEntriesUnsorted = await getCollection("changelog");
 const changelogEntries = await Promise.all(
@@ -9,6 +10,7 @@ const changelogEntries = await Promise.all(
       (a, b) =>
         new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
     )
+    .filter((entry) => !entry.data.draft)
     .map(async (entry) => ({
       ...entry,
       content: await entry.render()
@@ -28,16 +30,27 @@ const changelogEntries = await Promise.all(
     changelogEntries.map((entry) => {
       return (
         <section>
-          <h2>
-            {entry.data.date.toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-            })}
-          </h2>
+          <div>
+            <h2>
+              {entry.data.date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              })}
+            </h2>
+            <Badge variant="default" text={`v${entry.data.version}`} />
+          </div>
           <entry.content.Content />
         </section>
       );
     })
   }
 </StarlightPage>
+
+<style>
+  div {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+</style>

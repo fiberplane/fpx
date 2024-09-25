@@ -1,10 +1,10 @@
+import { CodeMirrorSqlEditor } from "@/components/CodeMirrorEditor";
 import { CF_BINDING_ERROR, CF_BINDING_RESULT } from "@/constants";
 import { type CloudflareD1VendorInfo, getString, noop } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { CollapsibleSubSection } from "../../../shared";
-import { CodeMirrorSqlEditor } from "../../CodeMirrorEditor";
 import { CfResultAndError } from "./shared";
 
 /**

@@ -1,10 +1,10 @@
+import { useOrphanLogs } from "@/hooks";
 import { useOtelTraces } from "@/queries";
 import { useOtelTrace } from "@/queries/traces-otel";
 import { EmptyState } from "../EmptyState";
 import { SkeletonLoader } from "../SkeletonLoader";
 import { usePagination } from "../hooks";
 import { RequestDetailsPageContentV2 } from "./RequestDetailsPageV2Content";
-import { useOrphanLogs } from "./useOrphanLogs";
 
 export function RequestDetailsPageV2({
   traceId,

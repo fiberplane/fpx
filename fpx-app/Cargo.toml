@@ -13,13 +13,13 @@ repository = { workspace = true }
 tauri-build = { version = "2.0.0-rc.11", features = [] }
 
 [dependencies]
-schemars.workspace = true
+fpx = { version = "0.1.0", path = "../fpx", features = ["config"] }
+schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { version = "2.0.0-rc.14", features = ["config-toml"] }
 tauri-plugin-dialog = "2.0.0-rc"
 tauri-plugin-store = { version = "2.0.0-rc" }
-toml = "0.8.19"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

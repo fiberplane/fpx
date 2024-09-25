@@ -16,7 +16,7 @@ import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
-import { CodeMirrorJsonEditor } from "@/components/Timeline";
+import { CodeMirrorJsonEditor } from "@/components/CodeMirrorEditor";
 import { useRequestorStore } from "../store";
 
 type RequestPanelProps = {
@@ -101,7 +101,8 @@ export const RequestPanel = memo(function RequestPanel(
       className={cn(
         "border-none sm:border-r",
         "grid grid-rows-[auto_1fr]",
-        "lg:overflow-hidden lg:h-full max-h-full",
+        // NOTE - This max-height is necessary to allow overflow to be scrollable
+        "max-h-full",
       )}
     >
       <CustomTabsList>
@@ -337,15 +338,17 @@ export function PanelSectionHeader({
       {children}
 
       {handleClearData && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           className="h-3.5 w-3.5 cursor-pointer hover:text-white transition-color"
           title="Clear data"
           onClick={handleClearData}
           tabIndex={0}
         >
           <EraserIcon />
-        </button>
+        </Button>
       )}
     </div>
   );
