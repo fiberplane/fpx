@@ -6,8 +6,8 @@ export type NeonEvent = {
   timestamp: Date;
   sql: {
     query: string;
-    params: Array<string>
-  }
+    params: Array<string>;
+  };
 };
 
 // FIXME

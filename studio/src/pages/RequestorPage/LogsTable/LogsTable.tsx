@@ -1,10 +1,10 @@
 import { useOrphanLogs } from "@/hooks";
 import { useOtelTrace } from "@/queries";
+import { getNeonSqlQuery, isNeonFetch } from "@/utils";
 import { useMemo } from "react";
 import { LogsEmptyState } from "./Empty";
 import { LogRow } from "./LogsTableRow";
 import type { LogEntry, NeonEvent } from "./types";
-import { getNeonSqlQuery, isNeonFetch } from "@/utils";
 
 type Props = {
   traceId?: string;
@@ -28,16 +28,19 @@ const LogsTableWithTraceId = ({ traceId }: { traceId: string }) => {
   // For now, we're just looking for Neon database queries
   const logsWithEvents = useMemo<LogEntry[]>(() => {
     const neonSpans = spans?.filter((span) => isNeonFetch(span));
-    const neonEvents: NeonEvent[] = neonSpans?.map((span) => ({
-      id: span.span_id,
-      type: "neon-event",
-      timestamp: span.end_time,
-      sql: getNeonSqlQuery(span),
-    })) ?? [];
+    const neonEvents: NeonEvent[] =
+      neonSpans?.map((span) => ({
+        id: span.span_id,
+        type: "neon-event",
+        timestamp: span.end_time,
+        sql: getNeonSqlQuery(span),
+      })) ?? [];
 
     if (neonEvents?.length) {
       const result = [...logs, ...neonEvents];
-      return result.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      return result.sort(
+        (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
+      );
     }
 
     return logs;
