@@ -101,24 +101,37 @@ function searchFile(
       ts.isArrowFunction(node) ||
       ts.isFunctionExpression(node);
 
-    if (isFunction && node?.getText() === searchString) {
-      logger.debug("[debug] matched function we were looking for!");
-      const { line: startLine, character: startColumn } =
-        sourceFile.getLineAndCharacterOfPosition(node.getStart());
-      const { line: endLine, character: endColumn } =
-        sourceFile.getLineAndCharacterOfPosition(node.getEnd());
+    if (isFunction) {
+      let functionText = node?.getText();
 
-      // Replace the identifier analysis code with the new helper function
-      const identifiers = analyzeOutOfScopeIdentifiers(node, sourceFile);
+      // HACK - Remove the `async` keyword if it is at the beginning
+      if (
+        node.modifiers?.some(
+          (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
+        )
+      ) {
+        functionText = functionText.replace(/\basync\b\s*/, "");
+      }
 
-      result = {
-        file: filePath,
-        startLine: startLine + 1,
-        startColumn: startColumn + 1,
-        endLine: endLine + 1,
-        endColumn: endColumn + 1,
-        identifiers,
-      };
+      if (functionText === searchString) {
+        logger.debug("[debug] matched function we were looking for!");
+        const { line: startLine, character: startColumn } =
+          sourceFile.getLineAndCharacterOfPosition(node.getStart());
+        const { line: endLine, character: endColumn } =
+          sourceFile.getLineAndCharacterOfPosition(node.getEnd());
+
+        // Replace the identifier analysis code with the new helper function
+        const identifiers = analyzeOutOfScopeIdentifiers(node, sourceFile);
+
+        result = {
+          file: filePath,
+          startLine: startLine + 1,
+          startColumn: startColumn + 1,
+          endLine: endLine + 1,
+          endColumn: endColumn + 1,
+          identifiers,
+        };
+      }
     }
 
     // Only continue traversing if we haven't found a match yet

@@ -185,6 +185,9 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
+      drizzle-orm:
+        specifier: ^0.32.0
+        version: 0.32.2(@cloudflare/workers-types@4.20240821.1)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
       hono:
         specifier: ^4.5.9
         version: 4.5.9
@@ -192,6 +195,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20240821.1
         version: 4.20240821.1
+      drizzle-kit:
+        specifier: ^0.23.0
+        version: 0.23.2
       wrangler:
         specifier: ^3.73.0
         version: 3.73.0(@cloudflare/workers-types@4.20240821.1)
@@ -217,6 +223,9 @@ importers:
 
   examples/test-static-analysis:
     dependencies:
+      drizzle-orm:
+        specifier: ^0.32.0
+        version: 0.32.2(@cloudflare/workers-types@4.20240924.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
       hono:
         specifier: ^4.5.9
         version: 4.6.2
@@ -11199,6 +11208,16 @@ snapshots:
   drizzle-orm@0.32.2(@cloudflare/workers-types@4.20240821.1)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20240821.1
+      '@libsql/client': 0.6.2
+      '@neondatabase/serverless': 0.9.4
+      '@opentelemetry/api': 1.9.0
+      '@types/pg': 8.11.6
+      '@types/react': 18.3.3
+      react: 18.3.1
+
+  drizzle-orm@0.32.2(@cloudflare/workers-types@4.20240924.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1):
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20240924.0
       '@libsql/client': 0.6.2
       '@neondatabase/serverless': 0.9.4
       '@opentelemetry/api': 1.9.0
