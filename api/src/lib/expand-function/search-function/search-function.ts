@@ -1,11 +1,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
-import logger from "../../logger.js";
+import logger from "../../../logger.js";
 import {
   type OutOfScopeIdentifier,
   analyzeOutOfScopeIdentifiers,
-} from "./ast-helpers/index.js";
+} from "../ast-helpers/index.js";
 
 export type FunctionOutOfScopeIdentifiers = OutOfScopeIdentifier[];
 

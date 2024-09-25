@@ -10,7 +10,7 @@ import { contextForImport } from "./imports/index.js";
 import {
   type FunctionOutOfScopeIdentifiers,
   searchForFunction,
-} from "./search-function.js";
+} from "./search-function/index.js";
 import {
   getFileUri,
   getTSServer,
