@@ -1,1 +1,4 @@
-export { searchForFunction, type FunctionOutOfScopeIdentifiers } from "./search-function.js";
+export {
+  searchForFunction,
+  type FunctionOutOfScopeIdentifiers,
+} from "./search-function.js";
