@@ -70,7 +70,7 @@ jobs:
           rustflags: "" # Do not fail on warnings, so reset the default value to empty
 
       - name: Install tauri-cli
-        run: cargo install tauri-cli@2.0.0-rc.16
+        run: cargo install --locked tauri-cli@2.0.0-rc.16
 
       # Steps related to our project
 
