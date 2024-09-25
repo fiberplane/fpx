@@ -1,8 +1,8 @@
-use crate::models::workspace::{Config, OpenWorkspaceByPathError, Workspace};
+use crate::models::workspace::{OpenWorkspaceByPathError, Workspace};
 use crate::state::AppState;
 use crate::STORE_PATH;
-use serde_json::Value;
-use std::fs::read_to_string;
+use fpx::config::{FpxConfig, FpxConfigError};
+use std::path::PathBuf;
 use tauri::{AppHandle, Runtime, State};
 use tauri_plugin_store::{with_store, StoreCollection};
 
@@ -13,22 +13,20 @@ pub fn list_recent_workspaces<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
 ) -> Vec<String> {
-    if let Ok(recent_projects) = with_store(app, stores, STORE_PATH, |store| {
-        if let Some(Value::Array(arr)) = store.get(RECENT_WORKSPACES_STORE_KEY) {
-            let vec_of_strings: Vec<String> = arr
-                .iter()
-                .filter_map(|item| item.as_str().map(|s| s.to_string()))
-                .collect();
+    with_store(app, stores, STORE_PATH, |store| {
+        let recent_projects = store
+            .get(RECENT_WORKSPACES_STORE_KEY)
+            .and_then(|val| val.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|item| item.as_str().map(|s| s.to_string()))
+                    .collect()
+            })
+            .unwrap_or_default();
 
-            return Ok(vec_of_strings);
-        }
-
-        Ok(vec![])
-    }) {
-        return recent_projects;
-    }
-
-    vec![]
+        Ok(recent_projects)
+    })
+    .unwrap_or_default()
 }
 
 #[tauri::command]
@@ -43,50 +41,51 @@ pub fn open_workspace_by_path<R: Runtime>(
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
 ) -> Result<Workspace, OpenWorkspaceByPathError> {
-    match read_to_string(format!("{}/fpx.toml", path)) {
-        Ok(content) => match toml::from_str::<Config>(&content) {
-            Ok(config) => {
-                let workspace = Workspace::new(path.clone(), config);
-                state.set_workspace(workspace.clone());
+    let path_buf = PathBuf::from(path.clone());
+    let config = match FpxConfig::load(Some(path_buf)) {
+        Ok((config, _config_path)) => config,
+        Err(err) => {
+            return Err(match err {
+                FpxConfigError::FileNotFound(path_buf) => {
+                    OpenWorkspaceByPathError::ConfigFileMissing {
+                        path: path_buf.to_string_lossy().to_string(),
+                    }
+                }
+                FpxConfigError::InvalidFpxConfig { message, .. } => {
+                    OpenWorkspaceByPathError::InvalidConfiguration { message }
+                }
+                FpxConfigError::RootDirectoryNotFound => {
+                    unreachable!("FpxConfig::load takes a path, so this cannot occur")
+                }
+            })
+        }
+    };
 
-                with_store(app, stores, STORE_PATH, |store| {
-                    let mut recents = match store.get(RECENT_WORKSPACES_STORE_KEY) {
-                        Some(Value::Array(arr)) => {
-                            let vec_of_strings: Vec<String> = arr
-                                .iter()
-                                .filter_map(|item| {
-                                    if let Some(s) = item.as_str() {
-                                        if s != path {
-                                            return Some(s.to_string());
-                                        }
-                                    }
-                                    None
-                                })
-                                .collect();
+    let workspace = Workspace::new(path.clone(), config);
+    state.set_workspace(workspace.clone());
 
-                            vec_of_strings
-                        }
-                        _ => vec![],
-                    };
+    with_store(app, stores, STORE_PATH, |store| {
+        let mut recents: Vec<String> = store
+            .get(RECENT_WORKSPACES_STORE_KEY)
+            .and_then(|value| value.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|item| item.as_str().filter(|s| s == &path).map(|s| s.to_string()))
+                    .collect()
+            })
+            .unwrap_or_default();
 
-                    recents.insert(0, path);
+        recents.insert(0, path);
 
-                    store
-                        .insert(RECENT_WORKSPACES_STORE_KEY.into(), recents.into())
-                        .unwrap();
+        store
+            .insert(RECENT_WORKSPACES_STORE_KEY.into(), recents.into())
+            .unwrap();
 
-                    store.save()
-                })
-                .unwrap();
+        store.save()
+    })
+    .unwrap();
 
-                Ok(workspace)
-            }
-            Err(error) => Err(OpenWorkspaceByPathError::InvalidConfiguration {
-                message: format!("{}", error),
-            }),
-        },
-        Err(_) => Err(OpenWorkspaceByPathError::ConfigFileMissing { path }),
-    }
+    Ok(workspace)
 }
 
 #[tauri::command]

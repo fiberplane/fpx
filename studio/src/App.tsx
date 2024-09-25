@@ -7,6 +7,18 @@ import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPag
 import { RequestorPage } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
 
+export const REQUESTS_ROUTE = "/requests";
+export const REQUEST_DETAILS_OTEL_ROUTE = "/requests/otel/:traceId";
+export const REQUEST_DETAILS_TRACE_ROUTE = "/requests/:traceId";
+export const ROOT_ROUTE = "/";
+export const REQUESTOR_TRACE_ROUTE = "/:requestType/:traceId";
+
+export const TRACE_ID_ROUTES = [
+  REQUEST_DETAILS_OTEL_ROUTE,
+  REQUEST_DETAILS_TRACE_ROUTE,
+  REQUESTOR_TRACE_ROUTE,
+];
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -14,17 +26,17 @@ export function App() {
         <TooltipProvider>
           <Layout>
             <Routes>
-              <Route path="/requests" element={<RequestsPage />} />
+              <Route path={REQUESTS_ROUTE} element={<RequestsPage />} />
               <Route
-                path="/requests/otel/:traceId"
+                path={REQUEST_DETAILS_OTEL_ROUTE}
                 element={<RequestDetailsPage />}
               />
               <Route
-                path="/requests/:traceId"
+                path={REQUEST_DETAILS_TRACE_ROUTE}
                 element={<RequestDetailsPage />}
               />
-              <Route path="/" element={<RequestorPage />} />
-              <Route path="/:requestType/:id" element={<RequestorPage />} />
+              <Route path={ROOT_ROUTE} element={<RequestorPage />} />
+              <Route path={REQUESTOR_TRACE_ROUTE} element={<RequestorPage />} />
             </Routes>
           </Layout>
           <Toaster />

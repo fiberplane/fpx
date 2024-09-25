@@ -8,6 +8,9 @@ repository = { workspace = true }
 
 [lib]
 
+[features]
+config = ["toml"]
+
 [dependencies]
 anyhow = { version = "1.0", default-features = false }
 async-trait = { version = "0.1", default-features = false }
@@ -39,6 +42,7 @@ time = { version = "0.3", default-features = false, features = [
     "serde-human-readable",
 ] }
 tokio = { version = "1.40", default-features = false }
+toml = { version = "0.8", default-features = false, optional = true }
 tower-http = { version = "0.5", default-features = false, features = [
     "compression-br",
     "compression-gzip",

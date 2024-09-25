@@ -58,7 +58,7 @@ fn main() {
 
             let window = WebviewWindowBuilder::new(
                 app,
-                MAIN_WINDOW_ID.to_string(),
+                MAIN_WINDOW_ID,
                 tauri::WebviewUrl::App("index.html".into()),
             )
             .title("fpx")

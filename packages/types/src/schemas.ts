@@ -84,10 +84,6 @@ export const AppStateSchema = z.object({
 
 export type AppState = z.infer<typeof AppStateSchema>;
 
-export const ConfigSchema = z.object({ port: z.number().int().gte(0) });
-
-export type Config = z.infer<typeof ConfigSchema>;
-
 export const OpenWorkspaceByPathErrorSchema = z.any().superRefine((x, ctx) => {
   const schemas = [
     z.object({ path: z.string(), type: z.literal("ConfigFileMissing") }),
@@ -117,3 +113,50 @@ export type OpenWorkspaceByPathError = z.infer<
 export const WorkspaceSchema = z.object({ config: z.any(), path: z.string() });
 
 export type Workspace = z.infer<typeof WorkspaceSchema>;
+
+export const FpxConfigSchema = z.object({
+  listen_port: z
+    .union([
+      z
+        .number()
+        .int()
+        .gte(0)
+        .describe("The port on which the API server should listen."),
+      z.null().describe("The port on which the API server should listen."),
+    ])
+    .describe("The port on which the API server should listen.")
+    .optional(),
+});
+
+export type FpxConfig = z.infer<typeof FpxConfigSchema>;
+
+export const FpxConfigErrorSchema = z.any().superRefine((x, ctx) => {
+  const schemas = [
+    z.object({ FileNotFound: z.string() }).strict(),
+    z
+      .object({
+        InvalidFpxConfig: z.object({
+          message: z.string(),
+          span: z.union([z.any(), z.null()]).optional(),
+        }),
+      })
+      .strict(),
+  ];
+  const errors = schemas.reduce<z.ZodError[]>(
+    (errors, schema) =>
+      ((result) => (result.error ? [...errors, result.error] : errors))(
+        schema.safeParse(x),
+      ),
+    [],
+  );
+  if (schemas.length - errors.length !== 1) {
+    ctx.addIssue({
+      path: ctx.path,
+      code: "invalid_union",
+      unionErrors: errors,
+      message: "Invalid input: Should pass single schema",
+    });
+  }
+});
+
+export type FpxConfigError = z.infer<typeof FpxConfigErrorSchema>;
