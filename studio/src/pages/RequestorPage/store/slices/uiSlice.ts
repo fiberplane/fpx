@@ -14,12 +14,11 @@ export const uiSlice: StateCreator<
     sidePanel: isLgScreen() ? "open" : "closed",
     bottomPanels: validBottomPanelNames,
     bottomPanelIndex: undefined,
-    togglePanel: (
-      panelName: Exclude<keyof UISlice, "togglePanel"> | BOTTOM_PANEL_NAMES,
-    ) =>
+    togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) =>
       set((state) => {
         if (!isBottomPanelName(panelName)) {
-          state[panelName] === "open" ? "closed" : "open";
+          state[panelName] = state[panelName] === "open" ? "closed" : "open";
+          console.log("state[panelName]", state[panelName]);
           return;
         }
 

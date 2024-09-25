@@ -1,10 +1,13 @@
-import type { OtelSpan } from "./otel.js";
+import { z } from "zod";
+import { type OtelSpan, OtelSpanSchema } from "./otel.js";
 
-export type TraceSummary = {
-  traceId: string;
-  spans: Array<OtelSpan>;
-};
+export const TraceSummarySchema = z.object({
+  traceId: z.string(),
+  spans: z.array(OtelSpanSchema),
+});
+export type TraceSummary = z.infer<typeof TraceSummarySchema>;
 
-export type TraceListResponse = Array<TraceSummary>;
+export const TraceListResponseSchema = z.array(TraceSummarySchema);
+export type TraceListResponse = z.infer<typeof TraceListResponseSchema>;
 
 export type TraceDetailSpansResponse = Array<OtelSpan>;

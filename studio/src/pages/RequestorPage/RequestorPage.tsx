@@ -45,18 +45,18 @@ export const RequestorPage = () => {
 
   const {
     history,
-    sessionHistory,
+    // sessionHistory,
     isLoading,
-    recordRequestInSessionHistory,
+    // recordRequestInSessionHistory,
     loadHistoricalRequest,
   } = useRequestorHistory();
 
   const hasHistory = history.length > 0;
   useEffect(() => {
-    if (id && hasHistory && requestType === "request") {
+    if (id && hasHistory) {
       loadHistoricalRequest(id);
     }
-  }, [id, loadHistoricalRequest, hasHistory, requestType]);
+  }, [id, loadHistoricalRequest, hasHistory]);
 
   const width = getMainSectionWidth();
   const isLgScreen = useIsLgScreen();
@@ -80,7 +80,7 @@ export const RequestorPage = () => {
   const generateNavigation = useHandler((traceId: string) => {
     const search = searchParams.toString();
     return {
-      path: `/request/${traceId}/navigation`,
+      pathname: `/request/${traceId}`,
       search,
     };
   });
@@ -131,8 +131,6 @@ export const RequestorPage = () => {
             <RequestorPageContent
               history={history}
               historyLoading={isLoading}
-              sessionHistory={sessionHistory}
-              recordRequestInSessionHistory={recordRequestInSessionHistory}
               overrideTraceId={id}
               generateNavigation={generateNavigation}
             />

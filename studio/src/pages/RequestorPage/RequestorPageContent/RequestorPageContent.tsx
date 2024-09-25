@@ -27,8 +27,8 @@ import { getMainSectionWidth } from "./util";
 interface RequestorPageContentProps {
   history: Requestornator[]; // Replace 'any[]' with the correct type
   historyLoading: boolean;
-  sessionHistory: Requestornator[];
-  recordRequestInSessionHistory: (traceId: string) => void;
+  // sessionHistory: Requestornator[];
+  // recordRequestInSessionHistory: (traceId: string) => void;
   overrideTraceId?: string;
   generateNavigation: (traceId: string) => To;
 }
@@ -38,9 +38,8 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 ) => {
   const {
     history,
-    recordRequestInSessionHistory,
     overrideTraceId,
-    sessionHistory,
+    // sessionHistory,
     historyLoading,
     generateNavigation,
   } = props;
@@ -48,7 +47,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const { toast } = useToast();
 
   const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
-    sessionHistory,
+    history,
     overrideTraceId,
   );
 
@@ -92,7 +91,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const onSubmit = useRequestorSubmitHandler({
     makeRequest,
     connectWebsocket,
-    recordRequestInSessionHistory,
     generateNavigation,
   });
 

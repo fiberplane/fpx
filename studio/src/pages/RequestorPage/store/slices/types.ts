@@ -82,9 +82,7 @@ export interface UISlice {
   bottomPanels: BOTTOM_PANEL_NAMES[];
   bottomPanelIndex: undefined | number;
   setBottomPanelIndex(index: number | undefined): void;
-  togglePanel: (
-    panelName: Exclude<keyof UISlice, "togglePanel"> | BOTTOM_PANEL_NAMES,
-  ) => void;
+  togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) => void;
 }
 
 export type BOTTOM_PANEL_NAMES = "logsPanel" | "timelinePanel" | "aiPanel";
