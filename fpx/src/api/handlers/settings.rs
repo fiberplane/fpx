@@ -41,8 +41,6 @@ pub async fn settings_upsert(
         json.anthropic_api_key = None;
     }
 
-    debug!(settings = ?json, "updating settings");
-
     let tx = store.start_readwrite_transaction().await?;
 
     let settings = store.settings_upsert(&tx, json).await?;
