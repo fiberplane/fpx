@@ -36,14 +36,19 @@ export function GenericSpan({
     }
     return attr;
   }, [span]);
-  const icon = useTimelineIcon(span, { vendorInfo });
+  const icon = useTimelineIcon(span, {
+    vendorInfo,
+    colorOverride: "text-gray-400",
+  });
   const isCfSpan = isCloudflareVendorInfo(vendorInfo);
   const name = isCfSpan ? getCloudflareSpanName(span, vendorInfo) : span.name;
+
+  console.log("span", span);
   return (
     <div id={span.span_id}>
-      <SectionHeading className="grid gap-2 grid-cols-[auto_1fr] items-center">
-        {icon}
-        <div className="flex items-center gap-2 max-w-full">
+      <SectionHeading className="grid gap-2 grid-cols-[24px_1fr] items-center">
+        <div className="flex items-center justify-center">{icon}</div>
+        <div className="flex items-center gap-2 max-w-full text-muted-foreground">
           {name}
           {span.status?.code === SpanStatus.ERROR && (
             <>
@@ -53,7 +58,7 @@ export function GenericSpan({
               </Badge>
             </>
           )}
-          <div className="text-gray-400 text-xs w-12 px-2">
+          <div className="text-gray-400 text-xs w-12 px-2 text-muted-foreground">
             {formatDuration(
               span.start_time.toISOString(),
               span.end_time.toISOString(),

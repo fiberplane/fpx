@@ -1,3 +1,12 @@
+import {
+  useIsMdScreen,
+  // useIsSmScreen
+} from "@/hooks";
+// import { Timestamp } from "@/pages/RequestDetailsPage/Timestamp";
+import {
+  LogRow,
+  formatTimestamp,
+} from "@/pages/RequestorPage/LogsTable/LogsTableRow";
 import { isMizuOrphanLog } from "@/queries";
 import {
   type Waterfall,
@@ -6,9 +15,10 @@ import {
   isIncomingRequestSpan,
 } from "@/utils";
 import { memo } from "react";
-import { useTimelineContext } from "../context";
+// import { useTimelineContext } from "../context";
 import { DurationIndicator } from "../graph/DurationIndicator";
-import { OrphanLog } from "./OrphanLog";
+import { EventIndicator } from "../graph/EventIndicator";
+// import { OrphanLog } from "./OrphanLog";
 import { FetchSpan, GenericSpan, IncomingRequest } from "./spans";
 
 function TimelineListDetailsComponent({
@@ -20,40 +30,61 @@ function TimelineListDetailsComponent({
   minStart: number;
   duration: number;
 }) {
-  const { highlightedSpanId, setHighlightedSpanId } = useTimelineContext();
+  // const { highlightedSpanId, setHighlightedSpanId } = useTimelineContext();
+  console.log({
+    duration,
+    minStart,
+  });
+  const isMdScreen = useIsMdScreen();
+  const highlightedSpanId = null;
   // TODO: merge spans and orphanLogs
   return (
     <div className="grid gap-2">
       {waterfall.map((item) => (
         <div
           key={getId(item)}
-          onMouseEnter={() => setHighlightedSpanId(getId(item))}
-          onMouseLeave={() => setHighlightedSpanId(null)}
+          // onMouseEnter={() => setHighlightedSpanId(getId(item))}
+          // onMouseLeave={() => setHighlightedSpanId(null)}
           className={cn(
             "max-w-full overflow-hidden",
             "border-l-2 border-transparent rounded-sm transition-all bg-transparent",
+            "hover:bg-primary/10",
             "data-[highlighted=true]:bg-primary/10",
             "relative after:absolute after:bottom-[-4px] after:bg-muted-foreground/30 after:w-full after:h-px last:after:h-0",
-            "grid gap-2 bg-muted/50",
+            "grid gap-4",
+            // "grid gap-2 bg-muted/50",
+            isMdScreen
+              ? "grid-cols-[auto_150px_min-content]"
+              : "grid-cols-[auto_min-content]",
           )}
           data-highlighted={highlightedSpanId === getId(item)}
         >
-          {!isMizuOrphanLog(item) && (
-            <DurationIndicator
-              itemStartTime={item.span.start_time.getTime()}
-              itemDuration={
-                item.span.end_time.getTime() - item.span.start_time.getTime()
-              }
-              traceDuration={duration}
-              traceStartTime={minStart}
-            />
-          )}
-          <div>
-            <Content
-              item={item}
-              traceDuration={duration}
-              traceStartTime={minStart}
-            />
+          <Content item={item} traceDuration={0} traceStartTime={minStart} />
+
+          {isMdScreen &&
+            (isMizuOrphanLog(item) ? (
+              <EventIndicator
+                timestamp={item.timestamp.getTime()}
+                traceDuration={duration}
+                traceStartTime={minStart}
+              />
+            ) : (
+              <DurationIndicator
+                itemStartTime={item.span.start_time.getTime()}
+                itemDuration={
+                  item.span.end_time.getTime() - item.span.start_time.getTime()
+                }
+                traceDuration={duration}
+                traceStartTime={minStart}
+              />
+            ))}
+
+          <div className="flex items-center text-xs font-mono  text-muted-foreground">
+            <span>
+              {formatTimestamp(
+                isMizuOrphanLog(item) ? item.timestamp : item.span.start_time,
+              )}
+            </span>
           </div>
         </div>
       ))}
@@ -71,7 +102,8 @@ const Content = ({
     const marginLeft = `${(((item.timestamp.getTime() - traceStartTime) / traceDuration) * 100).toPrecision(4)}%`;
     return (
       <div style={{ marginLeft }}>
-        <OrphanLog log={item} key={item.id} />
+        {/* <OrphanLog log={item} key={item.id} /> */}
+        <LogRow log={item} key={item.id} />
       </div>
     );
   }
@@ -92,7 +124,7 @@ const Content = ({
 
   const marginLeft = `${(((item.span.start_time.getTime() - traceStartTime) / traceDuration) * 100).toPrecision(4)}%`;
   return (
-    <div style={{ marginLeft }}>
+    <div style={{ marginLeft }} className="min-h-[24px] flex items-center">
       <GenericSpan
         span={item.span}
         key={item.span.span_id}

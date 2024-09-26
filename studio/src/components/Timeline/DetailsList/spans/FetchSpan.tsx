@@ -117,7 +117,7 @@ function GenericFetchSpan({
     <div id={id}>
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-2">
-          <SectionHeading className="flex gap-2 items-center">
+          <SectionHeading className="grid grid-cols-[24px_1fr] gap-2 items-center">
             {icon} {title || "Fetch"}
             <div className="text-gray-400 text-xs w-12 px-2">{duration}ms</div>
           </SectionHeading>

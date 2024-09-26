@@ -61,34 +61,32 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
 
   return (
     <div id={id}>
+      {/* <div className="flex flex-col gap-2"> */}
       <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-2">
-          <SectionHeading className="flex items-center gap-2 max-lg:mt-2">
-            {/* {icon}
+        <SectionHeading className="flex items-center gap-2 max-lg:mt-2">
+          {/* {icon}
             Incoming Request */}
-            <StatusCode
-              status={responseStatusCode}
-              isFailure={false}
-              className="text-xs"
-            />
+          <StatusCode
+            status={responseStatusCode}
+            isFailure={false}
+            className="text-xs"
+          />
 
-            <div className="inline-flex gap-2 font-mono py-1 text-xs bg-accent/80 rounded px-1">
-              <span className={cn(getHttpMethodTextColor(method))}>
-                {method}
+          <div className="inline-flex gap-2 font-mono py-1 text-xs bg-accent/80 rounded px-1">
+            <span className={cn(getHttpMethodTextColor(method))}>{method}</span>
+            <span className="text-gray-400 font-light">{pathWithSearch}</span>
+          </div>
+          {matchedRoute && (
+            <div className="flex gap-2 p-1 text-xs bg-accent/80 rounded">
+              <span className="text-gray-200 text-xs">Route:</span>
+              <span className="text-gray-400 font-mono inline-block text-xs">
+                {matchedRoute}
               </span>
-              <span className="text-gray-400 font-light">{pathWithSearch}</span>
             </div>
-            {matchedRoute && (
-              <div className="flex gap-2 p-1 text-xs bg-accent/80 rounded">
-                <span className="text-gray-200 text-xs">Route:</span>
-                <span className="text-gray-400 font-mono inline-block text-xs">
-                  {matchedRoute}
-                </span>
-              </div>
-            )}
-          </SectionHeading>
+          )}
+        </SectionHeading>
 
-          {/* <div className="flex gap-2">
+        {/* <div className="flex gap-2">
             <div className="inline-flex gap-2 font-mono py-1 text-xs bg-accent/80 rounded px-1">
               <span className={cn(getHttpMethodTextColor(method))}>
                 {method}
@@ -104,9 +102,9 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
               </div>
             )}
           </div> */}
-        </div>
+      </div>
 
-        {/* <div className="px-2">
+      {/* <div className="px-2">
           <SubSectionHeading>Request</SubSectionHeading>
           <div className="">
             <CollapsibleKeyValueTableV2
@@ -161,7 +159,7 @@ export function IncomingRequest({ span }: { span: OtelSpan }) {
             )}
           </div>
         </div> */}
-      </div>
+      {/* </div> */}
     </div>
   );
 }

@@ -32,6 +32,7 @@ export function LogRow({ log }: LogRowProps) {
     copyToClipboard: copyArgumentsToClipboard,
   } = useCopyToClipboard();
 
+  const parsedMessage = log.message && safeParseJson(log.message);
   return (
     <details
       className={cn(isExpanded ? "rounded-t-xl" : "rounded-xl", bgColor)}
@@ -67,19 +68,13 @@ export function LogRow({ log }: LogRowProps) {
             Level: <span className={textColor}>{log.level.toUpperCase()}</span>
           </p>
           {log.service && <p>Service: {log.service}</p>}
-          {log.callerLocation && (
-            <p>
-              Location: {log.callerLocation.file}:{log.callerLocation.line}:
-              {log.callerLocation.column}
-            </p>
-          )}
           {log.message && (
             <div className="flex gap-2">
               <p>Message:</p>
               <div className="text-foreground break-words grow">
-                {safeParseJson(log.message) ? (
+                {parsedMessage ? (
                   <pre className="whitespace-pre-wrap">
-                    {JSON.stringify(JSON.parse(log.message), null, 2)}
+                    {JSON.stringify(parsedMessage, null, 2)}
                   </pre>
                 ) : (
                   <p>{log.message}</p>
@@ -143,13 +138,41 @@ export function LogRow({ log }: LogRowProps) {
               </div>
             </div>
           )}
+          {log.callerLocations && log.callerLocations.length > 0 && (
+            <div>
+              <p>Error: {parsedMessage}</p>
+              <ul className="ml-3 mb-1">
+                {log.callerLocations.map((location, index) => {
+                  const fileLocation = location.file
+                    ? `${location.file}${location.line != null && `:${location.line}`}${location.column != null && `:${location.column}`}`
+                    : "";
+                  return (
+                    <li key={index} className="pl-1">
+                      at{" "}
+                      <span className="text-accent-foreground">
+                        {location.methodName}
+                      </span>{" "}
+                      {location.file?.startsWith("file://") ? (
+                        <a
+                          href={`vscode:${fileLocation}`}
+                          className="text-blue-500 hover:underline"
+                        >
+                          {fileLocation}
+                        </a>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </details>
   );
 }
 
-function getIconColor(level: MizuOrphanLog["level"]) {
+export function getIconColor(level: MizuOrphanLog["level"]) {
   switch (level) {
     case "error":
       return "bg-red-500";
@@ -164,7 +187,7 @@ function getIconColor(level: MizuOrphanLog["level"]) {
   }
 }
 
-function formatTimestamp(timestamp: Date) {
+export function formatTimestamp(timestamp: Date) {
   return timestamp.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
