@@ -13,6 +13,7 @@ repository = { workspace = true }
 tauri-build = { version = "2.0.0-rc.11", features = [] }
 
 [dependencies]
+anyhow = { workspace = true }
 axum = { workspace = true, default-features = false, features = [
     "http1",
     "query",
@@ -28,6 +29,8 @@ tauri = { version = "2.0.0-rc.14", features = ["config-toml"] }
 tauri-plugin-dialog = "2.0.0-rc"
 tauri-plugin-store = { version = "2.0.0-rc" }
 tokio = { version = "1", default-features = false, features = ["sync"] }
+tracing = { version = "0.1" }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

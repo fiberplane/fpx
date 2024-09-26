@@ -1494,6 +1494,7 @@ dependencies = [
 name = "fpx-app"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "axum 0.7.5",
  "fpx",
  "schemars",
@@ -1505,6 +1506,8 @@ dependencies = [
  "tauri-plugin-store",
  "tauri-plugin-window-state",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

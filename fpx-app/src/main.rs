@@ -1,12 +1,17 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use anyhow::{Context, Result};
 use api_manager::ApiManager;
 use state::AppState;
+use std::env;
 use tauri::menu::{MenuBuilder, MenuId, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, WebviewWindowBuilder};
 use tauri::{Manager, Wry};
 use tauri_plugin_store::StoreCollection;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{EnvFilter, Registry};
 
 mod api_manager;
 mod commands;
@@ -17,6 +22,11 @@ const MAIN_WINDOW_ID: &str = "main-window";
 const STORE_PATH: &str = "fpx.bin";
 
 fn main() {
+    if let Err(err) = setup_tracing() {
+        eprintln!("error while setting up tracing: {:?}", err);
+        std::process::exit(1);
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -111,4 +121,23 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn setup_tracing() -> Result<()> {
+    let filter_layer = {
+        let directives = env::var("RUST_LOG").unwrap_or_else(|_| "warn,fpx=info".to_string());
+        eprintln!("directives: {:?}", directives);
+
+        EnvFilter::builder().parse(directives)?
+    };
+
+    let log_layer = tracing_subscriber::fmt::layer();
+
+    Registry::default()
+        .with(filter_layer)
+        .with(log_layer)
+        .try_init()
+        .context("unable to initialize logger")?;
+
+    Ok(())
 }
