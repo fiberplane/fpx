@@ -3,7 +3,6 @@ import {
   getErrorEvents,
   getNeonSqlQuery,
   getResponseBody,
-  hasErrorEvent,
   isJson,
   isNeonFetch,
   safeParseJson,
