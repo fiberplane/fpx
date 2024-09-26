@@ -16,14 +16,10 @@ pub struct ApiManager {
 }
 
 impl ApiManager {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    pub fn start_api(&self, fpx_config: FpxConfig) {
+    pub fn start_api(&self, _fpx_config: FpxConfig) {
         let mut shutdown_tx = self.shutdown_tx.lock().expect("lock is poisoned");
         if let Some(shutdown_tx) = shutdown_tx.take() {
-            // shutdown any existing api servers
+            // shutdown any existing api server
             let _ = shutdown_tx.send(());
         }
 
