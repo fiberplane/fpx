@@ -9,7 +9,7 @@ import {
 } from "@/utils";
 import { useMemo } from "react";
 import { LogsEmptyState } from "./Empty";
-import { LogRow } from "./LogsTableRow";
+import { LogsTableRow } from "./LogsTableRow";
 import type { LogEntry, NeonEvent } from "./types";
 
 type Props = {
@@ -73,7 +73,7 @@ function LogsTableContent({ logs }: { logs: LogEntry[] }) {
       ) : (
         <div className="space-y-1">
           {logs.map((log) => (
-            <LogRow key={log.id} log={log} />
+            <LogsTableRow key={log.id} log={log} />
           ))}
         </div>
       )}
