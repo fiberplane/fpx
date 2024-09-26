@@ -64,6 +64,7 @@ wasm-bindgen = { version = "0.2", default-features = false, optional = true }
 
 [dev-dependencies]
 http-body-util = { version = "0.1", default-features = false }
+test-log = { version = "0.2", default-features = false, features = ["trace"] }
 tokio = { version = "1.40", default-features = false, features = [
     "macros",
     "test-util",

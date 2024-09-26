@@ -74,6 +74,3 @@ libsql = { version = "0.5", default-features = false, features = [
     "serde",
     "replication",
 ] }
-
-[dev-dependencies]
-test-log = { version = "0.2", default-features = false, features = ["trace"] }

@@ -1,7 +1,7 @@
-use crate::data::LibsqlStore;
-use fpx::api::models::{AttributeMap, SpanKind};
-use fpx::data::models::{HexEncodedId, Span};
-use fpx::data::Store;
+use crate::api::models::{AttributeMap, SpanKind};
+use crate::data::libsql_store::LibsqlStore;
+use crate::data::models::{HexEncodedId, Span};
+use crate::data::Store;
 use test_log::test;
 
 /// Tests creating a span and then retrieving it using the various methods.
@@ -25,7 +25,7 @@ async fn span_successful() {
     let span_id = HexEncodedId::new("a6c0ed7c2f81e7c8").unwrap();
 
     let now = time::OffsetDateTime::now_utc();
-    let inner_span: fpx::api::models::Span = fpx::api::models::Span {
+    let inner_span = crate::api::models::Span {
         trace_id: trace_id.clone(),
         span_id: span_id.clone(),
         parent_span_id: None,
