@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/tooltip";
 import { useCopyToClipboard } from "@/hooks";
 import type { MizuOrphanLog } from "@/queries";
-import { cn, isJson, noop } from "@/utils";
+import { cn, isJson } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { formatTimestamp } from "./shared";
 
 export function LogRow({ log }: { log: MizuOrphanLog }) {
