@@ -1,10 +1,15 @@
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 
-export function useFormattedNeonQuery(sql: {
-  query: string;
-  params?: string[];
-}) {
+export function useFormattedNeonQuery(
+  sql: {
+    query: string;
+    params?: string[];
+  },
+  options?: {
+    tabWidth?: number;
+  },
+) {
   return useMemo(() => {
     try {
       const paramsFromNeon = sql.params ?? [];
@@ -14,10 +19,11 @@ export function useFormattedNeonQuery(sql: {
       return format(sql.query, {
         language: "postgresql",
         params,
+        tabWidth: options?.tabWidth ?? 2,
       });
     } catch (_e) {
       // Being very defensive soz
       return sql?.query ?? "";
     }
-  }, [sql]);
+  }, [sql, options?.tabWidth]);
 }

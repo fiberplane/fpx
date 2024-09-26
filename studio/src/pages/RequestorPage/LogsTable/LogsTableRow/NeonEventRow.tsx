@@ -11,7 +11,7 @@ import {
 import { useCopyToClipboard } from "@/hooks";
 import { cn, noop } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { NeonEvent } from "../types";
 import { formatTimestamp } from "./shared";
 
@@ -27,6 +27,10 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
   const message = "Neon DB Call";
 
   const queryValue = useFormattedNeonQuery(log.sql);
+  const queryPreview = useMemo(() => {
+    const flatQuery = queryValue.replace(/\n/g, "");
+    return flatQuery.length > 50 ? `${flatQuery.slice(0, 50)}...` : flatQuery;
+  }, [queryValue]);
 
   return (
     <details
@@ -47,7 +51,12 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
         <div className={"w-2 h-2 mr-2 flex-shrink-0"}>
           <NeonLogo className="w-2 h-2" />
         </div>
-        <div className="font-mono text-xs flex-grow truncate">{message}</div>
+        <div className="font-mono text-xs flex-grow truncate">
+          {message} ({log.duration}ms){" "}
+          <span className="font-mono text-xs text-muted-foreground">
+            {queryPreview}
+          </span>
+        </div>
         <div className="font-mono text-xs text-right whitespace-nowrap ml-2">
           {formatTimestamp(log.timestamp)}
         </div>
@@ -72,6 +81,7 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
           <div className="flex gap-2">
             <p>Query:</p>
             <CodeMirrorSqlEditor
+              lineNumbers={false}
               value={queryValue}
               onChange={noop}
               readOnly={true}

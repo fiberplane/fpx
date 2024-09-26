@@ -7,10 +7,24 @@ import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { customTheme } from "./themes";
 import type { CodeMirrorEditorProps } from "./types";
 
-type CodeMirrorSqlEditorProps = CodeMirrorEditorProps;
+type CodeMirrorSqlEditorProps = CodeMirrorEditorProps & {
+  /**
+   * Whether to show line numbers in the editor
+   * @default true
+   */
+  lineNumbers?: boolean;
+};
 
 export function CodeMirrorSqlEditor(props: CodeMirrorSqlEditorProps) {
-  const { height, value, onChange, minHeight, maxHeight, readOnly } = props;
+  const {
+    height,
+    value,
+    onChange,
+    minHeight,
+    maxHeight,
+    readOnly,
+    lineNumbers,
+  } = props;
   return (
     <CodeMirror
       value={value}
@@ -21,6 +35,9 @@ export function CodeMirrorSqlEditor(props: CodeMirrorSqlEditorProps) {
       extensions={[EditorView.lineWrapping, sql()]}
       onChange={onChange}
       theme={[duotoneDark, customTheme]}
+      basicSetup={{
+        lineNumbers: lineNumbers ?? true,
+      }}
     />
   );
 }
