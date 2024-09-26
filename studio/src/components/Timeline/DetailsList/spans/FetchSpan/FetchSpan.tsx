@@ -20,12 +20,12 @@ import {
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
-import { format } from "sql-formatter";
-import { useTimelineIcon } from "../../hooks";
-import { CollapsibleSubSection, SectionHeading } from "../../shared";
-import { SubSection, SubSectionHeading } from "../../shared";
-import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
-import { TextOrJsonViewer } from "../TextJsonViewer";
+import { useTimelineIcon } from "../../../hooks";
+import { CollapsibleSubSection, SectionHeading } from "../../../shared";
+import { SubSection, SubSectionHeading } from "../../../shared";
+import { CollapsibleKeyValueTableV2 } from "../../KeyValueTableV2";
+import { TextOrJsonViewer } from "../../TextJsonViewer";
+import { useFormattedNeonQuery } from "./hooks";
 
 export function FetchSpan({
   span,
@@ -226,21 +226,7 @@ function useVendorSpecificSection(vendorInfo: VendorInfo) {
 }
 
 function NeonSection({ vendorInfo }: { vendorInfo: NeonVendorInfo }) {
-  const queryValue = useMemo(() => {
-    try {
-      const paramsFromNeon = vendorInfo.sql.params ?? [];
-      // NOTE - sql-formatter expects the index in the array to match the `$nr` syntax from postgres
-      //        this makes the 0th index unused, but it makes the rest of the indices match the `$1`, `$2`, etc.
-      const params = ["", ...paramsFromNeon];
-      return format(vendorInfo.sql.query, {
-        language: "postgresql",
-        params,
-      });
-    } catch (e) {
-      // Being very defensive soz
-      return vendorInfo?.sql?.query ?? "";
-    }
-  }, [vendorInfo]);
+  const queryValue = useFormattedNeonQuery(vendorInfo?.sql);
   return (
     <SubSection>
       <SubSectionHeading>SQL Query</SubSectionHeading>

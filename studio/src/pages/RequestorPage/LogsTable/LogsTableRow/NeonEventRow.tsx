@@ -1,5 +1,6 @@
 import NeonLogo from "@/assets/NeonLogo.svg";
 import { CodeMirrorSqlEditor } from "@/components/CodeMirrorEditor";
+import { useFormattedNeonQuery } from "@/components/Timeline";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -10,11 +11,9 @@ import {
 import { useCopyToClipboard } from "@/hooks";
 import { cn, noop } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
-import { useMemo, useState } from "react";
-import { format } from "sql-formatter";
-import { formatTimestamp } from "./shared";
-
+import { useState } from "react";
 import type { NeonEvent } from "../types";
+import { formatTimestamp } from "./shared";
 
 export function NeonEventRow({ log }: { log: NeonEvent }) {
   const bgColor = "bg-green-500/10";
@@ -27,21 +26,7 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
 
   const message = "Neon DB Call";
 
-  const queryValue = useMemo(() => {
-    try {
-      const paramsFromNeon = log.sql.params ?? [];
-      // NOTE - sql-formatter expects the index in the array to match the `$nr` syntax from postgres
-      //        this makes the 0th index unused, but it makes the rest of the indices match the `$1`, `$2`, etc.
-      const params = ["", ...paramsFromNeon];
-      return format(log.sql.query, {
-        language: "postgresql",
-        params,
-      });
-    } catch (e) {
-      // Being very defensive soz
-      return log?.sql?.query ?? "";
-    }
-  }, [log]);
+  const queryValue = useFormattedNeonQuery(log.sql);
 
   return (
     <details
