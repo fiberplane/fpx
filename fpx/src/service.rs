@@ -1,5 +1,6 @@
 use crate::api::models::{Span, SpanAdded};
-use crate::data::{BoxedEvents, BoxedStore, DbError};
+use crate::data::{BoxedStore, DbError};
+use crate::events::BoxedEvents;
 use anyhow::Result;
 use opentelemetry_proto::tonic::collector::trace::v1::{
     ExportTraceServiceRequest, ExportTraceServiceResponse,

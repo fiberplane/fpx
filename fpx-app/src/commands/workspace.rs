@@ -1,3 +1,4 @@
+use crate::api_manager::ApiManager;
 use crate::models::workspace::{OpenWorkspaceError, Workspace};
 use crate::state::AppState;
 use crate::STORE_PATH;
@@ -37,10 +38,13 @@ pub fn get_current_workspace(state: State<'_, AppState>) -> Option<Workspace> {
 #[tauri::command]
 pub fn open_workspace_by_path<R: Runtime>(
     path: String,
-    state: State<'_, AppState>,
+    app_state: State<'_, AppState>,
+    api_manager: State<'_, ApiManager>,
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
 ) -> Result<Workspace, OpenWorkspaceError> {
+    api_manager.stop_api();
+
     let path_buf = PathBuf::from(path.clone());
     let config = match FpxConfig::load(Some(path_buf)) {
         Ok((config, _config_path)) => config,
@@ -59,8 +63,10 @@ pub fn open_workspace_by_path<R: Runtime>(
         }
     };
 
+    api_manager.start_api(config.clone());
+
     let workspace = Workspace::new(path.clone(), config);
-    state.set_workspace(workspace.clone());
+    app_state.set_workspace(workspace.clone());
 
     with_store(app, stores, STORE_PATH, |store| {
         let mut recents: Vec<String> = store

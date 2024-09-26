@@ -15,8 +15,6 @@ use tracing_subscriber::{EnvFilter, Registry};
 
 mod api;
 mod commands;
-pub mod data;
-pub mod events;
 pub mod grpc;
 
 #[tokio::main]

@@ -1,12 +1,14 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use api_manager::ApiManager;
 use state::AppState;
 use tauri::menu::{MenuBuilder, MenuId, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, WebviewWindowBuilder};
 use tauri::{Manager, Wry};
 use tauri_plugin_store::StoreCollection;
 
+mod api_manager;
 mod commands;
 mod models;
 mod state;
@@ -20,6 +22,7 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .manage(AppState::default())
+        .manage(ApiManager::default())
         .setup(|app| {
             app.handle()
                 .try_state::<StoreCollection<Wry>>()

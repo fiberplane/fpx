@@ -1,4 +1,4 @@
-use anyhow::Result;
+use crate::data::Result;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::ops::{Deref, DerefMut};

@@ -1,21 +1,19 @@
-<<<<<<< HEAD
+use crate::api::models::settings::Settings;
+use crate::data::models::{HexEncodedId, Span};
+use crate::data::sql::SqlBuilder;
+use crate::data::{DbError, Result, Store, Transaction};
 use anyhow::Context;
 use async_trait::async_trait;
-use fpx::api::models::settings::Settings;
-use fpx::data::models::{HexEncodedId, Span};
-use fpx::data::sql::SqlBuilder;
-use fpx::data::{DbError, Result, Store, Transaction};
+use libsql::{de, Rows};
 use libsql::{params, Builder, Connection};
+use serde::de::DeserializeOwned;
 use serde_json::Map;
 use std::fmt::Display;
 use std::path::Path;
 use std::sync::Arc;
 use tracing::{error, trace};
-use util::RowsExt;
 
-mod migrations;
-mod util;
-
+pub mod migrations;
 #[cfg(test)]
 mod tests;
 
@@ -182,7 +180,7 @@ impl Store for LibsqlStore {
         &self,
         _tx: &Transaction,
         // Future improvement could hold sort fields, limits, etc
-    ) -> Result<Vec<fpx::data::models::Trace>> {
+    ) -> Result<Vec<crate::data::models::Trace>> {
         let traces = self
             .connection
             .query(&self.sql_builder.traces_list(None), ())
@@ -280,6 +278,38 @@ impl Store for LibsqlStore {
         })
     }
 }
-=======
 
->>>>>>> 69b5198f (initial commit)
+#[allow(dead_code)]
+pub(crate) trait RowsExt {
+    /// `T` must be a `struct`
+    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T>;
+
+    /// `T` must be a `struct`
+    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>>;
+
+    /// `T` must be a `struct`
+    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>>;
+}
+
+impl RowsExt for Rows {
+    async fn fetch_one<T: DeserializeOwned>(&mut self) -> Result<T> {
+        self.fetch_optional().await?.ok_or(DbError::NotFound)
+    }
+
+    async fn fetch_optional<T: DeserializeOwned>(&mut self) -> Result<Option<T>> {
+        match self.next().await? {
+            Some(row) => Ok(Some(de::from_row(&row)?)),
+            None => Ok(None),
+        }
+    }
+
+    async fn fetch_all<T: DeserializeOwned>(&mut self) -> Result<Vec<T>> {
+        let mut results = Vec::new();
+
+        while let Some(row) = self.next().await? {
+            results.push(de::from_row(&row)?);
+        }
+
+        Ok(results)
+    }
+}

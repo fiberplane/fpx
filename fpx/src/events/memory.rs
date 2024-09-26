@@ -1,6 +1,6 @@
+use crate::api::models::ServerMessage;
+use crate::events::ServerEvents;
 use async_trait::async_trait;
-use fpx::api::models::ServerMessage;
-use fpx::events::ServerEvents;
 use tokio::sync::broadcast;
 use tracing::trace;
 
@@ -15,7 +15,7 @@ impl InMemoryEvents {
         Self { sender }
     }
 
-    pub async fn subscribe(&self) -> broadcast::Receiver<ServerMessage> {
+    pub fn subscribe(&self) -> broadcast::Receiver<ServerMessage> {
         self.sender.subscribe()
     }
 }
