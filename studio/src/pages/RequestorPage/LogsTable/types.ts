@@ -1,5 +1,6 @@
 import type { MizuOrphanLog } from "@/queries";
 import { objectWithKey } from "@/utils";
+import type { OtelEvent } from "@fiberplane/fpx-types";
 
 export type NeonEvent = {
   id: string;
@@ -11,6 +12,7 @@ export type NeonEvent = {
   };
   duration: number;
   rowCount: number | null;
+  errors?: OtelEvent[];
 };
 
 export const isNeonEvent = (log: unknown): log is NeonEvent => {

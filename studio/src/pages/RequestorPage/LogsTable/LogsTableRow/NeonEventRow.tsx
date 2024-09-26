@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCopyToClipboard } from "@/hooks";
-import { cn, noop } from "@/utils";
+import { cn, getString, noop } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import type { NeonEvent } from "../types";
@@ -24,7 +24,11 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
   const { isCopied: isMessageCopied, copyToClipboard: copyMessageToClipboard } =
     useCopyToClipboard();
 
-  const message = `Neon DB Call took ${log.duration}ms`;
+  const isError = !!log.errors?.length;
+
+  const message = isError
+    ? "Neon DB Call failed"
+    : `Neon DB Call took ${log.duration}ms`;
 
   const queryValue = useFormattedNeonQuery(log.sql);
   // This will show `SELECT`, `INSERT`, etc. instead of the full query
@@ -49,11 +53,11 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
           isExpanded ? "rounded-t-xl" : "rounded-xl",
         )}
       >
-        <div className={"w-2 h-2 mr-2 flex-shrink-0"}>
+        <div className={cn("w-2 h-2 mr-2 flex-shrink-0")}>
           <NeonLogo className="w-2 h-2" />
         </div>
         <div className="font-mono text-xs flex-grow truncate">
-          {message}{" "}
+          <span className={cn({ "text-red-400": isError })}>{message}</span>{" "}
           <span className="font-mono text-xs text-muted-foreground">
             {queryTypePreview}
           </span>
@@ -64,21 +68,35 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
       </summary>
       <div className="p-2 font-mono text-xs text-muted-foreground relative">
         <div className="pl-4">
-          {/* <p>
-            Level: <span className={textColor}>{log.level.toUpperCase()}</span>
-          </p> */}
           <div className="flex gap-2">
             <p>Duration:</p>
             <div className="flex justify-start">
               <p>{log.duration}ms</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <p>Row Count:</p>
-            <div className="flex justify-start">
-              <p>{log.rowCount}</p>
+
+          {isError && (
+            <div className="flex gap-2">
+              <p>Error:</p>
+              <div className="flex justify-start">
+                <p>
+                  {getString(
+                    log.errors?.[0]?.attributes?.["exception.message"],
+                  )}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
+
+          {!isError && (
+            <div className="flex gap-2">
+              <p>Row Count:</p>
+              <div className="flex justify-start">
+                <p>{log.rowCount}</p>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2">
             <p>Query:</p>
             <CodeMirrorSqlEditor

@@ -1,7 +1,9 @@
 import type { MizuOrphanLog } from "@/queries";
 import {
+  getErrorEvents,
   getNeonSqlQuery,
   getResponseBody,
+  hasErrorEvent,
   isJson,
   isNeonFetch,
   safeParseJson,
@@ -34,9 +36,11 @@ function neonSpanToEvent(span: OtelSpan): NeonEvent {
     responseBody && isJson(responseBody)
       ? Number.parseInt(safeParseJson(responseBody)?.rowCount ?? "") ?? null
       : null;
+  const errorEvents = getErrorEvents(span);
   return {
     id: span.span_id,
     type: "neon-event",
+    errors: errorEvents,
     timestamp: span.end_time,
     sql: getNeonSqlQuery(span),
     rowCount,
