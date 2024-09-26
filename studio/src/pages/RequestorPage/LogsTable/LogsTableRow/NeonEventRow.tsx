@@ -16,7 +16,6 @@ import type { NeonEvent } from "../types";
 import { formatTimestamp } from "./shared";
 
 export function NeonEventRow({ log }: { log: NeonEvent }) {
-  const bgColor = "bg-green-500/10";
   // const textColor = "text-gray-500";
   const [isExpanded, setIsExpanded] = useState(false);
   // we don't want the focus ring to be visible when the user is selecting the row with the mouse
@@ -29,6 +28,8 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
   const message = isError
     ? "Neon DB Call failed"
     : `Neon DB Call took ${log.duration}ms`;
+
+  const bgColor = isError ? "bg-red-500/10" : "bg-green-500/10";
 
   const queryValue = useFormattedNeonQuery(log.sql);
   // This will show `SELECT`, `INSERT`, etc. instead of the full query
