@@ -24,12 +24,13 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
   const { isCopied: isMessageCopied, copyToClipboard: copyMessageToClipboard } =
     useCopyToClipboard();
 
-  const message = "Neon DB Call";
+  const message = `Neon DB Call took ${log.duration}ms`;
 
   const queryValue = useFormattedNeonQuery(log.sql);
-  const queryPreview = useMemo(() => {
-    const flatQuery = queryValue.replace(/\n/g, "");
-    return flatQuery.length > 50 ? `${flatQuery.slice(0, 50)}...` : flatQuery;
+  // This will show `SELECT`, `INSERT`, etc. instead of the full query
+  const queryTypePreview = useMemo(() => {
+    const queryType = (queryValue.split("\n")?.[0] ?? "").toUpperCase();
+    return queryType.length < queryValue.length ? `${queryType}...` : queryType;
   }, [queryValue]);
 
   return (
@@ -52,9 +53,9 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
           <NeonLogo className="w-2 h-2" />
         </div>
         <div className="font-mono text-xs flex-grow truncate">
-          {message} ({log.duration}ms){" "}
+          {message}{" "}
           <span className="font-mono text-xs text-muted-foreground">
-            {queryPreview}
+            {queryTypePreview}
           </span>
         </div>
         <div className="font-mono text-xs text-right whitespace-nowrap ml-2">
