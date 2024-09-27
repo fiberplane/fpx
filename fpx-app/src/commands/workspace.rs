@@ -74,7 +74,7 @@ pub fn open_workspace_by_path<R: Runtime>(
             .and_then(|value| value.as_array())
             .map(|arr| {
                 arr.iter()
-                    .filter_map(|item| item.as_str().filter(|s| s == &path).map(|s| s.to_string()))
+                    .filter_map(|item| item.as_str().filter(|s| s != &path).map(|s| s.to_string()))
                     .collect()
             })
             .unwrap_or_default();
@@ -93,6 +93,7 @@ pub fn open_workspace_by_path<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn close_workspace(state: State<'_, AppState>) {
+pub fn close_workspace(state: State<'_, AppState>, api_manager: State<'_, ApiManager>) {
+    api_manager.stop_api();
     state.close_workspace();
 }

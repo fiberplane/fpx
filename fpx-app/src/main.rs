@@ -126,8 +126,6 @@ fn main() {
 fn setup_tracing() -> Result<()> {
     let filter_layer = {
         let directives = env::var("RUST_LOG").unwrap_or_else(|_| "warn,fpx=info".to_string());
-        eprintln!("directives: {:?}", directives);
-
         EnvFilter::builder().parse(directives)?
     };
 

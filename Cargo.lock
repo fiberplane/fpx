@@ -1497,6 +1497,7 @@ dependencies = [
  "anyhow",
  "axum 0.7.5",
  "fpx",
+ "nix",
  "schemars",
  "serde",
  "serde_json",
