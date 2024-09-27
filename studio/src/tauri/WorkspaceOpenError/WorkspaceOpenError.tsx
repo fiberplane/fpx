@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { OpenWorkspaceByPathError } from "@fiberplane/fpx-types";
+import type { OpenWorkspaceError } from "@fiberplane/fpx-types";
 import type { ReactNode } from "react";
 
 type WorkspaceOpenErrorProps = {
-  error: OpenWorkspaceByPathError;
+  error: OpenWorkspaceError;
   reset: () => void;
 };
 

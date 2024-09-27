@@ -84,7 +84,7 @@ export const AppStateSchema = z.object({
 
 export type AppState = z.infer<typeof AppStateSchema>;
 
-export const OpenWorkspaceByPathErrorSchema = z.any().superRefine((x, ctx) => {
+export const OpenWorkspaceErrorSchema = z.any().superRefine((x, ctx) => {
   const schemas = [
     z.object({ path: z.string(), type: z.literal("ConfigFileMissing") }),
     z.object({ message: z.string(), type: z.literal("InvalidConfiguration") }),
@@ -106,9 +106,7 @@ export const OpenWorkspaceByPathErrorSchema = z.any().superRefine((x, ctx) => {
   }
 });
 
-export type OpenWorkspaceByPathError = z.infer<
-  typeof OpenWorkspaceByPathErrorSchema
->;
+export type OpenWorkspaceError = z.infer<typeof OpenWorkspaceErrorSchema>;
 
 export const WorkspaceSchema = z.object({ config: z.any(), path: z.string() });
 
@@ -132,6 +130,7 @@ export type FpxConfig = z.infer<typeof FpxConfigSchema>;
 
 export const FpxConfigErrorSchema = z.any().superRefine((x, ctx) => {
   const schemas = [
+    z.literal("RootDirectoryNotFound"),
     z.object({ FileNotFound: z.string() }).strict(),
     z
       .object({
