@@ -6,11 +6,10 @@ use fpx::service::Service;
 use std::sync::{Arc, Mutex};
 use tauri::async_runtime::spawn;
 use tokio::sync::broadcast::error::RecvError;
+use tracing::{error, info, trace, warn};
 
 #[derive(Debug, Default)]
 pub struct ApiManager {
-    // join_handle: Option<JoinHandle<()>>,
-
     // Sending a message on this channel will shutdown the axum server.
     shutdown_tx: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
 }
@@ -23,31 +22,42 @@ impl ApiManager {
             let _ = shutdown_tx.send(());
         }
 
+        // Start a listener early, so that we can handle the issue where another
+        // process is listening already on that specific port.
         let listen_port = fpx_config.listen_port.unwrap_or(6767);
+        let listener = std::net::TcpListener::bind(format!("127.0.0.1:{listen_port}")).unwrap();
+        listener.set_nonblocking(true).unwrap(); // TODO
 
         let (shutdown, on_shutdown) = tokio::sync::oneshot::channel::<()>();
+        *shutdown_tx = Some(shutdown);
 
-        let _join_handle = spawn(async move {
-            let store: LibsqlStore = LibsqlStore::in_memory().await.unwrap();
+        spawn(async move {
+            let store = LibsqlStore::in_memory().await.unwrap();
             LibsqlStore::migrate(&store).await.unwrap();
             let store = Arc::new(store);
 
-            // Create a shared events struct, which allows events to be send to
-            // WebSocket connections.
+            // Create a event sink that simply logs
             let events = InMemoryEvents::new();
             let events = Arc::new(events);
 
+            // Our current implementation simply logs the events.
             let mut reader = events.subscribe();
             spawn(async move {
                 loop {
                     match reader.recv().await {
                         Ok(message) => {
-                            // Here we can do something with events, like emiting them to the frontend:
+                            // Here we can do something with events, like
+                            // emitting them to the frontend:
                             // window.emit("api_message", message).expect("emit failed");
-                            eprintln!("Received message: {:?}", message);
+                            info!("Received message: {:?}", message);
                         }
-                        Err(RecvError::Lagged(i)) => eprintln!("Lagged: {}", i),
-                        Err(RecvError::Closed) => break,
+                        Err(RecvError::Lagged(i)) => {
+                            warn!(lagged = i, "Event reader lagged behind");
+                        }
+                        Err(RecvError::Closed) => {
+                            trace!("Event reader loop stopped");
+                            break;
+                        }
                     }
                 }
             });
@@ -58,26 +68,20 @@ impl ApiManager {
                 .enable_compression()
                 .build(service.clone(), store.clone());
 
-            let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{listen_port}"))
-                .await
-                .unwrap();
-
-            // info!(
-            //     api_listen_address = ?listener.local_addr().context("Failed to get local address")?,
-            //     grpc_listen_address = ?args.grpc_listen_address,
-            //     "Starting server",
-            // );
-
+            let listener = tokio::net::TcpListener::from_std(listener).unwrap(); // TODO
             let api_server = axum::serve(listener, app).with_graceful_shutdown(async {
+                // Once we receive something on the [`on_shutdown`] channel,
+                // we'll resolve this future, and thus axum will shutdown.
+                // We are wrapping this in another future because of the
+                // incompatible return type of the oneshot channel.
                 let _ = on_shutdown.await;
+                trace!("Received API shutdown signal");
             });
 
             if let Err(err) = api_server.await {
-                eprintln!("Server error: {:?}", err);
+                error!(?err, "API server returned an error");
             };
         });
-
-        *shutdown_tx = Some(shutdown);
     }
 
     pub fn stop_api(&self) {
