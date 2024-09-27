@@ -217,10 +217,20 @@ export function measure<ARGS extends unknown[], RESULT>(
         }
 
         span.setStatus({ code: SpanStatusCode.OK });
-
         if (onSuccess) {
           try {
-            onSuccess(span, returnValue as ExtractInnerResult<RESULT>);
+            const result = onSuccess(
+              span,
+              returnValue as ExtractInnerResult<RESULT>,
+            );
+            if (isPromise(result)) {
+              shouldEndSpan = false;
+              result.finally(() => {
+                if (!endSpanManually) {
+                  span.end();
+                }
+              });
+            }
           } catch (error) {
             if (logger) {
               const errorMessage = formatException(convertToException(error));

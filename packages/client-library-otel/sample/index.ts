@@ -27,6 +27,7 @@ app.get("/", async (c) => {
   console.log("Hello Hono!");
   console.error("This message is logged as an error");
   console.debug("Debug message", { with: "extra", data: true });
+  console.warn({ with: "extra", data: true });
 
   loop(3);
 

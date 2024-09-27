@@ -15,7 +15,7 @@ export function useWebsocketQueryInvalidation() {
   if (wsMessage) {
     switch (wsMessage.event) {
       case "trace_created": {
-        // console.debug("trace_created");
+        console.debug("trace_created");
         queryClient.invalidateQueries({ queryKey: wsMessage.payload });
         break;
       }

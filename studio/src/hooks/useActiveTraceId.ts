@@ -1,4 +1,4 @@
-import { TRACE_ID_ROUTES } from "@/App";
+import { TRACE_ID_ROUTES } from "@/constants";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
 import { useMemo } from "react";
 import { matchRoutes, useLocation } from "react-router-dom";
@@ -25,5 +25,6 @@ function useTraceIdFromRoute() {
   if (match && match.length > 0) {
     return match[0].params.traceId;
   }
+
   return null;
 }

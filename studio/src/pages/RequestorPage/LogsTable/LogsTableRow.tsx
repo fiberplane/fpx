@@ -25,7 +25,12 @@ export function LogRow({ log }: LogRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   // we don't want the focus ring to be visible when the user is selecting the row with the mouse
   const [isMouseSelected, setIsMouseSelected] = useState(false);
-  const { isCopied, copyToClipboard } = useCopyToClipboard();
+  const { isCopied: isMessageCopied, copyToClipboard: copyMessageToClipboard } =
+    useCopyToClipboard();
+  const {
+    isCopied: isArgumentsCopied,
+    copyToClipboard: copyArgumentsToClipboard,
+  } = useCopyToClipboard();
 
   return (
     <details
@@ -71,37 +76,73 @@ export function LogRow({ log }: LogRowProps) {
           {log.message && (
             <div className="flex gap-2">
               <p>Message:</p>
-              <p className="text-foreground break-words">
+              <div className="text-foreground break-words grow">
                 {safeParseJson(log.message) ? (
                   <pre className="whitespace-pre-wrap">
                     {JSON.stringify(JSON.parse(log.message), null, 2)}
                   </pre>
                 ) : (
-                  log.message
+                  <p>{log.message}</p>
                 )}
-              </p>
+              </div>
+              <div className="-mt-2 flex justify-start">
+                <TooltipProvider>
+                  <Tooltip open={isMessageCopied}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Copy log message"
+                        onClick={() =>
+                          copyMessageToClipboard(log.message ?? "")
+                        }
+                        className="flex items-center gap-1"
+                      >
+                        <CopyIcon className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Message copied</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             </div>
           )}
-        </div>
-        <div className="mt-2 flex justify-start">
-          <TooltipProvider>
-            <Tooltip open={isCopied}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  title="Copy log message"
-                  onClick={() => copyToClipboard(log.message ?? "")}
-                  className="flex items-center gap-1"
-                >
-                  <CopyIcon className="h-3 w-3" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Message copied</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {log.args.length > 0 && (
+            <div className="flex gap-2">
+              <p>Additional arguments:</p>
+              <div className="text-foreground break-words grow">
+                <pre className="whitespace-pre-wrap">
+                  {JSON.stringify(log.args, null, 2)}
+                </pre>
+              </div>
+              <div className="-mt-2 flex justify-start">
+                <TooltipProvider>
+                  <Tooltip open={isArgumentsCopied}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Copy log message"
+                        onClick={() =>
+                          copyArgumentsToClipboard(
+                            JSON.stringify(log.args, null, 2),
+                          )
+                        }
+                        className="flex items-center gap-1"
+                      >
+                        <CopyIcon className="h-3 w-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Arguments copied</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </details>

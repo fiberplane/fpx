@@ -11,12 +11,10 @@ import { isWsRequest } from "./types";
 export function useRequestorSubmitHandler({
   makeRequest,
   connectWebsocket,
-  recordRequestInSessionHistory,
   generateNavigation,
 }: {
   makeRequest: MakeProxiedRequestQueryFn;
   connectWebsocket: (wsUrl: string) => void;
-  recordRequestInSessionHistory: (traceId: string) => void;
   generateNavigation: (traceId: string) => To;
 }) {
   const { toast } = useToast();
@@ -31,6 +29,7 @@ export function useRequestorSubmitHandler({
     queryParams,
     requestHeaders,
     requestType,
+    recordRequestInSessionHistory,
   } = useRequestorStore(
     "activeRoute",
     "body",
@@ -40,6 +39,7 @@ export function useRequestorSubmitHandler({
     "queryParams",
     "requestHeaders",
     "requestType",
+    "recordRequestInSessionHistory",
   );
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
@@ -99,10 +99,10 @@ export function useRequestorSubmitHandler({
       {
         onSuccess(data) {
           const traceId = data?.traceId;
-
           if (traceId && typeof traceId === "string") {
-            navigate(generateNavigation(traceId), { replace: true });
             recordRequestInSessionHistory(traceId);
+            const to = generateNavigation(traceId);
+            navigate(to, { replace: true });
           } else {
             console.error(
               "RequestorPage: onSuccess: traceId is not a string",

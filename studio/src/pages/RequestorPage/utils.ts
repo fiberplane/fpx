@@ -1,3 +1,15 @@
+import {
+  getRequestBody,
+  getRequestHeaders,
+  getRequestMethod,
+  getRequestPath,
+  getRequestQueryParams,
+  getRequestUrl,
+  getResponseBody,
+  getResponseHeaders,
+  getStatusCode,
+} from "@/utils";
+import type { TraceSummary } from "@fiberplane/fpx-types";
 import type { Requestornator } from "./queries";
 
 export function sortRequestornatorsDescending(
@@ -13,4 +25,44 @@ export function sortRequestornatorsDescending(
     return 1;
   }
   return 0;
+}
+
+export function traceToRequestornator(
+  trace: TraceSummary,
+): Requestornator | null {
+  const { spans, traceId } = trace;
+  const rootSpan = spans.find((s) => s.name === "request");
+  if (!rootSpan) {
+    // This trace doesn't have a request span (yet)
+    // This can happen if the trace is still being processed
+    return null;
+  }
+
+  const id = Math.random();
+  const status = getStatusCode(rootSpan);
+  const result = {
+    app_requests: {
+      id,
+      updatedAt: rootSpan.end_time.toISOString(),
+      requestUrl: getRequestUrl(rootSpan),
+      requestMethod: getRequestMethod(rootSpan),
+      requestRoute: getRequestPath(rootSpan),
+      requestHeaders: getRequestHeaders(rootSpan),
+      requestBody: getRequestBody(rootSpan),
+      requestPathParams: {},
+      getRequestQueryParams: getRequestQueryParams(rootSpan),
+    },
+    app_responses: {
+      id,
+      responseStatusCode: status ? status.toString() : "",
+      responseBody: getResponseBody(rootSpan) || "",
+      responseHeaders: getResponseHeaders(rootSpan),
+      traceId,
+      isFailure: false,
+      failureReason: null,
+      updatedAt: rootSpan.end_time.toISOString(),
+    },
+  };
+
+  return result;
 }

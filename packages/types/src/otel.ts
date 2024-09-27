@@ -75,7 +75,7 @@ export const OtelSpanSchema = z
       }),
     ),
   })
-  .passthrough(); // HACK - Passthrough to vendorify traces
+  .passthrough(); // HACK - Passthrough for now to allow for additional fields
 
 export type OtelSpan = z.infer<typeof OtelSpanSchema>;
 
