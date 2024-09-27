@@ -6,7 +6,7 @@ use axum::Json;
 use fpx_macros::ApiError;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use tracing::{debug, error};
+use tracing::error;
 
 #[tracing::instrument(skip_all)]
 pub async fn settings_get(
