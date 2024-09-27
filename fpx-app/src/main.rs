@@ -16,6 +16,7 @@ const STORE_PATH: &str = "fpx.bin";
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .manage(AppState::default())
@@ -25,16 +26,29 @@ fn main() {
                 .ok_or("Store not found")
                 .unwrap();
 
-            let quit = MenuItemBuilder::new("Quit").id("quit").build(app).unwrap();
-            let open = MenuItemBuilder::new("Open workspace")
-                .id("open")
+            let quit_app = MenuItemBuilder::new("Quit")
+                .id("quit_app")
+                .accelerator("CmdOrCtrl+Q")
+                .build(app)
+                .unwrap();
+
+            let open_workspace = MenuItemBuilder::new("Open workspace")
+                .id("open_workspace")
+                .accelerator("CmdOrCtrl+O")
+                .build(app)
+                .unwrap();
+
+            let close_workspace = MenuItemBuilder::new("Close workspace")
+                .id("close_workspace")
+                .accelerator("CmdOrCtrl+W")
                 .build(app)
                 .unwrap();
 
             let app_menu = SubmenuBuilder::new(app, "App")
-                .item(&open)
+                .item(&open_workspace)
+                .item(&close_workspace)
                 .separator()
-                .item(&quit)
+                .item(&quit_app)
                 .build()
                 .unwrap();
 
@@ -55,13 +69,32 @@ fn main() {
                 let MenuId(id) = event.id();
 
                 match id.as_str() {
-                    "quit" => {
+                    "quit_app" => {
                         std::process::exit(0);
                     }
-                    "open" => {
+                    "close_workspace" => {
+                        let app_state = window_.state::<AppState>();
+                        if app_state.get_workspace().is_some() {
+                            window_.emit("request-close-workspace", "").unwrap();
+                        } else {
+                            std::process::exit(0);
+                        }
+                    }
+                    "open_workspace" => {
                         window_.emit("request-open-dialog", "").unwrap();
                     }
                     _ => {}
+                }
+            });
+
+            let window_ = window.clone();
+            window.on_window_event(move |event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    let app_state = window_.state::<AppState>();
+                    if app_state.get_workspace().is_some() {
+                        api.prevent_close();
+                        window_.emit("request-close-workspace", "").unwrap();
+                    }
                 }
             });
 
