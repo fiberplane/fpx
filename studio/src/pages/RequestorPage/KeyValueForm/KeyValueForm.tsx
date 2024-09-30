@@ -38,7 +38,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
     onChangeValue,
     removeValue,
     parameter,
-    onSubmit
+    onSubmit,
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
