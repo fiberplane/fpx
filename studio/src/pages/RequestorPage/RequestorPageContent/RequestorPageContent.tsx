@@ -182,6 +182,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       setIgnoreAiInputsBanner={setIgnoreAiInputsBanner}
       websocketState={websocketState}
       sendWebsocketMessage={sendWebsocketMessage}
+      onSubmit={onSubmit}
     />
   );
 

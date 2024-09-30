@@ -30,6 +30,7 @@ type RequestPanelProps = {
   setIgnoreAiInputsBanner: Dispatch<SetStateAction<boolean>>;
   websocketState: WebSocketState;
   sendWebsocketMessage: (message: string) => void;
+  onSubmit: () => void;
 };
 
 export const RequestPanel = memo(function RequestPanel(
@@ -46,6 +47,7 @@ export const RequestPanel = memo(function RequestPanel(
     setIgnoreAiInputsBanner,
     websocketState,
     sendWebsocketMessage,
+    onSubmit,
   } = props;
 
   const {
@@ -93,10 +95,6 @@ export const RequestPanel = memo(function RequestPanel(
 
   const shouldShowBody = shouldShowRequestTab("body");
   const shouldShowMessages = shouldShowRequestTab("messages");
-
-  const onSubmitTest = () => {
-    console.log("submit");
-  };
 
   return (
     <Tabs
@@ -177,7 +175,7 @@ export const RequestPanel = memo(function RequestPanel(
           onChange={(params) => {
             setQueryParams(params);
           }}
-          onSubmit={onSubmitTest}
+          onSubmit={onSubmit}
         />
         {pathParams.length > 0 ? (
           <>
@@ -191,7 +189,7 @@ export const RequestPanel = memo(function RequestPanel(
               onChange={(params) => {
                 setPathParams(params);
               }}
-              onSubmit={onSubmitTest}
+              onSubmit={onSubmit}
             />
           </>
         ) : null}
@@ -213,7 +211,7 @@ export const RequestPanel = memo(function RequestPanel(
           onChange={(headers) => {
             setRequestHeaders(headers);
           }}
-          onSubmit={onSubmitTest}
+          onSubmit={onSubmit}
         />
       </CustomTabsContent>
       {shouldShowBody && (
