@@ -2,16 +2,12 @@ import "./CodeMirrorEditorCssOverrides.css";
 
 import { json } from "@codemirror/lang-json";
 import { duotoneDark } from "@uiw/codemirror-theme-duotone";
-
 import CodeMirror, {
   basicSetup,
   EditorView,
-  type KeyBinding,
   keymap,
 } from "@uiw/react-codemirror";
 import { useMemo } from "react";
-// import { defaultKeymap } from "@codemirror/commands";
-import { standardKeymap } from "./standard-keymap";
 import { customTheme } from "./themes";
 
 type CodeMirrorEditorProps = {
