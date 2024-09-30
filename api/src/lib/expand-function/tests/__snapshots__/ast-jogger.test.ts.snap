@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ast-jogger > should jog the ast 1`] = `
+"export function getAuthHeader(req: HonoRequest) {
+    return req.header("Authorization");
+}
+PASSPHRASES = ["I am a cat", "I am a dog", "I am a bird"]
+(c) => {
+    const auth = getAuthHeader(c.req);
+    if (auth && PASSPHRASES.includes(auth)) {
+        return c.text("Hello Hono!");
+    }
+    return c.text("Unauthorized", 401);
+}"
+`;
