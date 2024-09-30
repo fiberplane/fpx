@@ -1,7 +1,6 @@
 import { CodeMirrorInput } from "@/components/CodeMirrorEditor";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { cn, noop } from "@/utils";
 import { FileIcon, TrashIcon } from "@radix-ui/react-icons";
 import { useCallback, useRef, useState } from "react";
