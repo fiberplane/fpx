@@ -16,7 +16,6 @@ import type { NeonEvent } from "../types";
 import { formatTimestamp } from "./shared";
 
 export function NeonEventRow({ log }: { log: NeonEvent }) {
-  // const textColor = "text-gray-500";
   const [isExpanded, setIsExpanded] = useState(false);
   // we don't want the focus ring to be visible when the user is selecting the row with the mouse
   const [isMouseSelected, setIsMouseSelected] = useState(false);
