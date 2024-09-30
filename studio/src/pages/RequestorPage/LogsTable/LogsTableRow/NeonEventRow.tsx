@@ -11,7 +11,7 @@ import {
 import { useCopyToClipboard } from "@/hooks";
 import { cn, getString, noop } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { NeonEvent } from "../types";
 import { formatTimestamp } from "./shared";
 
