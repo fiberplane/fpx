@@ -94,6 +94,10 @@ export const RequestPanel = memo(function RequestPanel(
   const shouldShowBody = shouldShowRequestTab("body");
   const shouldShowMessages = shouldShowRequestTab("messages");
 
+  const onSubmitTest = () => {
+    console.log("submit");
+  };
+
   return (
     <Tabs
       value={activeRequestsPanelTab}
@@ -173,6 +177,7 @@ export const RequestPanel = memo(function RequestPanel(
           onChange={(params) => {
             setQueryParams(params);
           }}
+          onSubmit={onSubmitTest}
         />
         {pathParams.length > 0 ? (
           <>
@@ -186,6 +191,7 @@ export const RequestPanel = memo(function RequestPanel(
               onChange={(params) => {
                 setPathParams(params);
               }}
+              onSubmit={onSubmitTest}
             />
           </>
         ) : null}
@@ -207,6 +213,7 @@ export const RequestPanel = memo(function RequestPanel(
           onChange={(headers) => {
             setRequestHeaders(headers);
           }}
+          onSubmit={onSubmitTest}
         />
       </CustomTabsContent>
       {shouldShowBody && (
