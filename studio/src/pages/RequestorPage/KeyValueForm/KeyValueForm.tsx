@@ -17,6 +17,8 @@ import type {
 type Props = {
   keyValueParameters: KeyValueParameter[];
   onChange: ChangeKeyValueParametersHandler;
+  onSubmit?: () => void;
+  keyPlaceholder?: string;
 };
 
 type KeyValueRowProps = {
@@ -26,6 +28,8 @@ type KeyValueRowProps = {
   onChangeKey?: (key: string) => void;
   onChangeValue: (value: string) => void;
   removeValue?: () => void;
+  onSubmit?: () => void;
+  keyPlaceholder?: string;
 };
 
 export const KeyValueRow = (props: KeyValueRowProps) => {
@@ -36,6 +40,8 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
     onChangeValue,
     removeValue,
     parameter,
+    onSubmit,
+    keyPlaceholder = "name",
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
@@ -57,15 +63,17 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
       <CodeMirrorInput
         className="w-[140px]"
         value={key}
-        placeholder="name"
+        placeholder={keyPlaceholder}
         readOnly={!onChangeKey}
         onChange={(value) => onChangeKey?.(value ?? "")}
+        onSubmit={onSubmit}
       />
       <CodeMirrorInput
         className="w-[calc(100%-140px)]"
         value={value}
         placeholder="value"
         onChange={(value) => onChangeValue(value ?? "")}
+        onSubmit={onSubmit}
       />
       <div
         className={cn("ml-1 flex invisible", {
@@ -84,7 +92,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
 };
 
 export const KeyValueForm = (props: Props) => {
-  const { onChange, keyValueParameters } = props;
+  const { onChange, keyValueParameters, onSubmit, keyPlaceholder } = props;
 
   return (
     <div className="flex flex-col gap-0">
@@ -115,6 +123,8 @@ export const KeyValueForm = (props: Props) => {
                 keyValueParameters.filter(({ id }) => parameter.id !== id),
               );
             }}
+            onSubmit={onSubmit}
+            keyPlaceholder={keyPlaceholder}
           />
         );
       })}

@@ -2,8 +2,9 @@ import "./CodeMirrorEditorCssOverrides.css";
 
 import { json } from "@codemirror/lang-json";
 import { duotoneDark } from "@uiw/codemirror-theme-duotone";
-
-import CodeMirror, { EditorView } from "@uiw/react-codemirror";
+import CodeMirror, { basicSetup, EditorView } from "@uiw/react-codemirror";
+import { useMemo } from "react";
+import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
 import { customTheme } from "./themes";
 
 type CodeMirrorEditorProps = {
@@ -14,6 +15,7 @@ type CodeMirrorEditorProps = {
   readOnly?: boolean;
   value?: string;
   onChange: (value?: string) => void;
+  onSubmit?: () => void;
 };
 
 export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
@@ -24,7 +26,22 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
     readOnly,
     minHeight = "200px",
     maxHeight,
+    onSubmit,
   } = props;
+
+  const extensions = useMemo(
+    () => [
+      createOnSubmitKeymap(onSubmit, false),
+      basicSetup({
+        // Turn off searching the input via cmd+g and cmd+f
+        searchKeymap: false,
+      }),
+      EditorView.lineWrapping,
+      json(),
+      escapeKeymap,
+    ],
+    [onSubmit],
+  );
 
   return (
     <CodeMirror
@@ -32,16 +49,13 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
       height={height}
       maxHeight={maxHeight}
       minHeight={minHeight}
-      extensions={[EditorView.lineWrapping, json()]}
+      extensions={extensions}
       onChange={onChange}
       theme={[duotoneDark, customTheme]}
       readOnly={readOnly}
-      basicSetup={{
-        // Turn off searching the input via cmd+g and cmd+f
-        searchKeymap: false,
-        // Investigate: Remap the default keymap: https://codemirror.net/docs/ref/#commands.defaultKeymap
-        //              This will allow us to do things like cmd+enter to submit a payload
-      }}
+      // Turn off basic setup here, but then use it as an extension instead (in the extension array),
+      // AFTER using a keymap that allows us to conditionally intercept the "Mod+Enter" combo
+      basicSetup={false}
     />
   );
 }
