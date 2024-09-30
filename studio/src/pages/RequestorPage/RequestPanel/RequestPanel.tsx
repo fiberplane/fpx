@@ -239,6 +239,7 @@ export const RequestPanel = memo(function RequestPanel(
               onChange={setBody}
               value={body.value}
               maxHeight="800px"
+              onSubmit={onSubmit}
             />
           )}
           {body.type === "form-data" && (
