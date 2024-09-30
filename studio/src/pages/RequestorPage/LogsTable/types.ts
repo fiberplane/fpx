@@ -12,6 +12,8 @@ export type NeonEvent = {
   };
   duration: number;
   rowCount: number | null;
+  /** E.g., "SELECT" (this is returned from the Neon API) */
+  command: string | null;
   errors?: OtelEvent[];
 };
 

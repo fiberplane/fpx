@@ -31,11 +31,6 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
   const bgColor = isError ? "bg-red-500/10" : "bg-green-500/10";
 
   const queryValue = useFormattedNeonQuery(log.sql);
-  // This will show `SELECT`, `INSERT`, etc. instead of the full query
-  const queryTypePreview = useMemo(() => {
-    const queryType = (queryValue.split("\n")?.[0] ?? "").toUpperCase();
-    return queryType.length < queryValue.length ? `${queryType}...` : queryType;
-  }, [queryValue]);
 
   return (
     <details
@@ -59,7 +54,7 @@ export function NeonEventRow({ log }: { log: NeonEvent }) {
         <div className="font-mono text-xs flex-grow truncate">
           <span className={cn({ "text-red-400": isError })}>{message}</span>{" "}
           <span className="font-mono text-xs text-muted-foreground">
-            {queryTypePreview}
+            {log.command ?? "Unknown command"}
           </span>
         </div>
         <div className="font-mono text-xs text-right whitespace-nowrap ml-2">
