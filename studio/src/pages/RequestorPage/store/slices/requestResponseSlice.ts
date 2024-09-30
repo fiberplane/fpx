@@ -13,6 +13,7 @@ import {
   removeBaseUrl,
 } from "../utils";
 import type { RequestResponseSlice, Store } from "./types";
+import { getVisibleRequestPanelTabs } from "../tabs";
 
 export const requestResponseSlice: StateCreator<
   Store,
@@ -73,6 +74,20 @@ export const requestResponseSlice: StateCreator<
       // Update other state properties based on the new method and request type
       // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
       // You might want to move some of this logic to separate functions or slices
+      
+
+      // Update visibleRequestsPanelTabs based on the new method and request type
+      state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
+        requestType,
+        method,
+      });
+
+      // Ensure the activeRequestsPanelTab is valid
+      state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
+        state.activeRequestsPanelTab
+      )
+        ? state.activeRequestsPanelTab
+        : state.visibleRequestsPanelTabs[0];
     }),
 
   setPathParams: (pathParams) =>
