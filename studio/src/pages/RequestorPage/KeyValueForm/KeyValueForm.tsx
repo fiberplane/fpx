@@ -18,6 +18,7 @@ type Props = {
   keyValueParameters: KeyValueParameter[];
   onChange: ChangeKeyValueParametersHandler;
   onSubmit?: () => void;
+  keyPlaceholder?: string;
 };
 
 type KeyValueRowProps = {
@@ -28,6 +29,7 @@ type KeyValueRowProps = {
   onChangeValue: (value: string) => void;
   removeValue?: () => void;
   onSubmit?: () => void;
+  keyPlaceholder?: string;
 };
 
 export const KeyValueRow = (props: KeyValueRowProps) => {
@@ -39,6 +41,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
     removeValue,
     parameter,
     onSubmit,
+    keyPlaceholder = "name",
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
@@ -60,7 +63,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
       <CodeMirrorInput
         className="w-[140px]"
         value={key}
-        placeholder="name"
+        placeholder={keyPlaceholder}
         readOnly={!onChangeKey}
         onChange={(value) => onChangeKey?.(value ?? "")}
         onSubmit={onSubmit}
@@ -89,7 +92,7 @@ export const KeyValueRow = (props: KeyValueRowProps) => {
 };
 
 export const KeyValueForm = (props: Props) => {
-  const { onChange, keyValueParameters, onSubmit } = props;
+  const { onChange, keyValueParameters, onSubmit, keyPlaceholder } = props;
 
   return (
     <div className="flex flex-col gap-0">
@@ -121,6 +124,7 @@ export const KeyValueForm = (props: Props) => {
               );
             }}
             onSubmit={onSubmit}
+            keyPlaceholder={keyPlaceholder}
           />
         );
       })}

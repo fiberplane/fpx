@@ -171,6 +171,7 @@ export const RequestPanel = memo(function RequestPanel(
           }}
         />
         <KeyValueForm
+          keyPlaceholder="param_name"
           keyValueParameters={queryParams}
           onChange={(params) => {
             setQueryParams(params);
@@ -185,6 +186,7 @@ export const RequestPanel = memo(function RequestPanel(
               className="mt-4"
             />
             <PathParamForm
+              keyPlaceholder="param_name"
               keyValueParameters={pathParams}
               onChange={(params) => {
                 setPathParams(params);
@@ -207,6 +209,7 @@ export const RequestPanel = memo(function RequestPanel(
           }}
         />
         <KeyValueForm
+          keyPlaceholder="header-name"
           keyValueParameters={requestHeaders}
           onChange={(headers) => {
             setRequestHeaders(headers);
@@ -252,6 +255,7 @@ export const RequestPanel = memo(function RequestPanel(
                   value: params,
                 });
               }}
+              onSubmit={onSubmit}
             />
           )}
           {body.type === "file" && (

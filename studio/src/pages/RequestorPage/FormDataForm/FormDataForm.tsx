@@ -1,3 +1,4 @@
+import { CodeMirrorInput } from "@/components/CodeMirrorEditor";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import type {
 type Props = {
   keyValueParameters: FormDataParameter[];
   onChange: ChangeFormDataParametersHandler;
+  onSubmit?: () => void;
 };
 
 type FormDataRowProps = {
@@ -27,6 +29,7 @@ type FormDataRowProps = {
   onChangeKey?: (key: string) => void;
   onChangeValue: (value: FormDataParameter["value"]) => void;
   removeValue?: () => void;
+  onSubmit?: () => void;
 };
 
 const FormDataFormRow = (props: FormDataRowProps) => {
@@ -37,6 +40,7 @@ const FormDataFormRow = (props: FormDataRowProps) => {
     onChangeValue,
     removeValue,
     parameter,
+    onSubmit,
   } = props;
   const { enabled, key, value } = parameter;
   const [isHovering, setIsHovering] = useState(false);
@@ -67,23 +71,23 @@ const FormDataFormRow = (props: FormDataRowProps) => {
           return handler();
         }}
       />
-      <Input
-        type="text"
+      <CodeMirrorInput
+        className="w-[140px]"
         value={key}
-        placeholder="name"
+        placeholder="form_key"
         readOnly={!onChangeKey}
-        onChange={(e) => onChangeKey?.(e.target.value)}
-        className="w-28 h-8 bg-transparent shadow-none px-2 py-0 text-sm border-none"
+        onChange={(value) => onChangeKey?.(value ?? "")}
+        onSubmit={onSubmit}
       />
       {value.type === "text" && (
-        <Input
-          type="text"
+        <CodeMirrorInput
+          className="w-[calc(100%-140px)]"
           value={value.value}
           placeholder="value"
-          onChange={(e) =>
-            onChangeValue({ value: e.target.value, type: "text" })
+          onChange={(value) =>
+            onChangeValue({ value: value ?? "", type: "text" })
           }
-          className="h-8 flex-grow bg-transparent shadow-none px-2 py-0 text-sm border-none"
+          onSubmit={onSubmit}
         />
       )}
       {value.type === "file" && (
@@ -129,7 +133,7 @@ const FormDataFormRow = (props: FormDataRowProps) => {
 };
 
 export const FormDataForm = (props: Props) => {
-  const { onChange, keyValueParameters } = props;
+  const { onChange, keyValueParameters, onSubmit } = props;
 
   return (
     <div className="flex flex-col gap-0">
@@ -160,6 +164,7 @@ export const FormDataForm = (props: Props) => {
                 keyValueParameters.filter(({ id }) => parameter.id !== id),
               );
             }}
+            onSubmit={onSubmit}
           />
         );
       })}
