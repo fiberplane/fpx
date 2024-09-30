@@ -8,6 +8,7 @@ import CodeMirror, {
   keymap,
 } from "@uiw/react-codemirror";
 import { useMemo } from "react";
+import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
 import { customTheme } from "./themes";
 
 type CodeMirrorEditorProps = {
@@ -20,31 +21,6 @@ type CodeMirrorEditorProps = {
   onChange: (value?: string) => void;
   onSubmit?: () => void;
 };
-
-// Extension that blurs the editor when the user presses "Escape"
-const escapeKeymap = keymap.of([
-  {
-    key: "Escape",
-    run: (view) => {
-      view.contentDOM.blur();
-      return true;
-    },
-  },
-]);
-
-const submitKeymap = (onSubmit: (() => void) | undefined) =>
-  keymap.of([
-    {
-      key: "Mod-Enter",
-      run: () => {
-        if (onSubmit) {
-          onSubmit();
-          return true;
-        }
-        return false;
-      },
-    },
-  ]);
 
 export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
   const {
@@ -59,7 +35,7 @@ export function CodeMirrorJsonEditor(props: CodeMirrorEditorProps) {
 
   const extensions = useMemo(
     () => [
-      submitKeymap(onSubmit),
+      createOnSubmitKeymap(onSubmit, false),
       basicSetup({
         // Turn off searching the input via cmd+g and cmd+f
         searchKeymap: false,
