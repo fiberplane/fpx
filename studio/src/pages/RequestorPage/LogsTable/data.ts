@@ -30,14 +30,18 @@ export function useLogsWithEvents(spans: OtelSpan[], logs: MizuOrphanLog[]) {
 
 function neonSpanToEvent(span: OtelSpan): NeonEvent {
   const responseBody = getResponseBody(span);
-  const parsedResponseBody = responseBody && isJson(responseBody) ? safeParseJson(responseBody) : null;
+  const parsedResponseBody =
+    responseBody && isJson(responseBody) ? safeParseJson(responseBody) : null;
   const rowCount =
     parsedResponseBody && "rowCount" in parsedResponseBody
       ? Number.parseInt(parsedResponseBody.rowCount ?? "") ?? null
       : null;
 
   // E.g., "SELECT"
-  const command = parsedResponseBody && "command" in parsedResponseBody ? parsedResponseBody.command : null;
+  const command =
+    parsedResponseBody && "command" in parsedResponseBody
+      ? parsedResponseBody.command
+      : null;
   const errorEvents = getErrorEvents(span);
 
   return {
