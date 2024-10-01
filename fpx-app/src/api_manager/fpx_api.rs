@@ -26,7 +26,7 @@ impl ApiManager {
         // process is listening already on that specific port.
         let listen_port = fpx_config.listen_port.unwrap_or(6767);
         let listener = std::net::TcpListener::bind(format!("127.0.0.1:{listen_port}")).unwrap();
-        listener.set_nonblocking(true).unwrap(); // TODO
+        listener.set_nonblocking(true).unwrap();
 
         let (shutdown, on_shutdown) = tokio::sync::oneshot::channel::<()>();
         *shutdown_tx = Some(shutdown);
@@ -68,7 +68,7 @@ impl ApiManager {
                 .enable_compression()
                 .build(service.clone(), store.clone());
 
-            let listener = tokio::net::TcpListener::from_std(listener).unwrap(); // TODO
+            let listener = tokio::net::TcpListener::from_std(listener).unwrap();
             let api_server = axum::serve(listener, app).with_graceful_shutdown(async {
                 // Once we receive something on the [`on_shutdown`] channel,
                 // we'll resolve this future, and thus axum will shutdown.

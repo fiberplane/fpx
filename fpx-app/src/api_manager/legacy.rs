@@ -39,7 +39,7 @@ impl ApiManager {
             .process_group(0) //
             .envs(envs)
             .spawn()
-            .expect("should be able to execute"); // TODO
+            .expect("failed to execute pnpm dev:api");
 
         // Once the process is running, get the pid and store it in the mutex,
         // so that we can send signals to it later.
