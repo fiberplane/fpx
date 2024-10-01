@@ -124,7 +124,7 @@ async function extractContext(
     logger.debug(
       "[debug] No out of scope identifiers found in function, skipping context extraction",
     );
-    return [];
+    return context;
   }
 
   try {

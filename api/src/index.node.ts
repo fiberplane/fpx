@@ -9,6 +9,7 @@ import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
 import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema.js";
+import { getTSServer } from "./lib/expand-function/tsserver/index.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
@@ -91,4 +92,15 @@ const proxyRequestsEnabled = await getSetting(db, "proxyRequestsEnabled");
 if (proxyRequestsEnabled ?? false) {
   logger.debug("Proxy requests feature enabled.");
   await webhonc.start();
+}
+
+// check settings if ai is enabled, and proactively start the typescript language server
+const aiEnabled = await getSetting(db, "aiEnabled");
+if (aiEnabled ?? false) {
+  logger.debug("AI feature enabled.");
+  try {
+    await getTSServer(watchDir);
+  } catch (error) {
+    logger.error("Error starting TSServer:", error);
+  }
 }
