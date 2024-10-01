@@ -9,6 +9,7 @@
  */
 
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
+import { resolve } from "node:path";
 import {
   type MessageConnection,
   StreamMessageReader,
@@ -32,14 +33,16 @@ let tsServerInstance: {
  * @returns {Promise<{ connection: MessageConnection; tsServer: ChildProcessWithoutNullStreams }>} The TypeScript language server instance.
  */
 export async function getTSServer(pathToProject: string) {
+  const resolvedPath = resolve(pathToProject);
+
   if (tsServerInstance) {
     logger.debug(
-      `[debug]Reusing existing TS Server instance for project: ${pathToProject}`,
+      `[debug]Reusing existing TS Server instance for project: ${resolvedPath}`,
     );
     return tsServerInstance;
   }
 
-  tsServerInstance = await initializeTSServer(pathToProject);
+  tsServerInstance = await initializeTSServer(resolvedPath);
   return tsServerInstance;
 }
 

@@ -97,7 +97,9 @@ if (proxyRequestsEnabled ?? false) {
 // check settings if ai is enabled, and proactively start the typescript language server
 const aiEnabled = await getSetting(db, "aiEnabled");
 if (aiEnabled ?? false) {
-  logger.debug("AI feature enabled.");
+  logger.debug(
+    "AI Request Generation enabled. Starting typescript language server",
+  );
   try {
     await getTSServer(watchDir);
   } catch (error) {
