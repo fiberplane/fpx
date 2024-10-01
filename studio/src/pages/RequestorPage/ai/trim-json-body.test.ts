@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { trimJsonBody } from "./utils";
+import { trimJsonBody } from "./trim-json-body";
 
 describe("trimJsonBody", () => {
   it("should return non-object values as is", () => {
