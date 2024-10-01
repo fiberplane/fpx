@@ -10,6 +10,7 @@
 
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { resolve } from "node:path";
+import chalk from "chalk";
 import {
   type MessageConnection,
   StreamMessageReader,
@@ -19,7 +20,6 @@ import {
 import logger from "../../../logger.js";
 import { isPublishDiagnosticsParams } from "./types.js";
 import { getFileUri } from "./utils.js";
-import chalk from "chalk";
 
 let tsServerInstance: {
   connection: MessageConnection;
@@ -38,7 +38,9 @@ export async function getTSServer(pathToProject: string) {
 
   if (tsServerInstance) {
     logger.debug(
-      chalk.dim(`[debug] Reusing existing TS Server instance for project: ${resolvedPath}`),
+      chalk.dim(
+        `[debug] Reusing existing TS Server instance for project: ${resolvedPath}`,
+      ),
     );
     return tsServerInstance;
   }
@@ -48,7 +50,9 @@ export async function getTSServer(pathToProject: string) {
 }
 
 async function initializeTSServer(pathToProject: string) {
-  logger.debug(chalk.dim(`[debug] Initializing TS Server for project: ${pathToProject}`));
+  logger.debug(
+    chalk.dim(`[debug] Initializing TS Server for project: ${pathToProject}`),
+  );
 
   const tsServer = spawn("npx", ["typescript-language-server", "--stdio"], {
     // NOTE - This will add quite a bit of startup time if the user has not yet downloaded typescript-language-server dependency before via npx...
@@ -90,7 +94,9 @@ async function initializeTSServer(pathToProject: string) {
   try {
     const rootUri = getFileUri(pathToProject);
     logger.debug(
-      chalk.dim(`[debug] Initializing typescript language server with rootUri: ${rootUri}`),
+      chalk.dim(
+        `[debug] Initializing typescript language server with rootUri: ${rootUri}`,
+      ),
     );
 
     const _response = await connection.sendRequest("initialize", {

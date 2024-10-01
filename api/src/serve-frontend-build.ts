@@ -2,9 +2,9 @@ import fs from "node:fs";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serveStatic } from "@hono/node-server/serve-static";
+import chalk from "chalk";
 import { createFactory } from "hono/factory";
 import logger from "./logger.js";
-import chalk from "chalk";
 
 // Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
@@ -70,13 +70,19 @@ function getRelativePathToFrontendDist() {
         possiblePath,
       );
 
-      logger.debug(chalk.dim(`[debug] Relative path to frontend folder: ${relativePathToFrontend}`));
+      logger.debug(
+        chalk.dim(
+          `[debug] Relative path to frontend folder: ${relativePathToFrontend}`,
+        ),
+      );
 
       return relativePathToFrontend;
     }
   }
 
-  logger.error(chalk.red("Frontend build not found in the expected locations."));
+  logger.error(
+    chalk.red("Frontend build not found in the expected locations."),
+  );
 }
 
 /**
