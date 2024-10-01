@@ -8,6 +8,7 @@ import { USER_PROJECT_ROOT_DIR } from "../constants.js";
 import { generateRequestWithAiProvider } from "../lib/ai/index.js";
 import { cleanPrompt } from "../lib/ai/prompts.js";
 import {
+  type ExpandedFunctionContext,
   type ExpandedFunctionResult,
   expandFunction,
 } from "../lib/expand-function/index.js";
@@ -18,61 +19,13 @@ import logger from "../logger.js";
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 /**
- * REMOVE ME (eventually)
- *
  * This route is just here to quickly test the expand-function helper
  */
 app.post("/v0/expand-function", cors(), async (ctx) => {
   const { handler } = await ctx.req.json();
-  const expandedFunction = await expandFunctionForThisProject(handler);
+  const expandedFunction = await expandFunctionInUserProject(handler);
   return ctx.json({ expandedFunction });
 });
-
-/**
- * Expand a handler function's out-of-scope identifiers to help with ai request generation
- *
- * ...
- *
- * @param handler - The stringified version of a handler function
- * @returns The handler function location with certain out-of-scope identifiers expanded
- */
-async function expandFunctionForThisProject(handler: string) {
-  // HACK - Assume we're in the project root for now
-  //        We should either pick this up via an environment variable (from the CLI)
-  //        or allow it to be set in settings.
-  const projectRoot = USER_PROJECT_ROOT_DIR;
-  logger.debug(
-    `Expanding function ${handler.slice(0, 20)} in project root ${projectRoot}`,
-  );
-
-  const expandedFunction = await expandFunction(projectRoot, handler);
-  return expandedFunction;
-}
-
-function transformExpandedFunction(
-  expandedFunction: ExpandedFunctionResult | null,
-) {
-  if (!expandedFunction) {
-    return undefined;
-  }
-  if (!expandedFunction.context?.length) {
-    return undefined;
-  }
-  // HACK - Remove references to `console`... this should be fixed downstream in the expand-function lib
-  const filteredContext = expandedFunction.context.filter(
-    (context) => context.name !== "console",
-  );
-  // TODO - Improve this prompt info
-  return filteredContext
-    .map((context) =>
-      `
-    NAME: ${context.name}
-    DEFINITION:
-    ${context.definition?.text}
-  `.trim(),
-    )
-    .join("\n---\n");
-}
 
 const generateRequestSchema = z.object({
   handler: z.string(),
@@ -113,7 +66,7 @@ app.post(
     }
 
     // Expand out of scope identifiers in the handler function, to add as additional context
-    const expandedFunction = await expandFunctionForThisProject(handler);
+    const expandedFunction = await expandFunctionInUserProject(handler);
     const handlerContext = transformExpandedFunction(expandedFunction);
     // Generate the request
     const { data: parsedArgs, error: generateError } =
@@ -200,3 +153,77 @@ app.post(
 );
 
 export default app;
+
+/**
+ * Expand a handler function's out-of-scope identifiers to help with ai request generation
+ *
+ * This is a convenience wrapper around expandFunction that assumes the user's project root is the current working directory or FPX_WATCH_DIR
+ *
+ * @param handler - The stringified version of a handler function
+ * @returns The handler function location with certain out-of-scope identifiers expanded
+ */
+async function expandFunctionInUserProject(handler: string) {
+  // HACK - Assume we're in the project root for now
+  //        We should either pick this up via an environment variable (from the CLI)
+  //        or allow it to be set in settings.
+  const projectRoot = USER_PROJECT_ROOT_DIR;
+  logger.debug(
+    `Expanding function ${handler.slice(0, 20)} in project root ${projectRoot}`,
+  );
+
+  const expandedFunction = await expandFunction(projectRoot, handler);
+  return expandedFunction;
+}
+
+function transformExpandedFunction(
+  expandedFunction: ExpandedFunctionResult | null,
+): string | undefined {
+  if (!expandedFunction || !expandedFunction.context?.length) {
+    return undefined;
+  }
+
+  function stringifyContext(
+    context: ExpandedFunctionContext,
+    depth = 0,
+  ): string {
+    return context
+      .map((entry) => {
+        const indent = "  ".repeat(depth);
+        const filename = entry.definition?.uri
+          ? ` filename="${path.basename(entry.definition.uri)}"`
+          : "";
+        let result = `${indent}<entry>
+${indent}  <name${filename}>${entry.name}</name>
+${indent}  <type>${entry.type}</type>`;
+
+        if (entry.definition?.text) {
+          result += `
+${indent}  <definition>
+${indent}    ${entry.definition.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").trim().split("\n").join(`\n${indent}    `)}
+${indent}  </definition>`;
+        }
+
+        if (entry.package) {
+          result += `
+${indent}  <package>${entry.package}</package>`;
+        }
+
+        if (entry.context && entry.context.length > 0) {
+          result += `
+${indent}  <context>
+${stringifyContext(entry.context, depth + 2)}
+${indent}  </context>`;
+        }
+
+        result += `
+${indent}</entry>`;
+
+        return result;
+      })
+      .join("\n");
+  }
+
+  return `<expanded-function>
+${stringifyContext(expandedFunction.context)}
+</expanded-function>`;
+}
