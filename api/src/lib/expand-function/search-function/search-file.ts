@@ -26,10 +26,10 @@ export function searchFile(
   filePath: string,
   searchString: string,
 ): SearchFunctionResult | null {
-  logger.debug("[debug] Searching file:", filePath);
-  logger.debug("[debug] Search string:", searchString);
+  logger.debug("[debug][searchFile] Searching file:", filePath);
+  logger.debug("[debug][searchFile] Search string:", searchString);
   const fileContent = fs.readFileSync(filePath, "utf-8");
-  logger.debug("[debug] File content:", fileContent);
+  logger.debug("[debug][searchFile] File content:", fileContent);
   const sourceFile = ts.createSourceFile(
     filePath,
     fileContent,
@@ -37,7 +37,7 @@ export function searchFile(
     true,
   );
 
-  logger.debug("[debug] Source file:", sourceFile);
+  logger.debug("[debug][searchFile] Source file:", sourceFile);
 
   let result: SearchFunctionResult | null = null;
 
@@ -49,7 +49,7 @@ export function searchFile(
 
     if (isFunction) {
       let functionText = node.getText(sourceFile).trim();
-      logger.debug("[debug] Found function:", functionText);
+      logger.debug("[debug][searchFile] Found function:", functionText);
 
       // HACK - Remove the `async` keyword if it is at the beginning
       if (
@@ -58,7 +58,7 @@ export function searchFile(
         )
       ) {
         functionText = functionText.replace(/^\s*async\s*/, "");
-        logger.debug("[debug] Removed async keyword:", functionText);
+        logger.debug("[debug][searchFile] Removed async keyword:", functionText);
       }
 
       // Normalize whitespace in both the function text and search string
@@ -67,13 +67,13 @@ export function searchFile(
       const normalizedSearchString = searchString.replace(/\s+/g, " ");
 
       logger.debug(
-        "[debug] Comparing:",
+        "[debug][searchFile] Comparing:",
         normalizedFunctionText,
         "with:",
         normalizedSearchString,
       );
       if (normalizedFunctionText === normalizedSearchString) {
-        logger.debug("[debug] Match found!");
+        logger.debug("[debug][searchFile] Match found!");
         const { line: startLine, character: startColumn } =
           sourceFile.getLineAndCharacterOfPosition(node.getStart());
         const { line: endLine, character: endColumn } =

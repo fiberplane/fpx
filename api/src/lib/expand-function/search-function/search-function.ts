@@ -3,12 +3,23 @@ import * as path from "node:path";
 import logger from "../../../logger.js";
 import { type SearchFunctionResult, searchFile } from "./search-file.js";
 
+/**
+ * Recursively searches for a function in a directory and its subdirectories.
+ * 
+ * - Ignores hidden directories and node_modules
+ * - Only looks in .ts and .tsx files
+ * 
+ * @param dirPath - The directory to search in, typically the project root.
+ * @param searchString - The (stringified) function to search for.
+ * @returns The result of the search, or null if the function is not found.
+ */
 export function searchForFunction(
   dirPath: string,
   searchString: string,
 ): SearchFunctionResult | null {
   const files = fs.readdirSync(dirPath);
-  logger.debug("[debug] files", files);
+  logger.debug("[debug] [searchForFunction] Searching files:", files);
+
   for (const file of files) {
     const filePath = path.join(dirPath, file);
     const stats = fs.statSync(filePath);
@@ -18,6 +29,7 @@ export function searchForFunction(
       if (file.startsWith(".") || file === "node_modules") {
         continue;
       }
+      // Recursively search directories
       const result = searchForFunction(filePath, searchString);
       if (result) {
         return result;
@@ -26,9 +38,9 @@ export function searchForFunction(
       stats.isFile() &&
       (file.endsWith(".ts") || file.endsWith(".tsx"))
     ) {
-      logger.debug("[debug] searching file", file);
+      logger.debug("[debug] [searchForFunction] Searching file:", file);
       const result = searchFile(filePath, searchString);
-      logger.debug("[debug] result", result);
+      logger.debug("[debug] [searchForFunction] Result:", result);
       if (result) {
         return result;
       }

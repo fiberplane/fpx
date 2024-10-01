@@ -45,6 +45,7 @@ type ExpandedFunctionContextEntry = {
       start: { line: number; character: number };
       end: { line: number; character: number };
     };
+    /** The text of the definition (utility function, constant value, etc.) */
     text: string | undefined;
   };
   /** The package (in node_modules) that the constant or utility is defined in */
@@ -109,12 +110,6 @@ async function extractContext(
   identifiers: FunctionOutOfScopeIdentifiers,
 ): Promise<ExpandedFunctionContext> {
   const context: ExpandedFunctionContext = [];
-
-  // TODO: Implement logic to extract context
-  // This should involve:
-  // 1. Finding the node for the function
-  // 2. Analyzing its dependencies (imports, referenced variables, etc.)
-  // 3. Populating the context array with relevant information
 
   if (!identifiers?.length) {
     logger.debug(
