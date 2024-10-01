@@ -46,6 +46,14 @@ export function analyzeOutOfScopeIdentifiers(
     );
   }
 
+  if (!functionNode) {
+    console.error("[debug][analyzeOutOfScopeIdentifiers] functionNode is null");
+    return [];
+  }
+
+  const nodeType = ts.SyntaxKind[functionNode.kind];
+  console.log("nodeType", nodeType);
+
   // Add function name to local declarations if it exists
   if (ts.isFunctionDeclaration(functionNode) && functionNode.name) {
     localDeclarations.add(functionNode.name.text);

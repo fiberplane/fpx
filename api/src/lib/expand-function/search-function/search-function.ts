@@ -1,83 +1,67 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
 import logger from "../../../logger.js";
-import { type SearchFunctionResult, searchFile } from "./search-file.js";
+import { getSourceFunctionText } from "./search-compiled-function.js";
+import type { SearchFunctionResult } from "./search-file.js";
+import { searchSourceFunction } from "./search-source-function.js";
 
-/**
- * Recursively searches for a function in a directory and its subdirectories.
- *
- * - Ignores hidden directories and node_modules
- * - Only looks in .ts and .tsx files
- *
- * @param dirPath - The directory to search in, typically the project root.
- * @param searchString - The (stringified) function to search for.
- * @returns The result of the search, or null if the function is not found.
- */
-export function searchForFunction(
-  dirPath: string,
-  searchString: string,
-): SearchFunctionResult | null {
-  const files = fs.readdirSync(dirPath);
-  logger.trace("[trace] [searchForFunction] Searching files:", files);
-
-  for (const file of files) {
-    const filePath = path.join(dirPath, file);
-    const stats = fs.statSync(filePath);
-
-    if (stats.isDirectory()) {
-      if (shouldIgnoreDirent(file)) {
-        continue;
+// TODO - Tidy this up
+export async function searchFunction(
+  projectPath: string,
+  functionString: string,
+) {
+  return Promise.all([
+    new Promise<SearchFunctionResult | null>((resolve) => {
+      try {
+        const result = searchSourceFunction(projectPath, functionString);
+        if (result) {
+          logger.debug(
+            `[searchFunction] Found function directly in source: ${result}`,
+          );
+        }
+        resolve(result);
+      } catch (error) {
+        logger.error(`Error searching for function: ${error}`);
+        resolve(null);
       }
-      // Recursively search directories
-      const result = searchForFunction(filePath, searchString);
-      if (result) {
-        return result;
-      }
-    } else if (
-      stats.isFile() &&
-      (file.endsWith(".ts") || file.endsWith(".tsx"))
-    ) {
-      logger.trace("[trace] [searchForFunction] Searching file:", file);
-      const result = searchFile(filePath, searchString);
-      logger.trace("[trace] [searchForFunction] Result:", result);
-      if (result) {
-        return result;
-      }
-    }
-  }
-
-  return null;
-}
-
-/**
- * Returns true if the file should be ignored.
- * Ignores hidden directories and node_modules, for example.
- */
-function shouldIgnoreDirent(dirent: string): boolean {
-  const ignoredDirs = [
-    "node_modules",
-    ".git",
-    ".vscode",
-    ".idea",
-    "dist",
-    "build",
-    "coverage",
-    "tmp",
-    "temp",
-    ".wrangler",
-    ".next",
-    ".cache",
-    ".husky",
-    ".yarn",
-    ".nx",
-  ];
-
-  const ignoredPrefixes = [".", "_"];
-
-  return (
-    ignoredDirs.includes(dirent.toLowerCase()) ||
-    ignoredPrefixes.some((prefix) => dirent.startsWith(prefix)) ||
-    dirent.endsWith(".log") ||
-    dirent.endsWith(".md")
-  );
+    }),
+    new Promise<SearchFunctionResult | null>((resolve) => {
+      getSourceFunctionText(projectPath, functionString)
+        .then((sourceFunction) => {
+          logger.debug(
+            "[debug] [searchFunction] function text from source map:",
+            sourceFunction,
+          );
+          if (sourceFunction) {
+            try {
+              const result = searchSourceFunction(projectPath, sourceFunction);
+              if (result) {
+                logger.debug(
+                  `[searchFunction] Found function by mapping back to source: ${result}`,
+                );
+              }
+              resolve(result);
+            } catch (error) {
+              logger.error(`Error searching for function: ${error}`);
+              resolve(null);
+            }
+          } else {
+            logger.debug(
+              "[searchFunction] No source function found via source map",
+            );
+            resolve(null);
+          }
+        })
+        .catch((error) => {
+          logger.error(`Error searching for function: ${error}`);
+          resolve(null);
+        });
+    }),
+  ]).then((results) => {
+    logger.debug(
+      "[debug][searchFunction] results",
+      results.map((result) => (result ? result.file : null)),
+    );
+    return results.find(
+      (result) => result !== null,
+    ) as SearchFunctionResult | null;
+  });
 }

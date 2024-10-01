@@ -82,7 +82,7 @@ export async function expandFunction(
   projectRoot: string,
   func: string,
 ): Promise<ExpandedFunctionResult | null> {
-  const searchResult = searchForFunction(projectRoot, func);
+  const searchResult = await searchForFunction(projectRoot, func);
   if (!searchResult) {
     logger.warn(`[expandFunction] No search result found for ${func}`);
     return null;

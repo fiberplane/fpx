@@ -11,7 +11,7 @@ vi.mock("./search-file.js", () => ({
 import type ts from "typescript";
 import { searchFile } from "./search-file.js";
 // Import after mocking
-import { searchForFunction } from "./search-function.js";
+import { searchSourceFunction } from "./search-source-function.js";
 
 // Mock the fs and path modules
 vi.mock("node:fs");
@@ -48,7 +48,7 @@ describe("searchForFunction", () => {
     };
     vi.mocked(searchFile).mockReturnValueOnce(mockResult);
 
-    const result = searchForFunction("/path/to", "function testFunc() {}");
+    const result = searchSourceFunction("/path/to", "function testFunc() {}");
 
     expect(result).toEqual(mockResult);
     expect(fs.readdirSync).toHaveBeenCalledWith("/path/to");
@@ -68,7 +68,7 @@ describe("searchForFunction", () => {
     } as unknown as fs.Stats);
     vi.mocked(searchFile).mockReturnValueOnce(null);
 
-    const result = searchForFunction("/path/to", "function notFound() {}");
+    const result = searchSourceFunction("/path/to", "function notFound() {}");
 
     expect(result).toBeNull();
   });

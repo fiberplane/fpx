@@ -48,7 +48,8 @@ export function searchFile(
       ts.isFunctionExpression(node);
 
     if (isFunction) {
-      let functionText = node.getText(sourceFile).trim();
+      const functionText = node.getText(sourceFile).trim();
+      let functionTextWithoutAsync = functionText;
       logger.trace("[trace][searchFile] Found function:", functionText);
 
       // HACK - Remove the `async` keyword if it is at the beginning
@@ -57,7 +58,10 @@ export function searchFile(
           (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
         )
       ) {
-        functionText = functionText.replace(/^\s*async\s*/, "");
+        functionTextWithoutAsync = functionTextWithoutAsync.replace(
+          /^\s*async\s*/,
+          "",
+        );
         logger.trace(
           "[trace][searchFile] Removed async keyword:",
           functionText,
@@ -67,6 +71,8 @@ export function searchFile(
       // Normalize whitespace in both the function text and search string
       // TODO - Check that this doesn't break anything
       const normalizedFunctionText = functionText.replace(/\s+/g, " ");
+      const normalizedFunctionTextWithoutAsync =
+        functionTextWithoutAsync.replace(/\s+/g, " ");
       const normalizedSearchString = searchString.replace(/\s+/g, " ");
 
       logger.trace(
@@ -76,7 +82,10 @@ export function searchFile(
         normalizedSearchString,
       );
 
-      if (normalizedFunctionText === normalizedSearchString) {
+      if (
+        normalizedFunctionText === normalizedSearchString ||
+        normalizedFunctionTextWithoutAsync === normalizedSearchString
+      ) {
         logger.trace("[trace][searchFile] Match found!");
 
         const { line: startLine, character: startColumn } =

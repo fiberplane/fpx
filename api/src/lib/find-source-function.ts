@@ -118,36 +118,73 @@ async function findOriginalSource(
 export async function findSourceFunction(
   jsFilePath: string,
   functionText: string,
+  returnNullOnMissing = false,
 ) {
   return findFunctionByDefinition(jsFilePath, functionText).then(
     async (loc) => {
       const functionStartLine = loc?.startLine ?? 0;
       const functionStartColumn = loc?.startColumn ?? 0;
+      console.log(
+        "[debug][findSourceFunction] functionStartLine",
+        functionStartLine,
+      );
+      console.log(
+        "[debug][findSourceFunction] functionStartColumn",
+        functionStartColumn,
+      );
       const functionEndLine = loc?.endLine ?? 0;
       const functionEndColumn = loc?.endColumn ?? 0;
+      console.log(
+        "[debug][findSourceFunction] functionEndLine",
+        functionEndLine,
+      );
+      console.log(
+        "[debug][findSourceFunction] functionEndColumn",
+        functionEndColumn,
+      );
 
       const [sourceFunctionStart, sourceFunctionEnd] = await Promise.all([
         findOriginalSource(jsFilePath, functionStartLine, functionStartColumn),
         findOriginalSource(jsFilePath, functionEndLine, functionEndColumn),
       ]);
 
-      // console.log('Function start:', sourceFunctionStart);
-      // console.log('Function end:', sourceFunctionEnd);
+      console.log(
+        "[debug][findSourceFunction] sourceFunctionStart",
+        sourceFunctionStart,
+      );
+      console.log(
+        "[debug][findSourceFunction] sourceFunctionEnd",
+        sourceFunctionEnd,
+      );
 
       const sourceContent = sourceFunctionStart.sourceContent ?? "";
       const startLine = sourceFunctionStart.line;
+      const startColumn = sourceFunctionStart.column;
       const endLine = sourceFunctionEnd.line;
+      const endColumn = sourceFunctionEnd.column;
       // Check if the start/end line are null and otherwise just return sourceContent as is
       if (startLine === null || endLine === null) {
         // TODO decide what the proper behavior should be when
         // we can't find the correct source content.
         // For now: return the source content as is
-        return sourceContent;
+        return returnNullOnMissing ? null : sourceContent;
       }
 
       const sourceFunction = sourceContent
         .split("\n")
-        .filter((_, i) => i >= startLine - 1 && i <= endLine - 1)
+        .slice(startLine - 1, endLine)
+        .map((line, index) => {
+          if (index === 0 && startLine === endLine) {
+            return line.slice(startColumn ?? 0, endColumn ?? 0);
+          }
+          if (index === 0) {
+            return line.slice(startColumn ?? 0);
+          }
+          if (index === endLine - startLine) {
+            return line.slice(0, endColumn ?? 0);
+          }
+          return line;
+        })
         .join("\n");
 
       // console.log('Function source:', sourceFunction)
@@ -155,19 +192,3 @@ export async function findSourceFunction(
     },
   );
 }
-/**
- * Example Usage
- * 
-  const functionText = `async (c) => {
-    const { id: idString } = c.req.param();
-    const id = Number.parseInt(idString, 10);
-    const sql2 = zs(process.env.FPX_DATABASE_URL ?? "");
-    const db = drizzle(sql2, { schema: schema_exports });
-    const bug = await db.select().from(bugs).where(eq(bugs.id, id));
-    return c.json(bug);
-  }`;
-
-  const FILE_PATH = './test-content/function-loc-index.js';
-
- *
- */
