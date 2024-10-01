@@ -4,7 +4,10 @@ import type { RequestBodyType } from "../store";
 import type { ProbedRoute } from "../types";
 import { simplifyHistoryEntry } from "./utils";
 
-const expandFunction = (handler: string | undefined) => {
+/**
+ * NOTE - This is a temporary endpoint to test the expand-function endpoint
+ */
+export const expandFunction = (handler: string | undefined) => {
   if (!handler) {
     return Promise.reject(new Error("No handler provided"));
   }
