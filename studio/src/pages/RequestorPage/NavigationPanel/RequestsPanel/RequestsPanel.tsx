@@ -7,7 +7,7 @@ import { Icon } from "@iconify/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Link, type To, useNavigate, useSearchParams } from "react-router-dom";
-import type { Requestornator } from "../../queries";
+import type { ProxiedRequestResponse } from "../../queries";
 import { useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
 import { Search } from "../Search";
@@ -37,7 +37,7 @@ export function RequestsPanel() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const handleItemSelect = useCallback(
-    (item: Requestornator) => {
+    (item: ProxiedRequestResponse) => {
       navigate({
         pathname: `/request/${getId(item)}`,
         search: searchParams.toString(),
@@ -222,7 +222,7 @@ function EmptyState() {
 }
 
 type NavItemProps = {
-  item: Requestornator;
+  item: ProxiedRequestResponse;
   isSelected: boolean;
   to: To;
   searchParams: URLSearchParams;
@@ -274,11 +274,11 @@ const NavItem = memo(({ to, item, isSelected }: NavItemProps) => {
   );
 });
 
-const getId = (item: Requestornator) => {
+const getId = (item: ProxiedRequestResponse) => {
   return item.app_responses.traceId || item.app_requests.id.toString();
 };
 
-const PathCell = ({ item }: { item: Requestornator }) => {
+const PathCell = ({ item }: { item: ProxiedRequestResponse }) => {
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
   const path = removeServiceUrlFromPath(item.app_requests.requestUrl);
 
@@ -289,13 +289,13 @@ const PathCell = ({ item }: { item: Requestornator }) => {
   );
 };
 
-const StatusCell = ({ item }: { item: Requestornator }) => {
+const StatusCell = ({ item }: { item: ProxiedRequestResponse }) => {
   const code = Number.parseInt(item.app_responses.responseStatusCode);
 
   return <Status statusCode={code} />;
 };
 
-const MethodCell = ({ item }: { item: Requestornator }) => {
+const MethodCell = ({ item }: { item: ProxiedRequestResponse }) => {
   const method = item.app_requests.requestMethod;
   return <RequestMethod method={method} className="text-xs font-mono" />;
 };

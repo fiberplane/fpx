@@ -4,11 +4,11 @@ import {
   parsePathFromRequestUrl,
   truncatePathWithEllipsis,
 } from "@/utils";
-import type { Requestornator } from "./queries";
+import type { ProxiedRequestResponse } from "./queries";
 import { useServiceBaseUrl } from "./store";
 
 type RequestorHistoryProps = {
-  history: Array<Requestornator>;
+  history: Array<ProxiedRequestResponse>;
   loadHistoricalRequest: (traceId: string) => void;
 };
 
@@ -45,7 +45,7 @@ export function RequestorHistory({
 
 type HistoryEntryProps = {
   traceId: string;
-  response: Requestornator;
+  response: ProxiedRequestResponse;
   loadHistoricalRequest?: (traceId: string) => void;
   removeServiceUrlFromPath: (path: string) => string;
 };

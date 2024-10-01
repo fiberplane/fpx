@@ -4,7 +4,7 @@ import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
 import { createKeyValueParameters } from "./KeyValueForm";
-import { type Requestornator, useFetchRequestorRequests } from "./queries";
+import { type ProxiedRequestResponse, useFetchRequestorRequests } from "./queries";
 import { findMatchedRoute } from "./routes";
 import { useRequestorStore } from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
@@ -36,8 +36,8 @@ export function useRequestorHistory() {
   const { data: traces = EMPTY_TRACES } = useOtelTraces();
 
   // Keep a history of recent requests and responses
-  const history = useMemo<Array<Requestornator>>(() => {
-    const items: Array<Requestornator> = [];
+  const history = useMemo<Array<ProxiedRequestResponse>>(() => {
+    const items: Array<ProxiedRequestResponse> = [];
     if (allRequests) {
       items.push(...allRequests);
     }

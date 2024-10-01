@@ -15,7 +15,7 @@ import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useAi } from "../ai";
-import { type Requestornator, useMakeProxiedRequest } from "../queries";
+import { type ProxiedRequestResponse, useMakeProxiedRequest } from "../queries";
 import { useRequestorStore, useRequestorStoreRaw } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
 import { useMakeWebsocketRequest } from "../useMakeWebsocketRequest";
@@ -25,7 +25,7 @@ import { useMostRecentRequestornator } from "./useMostRecentRequestornator";
 import { getMainSectionWidth } from "./util";
 
 interface RequestorPageContentProps {
-  history: Requestornator[]; // Replace 'any[]' with the correct type
+  history: ProxiedRequestResponse[]; // Replace 'any[]' with the correct type
   historyLoading: boolean;
   // sessionHistory: Requestornator[];
   // recordRequestInSessionHistory: (traceId: string) => void;

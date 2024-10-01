@@ -15,13 +15,13 @@ import { cn, parsePathFromRequestUrl, truncatePathWithEllipsis } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import { usePrompt } from "./ai-test-generation";
 
 export function AiTestGenerationDrawer({
   history,
 }: {
-  history: null | Array<Requestornator>;
+  history: null | Array<ProxiedRequestResponse>;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
   const lastRequest = history?.[0] ?? null;
@@ -85,7 +85,7 @@ export function AiTestGenerationDrawer({
   );
 }
 
-export function ContextEntry({ response }: { response: Requestornator }) {
+export function ContextEntry({ response }: { response: ProxiedRequestResponse }) {
   const isFailure = response?.app_responses?.isFailure;
   const requestMethod = response.app_requests?.requestMethod;
   const responseStatusCode = response.app_responses?.responseStatusCode;

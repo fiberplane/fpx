@@ -1,6 +1,6 @@
 // import { useOtelTraces } from "@/queries";
 import { useMemo } from "react";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import { useActiveRoute, useRequestorStore } from "../store";
 import { sortRequestornatorsDescending } from "../utils";
 
@@ -9,7 +9,7 @@ import { sortRequestornatorsDescending } from "../utils";
  * this will look for the most recent request made against that route.
  */
 export function useMostRecentRequestornator(
-  all: Requestornator[],
+  all: ProxiedRequestResponse[],
   overrideTraceId: string | null = null,
 ) {
   const { path: routePath } = useActiveRoute();
@@ -22,17 +22,17 @@ export function useMostRecentRequestornator(
     );
 
   const traceId = overrideTraceId ?? activeHistoryResponseTraceId;
-  return useMemo<Requestornator | undefined>(() => {
+  return useMemo<ProxiedRequestResponse | undefined>(() => {
     if (traceId) {
       const result = all.find(
-        (r: Requestornator) => r?.app_responses?.traceId === traceId,
+        (r: ProxiedRequestResponse) => r?.app_responses?.traceId === traceId,
       );
 
       return result;
     }
 
     const matchingResponses = all?.filter(
-      (r: Requestornator) =>
+      (r: ProxiedRequestResponse) =>
         r.app_requests?.requestRoute === routePath &&
         r.app_requests?.requestMethod === method &&
         r.app_responses.traceId &&
@@ -52,7 +52,7 @@ export function useMostRecentRequestornator(
     //        This is a fallback to support the case where the route doesn't exist,
     //        perhaps because we made a request to a service we are not explicitly monitoring
     const matchingResponsesFallback = all?.filter(
-      (r: Requestornator) =>
+      (r: ProxiedRequestResponse) =>
         r?.app_requests?.requestUrl === path &&
         r?.app_requests?.requestMethod === method &&
         r.app_responses.traceId &&
