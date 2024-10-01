@@ -5,30 +5,68 @@ import logger from "../../../logger.js";
 import { type Definition, isDefinitionsArray } from "./types.js";
 import { getFileUri } from "./utils.js";
 
-// Add a Set to track opened files
-const openedFiles = new Set<string>();
+// Modify the openedFiles Map to store the version number
+const openedFiles = new Map<string, { content: string; version: number }>();
 
 export async function openFile(
   connection: MessageConnection,
   filePath: string,
 ) {
-  if (openedFiles.has(filePath)) {
-    logger.debug("[debug][openFile] File already opened:", filePath);
+  const fileUri = getFileUri(filePath);
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+
+  const existingFile = openedFiles.get(filePath);
+  if (existingFile && existingFile.content === fileContent) {
+    logger.trace("[trace] [openFile] File already opened:", filePath);
     return;
   }
-  const fileUri = getFileUri(filePath);
-  // TODO - Check if we need to read the content of the file... shouldn't the server know how to do this from the workspace configuration?
-  const fileContent = fs.readFileSync(filePath, "utf-8");
+
+  const version = (existingFile?.version ?? 0) + 1;
+
   await connection.sendNotification("textDocument/didOpen", {
     textDocument: {
       uri: fileUri,
       languageId: "typescript",
-      version: 1,
+      version: version,
       text: fileContent,
     },
   });
-  openedFiles.add(filePath);
+  openedFiles.set(filePath, { content: fileContent, version });
   logger.debug("[debug] Opened document:", fileUri);
+}
+
+export async function updateFile(
+  connection: MessageConnection,
+  filePath: string,
+) {
+  const fileUri = getFileUri(filePath);
+  const newContent = fs.readFileSync(filePath, "utf-8");
+
+  const existingFile = openedFiles.get(filePath);
+  if (!existingFile) {
+    logger.warn(
+      "[warn] Attempting to update a file that wasn't opened:",
+      filePath,
+    );
+    return await openFile(connection, filePath);
+  }
+
+  if (existingFile.content === newContent) {
+    logger.trace("[trace] [updateFile] File content unchanged:", filePath);
+    return;
+  }
+
+  const newVersion = existingFile.version + 1;
+
+  await connection.sendNotification("textDocument/didChange", {
+    textDocument: {
+      uri: fileUri,
+      version: newVersion,
+    },
+    contentChanges: [{ text: newContent }],
+  });
+  openedFiles.set(filePath, { content: newContent, version: newVersion });
+  logger.debug("[debug] Updated document:", fileUri);
 }
 
 /**

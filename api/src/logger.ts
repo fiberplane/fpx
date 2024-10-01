@@ -1,5 +1,5 @@
 // Define the possible log levels
-const logLevels = ["debug", "info", "warn", "error"] as const;
+const logLevels = ["trace", "debug", "info", "warn", "error"] as const;
 type LogLevel = (typeof logLevels)[number];
 
 const isDev = process.env.npm_lifecycle_event === "dev";

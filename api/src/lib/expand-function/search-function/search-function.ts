@@ -18,7 +18,7 @@ export function searchForFunction(
   searchString: string,
 ): SearchFunctionResult | null {
   const files = fs.readdirSync(dirPath);
-  logger.debug("[debug] [searchForFunction] Searching files:", files);
+  logger.trace("[trace] [searchForFunction] Searching files:", files);
 
   for (const file of files) {
     const filePath = path.join(dirPath, file);
@@ -37,9 +37,9 @@ export function searchForFunction(
       stats.isFile() &&
       (file.endsWith(".ts") || file.endsWith(".tsx"))
     ) {
-      logger.debug("[debug] [searchForFunction] Searching file:", file);
+      logger.trace("[trace] [searchForFunction] Searching file:", file);
       const result = searchFile(filePath, searchString);
-      logger.debug("[debug] [searchForFunction] Result:", result);
+      logger.trace("[trace] [searchForFunction] Result:", result);
       if (result) {
         return result;
       }
