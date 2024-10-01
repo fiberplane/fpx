@@ -34,24 +34,19 @@ interface RequestorPageContentProps {
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   props,
 ) => {
-  const {
-    history,
-    overrideTraceId,
-    historyLoading,
-    generateNavigation,
-  } = props;
+  const { history, overrideTraceId, historyLoading, generateNavigation } =
+    props;
 
   const { toast } = useToast();
 
-  const mostRecentProxiedRequestResponseForRoute = useMostRecentProxiedRequestResponse(
-    history,
-    overrideTraceId,
-  );
+  const mostRecentProxiedRequestResponseForRoute =
+    useMostRecentProxiedRequestResponse(history, overrideTraceId);
 
   // This is the preferred traceId to show in the UI
   // It is either the traceId from the url or a recent traceId from the session history
   const traceId =
-    overrideTraceId ?? mostRecentProxiedRequestResponseForRoute?.app_responses?.traceId;
+    overrideTraceId ??
+    mostRecentProxiedRequestResponseForRoute?.app_responses?.traceId;
 
   const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
     useRequestorStore(

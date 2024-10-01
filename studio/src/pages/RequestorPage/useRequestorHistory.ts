@@ -4,11 +4,17 @@ import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
 import { createKeyValueParameters } from "./KeyValueForm";
-import { type ProxiedRequestResponse, useFetchRequestorRequests } from "./queries";
+import {
+  type ProxiedRequestResponse,
+  useFetchRequestorRequests,
+} from "./queries";
 import { findMatchedRoute } from "./routes";
 import { useRequestorStore } from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
-import { sortProxiedRequestResponsesDescending, traceToProxiedRequestResponse } from "./utils";
+import {
+  sortProxiedRequestResponsesDescending,
+  traceToProxiedRequestResponse,
+} from "./utils";
 
 const EMPTY_TRACES: TraceListResponse = [];
 export function useRequestorHistory() {

@@ -14,7 +14,9 @@ import { useMemo } from "react";
 import type { ProxiedRequestResponse } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
 
-function createRequestDescription(request: ProxiedRequestResponse | null): string {
+function createRequestDescription(
+  request: ProxiedRequestResponse | null,
+): string {
   if (!request) {
     return "NO_MATCHING_REQUEST_FOUND";
   }

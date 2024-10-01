@@ -85,7 +85,9 @@ export function AiTestGenerationDrawer({
   );
 }
 
-export function ContextEntry({ response }: { response: ProxiedRequestResponse }) {
+export function ContextEntry({
+  response,
+}: { response: ProxiedRequestResponse }) {
   const isFailure = response?.app_responses?.isFailure;
   const requestMethod = response.app_requests?.requestMethod;
   const responseStatusCode = response.app_responses?.responseStatusCode;
