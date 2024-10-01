@@ -12,7 +12,7 @@ import {
 import type { TraceSummary } from "@fiberplane/fpx-types";
 import type { ProxiedRequestResponse } from "./queries";
 
-export function sortRequestornatorsDescending(
+export function sortProxiedRequestResponsesDescending(
   a: ProxiedRequestResponse,
   b: ProxiedRequestResponse,
 ) {
@@ -27,7 +27,7 @@ export function sortRequestornatorsDescending(
   return 0;
 }
 
-export function traceToRequestornator(
+export function traceToProxiedRequestResponse(
   trace: TraceSummary,
 ): ProxiedRequestResponse | null {
   const { spans, traceId } = trace;

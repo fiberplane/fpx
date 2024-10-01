@@ -8,7 +8,7 @@ import { type ProxiedRequestResponse, useFetchRequestorRequests } from "./querie
 import { findMatchedRoute } from "./routes";
 import { useRequestorStore } from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
-import { sortRequestornatorsDescending, traceToRequestornator } from "./utils";
+import { sortProxiedRequestResponsesDescending, traceToProxiedRequestResponse } from "./utils";
 
 const EMPTY_TRACES: TraceListResponse = [];
 export function useRequestorHistory() {
@@ -44,14 +44,14 @@ export function useRequestorHistory() {
 
     for (const trace of traces) {
       if (!items.find((r) => r.app_responses?.traceId === trace.traceId)) {
-        const convertedTrace = traceToRequestornator(trace);
+        const convertedTrace = traceToProxiedRequestResponse(trace);
         if (convertedTrace) {
           items.push(convertedTrace);
         }
       }
     }
 
-    items.sort(sortRequestornatorsDescending);
+    items.sort(sortProxiedRequestResponsesDescending);
 
     return items;
   }, [allRequests, traces]);

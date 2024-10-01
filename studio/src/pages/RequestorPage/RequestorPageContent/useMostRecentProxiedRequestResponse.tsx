@@ -2,13 +2,13 @@
 import { useMemo } from "react";
 import type { ProxiedRequestResponse } from "../queries";
 import { useActiveRoute, useRequestorStore } from "../store";
-import { sortRequestornatorsDescending } from "../utils";
+import { sortProxiedRequestResponsesDescending } from "../utils";
 
 /**
  * When you select a route from the route side panel,
  * this will look for the most recent request made against that route.
  */
-export function useMostRecentRequestornator(
+export function useMostRecentProxiedRequestResponse(
   all: ProxiedRequestResponse[],
   overrideTraceId: string | null = null,
 ) {
@@ -40,7 +40,7 @@ export function useMostRecentRequestornator(
     );
 
     // Descending sort by updatedAt
-    matchingResponses?.sort(sortRequestornatorsDescending);
+    matchingResponses?.sort(sortProxiedRequestResponsesDescending);
 
     const latestMatch = matchingResponses?.[0];
 
@@ -59,7 +59,7 @@ export function useMostRecentRequestornator(
         sessionHistory.includes(r.app_responses?.traceId),
     );
 
-    matchingResponsesFallback?.sort(sortRequestornatorsDescending);
+    matchingResponsesFallback?.sort(sortProxiedRequestResponsesDescending);
 
     return matchingResponsesFallback?.[0];
   }, [all, routePath, method, path, traceId, sessionHistory]);

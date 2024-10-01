@@ -21,14 +21,12 @@ import { BACKGROUND_LAYER } from "../styles";
 import { useMakeWebsocketRequest } from "../useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
 import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
-import { useMostRecentRequestornator } from "./useMostRecentRequestornator";
+import { useMostRecentProxiedRequestResponse } from "./useMostRecentProxiedRequestResponse";
 import { getMainSectionWidth } from "./util";
 
 interface RequestorPageContentProps {
-  history: ProxiedRequestResponse[]; // Replace 'any[]' with the correct type
+  history: ProxiedRequestResponse[];
   historyLoading: boolean;
-  // sessionHistory: Requestornator[];
-  // recordRequestInSessionHistory: (traceId: string) => void;
   overrideTraceId?: string;
   generateNavigation: (traceId: string) => To;
 }
@@ -39,14 +37,13 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const {
     history,
     overrideTraceId,
-    // sessionHistory,
     historyLoading,
     generateNavigation,
   } = props;
 
   const { toast } = useToast();
 
-  const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
+  const mostRecentProxiedRequestResponseForRoute = useMostRecentProxiedRequestResponse(
     history,
     overrideTraceId,
   );
@@ -54,7 +51,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   // This is the preferred traceId to show in the UI
   // It is either the traceId from the url or a recent traceId from the session history
   const traceId =
-    overrideTraceId ?? mostRecentRequestornatorForRoute?.app_responses?.traceId;
+    overrideTraceId ?? mostRecentProxiedRequestResponseForRoute?.app_responses?.traceId;
 
   const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
     useRequestorStore(
@@ -188,7 +185,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const responseContent = (
     <ResponsePanel
-      tracedResponse={mostRecentRequestornatorForRoute}
+      tracedResponse={mostRecentProxiedRequestResponseForRoute}
       isLoading={isRequestorRequesting || historyLoading}
       websocketState={websocketState}
     />

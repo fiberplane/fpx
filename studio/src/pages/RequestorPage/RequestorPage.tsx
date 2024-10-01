@@ -45,9 +45,7 @@ export const RequestorPage = () => {
 
   const {
     history,
-    // sessionHistory,
     isLoading,
-    // recordRequestInSessionHistory,
     loadHistoricalRequest,
   } = useRequestorHistory();
 
