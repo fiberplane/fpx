@@ -194,8 +194,7 @@ function transformExpandedFunction(
           ? ` filename="${path.basename(entry.definition.uri)}"`
           : "";
         let result = `${indent}<entry>
-${indent}  <name${filename}>${entry.name}</name>
-${indent}  <type>${entry.type}</type>`;
+${indent}  <name${filename}>${entry.name}</name>`;
 
         if (entry.definition?.text) {
           result += `
