@@ -7,7 +7,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import figlet from "figlet";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
-import { DEFAULT_DATABASE_URL } from "./constants.js";
+import { DEFAULT_DATABASE_URL, USER_PROJECT_ROOT_DIR } from "./constants.js";
 import * as schema from "./db/schema.js";
 import { getTSServer } from "./lib/expand-function/tsserver/index.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
@@ -77,8 +77,7 @@ server.on("error", (err) => {
 //
 // Additionally, this will watch for changes to files in the project directory,
 //   - If a file changes, send a new probe to the service
-const watchDir = process.env.FPX_WATCH_DIR ?? process.cwd();
-startRouteProbeWatcher(watchDir);
+startRouteProbeWatcher(USER_PROJECT_ROOT_DIR);
 
 // Set up websocket server
 setupRealtimeService({ server, path: "/ws", wsConnections });
@@ -101,7 +100,7 @@ if (aiEnabled ?? false) {
     "AI Request Generation enabled. Starting typescript language server",
   );
   try {
-    await getTSServer(watchDir);
+    await getTSServer(USER_PROJECT_ROOT_DIR);
   } catch (error) {
     logger.error("Error starting TSServer:", error);
   }

@@ -25,8 +25,7 @@ export function searchForFunction(
     const stats = fs.statSync(filePath);
 
     if (stats.isDirectory()) {
-      // Skip hidden directories and node_modules
-      if (file.startsWith(".") || file === "node_modules") {
+      if (shouldIgnoreDirent(file)) {
         continue;
       }
       // Recursively search directories
@@ -50,4 +49,35 @@ export function searchForFunction(
   return null;
 }
 
-export { searchFile, type SearchFunctionResult } from "./search-file.js";
+/**
+ * Returns true if the file should be ignored.
+ * Ignores hidden directories and node_modules, for example.
+ */
+function shouldIgnoreDirent(dirent: string): boolean {
+  const ignoredDirs = [
+    "node_modules",
+    ".git",
+    ".vscode",
+    ".idea",
+    "dist",
+    "build",
+    "coverage",
+    "tmp",
+    "temp",
+    ".wrangler",
+    ".next",
+    ".cache",
+    ".husky",
+    ".yarn",
+    ".nx",
+  ];
+
+  const ignoredPrefixes = [".", "_"];
+
+  return (
+    ignoredDirs.includes(dirent.toLowerCase()) ||
+    ignoredPrefixes.some((prefix) => dirent.startsWith(prefix)) ||
+    dirent.endsWith(".log") ||
+    dirent.endsWith(".md")
+  );
+}

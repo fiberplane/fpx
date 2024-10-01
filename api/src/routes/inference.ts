@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
+import { USER_PROJECT_ROOT_DIR } from "../constants.js";
 import { generateRequestWithAiProvider } from "../lib/ai/index.js";
 import { cleanPrompt } from "../lib/ai/prompts.js";
 import {
@@ -39,7 +40,7 @@ async function expandFunctionForThisProject(handler: string) {
   // HACK - Assume we're in the project root for now
   //        We should either pick this up via an environment variable (from the CLI)
   //        or allow it to be set in settings.
-  const projectRoot = path.resolve(process.env.FPX_WATCH_DIR ?? process.cwd());
+  const projectRoot = USER_PROJECT_ROOT_DIR;
   logger.debug(
     `Expanding function ${handler.slice(0, 20)} in project root ${projectRoot}`,
   );
