@@ -70,9 +70,9 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
-      expect(result?.startLine).toBe(9);
+      expect(result?.startLine).toBe(10);
       expect(result?.startColumn).toBe(19);
-      expect(result?.endLine).toBe(15);
+      expect(result?.endLine).toBe(16);
       expect(result?.endColumn).toBe(2);
 
       expect(result?.context?.[0]?.definition?.text).toBe(
@@ -85,9 +85,9 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
-      expect(result?.startLine).toBe(17);
+      expect(result?.startLine).toBe(18);
       expect(result?.startColumn).toBe(29);
-      expect(result?.endLine).toBe(20);
+      expect(result?.endLine).toBe(21);
       expect(result?.endColumn).toBe(2);
 
       expect(result?.context?.[0]?.definition?.text).toBe(
@@ -107,9 +107,9 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
-      expect(result?.startLine).toBe(22);
+      expect(result?.startLine).toBe(23);
       expect(result?.startColumn).toBe(42);
-      expect(result?.endLine).toBe(28);
+      expect(result?.endLine).toBe(29);
       expect(result?.endColumn).toBe(2);
 
       expect(result?.context).toEqual(

@@ -4,6 +4,7 @@
     "dev": "wrangler dev src/index.ts"
   },
   "dependencies": {
+    "@fiberplane/hono-otel": "workspace:*",
     "drizzle-orm": "^0.32.0",
     "hono": "^4.5.9"
   },

@@ -19,6 +19,7 @@ import {
 import logger from "../../../logger.js";
 import { isPublishDiagnosticsParams } from "./types.js";
 import { getFileUri } from "./utils.js";
+import chalk from "chalk";
 
 let tsServerInstance: {
   connection: MessageConnection;
@@ -37,7 +38,7 @@ export async function getTSServer(pathToProject: string) {
 
   if (tsServerInstance) {
     logger.debug(
-      `[debug]Reusing existing TS Server instance for project: ${resolvedPath}`,
+      chalk.dim(`[debug] Reusing existing TS Server instance for project: ${resolvedPath}`),
     );
     return tsServerInstance;
   }
@@ -47,7 +48,7 @@ export async function getTSServer(pathToProject: string) {
 }
 
 async function initializeTSServer(pathToProject: string) {
-  logger.debug(`[debug] Initializing TS Server for project: ${pathToProject}`);
+  logger.debug(chalk.dim(`[debug] Initializing TS Server for project: ${pathToProject}`));
 
   const tsServer = spawn("npx", ["typescript-language-server", "--stdio"], {
     // NOTE - This will add quite a bit of startup time if the user has not yet downloaded typescript-language-server dependency before via npx...
@@ -83,13 +84,13 @@ async function initializeTSServer(pathToProject: string) {
   connection.listen();
 
   tsServer.on("close", (code) => {
-    logger.debug(`tsserver process exited with code ${code}`);
+    logger.debug(`typescript-language-server process exited with code ${code}`);
   });
 
   try {
     const rootUri = getFileUri(pathToProject);
     logger.debug(
-      `Initializing typescript language server with rootUri: ${rootUri}`,
+      chalk.dim(`[debug] Initializing typescript language server with rootUri: ${rootUri}`),
     );
 
     const _response = await connection.sendRequest("initialize", {
@@ -106,7 +107,7 @@ async function initializeTSServer(pathToProject: string) {
       },
     });
 
-    logger.debug("Initialization response:");
+    logger.debug(chalk.dim("[debug] Initialized typescript language server"));
     // logger.debug('Initialization response:', JSON.stringify(_response, null, 2));
 
     await connection.sendNotification("initialized");
@@ -115,7 +116,7 @@ async function initializeTSServer(pathToProject: string) {
 
     return { connection, tsServer };
   } catch (error) {
-    logger.error("Error initializing TS Server:", error);
+    logger.error(chalk.red("Error initializing TS Server:"), error);
     throw error;
   }
 }

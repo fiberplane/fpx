@@ -1,4 +1,5 @@
 import { Hono, type HonoRequest } from "hono";
+import { instrument } from "@fiberplane/hono-otel";
 import otherRouter from "./other-router";
 import { getAuthHeader, getRandomHeader } from "./utils";
 
@@ -37,7 +38,7 @@ app.get("/const-and-helper-out-of-file-and-sub-helpers", (c) => {
 
 app.route("/other-router", otherRouter);
 
-export default app;
+export default instrument(app);
 
 function helperFunction(req: HonoRequest): boolean {
   return req.query("shouldSayHello") === "true";
