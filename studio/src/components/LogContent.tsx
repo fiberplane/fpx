@@ -1,5 +1,4 @@
 import {
-  // getBgColorForLevel,
   getTextColorForLevel,
 } from "@/components/Timeline/utils";
 import { Button } from "@/components/ui/button";
@@ -29,9 +28,7 @@ export function LogContent({
   isExpanded = false,
   toggleExpand,
 }: LogRowProps) {
-  // const bgColor = getBgColorForLevel(log.level);
   const textColor = getTextColorForLevel(log.level);
-  // const [isExpanded, setIsExpanded] = useState(false);
   // we don't want the focus ring to be visible when the user is selecting the row with the mouse
   // const [isMouseSelected, setIsMouseSelected] = useState(false);
   const { isCopied: isMessageCopied, copyToClipboard: copyMessageToClipboard } =
@@ -45,8 +42,6 @@ export function LogContent({
   return (
     <div
       className={cn(isExpanded ? "rounded-t-xl" : "rounded-xl")}
-      // onMouseDown={() => setIsMouseSelected(true)}
-      // onBlur={() => setIsMouseSelected(false)}
     >
       <div
         tabIndex={0}
