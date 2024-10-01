@@ -103,7 +103,9 @@ async function followImport(
   }
 
   if (!fs.existsSync(resolvedPath)) {
-    logger.warn(`[followImport] Could not resolve import path: ${resolvedPath}`);
+    logger.warn(
+      `[followImport] Could not resolve import path: ${resolvedPath}`,
+    );
     return null;
   }
 
