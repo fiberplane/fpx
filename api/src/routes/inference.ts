@@ -45,10 +45,7 @@ async function expandFunctionForThisProject(handler: string) {
     `Expanding function ${handler.slice(0, 20)} in project root ${projectRoot}`,
   );
 
-  // HACK - Assume src/ directory exists
-  // INVESTIGATE - Is src path even needed?
-  const srcPath = path.join(projectRoot, "src");
-  const expandedFunction = await expandFunction(projectRoot, srcPath, handler);
+  const expandedFunction = await expandFunction(projectRoot, handler);
   return expandedFunction;
 }
 

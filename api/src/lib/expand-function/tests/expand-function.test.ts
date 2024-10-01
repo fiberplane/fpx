@@ -11,7 +11,8 @@ const projectRoot = path.resolve(
   __dirname,
   "../../../../../examples/test-static-analysis",
 );
-const srcPath = path.join(projectRoot, "src");
+
+const srcPath = path.resolve(projectRoot, "src");
 
 // A function in `<root>/app/src/index.ts` that has a constant identifier that is out of scope
 const functionWithConstant = `(c) => {
@@ -65,11 +66,7 @@ const functionWithDrizzle = `(c) => {
 describe("expandFunction: testing on the test-static-analysis project", () => {
   describe("single file - app/src/index.ts", () => {
     it("should return the function location and definition of a constant identifier that is out of scope", async () => {
-      const result = await expandFunction(
-        projectRoot,
-        srcPath,
-        functionWithConstant,
-      );
+      const result = await expandFunction(projectRoot, functionWithConstant);
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
@@ -84,11 +81,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     });
 
     it("should return the function location and definition of a function identifier that is out of scope", async () => {
-      const result = await expandFunction(
-        projectRoot,
-        srcPath,
-        functionWithHelper,
-      );
+      const result = await expandFunction(projectRoot, functionWithHelper);
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
@@ -109,7 +102,6 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     it("should return the function location and definition of a function identifier that is out of scope", async () => {
       const result = await expandFunction(
         projectRoot,
-        srcPath,
         functionWithHelperInAnotherFile,
       );
 
@@ -136,7 +128,6 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     it("should recursively expand context for a function identifier that is out of scope", async () => {
       const result = await expandFunction(
         projectRoot,
-        srcPath,
         functionWithHelperWithConstant,
       );
 
@@ -169,7 +160,6 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     it("should not return global web standards like console as out of scope identifiers", async () => {
       const result = await expandFunction(
         projectRoot,
-        srcPath,
         functionWithWebStandardGlobals,
       );
 
@@ -218,11 +208,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
 
   describe("drizzle test (external packages)", () => {
     it("should report drizzle as an out of scope identifier and show its package name", async () => {
-      const result = await expandFunction(
-        projectRoot,
-        srcPath,
-        functionWithDrizzle,
-      );
+      const result = await expandFunction(projectRoot, functionWithDrizzle);
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "other-router.ts"));
@@ -243,11 +229,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     });
 
     it("should handle expansion of schema definition (drizzle schema)", async () => {
-      const result = await expandFunction(
-        projectRoot,
-        srcPath,
-        functionWithDrizzle,
-      );
+      const result = await expandFunction(projectRoot, functionWithDrizzle);
 
       expect(result).not.toBeNull();
 

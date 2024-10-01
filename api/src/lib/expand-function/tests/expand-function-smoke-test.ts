@@ -12,7 +12,6 @@ const projectRoot = path.resolve(
   __dirname,
   "../../../../../examples/test-static-analysis",
 );
-const srcPath = path.join(projectRoot, "src");
 
 const _functionWithConstant = `(c) => {
   const auth = c.req.header("Authorization");
@@ -40,7 +39,6 @@ async function main() {
     // await tsServerTest();
     const result = await expandFunction(
       projectRoot,
-      srcPath,
       functionWithHelperInAnotherFile,
     );
     console.log(result);

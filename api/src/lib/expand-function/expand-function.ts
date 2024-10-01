@@ -74,17 +74,15 @@ export type ExpandedFunctionResult = {
  * context. The result includes the location of the function and the expanded context of its dependencies.
  *
  * @param {string} projectRoot - The root directory of the project.
- * @param {string} srcPath - The source file path where the function is defined.
  * @param {string} func - The name of the function to expand.
  * @returns {Promise<ExpandedFunctionResult | null>} A promise that resolves to the expanded function context
  *                                                     or `null` if the function is not found.
  */
 export async function expandFunction(
   projectRoot: string,
-  srcPath: string,
   func: string,
 ): Promise<ExpandedFunctionResult | null> {
-  const searchResult = searchForFunction(srcPath, func);
+  const searchResult = searchForFunction(projectRoot, func);
   if (!searchResult) {
     return null;
   }
