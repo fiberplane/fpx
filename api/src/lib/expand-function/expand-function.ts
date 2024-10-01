@@ -17,13 +17,6 @@ import {
   openFile,
 } from "./tsserver/index.js";
 
-// NOTES
-// - given handler definition
-// - find handler in codebase
-// - look for anything it references
-// - expand that code
-// - (todo) REPEAT for each reference's value
-
 type ExpandedFunctionContextEntry = {
   /** The name of the constant or utility in the code */
   name: string;
@@ -74,6 +67,18 @@ export type ExpandedFunctionResult = {
   context: ExpandedFunctionContext;
 };
 
+/**
+ * Expands the context of a specified function within the codebase by analyzing its out-of-scope identifiers
+ * and recursively retrieving their definitions. This function searches for the target function, identifies
+ * all external references it makes, and gathers detailed information about each reference to build a comprehensive
+ * context. The result includes the location of the function and the expanded context of its dependencies.
+ *
+ * @param {string} projectRoot - The root directory of the project.
+ * @param {string} srcPath - The source file path where the function is defined.
+ * @param {string} func - The name of the function to expand.
+ * @returns {Promise<ExpandedFunctionResult | null>} A promise that resolves to the expanded function context
+ *                                                     or `null` if the function is not found.
+ */
 export async function expandFunction(
   projectRoot: string,
   srcPath: string,
