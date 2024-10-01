@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use state::AppState;
-use tauri::menu::{MenuBuilder, MenuId, MenuItemBuilder, SubmenuBuilder};
+use tauri::menu::{MenuId, MenuItemBuilder};
 use tauri::{Emitter, WebviewWindowBuilder};
 use tauri::{Manager, Wry};
 use tauri_plugin_store::StoreCollection;
@@ -26,12 +26,6 @@ fn main() {
                 .ok_or("Store not found")
                 .unwrap();
 
-            let quit_app = MenuItemBuilder::new("Quit")
-                .id("quit_app")
-                .accelerator("CmdOrCtrl+Q")
-                .build(app)
-                .unwrap();
-
             let open_workspace = MenuItemBuilder::new("Open workspace")
                 .id("open_workspace")
                 .accelerator("CmdOrCtrl+O")
@@ -44,17 +38,15 @@ fn main() {
                 .build(app)
                 .unwrap();
 
-            let app_menu = SubmenuBuilder::new(app, "App")
-                .item(&open_workspace)
-                .item(&close_workspace)
-                .separator()
-                .item(&quit_app)
-                .build()
-                .unwrap();
-
-            let menu = MenuBuilder::new(app).items(&[&app_menu]).build().unwrap();
-
-            app.set_menu(menu).unwrap();
+            let items = app.menu().unwrap().items().unwrap();
+            for item in items {
+                let item = item.as_submenu().unwrap();
+                let name = item.text().unwrap();
+                if name == "File" {
+                    item.append_items(&[&open_workspace, &close_workspace])
+                        .unwrap();
+                }
+            }
 
             let window = WebviewWindowBuilder::new(
                 app,
@@ -69,9 +61,6 @@ fn main() {
                 let MenuId(id) = event.id();
 
                 match id.as_str() {
-                    "quit_app" => {
-                        std::process::exit(0);
-                    }
                     "close_workspace" => {
                         let app_state = window_.state::<AppState>();
                         if app_state.get_workspace().is_some() {
