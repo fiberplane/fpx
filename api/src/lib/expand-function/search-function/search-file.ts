@@ -1,12 +1,7 @@
 import * as fs from "node:fs";
 import * as ts from "typescript";
 import logger from "../../../logger.js";
-import {
-  type OutOfScopeIdentifier,
-  analyzeOutOfScopeIdentifiers,
-} from "../ast-helpers/index.js";
-
-export type FunctionOutOfScopeIdentifiers = OutOfScopeIdentifier[];
+import type { FunctionNode } from "../types.js";
 
 export type SearchFunctionResult = {
   /** The file in which the function was found */
@@ -19,7 +14,13 @@ export type SearchFunctionResult = {
   endLine: number;
   /** The column on which the function definition ends */
   endColumn: number;
-  identifiers: FunctionOutOfScopeIdentifiers;
+
+  /** The node that was found */
+  node: FunctionNode;
+  /** The source file that was found */
+  sourceFile: ts.SourceFile;
+
+  // identifiers: FunctionOutOfScopeIdentifiers;
 };
 
 export function searchFile(
@@ -27,7 +28,6 @@ export function searchFile(
   searchString: string,
 ): SearchFunctionResult | null {
   logger.debug("[debug][searchFile] Searching file:", filePath);
-  logger.debug("[debug][searchFile] Search string:", searchString);
   const fileContent = fs.readFileSync(filePath, "utf-8");
   logger.debug("[debug][searchFile] File content:", fileContent);
   const sourceFile = ts.createSourceFile(
@@ -72,15 +72,17 @@ export function searchFile(
         "with:",
         normalizedSearchString,
       );
+
       if (normalizedFunctionText === normalizedSearchString) {
         logger.debug("[debug][searchFile] Match found!");
+
         const { line: startLine, character: startColumn } =
           sourceFile.getLineAndCharacterOfPosition(node.getStart());
         const { line: endLine, character: endColumn } =
           sourceFile.getLineAndCharacterOfPosition(node.getEnd());
 
         // Replace the identifier analysis code with the new helper function
-        const identifiers = analyzeOutOfScopeIdentifiers(node, sourceFile);
+        // const identifiers = analyzeOutOfScopeIdentifiers(node, sourceFile);
 
         result = {
           file: filePath,
@@ -88,7 +90,8 @@ export function searchFile(
           startColumn: startColumn + 1,
           endLine: endLine + 1,
           endColumn: endColumn + 1,
-          identifiers,
+          node,
+          sourceFile
         };
       }
     }

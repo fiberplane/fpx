@@ -1,14 +1,9 @@
 import * as fs from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { searchFile } from "./search-file";
+import { searchFile } from "./search-file.js";
 
-// Mock fs and analyzeOutOfScopeIdentifiers, but not typescript
+// Mock fs, but not typescript
 vi.mock("node:fs");
-vi.mock("../ast-helpers/index.js", () => ({
-  analyzeOutOfScopeIdentifiers: vi.fn().mockReturnValue([]),
-}));
-
-import { analyzeOutOfScopeIdentifiers } from "../ast-helpers/index.js";
 
 describe("searchFile", () => {
   beforeEach(() => {
@@ -16,7 +11,7 @@ describe("searchFile", () => {
   });
 
   it("should find a function in a file", () => {
-    const mockFileContent = `function testFunc() {
+    const mockFileContent = `\nfunction testFunc() {
   console.log('Hello, world!');
 }`;
     vi.mocked(fs.readFileSync).mockReturnValue(mockFileContent);
@@ -28,14 +23,13 @@ describe("searchFile", () => {
 
     expect(result).toMatchObject({
       file: "/path/to/file.ts",
-      startLine: 1,
+      startLine: 2,
       startColumn: 1,
-      endLine: 3,
+      endLine: 4,
       endColumn: 2,
     });
 
     expect(fs.readFileSync).toHaveBeenCalledWith("/path/to/file.ts", "utf-8");
-    expect(analyzeOutOfScopeIdentifiers).toHaveBeenCalled();
   });
 
   it("should return null if function is not found", () => {
@@ -51,7 +45,7 @@ describe("searchFile", () => {
     expect(fs.readFileSync).toHaveBeenCalledWith("/path/to/file.ts", "utf-8");
   });
 
-  it("should handle async functions", () => {
+  it("should match async functions even if search string does not include 'async'", () => {
     const mockFileContent = `async function testAsyncFunc() {
   await someAsyncOperation();
 }`;
@@ -71,7 +65,6 @@ describe("searchFile", () => {
     });
 
     expect(fs.readFileSync).toHaveBeenCalledWith("/path/to/file.ts", "utf-8");
-    expect(analyzeOutOfScopeIdentifiers).toHaveBeenCalled();
   });
 
   it("should handle arrow functions", () => {
@@ -94,6 +87,27 @@ describe("searchFile", () => {
     });
 
     expect(fs.readFileSync).toHaveBeenCalledWith("/path/to/file.ts", "utf-8");
-    expect(analyzeOutOfScopeIdentifiers).toHaveBeenCalled();
+  });
+
+  it("should handle async arrow functions", () => {
+    const mockFileContent = `const arrowFunc = async () => {
+  return 'Arrow function';
+};`;
+    vi.mocked(fs.readFileSync).mockReturnValue(mockFileContent);
+
+    const result = searchFile(
+      "/path/to/file.ts",
+      "() => { return 'Arrow function'; }",
+    );
+
+    expect(result).toMatchObject({
+      file: "/path/to/file.ts",
+      startLine: 1,
+      startColumn: 19,
+      endLine: 3,
+      endColumn: 2,
+    });
+
+    expect(fs.readFileSync).toHaveBeenCalledWith("/path/to/file.ts", "utf-8");
   });
 });

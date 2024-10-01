@@ -5,10 +5,17 @@ import logger from "../../../logger.js";
 import { type Definition, isDefinitionsArray } from "./types.js";
 import { getFileUri } from "./utils.js";
 
+// Add a Set to track opened files
+const openedFiles = new Set<string>();
+
 export async function openFile(
   connection: MessageConnection,
   filePath: string,
 ) {
+  if (openedFiles.has(filePath)) {
+    logger.debug("[debug][openFile] File already opened:", filePath);
+    return;
+  }
   const fileUri = getFileUri(filePath);
   // TODO - Check if we need to read the content of the file... shouldn't the server know how to do this from the workspace configuration?
   const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -20,7 +27,7 @@ export async function openFile(
       text: fileContent,
     },
   });
-
+  openedFiles.add(filePath);
   logger.debug("[debug] Opened document:", fileUri);
 }
 

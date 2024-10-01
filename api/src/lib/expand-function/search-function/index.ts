@@ -1,4 +1,3 @@
 export {
-  searchForFunction,
-  type FunctionOutOfScopeIdentifiers,
+  searchForFunction
 } from "./search-function.js";

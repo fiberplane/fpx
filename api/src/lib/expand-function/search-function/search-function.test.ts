@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { FunctionNode } from "../types.js";
 
 // Mock the search-file module
 vi.mock("./search-file.js", () => ({
@@ -10,6 +11,7 @@ vi.mock("./search-file.js", () => ({
 import { searchFile } from "./search-file.js";
 // Import after mocking
 import { searchForFunction } from "./search-function.js";
+import type ts from "typescript";
 
 // Mock the fs and path modules
 vi.mock("node:fs");
@@ -41,7 +43,8 @@ describe("searchForFunction", () => {
       startColumn: 1,
       endLine: 5,
       endColumn: 2,
-      identifiers: [],
+      node: {} as FunctionNode,
+      sourceFile: {} as ts.SourceFile,
     };
     vi.mocked(searchFile).mockReturnValueOnce(mockResult);
 

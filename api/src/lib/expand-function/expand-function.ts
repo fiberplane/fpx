@@ -5,10 +5,10 @@ import {
   definitionToNode,
   getDefinitionText,
   getParentImportDeclaration,
+  type OutOfScopeIdentifier,
 } from "./ast-helpers/index.js";
 import { contextForImport } from "./imports/index.js";
 import {
-  type FunctionOutOfScopeIdentifiers,
   searchForFunction,
 } from "./search-function/index.js";
 import {
@@ -86,10 +86,16 @@ export async function expandFunction(
     return null;
   }
 
+  const identifiers = analyzeOutOfScopeIdentifiers(
+    searchResult.node,
+    searchResult.sourceFile,
+    // true, // NOTE - Debug switch
+  );
+
   const context = await extractContext(
     projectRoot,
     searchResult.file,
-    searchResult.identifiers,
+    identifiers,
   );
 
   // TODO - Recursively expand context of functions' sub-functions
@@ -107,7 +113,7 @@ export async function expandFunction(
 async function extractContext(
   projectRoot: string,
   filePath: string,
-  identifiers: FunctionOutOfScopeIdentifiers,
+  identifiers: OutOfScopeIdentifier[],
 ): Promise<ExpandedFunctionContext> {
   const context: ExpandedFunctionContext = [];
 
@@ -229,6 +235,7 @@ async function extractContext(
               definition: {
                 uri: sourceDefinition.uri,
                 range: sourceDefinition.range,
+                // TODO - Truncate definition text here, since it can be huge (since this is from a node_modules package)
                 text: valueText?.text,
               },
               package: extractPackageName(sourceDefinition.uri) ?? undefined,
