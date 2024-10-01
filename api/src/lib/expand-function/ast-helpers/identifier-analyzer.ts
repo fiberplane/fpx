@@ -1,4 +1,5 @@
 import * as ts from "typescript";
+import logger from "../../../logger.js";
 
 export interface OutOfScopeIdentifier {
   /** The name of the identifier used but not declared within the function */
@@ -39,8 +40,8 @@ export function analyzeOutOfScopeIdentifiers(
   const localDeclarations = new Set<string>();
   const usedIdentifiers = new Map<string, ts.LineAndCharacter>();
   if (debug) {
-    console.log(
-      "[debug] [analyzeOutOfScopeIdentifiers] Analyzing function:",
+    logger.debug(
+      "[debug][analyzeOutOfScopeIdentifiers] Analyzing function:",
       functionNode.getText(),
     );
   }

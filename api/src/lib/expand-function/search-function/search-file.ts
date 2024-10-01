@@ -27,9 +27,9 @@ export function searchFile(
   filePath: string,
   searchString: string,
 ): SearchFunctionResult | null {
-  logger.debug("[debug][searchFile] Searching file:", filePath);
+  logger.trace("[trace][searchFile] Searching file:", filePath);
   const fileContent = fs.readFileSync(filePath, "utf-8");
-  logger.debug("[debug][searchFile] File content:", fileContent);
+  logger.trace("[trace][searchFile] File content:", fileContent);
   const sourceFile = ts.createSourceFile(
     filePath,
     fileContent,
@@ -37,7 +37,7 @@ export function searchFile(
     true,
   );
 
-  logger.debug("[debug][searchFile] Source file:", sourceFile);
+  logger.trace("[trace][searchFile] Source file:", sourceFile);
 
   let result: SearchFunctionResult | null = null;
 
@@ -49,7 +49,7 @@ export function searchFile(
 
     if (isFunction) {
       let functionText = node.getText(sourceFile).trim();
-      logger.debug("[debug][searchFile] Found function:", functionText);
+      logger.trace("[trace][searchFile] Found function:", functionText);
 
       // HACK - Remove the `async` keyword if it is at the beginning
       if (
@@ -58,8 +58,8 @@ export function searchFile(
         )
       ) {
         functionText = functionText.replace(/^\s*async\s*/, "");
-        logger.debug(
-          "[debug][searchFile] Removed async keyword:",
+        logger.trace(
+          "[trace][searchFile] Removed async keyword:",
           functionText,
         );
       }
@@ -69,15 +69,15 @@ export function searchFile(
       const normalizedFunctionText = functionText.replace(/\s+/g, " ");
       const normalizedSearchString = searchString.replace(/\s+/g, " ");
 
-      logger.debug(
-        "[debug][searchFile] Comparing:",
+      logger.trace(
+        "[trace][searchFile] Comparing:",
         normalizedFunctionText,
         "with:",
         normalizedSearchString,
       );
 
       if (normalizedFunctionText === normalizedSearchString) {
-        logger.debug("[debug][searchFile] Match found!");
+        logger.trace("[trace][searchFile] Match found!");
 
         const { line: startLine, character: startColumn } =
           sourceFile.getLineAndCharacterOfPosition(node.getStart());
@@ -107,6 +107,6 @@ export function searchFile(
 
   visit(sourceFile);
 
-  logger.debug("[debug] Search result:", result);
+  logger.trace("[trace][searchFile] Search result:", result);
   return result;
 }

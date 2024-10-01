@@ -84,6 +84,7 @@ export async function expandFunction(
 ): Promise<ExpandedFunctionResult | null> {
   const searchResult = searchForFunction(projectRoot, func);
   if (!searchResult) {
+    logger.warn(`[expandFunction] No search result found for ${func}`);
     return null;
   }
 

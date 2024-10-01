@@ -17,8 +17,8 @@ export async function contextForImport(
   identifierNode: ts.Node,
   identifier: OutOfScopeIdentifier,
 ) {
-  logger.info(
-    `[debug] [contextForImport] Going to follow import for identifier: ${identifier.name}`,
+  logger.debug(
+    `[debug][contextForImport] Going to follow import for identifier: ${identifier.name}`,
   );
 
   // So. Sometimes, for `import * as thing from "./my-module"`,
@@ -80,7 +80,7 @@ async function followImport(
   const importPath = (importNode.moduleSpecifier as ts.StringLiteral).text;
   let resolvedPath: string;
 
-  logger.debug(`[debug] [followImport] Import path: ${importPath}`);
+  logger.debug(`[debug][followImport] Import path: ${importPath}`);
 
   // TODO - Handle typescript config's aliased imports (`@/...`)
   if (importPath.startsWith(".")) {
@@ -94,7 +94,7 @@ async function followImport(
     return null;
   }
 
-  logger.debug(`[debug] [followImport] Resolved import path: ${resolvedPath}`);
+  logger.debug(`[debug][followImport] Resolved import path: ${resolvedPath}`);
 
   // Add .ts extension if not present
   // TODO - Handle .tsx files, js files, etc.
@@ -103,7 +103,7 @@ async function followImport(
   }
 
   if (!fs.existsSync(resolvedPath)) {
-    logger.warn(`Could not resolve import path: ${resolvedPath}`);
+    logger.warn(`[followImport] Could not resolve import path: ${resolvedPath}`);
     return null;
   }
 
@@ -144,7 +144,7 @@ async function followImport(
 
     if (identifierToFind) {
       logger.debug(
-        `[debug] [followImport] Identifier to find in file we're importing from: ${identifierToFind}`,
+        `[debug][followImport] Identifier to find in file we're importing from: ${identifierToFind}`,
       );
       const importedNode = findExportedDeclaration(
         importedSourceFile,

@@ -167,8 +167,9 @@ async function expandFunctionInUserProject(handler: string) {
   //        We should either pick this up via an environment variable (from the CLI)
   //        or allow it to be set in settings.
   const projectRoot = USER_PROJECT_ROOT_DIR;
+  const truncatedHandler = handler.slice(0, 33);
   logger.debug(
-    `Expanding function ${handler.slice(0, 20)} in project root ${projectRoot}`,
+    `Expanding function ${truncatedHandler}... in project root ${projectRoot}`,
   );
 
   const expandedFunction = await expandFunction(projectRoot, handler);

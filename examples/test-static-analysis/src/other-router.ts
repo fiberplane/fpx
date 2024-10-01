@@ -23,8 +23,8 @@ app.get("/db", async (c) => {
 app.post("/db", async (c) => {
   const body = await c.req.json();
   const db = drizzle(c.env.DB);
-  const stuff = await db.insert(schema.stuff).values(body).returning();
-  return c.json(stuff);
+  const stuff2 = await db.insert(schema.stuff).values(body).returning();
+  return c.json(stuff2);
 });
 
 export default app;
