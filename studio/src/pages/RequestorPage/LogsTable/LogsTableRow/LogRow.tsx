@@ -12,10 +12,7 @@ import {
 // } from "@/components/ui/tooltip";
 // import { useCopyToClipboard } from "@/hooks";
 import type { MizuOrphanLog } from "@/queries";
-import {
-  cn,
-  // safeParseJson
-} from "@/utils";
+import { cn } from "@/utils";
 // import { CopyIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
@@ -50,25 +47,25 @@ export function LogRow({ log, showTimestamp = true }: LogRowProps) {
   );
 }
 
-export function getIconColor(level: MizuOrphanLog["level"]) {
-  switch (level) {
-    case "error":
-      return "bg-red-500";
-    case "warn":
-      return "bg-yellow-500";
-    case "info":
-      return "bg-blue-500";
-    case "debug":
-      return "bg-green-500";
-    default:
-      return "bg-gray-500";
-  }
-}
+// export function getIconColor(level: MizuOrphanLog["level"]) {
+//   switch (level) {
+//     case "error":
+//       return "bg-red-500";
+//     case "warn":
+//       return "bg-yellow-500";
+//     case "info":
+//       return "bg-blue-500";
+//     case "debug":
+//       return "bg-green-500";
+//     default:
+//       return "bg-gray-500";
+//   }
+// }
 
-export function formatTimestamp(timestamp: Date) {
-  return timestamp.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
+// export function formatTimestamp(timestamp: Date) {
+//   return timestamp.toLocaleTimeString([], {
+//     hour: "2-digit",
+//     minute: "2-digit",
+//     second: "2-digit",
+//   });
+// }

@@ -1,13 +1,15 @@
 import { useOrphanLogs } from "@/hooks";
-import { type MizuOrphanLog, useOtelTrace } from "@/queries";
+import { useOtelTrace } from "@/queries";
 import { LogsEmptyState } from "./Empty";
-import { LogRow } from "./LogsTableRow";
+import { LogsTableRow } from "./LogsTableRow";
+import { useLogsWithEvents } from "./data";
+import type { LogEntry } from "./types";
 
 type Props = {
   traceId?: string;
 };
 
-const EMPTY_LIST: MizuOrphanLog[] = [];
+const EMPTY_LIST: LogEntry[] = [];
 
 export function LogsTable({ traceId }: Props) {
   if (!traceId) {
@@ -21,10 +23,16 @@ const LogsTableWithTraceId = ({ traceId }: { traceId: string }) => {
   const { data: spans } = useOtelTrace(traceId);
   const logs = useOrphanLogs(traceId, spans ?? []);
 
-  return <LogsTableContent logs={logs} />;
+  // Here we insert relevant events that happened.
+  // For now, we're just looking for Neon database queries.
+  // Jacco is going to add exceptions, then we should consider additional things like
+  // fetches, etc.
+  const logsWithEvents = useLogsWithEvents(spans ?? [], logs);
+
+  return <LogsTableContent logs={logsWithEvents} />;
 };
 
-function LogsTableContent({ logs }: { logs: MizuOrphanLog[] }) {
+function LogsTableContent({ logs }: { logs: LogEntry[] }) {
   return (
     <div className="overflow-x-hidden h-full">
       {logs.length === 0 ? (
@@ -32,7 +40,7 @@ function LogsTableContent({ logs }: { logs: MizuOrphanLog[] }) {
       ) : (
         <div className="space-y-1">
           {logs.map((log) => (
-            <LogRow key={log.id} log={log} />
+            <LogsTableRow key={log.id} log={log} />
           ))}
         </div>
       )}

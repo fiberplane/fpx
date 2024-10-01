@@ -44,8 +44,9 @@ export function useRequestorSubmitHandler({
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
   const { activeHistoryResponseTraceId } = useRequestorStore();
-  return useHandler((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // NOTE - We make the submit handler optional to make it easier to call this as a standalone function
+  return useHandler((e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault?.();
     // TODO - Make it clear in the UI that we're auto-adding this header
     const canHaveBody =
       !isWsRequest(requestType) && !["GET", "DELETE"].includes(method);

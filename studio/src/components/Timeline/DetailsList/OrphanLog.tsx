@@ -1,4 +1,4 @@
-import { getIconColor } from "@/pages/RequestorPage/LogsTable/LogsTableRow";
+import { getIconColor } from "@/components/LogContent";
 import type { MizuOrphanLog } from "@/queries";
 import {
   cn,

@@ -1,6 +1,6 @@
+import { formatTimestamp } from "@/components/LogContent";
 // import ExpandIcon from "@/assets/Expand.svg";
 import { SpanStatus } from "@/constants";
-import { formatTimestamp } from "@/pages/RequestorPage/LogsTable/LogsTableRow";
 import { isMizuOrphanLog } from "@/queries";
 import { type Waterfall, cn } from "@/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";

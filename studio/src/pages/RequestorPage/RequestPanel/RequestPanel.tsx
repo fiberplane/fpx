@@ -30,6 +30,7 @@ type RequestPanelProps = {
   setIgnoreAiInputsBanner: Dispatch<SetStateAction<boolean>>;
   websocketState: WebSocketState;
   sendWebsocketMessage: (message: string) => void;
+  onSubmit: () => void;
 };
 
 export const RequestPanel = memo(function RequestPanel(
@@ -46,6 +47,7 @@ export const RequestPanel = memo(function RequestPanel(
     setIgnoreAiInputsBanner,
     websocketState,
     sendWebsocketMessage,
+    onSubmit,
   } = props;
 
   const {
@@ -169,10 +171,12 @@ export const RequestPanel = memo(function RequestPanel(
           }}
         />
         <KeyValueForm
+          keyPlaceholder="param_name"
           keyValueParameters={queryParams}
           onChange={(params) => {
             setQueryParams(params);
           }}
+          onSubmit={onSubmit}
         />
         {pathParams.length > 0 ? (
           <>
@@ -182,10 +186,12 @@ export const RequestPanel = memo(function RequestPanel(
               className="mt-4"
             />
             <PathParamForm
+              keyPlaceholder="param_name"
               keyValueParameters={pathParams}
               onChange={(params) => {
                 setPathParams(params);
               }}
+              onSubmit={onSubmit}
             />
           </>
         ) : null}
@@ -203,10 +209,12 @@ export const RequestPanel = memo(function RequestPanel(
           }}
         />
         <KeyValueForm
+          keyPlaceholder="header-name"
           keyValueParameters={requestHeaders}
           onChange={(headers) => {
             setRequestHeaders(headers);
           }}
+          onSubmit={onSubmit}
         />
       </CustomTabsContent>
       {shouldShowBody && (
@@ -234,6 +242,7 @@ export const RequestPanel = memo(function RequestPanel(
               onChange={setBody}
               value={body.value}
               maxHeight="800px"
+              onSubmit={onSubmit}
             />
           )}
           {body.type === "form-data" && (
@@ -246,6 +255,7 @@ export const RequestPanel = memo(function RequestPanel(
                   value: params,
                 });
               }}
+              onSubmit={onSubmit}
             />
           )}
           {body.type === "file" && (

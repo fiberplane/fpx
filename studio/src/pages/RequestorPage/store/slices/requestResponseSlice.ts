@@ -5,6 +5,7 @@ import { enforceTerminalDraftParameter } from "../../KeyValueForm";
 import { findMatchedRoute } from "../../routes";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { setBodyTypeInState } from "../set-body-type";
+import { getVisibleRequestPanelTabs } from "../tabs";
 import {
   addBaseUrl,
   extractMatchedPathParams,
@@ -73,6 +74,19 @@ export const requestResponseSlice: StateCreator<
       // Update other state properties based on the new method and request type
       // (e.g., activeRoute, visibleRequestsPanelTabs, activeRequestsPanelTab, etc.)
       // You might want to move some of this logic to separate functions or slices
+
+      // Update visibleRequestsPanelTabs based on the new method and request type
+      state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
+        requestType,
+        method,
+      });
+
+      // Ensure the activeRequestsPanelTab is valid
+      state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
+        state.activeRequestsPanelTab,
+      )
+        ? state.activeRequestsPanelTab
+        : state.visibleRequestsPanelTabs[0];
     }),
 
   setPathParams: (pathParams) =>
