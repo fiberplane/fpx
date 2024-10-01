@@ -17,7 +17,7 @@ export async function openFile(
 
   const existingFile = openedFiles.get(filePath);
   if (existingFile && existingFile.content === fileContent) {
-    logger.trace("[trace] [openFile] File already opened:", filePath);
+    logger.debug("[debug] [openFile] File already opened:", filePath);
     return;
   }
 
@@ -32,7 +32,6 @@ export async function openFile(
     },
   });
   openedFiles.set(filePath, { content: fileContent, version });
-  logger.debug("[debug] Opened document:", fileUri);
 }
 
 export async function updateFile(
@@ -52,7 +51,7 @@ export async function updateFile(
   }
 
   if (existingFile.content === newContent) {
-    logger.trace("[trace] [updateFile] File content unchanged:", filePath);
+    // logger.debug("[debug] [updateFile] File content unchanged:", filePath);
     return;
   }
 

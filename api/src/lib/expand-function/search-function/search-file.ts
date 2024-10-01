@@ -23,13 +23,35 @@ export type SearchFunctionResult = {
   // identifiers: FunctionOutOfScopeIdentifiers;
 };
 
+/**
+ * Searches for a specific function in a TypeScript file.
+ *
+ * @param filePath - The path to the TypeScript file to search.
+ * @param searchString - The function text to search for.
+ * @param debug - Optional. If true, enables debug logging. Default is false. This exists because always having debug logs on kinda pollutes the console in dev.
+ * @returns A SearchFunctionResult object if the function is found, null otherwise.
+ *
+ * @description
+ * This function reads the content of the specified TypeScript file and searches for a function
+ * that matches the provided searchString. It handles function declarations, arrow functions,
+ * and function expressions. The function also normalizes whitespace and handles async functions
+ * by optionally removing the 'async' keyword during comparison.
+ *
+ * If a match is found, it returns a SearchFunctionResult object containing file information,
+ * start and end positions of the function, and the TypeScript AST node and SourceFile.
+ */
 export function searchFile(
   filePath: string,
   searchString: string,
+  debug = false,
 ): SearchFunctionResult | null {
-  logger.trace("[trace][searchFile] Searching file:", filePath);
+  if (debug) {
+    logger.debug("[debug][searchFile] Searching file:", filePath);
+  }
   const fileContent = fs.readFileSync(filePath, "utf-8");
-  logger.trace("[trace][searchFile] File content:", fileContent);
+  if (debug) {
+    logger.debug("[debug][searchFile] File content:", fileContent);
+  }
   const sourceFile = ts.createSourceFile(
     filePath,
     fileContent,
@@ -37,7 +59,9 @@ export function searchFile(
     true,
   );
 
-  logger.trace("[trace][searchFile] Source file:", sourceFile);
+  if (debug) {
+    logger.debug("[debug][searchFile] Source file:", sourceFile);
+  }
 
   let result: SearchFunctionResult | null = null;
 
@@ -50,7 +74,9 @@ export function searchFile(
     if (isFunction) {
       const functionText = node.getText(sourceFile).trim();
       let functionTextWithoutAsync = functionText;
-      logger.trace("[trace][searchFile] Found function:", functionText);
+      if (debug) {
+        logger.debug("[debug][searchFile] Found function:", functionText);
+      }
 
       // HACK - Remove the `async` keyword if it is at the beginning
       if (
@@ -62,10 +88,12 @@ export function searchFile(
           /^\s*async\s*/,
           "",
         );
-        logger.trace(
-          "[trace][searchFile] Removed async keyword:",
-          functionText,
-        );
+        if (debug) {
+          logger.debug(
+            "[debug][searchFile] Removed async keyword:",
+            functionText,
+          );
+        }
       }
 
       // Normalize whitespace in both the function text and search string
@@ -75,18 +103,22 @@ export function searchFile(
         functionTextWithoutAsync.replace(/\s+/g, " ");
       const normalizedSearchString = searchString.replace(/\s+/g, " ");
 
-      logger.trace(
-        "[trace][searchFile] Comparing:",
-        normalizedFunctionText,
-        "with:",
-        normalizedSearchString,
-      );
+      if (debug) {
+        logger.debug(
+          "[debug][searchFile] Comparing:",
+          normalizedFunctionText,
+          "with:",
+          normalizedSearchString,
+        );
+      }
 
       if (
         normalizedFunctionText === normalizedSearchString ||
         normalizedFunctionTextWithoutAsync === normalizedSearchString
       ) {
-        logger.trace("[trace][searchFile] Match found!");
+        if (debug) {
+          logger.debug("[debug][searchFile] Match found!");
+        }
 
         const { line: startLine, character: startColumn } =
           sourceFile.getLineAndCharacterOfPosition(node.getStart());
@@ -116,6 +148,8 @@ export function searchFile(
 
   visit(sourceFile);
 
-  logger.trace("[trace][searchFile] Search result:", result);
+  if (debug) {
+    logger.debug("[debug][searchFile] Search result:", result);
+  }
   return result;
 }

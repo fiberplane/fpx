@@ -12,16 +12,22 @@ import { type SearchFunctionResult, searchFile } from "./search-file.js";
  *
  * @param dirPath - The directory to search in, typically the project root.
  * @param searchString - The (stringified) function to search for.
+ * @param debug - Whether to log debug information - this is an explicit switch because otherwise the console gets too noisy
  * @returns The result of the search, or null if the function is not found.
  */
 export async function searchSourceFunction(
   dirPath: string,
   searchString: string,
+  debug = false,
 ): Promise<SearchFunctionResult | null> {
+  logger.debug("[debug] hiii");
+
   let files: string[];
   try {
     files = await fs.readdir(dirPath);
-    logger.trace("[trace] [searchForFunction] Searching files:", files);
+    if (debug) {
+      logger.debug("[debug] [searchForFunction] Searching files:", files);
+    }
   } catch (error) {
     logger.error(
       `[error] [searchForFunction] Failed to read directory: ${dirPath}`,
@@ -56,10 +62,15 @@ export async function searchSourceFunction(
       stats.isFile() &&
       (file.endsWith(".ts") || file.endsWith(".tsx"))
     ) {
-      logger.trace("[trace] [searchForFunction] Searching file:", file);
+      if (debug) {
+        logger.debug("[debug] [searchForFunction] Searching file:", file);
+      }
       let result: SearchFunctionResult | null;
       try {
         result = await searchFile(filePath, searchString);
+        if (debug && result) {
+          logger.debug("[debug] [searchForFunction] Result:", result);
+        }
       } catch (error) {
         logger.error(
           `[error] [searchForFunction] Failed to search file: ${filePath}`,
@@ -67,7 +78,9 @@ export async function searchSourceFunction(
         );
         continue;
       }
-      logger.trace("[trace] [searchForFunction] Result:", result);
+      if (debug) {
+        logger.debug("[debug] [searchForFunction] Result:", result);
+      }
       if (result) {
         return result;
       }
