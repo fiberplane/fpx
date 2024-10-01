@@ -1,4 +1,5 @@
-import * as fs from "node:fs";
+import { promises as fs } from "node:fs";
+import type { Stats } from "node:fs";
 import * as path from "node:path";
 import logger from "../../../logger.js";
 import { type SearchFunctionResult, searchFile } from "./search-file.js";
@@ -13,23 +14,41 @@ import { type SearchFunctionResult, searchFile } from "./search-file.js";
  * @param searchString - The (stringified) function to search for.
  * @returns The result of the search, or null if the function is not found.
  */
-export function searchSourceFunction(
+export async function searchSourceFunction(
   dirPath: string,
   searchString: string,
-): SearchFunctionResult | null {
-  const files = fs.readdirSync(dirPath);
-  logger.trace("[trace] [searchForFunction] Searching files:", files);
+): Promise<SearchFunctionResult | null> {
+  let files: string[];
+  try {
+    files = await fs.readdir(dirPath);
+    logger.trace("[trace] [searchForFunction] Searching files:", files);
+  } catch (error) {
+    logger.error(
+      `[error] [searchForFunction] Failed to read directory: ${dirPath}`,
+      error,
+    );
+    return null;
+  }
 
   for (const file of files) {
     const filePath = path.join(dirPath, file);
-    const stats = fs.statSync(filePath);
+    let stats: Stats;
+    try {
+      stats = await fs.stat(filePath);
+    } catch (error) {
+      logger.error(
+        `[error] [searchForFunction] Failed to stat file: ${filePath}`,
+        error,
+      );
+      continue;
+    }
 
     if (stats.isDirectory()) {
       if (shouldIgnoreDirent(file)) {
         continue;
       }
       // Recursively search directories
-      const result = searchSourceFunction(filePath, searchString);
+      const result = await searchSourceFunction(filePath, searchString);
       if (result) {
         return result;
       }
@@ -38,7 +57,16 @@ export function searchSourceFunction(
       (file.endsWith(".ts") || file.endsWith(".tsx"))
     ) {
       logger.trace("[trace] [searchForFunction] Searching file:", file);
-      const result = searchFile(filePath, searchString);
+      let result: SearchFunctionResult | null;
+      try {
+        result = await searchFile(filePath, searchString);
+      } catch (error) {
+        logger.error(
+          `[error] [searchForFunction] Failed to search file: ${filePath}`,
+          error,
+        );
+        continue;
+      }
       logger.trace("[trace] [searchForFunction] Result:", result);
       if (result) {
         return result;

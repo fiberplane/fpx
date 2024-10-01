@@ -55,4 +55,4 @@ Look in the `inference` routes in the Studio to see how this is ultimately done.
 - Cache results of `searchForFunction` to reduce filesystem lookups
 - Remove dependency on `typescript-language-server`
 - Re-introduce the `typescript-language-server`, and write a typescript plugin to provide the same functionality via custom workspace commands
-
+- Look for other common source maps in the project to provide more context (webpack, etc) -- right now only works with Wrangler projects
