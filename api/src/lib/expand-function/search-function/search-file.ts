@@ -58,7 +58,10 @@ export function searchFile(
         )
       ) {
         functionText = functionText.replace(/^\s*async\s*/, "");
-        logger.debug("[debug][searchFile] Removed async keyword:", functionText);
+        logger.debug(
+          "[debug][searchFile] Removed async keyword:",
+          functionText,
+        );
       }
 
       // Normalize whitespace in both the function text and search string
@@ -91,7 +94,7 @@ export function searchFile(
           endLine: endLine + 1,
           endColumn: endColumn + 1,
           node,
-          sourceFile
+          sourceFile,
         };
       }
     }

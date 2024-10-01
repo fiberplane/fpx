@@ -3,15 +3,15 @@ import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FunctionNode } from "../types.js";
 
-// Mock the search-file module
+// Mock the search-file module, as we test that separately
 vi.mock("./search-file.js", () => ({
   searchFile: vi.fn(),
 }));
 
+import type ts from "typescript";
 import { searchFile } from "./search-file.js";
 // Import after mocking
 import { searchForFunction } from "./search-function.js";
-import type ts from "typescript";
 
 // Mock the fs and path modules
 vi.mock("node:fs");
@@ -23,7 +23,7 @@ describe("searchForFunction", () => {
     vi.resetAllMocks();
   });
 
-  it("should find a function in a TypeScript file", () => {
+  it("should look for a function in a typescript files in a directory", () => {
     // Mock the filesystem structure
     vi.mocked(fs.readdirSync).mockReturnValue([
       "file1.ts",
@@ -52,7 +52,6 @@ describe("searchForFunction", () => {
 
     expect(result).toEqual(mockResult);
     expect(fs.readdirSync).toHaveBeenCalledWith("/path/to");
-    // expect(fs.statSync).toHaveBeenCalledTimes(3);
     expect(searchFile).toHaveBeenCalledWith(
       "/path/to/file1.ts",
       "function testFunc() {}",
@@ -74,5 +73,3 @@ describe("searchForFunction", () => {
     expect(result).toBeNull();
   });
 });
-
-// We can keep the searchFile tests in a separate file if needed

@@ -1,16 +1,14 @@
 import ts from "typescript";
 import logger from "../../logger.js";
 import {
+  type OutOfScopeIdentifier,
   analyzeOutOfScopeIdentifiers,
   definitionToNode,
   getDefinitionText,
   getParentImportDeclaration,
-  type OutOfScopeIdentifier,
 } from "./ast-helpers/index.js";
 import { contextForImport } from "./imports/index.js";
-import {
-  searchForFunction,
-} from "./search-function/index.js";
+import { searchForFunction } from "./search-function/index.js";
 import {
   getFileUri,
   getTSServer,

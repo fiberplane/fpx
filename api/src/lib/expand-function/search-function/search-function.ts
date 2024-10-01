@@ -5,10 +5,10 @@ import { type SearchFunctionResult, searchFile } from "./search-file.js";
 
 /**
  * Recursively searches for a function in a directory and its subdirectories.
- * 
+ *
  * - Ignores hidden directories and node_modules
  * - Only looks in .ts and .tsx files
- * 
+ *
  * @param dirPath - The directory to search in, typically the project root.
  * @param searchString - The (stringified) function to search for.
  * @returns The result of the search, or null if the function is not found.
