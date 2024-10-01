@@ -26,7 +26,7 @@ const LogsTableWithTraceId = ({ traceId }: { traceId: string }) => {
 
 function LogsTableContent({ logs }: { logs: MizuOrphanLog[] }) {
   return (
-    <div className="overflow-y-scroll">
+    <div className="overflow-x-hidden h-full">
       {logs.length === 0 ? (
         <LogsEmptyState />
       ) : (

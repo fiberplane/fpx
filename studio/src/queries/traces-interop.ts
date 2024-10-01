@@ -18,6 +18,7 @@ export type CallerLocation = z.infer<typeof CallerLocationSchema>;
 const MizuOrphanLogSchema = z.object({
   id: z.number(),
   traceId: z.string(),
+  isException: z.boolean().nullish(),
   timestamp: z.coerce.date(),
   level: z.string(), // TODO - use enum from db schema?
   message: z.union([z.string(), z.null()]),

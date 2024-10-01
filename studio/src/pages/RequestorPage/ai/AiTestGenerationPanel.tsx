@@ -54,8 +54,8 @@ export function AiTestGenerationPanel({
   const prompt = usePrompt(lastMatchingRequest, userInput);
 
   return (
-    <div className="overflow-hidden h-full relative border-l">
-      <div className="w-full">
+    <div className="overflow-x-hidden h-full relative border-l">
+      <div className="w-full max-w-[1000px]">
         <h3 className="">Close the Loop</h3>
         <div className="text-sm text-muted-foreground py-2">
           Describe the problem you encountered or a test you wish to write. FPX

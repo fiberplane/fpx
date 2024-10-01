@@ -16,54 +16,12 @@ export function useOrphanLogs(traceId: string, spans: Array<OtelSpan>) {
     const orphans: MizuOrphanLog[] = [];
     for (const span of spans ?? []) {
       if (span.events) {
-        for (const event of span.events) {
-          switch (event.name) {
-            case "log": {
-              let args =
-                safeParseJson(getString(event.attributes.arguments)) || [];
-              if (!Array.isArray(args)) {
-                args = [args];
-              }
-              // TODO - Use a more deterministic ID - preferably string that includes the trace+span+event_index
-              const logId = Math.floor(Math.random() * 1000000);
-              const orphanLog = convertLogEventToOrphanLog(
-                traceId,
-                logId,
-                event,
-                span.span_id,
-              );
-              // HACK - We want to be sure that we construct a valid orphan log, otherwise the UI will break
-              if (isMizuOrphanLog(orphanLog)) {
-                orphans.push(orphanLog);
-              } else {
-                console.error("Constructed invalid orphan log", orphanLog);
-              }
-              break;
-            }
-            case "exception": {
-              // Convert the exception event to a log event
-              const logId = Math.floor(Math.random() * 1000000);
-              const orphanLog = convertExceptionEventToOrphanLog(
-                traceId,
-                logId,
-                event,
-                span.span_id,
-              );
-              // console.log("event", event, orphanLog);
-
-              // HACK - We want to be sure that we construct a valid orphan log, otherwise the UI will break
-              if (isMizuOrphanLog(orphanLog)) {
-                orphans.push(orphanLog);
-              } else {
-                console.error("Constructed invalid orphan log", orphanLog);
-              }
-              break;
-            }
-            default: {
-              // TODO - Visualize other types of events on the timeline?
-            }
-          }
-        }
+        const logs = convertEventsToOrphanLogs(
+          span.events,
+          traceId,
+          span.span_id,
+        );
+        orphans.push(...logs);
       }
     }
     return orphans;
@@ -72,10 +30,68 @@ export function useOrphanLogs(traceId: string, spans: Array<OtelSpan>) {
   return orphanLogs;
 }
 
+export function convertEventsToOrphanLogs(
+  events: OtelEvent[],
+  traceId: string,
+  spanId: string,
+) {
+  const orphans: MizuOrphanLog[] = [];
+  // if (span.events) {
+  for (const event of events) {
+    switch (event.name) {
+      case "log": {
+        let args = safeParseJson(getString(event.attributes.arguments)) || [];
+        if (!Array.isArray(args)) {
+          args = [args];
+        }
+        // TODO - Use a more deterministic ID - preferably string that includes the trace+span+event_index
+        const logId = Math.floor(Math.random() * 1000000);
+        const orphanLog = convertLogEventToOrphanLog(
+          traceId,
+          logId,
+          event,
+          spanId,
+        );
+        // HACK - We want to be sure that we construct a valid orphan log, otherwise the UI will break
+        if (isMizuOrphanLog(orphanLog)) {
+          orphans.push(orphanLog);
+        } else {
+          console.error("Constructed invalid orphan log", orphanLog);
+        }
+        break;
+      }
+      case "exception": {
+        // Convert the exception event to a log event
+        const logId = Math.floor(Math.random() * 1000000);
+        const orphanLog = convertExceptionEventToOrphanLog(
+          traceId,
+          logId,
+          event,
+          spanId,
+        );
+        // console.log("event", event, orphanLog);
+
+        // HACK - We want to be sure that we construct a valid orphan log, otherwise the UI will break
+        if (isMizuOrphanLog(orphanLog)) {
+          orphans.push(orphanLog);
+        } else {
+          console.error("Constructed invalid orphan log", orphanLog);
+        }
+        break;
+      }
+      default: {
+        // TODO - Visualize other types of events on the timeline?
+      }
+    }
+  }
+  // }
+  return orphans;
+}
+
 /**
  * Converts an Otel event to a so-called Orphan Log to maintain backwards compatibility with the old Mizu data format
  */
-function convertLogEventToOrphanLog(
+export function convertLogEventToOrphanLog(
   traceId: string,
   logId: number,
   event: OtelEvent,
@@ -97,17 +113,12 @@ function convertLogEventToOrphanLog(
   };
 }
 
-function convertExceptionEventToOrphanLog(
+export function convertExceptionEventToOrphanLog(
   traceId: string,
   logId: number,
   event: OtelEvent,
   spanId: string,
 ): MizuOrphanLog {
-  // const argsAsString = getString(event.attributes.arguments);
-  // const parsedArgs = argsAsString ? safeParseJson(argsAsString) : [];
-  // const message = {
-  //   stack: stackTrace ? parseStackTrace(stackTrace) :
-  // }
   const stackTrace = getString(event.attributes[SEMATTRS_EXCEPTION_STACKTRACE]);
   const callerLocation = stackTrace
     ? parse(stackTrace).map(
@@ -136,5 +147,6 @@ function convertExceptionEventToOrphanLog(
     createdAt: event.timestamp,
     updatedAt: event.timestamp,
     relatedSpanId: spanId,
+    isException: true,
   };
 }

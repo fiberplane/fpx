@@ -37,7 +37,8 @@ export function RequestorTimeline({ traceId = "" }: Props) {
   // });
 
   return (
-    <div className="overflow-hidden">
+    // <div className="overflow-y-auto max-y-full">
+    <div className="overflow-x-hidden h-full">
       {waterfall.length === 0 ? (
         <TimelineEmptyState />
       ) : (

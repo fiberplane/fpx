@@ -277,10 +277,11 @@ function setupTracerProvider(options: {
     url: options.endpoint,
   });
   provider.addSpanProcessor(
-    new BatchSpanProcessor(exporter, {
-      maxQueueSize: 1000,
-      scheduledDelayMillis: 2,
-    }),
+    new SimpleSpanProcessor(exporter),
+    // new BatchSpanProcessor(exporter, {
+    //   maxQueueSize: 1000,
+    //   scheduledDelayMillis: 2,
+    // }),
   );
   provider.register();
   return provider;

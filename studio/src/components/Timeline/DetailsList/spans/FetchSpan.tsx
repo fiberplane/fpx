@@ -18,19 +18,15 @@ import {
   isOpenAIVendorInfo,
 } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
-import { ClockIcon } from "@radix-ui/react-icons";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
-import { useTimelineIcon } from "../../hooks";
-import { CollapsibleSubSection, SectionHeading } from "../../shared";
+import { CollapsibleSubSection } from "../../shared";
 import { SubSection, SubSectionHeading } from "../../shared";
 import { CollapsibleKeyValueTableV2 } from "../KeyValueTableV2";
 import { TextOrJsonViewer } from "../TextJsonViewer";
 
-export function FetchSpan({
-  span,
-  vendorInfo,
-}: { span: OtelSpan; vendorInfo: VendorInfo }) {
+type Props = { span: OtelSpan; vendorInfo: VendorInfo; isExpanded?: boolean };
+export function FetchSpan({ span, vendorInfo, isExpanded = false }: Props) {
   const id = span.span_id;
 
   const method = getRequestMethod(span);
@@ -51,33 +47,21 @@ export function FetchSpan({
     return getResponseBody(span) ?? "";
   }, [span]);
 
-  const duration = useMemo(() => {
-    try {
-      const duration =
-        new Date(span.end_time).getTime() - new Date(span.start_time).getTime();
-      return duration;
-    } catch (e) {
-      return null;
-    }
-  }, [span]);
-
   const url = getRequestUrl(span);
 
-  const { component, title } = useVendorSpecificSection(vendorInfo) ?? {};
-  const icon = useTimelineIcon(span, { vendorInfo });
+  const { component } = useVendorSpecificSection(vendorInfo) ?? {};
+
   return (
     <GenericFetchSpan
-      icon={icon}
       id={id}
-      title={title}
       statusCode={getStatusCode(span)}
-      duration={duration}
       method={method}
       url={url}
       requestHeaders={requestHeaders}
       requestBody={requestBody}
       responseHeaders={responseHeaders}
       responseBody={responseBody}
+      isExpanded={isExpanded}
     >
       {component}
     </GenericFetchSpan>
@@ -86,105 +70,97 @@ export function FetchSpan({
 
 type GenericFetchSpanProps = {
   id: string;
-  title?: string;
   statusCode: number;
-  duration: number | null;
   method: string;
   url: string;
   requestHeaders: Record<string, string>;
   requestBody?: string;
   responseHeaders: Record<string, string>;
   responseBody?: string;
-  icon?: React.ReactNode;
   children?: React.ReactNode;
+  isExpanded?: boolean;
 };
 
 function GenericFetchSpan({
   id,
-  title,
   statusCode,
-  duration,
   method,
   url,
   requestHeaders,
   requestBody,
   responseHeaders,
   responseBody,
-  icon,
   children,
+  isExpanded,
 }: GenericFetchSpanProps) {
   return (
     <div id={id}>
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-2">
-          <SectionHeading className="grid grid-cols-[24px_1fr] gap-2 items-center">
-            {icon} {title || "Fetch"}
-            <div className="text-gray-400 text-xs w-12 px-2">{duration}ms</div>
-          </SectionHeading>
-          <div className="flex gap-2 flex-wrap">
-            <div className="inline-flex gap-2 font-mono py-1 text-xs  px-2 bg-accent/80 rounded">
+          <div className="flex gap-2 flex-wrap items-center">
+            {statusCode !== undefined && <Status statusCode={statusCode} />}
+            <div className="inline-flex gap-2 font-mono py-1 text-xs  px-2 bg-accent/80 rounded text-muted-foreground">
               <span className={cn("uppercase", getHttpMethodTextColor(method))}>
                 {method}
               </span>
               {url}
             </div>
-            <div className="inline-flex gap-2 font-mono text-gray-400 py-1 px-2 text-xs bg-accent/80 rounded">
-              <ClockIcon className="w-4 h-4" />
-              <span className=" font-light">{duration}ms</span>
+          </div>
+        </div>
+
+        {isExpanded && (
+          <div>
+            {children}
+
+            <div className="px-2">
+              <SubSectionHeading>Request</SubSectionHeading>
+              <div>
+                <SubSection>
+                  <CollapsibleKeyValueTableV2
+                    keyValue={requestHeaders}
+                    title="Headers"
+                    sensitiveKeys={SENSITIVE_HEADERS}
+                  />
+                </SubSection>
+
+                {requestBody && (
+                  <>
+                    <CollapsibleSubSection heading="Request Body">
+                      <TextOrJsonViewer
+                        text={requestBody}
+                        textMaxPreviewLines={15}
+                      />
+                    </CollapsibleSubSection>
+                  </>
+                )}
+              </div>
             </div>
-            {statusCode !== undefined && <Status statusCode={statusCode} />}
-          </div>
-        </div>
 
-        {children}
-
-        <div className="px-2">
-          <SubSectionHeading>Request</SubSectionHeading>
-          <div>
-            <SubSection>
-              <CollapsibleKeyValueTableV2
-                keyValue={requestHeaders}
-                title="Headers"
-                sensitiveKeys={SENSITIVE_HEADERS}
-              />
-            </SubSection>
-
-            {requestBody && (
-              <>
-                <CollapsibleSubSection heading="Request Body">
-                  <TextOrJsonViewer
-                    text={requestBody}
-                    textMaxPreviewLines={15}
+            <div className="px-2">
+              <SubSectionHeading>Response</SubSectionHeading>
+              <div>
+                <SubSection>
+                  <CollapsibleKeyValueTableV2
+                    keyValue={responseHeaders}
+                    title="Headers"
+                    sensitiveKeys={SENSITIVE_HEADERS}
                   />
-                </CollapsibleSubSection>
-              </>
-            )}
-          </div>
-        </div>
+                </SubSection>
 
-        <div className="px-2">
-          <SubSectionHeading>Response</SubSectionHeading>
-          <div>
-            <SubSection>
-              <CollapsibleKeyValueTableV2
-                keyValue={responseHeaders}
-                title="Headers"
-                sensitiveKeys={SENSITIVE_HEADERS}
-              />
-            </SubSection>
-
-            {responseBody && (
-              <>
-                <CollapsibleSubSection heading="Body">
-                  <TextOrJsonViewer
-                    text={responseBody}
-                    textMaxPreviewLines={15}
-                  />
-                </CollapsibleSubSection>
-              </>
-            )}
+                {responseBody && (
+                  <>
+                    <CollapsibleSubSection heading="Body">
+                      <TextOrJsonViewer
+                        text={responseBody}
+                        textMaxPreviewLines={15}
+                      />
+                    </CollapsibleSubSection>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -6,30 +6,40 @@ import {
 import { cn } from "@/utils";
 
 import * as React from "react";
+import { DurationContainer } from "./DurationContainer";
 
 export function DurationIndicator(props: {
   itemStartTime: number;
   itemDuration: number;
   traceDuration: number;
   traceStartTime: number;
+  isActive?: boolean;
+  level?: "info" | "warn" | "error";
 }) {
-  const { itemDuration, itemStartTime, traceDuration, traceStartTime } = props;
+  const {
+    itemDuration,
+    itemStartTime,
+    traceDuration,
+    traceStartTime,
+    isActive,
+    level = "info",
+  } = props;
   const normalizedDuration = itemDuration / traceDuration;
   const percentageWidth =
     traceDuration === 0 ? 100 : (normalizedDuration * 100).toFixed(6);
-  // const lineWidth = `calc(${-4 * 0.0625}rem + ${percentageWidth}%)`;
-  const lineWidth = `calc(${2 * 0.0625}rem + ${percentageWidth}%)`;
+  const lineWidth = `${percentageWidth}%`;
 
   const lineOffsetNumeric =
     traceDuration === 0
       ? 0
       : ((itemStartTime - traceStartTime) / traceDuration) * 100;
   // const lineOffset = `calc(${lineOffsetNumeric.toFixed(4)}% + ${2 * 0.0625}rem)`;
-  const lineOffset = `calc(${lineOffsetNumeric.toFixed(4)}% - ${0 * 0.0625}rem)`;
+  // const lineOffset = `calc(${lineOffsetNumeric.toFixed(4)}% - ${0 * 0.0625}rem)`;
+  const lineOffset = `${lineOffsetNumeric.toFixed(4)}%`;
 
   const [visible, setVisible] = React.useState(false);
   return (
-    <div className="pl-1 pr-1.5 bg-muted/40 rounded hover hover:bg-primary/20">
+    <DurationContainer className="pl-1.5 pr-1.5">
       <Tooltip open={visible}>
         <div
           className={cn(
@@ -39,7 +49,8 @@ export function DurationIndicator(props: {
             "data-[highlighted=true]:bg-primary/10",
             "transition-all ",
             "relative min-w-0",
-            "pt-1",
+            "max-w-full",
+            // "pt-0.5",
           )}
         >
           <TooltipTrigger
@@ -51,7 +62,11 @@ export function DurationIndicator(props: {
             <div>
               <div
                 className={cn(
-                  "h-4 border border-blue-700 bg-blue-950 flex items-center min-w-0 absolute rounded",
+                  // `h-4 border border-${levelToColor(level)}-700 bg-${levelToColor(level)}-950 flex items-center min-w-0 absolute rounded`,
+                  `h-4 border border-${levelToColor(level)}-${isActive ? 600 : 700} bg-${levelToColor(level)}-${isActive && level !== "info" ? 950 : 950} flex items-center min-w-0 absolute rounded`,
+                  // (isActive || level !== "info") && `bg-${levelToColor(level)}-900 border-${levelToColor(level)}-500`,
+                  "max-w-full",
+                  // "bg-red-900"
                 )}
                 style={{ width: lineWidth, marginLeft: lineOffset }}
               >
@@ -67,6 +82,17 @@ export function DurationIndicator(props: {
           duration: {itemDuration}ms
         </TooltipContent>
       </Tooltip>
-    </div>
+    </DurationContainer>
   );
 }
+
+export const levelToColor = (level: "info" | "warn" | "error") => {
+  switch (level) {
+    case "info":
+      return "blue";
+    case "warn":
+      return "yellow";
+    case "error":
+      return "red";
+  }
+};
