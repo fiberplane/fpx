@@ -1,5 +1,5 @@
-import { Hono, type HonoRequest } from "hono";
 import { instrument } from "@fiberplane/hono-otel";
+import { Hono, type HonoRequest } from "hono";
 import otherRouter from "./other-router";
 import { getAuthHeader, getRandomHeader } from "./utils";
 
