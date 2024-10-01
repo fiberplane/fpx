@@ -14,6 +14,11 @@ const projectRoot = path.resolve(
 
 const srcPath = path.resolve(projectRoot, "src");
 
+// Skip source map search for tests
+// Typically, we want to also look for a handler defintion in the source map of compiled ts code,
+// but this adds unnecessary time to the test suite and could introduce flakiness.
+const SKIP_SOURCE_MAP_SEARCH = { skipSourceMap: true };
+
 // A function in `<root>/app/src/index.ts` that has a constant identifier that is out of scope
 const functionWithConstant = `(c) => {
   const auth = c.req.header("Authorization");
@@ -66,7 +71,11 @@ const functionWithDrizzle = `(c) => {
 describe("expandFunction: testing on the test-static-analysis project", () => {
   describe("single file - app/src/index.ts", () => {
     it("should return the function location and definition of a constant identifier that is out of scope", async () => {
-      const result = await expandFunction(projectRoot, functionWithConstant);
+      const result = await expandFunction(
+        projectRoot,
+        functionWithConstant,
+        SKIP_SOURCE_MAP_SEARCH,
+      );
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
@@ -81,7 +90,11 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     });
 
     it("should return the function location and definition of a function identifier that is out of scope", async () => {
-      const result = await expandFunction(projectRoot, functionWithHelper);
+      const result = await expandFunction(
+        projectRoot,
+        functionWithHelper,
+        SKIP_SOURCE_MAP_SEARCH,
+      );
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "index.ts"));
@@ -103,6 +116,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
       const result = await expandFunction(
         projectRoot,
         functionWithHelperInAnotherFile,
+        SKIP_SOURCE_MAP_SEARCH,
       );
 
       expect(result).not.toBeNull();
@@ -129,6 +143,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
       const result = await expandFunction(
         projectRoot,
         functionWithHelperWithConstant,
+        SKIP_SOURCE_MAP_SEARCH,
       );
 
       expect(result).not.toBeNull();
@@ -161,6 +176,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
       const result = await expandFunction(
         projectRoot,
         functionWithWebStandardGlobals,
+        SKIP_SOURCE_MAP_SEARCH,
       );
 
       expect(result).not.toBeNull();
@@ -208,7 +224,11 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
 
   describe("drizzle test (external packages)", () => {
     it("should report drizzle as an out of scope identifier and show its package name", async () => {
-      const result = await expandFunction(projectRoot, functionWithDrizzle);
+      const result = await expandFunction(
+        projectRoot,
+        functionWithDrizzle,
+        SKIP_SOURCE_MAP_SEARCH,
+      );
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "other-router.ts"));
@@ -229,7 +249,11 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     });
 
     it("should handle expansion of schema definition (drizzle schema)", async () => {
-      const result = await expandFunction(projectRoot, functionWithDrizzle);
+      const result = await expandFunction(
+        projectRoot,
+        functionWithDrizzle,
+        SKIP_SOURCE_MAP_SEARCH,
+      );
 
       expect(result).not.toBeNull();
 

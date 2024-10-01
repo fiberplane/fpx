@@ -75,14 +75,17 @@ export type ExpandedFunctionResult = {
  *
  * @param {string} projectRoot - The root directory of the project.
  * @param {string} func - The name of the function to expand.
+ * @param {Object} options - Optional parameters for the search.
+ * @param {boolean} options.skipSourceMap - If true, the source map search will be skipped. Useful for tests.
  * @returns {Promise<ExpandedFunctionResult | null>} A promise that resolves to the expanded function context
  *                                                     or `null` if the function is not found.
  */
 export async function expandFunction(
   projectRoot: string,
   func: string,
+  options: { skipSourceMap?: boolean } = {},
 ): Promise<ExpandedFunctionResult | null> {
-  const searchResult = await searchForFunction(projectRoot, func);
+  const searchResult = await searchForFunction(projectRoot, func, options);
   if (!searchResult) {
     logger.warn(`[expandFunction] No search result found for ${func}`);
     return null;

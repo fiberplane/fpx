@@ -3,65 +3,70 @@ import { getSourceFunctionText } from "./search-compiled-function.js";
 import type { SearchFunctionResult } from "./search-file.js";
 import { searchSourceFunction } from "./search-source-function.js";
 
-// TODO - Tidy this up
+/**
+ * Searches for a function within the project source code.
+ *
+ * This function attempts to locate a specified function within the project's source files.
+ * It performs two main searches:
+ *
+ * 1. Directly searches for the function string in the source.
+ * 2. Retrieves the source function text via a source map and searches using the mapped text.
+ *
+ * This is ripe for optimization.
+ *
+ * @param projectPath - The path to the project directory.
+ * @param functionString - The string representation of the function to search for.
+ * @param options - Optional parameters for the search.
+ * @param options.skipSourceMap - If true, the source map search will be skipped. Useful for tests.
+ * @returns A promise that resolves to a {@link SearchFunctionResult} if found, or `null` otherwise.
+ */
 export async function searchFunction(
   projectPath: string,
   functionString: string,
-) {
-  return Promise.all([
-    new Promise<SearchFunctionResult | null>((resolve) => {
-      try {
-        const result = searchSourceFunction(projectPath, functionString);
-        if (result) {
-          logger.debug(
-            `[searchFunction] Found function directly in source: ${result}`,
-          );
-        }
-        resolve(result);
-      } catch (error) {
-        logger.error(`Error searching for function: ${error}`);
-        resolve(null);
-      }
-    }),
-    new Promise<SearchFunctionResult | null>((resolve) => {
-      getSourceFunctionText(projectPath, functionString)
-        .then((sourceFunction) => {
-          logger.debug(
-            "[debug] [searchFunction] function text from source map:",
-            sourceFunction,
-          );
-          if (sourceFunction) {
-            try {
-              const result = searchSourceFunction(projectPath, sourceFunction);
-              if (result) {
-                logger.debug(
-                  `[searchFunction] Found function by mapping back to source: ${result}`,
-                );
-              }
-              resolve(result);
-            } catch (error) {
-              logger.error(`Error searching for function: ${error}`);
-              resolve(null);
-            }
-          } else {
-            logger.debug(
-              "[searchFunction] No source function found via source map",
-            );
-            resolve(null);
-          }
-        })
-        .catch((error) => {
-          logger.error(`Error searching for function: ${error}`);
-          resolve(null);
-        });
-    }),
-  ]).then((results) => {
-    logger.debug(
-      "[debug][searchFunction] results",
-      results.map((result) => (result ? result.file : null)),
+  options: { skipSourceMap?: boolean } = {},
+): Promise<SearchFunctionResult | null> {
+  // Attempt to search the function directly in the source.
+  try {
+    const directResult = await searchSourceFunction(
+      projectPath,
+      functionString,
     );
-    return results.find(
-      (result) => result !== null,
-    ) as SearchFunctionResult | null;
-  });
+    if (directResult) {
+      return directResult;
+    }
+  } catch (error) {
+    logger.error(`Error searching for function directly in source: ${error}`);
+  }
+
+  if (options.skipSourceMap) {
+    return null;
+  }
+
+  // Attempt to retrieve the source function text via a source map and search.
+  try {
+    const sourceFunction = await getSourceFunctionText(
+      projectPath,
+      functionString,
+    );
+    if (sourceFunction) {
+      try {
+        const mappedResult = await searchSourceFunction(
+          projectPath,
+          sourceFunction,
+        );
+        if (mappedResult) {
+          return mappedResult;
+        }
+      } catch (error) {
+        logger.error(
+          `Error searching for function via source mapping: ${error}`,
+        );
+      }
+    }
+  } catch (error) {
+    logger.error(`Error retrieving source function text: ${error}`);
+  }
+
+  // If the function was not found in either search, return null.
+  return null;
 }

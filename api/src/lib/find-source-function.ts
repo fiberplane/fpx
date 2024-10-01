@@ -124,38 +124,13 @@ export async function findSourceFunction(
     async (loc) => {
       const functionStartLine = loc?.startLine ?? 0;
       const functionStartColumn = loc?.startColumn ?? 0;
-      console.log(
-        "[debug][findSourceFunction] functionStartLine",
-        functionStartLine,
-      );
-      console.log(
-        "[debug][findSourceFunction] functionStartColumn",
-        functionStartColumn,
-      );
       const functionEndLine = loc?.endLine ?? 0;
       const functionEndColumn = loc?.endColumn ?? 0;
-      console.log(
-        "[debug][findSourceFunction] functionEndLine",
-        functionEndLine,
-      );
-      console.log(
-        "[debug][findSourceFunction] functionEndColumn",
-        functionEndColumn,
-      );
 
       const [sourceFunctionStart, sourceFunctionEnd] = await Promise.all([
         findOriginalSource(jsFilePath, functionStartLine, functionStartColumn),
         findOriginalSource(jsFilePath, functionEndLine, functionEndColumn),
       ]);
-
-      console.log(
-        "[debug][findSourceFunction] sourceFunctionStart",
-        sourceFunctionStart,
-      );
-      console.log(
-        "[debug][findSourceFunction] sourceFunctionEnd",
-        sourceFunctionEnd,
-      );
 
       const sourceContent = sourceFunctionStart.sourceContent ?? "";
       const startLine = sourceFunctionStart.line;
@@ -187,7 +162,6 @@ export async function findSourceFunction(
         })
         .join("\n");
 
-      // console.log('Function source:', sourceFunction)
       return sourceFunction;
     },
   );
