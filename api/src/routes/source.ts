@@ -5,7 +5,7 @@ import { cors } from "hono/cors";
 import { SourceMapConsumer } from "source-map";
 import { z } from "zod";
 
-import { findSourceFunction } from "../lib/find-source-function.js";
+import { findSourceFunction } from "../lib/find-source-function/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();

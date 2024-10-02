@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import logger from "../../../logger.js";
-import { findSourceFunction } from "../../find-source-function.js";
+import { findSourceFunction } from "../../find-source-function/index.js";
 
 /**
  * Retrieves the source function text from the compiled JavaScript directory.

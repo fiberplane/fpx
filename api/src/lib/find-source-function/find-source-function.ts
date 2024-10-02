@@ -86,20 +86,20 @@ async function findFunctionByDefinition(
 }
 
 /**
- * This function will throw an error if the
+ * This function will throw an error if the map file is not valid json
  */
 async function findOriginalSource(
   jsFile: string,
   line: number,
   column: number,
 ) {
-  const mapFile = `${jsFile}.map`; // Adjust if your source map is located elsewhere
+  const mapFile = `${jsFile}.map`;
   const sourceMapContent = JSON.parse(fs.readFileSync(mapFile, "utf8"));
 
   return await SourceMapConsumer.with(sourceMapContent, null, (consumer) => {
     const pos = consumer.originalPositionFor({
-      line: line, // Line number from JS file
-      column: column, // Column number from JS file
+      line, // Line number from JS file
+      column, // Column number from JS file
     });
 
     consumer.destroy();
@@ -145,9 +145,9 @@ export async function findSourceFunction(
         return returnNullOnMissing ? null : sourceContent;
       }
 
-      const sourceFunction = sourceContent
-        .split("\n")
-        .slice(startLine - 1, endLine)
+      const lines = sourceContent.split("\n").slice(startLine - 1, endLine);
+      // console.log("lines", lines);
+      const sourceFunction = lines
         .map((line, index) => {
           if (index === 0 && startLine === endLine) {
             return line.slice(startColumn ?? 0, endColumn ?? 0);
@@ -156,7 +156,13 @@ export async function findSourceFunction(
             return line.slice(startColumn ?? 0);
           }
           if (index === endLine - startLine) {
-            return line.slice(0, endColumn ?? 0);
+            // MEGA HACK - Add 1 to the end column only if it ends in a comma
+            // I don't know what was causing this issue, but when we parse the source code,
+            // we need to account for the fact that the original source code might have
+            // trailing commas in functions that are passed as arguments to other functions.
+            // In that case, we need to add 1 to the end column to account for something that gets odd when receiving the location back.
+            const endsInComma = line.endsWith(",");
+            return line.slice(0, (endColumn ?? 0) + (endsInComma ? 1 : 0));
           }
           return line;
         })
