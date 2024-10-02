@@ -83,7 +83,9 @@ export function analyzeOutOfScopeIdentifiers(
         addDeclaration(node.name.text);
       }
 
-      ts.forEachChild(node, traverse);
+      if (node.body) {
+        traverse(node.body);
+      }
 
       popScope();
       return;
@@ -92,7 +94,9 @@ export function analyzeOutOfScopeIdentifiers(
     if (ts.isBlock(node)) {
       pushScope();
 
-      ts.forEachChild(node, traverse);
+      for (const statement of node.statements) {
+        traverse(statement);
+      }
 
       popScope();
       return;
@@ -101,19 +105,77 @@ export function analyzeOutOfScopeIdentifiers(
     if (ts.isVariableStatement(node)) {
       for (const decl of node.declarationList.declarations) {
         collectBindings(decl.name);
+        if (decl.initializer) {
+          traverse(decl.initializer);
+        }
       }
-    } else if (ts.isVariableDeclaration(node)) {
-      collectBindings(node.name);
-    } else if (ts.isParameter(node)) {
-      collectBindings(node.name);
-    } else if (ts.isIdentifier(node)) {
-      if (!isDeclared(node.text)) {
-        const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-        usedIdentifiers.set(node.text, pos);
-      }
+      return;
     }
 
-    ts.forEachChild(node, traverse);
+    if (ts.isVariableDeclaration(node)) {
+      collectBindings(node.name);
+      if (node.initializer) {
+        traverse(node.initializer);
+      }
+      return;
+    }
+
+    if (ts.isPropertyAccessExpression(node)) {
+      // Traverse the base expression
+      traverse(node.expression);
+
+      // Handle the property name
+      if (!isDeclared(node.name.text)) {
+        const pos = sourceFile.getLineAndCharacterOfPosition(node.name.getStart());
+        usedIdentifiers.set(node.name.text, pos);
+      }
+
+      return;
+    }
+
+    if (ts.isElementAccessExpression(node)) {
+      // Traverse the object and the index expression
+      traverse(node.expression);
+      traverse(node.argumentExpression);
+      return;
+    }
+
+    if (ts.isCallExpression(node)) {
+      // Traverse the function being called and its arguments
+      traverse(node.expression);
+      for (const arg of node.arguments) {
+        traverse(arg);
+      }
+      return;
+    }
+
+    if (ts.isIdentifier(node)) {
+      const parent = node.parent;
+      const name = node.text;
+
+      // Ignore property names in property assignments and declarations
+      const isIgnoredPropertyName =
+        (ts.isPropertyAssignment(parent) && parent.name === node) ||
+        (ts.isShorthandPropertyAssignment(parent) && parent.name === node) ||
+        (ts.isBindingElement(parent) && parent.propertyName === node) ||
+        (ts.isPropertyDeclaration(parent) && parent.name === node) ||
+        (ts.isMethodDeclaration(parent) && parent.name === node) ||
+        (ts.isClassDeclaration(parent) && parent.name === node);
+
+      if (isIgnoredPropertyName) {
+        // The identifier is a property name in an assignment or declaration; ignore it
+        return;
+      }
+
+      if (!isDeclared(name)) {
+        const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+        usedIdentifiers.set(name, pos);
+      }
+      return;
+    }
+
+    // For all other nodes, continue traversal
+    node.forEachChild(traverse);
   }
 
   function collectBindings(name: ts.BindingName) {
@@ -141,7 +203,11 @@ export function analyzeOutOfScopeIdentifiers(
     addDeclaration(functionNode.name.text);
   }
 
-  traverse(functionNode);
+  if (functionNode.body) {
+    traverse(functionNode.body);
+  }
+
+  popScope();
 
   // Convert the map to an array of OutOfScopeIdentifier objects
   return Array.from(usedIdentifiers, ([name, position]) => ({

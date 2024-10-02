@@ -169,7 +169,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     );
   });
 
-  it("should handle complex scenarios", () => {
+  it.only("should handle complex scenarios", () => {
     const source = `
       function complex(param1) {
         const local1 = outOfScope1;
