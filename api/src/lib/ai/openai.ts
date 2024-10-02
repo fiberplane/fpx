@@ -19,6 +19,7 @@ type GenerateRequestOptions = {
     method: string;
     path: string;
   }[];
+  middlewareContext?: string;
 };
 
 /**
@@ -40,6 +41,7 @@ export async function generateRequestWithOpenAI({
   history,
   openApiSpec,
   middleware,
+  middlewareContext,
 }: GenerateRequestOptions) {
   logger.debug(
     "Generating request data with OpenAI",
@@ -52,6 +54,7 @@ export async function generateRequestWithOpenAI({
     `handlerContext: ${handlerContext}`,
     `openApiSpec: ${openApiSpec}`,
     `middleware: ${middleware}`,
+    `middlewareContext: ${middlewareContext}`,
   );
   const openaiClient = new OpenAI({ apiKey, baseURL: baseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
@@ -63,6 +66,7 @@ export async function generateRequestWithOpenAI({
     history,
     openApiSpec,
     middleware,
+    middlewareContext,
   });
 
   const response = await openaiClient.chat.completions.create({

@@ -26,6 +26,7 @@ type GenerateRequestOptions = {
     method: string;
     path: string;
   }[];
+  middlewareContext?: string;
 };
 
 /**
@@ -47,6 +48,7 @@ export async function generateRequestWithAnthropic({
   history,
   openApiSpec,
   middleware,
+  middlewareContext,
 }: GenerateRequestOptions) {
   logger.debug(
     "Generating request data with Anthropic",
@@ -70,6 +72,7 @@ export async function generateRequestWithAnthropic({
     history,
     openApiSpec,
     middleware,
+    middlewareContext,
   });
 
   const toolChoice: Anthropic.Messages.MessageCreateParams.ToolChoiceTool = {

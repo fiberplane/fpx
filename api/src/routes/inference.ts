@@ -66,8 +66,10 @@ app.post(
     }
 
     // Expand out of scope identifiers in the handler function, to add as additional context
-    const expandedFunction = await expandFunctionInUserProject(handler);
-    const handlerContext = transformExpandedFunction(expandedFunction);
+    const [handlerContext, middlewareContext] = await buildAiContext(
+      handler,
+      middleware,
+    );
     // Generate the request
     const { data: parsedArgs, error: generateError } =
       await generateRequestWithAiProvider({
@@ -79,7 +81,8 @@ app.post(
         handlerContext,
         history: history ?? undefined,
         openApiSpec: openApiSpec ?? undefined,
-        middleware: middleware ? middleware : undefined,
+        middleware: middleware ?? undefined,
+        middlewareContext: middlewareContext ?? undefined,
       });
 
     if (generateError) {
@@ -154,6 +157,29 @@ app.post(
 
 export default app;
 
+async function buildAiContext(
+  handler: string,
+  middleware:
+    | Array<{
+        handler: string;
+      }>
+    | undefined
+    | null,
+) {
+  // Expand out of scope identifiers in the handler function, to add as additional context
+  return Promise.all([
+    buildHandlerContext(handler),
+    middleware
+      ? buildMiddlewareContext(middleware)
+      : Promise.resolve(undefined),
+  ]);
+}
+
+async function buildHandlerContext(handler: string) {
+  const expandedFunction = await expandFunctionInUserProject(handler);
+  return transformExpandedFunction(expandedFunction);
+}
+
 /**
  * Expand a handler function's out-of-scope identifiers to help with ai request generation
  *
@@ -163,11 +189,9 @@ export default app;
  * @returns The handler function location with certain out-of-scope identifiers expanded
  */
 async function expandFunctionInUserProject(handler: string) {
-  // HACK - Assume we're in the project root for now
-  //        We should either pick this up via an environment variable (from the CLI)
-  //        or allow it to be set in settings.
   const projectRoot = USER_PROJECT_ROOT_DIR;
-  const truncatedHandler = handler.slice(0, 33);
+
+  const truncatedHandler = handler.replace(/\n/g, " ").slice(0, 33);
   logger.debug(
     `Expanding function ${truncatedHandler}... in project root ${projectRoot}`,
   );
@@ -176,6 +200,12 @@ async function expandFunctionInUserProject(handler: string) {
   return expandedFunction;
 }
 
+/**
+ * Transform the expanded function into a string that can be used in the LLM's context.
+ *
+ * @param expandedFunction - The expanded function context
+ * @returns The transformed expanded function context
+ */
 function transformExpandedFunction(
   expandedFunction: ExpandedFunctionResult | null,
 ): string | undefined {
@@ -226,4 +256,31 @@ ${indent}</entry>`;
   return `<expanded-function>
 ${stringifyContext(expandedFunction.context)}
 </expanded-function>`;
+}
+
+/**
+ * Build the middleware context from the middleware functions.
+ *
+ * Recursively expands middleware functions' out of scope identifiers
+ * and transforms them into a string that can be used in the LLM's context.
+ *
+ * @param middleware - The middleware functions
+ * @returns The middleware context
+ */
+async function buildMiddlewareContext(
+  middleware: Array<{
+    handler: string;
+  }>,
+): Promise<string | undefined> {
+  if (!middleware || !middleware.length) {
+    return undefined;
+  }
+
+  const expandedMiddleware = await Promise.all(
+    middleware.map(({ handler }) => expandFunctionInUserProject(handler)),
+  );
+
+  return `<middleware>
+${expandedMiddleware.map(transformExpandedFunction).join("\n")}
+</middleware>`;
 }

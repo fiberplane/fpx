@@ -12,6 +12,7 @@ export async function generateRequestWithAiProvider({
   history,
   openApiSpec,
   middleware,
+  middlewareContext,
 }: {
   inferenceConfig: Settings;
   persona: string;
@@ -26,6 +27,7 @@ export async function generateRequestWithAiProvider({
     method: string;
     path: string;
   }[];
+  middlewareContext?: string;
 }) {
   const {
     openaiApiKey,
@@ -49,6 +51,7 @@ export async function generateRequestWithAiProvider({
       history,
       openApiSpec,
       middleware,
+      middlewareContext,
     }).then(
       (parsedArgs) => {
         return { data: parsedArgs, error: null };
@@ -74,6 +77,7 @@ export async function generateRequestWithAiProvider({
       history,
       openApiSpec,
       middleware,
+      middlewareContext,
     }).then(
       (parsedArgs) => {
         return { data: parsedArgs, error: null };
