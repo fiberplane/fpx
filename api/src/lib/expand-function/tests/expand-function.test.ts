@@ -191,9 +191,9 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
 
       expect(result).not.toBeNull();
       expect(result?.file).toBe(path.resolve(srcPath, "other-router.ts"));
-      expect(result?.startLine).toBe(11);
+      expect(result?.startLine).toBe(12);
       expect(result?.startColumn).toBe(14);
-      expect(result?.endLine).toBe(15);
+      expect(result?.endLine).toBe(16);
       expect(result?.endColumn).toBe(2);
 
       // NOTE - `console` maps back to `@cloudflare/workers-types`'s declaration file (.d.ts)
@@ -232,7 +232,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     });
   });
 
-  describe.only("drizzle test (external packages)", () => {
+  describe("drizzle test (external packages)", () => {
     it("should report drizzle as an out of scope identifier and show its package name", async () => {
       const result = await expandFunction(
         projectRoot,
@@ -335,7 +335,7 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
     //             So expected behavior for now is that when you use
     //             `import * as schema from "./db"` and
     //             `schema.stuff` in a function, we expand to the entire schema definition
-    it.only("TEMP should handle expansion of entire schema definition (drizzle schema) for `schema.stuff`", async () => {
+    it("TEMP should handle expansion of entire schema definition (drizzle schema) for `schema.stuff`", async () => {
       const result = await expandFunction(
         projectRoot,
         functionWithDrizzleSchemaStuff,
@@ -349,7 +349,15 @@ describe("expandFunction: testing on the test-static-analysis project", () => {
           expect.objectContaining({
             name: "schema",
             definition: expect.objectContaining({
-              text: `ENTIRE SCHEMA FILE ${"TODO"}`.trim(),
+              text: `import { sql } from "drizzle-orm";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const stuff = sqliteTable("stuff", {
+  id: integer("id", { mode: "number" }).primaryKey(),
+  foo: text("foo").notNull(),
+  createdAt: text("created_at").notNull().default(sql\`(CURRENT_TIMESTAMP)\`),
+  updatedAt: text("updated_at").notNull().default(sql\`(CURRENT_TIMESTAMP)\`),
+});\n`,
             }),
           }),
         ]),

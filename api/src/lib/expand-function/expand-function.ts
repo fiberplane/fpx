@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import ts from "typescript";
 import logger from "../../logger.js";
 import {
@@ -7,7 +9,7 @@ import {
   getDefinitionText,
   getParentImportDeclaration,
 } from "./ast-helpers/index.js";
-import { contextForImport } from "./imports/index.js";
+import { contextForImport, resolveModulePath } from "./imports/index.js";
 import { searchFunction } from "./search-function/index.js";
 import {
   getFileUri,
@@ -184,6 +186,72 @@ async function extractContext(
             parentImportDeclaration &&
             ts.isImportDeclaration(parentImportDeclaration)
           ) {
+            const importClause = parentImportDeclaration.importClause;
+
+            // Check if it's a namespace import (e.g., import * as schema from "./db")
+            if (
+              importClause?.namedBindings &&
+              ts.isNamespaceImport(importClause.namedBindings)
+            ) {
+              const namespaceName = importClause.namedBindings.name.text;
+              const moduleSpecifier = parentImportDeclaration.moduleSpecifier
+                .getText()
+                .replace(/['"]/g, "");
+
+              // Resolve the imported module's file path using a utility that can account for TypeScript path aliases
+              const importedFilePath = resolveModulePath(
+                moduleSpecifier,
+                filePath,
+                projectRoot,
+              );
+
+              if (!importedFilePath) {
+                logger.warn(
+                  `[extractContext] Failed to resolve imported file path for ${identifier.name}`,
+                );
+                continue;
+              }
+
+              // Read the contents of the imported file
+              let importedFileContent: string;
+              try {
+                importedFileContent = await fs.promises.readFile(
+                  importedFilePath,
+                  "utf-8",
+                );
+              } catch (readError) {
+                logger.warn(
+                  `[extractContext] Failed to read imported file at ${importedFilePath} for namespace import ${namespaceName}`,
+                  readError,
+                );
+                continue;
+              }
+
+              // Create a context entry with the entire file's contents
+              const contextEntry: ExpandedFunctionContextEntry = {
+                name: namespaceName,
+                type: "unknown",
+                position: identifier.position,
+                definition: {
+                  uri: getFileUri(importedFilePath),
+                  range: {
+                    start: { line: 0, character: 0 },
+                    end: {
+                      line: Number.MAX_SAFE_INTEGER,
+                      character: Number.MAX_SAFE_INTEGER,
+                    },
+                  },
+                  text: importedFileContent,
+                },
+                // Optionally include package information if applicable
+                package: extractPackageName(sourceDefinition.uri) ?? undefined,
+                // You can also include context if you want to further process the imported file
+              };
+
+              context.push(contextEntry);
+              continue; // Skip further processing for this identifier
+            }
+
             const contextEntry = await contextForImport(
               connection,
               projectRoot,
