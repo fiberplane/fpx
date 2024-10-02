@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import path from "node:path";
 import ts from "typescript";
 import logger from "../../logger.js";
 import {

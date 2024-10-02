@@ -125,6 +125,9 @@ Here is the OpenAPI spec for the handler:
 Here is the middleware that will be applied to the request:
 {middleware}
 
+Here is some additional context for the middleware that will be applied to the request:
+{middlewareContext}
+
 Here is the code for the handler:
 {handler}
 
