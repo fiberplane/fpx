@@ -6,9 +6,13 @@ import { findSourceFunction } from "./find-source-function.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Resolve the path and analyze the 'src' directory
+// Resolve the path and analyze the source maps in our test-data directory
 const testContentsDir = path.resolve(__dirname, "./test-data/hono-js-tracker");
 
+// NOTE - This covers an edge case I found when analyzing code from hono-github-tracker,
+//        where the source code mapping to the original function would cut off the final character,
+//        and I think the cause of the issue was a trailing comma after the function's closing brace,
+//        since it was being passed as an argument to another function.
 describe("findSourceFunction", () => {
   describe("handler", () => {
     const HANDLER_COMPILED_CODE =
