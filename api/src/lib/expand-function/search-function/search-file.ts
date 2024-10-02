@@ -115,7 +115,10 @@ export function searchFile(
       }
 
       // TODO - Need to fix upstream issue with source map parsing before resolving this...
-      const hackyIncludes = normalizedSearchString?.length > 25 ? normalizedFunctionText.includes(normalizedSearchString) : false;
+      const hackyIncludes =
+        normalizedSearchString?.length > 25
+          ? normalizedFunctionText.includes(normalizedSearchString)
+          : false;
       if (
         hackyIncludes ||
         normalizedFunctionText === normalizedSearchString ||

@@ -49,16 +49,21 @@ export async function searchFunction(
       functionString,
     );
     if (sourceFunction) {
-      logger.debug(`[searchFunction] Searching for function via source mapping: ${sourceFunction}`);
+      logger.debug(
+        `[searchFunction] Searching for function via source mapping: ${sourceFunction}`,
+      );
       try {
         const mappedResult = await searchSourceFunction(
           projectPath,
-          sourceFunction
+          sourceFunction,
         );
         if (mappedResult) {
           return mappedResult;
         }
-        logger.debug("no mapped result found for source function", sourceFunction);
+        logger.debug(
+          "no mapped result found for source function",
+          sourceFunction,
+        );
       } catch (error) {
         logger.error(
           `Error searching for function via source mapping: ${error}`,

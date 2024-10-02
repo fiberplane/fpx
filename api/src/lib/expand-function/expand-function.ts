@@ -262,18 +262,28 @@ async function extractContext(
 
           // Recursively expand context if the identifier is a function
           if (contextEntry?.type === "function") {
-            const functionBody = valueText?.definitionNode ?? node;
-            if (!functionBody) {
+            const functionNode = valueText?.definitionNode ?? node;
+            if (!functionNode) {
               logger.warn(
                 `[extractContext] No function body found for ${identifier.name}`,
               );
               continue;
             }
 
+            // Do type narrowing on the result to appease the call to analyzeOutOfScopeIdentifiers
+            if (
+              !ts.isFunctionDeclaration(functionNode) &&
+              !ts.isArrowFunction(functionNode) &&
+              !ts.isFunctionExpression(functionNode)
+            ) {
+              logger.warn(
+                `[extractContext] An unexpected node was returned for ${identifier.name}`,
+              );
+              continue;
+            }
+
             const functionIdentifiers = analyzeOutOfScopeIdentifiers(
-              // @ts-expect-error - I haven't type-narrowed the `node` based off of the valueText.type
-              //                    But just narrowing the node type would work and we could ditch the type property altogether?
-              functionBody,
+              functionNode,
               sourceFile,
             );
 
