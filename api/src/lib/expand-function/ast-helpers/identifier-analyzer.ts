@@ -35,74 +35,113 @@ export function analyzeOutOfScopeIdentifiers(
     | ts.ArrowFunction
     | ts.FunctionExpression,
   sourceFile: ts.SourceFile,
-  debug?: boolean,
 ): OutOfScopeIdentifier[] {
-  const localDeclarations = new Set<string>();
   const usedIdentifiers = new Map<string, ts.LineAndCharacter>();
-  if (debug) {
-    logger.debug(
-      "[debug][analyzeOutOfScopeIdentifiers] Analyzing function:",
-      functionNode.getText(),
-    );
+
+  // Stack to keep track of scopes
+  const scopeStack: Set<string>[] = [];
+
+  function pushScope() {
+    scopeStack.push(new Set<string>());
   }
 
-  if (!functionNode) {
-    console.error("[debug][analyzeOutOfScopeIdentifiers] functionNode is null");
-    return [];
+  function popScope() {
+    scopeStack.pop();
   }
 
-  const nodeType = ts.SyntaxKind[functionNode.kind];
-  console.log("nodeType", nodeType);
-
-  // Add function name to local declarations if it exists
-  if (ts.isFunctionDeclaration(functionNode) && functionNode.name) {
-    localDeclarations.add(functionNode.name.text);
+  function addDeclaration(name: string) {
+    if (scopeStack.length > 0) {
+      scopeStack[scopeStack.length - 1].add(name);
+    }
   }
 
-  // First pass: collect local declarations
-  ts.forEachChild(functionNode, function collectDeclarations(childNode) {
+  function isDeclared(name: string): boolean {
+    for (let i = scopeStack.length - 1; i >= 0; i--) {
+      if (scopeStack[i].has(name)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Start traversing the function node
+  function traverse(node: ts.Node) {
     if (
-      ts.isVariableDeclaration(childNode) &&
-      ts.isIdentifier(childNode.name)
+      ts.isFunctionDeclaration(node) ||
+      ts.isFunctionExpression(node) ||
+      ts.isArrowFunction(node)
     ) {
-      localDeclarations.add(childNode.name.text);
-    }
-    if (ts.isParameter(childNode) && ts.isIdentifier(childNode.name)) {
-      localDeclarations.add(childNode.name.text);
-    }
-    ts.forEachChild(childNode, collectDeclarations);
-  });
+      pushScope();
 
-  // Second pass: collect used identifiers
-  ts.forEachChild(functionNode, function collectIdentifiers(childNode) {
-    if (ts.isIdentifier(childNode)) {
-      if (ts.isPropertyAccessExpression(childNode.parent)) {
-        if (childNode === childNode.parent.name) {
-          // This is the property being accessed
-          const baseObject = childNode.parent.expression;
-          if (
-            ts.isIdentifier(baseObject) &&
-            !localDeclarations.has(baseObject.text)
-          ) {
-            // The base object is out of scope, so we include this property
-            const pos = sourceFile.getLineAndCharacterOfPosition(
-              childNode.getStart(),
-            );
-            usedIdentifiers.set(childNode.text, pos);
-          }
-          return;
+      // Add parameters to the current scope
+      for (const param of node.parameters) {
+        collectBindings(param.name);
+      }
+
+      // If it's a named function (not anonymous), add its name to the scope
+      if (node.name && ts.isIdentifier(node.name)) {
+        addDeclaration(node.name.text);
+      }
+
+      ts.forEachChild(node, traverse);
+
+      popScope();
+      return;
+    }
+
+    if (ts.isBlock(node)) {
+      pushScope();
+
+      ts.forEachChild(node, traverse);
+
+      popScope();
+      return;
+    }
+
+    if (ts.isVariableStatement(node)) {
+      for (const decl of node.declarationList.declarations) {
+        collectBindings(decl.name);
+      }
+    } else if (ts.isVariableDeclaration(node)) {
+      collectBindings(node.name);
+    } else if (ts.isParameter(node)) {
+      collectBindings(node.name);
+    } else if (ts.isIdentifier(node)) {
+      if (!isDeclared(node.text)) {
+        const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+        usedIdentifiers.set(node.text, pos);
+      }
+    }
+
+    ts.forEachChild(node, traverse);
+  }
+
+  function collectBindings(name: ts.BindingName) {
+    if (ts.isIdentifier(name)) {
+      addDeclaration(name.text);
+    } else if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
+      for (const element of name.elements) {
+        if (ts.isBindingElement(element)) {
+          collectBindings(element.name);
         }
       }
-
-      if (!localDeclarations.has(childNode.text)) {
-        const pos = sourceFile.getLineAndCharacterOfPosition(
-          childNode.getStart(),
-        );
-        usedIdentifiers.set(childNode.text, pos);
-      }
     }
-    ts.forEachChild(childNode, collectIdentifiers);
-  });
+  }
+
+  // Initialize the scope with function parameters and the function name
+  pushScope();
+
+  // Add function parameters to the initial scope
+  for (const param of functionNode.parameters) {
+    collectBindings(param.name);
+  }
+
+  // Add function name to the scope if it exists
+  if (functionNode.name && ts.isIdentifier(functionNode.name)) {
+    addDeclaration(functionNode.name.text);
+  }
+
+  traverse(functionNode);
 
   // Convert the map to an array of OutOfScopeIdentifier objects
   return Array.from(usedIdentifiers, ([name, position]) => ({

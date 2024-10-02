@@ -62,6 +62,12 @@ describe("analyzeOutOfScopeIdentifiers", () => {
         expect.objectContaining({ name: "log" }),
       ]),
     );
+
+    expect(result).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "localVar" }),
+      ]),
+    );
   });
 
   it("should handle arrow functions", () => {
@@ -85,12 +91,11 @@ describe("analyzeOutOfScopeIdentifiers", () => {
       ]),
     );
 
-    expect(result).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "test" }),
-        expect.objectContaining({ name: "localVar" }),
-      ]),
-    );
+    const forbiddenNames = ["test", "localVar"];
+    // biome-ignore lint/complexity/noForEach: <explanation>
+    forbiddenNames.forEach(name => {
+      expect(result).not.toContainEqual(expect.objectContaining({ name }));
+    });
   });
 
   it("should handle function parameters", () => {
@@ -112,12 +117,11 @@ describe("analyzeOutOfScopeIdentifiers", () => {
       ]),
     );
 
-    expect(result).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "param1" }),
-        expect.objectContaining({ name: "param2" }),
-      ]),
-    );
+    const forbiddenNames = ["param1", "param2"];
+    // biome-ignore lint/complexity/noForEach: <explanation>
+    forbiddenNames.forEach(name => {
+      expect(result).not.toContainEqual(expect.objectContaining({ name }));
+    });
   });
 
   it("should handle property access expressions correctly", () => {
@@ -146,12 +150,11 @@ describe("analyzeOutOfScopeIdentifiers", () => {
       ]),
     );
 
-    expect(result).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "test" }),
-        expect.objectContaining({ name: "arg3" }),
-      ]),
-    );
+    const forbiddenNames = ["test", "arg3"];
+    // biome-ignore lint/complexity/noForEach: <explanation>
+    forbiddenNames.forEach(name => {
+      expect(result).not.toContainEqual(expect.objectContaining({ name }));
+    });
   });
 
   it("should not return a parent function declaration's name", () => {
@@ -163,33 +166,6 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
     expect(result).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ name: "outer" })]),
-    );
-  });
-
-  it("should handle nested functions", () => {
-    const source = `
-      function outer() {
-        const outerVar = 1;
-        function inner() {
-          return meh;
-        }
-      }
-    `;
-    const sourceFile = createSourceFile(source);
-    const functionNode = getFunctionNode(sourceFile);
-
-    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
-
-    expect(result).toEqual(
-      expect.arrayContaining([expect.objectContaining({ name: "meh" })]),
-    );
-
-    expect(result).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "inner" }),
-        expect.objectContaining({ name: "outer" }),
-        expect.objectContaining({ name: "outerVar" }),
-      ]),
     );
   });
 
@@ -224,14 +200,11 @@ describe("analyzeOutOfScopeIdentifiers", () => {
       ]),
     );
 
-    expect(result).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "inner" }),
-        expect.objectContaining({ name: "local1" }),
-        expect.objectContaining({ name: "local2" }),
-        expect.objectContaining({ name: "param1" }),
-      ]),
-    );
+    const forbiddenNames = ["inner", "local1", "local2", "param1"];
+    // biome-ignore lint/complexity/noForEach: <explanation>
+    forbiddenNames.forEach(name => {
+      expect(result).not.toContainEqual(expect.objectContaining({ name }));
+    });
   });
 
   it("should consider destructured variables from in-scope identifiers as local scope", () => {
@@ -246,19 +219,52 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
     const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
 
-    expect(result).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "c" }),
-        expect.objectContaining({ name: "req" }),
-        expect.objectContaining({ name: "query" }),
-        expect.objectContaining({ name: "shouldHonk" }),
-        expect.objectContaining({ name: "honk" }),
-      ]),
-    );
+    // expect(result).not.toEqual(
+    //   expect.arrayContaining([
+    //     expect.objectContaining({ name: "c" }),
+    //     expect.objectContaining({ name: "req" }),
+    //     expect.objectContaining({ name: "query" }),
+    //     expect.objectContaining({ name: "shouldHonk" }),
+    //     expect.objectContaining({ name: "honk" }),
+    //   ]),
+    // );
+
+
+    const forbiddenNames = ["c", "req", "query", "shouldHonk", "honk"];
+    // biome-ignore lint/complexity/noForEach: <explanation>
+    forbiddenNames.forEach(name => {
+      expect(result).not.toContainEqual(expect.objectContaining({ name }));
+    });
   });
 
-  it.only("should not consider parameters of functions defined within the function as out of scope", () => {
-    const source = `
+  describe("nested functions", () => {
+    it("should return out of scope identifiers from nested functions, but not the nested function's name", () => {
+      const source = `
+      function outer() {
+        const outerVar = 1;
+        function inner() {
+          return meh;
+        }
+      }
+    `;
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
+
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+      expect(result).toEqual(
+        expect.arrayContaining([expect.objectContaining({ name: "meh" })]),
+      );
+
+      const forbiddenNames = ["inner", "outer", "outerVar"];
+      // biome-ignore lint/complexity/noForEach: <explanation>
+      forbiddenNames.forEach(name => {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      });
+    });
+
+    it("should not consider parameters of functions defined within the function as out of scope", () => {
+      const source = `
       function test(userId, eventId) {
         webhooks.on(
           ["issues.opened", "star.created", "watch.started"],
@@ -273,32 +279,26 @@ describe("analyzeOutOfScopeIdentifiers", () => {
           }
       }
     `;
-    const sourceFile = createSourceFile(source);
-    const functionNode = getFunctionNode(sourceFile);
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
 
-    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
 
-    expect(result).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "db" }),
-        expect.objectContaining({ name: "insert" }),
-        expect.objectContaining({ name: "values" }),
-        expect.objectContaining({ name: "webhooks" }),
-        expect.objectContaining({ name: "events" }),
-      ]),
-    );
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "db" }),
+          expect.objectContaining({ name: "insert" }),
+          expect.objectContaining({ name: "values" }),
+          expect.objectContaining({ name: "webhooks" }),
+          expect.objectContaining({ name: "events" }),
+        ]),
+      );
 
-    expect(result).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "test" }),
-        expect.objectContaining({ name: "userId" }),
-        expect.objectContaining({ name: "eventId" }),
-        expect.objectContaining({ name: "payload" }),
-        expect.objectContaining({ name: "action" }),
-        expect.objectContaining({ name: "repository" }),
-        expect.objectContaining({ name: "id" }),
-        expect.objectContaining({ name: "name" }),
-      ]),
-    );
+      const forbiddenNames = ["test", "userId", "eventId", "payload", "action", "repository", "id", "name"];
+      // biome-ignore lint/complexity/noForEach: <explanation>
+      forbiddenNames.forEach(name => {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      });
+    });
   });
 });
