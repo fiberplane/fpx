@@ -1,3 +1,4 @@
+import { useApiBaseUrl } from "@/hooks";
 import {
   OtelSpanSchema,
   type TraceListResponse,
@@ -6,7 +7,6 @@ import {
 import { type QueryFunctionContext, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { MIZU_TRACES_KEY } from "./queries";
-import { useApiBaseUrl } from "@/hooks";
 
 export const TRACES_KEY = "otelTrace";
 
