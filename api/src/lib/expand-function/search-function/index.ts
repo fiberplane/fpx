@@ -1,1 +1,1 @@
-export { searchFunction as searchForFunction } from "./search-function.js";
+export { searchFunction } from "./search-function.js";

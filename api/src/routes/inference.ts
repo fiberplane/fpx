@@ -276,8 +276,19 @@ async function buildMiddlewareContext(
     return undefined;
   }
 
+  // HACK - Ignore reactRenderer middleware, since it's from a third party library
+  // We could also be clever and ignore a bunch of other third party middleware by default to avoid too much work being done here
+  const filteredMiddleware = middleware.filter(({ handler }) => {
+    if (handler?.startsWith("function reactRenderer")) {
+      return false;
+    }
+    return true;
+  });
+
   const expandedMiddleware = await Promise.all(
-    middleware.map(({ handler }) => expandFunctionInUserProject(handler)),
+    filteredMiddleware.map(({ handler }) =>
+      expandFunctionInUserProject(handler),
+    ),
   );
 
   return `<middleware>

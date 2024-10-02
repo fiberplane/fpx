@@ -8,7 +8,7 @@ import {
   getParentImportDeclaration,
 } from "./ast-helpers/index.js";
 import { contextForImport } from "./imports/index.js";
-import { searchForFunction } from "./search-function/index.js";
+import { searchFunction } from "./search-function/index.js";
 import {
   getFileUri,
   getTSServer,
@@ -85,7 +85,7 @@ export async function expandFunction(
   func: string,
   options: { skipSourceMap?: boolean } = {},
 ): Promise<ExpandedFunctionResult | null> {
-  const searchResult = await searchForFunction(projectRoot, func, options);
+  const searchResult = await searchFunction(projectRoot, func, options);
   if (!searchResult) {
     logger.warn(`[expandFunction] No search result found for ${func}`);
     return null;
@@ -274,10 +274,16 @@ async function extractContext(
             // @ts-expect-error - I haven't type-narrowed the `node` based off of the valueText.type
             //                    But just narrowing the node type would work and we could ditch the type property altogether?
             const functionBody = valueText?.definitionNode?.body ?? node?.body;
+            if (!functionBody) {
+              logger.warn(
+                `[extractContext] No function body found for ${identifier.name}`,
+              );
+              continue;
+            }
+
             const functionIdentifiers = analyzeOutOfScopeIdentifiers(
               functionBody,
               sourceFile,
-              true,
             );
 
             logger.debug(

@@ -43,8 +43,10 @@ export type SearchFunctionResult = {
 export function searchFile(
   filePath: string,
   searchString: string,
-  debug = false,
+  debugg = false,
 ): SearchFunctionResult | null {
+  // TODO - Remove
+  const debug = debugg || filePath.includes("githubWebhooksMiddleware");
   if (debug) {
     logger.debug("[debug][searchFile] Searching file:", filePath);
   }
@@ -112,7 +114,10 @@ export function searchFile(
         );
       }
 
+      // TODO - Need to fix upstream issue with source map parsing before resolving this...
+      const hackyIncludes = normalizedSearchString?.length > 25 ? normalizedFunctionText.includes(normalizedSearchString) : false;
       if (
+        hackyIncludes ||
         normalizedFunctionText === normalizedSearchString ||
         normalizedFunctionTextWithoutAsync === normalizedSearchString
       ) {

@@ -35,6 +35,10 @@ export function analyzeOutOfScopeIdentifiers(
     | ts.FunctionExpression,
   sourceFile: ts.SourceFile,
 ): OutOfScopeIdentifier[] {
+  if (!functionNode) {
+    return [];
+  }
+
   const usedIdentifiers = new Map<string, ts.LineAndCharacter>();
 
   // Stack to keep track of scopes
