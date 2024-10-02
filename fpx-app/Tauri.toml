@@ -12,4 +12,3 @@ icon = ["./icons/Square310x310Logo.png"]
 
 [app.security]
 capabilities = ["workspace-capability"]
-# csp = "default-src 'self' http://localhost:* https://localhost:*; script-src 'self'; style-src 'self' 'unsafe-inline';"
