@@ -1,0 +1,28 @@
+node_modules
+# do not publish biome config
+biome.jsonc
+
+# Change them to your taste:
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# mac
+.DS_Store
+
+# VS Code
+.vscode/*
+*.code-workspace
+
+# CLion
+.idea
+
+# TypeScript / Yarn
+node_modules
+package-lock.json
+
+# Build tools
+*.tsbuildinfo
+
+.git/*

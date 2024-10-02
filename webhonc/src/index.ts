@@ -1,9 +1,10 @@
+import { resolveBody } from "@fiberplane/fpx-utils";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { z } from "zod";
 import type { Bindings } from "./types";
-import { resolveBody, resolveWebhoncId } from "./utils";
+import { resolveWebhoncId } from "./utils";
 import { WebHonc } from "./webhonc";
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -64,7 +65,7 @@ app.all(
 
     const method = c.req.method;
 
-    const body: string | FormData | null = await resolveBody(c);
+    const body: string | FormData | null = await resolveBody(c.req);
 
     const query = c.req.query();
 

@@ -1,0 +1,25 @@
+{
+  "name": "@fiberplane/fpx-utils",
+  "description": "Shared utils for fpx",
+  "version": "0.0.4",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT or Apache 2",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "pnpm clean && tsc"
+  },
+  "dependencies": {
+    "hono": "^4.4.11"
+  }
+}

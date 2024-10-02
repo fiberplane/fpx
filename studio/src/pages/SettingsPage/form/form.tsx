@@ -15,6 +15,7 @@ const DEFAULT_VALUES = {
   aiProviderType: "openai",
   openaiModel: GPT_4o,
   anthropicModel: CLAUDE_3_5_SONNET,
+  proxyDeflectorEnabled: false,
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",
 } satisfies Settings;

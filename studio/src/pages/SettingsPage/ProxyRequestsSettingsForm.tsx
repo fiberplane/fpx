@@ -13,12 +13,15 @@ import { cn } from "@/utils";
 import type { Settings } from "@fiberplane/fpx-types";
 import { useSettingsForm } from "./form";
 
-// TODO: automatically restart the fpx studio when this is changed
 export function ProxyRequestsSettingsForm({
   settings,
-}: { settings: Settings }) {
+}: {
+  settings: Settings;
+}) {
   const { form, onSubmit } = useSettingsForm(settings);
   const isProxyRequestsDirty = form.formState.dirtyFields.proxyRequestsEnabled;
+  const isProxyDeflectorDirty =
+    form.formState.dirtyFields.proxyDeflectorEnabled;
 
   return (
     <Form {...form}>
@@ -101,6 +104,58 @@ export function ProxyRequestsSettingsForm({
                       />
                     </>
                   )}
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="space-y-4 mt-4">
+            <FormField
+              control={form.control}
+              name="proxyDeflectorEnabled"
+              render={({ field }) => (
+                <FormItem
+                  className={cn("rounded-lg border p-4", {
+                    "border-yellow-100/50": isProxyDeflectorDirty,
+                  })}
+                >
+                  <div className="flex flex-row items-center justify-between">
+                    <div className="space-y-1">
+                      <FormLabel className="text-base">
+                        Enable proxy from this FPX
+                        <span className="font-light text-gray-400 ml-2">
+                          (Alpha)
+                        </span>
+                      </FormLabel>
+                      <FormDescription className="max-w-3xl grid gap-2">
+                        <p>
+                          Enable proxying of requests from FPX running on your
+                          device. This feature is useful if you want to use FPX
+                          with frameworks/languages that aren't currently
+                          supported by it.
+                        </p>
+                        <p>
+                          To make use of this feature, configure your frontend
+                          to send requests to the FPX instance(
+                          {`${window.location.protocol}//
+                        ${window.location.hostname}:${window.location.port}`}
+                          ) instead of your backend. Be sure to also add a{" "}
+                          <code className="font-mono text-wrap">
+                            x-fpx-deflect-to
+                          </code>{" "}
+                          header to your requests with the URL of the backend to
+                          make sure FPX knows where to forward the request. All
+                          requests passing through FPX will be recorded and
+                          inspectable in the UI.
+                        </p>
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </div>
                 </FormItem>
               )}
             />

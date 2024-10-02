@@ -9,6 +9,10 @@ import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
 import { DEFAULT_DATABASE_URL } from "./constants.js";
 import * as schema from "./db/schema.js";
+import {
+  deflectorMiddleware,
+  setDeflectorStatus,
+} from "./lib/deflector/middleware.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
@@ -32,6 +36,11 @@ const sql = createClient({
 const db = drizzle(sql, { schema });
 // Set up the api routes
 const app = createApp(db, webhonc, wsConnections);
+
+/**
+ * Deflector middleware has to go before the frontend routes handler to work
+ */
+app.use(deflectorMiddleware);
 
 /**
  * Serve all the frontend static files
@@ -92,3 +101,8 @@ if (proxyRequestsEnabled ?? false) {
   logger.debug("Proxy requests feature enabled.");
   await webhonc.start();
 }
+
+// check settings if proxy deflector is enabled
+const proxyDeflectorEnabled = await getSetting(db, "proxyDeflectorEnabled");
+
+setDeflectorStatus(proxyDeflectorEnabled ?? false);

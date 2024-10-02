@@ -1,6 +1,7 @@
 import { SettingsSchema } from "@fiberplane/fpx-types";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { setDeflectorStatus } from "../lib/deflector/middleware.js";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
@@ -52,6 +53,12 @@ app.post("/v0/settings", cors(), async (ctx) => {
   if (!proxyUrlEnabled) {
     await webhonc.stop();
   }
+
+  const proxyDeflectorEnabled =
+    updatedSettings.find((setting) => setting.key === "proxyDeflectorEnabled")
+      ?.value === "true" ?? false;
+
+  setDeflectorStatus(proxyDeflectorEnabled);
 
   return ctx.json(updatedSettings);
 });
