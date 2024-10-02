@@ -5,7 +5,7 @@ use anyhow::{Context, Result};
 use api_manager::ApiManager;
 use state::AppState;
 use std::env;
-use tauri::menu::{MenuId, MenuItemBuilder};
+use tauri::menu::{MenuBuilder, MenuId, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, WebviewWindowBuilder};
 use tauri::{Manager, Wry};
 use tauri_plugin_store::StoreCollection;
@@ -51,15 +51,21 @@ fn main() {
                 .build(app)
                 .unwrap();
 
-            let items = app.menu().unwrap().items().unwrap();
-            for item in items {
-                let item = item.as_submenu().unwrap();
-                let name = item.text().unwrap();
-                if name == "File" {
-                    item.append_items(&[&open_workspace, &close_workspace])
-                        .unwrap();
-                }
-            }
+            let app_menu = SubmenuBuilder::new(app, "App")
+                .item(&open_workspace)
+                .item(&close_workspace)
+                .separator()
+                .cut()
+                .copy()
+                .paste()
+                .separator()
+                .close_window()
+                .build()
+                .unwrap();
+
+            let menu = MenuBuilder::new(app).items(&[&app_menu]).build().unwrap();
+
+            app.set_menu(menu).unwrap();
 
             let window = WebviewWindowBuilder::new(
                 app,
