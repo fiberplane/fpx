@@ -170,7 +170,12 @@ const messageHandlers: {
   },
   connection_open: async (message, config) => {
     const { connectionId } = message.payload;
-    setWebHoncConnectionId(config.db, connectionId);
+    logger.debug(
+      "connection_open message received, setting webhonc connection id:",
+      connectionId,
+    );
+    // Await this call so that the webhonc id is set before the query on the studio side is invalidated
+    await setWebHoncConnectionId(config.db, connectionId);
     for (const ws of config.wsConnections) {
       ws.send(
         JSON.stringify({
