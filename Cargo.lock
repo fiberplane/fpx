@@ -1467,6 +1467,7 @@ dependencies = [
  "hex",
  "http 1.1.0",
  "http-body-util",
+ "include_dir",
  "libsql",
  "opentelemetry",
  "opentelemetry-proto",
@@ -1476,6 +1477,7 @@ dependencies = [
  "serde",
  "serde_json",
  "strum",
+ "test-log",
  "thiserror",
  "time",
  "tokio",
@@ -1492,7 +1494,10 @@ dependencies = [
 name = "fpx-app"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "axum 0.7.5",
  "fpx",
+ "nix",
  "schemars",
  "serde",
  "serde_json",
@@ -1501,6 +1506,9 @@ dependencies = [
  "tauri-plugin-dialog",
  "tauri-plugin-store",
  "tauri-plugin-window-state",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -1533,7 +1541,6 @@ dependencies = [
  "serde_json",
  "serde_with",
  "strum",
- "test-log",
  "thiserror",
  "time",
  "tokio",

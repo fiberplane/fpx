@@ -1,7 +1,7 @@
 import {
   type AppState,
-  type OpenWorkspaceByPathError,
-  OpenWorkspaceByPathErrorSchema,
+  type OpenWorkspaceError,
+  OpenWorkspaceErrorSchema,
   type Workspace,
 } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
@@ -45,7 +45,7 @@ export function RuntimeProvider({ children }: RuntimeProviderProps) {
 
 function TauriRuntime({ children }: RuntimeProviderProps) {
   const [workspace, setWorkspace] = useState<Workspace | undefined>();
-  const [error, setError] = useState<OpenWorkspaceByPathError | undefined>();
+  const [error, setError] = useState<OpenWorkspaceError | undefined>();
 
   const handleOpenWorkspaceByPath = useHandler(async (path: string) => {
     const workspace = await openWorkspace(path);
@@ -60,7 +60,7 @@ function TauriRuntime({ children }: RuntimeProviderProps) {
         }
       })
       .catch((error) => {
-        const parsed = OpenWorkspaceByPathErrorSchema.safeParse(error);
+        const parsed = OpenWorkspaceErrorSchema.safeParse(error);
         if (parsed.success) {
           return setError(parsed.data);
         }

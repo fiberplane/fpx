@@ -1,4 +1,5 @@
-use crate::models::workspace::{OpenWorkspaceByPathError, Workspace};
+use crate::api_manager::ApiManager;
+use crate::models::workspace::{OpenWorkspaceError, Workspace};
 use crate::state::AppState;
 use crate::STORE_PATH;
 use fpx::config::{FpxConfig, FpxConfigError};
@@ -37,22 +38,23 @@ pub fn get_current_workspace(state: State<'_, AppState>) -> Option<Workspace> {
 #[tauri::command]
 pub fn open_workspace_by_path<R: Runtime>(
     path: String,
-    state: State<'_, AppState>,
+    app_state: State<'_, AppState>,
+    api_manager: State<'_, ApiManager>,
     app: AppHandle<R>,
     stores: State<'_, StoreCollection<R>>,
-) -> Result<Workspace, OpenWorkspaceByPathError> {
+) -> Result<Workspace, OpenWorkspaceError> {
+    api_manager.stop_api();
+
     let path_buf = PathBuf::from(path.clone());
     let config = match FpxConfig::load(Some(path_buf)) {
         Ok((config, _config_path)) => config,
         Err(err) => {
             return Err(match err {
-                FpxConfigError::FileNotFound(path_buf) => {
-                    OpenWorkspaceByPathError::ConfigFileMissing {
-                        path: path_buf.to_string_lossy().to_string(),
-                    }
-                }
+                FpxConfigError::FileNotFound(path_buf) => OpenWorkspaceError::ConfigFileMissing {
+                    path: path_buf.to_string_lossy().to_string(),
+                },
                 FpxConfigError::InvalidFpxConfig { message, .. } => {
-                    OpenWorkspaceByPathError::InvalidConfiguration { message }
+                    OpenWorkspaceError::InvalidConfiguration { message }
                 }
                 FpxConfigError::RootDirectoryNotFound => {
                     unreachable!("FpxConfig::load takes a path, so this cannot occur")
@@ -61,8 +63,10 @@ pub fn open_workspace_by_path<R: Runtime>(
         }
     };
 
+    api_manager.start_api(config.clone());
+
     let workspace = Workspace::new(path.clone(), config);
-    state.set_workspace(workspace.clone());
+    app_state.set_workspace(workspace.clone());
 
     with_store(app, stores, STORE_PATH, |store| {
         let mut recents: Vec<String> = store
@@ -70,7 +74,7 @@ pub fn open_workspace_by_path<R: Runtime>(
             .and_then(|value| value.as_array())
             .map(|arr| {
                 arr.iter()
-                    .filter_map(|item| item.as_str().filter(|s| s == &path).map(|s| s.to_string()))
+                    .filter_map(|item| item.as_str().filter(|s| s != &path).map(|s| s.to_string()))
                     .collect()
             })
             .unwrap_or_default();
@@ -89,6 +93,7 @@ pub fn open_workspace_by_path<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn close_workspace(state: State<'_, AppState>) {
+pub fn close_workspace(state: State<'_, AppState>, api_manager: State<'_, ApiManager>) {
+    api_manager.stop_api();
     state.close_workspace();
 }
