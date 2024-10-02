@@ -13,6 +13,7 @@ import inference from "./routes/inference.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
 import traces from "./routes/traces.js";
+import { cors } from "hono/cors";
 
 export function createApp(
   db: LibSQLDatabase<typeof schema>,
@@ -20,6 +21,13 @@ export function createApp(
   wsConnections?: Set<WebSocket>,
 ) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+  app.use(
+    "*",
+    cors({
+      origin: "*",
+    }),
+  );
 
   // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
   app.use(async (c, next) => {

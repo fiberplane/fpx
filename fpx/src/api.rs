@@ -5,6 +5,7 @@ use axum::extract::FromRef;
 use axum::routing::{get, post};
 use http::StatusCode;
 use tower_http::compression::CompressionLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::decompression::RequestDecompressionLayer;
 
 pub mod errors;
@@ -74,6 +75,7 @@ impl Builder {
             )
             .with_state(api_state)
             .fallback(StatusCode::NOT_FOUND)
+            .layer(CorsLayer::new().allow_origin(Any))
             .layer(OtelTraceLayer::default())
             .layer(RequestDecompressionLayer::new());
 
