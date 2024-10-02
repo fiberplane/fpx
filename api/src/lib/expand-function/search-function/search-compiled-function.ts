@@ -9,7 +9,7 @@ import { findSourceFunction } from "../../find-source-function/index.js";
  * On even a medium sized codebase, these lookups can take 600ms
  *
  * @param {string} projectPath - The path to the project directory.
- * @param {string} functionString - The identifier of the function to retrieve.
+ * @param {string} functionString - The text of the function to retrieve.
  * @returns {Promise<string | null>} The source function text if found, otherwise null.
  */
 export async function getSourceFunctionText(
@@ -21,6 +21,9 @@ export async function getSourceFunctionText(
     return null;
   }
 
+  // NOTE - This is a bit of an optimization. We're reading the file contents into memory
+  // before passing them to findSourceFunction. This allows us to avoid a multiple reads
+  // of the files in findSourceFunction.
   const jsFilePath = path.join(compiledJavascriptPath, "index.js");
   const mapFile = `${jsFilePath}.map`;
   const sourceMapContent = JSON.parse(
