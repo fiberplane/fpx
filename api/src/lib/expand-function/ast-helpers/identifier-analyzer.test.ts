@@ -39,7 +39,27 @@ function getFunctionNode(
 }
 
 describe("analyzeOutOfScopeIdentifiers", () => {
-  it("should identify out-of-scope variables", () => {
+  it("should identify an out-of-scope variable", () => {
+    const source = `
+      function test() {
+        console.log(outOfScope);
+      }
+    `;
+    const sourceFile = createSourceFile(source);
+    const functionNode = getFunctionNode(sourceFile);
+
+    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "outOfScope",
+        }),
+      ]),
+    );
+  });
+
+  it("should identify `console` and `log` (from `console.log`) both as out-of-scope identifiers", () => {
     const source = `
       function test() {
         console.log(outOfScope);
@@ -62,10 +82,27 @@ describe("analyzeOutOfScopeIdentifiers", () => {
         expect.objectContaining({ name: "log" }),
       ]),
     );
+  });
 
-    expect(result).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ name: "localVar" })]),
-    );
+  it("should NOT identify a locally declared const, var, or let as out-of-scope identifiers", () => {
+    const source = `
+      function test() {
+        console.log(outOfScope);
+        const localConst = 1;
+        var localVar = 2;
+        let localLet = 3;
+        console.log(localConst, localVar, localLet);
+      }
+    `;
+    const sourceFile = createSourceFile(source);
+    const functionNode = getFunctionNode(sourceFile);
+
+    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+    const forbiddenNames = ["localConst", "localVar", "localLet"];
+    for (const name of forbiddenNames) {
+      expect(result).not.toContainEqual(expect.objectContaining({ name }));
+    }
   });
 
   it("should handle arrow functions", () => {
@@ -167,6 +204,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     );
   });
 
+  // TODO - Factor out into simpler unit tests
   it("should handle complex scenarios", () => {
     const source = `
       function complex(param1) {
