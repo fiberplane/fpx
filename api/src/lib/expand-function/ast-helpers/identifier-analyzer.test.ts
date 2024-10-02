@@ -6,6 +6,7 @@ function createSourceFile(content: string): ts.SourceFile {
   return ts.createSourceFile("test.ts", content, ts.ScriptTarget.Latest, true);
 }
 
+// NOTE - This helper does not parse out anonymous arrow functions
 function getFunctionNode(
   sourceFile: ts.SourceFile,
 ): ts.FunctionDeclaration | ts.ArrowFunction | ts.FunctionExpression {
@@ -127,36 +128,9 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     );
 
     const forbiddenNames = ["test", "localVar"];
-    // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach((name) => {
+    for (const name of forbiddenNames) {
       expect(result).not.toContainEqual(expect.objectContaining({ name }));
-    });
-  });
-
-  it("should handle function parameters", () => {
-    const source = `
-      function test(param1, param2) {
-        console.log(param1, param2, outOfScope);
-      }
-    `;
-    const sourceFile = createSourceFile(source);
-    const functionNode = getFunctionNode(sourceFile);
-
-    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
-
-    expect(result).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "outOfScope" }),
-        expect.objectContaining({ name: "log" }),
-        expect.objectContaining({ name: "console" }),
-      ]),
-    );
-
-    const forbiddenNames = ["param1", "param2"];
-    // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach((name) => {
-      expect(result).not.toContainEqual(expect.objectContaining({ name }));
-    });
+    }
   });
 
   it("should handle property access expressions correctly", () => {
@@ -192,7 +166,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     });
   });
 
-  it("should not return a parent function declaration's name", () => {
+  it("should not return a the function declaration's name as out of scope", () => {
     const source = "function outer() {}";
     const sourceFile = createSourceFile(source);
     const functionNode = getFunctionNode(sourceFile);
@@ -255,20 +229,62 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
     const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
 
-    // expect(result).not.toEqual(
-    //   expect.arrayContaining([
-    //     expect.objectContaining({ name: "c" }),
-    //     expect.objectContaining({ name: "req" }),
-    //     expect.objectContaining({ name: "query" }),
-    //     expect.objectContaining({ name: "shouldHonk" }),
-    //     expect.objectContaining({ name: "honk" }),
-    //   ]),
-    // );
-
     const forbiddenNames = ["c", "req", "query", "shouldHonk", "honk"];
-    // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach((name) => {
+    for (const name of forbiddenNames) {
       expect(result).not.toContainEqual(expect.objectContaining({ name }));
+    }
+  });
+
+  describe("function parameters", () => {
+    it("should NOT consider function declaration parameters as out-of-scope identifiers", () => {
+      const source = `
+      function test(param1, param2) {
+        console.log(param1, param2, outOfScope);
+      }
+    `;
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
+
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+      const forbiddenNames = ["param1", "param2"];
+      for (const name of forbiddenNames) {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      }
+    });
+
+    it("should NOT consider function expression parameters as out-of-scope identifiers", () => {
+      const source = `
+      function(param1, param2) {
+        console.log(param1, param2, outOfScope);
+      }
+    `;
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
+
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+      const forbiddenNames = ["param1", "param2"];
+      for (const name of forbiddenNames) {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      }
+    });
+
+    it("should NOT consider arrow function parameters as out-of-scope identifiers", () => {
+      const source = `
+      const test = (param1, param2) => {
+        console.log(param1, param2, outOfScope);
+      }
+    `;
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
+
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+      const forbiddenNames = ["param1", "param2"];
+      for (const name of forbiddenNames) {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      }
     });
   });
 
