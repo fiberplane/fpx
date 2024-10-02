@@ -13,7 +13,7 @@ import { findSourceFunction } from "../../find-source-function/index.js";
 export async function getSourceFunctionText(
   projectPath: string,
   functionString: string,
-): Promise<string | null> {
+): Promise<{ text: string | null; source: string | null } | null> {
   const compiledJavascriptPath = findWranglerCompiledJavascriptDir(projectPath);
   if (!compiledJavascriptPath) {
     return null;
@@ -21,9 +21,16 @@ export async function getSourceFunctionText(
 
   const jsFilePath = path.join(compiledJavascriptPath, "index.js");
 
-  const sourceFunction = await findSourceFunction(jsFilePath, functionString);
+  const sourceFunction = await findSourceFunction(
+    jsFilePath,
+    functionString,
+    true,
+  );
 
-  return sourceFunction;
+  return {
+    text: sourceFunction?.sourceFunction ?? null,
+    source: sourceFunction?.source ?? null,
+  };
 }
 
 /**

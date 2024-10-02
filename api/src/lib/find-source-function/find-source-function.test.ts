@@ -95,7 +95,7 @@ describe("findSourceFunction", () => {
       const result = await findSourceFunction(jsFilePath, functionText);
 
       expect(result).toBeDefined();
-      expect(result).toEqual(HANDLE_SOURCE_CODE);
+      expect(result?.sourceFunction).toEqual(HANDLE_SOURCE_CODE);
     });
   });
 
@@ -139,8 +139,7 @@ describe("findSourceFunction", () => {
       const result = await findSourceFunction(jsFilePath, functionText);
 
       expect(result).toBeDefined();
-      console.log(result);
-      expect(result).toEqual(MIDDLEWARE_SOURCE_CODE);
+      expect(result?.sourceFunction).toEqual(MIDDLEWARE_SOURCE_CODE);
     });
   });
 });

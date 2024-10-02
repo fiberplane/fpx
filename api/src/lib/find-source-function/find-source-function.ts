@@ -132,6 +132,7 @@ export async function findSourceFunction(
         findOriginalSource(jsFilePath, functionEndLine, functionEndColumn),
       ]);
 
+      const source = sourceFunctionStart.source;
       const sourceContent = sourceFunctionStart.sourceContent ?? "";
       const startLine = sourceFunctionStart.line;
       const startColumn = sourceFunctionStart.column;
@@ -142,7 +143,9 @@ export async function findSourceFunction(
         // TODO decide what the proper behavior should be when
         // we can't find the correct source content.
         // For now: return the source content as is
-        return returnNullOnMissing ? null : sourceContent;
+        return returnNullOnMissing
+          ? null
+          : { sourceContent, source, sourceFunction: null };
       }
 
       const lines = sourceContent.split("\n").slice(startLine - 1, endLine);
@@ -168,7 +171,7 @@ export async function findSourceFunction(
         })
         .join("\n");
 
-      return sourceFunction;
+      return { sourceFunction, source };
     },
   );
 }

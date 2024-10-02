@@ -18,8 +18,22 @@ import { type SearchFunctionResult, searchFile } from "./search-file.js";
 export async function searchSourceFunction(
   dirPath: string,
   searchString: string,
-  debug = false,
+  options: { debug?: boolean; sourceHint?: string } = { debug: false },
 ): Promise<SearchFunctionResult | null> {
+  const { debug, sourceHint } = options;
+  // HACK - The sourceHint is a path to a file that contains the function we are trying to expand
+  //        We will receive this as a hint if we did source map parsing to find the definition of the function
+  if (sourceHint) {
+    if (debug) {
+      logger.debug(
+        `[debug] [searchSourceFunction] Searching for function: ${searchString} in directory: ${dirPath} with source hint: ${sourceHint}`,
+      );
+    }
+    const result = await searchFile(sourceHint, searchString);
+    if (result) {
+      return result;
+    }
+  }
   let files: string[];
   try {
     files = await fs.readdir(dirPath);

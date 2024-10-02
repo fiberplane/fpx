@@ -48,14 +48,15 @@ export async function searchFunction(
       projectPath,
       functionString,
     );
-    if (sourceFunction) {
+    if (sourceFunction?.text) {
       logger.debug(
         `[searchFunction] Searching for function via source mapping: ${sourceFunction}`,
       );
       try {
         const mappedResult = await searchSourceFunction(
           projectPath,
-          sourceFunction,
+          sourceFunction?.text,
+          { sourceHint: sourceFunction?.source ?? undefined },
         );
         if (mappedResult) {
           return mappedResult;
