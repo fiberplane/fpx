@@ -94,7 +94,6 @@ export async function expandFunction(
   const identifiers = analyzeOutOfScopeIdentifiers(
     searchResult.node,
     searchResult.sourceFile,
-    // true, // NOTE - Debug switch
   );
 
   const context = await extractContext(
@@ -102,12 +101,6 @@ export async function expandFunction(
     searchResult.file,
     identifiers,
   );
-
-  // TODO - Recursively expand context of functions' sub-functions
-  //
-  //        Unsure whether should approach this with optimal solution first,
-  //        of creating a "queue" of functions to expand, or just a simple
-  //        recursive approach.
 
   return {
     ...searchResult,
@@ -147,15 +140,17 @@ async function extractContext(
         getTextDocumentDefinition(connection, funcFileUri, identifier.position),
       ]);
 
-      // logger.debug(
-      //   `[debug] ts sourceDefinition for ${identifier.name}:`,
-      //   JSON.stringify(sourceDefinition, null, 2),
-      // );
+      if (identifier.name === "schema") {
+        logger.debug(
+          `[debug] ts sourceDefinition for ${identifier.name}:`,
+          JSON.stringify(sourceDefinition, null, 2),
+        );
 
-      // logger.debug(
-      //   `[debug] textDocumentDefinition for ${identifier.name}:`,
-      //   JSON.stringify(textDocumentDefinition, null, 2),
-      // );
+        logger.debug(
+          `[debug] textDocumentDefinition for ${identifier.name}:`,
+          JSON.stringify(textDocumentDefinition, null, 2),
+        );
+      }
 
       // Here we can filter out standard globals that are defined in the runtime
       //   (e.g., `console`, `URL`, `Number`, etc.)
@@ -182,7 +177,7 @@ async function extractContext(
         // If there's a node, we can try to extract the value of the definition
         if (node) {
           // First, handle the case where it was imported from another file.
-          // As of writing, we *shouldn't* hit this case, but it's good as a fallback
+          // As of writing, we will hit this case when you do `import * as schema from "./db"`
           //
           const parentImportDeclaration = getParentImportDeclaration(node);
           if (
@@ -198,7 +193,7 @@ async function extractContext(
               identifier,
             );
 
-            // TODO - Recurse
+            // TODO - Recurse (do not implement yet)
             if (contextEntry) {
               context.push(contextEntry);
               continue;

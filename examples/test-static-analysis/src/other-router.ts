@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/d1";
  */
 import { Hono } from "hono";
 import * as schema from "./db/schema";
+import { stuff } from "./db/schema";
 
 const app = new Hono<{ Bindings: { DB: D1Database } }>();
 
@@ -24,6 +25,13 @@ app.post("/db", async (c) => {
   const body = await c.req.json();
   const db = drizzle(c.env.DB);
   const stuff2 = await db.insert(schema.stuff).values(body).returning();
+  return c.json(stuff2);
+});
+
+app.post("/db-alt", async (c) => {
+  const body = await c.req.json();
+  const db = drizzle(c.env.DB);
+  const stuff2 = await db.insert(stuff).values(body).returning();
   return c.json(stuff2);
 });
 
