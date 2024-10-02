@@ -20,8 +20,6 @@ export async function searchSourceFunction(
   searchString: string,
   debug = false,
 ): Promise<SearchFunctionResult | null> {
-  logger.debug("[debug] hiii");
-
   let files: string[];
   try {
     files = await fs.readdir(dirPath);

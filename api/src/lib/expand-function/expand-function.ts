@@ -209,8 +209,6 @@ async function extractContext(
             );
           }
 
-          const valueText = getDefinitionText(node, sourceFile);
-
           // HACK - If we resolved the definition to node_modules,
           //        we can skip any recursive expansion and just add the import as context for now
           const isNodeModule = sourceDefinition?.uri?.includes("node_modules");
@@ -235,19 +233,22 @@ async function extractContext(
             );
             const contextEntry: ExpandedFunctionContextEntry = {
               name: identifier.name,
-              type: valueText?.type ?? "unknown",
+              // HACK - `unknown` just means "do not expand this"
+              type: "unknown",
               position: identifier.position,
               definition: {
                 uri: sourceDefinition.uri,
                 range: sourceDefinition.range,
-                // TODO - Truncate definition text here, since it can be huge (since this is from a node_modules package)
-                text: valueText?.text,
+                // NOTE - We do not include definition text here, since it can be huge (since this is from a node_modules package)
+                text: "#third-party-library-code",
               },
               package: extractPackageName(sourceDefinition.uri) ?? undefined,
             };
             context.push(contextEntry);
             continue;
           }
+
+          const valueText = getDefinitionText(node, sourceFile);
 
           const contextEntry: ExpandedFunctionContextEntry = {
             name: identifier.name,

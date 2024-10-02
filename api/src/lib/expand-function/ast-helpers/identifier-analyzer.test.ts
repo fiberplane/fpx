@@ -256,4 +256,49 @@ describe("analyzeOutOfScopeIdentifiers", () => {
       ]),
     );
   });
+
+  it.only("should not consider parameters of functions defined within the function as out of scope", () => {
+    const source = `
+      function test(userId, eventId) {
+        webhooks.on(
+          ["issues.opened", "star.created", "watch.started"],
+          async ({ payload, name }) => {  
+            await db.insert(events).values({
+              eventId,
+              eventAction: payload.action,
+              eventName: name,
+              repoId: payload.repository.id,
+              userId,
+            });
+          }
+      }
+    `;
+    const sourceFile = createSourceFile(source);
+    const functionNode = getFunctionNode(sourceFile);
+
+    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "db" }),
+        expect.objectContaining({ name: "insert" }),
+        expect.objectContaining({ name: "values" }),
+        expect.objectContaining({ name: "webhooks" }),
+        expect.objectContaining({ name: "events" }),
+      ]),
+    );
+
+    expect(result).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "test" }),
+        expect.objectContaining({ name: "userId" }),
+        expect.objectContaining({ name: "eventId" }),
+        expect.objectContaining({ name: "payload" }),
+        expect.objectContaining({ name: "action" }),
+        expect.objectContaining({ name: "repository" }),
+        expect.objectContaining({ name: "id" }),
+        expect.objectContaining({ name: "name" }),
+      ]),
+    );
+  });
 });
