@@ -58,9 +58,10 @@ export async function generateRequestWithAnthropic({
     `method: ${method}`,
     `path: ${path}`,
     `handler: ${handler}`,
-    `handlerContext: ${handlerContext}`,
-    `openApiSpec: ${openApiSpec}`,
-    `middleware: ${middleware}`,
+    // `handlerContext: ${handlerContext}`,
+    // `openApiSpec: ${openApiSpec}`,
+    // `middleware: ${middleware}`,
+    // `middlewareContext: ${middlewareContext}`,
   );
   const anthropicClient = new Anthropic({ apiKey, baseURL: baseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({

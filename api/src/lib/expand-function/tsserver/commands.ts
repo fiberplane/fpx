@@ -17,7 +17,7 @@ export async function openFile(
 
   const existingFile = openedFiles.get(filePath);
   if (existingFile && existingFile.content === fileContent) {
-    logger.debug("[debug] [openFile] File already opened:", filePath);
+    // logger.debug("[debug] [openFile] File already opened:", filePath);
     return;
   }
 

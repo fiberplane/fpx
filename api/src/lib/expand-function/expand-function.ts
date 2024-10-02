@@ -160,9 +160,9 @@ async function extractContext(
       const isStandardGlobal =
         !sourceDefinition && textDocumentDefinition?.uri?.endsWith(".d.ts");
       if (isStandardGlobal) {
-        logger.debug(
-          `[debug] Skipping expansion of ${identifier.name} as it is likely a standard global in the runtime`,
-        );
+        // logger.debug(
+        //   `[debug] Skipping expansion of ${identifier.name} as it is likely a standard global in the runtime`,
+        // );
         continue;
       }
 
@@ -275,18 +275,10 @@ async function extractContext(
           //        we can skip any recursive expansion and just add the import as context for now
           const isNodeModule = sourceDefinition?.uri?.includes("node_modules");
 
-          if (identifier.name === "schema") {
-            console.log("schema sourceDefinition", sourceDefinition);
-            console.log(
-              "schema textDocumentDefinition",
-              textDocumentDefinition,
-            );
-          }
-
           if (isNodeModule) {
-            logger.debug(
-              `[debug] ${identifier.name} is likely an installed dependency`,
-            );
+            // logger.debug(
+            //   `[debug] ${identifier.name} is likely an installed dependency`,
+            // );
             const contextEntry: ExpandedFunctionContextEntry = {
               name: identifier.name,
               // HACK - `unknown` just means "do not expand this"
@@ -317,10 +309,10 @@ async function extractContext(
             },
           };
 
-          logger.debug(
-            `[debug] [extractContext] Context entry for ${identifier.name}`,
-            contextEntry,
-          );
+          // logger.debug(
+          //   `[debug] [extractContext] Context entry for ${identifier.name}`,
+          //   contextEntry,
+          // );
 
           // Recursively expand context if the identifier is a function
           if (contextEntry?.type === "function") {
@@ -349,10 +341,10 @@ async function extractContext(
               sourceFile,
             );
 
-            logger.debug(
-              `[debug] [extractContext] Analyzed NESTED out of scope identifiers for ${identifier.name}`,
-              functionIdentifiers,
-            );
+            // logger.debug(
+            //   `[debug] [extractContext] Analyzed NESTED out of scope identifiers for ${identifier.name}`,
+            //   functionIdentifiers,
+            // );
 
             const subContext = await extractContext(
               projectRoot,

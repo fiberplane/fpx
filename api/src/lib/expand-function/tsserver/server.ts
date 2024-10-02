@@ -37,11 +37,11 @@ export async function getTSServer(pathToProject: string) {
   const resolvedPath = resolve(pathToProject);
 
   if (tsServerInstance) {
-    logger.debug(
-      chalk.dim(
-        `[debug] Reusing existing TS Server instance for project: ${resolvedPath}`,
-      ),
-    );
+    // logger.debug(
+    //   chalk.dim(
+    //     `[debug] Reusing existing TS Server instance for project: ${resolvedPath}`,
+    //   ),
+    // );
     return tsServerInstance;
   }
 

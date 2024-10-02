@@ -66,10 +66,12 @@ app.post(
     }
 
     // Expand out of scope identifiers in the handler function, to add as additional context
+    console.time("buildAiContext");
     const [handlerContext, middlewareContext] = await buildAiContext(
       handler,
       middleware,
     );
+    console.timeEnd("buildAiContext");
     // Generate the request
     const { data: parsedArgs, error: generateError } =
       await generateRequestWithAiProvider({
@@ -166,13 +168,19 @@ async function buildAiContext(
     | undefined
     | null,
 ) {
-  // Expand out of scope identifiers in the handler function, to add as additional context
-  return Promise.all([
-    buildHandlerContext(handler),
-    middleware
-      ? buildMiddlewareContext(middleware)
-      : Promise.resolve(undefined),
-  ]);
+  console.time("buildHandlerContext");
+  const handlerContextPromise = buildHandlerContext(handler).finally(() => {
+    console.timeEnd("buildHandlerContext");
+  });
+
+  console.time("buildMiddlewareContext");
+  const middlewareContextPromise = middleware
+    ? buildMiddlewareContext(middleware).finally(() => {
+        console.timeEnd("buildMiddlewareContext");
+      })
+    : Promise.resolve(undefined);
+
+  return Promise.all([handlerContextPromise, middlewareContextPromise]);
 }
 
 async function buildHandlerContext(handler: string) {

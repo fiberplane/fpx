@@ -23,22 +23,24 @@ import { searchSourceFunction } from "./search-source-function.js";
 export async function searchFunction(
   projectPath: string,
   functionString: string,
-  options: { skipSourceMap?: boolean } = {},
+  options: { skipSourceMap?: boolean; debug?: boolean } = {},
 ): Promise<SearchFunctionResult | null> {
-  // Attempt to search the function directly in the source.
-  try {
-    const directResult = await searchSourceFunction(
-      projectPath,
-      functionString,
-    );
-    if (directResult) {
-      return directResult;
-    }
-  } catch (error) {
-    logger.error(`Error searching for function directly in source: ${error}`);
-  }
+  const debug = options.debug || false;
 
+  // HACK - Allows us to run tests without source maps
   if (options.skipSourceMap) {
+    // Attempt to search the function directly in the source.
+    try {
+      const directResult = await searchSourceFunction(
+        projectPath,
+        functionString,
+      );
+      if (directResult) {
+        return directResult;
+      }
+    } catch (error) {
+      logger.error(`Error searching for function directly in source: ${error}`);
+    }
     return null;
   }
 
@@ -49,9 +51,11 @@ export async function searchFunction(
       functionString,
     );
     if (sourceFunction?.text) {
-      logger.debug(
-        `[searchFunction] Searching for function via source mapping: ${sourceFunction}`,
-      );
+      if (debug) {
+        logger.debug(
+          `[searchFunction] Searching for function via source mapping: ${sourceFunction}`,
+        );
+      }
       try {
         const mappedResult = await searchSourceFunction(
           projectPath,

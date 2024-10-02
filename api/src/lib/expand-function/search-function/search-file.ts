@@ -43,10 +43,8 @@ export type SearchFunctionResult = {
 export function searchFile(
   filePath: string,
   searchString: string,
-  debugg = false,
+  debug = false,
 ): SearchFunctionResult | null {
-  // TODO - Remove
-  const debug = debugg || filePath.includes("githubWebhooksMiddleware");
   if (debug) {
     logger.debug("[debug][searchFile] Searching file:", filePath);
   }
