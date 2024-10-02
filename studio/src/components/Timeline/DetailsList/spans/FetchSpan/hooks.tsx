@@ -1,4 +1,9 @@
-import { isAnthropicVendorInfo, isNeonVendorInfo, isOpenAIVendorInfo, VendorInfo } from "@/utils";
+import {
+  type VendorInfo,
+  isAnthropicVendorInfo,
+  isNeonVendorInfo,
+  isOpenAIVendorInfo,
+} from "@/utils";
 import { useMemo } from "react";
 import { format } from "sql-formatter";
 import { NeonSection } from "./NeonSection";
@@ -30,13 +35,10 @@ export function useFormattedNeonQuery(
   }, [sql, options?.tabWidth]);
 }
 
-
 const DEFAULT_VENDOR_RESULT = {
   component: undefined,
   title: undefined,
 };
-
-
 
 /**
  * Returns a component and title for a vendor-specific span.

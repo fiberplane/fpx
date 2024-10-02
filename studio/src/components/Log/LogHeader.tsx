@@ -1,5 +1,6 @@
 import type { MizuOrphanLog } from "@/queries";
-import { getIconColor } from ".";
+import { safeParseJson } from "@/utils";
+import { formatTimestamp, getIconColor } from ".";
 
 type Props = {
   /**
@@ -9,15 +10,17 @@ type Props = {
    */
   logLevel?: MizuOrphanLog["level"];
 
-  message: string;
+  message: string | null;
   /**
    * Whether to show the timestamp of the log.
    */
-  formattedTimestamp?: string;
+  timestamp?: Date;
 };
 
-export function LogContentHeader(props: Props) {
-  const { logLevel, formattedTimestamp, message } = props;
+export function LogHeader(props: Props) {
+  const { logLevel, timestamp, message } = props;
+  const formattedTimestamp = timestamp && formatTimestamp(timestamp);
+  const parsedMessage = message && safeParseJson(message);
 
   return (
     <div className="py-1 flex items-center">
@@ -27,7 +30,9 @@ export function LogContentHeader(props: Props) {
         />
       )}
 
-      <div className="font-mono text-xs flex-grow truncate">{message}</div>
+      <div className="font-mono text-xs flex-grow truncate">
+        {typeof parsedMessage === "string" ? parsedMessage : message ?? ""}
+      </div>
       {formattedTimestamp && (
         <div className="font-mono text-xs text-right whitespace-nowrap ml-2">
           {formattedTimestamp}

@@ -19,15 +19,15 @@ import { CfBindingOverview, KeyBadge } from "./shared";
  *
  * https://github.com/cloudflare/workers-sdk/blob/c4f0d9e01ef333f5882096ad1e0f37e0911089a7/templates/experimental/worker-scala-kv/src/main/scala/Globals.scala#L9
  */
-export function CloudflareKVSpan({ span }: { span: OtelSpan }) {
-  const method = getString(span.attributes[CF_BINDING_METHOD]);
-  const args = getString(span.attributes.args);
+export function CloudflareKVSpan({ attributes }: Pick<OtelSpan, "attributes">) {
+  const method = getString(attributes[CF_BINDING_METHOD]);
+  const args = getString(attributes.args);
   const kvArgs = useCloudflareKVArgs(args, method);
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-  const error = getString(span.attributes[CF_BINDING_ERROR]);
+  const result = getString(attributes[CF_BINDING_RESULT]);
+  const error = getString(attributes[CF_BINDING_ERROR]);
   return (
     <div className="text-xs py-2">
-      <CfBindingOverview span={span}>
+      <CfBindingOverview attributes={attributes}>
         {kvArgs.key ? <KeyBadge keyName={kvArgs.key} /> : null}
       </CfBindingOverview>
       <div className="text-xs py-2 space-y-2">

@@ -1,4 +1,4 @@
-import { getIconColor } from "@/components/LogContent";
+import { getIconColor } from "@/components/Log";
 import type { MizuOrphanLog } from "@/queries";
 import {
   cn,

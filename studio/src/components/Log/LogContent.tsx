@@ -15,7 +15,7 @@ type Props = Pick<
   MizuOrphanLog,
   "level" | "service" | "message" | "args" | "callerLocations"
 >;
-export function LogContentExpanded(log: Props) {
+export function LogContent(log: Props) {
   const textColor = getTextColorForLevel(log.level);
   const parsedMessage = log.message && safeParseJson(log.message);
   const { isCopied: isMessageCopied, copyToClipboard: copyMessageToClipboard } =

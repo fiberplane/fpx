@@ -1,4 +1,4 @@
-import { LogContent } from "@/components/LogContent";
+import { LogContent, LogHeader } from "@/components/Log";
 import {
   getBgColorForLevel,
   // getTextColorForLevel,
@@ -13,6 +13,7 @@ import {
 // import { useCopyToClipboard } from "@/hooks";
 import type { MizuOrphanLog } from "@/queries";
 import { cn } from "@/utils";
+// import { useHandler } from "@fiberplane/hooks";
 // import { CopyIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
@@ -21,11 +22,11 @@ type LogRowProps = {
   showTimestamp?: boolean;
 };
 
-export function LogRow({ log, showTimestamp = true }: LogRowProps) {
+export function LogRow({ log }: LogRowProps) {
   const bgColor = getBgColorForLevel(log.level);
   // const textColor = getTextColorForLevel(log.level);
   const [isExpanded, setIsExpanded] = useState(false);
-  console.log("isExpanded", isExpanded);
+  // const toggleExpand = useHandler(() => setIsExpanded(!isExpanded));
   // we don't want the focus ring to be visible when the user is selecting the row with the mouse
   // const [isMouseSelected, setIsMouseSelected] = useState(false);
   // const { isCopied: isMessageCopied, copyToClipboard: copyMessageToClipboard } =
@@ -37,12 +38,63 @@ export function LogRow({ log, showTimestamp = true }: LogRowProps) {
 
   return (
     <div className={cn(bgColor, "hover:bg-muted")}>
-      <LogContent
+      {/* <LogContent
         log={log}
         showTimestamp={showTimestamp}
-        isExpanded={isExpanded}
-        toggleExpand={() => setIsExpanded(!isExpanded)}
+        // isExpanded={isExpanded}
+        // toggleExpand={() => setIsExpanded(!isExpanded)}
       />
+    </div>
+  );
+}
+
+export function LogContent({
+  log,
+  showTimestamp = true,
+  showIcon = true,
+  isExpanded = false,
+  toggleExpand,
+}: LogRowProps) {
+  return ( */}
+      <div className={cn(isExpanded ? "rounded-t-xl" : "rounded-xl")}>
+        <div
+          tabIndex={0}
+          role="button"
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }
+          }}
+          onClick={(event) => {
+            event?.preventDefault();
+            event.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className={cn(
+            "cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-inset",
+            isExpanded ? "rounded-t-xl" : "rounded-xl",
+          )}
+        >
+          <LogHeader
+            logLevel={log.level}
+            message={log.message}
+            timestamp={log.timestamp}
+            // formattedTimestamp={
+            //   formatTimestamp(log.timestamp)
+            // }
+          />
+        </div>
+        {isExpanded && (
+          <LogContent
+            level={log.level}
+            service={log.service}
+            message={log.message}
+            args={log.args}
+            callerLocations={log.callerLocations}
+          />
+        )}
+      </div>
     </div>
   );
 }

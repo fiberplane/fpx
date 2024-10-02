@@ -1,5 +1,6 @@
 import NeonLogo from "@/assets/NeonLogo.svg";
 import { CodeMirrorSqlEditor } from "@/components/CodeMirrorEditor";
+import { formatTimestamp } from "@/components/Log";
 import { useFormattedNeonQuery } from "@/components/Timeline";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +14,6 @@ import { cn, getString, noop } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import type { NeonEvent } from "../types";
-import { formatTimestamp } from "./shared";
 
 export function NeonEventRow({ log }: { log: NeonEvent }) {
   const [isExpanded, setIsExpanded] = useState(false);

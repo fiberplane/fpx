@@ -1,11 +1,11 @@
-import { LogContent } from "@/components/Log";
+import { LogHeader } from "@/components/Log";
 import { isMizuOrphanLog } from "@/queries";
 import { type Waterfall, isFetchSpan, isIncomingRequestSpan } from "@/utils";
-import { FetchSpanContent } from "../spans/FetchSpan/FetchSpanContent";
-import { GenericSpanContent } from "../spans/GenericSpan/GenericSpanContent";
-import { IncomingRequestContent } from "../spans/IncomingRequest/IncomingRequestContent";
+import { FetchSpanHeader } from "../spans/FetchSpan/FetchSpanHeader";
+import { GenericSpanHeader } from "../spans/GenericSpan/GenericSpanHeader";
+import { IncomingRequestHeader } from "../spans/IncomingRequest/IncomingRequestHeader";
 
-export function Content({
+export function TimelineDetailItemHeader({
   item,
   // traceDuration,
   // traceStartTime,
@@ -22,20 +22,27 @@ export function Content({
     // const marginLeft = `${(((item.timestamp.getTime() - traceStartTime) / traceDuration) * 100).toPrecision(4)}%`;
     return (
       // <div style={{ marginLeft }} className="overflow-hidden">
-      <LogContent args={item.args} level={item.level} message={item.message} />
+      <LogHeader
+        // logLevel={item.level}
+        message={item.message}
+      />
       // </div>
     );
   }
 
   if (isIncomingRequestSpan(item.span)) {
-    return <IncomingRequestContent attributes={item.span.attributes} />;
+    return <IncomingRequestHeader attributes={item.span.attributes} />;
   }
 
   if (isFetchSpan(item.span)) {
     return (
-      <FetchSpanContent
+      <FetchSpanHeader
         attributes={item.span.attributes}
-        vendorInfo={item.vendorInfo}
+        // vendorInfo={item.vendorInfo}
+        // attributes={item.span.attributes}
+        // vendorInfo={item.vendorInfo}
+        // key={item.span.span_id}
+        // isExpanded={isExpanded}
       />
     );
   }
@@ -43,17 +50,13 @@ export function Content({
   // const marginLeft = `${(((item.span.start_time.getTime() - traceStartTime) / traceDuration) * 100).toPrecision(4)}%`;
   return (
     // <div style={{ marginLeft }} className="min-h-[24px] flex items-center">
-    <GenericSpanContent
+    <GenericSpanHeader
       attributes={item.span.attributes}
-      kind={item.span.kind}
-      parent_span_id={item.span.parent_span_id}
-      span_id={item.span.span_id}
-      trace_id={item.span.trace_id}
-      events={item.span.events}
-      status={item.span.status}
-      end_time={item.span.end_time}
-      start_time={item.span.start_time}
+      name={item.span.name}
       vendorInfo={item.vendorInfo}
+      // span={item.span}
+      // key={item.span.span_id}
+      // vendorInfo={item.vendorInfo}
       // isExpanded={isExpanded}
     />
     // </div>

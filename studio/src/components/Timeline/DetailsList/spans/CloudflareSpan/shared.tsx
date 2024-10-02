@@ -6,12 +6,15 @@ import type { OtelSpan } from "@fiberplane/fpx-types";
 import { TextOrJsonViewer } from "../../TextJsonViewer";
 
 export function CfBindingOverview({
-  span,
+  attributes,
   className,
   children,
-}: { span: OtelSpan; className?: string; children?: React.ReactNode }) {
-  const bindingName = getString(span.attributes[CF_BINDING_NAME]);
-  const method = getString(span.attributes[CF_BINDING_METHOD]);
+}: { className?: string; children?: React.ReactNode } & Pick<
+  OtelSpan,
+  "attributes"
+>) {
+  const bindingName = getString(attributes[CF_BINDING_NAME]);
+  const method = getString(attributes[CF_BINDING_METHOD]);
 
   return (
     <div className={cn("flex items-center gap-2 py-0.5", className)}>

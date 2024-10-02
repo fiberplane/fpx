@@ -1,4 +1,4 @@
-import { getIconColor } from "@/components/LogContent";
+import { getIconColor } from "@/components/Log";
 import { SpanStatus } from "@/constants";
 import { isMizuOrphanLog } from "@/queries";
 import type { Waterfall } from "@/utils";
