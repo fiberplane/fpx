@@ -1,5 +1,4 @@
 import * as ts from "typescript";
-import logger from "../../../logger.js";
 
 export interface OutOfScopeIdentifier {
   /** The name of the identifier used but not declared within the function */
@@ -143,13 +142,20 @@ export function analyzeOutOfScopeIdentifiers(
       // Traverse the base expression
       traverse(node.expression);
 
+      // NOTE - This is commented out because we don't want to consider property names as out-of-scope identifiers
+      //        It adds too much noise and complexity to the analysis.
+      //        We will rely on traversing the parent object's definition to understand what the property is or represents.
+      //
+      //        If you uncomment this code, the unfortunate thing that happens is that if `c` is in scope, then `c.req` will return `req` as out of scope
+      //
       // Handle the property name
-      if (!isDeclared(node.name.text)) {
-        const pos = sourceFile.getLineAndCharacterOfPosition(
-          node.name.getStart(),
-        );
-        usedIdentifiers.set(node.name.text, pos);
-      }
+      //
+      // if (!isDeclared(node.name.text)) {
+      //   const pos = sourceFile.getLineAndCharacterOfPosition(
+      //     node.name.getStart(),
+      //   );
+      //   usedIdentifiers.set(node.name.text, pos);
+      // }
 
       return;
     }

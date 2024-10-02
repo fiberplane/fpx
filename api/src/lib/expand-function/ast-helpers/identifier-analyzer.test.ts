@@ -29,6 +29,11 @@ function getFunctionNode(
           }
         }
       });
+    } else if (ts.isExpressionStatement(node)) {
+      // Check for anonymous arrow functions
+      if (ts.isArrowFunction(node.expression)) {
+        functionNode = node.expression;
+      }
     }
   });
 
@@ -40,6 +45,17 @@ function getFunctionNode(
 }
 
 describe("analyzeOutOfScopeIdentifiers", () => {
+  it("should NOT return a function declaration's name as out of scope", () => {
+    const source = "function outer() {}";
+    const sourceFile = createSourceFile(source);
+    const functionNode = getFunctionNode(sourceFile);
+
+    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+    expect(result).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "outer" })]),
+    );
+  });
   it("should identify an out-of-scope variable", () => {
     const source = `
       function test() {
@@ -60,7 +76,61 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     );
   });
 
-  it("should identify `console` and `log` (from `console.log`) both as out-of-scope identifiers", () => {
+  it("should NOT identify locally declared const as an out-of-scope identifier", () => {
+    const source = `
+      function test() {
+        console.log(outOfScope);
+        const localConst = 1;
+        console.log(localConst);
+      }
+    `;
+    const sourceFile = createSourceFile(source);
+    const functionNode = getFunctionNode(sourceFile);
+
+    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+    expect(result).not.toContainEqual(
+      expect.objectContaining({ name: "localConst" }),
+    );
+  });
+
+  it("should NOT identify locally declared var as an out-of-scope identifier", () => {
+    const source = `
+      function test() {
+        console.log(outOfScope);
+        var localVar = 2;
+        console.log(localVar);
+      }
+    `;
+    const sourceFile = createSourceFile(source);
+    const functionNode = getFunctionNode(sourceFile);
+
+    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+    expect(result).not.toContainEqual(
+      expect.objectContaining({ name: "localVar" }),
+    );
+  });
+
+  it("should NOT identify locally declared `let` as an out-of-scope identifier", () => {
+    const source = `
+      function test() {
+        console.log(outOfScope);
+        let localLet = 3;
+        console.log(localLet);
+      }
+    `;
+    const sourceFile = createSourceFile(source);
+    const functionNode = getFunctionNode(sourceFile);
+
+    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+    expect(result).not.toContainEqual(
+      expect.objectContaining({ name: "localLet" }),
+    );
+  });
+
+  it("should consider Web Standard global like `console` (from `console.log`) as out-of-scope identifier", () => {
     const source = `
       function test() {
         console.log(outOfScope);
@@ -74,112 +144,64 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
 
     expect(result).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          name: "outOfScope",
-          position: expect.objectContaining({ line: 2, character: 20 }),
-        }),
-        expect.objectContaining({ name: "console" }),
-        expect.objectContaining({ name: "log" }),
-      ]),
+      expect.arrayContaining([expect.objectContaining({ name: "console" })]),
     );
   });
 
-  it("should NOT identify a locally declared const, var, or let as out-of-scope identifiers", () => {
-    const source = `
-      function test() {
-        console.log(outOfScope);
-        const localConst = 1;
-        var localVar = 2;
-        let localLet = 3;
-        console.log(localConst, localVar, localLet);
-      }
-    `;
-    const sourceFile = createSourceFile(source);
-    const functionNode = getFunctionNode(sourceFile);
-
-    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
-
-    const forbiddenNames = ["localConst", "localVar", "localLet"];
-    for (const name of forbiddenNames) {
-      expect(result).not.toContainEqual(expect.objectContaining({ name }));
-    }
-  });
-
-  it("should handle arrow functions", () => {
-    const source = `
+  describe("arrow functions", () => {
+    it("should handle arrow functions assigned to variables", () => {
+      const source = `
       const test = () => {
         console.log(outOfScope);
         const localVar = 1;
         console.log(localVar);
       };
     `;
-    const sourceFile = createSourceFile(source);
-    const functionNode = getFunctionNode(sourceFile);
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
 
-    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
 
-    expect(result).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "outOfScope" }),
-        expect.objectContaining({ name: "console" }),
-        expect.objectContaining({ name: "log" }),
-      ]),
-    );
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "outOfScope" }),
+          expect.objectContaining({ name: "console" }),
+        ]),
+      );
 
-    const forbiddenNames = ["test", "localVar"];
-    for (const name of forbiddenNames) {
-      expect(result).not.toContainEqual(expect.objectContaining({ name }));
-    }
-  });
-
-  it("should handle property access expressions correctly", () => {
-    const source = `
-      function test() {
-        const arg3 = 3;
-        console.log(obj.property);
-        globalObject.someMethod(arg1, arg2, arg3);
+      const forbiddenNames = ["test", "localVar"];
+      for (const name of forbiddenNames) {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
       }
+    });
+    it("should handle anonymous arrow functions", () => {
+      const source = `
+      () => {
+        console.log(outOfScope);
+        const localVar = 1;
+        console.log(localVar);
+      };
     `;
-    const sourceFile = createSourceFile(source);
-    const functionNode = getFunctionNode(sourceFile);
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
 
-    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
 
-    expect(result).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "console" }),
-        expect.objectContaining({ name: "log" }),
-        expect.objectContaining({ name: "obj" }),
-        expect.objectContaining({ name: "property" }),
-        expect.objectContaining({ name: "globalObject" }),
-        expect.objectContaining({ name: "someMethod" }),
-        expect.objectContaining({ name: "arg1" }),
-        expect.objectContaining({ name: "arg2" }),
-      ]),
-    );
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "outOfScope" }),
+          expect.objectContaining({ name: "console" }),
+        ]),
+      );
 
-    const forbiddenNames = ["test", "arg3"];
-    // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach((name) => {
-      expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      const forbiddenNames = ["localVar"];
+      for (const name of forbiddenNames) {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      }
     });
   });
 
-  it("should not return a the function declaration's name as out of scope", () => {
-    const source = "function outer() {}";
-    const sourceFile = createSourceFile(source);
-    const functionNode = getFunctionNode(sourceFile);
-
-    const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
-
-    expect(result).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ name: "outer" })]),
-    );
-  });
-
-  // TODO - Factor out into simpler unit tests
-  it("should handle complex scenarios", () => {
+  it("should consider local variables derived from out of scope variables as in scope", () => {
     const source = `
       function complex(param1) {
         const local1 = outOfScope1;
@@ -206,7 +228,6 @@ describe("analyzeOutOfScopeIdentifiers", () => {
         expect.objectContaining({ name: "outOfScope4" }),
         expect.objectContaining({ name: "outOfScope5" }),
         expect.objectContaining({ name: "obj" }),
-        expect.objectContaining({ name: "property" }),
       ]),
     );
 
@@ -217,10 +238,81 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     });
   });
 
-  it("should consider destructured variables from in-scope identifiers as local scope", () => {
-    const source = `
+  // NOTE - We may want to change some of this behavior going forward, but it makes things much simpler for now
+  //        Right now we're just going to ignore any properties on a given out-of-scope object.
+  //        Doing so could lead to us adding in LOTS of context, e.g., when someone imports an entire module file.
+  //        `import * as schema from "./db";`
+  //
+  //        However, that might be preferable to instead receiving a bunch of identifiers and having to do oodles of lookups.
+  //
+  describe("property access and destructuring", () => {
+    it("should not return identifiers that are used to access object properties", () => {
+      const source = `
+      function test() {
+        console.log(obj.property);
+        globalObject.someMethod();
+      }
+    `;
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
+
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "console" }),
+          expect.objectContaining({ name: "obj" }),
+          expect.objectContaining({ name: "globalObject" }),
+        ]),
+      );
+
+      const forbiddenNames = ["log", "property", "someMethod"];
+      for (const name of forbiddenNames) {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      }
+    });
+
+    it("should consider property access expressions on function parameters as in-scope", () => {
+      const source = `
       function test(c) {
         const { shouldHonk } = c.req.query();
+        const honk = typeof shouldHonk !== "undefined" ? "Honk honk!" : "";
+      }
+    `;
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
+
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+      const forbiddenNames = ["c", "req", "query"];
+      for (const name of forbiddenNames) {
+        expect(result).not.toContainEqual(expect.objectContaining({ name }));
+      }
+    });
+
+    it("should consider destructured variables from in-scope identifiers as local scope", () => {
+      const source = `
+      function test(c) {
+        const { shouldHonk } = c.req.query();
+        const honk = typeof shouldHonk !== "undefined" ? "Honk honk!" : "";
+      }
+    `;
+      const sourceFile = createSourceFile(source);
+      const functionNode = getFunctionNode(sourceFile);
+
+      const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
+
+      expect(result).not.toContainEqual(
+        expect.objectContaining({ name: "shouldHonk" }),
+      );
+    });
+  });
+
+  // Okay, this doesn't matter too much, since we'd expand OutOfScopeConstants anyhow
+  it.skip("should consider destructured variables from out-of-scope identifiers as out of scope", () => {
+    const source = `
+      function test(_c) {
+        const { shouldHonk } = OutOfScopeConstants;
         const honk = typeof shouldHonk !== "undefined" ? "Honk honk!" : "";
       }
     `;
@@ -229,10 +321,12 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
     const result = analyzeOutOfScopeIdentifiers(functionNode, sourceFile);
 
-    const forbiddenNames = ["c", "req", "query", "shouldHonk", "honk"];
-    for (const name of forbiddenNames) {
-      expect(result).not.toContainEqual(expect.objectContaining({ name }));
-    }
+    expect(result).toContainEqual(
+      expect.objectContaining({ name: "OutOfScopeConstants" }),
+    );
+    expect(result).toContainEqual(
+      expect.objectContaining({ name: "shouldHonk" }),
+    );
   });
 
   describe("function parameters", () => {
@@ -294,6 +388,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
       function outer() {
         const outerVar = 1;
         function inner() {
+          console.log(outerVar);
           return meh;
         }
       }
@@ -338,8 +433,6 @@ describe("analyzeOutOfScopeIdentifiers", () => {
       expect(result).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ name: "db" }),
-          expect.objectContaining({ name: "insert" }),
-          expect.objectContaining({ name: "values" }),
           expect.objectContaining({ name: "webhooks" }),
           expect.objectContaining({ name: "events" }),
         ]),
