@@ -66,11 +66,13 @@ export function analyzeOutOfScopeIdentifiers(
 
   // Start traversing the function node
   function traverse(node: ts.Node) {
-    if (
-      ts.isFunctionDeclaration(node) ||
-      ts.isFunctionExpression(node) ||
-      ts.isArrowFunction(node)
-    ) {
+    if (ts.isFunctionDeclaration(node)) {
+      // Add function name to the outer scope
+      if (node.name && ts.isIdentifier(node.name)) {
+        addDeclaration(node.name.text);
+      }
+
+      // Push a new scope for the function body
       pushScope();
 
       // Add parameters to the current scope
@@ -78,7 +80,24 @@ export function analyzeOutOfScopeIdentifiers(
         collectBindings(param.name);
       }
 
-      // If it's a named function (not anonymous), add its name to the scope
+      if (node.body) {
+        traverse(node.body);
+      }
+
+      popScope();
+      return;
+    }
+
+    if (ts.isFunctionExpression(node) || ts.isArrowFunction(node)) {
+      // Push a new scope for the function body
+      pushScope();
+
+      // Add parameters to the current scope
+      for (const param of node.parameters) {
+        collectBindings(param.name);
+      }
+
+      // If it's a named function expression, add its name to the inner scope
       if (node.name && ts.isIdentifier(node.name)) {
         addDeclaration(node.name.text);
       }
@@ -126,7 +145,9 @@ export function analyzeOutOfScopeIdentifiers(
 
       // Handle the property name
       if (!isDeclared(node.name.text)) {
-        const pos = sourceFile.getLineAndCharacterOfPosition(node.name.getStart());
+        const pos = sourceFile.getLineAndCharacterOfPosition(
+          node.name.getStart(),
+        );
         usedIdentifiers.set(node.name.text, pos);
       }
 
@@ -181,7 +202,10 @@ export function analyzeOutOfScopeIdentifiers(
   function collectBindings(name: ts.BindingName) {
     if (ts.isIdentifier(name)) {
       addDeclaration(name.text);
-    } else if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
+    } else if (
+      ts.isObjectBindingPattern(name) ||
+      ts.isArrayBindingPattern(name)
+    ) {
       for (const element of name.elements) {
         if (ts.isBindingElement(element)) {
           collectBindings(element.name);
@@ -199,7 +223,11 @@ export function analyzeOutOfScopeIdentifiers(
   }
 
   // Add function name to the scope if it exists
-  if (functionNode.name && ts.isIdentifier(functionNode.name)) {
+  if (
+    ts.isFunctionDeclaration(functionNode) &&
+    functionNode.name &&
+    ts.isIdentifier(functionNode.name)
+  ) {
     addDeclaration(functionNode.name.text);
   }
 

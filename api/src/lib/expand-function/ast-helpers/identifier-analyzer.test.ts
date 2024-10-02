@@ -64,9 +64,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     );
 
     expect(result).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: "localVar" }),
-      ]),
+      expect.arrayContaining([expect.objectContaining({ name: "localVar" })]),
     );
   });
 
@@ -93,7 +91,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
     const forbiddenNames = ["test", "localVar"];
     // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach(name => {
+    forbiddenNames.forEach((name) => {
       expect(result).not.toContainEqual(expect.objectContaining({ name }));
     });
   });
@@ -119,7 +117,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
     const forbiddenNames = ["param1", "param2"];
     // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach(name => {
+    forbiddenNames.forEach((name) => {
       expect(result).not.toContainEqual(expect.objectContaining({ name }));
     });
   });
@@ -152,7 +150,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
     const forbiddenNames = ["test", "arg3"];
     // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach(name => {
+    forbiddenNames.forEach((name) => {
       expect(result).not.toContainEqual(expect.objectContaining({ name }));
     });
   });
@@ -169,7 +167,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     );
   });
 
-  it.only("should handle complex scenarios", () => {
+  it("should handle complex scenarios", () => {
     const source = `
       function complex(param1) {
         const local1 = outOfScope1;
@@ -202,7 +200,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
     const forbiddenNames = ["inner", "local1", "local2", "param1"];
     // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach(name => {
+    forbiddenNames.forEach((name) => {
       expect(result).not.toContainEqual(expect.objectContaining({ name }));
     });
   });
@@ -229,10 +227,9 @@ describe("analyzeOutOfScopeIdentifiers", () => {
     //   ]),
     // );
 
-
     const forbiddenNames = ["c", "req", "query", "shouldHonk", "honk"];
     // biome-ignore lint/complexity/noForEach: <explanation>
-    forbiddenNames.forEach(name => {
+    forbiddenNames.forEach((name) => {
       expect(result).not.toContainEqual(expect.objectContaining({ name }));
     });
   });
@@ -258,7 +255,7 @@ describe("analyzeOutOfScopeIdentifiers", () => {
 
       const forbiddenNames = ["inner", "outer", "outerVar"];
       // biome-ignore lint/complexity/noForEach: <explanation>
-      forbiddenNames.forEach(name => {
+      forbiddenNames.forEach((name) => {
         expect(result).not.toContainEqual(expect.objectContaining({ name }));
       });
     });
@@ -294,9 +291,18 @@ describe("analyzeOutOfScopeIdentifiers", () => {
         ]),
       );
 
-      const forbiddenNames = ["test", "userId", "eventId", "payload", "action", "repository", "id", "name"];
+      const forbiddenNames = [
+        "test",
+        "userId",
+        "eventId",
+        "payload",
+        "action",
+        "repository",
+        "id",
+        "name",
+      ];
       // biome-ignore lint/complexity/noForEach: <explanation>
-      forbiddenNames.forEach(name => {
+      forbiddenNames.forEach((name) => {
         expect(result).not.toContainEqual(expect.objectContaining({ name }));
       });
     });
