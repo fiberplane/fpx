@@ -80,7 +80,14 @@ export function LogContent({
         )}
       </div>
       {isExpanded && (
-        <div className="p-2 font-mono text-xs text-muted-foreground relative">
+        <div className="p-2 font-mono text-xs text-muted-foreground relative"
+          onClick={event => event.stopPropagation()}
+          onKeyDown={event => {
+            if (event.key === "Enter") {
+              event.stopPropagation();
+            }
+          }}
+        >
           <div className="pl-4">
             <div
               className={cn(

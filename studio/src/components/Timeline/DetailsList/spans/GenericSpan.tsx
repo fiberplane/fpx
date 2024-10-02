@@ -76,7 +76,11 @@ export function GenericSpan({ span, vendorInfo, isExpanded }: Props) {
         </div>
       </SectionHeading>
       {isExpanded && (
-        <div className="py-2 grid gap-4">
+        <div className="py-2 grid gap-4" onClick={event => event.stopPropagation()} onKeyDown={event => {
+          if (event.key === "Enter") {
+            event.stopPropagation();
+          }
+        }}>
           {exception && (
             // <div className={cn(
             //   getBgColorForLevel("error"),
@@ -100,9 +104,12 @@ export function GenericSpan({ span, vendorInfo, isExpanded }: Props) {
               />
             </SubSection>
           )}
-          <SubSection>
+          <SubSection className="gap-0">
             <SubSectionHeading>Meta data</SubSectionHeading>
             <KeyValueTable
+              className="mt-0"
+              valueCellClassName="text-[10px]/3"
+              keyCellClassName="text-[10px]/3"
               keyValue={{
                 "Span ID": span.span_id,
                 "Start Time": span.start_time.toString(),

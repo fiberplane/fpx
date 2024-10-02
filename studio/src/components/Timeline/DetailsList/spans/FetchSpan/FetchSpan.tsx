@@ -109,7 +109,14 @@ function GenericFetchSpan({
         </div>
 
         {isExpanded && (
-          <div>
+          <div
+            onClick={event => event.stopPropagation()}
+            onKeyDown={event => {
+              if (event.key === "Enter") {
+                event.stopPropagation();
+              }
+            }}
+          >
             {children}
 
             <div className="px-2">
