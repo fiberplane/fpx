@@ -2,7 +2,12 @@ import fs from "node:fs";
 import { promisify } from "node:util";
 import { parse } from "acorn";
 import { simple as walkSimple } from "acorn-walk";
-import { SourceMapConsumer } from "source-map";
+import {
+  type RawIndexMap,
+  type RawSourceMap,
+  SourceMapConsumer,
+} from "source-map";
+import logger from "../../logger.js";
 
 const readFileAsync = promisify(fs.readFile);
 
@@ -14,12 +19,15 @@ interface FunctionLocation {
 }
 
 async function findFunctionByDefinition(
-  jsFilePath: string,
+  jsFileContents: string,
   functionDefinition: string,
 ): Promise<FunctionLocation | null> {
   try {
-    const fileContent = await readFileAsync(jsFilePath, { encoding: "utf-8" });
-    const ast = parse(fileContent, {
+    const normalizedFunctionDefinition = functionDefinition
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const ast = parse(jsFileContents, {
       ecmaVersion: "latest",
       locations: true,
       sourceType: "module",
@@ -29,11 +37,14 @@ async function findFunctionByDefinition(
 
     walkSimple(ast, {
       FunctionDeclaration(node) {
+        if (foundLocation) {
+          return;
+        }
         // Extract function source from original content based on node's location
-        const funcSource = fileContent.substring(node.start, node.end);
+        const funcSource = jsFileContents.substring(node.start, node.end);
         if (
           funcSource.replace(/\s+/g, " ").trim() ===
-            functionDefinition.replace(/\s+/g, " ").trim() &&
+            normalizedFunctionDefinition &&
           node.loc
         ) {
           foundLocation = {
@@ -45,11 +56,14 @@ async function findFunctionByDefinition(
         }
       },
       FunctionExpression(node) {
+        if (foundLocation) {
+          return;
+        }
         // Repeat as FunctionDeclaration
-        const funcSource = fileContent.substring(node.start, node.end);
+        const funcSource = jsFileContents.substring(node.start, node.end);
         if (
           funcSource.replace(/\s+/g, " ").trim() ===
-            functionDefinition.replace(/\s+/g, " ").trim() &&
+            normalizedFunctionDefinition &&
           node.loc
         ) {
           foundLocation = {
@@ -61,11 +75,13 @@ async function findFunctionByDefinition(
         }
       },
       ArrowFunctionExpression(node) {
-        // Repeat as FunctionDeclaration
-        const funcSource = fileContent.substring(node.start, node.end);
+        if (foundLocation) {
+          return;
+        }
+        const funcSource = jsFileContents.substring(node.start, node.end);
         if (
           funcSource.replace(/\s+/g, " ").trim() ===
-            functionDefinition.replace(/\s+/g, " ").trim() &&
+            normalizedFunctionDefinition &&
           node.loc
         ) {
           foundLocation = {
@@ -80,7 +96,7 @@ async function findFunctionByDefinition(
 
     return foundLocation;
   } catch {
-    console.error("Error reading or parsing file:", jsFilePath);
+    logger.error("[findFunctionByDefinition] Error parsing js file contents");
     return null;
   }
 }
@@ -89,13 +105,10 @@ async function findFunctionByDefinition(
  * This function will throw an error if the map file is not valid json
  */
 async function findOriginalSource(
-  jsFile: string,
+  sourceMapContent: RawSourceMap | RawIndexMap,
   line: number,
   column: number,
 ) {
-  const mapFile = `${jsFile}.map`;
-  const sourceMapContent = JSON.parse(fs.readFileSync(mapFile, "utf8"));
-
   return await SourceMapConsumer.with(sourceMapContent, null, (consumer) => {
     const pos = consumer.originalPositionFor({
       line, // Line number from JS file
@@ -105,11 +118,13 @@ async function findOriginalSource(
     consumer.destroy();
     // console.log('Original Source:', pos);
     // Optional: Display the source code snippet if needed
+
     const returnNullOnMissing = true;
     const sourceContent = consumer.sourceContentFor(
       pos.source ?? "",
       returnNullOnMissing,
     );
+
     // console.log('Source Content:\n', sourceContent);
     return { ...pos, sourceContent };
   });
@@ -119,8 +134,22 @@ export async function findSourceFunction(
   jsFilePath: string,
   functionText: string,
   returnNullOnMissing = false,
+  hints: {
+    sourceMapContent?: RawSourceMap | RawIndexMap;
+    jsFileContents?: string;
+  } = {},
 ) {
-  return findFunctionByDefinition(jsFilePath, functionText).then(
+  const mapFile = `${jsFilePath}.map`;
+  // OPTIMIZE - This is a hot path, so we should cache the source map content
+  //            Each parse takes about 10ms even on a medium sized codebase
+  const sourceMapContent =
+    hints.sourceMapContent ??
+    JSON.parse(await readFileAsync(mapFile, { encoding: "utf8" }));
+  const jsFileContents =
+    hints.jsFileContents ??
+    (await readFileAsync(jsFilePath, { encoding: "utf8" }));
+
+  return findFunctionByDefinition(jsFileContents, functionText).then(
     async (loc) => {
       const functionStartLine = loc?.startLine ?? 0;
       const functionStartColumn = loc?.startColumn ?? 0;
@@ -128,8 +157,16 @@ export async function findSourceFunction(
       const functionEndColumn = loc?.endColumn ?? 0;
 
       const [sourceFunctionStart, sourceFunctionEnd] = await Promise.all([
-        findOriginalSource(jsFilePath, functionStartLine, functionStartColumn),
-        findOriginalSource(jsFilePath, functionEndLine, functionEndColumn),
+        findOriginalSource(
+          sourceMapContent,
+          functionStartLine,
+          functionStartColumn,
+        ),
+        findOriginalSource(
+          sourceMapContent,
+          functionEndLine,
+          functionEndColumn,
+        ),
       ]);
 
       const source = sourceFunctionStart.source;

@@ -65,10 +65,12 @@ export async function searchFunction(
         if (mappedResult) {
           return mappedResult;
         }
-        logger.debug(
-          "no mapped result found for source function",
-          sourceFunction,
-        );
+        if (debug) {
+          logger.debug(
+            "no mapped result found for source function",
+            sourceFunction,
+          );
+        }
       } catch (error) {
         logger.error(
           `Error searching for function via source mapping: ${error}`,

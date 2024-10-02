@@ -1,5 +1,6 @@
 import path from "node:path";
 import { zValidator } from "@hono/zod-validator";
+import chalk from "chalk";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
@@ -201,7 +202,9 @@ async function expandFunctionInUserProject(handler: string) {
 
   const truncatedHandler = handler.replace(/\n/g, " ").slice(0, 33);
   logger.debug(
-    `Expanding function ${truncatedHandler}... in project root ${projectRoot}`,
+    chalk.dim(
+      `Expanding function ${truncatedHandler}... in project root ${projectRoot}`,
+    ),
   );
 
   const expandedFunction = await expandFunction(projectRoot, handler);
@@ -284,10 +287,13 @@ async function buildMiddlewareContext(
     return undefined;
   }
 
-  // HACK - Ignore reactRenderer middleware, since it's from a third party library
-  // We could also be clever and ignore a bunch of other third party middleware by default to avoid too much work being done here
+  // HACK - Ignore reactRenderer middleware, as well as bearerAuth, since it's from a third party library
+  // We could also be clever and ignore a bunch of other third party Hono middleware by default to avoid too much work being done here
   const filteredMiddleware = middleware.filter(({ handler }) => {
     if (handler?.startsWith("function reactRenderer")) {
+      return false;
+    }
+    if (handler?.startsWith("async function bearerAuth")) {
       return false;
     }
     return true;

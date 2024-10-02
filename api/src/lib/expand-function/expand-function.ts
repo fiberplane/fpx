@@ -75,7 +75,7 @@ export type ExpandedFunctionResult = {
  * context. The result includes the location of the function and the expanded context of its dependencies.
  *
  * @param {string} projectRoot - The root directory of the project.
- * @param {string} func - The name of the function to expand.
+ * @param {string} func - The string representation of the function to expand.
  * @param {Object} options - Optional parameters for the search.
  * @param {boolean} options.skipSourceMap - If true, the source map search will be skipped. Useful for tests.
  * @returns {Promise<ExpandedFunctionResult | null>} A promise that resolves to the expanded function context
@@ -88,7 +88,10 @@ export async function expandFunction(
 ): Promise<ExpandedFunctionResult | null> {
   const searchResult = await searchFunction(projectRoot, func, options);
   if (!searchResult) {
-    logger.warn(`[expandFunction] No search result found for ${func}`);
+    const truncatedFunc = func.slice(0, 100);
+    logger.warn(
+      `[expandFunction] No search result found for ${truncatedFunc}...`,
+    );
     return null;
   }
 

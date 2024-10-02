@@ -6,6 +6,8 @@ import { findSourceFunction } from "../../find-source-function/index.js";
 /**
  * Retrieves the source function text from the compiled JavaScript directory.
  *
+ * On even a medium sized codebase, these lookups can take 600ms
+ *
  * @param {string} projectPath - The path to the project directory.
  * @param {string} functionString - The identifier of the function to retrieve.
  * @returns {Promise<string | null>} The source function text if found, otherwise null.
@@ -20,13 +22,26 @@ export async function getSourceFunctionText(
   }
 
   const jsFilePath = path.join(compiledJavascriptPath, "index.js");
+  const mapFile = `${jsFilePath}.map`;
+  const sourceMapContent = JSON.parse(
+    await fs.promises.readFile(mapFile, { encoding: "utf8" }),
+  );
+  const jsFileContents = await fs.promises.readFile(jsFilePath, {
+    encoding: "utf8",
+  });
 
+  // const truncatedFunctionString = functionString.slice(0, 100);
+  // console.time(`findSourceFunction: ${truncatedFunctionString}`);
   const sourceFunction = await findSourceFunction(
     jsFilePath,
     functionString,
     true,
+    {
+      sourceMapContent,
+      jsFileContents,
+    },
   );
-
+  // console.timeEnd(`findSourceFunction: ${truncatedFunctionString}`);
   return {
     text: sourceFunction?.sourceFunction ?? null,
     source: sourceFunction?.source ?? null,
