@@ -20,8 +20,8 @@ export function KeyValueTable({
   valueCellClassName,
 }: {
   keyValue:
-  | Record<string, string>
-  | Array<[string | ReactNode, string | ReactNode]>;
+    | Record<string, string>
+    | Array<[string | ReactNode, string | ReactNode]>;
   emptyMessage?: string;
   className?: string;
   sensitiveKeys?: string[] | ((key: string) => boolean);
@@ -61,8 +61,8 @@ export function KeyValueTable({
 
 type Props = {
   keyValue:
-  | Record<string, string>
-  | Array<[string | ReactNode, string | ReactNode]>;
+    | Record<string, string>
+    | Array<[string | ReactNode, string | ReactNode]>;
   emptyMessage?: string;
   className?: string;
   headerClassName?: string;

@@ -14,7 +14,7 @@ export function EventIndicator(props: Props) {
   const lineOffset = `calc(${left.toFixed(4)}% - ${0 * 0.0625}rem)`;
 
   return (
-    <DurationContainer className="pl-1 pr-2">
+    <DurationContainer className="pl-[5px] pr-2">
       <div
         className={cn(
           "data-[highlighted=true]:bg-primary/10",
@@ -27,7 +27,7 @@ export function EventIndicator(props: Props) {
           style={{ marginLeft: lineOffset }}
           title={new Date(timestamp).toISOString()}
         >
-          <div className="h-1.5 w-1.5 bg-blue-500 rounded-full" />
+          <div className="h-1.5 w-1.5 min-w-1.5 border border-blue-500 bg-blue-800 rounded-full" />
         </div>
       </div>
     </DurationContainer>

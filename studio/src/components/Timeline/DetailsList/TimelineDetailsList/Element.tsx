@@ -11,6 +11,8 @@ import { getBgColorForLevel } from "../../utils";
 import { Content } from "./Content";
 import { ItemIcon } from "./ItemIcon";
 import { getId, getLevelForSpan } from "./utils";
+import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 
 export function Element({
   item,
@@ -25,8 +27,6 @@ export function Element({
   duration: number;
   indent?: number;
 }) {
-  // const highlightedSpanId = null ;
-  // console.log("indent", indent);
   const isLog = isMizuOrphanLog(item);
   const bgColor = getBgColorForLevel(
     isLog
@@ -48,20 +48,15 @@ export function Element({
       }}
       tabIndex={0}
       role="button"
-      // onMouseEnter={() => setHighlightedSpanId(getId(item))}
-      // onMouseLeave={() => setHighlightedSpanId(null)}
       className={cn(
         "max-w-full",
-        // "border-l-2 border-transparent ""
-        "rounded-sm transition-all",
+        "first:rounded-t-sm transition-all",
+        "last:border-none",
         "hover:bg-primary/10",
         "data-[highlighted=true]:bg-primary/10",
         "border-b border-muted-foreground/30",
-        // "relative after:absolute after:bottom-[-4px] after:bg-muted-foreground/30 after:w-full after:h-px last:after:h-0",
         "grid gap-3",
         bgColor,
-        // `ml-${indent * 2}`,
-        // "grid gap-2 bg-muted/50",
         isMdScreen
           ? "grid-cols-[24px_auto_150px_min-content]"
           : "grid-cols-[24px_auto_min-content]",
@@ -72,9 +67,15 @@ export function Element({
       </div>
       <div
         style={{ marginLeft: `${(indent * 16) / 16}rem` }}
-        className="flex gap-2 min-w-0"
+        className={cn("flex gap-2",
+          // min width needed for ellipsis to work
+          "min-w-0"
+        )}
       >
-        <div className="grow min-w-0">
+        <div className={cn("grow",
+          // min width needed for ellipsis to work
+          "min-w-0"
+        )}>
           <Content
             item={item}
             traceDuration={0}
@@ -84,7 +85,9 @@ export function Element({
           />
         </div>
         <div className="h-6 flex items-center justify-center text-primary grow-0">
-          <Icon icon={isExpanded ? "ph:caret-up" : "ph:caret-down"} />
+          <Button size="sm" variant="ghost">
+            <Icon icon={isExpanded ? "ph:caret-up" : "ph:caret-down"} />
+          </Button>
         </div>
       </div>
       {isMdScreen &&
@@ -107,7 +110,7 @@ export function Element({
           />
         ))}
 
-      <div className="text-xs font-mono  text-muted-foreground h-6 flex items-center">
+      <div className="text-xs font-mono  text-muted-foreground min-h-6 flex items-center justify-end">
         <div>
           {formatTimestamp(
             isMizuOrphanLog(item) ? item.timestamp : item.span.start_time,

@@ -39,7 +39,7 @@ export function DurationIndicator(props: {
 
   const [visible, setVisible] = React.useState(false);
   return (
-    <DurationContainer className="pl-1.5 pr-1.5">
+    <DurationContainer className="pl-1.5 pr-1.5 pt-[1px]">
       <Tooltip open={visible}>
         <div
           className={cn(
@@ -50,6 +50,7 @@ export function DurationIndicator(props: {
             "transition-all ",
             "relative min-w-0",
             "max-w-full",
+
             // "pt-0.5",
           )}
         >
@@ -59,19 +60,17 @@ export function DurationIndicator(props: {
             onPointerCancel={() => setVisible(false)}
             onPointerLeave={() => setVisible(false)}
           >
-            <div>
-              <div
-                className={cn(
-                  // `h-4 border border-${levelToColor(level)}-700 bg-${levelToColor(level)}-950 flex items-center min-w-0 absolute rounded`,
-                  `h-4 border border-${levelToColor(level)}-${isActive ? 600 : 700} bg-${levelToColor(level)}-${isActive && level !== "info" ? 950 : 950} flex items-center min-w-0 absolute rounded`,
-                  // (isActive || level !== "info") && `bg-${levelToColor(level)}-900 border-${levelToColor(level)}-500`,
-                  "max-w-full",
-                  // "bg-red-900"
-                )}
-                style={{ width: lineWidth, marginLeft: lineOffset }}
-              >
-                {/* <div className={"h-0.5 min-w-0.5 bg-blue-700 w-full"} /> */}
-              </div>
+            <div
+              className={cn(
+                // `h-4 border border-${levelToColor(level)}-700 bg-${levelToColor(level)}-950 flex items-center min-w-0 absolute rounded`,
+                `h-3.5 border border-${levelToColor(level)}-${isActive ? 600 : 700} bg-${levelToColor(level)}-${isActive && level !== "info" ? 950 : 950} flex items-center min-w-0 rounded`,
+                // (isActive || level !== "info") && `bg-${levelToColor(level)}-900 border-${levelToColor(level)}-500`,
+                "max-w-full",
+                // "bg-red-900"
+              )}
+              style={{ width: lineWidth, marginLeft: lineOffset }}
+            >
+              {/* <div className={"h-0.5 min-w-0.5 bg-blue-700 w-full"} /> */}
             </div>
           </TooltipTrigger>
         </div>

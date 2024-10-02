@@ -55,7 +55,7 @@ export function GenericSpan({ span, vendorInfo, isExpanded }: Props) {
   const exception = span.events?.find((event) => event.name === "exception");
   return (
     <div id={span.span_id}>
-      <SectionHeading className="grid gap-2 grid-cols-[1fr] items-center min-h-6">
+      <SectionHeading className="grid gap-2 grid-cols-[1fr] items-center min-h-[26px]">
         {/* <div className="flex items-center justify-center">{icon}</div> */}
         <div className="flex items-center gap-2 max-w-full text-muted-foreground">
           {name}
@@ -76,11 +76,15 @@ export function GenericSpan({ span, vendorInfo, isExpanded }: Props) {
         </div>
       </SectionHeading>
       {isExpanded && (
-        <div className="py-2 grid gap-4" onClick={event => event.stopPropagation()} onKeyDown={event => {
-          if (event.key === "Enter") {
-            event.stopPropagation();
-          }
-        }}>
+        <div
+          className="py-2 grid gap-4"
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.stopPropagation();
+            }
+          }}
+        >
           {exception && (
             // <div className={cn(
             //   getBgColorForLevel("error"),

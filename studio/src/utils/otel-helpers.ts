@@ -28,19 +28,19 @@ const isErrorEvent = (event: OtelEvent) => {
   return isExceptionEvent(event) || isErrorLogEvent(event);
 };
 
-export const hasErrorEvent = (span: OtelSpan) => {
+export const hasErrorEvent = (span: Pick<OtelSpan, "events">) => {
   return span.events?.some(isErrorEvent);
 };
 
-export const getErrorEvents = (span: OtelSpan) => {
+export const getErrorEvents = (span: Pick<OtelSpan, "events">) => {
   return span.events?.filter(isErrorEvent) ?? [];
 };
 
-export function isFpxRequestSpan(span: OtelSpan) {
+export function isFpxRequestSpan(span: Pick<OtelSpan, "name" | "kind">) {
   return span.name === "request" && span.kind === SpanKind.SERVER;
 }
 
-export const hasHttpError = (span: OtelSpan) => {
+export const hasHttpError = (span: Pick<OtelSpan, "attributes">) => {
   const statusCode = getStatusCode(span);
   return statusCode && statusCode >= 400;
 };
@@ -51,7 +51,7 @@ export const hasHttpError = (span: OtelSpan) => {
  * - Any span has an exception event
  * - Any span has an error log event
  */
-export function isFpxTraceError(trace: OtelTrace) {
+export function isFpxTraceError(trace: Pick<OtelTrace, "spans">) {
   const requestSpan = trace.spans.find(isFpxRequestSpan);
   if (requestSpan && getStatusCode(requestSpan) > 400) {
     return true;
@@ -60,11 +60,11 @@ export function isFpxTraceError(trace: OtelTrace) {
 }
 
 // TODO support this in the otel client
-export function getMatchedRoute(span: OtelSpan) {
+export function getMatchedRoute(span: Pick<OtelSpan, "attributes">) {
   return getString(span.attributes["http.route"]);
 }
 
-export function getRequestPath(span: OtelSpan) {
+export function getRequestPath(span: Pick<OtelSpan, "attributes">) {
   const attribute = span.attributes[FPX_REQUEST_PATHNAME];
   return getString(attribute);
 }
@@ -111,31 +111,31 @@ export function getNumber<T = number>(
   return defaultValue;
 }
 
-export function getQuery(span: OtelSpan) {
+export function getQuery(span: Pick<OtelSpan, "attributes">) {
   const attribute = span.attributes[FPX_REQUEST_SEARCH];
   return getString(attribute);
 }
 
-export function getPathWithSearch(span: OtelSpan) {
+export function getPathWithSearch(span: Pick<OtelSpan, "attributes">) {
   const path = getRequestPath(span);
   const queryParams = getQuery(span);
   const queryParamsString = queryParams ? `${queryParams}` : "";
   return `${path}${queryParamsString}`;
 }
 
-export function getRequestBody(span: OtelSpan) {
+export function getRequestBody(span: Pick<OtelSpan, "attributes">) {
   return getString(span.attributes[FPX_REQUEST_BODY], {
     defaultValue: undefined,
   });
 }
 
-export function getResponseBody(span: OtelSpan) {
+export function getResponseBody(span: Pick<OtelSpan, "attributes">) {
   return getString(span.attributes[FPX_RESPONSE_BODY], {
     defaultValue: undefined,
   });
 }
 
-export function getRequestHeaders(span: OtelSpan) {
+export function getRequestHeaders(span: Pick<OtelSpan, "attributes">) {
   const headers: Record<string, string> = {};
   const keys = Object.keys(span.attributes);
 
@@ -150,7 +150,7 @@ export function getRequestHeaders(span: OtelSpan) {
   return headers;
 }
 
-export function getRequestEnv(span: OtelSpan) {
+export function getRequestEnv(span: Pick<OtelSpan, "attributes">) {
   const env = getString(span.attributes[FPX_REQUEST_ENV], {
     defaultValue: null,
   });
@@ -179,7 +179,7 @@ export function getRequestEnv(span: OtelSpan) {
   }
 }
 
-export function getRequestQueryParams(span: OtelSpan) {
+export function getRequestQueryParams(span: Pick<OtelSpan, "attributes">) {
   try {
     const urlAttribute = getRequestUrl(span);
     const url = new URL(urlAttribute);
@@ -189,7 +189,7 @@ export function getRequestQueryParams(span: OtelSpan) {
   }
 }
 
-export function getResponseHeaders(span: OtelSpan) {
+export function getResponseHeaders(span: Pick<OtelSpan, "attributes">) {
   const headers: Record<string, string> = {};
   const keys = Object.keys(span.attributes);
   for (const key of keys) {
@@ -203,11 +203,11 @@ export function getResponseHeaders(span: OtelSpan) {
   return headers;
 }
 
-export function getRequestMethod(span: OtelSpan) {
+export function getRequestMethod(span: Pick<OtelSpan, "attributes">) {
   return getString(span.attributes[EXTRA_SEMATTRS_HTTP_REQUEST_METHOD]);
 }
 
-export function getStatusCode(span: OtelSpan) {
+export function getStatusCode(span: Pick<OtelSpan, "attributes">) {
   return getNumber(span.attributes[EXTRA_SEMATTRS_HTTP_RESPONSE_STATUS_CODE]);
 }
 
@@ -225,14 +225,14 @@ export function getStatusCode(span: OtelSpan) {
 //   return `${scheme}://${host}${port}${path}${queryParamsString}`;
 // }
 
-export function getRequestUrl(span: OtelSpan) {
+export function getRequestUrl(span: Pick<OtelSpan, "attributes">) {
   return getString(span.attributes[EXTRA_SEMATTRS_URL_FULL]);
 }
 
-export function isFetchSpan(span: OtelSpan) {
+export function isFetchSpan(span: Pick<OtelSpan, "kind" | "name">) {
   return span.kind === SpanKind.CLIENT && span.name.toLowerCase() === "fetch";
 }
 
-export function isIncomingRequestSpan(span: OtelSpan) {
+export function isIncomingRequestSpan(span: Pick<OtelSpan, "name" | "kind">) {
   return span.name.toLowerCase() === "request" && span.kind === SpanKind.SERVER;
 }

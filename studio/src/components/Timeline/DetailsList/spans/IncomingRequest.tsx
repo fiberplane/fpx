@@ -14,7 +14,6 @@ import {
 import { getMatchedRoute, getRequestMethod, getRequestUrl } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
-// import { useTimelineIcon } from "../../hooks";
 import {
   CollapsibleSubSection,
   SectionHeading,
@@ -29,7 +28,6 @@ type Props = {
   isExpanded?: boolean;
 };
 export function IncomingRequest({ span, isExpanded = false }: Props) {
-  const id = span.span_id;
   const method = getRequestMethod(span);
 
   const pathWithSearch = useMemo<string>(() => {
@@ -60,31 +58,24 @@ export function IncomingRequest({ span, isExpanded = false }: Props) {
     return getStatusCode(span);
   }, [span]);
 
-  // const icon = useTimelineIcon(span);
   const requestEnv = useMemo(() => getRequestEnv(span), [span]);
 
   return (
-    <div id={id}>
-      {/* <div className="flex flex-col gap-2"> */}
-      <div className="flex flex-col gap-2">
+    <div>
+      <div className="flex flex-col gap-2 justify-center">
         <SectionHeading className="flex items-center gap-2 max-lg:mt-2">
-          {/* <div className="flex items-center justify-center w-[24px]">
-            {icon}
-          </div> */}
-
-          {/*  Incoming Request */}
           <StatusCode
             status={responseStatusCode}
             isFailure={false}
-            className="text-xs"
+            className="text-xs py-0.5"
           />
 
-          <div className="inline-flex gap-2 font-mono py-1 text-xs bg-accent/80 rounded px-1">
+          <div className="inline-flex gap-2 font-mono py-0.5 text-xs bg-accent rounded px-1">
             <span className={cn(getHttpMethodTextColor(method))}>{method}</span>
             <span className="text-gray-400 font-light">{pathWithSearch}</span>
           </div>
           {matchedRoute && (
-            <div className="flex gap-2 p-1 text-xs bg-accent/80 rounded">
+            <div className="flex gap-2 p-1 text-xs bg-accent rounded">
               <span className="text-gray-200 text-xs">Route:</span>
               <span className="text-gray-400 font-mono inline-block text-xs">
                 {matchedRoute}
@@ -92,23 +83,6 @@ export function IncomingRequest({ span, isExpanded = false }: Props) {
             </div>
           )}
         </SectionHeading>
-
-        {/* <div className="flex gap-2">
-          <div className="inline-flex gap-2 font-mono py-1 text-xs bg-accent/80 rounded px-1">
-            <span className={cn(getHttpMethodTextColor(method))}>
-              {method}
-            </span>
-            <span className="text-gray-400 font-light">{pathWithSearch}</span>
-          </div>
-          {matchedRoute && (
-            <div className="flex gap-2 p-1 text-xs bg-accent/80 rounded">
-              <span className="text-gray-200 text-xs">Route:</span>
-              <span className="text-gray-400 font-mono inline-block text-xs">
-                {matchedRoute}
-              </span>
-            </div>
-          )}
-        </div> */}
       </div>
 
       {isExpanded && (
@@ -149,9 +123,6 @@ export function IncomingRequest({ span, isExpanded = false }: Props) {
               </SubSection>
             </>
           )}
-          {/* </div> */}
-          {/* </div> */}
-
           <div>
             <SubSectionHeading>Response</SubSectionHeading>
             <div>
@@ -175,7 +146,6 @@ export function IncomingRequest({ span, isExpanded = false }: Props) {
           </div>
         </div>
       )}
-      {/* </div> */}
     </div>
   );
 }
