@@ -1,31 +1,11 @@
 import { getIconColor } from "@/components/Log";
 import type { MizuOrphanLog } from "@/queries";
-import {
-  cn,
-  // objectHasName,
-  objectHasStack,
-  renderFullLogMessage,
-} from "@/utils";
-// import { Icon } from "@iconify/react";
-// import { SubSectionHeading } from "../shared";
-import {
-  // getBgColorForLevel,
-  // getTextColorForLevel
-} from "../utils";
+import { cn, objectHasStack, renderFullLogMessage } from "@/utils";
 import { StackTrace } from "./StackTrace";
 
 export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const id = log.id;
-  const {
-    // level,
-    message,
-  } = log;
-  // const name = objectHasName(message) ? message.name : null;
-
-  // const levelWithDefensiveFallback = level || "info";
-  // const consoleMethod = levelWithDefensiveFallback === "info" ? "log" : level;
-
-  // const heading = `${consoleMethod}${name ? `:  ${name}` : ""}`;
+  const { message } = log;
 
   const { type: contentsType, value: contents } = getLogContents(
     message ?? "",
@@ -34,11 +14,6 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   const description = getDescription(message ?? "", log.args);
   // TODO - Get stack from the span!
   const stack = objectHasStack(message) ? message.stack : null;
-  // const textColorLevel = getTextColorForLevel(level);
-  // const bgColorLevel = getBgColorForLevel(level);
-  // const icon = useTimelineIcon(log, {
-  //   colorOverride: getColorForLevel(log.level),
-  // });
 
   const hasDescription = !!description;
 
@@ -67,10 +42,7 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
   return (
     <div
       id={id?.toString()}
-      className={cn(
-        "overflow-x-auto overflow-y-hidden max-w-full px-2",
-        // bgColorLevel,
-      )}
+      className={cn("overflow-x-auto overflow-y-hidden max-w-full px-2")}
     >
       <div
         className={cn(
@@ -82,17 +54,7 @@ export function OrphanLog({ log }: { log: MizuOrphanLog }) {
             className={`w-2 h-2 mr-2 flex-shrink-0 rounded-[15%] ${getIconColor(log.level)}`}
           />
         </div>
-        {/* <Icon icon="lucide:terminal" className={textColorLevel} /> */}
         {topContent}
-
-        {/* <SubSectionHeading
-          className={cn(
-            "font-semibold text-sm flex items-center gap-2",
-            textColorLevel,
-          )}
-        >
-          {heading}
-        </SubSectionHeading> */}
       </div>
 
       {hasDescription && contentsType === "multi-arg-log" && (

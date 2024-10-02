@@ -20,7 +20,6 @@ function TimelineListDetailsComponent({
   const [withLogs, setWithLogs] = useState(true);
   const [withSpans, setWithSpans] = useState(true);
 
-  // const asTree = false;
   const isMdScreen = useIsMdScreen();
 
   const tree = useMemo(() => convertToTree(waterfall), [waterfall]);

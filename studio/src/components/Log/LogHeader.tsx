@@ -1,6 +1,6 @@
 import type { MizuOrphanLog } from "@/queries";
 import { safeParseJson } from "@/utils";
-import { formatTimestamp, getIconColor } from ".";
+import { formatTimestamp, getIconColor } from "./utils";
 
 type Props = {
   /**

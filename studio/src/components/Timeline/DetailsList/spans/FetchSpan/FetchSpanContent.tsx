@@ -19,15 +19,7 @@ import { useVendorSpecificSection } from "./hooks";
 type Props = { vendorInfo: VendorInfo } & Pick<OtelSpan, "attributes">;
 
 export function FetchSpanContent(props: Props) {
-  const {
-    // children,
-    // requestHeaders,
-    // requestBody,
-    // responseHeaders,
-    // responseBody,
-    attributes,
-    vendorInfo,
-  } = props;
+  const { attributes, vendorInfo } = props;
 
   const { component: children } = useVendorSpecificSection(vendorInfo) ?? {};
   const requestHeaders = getRequestHeaders({ attributes });

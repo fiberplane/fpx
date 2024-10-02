@@ -33,23 +33,7 @@ export const RequestorPage = () => {
 
   const { sidePanel } = useRequestorStore("sidePanel");
 
-  // NOTE - Uncomment this to test overflow of requests panel
-  // const { setQueryParams } = useRequestorStore("setQueryParams");
-  // useEffect(() => {
-  //   setQueryParams(
-  //     createKeyValueParameters(
-  //       Array.from({ length: 30 }).map(() => ({ key: "a", value: "" })),
-  //     ),
-  //   );
-  // }, [setQueryParams]);
-
-  const {
-    history,
-    // sessionHistory,
-    isLoading,
-    // recordRequestInSessionHistory,
-    loadHistoricalRequest,
-  } = useRequestorHistory();
+  const { history, isLoading, loadHistoricalRequest } = useRequestorHistory();
 
   const hasHistory = history.length > 0;
   useEffect(() => {

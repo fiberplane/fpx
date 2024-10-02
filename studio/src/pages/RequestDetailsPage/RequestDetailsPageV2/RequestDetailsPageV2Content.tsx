@@ -12,16 +12,10 @@ import {
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import {
   TimelineListDetails,
-  TimelineProvider,
   extractWaterfallTimeStats,
 } from "@/components/Timeline";
 import { useAsWaterfall } from "@/components/Timeline/hooks/useAsWaterfall";
 import { Button } from "@/components/ui/button";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
 import type { MizuOrphanLog } from "@/queries";
 import { useOtelTraces } from "@/queries/traces-otel";
 import { cn, isMac } from "@/utils";
@@ -35,7 +29,6 @@ import {
   useReplayRequest,
   useShouldReplay,
 } from "../hooks";
-import { TraceDetailsTimeline } from "../v2";
 import { HttpSummary, SummaryV2 } from "../v2/SummaryV2";
 
 const EMPTY_LIST: Array<MizuOrphanLog> = [];
@@ -68,7 +61,6 @@ export function RequestDetailsPageContentV2({
     useMostRecentRequest(currentTrace, traces);
 
   const { rootSpan, waterfall } = useAsWaterfall(spans, orphanLogs);
-  // const {} = useDuratio
   const { minStart, duration } = useMemo(
     () => extractWaterfallTimeStats(waterfall),
     [waterfall],
@@ -209,46 +201,14 @@ export function RequestDetailsPageContentV2({
           )}
         </div>
       </div>
-      <TimelineProvider>
-        <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
-          <SummaryV2 requestSpan={rootSpan.span} />
-          <div className="min-w-0 overflow-hidden w-full lg:hidden">
-            <TraceDetailsTimeline waterfall={waterfall} />
-          </div>
-          <ResizablePanelGroup
-            direction="horizontal"
-            className={cn("grid grid-rows-[auto_1fr] w-full border-t")}
-          >
-            <ResizablePanel
-              defaultSize={20}
-              className={cn(
-                "hidden",
-                "lg:block lg:sticky lg:top-4 self-start",
-                "min-w-[300px]",
-                "xl:min-w-[260px]",
-                "2xl:min-w-[320px]",
-              )}
-            >
-              <TraceDetailsTimeline waterfall={waterfall} className="lg:pt-0" />
-            </ResizablePanel>
-            <ResizableHandle className="max-lg:hidden" />
-            <ResizablePanel
-              className={cn(
-                "grid items-center gap-4 overflow-x-auto relative",
-                "w-full",
-                "lg:items-start",
-                "lg:p-4",
-              )}
-            >
-              <TimelineListDetails
-                waterfall={waterfall}
-                duration={duration}
-                minStart={minStart}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
-      </TimelineProvider>
+      <div className={cn("grid grid-rows-[auto_1fr] gap-4")}>
+        <SummaryV2 requestSpan={rootSpan.span} />
+        <TimelineListDetails
+          waterfall={waterfall}
+          duration={duration}
+          minStart={minStart}
+        />
+      </div>
     </div>
   );
 }

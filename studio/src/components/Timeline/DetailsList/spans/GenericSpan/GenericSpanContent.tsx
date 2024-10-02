@@ -62,8 +62,8 @@ export function GenericSpanContent(props: Props) {
   const metaData = useMemo(() => {
     return {
       "Span ID": span_id,
-      "Start Time": start_time.toString(),
-      "End Time": end_time.toString(),
+      "Start Time": start_time.toLocaleString(),
+      "End Time": end_time.toLocaleString(),
       Kind: kind,
       "Status Message": status?.message ?? "No message",
       "Parent Span ID": parent_span_id ?? "",

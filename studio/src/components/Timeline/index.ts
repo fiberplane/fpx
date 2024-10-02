@@ -1,4 +1,3 @@
-export { TimelineGraph } from "./graph";
 export { extractWaterfallTimeStats } from "./utils";
 export { RequestMethod, SubSectionHeading, SubSection } from "./shared";
 export { useAsWaterfall } from "./hooks";
@@ -8,4 +7,3 @@ export {
   TimelineListDetails,
   useFormattedNeonQuery,
 } from "./DetailsList";
-export { TimelineProvider } from "./context";

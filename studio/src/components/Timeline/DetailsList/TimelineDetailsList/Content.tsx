@@ -7,23 +7,12 @@ import { IncomingRequestContent } from "../spans/IncomingRequest/IncomingRequest
 
 export function Content({
   item,
-  // traceDuration,
-  // traceStartTime,
-  // isExpanded,
-  // toggleExpand,
 }: {
   item: Waterfall[0];
-  // traceDuration: number;
-  // traceStartTime: number;
-  // isExpanded: boolean;
-  // toggleExpand: () => void;
 }) {
   if (isMizuOrphanLog(item)) {
-    // const marginLeft = `${(((item.timestamp.getTime() - traceStartTime) / traceDuration) * 100).toPrecision(4)}%`;
     return (
-      // <div style={{ marginLeft }} className="overflow-hidden">
       <LogContent args={item.args} level={item.level} message={item.message} />
-      // </div>
     );
   }
 
@@ -40,9 +29,7 @@ export function Content({
     );
   }
 
-  // const marginLeft = `${(((item.span.start_time.getTime() - traceStartTime) / traceDuration) * 100).toPrecision(4)}%`;
   return (
-    // <div style={{ marginLeft }} className="min-h-[24px] flex items-center">
     <GenericSpanContent
       attributes={item.span.attributes}
       kind={item.span.kind}
@@ -54,8 +41,6 @@ export function Content({
       end_time={item.span.end_time}
       start_time={item.span.start_time}
       vendorInfo={item.vendorInfo}
-      // isExpanded={isExpanded}
     />
-    // </div>
   );
 }

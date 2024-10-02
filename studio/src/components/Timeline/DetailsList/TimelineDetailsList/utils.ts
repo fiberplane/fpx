@@ -32,25 +32,10 @@ export function convertToTree(waterfall: Waterfall): SpanNode | null {
   const spans = [...waterfall].filter(
     (item: SpanWithVendorInfo | MizuOrphanLog) => !isMizuOrphanLog(item),
   ) as Array<SpanWithVendorInfo>;
-  // const orphanLogs = waterfall.filter((item) => isMizuOrphanLog(item));
 
-  // const rootSpans = spans.filter((span) => !span.span.parent_span_id);
   // HACK - normally we'd look for the root span by trying to find the span with the parent_span_id === null
   //        but we set a fake parent_span_id for the root span in the middleware for now
-  const rootSpans = spans.filter(
-    // (item) => item.span.parent_span_id === null,
-    (item) => item.span.name === "request",
-  );
-
-  // const children = (span: SpanWithVendorInfo) => {
-  //   const childSpans = spans.filter((s) => s.span.parent_span_id === span.span.span_id);
-  //   // const childOrphanLogs = orphanLogs.filter((s) => s.parent_span_id === span.span.span_id);
-  //   // return childSpans.concat(childOrphanLogs);
-  //   return {
-  //     span: span,
-  //     children: childSpans.map(children)
-  //   }
-  // };
+  const rootSpans = spans.filter((item) => item.span.name === "request");
 
   const buildTree = (
     span: SpanWithVendorInfo,
@@ -76,7 +61,7 @@ export function convertToTree(waterfall: Waterfall): SpanNode | null {
 export function getLevelForSpan(item: SpanWithVendorInfo) {
   if (isFetchSpan(item.span) || isIncomingRequestSpan(item.span)) {
     const statusCode = getStatusCode(item.span);
-    // return item.span.attributes;
+
     if (statusCode >= 500) {
       return "error";
     }

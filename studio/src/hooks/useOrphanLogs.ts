@@ -69,7 +69,6 @@ export function convertEventsToOrphanLogs(
           event,
           spanId,
         );
-        // console.log("event", event, orphanLog);
 
         // HACK - We want to be sure that we construct a valid orphan log, otherwise the UI will break
         if (isMizuOrphanLog(orphanLog)) {

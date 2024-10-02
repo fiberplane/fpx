@@ -26,9 +26,7 @@ export function TimelineTree({
       )
     : [];
 
-  // console.log("current", current.item.span.name, logs);
   const combined = [...current.children, ...logs].sort((a, b) => {
-    // return items.sort((a, b) => {
     const timeA = "item" in a ? a.item.span.start_time : a.timestamp;
     const timeB = "item" in b ? b.item.span.start_time : b.timestamp;
     if (timeA.getTime() === timeB.getTime()) {
@@ -52,7 +50,6 @@ export function TimelineTree({
       }
     }
     return new Date(timeA).getTime() - new Date(timeB).getTime();
-    // });
   });
 
   return (
@@ -89,12 +86,6 @@ export function TimelineTree({
           />
         ),
       )}
-      {/* {current.children.map((child) => (
-      <TimelineNode key={child.item.span.span_id} node={child} timelineVisible={timelineVisible} minStart={minStart} duration={duration} indent={indent + 1} />
-    ))}
-    {logs.map((log) => (
-      <Element key={log.id} item={log} timelineVisible={timelineVisible} minStart={minStart} duration={duration} indent={indent + 1} />
-    ))} */}
     </>
   );
 }

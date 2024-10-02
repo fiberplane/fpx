@@ -1,13 +1,12 @@
 import { formatTimestamp } from "@/components/Log";
 import { Button } from "@/components/ui/button";
-// import ExpandIcon from "@/assets/Expand.svg";
 import { SpanStatus } from "@/constants";
 import { isMizuOrphanLog } from "@/queries";
 import { type Waterfall, cn } from "@/utils";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { useHandler } from "@fiberplane/hooks";
+import { Icon } from "@iconify/react";
 import { type HTMLAttributes, useState } from "react";
-import { DurationIndicator } from "../../graph/DurationIndicator";
-import { EventIndicator } from "../../graph/EventIndicator";
+import { DurationIndicator, EventIndicator } from "../../graph";
 import { getBgColorForLevel } from "../../utils";
 import { Content } from "./Content";
 import { TimelineDetailItemHeader } from "./Header";
@@ -37,29 +36,40 @@ export function Element({
         ? "error"
         : "info",
   );
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (isMizuOrphanLog(item)) {
+      return item.level === "error";
+    }
+
+    return item.span.status?.code === SpanStatus.ERROR;
+  });
+  const onClickToggle = useHandler(() => setIsExpanded(!isExpanded));
+  const onKeyDownToggle = useHandler((event) => {
+    if (event.key === "Enter") {
+      setIsExpanded(!isExpanded);
+    }
+  });
 
   const indentSpace = indent * 20;
   return (
     <div
       key={getId(item)}
       className={cn(
-        "max-w-full",
+        "grid max-w-full",
         "first:rounded-t-sm transition-all",
-        "last:border-none",
         "group",
-        "data-[highlighted=true]:bg-primary/10",
-        "border-b border-muted-foreground/30",
-        "grid",
+        "border-b border-muted-foreground/30 last:border-none",
         bgColor,
         isMdScreen
-          ? "grid-cols-[24px_auto_150px_min-content]"
-          : "grid-cols-[24px_auto_min-content]",
+          ? "grid-cols-[2rem_auto_150px_min-content]"
+          : "grid-cols-[2rem_auto_min-content]",
       )}
     >
       <DivWithHover
+        onClick={onClickToggle}
+        onKeyDown={onKeyDownToggle}
         className="flex items-center justify-around h-6
-       pr-3"
+       pr-3 pl-1"
       >
         <ItemIcon item={item} />
       </DivWithHover>
@@ -78,13 +88,9 @@ export function Element({
           )}
         >
           <DivWithHover
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={onClickToggle}
+            onKeyDown={onKeyDownToggle}
             style={{ paddingLeft: `${indentSpace}px` }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                setIsExpanded(!isExpanded);
-              }
-            }}
             tabIndex={0}
             role="button"
             className="group-hover:bg-primary/10  pr-3"
@@ -96,15 +102,12 @@ export function Element({
               <Content item={item} />
             </div>
           )}
-          {/* <Content
-            item={item}
-            traceDuration={0}
-            traceStartTime={minStart}
-            isExpanded={isExpanded}
-            toggleExpand={() => setIsExpanded(!isExpanded)}
-          /> */}
         </div>
-        <DivWithHover className="h-6 flex items-center justify-center text-primary grow-0  pr-3">
+        <DivWithHover
+          className="h-6 flex items-center justify-center text-primary grow-0  pr-3"
+          onClick={onClickToggle}
+          onKeyDown={onKeyDownToggle}
+        >
           <Button
             size="icon-xs"
             variant="ghost"
@@ -115,7 +118,11 @@ export function Element({
         </DivWithHover>
       </div>
       {isMdScreen && (
-        <DivWithHover className="h-6  pr-3">
+        <DivWithHover
+          className="h-6  pr-3"
+          onClick={onClickToggle}
+          onKeyDown={onKeyDownToggle}
+        >
           {isMizuOrphanLog(item) ? (
             <EventIndicator
               timestamp={item.timestamp.getTime()}
@@ -137,7 +144,15 @@ export function Element({
         </DivWithHover>
       )}
 
-      <DivWithHover className="text-xs font-mono  text-muted-foreground min-h-6 flex justify-end pl-3 h-6">
+      <DivWithHover
+        onClick={onClickToggle}
+        onKeyDown={onKeyDownToggle}
+        className={cn(
+          "text-xs font-mono text-muted-foreground",
+          "min-h-6 h-6",
+          "flex justify-end pl-3 items-center",
+        )}
+      >
         <div>
           {formatTimestamp(
             isMizuOrphanLog(item) ? item.timestamp : item.span.start_time,
@@ -154,7 +169,10 @@ const DivWithHover = ({
   ...props
 }: HTMLAttributes<HTMLDivElement>) => {
   return (
-    <div {...props} className={cn("group-hover:bg-primary/10", className)}>
+    <div
+      {...props}
+      className={cn("group-hover:bg-primary/10 cursor-pointer", className)}
+    >
       {children}
     </div>
   );
