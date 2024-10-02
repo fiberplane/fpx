@@ -39,12 +39,6 @@ fn main() {
                 .ok_or("Store not found")
                 .unwrap();
 
-            let quit_app = MenuItemBuilder::new("Quit")
-                .id("quit_app")
-                .accelerator("CmdOrCtrl+Q")
-                .build(app)
-                .unwrap();
-
             let open_workspace = MenuItemBuilder::new("Open workspace")
                 .id("open_workspace")
                 .accelerator("CmdOrCtrl+O")
@@ -61,7 +55,15 @@ fn main() {
                 .item(&open_workspace)
                 .item(&close_workspace)
                 .separator()
-                .item(&quit_app)
+                .undo()
+                .redo()
+                .separator()
+                .cut()
+                .copy()
+                .paste()
+                .select_all()
+                .separator()
+                .close_window()
                 .build()
                 .unwrap();
 
@@ -82,9 +84,6 @@ fn main() {
                 let MenuId(id) = event.id();
 
                 match id.as_str() {
-                    "quit_app" => {
-                        std::process::exit(0);
-                    }
                     "close_workspace" => {
                         let app_state = window_.state::<AppState>();
                         if app_state.get_workspace().is_some() {
