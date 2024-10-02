@@ -1,4 +1,5 @@
 import * as ts from "typescript";
+import logger from "../../../logger.js";
 
 export interface OutOfScopeIdentifier {
   /** The name of the identifier used but not declared within the function */
@@ -36,6 +37,23 @@ export function analyzeOutOfScopeIdentifiers(
   sourceFile: ts.SourceFile,
 ): OutOfScopeIdentifier[] {
   if (!functionNode) {
+    return [];
+  }
+
+  console.log("functionNode.kind", ts.SyntaxKind[functionNode.kind]);
+
+  // Type verification
+  if (
+    !ts.isFunctionDeclaration(functionNode) &&
+    !ts.isArrowFunction(functionNode) &&
+    !ts.isFunctionExpression(functionNode)
+  ) {
+    logger.error("Unexpected node type passed to analyzeOutOfScopeIdentifiers:");
+    // @ts-ignore
+    logger.error("Node kind:", ts.SyntaxKind[functionNode?.kind]);
+    // @ts-ignore
+    logger.error("Node text:", functionNode?.getText?.(sourceFile));
+    // console.error("Full node structure:", JSON.stringify(functionNode, null, 2));
     return [];
   }
 
@@ -228,9 +246,12 @@ export function analyzeOutOfScopeIdentifiers(
   pushScope();
 
   // Add function parameters to the initial scope
-  for (const param of functionNode.parameters) {
+  console.log("functionNode.name", functionNode.name)
+  console.log("functionNode.parameters", functionNode.parameters)
+  // biome-ignore lint/complexity/noForEach: This is a NodeArray, which is not iterable in certain cases
+  functionNode.parameters.forEach((param) => {
     collectBindings(param.name);
-  }
+  });
 
   // Add function name to the scope if it exists
   if (

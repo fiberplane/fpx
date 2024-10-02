@@ -213,12 +213,6 @@ async function extractContext(
           //        we can skip any recursive expansion and just add the import as context for now
           const isNodeModule = sourceDefinition?.uri?.includes("node_modules");
 
-          // if (identifier.name === "drizzle") {
-          //   console.log("drizzle sourceDefinition", sourceDefinition);
-          //   console.log("drizzle textDocumentDefinition", textDocumentDefinition);
-          //   console.log("drizzle isNodeModule", isNodeModule);
-          // }
-
           if (identifier.name === "schema") {
             console.log("schema sourceDefinition", sourceDefinition);
             console.log(
@@ -268,12 +262,7 @@ async function extractContext(
 
           // Recursively expand context if the identifier is a function
           if (contextEntry?.type === "function") {
-            // TODO - Check if this is necessary
-            // await openFile(connection, sourceDefinition.uri);
-
-            // @ts-expect-error - I haven't type-narrowed the `node` based off of the valueText.type
-            //                    But just narrowing the node type would work and we could ditch the type property altogether?
-            const functionBody = valueText?.definitionNode?.body ?? node?.body;
+            const functionBody = valueText?.definitionNode ?? node;
             if (!functionBody) {
               logger.warn(
                 `[extractContext] No function body found for ${identifier.name}`,
@@ -282,6 +271,8 @@ async function extractContext(
             }
 
             const functionIdentifiers = analyzeOutOfScopeIdentifiers(
+              // @ts-expect-error - I haven't type-narrowed the `node` based off of the valueText.type
+              //                    But just narrowing the node type would work and we could ditch the type property altogether?
               functionBody,
               sourceFile,
             );
