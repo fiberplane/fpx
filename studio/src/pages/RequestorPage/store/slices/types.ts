@@ -81,6 +81,10 @@ export interface UISlice {
   sidePanel: PanelState;
   bottomPanels: BOTTOM_PANEL_NAMES[];
   bottomPanelIndex: undefined | number;
+  timelineShowLogs: boolean;
+  timelineAsTree: boolean;
+  toggleTimelineLogs: () => void;
+  toggleTimelineAsTree: () => void;
   setBottomPanelIndex(index: number | undefined): void;
   togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) => void;
 }

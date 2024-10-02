@@ -1,8 +1,9 @@
 import { Switch } from "@/components/ui/switch";
 import { useIsMdScreen } from "@/hooks";
+import { useRequestorStore } from "@/pages/RequestorPage/store";
 import { isMizuOrphanLog } from "@/queries";
 import type { Waterfall } from "@/utils";
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { Element } from "./Element";
 import { TimelineTree } from "./TimelineTree";
 import { convertToTree, getId } from "./utils";
@@ -16,9 +17,19 @@ function TimelineListDetailsComponent({
   minStart: number;
   duration: number;
 }) {
-  const [asTree, setAsTree] = useState(true);
-  const [withLogs, setWithLogs] = useState(true);
-  const [withSpans, setWithSpans] = useState(true);
+  const {
+    timelineAsTree: asTree,
+    toggleTimelineAsTree: setAsTree,
+    timelineShowLogs: withLogs,
+    toggleTimelineLogs: setWithLogs,
+  } = useRequestorStore(
+    "toggleTimelineAsTree",
+    "timelineAsTree",
+    "toggleTimelineLogs",
+    "timelineShowLogs",
+  );
+  // const [asTree, setAsTree] = useState(true);
+  // const [withLogs, setWithLogs] = useState(true);
 
   const isMdScreen = useIsMdScreen();
 
@@ -30,12 +41,9 @@ function TimelineListDetailsComponent({
         <label className="flex items-center space-x-2 cursor-pointer">
           <span className="text-xs text-muted-foreground ">Tree view</span>
           <Switch
-            checked={asTree && withSpans}
-            onCheckedChange={(checked) => {
-              setAsTree(checked);
-              if (checked && !withSpans) {
-                setWithSpans(true);
-              }
+            checked={asTree}
+            onCheckedChange={() => {
+              setAsTree();
             }}
           />
         </label>
@@ -44,14 +52,14 @@ function TimelineListDetailsComponent({
           <span className="text-xs text-muted-foreground ">Logs</span>
           <Switch
             checked={withLogs}
-            onCheckedChange={(checked) => {
-              setWithLogs(checked);
+            onCheckedChange={() => {
+              setWithLogs();
             }}
           />
         </label>
       </div>
       <div className="grid overflow-auto min-h-0">
-        {asTree && withSpans
+        {asTree
           ? tree && (
               <TimelineTree
                 node={tree}
@@ -67,8 +75,7 @@ function TimelineListDetailsComponent({
               if (isLog) {
                 console.log("log", item);
               }
-              return (isLog && withLogs && !item.isException) ||
-                (!isLog && withSpans) ? (
+              return (isLog && withLogs && !item.isException) || !isLog ? (
                 <Element
                   item={item}
                   timelineVisible={isMdScreen}
