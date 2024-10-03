@@ -35,7 +35,7 @@ export async function expandHandler(
   const jsFilePath = path.join(compiledJavascriptPath, "index.js");
   const { jsFileContents, sourceMapContent } = await getSourceFiles(jsFilePath);
 
-  // HACK - We filter out certian third-party middleware in this function, to reduce the amount of work done here
+  // HACK - We filter out certian third-party middleware in this function, to reduce the amount of work done in source map lookups
   const filteredMiddleware = filterHonoMiddleware(middleware);
 
   const functionDefinitions = [
@@ -223,12 +223,15 @@ ${stringifyContext(expandedFunction.context)}
 </expanded-function>`;
 }
 
-// HACK - Ignore expansion of reactRenderer middleware, since it's from a third party library
-//        We could also be clever and ignore a bunch of other third party Hono middleware by default to avoid too much work being done here
+// HACK - Ignore expansion of reactRenderer middleware, since it's from a third party library.
+//        We could also be clever and ignore a bunch of other third party Hono middleware by default.
 function filterHonoMiddleware(middleware: Array<{ handler: string }>) {
   return middleware.filter((m) => {
     const functionText = m.handler;
-    return !functionText.startsWith("function reactRenderer");
+    return (
+      !functionText.startsWith("function reactRenderer") &&
+      !functionText.startsWith("async function bearerAuth")
+    );
   });
 }
 
