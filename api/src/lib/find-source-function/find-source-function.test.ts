@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { findSourceFunction } from "./find-source-function.js";
+import { findSourceFunctions } from "./find-source-function.js";
 
 // Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
@@ -92,7 +92,7 @@ describe("findSourceFunction", () => {
     it("should find the source handler function", async () => {
       const jsFilePath = path.join(testContentsDir, "index.js");
       const functionText = HANDLER_COMPILED_CODE;
-      const result = await findSourceFunction(jsFilePath, functionText);
+      const result = await findSourceFunctions(jsFilePath, functionText);
 
       expect(result).toBeDefined();
       expect(result?.sourceFunction).toEqual(HANDLE_SOURCE_CODE);
@@ -136,7 +136,7 @@ describe("findSourceFunction", () => {
     it("should find the source middleware function", async () => {
       const jsFilePath = path.join(testContentsDir, "index.js");
       const functionText = MIDDLEWARE_COMPILED_CODE;
-      const result = await findSourceFunction(jsFilePath, functionText);
+      const result = await findSourceFunctions(jsFilePath, functionText);
 
       expect(result).toBeDefined();
       expect(result?.sourceFunction).toEqual(MIDDLEWARE_SOURCE_CODE);

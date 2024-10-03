@@ -1,1 +1,1 @@
-export { findSourceFunction } from "./find-source-function.js";
+export { findSourceFunctions } from "./find-source-function.js";

@@ -1,3 +1,4 @@
+import * as fs from "node:fs";
 import path from "node:path";
 import { zValidator } from "@hono/zod-validator";
 import chalk from "chalk";
@@ -13,6 +14,8 @@ import {
   type ExpandedFunctionResult,
   expandFunction,
 } from "../lib/expand-function/index.js";
+import { findWranglerCompiledJavascriptDir } from "../lib/expand-function/search-function/index.js";
+import { findSourceFunctions } from "../lib/find-source-function/find-source-function.js";
 import { getInferenceConfig } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
@@ -160,6 +163,51 @@ app.post(
 
 export default app;
 
+async function expandFunctionsPerformant(
+  handler: string,
+  middleware: Array<{ handler: string }>,
+) {
+  // TODO - Implement this
+  // 1. Batch all handler and middleware lookups
+  // 2. Return a map of the function text to node and source file locations
+  // 3. Expand one level
+  // 4. Determine candidates for round level of expansion
+  // 5. Repeat 1-4 as necessary
+  // 6. Return the results
+
+  const projectPath = USER_PROJECT_ROOT_DIR;
+  const compiledJavascriptPath = findWranglerCompiledJavascriptDir(projectPath);
+  if (!compiledJavascriptPath) {
+    return null;
+  }
+
+  // NOTE - This is a bit of an optimization. We're reading the file contents into memory
+  // before passing them to findSourceFunction. This allows us to avoid a multiple reads
+  // of the files in findSourceFunction.
+  const jsFilePath = path.join(compiledJavascriptPath, "index.js");
+  const mapFile = `${jsFilePath}.map`;
+  const sourceMapContent = JSON.parse(
+    await fs.promises.readFile(mapFile, { encoding: "utf8" }),
+  );
+  const jsFileContents = await fs.promises.readFile(jsFilePath, {
+    encoding: "utf8",
+  });
+
+  const functionDefinitions = [
+    handler,
+    ...middleware.map(({ handler }) => handler),
+  ];
+  const sourceFunctions = await findSourceFunctions(
+    jsFileContents,
+    functionDefinitions,
+    true,
+    {
+      sourceMapContent,
+      jsFileContents,
+    },
+  );
+}
+
 async function buildAiContext(
   handler: string,
   middleware:
@@ -179,7 +227,9 @@ async function buildAiContext(
     ? buildMiddlewareContext(middleware).finally(() => {
         console.timeEnd("buildMiddlewareContext");
       })
-    : Promise.resolve(undefined);
+    : Promise.resolve(undefined).then(() => {
+        console.timeEnd("buildMiddlewareContext");
+      });
 
   return Promise.all([handlerContextPromise, middlewareContextPromise]);
 }

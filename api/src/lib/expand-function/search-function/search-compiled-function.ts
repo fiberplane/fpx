@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import logger from "../../../logger.js";
-import { findSourceFunction } from "../../find-source-function/index.js";
+import { findSourceFunctions } from "../../find-source-function/index.js";
 
 /**
  * Retrieves the source function text from the compiled JavaScript directory.
@@ -35,7 +35,7 @@ export async function getSourceFunctionText(
 
   // const truncatedFunctionString = functionString.slice(0, 100);
   // console.time(`findSourceFunction: ${truncatedFunctionString}`);
-  const sourceFunction = await findSourceFunction(
+  const sourceFunction = await findSourceFunctions(
     jsFilePath,
     functionString,
     true,
@@ -57,7 +57,9 @@ export async function getSourceFunctionText(
  * @param {string} projectPath - The path to the project directory.
  * @returns {string | null} The path to the compiled JavaScript directory if found, otherwise null.
  */
-function findWranglerCompiledJavascriptDir(projectPath: string): string | null {
+export function findWranglerCompiledJavascriptDir(
+  projectPath: string,
+): string | null {
   const wranglerTmpPath = findWranglerTmp(projectPath);
   if (!wranglerTmpPath) {
     return null;

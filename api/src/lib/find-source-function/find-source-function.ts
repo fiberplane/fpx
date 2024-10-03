@@ -20,10 +20,10 @@ interface FunctionLocation {
 
 async function findFunctionByDefinition(
   jsFileContents: string,
-  functionDefinition: string,
+  functionDefinitions: Array<string>,
 ): Promise<FunctionLocation | null> {
   try {
-    const normalizedFunctionDefinition = functionDefinition
+    const normalizedFunctionDefinition = functionDefinitions[0]
       .replace(/\s+/g, " ")
       .trim();
 
@@ -130,9 +130,9 @@ async function findOriginalSource(
   });
 }
 
-export async function findSourceFunction(
+export async function findSourceFunctions(
   jsFilePath: string,
-  functionText: string,
+  functionText: string | Array<string>,
   returnNullOnMissing = false,
   hints: {
     sourceMapContent?: RawSourceMap | RawIndexMap;
@@ -149,7 +149,11 @@ export async function findSourceFunction(
     hints.jsFileContents ??
     (await readFileAsync(jsFilePath, { encoding: "utf8" }));
 
-  return findFunctionByDefinition(jsFileContents, functionText).then(
+  const functionDefinitions = Array.isArray(functionText)
+    ? functionText
+    : [functionText];
+
+  return findFunctionByDefinition(jsFileContents, functionDefinitions).then(
     async (loc) => {
       const functionStartLine = loc?.startLine ?? 0;
       const functionStartColumn = loc?.startColumn ?? 0;
