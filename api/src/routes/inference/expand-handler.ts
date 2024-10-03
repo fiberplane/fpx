@@ -195,7 +195,7 @@ ${indent}  <name${filename}>${entry.name}</name>`;
         if (entry.definition?.text) {
           result += `
 ${indent}  <definition>
-${indent}    ${entry.definition.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").trim().split("\n").join(`\n${indent}    `)}
+${indent}    ${entry.definition.text.trim().split("\n").join(`\n${indent}    `)}
 ${indent}  </definition>`;
         }
 

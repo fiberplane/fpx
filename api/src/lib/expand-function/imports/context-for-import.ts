@@ -60,15 +60,10 @@ export async function contextForImport(
  * Follows an import to the file it imports and returns the definition of the
  * identifier it contains.
  *
- * This is WILDLY INCOMPLETE and will fail in many, many cases.
- *
  * I only wrote this helper because I couldn't get the language server to follow
- * definitions to other files. (This has since been fixed, as far as I can tell.)
+ * definitions to other files. (This has since been fixed.)
  *
- * If you find yourself needing to use this, consider the following fixes:
- *
- * - Resolving imports with special ts aliases (e.g. `@/...`)
- * - Handling different file extension for default imports (e.g. .tsx, .js, etc.)
+ * I haven't thoroughly tested that it follows typescript aliases faithfully.
  */
 async function followImport(
   tsserver: MessageConnection,
