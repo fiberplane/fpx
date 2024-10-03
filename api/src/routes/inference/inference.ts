@@ -6,23 +6,23 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
-import { USER_PROJECT_ROOT_DIR } from "../constants.js";
-import { generateRequestWithAiProvider } from "../lib/ai/index.js";
-import { cleanPrompt } from "../lib/ai/prompts.js";
+import { USER_PROJECT_ROOT_DIR } from "../../constants.js";
+import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
+import { cleanPrompt } from "../../lib/ai/prompts.js";
 import {
   type ExpandedFunctionContext,
   type ExpandedFunctionResult,
   expandFunction,
-} from "../lib/expand-function/index.js";
-import { findWranglerCompiledJavascriptDir } from "../lib/expand-function/search-function/index.js";
+} from "../../lib/expand-function/index.js";
+import { findWranglerCompiledJavascriptDir } from "../../lib/expand-function/search-function/index.js";
 import {
   type FindSourceFunctionsResult,
   type SourceFunctionResult,
   findSourceFunctions,
-} from "../lib/find-source-function/find-source-function.js";
-import { getInferenceConfig } from "../lib/settings/index.js";
-import type { Bindings, Variables } from "../lib/types.js";
-import logger from "../logger.js";
+} from "../../lib/find-source-function/find-source-function.js";
+import { getInferenceConfig } from "../../lib/settings/index.js";
+import type { Bindings, Variables } from "../../lib/types.js";
+import logger from "../../logger.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
