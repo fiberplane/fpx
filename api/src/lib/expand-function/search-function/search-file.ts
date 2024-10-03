@@ -19,8 +19,6 @@ export type SearchFunctionResult = {
   node: FunctionNode;
   /** The source file that was found */
   sourceFile: ts.SourceFile;
-
-  // identifiers: FunctionOutOfScopeIdentifiers;
 };
 
 /**
