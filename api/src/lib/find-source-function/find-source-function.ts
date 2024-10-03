@@ -145,14 +145,16 @@ async function findOriginalSource(
   });
 }
 
-type FindSourceFunctionsResult = Array<{
+export type SourceFunctionResult = {
   /** The (compiled) function text that was used to find the source */
   functionText: string;
   /** The source file */
   source: string | null;
   /** The source code of the function */
   sourceFunction: string | null;
-}>;
+};
+
+export type FindSourceFunctionsResult = Array<SourceFunctionResult>;
 
 export async function findSourceFunctions(
   jsFilePath: string,

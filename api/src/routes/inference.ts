@@ -15,7 +15,11 @@ import {
   expandFunction,
 } from "../lib/expand-function/index.js";
 import { findWranglerCompiledJavascriptDir } from "../lib/expand-function/search-function/index.js";
-import { findSourceFunctions } from "../lib/find-source-function/find-source-function.js";
+import {
+  type FindSourceFunctionsResult,
+  type SourceFunctionResult,
+  findSourceFunctions,
+} from "../lib/find-source-function/find-source-function.js";
 import { getInferenceConfig } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
@@ -27,7 +31,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
  */
 app.post("/v0/expand-function", cors(), async (ctx) => {
   const { handler } = await ctx.req.json();
-  const expandedFunction = await expandFunctionInUserProject(handler);
+  const expandedFunction = await expandFunctionInUserProject(handler, false);
   return ctx.json({ expandedFunction });
 });
 
@@ -70,12 +74,11 @@ app.post(
     }
 
     // Expand out of scope identifiers in the handler function, to add as additional context
-    console.time("buildAiContext");
-    const [handlerContext, middlewareContext] = await buildAiContext(
-      handler,
-      middleware,
-    );
-    console.timeEnd("buildAiContext");
+    console.time("expandHandlerAndMiddlewarePerformant");
+    const [handlerContextPerformant, middlewareContextPerformant] =
+      await expandHandlerAndMiddlewarePerformant(handler, middleware ?? []);
+    console.timeEnd("expandHandlerAndMiddlewarePerformant");
+
     // Generate the request
     const { data: parsedArgs, error: generateError } =
       await generateRequestWithAiProvider({
@@ -84,11 +87,11 @@ app.post(
         method,
         path,
         handler,
-        handlerContext,
+        handlerContext: handlerContextPerformant ?? undefined,
         history: history ?? undefined,
         openApiSpec: openApiSpec ?? undefined,
         middleware: middleware ?? undefined,
-        middlewareContext: middlewareContext ?? undefined,
+        middlewareContext: middlewareContextPerformant ?? undefined,
       });
 
     if (generateError) {
@@ -163,22 +166,20 @@ app.post(
 
 export default app;
 
-async function expandFunctionsPerformant(
+async function expandHandlerAndMiddlewarePerformant(
   handler: string,
   middleware: Array<{ handler: string }>,
 ) {
   // TODO - Implement this
   // 1. Batch all handler and middleware lookups
   // 2. Return a map of the function text to node and source file locations
-  // 3. Expand one level
-  // 4. Determine candidates for round level of expansion
-  // 5. Repeat 1-4 as necessary
-  // 6. Return the results
+  // 3. Run expansion on each function
+  // 4. Return the results
 
   const projectPath = USER_PROJECT_ROOT_DIR;
   const compiledJavascriptPath = findWranglerCompiledJavascriptDir(projectPath);
   if (!compiledJavascriptPath) {
-    return null;
+    return [null, null];
   }
 
   // NOTE - This is a bit of an optimization. We're reading the file contents into memory
@@ -193,10 +194,11 @@ async function expandFunctionsPerformant(
     encoding: "utf8",
   });
 
-  // TODO - Make this a generic "work queue" that we can map over?
+  const filteredMiddleware = filterHonoMiddleware(middleware);
+
   const functionDefinitions = [
     handler,
-    ...middleware.map(({ handler }) => handler),
+    ...filteredMiddleware.map(({ handler }) => handler),
   ];
 
   const sourceFunctions = await findSourceFunctions(
@@ -209,7 +211,74 @@ async function expandFunctionsPerformant(
     },
   );
 
+  const handlerSourceFunction =
+    sourceFunctions.find(
+      (sourceFunction) => sourceFunction.functionText === handler,
+    ) ?? null;
+
+  const middlewareSourceFunctions = sourceFunctions.filter((sourceFunction) =>
+    filteredMiddleware.some(
+      // @ts-ignore - I will fix this later...
+      (middleware) => middleware.handler === sourceFunction.functionText,
+    ),
+  );
+
   // TODO - Expand context...
+  return buildAiContextPerformant(
+    handlerSourceFunction,
+    middlewareSourceFunctions,
+  );
+}
+
+async function buildAiContextPerformant(
+  handler: SourceFunctionResult | null,
+  middleware: FindSourceFunctionsResult,
+) {
+  console.time("buildHandlerContextPerformant");
+  const handlerContextPromise = handler
+    ? buildHandlerContextPerformant(handler).finally(() => {
+        console.timeEnd("buildHandlerContextPerformant");
+      })
+    : Promise.resolve(undefined).then(() => {
+        console.timeEnd("buildHandlerContextPerformant");
+      });
+
+  console.time("buildMiddlewareContextPerformant");
+  const middlewareContextPromise = middleware
+    ? buildMiddlewareContextPerformant(middleware).finally(() => {
+        console.timeEnd("buildMiddlewareContextPerformant");
+      })
+    : Promise.resolve(undefined).finally(() => {
+        console.timeEnd("buildMiddlewareContextPerformant");
+      });
+
+  return Promise.all([handlerContextPromise, middlewareContextPromise]);
+}
+
+async function buildHandlerContextPerformant(handler: SourceFunctionResult) {
+  if (handler?.sourceFunction) {
+    const expandedFunction = await expandFunctionInUserProject(handler, true);
+    return transformExpandedFunction(expandedFunction);
+  }
+  return undefined;
+}
+
+async function buildMiddlewareContextPerformant(
+  middleware: FindSourceFunctionsResult,
+): Promise<string | undefined> {
+  if (!middleware || !middleware.length) {
+    return undefined;
+  }
+
+  const expandedMiddleware = await Promise.all(
+    middleware.map((m) => {
+      return expandFunctionInUserProject(m, true);
+    }),
+  );
+
+  return `<middleware>
+${expandedMiddleware.map(transformExpandedFunction).join("\n")}
+</middleware>`;
 }
 
 async function buildAiContext(
@@ -239,8 +308,38 @@ async function buildAiContext(
 }
 
 async function buildHandlerContext(handler: string) {
-  const expandedFunction = await expandFunctionInUserProject(handler);
+  const expandedFunction = await expandFunctionInUserProject(handler, false);
   return transformExpandedFunction(expandedFunction);
+}
+
+/**
+ * Build the middleware context from the middleware functions.
+ *
+ * Recursively expands middleware functions' out of scope identifiers
+ * and transforms them into a string that can be used in the LLM's context.
+ *
+ * @param middleware - The middleware functions
+ * @returns The middleware context
+ */
+async function buildMiddlewareContext(
+  middleware: Array<{
+    handler: string;
+  }>,
+): Promise<string | undefined> {
+  if (!middleware || !middleware.length) {
+    return undefined;
+  }
+
+  const filteredMiddleware = filterHonoMiddleware(middleware);
+  const expandedMiddleware = await Promise.all(
+    filteredMiddleware.map((m) => {
+      return expandFunctionInUserProject(m.handler, false);
+    }),
+  );
+
+  return `<middleware>
+${expandedMiddleware.map(transformExpandedFunction).join("\n")}
+</middleware>`;
 }
 
 /**
@@ -251,17 +350,31 @@ async function buildHandlerContext(handler: string) {
  * @param handler - The stringified version of a handler function
  * @returns The handler function location with certain out-of-scope identifiers expanded
  */
-async function expandFunctionInUserProject(handler: string) {
+async function expandFunctionInUserProject(
+  handler: string | SourceFunctionResult,
+  skipSourceMap: boolean,
+) {
   const projectRoot = USER_PROJECT_ROOT_DIR;
-
-  const truncatedHandler = handler.replace(/\n/g, " ").slice(0, 33);
+  const functionText =
+    typeof handler === "string" ? handler : handler.functionText;
+  const truncatedHandler = functionText.replace(/\n/g, " ").slice(0, 33);
   logger.debug(
     chalk.dim(
       `Expanding function ${truncatedHandler}... in project root ${projectRoot}`,
     ),
   );
 
-  const expandedFunction = await expandFunction(projectRoot, handler);
+  const hints =
+    typeof handler === "string"
+      ? undefined
+      : {
+          sourceFunction: handler.sourceFunction,
+          sourceFile: handler.source,
+        };
+  const expandedFunction = await expandFunction(projectRoot, functionText, {
+    skipSourceMap,
+    hints,
+  });
   return expandedFunction;
 }
 
@@ -323,43 +436,22 @@ ${stringifyContext(expandedFunction.context)}
 </expanded-function>`;
 }
 
-/**
- * Build the middleware context from the middleware functions.
- *
- * Recursively expands middleware functions' out of scope identifiers
- * and transforms them into a string that can be used in the LLM's context.
- *
- * @param middleware - The middleware functions
- * @returns The middleware context
- */
-async function buildMiddlewareContext(
-  middleware: Array<{
-    handler: string;
-  }>,
-): Promise<string | undefined> {
-  if (!middleware || !middleware.length) {
-    return undefined;
-  }
-
-  // HACK - Ignore reactRenderer middleware, as well as bearerAuth, since it's from a third party library
-  // We could also be clever and ignore a bunch of other third party Hono middleware by default to avoid too much work being done here
-  const filteredMiddleware = middleware.filter(({ handler }) => {
-    if (handler?.startsWith("function reactRenderer")) {
-      return false;
-    }
-    if (handler?.startsWith("async function bearerAuth")) {
-      return false;
-    }
-    return true;
+// Implementation of filterHonoMiddleware
+// HACK - Ignore reactRenderer middleware, as well as bearerAuth, since it's from a third party library
+//        We could also be clever and ignore a bunch of other third party Hono middleware by default to avoid too much work being done here
+function filterHonoMiddleware(middleware: Array<{ handler: string }>) {
+  return middleware.filter((m) => {
+    const functionText = m.handler;
+    return (
+      !functionText.startsWith("function reactRenderer") &&
+      !functionText.startsWith("async function bearerAuth")
+    );
   });
+}
 
-  const expandedMiddleware = await Promise.all(
-    filteredMiddleware.map(({ handler }) =>
-      expandFunctionInUserProject(handler),
-    ),
-  );
-
-  return `<middleware>
-${expandedMiddleware.map(transformExpandedFunction).join("\n")}
-</middleware>`;
+// Define a type guard to check if the array is of type Array<{ handler: string }>
+function isArrayOfHandlers(
+  middleware: Array<{ handler: string }> | FindSourceFunctionsResult,
+): middleware is Array<{ handler: string }> {
+  return middleware.every((m) => "handler" in m);
 }

@@ -3,6 +3,12 @@ import { getSourceFunctionText } from "./search-compiled-function.js";
 import type { SearchFunctionResult } from "./search-file.js";
 import { searchSourceFunction } from "./search-source-function.js";
 
+type SearchFunctionOptions = {
+  skipSourceMap?: boolean;
+  debug?: boolean;
+  hints?: { sourceFunction?: string | null; sourceFile?: string | null };
+};
+
 /**
  * Searches for a function within the project source code.
  *
@@ -23,17 +29,22 @@ import { searchSourceFunction } from "./search-source-function.js";
 export async function searchFunction(
   projectPath: string,
   functionString: string,
-  options: { skipSourceMap?: boolean; debug?: boolean } = {},
+  options: SearchFunctionOptions = {},
 ): Promise<SearchFunctionResult | null> {
   const debug = options.debug || false;
 
   // HACK - Allows us to run tests without source maps
   if (options.skipSourceMap) {
     // Attempt to search the function directly in the source.
+    const searchString = options.hints?.sourceFunction ?? functionString;
     try {
       const directResult = await searchSourceFunction(
         projectPath,
-        functionString,
+        searchString,
+        {
+          debug,
+          sourceHint: options.hints?.sourceFile ?? undefined,
+        },
       );
       if (directResult) {
         return directResult;

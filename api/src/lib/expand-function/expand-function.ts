@@ -68,6 +68,11 @@ export type ExpandedFunctionResult = {
   context: ExpandedFunctionContext;
 };
 
+type ExpandFunctionOptions = {
+  skipSourceMap?: boolean;
+  hints?: { sourceFunction?: string | null; sourceFile?: string | null };
+};
+
 /**
  * Expands the context of a specified function within the codebase by analyzing its out-of-scope identifiers
  * and recursively retrieving their definitions. This function searches for the target function, identifies
@@ -84,7 +89,7 @@ export type ExpandedFunctionResult = {
 export async function expandFunction(
   projectRoot: string,
   func: string,
-  options: { skipSourceMap?: boolean } = {},
+  options: ExpandFunctionOptions = {},
 ): Promise<ExpandedFunctionResult | null> {
   const searchResult = await searchFunction(projectRoot, func, options);
   if (!searchResult) {
