@@ -18,16 +18,20 @@ export interface OutOfScopeIdentifier {
  * used within the function but not declared locally.
  *
  * @description
- * This function performs a two-pass analysis on the given function node:
- * 1. It collects all local declarations (variables and parameters).
- * 2. It identifies all used identifiers that are not in the local declarations.
+ * This function performs a single-pass analysis on the given function node using a scope stack:
+ * 1. It tracks local declarations (variables and parameters) as it traverses the AST.
+ * 2. It identifies used identifiers that are not in the current scope stack.
  *
  * The function handles property access expressions specially:
  * - It ignores property names in property access expressions.
  * - It includes the base object of a property access if it's not locally declared.
  *
  * Note: This analysis does not consider closure variables or imported identifiers
- * as "in scope". It only looks at declarations within the function itself.
+ * as "in scope". It only looks at declarations within the function itself and its
+ * nested scopes.
+ *
+ * The function also properly handles nested function declarations, function
+ * expressions, and arrow functions, creating new scopes as appropriate.
  */
 export function analyzeOutOfScopeIdentifiers(
   functionNode:
@@ -161,11 +165,13 @@ export function analyzeOutOfScopeIdentifiers(
       // Traverse the base expression
       traverse(node.expression);
 
-      // NOTE - This is commented out because we don't want to consider property names as out-of-scope identifiers
+      // NOTE - The code below is commented out because we don't want to consider property names as out-of-scope identifiers
       //        It adds too much noise and complexity to the analysis.
       //        We will rely on traversing the parent object's definition to understand what the property is or represents.
       //
       //        If you uncomment this code, the unfortunate thing that happens is that if `c` is in scope, then `c.req` will return `req` as out of scope
+      //
+      // ***
       //
       // Handle the property name
       //
