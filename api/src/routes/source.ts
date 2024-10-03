@@ -53,7 +53,7 @@ app.post("/v0/source-function", cors(), async (ctx) => {
   try {
     const result = await findSourceFunctions(source, handler);
     return ctx.json({
-      functionText: result?.sourceFunction ?? result?.sourceContent ?? null,
+      functionText: result?.[0]?.sourceFunction ?? null,
     });
   } catch (err) {
     console.error("Could not find function in source", source);

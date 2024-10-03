@@ -46,8 +46,8 @@ export async function getSourceFunctionText(
   );
   // console.timeEnd(`findSourceFunction: ${truncatedFunctionString}`);
   return {
-    text: sourceFunction?.sourceFunction ?? null,
-    source: sourceFunction?.source ?? null,
+    text: sourceFunction?.[0]?.sourceFunction ?? null,
+    source: sourceFunction?.[0]?.source ?? null,
   };
 }
 

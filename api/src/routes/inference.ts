@@ -193,10 +193,12 @@ async function expandFunctionsPerformant(
     encoding: "utf8",
   });
 
+  // TODO - Make this a generic "work queue" that we can map over?
   const functionDefinitions = [
     handler,
     ...middleware.map(({ handler }) => handler),
   ];
+
   const sourceFunctions = await findSourceFunctions(
     jsFileContents,
     functionDefinitions,

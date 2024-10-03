@@ -15,9 +15,53 @@ const testContentsDir = path.resolve(__dirname, "./test-data/hono-js-tracker");
 //        since it was being passed as an argument to another function.
 describe("findSourceFunction", () => {
   describe("handler", () => {
-    const HANDLER_COMPILED_CODE =
-      'async (c) => {\n  const db2 = c.var.db;\n  const webhooks2 = c.var.webhooks;\n  const fetchUserById = c.var.fetchUserById;\n  webhooks2.on(\n    ["issues.opened", "star.created", "watch.started"],\n    async ({ payload, name }) => {\n      const userId = payload.sender.id;\n      try {\n        await db2.insert(repositories).values({\n          description: payload.repository.description,\n          fullName: payload.repository.full_name,\n          id: payload.repository.id,\n          name: payload.repository.name,\n          stargazersCount: payload.repository.stargazers_count,\n          watchersCount: payload.repository.watchers_count\n        }).onConflictDoUpdate({\n          target: repositories.id,\n          set: {\n            stargazersCount: payload.repository.stargazers_count,\n            watchersCount: payload.repository.watchers_count\n          }\n        });\n      } catch (error) {\n        return c.text(`Error fetching repository: ${error}`, 500);\n      }\n      try {\n        const user = await fetchUserById(userId);\n        await db2.insert(users).values({\n          avatar: user.avatar_url,\n          company: user.company,\n          emailAddress: user.email,\n          handle: user.login,\n          id: user.id,\n          location: user.location,\n          name: user.name,\n          twitterHandle: user.twitter_username\n        }).onConflictDoNothing({ target: users.id });\n      } catch (error) {\n        return c.text(`Error inserting user: ${error}`, 500);\n      }\n      let eventId;\n      if (name === "issues") {\n        eventId = payload.issue.id;\n      }\n      try {\n        await db2.insert(events).values({\n          eventId,\n          eventAction: payload.action,\n          eventName: name,\n          repoId: payload.repository.id,\n          userId\n        });\n      } catch (error) {\n        return c.text(`Error inserting event: ${error}`, 500);\n      }\n    }\n  );\n}';
-    const HANDLE_SOURCE_CODE = `async (c) => {
+    it("should find the source handler function", async () => {
+      const { HANDLER_COMPILED_CODE, HANDLE_SOURCE_CODE } = getHandlerCode();
+      const jsFilePath = path.join(testContentsDir, "index.js");
+      const functionText = HANDLER_COMPILED_CODE;
+      const result = await findSourceFunctions(jsFilePath, functionText);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.sourceFunction).toEqual(HANDLE_SOURCE_CODE);
+    });
+  });
+
+  describe("middleware", () => {
+    it("should find the source middleware function", async () => {
+      const { MIDDLEWARE_COMPILED_CODE, MIDDLEWARE_SOURCE_CODE } =
+        getMiddlewareCode();
+      const jsFilePath = path.join(testContentsDir, "index.js");
+      const functionText = MIDDLEWARE_COMPILED_CODE;
+      const result = await findSourceFunctions(jsFilePath, functionText);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.sourceFunction).toEqual(MIDDLEWARE_SOURCE_CODE);
+    });
+  });
+
+  describe("batch input", () => {
+    it("should be able to do multiple lookups", async () => {
+      const { HANDLER_COMPILED_CODE, HANDLE_SOURCE_CODE } = getHandlerCode();
+      const { MIDDLEWARE_COMPILED_CODE, MIDDLEWARE_SOURCE_CODE } =
+        getMiddlewareCode();
+      const jsFilePath = path.join(testContentsDir, "index.js");
+      const functionDefinitions = [
+        HANDLER_COMPILED_CODE,
+        MIDDLEWARE_COMPILED_CODE,
+      ];
+      const result = await findSourceFunctions(jsFilePath, functionDefinitions);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]?.sourceFunction).toEqual(HANDLE_SOURCE_CODE);
+      expect(result[1]?.sourceFunction).toEqual(MIDDLEWARE_SOURCE_CODE);
+    });
+  });
+});
+
+function getHandlerCode() {
+  const HANDLER_COMPILED_CODE =
+    'async (c) => {\n  const db2 = c.var.db;\n  const webhooks2 = c.var.webhooks;\n  const fetchUserById = c.var.fetchUserById;\n  webhooks2.on(\n    ["issues.opened", "star.created", "watch.started"],\n    async ({ payload, name }) => {\n      const userId = payload.sender.id;\n      try {\n        await db2.insert(repositories).values({\n          description: payload.repository.description,\n          fullName: payload.repository.full_name,\n          id: payload.repository.id,\n          name: payload.repository.name,\n          stargazersCount: payload.repository.stargazers_count,\n          watchersCount: payload.repository.watchers_count\n        }).onConflictDoUpdate({\n          target: repositories.id,\n          set: {\n            stargazersCount: payload.repository.stargazers_count,\n            watchersCount: payload.repository.watchers_count\n          }\n        });\n      } catch (error) {\n        return c.text(`Error fetching repository: ${error}`, 500);\n      }\n      try {\n        const user = await fetchUserById(userId);\n        await db2.insert(users).values({\n          avatar: user.avatar_url,\n          company: user.company,\n          emailAddress: user.email,\n          handle: user.login,\n          id: user.id,\n          location: user.location,\n          name: user.name,\n          twitterHandle: user.twitter_username\n        }).onConflictDoNothing({ target: users.id });\n      } catch (error) {\n        return c.text(`Error inserting user: ${error}`, 500);\n      }\n      let eventId;\n      if (name === "issues") {\n        eventId = payload.issue.id;\n      }\n      try {\n        await db2.insert(events).values({\n          eventId,\n          eventAction: payload.action,\n          eventName: name,\n          repoId: payload.repository.id,\n          userId\n        });\n      } catch (error) {\n        return c.text(`Error inserting event: ${error}`, 500);\n      }\n    }\n  );\n}';
+  const HANDLE_SOURCE_CODE = `async (c) => {
   const db = c.var.db;
   const webhooks = c.var.webhooks;
   const fetchUserById = c.var.fetchUserById;
@@ -89,20 +133,14 @@ describe("findSourceFunction", () => {
     },
   );
 }`;
-    it("should find the source handler function", async () => {
-      const jsFilePath = path.join(testContentsDir, "index.js");
-      const functionText = HANDLER_COMPILED_CODE;
-      const result = await findSourceFunctions(jsFilePath, functionText);
 
-      expect(result).toBeDefined();
-      expect(result?.sourceFunction).toEqual(HANDLE_SOURCE_CODE);
-    });
-  });
+  return { HANDLER_COMPILED_CODE, HANDLE_SOURCE_CODE };
+}
 
-  describe("middleware", () => {
-    const MIDDLEWARE_COMPILED_CODE =
-      'async (c, next) => {\n    const secret = c.env.GITHUB_WEBHOOK_SECRET;\n    const webhooks2 = getWebhooksInstance(secret);\n    c.set("webhooks", webhooks2);\n    await next();\n    const id = c.req.header("x-github-delivery");\n    const signature = c.req.header("x-hub-signature-256");\n    const name = c.req.header("x-github-event");\n    if (!(id && name && signature)) {\n      return c.text("Invalid webhook request", 403);\n    }\n    const payload = await c.req.text();\n    try {\n      await webhooks2.verifyAndReceive({\n        id,\n        name,\n        signature,\n        payload\n      });\n      return c.text("Webhook received & verified", 201);\n    } catch (error) {\n      return c.text(`Failed to verify Github Webhook request: ${error}`, 400);\n    }\n  }';
-    const MIDDLEWARE_SOURCE_CODE = `async (c, next) => {
+function getMiddlewareCode() {
+  const MIDDLEWARE_COMPILED_CODE =
+    'async (c, next) => {\n    const secret = c.env.GITHUB_WEBHOOK_SECRET;\n    const webhooks2 = getWebhooksInstance(secret);\n    c.set("webhooks", webhooks2);\n    await next();\n    const id = c.req.header("x-github-delivery");\n    const signature = c.req.header("x-hub-signature-256");\n    const name = c.req.header("x-github-event");\n    if (!(id && name && signature)) {\n      return c.text("Invalid webhook request", 403);\n    }\n    const payload = await c.req.text();\n    try {\n      await webhooks2.verifyAndReceive({\n        id,\n        name,\n        signature,\n        payload\n      });\n      return c.text("Webhook received & verified", 201);\n    } catch (error) {\n      return c.text(`Failed to verify Github Webhook request: ${error}`, 400);\n    }\n  }';
+  const MIDDLEWARE_SOURCE_CODE = `async (c, next) => {
     const secret = c.env.GITHUB_WEBHOOK_SECRET;
     const webhooks = getWebhooksInstance(secret);
 
@@ -133,13 +171,5 @@ describe("findSourceFunction", () => {
     }
   }`;
 
-    it("should find the source middleware function", async () => {
-      const jsFilePath = path.join(testContentsDir, "index.js");
-      const functionText = MIDDLEWARE_COMPILED_CODE;
-      const result = await findSourceFunctions(jsFilePath, functionText);
-
-      expect(result).toBeDefined();
-      expect(result?.sourceFunction).toEqual(MIDDLEWARE_SOURCE_CODE);
-    });
-  });
-});
+  return { MIDDLEWARE_COMPILED_CODE, MIDDLEWARE_SOURCE_CODE };
+}
