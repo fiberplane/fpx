@@ -1,5 +1,4 @@
 import * as fs from "node:fs";
-import * as path from "node:path";
 import * as ts from "typescript";
 import type { MessageConnection } from "vscode-jsonrpc";
 import logger from "../../../logger.js";
@@ -8,6 +7,7 @@ import {
   getDefinitionText,
 } from "../ast-helpers/index.js";
 import { getFileUri, openFile } from "../tsserver/index.js";
+import { resolveModulePath } from "./resolve-imports.js";
 
 export async function contextForImport(
   tsserver: MessageConnection,
@@ -72,46 +72,35 @@ export async function contextForImport(
  */
 async function followImport(
   tsserver: MessageConnection,
-  _projectRoot: string, // TODO - Use this to resolve node module imports
+  projectRoot: string,
   currentFilePath: string,
   importNode: ts.ImportDeclaration,
   identifierNode: ts.Node,
 ) {
   const importPath = (importNode.moduleSpecifier as ts.StringLiteral).text;
-  let resolvedPath: string;
+  const resolvedPath: string | null = resolveModulePath(
+    importPath,
+    currentFilePath,
+    projectRoot,
+  );
 
   logger.debug(`[debug][followImport] Import path: ${importPath}`);
-
-  // TODO - Handle typescript config's aliased imports (`@/...`)
-  if (importPath.startsWith(".")) {
-    // Relative import
-    resolvedPath = path.resolve(path.dirname(currentFilePath), importPath);
-  } else {
-    // NOTE - Skip node modules imports for now...
-    // // Absolute import (assuming it's within the project)
-    // resolvedPath = path.resolve(projectRoot, 'node_modules', importPath);
-
-    return null;
-  }
-
   logger.debug(`[debug][followImport] Resolved import path: ${resolvedPath}`);
 
-  // Add .ts extension if not present
-  // TODO - Handle .tsx files, js files, etc.
-  if (!resolvedPath.endsWith(".ts") && !resolvedPath.endsWith(".tsx")) {
-    resolvedPath += ".ts";
+  if (!resolvedPath) {
+    return null;
   }
 
   if (!fs.existsSync(resolvedPath)) {
     logger.warn(
-      `[followImport] Could not resolve import path: ${resolvedPath}`,
+      `[followImport] Resolved import path does not exist: ${resolvedPath}`,
     );
     return null;
   }
 
   await openFile(tsserver, resolvedPath);
 
-  const importedFileContent = fs.readFileSync(resolvedPath, "utf-8");
+  const importedFileContent = await fs.promises.readFile(resolvedPath, "utf-8");
   const importedSourceFile = ts.createSourceFile(
     resolvedPath,
     importedFileContent,
