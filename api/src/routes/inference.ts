@@ -31,7 +31,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
  */
 app.post("/v0/expand-function", cors(), async (ctx) => {
   const { handler } = await ctx.req.json();
-  const expandedFunction = await expandFunctionInUserProject(handler, false);
+  const expandedFunction = await expandFunctionInUserProject(handler);
   return ctx.json({ expandedFunction });
 });
 
@@ -257,59 +257,10 @@ async function buildAiContextPerformant(
 
 async function buildHandlerContextPerformant(handler: SourceFunctionResult) {
   if (handler?.sourceFunction) {
-    const expandedFunction = await expandFunctionInUserProject(handler, true);
+    const expandedFunction = await expandFunctionInUserProject(handler);
     return transformExpandedFunction(expandedFunction);
   }
   return undefined;
-}
-
-async function buildMiddlewareContextPerformant(
-  middleware: FindSourceFunctionsResult,
-): Promise<string | undefined> {
-  if (!middleware || !middleware.length) {
-    return undefined;
-  }
-
-  const expandedMiddleware = await Promise.all(
-    middleware.map((m) => {
-      return expandFunctionInUserProject(m, true);
-    }),
-  );
-
-  return `<middleware>
-${expandedMiddleware.map(transformExpandedFunction).join("\n")}
-</middleware>`;
-}
-
-async function buildAiContext(
-  handler: string,
-  middleware:
-    | Array<{
-        handler: string;
-      }>
-    | undefined
-    | null,
-) {
-  console.time("buildHandlerContext");
-  const handlerContextPromise = buildHandlerContext(handler).finally(() => {
-    console.timeEnd("buildHandlerContext");
-  });
-
-  console.time("buildMiddlewareContext");
-  const middlewareContextPromise = middleware
-    ? buildMiddlewareContext(middleware).finally(() => {
-        console.timeEnd("buildMiddlewareContext");
-      })
-    : Promise.resolve(undefined).then(() => {
-        console.timeEnd("buildMiddlewareContext");
-      });
-
-  return Promise.all([handlerContextPromise, middlewareContextPromise]);
-}
-
-async function buildHandlerContext(handler: string) {
-  const expandedFunction = await expandFunctionInUserProject(handler, false);
-  return transformExpandedFunction(expandedFunction);
 }
 
 /**
@@ -321,19 +272,16 @@ async function buildHandlerContext(handler: string) {
  * @param middleware - The middleware functions
  * @returns The middleware context
  */
-async function buildMiddlewareContext(
-  middleware: Array<{
-    handler: string;
-  }>,
+async function buildMiddlewareContextPerformant(
+  middleware: FindSourceFunctionsResult,
 ): Promise<string | undefined> {
   if (!middleware || !middleware.length) {
     return undefined;
   }
 
-  const filteredMiddleware = filterHonoMiddleware(middleware);
   const expandedMiddleware = await Promise.all(
-    filteredMiddleware.map((m) => {
-      return expandFunctionInUserProject(m.handler, false);
+    middleware.map((m) => {
+      return expandFunctionInUserProject(m);
     }),
   );
 
@@ -347,16 +295,12 @@ ${expandedMiddleware.map(transformExpandedFunction).join("\n")}
  *
  * This is a convenience wrapper around expandFunction that assumes the user's project root is the current working directory or FPX_WATCH_DIR
  *
- * @param handler - The stringified version of a handler function
+ * @param handler - The result of mapping the handler function back to the original source code
  * @returns The handler function location with certain out-of-scope identifiers expanded
  */
-async function expandFunctionInUserProject(
-  handler: string | SourceFunctionResult,
-  skipSourceMap: boolean,
-) {
+async function expandFunctionInUserProject(handler: SourceFunctionResult) {
   const projectRoot = USER_PROJECT_ROOT_DIR;
-  const functionText =
-    typeof handler === "string" ? handler : handler.functionText;
+  const functionText = handler.functionText;
   const truncatedHandler = functionText.replace(/\n/g, " ").slice(0, 33);
   logger.debug(
     chalk.dim(
@@ -364,17 +308,16 @@ async function expandFunctionInUserProject(
     ),
   );
 
-  const hints =
-    typeof handler === "string"
-      ? undefined
-      : {
-          sourceFunction: handler.sourceFunction,
-          sourceFile: handler.source,
-        };
+  const hints = {
+    sourceFunction: handler.sourceFunction,
+    sourceFile: handler.source,
+  };
+
   const expandedFunction = await expandFunction(projectRoot, functionText, {
-    skipSourceMap,
+    skipSourceMap: true,
     hints,
   });
+
   return expandedFunction;
 }
 
@@ -436,7 +379,6 @@ ${stringifyContext(expandedFunction.context)}
 </expanded-function>`;
 }
 
-// Implementation of filterHonoMiddleware
 // HACK - Ignore reactRenderer middleware, as well as bearerAuth, since it's from a third party library
 //        We could also be clever and ignore a bunch of other third party Hono middleware by default to avoid too much work being done here
 function filterHonoMiddleware(middleware: Array<{ handler: string }>) {
@@ -447,11 +389,4 @@ function filterHonoMiddleware(middleware: Array<{ handler: string }>) {
       !functionText.startsWith("async function bearerAuth")
     );
   });
-}
-
-// Define a type guard to check if the array is of type Array<{ handler: string }>
-function isArrayOfHandlers(
-  middleware: Array<{ handler: string }> | FindSourceFunctionsResult,
-): middleware is Array<{ handler: string }> {
-  return middleware.every((m) => "handler" in m);
 }
