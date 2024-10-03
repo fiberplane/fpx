@@ -126,9 +126,7 @@ ${expandedMiddleware.map(transformExpandedFunction).join("\n")}
  * @param handler - The result of mapping the handler function back to the original source code
  * @returns The handler function location with certain out-of-scope identifiers expanded
  */
-export async function expandFunctionInUserProject(
-  handler: SourceFunctionResult,
-) {
+async function expandFunctionInUserProject(handler: SourceFunctionResult) {
   const projectRoot = USER_PROJECT_ROOT_DIR;
   const functionText = handler.functionText;
   const truncatedHandler = functionText.replace(/\n/g, " ").slice(0, 33);

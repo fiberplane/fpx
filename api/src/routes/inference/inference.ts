@@ -3,14 +3,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
+import { USER_PROJECT_ROOT_DIR } from "../../constants.js";
 import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
 import { cleanPrompt } from "../../lib/ai/prompts.js";
+import { expandFunction } from "../../lib/expand-function/index.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
-import {
-  expandFunctionInUserProject,
-  expandHandler,
-} from "./expand-handler.js";
+import { expandHandler } from "./expand-handler.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -19,7 +18,9 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
  */
 app.post("/v0/expand-function", cors(), async (ctx) => {
   const { handler } = await ctx.req.json();
-  const expandedFunction = await expandFunctionInUserProject(handler);
+  const projectRoot = USER_PROJECT_ROOT_DIR;
+
+  const expandedFunction = await expandFunction(projectRoot, handler);
   return ctx.json({ expandedFunction });
 });
 
