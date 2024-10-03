@@ -21,6 +21,7 @@ import {
   getTsSourceDefinition,
   openFile,
 } from "./tsserver/index.js";
+import type { FunctionContextType } from "./types.js";
 
 type ExpandedFunctionContextEntry = {
   /** The name of the constant or utility in the code */
@@ -32,7 +33,7 @@ type ExpandedFunctionContextEntry = {
    *
    * For now, "unknown" is a placeholder for other ast nodes we do not want to want to expand.
    */
-  type: "unknown" | "function" | "type";
+  type: FunctionContextType;
   /** The position of the constant or utility in the code */
   position: { line: number; character: number };
   definition?: {

@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import * as ts from "typescript";
 import { URI } from "vscode-uri";
+import type { FunctionContextType } from "../types.js";
 
 export function getParentImportDeclaration(
   node: ts.Node,
@@ -16,7 +17,7 @@ export function getParentImportDeclaration(
 }
 
 type DefinitionText = {
-  type: "unknown" | "function" | "type";
+  type: FunctionContextType;
   text: string;
   definitionNode?: ts.Node;
 };
