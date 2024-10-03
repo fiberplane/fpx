@@ -65,6 +65,11 @@ async function initializeTSServer(pathToProject: string) {
 
   // Terminate the language server when the Node.js process exits
   process.on("exit", () => {
+    logger.debug(
+      chalk.dim(
+        `[debug] Terminating TS Server instance for project: ${pathToProject}`,
+      ),
+    );
     tsServer.kill();
   });
 
