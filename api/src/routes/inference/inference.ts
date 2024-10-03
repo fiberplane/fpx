@@ -9,6 +9,7 @@ import { cleanPrompt } from "../../lib/ai/prompts.js";
 import { expandFunction } from "../../lib/expand-function/index.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
+import logger from "../../logger.js";
 import { expandHandler } from "./expand-handler.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -69,7 +70,10 @@ app.post(
     //
     // console.time("Handler and Middleware Expansion");
     const [handlerContextPerformant, middlewareContextPerformant] =
-      await expandHandler(handler, middleware ?? []);
+      await expandHandler(handler, middleware ?? []).catch((error) => {
+        logger.error(`Error expanding handler and middleware: ${error}`);
+        return [null, null];
+      });
     // console.timeEnd("Handler and Middleware Expansion");
 
     // Generate the request
