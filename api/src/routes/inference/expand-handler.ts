@@ -61,7 +61,6 @@ export async function expandHandler(
     ) ?? null;
 
   const middlewareSourceFunctions = sourceFunctions.filter((sourceFunction) => {
-    // TODO - Filter out or transform node modules middleware?
     const isMiddleware = filteredMiddleware.some(
       (middleware) => middleware.handler === sourceFunction.functionText,
     );
@@ -133,6 +132,8 @@ ${expandedMiddleware.map(transformExpandedFunction).join("\n")}
  * Expand a handler function's out-of-scope identifiers to help with ai request generation
  *
  * This is a convenience wrapper around expandFunction that assumes the user's project root is the current working directory or FPX_WATCH_DIR
+ *
+ * @note - Ignores functions coming from node_modules, only tries to expand code from user's project
  *
  * @param handler - The result of mapping the handler function back to the original source code
  * @returns The handler function location with certain out-of-scope identifiers expanded

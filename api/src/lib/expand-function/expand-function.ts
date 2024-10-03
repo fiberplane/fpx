@@ -26,7 +26,7 @@ type ExpandedFunctionContextEntry = {
    * This will be used to help determine whether or not to recursively comb
    * helper utilities to expand context of their utilities, etc.
    *
-   * For now, "unknown" is a placeholder for other ast nodes we may want to continue expanding.
+   * For now, "unknown" is a placeholder for other ast nodes we do not want to want to expand.
    */
   type: "unknown" | "function";
   /** The position of the constant or utility in the code */
@@ -70,6 +70,7 @@ export type ExpandedFunctionResult = {
 
 type ExpandFunctionOptions = {
   skipSourceMap?: boolean;
+  debug?: boolean;
   hints?: { sourceFunction?: string | null; sourceFile?: string | null };
 };
 
@@ -80,20 +81,27 @@ type ExpandFunctionOptions = {
  * context. The result includes the location of the function and the expanded context of its dependencies.
  *
  * @param {string} projectRoot - The root directory of the project.
- * @param {string} func - The string representation of the function to expand.
+ * @param {string} compiledFunction - The string representation of the function to expand (compiled JS, not TS)
  * @param {Object} options - Optional parameters for the search.
  * @param {boolean} options.skipSourceMap - If true, the source map search will be skipped. Useful for tests.
+ * @param {Object} options.hints - Optional parameters for the search.
+ * @param {string} options.hints.sourceFunction - The string representation of the source function to expand (TS, not compiled JS).
+ * @param {string} options.hints.sourceFile - The file containing the function to expand.
  * @returns {Promise<ExpandedFunctionResult | null>} A promise that resolves to the expanded function context
  *                                                     or `null` if the function is not found.
  */
 export async function expandFunction(
   projectRoot: string,
-  func: string,
+  compiledFunction: string,
   options: ExpandFunctionOptions = {},
 ): Promise<ExpandedFunctionResult | null> {
-  const searchResult = await searchFunction(projectRoot, func, options);
+  const searchResult = await searchFunction(
+    projectRoot,
+    compiledFunction,
+    options,
+  );
   if (!searchResult) {
-    const truncatedFunc = func.slice(0, 100);
+    const truncatedFunc = compiledFunction.slice(0, 100);
     logger.warn(
       `[expandFunction] No search result found for ${truncatedFunc}...`,
     );
@@ -121,13 +129,17 @@ async function extractContext(
   projectRoot: string,
   filePath: string,
   identifiers: OutOfScopeIdentifier[],
+  options: { debug?: boolean } = { debug: false },
 ): Promise<ExpandedFunctionContext> {
+  const { debug } = options;
   const context: ExpandedFunctionContext = [];
 
   if (!identifiers?.length) {
-    logger.debug(
-      "[debug] No out of scope identifiers found in function, skipping context extraction",
-    );
+    if (debug) {
+      logger.debug(
+        "[debug] No out of scope identifiers found in function, skipping context extraction",
+      );
+    }
     return context;
   }
 
@@ -149,18 +161,6 @@ async function extractContext(
         getTextDocumentDefinition(connection, funcFileUri, identifier.position),
       ]);
 
-      if (identifier.name === "schema") {
-        logger.debug(
-          `[debug] ts sourceDefinition for ${identifier.name}:`,
-          JSON.stringify(sourceDefinition, null, 2),
-        );
-
-        logger.debug(
-          `[debug] textDocumentDefinition for ${identifier.name}:`,
-          JSON.stringify(textDocumentDefinition, null, 2),
-        );
-      }
-
       // Here we can filter out standard globals that are defined in the runtime
       //   (e.g., `console`, `URL`, `Number`, etc.)
       // We can do this because the textDocumentDefinition will be a .d.ts file, while the sourceDefinition will not be present
@@ -168,9 +168,11 @@ async function extractContext(
       const isStandardGlobal =
         !sourceDefinition && textDocumentDefinition?.uri?.endsWith(".d.ts");
       if (isStandardGlobal) {
-        // logger.debug(
-        //   `[debug] Skipping expansion of ${identifier.name} as it is likely a standard global in the runtime`,
-        // );
+        if (debug) {
+          logger.debug(
+            `[debug] Skipping expansion of ${identifier.name} as it is likely a standard global in the runtime`,
+          );
+        }
         continue;
       }
 
@@ -178,10 +180,6 @@ async function extractContext(
         // Find the node at the definition position
         const { node, sourceFile, definitionFilePath } =
           definitionToNode(sourceDefinition);
-
-        // NOTE - This debug log is quite noisy, but can be helpful
-        //
-        // logger.debug(`[debug] AST node for ${identifier.name}:`, node);
 
         // If there's a node, we can try to extract the value of the definition
         if (node) {
@@ -252,11 +250,10 @@ async function extractContext(
                 },
                 // Optionally include package information if applicable
                 package: extractPackageName(sourceDefinition.uri) ?? undefined,
-                // You can also include context if you want to further process the imported file
               };
 
               context.push(contextEntry);
-              continue; // Skip further processing for this identifier
+              continue;
             }
 
             const contextEntry = await contextForImport(
@@ -268,7 +265,7 @@ async function extractContext(
               identifier,
             );
 
-            // TODO - Recurse (do not implement yet)
+            // TODO - Recurse definition from imported files (not implemented yet)
             if (contextEntry) {
               context.push(contextEntry);
               continue;
@@ -284,9 +281,12 @@ async function extractContext(
           const isNodeModule = sourceDefinition?.uri?.includes("node_modules");
 
           if (isNodeModule) {
-            // logger.debug(
-            //   `[debug] ${identifier.name} is likely an installed dependency`,
-            // );
+            if (debug) {
+              logger.debug(
+                `[debug] ${identifier.name} is likely an installed dependency`,
+              );
+            }
+
             const contextEntry: ExpandedFunctionContextEntry = {
               name: identifier.name,
               // HACK - `unknown` just means "do not expand this"
@@ -317,10 +317,12 @@ async function extractContext(
             },
           };
 
-          // logger.debug(
-          //   `[debug] [extractContext] Context entry for ${identifier.name}`,
-          //   contextEntry,
-          // );
+          if (debug) {
+            logger.debug(
+              `[debug] [extractContext] Context entry for ${identifier.name}`,
+              contextEntry,
+            );
+          }
 
           // Recursively expand context if the identifier is a function
           if (contextEntry?.type === "function") {
@@ -349,10 +351,12 @@ async function extractContext(
               sourceFile,
             );
 
-            // logger.debug(
-            //   `[debug] [extractContext] Analyzed NESTED out of scope identifiers for ${identifier.name}`,
-            //   functionIdentifiers,
-            // );
+            if (debug) {
+              logger.debug(
+                `[debug] [extractContext] Analyzed NESTED out of scope identifiers for ${identifier.name}`,
+                functionIdentifiers,
+              );
+            }
 
             const subContext = await extractContext(
               projectRoot,
