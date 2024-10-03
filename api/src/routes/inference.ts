@@ -208,6 +208,8 @@ async function expandFunctionsPerformant(
       jsFileContents,
     },
   );
+
+  // TODO - Expand context...
 }
 
 async function buildAiContext(

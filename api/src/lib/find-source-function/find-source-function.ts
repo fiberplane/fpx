@@ -54,9 +54,9 @@ async function findFunctionsByDefinition(
           }
           const funcSource = jsFileContents.substring(node.start, node.end);
           if (
+            node.loc &&
             funcSource.replace(/\s+/g, " ").trim() ===
-              functionMap[key].normalized &&
-            node.loc
+              functionMap[key].normalized
           ) {
             functionMap[key].foundLocation = {
               startLine: node.loc.start.line,
@@ -74,9 +74,9 @@ async function findFunctionsByDefinition(
           }
           const funcSource = jsFileContents.substring(node.start, node.end);
           if (
+            node.loc &&
             funcSource.replace(/\s+/g, " ").trim() ===
-              functionMap[key].normalized &&
-            node.loc
+              functionMap[key].normalized
           ) {
             functionMap[key].foundLocation = {
               startLine: node.loc.start.line,
@@ -94,9 +94,9 @@ async function findFunctionsByDefinition(
           }
           const funcSource = jsFileContents.substring(node.start, node.end);
           if (
+            node.loc &&
             funcSource.replace(/\s+/g, " ").trim() ===
-              functionMap[key].normalized &&
-            node.loc
+              functionMap[key].normalized
           ) {
             functionMap[key].foundLocation = {
               startLine: node.loc.start.line,
@@ -146,14 +146,17 @@ async function findOriginalSource(
 }
 
 type FindSourceFunctionsResult = Array<{
+  /** The (compiled) function text that was used to find the source */
   functionText: string;
+  /** The source file */
   source: string | null;
+  /** The source code of the function */
   sourceFunction: string | null;
 }>;
 
 export async function findSourceFunctions(
   jsFilePath: string,
-  functionText: string | Array<string>,
+  compiledFunctionText: string | Array<string>,
   returnNullOnMissing = false,
   hints: {
     sourceMapContent?: RawSourceMap | RawIndexMap;
@@ -170,9 +173,9 @@ export async function findSourceFunctions(
     hints.jsFileContents ??
     (await readFileAsync(jsFilePath, { encoding: "utf8" }));
 
-  const functionDefinitions = Array.isArray(functionText)
-    ? functionText
-    : [functionText];
+  const functionDefinitions = Array.isArray(compiledFunctionText)
+    ? compiledFunctionText
+    : [compiledFunctionText];
 
   const locations = await findFunctionsByDefinition(
     jsFileContents,
