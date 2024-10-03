@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import * as ts from "typescript";
 import { URI } from "vscode-uri";
+import type { Definition as TSServerDefinition } from "../tsserver/index.js";
 import type { FunctionContextType } from "../types.js";
 
 export function getParentImportDeclaration(
@@ -124,11 +125,13 @@ function positionInNode(
   );
 }
 
-// NOTE - Takes a definition from the typescript language server
-//        and returns the node and source file
-//
-// biome-ignore lint/suspicious/noExplicitAny: We don't have a type for the definition response yet
-export function definitionToNode(definition: any) {
+/**
+ * Takes a definition from the TypeScript language server and returns the corresponding node and source file.
+ *
+ * @param definition - The definition object from the TypeScript language server
+ * @returns An object containing the node, source file, and definition file path
+ */
+export function definitionToNode(definition: TSServerDefinition) {
   const definitionUri = URI.parse(definition.uri);
   const definitionFilePath = definitionUri.fsPath;
 
@@ -143,7 +146,6 @@ export function definitionToNode(definition: any) {
     true,
   );
 
-  // Find the node at the definition position
   const node = findNodeAtPosition(sourceFile, definition.range.start);
 
   return { node, sourceFile, definitionFilePath };
