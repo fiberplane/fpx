@@ -32,7 +32,7 @@ type ExpandedFunctionContextEntry = {
    *
    * For now, "unknown" is a placeholder for other ast nodes we do not want to want to expand.
    */
-  type: "unknown" | "function";
+  type: "unknown" | "function" | "type";
   /** The position of the constant or utility in the code */
   position: { line: number; character: number };
   definition?: {

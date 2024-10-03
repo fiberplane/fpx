@@ -16,7 +16,7 @@ export function getParentImportDeclaration(
 }
 
 type DefinitionText = {
-  type: "unknown" | "function";
+  type: "unknown" | "function" | "type";
   text: string;
   definitionNode?: ts.Node;
 };
@@ -25,8 +25,6 @@ export function getDefinitionText(
   node: ts.Node,
   sourceFile: ts.SourceFile,
 ): DefinitionText | undefined {
-  // debugger;
-
   // Check: Variable declaration with initializer
   // `const y = ...`
   // `let x = ...`
@@ -72,6 +70,25 @@ export function getDefinitionText(
     return {
       type: "unknown", // TODO
       text: node.parent.initializer.getText(sourceFile),
+    };
+  }
+
+  // Check for type alias declarations
+  // `type MyType = ...`
+  if (ts.isTypeAliasDeclaration(node)) {
+    return {
+      type: "type",
+      text: node.getText(sourceFile),
+      definitionNode: node,
+    };
+  }
+
+  // Check if the node is an identifier and the parent node is a type alias declaration
+  if (ts.isIdentifier(node) && ts.isTypeAliasDeclaration(node.parent)) {
+    return {
+      type: "type",
+      text: node.parent.getText(sourceFile),
+      definitionNode: node.parent,
     };
   }
 
