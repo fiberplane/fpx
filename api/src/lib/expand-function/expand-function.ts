@@ -84,15 +84,27 @@ type ExpandFunctionOptions = {
  * all external references it makes, and gathers detailed information about each reference to build a comprehensive
  * context. The result includes the location of the function and the expanded context of its dependencies.
  *
- * @param {string} projectRoot - The root directory of the project.
- * @param {string} compiledFunction - The string representation of the function to expand (compiled JS, not TS)
- * @param {Object} options - Optional parameters for the search.
- * @param {boolean} options.skipSourceMap - If true, the source map search will be skipped. Useful for tests.
- * @param {Object} options.hints - Optional parameters for the search.
- * @param {string} options.hints.sourceFunction - The string representation of the source function to expand (TS, not compiled JS).
- * @param {string} options.hints.sourceFile - The file containing the function to expand.
- * @returns {Promise<ExpandedFunctionResult | null>} A promise that resolves to the expanded function context
- *                                                     or `null` if the function is not found.
+ * @param projectRoot - The root directory of the project.
+ * @param compiledFunction - The string representation of the function to expand (compiled JavaScript, not TypeScript).
+ * @param options - Optional parameters for the expansion process.
+ * @param options.skipSourceMap - If `true`, skips the source map search. Useful for testing scenarios.
+ * @param options.debug - If `true`, enables debug logging for detailed tracing.
+ * @param options.hints - Provides contextual hints for the search.
+ * @param options.hints.sourceFunction - The string representation of the source TypeScript function to expand.
+ * @param options.hints.sourceFile - The file path containing the source function to expand.
+ * @returns A promise that resolves to an `ExpandedFunctionResult` containing the expanded context of the function,
+ *          or `null` if the function is not found within the project.
+ *
+ * @example
+ * ```typescript
+ * const result = await expandFunction('/path/to/project', 'function example2(t) { ... }', {
+ *   debug: true,
+ *   hints: {
+ *     sourceFunction: 'function example<T>(t: T) { ... }',
+ *     sourceFile: 'src/example.ts',
+ *   },
+ * });
+ * ```
  */
 export async function expandFunction(
   projectRoot: string,
@@ -129,6 +141,24 @@ export async function expandFunction(
   };
 }
 
+/**
+ * Extracts the expanded context of out-of-scope identifiers within a function by analyzing their definitions.
+ * This involves querying the TypeScript server to locate definitions, handling namespace imports, and recursively
+ * expanding the context for functions. The function aggregates detailed information about each identifier,
+ * including its type, position, definition details, and package information if applicable.
+ *
+ * @param projectRoot - The root directory of the project.
+ * @param filePath - The file path where the original function is located.
+ * @param identifiers - An array of `OutOfScopeIdentifier` representing identifiers that are not defined within the function's scope.
+ * @param options - Optional parameters to modify the extraction behavior.
+ * @param options.debug - If `true`, enables debug logging for detailed tracing during context extraction.
+ * @returns A promise that resolves to an `ExpandedFunctionContext`, detailing the context of each out-of-scope identifier.
+ *
+ * @example
+ * ```typescript
+ * const context = await extractContext('/path/to/project', 'src/example.ts', identifiers, { debug: true });
+ * ```
+ */
 async function extractContext(
   projectRoot: string,
   filePath: string,
