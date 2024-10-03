@@ -1,23 +1,39 @@
 # Static Analysis to Expand Functions
 
+> **NOTE** The original Pull Request for this functionality can be found [here](https://github.com/fiberplane/fpx/pull/291).
+
 ## Overview
 
 The `expand-function` library provides functionality to look up and "expand"
-functions in a user's codebase.
+functions in a user's codebase, providing more context to the LLM when generating
+requests using AI.
 
-Given the text of a function definition (an api handler), it will:
+### The Problem
 
-1. Search for the function definition in the user's codebase
-2. Parse the function definition into a `ts.Node`
-3. Expand the function definition by looking up identifiers that are in scope,
-   but not local to the function
-4. Return the definitions of those identifiers
-5. Recursively expand the function definitions of any of the identifiers from
-   (4) that are also functions
+Right now, when we need to generate a request with AI, all we have at our disposal are the stringified versions of compiled handler and middleware functions.
 
-This library is used by the Studio to look for Hono api handler definitions, and
-provide an LLM with more context about the handler. This, in turn, allows the
-LLM to provide more accurate and helpful request completions for the developer.
+If those functions rely on helper utilities to, say, validate certain headers or parameters, we end up in a pickle. The LLM doesn't have enough context to give a valid request back to us. It's effectively blind to certain critical logic.
+
+### The Solution
+
+So, our job is to locate the handler and middleware definitions in the code, and then statically analyze them, to find the definitions of any constants or utilities that they use to execute an incoming request.
+
+To achieve this, we have to do some terrible things.
+
+1. Map the compiled functions back to their locations in the source
+2. Parse and analyze the abstract syntax tree of the source function
+3. Apply heuristics to identify out-of-scope identifiers in the source function
+4. Traverse the codebase to find the definitions of said out-of-scope identifiers
+5. Repeat steps (3) and (4) recursively on any utility functions that are used in the functions we analyze
+
+The rest of the pr description will go through the decisions made to implement each of these steps.
+
+The 3rd party libraries/tools at our disposal are:
+
+- `acorn` and `source-map` - libraries for parsing source maps to go from compiled code back to the source
+- `typescript` - the typescript compiler api, for parsing and traversing ASTs
+- `typescript-language-server`  - wrapper around `tsserver` (with which we communicate over stdio)
+- `vscode-jsonrpc` - helpers for interfacing with the ts language server
 
 ## Testing
 
@@ -39,6 +55,7 @@ pnpm test expand-function.test
 
 Separately, there are unit tests for:
 
+- Source map resolution: `find-source-function.test.ts` (outside this lib, in the `lib/find-source-function` directory)
 - Identifier analysis: `analyze-identifiers.test.ts`
 - File search: `search-file.test.ts`
 - Function search: `search-function.test.ts`
@@ -76,4 +93,5 @@ Look in the `inference` routes in the Studio to see how this is ultimately done.
   allow us to use the typescript version of the user's project, rather than our
   version in this repo)
 - Look for other common source maps in the project to provide more context
-  (webpack, etc) -- right now only works with Wrangler projects
+  (webpack, etc) -- **right now only works with Wrangler projects**
+
