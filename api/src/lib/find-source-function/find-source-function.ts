@@ -164,12 +164,10 @@ export type SourceFunctionResult = {
   /** The (compiled) function text that was used to find the source */
   functionText: string;
   /** The source file */
-  source: string | null;
+  sourceFile: string | null;
   /** The source code of the function */
   sourceFunction: string | null;
 };
-
-export type FindSourceFunctionsResult = Array<SourceFunctionResult>;
 
 /**
  * Finds the original source functions corresponding to compiled function texts using source maps.
@@ -190,7 +188,7 @@ export async function findSourceFunctions(
     sourceMapContent?: RawSourceMap | RawIndexMap;
     jsFileContents?: string;
   } = {},
-): Promise<FindSourceFunctionsResult> {
+): Promise<Array<SourceFunctionResult>> {
   const mapFile = `${jsFilePath}.map`;
   // OPTIMIZE - This is a hot path, so we should cache the source map content
   //            Each parse takes about 10ms even on a medium sized codebase
@@ -216,14 +214,14 @@ export async function findSourceFunctions(
         if (!foundLocation) {
           return {
             functionText: compiledFunctionText,
-            source: null,
+            sourceFile: null,
             sourceFunction: null,
           };
         }
         const lookupResult = await lookUpLocation(foundLocation);
         return {
           functionText: compiledFunctionText,
-          source: lookupResult?.source ?? null,
+          sourceFile: lookupResult?.sourceFile ?? null,
           sourceFunction: lookupResult?.sourceFunction ?? null,
         };
       },
@@ -254,7 +252,7 @@ export async function findSourceFunctions(
       findOriginalSource(sourceMapContent, functionEndLine, functionEndColumn),
     ]);
 
-    const source = sourceFunctionStart.source;
+    const sourceFile = sourceFunctionStart.source;
     const sourceContent = sourceFunctionStart.sourceContent ?? "";
     const startLine = sourceFunctionStart.line;
     const startColumn = sourceFunctionStart.column;
@@ -267,11 +265,10 @@ export async function findSourceFunctions(
       // For now: return the source content as is
       return returnNullOnMissing
         ? null
-        : { sourceContent, source, sourceFunction: null };
+        : { sourceContent, sourceFile, sourceFunction: null };
     }
 
     const lines = sourceContent.split("\n").slice(startLine - 1, endLine);
-    // console.log("lines", lines);
     const sourceFunction = lines
       .map((line, index) => {
         if (index === 0 && startLine === endLine) {
@@ -293,6 +290,6 @@ export async function findSourceFunctions(
       })
       .join("\n");
 
-    return { sourceFunction, source };
+    return { sourceFunction, sourceFile };
   }
 }

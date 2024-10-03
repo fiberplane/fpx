@@ -43,7 +43,9 @@ export async function searchFunction(
         searchString,
         {
           debug,
-          sourceHint: options.hints?.sourceFile ?? undefined,
+          hints: {
+            sourceFile: options.hints?.sourceFile ?? undefined,
+          },
         },
       );
       if (directResult) {
@@ -71,7 +73,11 @@ export async function searchFunction(
         const mappedResult = await searchSourceFunction(
           projectPath,
           sourceFunction?.text,
-          { sourceHint: sourceFunction?.source ?? undefined },
+          {
+            hints: {
+              sourceFile: sourceFunction?.sourceFile ?? undefined,
+            },
+          },
         );
         if (mappedResult) {
           return mappedResult;

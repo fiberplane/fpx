@@ -9,7 +9,6 @@ import {
   findWranglerCompiledJavascriptDir,
 } from "../../lib/expand-function/index.js";
 import {
-  type FindSourceFunctionsResult,
   type SourceFunctionResult,
   findSourceFunctions,
 } from "../../lib/find-source-function/index.js";
@@ -20,6 +19,9 @@ export async function expandHandler(
   middleware: Array<{ handler: string }>,
 ) {
   const projectPath = USER_PROJECT_ROOT_DIR;
+
+  // Here we look for the wrangler tmp files containing the compiled js and source map
+  // If we can't find a source map, we can't do much here
   const compiledJavascriptPath = findWranglerCompiledJavascriptDir(projectPath);
   if (!compiledJavascriptPath) {
     return [null, null];
@@ -51,7 +53,7 @@ export async function expandHandler(
     },
   );
 
-  // TODO - Handle case where no source functions are found, fall back to inefficient search
+  // TODO - Handle case where no source functions are found, fall back to inefficient search?
 
   const handlerSourceFunction =
     sourceFunctions.find(
@@ -69,9 +71,17 @@ export async function expandHandler(
   return buildAiContext(handlerSourceFunction, middlewareSourceFunctions);
 }
 
+/**
+ * Builds the AI context for the handler and middleware.
+ *
+ * @param {SourceFunctionResult | null} handler - The handler function result.
+ * @param {FindSourceFunctionsResult} middleware - The middleware functions result.
+ * @returns {Promise<[string | undefined, string | undefined] | [null, null]}
+ *          A promise that resolves to the handler and middleware context, or null if not found.
+ */
 async function buildAiContext(
   handler: SourceFunctionResult | null,
-  middleware: FindSourceFunctionsResult,
+  middleware: Array<SourceFunctionResult>,
 ) {
   const handlerContextPromise = handler
     ? buildHandlerContext(handler)
@@ -102,7 +112,7 @@ async function buildHandlerContext(handler: SourceFunctionResult) {
  * @returns The middleware context
  */
 async function buildMiddlewareContext(
-  middleware: FindSourceFunctionsResult,
+  middleware: Array<SourceFunctionResult>,
 ): Promise<string | undefined> {
   if (!middleware || !middleware.length) {
     return undefined;
@@ -129,7 +139,7 @@ ${expandedMiddleware.map(transformExpandedFunction).join("\n")}
  */
 async function expandFunctionInUserProject(handler: SourceFunctionResult) {
   // NOTE - If the handler is in node_modules, we can skip the expansion (an optimization)
-  if (handler.source?.includes("node_modules")) {
+  if (handler.sourceFile?.includes("node_modules")) {
     return null;
   }
 
@@ -144,7 +154,7 @@ async function expandFunctionInUserProject(handler: SourceFunctionResult) {
 
   const hints = {
     sourceFunction: handler.sourceFunction,
-    sourceFile: handler.source,
+    sourceFile: handler.sourceFile,
   };
 
   const expandedFunction = await expandFunction(projectRoot, functionText, {

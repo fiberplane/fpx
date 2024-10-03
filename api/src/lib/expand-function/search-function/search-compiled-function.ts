@@ -15,7 +15,7 @@ import { findSourceFunctions } from "../../find-source-function/index.js";
 export async function getSourceFunctionText(
   projectPath: string,
   functionString: string,
-): Promise<{ text: string | null; source: string | null } | null> {
+): Promise<{ text: string | null; sourceFile: string | null } | null> {
   const compiledJavascriptPath = findWranglerCompiledJavascriptDir(projectPath);
   if (!compiledJavascriptPath) {
     return null;
@@ -47,7 +47,7 @@ export async function getSourceFunctionText(
   // console.timeEnd(`findSourceFunction: ${truncatedFunctionString}`);
   return {
     text: sourceFunction?.[0]?.sourceFunction ?? null,
-    source: sourceFunction?.[0]?.source ?? null,
+    sourceFile: sourceFunction?.[0]?.sourceFile ?? null,
   };
 }
 
