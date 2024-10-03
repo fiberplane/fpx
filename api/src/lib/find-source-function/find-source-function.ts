@@ -18,6 +18,14 @@ type FunctionLocation = {
   endColumn: number;
 };
 
+/**
+ * Finds the locations of specified function definitions within the provided JavaScript file contents.
+ *
+ * @param {string} jsFileContents - The contents of the JavaScript file to search.
+ * @param {Array<string>} functionDefinitions - An array of function definition strings to locate.
+ * @returns {Promise<Record<string, { normalized: string; foundLocation: FunctionLocation | null }>>}
+ *          A promise that resolves to a record mapping each function definition to its normalized form and location.
+ */
 async function findFunctionsByDefinition(
   jsFileContents: string,
   functionDefinitions: Array<string>,
@@ -117,7 +125,14 @@ async function findFunctionsByDefinition(
 }
 
 /**
- * This function will throw an error if the map file is not valid json
+ * Finds the original source position for a given position in the compiled JavaScript using a source map.
+ *
+ * @param {RawSourceMap | RawIndexMap} sourceMapContent - The source map content.
+ * @param {number} line - The line number in the compiled JavaScript file.
+ * @param {number} column - The column number in the compiled JavaScript file.
+ * @returns {Promise<{ source: string | null; sourceContent: string | null; line: number | null; column: number | null }>}
+ *          A promise that resolves to the original source position and content.
+ * @throws Will throw an error if the source map is not valid JSON.
  */
 async function findOriginalSource(
   sourceMapContent: RawSourceMap | RawIndexMap,
@@ -156,6 +171,17 @@ export type SourceFunctionResult = {
 
 export type FindSourceFunctionsResult = Array<SourceFunctionResult>;
 
+/**
+ * Finds the original source functions corresponding to compiled function texts using source maps.
+ *
+ * @param {string} jsFilePath - The path to the compiled JavaScript file.
+ * @param {string | Array<string>} compiledFunctionText - The compiled function text(s) to locate in the source.
+ * @param {boolean} [returnNullOnMissing=false] - Whether to return null when a source function is missing.
+ * @param {Object} [hints={}] - Optional hints to provide preloaded source map content or JavaScript file contents.
+ * @param {RawSourceMap | RawIndexMap} [hints.sourceMapContent] - Preloaded source map content.
+ * @param {string} [hints.jsFileContents] - Preloaded JavaScript file contents.
+ * @returns {Promise<FindSourceFunctionsResult>} A promise that resolves to an array of results mapping compiled functions to their sources.
+ */
 export async function findSourceFunctions(
   jsFilePath: string,
   compiledFunctionText: string | Array<string>,
@@ -206,7 +232,13 @@ export async function findSourceFunctions(
 
   return results;
 
-  // Helper function to look up the original source for a function location
+  /**
+   * Looks up the original source function based on a function's location in the compiled code.
+   *
+   * @param {FunctionLocation} loc - The location of the function in the compiled JavaScript file.
+   * @returns {Promise<{ sourceFunction: string | null; source: string | null } | null>}
+   *          A promise that resolves to the original source function and its source file, or null if not found.
+   */
   async function lookUpLocation(loc: FunctionLocation) {
     const functionStartLine = loc?.startLine ?? 0;
     const functionStartColumn = loc?.startColumn ?? 0;

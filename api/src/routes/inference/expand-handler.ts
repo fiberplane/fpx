@@ -6,13 +6,13 @@ import {
   type ExpandedFunctionContext,
   type ExpandedFunctionResult,
   expandFunction,
+  findWranglerCompiledJavascriptDir,
 } from "../../lib/expand-function/index.js";
-import { findWranglerCompiledJavascriptDir } from "../../lib/expand-function/search-function/index.js";
 import {
   type FindSourceFunctionsResult,
   type SourceFunctionResult,
   findSourceFunctions,
-} from "../../lib/find-source-function/find-source-function.js";
+} from "../../lib/find-source-function/index.js";
 import logger from "../../logger.js";
 
 export async function expandHandler(
@@ -25,18 +25,15 @@ export async function expandHandler(
     return [null, null];
   }
 
-  // NOTE - This is an optimization. We're reading the file contents into memory
-  //        before passing them to findSourceFunction. This allows us to avoid multiple reads
-  //        of the files in findSourceFunction.
+  // NOTE - This is an optimization.
+  //        We're reading the compiled js file contents into memory, along with the source map,
+  //        before passing them to findSourceFunction.
+  //        This allows us to avoid multiple reads of these files in findSourceFunction.
+  //        (Parsing a mid-sized source map into JSON takes ~10ms)
   const jsFilePath = path.join(compiledJavascriptPath, "index.js");
-  const mapFile = `${jsFilePath}.map`;
-  const sourceMapContent = JSON.parse(
-    await fs.promises.readFile(mapFile, { encoding: "utf8" }),
-  );
-  const jsFileContents = await fs.promises.readFile(jsFilePath, {
-    encoding: "utf8",
-  });
+  const { jsFileContents, sourceMapContent } = await getSourceFiles(jsFilePath);
 
+  // HACK - We filter out certian third-party middleware in this function, to reduce the amount of work done here
   const filteredMiddleware = filterHonoMiddleware(middleware);
 
   const functionDefinitions = [
@@ -54,16 +51,20 @@ export async function expandHandler(
     },
   );
 
+  // TODO - Handle case where no source functions are found, fall back to inefficient search
+
   const handlerSourceFunction =
     sourceFunctions.find(
       (sourceFunction) => sourceFunction.functionText === handler,
     ) ?? null;
 
-  const middlewareSourceFunctions = sourceFunctions.filter((sourceFunction) =>
-    filteredMiddleware.some(
+  const middlewareSourceFunctions = sourceFunctions.filter((sourceFunction) => {
+    // TODO - Filter out or transform node modules middleware?
+    const isMiddleware = filteredMiddleware.some(
       (middleware) => middleware.handler === sourceFunction.functionText,
-    ),
-  );
+    );
+    return isMiddleware;
+  });
 
   return buildAiContext(handlerSourceFunction, middlewareSourceFunctions);
 }
@@ -127,6 +128,11 @@ ${expandedMiddleware.map(transformExpandedFunction).join("\n")}
  * @returns The handler function location with certain out-of-scope identifiers expanded
  */
 async function expandFunctionInUserProject(handler: SourceFunctionResult) {
+  // NOTE - If the handler is in node_modules, we can skip the expansion (an optimization)
+  if (handler.source?.includes("node_modules")) {
+    return null;
+  }
+
   const projectRoot = USER_PROJECT_ROOT_DIR;
   const functionText = handler.functionText;
   const truncatedHandler = functionText.replace(/\n/g, " ").slice(0, 33);
@@ -207,14 +213,32 @@ ${stringifyContext(expandedFunction.context)}
 </expanded-function>`;
 }
 
-// HACK - Ignore reactRenderer middleware, as well as bearerAuth, since it's from a third party library
+// HACK - Ignore expansion of reactRenderer middleware, since it's from a third party library
 //        We could also be clever and ignore a bunch of other third party Hono middleware by default to avoid too much work being done here
 function filterHonoMiddleware(middleware: Array<{ handler: string }>) {
   return middleware.filter((m) => {
     const functionText = m.handler;
-    return (
-      !functionText.startsWith("function reactRenderer") &&
-      !functionText.startsWith("async function bearerAuth")
-    );
+    return !functionText.startsWith("function reactRenderer");
   });
+}
+
+async function getSourceFiles(jsFilePath: string) {
+  const [jsFileContents, sourceMapContent] = await Promise.all([
+    fs.promises.readFile(jsFilePath, { encoding: "utf8" }),
+    getSourceMap(jsFilePath),
+  ]);
+  return { jsFileContents, sourceMapContent };
+}
+
+async function getSourceMap(jsFilePath: string) {
+  try {
+    const mapFile = `${jsFilePath}.map`;
+    const sourceMapContent = JSON.parse(
+      await fs.promises.readFile(mapFile, { encoding: "utf8" }),
+    );
+    return sourceMapContent;
+  } catch (_error) {
+    logger.error(`Failed to parse source map for ${jsFilePath}`);
+    return null;
+  }
 }
