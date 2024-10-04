@@ -52,6 +52,7 @@ export const AiProviderTypeSchema = z.union([
 export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;
 
 export const SettingsSchema = z.object({
+  accountManagement: z.boolean().optional(),
   aiEnabled: z.boolean().optional(),
   aiProviderType: AiProviderTypeSchema.optional(),
   anthropicApiKey: z.string().optional(),

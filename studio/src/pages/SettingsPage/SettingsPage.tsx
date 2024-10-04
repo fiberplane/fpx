@@ -36,6 +36,7 @@ export function SettingsPage() {
 const AI_TAB = "AI";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
 const FPX_WORKER_PROXY_TAB = "Production Ingestion";
+const ACCOUNT_TAB = "Account";
 
 function SettingsLayout({ settings }: { settings: Settings }) {
   const [activeTab, setActiveTab] = useState(AI_TAB);
@@ -45,7 +46,12 @@ function SettingsLayout({ settings }: { settings: Settings }) {
       defaultValue={AI_TAB}
       value={activeTab}
       onValueChange={setActiveTab}
-      className="grid max-md:grid-rows-[auto_1fr] h-full gap-4 overflow-hidden md:grid-cols-[auto_1fr] md:gap-2 lg:gap-4"
+      className={cn(
+        "grid max-md:grid-rows-[auto_1fr] h-full",
+        "gap-4 md:gap-2 lg:gap-4",
+        "overflow-hidden md:grid-cols-[auto_1fr]",
+        "w-[1025px] max-w-[95vw]"
+      )}
     >
       <TabsList
         className={cn(
@@ -101,6 +107,12 @@ function SettingsLayout({ settings }: { settings: Settings }) {
         </TabsTrigger>
         <TabsTrigger
           className="hidden md:block w-full justify-start text-left py-2 px-4"
+          value={ACCOUNT_TAB}
+        >
+          Account support
+        </TabsTrigger>
+        <TabsTrigger
+          className="hidden md:block w-full justify-start text-left py-2 px-4"
           value={PROXY_REQUESTS_TAB}
         >
           Proxy Requests
@@ -115,6 +127,10 @@ function SettingsLayout({ settings }: { settings: Settings }) {
       <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll pr-3">
         <TabsContent className="m-0" value={AI_TAB}>
           <AISettingsForm settings={settings} />
+        </TabsContent>
+        <TabsContent className="m-0" value={ACCOUNT_TAB}>
+          <div>Account settings</div>
+          <p>Do you want to enable account settings?</p>
         </TabsContent>
         <TabsContent className="m-0" value={PROXY_REQUESTS_TAB}>
           <ProxyRequestsSettingsForm settings={settings} />

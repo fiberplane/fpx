@@ -13,6 +13,8 @@ import {
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import { RequestorPage } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
+import { SignIn } from "./pages/SignIn";
+import { Account } from "./pages/Account";
 
 export function App() {
   return (
@@ -21,6 +23,8 @@ export function App() {
         <TooltipProvider>
           <Layout>
             <Routes>
+              <Route path="/sign-in" element={<SignIn />} />
+              <Route path="/account" element={<Account />} />
               <Route path={REQUESTS_ROUTE} element={<RequestsPage />} />
               <Route
                 path={REQUEST_DETAILS_OTEL_ROUTE}
