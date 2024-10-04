@@ -353,9 +353,6 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.17.3
         version: 8.20.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/highlight-words-core':
-        specifier: ^1.2.3
-        version: 1.2.3
       '@uiw/codemirror-theme-duotone':
         specifier: ^4.22.2
         version: 4.23.0(@codemirror/language@6.10.2)(@codemirror/state@6.4.1)(@codemirror/view@6.33.0)
@@ -377,9 +374,6 @@ importers:
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
-      highlight-words-core:
-        specifier: ^1.2.2
-        version: 1.2.2
       hono:
         specifier: ^4.4.8
         version: 4.5.5
@@ -395,9 +389,6 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
-      react-highlight-words:
-        specifier: ^0.20.0
-        version: 0.20.0(react@18.3.1)
       react-hook-form:
         specifier: ^7.52.0
         version: 7.53.0(react@18.3.1)
@@ -416,9 +407,6 @@ importers:
       sql-formatter:
         specifier: ^15.3.2
         version: 15.4.0
-      stopword:
-        specifier: ^3.0.1
-        version: 3.1.1
       tailwind-merge:
         specifier: ^2.3.0
         version: 2.5.2
@@ -450,12 +438,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.22
         version: 18.3.0
-      '@types/react-resizable':
-        specifier: ^3.0.7
-        version: 3.0.8
-      '@types/stopword':
-        specifier: ^2.0.3
-        version: 2.0.3
       '@vitejs/plugin-react-swc':
         specifier: ^3.5.0
         version: 3.7.0(vite@5.4.0(@types/node@20.14.15))
@@ -3295,9 +3277,6 @@ packages:
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
-  '@types/highlight-words-core@1.2.3':
-    resolution: {integrity: sha512-PWNU/NR0CaYEsK38mcCTyDzeS2TlEGK9kRhRMz1i86jVAe836ZlA3gl6QYpu+CG6IpfNKTgWpEnJuRededvC0g==}
-
   '@types/http-cache-semantics@4.0.4':
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
 
@@ -3343,9 +3322,6 @@ packages:
   '@types/react-dom@18.3.0':
     resolution: {integrity: sha512-EhwApuTmMBmXuFOikhQLIBUn6uFg81SwLMOAUgodJF14SOBOCMdU04gDoYi0WOJJHD144TL32z4yDqCW3dnkQg==}
 
-  '@types/react-resizable@3.0.8':
-    resolution: {integrity: sha512-Pcvt2eGA7KNXldt1hkhVhAgZ8hK41m0mp89mFgQi7LAAEZiaLgm4fHJ5zbJZ/4m2LVaAyYrrRRv1LHDcrGQanA==}
-
   '@types/react@18.3.3':
     resolution: {integrity: sha512-hti/R0pS0q1/xx+TsI73XIqk26eBsISZ2R0wUijXIngRK9R/e7Xw/cXVxQK7R5JjW+SV4zGcn5hXjudkN/pLIw==}
 
@@ -3360,9 +3336,6 @@ packages:
 
   '@types/shimmer@1.2.0':
     resolution: {integrity: sha512-UE7oxhQLLd9gub6JKIAhDq06T0F6FnztwMNRvYgjeQSBeMc1ZG/tA47EwfduvkuQS8apbkM/lpLpWsaCeYsXVg==}
-
-  '@types/stopword@2.0.3':
-    resolution: {integrity: sha512-hioMj0lOvISM+EDevf7ijG8EMbU+J3pj4SstCyfQC1t39uPYpAe7beSfBdU6c1d9jeECTQQtR3UJWtVoUO8Weg==}
 
   '@types/tar@6.1.13':
     resolution: {integrity: sha512-IznnlmU5f4WcGTh2ltRu/Ijpmk8wiWXfF0VA4s+HPjHZgvFggk1YaIkbo5krX/zUCzWF8N/l4+W/LNxnvAJ8nw==}
@@ -4886,9 +4859,6 @@ packages:
   highlight-es@1.0.3:
     resolution: {integrity: sha512-s/SIX6yp/5S1p8aC/NRDC1fwEb+myGIfp8/TzZz0rtAv8fzsdX7vGl3Q1TrXCsczFq8DI3CBFBCySPClfBSdbg==}
 
-  highlight-words-core@1.2.2:
-    resolution: {integrity: sha512-BXUKIkUuh6cmmxzi5OIbUJxrG8OAk2MqoL1DtO3Wo9D2faJg2ph5ntyuQeLqaHJmzER6H5tllCDA9ZnNe9BVGg==}
-
   hono@4.5.5:
     resolution: {integrity: sha512-fXBXHqaVfimWofbelLXci8pZyIwBMkDIwCa4OwZvK+xVbEyYLELVP4DfbGaj1aEM6ZY3hHgs4qLvCO2ChkhgQw==}
     engines: {node: '>=16.0.0'}
@@ -5387,9 +5357,6 @@ packages:
 
   mdn-data@2.0.30:
     resolution: {integrity: sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==}
-
-  memoize-one@4.0.3:
-    resolution: {integrity: sha512-QmpUu4KqDmX0plH4u+tf0riMc1KHE1+lw95cMrLlXQAFOx/xnBtwhZ52XJxd9X2O6kwKBqX32kmhbhlobD0cuw==}
 
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
@@ -6168,9 +6135,6 @@ packages:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}
     engines: {node: '>= 6'}
 
-  prop-types@15.8.1:
-    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
-
   property-information@6.5.0:
     resolution: {integrity: sha512-PgTgs/BlvHxOu8QuEN7wi5A0OmXaBcHpmCSTehcs6Uuu9IkDIEo13Hy7n898RHfrQ49vKCoGeWZSaAK01nwVig==}
 
@@ -6241,11 +6205,6 @@ packages:
     peerDependencies:
       react: ^18.3.1
 
-  react-highlight-words@0.20.0:
-    resolution: {integrity: sha512-asCxy+jCehDVhusNmCBoxDf2mm1AJ//D+EzDx1m5K7EqsMBIHdZ5G4LdwbSEXqZq1Ros0G0UySWmAtntSph7XA==}
-    peerDependencies:
-      react: ^0.14.0 || ^15.0.0 || ^16.0.0-0 || ^17.0.0-0 || ^18.0.0-0
-
   react-hook-form@7.53.0:
     resolution: {integrity: sha512-M1n3HhqCww6S2hxLxciEXy2oISPnAzxY7gvwVPrtlczTM/1dDadXgUxDpHMrMTblDOcm/AXtXxHwZ3jpg1mqKQ==}
     engines: {node: '>=18.0.0'}
@@ -6257,9 +6216,6 @@ packages:
     peerDependencies:
       react: '>=16.8.1'
       react-dom: '>=16.8.1'
-
-  react-is@16.13.1:
-    resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
@@ -6701,9 +6657,6 @@ packages:
   stoppable@1.1.0:
     resolution: {integrity: sha512-KXDYZ9dszj6bzvnEMRYvxgeTHU74QBFL54XKtP3nyMuJ81CFYtABZ3bAzL2EdFUaEwJOBOgENyFj3R7oTzDyyw==}
     engines: {node: '>=4', npm: '>=6'}
-
-  stopword@3.1.1:
-    resolution: {integrity: sha512-TzJdIuzqJNo6IaFvrF3fYqu08uJ/0VMsdABl6d6+dt6daD7QeHJnMt9sPqhVIxEmNaaeE8+eandVPJv9RhAL5Q==}
 
   stream-replace-string@2.0.0:
     resolution: {integrity: sha512-TlnjJ1C0QrmxRNrON00JvaFFlNh5TTG00APw23j74ET7gkQpTASi6/L2fuiav8pzK715HXtUeClpBTw2NPSn6w==}
@@ -10177,8 +10130,6 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.2
 
-  '@types/highlight-words-core@1.2.3': {}
-
   '@types/http-cache-semantics@4.0.4': {}
 
   '@types/keyv@3.1.4':
@@ -10230,10 +10181,6 @@ snapshots:
     dependencies:
       '@types/react': 18.3.3
 
-  '@types/react-resizable@3.0.8':
-    dependencies:
-      '@types/react': 18.3.3
-
   '@types/react@18.3.3':
     dependencies:
       '@types/prop-types': 15.7.12
@@ -10250,8 +10197,6 @@ snapshots:
       '@types/node': 20.14.15
 
   '@types/shimmer@1.2.0': {}
-
-  '@types/stopword@2.0.3': {}
 
   '@types/tar@6.1.13':
     dependencies:
@@ -12009,8 +11954,6 @@ snapshots:
       is-es2016-keyword: 1.0.0
       js-tokens: 3.0.2
 
-  highlight-words-core@1.2.2: {}
-
   hono@4.5.5: {}
 
   hono@4.5.9: {}
@@ -12572,8 +12515,6 @@ snapshots:
   mdn-data@2.0.28: {}
 
   mdn-data@2.0.30: {}
-
-  memoize-one@4.0.3: {}
 
   merge-stream@2.0.0: {}
 
@@ -13567,12 +13508,6 @@ snapshots:
       kleur: 3.0.3
       sisteransi: 1.0.5
 
-  prop-types@15.8.1:
-    dependencies:
-      loose-envify: 1.4.0
-      object-assign: 4.1.1
-      react-is: 16.13.1
-
   property-information@6.5.0: {}
 
   protobufjs@7.3.2:
@@ -13654,13 +13589,6 @@ snapshots:
       react: 18.3.1
       scheduler: 0.23.2
 
-  react-highlight-words@0.20.0(react@18.3.1):
-    dependencies:
-      highlight-words-core: 1.2.2
-      memoize-one: 4.0.3
-      prop-types: 15.8.1
-      react: 18.3.1
-
   react-hook-form@7.53.0(react@18.3.1):
     dependencies:
       react: 18.3.1
@@ -13669,8 +13597,6 @@ snapshots:
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-
-  react-is@16.13.1: {}
 
   react-is@18.3.1: {}
 
@@ -14223,8 +14149,6 @@ snapshots:
   stdin-discarder@0.2.2: {}
 
   stoppable@1.1.0: {}
-
-  stopword@3.1.1: {}
 
   stream-replace-string@2.0.0: {}
 
