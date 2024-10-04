@@ -1,3 +1,4 @@
+import { WEBHONC_ID_KEY } from "@/components/WebhoncBadge/const";
 import { useRealtimeService } from "@/hooks/useRealtimeService";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -21,11 +22,10 @@ export function useWebsocketQueryInvalidation() {
       }
 
       case "connection_open": {
-        // TODO: rewriting some webhook/websocket stuff tbd if this is needed
-        console.debug("connection_open");
-        // queryClient.invalidateQueries({
-        // queryKey: [WEBHONC_ID_KEY, WEBHONC_REQUEST_KEY],
-        // });
+        console.debug("connection_open - invalidating webhonc id");
+        queryClient.invalidateQueries({
+          queryKey: [WEBHONC_ID_KEY],
+        });
         break;
       }
 

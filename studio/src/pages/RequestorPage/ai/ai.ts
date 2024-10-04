@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { createFormDataParameter } from "../FormDataForm/data";
 import { createKeyValueParameters } from "../KeyValueForm";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import type { RequestorBody } from "../store";
 import { useRequestorStore, useServiceBaseUrl } from "../store";
 import { isRequestorBodyType } from "../store/request-body";
@@ -17,7 +17,7 @@ export const HOSTILE = "QA" as const;
 
 export type AiTestingPersona = "Friendly" | "QA";
 
-export function useAi(requestHistory: Array<Requestornator>) {
+export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
   const { toast } = useToast();
   const isAiEnabled = useAiEnabled();
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
