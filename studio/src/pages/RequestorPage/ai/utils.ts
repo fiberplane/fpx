@@ -1,5 +1,5 @@
 import { isJson, redactSensitiveHeaders } from "@/utils";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import { trimJsonBody } from "./trim-json-body";
 
 /**
@@ -9,14 +9,14 @@ import { trimJsonBody } from "./trim-json-body";
  * Truncates the request and response bodies to minimize token count.
  * The request and response themselves are formatted closely to how a server would render them as text.
  */
-export function simplifyHistoryEntry(entry: Requestornator) {
+export function simplifyHistoryEntry(entry: ProxiedRequestResponse) {
   // NOTE - Can we glean the http version somehow, somewhere?
   return [appRequestToHttpRequest(entry), appResponseToHttpRequest(entry)].join(
     "\n",
   );
 }
 
-export function appRequestToHttpRequest(entry: Requestornator) {
+export function appRequestToHttpRequest(entry: ProxiedRequestResponse) {
   const requestHeaders =
     redactSensitiveHeaders(entry.app_requests.requestHeaders) ?? {};
 
@@ -41,7 +41,7 @@ export function appRequestToHttpRequest(entry: Requestornator) {
   ].join("\n");
 }
 
-export function appResponseToHttpRequest(entry: Requestornator) {
+export function appResponseToHttpRequest(entry: ProxiedRequestResponse) {
   const responseHeaders =
     redactSensitiveHeaders(entry.app_responses?.responseHeaders) ?? {};
 

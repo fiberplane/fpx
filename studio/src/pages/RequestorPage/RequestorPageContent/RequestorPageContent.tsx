@@ -15,20 +15,18 @@ import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
 import { useAi } from "../ai";
-import { type Requestornator, useMakeProxiedRequest } from "../queries";
+import { type ProxiedRequestResponse, useMakeProxiedRequest } from "../queries";
 import { useRequestorStore, useRequestorStoreRaw } from "../store";
 import { BACKGROUND_LAYER } from "../styles";
 import { useMakeWebsocketRequest } from "../useMakeWebsocketRequest";
 import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
 import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
-import { useMostRecentRequestornator } from "./useMostRecentRequestornator";
+import { useMostRecentProxiedRequestResponse } from "./useMostRecentProxiedRequestResponse";
 import { getMainSectionWidth } from "./util";
 
 interface RequestorPageContentProps {
-  history: Requestornator[]; // Replace 'any[]' with the correct type
+  history: ProxiedRequestResponse[];
   historyLoading: boolean;
-  // sessionHistory: Requestornator[];
-  // recordRequestInSessionHistory: (traceId: string) => void;
   overrideTraceId?: string;
   generateNavigation: (traceId: string) => To;
 }
@@ -36,25 +34,19 @@ interface RequestorPageContentProps {
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   props,
 ) => {
-  const {
-    history,
-    overrideTraceId,
-    // sessionHistory,
-    historyLoading,
-    generateNavigation,
-  } = props;
+  const { history, overrideTraceId, historyLoading, generateNavigation } =
+    props;
 
   const { toast } = useToast();
 
-  const mostRecentRequestornatorForRoute = useMostRecentRequestornator(
-    history,
-    overrideTraceId,
-  );
+  const mostRecentProxiedRequestResponseForRoute =
+    useMostRecentProxiedRequestResponse(history, overrideTraceId);
 
   // This is the preferred traceId to show in the UI
   // It is either the traceId from the url or a recent traceId from the session history
   const traceId =
-    overrideTraceId ?? mostRecentRequestornatorForRoute?.app_responses?.traceId;
+    overrideTraceId ??
+    mostRecentProxiedRequestResponseForRoute?.app_responses?.traceId;
 
   const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
     useRequestorStore(
@@ -188,7 +180,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const responseContent = (
     <ResponsePanel
-      tracedResponse={mostRecentRequestornatorForRoute}
+      tracedResponse={mostRecentProxiedRequestResponseForRoute}
       isLoading={isRequestorRequesting || historyLoading}
       websocketState={websocketState}
     />

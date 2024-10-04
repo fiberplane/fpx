@@ -15,7 +15,7 @@ import {
   QuestionMarkIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
@@ -25,7 +25,7 @@ export function ResponseBody({
   response,
   className,
 }: {
-  response?: Requestornator | RequestorActiveResponse;
+  response?: ProxiedRequestResponse | RequestorActiveResponse;
   className?: string;
 }) {
   const isFailure = isRequestorActiveResponse(response)
@@ -277,7 +277,7 @@ function useTextPreview(
 
 export function FailedRequest({
   response,
-}: { response?: Requestornator | RequestorActiveResponse }) {
+}: { response?: ProxiedRequestResponse | RequestorActiveResponse }) {
   // TODO - Show a more friendly error message
   const failureReason = isRequestorActiveResponse(response)
     ? null

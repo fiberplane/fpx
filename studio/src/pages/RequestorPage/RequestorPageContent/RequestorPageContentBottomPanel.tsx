@@ -7,13 +7,13 @@ import { LogsLabel } from "../LogsTable";
 import { RequestorTimeline } from "../RequestorTimeline";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
 import { AiTestGenerationPanel } from "../ai";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import { useRequestorStore } from "../store";
 import type { BOTTOM_PANEL_NAMES } from "../store/slices/types";
 
 interface RequestorPageContentBottomPanelProps {
   traceId?: string;
-  history: Requestornator[];
+  history: ProxiedRequestResponse[];
 }
 
 const RequestorPageContentBottomPanel: React.FC<
