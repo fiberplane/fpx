@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import type { RequestBodyType } from "../store";
 import type { ProbedRoute } from "../types";
 import { simplifyHistoryEntry } from "./utils";
@@ -8,7 +8,7 @@ const fetchAiRequestData = (
   route: ProbedRoute | null,
   middleware: ProbedRoute[] | null,
   bodyType: RequestBodyType,
-  history: Array<Requestornator>,
+  history: Array<ProxiedRequestResponse>,
   persona: string,
 ) => {
   // FIXME - type wonkiness
@@ -42,7 +42,7 @@ export function useAiRequestData(
   route: ProbedRoute | null,
   matchingMiddleware: ProbedRoute[] | null,
   bodyType: RequestBodyType,
-  history: Array<Requestornator>,
+  history: Array<ProxiedRequestResponse>,
   persona = "Friendly",
 ) {
   return useQuery({

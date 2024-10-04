@@ -4,7 +4,7 @@ import { useCopyToClipboard } from "@/hooks";
 import { parsePathFromRequestUrl } from "@/utils";
 import { CopyIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import { findMatchedRoute } from "../routes";
 import { useActiveRoute, useServiceBaseUrl } from "../store";
 import { ContextEntry } from "./AiTestGenerationDrawer";
@@ -13,13 +13,13 @@ import { usePrompt } from "./ai-test-generation";
 export function AiTestGenerationPanel({
   history,
 }: {
-  history: Array<Requestornator>;
+  history: Array<ProxiedRequestResponse>;
 }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
   const activeRoute = useActiveRoute();
   const { removeServiceUrlFromPath } = useServiceBaseUrl();
-  const lastMatchingRequest = useMemo<Requestornator | null>(() => {
+  const lastMatchingRequest = useMemo<ProxiedRequestResponse | null>(() => {
     const match = history.find((response) => {
       const path = parsePathFromRequestUrl(response.app_requests?.requestUrl);
 

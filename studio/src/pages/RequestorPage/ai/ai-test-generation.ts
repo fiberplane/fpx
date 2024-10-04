@@ -11,10 +11,12 @@ import {
 import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useMemo } from "react";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import { appRequestToHttpRequest, appResponseToHttpRequest } from "./utils";
 
-function createRequestDescription(request: Requestornator | null): string {
+function createRequestDescription(
+  request: ProxiedRequestResponse | null,
+): string {
   if (!request) {
     return "NO_MATCHING_REQUEST_FOUND";
   }
@@ -28,7 +30,7 @@ function createRequestDescription(request: Requestornator | null): string {
   ].join("\n");
 }
 
-function createResponseDescription(response: Requestornator | null) {
+function createResponseDescription(response: ProxiedRequestResponse | null) {
   if (!response) {
     return "NO_MATCHING_RESPONSE_FOUND";
   }
@@ -36,7 +38,7 @@ function createResponseDescription(response: Requestornator | null) {
 }
 
 export function usePrompt(
-  latestRequest: Requestornator | null,
+  latestRequest: ProxiedRequestResponse | null,
   userInput: string,
 ) {
   const traceId = latestRequest?.app_responses?.traceId ?? "";
