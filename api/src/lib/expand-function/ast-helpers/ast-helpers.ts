@@ -32,7 +32,7 @@ export function getDefinitionText(
   // `let x = ...`
   if (ts.isVariableDeclaration(node) && node.initializer) {
     return {
-      type: "unknown", // TODO
+      type: "variable",
       text: node.initializer.getText(sourceFile),
     };
   }
@@ -70,7 +70,7 @@ export function getDefinitionText(
     node.parent.initializer
   ) {
     return {
-      type: "unknown", // TODO
+      type: "variable",
       text: node.parent.initializer.getText(sourceFile),
     };
   }
