@@ -17,7 +17,7 @@ import logger from "../../logger.js";
 export async function expandHandler(
   handler: string,
   middleware: Array<{ handler: string }>,
-) {
+): Promise<[string | null, string | null]> {
   const projectPath = USER_PROJECT_ROOT_DIR;
 
   // Here we look for the wrangler tmp files containing the compiled js and source map
@@ -67,38 +67,26 @@ export async function expandHandler(
     return isMiddleware;
   });
 
-  return buildAiContext(handlerSourceFunction, middlewareSourceFunctions);
-}
+  const handlerContextPromise = handlerSourceFunction
+    ? buildHandlerContext(handlerSourceFunction)
+    : Promise.resolve(null);
 
-/**
- * Builds the AI context for the handler and middleware.
- *
- * @param {SourceFunctionResult | null} handler - The handler function result.
- * @param {FindSourceFunctionsResult} middleware - The middleware functions result.
- * @returns {Promise<[string | undefined, string | undefined] | [null, null]}
- *          A promise that resolves to the handler and middleware context, or null if not found.
- */
-async function buildAiContext(
-  handler: SourceFunctionResult | null,
-  middleware: Array<SourceFunctionResult>,
-) {
-  const handlerContextPromise = handler
-    ? buildHandlerContext(handler)
-    : Promise.resolve(undefined);
-
-  const middlewareContextPromise = middleware
-    ? buildMiddlewareContext(middleware)
-    : Promise.resolve(undefined);
+  const middlewareContextPromise =
+    middlewareSourceFunctions?.length > 0
+      ? buildMiddlewareContext(middlewareSourceFunctions)
+      : Promise.resolve(null);
 
   return Promise.all([handlerContextPromise, middlewareContextPromise]);
 }
 
-async function buildHandlerContext(handler: SourceFunctionResult) {
+async function buildHandlerContext(
+  handler: SourceFunctionResult,
+): Promise<string | null> {
   if (handler?.sourceFunction) {
     const expandedFunction = await expandFunctionInUserProject(handler);
     return transformExpandedFunction(expandedFunction);
   }
-  return undefined;
+  return null;
 }
 
 /**
@@ -112,9 +100,9 @@ async function buildHandlerContext(handler: SourceFunctionResult) {
  */
 async function buildMiddlewareContext(
   middleware: Array<SourceFunctionResult>,
-): Promise<string | undefined> {
+): Promise<string | null> {
   if (!middleware || !middleware.length) {
-    return undefined;
+    return null;
   }
 
   const expandedMiddleware = await Promise.all(
@@ -174,9 +162,9 @@ async function expandFunctionInUserProject(handler: SourceFunctionResult) {
  */
 function transformExpandedFunction(
   expandedFunction: ExpandedFunctionResult | null,
-): string | undefined {
+): string | null {
   if (!expandedFunction || !expandedFunction.context?.length) {
-    return undefined;
+    return null;
   }
 
   function stringifyContext(
