@@ -42,3 +42,6 @@ yarn-error.log
 # Personal files
 start-dev.sh
 slam-geese.sh
+
+# Ignore .dev.vars files in the examples folder
+examples/**/*.dev.vars

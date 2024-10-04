@@ -3,6 +3,7 @@ import "./CodeMirrorEditorCssOverrides.css";
 import { cn } from "@/utils";
 import CodeMirror, { EditorView, gutter, keymap } from "@uiw/react-codemirror";
 import { useMemo, useState } from "react";
+import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
 
 const inputTheme = EditorView.theme({
   "&": {
@@ -113,30 +114,6 @@ const preventNewlineInFirefox = keymap.of([
   },
 ]);
 
-// Extension that blurs the editor when the user presses "Escape"
-const escapeKeymap = keymap.of([
-  {
-    key: "Escape",
-    run: (view) => {
-      view.contentDOM.blur();
-      return true;
-    },
-  },
-]);
-
-const submitKeymap = (onSubmit: (() => void) | undefined) =>
-  keymap.of([
-    {
-      key: "Mod-Enter",
-      run: (_view) => {
-        if (onSubmit) {
-          onSubmit();
-        }
-        return true;
-      },
-    },
-  ]);
-
 export function CodeMirrorInput(props: CodeMirrorInputProps) {
   const { value, onChange, placeholder, className, readOnly, onSubmit } = props;
 
@@ -163,7 +140,7 @@ export function CodeMirrorInput(props: CodeMirrorInputProps) {
       EditorView.lineWrapping,
       readOnly ? readonlyExtension : noopExtension,
       isFocused ? noopExtension : inputTrucateExtension,
-      submitKeymap(onSubmit),
+      createOnSubmitKeymap(onSubmit),
     ];
   }, [isFocused, readOnly, onSubmit]);
 
