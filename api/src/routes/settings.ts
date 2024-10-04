@@ -18,8 +18,13 @@ app.get("/v0/settings", cors(), async (ctx) => {
 
 /**
  * Upsert the settings record
+ *
+ * NOTE - We need to start and stop webhonc when the proxy requests setting is updated.
  */
 app.post("/v0/settings", cors(), async (ctx) => {
+  const currentSettings = await getAllSettings(ctx.get("db"));
+  const prevProxyUrlEnabled = currentSettings?.proxyRequestsEnabled;
+
   const { content } = (await ctx.req.json()) as {
     content: Record<string, string>;
   };
@@ -40,16 +45,22 @@ app.post("/v0/settings", cors(), async (ctx) => {
 
   logger.debug("Configuration updated...");
 
-  const proxyUrlEnabled = !!Number(
+  // HACK - We should techincally JSON parse the value here, but whatever.
+  const proxyUrlEnabled =
     updatedSettings.find((setting) => setting.key === "proxyRequestsEnabled")
-      ?.value,
-  );
+      ?.value === "true";
 
-  if (proxyUrlEnabled) {
+  const shouldStartWebhonc = !prevProxyUrlEnabled && proxyUrlEnabled;
+  if (shouldStartWebhonc) {
+    logger.debug("Proxy requests enabled in settings update, starting webhonc");
     await webhonc.start();
   }
 
-  if (!proxyUrlEnabled) {
+  const shouldStopWebhonc = prevProxyUrlEnabled && !proxyUrlEnabled;
+  if (shouldStopWebhonc) {
+    logger.debug(
+      "Proxy requests disabled in settings update, stopping webhonc",
+    );
     await webhonc.stop();
   }
 
