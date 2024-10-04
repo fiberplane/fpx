@@ -104,7 +104,7 @@ export function GenericSpanContent(props: Props) {
         </SubSection>
       )}
       <SubSection className="gap-0">
-        <SubSectionHeading>Meta data</SubSectionHeading>
+        <SubSectionHeading>Metadata</SubSectionHeading>
         <KeyValueTable
           className="mt-0"
           valueCellClassName="text-[10px]/3"

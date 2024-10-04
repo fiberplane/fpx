@@ -38,7 +38,7 @@ export function AiTestGenerationDrawer({
       <DrawerContent className="py-4">
         <div className="mx-auto w-full max-w-md">
           <DrawerHeader className="mt-2 p-2">
-            <DrawerTitle>Close the Loop 2</DrawerTitle>
+            <DrawerTitle>Close the Loop</DrawerTitle>
             <DrawerDescription>
               Describe the problem you encountered or a test you wish to write.
               FPX will create a context-rich prompt that you can copy-paste into

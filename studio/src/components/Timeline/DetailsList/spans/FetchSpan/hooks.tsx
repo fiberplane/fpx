@@ -47,7 +47,6 @@ const DEFAULT_VENDOR_RESULT = {
  */
 export function useVendorSpecificSection(vendorInfo: VendorInfo) {
   return useMemo(() => {
-    // const vendorInfo =
     if (isNeonVendorInfo(vendorInfo)) {
       return {
         component: <NeonSection vendorInfo={vendorInfo} />,

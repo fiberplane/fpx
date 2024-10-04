@@ -36,7 +36,7 @@ export const getErrorEvents = (span: Pick<OtelSpan, "events">) => {
   return span.events?.filter(isErrorEvent) ?? [];
 };
 
-export function isFpxRequestSpan(span: Pick<OtelSpan, "name" | "kind">) {
+export function isFpxRequestSpan(span: OtelSpan) {
   return span.name === "request" && span.kind === SpanKind.SERVER;
 }
 

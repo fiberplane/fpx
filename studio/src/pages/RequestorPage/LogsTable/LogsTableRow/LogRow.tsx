@@ -16,6 +16,7 @@ export function LogRow({ log }: LogRowProps) {
   return (
     <div className={cn(bgColor, "hover:bg-muted")}>
       <div className={cn(isExpanded ? "rounded-t-xl" : "rounded-xl")}>
+
         <div
           tabIndex={0}
           role="button"
@@ -32,9 +33,8 @@ export function LogRow({ log }: LogRowProps) {
           }}
           className={cn(
             "cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-inset",
-            isExpanded ? "rounded-t-xl" : "rounded-xl",
-          )}
-        >
+            isExpanded ? "rounded-t-lg" : "rounded-lg",
+          )}        >
           <LogHeader
             logLevel={log.level}
             message={log.message}

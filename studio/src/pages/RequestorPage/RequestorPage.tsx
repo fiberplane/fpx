@@ -33,8 +33,6 @@ export const RequestorPage = () => {
 
   const { sidePanel } = useRequestorStore("sidePanel");
 
-<<<<<<< HEAD
-=======
   // NOTE - Uncomment this to test overflow of requests panel
   // const { setQueryParams } = useRequestorStore("setQueryParams");
   // useEffect(() => {
@@ -45,7 +43,6 @@ export const RequestorPage = () => {
   //   );
   // }, [setQueryParams]);
 
->>>>>>> origin/main
   const { history, isLoading, loadHistoricalRequest } = useRequestorHistory();
 
   const hasHistory = history.length > 0;
