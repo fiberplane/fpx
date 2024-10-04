@@ -11,15 +11,12 @@ import {
 } from "@/components/ui/tooltip";
 import { useCopyToClipboard } from "@/hooks";
 import type { MizuOrphanLog } from "@/queries";
-import { cn, safeParseJson } from "@/utils";
+import { cn, isJson } from "@/utils";
 import { CopyIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
+import { formatTimestamp } from "./shared";
 
-type LogRowProps = {
-  log: MizuOrphanLog;
-};
-
-export function LogRow({ log }: LogRowProps) {
+export function LogRow({ log }: { log: MizuOrphanLog }) {
   const bgColor = getBgColorForLevel(log.level);
   const textColor = getTextColorForLevel(log.level);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -77,7 +74,7 @@ export function LogRow({ log }: LogRowProps) {
             <div className="flex gap-2">
               <p>Message:</p>
               <div className="text-foreground break-words grow">
-                {safeParseJson(log.message) ? (
+                {isJson(log.message) ? (
                   <pre className="whitespace-pre-wrap">
                     {JSON.stringify(JSON.parse(log.message), null, 2)}
                   </pre>
@@ -162,12 +159,4 @@ function getIconColor(level: MizuOrphanLog["level"]) {
     default:
       return "bg-gray-500";
   }
-}
-
-function formatTimestamp(timestamp: Date) {
-  return timestamp.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
 }

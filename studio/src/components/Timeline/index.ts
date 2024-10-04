@@ -6,5 +6,6 @@ export {
   BodyViewerV2,
   CollapsibleKeyValueTableV2,
   TimelineListDetails,
+  useFormattedNeonQuery,
 } from "./DetailsList";
 export { TimelineProvider } from "./context";
