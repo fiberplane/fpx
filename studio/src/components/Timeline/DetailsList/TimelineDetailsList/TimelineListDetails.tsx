@@ -60,30 +60,30 @@ function TimelineListDetailsComponent({
       <div className="grid overflow-auto min-h-0">
         {asTree
           ? tree && (
-              <TimelineTree
-                node={tree}
+            <TimelineTree
+              node={tree}
+              timelineVisible={isMdScreen}
+              minStart={minStart}
+              duration={duration}
+              indent={0}
+              withLogs={withLogs}
+            />
+          )
+          : waterfall.map((item) => {
+            const isLog = isMizuOrphanLog(item);
+            if (isLog) {
+              console.log("log", item);
+            }
+            return (isLog && withLogs && !item.isException) || !isLog ? (
+              <Element
+                item={item}
                 timelineVisible={isMdScreen}
+                key={getId(item)}
                 minStart={minStart}
                 duration={duration}
-                indent={0}
-                withLogs={withLogs}
               />
-            )
-          : waterfall.map((item) => {
-              const isLog = isMizuOrphanLog(item);
-              if (isLog) {
-                console.log("log", item);
-              }
-              return (isLog && withLogs && !item.isException) || !isLog ? (
-                <Element
-                  item={item}
-                  timelineVisible={isMdScreen}
-                  key={getId(item)}
-                  minStart={minStart}
-                  duration={duration}
-                />
-              ) : null;
-            })}
+            ) : null;
+          })}
       </div>
     </div>
   );

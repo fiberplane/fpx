@@ -21,7 +21,7 @@ export function FetchSpanHeader(props: Props) {
       {statusCode !== undefined && (
         <Status statusCode={statusCode} className="py-0.5" />
       )}
-      <div className="flex gap-2 font-mono py-1 text-xs px-2 bg-accent/80 rounded text-muted-foreground  min-w-0">
+      <div className="flex gap-2 font-mono py-1 text-xs px-2 bg-accent/80 rounded text-muted-foreground min-w-0">
         <span className={cn("uppercase", getHttpMethodTextColor(method))}>
           {method}
         </span>

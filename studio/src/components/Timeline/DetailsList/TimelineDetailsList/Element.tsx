@@ -55,110 +55,129 @@ export function Element({
     <div
       key={getId(item)}
       className={cn(
-        "grid max-w-full",
+        "max-w-full",
+        "min-w-0",
         "first:rounded-t-sm transition-all",
         "group",
         "border-b border-muted-foreground/30 last:border-none",
         bgColor,
-        isMdScreen
-          ? "grid-cols-[2rem_auto_150px_min-content]"
-          : "grid-cols-[2rem_auto_min-content]",
       )}
     >
-      <DivWithHover
-        onClick={onClickToggle}
-        onKeyDown={onKeyDownToggle}
-        className="flex items-center justify-around h-6
-       pr-3 pl-1"
-      >
-        <ItemIcon item={item} />
-      </DivWithHover>
       <div
         className={cn(
-          "flex",
-          // min width needed for ellipsis to work
-          "min-w-0",
-        )}
-      >
+          "grid",
+          isMdScreen
+            ? "grid-cols-[2rem_auto_150px_min-content]"
+            : "grid-cols-[2rem_auto_min-content]",
+
+        )}>
+        <DivWithHover
+          onClick={onClickToggle}
+          onKeyDown={onKeyDownToggle}
+          className="flex items-center justify-around h-6
+       pr-3 pl-1"
+        >
+          <ItemIcon item={item} />
+        </DivWithHover>
         <div
           className={cn(
-            "grow",
+            "grid",
+            "grid-cols-[1fr_2rem]",
             // min width needed for ellipsis to work
             "min-w-0",
           )}
         >
+          <div
+            className={cn(
+              // min width needed for ellipsis to work
+              "min-w-0",
+
+            )}
+          >
+            <DivWithHover
+              onClick={onClickToggle}
+              onKeyDown={onKeyDownToggle}
+              style={{ paddingLeft: `${indentSpace}px` }}
+              tabIndex={0}
+              role="button"
+              className="group-hover:bg-primary/10 pr-3"
+            >
+              <TimelineDetailItemHeader item={item} />
+            </DivWithHover>
+          </div>
           <DivWithHover
+            className="h-6 flex items-center justify-center text-primary grow-0  pr-3"
             onClick={onClickToggle}
             onKeyDown={onKeyDownToggle}
-            style={{ paddingLeft: `${indentSpace}px` }}
-            tabIndex={0}
-            role="button"
-            className="group-hover:bg-primary/10  pr-3"
           >
-            <TimelineDetailItemHeader item={item} />
+            <Button
+              size="icon-xs"
+              variant="ghost"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              <Icon icon={isExpanded ? "ph:caret-up" : "ph:caret-down"} />
+            </Button>
           </DivWithHover>
-          {isExpanded && (
-            <div style={{ paddingLeft: `${indentSpace}px` }}>
-              <Content item={item} />
-            </div>
-          )}
         </div>
+        {isMdScreen && (
+          <DivWithHover
+            className="h-6 pr-3"
+            onClick={onClickToggle}
+            onKeyDown={onKeyDownToggle}
+          >
+            {isMizuOrphanLog(item) ? (
+              <EventIndicator
+                timestamp={item.timestamp.getTime()}
+                traceDuration={duration}
+                traceStartTime={minStart}
+              />
+            ) : (
+              <DurationIndicator
+                isActive={indent === 0}
+                itemStartTime={item.span.start_time.getTime()}
+                itemDuration={
+                  item.span.end_time.getTime() - item.span.start_time.getTime()
+                }
+                level={getLevelForSpan(item)}
+                traceDuration={duration}
+                traceStartTime={minStart}
+              />
+            )}
+          </DivWithHover>
+        )}
+
         <DivWithHover
-          className="h-6 flex items-center justify-center text-primary grow-0  pr-3"
           onClick={onClickToggle}
           onKeyDown={onKeyDownToggle}
+          className={cn(
+            "text-xs font-mono text-muted-foreground",
+            "min-h-6 h-6",
+            "flex justify-end pl-3 items-center",
+            "text-nowrap"
+          )}
         >
-          <Button
-            size="icon-xs"
-            variant="ghost"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            <Icon icon={isExpanded ? "ph:caret-up" : "ph:caret-down"} />
-          </Button>
+          <div>
+            {formatTimestamp(
+              isMizuOrphanLog(item) ? item.timestamp : item.span.start_time,
+            )}
+          </div>
         </DivWithHover>
       </div>
-      {isMdScreen && (
-        <DivWithHover
-          className="h-6  pr-3"
-          onClick={onClickToggle}
-          onKeyDown={onKeyDownToggle}
-        >
-          {isMizuOrphanLog(item) ? (
-            <EventIndicator
-              timestamp={item.timestamp.getTime()}
-              traceDuration={duration}
-              traceStartTime={minStart}
-            />
-          ) : (
-            <DurationIndicator
-              isActive={indent === 0}
-              itemStartTime={item.span.start_time.getTime()}
-              itemDuration={
-                item.span.end_time.getTime() - item.span.start_time.getTime()
-              }
-              level={getLevelForSpan(item)}
-              traceDuration={duration}
-              traceStartTime={minStart}
-            />
-          )}
-        </DivWithHover>
-      )}
+      {isExpanded && (
+        <div
+          className={cn("overflow-auto min-w-0",
+            "max-w-full",
+            // "max-w-[200px]"
+          )}>
+          <div style={{ paddingLeft: `${indentSpace + 32}px` }}
+            className={cn("",
 
-      <DivWithHover
-        onClick={onClickToggle}
-        onKeyDown={onKeyDownToggle}
-        className={cn(
-          "text-xs font-mono text-muted-foreground",
-          "min-h-6 h-6",
-          "flex justify-end pl-3 items-center",
-        )}
-      >
-        <div>
-          {formatTimestamp(
-            isMizuOrphanLog(item) ? item.timestamp : item.span.start_time,
-          )}
+            )}
+          >
+            <Content item={item} />
+          </div>
         </div>
-      </DivWithHover>
+      )}
     </div>
   );
 }
