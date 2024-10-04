@@ -146,16 +146,14 @@ async function findOriginalSource(
     });
 
     consumer.destroy();
-    // console.log('Original Source:', pos);
-    // Optional: Display the source code snippet if needed
 
+    // Optional: Display the source code snippet if needed
     const returnNullOnMissing = true;
     const sourceContent = consumer.sourceContentFor(
       pos.source ?? "",
       returnNullOnMissing,
     );
 
-    // console.log('Source Content:\n', sourceContent);
     return { ...pos, sourceContent };
   });
 }
@@ -178,7 +176,7 @@ export type SourceFunctionResult = {
  * @param {Object} [hints={}] - Optional hints to provide preloaded source map content or JavaScript file contents.
  * @param {RawSourceMap | RawIndexMap} [hints.sourceMapContent] - Preloaded source map content.
  * @param {string} [hints.jsFileContents] - Preloaded JavaScript file contents.
- * @returns {Promise<FindSourceFunctionsResult>} A promise that resolves to an array of results mapping compiled functions to their sources.
+ * @returns {Promise<Array<SourceFunctionResult>>} A promise that resolves to an array of results mapping compiled functions to their sources.
  */
 export async function findSourceFunctions(
   jsFilePath: string,
@@ -243,6 +241,7 @@ export async function findSourceFunctions(
     const functionEndLine = loc?.endLine ?? 0;
     const functionEndColumn = loc?.endColumn ?? 0;
 
+    // NOTE - We want to execute these in parallel, time is of the essence
     const [sourceFunctionStart, sourceFunctionEnd] = await Promise.all([
       findOriginalSource(
         sourceMapContent,
