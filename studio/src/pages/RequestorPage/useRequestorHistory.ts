@@ -4,11 +4,17 @@ import type { TraceListResponse } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useMemo } from "react";
 import { createKeyValueParameters } from "./KeyValueForm";
-import { type Requestornator, useFetchRequestorRequests } from "./queries";
+import {
+  type ProxiedRequestResponse,
+  useFetchRequestorRequests,
+} from "./queries";
 import { findMatchedRoute } from "./routes";
 import { useRequestorStore } from "./store";
 import { isRequestMethod, isWsRequest } from "./types";
-import { sortRequestornatorsDescending, traceToRequestornator } from "./utils";
+import {
+  sortProxiedRequestResponsesDescending,
+  traceToProxiedRequestResponse,
+} from "./utils";
 
 const EMPTY_TRACES: TraceListResponse = [];
 export function useRequestorHistory() {
@@ -36,22 +42,22 @@ export function useRequestorHistory() {
   const { data: traces = EMPTY_TRACES } = useOtelTraces();
 
   // Keep a history of recent requests and responses
-  const history = useMemo<Array<Requestornator>>(() => {
-    const items: Array<Requestornator> = [];
+  const history = useMemo<Array<ProxiedRequestResponse>>(() => {
+    const items: Array<ProxiedRequestResponse> = [];
     if (allRequests) {
       items.push(...allRequests);
     }
 
     for (const trace of traces) {
       if (!items.find((r) => r.app_responses?.traceId === trace.traceId)) {
-        const convertedTrace = traceToRequestornator(trace);
+        const convertedTrace = traceToProxiedRequestResponse(trace);
         if (convertedTrace) {
           items.push(convertedTrace);
         }
       }
     }
 
-    items.sort(sortRequestornatorsDescending);
+    items.sort(sortProxiedRequestResponsesDescending);
 
     return items;
   }, [allRequests, traces]);

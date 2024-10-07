@@ -1,4 +1,7 @@
-export { GenericSpan } from "./GenericSpan";
-export { IncomingRequest } from "./IncomingRequest";
-export { FetchSpan } from "./FetchSpan";
+export { GenericSpanContent, GenericSpanHeader } from "./GenericSpan";
+export {
+  IncomingRequestContent,
+  IncomingRequestHeader,
+} from "./IncomingRequest";
+export { FetchSpanContent, FetchSpanHeader } from "./FetchSpan";
 export { useFormattedNeonQuery } from "./FetchSpan";

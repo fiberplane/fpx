@@ -43,13 +43,7 @@ export const RequestorPage = () => {
   //   );
   // }, [setQueryParams]);
 
-  const {
-    history,
-    // sessionHistory,
-    isLoading,
-    // recordRequestInSessionHistory,
-    loadHistoricalRequest,
-  } = useRequestorHistory();
+  const { history, isLoading, loadHistoricalRequest } = useRequestorHistory();
 
   const hasHistory = history.length > 0;
   useEffect(() => {
