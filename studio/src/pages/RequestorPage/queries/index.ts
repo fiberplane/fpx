@@ -14,7 +14,7 @@ export const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
 export type JsonSchemaType = z.infer<typeof JsonSchema>;
 
 // TODO - Use validation schema
-export type Requestornator = {
+export type ProxiedRequestResponse = {
   app_requests: {
     id: number;
     requestUrl: string;

@@ -6,6 +6,7 @@ const DAY = HOUR * 24;
 
 type Props = {
   date: string;
+  className?: string;
 };
 
 /**
@@ -14,7 +15,8 @@ type Props = {
  * Anything over 24hrs ago, render date
  */
 export function Timestamp(props: Props) {
-  const parsedDate = new Date(props.date);
+  const { date, className } = props;
+  const parsedDate = new Date(date);
 
   const diffInMs = calculateDifferenceInMilliseconds(new Date(), parsedDate);
   const showTime = diffInMs < DAY;
@@ -26,5 +28,5 @@ export function Timestamp(props: Props) {
     return null;
   }
 
-  return <span>{time}</span>;
+  return <span className={className}>{time}</span>;
 }

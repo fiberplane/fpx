@@ -3,6 +3,7 @@ import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { Resource } from "@opentelemetry/resources";
 import {
   BasicTracerProvider,
+  // BatchSpanProcessor,
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
 import { SEMRESATTRS_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
@@ -275,7 +276,13 @@ function setupTracerProvider(options: {
   const exporter = new OTLPTraceExporter({
     url: options.endpoint,
   });
-  provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+  provider.addSpanProcessor(
+    new SimpleSpanProcessor(exporter),
+    // new BatchSpanProcessor(exporter, {
+    //   maxQueueSize: 1000,
+    //   scheduledDelayMillis: 2,
+    // }),
+  );
   provider.register();
   return provider;
 }

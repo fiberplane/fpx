@@ -179,7 +179,7 @@ export function getHttpMethodTextColor(method: string) {
 }
 
 export function getCloudflareSpanName(
-  span: OtelSpan,
+  span: Pick<OtelSpan, "attributes">,
   vendorInfo: CloudflareVendorInfo,
 ) {
   const { type } = vendorInfo;

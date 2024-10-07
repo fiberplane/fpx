@@ -10,11 +10,11 @@ import {
   getStatusCode,
 } from "@/utils";
 import type { TraceSummary } from "@fiberplane/fpx-types";
-import type { Requestornator } from "./queries";
+import type { ProxiedRequestResponse } from "./queries";
 
-export function sortRequestornatorsDescending(
-  a: Requestornator,
-  b: Requestornator,
+export function sortProxiedRequestResponsesDescending(
+  a: ProxiedRequestResponse,
+  b: ProxiedRequestResponse,
 ) {
   const aLatestTimestamp = a.app_requests?.updatedAt;
   const bLatestTimestamp = b.app_requests?.updatedAt;
@@ -27,9 +27,9 @@ export function sortRequestornatorsDescending(
   return 0;
 }
 
-export function traceToRequestornator(
+export function traceToProxiedRequestResponse(
   trace: TraceSummary,
-): Requestornator | null {
+): ProxiedRequestResponse | null {
   const { spans, traceId } = trace;
   const rootSpan = spans.find((s) => s.name === "request");
   if (!rootSpan) {

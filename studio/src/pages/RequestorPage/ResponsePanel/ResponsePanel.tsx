@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react";
 import { memo } from "react";
 import { Method, StatusCode } from "../RequestorHistory";
 import { CustomTabTrigger, CustomTabsContent, CustomTabsList } from "../Tabs";
-import type { Requestornator } from "../queries";
+import type { ProxiedRequestResponse } from "../queries";
 import type { ResponsePanelTab } from "../store";
 import { useActiveRoute, useRequestorStore, useServiceBaseUrl } from "../store";
 import {
@@ -23,7 +23,7 @@ import {
 } from "./Websocket";
 
 type Props = {
-  tracedResponse?: Requestornator;
+  tracedResponse?: ProxiedRequestResponse;
   isLoading: boolean;
   websocketState: WebSocketState;
 };
@@ -189,7 +189,7 @@ function ResponseSummary({
   response,
   transformUrl = (url: string) => url,
 }: {
-  response?: Requestornator | RequestorActiveResponse;
+  response?: ProxiedRequestResponse | RequestorActiveResponse;
   transformUrl?: (url: string) => string;
 }) {
   const status = isRequestorActiveResponse(response)

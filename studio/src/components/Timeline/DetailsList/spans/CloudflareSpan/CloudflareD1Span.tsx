@@ -7,15 +7,17 @@ import { format } from "sql-formatter";
 import { CollapsibleSubSection } from "../../../shared";
 import { CfResultAndError } from "./shared";
 
+type Props = { vendorInfo: CloudflareD1VendorInfo } & Pick<
+  OtelSpan,
+  "attributes"
+>;
+
 /**
  * The D1 span is rendered a little differently.
  * We ignore the exact method that was called on the binding,
  * and instead just opt to render the query and result.
  */
-export function CloudflareD1Span({
-  span,
-  vendorInfo,
-}: { span: OtelSpan; vendorInfo: CloudflareD1VendorInfo }) {
+export function CloudflareD1Span({ attributes, vendorInfo }: Props) {
   const queryValue = useMemo(() => {
     try {
       return format(vendorInfo.sql.query, {
@@ -28,8 +30,8 @@ export function CloudflareD1Span({
     }
   }, [vendorInfo]);
 
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-  const error = getString(span.attributes[CF_BINDING_ERROR]);
+  const result = getString(attributes[CF_BINDING_RESULT]);
+  const error = getString(attributes[CF_BINDING_ERROR]);
 
   return (
     <div className="text-xs py-2 space-y-2">

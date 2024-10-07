@@ -12,15 +12,15 @@ import { CfBindingOverview, CfResultAndError } from "./shared";
  * This component helps surface the model name and inputs.
  * It links to the Cloudflare docs for the given model, which might be risky!
  */
-export function CloudflareAISpan({ span }: { span: OtelSpan }) {
-  const args = getString(span.attributes.args);
+export function CloudflareAISpan({ attributes }: Pick<OtelSpan, "attributes">) {
+  const args = getString(attributes.args);
   const runAiArgs = useCloudflareAiArgs(args);
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-  const error = getString(span.attributes[CF_BINDING_ERROR]);
+  const result = getString(attributes[CF_BINDING_RESULT]);
+  const error = getString(attributes[CF_BINDING_ERROR]);
 
   return (
     <div className="text-xs py-2">
-      <CfBindingOverview span={span}>
+      <CfBindingOverview attributes={attributes}>
         <Badge className="text-xs" variant="secondary">
           {runAiArgs.model ? (
             <AiModelLink model={runAiArgs.model} />

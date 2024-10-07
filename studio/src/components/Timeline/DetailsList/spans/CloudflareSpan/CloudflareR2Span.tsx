@@ -23,15 +23,15 @@ import { CfBindingOverview, CfResultAndError, KeyBadge } from "./shared";
  *
  * https://developers.cloudflare.com/r2/api/workers/workers-api-reference/#bucket-method-definitions
  */
-export function CloudflareR2Span({ span }: { span: OtelSpan }) {
-  const method = getString(span.attributes[CF_BINDING_METHOD]);
-  const args = getString(span.attributes.args);
+export function CloudflareR2Span({ attributes }: Pick<OtelSpan, "attributes">) {
+  const method = getString(attributes[CF_BINDING_METHOD]);
+  const args = getString(attributes.args);
   const r2Args = useCloudflareR2Args(args, method);
-  const result = getString(span.attributes[CF_BINDING_RESULT]);
-  const error = getString(span.attributes[CF_BINDING_ERROR]);
+  const result = getString(attributes[CF_BINDING_RESULT]);
+  const error = getString(attributes[CF_BINDING_ERROR]);
   return (
     <div className="text-xs py-2">
-      <CfBindingOverview span={span}>
+      <CfBindingOverview attributes={attributes}>
         {r2Args.key ? <KeyBadge keyName={r2Args.key} /> : null}
       </CfBindingOverview>
       <div className="text-xs py-2 space-y-2">

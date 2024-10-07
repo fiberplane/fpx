@@ -7,7 +7,13 @@ import {
   CF_BINDING_TYPE,
 } from "../constants";
 import { measure } from "../measure";
-import { errorToJson, isUintArray, safelySerializeJSON } from "../utils";
+import {
+  errorToJson,
+  isObject,
+  isUintArray,
+  objectWithKey,
+  safelySerializeJSON,
+} from "../utils";
 
 /**
  * A key used to mark objects as proxied by us, so that we don't proxy them again.
@@ -133,46 +139,68 @@ function proxyD1Binding(o: object, bindingName: string) {
     return o;
   }
 
+  // This is how we monitor db calls in versions of miniflare after: https://github.com/cloudflare/workerd/commit/11661908ea8b6825b6d91703717f12daa6688db9
+  if (hasCloudflareD1Session(o)) {
+    if (!isAlreadyProxied(o.alwaysPrimarySession)) {
+      const proxiedPrimarySession = new Proxy(o.alwaysPrimarySession, {
+        get(primarySessionTarget, primarySessionProp) {
+          return measureD1Queries(
+            bindingName,
+            primarySessionTarget,
+            primarySessionProp,
+          );
+        },
+      });
+      markAsProxied(proxiedPrimarySession);
+      o.alwaysPrimarySession = proxiedPrimarySession;
+    }
+  }
+
+  // This is how we monitor db calls in versions of miniflare before https://github.com/cloudflare/workerd/commit/11661908ea8b6825b6d91703717f12daa6688db9
   const d1Proxy = new Proxy(o, {
     get(d1Target, d1Prop) {
-      const d1Method = String(d1Prop);
-      const d1Value = Reflect.get(d1Target, d1Prop);
-      // HACK - These are technically public methods on the database object,
-      // but they have an underscore prefix which usually means "private" by convention.
-      //
-      const isSendingQuery =
-        d1Method === "_send" || d1Method === "_sendOrThrow";
-      if (typeof d1Value === "function" && isSendingQuery) {
-        return measure(
-          {
-            name: "D1 Query",
-            attributes: getCfBindingAttributes(
-              "D1Database",
-              bindingName,
-              d1Method,
-            ),
-            onStart: (span, args) => {
-              span.setAttributes({
-                args: safelySerializeJSON(args),
-              });
-            },
-            onSuccess: (span, result) => {
-              addResultAttribute(span, result);
-            },
-            onError: handleError,
-          },
-          // OPTIMIZE - bind is expensive, can we avoid it?
-          d1Value.bind(d1Target),
-        );
-      }
-
-      return d1Value;
+      return measureD1Queries(bindingName, d1Target, d1Prop);
     },
   });
 
   markAsProxied(d1Proxy);
 
   return d1Proxy;
+}
+
+function measureD1Queries(
+  bindingName: string,
+  d1Target: object,
+  d1Prop: string | symbol,
+) {
+  const d1Method = String(d1Prop);
+  const d1Value = Reflect.get(d1Target, d1Prop);
+
+  // HACK - These are technically public methods on the database object,
+  // but they have an underscore prefix which usually means "private" by convention.
+  //
+  const isSendingQuery = d1Method === "_send" || d1Method === "_sendOrThrow";
+  if (typeof d1Value === "function" && isSendingQuery) {
+    return measure(
+      {
+        name: "D1 Query",
+        attributes: getCfBindingAttributes("D1Database", bindingName, d1Method),
+        onStart: (span, args) => {
+          span.setAttributes({
+            args: safelySerializeJSON(args),
+          });
+        },
+        onSuccess: (span, result) => {
+          addResultAttribute(span, result);
+        },
+        onError: handleError,
+      },
+      // OPTIMIZE - bind is expensive, can we avoid it?
+      d1Value.bind(d1Target),
+    );
+  }
+
+  return d1Value;
 }
 
 /**
@@ -265,6 +293,14 @@ function isCloudflareD1Binding(o: unknown) {
   }
 
   return true;
+}
+
+function hasCloudflareD1Session(
+  o: unknown,
+): o is { alwaysPrimarySession: object } {
+  return (
+    objectWithKey(o, "alwaysPrimarySession") && isObject(o.alwaysPrimarySession)
+  );
 }
 
 function isCloudflareKVBinding(o: unknown) {

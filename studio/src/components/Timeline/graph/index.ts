@@ -1,1 +1,2 @@
-export { TimelineGraph } from "./TimelineGraph";
+export { DurationIndicator } from "./DurationIndicator";
+export { EventIndicator } from "./EventIndicator";
