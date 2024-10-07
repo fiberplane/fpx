@@ -66,6 +66,7 @@ impl ApiManager {
 
             let app = api::Builder::new()
                 .enable_compression()
+                .allow_origin_any()
                 .build(service.clone(), store.clone());
 
             let listener = tokio::net::TcpListener::from_std(listener).unwrap();

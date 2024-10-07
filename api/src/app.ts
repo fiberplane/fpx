@@ -7,6 +7,7 @@ import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
 import logger from "./logger.js";
 
+import { cors } from "hono/cors";
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
 import inference from "./routes/inference.js";
@@ -20,6 +21,13 @@ export function createApp(
   wsConnections?: Set<WebSocket>,
 ) {
   const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+  app.use(
+    "*",
+    cors({
+      origin: "*",
+    }),
+  );
 
   // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
   app.use(async (c, next) => {

@@ -1,3 +1,5 @@
+export { PROBED_ROUTES_KEY } from "./app-routes";
+
 export {
   QueryClientProvider,
   queryClient,
@@ -12,8 +14,6 @@ export {
 export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
 
 export { useFetchSettings, useUpdateSettings } from "./settings";
-
-export { PROBED_ROUTES_KEY } from "./app-routes";
 export {
   type MizuOrphanLog,
   isMizuOrphanLog,

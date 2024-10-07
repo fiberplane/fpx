@@ -7,7 +7,7 @@ import {
 import { useHandler } from "@fiberplane/hooks";
 import { listen } from "@tauri-apps/api/event";
 import type { ReactNode } from "react";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import { RUNTIME } from "../constants";
 import { WorkspaceOpenError } from "./WorkspaceOpenError";
 import { WorkspaceSelector } from "./WorkspaceSelector";
@@ -29,8 +29,9 @@ type Runtime =
       requestCloseWorkspace: () => void;
       requestOpenWorkspaceDialog: () => void;
       requestOpenWorkspaceByPath: (path: string) => void;
+      requestApiBaseUrl: () => string;
     }
-  | { type: "unknown" };
+  | { type: "unknown"; requestApiBaseUrl: () => string };
 
 export const RuntimeContext = createContext<Runtime | null>(null);
 
@@ -74,6 +75,14 @@ function TauriRuntime({ children }: RuntimeProviderProps) {
     setWorkspace(undefined);
   });
 
+  const handleGetApiBaseUrl = useCallback(() => {
+    if (workspace) {
+      return `http://localhost:${workspace.config.listen_port}`;
+    }
+
+    return "";
+  }, [workspace]);
+
   useEffect(() => {
     if (workspace === undefined) {
       getCurrentWorkspace().then(setWorkspace);
@@ -116,6 +125,7 @@ function TauriRuntime({ children }: RuntimeProviderProps) {
         requestCloseWorkspace: handleCloseWorkspace,
         requestOpenWorkspaceDialog: handleOpenDialogRequested,
         requestOpenWorkspaceByPath: handleOpenWorkspaceByPath,
+        requestApiBaseUrl: handleGetApiBaseUrl,
       }}
     >
       {component}
@@ -124,8 +134,12 @@ function TauriRuntime({ children }: RuntimeProviderProps) {
 }
 
 function DefaultRuntime({ children }: RuntimeProviderProps) {
+  const handleGetApiBaseUrl = () => "";
+
   return (
-    <RuntimeContext.Provider value={{ type: "unknown" }}>
+    <RuntimeContext.Provider
+      value={{ type: "unknown", requestApiBaseUrl: handleGetApiBaseUrl }}
+    >
       {children}
     </RuntimeContext.Provider>
   );

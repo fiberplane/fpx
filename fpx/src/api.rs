@@ -5,6 +5,7 @@ use axum::extract::FromRef;
 use axum::routing::{get, post};
 use http::StatusCode;
 use tower_http::compression::CompressionLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::decompression::RequestDecompressionLayer;
 
 pub mod errors;
@@ -31,12 +32,18 @@ impl FromRef<ApiState> for Service {
 
 #[derive(Default)]
 pub struct Builder {
+    allow_origin_any: bool,
     enable_compression: bool,
 }
 
 impl Builder {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn allow_origin_any(mut self) -> Self {
+        self.allow_origin_any = true;
+        self
     }
 
     pub fn set_compression(mut self, compression: bool) -> Self {
@@ -48,11 +55,11 @@ impl Builder {
         self.set_compression(true)
     }
 
-    /// Create a API and expose it through a axum router.
+    /// Create an API and expose it through an axum router.
     pub fn build(self, service: Service, store: BoxedStore) -> axum::Router {
         let api_state = ApiState { service, store };
 
-        let router = axum::Router::new()
+        let mut router = axum::Router::new()
             .route("/v1/traces", post(handlers::otel::trace_collector_handler))
             .route("/v1/traces", get(handlers::traces::traces_list_handler))
             .route(
@@ -77,10 +84,14 @@ impl Builder {
             .layer(OtelTraceLayer::default())
             .layer(RequestDecompressionLayer::new());
 
-        if self.enable_compression {
-            router.layer(CompressionLayer::new())
-        } else {
-            router
+        if self.allow_origin_any {
+            router = router.layer(CorsLayer::new().allow_origin(Any));
         }
+
+        if self.enable_compression {
+            router = router.layer(CompressionLayer::new());
+        }
+
+        router
     }
 }
