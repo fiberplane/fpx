@@ -12,14 +12,14 @@ export function isRouteInspectorRequest(request: Request) {
 }
 
 /**
- * Responds to the route inspector request by sending the routes to the FPX service.
+ * Sends the routes from the app to the FPX service.
  *
  * @param fetchFn - The fetch function to use to send the request.
  * @param fpxEndpoint - The endpoint of the FPX service.
  * @param app - The Hono app to get the routes from.
  * @returns
  */
-export function respondWithRoutes(
+export function sendRoutes(
   fetchFn: FetchFn,
   fpxEndpoint: string,
   app: HonoLikeApp,
@@ -48,7 +48,23 @@ export function respondWithRoutes(
     // TODO - Use a logger, or only log if library debugging is enabled
     // console.error("Error sending routes to FPX", e);
   }
+}
 
+/**
+ * Sends the routes from the app to the FPX service, then returns a response that can be used
+ * for fpx route inspection requests.
+ *
+ * @param fetchFn - The fetch function to use to send the request.
+ * @param fpxEndpoint - The endpoint of the FPX service.
+ * @param app - The Hono app to get the routes from.
+ * @returns
+ */
+export function respondWithRoutes(
+  fetchFn: FetchFn,
+  fpxEndpoint: string,
+  app: HonoLikeApp,
+) {
+  sendRoutes(fetchFn, fpxEndpoint, app);
   return new Response("OK");
 }
 

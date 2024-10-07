@@ -25,7 +25,11 @@ import {
 } from "./patch";
 import { PromiseStore } from "./promiseStore";
 import { propagateFpxTraceId } from "./propagation";
-import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
+import {
+  isRouteInspectorRequest,
+  respondWithRoutes,
+  sendRoutes,
+} from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
 import {
   getFromEnv,
@@ -130,6 +134,10 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             logger.debug("Responding to route inspector request");
             return respondWithRoutes(webStandardFetch, endpoint, app);
           }
+
+          // NOTE - We want to report the latest routes to FPX on every request
+          //        so that we have an up-to-date list of routes in the UI
+          sendRoutes(webStandardFetch, endpoint, app);
 
           const serviceName =
             getFromEnv(env, ENV_FPX_SERVICE_NAME) ?? "unknown";
