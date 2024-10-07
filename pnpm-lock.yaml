@@ -122,7 +122,7 @@ importers:
         version: link:../../packages/client-library-otel
       '@langchain/core':
         specifier: ^0.2.18
-        version: 0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
+        version: 0.2.23(openai@4.55.4)
       hono:
         specifier: ^4.5.9
         version: 4.5.9
@@ -354,8 +354,8 @@ importers:
         specifier: ^8.17.3
         version: 8.20.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tauri-apps/api':
-        specifier: 2.0.0-rc.4
-        version: 2.0.0-rc.4
+        specifier: 2.0.1
+        version: 2.0.1
       '@tauri-apps/plugin-dialog':
         specifier: 2.0.0-rc.1
         version: 2.0.0-rc.1
@@ -3258,8 +3258,8 @@ packages:
     resolution: {integrity: sha512-P9dF7XbibHph2PFRz8gfBKEXEY/HJPOhym8CHmjF8y3q5mWpKx9xtZapXQUWCgkqvsK0R46Azuz+VaxD4Xl+Tg==}
     engines: {node: '>=12'}
 
-  '@tauri-apps/api@2.0.0-rc.4':
-    resolution: {integrity: sha512-UNiIhhKG08j4ooss2oEEVexffmWkgkYlC2M3GcX3VPtNsqFgVNL8Mcw/4Y7rO9M9S+ffAMnLOF5ypzyuyb8tyg==}
+  '@tauri-apps/api@2.0.1':
+    resolution: {integrity: sha512-eoQWT+Tq1qSwQpHV+nw1eNYe5B/nm1PoRjQCRiEOS12I1b+X4PUcREfXVX8dPcBT6GrzWGDtaecY0+1p0Rfqlw==}
 
   '@tauri-apps/plugin-dialog@2.0.0-rc.1':
     resolution: {integrity: sha512-H28gh6BfZtjflHQ+HrmWwunDriBI3AQLAKnMs50GA6zeNUULqbQr7VXbAAKeJL/0CmWcecID4PKXVoSlaWRhEg==}
@@ -8680,7 +8680,7 @@ snapshots:
       '@antfu/install-pkg': 0.4.1
       '@antfu/utils': 0.7.10
       '@iconify/types': 2.0.0
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       kolorist: 1.8.0
       local-pkg: 0.5.0
       mlly: 1.7.1
@@ -8811,6 +8811,23 @@ snapshots:
       decamelize: 1.2.0
       js-tiktoken: 1.0.12
       langsmith: 0.1.41(@langchain/core@0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8)))(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
+      mustache: 4.2.0
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 10.0.0
+      zod: 3.23.8
+      zod-to-json-schema: 3.23.2(zod@3.23.8)
+    transitivePeerDependencies:
+      - langchain
+      - openai
+
+  '@langchain/core@0.2.23(openai@4.55.4)':
+    dependencies:
+      ansi-styles: 5.2.0
+      camelcase: 6.3.0
+      decamelize: 1.2.0
+      js-tiktoken: 1.0.12
+      langsmith: 0.1.41(@langchain/core@0.2.23(openai@4.55.4))(openai@4.55.4)
       mustache: 4.2.0
       p-queue: 6.6.2
       p-retry: 4.6.2
@@ -10135,11 +10152,11 @@ snapshots:
 
   '@tanstack/table-core@8.20.5': {}
 
-  '@tauri-apps/api@2.0.0-rc.4': {}
+  '@tauri-apps/api@2.0.1': {}
 
   '@tauri-apps/plugin-dialog@2.0.0-rc.1':
     dependencies:
-      '@tauri-apps/api': 2.0.0-rc.4
+      '@tauri-apps/api': 2.0.1
 
   '@tokenizer/token@0.3.0': {}
 
@@ -10293,7 +10310,7 @@ snapshots:
 
   '@typescript/vfs@1.6.0(typescript@5.5.4)':
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       typescript: 5.5.4
     transitivePeerDependencies:
       - supports-color
@@ -10821,7 +10838,7 @@ snapshots:
 
   capnp-ts@0.7.0:
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       tslib: 2.6.3
     transitivePeerDependencies:
       - supports-color
@@ -11097,10 +11114,6 @@ snapshots:
 
   date-fns@3.6.0: {}
 
-  debug@4.3.6:
-    dependencies:
-      ms: 2.1.2
-
   debug@4.3.6(supports-color@5.5.0):
     dependencies:
       ms: 2.1.2
@@ -11304,7 +11317,7 @@ snapshots:
 
   esbuild-register@3.6.0(esbuild@0.19.12):
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       esbuild: 0.19.12
     transitivePeerDependencies:
       - supports-color
@@ -11563,7 +11576,7 @@ snapshots:
 
   extract-zip@2.0.1:
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       get-stream: 5.2.0
       yauzl: 2.10.0
     optionalDependencies:
@@ -12299,6 +12312,18 @@ snapshots:
       '@langchain/core': 0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
       openai: 4.55.4(encoding@0.1.13)(zod@3.23.8)
 
+  langsmith@0.1.41(@langchain/core@0.2.23(openai@4.55.4))(openai@4.55.4):
+    dependencies:
+      '@types/uuid': 9.0.8
+      commander: 10.0.1
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      semver: 7.6.3
+      uuid: 9.0.1
+    optionalDependencies:
+      '@langchain/core': 0.2.23(openai@4.55.4)
+      openai: 4.55.4(encoding@0.1.13)(zod@3.23.8)
+
   leven@4.0.0: {}
 
   libsql@0.3.19:
@@ -12852,7 +12877,7 @@ snapshots:
   micromark@4.0.0:
     dependencies:
       '@types/debug': 4.1.12
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       decode-named-character-reference: 1.0.2
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.1
@@ -14481,7 +14506,7 @@ snapshots:
   threads@1.7.0:
     dependencies:
       callsites: 3.1.0
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       is-observable: 2.1.0
       observable-fns: 0.6.1
     optionalDependencies:
@@ -14786,7 +14811,7 @@ snapshots:
   vite-node@1.6.0(@types/node@20.14.15):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       pathe: 1.1.2
       picocolors: 1.0.1
       vite: 5.4.0(@types/node@20.14.15)
@@ -14814,7 +14839,7 @@ snapshots:
 
   vite-tsconfig-paths@4.3.2(typescript@5.6.2)(vite@5.4.0(@types/node@20.14.15)):
     dependencies:
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       globrex: 0.1.2
       tsconfck: 3.1.1(typescript@5.6.2)
     optionalDependencies:
@@ -14854,7 +14879,7 @@ snapshots:
       '@vitest/utils': 1.6.0
       acorn-walk: 8.3.3
       chai: 4.5.0
-      debug: 4.3.6
+      debug: 4.3.6(supports-color@5.5.0)
       execa: 8.0.1
       local-pkg: 0.5.0
       magic-string: 0.30.11

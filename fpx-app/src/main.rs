@@ -5,10 +5,11 @@ use anyhow::{Context, Result};
 use api_manager::ApiManager;
 use state::AppState;
 use std::env;
+use std::time::Duration;
 use tauri::menu::{MenuBuilder, MenuId, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, WebviewWindowBuilder};
 use tauri::{Manager, Wry};
-use tauri_plugin_store::StoreCollection;
+use tauri_plugin_store::{StoreCollection, StoreExt};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Registry};
@@ -34,6 +35,18 @@ fn main() {
         .manage(AppState::default())
         .manage(ApiManager::default())
         .setup(|app| {
+            // Init store and load it from disk
+            let store = app
+                .handle()
+                .store_builder(STORE_PATH)
+                .auto_save(Duration::from_millis(100))
+                .build();
+
+            // If there are no saved settings yet, this will return an error so we ignore the return value.
+            let _ = store.load();
+
+            app.manage(store);
+
             app.handle()
                 .try_state::<StoreCollection<Wry>>()
                 .ok_or("Store not found")

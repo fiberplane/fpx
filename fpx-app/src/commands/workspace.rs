@@ -1,33 +1,30 @@
 use crate::api_manager::ApiManager;
 use crate::models::workspace::{OpenWorkspaceError, Workspace};
 use crate::state::AppState;
-use crate::STORE_PATH;
 use fpx::config::{FpxConfig, FpxConfigError};
 use std::path::PathBuf;
-use tauri::{AppHandle, Runtime, State};
-use tauri_plugin_store::{with_store, StoreCollection};
+use tauri::{State, Wry};
+use tauri_plugin_store::Store;
 
 const RECENT_WORKSPACES_STORE_KEY: &str = "recent_workspaces";
 
 #[tauri::command]
-pub fn list_recent_workspaces<R: Runtime>(
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
-) -> Vec<String> {
-    with_store(app, stores, STORE_PATH, |store| {
-        let recent_projects = store
-            .get(RECENT_WORKSPACES_STORE_KEY)
-            .and_then(|val| val.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|item| item.as_str().map(|s| s.to_string()))
-                    .collect()
-            })
-            .unwrap_or_default();
+pub fn list_recent_workspaces(store: State<'_, Store<Wry>>) -> Vec<String> {
+    store
+        .with_store(|store| {
+            let recent_projects = store
+                .get(RECENT_WORKSPACES_STORE_KEY)
+                .and_then(|val| val.as_array())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|item| item.as_str().map(|s| s.to_string()))
+                        .collect()
+                })
+                .unwrap_or_default();
 
-        Ok(recent_projects)
-    })
-    .unwrap_or_default()
+            Ok(recent_projects)
+        })
+        .unwrap_or_default()
 }
 
 #[tauri::command]
@@ -36,12 +33,11 @@ pub fn get_current_workspace(state: State<'_, AppState>) -> Option<Workspace> {
 }
 
 #[tauri::command]
-pub fn open_workspace_by_path<R: Runtime>(
+pub fn open_workspace_by_path(
     path: String,
     app_state: State<'_, AppState>,
     api_manager: State<'_, ApiManager>,
-    app: AppHandle<R>,
-    stores: State<'_, StoreCollection<R>>,
+    store: State<'_, Store<Wry>>,
 ) -> Result<Workspace, OpenWorkspaceError> {
     api_manager.stop_api();
 
@@ -68,26 +64,27 @@ pub fn open_workspace_by_path<R: Runtime>(
     let workspace = Workspace::new(path.clone(), config);
     app_state.set_workspace(workspace.clone());
 
-    with_store(app, stores, STORE_PATH, |store| {
-        let mut recents: Vec<String> = store
-            .get(RECENT_WORKSPACES_STORE_KEY)
-            .and_then(|value| value.as_array())
-            .map(|arr| {
-                arr.iter()
-                    .filter_map(|item| item.as_str().filter(|s| s != &path).map(|s| s.to_string()))
-                    .collect()
-            })
-            .unwrap_or_default();
+    store
+        .with_store(|store| {
+            let mut recents: Vec<String> = store
+                .get(RECENT_WORKSPACES_STORE_KEY)
+                .and_then(|value| value.as_array())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|item| {
+                            item.as_str().filter(|s| s != &path).map(|s| s.to_string())
+                        })
+                        .collect()
+                })
+                .unwrap_or_default();
 
-        recents.insert(0, path);
+            recents.insert(0, path);
 
-        store
-            .insert(RECENT_WORKSPACES_STORE_KEY.into(), recents.into())
-            .unwrap();
+            store.insert(RECENT_WORKSPACES_STORE_KEY.to_string(), recents);
 
-        store.save()
-    })
-    .unwrap();
+            Ok(())
+        })
+        .unwrap();
 
     Ok(workspace)
 }
