@@ -106,9 +106,6 @@ async function findFunctionsByDefinition(
             funcSource.replace(/\s+/g, " ").trim() ===
               functionMap[key].normalized
           ) {
-            logger.debug(
-              `Found ArrowFunctionExpression ${funcSource} at ${node.loc.start.line}:${node.loc.start.column}`,
-            );
             functionMap[key].foundLocation = {
               startLine: node.loc.start.line,
               startColumn: node.loc.start.column,
@@ -271,9 +268,7 @@ export async function findSourceFunctions(
     }
 
     const lines = sourceContent.split("\n").slice(startLine - 1, endLine);
-    for (const line of lines) {
-      logger.debug(`Line: ${line}`);
-    }
+
     const sourceFunction = lines
       .map((line, index) => {
         if (index === 0 && startLine === endLine) {
@@ -291,7 +286,6 @@ export async function findSourceFunctions(
           // In that case, we need to add 1 to the end column to account for something that gets odd when receiving the location back.
           const endsInComma = line.endsWith(",");
           const sliceTo = (endColumn ?? 0) + (endsInComma ? 1 : 0);
-          logger.debug(`Slicing end line ${line} to ${sliceTo}`);
           return line.slice(0, sliceTo);
         }
         return line;
