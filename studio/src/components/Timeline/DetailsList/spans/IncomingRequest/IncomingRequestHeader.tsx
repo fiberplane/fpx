@@ -31,7 +31,9 @@ export function IncomingRequestHeader(props: Props) {
 
         <div className="inline-flex gap-2 font-mono py-0.5 text-xs bg-accent rounded px-1 min-w-0">
           <span className={cn(getHttpMethodTextColor(method))}>{method}</span>
-          <span className="text-gray-400 font-light text-nowrap text-ellipsis overflow-hidden">{pathWithSearch}</span>
+          <span className="text-gray-400 font-light text-nowrap text-ellipsis overflow-hidden">
+            {pathWithSearch}
+          </span>
         </div>
         {matchedRoute && (
           <div className="flex gap-2 p-1 text-xs bg-accent rounded">

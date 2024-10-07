@@ -69,8 +69,8 @@ export function Element({
           isMdScreen
             ? "grid-cols-[2rem_auto_150px_min-content]"
             : "grid-cols-[2rem_auto_min-content]",
-
-        )}>
+        )}
+      >
         <DivWithHover
           onClick={onClickToggle}
           onKeyDown={onKeyDownToggle}
@@ -91,7 +91,6 @@ export function Element({
             className={cn(
               // min width needed for ellipsis to work
               "min-w-0",
-
             )}
           >
             <DivWithHover
@@ -153,7 +152,7 @@ export function Element({
             "text-xs font-mono text-muted-foreground",
             "min-h-6 h-6",
             "flex justify-end pl-3 items-center",
-            "text-nowrap"
+            "text-nowrap",
           )}
         >
           <div>
@@ -165,14 +164,15 @@ export function Element({
       </div>
       {isExpanded && (
         <div
-          className={cn("overflow-auto min-w-0",
+          className={cn(
+            "overflow-auto min-w-0",
             "max-w-full",
             // "max-w-[200px]"
-          )}>
-          <div style={{ paddingLeft: `${indentSpace + 32}px` }}
-            className={cn("",
-
-            )}
+          )}
+        >
+          <div
+            style={{ paddingLeft: `${indentSpace + 32}px` }}
+            className={cn("")}
           >
             <Content item={item} />
           </div>
