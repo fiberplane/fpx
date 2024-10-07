@@ -11,6 +11,7 @@ import {
 import {
   contextForImport,
   extractPackageName,
+  isDependency,
   resolveModulePath,
 } from "./imports/index.js";
 import { searchFunction } from "./search-function/index.js";
@@ -313,9 +314,7 @@ async function extractContext(
 
           // HACK - If we resolved the definition to node_modules,
           //        we can skip any recursive expansion and just add the import as context for now
-          const isNodeModule = sourceDefinition?.uri?.includes("node_modules");
-
-          if (isNodeModule) {
+          if (isDependency(sourceDefinition?.uri)) {
             if (debug) {
               logger.debug(
                 `[debug] ${identifier.name} is likely an installed dependency`,

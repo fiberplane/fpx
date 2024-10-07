@@ -106,11 +106,14 @@ async function findFunctionsByDefinition(
             funcSource.replace(/\s+/g, " ").trim() ===
               functionMap[key].normalized
           ) {
+            logger.debug(
+              `Found ArrowFunctionExpression ${funcSource} at ${node.loc.start.line}:${node.loc.start.column}`,
+            );
             functionMap[key].foundLocation = {
               startLine: node.loc.start.line,
-              startColumn: node.loc.start.column + 1,
+              startColumn: node.loc.start.column,
               endLine: node.loc.end.line,
-              endColumn: node.loc.end.column + 1,
+              endColumn: node.loc.end.column,
             };
           }
         }
@@ -268,13 +271,17 @@ export async function findSourceFunctions(
     }
 
     const lines = sourceContent.split("\n").slice(startLine - 1, endLine);
+    for (const line of lines) {
+      logger.debug(`Line: ${line}`);
+    }
     const sourceFunction = lines
       .map((line, index) => {
         if (index === 0 && startLine === endLine) {
           return line.slice(startColumn ?? 0, endColumn ?? 0);
         }
         if (index === 0) {
-          return line.slice(startColumn ?? 0);
+          const sliceFrom = startColumn ?? 0;
+          return line.slice(sliceFrom);
         }
         if (index === endLine - startLine) {
           // MEGA HACK - Add 1 to the end column only if it ends in a comma
@@ -283,7 +290,9 @@ export async function findSourceFunctions(
           // trailing commas in functions that are passed as arguments to other functions.
           // In that case, we need to add 1 to the end column to account for something that gets odd when receiving the location back.
           const endsInComma = line.endsWith(",");
-          return line.slice(0, (endColumn ?? 0) + (endsInComma ? 1 : 0));
+          const sliceTo = (endColumn ?? 0) + (endsInComma ? 1 : 0);
+          logger.debug(`Slicing end line ${line} to ${sliceTo}`);
+          return line.slice(0, sliceTo);
         }
         return line;
       })

@@ -1,7 +1,10 @@
 {
   "name": "app",
   "scripts": {
-    "dev": "wrangler dev src/index.ts"
+    "dev": "wrangler dev src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply my-database --local",
+    "db:touch": "wrangler d1 execute my-database --local --command='SELECT 1'"
   },
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",
@@ -10,6 +13,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240909.0",
+    "drizzle-kit": "^0.23.0",
     "wrangler": "^3.73.0"
   }
 }
