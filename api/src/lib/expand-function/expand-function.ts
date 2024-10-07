@@ -410,6 +410,7 @@ async function extractContext(
         logger.warn(
           `[extractContext] TSServer found no definition found for ${identifier.name}`,
         );
+        logger.warn(`[extractContext] Originating file: ${filePath}`);
       }
     }
   } catch (error) {

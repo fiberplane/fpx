@@ -205,6 +205,11 @@ export function analyzeOutOfScopeIdentifiers(
       const parent = node.parent;
       const name = node.text;
 
+      // HACK - Just ignore the `arguments` identifier, it can cause us heartache following this
+      if (name === "arguments") {
+        return;
+      }
+
       // Ignore property names in property assignments and declarations
       const isIgnoredPropertyName =
         (ts.isPropertyAssignment(parent) && parent.name === node) ||

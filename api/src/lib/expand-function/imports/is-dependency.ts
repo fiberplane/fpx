@@ -7,7 +7,18 @@ export function isDependency(filePath: string): boolean {
 
   // Normalize the path to handle Windows
   const normalizedPath = filePath.replace(/\\/g, "/");
-  return dependencyFolders.some((folder) =>
+  const isTypicalDependency = dependencyFolders.some((folder) =>
     normalizedPath.includes(`/${folder}/`),
   );
+
+  if (isTypicalDependency) {
+    return true;
+  }
+
+  // HACK - Handle workspace:* packages in our own monorepo
+  if (normalizedPath.includes("/fpx/packages/")) {
+    return true;
+  }
+
+  return false;
 }
