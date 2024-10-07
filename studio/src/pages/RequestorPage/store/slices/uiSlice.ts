@@ -14,11 +14,20 @@ export const uiSlice: StateCreator<
     sidePanel: isLgScreen() ? "open" : "closed",
     bottomPanels: validBottomPanelNames,
     bottomPanelIndex: undefined,
+    timelineShowLogs: true,
+    timelineAsTree: true,
+    toggleTimelineAsTree: () =>
+      set((state) => {
+        state.timelineAsTree = !state.timelineAsTree;
+      }),
+    toggleTimelineLogs: () =>
+      set((state) => {
+        state.timelineShowLogs = !state.timelineShowLogs;
+      }),
     togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) =>
       set((state) => {
         if (!isBottomPanelName(panelName)) {
           state[panelName] = state[panelName] === "open" ? "closed" : "open";
-          console.log("state[panelName]", state[panelName]);
           return;
         }
 
