@@ -60,7 +60,7 @@ tokio-tungstenite = { version = "0.21", features = [
     "rustls-tls-webpki-roots",
 ] } # This should be kept the same as whatever Axum has
 toml = { version = "0.8" }
-tonic = { version = "0.12.3" }
+tonic = { version = "0.12" }
 tower = { version = "0.4" }
 tracing = { version = "0.1" }
 tracing-opentelemetry = { version = "0.25" }
