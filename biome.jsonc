@@ -96,7 +96,10 @@
       ".astro",
 
       // ignore all tsconfig.json files
-      "tsconfig.json"
+      "tsconfig.json",
+
+      // ignore any test data files
+      "test-data/*.js"
 
       // Rust code related
       // This caused biome to ignore the entire fpx folder

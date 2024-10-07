@@ -32,14 +32,17 @@ export const invokeRequestGenerationPrompt = async ({
   method,
   path,
   handler,
+  handlerContext,
   history,
   openApiSpec,
   middleware,
+  middlewareContext,
 }: {
   persona: string;
   method: string;
   path: string;
   handler: string;
+  handlerContext?: string;
   history?: Array<string>;
   openApiSpec?: string;
   middleware?: {
@@ -47,6 +50,7 @@ export const invokeRequestGenerationPrompt = async ({
     method: string;
     path: string;
   }[];
+  middlewareContext?: string;
 }) => {
   const promptTemplate =
     persona === "QA" ? qaTesterPrompt : friendlyTesterPrompt;
@@ -54,9 +58,11 @@ export const invokeRequestGenerationPrompt = async ({
     method,
     path,
     handler,
+    handlerContext: handlerContext ?? "NO HANDLER CONTEXT",
     history: history?.join("\n") ?? "NO HISTORY",
     openApiSpec: openApiSpec ?? "NO OPENAPI SPEC",
     middleware: formatMiddleware(middleware),
+    middlewareContext: middlewareContext ?? "NO MIDDLEWARE CONTEXT",
   });
   const userPrompt = userPromptInterface.value;
   return userPrompt;
@@ -87,8 +93,14 @@ Here is the OpenAPI spec for the handler:
 Here is the middleware that will be applied to the request:
 {middleware}
 
+Here is some additional context for the middleware that will be applied to the request:
+{middlewareContext}
+
 Here is the code for the handler:
 {handler}
+
+Here is some additional context for the handler source code, if you need it:
+{handlerContext}
 
 `.trim(),
 );
@@ -113,8 +125,14 @@ Here is the OpenAPI spec for the handler:
 Here is the middleware that will be applied to the request:
 {middleware}
 
+Here is some additional context for the middleware that will be applied to the request:
+{middlewareContext}
+
 Here is the code for the handler:
 {handler}
+
+Here is some additional context for the handler source code, if you need it:
+{handlerContext}
 
 REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
 Keep your responses short-ish. Including your random data.
