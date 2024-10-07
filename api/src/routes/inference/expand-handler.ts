@@ -146,8 +146,6 @@ async function expandFunctionInUserProject(handler: SourceFunctionResult) {
     sourceFile: handler.sourceFile,
   };
 
-  logger.debug(chalk.dim(`Using hints: ${JSON.stringify(hints, null, 2)}`));
-
   const expandedFunction = await expandFunction(projectRoot, functionText, {
     skipSourceMap: true,
     hints,
