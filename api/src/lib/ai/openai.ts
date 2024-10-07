@@ -50,11 +50,11 @@ export async function generateRequestWithOpenAI({
     `persona: ${persona}`,
     `method: ${method}`,
     `path: ${path}`,
-    `handler: ${handler}`,
-    `handlerContext: ${handlerContext}`,
+    // `handler: ${handler}`,
+    // `handlerContext: ${handlerContext}`,
     // `openApiSpec: ${openApiSpec}`,
-    `middleware: ${middleware}`,
-    `middlewareContext: ${middlewareContext}`,
+    // `middleware: ${middleware}`,
+    // `middlewareContext: ${middlewareContext}`,
   );
   const openaiClient = new OpenAI({ apiKey, baseURL: baseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
