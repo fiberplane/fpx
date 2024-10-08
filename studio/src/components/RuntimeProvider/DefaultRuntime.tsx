@@ -1,12 +1,8 @@
 import { RuntimeContext, type RuntimeProviderProps } from "./RuntimeProvider";
 
 export function DefaultRuntime({ children }: RuntimeProviderProps) {
-  const handleGetApiBaseUrl = () => "";
-
   return (
-    <RuntimeContext.Provider
-      value={{ type: "unknown", requestApiBaseUrl: handleGetApiBaseUrl }}
-    >
+    <RuntimeContext.Provider value={{ type: "unknown" }}>
       {children}
     </RuntimeContext.Provider>
   );

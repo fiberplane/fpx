@@ -1,7 +1,12 @@
-import { RuntimeContext } from "@/tauri";
+import { RuntimeContext } from "@/components/RuntimeProvider";
 import { useContext } from "react";
 
 export function useApiBaseUrl(): string {
   const runtime = useContext(RuntimeContext);
-  return runtime?.requestApiBaseUrl() ?? "";
+
+  if (runtime?.type === "tauri") {
+    return runtime.requestApiBaseUrl();
+  }
+
+  return "";
 }
