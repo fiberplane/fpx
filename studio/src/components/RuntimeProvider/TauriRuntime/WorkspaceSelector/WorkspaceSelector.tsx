@@ -1,8 +1,8 @@
+import { RuntimeContext } from "@/RuntimeProvider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/utils";
 import { useContext, useEffect, useState } from "react";
-import { RuntimeContext } from "../RuntimeProvider";
 import { listRecentWorkspaces } from "../utils";
 
 export function WorkspaceSelector() {

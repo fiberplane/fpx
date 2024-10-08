@@ -1,20 +1,20 @@
 import {
-  type Workspace,
   type OpenWorkspaceError,
   OpenWorkspaceErrorSchema,
+  type Workspace,
 } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { RuntimeContext, type RuntimeProviderProps } from "../RuntimeProvider";
+import { WorkspaceOpenError } from "./WorkspaceOpenError";
+import { WorkspaceSelector } from "./WorkspaceSelector";
+import { useTauriEventHandler } from "./hooks";
 import {
-  openWorkspace,
-  showOpenWorkspaceDialog,
   closeWorkspace,
   getCurrentWorkspace,
-} from "../utils";
-import { WorkspaceOpenError } from "../WorkspaceOpenError";
-import { WorkspaceSelector } from "../WorkspaceSelector";
-import { RuntimeContext, type RuntimeProviderProps } from "./RuntimeProvider";
-import { useTauriEventHandler } from "../hooks";
+  openWorkspace,
+  showOpenWorkspaceDialog,
+} from "./utils";
 
 export function TauriRuntime({ children }: RuntimeProviderProps) {
   const [workspace, setWorkspace] = useState<Workspace | undefined>();
@@ -25,21 +25,20 @@ export function TauriRuntime({ children }: RuntimeProviderProps) {
     setWorkspace(workspace);
   });
 
-  const handleOpenDialogRequested = useHandler(() => {
-    showOpenWorkspaceDialog()
-      .then((workspace) => {
-        if (workspace) {
-          setWorkspace(workspace);
-        }
-      })
-      .catch((error) => {
-        const parsed = OpenWorkspaceErrorSchema.safeParse(error);
-        if (parsed.success) {
-          return setError(parsed.data);
-        }
+  const handleOpenDialogRequested = useHandler(async () => {
+    try {
+      const workspace = await showOpenWorkspaceDialog();
+      if (workspace) {
+        setWorkspace(workspace);
+      }
+    } catch (error) {
+      const parsed = OpenWorkspaceErrorSchema.safeParse(error);
+      if (parsed.success) {
+        return setError(parsed.data);
+      }
 
-        throw error;
-      });
+      throw error;
+    }
   });
 
   const handleCloseWorkspaceRequested = useHandler(() => {

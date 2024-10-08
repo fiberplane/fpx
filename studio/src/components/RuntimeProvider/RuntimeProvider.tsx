@@ -2,8 +2,8 @@ import type { AppState } from "@fiberplane/fpx-types";
 import type { ReactNode } from "react";
 import { createContext } from "react";
 import { RUNTIME } from "../../constants";
-import { TauriRuntime } from "./TauriRuntime";
 import { DefaultRuntime } from "./DefaultRuntime";
+import { TauriRuntime } from "./TauriRuntime";
 
 export type RuntimeProviderProps = {
   children: ReactNode;
