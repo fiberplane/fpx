@@ -38,6 +38,9 @@ export function ResponseBody({
     return <FailedRequest response={response} />;
   }
 
+  // NOTE - This means we have the *actual* response from the service in the store,
+  //        which may contain binary data that we can render in the UI.
+  //        This is different from history responses, which will only have whatever data was stored in the trace
   if (isRequestorActiveResponse(response)) {
     const body = response?.responseBody;
     if (body?.type === "error") {
