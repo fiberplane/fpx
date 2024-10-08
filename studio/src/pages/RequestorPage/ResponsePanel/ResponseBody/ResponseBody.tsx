@@ -15,11 +15,11 @@ import {
   QuestionMarkIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import type { ProxiedRequestResponse } from "../queries";
+import type { ProxiedRequestResponse } from "../../queries";
 import {
   type RequestorActiveResponse,
   isRequestorActiveResponse,
-} from "../store/types";
+} from "../../store/types";
 
 export function ResponseBody({
   response,
@@ -65,7 +65,6 @@ export function ResponseBody({
       );
     }
 
-    // TODO
     if (body?.type === "binary") {
       return (
         <div
