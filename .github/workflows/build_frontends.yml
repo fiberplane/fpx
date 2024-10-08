@@ -74,7 +74,7 @@ jobs:
         run: pnpm --filter @fiberplane/studio-frontend test
 
       - name: Test Client Library
-        run: pnpm --filter @fiberplane/client-library-otel test
+        run: pnpm --filter @fiberplane/hono-otel test
 
       # Building
 
