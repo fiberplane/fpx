@@ -25,7 +25,11 @@ import {
 } from "./patch";
 import { PromiseStore } from "./promiseStore";
 import { propagateFpxTraceId } from "./propagation";
-import { isRouteInspectorRequest, respondWithRoutes } from "./routes";
+import {
+  isRouteInspectorRequest,
+  respondWithRoutes,
+  sendRoutes,
+} from "./routes";
 import type { HonoLikeApp, HonoLikeEnv, HonoLikeFetch } from "./types";
 import {
   getFromEnv,
@@ -125,10 +129,16 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             return await originalFetch(request, rawEnv, executionContext);
           }
 
-          // If the request is from the route inspector, respond with the routes
+          // If the request is from the route inspector, send latest routes to the Studio API and respond with 200 OK
           if (isRouteInspectorRequest(request)) {
             logger.debug("Responding to route inspector request");
-            return respondWithRoutes(webStandardFetch, endpoint, app);
+            const response = await respondWithRoutes(
+              webStandardFetch,
+              endpoint,
+              app,
+              logger,
+            );
+            return response;
           }
 
           const serviceName =
@@ -151,6 +161,14 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
           });
 
           const promiseStore = new PromiseStore();
+
+          // NOTE - We want to report the latest routes to Studio on every request,
+          //        so that we have an up-to-date list of routes in the UI.
+          //        This will place the request in the promise store, so that we can
+          //        send the routes in the background while still ensuring the request
+          //        completes as usual.
+          sendRoutes(webStandardFetch, endpoint, app, logger, promiseStore);
+
           // Enable tracing for waitUntil
           const proxyExecutionCtx =
             executionContext && patchWaitUntil(executionContext, promiseStore);
