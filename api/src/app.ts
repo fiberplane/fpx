@@ -10,7 +10,7 @@ import logger from "./logger.js";
 import { cors } from "hono/cors";
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
-import inference from "./routes/inference.js";
+import inference from "./routes/inference/index.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
 import traces from "./routes/traces.js";

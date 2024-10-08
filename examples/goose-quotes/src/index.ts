@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type HonoRequest } from "hono";
 
 import { instrument, measure } from "@fiberplane/hono-otel";
 import { neon } from "@neondatabase/serverless";
@@ -13,6 +13,7 @@ import {
   updateGoose,
 } from "./db/client";
 import { geese } from "./db/schema";
+import { shouldHonk } from "./utils";
 
 import { upgradeWebSocket } from "hono/cloudflare-workers";
 import { OpenAI } from "openai";
@@ -31,8 +32,7 @@ const app = new Hono<{ Bindings: Bindings }>();
  * If `shouldHonk` query parameter is present, then print "Honk honk!"
  */
 app.get("/", (c) => {
-  const { shouldHonk } = c.req.query();
-  const honk = typeof shouldHonk !== "undefined" ? "Honk honk!" : "";
+  const honk = shouldHonk(c.req) ? "Honk honk!" : "";
   console.log(`Home page accessed. Honk: ${honk}`);
   return c.text(`Hello Goose Quotes! ${honk}`.trim());
 });

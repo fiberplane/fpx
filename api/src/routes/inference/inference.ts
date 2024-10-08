@@ -3,12 +3,27 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import OpenAI from "openai";
 import { z } from "zod";
-import { generateRequestWithAiProvider } from "../lib/ai/index.js";
-import { cleanPrompt } from "../lib/ai/prompts.js";
-import { getInferenceConfig } from "../lib/settings/index.js";
-import type { Bindings, Variables } from "../lib/types.js";
+import { USER_PROJECT_ROOT_DIR } from "../../constants.js";
+import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
+import { cleanPrompt } from "../../lib/ai/prompts.js";
+import { expandFunction } from "../../lib/expand-function/index.js";
+import { getInferenceConfig } from "../../lib/settings/index.js";
+import type { Bindings, Variables } from "../../lib/types.js";
+import logger from "../../logger.js";
+import { expandHandler } from "./expand-handler.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+/**
+ * This route is just here to quickly test the expand-function helper
+ */
+app.post("/v0/expand-function", cors(), async (ctx) => {
+  const { handler } = await ctx.req.json();
+  const projectRoot = USER_PROJECT_ROOT_DIR;
+
+  const expandedFunction = await expandFunction(projectRoot, handler);
+  return ctx.json({ expandedFunction });
+});
 
 const generateRequestSchema = z.object({
   handler: z.string(),
@@ -48,6 +63,20 @@ app.post(
       );
     }
 
+    // Expand out of scope identifiers in the handler function, to add as additional context
+    //
+    // Uncomment console.time to see how long this takes
+    // It should be slow on the first request, but fast-ish on subsequent requests
+    //
+    // console.time("Handler and Middleware Expansion");
+    const [handlerContextPerformant, middlewareContextPerformant] =
+      await expandHandler(handler, middleware ?? []).catch((error) => {
+        logger.error(`Error expanding handler and middleware: ${error}`);
+        return [null, null];
+      });
+    // console.timeEnd("Handler and Middleware Expansion");
+
+    // Generate the request
     const { data: parsedArgs, error: generateError } =
       await generateRequestWithAiProvider({
         inferenceConfig,
@@ -55,9 +84,11 @@ app.post(
         method,
         path,
         handler,
+        handlerContext: handlerContextPerformant ?? undefined,
         history: history ?? undefined,
         openApiSpec: openApiSpec ?? undefined,
-        middleware: middleware ? middleware : undefined,
+        middleware: middleware ?? undefined,
+        middlewareContext: middlewareContextPerformant ?? undefined,
       });
 
     if (generateError) {

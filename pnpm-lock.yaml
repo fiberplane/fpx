@@ -22,7 +22,7 @@ importers:
         version: 5.5.4
       wrangler:
         specifier: ^3.73.0
-        version: 3.73.0(@cloudflare/workers-types@4.20240821.1)
+        version: 3.73.0(@cloudflare/workers-types@4.20240924.0)
 
   api:
     dependencies:
@@ -83,6 +83,18 @@ importers:
       source-map:
         specifier: ^0.7.4
         version: 0.7.4
+      typescript:
+        specifier: ^5.5.4
+        version: 5.6.2
+      typescript-language-server:
+        specifier: ^4.3.3
+        version: 4.3.3
+      vscode-jsonrpc:
+        specifier: ^8.2.1
+        version: 8.2.1
+      vscode-uri:
+        specifier: ^3.0.8
+        version: 3.0.8
       ws:
         specifier: ^8.17.1
         version: 8.18.0
@@ -173,6 +185,9 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
+      drizzle-orm:
+        specifier: ^0.32.0
+        version: 0.32.2(@cloudflare/workers-types@4.20240821.1)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
       hono:
         specifier: ^4.5.9
         version: 4.5.9
@@ -180,6 +195,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20240821.1
         version: 4.20240821.1
+      drizzle-kit:
+        specifier: ^0.23.0
+        version: 0.23.2
       wrangler:
         specifier: ^3.73.0
         version: 3.73.0(@cloudflare/workers-types@4.20240821.1)
@@ -202,6 +220,28 @@ importers:
       tsx:
         specifier: ^4.7.1
         version: 4.17.0
+
+  examples/test-static-analysis:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      drizzle-orm:
+        specifier: ^0.32.0
+        version: 0.32.2(@cloudflare/workers-types@4.20240924.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1)
+      hono:
+        specifier: ^4.5.9
+        version: 4.6.2
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240909.0
+        version: 4.20240924.0
+      drizzle-kit:
+        specifier: ^0.23.0
+        version: 0.23.2
+      wrangler:
+        specifier: ^3.73.0
+        version: 3.78.5(@cloudflare/workers-types@4.20240924.0)
 
   packages/client-library-otel:
     dependencies:
@@ -559,7 +599,7 @@ importers:
         version: 0.14.1
       wrangler:
         specifier: ^3.78.5
-        version: 3.78.5(@cloudflare/workers-types@4.20240821.1)
+        version: 3.78.5(@cloudflare/workers-types@4.20240924.0)
 
 packages:
 
@@ -910,6 +950,9 @@ packages:
 
   '@cloudflare/workers-types@4.20240821.1':
     resolution: {integrity: sha512-icAkbnAqgVl6ef9lgLTom8na+kj2RBw2ViPAQ586hbdj0xZcnrjK7P46Eu08OU9D/lNDgN2sKU/sxhe2iK/gIg==}
+
+  '@cloudflare/workers-types@4.20240924.0':
+    resolution: {integrity: sha512-AnoHY0B5rgMv4Lg34mdwfp4+Z9ZZRli8AFO7uY8Q9UchR+HPEMEdaAQ0EswTYQqcVBdarRuYyM0Oeo4hM8Jqog==}
 
   '@codemirror/autocomplete@6.18.0':
     resolution: {integrity: sha512-5DbOvBbY4qW5l57cjDsmmpDh3/TeK1vXfTHa+BUMrRzdWdcxKZ4U4V7vQaTtOpApNU4kLS4FQ6cINtLg245LXA==}
@@ -6994,6 +7037,11 @@ packages:
   typescript-auto-import-cache@0.3.3:
     resolution: {integrity: sha512-ojEC7+Ci1ij9eE6hp8Jl9VUNnsEKzztktP5gtYNRMrTmfXVwA1PITYYAkpxCvvupdSYa/Re51B6KMcv1CTZEUA==}
 
+  typescript-language-server@4.3.3:
+    resolution: {integrity: sha512-3QLj57Ru9S6zv10sa4z1pA3TIR1Rdkd04Ke0EszbO4fx5PLdlYhlC/PMxwlyxls9wrZs7wPCME1Ru0s1Gabz4Q==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   typescript@5.5.4:
     resolution: {integrity: sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==}
     engines: {node: '>=14.17'}
@@ -7332,12 +7380,20 @@ packages:
     resolution: {integrity: sha512-0vSpg6Xd9hfV+eZAaYN63xVVMOTmJ4GgHxXnkLCh+9RsQBkWKIghzLhW2B9ebfG+LQQg8uLtsQ2aUKjTgE+QOg==}
     engines: {npm: '>=7.0.0'}
 
+  vscode-jsonrpc@5.0.1:
+    resolution: {integrity: sha512-JvONPptw3GAQGXlVV2utDcHx0BiY34FupW/kI6mZ5x06ER5DdPG/tXWMVHjTNULF5uKPOUUD0SaXg5QaubJL0A==}
+    engines: {node: '>=8.0.0 || >=10.0.0'}
+
   vscode-jsonrpc@6.0.0:
     resolution: {integrity: sha512-wnJA4BnEjOSyFMvjZdpiOwhSq9uDoK8e/kpRJDTaMYzwlkrhG1fwDIZI94CLsLzlCK5cIbMMtFlJlfR57Lavmg==}
     engines: {node: '>=8.0.0 || >=10.0.0'}
 
   vscode-jsonrpc@8.2.0:
     resolution: {integrity: sha512-C+r0eKJUIfiDIfwJhria30+TYWPtuHJXHtI7J0YlOmKAo7ogxP20T0zxB7HZQIFhIyvoBPwWskjxrvAtfjyZfA==}
+    engines: {node: '>=14.0.0'}
+
+  vscode-jsonrpc@8.2.1:
+    resolution: {integrity: sha512-kdjOSJ2lLIn7r1rtrMbbNCHjyMPfRnowdKjBQ+mGq6NAW5QY2bEZC/khaC5OR8svbbjvLEaIXkOq45e2X9BIbQ==}
     engines: {node: '>=14.0.0'}
 
   vscode-languageserver-protocol@3.16.0:
@@ -8021,6 +8077,8 @@ snapshots:
   '@cloudflare/workers-types@4.20240806.0': {}
 
   '@cloudflare/workers-types@4.20240821.1': {}
+
+  '@cloudflare/workers-types@4.20240924.0': {}
 
   '@codemirror/autocomplete@6.18.0(@codemirror/language@6.10.2)(@codemirror/state@6.4.1)(@codemirror/view@6.33.0)(@lezer/common@1.2.1)':
     dependencies:
@@ -10264,10 +10322,10 @@ snapshots:
       '@types/node': 20.14.15
     optional: true
 
-  '@typescript/vfs@1.6.0(typescript@5.5.4)':
+  '@typescript/vfs@1.6.0(typescript@5.6.2)':
     dependencies:
-      debug: 4.3.6(supports-color@8.1.1)
-      typescript: 5.5.4
+      debug: 4.3.7(supports-color@5.5.0)
+      typescript: 5.6.2
     transitivePeerDependencies:
       - supports-color
 
@@ -11202,6 +11260,16 @@ snapshots:
   drizzle-orm@0.32.2(@cloudflare/workers-types@4.20240821.1)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20240821.1
+      '@libsql/client': 0.6.2
+      '@neondatabase/serverless': 0.9.4
+      '@opentelemetry/api': 1.9.0
+      '@types/pg': 8.11.6
+      '@types/react': 18.3.3
+      react: 18.3.1
+
+  drizzle-orm@0.32.2(@cloudflare/workers-types@4.20240924.0)(@libsql/client@0.6.2)(@neondatabase/serverless@0.9.4)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@18.3.3)(react@18.3.1):
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20240924.0
       '@libsql/client': 0.6.2
       '@neondatabase/serverless': 0.9.4
       '@opentelemetry/api': 1.9.0
@@ -14490,7 +14558,7 @@ snapshots:
   ts-to-zod@3.10.0:
     dependencies:
       '@oclif/core': 4.0.17
-      '@typescript/vfs': 1.6.0(typescript@5.5.4)
+      '@typescript/vfs': 1.6.0(typescript@5.6.2)
       case: 1.6.3
       chokidar: 3.6.0
       fs-extra: 11.2.0
@@ -14502,8 +14570,8 @@ snapshots:
       slash: 3.0.0
       threads: 1.7.0
       tslib: 2.6.3
-      tsutils: 3.21.0(typescript@5.5.4)
-      typescript: 5.5.4
+      tsutils: 3.21.0(typescript@5.6.2)
+      typescript: 5.6.2
       zod: 3.23.8
     transitivePeerDependencies:
       - supports-color
@@ -14529,10 +14597,10 @@ snapshots:
 
   tslib@2.6.3: {}
 
-  tsutils@3.21.0(typescript@5.5.4):
+  tsutils@3.21.0(typescript@5.6.2):
     dependencies:
       tslib: 1.14.1
-      typescript: 5.5.4
+      typescript: 5.6.2
 
   tsx@4.17.0:
     dependencies:
@@ -14560,6 +14628,11 @@ snapshots:
   typescript-auto-import-cache@0.3.3:
     dependencies:
       semver: 7.6.3
+
+  typescript-language-server@4.3.3:
+    dependencies:
+      vscode-jsonrpc: 5.0.1
+      vscode-languageserver-protocol: 3.17.5
 
   typescript@5.5.4: {}
 
@@ -14909,9 +14982,13 @@ snapshots:
       vscode-nls: 5.2.0
       vscode-uri: 3.0.8
 
+  vscode-jsonrpc@5.0.1: {}
+
   vscode-jsonrpc@6.0.0: {}
 
   vscode-jsonrpc@8.2.0: {}
+
+  vscode-jsonrpc@8.2.1: {}
 
   vscode-languageserver-protocol@3.16.0:
     dependencies:
@@ -15077,7 +15154,35 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  wrangler@3.78.5(@cloudflare/workers-types@4.20240821.1):
+  wrangler@3.73.0(@cloudflare/workers-types@4.20240924.0):
+    dependencies:
+      '@cloudflare/kv-asset-handler': 0.3.4
+      '@cloudflare/workers-shared': 0.4.1
+      '@esbuild-plugins/node-globals-polyfill': 0.2.3(esbuild@0.17.19)
+      '@esbuild-plugins/node-modules-polyfill': 0.2.2(esbuild@0.17.19)
+      blake3-wasm: 2.1.5
+      chokidar: 3.6.0
+      date-fns: 3.6.0
+      esbuild: 0.17.19
+      miniflare: 3.20240821.0
+      nanoid: 3.3.7
+      path-to-regexp: 6.2.2
+      resolve: 1.22.8
+      resolve.exports: 2.0.2
+      selfsigned: 2.4.1
+      source-map: 0.6.1
+      unenv: unenv-nightly@2.0.0-1724863496.70db6f1
+      workerd: 1.20240821.1
+      xxhash-wasm: 1.0.2
+    optionalDependencies:
+      '@cloudflare/workers-types': 4.20240924.0
+      fsevents: 2.3.3
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  wrangler@3.78.5(@cloudflare/workers-types@4.20240924.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@cloudflare/workers-shared': 0.5.3
@@ -15098,7 +15203,7 @@ snapshots:
       workerd: 1.20240909.0
       xxhash-wasm: 1.0.2
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20240821.1
+      '@cloudflare/workers-types': 4.20240924.0
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil
