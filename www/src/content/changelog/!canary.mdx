@@ -8,7 +8,13 @@ draft: true
 
 - **Rendering outside requests** External requests are now rendered in the request panel, instead of the timeline panel.
 
+- **Improved AI request generation** We've added some static analysis smarts for wrangler projects in order to give LLM providers more context about the code that powers each route.
+
+- **Improved Route Updating** We've added some improvements to how we refresh your list of API routes in the Studio.
+
 ### Bug fixes
+
+- **D1 autoinstrumentation** The client library, `@fiberplane/hono-otel`, now instruments D1 queries in latest versions of wrangler/miniflare.
 
 - **Set response attributes** Fixed an issue where setting response attributes would not work correctly (for synchronous endpoints).
 

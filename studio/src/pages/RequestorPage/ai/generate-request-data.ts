@@ -4,7 +4,20 @@ import type { RequestBodyType } from "../store";
 import type { ProbedRoute } from "../types";
 import { simplifyHistoryEntry } from "./utils";
 
-const fetchAiRequestData = (
+/**
+ * NOTE - This is a temporary endpoint to test the expand-function endpoint
+ */
+export const expandFunction = (handler: string | undefined) => {
+  if (!handler) {
+    return Promise.reject(new Error("No handler provided"));
+  }
+  return fetch("/v0/expand-function", {
+    method: "POST",
+    body: JSON.stringify({ handler }),
+  });
+};
+
+const fetchAiRequestData = async (
   route: ProbedRoute | null,
   middleware: ProbedRoute[] | null,
   bodyType: RequestBodyType,
@@ -13,6 +26,11 @@ const fetchAiRequestData = (
 ) => {
   // FIXME - type wonkiness
   const { handler, method, path, openApiSpec } = route ?? {};
+
+  // NOTE - Uncomment this to use the expand-function endpoint without hitting the AI
+  // await expandFunction(handler);
+  // throw new Error("Not implemented");
+
   const simplifiedHistory = history.map(simplifyHistoryEntry);
   return fetch("/v0/generate-request", {
     headers: {

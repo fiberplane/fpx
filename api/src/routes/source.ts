@@ -5,7 +5,7 @@ import { cors } from "hono/cors";
 import { SourceMapConsumer } from "source-map";
 import { z } from "zod";
 
-import { findSourceFunction } from "../lib/find-source-function.js";
+import { findSourceFunctions } from "../lib/find-source-function/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -51,8 +51,10 @@ app.post("/v0/source-function", cors(), async (ctx) => {
   const { handler, source } = ctx.req.query();
 
   try {
-    const functionText = await findSourceFunction(source, handler);
-    return ctx.json({ functionText });
+    const result = await findSourceFunctions(source, handler);
+    return ctx.json({
+      functionText: result?.[0]?.sourceFunction ?? null,
+    });
   } catch (err) {
     console.error("Could not find function in source", source);
     const message = getValueFromObject(err, "message", "Unknown error");

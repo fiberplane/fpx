@@ -26,12 +26,14 @@ type GenerateRequestOptions = {
   handler: string;
   baseUrl?: string;
   history?: Array<string>;
+  handlerContext?: string;
   openApiSpec?: string;
   middleware?: {
     handler: string;
     method: string;
     path: string;
   }[];
+  middlewareContext?: string;
 };
 
 /**
@@ -49,9 +51,11 @@ export async function generateRequestWithAnthropic({
   method,
   path,
   handler,
+  handlerContext,
   history,
   openApiSpec,
   middleware,
+  middlewareContext,
 }: GenerateRequestOptions) {
   logger.debug(
     "Generating request data with Anthropic",
@@ -61,8 +65,10 @@ export async function generateRequestWithAnthropic({
     `method: ${method}`,
     `path: ${path}`,
     `handler: ${handler}`,
-    `openApiSpec: ${openApiSpec}`,
-    `middleware: ${middleware}`,
+    // `handlerContext: ${handlerContext}`,
+    // `openApiSpec: ${openApiSpec}`,
+    // `middleware: ${middleware}`,
+    // `middlewareContext: ${middlewareContext}`,
   );
   const anthropicClient = new Anthropic({ apiKey, baseURL: baseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
@@ -70,9 +76,11 @@ export async function generateRequestWithAnthropic({
     method,
     path,
     handler,
+    handlerContext,
     history,
     openApiSpec,
     middleware,
+    middlewareContext,
   });
 
   const toolChoice: Anthropic.Messages.MessageCreateParams.ToolChoiceTool = {

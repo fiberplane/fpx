@@ -73,6 +73,9 @@ jobs:
       - name: Test Studio Frontend
         run: pnpm --filter @fiberplane/studio-frontend test
 
+      - name: Test Client Library
+        run: pnpm --filter @fiberplane/hono-otel test
+
       # Building
 
       - name: Build api, frontend, and client library

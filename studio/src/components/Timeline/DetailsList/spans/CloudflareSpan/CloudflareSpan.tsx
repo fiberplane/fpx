@@ -5,24 +5,25 @@ import { CloudflareD1Span } from "./CloudflareD1Span";
 import { CloudflareKVSpan } from "./CloudflareKVSpan";
 import { CloudflareR2Span } from "./CloudflareR2Span";
 
+type Props = { vendorInfo: CloudflareVendorInfo } & Pick<
+  OtelSpan,
+  "attributes"
+>;
 /**
  * Render information about a Span originating from a Cloudflare Binding
  */
-export function CloudflareSpan({
-  span,
-  vendorInfo,
-}: { span: OtelSpan; vendorInfo: CloudflareVendorInfo }) {
+export function CloudflareSpan({ attributes, vendorInfo }: Props) {
   if (isCloudflareD1VendorInfo(vendorInfo)) {
-    return <CloudflareD1Span span={span} vendorInfo={vendorInfo} />;
+    return <CloudflareD1Span attributes={attributes} vendorInfo={vendorInfo} />;
   }
   if (vendorInfo.type === "r2") {
-    return <CloudflareR2Span span={span} />;
+    return <CloudflareR2Span attributes={attributes} />;
   }
   if (vendorInfo.type === "ai") {
-    return <CloudflareAISpan span={span} />;
+    return <CloudflareAISpan attributes={attributes} />;
   }
   if (vendorInfo.type === "kv") {
-    return <CloudflareKVSpan span={span} />;
+    return <CloudflareKVSpan attributes={attributes} />;
   }
 
   return null;

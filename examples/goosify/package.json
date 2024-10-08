@@ -13,10 +13,12 @@
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",
     "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.32.0",
     "hono": "^4.5.9"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240821.1",
+    "drizzle-kit": "^0.23.0",
     "wrangler": "^3.73.0"
   }
 }
