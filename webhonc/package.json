@@ -11,7 +11,7 @@
   "dependencies": {
     "@fiberplane/fpx-types": "workspace:*",
     "@hono/zod-validator": "^0.2.2",
-    "hono": "^4.4.11",
+    "hono": "^4.5.8",
     "zod": "^3.23.8"
   },
   "devDependencies": {
