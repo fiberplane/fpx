@@ -4,10 +4,10 @@ import { zodToJsonSchema } from "zod-to-json-schema";
 import logger from "../../logger.js";
 import {
   getSystemPrompt,
-  invokeRequestGenerationPrompt,
   invokeDiffGeneratorPrompt,
+  invokeRequestGenerationPrompt,
 } from "./prompts.js";
-import { GitDiffSchema, type FileType } from "./schema.js";
+import { type FileType, GitDiffSchema } from "./schema.js";
 import { makeRequestTool } from "./tools.js";
 
 type GenerateRequestOptions = {
