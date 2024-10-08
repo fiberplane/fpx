@@ -1,3 +1,5 @@
+import type { FpxLogger } from "./logger";
+import type { PromiseStore } from "./promiseStore";
 import type { HonoLikeApp } from "./types";
 
 type FetchFn = typeof fetch;
@@ -17,36 +19,41 @@ export function isRouteInspectorRequest(request: Request) {
  * @param fetchFn - The fetch function to use to send the request.
  * @param fpxEndpoint - The endpoint of the FPX service.
  * @param app - The Hono app to get the routes from.
- * @returns
+ * @param logger - The logger to use to log messages.
+ * @param promiseStore - An optional promise store to add the request to.
+ * @returns `true` if the routes were sent successfully or if the request was added to the promise store, `false` otherwise
  */
-export function sendRoutes(
+export async function sendRoutes(
   fetchFn: FetchFn,
   fpxEndpoint: string,
   app: HonoLikeApp,
+  logger: FpxLogger,
+  promiseStore?: PromiseStore,
 ) {
   const routes = getRoutesFromApp(app) ?? [];
 
   try {
-    // HACK - Construct the routes endpoint here
-    //        We could also do what we did before and submit the routes to the same `/v1/traces`
-    //        but that route handler is so chaotic right now I wanted to have this as a separate
-    //        endpoint.
+    // NOTE - Construct url to the routes endpoint here, given the FPX endpoint.
+    //        The routes endpoint is what we use to update the list of registered routes in Studio.
     const routesEndpoint = getRoutesEndpoint(fpxEndpoint);
-    fetchFn(routesEndpoint.toString(), {
+    const responsePromise = fetchFn(routesEndpoint.toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ routes }),
-    }).catch((_e) => {
-      // NOTE - We're not awaiting this fetch, so we need to catch its errors
-      //        to avoid unhandled promise rejections.
-      // TODO - Use a logger, or only log if library debugging is enabled
-      // console.error("Error sending routes to FPX", e);
     });
-  } catch (_e) {
-    // TODO - Use a logger, or only log if library debugging is enabled
-    // console.error("Error sending routes to FPX", e);
+
+    if (promiseStore) {
+      promiseStore.add(responsePromise);
+    } else {
+      await responsePromise;
+    }
+    return true;
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    logger?.debug("Error sending routes to FPX:", message);
+    return false;
   }
 }
 
@@ -57,15 +64,22 @@ export function sendRoutes(
  * @param fetchFn - The fetch function to use to send the request.
  * @param fpxEndpoint - The endpoint of the FPX service.
  * @param app - The Hono app to get the routes from.
- * @returns
+ * @returns A Response that can be sent back to the client
  */
-export function respondWithRoutes(
+export async function respondWithRoutes(
   fetchFn: FetchFn,
   fpxEndpoint: string,
   app: HonoLikeApp,
+  logger: FpxLogger,
 ) {
-  sendRoutes(fetchFn, fpxEndpoint, app);
-  return new Response("OK");
+  try {
+    const success = await sendRoutes(fetchFn, fpxEndpoint, app, logger);
+    return new Response(success ? "OK" : "Error sending routes to FPX", {
+      status: success ? 200 : 500,
+    });
+  } catch (_e) {
+    return new Response("Error sending routes to FPX", { status: 500 });
+  }
 }
 
 function getRoutesFromApp(app: HonoLikeApp) {
