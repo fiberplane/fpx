@@ -10,6 +10,8 @@ use tauri::menu::{MenuBuilder, MenuId, MenuItemBuilder, SubmenuBuilder};
 use tauri::{Emitter, WebviewWindowBuilder};
 use tauri::{Manager, Wry};
 use tauri_plugin_store::{StoreCollection, StoreExt};
+use tokio::signal::unix::SignalKind;
+use tracing::debug;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::{EnvFilter, Registry};
@@ -28,12 +30,32 @@ fn main() {
         std::process::exit(1);
     }
 
+    let api_manager = ApiManager::default();
+
+    // Create a signal handler which will cleanup any resources in use
+    // (currently only the api manager) when fpx-app receives the SIGTERM signal.
+    let api_manager_ = api_manager.clone();
+    tauri::async_runtime::spawn(async move {
+        // Block until we receive a SIGTERM signal
+        tokio::signal::unix::signal(SignalKind::terminate())
+            .expect("Unable to set signal handler")
+            .recv()
+            .await;
+
+        debug!("received SIGTERM signal, stopping API server");
+
+        api_manager_.stop_api();
+
+        // Do we need to exit the process?
+        std::process::exit(0);
+    });
+
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .manage(AppState::default())
-        .manage(ApiManager::default())
+        .manage(api_manager)
         .setup(|app| {
             // Init store and load it from disk
             let store = app
@@ -112,17 +134,6 @@ fn main() {
                 }
             });
 
-            let window_ = window.clone();
-            window.on_window_event(move |event| {
-                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                    let app_state = window_.state::<AppState>();
-                    if app_state.get_workspace().is_some() {
-                        api.prevent_close();
-                        window_.emit("request-close-workspace", "").unwrap();
-                    }
-                }
-            });
-
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -131,8 +142,15 @@ fn main() {
             commands::workspace::list_recent_workspaces,
             commands::workspace::open_workspace_by_path,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("failed to build application")
+        .run(|app_handle, event| {
+            // Make sure we cleanup after the app is going to exit
+            if let tauri::RunEvent::ExitRequested { .. } = event {
+                let api_manager = app_handle.state::<ApiManager>();
+                api_manager.stop_api();
+            };
+        });
 }
 
 fn setup_tracing() -> Result<()> {

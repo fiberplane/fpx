@@ -26,13 +26,14 @@ nix = { version = "0.29", default-features = false, features = ["signal"] }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tauri = { version = "2.0.1", features = ["config-toml"] }
+tauri = { version = "2.0.1", features = ["config-toml", "tracing"] }
 tauri-plugin-dialog = "2.0.1"
 tauri-plugin-store = { version = "2.0.1" }
 tokio = { version = "1", default-features = false, features = [
-    "sync",
-    "process",
     "macros",
+    "process",
+    "signal",
+    "sync",
 ] }
 tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

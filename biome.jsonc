@@ -2,43 +2,43 @@
   "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
   "css": {
     "linter": {
-      "enabled": true
-    }
+      "enabled": true,
+    },
   },
   "vcs": {
     "enabled": true,
     "clientKind": "git",
-    "useIgnoreFile": true
+    "useIgnoreFile": true,
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "space"
+    "indentStyle": "space",
   },
   "organizeImports": {
-    "enabled": true
+    "enabled": true,
   },
   "linter": {
     "enabled": true,
     "rules": {
       "style": {
         "useBlockStatements": {
-          "level": "error"
-        }
-      }
-    }
+          "level": "error",
+        },
+      },
+    },
   },
   "overrides": [
     {
       "include": ["packages/types/src/schemas.ts"],
       "linter": {
-        "enabled": false
-      }
+        "enabled": false,
+      },
     },
     {
       "include": ["www"],
       "formatter": {
-        "enabled": false
-      }
+        "enabled": false,
+      },
     },
     {
       "include": ["studio"],
@@ -47,11 +47,11 @@
         "rules": {
           "suspicious": {
             "noArrayIndexKey": {
-              "level": "off"
-            }
-          }
-        }
-      }
+              "level": "off",
+            },
+          },
+        },
+      },
     },
     {
       "include": ["packages/client-library-otel"],
@@ -61,11 +61,11 @@
           "recommended": true,
           "style": {
             "useBlockStatements": {
-              "level": "off"
-            }
-          }
-        }
-      }
+              "level": "off",
+            },
+          },
+        },
+      },
     },
     {
       "include": ["packages/client-library-otel", "api"],
@@ -75,30 +75,29 @@
           "recommended": true,
           "correctness": {
             "noUnusedImports": {
-              "level": "error"
+              "level": "error",
             },
             "noUnusedVariables": {
-              "level": "error"
-            }
-          }
-        }
-      }
-    }
+              "level": "error",
+            },
+          },
+        },
+      },
+    },
   ],
   "files": {
     "ignore": [
       // API related
       "meta/*.json",
-
       // Client library and website related
       "dist",
       "www/",
       ".astro",
-
       // ignore all tsconfig.json files
       "tsconfig.json",
-
-      "fpx-app/gen"
-    ]
-  }
+      // ignore any test data files
+      "test-data/*.js",
+      "fpx-app/gen",
+    ],
+  },
 }

@@ -45,7 +45,7 @@ Follow the instructions in the [`client-library-otel` README](./packages/client-
 
 ## Developing
 
-This project uses typescript, biome and pnpm workspaces. The frontend package also uses eslint for linting purposes, all other packages use biome for linting (formatting is always done with biome).
+This project uses typescript, biome and pnpm workspaces. Linting and formatting is handled with [biome](https://biomejs.dev/).
 
 In the project root you can format all typescript codebases with `pnpm run format`.
 
