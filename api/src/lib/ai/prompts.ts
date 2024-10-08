@@ -1,4 +1,7 @@
+import type { OtelTrace } from "@fiberplane/fpx-types";
 import { PromptTemplate } from "@langchain/core/prompts";
+import type { JsonSchema7Type } from "zod-to-json-schema";
+import type { FileType } from "./schema.js";
 
 export const getSystemPrompt = (persona: string) => {
   return persona === "QA"
@@ -57,6 +60,30 @@ export const invokeRequestGenerationPrompt = async ({
     history: history?.join("\n") ?? "NO HISTORY",
     openApiSpec: openApiSpec ?? "NO OPENAPI SPEC",
     middleware: formatMiddleware(middleware),
+  });
+  const userPrompt = userPromptInterface.value;
+  return userPrompt;
+};
+
+export const invokeDiffGeneratorPrompt = async ({
+  trace,
+  relevantFiles,
+  diffJsonSchema,
+}: {
+  trace: OtelTrace;
+  relevantFiles: FileType[];
+  diffJsonSchema: JsonSchema7Type;
+}) => {
+  const promptTemplate = diffGeneratorPrompt;
+  const stringifiedTrace = JSON.stringify(trace);
+  const diffSchema = JSON.stringify(diffJsonSchema);
+  const projectFileTree = relevantFiles
+    .map(({ path, content }) => `${path}:\n${content}`)
+    .join("\n\n");
+  const userPromptInterface = await promptTemplate.invoke({
+    trace: stringifiedTrace,
+    diffSchema,
+    projectFileTree,
   });
   const userPrompt = userPromptInterface.value;
   return userPrompt;
@@ -210,7 +237,7 @@ export const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
 You are an expert QA Engineer, a thorough API tester, and a code debugging assistant for web APIs that use Hono,
 a typescript web framework similar to express. You have a generally hostile disposition.
 
-You need to help craft requests to route handlers. 
+You need to help craft requests to route handlers.
 
 You will be provided the source code of a route handler for an API route, and you should generate
 query parameters, a request body, and headers that will test the request.
@@ -269,19 +296,40 @@ But if the body type is a file stream, just return an empty body.
 For form data, you can return a body type of "form-data". You can still return a JSON object like above,
 I will handle converting it to form data.
 
-You should focus on trying to break things. You are a QA. 
+You should focus on trying to break things. You are a QA.
 
 You are the enemy of bugs. To protect quality, you must find bugs.
 
-Try strategies like specifying invalid data, missing data, or invalid data types (e.g., using strings instead of numbers). 
+Try strategies like specifying invalid data, missing data, or invalid data types (e.g., using strings instead of numbers).
 
-Try to break the system. But do not break yourself! 
+Try to break the system. But do not break yourself!
 Keep your responses to a reasonable length. Including your random data.
 
 Never add the x-fpx-trace-id header to the request.
 
 Use the tool "make_request". Always respond in valid JSON.
 ***Don't make your responses too long, otherwise we cannot parse your JSON response.***
+`);
+
+export const diffGeneratorPrompt = PromptTemplate.fromTemplate(`
+You're an expert developer writing tests for error scenarios that have been discovered in production.
+
+You will be supplied the trace of the error, the filetree of the project and the source code of the existing codebase (or the relevant parts of it).
+
+You need write a test for the error case. You need to identify which testing provider the project is using and write the most appropriate test that would catch the errors found in the trace, if the testing provider is not included in package.json you should include it.
+
+Prioritize more modern and faster versions of tools if you're adding new things (e.g. use vitest not jest).
+
+You should respond only in json that would correspond to the following schema:
+\`\`\`json
+{diffSchema}
+\`\`\`
+
+Here's the trace of the error:
+{trace}
+
+Here's the list of relevant files and their contents:
+{projectFileTree}
 `);
 
 /**
