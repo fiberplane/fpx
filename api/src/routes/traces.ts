@@ -98,46 +98,46 @@ app.get("/v1/traces/:traceId/fix.patch", cors(), async (ctx) => {
     spans: traces[0].inner ? [traces[0].inner] : [],
   };
 
-  const diffJson = await generateDiffWithCreatedTest({
+  const { data } = await generateDiffWithCreatedTest({
     inferenceConfig: inferenceConfig || {},
     relevantFiles,
     trace: traceWithSpans,
   });
 
-  if (diffJson.data) {
-    const gitDiff: GitDiff = diffJson.data;
-    const patchContent = gitDiff.files
-      .map((file) => {
-        const hunks = file.hunks
-          .map((hunk) => {
-            const header = `@@ -${hunk.oldStartLine},${hunk.oldLineCount} +${hunk.newStartLine},${hunk.newLineCount} @@${hunk.sectionHeader ? " " + hunk.sectionHeader : ""}`;
-            const changes = hunk.changes
-              .map((change) => {
-                const prefix =
-                  change.type === "addition"
-                    ? "+"
-                    : change.type === "deletion"
-                      ? "-"
-                      : " ";
-                return change.content
-                  .split("\n")
-                  .map((line) => prefix + line)
-                  .join("\n");
-              })
-              .join("\n");
-            return header + "\n" + changes;
-          })
-          .join("\n");
-        return `--- ${file.oldFile}\n+++ ${file.newFile}\n${hunks}`;
-      })
-      .join("\n\n");
-
-    ctx.header("Content-Type", "text/plain");
-    ctx.header("Content-Disposition", 'attachment; filename="fix.patch"');
-    return ctx.body(patchContent);
+  if (!data || typeof data === "string") {
+    return ctx.text("");
   }
 
-  return ctx.json(diffJson);
+  const gitDiff: GitDiff = data;
+  const patchContent = gitDiff.files
+    .map((file) => {
+      const hunks = file.hunks
+        .map((hunk) => {
+          const header = `@@ -${hunk.oldStartLine},${hunk.oldLineCount} +${hunk.newStartLine},${hunk.newLineCount} @@${hunk.sectionHeader ? ` ${hunk.sectionHeader}` : ""}`;
+          const changes = hunk.changes
+            .map((change) => {
+              const prefix =
+                change.type === "addition"
+                  ? "+"
+                  : change.type === "deletion"
+                    ? "-"
+                    : " ";
+              return change.content
+                .split("\n")
+                .map((line) => `${prefix}${line}`)
+                .join("\n");
+            })
+            .join("\n");
+          return `${header}\n${changes}`;
+        })
+        .join("\n");
+      return `--- ${file.oldFile}\n+++ ${file.newFile}\n${hunks}`;
+    })
+    .join("\n\n");
+
+  ctx.header("Content-Type", "text/plain");
+  ctx.header("Content-Disposition", 'attachment; filename="fix.patch"');
+  return ctx.body(patchContent);
 });
 
 /**
