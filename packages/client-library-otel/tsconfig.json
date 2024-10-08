@@ -6,7 +6,7 @@
     "strict": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
-    "types": ["@cloudflare/workers-types"],
+    "types": ["vitest/globals", "@cloudflare/workers-types"],
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./src",

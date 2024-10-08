@@ -25,7 +25,8 @@
     "nodemon": "^3.1.7",
     "rimraf": "^6.0.1",
     "tsc-alias": "^1.8.10",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
   },
   "publishConfig": {
     "access": "public"
@@ -50,6 +51,7 @@
     "dev": "wrangler dev sample/index.ts",
     "prepublishOnly": "pnpm run build",
     "clean": "rimraf dist",
+    "test": "vitest --run",
     "watch": "nodemon --watch src --ext ts,js,json --exec \"pnpm run build\""
   }
 }
