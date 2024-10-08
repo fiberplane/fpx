@@ -1,8 +1,13 @@
 import type { OtelTrace } from "@fiberplane/fpx-types";
 import OpenAI from "openai";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import logger from "../../logger.js";
-import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
-import type { FileType } from "./schema.js";
+import {
+  getSystemPrompt,
+  invokeRequestGenerationPrompt,
+  invokeDiffGeneratorPrompt,
+} from "./prompts.js";
+import { GitDiffSchema, type FileType } from "./schema.js";
 import { makeRequestTool } from "./tools.js";
 
 type GenerateRequestOptions = {
@@ -116,6 +121,57 @@ export async function generateDiffWithCreatedTestOpenAI({
   trace: OtelTrace;
   relevantFiles: FileType[];
 }) {
-  logger.error("OpenAI is not yet supported for generating diffs");
-  return "";
+  const diffJsonSchema = zodToJsonSchema(GitDiffSchema);
+
+  const openaiClient = new OpenAI({ apiKey, baseURL: baseUrl });
+  const userPrompt = await invokeDiffGeneratorPrompt({
+    trace,
+    relevantFiles,
+    diffJsonSchema,
+  });
+
+  const response = await openaiClient.chat.completions.create({
+    model,
+    messages: [
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ],
+    functions: [
+      {
+        name: diffJsonSchema.title ?? "generateDiff",
+        description: "Generate a diff for the created test",
+        parameters: diffJsonSchema,
+      },
+    ],
+    function_call: { name: diffJsonSchema.title ?? "generateDiff" },
+    temperature: 0.06,
+    max_tokens: 2048,
+  });
+
+  const {
+    choices: [{ message }],
+  } = response;
+
+  const functionCall = message.function_call;
+
+  if (
+    functionCall &&
+    functionCall.name === (diffJsonSchema.title ?? "generateDiff")
+  ) {
+    try {
+      const parsedArgs = JSON.parse(functionCall.arguments ?? "{}");
+      return parsedArgs;
+    } catch (error) {
+      logger.error("Parsing function call response from OpenAI failed:", error);
+      throw new Error("Could not parse response from OpenAI");
+    }
+  }
+
+  logger.error(
+    "OpenAI response did not contain expected function call. Response:",
+    JSON.stringify(message, null, 2),
+  );
+  throw new Error("Unexpected response format from OpenAI");
 }
