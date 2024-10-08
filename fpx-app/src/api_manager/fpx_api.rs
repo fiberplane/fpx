@@ -6,12 +6,13 @@ use fpx::service::Service;
 use std::sync::{Arc, Mutex};
 use tauri::async_runtime::spawn;
 use tokio::sync::broadcast::error::RecvError;
+use tokio::sync::oneshot;
 use tracing::{error, info, trace, warn};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ApiManager {
     // Sending a message on this channel will shutdown the axum server.
-    shutdown_tx: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
+    shutdown_tx: Arc<Mutex<Option<oneshot::Sender<()>>>>,
 }
 
 impl ApiManager {
@@ -28,7 +29,7 @@ impl ApiManager {
         let listener = std::net::TcpListener::bind(format!("127.0.0.1:{listen_port}")).unwrap();
         listener.set_nonblocking(true).unwrap();
 
-        let (shutdown, on_shutdown) = tokio::sync::oneshot::channel::<()>();
+        let (shutdown, on_shutdown) = oneshot::channel::<()>();
         *shutdown_tx = Some(shutdown);
 
         spawn(async move {
