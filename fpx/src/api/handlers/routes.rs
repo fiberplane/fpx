@@ -25,7 +25,7 @@ pub async fn route_get(
     }))
 }
 
-#[derive(Debug, Serialize, Deserialize, Err or, ApiError)]
+#[derive(Debug, Serialize, Deserialize, Error, ApiError)]
 #[serde(tag = "error", content = "details", rename_all = "camelCase")]
 #[non_exhaustive]
 pub enum RoutesGetError {}
