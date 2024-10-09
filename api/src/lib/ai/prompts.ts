@@ -1,4 +1,5 @@
 import { PromptTemplate } from "@langchain/core/prompts";
+import { makeRequestTool } from "./tools.js";
 
 export const getSystemPrompt = (persona: string, provider?: "ollama") => {
   if (provider === "ollama") {
@@ -379,10 +380,12 @@ with a body type of "json"
 
 ===
 
-Perform a TOOL CALL to make_request.
-
 Always use the tool "make_request". 
+
+Respond with the schema ${JSON.stringify(makeRequestTool.function.parameters, null, 2)}.
+
 Always respond in VALID JSON. 
+
 Escape quotes in the request body!!! 
 
 Help the user test the happy path.
