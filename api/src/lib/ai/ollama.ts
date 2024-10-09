@@ -4,7 +4,7 @@ import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool } from "./tools.js";
 
 type GenerateRequestOptions = {
-  apiKey: string;
+  apiKey?: string;
   baseUrl?: string;
   model: string;
   persona: string;
@@ -87,7 +87,7 @@ export async function generateRequestWithOllama({
     messages: [
       {
         role: "system",
-        content: getSystemPrompt(persona),
+        content: getSystemPrompt(persona, "ollama"),
       },
       {
         role: "user",
