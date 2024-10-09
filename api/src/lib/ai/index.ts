@@ -1,7 +1,7 @@
 import type { Settings } from "@fiberplane/fpx-types";
 import { generateRequestWithAnthropic } from "./anthropic.js";
-import { generateRequestWithOpenAI } from "./openai.js";
 import { generateRequestWithOllama } from "./ollama.js";
+import { generateRequestWithOpenAI } from "./openai.js";
 
 export async function generateRequestWithAiProvider({
   inferenceConfig,
