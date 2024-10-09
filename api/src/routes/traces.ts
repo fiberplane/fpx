@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import {
   OtelSpanSchema,
   type TraceDetailSpansResponse,
@@ -16,6 +16,9 @@ import { fromCollectorRequest } from "../lib/otel/index.js";
 import { getInferenceConfig, getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
+import { USER_PROJECT_ROOT_DIR } from "../constants.js";
+import { getIgnoredPaths, shouldIgnoreFile } from "../lib/utils.js";
+import { serializeDiffToPatch } from "../lib/diff/index.js";
 
 const { otelSpans } = schema;
 
@@ -70,7 +73,6 @@ app.get("/v1/traces", async (ctx) => {
 
 app.get("/v1/traces/:traceId/fix.patch", cors(), async (ctx) => {
   const traceId = ctx.req.param("traceId");
-  // const noCache = ctx.req.query("nocache");
   const db = ctx.get("db");
 
   const traces = await db
@@ -85,13 +87,29 @@ app.get("/v1/traces/:traceId/fix.patch", cors(), async (ctx) => {
 
   const inferenceConfig = await getInferenceConfig(db);
 
+  const ignoredPaths = getIgnoredPaths();
+
   const relevantFiles = fs
-    .readdirSync(process.cwd())
-    .filter((file) => file.endsWith(".ts"))
-    .map((file) => ({
-      path: file,
-      content: fs.readFileSync(path.join(process.cwd(), file), "utf-8"),
-    }));
+    .readdirSync(USER_PROJECT_ROOT_DIR, {
+      recursive: true,
+      withFileTypes: true,
+    })
+    .filter(
+      (dirent) =>
+        !dirent.isDirectory() &&
+        (dirent.name.endsWith(".ts") ||
+          dirent.name.endsWith(".js") ||
+          dirent.name === "package.json") &&
+        !shouldIgnoreFile(path.join(dirent.path, dirent.name), ignoredPaths),
+    )
+    .map((dirent) => {
+      const filePath = path.join(dirent.path, dirent.name);
+      logger.debug("filePath", filePath);
+      return {
+        path: path.relative(USER_PROJECT_ROOT_DIR, filePath),
+        content: fs.readFileSync(filePath, "utf-8").toString(),
+      };
+    });
 
   const traceWithSpans = {
     ...traces[0],
@@ -109,31 +127,7 @@ app.get("/v1/traces/:traceId/fix.patch", cors(), async (ctx) => {
   }
 
   const gitDiff: GitDiff = data;
-  const patchContent = gitDiff.files
-    .map((file) => {
-      const hunks = file.hunks
-        .map((hunk) => {
-          const header = `@@ -${hunk.oldStartLine},${hunk.oldLineCount} +${hunk.newStartLine},${hunk.newLineCount} @@${hunk.sectionHeader ? ` ${hunk.sectionHeader}` : ""}`;
-          const changes = hunk.changes
-            .map((change) => {
-              const prefix =
-                change.type === "addition"
-                  ? "+"
-                  : change.type === "deletion"
-                    ? "-"
-                    : " ";
-              return change.content
-                .split("\n")
-                .map((line) => `${prefix}${line}`)
-                .join("\n");
-            })
-            .join("\n");
-          return `${header}\n${changes}`;
-        })
-        .join("\n");
-      return `--- ${file.oldFile}\n+++ ${file.newFile}\n${hunks}`;
-    })
-    .join("\n\n");
+  const patchContent = serializeDiffToPatch(gitDiff);
 
   ctx.header("Content-Type", "text/plain");
   ctx.header("Content-Disposition", 'attachment; filename="fix.patch"');
