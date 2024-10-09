@@ -38,6 +38,10 @@ import {
 import { useState } from "react";
 import { useSettingsForm } from "./form";
 
+const OllamaModelOptions = {
+  "llama3.1": "Llama 3.1 (8B)",
+};
+
 export function AISettingsForm({
   settings,
 }: {
@@ -186,7 +190,10 @@ export function AISettingsForm({
                                             {Object.entries(
                                               providerField.value === "openai"
                                                 ? OpenAiModelOptions
-                                                : AnthropicModelOptions,
+                                                : providerField.value ===
+                                                    "ollama"
+                                                  ? OllamaModelOptions
+                                                  : AnthropicModelOptions,
                                             ).map(([option, label]) => (
                                               <DropdownMenuRadioItem
                                                 key={option}
@@ -203,73 +210,79 @@ export function AISettingsForm({
                                 </div>
                               </FormControl>
                             </div>
-                            <FormField
-                              control={form.control}
-                              name={
-                                providerField.value === "openai"
-                                  ? "openaiApiKey"
-                                  : "anthropicApiKey"
-                              }
-                              key={`${providerField.value}-api-key`}
-                              render={({ field }) => (
-                                <div className="flex flex-col gap-1">
-                                  <FormLabel className="block font-normal text-sm text-gray-300">
-                                    API Key
-                                  </FormLabel>
-                                  <FormDescription className="mb-1">
-                                    Your api key is stored locally in{" "}
-                                    <code className="text-red-200/80 text-xs">
-                                      .fpxconfig/fpx.db
-                                    </code>{" "}
-                                    to make requests to the{" "}
-                                    {
-                                      ProviderOptions[
-                                        providerField.value ?? "openai"
-                                      ]
-                                    }{" "}
-                                    API. It should be ignored by version control
-                                    by default.
-                                  </FormDescription>
-                                  <FormControl>
-                                    <ApiKeyInput
-                                      value={field.value ?? ""}
-                                      onChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                </div>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={
-                                providerField.value === "openai"
-                                  ? "openaiBaseUrl"
-                                  : "anthropicBaseUrl"
-                              }
-                              key={`${providerField.value}-base-url`}
-                              render={({ field }) => (
-                                <div className="flex flex-col gap-1">
-                                  <FormLabel className="block font-normal text-sm text-gray-300">
-                                    Base URL
-                                  </FormLabel>
-                                  <FormDescription className="mb-1">
-                                    You can configure the base URL used by{" "}
-                                    {
-                                      ProviderOptions[
-                                        providerField.value ?? "openai"
-                                      ]
-                                    }{" "}
-                                    API client to use any compatible endpoint.
-                                  </FormDescription>
-                                  <FormControl>
-                                    <Input
-                                      value={field.value ?? ""}
-                                      onChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                </div>
-                              )}
-                            />
+                            {(providerField.value === "openai" ||
+                              providerField.value === "anthropic") && (
+                              <>
+                                <FormField
+                                  control={form.control}
+                                  name={
+                                    providerField.value === "openai"
+                                      ? "openaiApiKey"
+                                      : "anthropicApiKey"
+                                  }
+                                  key={`${providerField.value}-api-key`}
+                                  render={({ field }) => (
+                                    <div className="flex flex-col gap-1">
+                                      <FormLabel className="block font-normal text-sm text-gray-300">
+                                        API Key
+                                      </FormLabel>
+                                      <FormDescription className="mb-1">
+                                        Your api key is stored locally in{" "}
+                                        <code className="text-red-200/80 text-xs">
+                                          .fpxconfig/fpx.db
+                                        </code>{" "}
+                                        to make requests to the{" "}
+                                        {
+                                          ProviderOptions[
+                                            providerField.value ?? "openai"
+                                          ]
+                                        }{" "}
+                                        API. It should be ignored by version
+                                        control by default.
+                                      </FormDescription>
+                                      <FormControl>
+                                        <ApiKeyInput
+                                          value={field.value ?? ""}
+                                          onChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                    </div>
+                                  )}
+                                />
+                                <FormField
+                                  control={form.control}
+                                  name={
+                                    providerField.value === "openai"
+                                      ? "openaiBaseUrl"
+                                      : "anthropicBaseUrl"
+                                  }
+                                  key={`${providerField.value}-base-url`}
+                                  render={({ field }) => (
+                                    <div className="flex flex-col gap-1">
+                                      <FormLabel className="block font-normal text-sm text-gray-300">
+                                        Base URL
+                                      </FormLabel>
+                                      <FormDescription className="mb-1">
+                                        You can configure the base URL used by{" "}
+                                        {
+                                          ProviderOptions[
+                                            providerField.value ?? "openai"
+                                          ]
+                                        }{" "}
+                                        API client to use any compatible
+                                        endpoint.
+                                      </FormDescription>
+                                      <FormControl>
+                                        <Input
+                                          value={field.value ?? ""}
+                                          onChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                    </div>
+                                  )}
+                                />
+                              </>
+                            )}
                           </FormItem>
                           <div>
                             <CodeSentToAiBanner />

@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import OpenAI from "openai";
 import logger from "../../logger.js";
 import { isJson } from "../utils.js";
@@ -57,7 +58,7 @@ export async function generateRequestWithOllama({
     `method: ${method}`,
     `path: ${path}`,
     `handler: ${handler}`,
-    `handlerContext: ${handlerContext}`,
+    // `handlerContext: ${handlerContext}`,
     // `openApiSpec: ${openApiSpec}`,
     // `middleware: ${middleware}`,
     // `middlewareContext: ${middlewareContext}`,
@@ -80,14 +81,14 @@ export async function generateRequestWithOllama({
   });
 
   const response = await openaiClient.chat.completions.create({
-    // NOTE - Later models (gpt-4o, gpt-4-turbo) should guarantee function calling to have json output
+    // NOTE - llama-3.1-8b is not very good at function calling, but the 70b and 405b variants were pre-trained to be good at it.
+    //        Don't expect a lot from this :grimace:
     model,
-    // NOTE - We can restrict the response to be from this single tool call
+    // NOTE - We can try to restrict the response to be from this single tool call
     tool_choice: {
       type: "function",
       function: { name: makeRequestTool.function.name },
     },
-    // Define the make_request tool
     tools: [makeRequestTool],
     messages: [
       {
@@ -107,36 +108,50 @@ export async function generateRequestWithOllama({
     choices: [{ message }],
   } = response;
 
-  console.log("ollama initial message", message);
+  logger.debug(
+    "ollama message from response:",
+    JSON.stringify(message, null, 2),
+  );
 
   const makeRequestCall = message.tool_calls?.[0];
   const toolArgs = makeRequestCall?.function?.arguments;
 
-  console.log("ollama toolArgs", toolArgs);
+  logger.debug("ollama toolArgs", JSON.stringify(toolArgs, null, 2));
 
-  // HACK - The model might get confused and just respond with JSON describing the tool call.
+  // HACK - llama 3.1 (8B) might get confused and just respond with JSON describing the tool call.
   //        So we should try to parse the content as a tool call
+  //        ((this does not really work as a fallback yet, but usually the json is malformed anyhow))
   if (!toolArgs) {
-    console.log("ollama message content", message?.content);
+    logger.warn(
+      chalk.red(
+        "ollama tool call arguments not found, trying to parse message content as tool call",
+      ),
+    );
+    logger.debug("ollama message content", message?.content);
     const parsedContent = isJson(message?.content)
       ? JSON.parse(message?.content ?? "")
       : null;
-    console.log("ollama parsedContent", parsedContent);
+    logger.debug("ollama parsedContent", parsedContent);
     // TODO - Validate the parsed content as a tool call, this object could take a couple of different shapes
     return parsedContent;
   }
 
   try {
     const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
-    // HACK - Ollama does not deal well with nested json objects, and will return each property as its stringified value.
+    // HACK - llama 3.1 does not deal well with nested json objects, and will return each property as its stringified value.
     //        We should try to parse the values that look like json strings.
     if (parsedArgs) {
       for (const key in parsedArgs) {
+        // We do not want to json parse the body field - it should be a string
+        if (key === "body") {
+          continue;
+        }
+
         const value = parsedArgs[key];
         if (typeof value === "string" && isJson(value)) {
           const parsedValue = JSON.parse(value);
           if (key === "headers" && Array.isArray(parsedValue)) {
-            // HACK - Ollama will sometimes return the headers like ["Content-Type: application/json"]
+            // HACK - llama 3.1 will sometimes return the headers like ["Content-Type: application/json"]
             parsedArgs[key] = parsedValue.map((header: unknown) => {
               if (typeof header === "string" && header.includes(":")) {
                 const [key, value] = header.split(": ");
