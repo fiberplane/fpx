@@ -2,7 +2,7 @@ import { Hono, type HonoRequest } from "hono";
 
 import { instrument, measure } from "@fiberplane/hono-otel";
 import { neon } from "@neondatabase/serverless";
-import { asc, eq, ilike } from "drizzle-orm";
+import { asc, eq, ilike, isNull, not } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 
 import {
@@ -70,6 +70,27 @@ app.get("/api/geese", async (c) => {
   });
 
   return c.json(searchResults);
+});
+
+/**
+ * Search for geese with avatars
+ */
+app.get("/api/geese-with-avatar", async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  console.log("Fetching geese with avatars");
+
+  const geeseWithAvatars = await measure("getGeeseWithAvatars", () =>
+    db
+      .select()
+      .from(geese)
+      .where(not(isNull(geese.avatar)))
+      .orderBy(asc(geese.id)),
+  )();
+
+  console.log(`Found ${geeseWithAvatars.length} geese with avatars`);
+  return c.json(geeseWithAvatars.map((g) => g.id));
 });
 
 /**
