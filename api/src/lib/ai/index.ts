@@ -104,7 +104,6 @@ export async function generateRequestWithAiProvider({
       // TODO - Add handlerContext, history, middleware, etc
     }).then(
       (parsedArgs) => {
-        console.log(parsedArgs);
         return { data: parsedArgs, error: null };
       },
       (error) => {
