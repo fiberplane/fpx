@@ -1,6 +1,7 @@
 import type { Settings } from "@fiberplane/fpx-types";
 import { generateRequestWithAnthropic } from "./anthropic.js";
 import { generateRequestWithOpenAI } from "./openai.js";
+import { generateRequestWithOllama } from "./ollama.js";
 
 export async function generateRequestWithAiProvider({
   inferenceConfig,
@@ -80,6 +81,29 @@ export async function generateRequestWithAiProvider({
       middlewareContext,
     }).then(
       (parsedArgs) => {
+        return { data: parsedArgs, error: null };
+      },
+      (error) => {
+        if (error instanceof Error) {
+          return { data: null, error: { message: error.message } };
+        }
+        return { data: null, error: { message: "Unknown error" } };
+      },
+    );
+  }
+
+  if (aiProviderType === "ollama") {
+    return generateRequestWithOllama({
+      apiKey: "",
+      model: "llama3.1",
+      baseUrl: "http://localhost:11434",
+      persona,
+      method,
+      path,
+      handler,
+    }).then(
+      (parsedArgs) => {
+        console.log(parsedArgs);
         return { data: parsedArgs, error: null };
       },
       (error) => {

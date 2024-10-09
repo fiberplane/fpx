@@ -42,11 +42,13 @@ export type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
 export const ProviderOptions = {
   openai: "OpenAI",
   anthropic: "Anthropic",
+  ollama: "Ollama",
 } as const;
 
 export const AiProviderTypeSchema = z.union([
   z.literal("openai"),
   z.literal("anthropic"),
+  z.literal("ollama"),
 ]);
 
 export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;
@@ -66,6 +68,8 @@ export const SettingsSchema = z.object({
       baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
     })
     .optional(),
+  ollamaModel: z.string().optional(),
+  ollamaBaseUrl: z.string().default("http://localhost:11434"),
   openaiApiKey: z.string().optional(),
   openaiBaseUrl: z.string().optional(),
   openaiModel: OpenAiModelSchema.optional(),

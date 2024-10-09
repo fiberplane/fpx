@@ -13,6 +13,8 @@ import { useForm } from "react-hook-form";
 const DEFAULT_VALUES = {
   aiEnabled: false,
   aiProviderType: "openai",
+  ollamaBaseUrl: "http://localhost:11434",
+  ollamaModel: "llama3.1",
   openaiModel: GPT_4o,
   anthropicModel: CLAUDE_3_5_SONNET,
   proxyRequestsEnabled: false,

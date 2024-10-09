@@ -149,7 +149,9 @@ export function AISettingsForm({
                                     name={
                                       providerField.value === "openai"
                                         ? "openaiModel"
-                                        : "anthropicModel"
+                                        : providerField.value === "ollama"
+                                          ? "ollamaModel"
+                                          : "anthropicModel"
                                     }
                                     // key is used to force re-render when provider changes
                                     key={`${providerField.value}-model`}
@@ -167,9 +169,11 @@ export function AISettingsForm({
                                               ? OpenAiModelOptions[
                                                   field.value as keyof typeof OpenAiModelOptions
                                                 ]
-                                              : AnthropicModelOptions[
-                                                  field.value as keyof typeof AnthropicModelOptions
-                                                ]}
+                                              : providerField.value === "ollama"
+                                                ? "llama3.1"
+                                                : AnthropicModelOptions[
+                                                    field.value as keyof typeof AnthropicModelOptions
+                                                  ]}
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-full max-w-lg">
