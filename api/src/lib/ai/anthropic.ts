@@ -1,6 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
+import type { OtelTrace } from "@fiberplane/fpx-types";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import logger from "../../logger.js";
-import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
+import {
+  getSystemPrompt,
+  invokeDiffGeneratorPrompt,
+  invokeRequestGenerationPrompt,
+} from "./prompts.js";
+import { type FileType, GitDiffSchema } from "./schema.js";
 import { makeRequestTool as makeRequestToolBase } from "./tools.js";
 
 // Convert the tool call into the format that Anthropic suggests (different than openai's api)
@@ -86,6 +93,72 @@ export async function generateRequestWithAnthropic({
     tool_choice: toolChoice,
     tools: [makeRequestTool],
     system: getSystemPrompt(persona),
+    messages: [
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ],
+    temperature: 0.06,
+    max_tokens: 2048,
+  });
+
+  const { content } = response;
+
+  let toolArgs: Anthropic.Messages.ToolUseBlock["input"];
+  for (const message of content) {
+    if (message.type === "tool_use") {
+      logger.debug(
+        "Anthropic tool use response:",
+        JSON.stringify(message, null, 2),
+      );
+      toolArgs = message.input;
+      return toolArgs;
+    }
+  }
+
+  logger.error(
+    "Parsing tool-call response from Anthropic failed. Response content:",
+    JSON.stringify(content, null, 2),
+  );
+  throw new Error("Could not parse response from Anthropic");
+}
+
+export async function generateDiffWithCreatedTestAnthropic({
+  apiKey,
+  baseUrl,
+  model,
+  trace,
+  relevantFiles,
+}: {
+  apiKey: string;
+  baseUrl?: string;
+  model: string;
+  trace: OtelTrace;
+  relevantFiles: FileType[];
+}) {
+  const diffJsonSchema = zodToJsonSchema(GitDiffSchema);
+
+  const anthropicClient = new Anthropic({ apiKey, baseURL: baseUrl });
+  const userPrompt = await invokeDiffGeneratorPrompt({
+    trace,
+    relevantFiles,
+    diffJsonSchema,
+  });
+  const toolChoice: Anthropic.Messages.MessageCreateParams.ToolChoiceTool = {
+    name: diffJsonSchema.title ?? "diffJsonSchema",
+    type: "tool",
+  };
+
+  const response = await anthropicClient.messages.create({
+    model,
+    tool_choice: toolChoice,
+    tools: [
+      {
+        name: diffJsonSchema.title ?? "diffJsonSchema",
+        input_schema: diffJsonSchema as Anthropic.Messages.Tool.InputSchema,
+      },
+    ],
     messages: [
       {
         role: "user",

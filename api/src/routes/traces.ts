@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import {
   OtelSpanSchema,
   type TraceDetailSpansResponse,
@@ -6,9 +8,12 @@ import {
 import type { IExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
 import { and, desc, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
+import { generateDiffWithCreatedTest } from "../lib/ai/index.js";
+import type { GitDiff } from "../lib/ai/schema.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
-import { getSetting } from "../lib/settings/index.js";
+import { getInferenceConfig, getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
@@ -61,6 +66,78 @@ app.get("/v1/traces", async (ctx) => {
   }));
 
   return ctx.json(response);
+});
+
+app.get("/v1/traces/:traceId/fix.patch", cors(), async (ctx) => {
+  const traceId = ctx.req.param("traceId");
+  // const noCache = ctx.req.query("nocache");
+  const db = ctx.get("db");
+
+  const traces = await db
+    .select()
+    .from(otelSpans)
+    .where(
+      and(
+        sql`inner->>'scope_name' = 'fpx-tracer'`,
+        sql`inner->>'trace_id' = ${traceId}`,
+      ),
+    );
+
+  const inferenceConfig = await getInferenceConfig(db);
+
+  const relevantFiles = fs
+    .readdirSync(process.cwd())
+    .filter((file) => file.endsWith(".ts"))
+    .map((file) => ({
+      path: file,
+      content: fs.readFileSync(path.join(process.cwd(), file), "utf-8"),
+    }));
+
+  const traceWithSpans = {
+    ...traces[0],
+    spans: traces[0].inner ? [traces[0].inner] : [],
+  };
+
+  const { data } = await generateDiffWithCreatedTest({
+    inferenceConfig: inferenceConfig || {},
+    relevantFiles,
+    trace: traceWithSpans,
+  });
+
+  if (!data || typeof data === "string") {
+    return ctx.text("");
+  }
+
+  const gitDiff: GitDiff = data;
+  const patchContent = gitDiff.files
+    .map((file) => {
+      const hunks = file.hunks
+        .map((hunk) => {
+          const header = `@@ -${hunk.oldStartLine},${hunk.oldLineCount} +${hunk.newStartLine},${hunk.newLineCount} @@${hunk.sectionHeader ? ` ${hunk.sectionHeader}` : ""}`;
+          const changes = hunk.changes
+            .map((change) => {
+              const prefix =
+                change.type === "addition"
+                  ? "+"
+                  : change.type === "deletion"
+                    ? "-"
+                    : " ";
+              return change.content
+                .split("\n")
+                .map((line) => `${prefix}${line}`)
+                .join("\n");
+            })
+            .join("\n");
+          return `${header}\n${changes}`;
+        })
+        .join("\n");
+      return `--- ${file.oldFile}\n+++ ${file.newFile}\n${hunks}`;
+    })
+    .join("\n\n");
+
+  ctx.header("Content-Type", "text/plain");
+  ctx.header("Content-Disposition", 'attachment; filename="fix.patch"');
+  return ctx.body(patchContent);
 });
 
 /**
