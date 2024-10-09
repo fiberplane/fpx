@@ -69,7 +69,7 @@ export const SettingsSchema = z.object({
     })
     .optional(),
   ollamaModel: z.string().optional(),
-  ollamaBaseUrl: z.string().optional().default("http://localhost:11434"),
+  ollamaBaseUrl: z.string().optional(),
   openaiApiKey: z.string().optional(),
   openaiBaseUrl: z.string().optional(),
   openaiModel: OpenAiModelSchema.optional(),
