@@ -15,18 +15,17 @@ const GitDiffHunkSchema = z.object({
 });
 
 const GitDiffFileSchema = z.object({
-  oldFile: z.string(),
-  newFile: z.string(),
+  oldFile: z.union([z.string().regex(/^[\w\-./\\]+$/), z.literal("/dev/null")]),
+  newFile: z.union([z.string().regex(/^[\w\-./\\]+$/), z.literal("/dev/null")]),
   hunks: z.array(GitDiffHunkSchema),
   isBinary: z.boolean().optional(),
-  binaryChanges: z
-    .object({
-      oldMode: z.string().optional(),
-      newMode: z.string().optional(),
-      deletedFileMode: z.string().optional(),
-      newFileMode: z.string().optional(),
-    })
-    .optional(),
+  oldMode: z.string().optional(),
+  newMode: z.string().optional(),
+  newFileMode: z.string().optional(),
+  deletedFileMode: z.string().optional(),
+  isNewFile: z.boolean(),
+  isDeletedFile: z.boolean(),
+  fileIndex: z.string().optional(),
 });
 
 export const GitDiffSchema = z.object({
