@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import logger from "../../logger.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool } from "./tools.js";
+import { isJson } from "../utils.js";
 
 type GenerateRequestOptions = {
   apiKey?: string;
@@ -61,7 +62,14 @@ export async function generateRequestWithOllama({
     // `middleware: ${middleware}`,
     // `middlewareContext: ${middlewareContext}`,
   );
-  const openaiClient = new OpenAI({ apiKey, baseURL: `${baseUrl}/v1` });
+  // Remove trailing slash from baseUrl
+  let openaiCompatibleBaseUrl = baseUrl.replace(/\/$/, "");
+  openaiCompatibleBaseUrl = baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`;
+  const patchedFetch = (...args: any) => {
+    console.log("fetch args", args);
+    return fetch(...args);
+  };
+  const openaiClient = new OpenAI({ apiKey, baseURL: openaiCompatibleBaseUrl, fetch: patchedFetch });
   const userPrompt = await invokeRequestGenerationPrompt({
     persona,
     method,
@@ -94,7 +102,7 @@ export async function generateRequestWithOllama({
         content: userPrompt,
       },
     ],
-    temperature: 0.12,
+    temperature: 0.04,
     max_tokens: 2048,
   });
 
@@ -102,15 +110,36 @@ export async function generateRequestWithOllama({
     choices: [{ message }],
   } = response;
 
-  console.log("initial message", message);
+  console.log("ollama initial message", message);
 
   const makeRequestCall = message.tool_calls?.[0];
   const toolArgs = makeRequestCall?.function?.arguments;
 
-  console.log("toolArgs", toolArgs);
+  console.log("ollama toolArgs", toolArgs);
+
+
+  // HACK - The model might get confused and just respond with JSON describing the tool call.
+  //        So we should try to parse the content as a tool call
+  if (!toolArgs) {
+    console.log("ollama message content", message?.content);
+    const parsedContent = isJson(message?.content) ? JSON.parse(message?.content ?? "") : null;
+    console.log("ollama parsedContent", parsedContent);
+    // TODO - Validate the parsed content as a tool call, this object could take a couple of different shapes
+    return parsedContent;
+  }
 
   try {
     const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
+    // HACK - Ollama does not deal well with nested json objects, and will return each property as its stringified value.
+    //        We should try to parse the values that look like json strings.
+    if (parsedArgs) {
+      for (const key in parsedArgs) {
+        const value = parsedArgs[key];
+        if (typeof value === "string" && isJson(value)) {
+          parsedArgs[key] = JSON.parse(value);
+        }
+      }
+    }
     return parsedArgs;
   } catch (error) {
     logger.error("Parsing tool-call response from Ollama failed:", error);
