@@ -1,6 +1,5 @@
 import type { OtelTrace } from "@fiberplane/fpx-types";
 import { PromptTemplate } from "@langchain/core/prompts";
-import type { JsonSchema7Type } from "zod-to-json-schema";
 import type { FileType } from "./schema.js";
 
 export const getSystemPrompt = (persona: string) => {
@@ -74,21 +73,16 @@ export const invokeRequestGenerationPrompt = async ({
 export const invokeDiffGeneratorPrompt = async ({
   trace,
   relevantFiles,
-  diffJsonSchema,
 }: {
   trace: OtelTrace;
   relevantFiles: FileType[];
-  diffJsonSchema: JsonSchema7Type;
 }) => {
-  const promptTemplate = diffGeneratorPrompt;
   const stringifiedTrace = JSON.stringify(trace);
-  const diffSchema = JSON.stringify(diffJsonSchema);
   const projectFileTree = relevantFiles
     .map(({ path, content }) => `${path}:\n${content}`)
     .join("\n\n");
-  const userPromptInterface = await promptTemplate.invoke({
+  const userPromptInterface = await diffGeneratorUserPrompt.invoke({
     trace: stringifiedTrace,
-    diffSchema,
     projectFileTree,
   });
   const userPrompt = userPromptInterface.value;
@@ -329,25 +323,32 @@ Use the tool "make_request". Always respond in valid JSON.
 ***Don't make your responses too long, otherwise we cannot parse your JSON response.***
 `);
 
-export const diffGeneratorPrompt = PromptTemplate.fromTemplate(`
-You're an expert developer writing tests for error scenarios that have been discovered in production.
+export const DIFF_GENERATOR_SYSTEM_PROMPT = cleanPrompt(`
+You are an expert developer writing tests for error scenarios that have been discovered in production.
+Your task is to write a test for an error case based on the provided trace and project files.
 
-You will be supplied the trace of the error, the filetree of the project and the source code of the existing codebase (or the relevant parts of it).
+Follow these guidelines:
+1. Identify which testing provider the project is using.
+2. Write the most appropriate test that would catch the errors found in the trace.
+3. If the testing provider is not included in package.json, include it.
+4. Prioritize more modern and faster versions of tools if you're adding new things (e.g., use vitest instead of jest).
+5. When adding new lines to package.json, ensure to add any missing commas and keep the JSON valid.
+6. Always make sure that the patch data is valid: ensure that the line change counts are the same as the content and so on
 
-You need write a test for the error case. You need to identify which testing provider the project is using and write the most appropriate test that would catch the errors found in the trace, if the testing provider is not included in package.json you should include it.
+Use the tool "diffJsonSchema" to generate the test.
+`);
 
-Prioritize more modern and faster versions of tools if you're adding new things (e.g. use vitest not jest).
-
-You should respond only in json that would correspond to the following schema:
-\`\`\`json
-{diffSchema}
-\`\`\`
+export const diffGeneratorUserPrompt = PromptTemplate.fromTemplate(`
+I need you to write a test for an error case that was discovered in production.
 
 Here's the trace of the error:
 {trace}
 
 Here's the list of relevant files and their contents:
 {projectFileTree}
+
+Please analyze the trace and the project files, then generate a test that would catch this error. 
+Make sure to use the appropriate testing framework and follow the guidelines provided in the system prompt.
 `);
 
 /**

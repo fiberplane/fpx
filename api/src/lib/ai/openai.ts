@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import logger from "../../logger.js";
 import {
+  DIFF_GENERATOR_SYSTEM_PROMPT,
   getSystemPrompt,
   invokeDiffGeneratorPrompt,
   invokeRequestGenerationPrompt,
@@ -135,12 +136,15 @@ export async function generateDiffWithCreatedTestOpenAI({
   const userPrompt = await invokeDiffGeneratorPrompt({
     trace,
     relevantFiles,
-    diffJsonSchema,
   });
 
   const response = await openaiClient.chat.completions.create({
     model,
     messages: [
+      {
+        role: "system",
+        content: DIFF_GENERATOR_SYSTEM_PROMPT,
+      },
       {
         role: "user",
         content: userPrompt,

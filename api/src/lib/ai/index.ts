@@ -152,7 +152,10 @@ export async function generateDiffWithCreatedTest({
           const diff = GitDiffSchema.parse(generatedDiff);
           return { data: diff, error: null };
         } catch (error) {
-          return { data: null, error: { message: "Could not parse diff" } };
+          return {
+            data: null,
+            error: { message: `Could not parse diff: ${error}` },
+          };
         }
       },
       (error) => {

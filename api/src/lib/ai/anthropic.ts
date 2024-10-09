@@ -3,6 +3,7 @@ import type { OtelTrace } from "@fiberplane/fpx-types";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import logger from "../../logger.js";
 import {
+  DIFF_GENERATOR_SYSTEM_PROMPT,
   getSystemPrompt,
   invokeDiffGeneratorPrompt,
   invokeRequestGenerationPrompt,
@@ -143,20 +144,25 @@ export async function generateDiffWithCreatedTestAnthropic({
   const userPrompt = await invokeDiffGeneratorPrompt({
     trace,
     relevantFiles,
-    diffJsonSchema,
   });
-  const toolChoice: Anthropic.Messages.MessageCreateParams.ToolChoiceTool = {
-    name: diffJsonSchema.title ?? "diffJsonSchema",
-    type: "tool",
-  };
 
   const response = await anthropicClient.messages.create({
     model,
-    tool_choice: toolChoice,
+    tool_choice: {
+      name: "diffJsonSchema",
+      type: "tool",
+    },
     tools: [
       {
-        name: diffJsonSchema.title ?? "diffJsonSchema",
+        name: "diffJsonSchema",
         input_schema: diffJsonSchema as Anthropic.Messages.Tool.InputSchema,
+      },
+    ],
+    system: [
+      {
+        text: DIFF_GENERATOR_SYSTEM_PROMPT,
+        type: "text",
+        // cache_control: { type: "ephemeral" },
       },
     ],
     messages: [
@@ -168,6 +174,8 @@ export async function generateDiffWithCreatedTestAnthropic({
     temperature: 0.06,
     max_tokens: 2048,
   });
+
+  logger.debug("Anthropic response: ", response)
 
   const { content } = response;
 
