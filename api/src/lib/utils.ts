@@ -53,18 +53,22 @@ export function shouldIgnoreFile(
   filename: string | null,
   ignoredPaths: string[],
 ): boolean {
-  return (
-    !filename ||
-    ignoredPaths.some(
-      (pattern) =>
-        // E.g., ignore everything inside the `.wrangler` directory
-        filename.startsWith(`${pattern}${path.sep}`) ||
-        // E.g., ignore all files with the given name (e.g., `fpx.db`, `.fpxconfig/fpx.db`)
-        path.basename(filename) === pattern ||
-        // E.g., ignore all files that match the given pattern (e.g., *.db`, `*.db-journal`)
-        minimatch(filename, pattern),
-    )
-  );
+  if (!filename) {
+    return true;
+  }
+
+  const normalizedFilename = path.normalize(filename);
+  const filenameParts = normalizedFilename.split(path.sep);
+
+  return ignoredPaths.some((pattern) => {
+    // Check if the file is inside an ignored directory
+    if (filenameParts.includes(pattern)) {
+      return true;
+    }
+
+    // Check if the file matches an ignored pattern
+    return minimatch(normalizedFilename, pattern, { dot: true });
+  });
 }
 
 export function getIgnoredPaths() {
@@ -97,9 +101,10 @@ export function getIgnoredPaths() {
           .filter((line) => line.trim() !== "")
           // Filter out comments
           .filter((line) => !line.startsWith("#"))
-          // Filter out negations, since we're using minimatch on a per-pattern basis
-          // so, `!.yarn/releases` would match like all files
-          .filter((line) => !line.startsWith("!"))
+          // Keep negations as they might be important for specific inclusions
+          .map((line) =>
+            line.startsWith("!") ? line : line.replace(/^\/+/, ""),
+          )
       );
     });
 
