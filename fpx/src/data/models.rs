@@ -1,6 +1,8 @@
 use crate::api;
 use crate::api::models::SpanKind;
 use crate::data::util::{Json, Timestamp};
+use libsql::params::IntoValue;
+use libsql::Value;
 use serde::de::{Error, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt::Formatter;
@@ -68,6 +70,71 @@ impl From<api::models::Span> for Span {
             inner,
         }
     }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct AllRoutes {
+    pub base_url: String,
+    pub routes: Vec<Route>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Route {
+    pub id: i32,
+    pub path: String,
+    pub method: String,
+    pub handler: String,
+    pub handler_type: String,
+    pub currently_registered: bool,
+    pub registration_order: i32,
+    pub route_origin: RouteOrigin,
+    pub openapi_spec: String,
+    pub request_type: RequestType,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum RouteOrigin {
+    Discovered,
+    Custom,
+    OpenApi,
+}
+
+impl IntoValue for RouteOrigin {
+    fn into_value(self) -> libsql::Result<Value> {
+        let serialized = serde_json::to_string(&self).map_err(|_| libsql::Error::NullValue)?;
+        Ok(Value::Text(serialized))
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum RequestType {
+    Http,
+    Websocket,
+}
+
+impl IntoValue for RequestType {
+    fn into_value(self) -> libsql::Result<Value> {
+        let serialized = serde_json::to_string(&self).map_err(|_| libsql::Error::NullValue)?;
+        Ok(Value::Text(serialized))
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ProbedRoutes {
+    pub routes: Vec<ProbedRoute>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ProbedRoute {
+    pub method: String,
+    pub path: String,
+    pub handler: String,
+    pub handler_type: String,
 }
 
 #[derive(Clone, Debug, Serialize, PartialEq)]
