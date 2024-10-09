@@ -111,4 +111,31 @@ impl SqlBuilder {
     pub fn settings_insert(&self) -> String {
         String::from("INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT(key) DO UPDATE SET value = excluded.value RETURNING value")
     }
+
+    pub fn routes_get(&self) -> String {
+        String::from("SELECT * FROM app_routes")
+    }
+
+    pub fn routes_insert(&self) -> String {
+        String::from(
+            "INSERT INTO app_routes
+            (id, path, method, handler, handlerType, currentlyRegistered, 
+            registrationOrder, routeOrigin, openapiSpec, requestType) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+        )
+    }
+
+    pub fn routes_delete(&self) -> String {
+        String::from("DELETE FROM app_routes WHERE method = $1 AND path = $2")
+    }
+
+    pub fn probed_route_upsert(&self) -> String {
+        // TODO: investigate if this right as the ts api has different behaviour
+        // by first unregistering everything and then re-registering it but
+        // that might be just required to see any routes that changed which
+        // we dont currently propagate as we dont have a ws connection
+        String::from(
+            "INSERT INTO app_routes (path, method, handler, handlerType) VALUES ($1, $2, $3, $4)",
+        )
+    }
 }

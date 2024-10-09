@@ -1,5 +1,5 @@
 use crate::api::models::settings::Settings;
-use crate::data::models::{HexEncodedId, Span};
+use crate::data::models::{HexEncodedId, ProbedRoutes, Route, Span};
 use crate::data::sql::SqlBuilder;
 use crate::data::{DbError, Result, Store, Transaction};
 use anyhow::Context;
@@ -276,6 +276,84 @@ impl Store for LibsqlStore {
             error!(?err, "failed to serialize from db values");
             DbError::FailedSerialize
         })
+    }
+
+    async fn routes_get(&self, _tx: &Transaction) -> Result<Vec<Route>> {
+        let routes = self
+            .connection
+            .query(&self.sql_builder.routes_get(), ())
+            .await?
+            .fetch_all()
+            .await?;
+
+        Ok(routes)
+    }
+
+    async fn route_insert(&self, _tx: &Transaction, route: Route) -> Result<Route> {
+        let route = self
+            .connection
+            .query(
+                &self.sql_builder.routes_insert(),
+                params!(
+                    route.id,
+                    route.path,
+                    route.method,
+                    route.handler,
+                    route.handler_type,
+                    route.currently_registered,
+                    route.registration_order,
+                    route.route_origin,
+                    route.openapi_spec,
+                    route.request_type
+                ),
+            )
+            .await?
+            .fetch_one()
+            .await?;
+
+        Ok(route)
+    }
+
+    async fn route_delete(
+        &self,
+        _tx: &Transaction,
+        method: &str,
+        path: &str,
+    ) -> Result<Option<Route>> {
+        let route = self
+            .connection
+            .query(&self.sql_builder.routes_delete(), params!(method, path))
+            .await?
+            .fetch_optional()
+            .await?;
+
+        Ok(route)
+    }
+
+    async fn probed_route_upsert(
+        &self,
+        _tx: &Transaction,
+        routes: ProbedRoutes,
+    ) -> Result<ProbedRoutes> {
+        let mut results = Vec::with_capacity(routes.routes.len());
+
+        for route in routes.routes {
+            // this gets coerced into a `ProbedRoute` instead of a `Route`
+            // but it should be fine as serde just ignores not-found fields
+            // methinks at least
+            results.push(
+                self.connection
+                    .query(
+                        &self.sql_builder.probed_route_upsert(),
+                        params!(route.path, route.method, route.handler, route.handler_type),
+                    )
+                    .await?
+                    .fetch_one()
+                    .await?,
+            );
+        }
+
+        Ok(ProbedRoutes { routes: results })
     }
 }
 

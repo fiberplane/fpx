@@ -1,6 +1,6 @@
 use axum::async_trait;
 use fpx::api::models::settings::Settings;
-use fpx::data::models::HexEncodedId;
+use fpx::data::models::{HexEncodedId, ProbedRoutes, Route};
 use fpx::data::sql::SqlBuilder;
 use fpx::data::{models, DbError, Result, Store, Transaction};
 use serde::Deserialize;
@@ -39,6 +39,26 @@ impl D1Store {
             .await
             .map_err(|err| DbError::InternalError(err.to_string()))? // TODO: Correct error;
             .ok_or(DbError::NotFound)?;
+
+        Ok(result)
+    }
+
+    async fn fetch_optional<T>(
+        &self,
+        query: impl Into<String>,
+        values: &[JsValue],
+    ) -> Result<Option<T>> {
+        let prepared_statement = self
+            .database
+            .prepare(query)
+            .bind(values)
+            .map_err(|err| DbError::InternalError(err.to_string()))?; // TODO: Correct error;
+
+        let result = prepared_statement
+            .first(None)
+            .await
+            .map_err(|err| DbError::InternalError(err.to_string()))? // TODO: Correct error;
+            ;
 
         Ok(result)
     }
@@ -278,6 +298,84 @@ impl Store for D1Store {
                 error!(?err, "failed to serialize from db values");
                 DbError::FailedSerialize
             })
+        })
+        .await
+    }
+
+    async fn routes_get(&self, _tx: &Transaction) -> Result<Vec<Route>> {
+        SendFuture::new(async {
+            let routes = self.fetch_all(&self.sql_builder.routes_get()).await?;
+
+            Ok(routes)
+        })
+        .await
+    }
+
+    async fn route_insert(&self, _tx: &Transaction, route: Route) -> Result<Route> {
+        SendFuture::new(async {
+            self.fetch_one(
+                &self.sql_builder.routes_insert(),
+                &[
+                    route.id.into(),
+                    route.path.into(),
+                    route.method.into(),
+                    route.handler.into(),
+                    route.handler_type.into(),
+                    route.currently_registered.into(),
+                    route.registration_order.into(),
+                    route.route_origin.into(),
+                    route.openapi_spec.into(),
+                    route.request_type.into(),
+                ],
+            )
+            .await
+        })
+        .await
+    }
+
+    async fn route_delete(
+        &self,
+        _tx: &Transaction,
+        method: &str,
+        path: &str,
+    ) -> Result<Option<Route>> {
+        SendFuture::new(async {
+            self.fetch_optional(
+                &self.sql_builder.routes_delete(),
+                &[method.into(), path.into()],
+            )
+            .await
+        })
+        .await
+    }
+
+    async fn probed_route_upsert(
+        &self,
+        _tx: &Transaction,
+        routes: ProbedRoutes,
+    ) -> Result<ProbedRoutes> {
+        SendFuture::new(async {
+            let mut results = Vec::with_capacity(routes.routes.len());
+
+            for route in routes.routes {
+                // this gets coerced into a `ProbedRoute` instead of a `Route`
+                // but it should be fine as serde just ignores not-found fields
+                // methinks at least
+                results.push(
+                    self.fetch_one(
+                        &self.sql_builder.probed_route_upsert(),
+                        &[
+                            route.path.into(),
+                            route.method.into(),
+                            route.handler.into(),
+                            route.handler_type.into(),
+                        ],
+                    )
+                    .await?,
+                );
+            }
+
+            Ok(ProbedRoutes { routes: results })
         })
         .await
     }

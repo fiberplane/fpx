@@ -1,8 +1,9 @@
+use crate::api::handlers::routes::{route_create, route_delete, route_get, route_probe};
 use crate::data::BoxedStore;
 use crate::otel::OtelTraceLayer;
 use crate::service::Service;
 use axum::extract::FromRef;
-use axum::routing::{get, post};
+use axum::routing::{delete, get, post};
 use http::StatusCode;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::{Any, CorsLayer};
@@ -79,6 +80,9 @@ impl Builder {
                 "/v0/settings",
                 get(handlers::settings::settings_get).post(handlers::settings::settings_upsert),
             )
+            .route("/v0/probed-routes", post(route_probe))
+            .route("/v0/app-routes", get(route_get).post(route_create))
+            .route("/v0/app-routes/:method/:path", delete(route_delete))
             .with_state(api_state)
             .fallback(StatusCode::NOT_FOUND)
             .layer(OtelTraceLayer::default())
