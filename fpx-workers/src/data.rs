@@ -47,7 +47,10 @@ impl D1Store {
         &self,
         query: impl Into<String>,
         values: &[JsValue],
-    ) -> Result<Option<T>> {
+    ) -> Result<Option<T>>
+    where
+        T: for<'a> Deserialize<'a>,
+    {
         let prepared_statement = self
             .database
             .prepare(query)
