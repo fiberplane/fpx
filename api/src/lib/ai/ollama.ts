@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 import logger from "../../logger.js";
+import { isJson } from "../utils.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool } from "./tools.js";
-import { isJson } from "../utils.js";
 
 type GenerateRequestOptions = {
   apiKey?: string;
@@ -56,8 +56,8 @@ export async function generateRequestWithOllama({
     `persona: ${persona}`,
     `method: ${method}`,
     `path: ${path}`,
-    // `handler: ${handler}`,
-    // `handlerContext: ${handlerContext}`,
+    `handler: ${handler}`,
+    `handlerContext: ${handlerContext}`,
     // `openApiSpec: ${openApiSpec}`,
     // `middleware: ${middleware}`,
     // `middlewareContext: ${middlewareContext}`,
@@ -65,11 +65,8 @@ export async function generateRequestWithOllama({
   // Remove trailing slash from baseUrl
   let openaiCompatibleBaseUrl = baseUrl.replace(/\/$/, "");
   openaiCompatibleBaseUrl = baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`;
-  const patchedFetch = (...args: any) => {
-    console.log("fetch args", args);
-    return fetch(...args);
-  };
-  const openaiClient = new OpenAI({ apiKey, baseURL: openaiCompatibleBaseUrl, fetch: patchedFetch });
+
+  const openaiClient = new OpenAI({ apiKey, baseURL: openaiCompatibleBaseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
     persona,
     method,
@@ -117,12 +114,13 @@ export async function generateRequestWithOllama({
 
   console.log("ollama toolArgs", toolArgs);
 
-
   // HACK - The model might get confused and just respond with JSON describing the tool call.
   //        So we should try to parse the content as a tool call
   if (!toolArgs) {
     console.log("ollama message content", message?.content);
-    const parsedContent = isJson(message?.content) ? JSON.parse(message?.content ?? "") : null;
+    const parsedContent = isJson(message?.content)
+      ? JSON.parse(message?.content ?? "")
+      : null;
     console.log("ollama parsedContent", parsedContent);
     // TODO - Validate the parsed content as a tool call, this object could take a couple of different shapes
     return parsedContent;
@@ -136,7 +134,19 @@ export async function generateRequestWithOllama({
       for (const key in parsedArgs) {
         const value = parsedArgs[key];
         if (typeof value === "string" && isJson(value)) {
-          parsedArgs[key] = JSON.parse(value);
+          const parsedValue = JSON.parse(value);
+          if (key === "headers" && Array.isArray(parsedValue)) {
+            // HACK - Ollama will sometimes return the headers like ["Content-Type: application/json"]
+            parsedArgs[key] = parsedValue.map((header: unknown) => {
+              if (typeof header === "string" && header.includes(":")) {
+                const [key, value] = header.split(": ");
+                return { key, value };
+              }
+              return header;
+            });
+          } else {
+            parsedArgs[key] = parsedValue;
+          }
         }
       }
     }
