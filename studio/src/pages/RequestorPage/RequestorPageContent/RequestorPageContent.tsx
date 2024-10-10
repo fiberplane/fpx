@@ -162,6 +162,16 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     },
   );
 
+  useKeySequence(
+    ["g", "o"],
+    () => {
+      togglePanel("composerPanel");
+    },
+    {
+      description: "Open composer panel",
+    },
+  );
+
   const requestContent = (
     <RequestPanel
       aiEnabled={aiEnabled}

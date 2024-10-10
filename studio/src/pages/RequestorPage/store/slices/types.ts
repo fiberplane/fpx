@@ -89,12 +89,17 @@ export interface UISlice {
   togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) => void;
 }
 
-export type BOTTOM_PANEL_NAMES = "logsPanel" | "timelinePanel" | "aiPanel";
+export type BOTTOM_PANEL_NAMES =
+  | "logsPanel"
+  | "timelinePanel"
+  | "aiPanel"
+  | "composerPanel";
 
 export const validBottomPanelNames: BOTTOM_PANEL_NAMES[] = [
   "logsPanel",
   "timelinePanel",
   "aiPanel",
+  "composerPanel",
 ];
 
 export type PanelState = "open" | "closed";

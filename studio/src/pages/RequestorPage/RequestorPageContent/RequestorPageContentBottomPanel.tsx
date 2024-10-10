@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
+import { Composer } from "../Composer";
 import { LogsTable } from "../LogsTable";
 import { LogsLabel } from "../LogsTable";
 import { RequestorTimeline } from "../RequestorTimeline";
@@ -84,6 +85,9 @@ const RequestorPageContentBottomPanel: React.FC<
         </CustomTabsContent>
         <CustomTabsContent value="timelinePanel">
           <RequestorTimeline traceId={traceId} />
+        </CustomTabsContent>
+        <CustomTabsContent value="composerPanel">
+          <Composer />
         </CustomTabsContent>
       </Tabs>
     </div>
