@@ -13,13 +13,13 @@ pub struct ApiManager {
 }
 
 impl ApiManager {
-    /// Start a API server. If a API pid is already set, then that will first be
+    /// Start an API server. If an API pid is already set, then that will first be
     /// shutdown.
     pub fn start_api(&self, fpx_config: FpxConfig) {
         // Get a lock for the duration of this function
         let mut api_pid = self.api_pid.lock().expect("lock is poisoned");
 
-        // If there is a API pid already there, then first send the SIGTERM
+        // If there is an API pid already there, then first send the SIGTERM
         // signal to that process group.
         if let Some(api_pid) = api_pid.take() {
             // shutdown any existing api server
@@ -28,9 +28,9 @@ impl ApiManager {
 
         // Create some environment variables overrides based on the fpx.toml
         let mut envs: Vec<(&str, String)> = vec![];
-        if let Some(listen_port) = fpx_config.listen_port {
-            envs.push(("FPX_PORT", listen_port.to_string()));
-        }
+
+        let listen_port = fpx_config.listen_port();
+        envs.push(("FPX_PORT", listen_port.to_string()));
 
         // Start the process using pnpm. The process_group=0 will ensure that
         // the process group ID is the same as the root process ID.

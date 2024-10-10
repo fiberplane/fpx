@@ -108,7 +108,10 @@ export const OpenWorkspaceErrorSchema = z.any().superRefine((x, ctx) => {
 
 export type OpenWorkspaceError = z.infer<typeof OpenWorkspaceErrorSchema>;
 
-export const WorkspaceSchema = z.object({ config: z.any(), path: z.string() });
+export const WorkspaceSchema = z.object({
+  api_port: z.number().int().gte(0),
+  path: z.string(),
+});
 
 export type Workspace = z.infer<typeof WorkspaceSchema>;
 
