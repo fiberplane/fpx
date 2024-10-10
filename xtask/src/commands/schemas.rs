@@ -1,5 +1,5 @@
 use anyhow::Result;
-use fpx_lib::api::models::{ClientMessage, ServerMessage};
+use fpx::api::models::{ClientMessage, ServerMessage};
 use schemars::schema::RootSchema;
 use schemars::schema_for;
 use serde_json::Value;
@@ -20,7 +20,11 @@ pub async fn handle_command(args: Args) -> Result<()> {
     let schemas = Vec::from([
         schema_for!(ClientMessage),
         schema_for!(ServerMessage),
-        // schema_for!(fpx_lib::api::models::Span),
+        schema_for!(fpx_app::state::AppState),
+        schema_for!(fpx_app::models::workspace::OpenWorkspaceError),
+        schema_for!(fpx_app::models::workspace::Workspace),
+        schema_for!(fpx::config::FpxConfig),
+        schema_for!(fpx::config::FpxConfigError),
     ]);
 
     let zod_schema = generate_zod_schemas(&args.project_directory, &schemas)?;

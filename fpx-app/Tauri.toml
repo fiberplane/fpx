@@ -1,0 +1,14 @@
+identifier = "com.fiberplane.fpx"
+
+[build]
+devUrl = "http://localhost:5173"
+beforeBuildCommand = "pnpm build:fpx-studio"
+beforeDevCommand = "pnpm dev:frontend"
+frontendDist = "../studio/dist"
+
+[bundle]
+active = true
+icon = ["./icons/Square310x310Logo.png"]
+
+[app.security]
+capabilities = ["workspace-capability"]

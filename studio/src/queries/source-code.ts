@@ -1,7 +1,10 @@
+import { useApiBaseUrl } from "@/hooks";
 import { objectWithKey } from "@/utils";
 import { useEffect, useState } from "react";
 
 export function useHandlerSourceCode(source?: string, handler?: string) {
+  const apiBaseUrl = useApiBaseUrl();
+
   const [handlerSourceCode, setHandlerSourceCode] = useState<string | null>(
     null,
   );
@@ -13,17 +16,18 @@ export function useHandlerSourceCode(source?: string, handler?: string) {
       return;
     }
 
-    fetchSourceLocation(source, handler).then((sourceCode) => {
+    fetchSourceLocation(apiBaseUrl, source, handler).then((sourceCode) => {
       if (typeof sourceCode === "string" && sourceCode) {
         setHandlerSourceCode(sourceCode);
       }
     });
-  }, [handler, source]);
+  }, [apiBaseUrl, handler, source]);
 
   return handlerSourceCode;
 }
 
 export async function fetchSourceLocation(
+  apiBaseUrl: string,
   source: string | undefined,
   handler: string | undefined,
 ) {
@@ -38,9 +42,12 @@ export async function fetchSourceLocation(
     handler,
   });
   try {
-    const response = await fetch(`/v0/source-function?${query.toString()}`, {
-      method: "POST",
-    });
+    const response = await fetch(
+      `${apiBaseUrl}/v0/source-function?${query.toString()}`,
+      {
+        method: "POST",
+      },
+    );
     if (!response.ok) {
       throw new Error(
         `Failed to fetch source location from source map: ${response.status}`,

@@ -89,23 +89,15 @@
     "ignore": [
       // API related
       "meta/*.json",
-
       // Client library and website related
       "dist",
       "www/",
       ".astro",
-
       // ignore all tsconfig.json files
       "tsconfig.json",
-
       // ignore any test data files
-      "test-data/*.js"
-
-      // Rust code related
-      // This caused biome to ignore the entire fpx folder
-      // commenting out for now as we still want to find a way to
-      // skip Rust code in biome
-      // "fpx/*.*"
+      "test-data/*.js",
+      "fpx-app/gen"
     ]
   }
 }

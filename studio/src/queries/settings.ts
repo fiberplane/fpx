@@ -1,3 +1,4 @@
+import { useApiBaseUrl } from "@/hooks";
 import {
   type Settings,
   type SettingsKey,
@@ -9,10 +10,12 @@ import { useMemo } from "react";
 const FPX_USER_SETTINGS_QUERY_KEY = "FPX_USER_SETTINGS";
 
 export function useFetchSettings() {
+  const apiBaseUrl = useApiBaseUrl();
+
   return useQuery({
     queryKey: [FPX_USER_SETTINGS_QUERY_KEY],
     queryFn: async () => {
-      const response = await fetch("/v0/settings");
+      const response = await fetch(`${apiBaseUrl}/v0/settings`);
       const json = await response.json();
       return SettingsSchema.parse(json);
     },

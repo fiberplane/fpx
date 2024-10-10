@@ -2,6 +2,7 @@ import {
   FPX_REQUEST_HANDLER_FILE,
   FPX_REQUEST_HANDLER_SOURCE_CODE,
 } from "@/constants";
+import { useApiBaseUrl } from "@/hooks";
 import { fetchSourceLocation } from "@/queries";
 import {
   getErrorEvents,
@@ -17,7 +18,7 @@ import { formatHeaders, redactSensitiveHeaders } from "@/utils";
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { useQuery } from "@tanstack/react-query";
 
-async function summarizeError(trace?: Array<OtelSpan>) {
+async function summarizeError(apiBaseUrl: string, trace?: Array<OtelSpan>) {
   if (!trace) {
     return null;
   }
@@ -28,7 +29,11 @@ async function summarizeError(trace?: Array<OtelSpan>) {
   // NOTE - If this takes too long, we can just send the compiled js instead of the source func
   //
   // At any rate, we'll try to fetch the source code here, and fall back to the compiled js
-  let handlerCode = await fetchSourceLocation(source, compiledHandler);
+  let handlerCode = await fetchSourceLocation(
+    apiBaseUrl,
+    source,
+    compiledHandler,
+  );
   if (!handlerCode) {
     handlerCode = compiledHandler ?? null;
   }
@@ -150,9 +155,11 @@ export function serializeTraceForLLM(trace: Array<OtelSpan>) {
 }
 
 export function useSummarizeError(trace?: Array<OtelSpan>) {
+  const apiBaseUrl = useApiBaseUrl();
+
   return useQuery({
     queryKey: ["summarizeError"],
-    queryFn: () => summarizeError(trace),
+    queryFn: () => summarizeError(apiBaseUrl, trace),
     enabled: false,
   });
 }

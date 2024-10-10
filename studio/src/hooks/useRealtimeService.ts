@@ -2,6 +2,7 @@ import { MIZU_TRACES_KEY, PROBED_ROUTES_KEY } from "@/queries";
 import { useEffect, useState } from "react";
 import useWebSocket from "react-use-websocket";
 import z from "zod";
+import { useApiBaseUrl } from "./useApiBaseUrl";
 
 const FpxWebsocketMessageSchema = z.discriminatedUnion("event", [
   z.object({
@@ -31,10 +32,12 @@ const isFPXWebsocketMessage = (m: unknown): m is FpxWebsocketMessage => {
 };
 
 export function useRealtimeService() {
+  const apiBaseUrl = useApiBaseUrl();
+
   const [parsedMessage, setParsedMessage] =
     useState<FpxWebsocketMessage | null>(null);
 
-  const { lastJsonMessage } = useWebSocket("/ws", {
+  const { lastJsonMessage } = useWebSocket(`${apiBaseUrl}/ws`, {
     heartbeat: true,
     onOpen: (ev) => {
       console.debug("Websocket connection opened: ", ev.target);
