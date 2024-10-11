@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import OpenAI from "openai";
 import logger from "../../logger.js";
 import { isJson } from "../utils.js";
@@ -24,6 +23,33 @@ type GenerateRequestOptions = {
   middlewareContext?: string;
 };
 
+const samplePrompt = `
+I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+</history>
+
+The request you make should be a GET request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+<openapi/>
+
+Here is the middleware that will be applied to the request:
+<middleware/>
+
+Here is some additional context for the middleware that will be applied to the request:
+<middlewareContext/>
+
+Here is the code for the handler:
+<code/>
+
+Here is some additional context for the handler source code, if you need it:
+<context/>
+`;
+
 /**
  * Generates request data for a route handler
  * - uses OpenAI's tool-calling feature.
@@ -35,7 +61,7 @@ export async function generateRequestWithOllama({
   // NOTE - Ollama does not require an API key
   apiKey = "ollama",
   baseUrl = "http://localhost:11434",
-  model = "llama3.1",
+  model = "llama3.2",
   persona,
   method,
   path,
@@ -97,10 +123,32 @@ export async function generateRequestWithOllama({
       },
       {
         role: "user",
+        content: samplePrompt,
+      },
+      {
+        role: "assistant",
+        tool_calls: [
+          {
+            id: "call_1",
+            type: "function",
+            function: {
+              name: makeRequestTool.function.name,
+              arguments: JSON.stringify(makeRequestTool.function.parameters),
+            },
+          },
+        ],
+      },
+      {
+        role: "tool",
+        tool_call_id: "call_1",
+        content: "{}",
+      },
+      {
+        role: "user",
         content: userPrompt,
       },
     ],
-    temperature: 0.04,
+    temperature: 0.12,
     max_tokens: 2048,
   });
 
@@ -114,27 +162,10 @@ export async function generateRequestWithOllama({
   );
 
   const makeRequestCall = message.tool_calls?.[0];
+
   const toolArgs = makeRequestCall?.function?.arguments;
 
   logger.debug("ollama toolArgs", JSON.stringify(toolArgs, null, 2));
-
-  // HACK - llama 3.1 (8B) might get confused and just respond with JSON describing the tool call.
-  //        So we should try to parse the content as a tool call
-  //        ((this does not really work as a fallback yet, but usually the json is malformed anyhow))
-  if (!toolArgs) {
-    logger.warn(
-      chalk.red(
-        "ollama tool call arguments not found, trying to parse message content as tool call",
-      ),
-    );
-    logger.debug("ollama message content", message?.content);
-    const parsedContent = isJson(message?.content)
-      ? JSON.parse(message?.content ?? "")
-      : null;
-    logger.debug("ollama parsedContent", parsedContent);
-    // TODO - Validate the parsed content as a tool call, this object could take a couple of different shapes
-    return parsedContent;
-  }
 
   try {
     const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
