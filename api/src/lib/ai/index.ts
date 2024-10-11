@@ -1,5 +1,6 @@
 import type { Settings } from "@fiberplane/fpx-types";
 import { generateRequestWithAnthropic } from "./anthropic.js";
+import { generateRequestWithOllama } from "./ollama.js";
 import { generateRequestWithOpenAI } from "./openai.js";
 
 export async function generateRequestWithAiProvider({
@@ -37,6 +38,8 @@ export async function generateRequestWithAiProvider({
     anthropicModel,
     anthropicBaseUrl,
     aiProviderType,
+    ollamaModel,
+    ollamaBaseUrl,
   } = inferenceConfig;
   if (aiProviderType === "openai") {
     return generateRequestWithOpenAI({
@@ -78,6 +81,28 @@ export async function generateRequestWithAiProvider({
       openApiSpec,
       middleware,
       middlewareContext,
+    }).then(
+      (parsedArgs) => {
+        return { data: parsedArgs, error: null };
+      },
+      (error) => {
+        if (error instanceof Error) {
+          return { data: null, error: { message: error.message } };
+        }
+        return { data: null, error: { message: "Unknown error" } };
+      },
+    );
+  }
+
+  if (aiProviderType === "ollama") {
+    return generateRequestWithOllama({
+      model: ollamaModel ?? "llama3.1",
+      baseUrl: ollamaBaseUrl ?? "http://localhost:11434",
+      persona,
+      method,
+      path,
+      handler,
+      // TODO - Add handlerContext, history, middleware, etc
     }).then(
       (parsedArgs) => {
         return { data: parsedArgs, error: null };
