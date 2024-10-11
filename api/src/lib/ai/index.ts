@@ -38,6 +38,8 @@ export async function generateRequestWithAiProvider({
     anthropicModel,
     anthropicBaseUrl,
     aiProviderType,
+    ollamaModel,
+    ollamaBaseUrl,
   } = inferenceConfig;
   if (aiProviderType === "openai") {
     return generateRequestWithOpenAI({
@@ -94,9 +96,8 @@ export async function generateRequestWithAiProvider({
 
   if (aiProviderType === "ollama") {
     return generateRequestWithOllama({
-      apiKey: "",
-      model: "llama3.1",
-      baseUrl: "http://localhost:11434",
+      model: ollamaModel ?? "llama3.1",
+      baseUrl: ollamaBaseUrl ?? "http://localhost:11434",
       persona,
       method,
       path,
