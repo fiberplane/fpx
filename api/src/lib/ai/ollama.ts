@@ -89,11 +89,12 @@ export async function generateRequestWithOllama({
     // `middleware: ${middleware}`,
     // `middlewareContext: ${middlewareContext}`,
   );
-  // Remove trailing slash from baseUrl
-  let openaiCompatibleBaseUrl = baseUrl.replace(/\/$/, "");
-  openaiCompatibleBaseUrl = baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`;
 
-  const openaiClient = new OpenAI({ apiKey, baseURL: openaiCompatibleBaseUrl });
+  // Remove trailing slash from baseUrl
+  let ollamaCompatibleBaseUrl = baseUrl.replace(/\/$/, "");
+  ollamaCompatibleBaseUrl = baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`;
+
+  const ollamaClient = new OpenAI({ apiKey, baseURL: ollamaCompatibleBaseUrl });
   const userPrompt = await invokeRequestGenerationPrompt({
     persona,
     method,
@@ -106,7 +107,7 @@ export async function generateRequestWithOllama({
     middlewareContext,
   });
 
-  const response = await openaiClient.chat.completions.create({
+  const response = await ollamaClient.chat.completions.create({
     // NOTE - llama-3.1-8b is not very good at function calling, but the 70b and 405b variants were pre-trained to be good at it.
     //        Don't expect a lot from this :grimace:
     model,
