@@ -51,6 +51,8 @@ impl FpxConfig {
         Ok((config, config_file_path))
     }
 
+    /// Unwraps the configured listen_port in the workspace' `fpx.toml` if it's set or return the
+    /// default port
     pub fn listen_port(&self) -> u32 {
         self.listen_port.unwrap_or(DEFAULT_PORT)
     }

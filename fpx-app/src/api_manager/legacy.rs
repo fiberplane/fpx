@@ -26,17 +26,16 @@ impl ApiManager {
             send_sigterm_signal(api_pid);
         }
 
-        // Create some environment variables overrides based on the fpx.toml
-        let mut envs: Vec<(&str, String)> = vec![];
-
         let listen_port = fpx_config.listen_port();
-        envs.push(("FPX_PORT", listen_port.to_string()));
+
+        // Create some environment variables overrides based on the fpx.toml
+        let envs: Vec<(&str, String)> = vec![("FPX_PORT", listen_port.to_string())];
 
         // Start the process using pnpm. The process_group=0 will ensure that
         // the process group ID is the same as the root process ID.
         let mut child_process = process::Command::new("pnpm")
             .arg("dev:api")
-            .process_group(0) //
+            .process_group(0)
             .envs(envs)
             .spawn()
             .expect("failed to execute pnpm dev:api");
