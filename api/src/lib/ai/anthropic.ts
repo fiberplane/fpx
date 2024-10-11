@@ -175,7 +175,7 @@ export async function generateDiffWithCreatedTestAnthropic({
     max_tokens: 2048,
   });
 
-  logger.debug("Anthropic response: ", response)
+  logger.debug("Anthropic response: ", response);
 
   const { content } = response;
 

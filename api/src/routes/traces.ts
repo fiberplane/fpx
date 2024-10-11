@@ -9,16 +9,16 @@ import type { IExportTraceServiceRequest } from "@opentelemetry/otlp-transformer
 import { and, desc, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { USER_PROJECT_ROOT_DIR } from "../constants.js";
 import * as schema from "../db/schema.js";
 import { generateDiffWithCreatedTest } from "../lib/ai/index.js";
 import type { GitDiff } from "../lib/ai/schema.js";
+import { serializeDiffToPatch } from "../lib/diff/index.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
 import { getInferenceConfig, getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import logger from "../logger.js";
-import { USER_PROJECT_ROOT_DIR } from "../constants.js";
 import { getIgnoredPaths, shouldIgnoreFile } from "../lib/utils.js";
-import { serializeDiffToPatch } from "../lib/diff/index.js";
+import logger from "../logger.js";
 
 const { otelSpans } = schema;
 
