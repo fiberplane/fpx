@@ -160,7 +160,7 @@ async function expandFunctionInUserProject(handler: SourceFunctionResult) {
  * @param expandedFunction - The expanded function context
  * @returns The transformed expanded function context
  */
-function transformExpandedFunction(
+export function transformExpandedFunction(
   expandedFunction: ExpandedFunctionResult | null,
 ): string | null {
   if (!expandedFunction || !expandedFunction.context?.length) {

@@ -1,0 +1,1989 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generate request > geese handler (DEV / original) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a POST request to route: /api/geese
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  console.log("Fetching flock leaders");
+
+  const flockLeaders = await measure("getFlockLeaders", () =>
+    db.select().from(geese).where(eq(geese.isFlockLeader, true)),
+  )();
+
+  console.log(\`Found \${flockLeaders.length} flock leaders\`);
+
+  return c.json(flockLeaders);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="schema.ts">geese</name>
+  <definition>
+    pgTable("geese", {
+      id: serial("id").primaryKey(),
+      name: text("name").notNull(),
+      description: text("description"),
+      isFlockLeader: boolean("is_leader"),
+      programmingLanguage: text("programming_language"),
+      motivations: jsonb("motivations"),
+      location: text("location"),
+      bio: text("bio"),
+      avatar: text("avatar"),
+      honks: integer("honks").default(0),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    })
+  </definition>
+</entry>
+<entry>
+  <name filename="index.cjs">eq</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+</expanded-function>"
+`;
+
+exports[`generate request > geese handler (DEV / original) 2`] = `
+{
+  "body": "{}",
+  "bodyType": {
+    "type": "json",
+  },
+  "path": "/api/geese",
+}
+`;
+
+exports[`generate request > geese handler (DEV / slim) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a POST request to route: /api/geese
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  console.log("Fetching flock leaders");
+
+  const flockLeaders = await measure("getFlockLeaders", () =>
+    db.select().from(geese).where(eq(geese.isFlockLeader, true)),
+  )();
+
+  console.log(\`Found \${flockLeaders.length} flock leaders\`);
+
+  return c.json(flockLeaders);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="schema.ts">geese</name>
+  <definition>
+    pgTable("geese", {
+      id: serial("id").primaryKey(),
+      name: text("name").notNull(),
+      description: text("description"),
+      isFlockLeader: boolean("is_leader"),
+      programmingLanguage: text("programming_language"),
+      motivations: jsonb("motivations"),
+      location: text("location"),
+      bio: text("bio"),
+      avatar: text("avatar"),
+      honks: integer("honks").default(0),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    })
+  </definition>
+</entry>
+<entry>
+  <name filename="index.cjs">eq</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+</expanded-function>"
+`;
+
+exports[`generate request > geese handler (DEV / slim) 2`] = `
+{
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json",
+    },
+  ],
+  "path": "/api/geese",
+}
+`;
+
+exports[`generate request > geese handler (QA / original) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests and responses, which you can use as inspiration for future requests.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a POST request to route: /api/geese
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  console.log("Fetching flock leaders");
+
+  const flockLeaders = await measure("getFlockLeaders", () =>
+    db.select().from(geese).where(eq(geese.isFlockLeader, true)),
+  )();
+
+  console.log(\`Found \${flockLeaders.length} flock leaders\`);
+
+  return c.json(flockLeaders);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="schema.ts">geese</name>
+  <definition>
+    pgTable("geese", {
+      id: serial("id").primaryKey(),
+      name: text("name").notNull(),
+      description: text("description"),
+      isFlockLeader: boolean("is_leader"),
+      programmingLanguage: text("programming_language"),
+      motivations: jsonb("motivations"),
+      location: text("location"),
+      bio: text("bio"),
+      avatar: text("avatar"),
+      honks: integer("honks").default(0),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    })
+  </definition>
+</entry>
+<entry>
+  <name filename="index.cjs">eq</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+</expanded-function>
+
+REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
+Keep your responses short-ish. Including your random data."
+`;
+
+exports[`generate request > geese handler (QA / original) 2`] = `
+{
+  "body": "{
+  "maliciousPayload": "DROP TABLE geese;",
+  "isFlockLeader": "NotABoolean",
+  "honks": "Over9000"
+}",
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/xml",
+    },
+    {
+      "key": "X-Hacker",
+      "value": "1337",
+    },
+  ],
+  "path": "/api/geese",
+  "queryParams": [
+    {
+      "key": "UNION",
+      "value": "SELECT * FROM users",
+    },
+    {
+      "key": "limit",
+      "value": "-1",
+    },
+  ],
+}
+`;
+
+exports[`generate request > geese handler (QA / slim) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests and responses, which you can use as inspiration for future requests.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a POST request to route: /api/geese
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  console.log("Fetching flock leaders");
+
+  const flockLeaders = await measure("getFlockLeaders", () =>
+    db.select().from(geese).where(eq(geese.isFlockLeader, true)),
+  )();
+
+  console.log(\`Found \${flockLeaders.length} flock leaders\`);
+
+  return c.json(flockLeaders);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="schema.ts">geese</name>
+  <definition>
+    pgTable("geese", {
+      id: serial("id").primaryKey(),
+      name: text("name").notNull(),
+      description: text("description"),
+      isFlockLeader: boolean("is_leader"),
+      programmingLanguage: text("programming_language"),
+      motivations: jsonb("motivations"),
+      location: text("location"),
+      bio: text("bio"),
+      avatar: text("avatar"),
+      honks: integer("honks").default(0),
+      createdAt: timestamp("created_at").defaultNow().notNull(),
+      updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    })
+  </definition>
+</entry>
+<entry>
+  <name filename="index.cjs">eq</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+</expanded-function>
+
+REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
+Keep your responses short-ish. Including your random data."
+`;
+
+exports[`generate request > geese handler (QA / slim) 2`] = `
+{
+  "body": "{
+  "maliciousPayload": true,
+  "sql_injection": "'; DROP TABLE geese; --",
+  "overflowAttempt": "A".repeat(10000)
+}",
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json",
+    },
+    {
+      "key": "X-Hacker",
+      "value": "1337",
+    },
+  ],
+  "path": "/api/geese",
+}
+`;
+
+exports[`generate request > goose update handler (DEV / original with history) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+<request>
+HTTP/1.1 POST http://localhost:8787/api/geese
+Content-Type: application/json
+User-Agent: GooseAPI-Tester/1.0
+
+{"name":"Feather Flockington","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking","...","coding","leading","honking"],"location":{"latitude":51.5074,"longitude":-0.1278}}
+</request>
+<response>
+HTTP/1.1 200
+content-encoding: gzip
+content-type: application/json; charset=UTF-8
+transfer-encoding: chunked
+
+[{"id":2,"name":"Feather Flockington","description":"A person named Feather Flockington who talks like a Goose","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking"],"location":"{\\"latitude\\":51.5074,\\"longitude\\":-0.1278}"},"...",{"id":2,"name":"Feather Flockington","description":"A person named Feather Flockington who talks like a Goose","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking"],"location":"{\\"latitude\\":51.5074,\\"longitude\\":-0.1278}"}]
+</response>
+</history>
+
+The request you make should be a PUT request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const id = c.req.param("id");
+  const updateData = await c.req.json();
+
+  console.log(\`Updating goose \${id} with data:\`, updateData);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
+
+  if (!goose) {
+    console.warn(\`Goose not found: \${id}\`);
+    return c.json({ message: "Goose not found" }, 404);
+  }
+
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
+  console.log(\`Goose \${id} updated successfully\`);
+  return c.json(updatedGoose);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">getGooseById</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+    ) => {
+      console.log(\`Fetching goose with id: \${id}\`);
+      return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
+    }
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">updateGoose</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+      updateData: Partial<typeof geese.$inferInsert>,
+    ) => {
+      console.log({ action: "updateGoose", id, updateData });
+    
+      // Simulate a race condition by splitting the update into two parts
+      const updatePromises = Object.entries(updateData).map(
+        async ([key, value]) => {
+          // Introduce a random delay to increase the chance of interleaved updates
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+    
+          return db
+            .update(geese)
+            .set({ [key]: value })
+            .where(eq(geese.id, id))
+            .returning();
+        },
+      );
+    
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises);
+    
+      // Return the last result, which may not contain all updates
+      return results[results.length - 1][0];
+    }
+  </definition>
+</entry>
+</expanded-function>"
+`;
+
+exports[`generate request > goose update handler (DEV / original with history) 2`] = `
+{
+  "body": "{
+  "name": "Captain Feather Flockington",
+  "isFlockLeader": true,
+  "programmingLanguage": "TypeScript",
+  "motivations": ["coding", "leading", "honking", "learning"],
+  "location": {
+    "latitude": 51.5074,
+    "longitude": -0.1278
+  }
+}",
+  "bodyType": {
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json",
+    },
+  ],
+  "path": "/api/geese/2",
+  "pathParams": [
+    {
+      "key": ":id",
+      "value": "2",
+    },
+  ],
+}
+`;
+
+exports[`generate request > goose update handler (DEV / original) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a PUT request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const id = c.req.param("id");
+  const updateData = await c.req.json();
+
+  console.log(\`Updating goose \${id} with data:\`, updateData);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
+
+  if (!goose) {
+    console.warn(\`Goose not found: \${id}\`);
+    return c.json({ message: "Goose not found" }, 404);
+  }
+
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
+  console.log(\`Goose \${id} updated successfully\`);
+  return c.json(updatedGoose);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">getGooseById</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+    ) => {
+      console.log(\`Fetching goose with id: \${id}\`);
+      return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
+    }
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">updateGoose</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+      updateData: Partial<typeof geese.$inferInsert>,
+    ) => {
+      console.log({ action: "updateGoose", id, updateData });
+    
+      // Simulate a race condition by splitting the update into two parts
+      const updatePromises = Object.entries(updateData).map(
+        async ([key, value]) => {
+          // Introduce a random delay to increase the chance of interleaved updates
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+    
+          return db
+            .update(geese)
+            .set({ [key]: value })
+            .where(eq(geese.id, id))
+            .returning();
+        },
+      );
+    
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises);
+    
+      // Return the last result, which may not contain all updates
+      return results[results.length - 1][0];
+    }
+  </definition>
+</entry>
+</expanded-function>"
+`;
+
+exports[`generate request > goose update handler (DEV / original) 2`] = `
+{
+  "body": "{
+  "name": "Honkers McFeathers",
+  "age": 3,
+  "breed": "Canadian Goose",
+  "favoriteFood": "Bread crumbs",
+  "lastSeenAt": "2023-09-15T14:30:00Z"
+}",
+  "bodyType": {
+    "type": "json",
+  },
+  "path": "/api/geese/42",
+  "pathParams": [
+    {
+      "key": ":id",
+      "value": "42",
+    },
+  ],
+}
+`;
+
+exports[`generate request > goose update handler (DEV / slim with history) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+<request>
+HTTP/1.1 POST http://localhost:8787/api/geese
+Content-Type: application/json
+User-Agent: GooseAPI-Tester/1.0
+
+{"name":"Feather Flockington","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking","...","coding","leading","honking"],"location":{"latitude":51.5074,"longitude":-0.1278}}
+</request>
+<response>
+HTTP/1.1 200
+content-encoding: gzip
+content-type: application/json; charset=UTF-8
+transfer-encoding: chunked
+
+[{"id":2,"name":"Feather Flockington","description":"A person named Feather Flockington who talks like a Goose","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking"],"location":"{\\"latitude\\":51.5074,\\"longitude\\":-0.1278}"},"...",{"id":2,"name":"Feather Flockington","description":"A person named Feather Flockington who talks like a Goose","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking"],"location":"{\\"latitude\\":51.5074,\\"longitude\\":-0.1278}"}]
+</response>
+</history>
+
+The request you make should be a PUT request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const id = c.req.param("id");
+  const updateData = await c.req.json();
+
+  console.log(\`Updating goose \${id} with data:\`, updateData);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
+
+  if (!goose) {
+    console.warn(\`Goose not found: \${id}\`);
+    return c.json({ message: "Goose not found" }, 404);
+  }
+
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
+  console.log(\`Goose \${id} updated successfully\`);
+  return c.json(updatedGoose);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">getGooseById</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+    ) => {
+      console.log(\`Fetching goose with id: \${id}\`);
+      return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
+    }
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">updateGoose</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+      updateData: Partial<typeof geese.$inferInsert>,
+    ) => {
+      console.log({ action: "updateGoose", id, updateData });
+    
+      // Simulate a race condition by splitting the update into two parts
+      const updatePromises = Object.entries(updateData).map(
+        async ([key, value]) => {
+          // Introduce a random delay to increase the chance of interleaved updates
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+    
+          return db
+            .update(geese)
+            .set({ [key]: value })
+            .where(eq(geese.id, id))
+            .returning();
+        },
+      );
+    
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises);
+    
+      // Return the last result, which may not contain all updates
+      return results[results.length - 1][0];
+    }
+  </definition>
+</entry>
+</expanded-function>"
+`;
+
+exports[`generate request > goose update handler (DEV / slim with history) 2`] = `
+{
+  "body": "{
+  "name": "Captain Feather Flockington",
+  "isFlockLeader": true,
+  "programmingLanguage": "TypeScript",
+  "motivations": ["coding", "leading", "honking", "learning"],
+  "location": {
+    "latitude": 51.5074,
+    "longitude": -0.1278
+  }
+}",
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json",
+    },
+  ],
+  "path": "/api/geese/2",
+  "pathParams": [
+    {
+      "key": ":id",
+      "value": "2",
+    },
+  ],
+}
+`;
+
+exports[`generate request > goose update handler (DEV / slim) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a PUT request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const id = c.req.param("id");
+  const updateData = await c.req.json();
+
+  console.log(\`Updating goose \${id} with data:\`, updateData);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
+
+  if (!goose) {
+    console.warn(\`Goose not found: \${id}\`);
+    return c.json({ message: "Goose not found" }, 404);
+  }
+
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
+  console.log(\`Goose \${id} updated successfully\`);
+  return c.json(updatedGoose);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">getGooseById</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+    ) => {
+      console.log(\`Fetching goose with id: \${id}\`);
+      return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
+    }
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">updateGoose</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+      updateData: Partial<typeof geese.$inferInsert>,
+    ) => {
+      console.log({ action: "updateGoose", id, updateData });
+    
+      // Simulate a race condition by splitting the update into two parts
+      const updatePromises = Object.entries(updateData).map(
+        async ([key, value]) => {
+          // Introduce a random delay to increase the chance of interleaved updates
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+    
+          return db
+            .update(geese)
+            .set({ [key]: value })
+            .where(eq(geese.id, id))
+            .returning();
+        },
+      );
+    
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises);
+    
+      // Return the last result, which may not contain all updates
+      return results[results.length - 1][0];
+    }
+  </definition>
+</entry>
+</expanded-function>"
+`;
+
+exports[`generate request > goose update handler (DEV / slim) 2`] = `
+{
+  "body": "{
+  "name": "Honker",
+  "age": 3,
+  "color": "gray"
+}",
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json",
+    },
+  ],
+  "path": "/api/geese/1234567890",
+  "pathParams": [
+    {
+      "key": ":id",
+      "value": "1234567890",
+    },
+  ],
+}
+`;
+
+exports[`generate request > goose update handler (QA / original with history) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests and responses, which you can use as inspiration for future requests.
+
+<history>
+<request>
+HTTP/1.1 POST http://localhost:8787/api/geese
+Content-Type: application/json
+User-Agent: GooseAPI-Tester/1.0
+
+{"name":"Feather Flockington","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking","...","coding","leading","honking"],"location":{"latitude":51.5074,"longitude":-0.1278}}
+</request>
+<response>
+HTTP/1.1 200
+content-encoding: gzip
+content-type: application/json; charset=UTF-8
+transfer-encoding: chunked
+
+[{"id":2,"name":"Feather Flockington","description":"A person named Feather Flockington who talks like a Goose","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking"],"location":"{\\"latitude\\":51.5074,\\"longitude\\":-0.1278}"},"...",{"id":2,"name":"Feather Flockington","description":"A person named Feather Flockington who talks like a Goose","isFlockLeader":true,"programmingLanguage":"JavaScript","motivations":["coding","leading","honking"],"location":"{\\"latitude\\":51.5074,\\"longitude\\":-0.1278}"}]
+</response>
+</history>
+
+The request you make should be a PUT request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const id = c.req.param("id");
+  const updateData = await c.req.json();
+
+  console.log(\`Updating goose \${id} with data:\`, updateData);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
+
+  if (!goose) {
+    console.warn(\`Goose not found: \${id}\`);
+    return c.json({ message: "Goose not found" }, 404);
+  }
+
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
+  console.log(\`Goose \${id} updated successfully\`);
+  return c.json(updatedGoose);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">getGooseById</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+    ) => {
+      console.log(\`Fetching goose with id: \${id}\`);
+      return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
+    }
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">updateGoose</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+      updateData: Partial<typeof geese.$inferInsert>,
+    ) => {
+      console.log({ action: "updateGoose", id, updateData });
+    
+      // Simulate a race condition by splitting the update into two parts
+      const updatePromises = Object.entries(updateData).map(
+        async ([key, value]) => {
+          // Introduce a random delay to increase the chance of interleaved updates
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+    
+          return db
+            .update(geese)
+            .set({ [key]: value })
+            .where(eq(geese.id, id))
+            .returning();
+        },
+      );
+    
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises);
+    
+      // Return the last result, which may not contain all updates
+      return results[results.length - 1][0];
+    }
+  </definition>
+</entry>
+</expanded-function>
+
+REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
+Keep your responses short-ish. Including your random data."
+`;
+
+exports[`generate request > goose update handler (QA / original with history) 2`] = `
+{
+  "body": "{
+  "name": "Malicious McHackerson",
+  "isFlockLeader": "not_a_boolean",
+  "programmingLanguage": {"sql": "DROP TABLE geese;--"},
+  "motivations": "single_string_instead_of_array",
+  "location": "invalid_location_data"
+}",
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/xml",
+    },
+    {
+      "key": "User-Agent",
+      "value": "EvilGoose/6.66",
+    },
+  ],
+  "path": "/api/geese/42",
+  "pathParams": [
+    {
+      "key": ":id",
+      "value": "42",
+    },
+  ],
+}
+`;
+
+exports[`generate request > goose update handler (QA / original) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests and responses, which you can use as inspiration for future requests.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a PUT request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const id = c.req.param("id");
+  const updateData = await c.req.json();
+
+  console.log(\`Updating goose \${id} with data:\`, updateData);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
+
+  if (!goose) {
+    console.warn(\`Goose not found: \${id}\`);
+    return c.json({ message: "Goose not found" }, 404);
+  }
+
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
+  console.log(\`Goose \${id} updated successfully\`);
+  return c.json(updatedGoose);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">getGooseById</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+    ) => {
+      console.log(\`Fetching goose with id: \${id}\`);
+      return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
+    }
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">updateGoose</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+      updateData: Partial<typeof geese.$inferInsert>,
+    ) => {
+      console.log({ action: "updateGoose", id, updateData });
+    
+      // Simulate a race condition by splitting the update into two parts
+      const updatePromises = Object.entries(updateData).map(
+        async ([key, value]) => {
+          // Introduce a random delay to increase the chance of interleaved updates
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+    
+          return db
+            .update(geese)
+            .set({ [key]: value })
+            .where(eq(geese.id, id))
+            .returning();
+        },
+      );
+    
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises);
+    
+      // Return the last result, which may not contain all updates
+      return results[results.length - 1][0];
+    }
+  </definition>
+</entry>
+</expanded-function>
+
+REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
+Keep your responses short-ish. Including your random data."
+`;
+
+exports[`generate request > goose update handler (QA / original) 2`] = `
+{
+  "body": "{
+  "name": "Malicious Goose",
+  "age": "not_a_number",
+  "weight": -500,
+  "favoriteFood": null,
+  "id": 99999
+}",
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json",
+    },
+  ],
+  "path": "/api/geese/12345",
+  "pathParams": [
+    {
+      "key": ":id",
+      "value": "12345",
+    },
+  ],
+}
+`;
+
+exports[`generate request > goose update handler (QA / slim) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests and responses, which you can use as inspiration for future requests.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a PUT request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const id = c.req.param("id");
+  const updateData = await c.req.json();
+
+  console.log(\`Updating goose \${id} with data:\`, updateData);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
+
+  if (!goose) {
+    console.warn(\`Goose not found: \${id}\`);
+    return c.json({ message: "Goose not found" }, 404);
+  }
+
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
+  console.log(\`Goose \${id} updated successfully\`);
+  return c.json(updatedGoose);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">getGooseById</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+    ) => {
+      console.log(\`Fetching goose with id: \${id}\`);
+      return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
+    }
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">updateGoose</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+      updateData: Partial<typeof geese.$inferInsert>,
+    ) => {
+      console.log({ action: "updateGoose", id, updateData });
+    
+      // Simulate a race condition by splitting the update into two parts
+      const updatePromises = Object.entries(updateData).map(
+        async ([key, value]) => {
+          // Introduce a random delay to increase the chance of interleaved updates
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+    
+          return db
+            .update(geese)
+            .set({ [key]: value })
+            .where(eq(geese.id, id))
+            .returning();
+        },
+      );
+    
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises);
+    
+      // Return the last result, which may not contain all updates
+      return results[results.length - 1][0];
+    }
+  </definition>
+</entry>
+</expanded-function>
+
+REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
+Keep your responses short-ish. Including your random data."
+`;
+
+exports[`generate request > goose update handler (QA / slim) 2`] = `
+{
+  "body": "{
+  "name": null,
+  "age": -1,
+  "weight": "not a number",
+  "favorite_food": {"malicious": "object"},
+  "id": 9999
+}",
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json",
+    },
+  ],
+  "path": "/api/geese/0",
+  "pathParams": [
+    {
+      "key": ":id",
+      "value": "0",
+    },
+  ],
+}
+`;
+
+exports[`generate request > goose update handler (QA / slim) 3`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests and responses, which you can use as inspiration for future requests.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a PUT request to route: /api/geese/:id
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+async (c) => {
+  const sql = neon(c.env.DATABASE_URL);
+  const db = drizzle(sql);
+
+  const id = c.req.param("id");
+  const updateData = await c.req.json();
+
+  console.log(\`Updating goose \${id} with data:\`, updateData);
+
+  const goose = await measure("getGooseById", () => getGooseById(db, +id))();
+
+  if (!goose) {
+    console.warn(\`Goose not found: \${id}\`);
+    return c.json({ message: "Goose not found" }, 404);
+  }
+
+  // Simulate a race condition by splitting the update into multiple parts
+  const updatePromises = Object.entries(updateData).map(
+    async ([key, value]) => {
+      await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+      return measure("updateGoose", () =>
+        updateGoose(db, +id, { [key]: value }),
+      )();
+    },
+  );
+
+  await Promise.all(updatePromises);
+
+  const updatedGoose = await measure("getGooseById", () =>
+    getGooseById(db, +id),
+  )();
+
+  console.log(\`Goose \${id} updated successfully\`);
+  return c.json(updatedGoose);
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="index.js">neon</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>@neondatabase+serverless@0.9.4/node_modules</package>
+</entry>
+<entry>
+  <name filename="index.cjs">drizzle</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+  <package>drizzle-orm@0.32.2_@cloudflare+workers-types@4.20240821.1_@libsql+client@0.6.2_@neondatabase+_jgwx5w4as4cf27fa4hwacogio4</package>
+</entry>
+<entry>
+  <name filename="measure.js">measure</name>
+  <definition>
+    #third-party-library-code
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">getGooseById</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+    ) => {
+      console.log(\`Fetching goose with id: \${id}\`);
+      return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
+    }
+  </definition>
+</entry>
+<entry>
+  <name filename="client.ts">updateGoose</name>
+  <definition>
+    async (
+      db: ReturnType<typeof drizzle>,
+      id: number,
+      updateData: Partial<typeof geese.$inferInsert>,
+    ) => {
+      console.log({ action: "updateGoose", id, updateData });
+    
+      // Simulate a race condition by splitting the update into two parts
+      const updatePromises = Object.entries(updateData).map(
+        async ([key, value]) => {
+          // Introduce a random delay to increase the chance of interleaved updates
+          await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000));
+    
+          return db
+            .update(geese)
+            .set({ [key]: value })
+            .where(eq(geese.id, id))
+            .returning();
+        },
+      );
+    
+      // Wait for all updates to complete
+      const results = await Promise.all(updatePromises);
+    
+      // Return the last result, which may not contain all updates
+      return results[results.length - 1][0];
+    }
+  </definition>
+</entry>
+</expanded-function>
+
+REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
+Keep your responses short-ish. Including your random data."
+`;
+
+exports[`generate request > goose update handler (QA / slim) 4`] = `
+{
+  "body": "{
+  "name": null,
+  "age": -1,
+  "weight": "heavy",
+  "favoriteFood": {"sql": "DROP TABLE geese;"},
+  "isAggressive": "maybe"
+}",
+  "bodyType": {
+    "isMultipart": false,
+    "type": "json",
+  },
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json",
+    },
+  ],
+  "path": "/api/geese/0",
+  "pathParams": [
+    {
+      "key": ":id",
+      "value": "0",
+    },
+  ],
+}
+`;
+
+exports[`generate request > home handler (DEV / original) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a GET request to route: /
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+(c) => {
+  const honk = shouldHonk(c.req) ? "Honk honk!" : "";
+  console.log(\`Home page accessed. Honk: \${honk}\`);
+  return c.text(\`Hello Goose Quotes! \${honk}\`.trim());
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="utils.ts">shouldHonk</name>
+  <definition>
+    export function shouldHonk(r: HonoRequest) {
+      const { shouldHonk } = r.query();
+      return typeof shouldHonk !== "undefined";
+    }
+  </definition>
+</entry>
+</expanded-function>"
+`;
+
+exports[`generate request > home handler (DEV / original) 2`] = `
+{
+  "path": "/",
+  "queryParams": [
+    {
+      "key": "shouldHonk",
+      "value": "true",
+    },
+  ],
+}
+`;
+
+exports[`generate request > home handler (DEV / slim) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests/responses, which you can use as inspiration for future requests.
+E.g., if we recently created a resource, you can look that resource up.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a GET request to route: /
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+(c) => {
+  const honk = shouldHonk(c.req) ? "Honk honk!" : "";
+  console.log(\`Home page accessed. Honk: \${honk}\`);
+  return c.text(\`Hello Goose Quotes! \${honk}\`.trim());
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="utils.ts">shouldHonk</name>
+  <definition>
+    export function shouldHonk(r: HonoRequest) {
+      const { shouldHonk } = r.query();
+      return typeof shouldHonk !== "undefined";
+    }
+  </definition>
+</entry>
+</expanded-function>"
+`;
+
+exports[`generate request > home handler (DEV / slim) 2`] = `
+{
+  "path": "/",
+  "queryParams": [
+    {
+      "key": "shouldHonk",
+      "value": "true",
+    },
+  ],
+}
+`;
+
+exports[`generate request > home handler (QA / original) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests and responses, which you can use as inspiration for future requests.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a GET request to route: /
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+(c) => {
+  const honk = shouldHonk(c.req) ? "Honk honk!" : "";
+  console.log(\`Home page accessed. Honk: \${honk}\`);
+  return c.text(\`Hello Goose Quotes! \${honk}\`.trim());
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="utils.ts">shouldHonk</name>
+  <definition>
+    export function shouldHonk(r: HonoRequest) {
+      const { shouldHonk } = r.query();
+      return typeof shouldHonk !== "undefined";
+    }
+  </definition>
+</entry>
+</expanded-function>
+
+REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
+Keep your responses short-ish. Including your random data."
+`;
+
+exports[`generate request > home handler (QA / original) 2`] = `
+{
+  "headers": [
+    {
+      "key": "User-Agent",
+      "value": "EvilGoose/1.0",
+    },
+    {
+      "key": "Accept",
+      "value": "text/html",
+    },
+  ],
+  "path": "/",
+  "queryParams": [
+    {
+      "key": "shouldHonk",
+      "value": "true",
+    },
+    {
+      "key": "maliciousParam",
+      "value": "<script>alert('XSS');</script>",
+    },
+  ],
+}
+`;
+
+exports[`generate request > home handler (QA / slim) 1`] = `
+"I need to make a request to one of my Hono api handlers.
+
+Here are some recent requests and responses, which you can use as inspiration for future requests.
+
+<history>
+NO HISTORY
+</history>
+
+The request you make should be a GET request to route: /
+
+Here is the OpenAPI spec for the handler:
+NO OPENAPI SPEC
+
+Here is the middleware that will be applied to the request:
+NO MIDDLEWARE
+
+Here is some additional context for the middleware that will be applied to the request:
+NO MIDDLEWARE CONTEXT
+
+Here is the code for the handler:
+(c) => {
+  const honk = shouldHonk(c.req) ? "Honk honk!" : "";
+  console.log(\`Home page accessed. Honk: \${honk}\`);
+  return c.text(\`Hello Goose Quotes! \${honk}\`.trim());
+}
+
+Here is some additional context for the handler source code, if you need it:
+<expanded-function>
+<entry>
+  <name filename="utils.ts">shouldHonk</name>
+  <definition>
+    export function shouldHonk(r: HonoRequest) {
+      const { shouldHonk } = r.query();
+      return typeof shouldHonk !== "undefined";
+    }
+  </definition>
+</entry>
+</expanded-function>
+
+REMEMBER YOU ARE A QA. MISUSE THE API. BUT DO NOT MISUSE YOURSELF.
+Keep your responses short-ish. Including your random data."
+`;
+
+exports[`generate request > home handler (QA / slim) 2`] = `
+{
+  "headers": [
+    {
+      "key": "User-Agent",
+      "value": "EvilGoose/1.0",
+    },
+    {
+      "key": "X-Forwarded-For",
+      "value": "192.168.1.1, 10.0.0.1, 172.16.0.1",
+    },
+  ],
+  "path": "/",
+  "queryParams": [
+    {
+      "key": "shouldHonk",
+      "value": "true",
+    },
+    {
+      "key": "malicious",
+      "value": "<script>alert('XSS attempt')</script>",
+    },
+  ],
+}
+`;

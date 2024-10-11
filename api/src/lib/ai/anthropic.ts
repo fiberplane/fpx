@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { CLAUDE_3_5_SONNET } from "@fiberplane/fpx-types";
 import logger from "../../logger.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool as makeRequestToolBase } from "./tools.js";
@@ -81,11 +82,13 @@ export async function generateRequestWithAnthropic({
     name: makeRequestTool.name,
   };
 
+  const systemPrompt = getSystemPrompt(persona, model === CLAUDE_3_5_SONNET);
+
   const response = await anthropicClient.messages.create({
     model,
     tool_choice: toolChoice,
     tools: [makeRequestTool],
-    system: getSystemPrompt(persona),
+    system: systemPrompt,
     messages: [
       {
         role: "user",
