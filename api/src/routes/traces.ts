@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import {
   OtelSpanSchema,
   type TraceDetailSpansResponse,
@@ -6,10 +8,16 @@ import {
 import type { IExportTraceServiceRequest } from "@opentelemetry/otlp-transformer";
 import { and, desc, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { USER_PROJECT_ROOT_DIR } from "../constants.js";
 import * as schema from "../db/schema.js";
+import { generateDiffWithCreatedTest } from "../lib/ai/index.js";
+import type { GitDiff } from "../lib/ai/schema.js";
+import { serializeDiffToPatch } from "../lib/diff/index.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
-import { getSetting } from "../lib/settings/index.js";
+import { getInferenceConfig, getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
+import { getIgnoredPaths, shouldIgnoreFile } from "../lib/utils.js";
 import logger from "../logger.js";
 
 const { otelSpans } = schema;
@@ -61,6 +69,69 @@ app.get("/v1/traces", async (ctx) => {
   }));
 
   return ctx.json(response);
+});
+
+app.get("/v1/traces/:traceId/fix.patch", cors(), async (ctx) => {
+  const traceId = ctx.req.param("traceId");
+  const db = ctx.get("db");
+
+  const traces = await db
+    .select()
+    .from(otelSpans)
+    .where(
+      and(
+        sql`inner->>'scope_name' = 'fpx-tracer'`,
+        sql`inner->>'trace_id' = ${traceId}`,
+      ),
+    );
+
+  const inferenceConfig = await getInferenceConfig(db);
+
+  const ignoredPaths = getIgnoredPaths();
+
+  const relevantFiles = fs
+    .readdirSync(USER_PROJECT_ROOT_DIR, {
+      recursive: true,
+      withFileTypes: true,
+    })
+    .filter(
+      (dirent) =>
+        !dirent.isDirectory() &&
+        (dirent.name.endsWith(".ts") ||
+          dirent.name.endsWith(".js") ||
+          dirent.name === "package.json") &&
+        !shouldIgnoreFile(path.join(dirent.path, dirent.name), ignoredPaths),
+    )
+    .map((dirent) => {
+      const filePath = path.join(dirent.path, dirent.name);
+      logger.debug("filePath", filePath);
+      return {
+        path: path.relative(USER_PROJECT_ROOT_DIR, filePath),
+        content: fs.readFileSync(filePath, "utf-8").toString(),
+      };
+    });
+
+  const traceWithSpans = {
+    ...traces[0],
+    spans: traces[0].inner ? [traces[0].inner] : [],
+  };
+
+  const { data } = await generateDiffWithCreatedTest({
+    inferenceConfig: inferenceConfig || {},
+    relevantFiles,
+    trace: traceWithSpans,
+  });
+
+  if (!data || typeof data === "string") {
+    return ctx.text("");
+  }
+
+  const gitDiff: GitDiff = data;
+  const patchContent = serializeDiffToPatch(gitDiff);
+
+  ctx.header("Content-Type", "text/plain");
+  ctx.header("Content-Disposition", 'attachment; filename="fix.patch"');
+  return ctx.body(patchContent);
 });
 
 /**

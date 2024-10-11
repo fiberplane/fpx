@@ -1,4 +1,6 @@
+import type { OtelTrace } from "@fiberplane/fpx-types";
 import { PromptTemplate } from "@langchain/core/prompts";
+import type { FileType } from "./schema.js";
 
 export const getSystemPrompt = (persona: string) => {
   return persona === "QA"
@@ -63,6 +65,25 @@ export const invokeRequestGenerationPrompt = async ({
     openApiSpec: openApiSpec ?? "NO OPENAPI SPEC",
     middleware: formatMiddleware(middleware),
     middlewareContext: middlewareContext ?? "NO MIDDLEWARE CONTEXT",
+  });
+  const userPrompt = userPromptInterface.value;
+  return userPrompt;
+};
+
+export const invokeDiffGeneratorPrompt = async ({
+  trace,
+  relevantFiles,
+}: {
+  trace: OtelTrace;
+  relevantFiles: FileType[];
+}) => {
+  const stringifiedTrace = JSON.stringify(trace);
+  const projectFileTree = relevantFiles
+    .map(({ path, content }) => `${path}:\n${content}`)
+    .join("\n\n");
+  const userPromptInterface = await diffGeneratorUserPrompt.invoke({
+    trace: stringifiedTrace,
+    projectFileTree,
   });
   const userPrompt = userPromptInterface.value;
   return userPrompt;
@@ -228,7 +249,7 @@ export const QA_PARAMETER_GENERATION_SYSTEM_PROMPT = cleanPrompt(`
 You are an expert QA Engineer, a thorough API tester, and a code debugging assistant for web APIs that use Hono,
 a typescript web framework similar to express. You have a generally hostile disposition.
 
-You need to help craft requests to route handlers. 
+You need to help craft requests to route handlers.
 
 You will be provided the source code of a route handler for an API route, and you should generate
 query parameters, a request body, and headers that will test the request.
@@ -287,19 +308,47 @@ But if the body type is a file stream, just return an empty body.
 For form data, you can return a body type of "form-data". You can still return a JSON object like above,
 I will handle converting it to form data.
 
-You should focus on trying to break things. You are a QA. 
+You should focus on trying to break things. You are a QA.
 
 You are the enemy of bugs. To protect quality, you must find bugs.
 
-Try strategies like specifying invalid data, missing data, or invalid data types (e.g., using strings instead of numbers). 
+Try strategies like specifying invalid data, missing data, or invalid data types (e.g., using strings instead of numbers).
 
-Try to break the system. But do not break yourself! 
+Try to break the system. But do not break yourself!
 Keep your responses to a reasonable length. Including your random data.
 
 Never add the x-fpx-trace-id header to the request.
 
 Use the tool "make_request". Always respond in valid JSON.
 ***Don't make your responses too long, otherwise we cannot parse your JSON response.***
+`);
+
+export const DIFF_GENERATOR_SYSTEM_PROMPT = cleanPrompt(`
+You are an expert developer writing tests for error scenarios that have been discovered in production.
+Your task is to write a test for an error case based on the provided trace and project files.
+
+Follow these guidelines:
+1. Identify which testing provider the project is using.
+2. Write the most appropriate test that would catch the errors found in the trace.
+3. If the testing provider is not included in package.json, include it.
+4. Prioritize more modern and faster versions of tools if you're adding new things (e.g., use vitest instead of jest).
+5. When adding new lines to package.json, ensure to add any missing commas and keep the JSON valid.
+6. Always make sure that the patch data is valid: ensure that the line change counts are the same as the content and so on
+
+Use the tool "diffJsonSchema" to generate the test.
+`);
+
+export const diffGeneratorUserPrompt = PromptTemplate.fromTemplate(`
+I need you to write a test for an error case that was discovered in production.
+
+Here's the trace of the error:
+{trace}
+
+Here's the list of relevant files and their contents:
+{projectFileTree}
+
+Please analyze the trace and the project files, then generate a test that would catch this error. 
+Make sure to use the appropriate testing framework and follow the guidelines provided in the system prompt.
 `);
 
 /**
