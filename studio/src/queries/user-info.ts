@@ -4,9 +4,10 @@ import { z } from "zod";
 // Define a schema for user info
 const UserInfoSchema = z.object({
   id: z.number(),
-  // username: z.string(),
-  // email: z.string().email(),
-  value: z.string(),
+  githubUsername: z.string(),
+  email: z.string().email(),
+  token: z.string(),
+  aiRequestCredits: z.number().optional(),
 });
 
 // type UserInfo = z.infer<typeof UserInfoSchema>;
@@ -19,9 +20,7 @@ export function useFetchUserInfo() {
     queryFn: async () => {
       const response = await fetch("/v0/auth/user");
       const json = await response.json();
-      console.log("json", json);
       const user = UserInfoSchema.parse(json);
-      console.log("user", user);
       return user;
     },
   });

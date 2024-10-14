@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
-import { verifyToken } from "../lib/auth/auth.js";
+import { getUser, verifyToken } from "../lib/auth/auth.js";
 import { TokenPayloadSchema } from "../lib/auth/types.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
@@ -15,8 +15,18 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 app.get("/v0/auth/user", cors(), async (ctx) => {
   logger.debug("Getting user details");
   const db = ctx.get("db");
-  const [user] = await db.select().from(schema.tokens);
-  return ctx.json(user);
+  const [token] = await db.select().from(schema.tokens);
+
+  if (!token) {
+    return ctx.json(null);
+  }
+
+  const user = await getUser(token.value);
+
+  return ctx.json({
+    ...user,
+    token: token.value,
+  });
 });
 
 /**
