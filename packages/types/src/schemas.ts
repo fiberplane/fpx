@@ -91,7 +91,7 @@ export const SpanAddedSchema = memoizeOne(() =>
 export type SpanAdded = z.infer<ReturnType<typeof SpanAddedSchema>>;
 
 export const WorkspaceSchema = memoizeOne(() =>
-  z.object({ config: z.lazy(FpxConfigSchema), path: z.string() }),
+  z.object({ api_port: z.number().int(), path: z.string() }),
 );
 
 export type Workspace = z.infer<ReturnType<typeof WorkspaceSchema>>;

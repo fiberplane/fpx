@@ -48,7 +48,7 @@ export function TauriRuntime({ children }: RuntimeProviderProps) {
 
   const handleGetApiBaseUrl = useHandler(() => {
     if (workspace) {
-      return `http://localhost:${workspace.config.listen_port}`;
+      return `http://localhost:${workspace.api_port}`;
     }
 
     return "";

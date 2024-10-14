@@ -5,12 +5,15 @@ use serde::{Deserialize, Serialize};
 #[derive(JsonSchema, Deserialize, Serialize, Clone)]
 pub struct Workspace {
     path: String,
-    config: FpxConfig,
+    api_port: u32,
 }
 
 impl Workspace {
     pub fn new(path: String, config: FpxConfig) -> Self {
-        Self { path, config }
+        Self {
+            path,
+            api_port: config.listen_port(),
+        }
     }
 }
 
