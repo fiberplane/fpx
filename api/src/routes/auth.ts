@@ -1,70 +1,82 @@
-import { SettingsSchema } from "@fiberplane/fpx-types";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
+import * as schema from "../db/schema.js";
+import { verifyToken } from "../lib/auth.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 /**
- * Retrieve the settings record
+ * Get user info
  */
-app.get("/v0/settings", cors(), async (ctx) => {
+app.get("/v0/auth/user", cors(), async (ctx) => {
+  logger.debug("Getting user details");
   const db = ctx.get("db");
-  const settingsRecord = await getAllSettings(db);
-  return ctx.json(settingsRecord);
+  const [user] = await db.select().from(schema.tokens);
+  return ctx.json(user);
 });
 
 /**
- * Upsert the settings record
- *
- * NOTE - We need to start and stop webhonc when the proxy requests setting is updated.
+ * Delete user info
  */
-app.post("/v0/settings", cors(), async (ctx) => {
-  const currentSettings = await getAllSettings(ctx.get("db"));
-  const prevProxyUrlEnabled = currentSettings?.proxyRequestsEnabled;
-
-  const { content } = (await ctx.req.json()) as {
-    content: Record<string, string>;
-  };
-
-  const parsedContent = SettingsSchema.parse(content);
-  // Remove the stored api key if the feature is disabled
-  if (!parsedContent.aiEnabled) {
-    parsedContent.openaiApiKey = undefined;
-    parsedContent.anthropicApiKey = undefined;
-  }
-
-  logger.debug("Updating settings", { content });
-
+app.delete("/v0/auth/user", cors(), async (ctx) => {
+  logger.debug("Deleting user details");
   const db = ctx.get("db");
-  const webhonc = ctx.get("webhonc");
+  await db.delete(schema.tokens);
+  return ctx.body(null, 204);
+});
 
-  const updatedSettings = await upsertSettings(db, parsedContent);
+/**
+ * Handle user login
+ */
+app.post("/v0/auth/login-start", cors(), async (ctx) => {
+  // TODO: Implement login start logic
+  logger.debug("Login starting");
+  return ctx.json({ message: "Logged in" });
+});
 
-  logger.debug("Configuration updated...");
-
-  // HACK - We should techincally JSON parse the value here, but whatever.
-  const proxyUrlEnabled =
-    updatedSettings.find((setting) => setting.key === "proxyRequestsEnabled")
-      ?.value === "true";
-
-  const shouldStartWebhonc = !prevProxyUrlEnabled && proxyUrlEnabled;
-  if (shouldStartWebhonc) {
-    logger.debug("Proxy requests enabled in settings update, starting webhonc");
-    await webhonc.start();
+/**
+ * Verify user authentication
+ */
+app.post("/v0/auth/verify", cors(), async (ctx) => {
+  const token = ctx.req.header("Authorization")?.split(" ")[1];
+  if (!token) {
+    return ctx.json({ error: "No token provided" }, 400);
   }
 
-  const shouldStopWebhonc = prevProxyUrlEnabled && !proxyUrlEnabled;
-  if (shouldStopWebhonc) {
-    logger.debug(
-      "Proxy requests disabled in settings update, stopping webhonc",
-    );
-    await webhonc.stop();
+  try {
+    await verifyToken(token);
+    logger.debug("Verification successful");
+    return ctx.json(true);
+  } catch (error) {
+    logger.error("Verification failed", error);
+    return ctx.json({ error: "Verification failed" }, 401);
   }
+});
 
-  return ctx.json(updatedSettings);
+/**
+ * Handle successful authentication
+ */
+app.post("/v0/auth/success", cors(), async (ctx) => {
+  // ...
+  const _body = await ctx.req.json();
+  // TODO - Upsert token?
+  logger.debug("NYI NYI NYI");
+  return ctx.text("OK");
+});
+
+/**
+ * Complete the authentication process
+ */
+app.post("/v0/auth/complete", cors(), async (ctx) => {
+  const authData = await ctx.req.json();
+  logger.debug("Received authentication data", authData);
+
+  // TODO: Store the authentication data or perform any necessary actions
+  // For now, we'll just log it and return a success message
+
+  return ctx.json({ message: "Authentication data received and processed" });
 });
 
 export default app;

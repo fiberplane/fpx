@@ -20,3 +20,5 @@ export {
 } from "./traces-interop";
 
 export { useOtelTrace, useOtelTraces } from "./traces-otel";
+
+export * from "./user-info";

@@ -9,6 +9,7 @@ import logger from "./logger.js";
 
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
+import auth from "./routes/auth.js";
 import inference from "./routes/inference/index.js";
 import settings from "./routes/settings.js";
 import source from "./routes/source.js";
@@ -53,6 +54,7 @@ export function createApp(
   );
 
   // All routes are modularized in the ./routes folder
+  app.route("/", auth);
   app.route("/", traces);
   app.route("/", inference);
   app.route("/", source);

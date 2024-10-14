@@ -1,5 +1,10 @@
+import { useLogout, useUserInfo } from "@/queries";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
+import {
+  DiscordLogoIcon,
+  GitHubLogoIcon,
+  PersonIcon,
+} from "@radix-ui/react-icons";
 import {
   Menubar,
   MenubarContent,
@@ -23,6 +28,9 @@ export function SettingsMenu({
       menuBarTriggerRef.current.click();
     }
   });
+
+  const user = useUserInfo();
+  const logout = useLogout();
 
   return (
     <Menubar className="p-0">
@@ -57,6 +65,26 @@ export function SettingsMenu({
           >
             Discord
           </MenuItemLink>
+          <MenubarSeparator className="h-px bg-muted" />
+          {user ? (
+            <MenubarItem
+              className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+              onClick={() => !logout.isPending && logout.mutate()}
+            >
+              <div className="flex items-center gap-2">
+                <Icon icon="lucide:user" />
+                {logout.isPending ? "Logging you out" : "Log out"}
+              </div>
+            </MenubarItem>
+          ) : (
+            <MenuItemLink
+              href="http://127.0.0.1:3578/github"
+              icon={<PersonIcon className="w-3.5 h-3.5" />}
+            >
+              Log in
+            </MenuItemLink>
+          )}
+
           <MenubarSeparator className="h-px bg-muted" />
           <MenubarItem
             className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
