@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
+import { desc } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
@@ -13,9 +14,12 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
  * Get user info (checks if there is a token for the user locally)
  */
 app.get("/v0/auth/user", cors(), async (ctx) => {
-  logger.debug("Getting user details");
   const db = ctx.get("db");
-  const [token] = await db.select().from(schema.tokens);
+  const [token] = await db
+    .select()
+    .from(schema.tokens)
+    .orderBy(desc(schema.tokens.createdAt))
+    .limit(1);
 
   if (!token) {
     return ctx.json(null);
