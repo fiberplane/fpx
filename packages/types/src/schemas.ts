@@ -7,13 +7,7 @@
 // =========================================== //
 
 import { z } from "zod";
-
-// TODO: Polyfill memoizeOne for now, seems like this breaks our TypeScript setup
-// See: https://github.com/alexreardon/memoize-one/issues/267
-// The suggested `.default` works in the types package but breaks studio
-function memoizeOne<T>(callback: () => T) {
-  return callback;
-}
+import memoizeOne from "memoize-one";
 
 export const AppStateSchema = memoizeOne(() =>
   z.object({ workspace: z.union([z.lazy(WorkspaceSchema), z.null()]) }),
