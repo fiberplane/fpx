@@ -1,10 +1,6 @@
 import { useLogout, useUserInfo } from "@/queries";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import {
-  DiscordLogoIcon,
-  GitHubLogoIcon,
-  PersonIcon,
-} from "@radix-ui/react-icons";
+import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Menubar,
   MenubarContent,
@@ -13,7 +9,6 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@radix-ui/react-menubar";
-import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
