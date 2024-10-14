@@ -180,3 +180,14 @@ export const settings = sqliteTable("settings", {
 
 export type Setting = typeof settings.$inferSelect;
 export type NewSetting = typeof settings.$inferInsert;
+
+// New schema for tokens
+export const tokens = sqliteTable("tokens", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  value: text("value").notNull().unique(),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type Token = typeof tokens.$inferSelect;
+export type NewToken = typeof tokens.$inferInsert;
