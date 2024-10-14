@@ -42,11 +42,13 @@ export type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
 export const ProviderOptions = {
   openai: "OpenAI",
   anthropic: "Anthropic",
+  fp: "Fiberplane",
 } as const;
 
 export const AiProviderTypeSchema = z.union([
   z.literal("openai"),
   z.literal("anthropic"),
+  z.literal("fp"),
 ]);
 
 export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;
