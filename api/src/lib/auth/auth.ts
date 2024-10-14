@@ -1,7 +1,7 @@
 import http from "node:http";
 import { URL } from "node:url";
 import chalk from "chalk";
-import logger from "../logger.js";
+import logger from "../../logger.js";
 
 /**
  * Verify a token with the authentication API

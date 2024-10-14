@@ -9,7 +9,7 @@ import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
 import { DEFAULT_DATABASE_URL, USER_PROJECT_ROOT_DIR } from "./constants.js";
 import * as schema from "./db/schema.js";
-import { startAuthServer } from "./lib/auth.js";
+import { startAuthServer } from "./lib/auth/auth.js";
 import { getTSServer } from "./lib/expand-function/tsserver/index.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getSetting } from "./lib/settings/index.js";

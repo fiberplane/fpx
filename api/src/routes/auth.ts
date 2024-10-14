@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
-import { verifyToken } from "../lib/auth.js";
+import { verifyToken } from "../lib/auth/auth.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
