@@ -8,6 +8,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt::Formatter;
 use std::ops::Deref;
 use std::str::FromStr;
+use wasm_bindgen::JsValue;
 
 /// A computed value based on the span objects that are present.
 #[derive(Clone, Debug, Deserialize)]
@@ -102,6 +103,12 @@ pub enum RouteOrigin {
     OpenApi,
 }
 
+impl ToString for RouteOrigin {
+    fn to_string(&self) -> String {
+        serde_json::to_string(&self).expect("serialization to always work")
+    }
+}
+
 impl IntoValue for RouteOrigin {
     fn into_value(self) -> libsql::Result<Value> {
         let serialized = serde_json::to_string(&self).map_err(|_| libsql::Error::NullValue)?;
@@ -114,6 +121,12 @@ impl IntoValue for RouteOrigin {
 pub enum RequestType {
     Http,
     Websocket,
+}
+
+impl ToString for RequestType {
+    fn to_string(&self) -> String {
+        serde_json::to_string(&self).expect("serialization to always work")
+    }
 }
 
 impl IntoValue for RequestType {

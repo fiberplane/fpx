@@ -307,7 +307,7 @@ impl Store for D1Store {
 
     async fn routes_get(&self, _tx: &Transaction) -> Result<Vec<Route>> {
         SendFuture::new(async {
-            let routes = self.fetch_all(&self.sql_builder.routes_get()).await?;
+            let routes = self.fetch_all(&self.sql_builder.routes_get(), &[]).await?;
 
             Ok(routes)
         })
@@ -326,9 +326,9 @@ impl Store for D1Store {
                     route.handler_type.into(),
                     route.currently_registered.into(),
                     route.registration_order.into(),
-                    route.route_origin.into(),
+                    route.route_origin.to_string().into(),
                     route.openapi_spec.into(),
-                    route.request_type.into(),
+                    route.request_type.to_string().into(),
                 ],
             )
             .await
