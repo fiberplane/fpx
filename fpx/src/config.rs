@@ -12,6 +12,8 @@ use std::{env, ops::Range};
 use thiserror::Error;
 use tracing::error;
 
+const DEFAULT_PORT: u32 = 8788;
+
 #[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq, Default, JsonSchema)]
 pub struct FpxConfig {
     /// The port on which the API server should listen.
@@ -47,6 +49,12 @@ impl FpxConfig {
             })?;
 
         Ok((config, config_file_path))
+    }
+
+    /// Unwraps the configured listen_port in the workspace' `fpx.toml` if it's set or return the
+    /// default port
+    pub fn listen_port(&self) -> u32 {
+        self.listen_port.unwrap_or(DEFAULT_PORT)
     }
 }
 
