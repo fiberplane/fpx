@@ -10,7 +10,12 @@
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "memoize-one": [
+        "./src/memoize-one.d.ts"
+      ]
+    }
   },
   "include": [
     "src"

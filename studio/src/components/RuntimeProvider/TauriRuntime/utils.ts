@@ -1,20 +1,25 @@
-import type { Workspace } from "@fiberplane/fpx-types";
+import { WorkspaceSchema } from "@fiberplane/fpx-types";
 import { invoke } from "@tauri-apps/api/core";
 import { appDataDir } from "@tauri-apps/api/path";
 import { open } from "@tauri-apps/plugin-dialog";
+import { z } from "zod";
 
 export async function listRecentWorkspaces() {
   return await invoke<Array<string>>("list_recent_workspaces");
 }
 
 export async function openWorkspace(path: string) {
-  return await invoke<Workspace | undefined>("open_workspace_by_path", {
+  const response = await invoke("open_workspace_by_path", {
     path,
   });
+
+  return z.lazy(WorkspaceSchema).parse(response);
 }
 
 export async function getCurrentWorkspace() {
-  return await invoke<Workspace | undefined>("get_current_workspace");
+  const response = await invoke("get_current_workspace");
+
+  return z.lazy(WorkspaceSchema).parse(response);
 }
 
 export async function closeWorkspace() {
