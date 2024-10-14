@@ -1,15 +1,12 @@
 import { URL } from "node:url";
+import { makeFpAuthRequest } from "./request.js";
 
 export async function getUser(token: string) {
-  const baseUrl = process.env.FPX_AUTH_BASE_URL;
-  const url = new URL("/user", baseUrl);
   try {
-    const response = await fetch(url.toString(), {
+    const response = await makeFpAuthRequest({
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      path: "/user",
+      token,
     });
 
     // NOTE - The API will return 404 for no matching user for token

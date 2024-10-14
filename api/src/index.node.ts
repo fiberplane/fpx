@@ -13,8 +13,8 @@ import {
   USER_PROJECT_ROOT_DIR,
 } from "./constants.js";
 import * as schema from "./db/schema.js";
-import { getAuthServer } from "./lib/auth/server.js";
 import { getTSServer } from "./lib/expand-function/tsserver/index.js";
+import { getAuthServer } from "./lib/fp-services/server.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";

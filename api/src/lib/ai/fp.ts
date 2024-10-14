@@ -1,4 +1,5 @@
 import logger from "../../logger.js";
+import { makeFpAuthRequest } from "../fp-services/request.js";
 
 type GenerateRequestOptions = {
   apiKey: string;
@@ -40,9 +41,12 @@ export async function generateRequestWithFp({
     // `middleware: ${middleware}`,
     // `middlewareContext: ${middlewareContext}`,
   );
-  const response = await fetch("http://localhost:3578/ai/request", {
+
+  const response = await makeFpAuthRequest({
+    token: apiKey,
     method: "POST",
-    body: JSON.stringify({
+    path: "/ai/request",
+    body: {
       persona,
       method,
       path,
@@ -52,10 +56,6 @@ export async function generateRequestWithFp({
       openApiSpec,
       middleware,
       middlewareContext,
-    }),
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
     },
   });
 

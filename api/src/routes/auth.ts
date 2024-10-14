@@ -2,8 +2,8 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
-import { getUser, verifyToken } from "../lib/auth/auth.js";
-import { TokenPayloadSchema } from "../lib/auth/types.js";
+import { getUser, verifyToken } from "../lib/fp-services/auth.js";
+import { TokenPayloadSchema } from "../lib/fp-services/types.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 

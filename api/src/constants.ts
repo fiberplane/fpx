@@ -10,3 +10,6 @@ export const USER_PROJECT_ROOT_DIR = path.resolve(
 export const FPX_AUTH_SERVER_PORT = 3579;
 
 export const FPX_PORT = +(process.env.FPX_PORT ?? 8788);
+
+export const FPX_AUTH_BASE_URL =
+  process.env.FPX_AUTH_BASE_URL || "http://localhost:3578";
