@@ -1,10 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { FPX_PORT } from "../constants.js";
 import * as schema from "../db/schema.js";
 import { verifyToken } from "../lib/auth/auth.js";
-import { getAuthServer } from "../lib/auth/server.js";
 import { TokenPayloadSchema } from "../lib/auth/types.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
@@ -35,10 +33,10 @@ app.delete("/v0/auth/user", cors(), async (ctx) => {
 });
 
 /**
- * Verify user authentication
+ * Verify user JWT
  */
 app.post("/v0/auth/verify", cors(), async (ctx) => {
-  const token = ctx.req.header("Authorization")?.split(" ")[1];
+  const token = ctx.req.header("Authorization")?.split(" ")?.[1];
 
   if (!token) {
     return ctx.json({ error: "No token provided" }, 400);
@@ -46,7 +44,7 @@ app.post("/v0/auth/verify", cors(), async (ctx) => {
 
   try {
     await verifyToken(token);
-    logger.debug("Verification successful");
+    logger.debug("Auth token verification successful");
     return ctx.json(true);
   } catch (error) {
     logger.error("Verification failed", error);
@@ -55,7 +53,7 @@ app.post("/v0/auth/verify", cors(), async (ctx) => {
 });
 
 /**
- * Handle successful authentication
+ * Handle successful authentication coming from our local background auth service
  */
 app.post(
   "/v0/auth/success",
@@ -85,8 +83,6 @@ app.post(
         }
       }
 
-      // TODO - Upsert token?
-      logger.debug("NYI NYI NYI");
       return ctx.text("OK");
     } catch (error) {
       logger.error("Error handling auth success message:", error);
@@ -94,18 +90,5 @@ app.post(
     }
   },
 );
-
-/**
- * Complete the authentication process
- */
-app.post("/v0/auth/complete", cors(), async (ctx) => {
-  const authData = await ctx.req.json();
-  logger.debug("Received authentication data", authData);
-
-  // TODO: Store the authentication data or perform any necessary actions
-  // For now, we'll just log it and return a success message
-
-  return ctx.json({ message: "Authentication data received and processed" });
-});
 
 export default app;

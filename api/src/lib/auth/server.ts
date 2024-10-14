@@ -48,6 +48,8 @@ export function serveAuth(fpxStudioPort: number): Promise<AuthServer> {
     try {
       const app = createAuthApp(fpxStudioPort);
 
+      logger.debug(chalk("[auth-server] Initializing"));
+
       const server = serve({
         fetch: app.fetch,
         port: FPX_AUTH_SERVER_PORT,
@@ -58,7 +60,7 @@ export function serveAuth(fpxStudioPort: number): Promise<AuthServer> {
       server.on("listening", () => {
         logger.debug(
           chalk.dim(
-            `[auth-server] Auth server listening on http://localhost:${fpxStudioPort}`,
+            `[auth-server] Auth server listening on http://localhost:${FPX_AUTH_SERVER_PORT}`,
           ),
         );
         resolve(server);
@@ -102,9 +104,21 @@ export function serveAuth(fpxStudioPort: number): Promise<AuthServer> {
 function createAuthApp(fpxStudioPort: number) {
   const app = new Hono();
 
+  // Set up CORS middleware
+  app.use(
+    "/v0/auth/success",
+    cors({
+      // HACK - Trust the local auth service while testing
+      // TODO - Update origin to include Fiberplane services
+      origin: ["http://127.0.0.1:3578", "http://localhost:3578"],
+      allowMethods: ["GET", "POST", "OPTIONS"],
+      allowHeaders: ["Content-Type"],
+      exposeHeaders: ["Content-Length"],
+    }),
+  );
+
   app.post(
     "/v0/auth/success",
-    cors(),
     zValidator("json", TokenPayloadSchema),
     async (c) => {
       const { token } = c.req.valid("json");
@@ -115,7 +129,7 @@ function createAuthApp(fpxStudioPort: number) {
         }
         return c.text("Unknown error", 500);
       } catch (error) {
-        logger.error("Error reporting token to Studio", error);
+        logger.error("Spooky error reporting token to Studio", error);
         return c.text("Unknown error", 500);
       }
     },

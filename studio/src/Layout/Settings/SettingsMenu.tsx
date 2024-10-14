@@ -1,5 +1,4 @@
 import { useLogout, useUserInfo } from "@/queries";
-import { useMutation } from '@tanstack/react-query';
 import { Icon } from "@iconify/react/dist/iconify.js";
 import {
   DiscordLogoIcon,
@@ -14,6 +13,7 @@ import {
   MenubarSeparator,
   MenubarTrigger,
 } from "@radix-ui/react-menubar";
+import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
@@ -66,11 +66,7 @@ export function SettingsMenu({
             Discord
           </MenuItemLink>
           <MenubarSeparator className="h-px bg-muted" />
-          {user ? (
-            <LogOut />
-          ) : (
-            <GitHubLogInLink />
-          )}
+          {user ? <LogOut /> : <GitHubLogInLink />}
           <MenubarSeparator className="h-px bg-muted" />
           <MenubarItem
             className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -100,7 +96,7 @@ function LogOut() {
         {logout.isPending ? "Logging you out" : "Log out"}
       </div>
     </MenubarItem>
-  )
+  );
 }
 
 function GitHubLogInLink() {
@@ -109,7 +105,7 @@ function GitHubLogInLink() {
       // TODO - Change to production service loing
       // IMPROVE - Allow us to configure this url
       href="http://127.0.0.1:3578/github"
-      icon="lucide:user"
+      icon={<Icon icon="lucide:user" />}
     >
       Log In
     </MenuItemLink>
