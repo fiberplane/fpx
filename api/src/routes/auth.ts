@@ -1,7 +1,11 @@
+import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { FPX_PORT } from "../constants.js";
 import * as schema from "../db/schema.js";
 import { verifyToken } from "../lib/auth/auth.js";
+import { getAuthServer } from "../lib/auth/server.js";
+import { TokenPayloadSchema } from "../lib/auth/types.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
@@ -18,22 +22,26 @@ app.get("/v0/auth/user", cors(), async (ctx) => {
 });
 
 /**
- * Delete user info
+ * Delete user info (effectively "logout")
+ * @TODO - Make an authenticated request to remove the user from Fiberplane Services.
+ * @NOTE - This won't delete the user from our OAuth app with GitHub.
  */
 app.delete("/v0/auth/user", cors(), async (ctx) => {
   logger.debug("Deleting user details");
   const db = ctx.get("db");
   await db.delete(schema.tokens);
+  // TODO - Make a request to Fiberplane Services to remove user from our D1 db
   return ctx.body(null, 204);
 });
 
 /**
- * Handle user login
+ * Begin background server to handle user login
  */
 app.post("/v0/auth/login-start", cors(), async (ctx) => {
-  // TODO: Implement login start logic
   logger.debug("Login starting");
-  return ctx.json({ message: "Logged in" });
+  await getAuthServer(FPX_PORT);
+  // TODO - Set timeout to kill server?
+  return ctx.json({ message: "Initialized auth server" });
 });
 
 /**
@@ -41,6 +49,7 @@ app.post("/v0/auth/login-start", cors(), async (ctx) => {
  */
 app.post("/v0/auth/verify", cors(), async (ctx) => {
   const token = ctx.req.header("Authorization")?.split(" ")[1];
+
   if (!token) {
     return ctx.json({ error: "No token provided" }, 400);
   }
@@ -58,13 +67,43 @@ app.post("/v0/auth/verify", cors(), async (ctx) => {
 /**
  * Handle successful authentication
  */
-app.post("/v0/auth/success", cors(), async (ctx) => {
-  // ...
-  const _body = await ctx.req.json();
-  // TODO - Upsert token?
-  logger.debug("NYI NYI NYI");
-  return ctx.text("OK");
-});
+app.post(
+  "/v0/auth/success",
+  cors(),
+  zValidator("json", TokenPayloadSchema),
+  async (ctx) => {
+    const { token } = ctx.req.valid("json");
+
+    const db = ctx.get("db");
+    const wsConnections = ctx.get("wsConnections");
+
+    try {
+      await db.insert(schema.tokens).values({
+        value: token,
+      });
+
+      // Force the UI to refresh user information,
+      // effectively logging the user in.
+      if (wsConnections) {
+        for (const ws of wsConnections) {
+          ws.send(
+            JSON.stringify({
+              event: "login_success",
+              payload: ["userInfo"],
+            }),
+          );
+        }
+      }
+
+      // TODO - Upsert token?
+      logger.debug("NYI NYI NYI");
+      return ctx.text("OK");
+    } catch (error) {
+      logger.error("Error handling auth success message:", error);
+      return ctx.text("Unknown error", 500);
+    }
+  },
+);
 
 /**
  * Complete the authentication process

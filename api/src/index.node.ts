@@ -7,9 +7,12 @@ import { drizzle } from "drizzle-orm/libsql";
 import figlet from "figlet";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
-import { DEFAULT_DATABASE_URL, USER_PROJECT_ROOT_DIR } from "./constants.js";
+import {
+  DEFAULT_DATABASE_URL,
+  FPX_PORT,
+  USER_PROJECT_ROOT_DIR,
+} from "./constants.js";
 import * as schema from "./db/schema.js";
-import { startAuthServer } from "./lib/auth/auth.js";
 import { getTSServer } from "./lib/expand-function/tsserver/index.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getSetting } from "./lib/settings/index.js";
@@ -47,7 +50,7 @@ app.use("/*", staticServerMiddleware);
 app.get("*", frontendRoutesHandler);
 
 // Serve the API
-const port = +(process.env.FPX_PORT ?? 8788);
+const port = FPX_PORT;
 const server = serve({
   fetch: app.fetch,
   port,
@@ -70,24 +73,6 @@ server.on("error", (err) => {
     process.exit(1);
   } else {
     logger.error("Server error:", err);
-  }
-});
-
-// TODO - Make this server ephemeral
-startAuthServer(port, async (authBody: unknown) => {
-  await db.insert(schema.tokens).values({
-    // @ts-expect-error - FIXME
-    value: authBody?.token,
-  });
-  if (wsConnections) {
-    for (const ws of wsConnections) {
-      ws.send(
-        JSON.stringify({
-          event: "login_success",
-          payload: ["userInfo"],
-        }),
-      );
-    }
   }
 });
 
