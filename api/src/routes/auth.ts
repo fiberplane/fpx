@@ -12,7 +12,7 @@ import logger from "../logger.js";
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 /**
- * Get user info
+ * Get user info (checks if there is a token for the user locally)
  */
 app.get("/v0/auth/user", cors(), async (ctx) => {
   logger.debug("Getting user details");
@@ -32,16 +32,6 @@ app.delete("/v0/auth/user", cors(), async (ctx) => {
   await db.delete(schema.tokens);
   // TODO - Make a request to Fiberplane Services to remove user from our D1 db
   return ctx.body(null, 204);
-});
-
-/**
- * Begin background server to handle user login
- */
-app.post("/v0/auth/login-start", cors(), async (ctx) => {
-  logger.debug("Login starting");
-  await getAuthServer(FPX_PORT);
-  // TODO - Set timeout to kill server?
-  return ctx.json({ message: "Initialized auth server" });
 });
 
 /**

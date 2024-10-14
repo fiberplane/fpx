@@ -1,4 +1,5 @@
 import { useLogout, useUserInfo } from "@/queries";
+import { useMutation } from '@tanstack/react-query';
 import { Icon } from "@iconify/react/dist/iconify.js";
 import {
   DiscordLogoIcon,
@@ -30,7 +31,6 @@ export function SettingsMenu({
   });
 
   const user = useUserInfo();
-  const logout = useLogout();
 
   return (
     <Menubar className="p-0">
@@ -67,24 +67,10 @@ export function SettingsMenu({
           </MenuItemLink>
           <MenubarSeparator className="h-px bg-muted" />
           {user ? (
-            <MenubarItem
-              className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
-              onClick={() => !logout.isPending && logout.mutate()}
-            >
-              <div className="flex items-center gap-2">
-                <Icon icon="lucide:user" />
-                {logout.isPending ? "Logging you out" : "Log out"}
-              </div>
-            </MenubarItem>
+            <LogOut />
           ) : (
-            <MenuItemLink
-              href="http://127.0.0.1:3578/github"
-              icon={<PersonIcon className="w-3.5 h-3.5" />}
-            >
-              Log in
-            </MenuItemLink>
+            <GitHubLogInLink />
           )}
-
           <MenubarSeparator className="h-px bg-muted" />
           <MenubarItem
             className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -98,6 +84,35 @@ export function SettingsMenu({
         </MenubarContent>
       </MenubarMenu>
     </Menubar>
+  );
+}
+
+function LogOut() {
+  const logout = useLogout();
+
+  return (
+    <MenubarItem
+      className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+      onClick={() => !logout.isPending && logout.mutate()}
+    >
+      <div className="flex items-center gap-2">
+        <Icon icon="lucide:user" />
+        {logout.isPending ? "Logging you out" : "Log out"}
+      </div>
+    </MenubarItem>
+  )
+}
+
+function GitHubLogInLink() {
+  return (
+    <MenuItemLink
+      // TODO - Change to production service loing
+      // IMPROVE - Allow us to configure this url
+      href="http://127.0.0.1:3578/github"
+      icon="lucide:user"
+    >
+      Log In
+    </MenuItemLink>
   );
 }
 

@@ -13,6 +13,7 @@ import {
   USER_PROJECT_ROOT_DIR,
 } from "./constants.js";
 import * as schema from "./db/schema.js";
+import { getAuthServer } from "./lib/auth/server.js";
 import { getTSServer } from "./lib/expand-function/tsserver/index.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getSetting } from "./lib/settings/index.js";
@@ -75,6 +76,10 @@ server.on("error", (err) => {
     logger.error("Server error:", err);
   }
 });
+
+// We need to kick off another server in the background on a predictable port
+// TODO - Implement a flow that kicks off and tears down this server ephemerally
+getAuthServer(FPX_PORT);
 
 // First, fire off an async probe to the service we want to monitor
 //   - This will collect information on all routes that the service exposes
