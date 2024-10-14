@@ -47,6 +47,7 @@ export const ProviderOptions = {
 export const AiProviderTypeSchema = z.union([
   z.literal("openai"),
   z.literal("anthropic"),
+  z.literal("fp"),
 ]);
 
 export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;

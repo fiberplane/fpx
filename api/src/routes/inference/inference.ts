@@ -78,18 +78,21 @@ app.post(
 
     // Generate the request
     const { data: parsedArgs, error: generateError } =
-      await generateRequestWithAiProvider({
-        inferenceConfig,
-        persona,
-        method,
-        path,
-        handler,
-        handlerContext: handlerContextPerformant ?? undefined,
-        history: history ?? undefined,
-        openApiSpec: openApiSpec ?? undefined,
-        middleware: middleware ?? undefined,
-        middlewareContext: middlewareContextPerformant ?? undefined,
-      });
+      await generateRequestWithAiProvider(
+        {
+          inferenceConfig,
+          persona,
+          method,
+          path,
+          handler,
+          handlerContext: handlerContextPerformant ?? undefined,
+          history: history ?? undefined,
+          openApiSpec: openApiSpec ?? undefined,
+          middleware: middleware ?? undefined,
+          middlewareContext: middlewareContextPerformant ?? undefined,
+        },
+        db,
+      );
 
     if (generateError) {
       return ctx.json({ message: generateError.message }, 500);
