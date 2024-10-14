@@ -8,7 +8,6 @@ use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt::Formatter;
 use std::ops::Deref;
 use std::str::FromStr;
-use wasm_bindgen::JsValue;
 
 /// A computed value based on the span objects that are present.
 #[derive(Clone, Debug, Deserialize)]
