@@ -9,7 +9,7 @@ export const requestSchema = z.object({
         value: z.string(),
       }),
     )
-    .optional(),
+    .nullable(),
   queryParams: z
     .array(
       z.object({
@@ -17,14 +17,14 @@ export const requestSchema = z.object({
         value: z.string(),
       }),
     )
-    .optional(),
-  body: z.string().optional(),
+    .nullable(),
+  body: z.string().nullable(),
   bodyType: z
     .object({
       type: z.enum(["json", "text", "form-data", "file"]),
       isMultipart: z.boolean(),
     })
-    .optional(),
+    .nullable(),
   headers: z
     .array(
       z.object({
@@ -32,7 +32,7 @@ export const requestSchema = z.object({
         value: z.string(),
       }),
     )
-    .optional(),
+    .nullable(),
 });
 
 export const makeRequestTool = {
