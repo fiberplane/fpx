@@ -1,6 +1,7 @@
 packages:
   - "studio"
   - "api"
+  - "cli"
   - "packages/*"
   - "examples/*"
   - "webhonc"

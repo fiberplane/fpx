@@ -68,7 +68,7 @@
       }
     },
     {
-      "include": ["packages/client-library-otel", "api"],
+      "include": ["packages/client-library-otel", "api", "cli"],
       "linter": {
         "enabled": true,
         "rules": {
