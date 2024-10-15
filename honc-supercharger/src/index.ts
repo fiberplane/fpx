@@ -112,9 +112,9 @@ app.post(
     const result = await builder(
       {
         apiKey: c.env.ANTHROPIC_API_KEY,
-        indexFile: indexFile ?? "",
-        schemaFile: schemaFile ?? "",
-        seedFile: seedFile ?? "",
+        indexFile: indexFile || "<index file not provided />",
+        schemaFile: schemaFile || "<schema file not provided />",
+        seedFile: seedFile || "<seed file not provided />",
         userPrompt: prompt,
       },
       logger,
