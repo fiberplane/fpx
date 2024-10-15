@@ -2,6 +2,7 @@ packages:
   - "studio"
   - "api"
   - "cli"
+  - "honc-supercharger"
   - "packages/*"
   - "examples/*"
   - "webhonc"
