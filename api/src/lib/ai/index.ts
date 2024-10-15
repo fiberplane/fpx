@@ -77,19 +77,22 @@ export async function generateRequestWithAiProvider({
     return { data: null, error: { message: "AI provider is not set" } };
   }
 
-  const providerConfig = aiProviderConfigurations[aiProvider];
-  if (!providerConfig) {
+  if (!aiProviderConfigurations || !aiProviderConfigurations[aiProvider]) {
     return {
       data: null,
       error: { message: "AI provider is not configured properly" },
     };
   }
 
+  const providerConfig = aiProviderConfigurations[aiProvider];
+
   const provider = configureProvider(aiProvider, providerConfig);
+
   logger.debug("Generating request with AI provider", {
     aiProvider,
     providerConfig,
   });
+
   const {
     object: generatedObject,
     warnings,

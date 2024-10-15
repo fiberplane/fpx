@@ -136,7 +136,7 @@ export function AISettingsForm({
                                               key={option}
                                               value={option}
                                             >
-                                              {label}
+                                              {label as React.ReactNode}
                                             </DropdownMenuRadioItem>
                                           ),
                                         )}
@@ -146,7 +146,9 @@ export function AISettingsForm({
                                   <SlashIcon className="w-3.5 h-3.5" />
                                   <FormField
                                     control={form.control}
-                                    name={`aiProviderConfigurations.${providerField.value}.model`}
+                                    name={
+                                      `aiProviderConfigurations.${providerField.value as AiProviderType}.model` as const
+                                    }
                                     render={({ field }) => (
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -176,7 +178,7 @@ export function AISettingsForm({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-full max-w-lg">
                                           <DropdownMenuRadioGroup
-                                            value={field.value}
+                                            value={field.value as string}
                                             onValueChange={(value) =>
                                               field.onChange(value)
                                             }
@@ -196,7 +198,7 @@ export function AISettingsForm({
                                                 key={option}
                                                 value={option}
                                               >
-                                                {label}
+                                                {label as React.ReactNode}
                                               </DropdownMenuRadioItem>
                                             ))}
                                           </DropdownMenuRadioGroup>
@@ -209,7 +211,9 @@ export function AISettingsForm({
                             </div>
                             <FormField
                               control={form.control}
-                              name={`aiProviderConfigurations.${providerField.value}.apiKey`}
+                              name={
+                                `aiProviderConfigurations.${providerField.value as AiProviderType}.apiKey` as const
+                              }
                               render={({ field }) => (
                                 <div className="flex flex-col gap-1">
                                   <FormLabel className="block font-normal text-sm text-gray-300">
@@ -231,8 +235,10 @@ export function AISettingsForm({
                                   </FormDescription>
                                   <FormControl>
                                     <ApiKeyInput
-                                      value={field.value ?? ""}
-                                      onChange={field.onChange}
+                                      value={(field.value as string) ?? ""}
+                                      onChange={(
+                                        e: React.ChangeEvent<HTMLInputElement>,
+                                      ) => field.onChange(e.target.value)}
                                     />
                                   </FormControl>
                                 </div>
@@ -240,7 +246,9 @@ export function AISettingsForm({
                             />
                             <FormField
                               control={form.control}
-                              name={`aiProviderConfigurations.${providerField.value}.baseUrl`}
+                              name={
+                                `aiProviderConfigurations.${providerField.value as AiProviderType}.baseUrl` as const
+                              }
                               render={({ field }) => (
                                 <div className="flex flex-col gap-1">
                                   <FormLabel className="block font-normal text-sm text-gray-300">
