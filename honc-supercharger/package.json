@@ -1,0 +1,62 @@
+{
+  "version": "0.0.1",
+  "name": "honc-supercharger",
+  "description": "API for ai-powered feature bootstrapping for Honc apps",
+  "author": "Brett Beutell<brett@fiberplane.com>",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fiberplane/fpx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fiberplane/fpx/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "types": "./src/lib/types.ts",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx migrate.ts",
+    "db:drop": "drizzle-kit drop",
+    "db:studio": "drizzle-kit studio",
+    "db:touch": "wrangler d1 execute honc-supercharger --local --command='SELECT 1'",
+    "db:migrate:prod": "HONC_SUPERCHARGER_ENV=production drizzle-kit migrate",
+    "db:studio:prod": "HONC_SUPERCHARGER_ENV=production drizzle-kit studio",
+    "build": "pnpm run db:generate && tsc",
+    "format": "biome check . --write",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest --run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT or Apache 2",
+  "keywords": ["honc", "fiberplane", "ai"],
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.29.0",
+    "@cloudflare/workers-types": "^4.20241011.0",
+    "@fiberplane/hono-otel": "^0.2.0",
+    "@hono/zod-validator": "^0.2.2",
+    "@langchain/anthropic": "^0.3.3",
+    "@langchain/core": "^0.2.36",
+    "@langchain/langgraph": "^0.2.14",
+    "dotenv": "^16.4.5",
+    "drizzle-kit": "^0.24.2",
+    "drizzle-orm": "^0.33.0",
+    "drizzle-zod": "^0.5.1",
+    "hono": "^4.6.2",
+    "openai": "^4.67.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "ts-to-zod": "^3.8.5",
+    "tsx": "^4.10.5",
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0",
+    "wrangler": "^3.80.1"
+  }
+}

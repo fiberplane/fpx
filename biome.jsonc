@@ -68,7 +68,12 @@
       }
     },
     {
-      "include": ["packages/client-library-otel", "api", "cli"],
+      "include": [
+        "packages/client-library-otel",
+        "api",
+        "cli",
+        "honc-supercharger"
+      ],
       "linter": {
         "enabled": true,
         "rules": {
