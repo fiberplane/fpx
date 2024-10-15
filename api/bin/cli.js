@@ -442,7 +442,7 @@ function readUserConfig() {
 
 function clearUserConfigDir() {
   const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
-  fs.rmdirSync(configDir, { recursive: true });
+  fs.rmSync(configDir, { recursive: true });
 }
 
 /**
