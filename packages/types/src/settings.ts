@@ -17,7 +17,6 @@ export const MistralModelOptions: Partial<
   "open-mixtral-8x7b": "Open Mixtral 8x7B",
   "open-mixtral-8x22b": "Open Mixtral 8x22B",
   "open-mistral-nemo": "Open Mistral Nemo",
-  "pixtral-12b-2409": "Pixtral 12B",
   "mistral-small-latest": "Mistral Small (Latest)",
   "mistral-large-latest": "Mistral Large (Latest)",
 };
@@ -27,7 +26,6 @@ export const MistralModelSchema = z.union([
   z.literal("open-mixtral-8x7b"),
   z.literal("open-mixtral-8x22b"),
   z.literal("open-mistral-nemo"),
-  z.literal("pixtral-12b-2409"),
   z.literal("mistral-small-latest"),
   z.literal("mistral-large-latest"),
 ]);
@@ -123,29 +121,6 @@ export const SettingsSchema = z.object({
       baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
     })
     .optional(),
-});
-
-export const SettingsSchemaOld = z.object({
-  aiEnabled: z.boolean().optional(),
-  aiProviderType: AiProviderTypeSchema.optional(),
-  anthropicApiKey: z.string().optional(),
-  anthropicBaseUrl: z.string().optional(),
-  anthropicModel: AnthropicModelSchema.optional(),
-  fpxWorkerProxy: z
-    .object({
-      enabled: z.boolean().optional(),
-      // Optional seems broken on urls with react-hook-form and controlled inputs resulting into empty strings
-      // Fix from:
-      // https://github.com/colinhacks/zod/discussions/1254#discussioncomment-3123225
-      baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
-    })
-    .optional(),
-  openaiApiKey: z.string().optional(),
-  openaiBaseUrl: z.string().optional(),
-  openaiModel: OpenAIModelSchema.optional(),
-  proxyBaseUrl: z.string().optional(),
-  proxyRequestsEnabled: z.boolean().optional(),
-  webhoncConnectionId: z.string().optional(),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;
