@@ -1,6 +1,7 @@
 node_modules
 dist
 .dev.vars
+.prod.vars
 honc.db
 
 # Change them to your taste:
