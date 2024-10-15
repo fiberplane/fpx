@@ -2,7 +2,6 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 mod schemas;
-mod static_analysis;
 
 /// FPX - Super-charge your local development.
 #[derive(Parser, Debug)]
@@ -15,12 +14,10 @@ pub struct Args {
 #[derive(Subcommand, Debug)]
 pub enum Command {
     GenerateSchemas(schemas::Args),
-    StaticAnalysis(static_analysis::Args),
 }
 
 pub async fn handle_command(args: Args) -> Result<()> {
     match args.command {
         Command::GenerateSchemas(args) => schemas::handle_command(args).await,
-        Command::StaticAnalysis(args) => static_analysis::handle_command(args).await,
     }
 }
