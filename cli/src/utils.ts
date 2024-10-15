@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { cancel, log } from "@clack/prompts";
 import { CANCEL_MESSAGE } from "./const";
+import { SuperchargerError } from "./types";
 
 export function getPackageManager() {
   return process.env.npm_config_user_agent?.split("/").at(0);
@@ -30,12 +32,27 @@ export async function runShell(cwd: string, commands: string[]): Promise<void> {
   });
 }
 
-export function handleError(error: Error) {
-  log.error(`create-honc-app exited with an error: ${error.message}`);
-  process.exit(1);
+export function handleError(error: Error | SuperchargerError) {
+  if (error instanceof SuperchargerError) {
+    log.warn(
+      `Could not scaffold project according to your description\n(error: ${error.message})`,
+    );
+    log.info("Continuing...");
+  } else {
+    log.error(`exiting with an error: ${error.message}`);
+    process.exit(1);
+  }
 }
 
 export function handleCancel() {
   cancel(CANCEL_MESSAGE);
   process.exit(0);
+}
+
+export function safeReadFile(path: string) {
+  try {
+    return readFileSync(path, "utf-8");
+  } catch (_error) {
+    return null;
+  }
 }

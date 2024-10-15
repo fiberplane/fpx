@@ -7,8 +7,10 @@ import { actionDatabase, promptDatabase } from "./actions/database";
 import { actionDependencies, promptDependencies } from "./actions/dependencies";
 import { promptDescription } from "./actions/description";
 import { actionGit, promptGit } from "./actions/git";
+import { actionSupercharger } from "./actions/supercharger";
 import { HONC_TITLE } from "./const";
 import { getContext } from "./context";
+import { isError } from "./types";
 import { handleCancel, handleError } from "./utils";
 
 async function main() {
@@ -42,6 +44,7 @@ async function main() {
 
   const actions = [
     actionTemplate,
+    actionSupercharger,
     actionDatabase,
     actionDependencies,
     actionGit,
@@ -54,7 +57,7 @@ async function main() {
       handleCancel();
     }
 
-    if (result instanceof Error) {
+    if (isError(result)) {
       handleError(result);
     }
   }

@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { Context } from "@/context";
 import type { Template } from "@/types";
+import { safeReadFile } from "@/utils";
 import { log, select, spinner } from "@clack/prompts";
 import { downloadTemplate } from "giget";
 
@@ -80,15 +80,15 @@ export async function actionTemplate(ctx: Context) {
       provider: "github",
     });
 
-    const indexFile = readFileSync(path.join(ctx.path, "src", "index.ts"));
-    const schemaFile = readFileSync(
+    const indexFile = safeReadFile(path.join(ctx.path, "src", "index.ts"));
+    const schemaFile = safeReadFile(
       path.join(ctx.path, "src", "db", "schema.ts"),
     );
-    const seedFile = readFileSync(path.join(ctx.path, "seed.ts"));
+    const seedFile = safeReadFile(path.join(ctx.path, "seed.ts"));
 
-    ctx.indexFile = indexFile.toString();
-    ctx.schemaFile = schemaFile.toString();
-    ctx.seedFile = seedFile.toString();
+    ctx.indexFile = indexFile?.toString();
+    ctx.schemaFile = schemaFile?.toString();
+    ctx.seedFile = seedFile?.toString();
   } catch (error) {
     return error;
   }

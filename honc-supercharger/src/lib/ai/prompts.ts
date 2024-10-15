@@ -67,7 +67,7 @@ Follow these guidelines:
 - Always respond in valid JSON
 - Only make changes to the files provided, do not make changes outside of the provided files
 - All imports are correct, so don't modify import paths
-
+- If the file was not provided, return an empty string for that file
 
 
 This is the description of the app I want to build:
