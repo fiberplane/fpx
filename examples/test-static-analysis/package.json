@@ -9,7 +9,7 @@
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",
     "drizzle-orm": "^0.32.0",
-    "hono": "^4.5.9"
+    "hono": "^4.5.8"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240909.0",
