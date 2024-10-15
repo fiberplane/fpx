@@ -114,6 +114,15 @@ export const SettingsSchema = z.object({
   proxyBaseUrl: z.string().optional(),
   proxyRequestsEnabled: z.boolean().optional(),
   webhoncConnectionId: z.string().optional(),
+  fpxWorkerProxy: z
+    .object({
+      enabled: z.boolean().optional(),
+      // Optional seems broken on urls with react-hook-form and controlled inputs resulting into empty strings
+      // Fix from:
+      // https://github.com/colinhacks/zod/discussions/1254#discussioncomment-3123225
+      baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
+    })
+    .optional(),
 });
 
 export const SettingsSchemaOld = z.object({
