@@ -7,7 +7,7 @@ import logger from "../../logger.js";
 import { invokeRequestGenerationPrompt } from "./prompts.js";
 import { requestSchema } from "./tools.js";
 
-function getProvider(
+function configureProvider(
   aiProvider: string,
   providerConfig: {
     apiKey: string;
@@ -85,12 +85,16 @@ export async function generateRequestWithAiProvider({
     };
   }
 
-  const provider = getProvider(aiProvider, providerConfig);
+  const provider = configureProvider(aiProvider, providerConfig);
   logger.debug("Generating request with AI provider", {
     aiProvider,
     providerConfig,
   });
-  const { object: generatedObject } = await generateObject({
+  const {
+    object: generatedObject,
+    warnings,
+    usage,
+  } = await generateObject({
     model: provider,
     schema: requestSchema,
     prompt: await invokeRequestGenerationPrompt({
@@ -104,6 +108,12 @@ export async function generateRequestWithAiProvider({
       method,
       path,
     }),
+  });
+
+  logger.debug("Generated request, warnings, usage", {
+    generatedObject,
+    warnings,
+    usage,
   });
 
   return { data: generatedObject, error: null };
