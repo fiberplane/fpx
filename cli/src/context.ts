@@ -29,6 +29,7 @@ export function getContext(): Context {
     packageManager: getPackageManager() ?? "npm",
     flags: [],
 
-    superchargerApiKey: process.env.SUPERCHARGER_API_KEY,
+    superchargerApiKey: process.env.HONC_API_KEY,
+    superchargerBaseUrl: process.env.HONC_BASE_URL,
   };
 }
