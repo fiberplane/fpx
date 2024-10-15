@@ -178,7 +178,7 @@ export function AISettingsForm({
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-full max-w-lg">
                                           <DropdownMenuRadioGroup
-                                            value={field.value as string}
+                                            value={field.value}
                                             onValueChange={(value) =>
                                               field.onChange(value)
                                             }
@@ -212,7 +212,7 @@ export function AISettingsForm({
                             <FormField
                               control={form.control}
                               name={
-                                `aiProviderConfigurations.${providerField.value as AiProviderType}.apiKey` as const
+                                `aiProviderConfigurations.${providerField.value}.apiKey` as const
                               }
                               render={({ field }) => (
                                 <div className="flex flex-col gap-1">
@@ -235,10 +235,8 @@ export function AISettingsForm({
                                   </FormDescription>
                                   <FormControl>
                                     <ApiKeyInput
-                                      value={(field.value as string) ?? ""}
-                                      onChange={(
-                                        e: React.ChangeEvent<HTMLInputElement>,
-                                      ) => field.onChange(e.target.value)}
+                                      value={field.value ?? ""}
+                                      onChange={field.onChange}
                                     />
                                   </FormControl>
                                 </div>
@@ -247,7 +245,7 @@ export function AISettingsForm({
                             <FormField
                               control={form.control}
                               name={
-                                `aiProviderConfigurations.${providerField.value as AiProviderType}.baseUrl` as const
+                                `aiProviderConfigurations.${providerField.value}.baseUrl` as const
                               }
                               render={({ field }) => (
                                 <div className="flex flex-col gap-1">
