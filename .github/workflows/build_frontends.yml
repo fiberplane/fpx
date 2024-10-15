@@ -5,12 +5,14 @@ on:
   pull_request:
     branches: ["*"]
     paths: 
+      - "cli/**"
       - "api/**"
       - "packages/client-library-otel/**"
       - "studio/**"
   push:
     branches: ["main", "release-*"]
     paths: 
+      - "cli/**"
       - "api/**"
       - "packages/client-library-otel/**"
       - "studio/**"
@@ -78,11 +80,12 @@ jobs:
 
       # Building
 
-      - name: Build api, frontend, and client library
+      - name: Build api, frontend, cli, and client library
         run: |
           pnpm \
             --filter=@fiberplane/studio-frontend \
             --filter=@fiberplane/studio \
+            --filter=@fiberplane/studio-cli \
             --filter=@fiberplane/hono-otel \
             build
 
@@ -90,6 +93,9 @@ jobs:
 
       - name: Copy the frontend files into the api
         run: cp -r ./studio/dist/* ./api/dist
+
+      - name: Copy the cli files into the api
+        run: cp -r ./cli/dist ./api/dist/cli
 
       - name: Publish a temporary preview version
         run: pnpx pkg-pr-new publish --pnpm "./api" "./packages/client-library-otel"
