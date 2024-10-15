@@ -93,7 +93,7 @@ app.post(
   ),
   async (c) => {
     // HACK - Set this true to return a mock response, not eat up API calls
-    const USE_MOCK = true;
+    const USE_MOCK = false;
 
     const db = c.get("db");
     const logger = c.get("appLogger");
