@@ -212,7 +212,7 @@ export function AISettingsForm({
                             <FormField
                               control={form.control}
                               name={
-                                `aiProviderConfigurations.${providerField.value}.apiKey` as const
+                                `aiProviderConfigurations.${providerField.value as AiProviderType}.apiKey` as const
                               }
                               render={({ field }) => (
                                 <div className="flex flex-col gap-1">
@@ -245,7 +245,7 @@ export function AISettingsForm({
                             <FormField
                               control={form.control}
                               name={
-                                `aiProviderConfigurations.${providerField.value}.baseUrl` as const
+                                `aiProviderConfigurations.${providerField.value as AiProviderType}.baseUrl` as const
                               }
                               render={({ field }) => (
                                 <div className="flex flex-col gap-1">
