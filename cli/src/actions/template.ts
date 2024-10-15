@@ -26,8 +26,8 @@ export async function promptTemplate(ctx: Context) {
         {
           value: "sample-d1",
           label: "D1 base template",
-          hint: "A barebones HONC project with a D1 Database"
-        }
+          hint: "A barebones HONC project with a D1 Database",
+        },
       ],
       initialValue: "base",
     });
@@ -65,7 +65,7 @@ export async function actionTemplate(ctx: Context) {
       break;
     case "sample-d1":
       templateUrl = "github:fiberplane/create-honc-app/templates/d1";
-      break
+      break;
     default:
       return new Error(`Invalid template selected: ${ctx.template}`);
   }

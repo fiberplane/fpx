@@ -1,8 +1,8 @@
 import type { Context } from "@/context";
 import { confirm } from "@clack/prompts";
-import { showNeonSetupInstructions, runNeonSetup } from "./neon";
-import { showSupabaseSetupInstructions } from "./supabase";
 import { showD1SetupInstructions } from "./d1";
+import { runNeonSetup, showNeonSetupInstructions } from "./neon";
+import { showSupabaseSetupInstructions } from "./supabase";
 
 export async function promptDatabase(ctx: Context) {
   switch (ctx.template) {
@@ -10,8 +10,8 @@ export async function promptDatabase(ctx: Context) {
       ctx.database = "supabase";
       break;
     }
-    case "sample-d1":{
-      ctx.database ="d1";
+    case "sample-d1": {
+      ctx.database = "d1";
       break;
     }
     case "base": {
@@ -39,7 +39,7 @@ export async function actionDatabase(ctx: Context) {
     showSupabaseSetupInstructions();
     return;
   }
-  if(ctx.database === "d1"){
+  if (ctx.database === "d1") {
     showD1SetupInstructions();
     return;
   }

@@ -1,8 +1,8 @@
+import fs from "node:fs";
 import type { Context } from "@/context";
 import { getNeonAuthToken } from "@/integrations/neon";
-import fs from "node:fs";
 import { isCancel, log, select, text } from "@clack/prompts";
-import { type Api, createApiClient, type Role } from "@neondatabase/api-client";
+import { type Api, type Role, createApiClient } from "@neondatabase/api-client";
 
 /*
  * Used if the user rejects the Neon setup flow

@@ -1,7 +1,7 @@
+import path from "node:path";
 import type { Context } from "@/context";
 import { runShell } from "@/utils";
 import { confirm, log, spinner } from "@clack/prompts";
-import path from "node:path";
 
 export async function promptDependencies(ctx: Context) {
   try {

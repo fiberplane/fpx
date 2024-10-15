@@ -1,13 +1,13 @@
-import { log } from "@clack/prompts";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
-import {
-  type TokenResponseBody,
-  OAuth2Client,
-  generateState,
-  generateCodeVerifier,
-} from "oslo/oauth2";
+import { log } from "@clack/prompts";
 import open from "open";
+import {
+  OAuth2Client,
+  type TokenResponseBody,
+  generateCodeVerifier,
+  generateState,
+} from "oslo/oauth2";
 
 const NEON_OAUTH_HOST = "https://oauth2.neon.tech";
 const NEON_CLIENT_ID = "create-honc-app";

@@ -1,4 +1,4 @@
-import type { Template, Flags } from "./types";
+import type { Flags, Template } from "./types";
 import { getPackageManager } from "./utils";
 
 export interface Context {

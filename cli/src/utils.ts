@@ -1,7 +1,6 @@
-import { cancel, log } from "@clack/prompts";
 import { spawn } from "node:child_process";
+import { cancel, log } from "@clack/prompts";
 import { CANCEL_MESSAGE } from "./const";
-import fs from "node:fs";
 
 export function getPackageManager() {
   return process.env.npm_config_user_agent?.split("/").at(0);
