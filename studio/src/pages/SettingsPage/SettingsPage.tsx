@@ -21,7 +21,9 @@ export function SettingsPage() {
   const { data, isPending, isError } = useFetchSettings();
 
   return (
-    <div className={cn("mt-4 px-4 overflow-hidden h-full", "lg:px-6")}>
+    <div
+      className={cn("mt-4 px-4 overflow-hidden h-full w-[950px]", "lg:px-6")}
+    >
       {isPending ? (
         <SettingsSkeleton />
       ) : isError ? (
