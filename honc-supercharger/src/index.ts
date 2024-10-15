@@ -1,10 +1,15 @@
+import { instrument } from "@fiberplane/hono-otel";
 import { zValidator } from "@hono/zod-validator";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { logger as honoLogger } from "hono/logger";
 import { z } from "zod";
 import * as schema from "./db/schema";
-import { buildWithAnthropic, buildWithAnthropicMock } from "./lib/ai/anthropic";
+import {
+  FILES_TO_MODIFY,
+  buildWithAnthropic,
+  buildWithAnthropicMock,
+} from "./lib/ai/anthropic";
 import { isScaffoldAppToolParameters } from "./lib/ai/tools";
 import {
   readProjectFiles,
@@ -22,6 +27,7 @@ app.use(async (c, next) => {
   c.set("appLogger", logger);
   await next();
 });
+
 // NOTE - This middleware adds `db` on the context so we don't have to initiate it every time
 app.use(async (c, next) => {
   const db = drizzle(c.env.DB, { schema });
@@ -57,8 +63,12 @@ app.get("/v0/files/:sessionId", async (c) => {
   return c.json({ files });
 });
 
+/**
+ * Creates files for a given prompt, and save those files in R2, using the sessionId as the key.
+ * Returns the list of files that were created.
+ */
 app.post(
-  "/v0/build",
+  "/v0/build/:sessionId",
   zValidator(
     "json",
     z.object({
@@ -66,19 +76,17 @@ app.post(
       indexFile: z.string().optional(),
       schemaFile: z.string().optional(),
       seedFile: z.string().optional(),
-      sessionId: z
-        .string()
-        .describe(
-          "A unique identifier for the session, to correlate artifacts",
-        ),
     }),
   ),
   async (c) => {
-    const logger = c.get("appLogger");
     // HACK - Set this true to return a mock response, not eat up API calls
-    const USE_MOCK = false;
+    const USE_MOCK = true;
+
+    const db = c.get("db");
+    const logger = c.get("appLogger");
+    const sessionId = c.req.param("sessionId");
     const body = c.req.valid("json");
-    const { prompt, sessionId, indexFile, schemaFile, seedFile } = body;
+    const { prompt, indexFile, schemaFile, seedFile } = body;
 
     logger.debug("Project files:", {
       indexFile: indexFile ? "present" : "missing",
@@ -90,6 +98,7 @@ app.post(
 
     const result = await builder(
       {
+        apiKey: c.env.ANTHROPIC_API_KEY,
         indexFile: indexFile ?? "",
         schemaFile: schemaFile ?? "",
         seedFile: seedFile ?? "",
@@ -99,24 +108,51 @@ app.post(
     );
 
     if (isScaffoldAppToolParameters(result)) {
-      logger.debug("Writing files");
-      logger.debug("Writing index file");
-      await writeIndexFile(c.env.R2, sessionId, result.indexFile);
-      logger.debug("Writing schema file");
-      await writeSchemaFile(c.env.R2, sessionId, result.schemaFile);
-      logger.debug("Writing seed file");
-      await writeSeedFile(c.env.R2, sessionId, result.seedFile);
+      // Don't await this, so we can return a response sooner and don't block the user's response
+      c.executionCtx.waitUntil(
+        Promise.all([
+          writeIndexFile(c.env.R2, sessionId, result.indexFile),
+          writeSchemaFile(c.env.R2, sessionId, result.schemaFile),
+          writeSeedFile(c.env.R2, sessionId, result.seedFile),
+        ]),
+      );
     } else {
       logger.error(
         "Failed to parse scaffold app tool parameter according to schema",
       );
+      await db
+        .insert(schema.sessions)
+        .values({
+          id: sessionId,
+          prompt,
+          data: {
+            result,
+            // NOTE - This is for future reference, if we change how and which files we modify
+            filesModified: FILES_TO_MODIFY,
+          },
+          type: "error",
+        })
+        .returning();
       return c.json(
         { error: "Unparseable tool call response from Anthropic" },
         500,
       );
     }
-    return c.json({ result });
+
+    const [session] = await db
+      .insert(schema.sessions)
+      .values({
+        id: sessionId,
+        prompt,
+        data: {
+          // NOTE - This is for future reference, if we change how and which files we modify
+          filesModified: FILES_TO_MODIFY,
+        },
+        type: "success",
+      })
+      .returning();
+    return c.json({ result, session });
   },
 );
 
-export default app;
+export default instrument(app);

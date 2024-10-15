@@ -10,13 +10,17 @@ const scaffoldAppTool = {
   input_schema: scaffoldAppToolBase.function.parameters,
 };
 
+export const FILES_TO_MODIFY = ["src/index.ts", "src/db/schema.ts", "seed.ts"];
+
 export async function buildWithAnthropic(
   {
+    apiKey,
     indexFile,
     schemaFile,
     seedFile,
     userPrompt,
   }: {
+    apiKey: string;
     indexFile: string;
     schemaFile: string;
     seedFile: string;
@@ -38,7 +42,7 @@ export async function buildWithAnthropic(
     `User prompt (truncated): ${userPrompt.replace(/\n/g, "\\n").substring(0, 100)}...`,
   );
   const anthropicClient = new Anthropic({
-    apiKey: process.env.ANTHORPIC_API_KEY,
+    apiKey,
     // fetch: globalThis.fetch,
   });
 
