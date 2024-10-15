@@ -5,6 +5,7 @@ import { defineConfig } from "drizzle-kit";
 
 let dbConfig: ReturnType<typeof defineConfig>;
 if (process.env.HONC_SUPERCHARGER_ENV === "production") {
+  console.log("Using production D1 DB");
   config({ path: "./.prod.vars" });
   dbConfig = defineConfig({
     schema: "./src/db/schema.ts",

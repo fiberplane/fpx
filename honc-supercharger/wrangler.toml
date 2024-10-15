@@ -5,9 +5,9 @@ compatibility_flags = [ "nodejs_compat" ]
 [dev]
 port = 4468
 
-[[kv_namespaces]]
-binding = "KV"
-id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# [[kv_namespaces]]
+# binding = "KV"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 [[r2_buckets]]
 binding = "R2"
@@ -16,7 +16,7 @@ bucket_name = "honc-supercharger-bucket"
 [[d1_databases]]
 binding = "DB"
 database_name = "honc-supercharger"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+database_id = "0d81a785-3c59-433e-8661-4ab4fe6df64f"
 migrations_dir = "drizzle/migrations"
 
 [ai]
