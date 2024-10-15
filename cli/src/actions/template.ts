@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import type { Context } from "@/context";
 import type { Template } from "@/types";
 import { log, select, spinner } from "@clack/prompts";
@@ -77,6 +79,16 @@ export async function actionTemplate(ctx: Context) {
       force: true,
       provider: "github",
     });
+
+    const indexFile = readFileSync(path.join(ctx.path, "src", "index.ts"));
+    const schemaFile = readFileSync(
+      path.join(ctx.path, "src", "db", "schema.ts"),
+    );
+    const seedFile = readFileSync(path.join(ctx.path, "seed.ts"));
+
+    ctx.indexFile = indexFile.toString();
+    ctx.schemaFile = schemaFile.toString();
+    ctx.seedFile = seedFile.toString();
   } catch (error) {
     return error;
   }
