@@ -19,7 +19,7 @@
     "dev": "wrangler dev src/index.ts",
     "deploy": "wrangler deploy --minify src/index.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx migrate.ts",
+    "db:migrate": "drizzle-kit migrate",
     "db:drop": "drizzle-kit drop",
     "db:studio": "drizzle-kit studio",
     "db:touch": "wrangler d1 execute honc-supercharger --local --command='SELECT 1'",
@@ -28,6 +28,7 @@
     "build": "pnpm run db:generate && tsc",
     "format": "biome check . --write",
     "lint": "biome lint .",
+    "studio": "pnpx @fiberplane/studio@canary",
     "typecheck": "tsc --noEmit",
     "test": "vitest --run"
   },
