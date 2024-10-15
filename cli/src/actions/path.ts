@@ -17,8 +17,11 @@ export async function promptPath(ctx: Context) {
     });
 
     if (typeof result === "string") {
-      if (result === "") ctx.path = placeholder;
-      else ctx.path = result;
+      if (result === "") {
+        ctx.path = placeholder;
+      } else {
+        ctx.path = result;
+      }
     }
 
     return result;

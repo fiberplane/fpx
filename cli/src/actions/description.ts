@@ -12,8 +12,11 @@ export async function promptDescription(ctx: Context) {
     });
 
     if (typeof result === "string") {
-      if (result === "") { ctx.description = placeholder; }
-      else { ctx.description = result; }
+      if (result === "") {
+        ctx.description = placeholder;
+      } else {
+        ctx.description = result;
+      }
     }
 
     return result;

@@ -65,11 +65,13 @@ runWizard();
  * If there are valid values in .fpxconfig, we skip asking questions
  */
 async function runWizard() {
+  const MIGHT_BE_CREATING =
+    IS_INITIALIZING_FPX && !WRANGLER_TOML && !PACKAGE_JSON;
 
-  const MIGHT_BE_CREATING = IS_INITIALIZING_FPX && !WRANGLER_TOML && !PACKAGE_JSON;
-  
   const question = chalk.green("  🕵️ No project detected. Create a new app?");
-  const isCreatingAnswer = MIGHT_BE_CREATING ? await askUser(question, "y") : "n";
+  const isCreatingAnswer = MIGHT_BE_CREATING
+    ? await askUser(question, "y")
+    : "n";
   const shouldCreateApp = cliAnswerToBool(isCreatingAnswer);
 
   const IS_CREATING = scriptsToRun.includes("create") || shouldCreateApp;
@@ -78,7 +80,6 @@ async function runWizard() {
   logger.debug("scriptsToRun", scriptsToRun);
   logger.debug("IS_CREATING", IS_CREATING);
   logger.debug("PROJECT_ROOT_DIR", PROJECT_ROOT_DIR);
-
 
   if (IS_CREATING) {
     // HACK - Clear the user's config dir (since we might have a placeholder config after the last steps)

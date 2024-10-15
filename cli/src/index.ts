@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-import { getContext } from "./context";
 import { promptPath } from "@/actions/path";
-import { promptTemplate, actionTemplate } from "@/actions/template";
-import { promptDatabase, actionDatabase } from "./actions/database";
-import { promptDependencies, actionDependencies } from "./actions/dependencies";
-import { promptGit, actionGit } from "./actions/git";
+import { actionTemplate, promptTemplate } from "@/actions/template";
+import { intro, isCancel, outro } from "@clack/prompts";
 import pico from "picocolors";
-import { intro, outro, isCancel } from "@clack/prompts";
-import { HONC_TITLE } from "./const";
-import { handleCancel, handleError } from "./utils";
+import { actionDatabase, promptDatabase } from "./actions/database";
+import { actionDependencies, promptDependencies } from "./actions/dependencies";
 import { promptDescription } from "./actions/description";
+import { actionGit, promptGit } from "./actions/git";
+import { HONC_TITLE } from "./const";
+import { getContext } from "./context";
+import { handleCancel, handleError } from "./utils";
 
 async function main() {
   console.log("");
@@ -63,9 +63,9 @@ async function main() {
     ? "You can now navigate to the project folder and run the following commands to generate, apply the migrations and seed the database:"
     : "Once you've set up the database and saved the connection string, you can generate the migrations, apply them, and seed the database using the following commands";
 
- 
-    const dbD1 = context.template === "sample-d1" ? `${context.packageManager} run dev` : "";
-    outro(`🪿 HONC app created successfully in ${context.path}!
+  const dbD1 =
+    context.template === "sample-d1" ? `${context.packageManager} run dev` : "";
+  outro(`🪿 HONC app created successfully in ${context.path}!
 
 ${dbPreamble}
 

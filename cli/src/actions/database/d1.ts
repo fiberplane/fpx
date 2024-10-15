@@ -11,7 +11,5 @@ export function showD1SetupInstructions() {
     CLOUDFLARE_DATABASE_ID=""
 
     `);
-log.step("visit https://developers.cloudflare.com/d1/ for more information");
-
-
+  log.step("visit https://developers.cloudflare.com/d1/ for more information");
 }
