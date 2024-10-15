@@ -5,6 +5,12 @@ compatibility_flags = [ "nodejs_compat" ]
 [dev]
 port = 4468
 
+# Workers Logs
+# Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
+# Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs
+[observability]
+enabled = true
+
 # [[kv_namespaces]]
 # binding = "KV"
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
