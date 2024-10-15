@@ -1,6 +1,45 @@
 import type { Settings } from "@fiberplane/fpx-types";
-import { generateRequestWithAnthropic } from "./anthropic.js";
-import { generateRequestWithOpenAI } from "./openai.js";
+import { generateObject } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createMistral } from "@ai-sdk/mistral";
+import { requestSchema } from "./tools.js";
+import logger from "../../logger.js";
+import { invokeRequestGenerationPrompt } from "./prompts.js";
+
+function getProvider(
+  aiProvider: string,
+  providerConfig: {
+    apiKey: string;
+    baseUrl?: string | undefined;
+    model: string;
+  },
+) {
+  if (aiProvider === "openai") {
+    const openai = createOpenAI({
+      apiKey: providerConfig.apiKey,
+      baseURL: providerConfig.baseUrl,
+    });
+    return openai(providerConfig.model, { structuredOutputs: true });
+  }
+  if (aiProvider === "anthropic") {
+    const anthropic = createAnthropic({
+      apiKey: providerConfig.apiKey,
+      baseURL: providerConfig.baseUrl,
+    });
+    return anthropic(providerConfig.model);
+  }
+
+  if (aiProvider === "mistral") {
+    const mistral = createMistral({
+      apiKey: providerConfig.apiKey,
+      baseURL: providerConfig.baseUrl,
+    });
+    return mistral(providerConfig.model);
+  }
+
+  throw new Error("Unknown AI provider");
+}
 
 export async function generateRequestWithAiProvider({
   inferenceConfig,
@@ -29,67 +68,43 @@ export async function generateRequestWithAiProvider({
   }[];
   middlewareContext?: string;
 }) {
-  const {
-    openaiApiKey,
-    openaiModel,
-    openaiBaseUrl,
-    anthropicApiKey,
-    anthropicModel,
-    anthropicBaseUrl,
-    aiProviderType,
-  } = inferenceConfig;
-  if (aiProviderType === "openai") {
-    return generateRequestWithOpenAI({
-      apiKey: openaiApiKey ?? "",
-      model: openaiModel ?? "",
-      baseUrl: openaiBaseUrl,
-      persona,
-      method,
-      path,
-      handler,
-      handlerContext,
-      history,
-      openApiSpec,
-      middleware,
-      middlewareContext,
-    }).then(
-      (parsedArgs) => {
-        return { data: parsedArgs, error: null };
-      },
-      (error) => {
-        if (error instanceof Error) {
-          return { data: null, error: { message: error.message } };
-        }
-        return { data: null, error: { message: "Unknown error" } };
-      },
-    );
-  }
-  if (aiProviderType === "anthropic") {
-    return generateRequestWithAnthropic({
-      apiKey: anthropicApiKey ?? "",
-      baseUrl: anthropicBaseUrl,
-      model: anthropicModel ?? "",
-      persona,
-      method,
-      path,
-      handler,
-      handlerContext,
-      history,
-      openApiSpec,
-      middleware,
-      middlewareContext,
-    }).then(
-      (parsedArgs) => {
-        return { data: parsedArgs, error: null };
-      },
-      (error) => {
-        if (error instanceof Error) {
-          return { data: null, error: { message: error.message } };
-        }
-        return { data: null, error: { message: "Unknown error" } };
-      },
-    );
+  const { aiEnabled, aiProviderConfigurations, aiProvider } = inferenceConfig;
+  if (!aiEnabled) {
+    return { data: null, error: { message: "AI is not enabled" } };
   }
 
-  return { data: null, error: { message: "Unknown AI provider" } };
+  if (!aiProvider) {
+    return { data: null, error: { message: "AI provider is not set" } };
+  }
+
+  const providerConfig = aiProviderConfigurations[aiProvider];
+  if (!providerConfig) {
+    return {
+      data: null,
+      error: { message: "AI provider is not configured properly" },
+    };
+  }
+
+  const provider = getProvider(aiProvider, providerConfig);
+  logger.debug("Generating request with AI provider", {
+    aiProvider,
+    providerConfig,
+  });
+  const { object: generatedObject } = await generateObject({
+    model: provider,
+    schema: requestSchema,
+    prompt: await invokeRequestGenerationPrompt({
+      handler,
+      handlerContext,
+      history,
+      openApiSpec,
+      middleware,
+      middlewareContext,
+      persona,
+      method,
+      path,
+    }),
+  });
+
+  return { data: generatedObject, error: null };
 }
