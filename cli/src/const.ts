@@ -7,4 +7,4 @@ export const HONC_TITLE = `
                                              
 `;
 
-export const CANCEL_MESSAGE = "create-honc-app cancelled 🪿";
+export const CANCEL_MESSAGE = "app creation cancelled 🪿";

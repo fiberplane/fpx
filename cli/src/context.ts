@@ -5,6 +5,7 @@ export interface Context {
   cwd: string;
   packageManager: string;
   path?: string;
+  description?: string;
   template?: Template;
   database?: string;
   flags: Flags;

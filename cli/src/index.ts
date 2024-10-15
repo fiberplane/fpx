@@ -9,17 +9,19 @@ import pico from "picocolors";
 import { intro, outro, isCancel } from "@clack/prompts";
 import { HONC_TITLE } from "./const";
 import { handleCancel, handleError } from "./utils";
+import { promptDescription } from "./actions/description";
 
 async function main() {
   console.log("");
   console.log(pico.red(HONC_TITLE));
   console.log("");
 
-  intro("🪿 create-honc-app");
+  intro("🪿 creating HONC app");
 
   const context = getContext();
 
   const prompts = [
+    promptDescription,
     promptPath,
     promptTemplate,
     promptDatabase,
