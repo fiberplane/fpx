@@ -18,14 +18,14 @@ function configureProvider(
   if (aiProvider === "openai") {
     const openai = createOpenAI({
       apiKey: providerConfig.apiKey,
-      baseURL: providerConfig.baseUrl,
+      baseURL: providerConfig.baseUrl ?? undefined,
     });
     return openai(providerConfig.model, { structuredOutputs: true });
   }
   if (aiProvider === "anthropic") {
     const anthropic = createAnthropic({
       apiKey: providerConfig.apiKey,
-      baseURL: providerConfig.baseUrl,
+      baseURL: providerConfig.baseUrl ?? undefined,
     });
     return anthropic(providerConfig.model);
   }
@@ -33,7 +33,7 @@ function configureProvider(
   if (aiProvider === "mistral") {
     const mistral = createMistral({
       apiKey: providerConfig.apiKey,
-      baseURL: providerConfig.baseUrl,
+      baseURL: providerConfig.baseUrl ?? undefined,
     });
     return mistral(providerConfig.model);
   }
@@ -113,11 +113,19 @@ export async function generateRequestWithAiProvider({
     }),
   });
 
-  logger.debug("Generated request, warnings, usage", {
+  logger.debug("Generated object, warnings, usage", {
     generatedObject,
     warnings,
     usage,
   });
 
-  return { data: generatedObject, error: null };
+  // Remove x-fpx-trace-id header from the generated object
+  const filteredHeaders = generatedObject?.headers?.filter(
+    (header) => header.key.toLowerCase() !== "x-fpx-trace-id",
+  );
+
+  return {
+    data: { ...generatedObject, headers: filteredHeaders },
+    error: null,
+  };
 }
