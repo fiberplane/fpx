@@ -24,9 +24,11 @@ import {
 import { cn } from "@/utils";
 import {
   AnthropicModelOptions,
-  OpenAiModelOptions,
+  OpenAIModelOptions,
   ProviderOptions,
   type Settings,
+  type AiProviderType,
+  MistralModelOptions,
 } from "@fiberplane/fpx-types";
 import {
   CaretDownIcon,
@@ -89,7 +91,7 @@ export function AISettingsForm({
                   {field.value ? (
                     <FormField
                       control={form.control}
-                      name="aiProviderType"
+                      name="aiProvider"
                       render={({ field: providerField }) => (
                         <div className="border-t pt-4">
                           <FormItem className="flex flex-col gap-2 justify-between rounded-lg text-sm">
@@ -116,11 +118,9 @@ export function AISettingsForm({
                                         className="w-auto px-2 inline-flex items-center"
                                       >
                                         <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
-                                        {
-                                          ProviderOptions[
-                                            providerField.value ?? "openai"
-                                          ]
-                                        }
+                                        {ProviderOptions[
+                                          providerField.value as AiProviderType
+                                        ] || "Select Provider"}
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="w-full max-w-lg">
@@ -146,13 +146,7 @@ export function AISettingsForm({
                                   <SlashIcon className="w-3.5 h-3.5" />
                                   <FormField
                                     control={form.control}
-                                    name={
-                                      providerField.value === "openai"
-                                        ? "openaiModel"
-                                        : "anthropicModel"
-                                    }
-                                    // key is used to force re-render when provider changes
-                                    key={`${providerField.value}-model`}
+                                    name={`aiProviderConfigurations.${providerField.value}.model`}
                                     render={({ field }) => (
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -164,12 +158,20 @@ export function AISettingsForm({
                                           >
                                             <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
                                             {providerField.value === "openai"
-                                              ? OpenAiModelOptions[
-                                                  field.value as keyof typeof OpenAiModelOptions
-                                                ]
-                                              : AnthropicModelOptions[
-                                                  field.value as keyof typeof AnthropicModelOptions
-                                                ]}
+                                              ? OpenAIModelOptions[
+                                                  field.value as keyof typeof OpenAIModelOptions
+                                                ] || "Select Model"
+                                              : providerField.value ===
+                                                  "anthropic"
+                                                ? AnthropicModelOptions[
+                                                    field.value as keyof typeof AnthropicModelOptions
+                                                  ] || "Select Model"
+                                                : providerField.value ===
+                                                    "mistral"
+                                                  ? MistralModelOptions[
+                                                      field.value as keyof typeof MistralModelOptions
+                                                    ] || "Select Model"
+                                                  : "Select Model"}
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-full max-w-lg">
@@ -181,8 +183,14 @@ export function AISettingsForm({
                                           >
                                             {Object.entries(
                                               providerField.value === "openai"
-                                                ? OpenAiModelOptions
-                                                : AnthropicModelOptions,
+                                                ? OpenAIModelOptions
+                                                : providerField.value ===
+                                                    "anthropic"
+                                                  ? AnthropicModelOptions
+                                                  : providerField.value ===
+                                                      "mistral"
+                                                    ? MistralModelOptions
+                                                    : {},
                                             ).map(([option, label]) => (
                                               <DropdownMenuRadioItem
                                                 key={option}
@@ -201,12 +209,7 @@ export function AISettingsForm({
                             </div>
                             <FormField
                               control={form.control}
-                              name={
-                                providerField.value === "openai"
-                                  ? "openaiApiKey"
-                                  : "anthropicApiKey"
-                              }
-                              key={`${providerField.value}-api-key`}
+                              name={`aiProviderConfigurations.${providerField.value}.apiKey`}
                               render={({ field }) => (
                                 <div className="flex flex-col gap-1">
                                   <FormLabel className="block font-normal text-sm text-gray-300">
@@ -220,7 +223,7 @@ export function AISettingsForm({
                                     to make requests to the{" "}
                                     {
                                       ProviderOptions[
-                                        providerField.value ?? "openai"
+                                        providerField.value as AiProviderType
                                       ]
                                     }{" "}
                                     API. It should be ignored by version control
@@ -237,12 +240,7 @@ export function AISettingsForm({
                             />
                             <FormField
                               control={form.control}
-                              name={
-                                providerField.value === "openai"
-                                  ? "openaiBaseUrl"
-                                  : "anthropicBaseUrl"
-                              }
-                              key={`${providerField.value}-base-url`}
+                              name={`aiProviderConfigurations.${providerField.value}.baseUrl`}
                               render={({ field }) => (
                                 <div className="flex flex-col gap-1">
                                   <FormLabel className="block font-normal text-sm text-gray-300">
@@ -252,7 +250,7 @@ export function AISettingsForm({
                                     You can configure the base URL used by{" "}
                                     {
                                       ProviderOptions[
-                                        providerField.value ?? "openai"
+                                        providerField.value as AiProviderType
                                       ]
                                     }{" "}
                                     API client to use any compatible endpoint.

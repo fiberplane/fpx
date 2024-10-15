@@ -1,20 +1,19 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useUpdateSettings } from "@/queries";
 import { errorHasMessage } from "@/utils";
-import {
-  CLAUDE_3_5_SONNET,
-  GPT_4o,
-  type Settings,
-  SettingsSchema,
-} from "@fiberplane/fpx-types";
+import { type Settings, SettingsSchema } from "@fiberplane/fpx-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 const DEFAULT_VALUES = {
   aiEnabled: false,
-  aiProviderType: "openai",
-  openaiModel: GPT_4o,
-  anthropicModel: CLAUDE_3_5_SONNET,
+  aiProvider: "openai",
+  aiProviderConfigurations: {
+    openai: {
+      model: "gpt-4o",
+      apiKey: "",
+    },
+  },
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",
 } satisfies Settings;
