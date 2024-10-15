@@ -1,11 +1,11 @@
-import type { Settings } from "@fiberplane/fpx-types";
-import { generateObject } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createMistral } from "@ai-sdk/mistral";
-import { requestSchema } from "./tools.js";
+import { createOpenAI } from "@ai-sdk/openai";
+import type { Settings } from "@fiberplane/fpx-types";
+import { generateObject } from "ai";
 import logger from "../../logger.js";
 import { invokeRequestGenerationPrompt } from "./prompts.js";
+import { requestSchema } from "./tools.js";
 
 function getProvider(
   aiProvider: string,

@@ -1,5 +1,5 @@
-import type { MistralProvider } from "@ai-sdk/mistral";
 import type { AnthropicProvider } from "@ai-sdk/anthropic";
+import type { MistralProvider } from "@ai-sdk/mistral";
 import type { OpenAIProvider } from "@ai-sdk/openai";
 import { z } from "zod";
 

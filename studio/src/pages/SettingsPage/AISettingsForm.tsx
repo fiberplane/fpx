@@ -23,12 +23,12 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils";
 import {
+  type AiProviderType,
   AnthropicModelOptions,
+  MistralModelOptions,
   OpenAIModelOptions,
   ProviderOptions,
   type Settings,
-  type AiProviderType,
-  MistralModelOptions,
 } from "@fiberplane/fpx-types";
 import {
   CaretDownIcon,

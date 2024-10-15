@@ -34,11 +34,7 @@
     "access": "public"
   },
   "license": "MIT or Apache 2",
-  "keywords": [
-    "hono",
-    "local",
-    "debugging"
-  ],
+  "keywords": ["hono", "local", "debugging"],
   "bin": {
     "fpx": "bin/cli.js"
   },
