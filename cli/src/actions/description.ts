@@ -1,20 +1,18 @@
 import type { Context } from "@/context";
 import { text } from "@clack/prompts";
 
-// TODO: validate path
 export async function promptDescription(ctx: Context) {
   try {
-    const placeholder = "a json data api with Hono.js";
+    const placeholder = 'E.g., "A social network for geese"';
     const result = await text({
-      message: "What kind of app are you building?",
+      message: "Briefly describe what you want to build.",
       placeholder,
-      defaultValue: placeholder,
+      defaultValue: "",
     });
 
+    // NOTE - Do not give a default description
     if (typeof result === "string") {
-      if (result === "") {
-        ctx.description = placeholder;
-      } else {
+      if (result !== "") {
         ctx.description = result;
       }
     }
