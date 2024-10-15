@@ -16,5 +16,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread", "signal"] }
 tracing = { workspace = true }
+tree-sitter = "*"
+tree-sitter-typescript = "*"
 typeshare-core = { version = "1.9" }
 url = { workspace = true }
