@@ -13,6 +13,7 @@ export async function promptPath(ctx: Context) {
         if (value !== "" && value[0] !== ".") {
           return "Please enter a relative path.";
         }
+        return undefined;
       },
     });
 

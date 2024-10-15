@@ -120,6 +120,7 @@ async function createNewProject(neon: Api<unknown>): Promise<string | symbol> {
       if (value.length > 64) {
         return "Project name must be less than 64 characters.";
       }
+      return undefined;
     },
   });
 
@@ -252,6 +253,7 @@ async function createNewDatabase(
       if (value.length > 64) {
         return "Database name must be less than 64 characters.";
       }
+      return undefined;
     },
   });
 
