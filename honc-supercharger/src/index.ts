@@ -45,6 +45,19 @@ app.use(async (c, next) => {
   }
 });
 
+// Very ridiculous auth
+app.use(async (c, next) => {
+  if (c.env.HONC_IS_LOCAL === "true") {
+    await next();
+  } else {
+    const token = c.req.header("Authorization")?.split(" ")?.[1]?.trim();
+    if (token !== c.env.HONC_PASSWORD) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    await next();
+  }
+});
+
 // Set up the builtin hono logger, but use debug logs from our logger
 // This means users of the Honc++ cli will not see the request logs in their terminal,
 // but if you want to see them locally, set `HONC_LOG_LEVEL=debug`

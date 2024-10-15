@@ -10,6 +10,8 @@ export type Bindings = {
   OPENAI_API_KEY: string;
   ANTHROPIC_API_KEY: string;
   HONC_LOG_LEVEL: string;
+  HONC_PASSWORD: string;
+  HONC_IS_LOCAL: string;
 };
 
 export type Variables = {
