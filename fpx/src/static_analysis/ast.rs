@@ -25,6 +25,7 @@ pub fn detect_routes(entry_path: &Path, source: &str) -> Vec<DetectedRoute> {
     routes
 }
 
+// TODO: find and traverse imports to match out of scope identifiers
 fn find_route_handler_nodes(
     file_path: &Path,
     source: &str,
@@ -61,7 +62,8 @@ fn find_route_handler_nodes(
                                 route_method: method.into(),
                                 route_handler: route_handler.into(),
                                 source_path: file_path.to_str().unwrap().into(),
-                                source_point: node.start_position(),
+                                source_start_point: node.start_position().into(),
+                                source_end_point: node.end_position().into(),
                             });
                         }
                     }
@@ -113,7 +115,8 @@ export default instrument(app);
                 route_method: "get".into(),
                 route_handler: "(c) => {\n  return c.text(\"Hello Hono!\");\n}".into(),
                 source_path: "src/index.ts".into(),
-                source_point: Point { row: 5, column: 0 }
+                source_start_point: Point { row: 5, column: 0 }.into(),
+                source_end_point: Point { row: 7, column: 2 }.into()
             }]
         )
     }
