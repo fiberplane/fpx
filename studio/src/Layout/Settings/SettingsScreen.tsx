@@ -17,25 +17,23 @@ export function SettingsScreen({
   return (
     <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
       <DialogPortal>
-        <DialogContent className="fixed top-0 left-0 w-full h-full z-50">
-          <div className="h-full grid bg-background items-start justify-center">
-            <div className="pr-1 overflow-hidden w-full lg:max-w-[1060px] md:max-w-[1100px] grid grid-rows-[auto_1fr]">
-              <div className="flex justify-between items-center px-8 pr-8 lg:px-12 lg:pr-10 pt-6">
+        <DialogContent className="fixed top-0 left-0 right-0 w-full overflow-hidden z-50 bg-background h-screen">
+          <div className="grid grid-rows-[auto_1fr] mx-auto h-full w-full md:max-w-[1100px] lg:max-w-[1060px]">
+            <div>
+              <div className="flex justify-between items-center px-8 pt-6 lg:px-12">
                 <DialogTitle>Settings</DialogTitle>
                 <DialogClose asChild>
-                  <Button variant="ghost" size="icon" className="p-0.5 w-6 h-6">
+                  <Button variant="ghost" size="icon" className="w-6 h-6 p-0.5">
                     <Icon icon="lucide:x" />
                   </Button>
                 </DialogClose>
               </div>
-              <div>
-                <DialogDescription className="px-8 pr-8 lg:px-12 lg:pr-10 pt-6 text-sm text-muted-foreground">
-                  Manage your settings and preferences.
-                </DialogDescription>
-
-                <SettingsPage />
-              </div>
+              <DialogDescription className="px-8 pt-6 text-sm text-muted-foreground lg:px-12">
+                Manage your settings and preferences.
+              </DialogDescription>
             </div>
+
+            <SettingsPage />
           </div>
         </DialogContent>
       </DialogPortal>

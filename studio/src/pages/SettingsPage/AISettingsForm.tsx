@@ -15,7 +15,6 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
   TooltipContent,
@@ -35,10 +34,10 @@ import {
   EyeClosedIcon,
   EyeOpenIcon,
   InfoCircledIcon,
-  SlashIcon,
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export function AISettingsForm({
   settings,
@@ -62,227 +61,123 @@ export function AISettingsForm({
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="aiEnabled"
+              name="aiProvider"
               render={({ field }) => (
-                <FormItem
-                  className={cn("rounded-lg border p-4 space-y-4", {
-                    "border-yellow-100/50": isAiDirty,
-                  })}
-                >
-                  <div className="flex flex-row items-center justify-between gap-2">
-                    <div className="space-y-1">
-                      <FormLabel className="text-base">
-                        Enable Request Autofill
-                        <span className="font-light text-gray-400 ml-2">
-                          (Beta)
-                        </span>
-                      </FormLabel>
-                      <FormDescription>
-                        Generate sample request data with AI.
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </div>
-                  {field.value ? (
-                    <FormField
-                      control={form.control}
-                      name="aiProvider"
-                      render={({ field: providerField }) => (
-                        <div className="border-t pt-4">
-                          <FormItem className="flex flex-col gap-2 justify-between rounded-lg text-sm">
-                            <div className="flex flex-col gap-2">
-                              <div className="flex flex-col gap-2">
-                                <FormLabel className="text-base text-gray-300">
-                                  Provider Configuration
-                                </FormLabel>
-                              </div>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <FormDescription className="mb-1">
-                                Select the AI provider and model you want to
-                                use.
-                              </FormDescription>
-                              <FormControl>
-                                <div className="flex gap-2 items-center">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        className="w-auto px-2 inline-flex items-center"
-                                      >
-                                        <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
-                                        {ProviderOptions[
-                                          providerField.value as AiProviderType
-                                        ] || "Select Provider"}
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-full max-w-lg">
-                                      <DropdownMenuRadioGroup
-                                        value={providerField.value}
-                                        onValueChange={(value) =>
-                                          providerField.onChange(value)
-                                        }
-                                      >
-                                        {Object.entries(ProviderOptions).map(
-                                          ([option, label]) => (
-                                            <DropdownMenuRadioItem
-                                              key={option}
-                                              value={option}
-                                            >
-                                              {label as React.ReactNode}
-                                            </DropdownMenuRadioItem>
-                                          ),
-                                        )}
-                                      </DropdownMenuRadioGroup>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                  <SlashIcon className="w-3.5 h-3.5" />
-                                  <FormField
-                                    control={form.control}
-                                    name={
-                                      `aiProviderConfigurations.${providerField.value as AiProviderType}.model` as const
-                                    }
-                                    render={({ field }) => (
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="outline"
-                                            className="w-auto px-2 inline-flex items-center"
-                                          >
-                                            <CaretDownIcon className="h-3.5 w-3.5 mr-2 text-white" />
-                                            {providerField.value === "openai"
-                                              ? OpenAIModelOptions[
-                                                  field.value as keyof typeof OpenAIModelOptions
-                                                ] || "Select Model"
-                                              : providerField.value ===
-                                                  "anthropic"
-                                                ? AnthropicModelOptions[
-                                                    field.value as keyof typeof AnthropicModelOptions
-                                                  ] || "Select Model"
-                                                : providerField.value ===
-                                                    "mistral"
-                                                  ? MistralModelOptions[
-                                                      field.value as keyof typeof MistralModelOptions
-                                                    ] || "Select Model"
-                                                  : "Select Model"}
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-full max-w-lg">
-                                          <DropdownMenuRadioGroup
-                                            value={field.value}
-                                            onValueChange={(value) =>
-                                              field.onChange(value)
-                                            }
-                                          >
-                                            {Object.entries(
-                                              providerField.value === "openai"
-                                                ? OpenAIModelOptions
-                                                : providerField.value ===
-                                                    "anthropic"
-                                                  ? AnthropicModelOptions
-                                                  : providerField.value ===
-                                                      "mistral"
-                                                    ? MistralModelOptions
-                                                    : {},
-                                            ).map(([option, label]) => (
-                                              <DropdownMenuRadioItem
-                                                key={option}
-                                                value={option}
-                                              >
-                                                {label as React.ReactNode}
-                                              </DropdownMenuRadioItem>
-                                            ))}
-                                          </DropdownMenuRadioGroup>
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
-                                    )}
-                                  />
-                                </div>
-                              </FormControl>
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name={
-                                `aiProviderConfigurations.${providerField.value as AiProviderType}.apiKey` as const
-                              }
-                              render={({ field }) => (
-                                <div className="flex flex-col gap-1">
-                                  <FormLabel className="block font-normal text-sm text-gray-300">
-                                    API Key
-                                  </FormLabel>
-                                  <FormDescription className="mb-1">
-                                    Your api key is stored locally in{" "}
-                                    <code className="text-red-200/80 text-xs">
-                                      .fpxconfig/fpx.db
-                                    </code>{" "}
-                                    to make requests to the{" "}
-                                    {
-                                      ProviderOptions[
-                                        providerField.value as AiProviderType
-                                      ]
-                                    }{" "}
-                                    API. It should be ignored by version control
-                                    by default.
-                                  </FormDescription>
-                                  <FormControl>
-                                    <ApiKeyInput
-                                      value={field.value ?? ""}
-                                      onChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                </div>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={
-                                `aiProviderConfigurations.${providerField.value as AiProviderType}.baseUrl` as const
-                              }
-                              render={({ field }) => (
-                                <div className="flex flex-col gap-1">
-                                  <FormLabel className="block font-normal text-sm text-gray-300">
-                                    Base URL
-                                  </FormLabel>
-                                  <FormDescription className="mb-1">
-                                    You can configure the base URL used by{" "}
-                                    {
-                                      ProviderOptions[
-                                        providerField.value as AiProviderType
-                                      ]
-                                    }{" "}
-                                    API client to use any compatible endpoint.
-                                  </FormDescription>
-                                  <FormControl>
-                                    <Input
-                                      value={field.value ?? ""}
-                                      onChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                </div>
-                              )}
-                            />
+                <FormItem className="space-y-3">
+                  <FormLabel>AI Provider</FormLabel>
+                  <FormDescription>
+                    Select the AI provider for request autofill.
+                  </FormDescription>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      {Object.entries(ProviderOptions).map(
+                        ([option, label]) => (
+                          <FormItem
+                            key={option}
+                            className="flex items-center space-x-3 space-y-0"
+                          >
+                            <FormControl>
+                              <RadioGroupItem value={option} />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {label as React.ReactNode}
+                            </FormLabel>
                           </FormItem>
-                          <div>
-                            <CodeSentToAiBanner />
-                          </div>
-                        </div>
+                        ),
                       )}
-                    />
-                  ) : null}
+                    </RadioGroup>
+                  </FormControl>
                 </FormItem>
               )}
             />
+            {Object.keys(ProviderOptions).map((provider) => (
+              <div key={provider} className="space-y-4">
+                <h4 className="text-md font-medium">
+                  {ProviderOptions[provider as AiProviderType]}
+                </h4>
+                <FormField
+                  control={form.control}
+                  name={`aiProviderConfigurations.${provider as AiProviderType}.model` as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="pr-2">Model</FormLabel>
+                      <FormControl>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                              {field.value || "Select Model"}
+                              <CaretDownIcon className="ml-2 h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuRadioGroup
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              {Object.entries(
+                                provider === "openai"
+                                  ? OpenAIModelOptions
+                                  : provider === "anthropic"
+                                    ? AnthropicModelOptions
+                                    : provider === "mistral"
+                                      ? MistralModelOptions
+                                      : {},
+                              ).map(([option, label]) => (
+                                <DropdownMenuRadioItem
+                                  key={option}
+                                  value={option}
+                                >
+                                  {label as React.ReactNode}
+                                </DropdownMenuRadioItem>
+                              ))}
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`aiProviderConfigurations.${provider as AiProviderType}.apiKey` as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>API Key</FormLabel>
+                      <FormControl>
+                        <ApiKeyInput
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} API Key`}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`aiProviderConfigurations.${provider as AiProviderType}.baseUrl` as const}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Base URL</FormLabel>
+                      <FormControl>
+                        <Input
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} Base URL`}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
           </div>
         </div>
+        <CodeSentToAiBanner />
         <div className="flex justify-end">
           <Button
             className={cn("text-white", {
@@ -302,9 +197,11 @@ export function AISettingsForm({
 const ApiKeyInput = ({
   value,
   onChange,
+  placeholder,
 }: {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
 }) => {
   const [passwordShown, setPasswordShown] = useState(false);
 
@@ -320,6 +217,7 @@ const ApiKeyInput = ({
         value={value}
         onChange={onChange}
         autoComplete="off"
+        placeholder={placeholder}
       />
       <Tooltip>
         <TooltipTrigger asChild>
@@ -339,9 +237,6 @@ const ApiKeyInput = ({
   );
 };
 
-/**
- * Banner component to inform the end user their code is sent to an ai provider
- */
 function CodeSentToAiBanner() {
   return (
     <div className="bg-primary/10 text-blue-300/90 text-sm px-2.5 py-4 mt-4 rounded-md grid grid-cols-[auto_1fr] gap-2.5 mb-2">

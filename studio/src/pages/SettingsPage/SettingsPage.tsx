@@ -54,67 +54,35 @@ function SettingsLayout({ settings }: { settings: Settings }) {
           "w-full md:h-auto",
           "border",
           "p-0",
-          "md:p-2 md:border-0",
+          "md:border-0",
+          "gap-2",
           "flex flex-col items-start justify-start",
           "md:w-[160px]",
           "lg:w-[200px]",
           "bg-transparent",
         )}
       >
-        {/* For smaller screens, show a dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full px-4 py-2 text-gray-200",
-                "flex justify-between items-center",
-                "md:hidden",
-              )}
-            >
-              {activeTab}
-              <CaretDownIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[calc(100vw-2rem)] min-w-[360px] sm:min-w-[400px] md:hidden"
-            align="start"
-          >
-            <DropdownMenuItem onClick={() => setActiveTab(AI_TAB)}>
-              {AI_TAB}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setActiveTab(PROXY_REQUESTS_TAB)}>
-              {PROXY_REQUESTS_TAB}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setActiveTab(FPX_WORKER_PROXY_TAB)}
-            >
-              {FPX_WORKER_PROXY_TAB}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        {/* For md breakpoint, show tab triggers */}
         <TabsTrigger
-          className="hidden md:block w-full justify-start text-left py-2 px-4"
+          className="w-full justify-start text-left px-4"
           value={AI_TAB}
         >
           <SparkleWand className="inline w-3.5 h-3.5 mr-1.5" />
           Request Autofill
         </TabsTrigger>
         <TabsTrigger
-          className="hidden md:block w-full justify-start text-left py-2 px-4"
+          className="w-full justify-start text-left px-4"
           value={PROXY_REQUESTS_TAB}
         >
           Proxy Requests
         </TabsTrigger>
         <TabsTrigger
-          className="hidden md:block w-full justify-start text-left py-2 px-4"
+          className="w-full justify-start text-left px-4"
           value={FPX_WORKER_PROXY_TAB}
         >
           {FPX_WORKER_PROXY_TAB}
         </TabsTrigger>
       </TabsList>
-      <div className="w-full md:py-3 max-w-[900px] overflow-hidden overflow-y-scroll pr-3">
+      <div className="w-full max-w-[900px] overflow-y-auto">
         <TabsContent className="m-0" value={AI_TAB}>
           <AISettingsForm settings={settings} />
         </TabsContent>
