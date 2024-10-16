@@ -72,7 +72,7 @@
         "packages/client-library-otel",
         "api",
         "cli",
-        "honc-supercharger"
+        "honc-code-gen"
       ],
       "linter": {
         "enabled": true,
