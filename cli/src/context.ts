@@ -1,3 +1,4 @@
+import type { ScaffoldedFiles } from "@/integrations/supercharger";
 import type { Flags, Template } from "./types";
 import { getPackageManager } from "./utils";
 
@@ -18,6 +19,16 @@ export interface Context {
 
   superchargerBaseUrl?: string;
   superchargerApiKey?: string;
+
+  /**
+   * Promise that resolves to the scaffolded files.
+   *
+   * @remarks
+   * We save the promise that resolves to the scaffolded files in context so that the code can generated in the background,
+   * while we install dependencies and finish setting up the project.
+   * This is because API requests to generate code from Supercharger are slowww
+   */
+  superchargerPromise: Promise<ScaffoldedFiles | null>;
 }
 
 export function getContext(): Context {
@@ -31,5 +42,6 @@ export function getContext(): Context {
 
     superchargerApiKey: process.env.HONC_API_KEY,
     superchargerBaseUrl: process.env.HONC_BASE_URL,
+    superchargerPromise: Promise.resolve(null),
   };
 }

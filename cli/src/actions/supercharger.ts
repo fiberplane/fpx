@@ -1,16 +1,37 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import type { Context } from "@/context";
-import { getScaffoldedFiles } from "@/integrations/supercharger/supercharger";
+import {
+  getScaffoldedFiles,
+  shouldSkipSupercharger,
+} from "@/integrations/supercharger";
 import { SuperchargerError } from "@/types";
 import { spinner } from "@clack/prompts";
 
-export async function actionSupercharger(ctx: Context) {
+/**
+ * Start the supercharger request in the background.
+ * We save it as a promise so we can await the result later, in `actionSuperchargerFinish`.
+ *
+ * @param ctx - The context object.
+ */
+export async function actionSuperchargerStart(ctx: Context) {
+  if (shouldSkipSupercharger(ctx)) {
+    return;
+  }
+
+  ctx.superchargerPromise = getScaffoldedFiles(ctx);
+}
+
+export async function actionSuperchargerFinish(ctx: Context) {
+  if (shouldSkipSupercharger(ctx)) {
+    return;
+  }
+
   const s = spinner();
-  s.start("Setting up supercharger...");
+  s.start("Generating code from project description...");
 
   try {
-    const scaffoldedFiles = await getScaffoldedFiles(ctx);
+    const scaffoldedFiles = await ctx.superchargerPromise;
 
     if (scaffoldedFiles) {
       const currentPath = ctx.path ?? ".";
@@ -33,7 +54,6 @@ export async function actionSupercharger(ctx: Context) {
         );
       }
     }
-
     s.stop();
     return;
   } catch (error) {

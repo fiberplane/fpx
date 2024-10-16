@@ -7,7 +7,10 @@ import { actionDatabase, promptDatabase } from "./actions/database";
 import { actionDependencies, promptDependencies } from "./actions/dependencies";
 import { promptDescription } from "./actions/description";
 import { actionGit, promptGit } from "./actions/git";
-import { actionSupercharger } from "./actions/supercharger";
+import {
+  actionSuperchargerFinish,
+  actionSuperchargerStart,
+} from "./actions/supercharger";
 import { HONC_TITLE } from "./const";
 import { getContext } from "./context";
 import { isError } from "./types";
@@ -44,10 +47,11 @@ async function main() {
 
   const actions = [
     actionTemplate,
-    actionSupercharger,
+    actionSuperchargerStart,
     actionDatabase,
     actionDependencies,
     actionGit,
+    actionSuperchargerFinish,
   ];
 
   for (const action of actions) {
