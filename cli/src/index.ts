@@ -74,7 +74,7 @@ ${dbPreamble}
 
 cd ${context.path}
 ${context.packageManager} run db:setup
-${context.packageManager} run fiberplane-studio
+${context.packageManager} run fiberplane
 `);
   process.exit(0);
 }
