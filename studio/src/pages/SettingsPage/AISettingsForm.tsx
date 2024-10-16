@@ -15,6 +15,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Tooltip,
   TooltipContent,
@@ -37,7 +38,6 @@ import {
 } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useSettingsForm } from "./form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export function AISettingsForm({
   settings,
@@ -101,7 +101,9 @@ export function AISettingsForm({
                 </h4>
                 <FormField
                   control={form.control}
-                  name={`aiProviderConfigurations.${provider as AiProviderType}.model` as const}
+                  name={
+                    `aiProviderConfigurations.${provider as AiProviderType}.model` as const
+                  }
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="pr-2">Model</FormLabel>
@@ -143,7 +145,9 @@ export function AISettingsForm({
                 />
                 <FormField
                   control={form.control}
-                  name={`aiProviderConfigurations.${provider as AiProviderType}.apiKey` as const}
+                  name={
+                    `aiProviderConfigurations.${provider as AiProviderType}.apiKey` as const
+                  }
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>API Key</FormLabel>
@@ -159,7 +163,9 @@ export function AISettingsForm({
                 />
                 <FormField
                   control={form.control}
-                  name={`aiProviderConfigurations.${provider as AiProviderType}.baseUrl` as const}
+                  name={
+                    `aiProviderConfigurations.${provider as AiProviderType}.baseUrl` as const
+                  }
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Base URL</FormLabel>
