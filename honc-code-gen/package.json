@@ -1,6 +1,6 @@
 {
   "version": "0.0.1",
-  "name": "honc-supercharger",
+  "name": "honc-code-gen",
   "description": "API for ai-powered feature bootstrapping for Honc apps",
   "author": "Brett Beutell<brett@fiberplane.com>",
   "type": "module",

@@ -1,10 +1,7 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import type { Context } from "@/context";
-import {
-  getScaffoldedFiles,
-  shouldSkipSupercharger,
-} from "@/integrations/supercharger";
+import { getScaffoldedFiles, shouldSkipCodeGen } from "@/integrations/code-gen";
 import { SuperchargerError } from "@/types";
 import { spinner } from "@clack/prompts";
 
@@ -14,16 +11,16 @@ import { spinner } from "@clack/prompts";
  *
  * @param ctx - The context object.
  */
-export async function actionSuperchargerStart(ctx: Context) {
-  if (shouldSkipSupercharger(ctx)) {
+export async function actionCodeGenStart(ctx: Context) {
+  if (shouldSkipCodeGen(ctx)) {
     return;
   }
 
   ctx.superchargerPromise = getScaffoldedFiles(ctx);
 }
 
-export async function actionSuperchargerFinish(ctx: Context) {
-  if (shouldSkipSupercharger(ctx)) {
+export async function actionCodeGenFinish(ctx: Context) {
+  if (shouldSkipCodeGen(ctx)) {
     return;
   }
 

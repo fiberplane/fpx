@@ -2,7 +2,7 @@ packages:
   - "studio"
   - "api"
   - "cli"
-  - "honc-supercharger"
+  - "honc-code-gen"
   - "packages/*"
   - "examples/*"
   - "webhonc"

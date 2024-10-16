@@ -1,4 +1,4 @@
-import type { ScaffoldedFiles } from "@/integrations/supercharger";
+import type { ScaffoldedFiles } from "@/integrations/code-gen";
 import type { Flags, Template } from "./types";
 import { getPackageManager } from "./utils";
 
