@@ -58,9 +58,7 @@ export function shouldSkipCodeGen(ctx: Context) {
 }
 
 // Type guard to validate the response structure
-function isCodeGenResponse(
-  data: unknown,
-): data is CodeGenResponse {
+function isCodeGenResponse(data: unknown): data is CodeGenResponse {
   return (
     typeof data === "object" &&
     data !== null &&

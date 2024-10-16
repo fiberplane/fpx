@@ -34,6 +34,36 @@ Here is the current index.ts file:
 {indexFile}
 </file>
 
+If you need to make any database queries, take these examples of how the Drizzle ORM and query builder work:
+
+<drizzle-orm-example description="Count the number of users in the database">
+import { count } from "drizzle-orm";
+// ...
+
+  // Rename destructured property to avoid name collision
+  const [ { count: usersCount } ] = await db.select({ count: count() }).from(schema.users);
+
+// ...
+</drizzle-orm-example>
+
+<drizzle-orm-example description="Order items by createdAt field in descending order">
+import { desc } from "drizzle-orm";
+// ...
+
+  const orderedItems = await db.select().from(schema.items).orderBy(desc(schema.items.createdAt));
+
+// ...
+</drizzle-orm-example>
+
+<drizzle-orm-example description="Select a user by id using the eq operator">
+import { eq } from "drizzle-orm";
+// ...
+
+const [user] = await db.select().from(schema.users).where(eq(schema.users.id, "some-user-id"));
+
+// ...
+</drizzle-orm-example>
+
 ===
 
 Here is the Drizzle schema for the postgres database:
@@ -66,6 +96,7 @@ Follow these guidelines:
 
 - Always respond in valid JSON
 - Only make changes to the files provided, do not make changes outside of the provided files
+- Prefer Number.parseInt over parseInt
 - All imports are correct, so don't modify import paths
 - If the file was not provided, return an empty string for that file
 
@@ -114,6 +145,8 @@ In the seed file, you can use process.env.DATABASE_URL directly, as this is not 
 Also export default instrument(app); <-- do not modify that line. Keep instrumenting the app as is, if it is instrumented.
 
 ===
+
+Pay attention to tips about working with the Drizzle ORM.
 
 Use the tool "scaffold_app". Always respond in valid JSON.
 `);
