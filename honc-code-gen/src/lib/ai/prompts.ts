@@ -37,17 +37,17 @@ Here is the current index.ts file:
 If you need to make any database queries, take these examples of how the Drizzle ORM and query builder work:
 
 <drizzle-orm-example description="Count the number of users in the database">
-import { count } from "drizzle-orm";
+import {{ count }} from "drizzle-orm";
 // ...
 
   // Rename destructured property to avoid name collision
-  const [ { count: usersCount } ] = await db.select({ count: count() }).from(schema.users);
+  const [ {{ count: usersCount }} ] = await db.select({{ count: count() }}).from(schema.users);
 
 // ...
 </drizzle-orm-example>
 
 <drizzle-orm-example description="Order items by createdAt field in descending order">
-import { desc } from "drizzle-orm";
+import {{ desc }} from "drizzle-orm";
 // ...
 
   const orderedItems = await db.select().from(schema.items).orderBy(desc(schema.items.createdAt));
@@ -56,7 +56,7 @@ import { desc } from "drizzle-orm";
 </drizzle-orm-example>
 
 <drizzle-orm-example description="Select a user by id using the eq operator">
-import { eq } from "drizzle-orm";
+import {{ eq }} from "drizzle-orm";
 // ...
 
 const [user] = await db.select().from(schema.users).where(eq(schema.users.id, "some-user-id"));
