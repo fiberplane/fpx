@@ -53,7 +53,7 @@ export function AISettingsForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4 pb-8">
         <div>
           <h3 className="hidden md:block md:mb-4 text-lg font-medium">
             Request Autofill Settings
@@ -72,13 +72,13 @@ export function AISettingsForm({
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="flex flex-col space-y-1"
+                      className="grid gap-1"
                     >
                       {Object.entries(ProviderOptions).map(
                         ([option, label]) => (
                           <FormItem
                             key={option}
-                            className="flex items-center space-x-3 space-y-0"
+                            className="grid grid-cols-[auto_1fr] items-center gap-3"
                           >
                             <FormControl>
                               <RadioGroupItem value={option} />
@@ -174,6 +174,7 @@ export function AISettingsForm({
                           value={field.value ?? ""}
                           onChange={field.onChange}
                           placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} Base URL`}
+                          className="w-full"
                         />
                       </FormControl>
                     </FormItem>
@@ -184,7 +185,7 @@ export function AISettingsForm({
           </div>
         </div>
         <CodeSentToAiBanner />
-        <div className="flex justify-end">
+        <div className="text-right">
           <Button
             className={cn("text-white", {
               "opacity-50": !isAiDirty,
@@ -216,7 +217,7 @@ const ApiKeyInput = ({
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="grid grid-cols-[1fr_auto] gap-2">
       <Input
         type={passwordShown ? "text" : "password"}
         className="w-full font-mono text-gray-300"
@@ -249,9 +250,9 @@ function CodeSentToAiBanner() {
       <div className="py-0.5">
         <InfoCircledIcon className="w-3.5 h-3.5" />
       </div>
-      <div className="flex flex-col items-start justify-start gap-1.5">
+      <div className="grid gap-1.5">
         <span className="font-semibold">What FPX sends to AI providers</span>
-        <div className="flex flex-col gap-1">
+        <div className="grid gap-1">
           <span className="">
             To generate inputs for HTTP requests, FPX sends the source code of
             route handlers along with short history of recent requests. Common

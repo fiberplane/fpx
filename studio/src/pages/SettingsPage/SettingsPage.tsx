@@ -47,36 +47,37 @@ function SettingsLayout({ settings }: { settings: Settings }) {
       defaultValue={AI_TAB}
       value={activeTab}
       onValueChange={setActiveTab}
-      className="grid max-md:grid-rows-[auto_1fr] h-full gap-4 overflow-hidden md:grid-cols-[auto_1fr] md:gap-2 lg:gap-4"
+      className="grid h-full gap-4 overflow-hidden md:grid-cols-[auto_1fr] md:gap-2 lg:gap-4"
     >
       <TabsList
         className={cn(
-          "w-full md:h-auto",
+          "w-full",
           "border",
           "p-0",
           "md:border-0",
           "gap-2",
-          "flex flex-col items-start justify-start",
+          "grid grid-flow-col md:grid-flow-row auto-cols-max md:auto-cols-auto",
+          "overflow-x-auto md:overflow-x-visible",
           "md:w-[160px]",
           "lg:w-[200px]",
           "bg-transparent",
         )}
       >
         <TabsTrigger
-          className="w-full justify-start text-left px-4"
+          className="whitespace-nowrap justify-start text-left px-4"
           value={AI_TAB}
         >
           <SparkleWand className="inline w-3.5 h-3.5 mr-1.5" />
           Request Autofill
         </TabsTrigger>
         <TabsTrigger
-          className="w-full justify-start text-left px-4"
+          className="whitespace-nowrap justify-start text-left px-4"
           value={PROXY_REQUESTS_TAB}
         >
           Proxy Requests
         </TabsTrigger>
         <TabsTrigger
-          className="w-full justify-start text-left px-4"
+          className="whitespace-nowrap justify-start text-left px-4"
           value={FPX_WORKER_PROXY_TAB}
         >
           {FPX_WORKER_PROXY_TAB}
