@@ -20,7 +20,7 @@ export async function getScaffoldedFiles(ctx: Context) {
   const prompt = ctx.description;
 
   // If the user didn't provide a description, we can't do anything to scaffold
-  if (shouldSkipSupercharger(ctx)) {
+  if (shouldSkipCodeGen(ctx)) {
     return null;
   }
 
@@ -53,7 +53,7 @@ export async function getScaffoldedFiles(ctx: Context) {
   throw new Error("Invalid response structure from supercharger");
 }
 
-export function shouldSkipSupercharger(ctx: Context) {
+export function shouldSkipCodeGen(ctx: Context) {
   return !ctx.description;
 }
 

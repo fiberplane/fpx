@@ -3,14 +3,11 @@ import { promptPath } from "@/actions/path";
 import { actionTemplate, promptTemplate } from "@/actions/template";
 import { intro, isCancel, outro } from "@clack/prompts";
 import pico from "picocolors";
+import { actionCodeGenFinish, actionCodeGenStart } from "./actions/code-gen";
 import { actionDatabase, promptDatabase } from "./actions/database";
 import { actionDependencies, promptDependencies } from "./actions/dependencies";
 import { promptDescription } from "./actions/description";
 import { actionGit, promptGit } from "./actions/git";
-import {
-  actionSuperchargerFinish,
-  actionSuperchargerStart,
-} from "./actions/supercharger";
 import { HONC_TITLE } from "./const";
 import { getContext } from "./context";
 import { isError } from "./types";
@@ -47,11 +44,11 @@ async function main() {
 
   const actions = [
     actionTemplate,
-    actionSuperchargerStart,
+    actionCodeGenStart,
     actionDatabase,
     actionDependencies,
     actionGit,
-    actionSuperchargerFinish,
+    actionCodeGenFinish,
   ];
 
   for (const action of actions) {
