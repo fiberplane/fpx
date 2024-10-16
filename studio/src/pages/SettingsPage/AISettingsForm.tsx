@@ -53,7 +53,10 @@ export function AISettingsForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4 pb-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="w-full space-y-4 pb-8"
+      >
         <div>
           <h3 className="hidden md:block md:mb-4 text-lg font-medium">
             Request Autofill Settings
