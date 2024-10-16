@@ -15,7 +15,8 @@ type CodeGenResponse = {
 export async function getScaffoldedFiles(ctx: Context) {
   const { sessionId, codeGenBaseUrl, codeGenApiKey } = ctx;
 
-  const baseUrl = codeGenBaseUrl || "http://localhost:4468";
+  const baseUrl =
+    codeGenBaseUrl || "https://honc-supercharger.mies.workers.dev";
 
   const prompt = ctx.description;
 
