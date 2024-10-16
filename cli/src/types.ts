@@ -4,13 +4,13 @@ export type Flags = Array<
   "install-dependencies" | "initialize-git" | "setup-neon"
 >;
 
-export class SuperchargerError extends Error {
+export class CodeGenError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "SuperchargerError";
+    this.name = "CodeGenError";
   }
 }
 
-export const isError = (error: unknown): error is Error | SuperchargerError => {
-  return error instanceof Error || error instanceof SuperchargerError;
+export const isError = (error: unknown): error is Error | CodeGenError => {
+  return error instanceof Error || error instanceof CodeGenError;
 };

@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { cancel, log } from "@clack/prompts";
 import { CANCEL_MESSAGE } from "./const";
-import { SuperchargerError } from "./types";
+import { CodeGenError } from "./types";
 
 export function getPackageManager() {
   return process.env.npm_config_user_agent?.split("/").at(0);
@@ -32,8 +32,8 @@ export async function runShell(cwd: string, commands: string[]): Promise<void> {
   });
 }
 
-export function handleError(error: Error | SuperchargerError) {
-  if (error instanceof SuperchargerError) {
+export function handleError(error: Error | CodeGenError) {
+  if (error instanceof CodeGenError) {
     log.warn(
       `Could not scaffold project according to your description\n(error: ${error.message})`,
     );

@@ -2,12 +2,12 @@ import { writeFileSync } from "node:fs";
 import path from "node:path";
 import type { Context } from "@/context";
 import { getScaffoldedFiles, shouldSkipCodeGen } from "@/integrations/code-gen";
-import { SuperchargerError } from "@/types";
+import { CodeGenError } from "@/types";
 import { spinner } from "@clack/prompts";
 
 /**
- * Start the supercharger request in the background.
- * We save it as a promise so we can await the result later, in `actionSuperchargerFinish`.
+ * Start the code generation request in the background.
+ * We save it as a promise so we can await the result later, in `actionCodeGenFinish`.
  *
  * @param ctx - The context object.
  */
@@ -16,7 +16,7 @@ export async function actionCodeGenStart(ctx: Context) {
     return;
   }
 
-  ctx.superchargerPromise = getScaffoldedFiles(ctx);
+  ctx.codeGenPromise = getScaffoldedFiles(ctx);
 }
 
 export async function actionCodeGenFinish(ctx: Context) {
@@ -28,7 +28,7 @@ export async function actionCodeGenFinish(ctx: Context) {
   s.start("Generating code from project description...");
 
   try {
-    const scaffoldedFiles = await ctx.superchargerPromise;
+    const scaffoldedFiles = await ctx.codeGenPromise;
 
     if (scaffoldedFiles) {
       const currentPath = ctx.path ?? ".";
@@ -55,7 +55,7 @@ export async function actionCodeGenFinish(ctx: Context) {
     return;
   } catch (error) {
     s.stop();
-    return new SuperchargerError(
+    return new CodeGenError(
       error instanceof Error ? error.message : "Unknown error",
     );
   }
