@@ -66,17 +66,15 @@ async function main() {
     ? "You can now navigate to the project folder and run the following commands to generate, apply the migrations and seed the database:"
     : "Once you've set up the database and saved the connection string, you can generate the migrations, apply them, and seed the database using the following commands";
 
-  const dbD1 =
-    context.template === "sample-d1" ? `${context.packageManager} run dev` : "";
+  // const dbD1 =
+  //   context.template === "sample-d1" ? `${context.packageManager} run dev` : "";
   outro(`🪿 HONC app created successfully in ${context.path}!
 
 ${dbPreamble}
 
 cd ${context.path}
-${context.packageManager} run db:generate
-${context.packageManager} run db:migrate
-${dbD1}
-${context.packageManager} run db:seed
+${context.packageManager} run db:setup
+${context.packageManager} run fiberplane-studio
 `);
   process.exit(0);
 }
