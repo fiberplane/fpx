@@ -1,1 +1,5 @@
-export { getScaffoldedFiles } from "./supercharger";
+export {
+  getScaffoldedFiles,
+  type ScaffoldedFiles,
+  shouldSkipSupercharger,
+} from "./supercharger";

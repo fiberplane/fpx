@@ -1,7 +1,7 @@
 import type { Context } from "../../context";
 
 // Define the expected structure of the scaffolded files
-type ScaffoldedFiles = {
+export type ScaffoldedFiles = {
   indexFile: string | null;
   schemaFile: string | null;
   seedFile: string | null;
@@ -20,7 +20,7 @@ export async function getScaffoldedFiles(ctx: Context) {
   const prompt = ctx.description;
 
   // If the user didn't provide a description, we can't do anything to scaffold
-  if (!prompt) {
+  if (shouldSkipSupercharger(ctx)) {
     return null;
   }
 
@@ -51,6 +51,10 @@ export async function getScaffoldedFiles(ctx: Context) {
   }
 
   throw new Error("Invalid response structure from supercharger");
+}
+
+export function shouldSkipSupercharger(ctx: Context) {
+  return !ctx.description;
 }
 
 // Type guard to validate the response structure
