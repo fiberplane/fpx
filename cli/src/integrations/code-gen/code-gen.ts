@@ -8,14 +8,14 @@ export type ScaffoldedFiles = {
 };
 
 // Define the expected structure of the API response
-type SuperchargerResponse = {
+type CodeGenResponse = {
   result: ScaffoldedFiles;
 };
 
 export async function getScaffoldedFiles(ctx: Context) {
-  const { sessionId, superchargerBaseUrl, superchargerApiKey } = ctx;
+  const { sessionId, codeGenBaseUrl, codeGenApiKey } = ctx;
 
-  const baseUrl = superchargerBaseUrl || "http://localhost:4468";
+  const baseUrl = codeGenBaseUrl || "http://localhost:4468";
 
   const prompt = ctx.description;
 
@@ -35,7 +35,7 @@ export async function getScaffoldedFiles(ctx: Context) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${superchargerApiKey}`,
+      Authorization: `Bearer ${codeGenApiKey}`,
     },
     body: JSON.stringify(payload),
   });
@@ -46,11 +46,11 @@ export async function getScaffoldedFiles(ctx: Context) {
 
   const rawData = await response.json();
 
-  if (isValidSuperchargerResponse(rawData)) {
+  if (isCodeGenResponse(rawData)) {
     return rawData.result;
   }
 
-  throw new Error("Invalid response structure from supercharger");
+  throw new Error("Invalid response structure from code generation api");
 }
 
 export function shouldSkipCodeGen(ctx: Context) {
@@ -58,9 +58,9 @@ export function shouldSkipCodeGen(ctx: Context) {
 }
 
 // Type guard to validate the response structure
-function isValidSuperchargerResponse(
+function isCodeGenResponse(
   data: unknown,
-): data is SuperchargerResponse {
+): data is CodeGenResponse {
   return (
     typeof data === "object" &&
     data !== null &&

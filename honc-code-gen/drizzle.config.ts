@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
 let dbConfig: ReturnType<typeof defineConfig>;
-if (process.env.HONC_SUPERCHARGER_ENV === "production") {
+if (process.env.HONC_CODE_GEN_ENV === "production") {
   console.log("Using production D1 DB");
   config({ path: "./.prod.vars" });
   dbConfig = defineConfig({

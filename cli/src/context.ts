@@ -17,8 +17,8 @@ export interface Context {
   seedFile?: string;
   sessionId: string;
 
-  superchargerBaseUrl?: string;
-  superchargerApiKey?: string;
+  codeGenBaseUrl?: string;
+  codeGenApiKey?: string;
 
   /**
    * Promise that resolves to the scaffolded files.
@@ -26,9 +26,9 @@ export interface Context {
    * @remarks
    * We save the promise that resolves to the scaffolded files in context so that the code can generated in the background,
    * while we install dependencies and finish setting up the project.
-   * This is because API requests to generate code from Supercharger are slowww
+   * This is because API requests to generate code from honc-code-gen are slowww
    */
-  superchargerPromise: Promise<ScaffoldedFiles | null>;
+  codeGenPromise: Promise<ScaffoldedFiles | null>;
 }
 
 export function getContext(): Context {
@@ -40,8 +40,8 @@ export function getContext(): Context {
     packageManager: getPackageManager() ?? "npm",
     flags: [],
 
-    superchargerApiKey: process.env.HONC_API_KEY,
-    superchargerBaseUrl: process.env.HONC_BASE_URL,
-    superchargerPromise: Promise.resolve(null),
+    codeGenApiKey: process.env.HONC_API_KEY,
+    codeGenBaseUrl: process.env.HONC_BASE_URL,
+    codeGenPromise: Promise.resolve(null),
   };
 }
