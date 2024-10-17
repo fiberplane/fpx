@@ -93,39 +93,53 @@ export async function generateRequestWithAiProvider({
     providerConfig,
   });
 
-  const {
-    object: generatedObject,
-    warnings,
-    usage,
-  } = await generateObject({
-    model: provider,
-    schema: requestSchema,
-    prompt: await invokeRequestGenerationPrompt({
-      handler,
-      handlerContext,
-      history,
-      openApiSpec,
-      middleware,
-      middlewareContext,
-      persona,
-      method,
-      path,
-    }),
-  });
+  try {
+    const {
+      object: generatedObject,
+      warnings,
+      usage,
+    } = await generateObject({
+      model: provider,
+      schema: requestSchema,
+      prompt: await invokeRequestGenerationPrompt({
+        handler,
+        handlerContext,
+        history,
+        openApiSpec,
+        middleware,
+        middlewareContext,
+        persona,
+        method,
+        path,
+      }),
+    });
 
-  logger.debug("Generated object, warnings, usage", {
-    generatedObject,
-    warnings,
-    usage,
-  });
+    logger.debug("Generated object, warnings, usage", {
+      generatedObject,
+      warnings,
+      usage,
+    });
 
-  // Remove x-fpx-trace-id header from the generated object
-  const filteredHeaders = generatedObject?.headers?.filter(
-    (header) => header.key.toLowerCase() !== "x-fpx-trace-id",
-  );
+    // Remove x-fpx-trace-id header from the generated object
+    const filteredHeaders = generatedObject?.headers?.filter(
+      (header) => header.key.toLowerCase() !== "x-fpx-trace-id",
+    );
 
-  return {
-    data: { ...generatedObject, headers: filteredHeaders },
-    error: null,
-  };
+    return {
+      data: { ...generatedObject, headers: filteredHeaders },
+      error: null,
+    };
+  } catch (error) {
+    logger.error("Error generating request with AI provider", {
+      error,
+    });
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Error generating request with AI provider";
+    return {
+      data: null,
+      error: { message: errorMessage },
+    };
+  }
 }
