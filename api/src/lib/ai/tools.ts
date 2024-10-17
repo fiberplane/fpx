@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// NOTE - We cannot use `.optional` from zod because it does not play nicely with structured output
 export const requestSchema = z.object({
   path: z.string(),
   pathParams: z
