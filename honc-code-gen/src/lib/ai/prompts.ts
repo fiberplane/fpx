@@ -153,6 +153,10 @@ Also export default instrument(app); <-- do not modify that line. Keep instrumen
 
 ===
 
+Remove existing code from the files that is no longer needed.
+
+If you keep existing code, make sure it is more thematically correct for the app. (Especially for seed data)
+
 Pay attention to tips about working with the Drizzle ORM.
 
 Do not return the files unchanged.
