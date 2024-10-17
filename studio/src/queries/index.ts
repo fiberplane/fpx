@@ -13,7 +13,7 @@ export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
 
 export { useFetchSettings, useUpdateSettings } from "./settings";
 
-export { PROBED_ROUTES_KEY } from "./app-routes";
+export { PROBED_ROUTES_KEY, useRefreshRoutesMutation } from "./app-routes";
 export {
   type MizuOrphanLog,
   isMizuOrphanLog,

@@ -37,7 +37,7 @@ export function startRouteProbeWatcher(watchDir: string) {
   // This will collect information on all routes that the service exposes
   // Which powers a postman-like UI to ping routes and see responses
   const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
-  const probeMaxRetries = 10;
+  const probeMaxRetries = 16;
   // Send the initial probe 500ms after startup
   const initialProbeDelay = 500;
   // Add 2.2s delay for all successive probes (e.g., after filesystem change of watched project)
@@ -93,7 +93,7 @@ async function probeRoutesWithExponentialBackoff(
         errorMessage,
       );
       if (attempt < maxRetries) {
-        const backoffDelay = Math.min(delay * 2 ** attempt, maxDelay);
+        const backoffDelay = Math.min(delay * 1.2 ** attempt, maxDelay);
         logger.debug(`  Retrying in ${backoffDelay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, backoffDelay));
       } else {
@@ -105,7 +105,7 @@ async function probeRoutesWithExponentialBackoff(
   }
 }
 
-async function routerProbe(target: string) {
+export async function routerProbe(target: string) {
   const headers = new Headers();
   headers.append("X-Fpx-Route-Inspector", "enabled");
   return await fetch(target, {
