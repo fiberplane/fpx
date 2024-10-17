@@ -101,7 +101,16 @@ export function AISettingsForm({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(
+          (data) => {
+            onSubmit(data);
+          },
+          (error) => {
+            // TODO - Show error to user
+            //        This can show up with the new settings form in a bad way
+            console.error("Form submission error:", error);
+          },
+        )}
         className="w-full space-y-4 pb-8"
       >
         <div>
@@ -144,87 +153,94 @@ export function AISettingsForm({
                 </FormItem>
               )}
             />
-            <div key={activeProvider} className="space-y-4">
-              <h4 className="hidden text-md font-medium">
-                {ProviderOptions[activeProvider as AiProviderType]}
-              </h4>
-              <FormField
-                control={form.control}
-                name={
-                  `aiProviderConfigurations.${activeProvider as AiProviderType}.model` as const
-                }
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="pr-2">Model</FormLabel>
-                    <FormControl>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline">
-                            {field.value || "Select Model"}
-                            <CaretDownIcon className="ml-2 h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuRadioGroup
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            {modelOptions.map(([option, label]) => (
-                              <DropdownMenuRadioItem
-                                key={option}
-                                value={option}
-                              >
-                                {label as React.ReactNode}
-                              </DropdownMenuRadioItem>
-                            ))}
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={
-                  `aiProviderConfigurations.${activeProvider as AiProviderType}.apiKey` as const
-                }
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>API Key</FormLabel>
-                    <FormControl>
-                      <ApiKeyInput
-                        value={field.value ?? ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        placeholder={`Enter ${ProviderOptions[activeProvider as AiProviderType]} API Key`}
-                        // HACK - Prevent clipping of focus ring
-                        className="mx-[2px]"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={
-                  `aiProviderConfigurations.${activeProvider as AiProviderType}.baseUrl` as const
-                }
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Base URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                        placeholder={`Enter ${ProviderOptions[activeProvider as AiProviderType]} Base URL`}
-                        // HACK - Match API Key input styles and prevent clipping of focus ring
-                        className="w-[calc(100%-4px)] font-mono mx-[2px]"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
+            {sortedProviderOptions.map(([provider]) => (
+              <div
+                key={provider}
+                className={cn("space-y-4", {
+                  hidden: provider !== activeProvider,
+                })}
+              >
+                <h4 className="hidden text-md font-medium">
+                  {ProviderOptions[provider as AiProviderType]}
+                </h4>
+                <FormField
+                  control={form.control}
+                  name={
+                    `aiProviderConfigurations.${provider as AiProviderType}.model` as const
+                  }
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="pr-2">Model</FormLabel>
+                      <FormControl>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                              {field.value || "Select Model"}
+                              <CaretDownIcon className="ml-2 h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuRadioGroup
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              {modelOptions.map(([option, label]) => (
+                                <DropdownMenuRadioItem
+                                  key={option}
+                                  value={option}
+                                >
+                                  {label as React.ReactNode}
+                                </DropdownMenuRadioItem>
+                              ))}
+                            </DropdownMenuRadioGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={
+                    `aiProviderConfigurations.${provider as AiProviderType}.apiKey` as const
+                  }
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>API Key</FormLabel>
+                      <FormControl>
+                        <ApiKeyInput
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} API Key`}
+                          // HACK - Prevent clipping of focus ring
+                          className="mx-[2px]"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={
+                    `aiProviderConfigurations.${provider as AiProviderType}.baseUrl` as const
+                  }
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Base URL</FormLabel>
+                      <FormControl>
+                        <Input
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} Base URL`}
+                          // HACK - Match API Key input styles and prevent clipping of focus ring
+                          className="w-[calc(100%-4px)] font-mono mx-[2px]"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
           </div>
         </div>
         <CodeSentToAiBanner />

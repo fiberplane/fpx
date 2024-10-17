@@ -13,6 +13,14 @@ const DEFAULT_VALUES = {
       model: "gpt-4o",
       apiKey: "",
     },
+    anthropic: {
+      model: "claude-3-5-sonnet-20240620",
+      apiKey: "",
+    },
+    mistral: {
+      model: "open-mixtral-8x7b",
+      apiKey: "",
+    },
   },
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",
@@ -23,11 +31,16 @@ export function useSettingsForm(settings: Settings) {
 
   const { mutate: updateSettings } = useUpdateSettings();
 
+  // TODO - Derive default values from the fiberplane types package
   const form = useForm<Settings>({
     resolver: zodResolver(SettingsSchema),
     defaultValues: {
       ...DEFAULT_VALUES,
       ...settings,
+      aiProviderConfigurations: {
+        ...DEFAULT_VALUES.aiProviderConfigurations,
+        ...settings.aiProviderConfigurations,
+      },
     },
   });
 
