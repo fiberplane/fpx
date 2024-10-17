@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 import { useRefreshAppRoutes } from "@/queries";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
@@ -13,7 +15,20 @@ import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
 
 export function RoutesPanel() {
-  const { mutate: refreshRoutes } = useRefreshAppRoutes();
+  const { toast } = useToast();
+  const { mutate: mutateRoutes } = useRefreshAppRoutes();
+  const refreshRoutes = () => {
+    mutateRoutes(undefined, {
+      onError: (error) => {
+        console.error("Failed to refresh app routes", error);
+        toast({
+          title: "Failed to refresh app routes",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+    });
+  };
   const { routes, activeRoute, setActiveRoute } = useRequestorStore(
     "routes",
     "activeRoute",
@@ -213,47 +228,56 @@ export function RoutesPanel() {
             ))}
           </RoutesSection>
         )}
-        {allRoutes.length === 0 && <EmptyState />}
+        {allRoutes.length === 0 && <EmptyState refreshRoutes={refreshRoutes} />}
       </div>
     </div>
   );
 }
 
-function EmptyState() {
+function EmptyState({ refreshRoutes }: { refreshRoutes: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center text-gray-300 h-full">
-      <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
+    <div className="flex flex-col items-center justify-center text-gray-300">
+      <div className="mt-12 px-2 rounded-lg flex flex-col items-center text-center">
         <div className="rounded-lg p-2 bg-muted mb-2">
           <Icon
             icon="lucide:book-copy"
             className="w-12 h-12 text-gray-400 stroke-1"
           />
         </div>
-        <h2 className="text-lg font-normal mb-4">No routes detected</h2>
+        <h2 className="text-lg font-normal mb-2">No routes detected</h2>
+        <div className="flex items-center mb-4">
+          <Button
+            onClick={() => refreshRoutes()}
+            className="bg-transparent text-muted-foreground"
+            variant="outline"
+            size="sm"
+          >
+            <ReloadIcon className="w-4 h-4 mr-2" /> Refresh
+          </Button>
+        </div>
         <div className="text-gray-400 text-left text-sm flex flex-col gap-2">
           <p className="text-gray-400 mb-4 text-sm">
             To enable route auto-detection:
           </p>
           <ol className="mb-4 flex flex-col gap-2">
             <li>
-              1. Install and add the client library:
-              <code className="block mt-1 bg-gray-800 p-1 pl-2 rounded">
-                npm i @fiberplane/hono-otel
-              </code>
-              Read more about using the client library on the{" "}
+              1. Add the client library (
               <a
                 className="underline"
                 href="https://fiberplane.com/docs/get-started"
               >
                 docs
               </a>
+              )
+              <code className="block mt-1 bg-gray-800 p-1 pl-2 rounded">
+                npm i @fiberplane/hono-otel
+              </code>
             </li>
             <li className="mt-2">
-              2. Set <code>FPX_ENDPOINT</code> environment variable to:
+              2. Set <code>FPX_ENDPOINT</code> env var to
               <code className="block mt-1 bg-gray-800 p-1 pl-2 rounded">
                 http://localhost:8788/v1/traces
               </code>
-              in the <code>.dev.vars</code> file in your project
             </li>
             <li className="mt-2">
               3. Restart your application and Fiberplane Studio
