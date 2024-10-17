@@ -22,9 +22,37 @@ export const invokeScaffoldAppPrompt = async ({
 
 export const scaffoldAppPrompt = PromptTemplate.fromTemplate(
   `
-I need to scaffold an app. I already set up several key files via a template.
+I need to scaffold a Hono API. I bootstrapped the app with a template.
 
-However, I want to modify these template files to better suit my needs.
+However, I want to modify these template files to better suit my app idea.
+
+===
+
+Here is the Drizzle schema for the database:
+
+<file language=typescript path=src/db/schema.ts>
+{schemaFile}
+</file>
+
+Tips:
+
+- Do not change the database adapter (postgres, sqlite, etc). It is correct.
+
+===
+
+Here is the current seed file:
+
+<file language=typescript name=seed.ts>
+{seedFile}
+</file>
+
+For the seed data file, a few tips:
+
+- Import the schema like this: \`import * as schema from "./src/db/schema"\`.
+- Keep any dotenv configuration \`config({{ path: ".dev.vars" }})\`
+- If you need to load the database url from an env variable, use \`process.env.DATABASE_URL\`
+- Preserve comments when possible
+- Add your own comments to explain your thought process and choices to future developers
 
 ===
 
@@ -37,7 +65,7 @@ Here is the current index.ts file:
 If you need to make any database queries, take these examples of how the Drizzle ORM and query builder work:
 
 <drizzle-orm-example description="Count the number of users in the database">
-import {{ count }} from "drizzle-orm";
+import {{ count, eq, sql }} from "drizzle-orm";
 // ...
 
   // Rename destructured property to avoid name collision
@@ -56,7 +84,7 @@ import {{ desc }} from "drizzle-orm";
 </drizzle-orm-example>
 
 <drizzle-orm-example description="Select a user by id using the eq operator">
-import {{ eq }} from "drizzle-orm";
+import {{ eq, sql }} from "drizzle-orm";
 // ...
 
 const [user] = await db.select().from(schema.users).where(eq(schema.users.id, "some-user-id"));
@@ -66,44 +94,23 @@ const [user] = await db.select().from(schema.users).where(eq(schema.users.id, "s
 
 ===
 
-Here is the Drizzle schema for the postgres database:
-
-<file language=typescript path=src/db/schema.ts>
-{schemaFile}
-</file>
-
-===
-
-Here is the current seed file:
-
-<file language=typescript name=seed.ts>
-{seedFile}
-</file>
-
-For the seed data file, a few tips:
-
-- Import the schema like this: \`import {{ schema }} from "./src/db/schema"\`.
-- Keep any dotenv configuration \`config({{ path: ".dev.vars" }})\`
-- If you need to load the database url from an env variable, use \`process.env.DATABASE_URL\`
-- Preserve comments when possible
-- Add your own comments to explain your thought process and choices to future developers
-
-===
-
 Please make the necessary changes to the template files to better suit the app I want to build.
 
 Follow these guidelines:
 
 - Always respond in valid JSON
-- Only make changes to the files provided, do not make changes outside of the provided files
 - Prefer Number.parseInt over parseInt
-- All imports are correct, so don't modify import paths
+- All import paths are correct, so don't modify import paths
+- Add new imports from the Drizzle ORM if you need new sql helper functions (like {{ sql }}, {{ gte }}, etc)
 - If the file was not provided, return an empty string for that file
-
 
 This is the description of the app I want to build:
 
 {userPrompt}
+
+Please adapt the files I provided to help me build the app I described.
+
+This is imporant to my career.
 
 `.trim(),
 );
@@ -119,11 +126,11 @@ You are using the HONC stack:
 - Neon for the database (serverless postgres)
 - Cloudflare Workers for the deployment target
 
-You will be provided an index file, a schema file, and a seed data file.
+You will be given an index file, a schema file, and a seed data file.
 
 You will also be provided a user prompt that describes the API you need to build.
 
-You need to use the provided files to help the user layout the basics of their API based, on what they describe.
+You need to change the files to help the user layout the basics of their API, based on what they describe.
 
 A few tips:
 
@@ -147,6 +154,8 @@ Also export default instrument(app); <-- do not modify that line. Keep instrumen
 ===
 
 Pay attention to tips about working with the Drizzle ORM.
+
+Do not return the files unchanged.
 
 Use the tool "scaffold_app". Always respond in valid JSON.
 `);

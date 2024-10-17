@@ -7,9 +7,11 @@ import { z } from "zod";
 import * as schema from "./db/schema";
 import {
   FILES_TO_MODIFY,
-  buildWithAnthropic,
+  // NOTE - Had to swap out Anthropic for OpenAI because of rate limiting concerns
+  // buildWithAnthropic,
   buildWithAnthropicMock,
 } from "./lib/ai/anthropic";
+import { buildWithOpenAi } from "./lib/ai/openai";
 import { isScaffoldAppToolParameters } from "./lib/ai/tools";
 import {
   readProjectFiles,
@@ -107,11 +109,12 @@ app.post(
       seedFile: seedFile ? "present" : "missing",
     });
 
-    const builder = USE_MOCK ? buildWithAnthropicMock : buildWithAnthropic;
+    const builder = USE_MOCK ? buildWithAnthropicMock : buildWithOpenAi;
 
     const result = await builder(
       {
-        apiKey: c.env.ANTHROPIC_API_KEY,
+        // apiKey: c.env.ANTHROPIC_API_KEY,
+        apiKey: c.env.OPENAI_API_KEY,
         indexFile: indexFile || "<index file not provided />",
         schemaFile: schemaFile || "<schema file not provided />",
         seedFile: seedFile || "<seed file not provided />",

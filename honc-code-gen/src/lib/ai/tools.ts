@@ -18,18 +18,25 @@ export const scaffoldAppTool = {
   type: "function",
   function: {
     name: "scaffold_app",
-    description: "Scaffolds a Hono API based on a prompt",
+    description: "Returns modified Hono API files based on a user prompt",
     parameters: {
       type: "object",
       properties: {
-        indexFile: {
+        reasoning: {
           type: "string",
+          description: "The brief reasoning for the changes to the files",
         },
         schemaFile: {
           type: "string",
+          description: "The modified src/db/schema.ts file",
+        },
+        indexFile: {
+          type: "string",
+          description: "The modified src/index.ts file",
         },
         seedFile: {
           type: "string",
+          description: "The modified seed.ts file",
         },
       },
       required: ["indexFile", "schemaFile", "seedFile"],
