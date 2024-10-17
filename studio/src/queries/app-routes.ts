@@ -27,7 +27,7 @@ export const refreshAppRoutes = async () => {
   }
 };
 
-export function useRefreshAppRoutes() {
+export function useRefreshRoutesMutation() {
   return useMutation({
     mutationFn: refreshAppRoutes,
   });

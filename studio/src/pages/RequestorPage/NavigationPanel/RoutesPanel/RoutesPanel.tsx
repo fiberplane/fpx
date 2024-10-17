@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { useRefreshAppRoutes } from "@/queries";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
@@ -13,22 +11,9 @@ import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
+import { useRefreshRoutes } from "./useRefreshRoutes";
 
 export function RoutesPanel() {
-  const { toast } = useToast();
-  const { mutate: mutateRoutes } = useRefreshAppRoutes();
-  const refreshRoutes = () => {
-    mutateRoutes(undefined, {
-      onError: (error) => {
-        console.error("Failed to refresh app routes", error);
-        toast({
-          title: "Failed to refresh app routes",
-          description: error.message,
-          variant: "destructive",
-        });
-      },
-    });
-  };
   const { routes, activeRoute, setActiveRoute } = useRequestorStore(
     "routes",
     "activeRoute",
@@ -174,23 +159,7 @@ export function RoutesPanel() {
           </RoutesSection>
         )}
 
-        <RoutesSection
-          title={
-            <span
-              className="flex items-center gap-2 cursor-pointer"
-              onClick={() => refreshRoutes()}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  refreshRoutes();
-                }
-              }}
-              role="button"
-              tabIndex={0}
-            >
-              Detected in app <ReloadIcon className="w-3 h-3" />
-            </span>
-          }
-        >
+        <RoutesSection title={<DetectedRoutesTitle />}>
           {detectedRoutes.map((route, index) => (
             <RoutesItem
               key={index}
@@ -228,13 +197,68 @@ export function RoutesPanel() {
             ))}
           </RoutesSection>
         )}
-        {allRoutes.length === 0 && <EmptyState refreshRoutes={refreshRoutes} />}
+        {allRoutes.length === 0 && <EmptyState />}
       </div>
     </div>
   );
 }
 
-function EmptyState({ refreshRoutes }: { refreshRoutes: () => void }) {
+function DetectedRoutesTitle() {
+  const { refreshRoutes, isRefreshing } = useRefreshRoutes();
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        "flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors",
+        isRefreshing && "opacity-80",
+        isRefreshing && "cursor-wait",
+      )}
+      disabled={isRefreshing}
+      onClick={() => {
+        if (!isRefreshing) {
+          refreshRoutes();
+        }
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          if (!isRefreshing) {
+            refreshRoutes();
+          }
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      Detected in app{" "}
+      <ReloadIcon className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
+    </button>
+  );
+}
+
+function RefreshRoutesButton() {
+  const { refreshRoutes, isRefreshing } = useRefreshRoutes();
+
+  return (
+    <Button
+      onClick={() => refreshRoutes()}
+      disabled={isRefreshing}
+      className={cn(
+        "bg-transparent text-muted-foreground",
+        isRefreshing && "cursor-wait",
+      )}
+      variant="outline"
+      size="sm"
+    >
+      <ReloadIcon
+        className={cn("w-4 h-4 mr-2", isRefreshing && "animate-spin")}
+      />
+      {isRefreshing ? "Checking..." : "Try Again"}
+    </Button>
+  );
+}
+
+function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center text-gray-300">
       <div className="mt-12 px-2 rounded-lg flex flex-col items-center text-center">
@@ -246,14 +270,7 @@ function EmptyState({ refreshRoutes }: { refreshRoutes: () => void }) {
         </div>
         <h2 className="text-lg font-normal mb-2">No routes detected</h2>
         <div className="flex items-center mb-4">
-          <Button
-            onClick={() => refreshRoutes()}
-            className="bg-transparent text-muted-foreground"
-            variant="outline"
-            size="sm"
-          >
-            <ReloadIcon className="w-4 h-4 mr-2" /> Refresh
-          </Button>
+          <RefreshRoutesButton />
         </div>
         <div className="text-gray-400 text-left text-sm flex flex-col gap-2">
           <p className="text-gray-400 mb-4 text-sm">
