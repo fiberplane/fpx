@@ -24,7 +24,7 @@
 To get started run the following command:
 
 ```sh
-npm create honc-app@latest
+npx @fiberplane/studio@latest create
 ```
 
 You'll be prompted a few simple questions, and then a fresh HONC project will arrive in a new directory on your machine.
