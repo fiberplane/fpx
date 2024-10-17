@@ -275,7 +275,7 @@ const NavItem = memo(({ to, item, isSelected }: NavItemProps) => {
 });
 
 const getId = (item: ProxiedRequestResponse) => {
-  return item.app_responses.traceId || item.app_requests.id.toString();
+  return item.app_responses?.traceId || item.app_requests.id.toString();
 };
 
 const PathCell = ({ item }: { item: ProxiedRequestResponse }) => {
@@ -290,7 +290,7 @@ const PathCell = ({ item }: { item: ProxiedRequestResponse }) => {
 };
 
 const StatusCell = ({ item }: { item: ProxiedRequestResponse }) => {
-  const code = Number.parseInt(item.app_responses.responseStatusCode);
+  const code = Number.parseInt(item.app_responses?.responseStatusCode);
 
   return <Status statusCode={code} />;
 };
