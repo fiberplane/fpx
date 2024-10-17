@@ -9,7 +9,7 @@
 </p>
 
 <div align="center">
-    <code>npm create honc-app@latest</code>
+    <code>npx @fiberplane/studio@latest create</code>
 </div>
 
 [HONC](https://honc.dev) is a modular collection of choice technologies for building lightweight, type-safe, edge-enabled data apis that scale seamlessly to their demand.
