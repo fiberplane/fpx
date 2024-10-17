@@ -159,23 +159,25 @@ export function RoutesPanel() {
           </RoutesSection>
         )}
 
-        <RoutesSection title={<DetectedRoutesTitle />}>
-          {detectedRoutes.map((route, index) => (
-            <RoutesItem
-              key={index}
-              index={userAddedRoutes.length + index}
-              route={route}
-              selectedRoute={
-                selectedRouteIndex === userAddedRoutes.length + index
-                  ? route
-                  : null
-              }
-              activeRoute={activeRoute}
-              handleRouteClick={handleRouteClick}
-              setSelectedRouteIndex={setSelectedRouteIndex}
-            />
-          ))}
-        </RoutesSection>
+        {allRoutes.length > 0 && (
+          <RoutesSection title={<DetectedRoutesTitle />}>
+            {detectedRoutes.map((route, index) => (
+              <RoutesItem
+                key={index}
+                index={userAddedRoutes.length + index}
+                route={route}
+                selectedRoute={
+                  selectedRouteIndex === userAddedRoutes.length + index
+                    ? route
+                    : null
+                }
+                activeRoute={activeRoute}
+                handleRouteClick={handleRouteClick}
+                setSelectedRouteIndex={setSelectedRouteIndex}
+              />
+            ))}
+          </RoutesSection>
+        )}
 
         {hasAnyOpenApiRoutes && (
           <RoutesSection title="OpenAPI">
