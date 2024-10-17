@@ -1,24 +1,11 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import type { AppLogger } from "../../logger";
 import { SYSTEM_PROMPT, invokeScaffoldAppPrompt } from "./prompts";
-import { scaffoldAppTool as scaffoldAppToolBase } from "./tools";
-
-// Convert the tool call into the format that Anthropic suggests (different than openai's api)
-const scaffoldAppTool = {
-  name: scaffoldAppToolBase.function.name,
-  description: scaffoldAppToolBase.function.description,
-  input_schema: scaffoldAppToolBase.function.parameters,
-};
+import { scaffoldAppTool } from "./tools";
 
 export const FILES_TO_MODIFY = ["src/index.ts", "src/db/schema.ts", "seed.ts"];
 
-/**
- * Initial testing was done with Anthropic's Claude 3.5 Sonnet model.
- * It works!
- *
- * However, we have pretty strict rate limits with Anthropic, so it won't be suitable to use Claude when we're at events.
- */
-export async function buildWithAnthropic(
+export async function buildWithOpenAi(
   {
     apiKey,
     indexFile,
@@ -34,36 +21,36 @@ export async function buildWithAnthropic(
   },
   logger: AppLogger,
 ) {
-  logger.debug("Building with Anthropic!");
-  logger.debug(
-    `Index file (truncated): ${indexFile.replace(/\n/g, "\\n").substring(0, 100)}...`,
-  );
-  logger.debug(
-    `Schema file (truncated): ${schemaFile.replace(/\n/g, "\\n").substring(0, 100)}...`,
-  );
-  logger.debug(
-    `Seed data file (truncated): ${seedFile.replace(/\n/g, "\\n").substring(0, 100)}...`,
-  );
-  logger.debug(
-    `User prompt (truncated): ${userPrompt.replace(/\n/g, "\\n").substring(0, 100)}...`,
-  );
-  const anthropicClient = new Anthropic({
-    apiKey,
-    // fetch: globalThis.fetch,
-  });
-
-  const toolChoice: Anthropic.Messages.ToolChoiceTool = {
-    type: "tool",
-    name: scaffoldAppTool.name,
-  };
+  // logger.debug("Building with OpenAI!");
+  // logger.debug(
+  //   `Index file (truncated): ${indexFile.replace(/\n/g, "\\n").substring(0, 100)}...`,
+  // );
+  // logger.debug(
+  //   `Schema file (truncated): ${schemaFile.replace(/\n/g, "\\n").substring(0, 100)}...`,
+  // );
+  // logger.debug(
+  //   `Seed data file (truncated): ${seedFile.replace(/\n/g, "\\n").substring(0, 100)}...`,
+  // );
+  // logger.debug(
+  //   `User prompt (truncated): ${userPrompt.replace(/\n/g, "\\n").substring(0, 100)}...`,
+  // );
+  const openaiClient = new OpenAI({ apiKey, fetch: globalThis.fetch });
 
   // TODO - Chain requests to create each file and emit updates to the client
-  const response = await anthropicClient.messages.create({
-    model: "claude-3-5-sonnet-20240620",
-    tool_choice: toolChoice,
+  const response = await openaiClient.chat.completions.create({
+    // NOTE - Later models (gpt-4o, gpt-4-turbo) should guarantee function calling to have json output
+    model: "gpt-4o",
+    // NOTE - We can restrict the response to be from this single tool call
+    tool_choice: {
+      type: "function",
+      function: { name: scaffoldAppTool.function.name },
+    },
     tools: [scaffoldAppTool],
-    system: SYSTEM_PROMPT,
     messages: [
+      {
+        role: "system",
+        content: SYSTEM_PROMPT,
+      },
       {
         role: "user",
         content: await invokeScaffoldAppPrompt({
@@ -74,31 +61,26 @@ export async function buildWithAnthropic(
         }),
       },
     ],
-    temperature: 0.06,
+    temperature: 0.2,
     max_tokens: 4096,
   });
 
-  const { content } = response;
+  const {
+    choices: [{ message }],
+  } = response;
 
-  // logger.debug("Anthropic response", JSON.stringify(content, null, 2));
+  const toolCall = message.tool_calls?.[0];
+  const toolArgs = toolCall?.function?.arguments;
 
-  let toolArgs: Anthropic.Messages.ToolUseBlock["input"];
-  for (const message of content) {
-    if (message.type === "tool_use") {
-      logger.debug(
-        "Anthropic tool use response:",
-        JSON.stringify(message, null, 2),
-      );
-      toolArgs = message.input;
-      return toolArgs;
-    }
+  // logger.debug("Openai response", JSON.stringify(message, null, 2));
+
+  try {
+    const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
+    return parsedArgs;
+  } catch (error) {
+    logger.error("Parsing tool-call response from OpenAI failed:", error);
+    throw new Error("Could not parse response from OpenAI");
   }
-
-  logger.error(
-    "Parsing tool-call response from Anthropic failed. Response content:",
-    JSON.stringify(content, null, 2),
-  );
-  throw new Error("Could not parse response from Anthropic");
 }
 
 export async function buildWithAnthropicMock() {
