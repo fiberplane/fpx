@@ -36,8 +36,41 @@ import {
   EyeOpenIcon,
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSettingsForm } from "./form";
+
+const getAnthropicModelReleaseDate = (model: string) => {
+  const chunks = model.split("-");
+  return chunks[chunks.length - 1];
+};
+
+function useModelOptions(provider: AiProviderType) {
+  return useMemo(() => {
+    const modelOptions = Object.entries(
+      provider === "openai"
+        ? OpenAIModelOptions
+        : provider === "anthropic"
+          ? AnthropicModelOptions
+          : provider === "mistral"
+            ? MistralModelOptions
+            : {},
+    );
+
+    // HACK - Anthropic models end in their date of release, so we sort by release date descending
+    //        This makes sure sonnet-3.5 is at the top of the list
+    if (provider === "anthropic") {
+      modelOptions.sort((a, b) => {
+        const modelNameA = a[0];
+        const modelNameB = b[0];
+        const dateStringA = getAnthropicModelReleaseDate(modelNameA);
+        const dateStringB = getAnthropicModelReleaseDate(modelNameB);
+        return dateStringB.localeCompare(dateStringA);
+      });
+    }
+
+    return modelOptions;
+  }, [provider]);
+}
 
 export function AISettingsForm({
   settings,
@@ -51,11 +84,19 @@ export function AISettingsForm({
       (key) => !["proxyRequestsEnabled", "proxyBaseUrl"].includes(key),
     ).length > 0;
 
+  const sortedProviderOptions = useMemo(() => {
+    const options = Object.entries(ProviderOptions);
+    options.sort((a, b) => a[0].localeCompare(b[0]));
+    return options;
+  }, []);
+
   const selectedProvider = form.watch("aiProvider");
 
   const activeProvider = Object.keys(ProviderOptions).find(
     (provider) => provider === selectedProvider,
   ) as AiProviderType;
+
+  const modelOptions = useModelOptions(activeProvider);
 
   return (
     <Form {...form}>
@@ -85,21 +126,19 @@ export function AISettingsForm({
                       defaultValue={field.value}
                       className="grid gap-1"
                     >
-                      {Object.entries(ProviderOptions).map(
-                        ([option, label]) => (
-                          <FormItem
-                            key={option}
-                            className="grid grid-cols-[auto_1fr] items-center gap-4 py-1 space-y-0"
-                          >
-                            <FormControl>
-                              <RadioGroupItem value={option} />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {label as React.ReactNode}
-                            </FormLabel>
-                          </FormItem>
-                        ),
-                      )}
+                      {sortedProviderOptions.map(([option, label]) => (
+                        <FormItem
+                          key={option}
+                          className="grid grid-cols-[auto_1fr] items-center gap-4 py-1 space-y-0"
+                        >
+                          <FormControl>
+                            <RadioGroupItem value={option} />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            {label as React.ReactNode}
+                          </FormLabel>
+                        </FormItem>
+                      ))}
                     </RadioGroup>
                   </FormControl>
                 </FormItem>
@@ -130,15 +169,7 @@ export function AISettingsForm({
                             value={field.value}
                             onValueChange={field.onChange}
                           >
-                            {Object.entries(
-                              activeProvider === "openai"
-                                ? OpenAIModelOptions
-                                : activeProvider === "anthropic"
-                                  ? AnthropicModelOptions
-                                  : activeProvider === "mistral"
-                                    ? MistralModelOptions
-                                    : {},
-                            ).map(([option, label]) => (
+                            {modelOptions.map(([option, label]) => (
                               <DropdownMenuRadioItem
                                 key={option}
                                 value={option}
