@@ -68,7 +68,12 @@
       }
     },
     {
-      "include": ["packages/client-library-otel", "api"],
+      "include": [
+        "packages/client-library-otel",
+        "api",
+        "cli",
+        "honc-code-gen"
+      ],
       "linter": {
         "enabled": true,
         "rules": {
