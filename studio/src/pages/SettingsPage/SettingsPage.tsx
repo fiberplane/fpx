@@ -1,17 +1,9 @@
 import SparkleWand from "@/assets/SparkleWand.svg";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFetchSettings } from "@/queries";
 import { cn } from "@/utils";
 import type { Settings } from "@fiberplane/fpx-types";
-import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
 import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
