@@ -156,7 +156,7 @@ export function RoutesPanel() {
           </RoutesSection>
         )}
 
-        <RoutesSection title="Detected in app">
+        <RoutesSection title={<>Detected in app</>}>
           {detectedRoutes.map((route, index) => (
             <RoutesItem
               key={index}
@@ -273,7 +273,7 @@ function EmptyState() {
 }
 
 type RoutesSectionProps = {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
 };
 
