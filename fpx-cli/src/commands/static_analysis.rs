@@ -17,15 +17,15 @@ pub async fn handle_command(args: Args) -> Result<()> {
     // TODO: Integrate fpx.toml?
     let detected_routes = fpx::static_analysis::ast::detect_routes(entry_path, &source);
 
-    println!("{}", detected_routes.len());
+    println!("Count: {}", detected_routes.len());
 
-    // // TODO: Should probably serialize this to stdout?
-    // for detected_route in detected_routes {
-    //     println!("==============");
-    //     println!("Handler:");
-    //     println!("{}", detected_route);
-    //     println!("==============");
-    // }
+    // TODO: Should probably serialize this to stdout?
+    for detected_route in detected_routes {
+        println!("==============");
+        println!("Handler:");
+        println!("{}", detected_route);
+        println!("==============");
+    }
 
     Ok(())
 }

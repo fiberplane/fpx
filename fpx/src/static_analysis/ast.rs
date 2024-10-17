@@ -31,14 +31,58 @@ pub fn detect_routes(entry_path: &Path, source: &str) -> Vec<DetectedRoute> {
     routes
 }
 
-pub fn detect_out_of_scope_identifier(import_path: &Path, source: &str, identifier: &str) {
-    println!(
-        "TODO: Find identifier '{}' in path '{:?}':\n{}",
-        identifier, import_path, source
-    );
+pub fn detect_out_of_scope_identifier(
+    source: &str,
+    identifier: &str,
+    out_of_scope_sources: &mut Vec<String>,
+) {
+    let mut parser = Parser::new();
+
+    parser
+        .set_language(&LANGUAGE_TYPESCRIPT.into())
+        .expect("error loading TypeScript grammar");
+
+    let tree = parser
+        .parse(source, None) //  TODO: handle watch?
+        .expect("failed to parse source file");
+
+    let root_node = tree.root_node();
+    let mut cursor = root_node.walk();
+    traverse_for_export_identifier(&mut cursor, source, identifier, out_of_scope_sources);
 }
 
-// TODO: find and traverse imports to match out of scope identifiers
+// TODO: Fix recursion bug, block is added multiple times
+fn traverse_for_export_identifier(
+    cursor: &mut TreeCursor,
+    source: &str,
+    identifier: &str,
+    out_of_scope_sources: &mut Vec<String>,
+) {
+    let node = cursor.node();
+
+    if node.kind() == "lexical_declaration" || node.kind() == "variable_declaration" {
+        let block_node = node.named_child(0).unwrap();
+        let identifier_node = block_node.child(0).unwrap();
+        let variable_name = identifier_node.utf8_text(source.as_bytes()).unwrap();
+
+        if variable_name == identifier {
+            // TODO: Include block / export declaration
+            let block_text = block_node.utf8_text(source.as_bytes()).unwrap();
+            out_of_scope_sources.push(block_text.to_string());
+        }
+    }
+
+    if cursor.goto_first_child() {
+        loop {
+            traverse_for_export_identifier(cursor, source, identifier, out_of_scope_sources);
+            if !cursor.goto_next_sibling() {
+                break;
+            }
+        }
+        cursor.goto_parent();
+    }
+}
+
 fn find_route_handler_nodes(
     entry_path: &Path,
     source: &str,
@@ -48,6 +92,7 @@ fn find_route_handler_nodes(
 ) {
     let node = cursor.node();
 
+    // TODO: Move out of function to traverse import map
     if node.kind() == "import_statement" {
         if let Some((import_path, identifiers)) = process_import(&node, source) {
             for identifier in identifiers {
@@ -58,6 +103,7 @@ fn find_route_handler_nodes(
         let function_node = node.child(0).unwrap();
         let function_name = function_node.utf8_text(source.as_bytes()).unwrap();
 
+        // TODO: Make sure to check for the Hono app initialization and match identifiers instead of relying on `.{METHOD}`
         if function_name.ends_with(".get")
             || function_name.ends_with(".post")
             || function_name.ends_with(".patch")
@@ -77,14 +123,15 @@ fn find_route_handler_nodes(
                         if let Some(handler_node) = route_node.child(3) {
                             let route_handler = handler_node.utf8_text(source.as_bytes()).unwrap();
 
-                            // println!("rh:\n{}", route_handler);
-
                             let mut cursor = handler_node.walk();
-                            let out_of_scope = collect_out_of_scope_identifiers(
+                            let mut out_of_scope_sources: Vec<String> = vec![];
+
+                            collect_out_of_scope_identifiers(
                                 entry_path,
                                 &mut cursor,
-                                &imports,
+                                imports,
                                 source,
+                                &mut out_of_scope_sources,
                             );
 
                             routes.push(DetectedRoute {
@@ -94,6 +141,7 @@ fn find_route_handler_nodes(
                                 source_path: entry_path.to_str().unwrap().into(),
                                 source_start_point: node.start_position().into(),
                                 source_end_point: node.end_position().into(),
+                                out_of_scope_sources,
                             });
                         }
                     }
@@ -163,6 +211,7 @@ fn collect_out_of_scope_identifiers(
     cursor: &mut TreeCursor,
     imports: &ImportMap,
     source: &str,
+    out_of_scope_sources: &mut Vec<String>,
 ) {
     let node = cursor.node();
 
@@ -175,13 +224,25 @@ fn collect_out_of_scope_identifiers(
             let path = Path::new(path.to_str().unwrap());
 
             let out_of_scope_source = fs::read_to_string(path).unwrap();
-            detect_out_of_scope_identifier(path, &out_of_scope_source, &identifier);
+
+            println!(
+                "DETECT OUT OF SCOPE FOR: {} IN: {}",
+                identifier,
+                path.to_str().unwrap()
+            );
+            detect_out_of_scope_identifier(&out_of_scope_source, &identifier, out_of_scope_sources);
         }
     }
 
     if cursor.goto_first_child() {
         loop {
-            collect_out_of_scope_identifiers(entry_path, cursor, imports, source);
+            collect_out_of_scope_identifiers(
+                entry_path,
+                cursor,
+                imports,
+                source,
+                out_of_scope_sources,
+            );
             if !cursor.goto_next_sibling() {
                 break;
             }
@@ -238,7 +299,8 @@ export default instrument(app);
                 route_handler: "(c) => {\n  return c.text(\"Hello Hono!\");\n}".into(),
                 source_path: "src/index.ts".into(),
                 source_start_point: Point { row: 5, column: 0 }.into(),
-                source_end_point: Point { row: 7, column: 2 }.into()
+                source_end_point: Point { row: 7, column: 2 }.into(),
+                out_of_scope_sources: vec![],
             }]
         )
     }
