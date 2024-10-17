@@ -18,7 +18,7 @@ const DEFAULT_VALUES = {
       apiKey: "",
     },
     mistral: {
-      model: "open-mixtral-8x7b",
+      model: "mistral-large-latest",
       apiKey: "",
     },
   },

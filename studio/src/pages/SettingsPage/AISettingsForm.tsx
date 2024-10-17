@@ -68,6 +68,36 @@ function useModelOptions(provider: AiProviderType) {
       });
     }
 
+    // Sort mistral models by the "latest" keyword
+    if (provider === "mistral") {
+      modelOptions.sort((a, b) => {
+        const modelNameA = a[0];
+        const modelNameB = b[0];
+        if (modelNameA.includes("latest")) {
+          return -1;
+        }
+        if (modelNameB.includes("latest")) {
+          return 1;
+        }
+        return modelNameA.localeCompare(modelNameB);
+      });
+    }
+
+    // Sort gpt-4o to the top of the list
+    if (provider === "openai") {
+      modelOptions.sort((a, b) => {
+        const modelNameA = a[0];
+        const modelNameB = b[0];
+        if (modelNameA.includes("gpt-4o")) {
+          return -1;
+        }
+        if (modelNameB.includes("gpt-4o")) {
+          return 1;
+        }
+        return modelNameA.localeCompare(modelNameB);
+      });
+    }
+
     return modelOptions;
   }, [provider]);
 }
