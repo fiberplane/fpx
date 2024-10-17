@@ -1,7 +1,7 @@
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 use super::detected_route::DetectedRoute;
-use tree_sitter::{Parser, TreeCursor};
+use tree_sitter::{Node, Parser, TreeCursor};
 use tree_sitter_typescript::LANGUAGE_TYPESCRIPT;
 
 pub fn detect_routes(entry_path: &Path, source: &str) -> Vec<DetectedRoute> {
@@ -18,23 +18,76 @@ pub fn detect_routes(entry_path: &Path, source: &str) -> Vec<DetectedRoute> {
     let root_node = tree.root_node();
     let mut cursor = root_node.walk();
 
+    let mut imports = HashMap::new();
     let mut routes: Vec<DetectedRoute> = vec![];
 
-    find_route_handler_nodes(entry_path, source, &mut routes, &mut cursor);
+    find_route_handler_nodes(entry_path, source, &mut imports, &mut routes, &mut cursor);
+
+    println!("imports: {:?}", imports);
 
     routes
+}
+
+fn process_import(node: &Node, source: &str) -> Option<(String, Vec<String>)> {
+    let mut cursor = node.walk();
+    let mut identifiers: Vec<String> = vec![];
+    let mut file = String::new();
+
+    for child in node.children(&mut cursor) {
+        if child.kind() == "import_clause"
+            || child.kind() == "namespace_import"
+            || child.kind() == "import_specifier"
+        {
+            let named_imports = child.child(0).unwrap();
+            let mut cursor = named_imports.walk();
+
+            for named_import in named_imports.children(&mut cursor) {
+                if named_import.kind() == "import_specifier" {
+                    let identifier = named_import
+                        .utf8_text(source.as_bytes())
+                        .unwrap()
+                        .to_string();
+
+                    identifiers.push(identifier);
+                }
+            }
+        }
+
+        if child.kind() == "string" {
+            file = child
+                .child(1)
+                .unwrap()
+                .utf8_text(source.as_bytes())
+                .unwrap()
+                .to_string()
+                .trim_matches('"')
+                .to_string();
+        }
+    }
+
+    // TODO: Should probably support alias' in ts config
+    if file.starts_with("./") {
+        Some((file, identifiers))
+    } else {
+        None
+    }
 }
 
 // TODO: find and traverse imports to match out of scope identifiers
 fn find_route_handler_nodes(
     file_path: &Path,
     source: &str,
+    imports: &mut HashMap<String, Vec<String>>,
     routes: &mut Vec<DetectedRoute>,
     cursor: &mut TreeCursor,
 ) {
     let node = cursor.node();
 
-    if node.kind() == "call_expression" {
+    if node.kind() == "import_statement" {
+        if let Some((file, identifiers)) = process_import(&node, source) {
+            imports.insert(file, identifiers);
+        }
+    } else if node.kind() == "call_expression" {
         let function_node = node.child(0).unwrap();
         let function_name = function_node.utf8_text(source.as_bytes()).unwrap();
 
@@ -57,6 +110,8 @@ fn find_route_handler_nodes(
                         if let Some(handler_node) = route_node.child(3) {
                             let route_handler = handler_node.utf8_text(source.as_bytes()).unwrap();
 
+                            // TODO: Find identifiers that are in the imports
+
                             routes.push(DetectedRoute {
                                 route_path: path.into(),
                                 route_method: method.into(),
@@ -74,7 +129,7 @@ fn find_route_handler_nodes(
 
     if cursor.goto_first_child() {
         loop {
-            find_route_handler_nodes(file_path, source, routes, cursor);
+            find_route_handler_nodes(file_path, source, imports, routes, cursor);
             if !cursor.goto_next_sibling() {
                 break;
             }
