@@ -39,6 +39,9 @@
     "fpx": "bin/cli.js"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^0.0.51",
+    "@ai-sdk/mistral": "^0.0.42",
+    "@ai-sdk/openai": "^0.0.66",
     "@anthropic-ai/sdk": "^0.24.3",
     "@fiberplane/fpx-types": "workspace:*",
     "@hono/node-server": "^1.11.1",
@@ -48,6 +51,7 @@
     "@libsql/client": "^0.6.2",
     "acorn": "^8.11.3",
     "acorn-walk": "^8.3.2",
+    "ai": "^3.4.10",
     "chalk": "^5.3.0",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.24.2",

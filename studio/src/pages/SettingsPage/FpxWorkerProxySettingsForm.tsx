@@ -48,11 +48,11 @@ export function FpxWorkerProxySettingsForm({
                         </span>
                       </FormLabel>
                       <FormDescription className="max-w-3xl grid gap-2">
-                        <p>
+                        <div>
                           Enable reading trace data to from a remote ingestion
                           engine hosted on Cloudflare workers. Contact
                           Fiberplane for more information.
-                        </p>
+                        </div>
                       </FormDescription>
                     </div>
                     <FormControl>

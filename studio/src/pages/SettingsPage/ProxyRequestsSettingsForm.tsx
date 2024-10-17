@@ -44,18 +44,18 @@ export function ProxyRequestsSettingsForm({
                         </span>
                       </FormLabel>
                       <FormDescription className="max-w-3xl grid gap-2">
-                        <p>
+                        <div>
                           Enable proxying of requests from a remote service.
                           This feature is useful for debugging, testing, and
                           developing with services that are only available on a
                           public internet (like webhooks).
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           Any request received at this URL will be forwarded to
                           your app including all the request data (path,
                           headers, body, etc.).
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                           E.g.: A request{" "}
                           <code className="font-mono text-wrap">
                             &lt;public_url&gt;/some-route{" "}
@@ -65,7 +65,7 @@ export function ProxyRequestsSettingsForm({
                             {" "}
                             &lt;your_app&gt;/some-route
                           </code>
-                        </p>
+                        </div>
                       </FormDescription>
                     </div>
                     <FormControl>
