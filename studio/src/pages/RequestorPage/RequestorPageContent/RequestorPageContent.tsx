@@ -141,7 +141,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     () => {
       togglePanel("logsPanel");
     },
-    { description: "Open logs panel" },
+    { description: "Open logs panel", ignoreSelector: "[contenteditable]" },
   );
 
   useKeySequence(
@@ -149,7 +149,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     () => {
       togglePanel("timelinePanel");
     },
-    { description: "Open timeline panel" },
+    { description: "Open timeline panel", ignoreSelector: "[contenteditable]" },
   );
 
   useKeySequence(
@@ -159,6 +159,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     },
     {
       description: "Open AI assistant panel",
+      ignoreSelector: "[contenteditable]",
     },
   );
 

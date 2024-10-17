@@ -25,9 +25,12 @@ export const createOnSubmitKeymap = (
   keymap.of([
     {
       key: "Mod-Enter",
-      run: () => {
+      run: (view) => {
         if (onSubmit) {
           onSubmit();
+          // NOTE - It's important for our workflows to blur the editor after the onSubmit function is called
+          //        This way, you can submit a request and then type `g+t` to see the timeline
+          view.contentDOM.blur();
           return true;
         }
         return bubbleWhenNoHandler;

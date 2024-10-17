@@ -26,12 +26,20 @@ export function NavigationPanel() {
     setParams({ [FILTER_TAB_KEY]: newTab }, { replace: true });
   });
 
-  useKeySequence(["g", "r"], () => {
-    setTab("routes");
-  });
-  useKeySequence(["g", "a"], () => {
-    setTab("requests");
-  });
+  useKeySequence(
+    ["g", "r"],
+    () => {
+      setTab("routes");
+    },
+    { ignoreSelector: "[contenteditable]" },
+  );
+  useKeySequence(
+    ["g", "a"],
+    () => {
+      setTab("requests");
+    },
+    { ignoreSelector: "[contenteditable]" },
+  );
 
   return (
     <Tabs
