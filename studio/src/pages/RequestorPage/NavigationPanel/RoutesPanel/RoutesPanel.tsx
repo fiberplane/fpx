@@ -212,7 +212,7 @@ function DetectedRoutesTitle() {
       className={cn(
         "flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors",
         isRefreshing && "opacity-80",
-        isRefreshing && "cursor-wait",
+        isRefreshing && "cursor-default",
       )}
       disabled={isRefreshing}
       onClick={() => {
@@ -243,10 +243,7 @@ function RefreshRoutesButton() {
     <Button
       onClick={() => refreshRoutes()}
       disabled={isRefreshing}
-      className={cn(
-        "bg-transparent text-muted-foreground",
-        isRefreshing && "cursor-wait",
-      )}
+      className={cn("bg-transparent text-muted-foreground")}
       variant="outline"
       size="sm"
     >
