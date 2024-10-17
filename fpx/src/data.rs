@@ -1,5 +1,5 @@
 use crate::api::models::settings::Settings;
-use crate::data::models::HexEncodedId;
+use crate::data::models::{HexEncodedId, ProbedRoutes, Route};
 use async_trait::async_trait;
 use std::sync::Arc;
 use thiserror::Error;
@@ -92,4 +92,31 @@ pub trait Store: Send + Sync {
     async fn settings_upsert(&self, tx: &Transaction, settings: Settings) -> Result<Settings>;
 
     async fn settings_get(&self, tx: &Transaction) -> Result<Settings>;
+
+    async fn routes_get(&self, tx: &Transaction) -> Result<Vec<Route>>;
+
+    async fn routes_insert(&self, tx: &Transaction, routes: Vec<Route>) -> Result<Vec<Route>> {
+        let mut results = Vec::with_capacity(routes.len());
+
+        for route in routes {
+            results.push(self.route_insert(tx, route).await?);
+        }
+
+        Ok(results)
+    }
+
+    async fn route_insert(&self, tx: &Transaction, route: Route) -> Result<Route>;
+
+    async fn route_delete(
+        &self,
+        tx: &Transaction,
+        method: &str,
+        path: &str,
+    ) -> Result<Option<Route>>;
+
+    async fn probed_route_upsert(
+        &self,
+        tx: &Transaction,
+        routes: ProbedRoutes,
+    ) -> Result<ProbedRoutes>;
 }

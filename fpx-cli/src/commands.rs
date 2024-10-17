@@ -23,6 +23,9 @@ pub struct Args {
     #[clap(long, env, default_value = "http://localhost:4317")]
     pub otlp_endpoint: Url,
 
+    #[clap(global = true, long, env, default_value = "http://localhost:8787")]
+    pub app_endpoint: Url,
+
     /// Change the fpx directory.
     ///
     /// By default fpx will search for a `.fpx` directory in the current
