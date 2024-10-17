@@ -105,7 +105,7 @@ async function probeRoutesWithExponentialBackoff(
   }
 }
 
-async function routerProbe(target: string) {
+export async function routerProbe(target: string) {
   const headers = new Headers();
   headers.append("X-Fpx-Route-Inspector", "enabled");
   return await fetch(target, {

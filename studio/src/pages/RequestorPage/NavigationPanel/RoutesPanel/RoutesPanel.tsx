@@ -1,6 +1,8 @@
+import { useRefreshAppRoutes } from "@/queries";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +13,7 @@ import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
 
 export function RoutesPanel() {
+  const { mutate: refreshRoutes } = useRefreshAppRoutes();
   const { routes, activeRoute, setActiveRoute } = useRequestorStore(
     "routes",
     "activeRoute",
@@ -156,7 +159,23 @@ export function RoutesPanel() {
           </RoutesSection>
         )}
 
-        <RoutesSection title={<>Detected in app</>}>
+        <RoutesSection
+          title={
+            <span
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => refreshRoutes()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  refreshRoutes();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              Detected in app <ReloadIcon className="w-3 h-3" />
+            </span>
+          }
+        >
           {detectedRoutes.map((route, index) => (
             <RoutesItem
               key={index}
