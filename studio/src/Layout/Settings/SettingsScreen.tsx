@@ -20,7 +20,7 @@ export function SettingsScreen({
         <DialogContent className="fixed top-0 left-0 right-0 w-full overflow-hidden z-50 bg-background h-screen">
           <div className="grid grid-rows-[auto_1fr] mx-auto h-full w-full md:max-w-[1100px] lg:max-w-[1060px]">
             <div>
-              <div className="flex justify-between items-center px-8 pt-6 lg:px-12">
+              <div className="flex justify-between items-center px-8 pt-6">
                 <DialogTitle>Settings</DialogTitle>
                 <DialogClose asChild>
                   <Button variant="ghost" size="icon" className="w-6 h-6 p-0.5">
@@ -28,7 +28,7 @@ export function SettingsScreen({
                   </Button>
                 </DialogClose>
               </div>
-              <DialogDescription className="px-8 pt-6 text-sm text-muted-foreground lg:px-12">
+              <DialogDescription className="px-8 pt-2 text-sm text-muted-foreground">
                 Manage your settings and preferences.
               </DialogDescription>
             </div>

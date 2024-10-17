@@ -64,19 +64,21 @@ export function AISettingsForm({
         className="w-full space-y-4 pb-8"
       >
         <div>
-          <h3 className="hidden md:block md:mb-4 text-lg font-medium">
+          <h3 className="md:block md:mb-4 text-lg font-medium">
             Request Autofill Settings
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             <FormField
               control={form.control}
               name="aiProvider"
               render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>AI Provider</FormLabel>
-                  <FormDescription>
-                    Select the AI provider for request autofill.
-                  </FormDescription>
+                <FormItem className="space-y-4">
+                  <div className="flex flex-col gap-2">
+                    <FormLabel>AI Provider</FormLabel>
+                    <FormDescription>
+                      Select the AI provider for request autofill.
+                    </FormDescription>
+                  </div>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -87,7 +89,7 @@ export function AISettingsForm({
                         ([option, label]) => (
                           <FormItem
                             key={option}
-                            className="grid grid-cols-[auto_1fr] items-center gap-3"
+                            className="grid grid-cols-[auto_1fr] items-center gap-4 py-1 space-y-0"
                           >
                             <FormControl>
                               <RadioGroupItem value={option} />
@@ -104,7 +106,7 @@ export function AISettingsForm({
               )}
             />
             <div key={activeProvider} className="space-y-4">
-              <h4 className="text-md font-medium">
+              <h4 className="hidden text-md font-medium">
                 {ProviderOptions[activeProvider as AiProviderType]}
               </h4>
               <FormField
