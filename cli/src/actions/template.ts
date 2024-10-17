@@ -20,11 +20,11 @@ export async function promptTemplate(ctx: Context) {
           label: "(Supa)base template",
           hint: "A barebones HONC project with a Supabase database",
         },
-        {
-          value: "sample-api",
-          label: "Sample API template",
-          hint: "A configured sample API using the HONC stack",
-        },
+        // {
+        //   value: "sample-api",
+        //   label: "Sample API template",
+        //   hint: "A configured sample API using the HONC stack",
+        // },
         {
           value: "sample-d1",
           label: "D1 base template",
