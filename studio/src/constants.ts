@@ -1,3 +1,5 @@
+import type { RuntimeType } from "./components/RuntimeProvider";
+
 /**
  * SEMATTRS_* are constants that should actually be exposed by the Samantic Conventions package
  * but are not. These are the ones that are used in the frontend and the client library.
@@ -66,6 +68,9 @@ export const REQUEST_DETAILS_OTEL_ROUTE = "/requests/otel/:traceId";
 export const REQUEST_DETAILS_TRACE_ROUTE = "/requests/:traceId";
 export const ROOT_ROUTE = "/";
 export const REQUESTOR_TRACE_ROUTE = "/:requestType/:traceId";
+
+export const RUNTIME: RuntimeType =
+  "__TAURI_INTERNALS__" in window ? "tauri" : "unknown";
 
 export const TRACE_ID_ROUTES = [
   REQUEST_DETAILS_OTEL_ROUTE,

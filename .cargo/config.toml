@@ -1,3 +1,3 @@
 [alias]
-fpx = "run --package fpx --"
+fpx = "run --package fpx-cli --"
 xtask = "run --package xtask --"

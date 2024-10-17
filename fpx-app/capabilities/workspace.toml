@@ -1,0 +1,11 @@
+identifier = "workspace-capability"
+description = "Workspace capabilities for the main window"
+windows = ["main-window"]
+permissions = [
+  "core:app:default",
+  "core:event:allow-listen",
+  "core:webview:allow-internal-toggle-devtools",
+  "core:path:allow-resolve-directory",
+  "dialog:default",
+  "store:default",
+]

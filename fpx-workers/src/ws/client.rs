@@ -1,4 +1,4 @@
-use fpx_lib::api::models::ServerMessage;
+use fpx::api::models::ServerMessage;
 use std::sync::Arc;
 use wasm_bindgen_futures::wasm_bindgen::JsValue;
 use worker::*;

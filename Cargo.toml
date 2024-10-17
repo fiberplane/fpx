@@ -1,7 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["fpx", "fpx-lib", "fpx-workers", "fpx-macros", "xtask"]
-default-members = ["fpx"]
+members = ["fpx", "fpx-app", "fpx-cli", "fpx-macros", "fpx-workers", "xtask"]
 
 [workspace.package]
 authors = ["Fiberplane <info@fiberplane.com>"]

@@ -1,9 +1,9 @@
 use axum::async_trait;
 use axum::routing::get;
 use data::D1Store;
-use fpx_lib::api::models::ServerMessage;
-use fpx_lib::events::ServerEvents;
-use fpx_lib::{api, service};
+use fpx::api::models::ServerMessage;
+use fpx::events::ServerEvents;
+use fpx::{api, service};
 use std::sync::Arc;
 use tower_service::Service;
 use tracing_subscriber::fmt::format::Pretty;
