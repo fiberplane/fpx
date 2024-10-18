@@ -1,11 +1,27 @@
 import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
+import { basename, dirname } from "node:path";
 import { cancel, log } from "@clack/prompts";
 import { CANCEL_MESSAGE } from "./const";
 import { CodeGenError } from "./types";
 
 export function getPackageManager() {
   return process.env.npm_config_user_agent?.split("/").at(0);
+}
+
+export function getProjectName(path: string) {
+  try {
+    const stats = statSync(path);
+
+    if (stats.isDirectory()) {
+      return basename(path);
+    }
+    // If it's a file, return the parent directory name
+    return basename(dirname(path));
+  } catch {
+    // If the path doesn't exist, just return the last part of the path
+    return basename(path);
+  }
 }
 
 export async function runShell(cwd: string, commands: string[]): Promise<void> {

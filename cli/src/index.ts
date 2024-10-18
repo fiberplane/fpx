@@ -10,6 +10,7 @@ import { promptDescription } from "./actions/description";
 import { actionGit, promptGit } from "./actions/git";
 import { HONC_TITLE } from "./const";
 import { getContext } from "./context";
+import { updateProjectName } from "./project-name";
 import { isError } from "./types";
 import { handleCancel, handleError } from "./utils";
 
@@ -62,6 +63,9 @@ async function main() {
       handleError(result);
     }
   }
+
+  // Update the project name in the package.json file and wrangler.toml file
+  updateProjectName(context);
 
   const dbPreamble = context.flags.includes("setup-neon")
     ? "You can now navigate to the project folder and run the following commands to generate, apply the migrations and seed the database:"
