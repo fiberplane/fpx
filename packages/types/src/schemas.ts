@@ -7,7 +7,13 @@
 // =========================================== //
 
 import { z } from "zod";
-import memoizeOne from "memoize-one";
+
+// TODO: Polyfill memoizeOne for now, seems like this breaks our TypeScript setup
+// See: https://github.com/alexreardon/memoize-one/issues/267
+// Couldn't get it to work reliably on both the CI and locally with custom module type definitions
+function memoizeOne<T>(schema: T) {
+  return schema;
+}
 
 export const AppStateSchema = memoizeOne(() =>
   z.object({ workspace: z.union([z.lazy(WorkspaceSchema), z.null()]) }),

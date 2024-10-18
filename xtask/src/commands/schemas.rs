@@ -80,7 +80,13 @@ fn generate_zod_schemas(schemas: Vec<RootSchema>) -> Result<Vec<u8>> {
 // =========================================== //
 
 import { z } from "zod";
-import memoizeOne from "memoize-one";
+
+// TODO: Polyfill memoizeOne for now, seems like this breaks our TypeScript setup
+// See: https://github.com/alexreardon/memoize-one/issues/267
+// Couldn't get it to work reliably on both the CI and locally with custom module type definitions
+function memoizeOne<T>(schema: T) {
+  return schema;
+}
     "#,
     );
 

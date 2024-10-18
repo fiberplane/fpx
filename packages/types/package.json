@@ -15,7 +15,6 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "zod": "^3.23.8",
-    "memoize-one": "^6.0.0"
+    "zod": "^3.23.8"
   }
 }
