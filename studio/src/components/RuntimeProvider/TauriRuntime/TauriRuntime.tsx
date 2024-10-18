@@ -5,6 +5,7 @@ import {
 } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { RuntimeContext, type RuntimeProviderProps } from "../RuntimeProvider";
 import { WorkspaceOpenError } from "./WorkspaceOpenError";
 import { WorkspaceSelector } from "./WorkspaceSelector";
@@ -15,7 +16,6 @@ import {
   openWorkspace,
   showOpenWorkspaceDialog,
 } from "./utils";
-import { z } from "zod";
 
 export function TauriRuntime({ children }: RuntimeProviderProps) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
