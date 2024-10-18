@@ -5,6 +5,7 @@ import {
 } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { RuntimeContext, type RuntimeProviderProps } from "../RuntimeProvider";
 import { WorkspaceOpenError } from "./WorkspaceOpenError";
 import { WorkspaceSelector } from "./WorkspaceSelector";
@@ -17,7 +18,7 @@ import {
 } from "./utils";
 
 export function TauriRuntime({ children }: RuntimeProviderProps) {
-  const [workspace, setWorkspace] = useState<Workspace | undefined>();
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [error, setError] = useState<OpenWorkspaceError | undefined>();
 
   const handleOpenWorkspaceByPath = useHandler(async (path: string) => {
@@ -32,7 +33,7 @@ export function TauriRuntime({ children }: RuntimeProviderProps) {
         setWorkspace(workspace);
       }
     } catch (error) {
-      const parsed = OpenWorkspaceErrorSchema.safeParse(error);
+      const parsed = z.lazy(OpenWorkspaceErrorSchema).safeParse(error);
       if (parsed.success) {
         return setError(parsed.data);
       }
@@ -43,7 +44,7 @@ export function TauriRuntime({ children }: RuntimeProviderProps) {
 
   const handleCloseWorkspaceRequested = useHandler(() => {
     closeWorkspace();
-    setWorkspace(undefined);
+    setWorkspace(null);
   });
 
   const handleGetApiBaseUrl = useHandler(() => {
@@ -55,7 +56,7 @@ export function TauriRuntime({ children }: RuntimeProviderProps) {
   });
 
   useEffect(() => {
-    if (workspace === undefined) {
+    if (workspace === null) {
       getCurrentWorkspace().then(setWorkspace);
     }
   }, [workspace]);
