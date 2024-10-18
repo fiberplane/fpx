@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { AppLogger } from "../../logger";
+import type { SchemaContext } from "../../types";
 import { SYSTEM_PROMPT, invokeScaffoldAppPrompt } from "./prompts";
 import { scaffoldAppTool } from "./tools";
 
@@ -10,12 +11,14 @@ export async function buildWithOpenAi(
     apiKey,
     indexFile,
     schemaFile,
+    schemaContext,
     seedFile,
     userPrompt,
   }: {
     apiKey: string;
     indexFile: string;
     schemaFile: string;
+    schemaContext: SchemaContext | null;
     seedFile: string;
     userPrompt: string;
   },
@@ -56,6 +59,7 @@ export async function buildWithOpenAi(
         content: await invokeScaffoldAppPrompt({
           indexFile,
           schemaFile,
+          schemaContext,
           seedFile,
           userPrompt,
         }),

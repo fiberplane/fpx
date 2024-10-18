@@ -1,3 +1,4 @@
+import type { Template } from "@/types";
 import type { Context } from "../../context";
 
 // Define the expected structure of the scaffolded files
@@ -12,8 +13,33 @@ type CodeGenResponse = {
   result: ScaffoldedFiles;
 };
 
+function createDatabaseSchemaContext(template?: Template) {
+  switch (template) {
+    case "base":
+      return {
+        type: "postgres",
+        drizzleImport: "drizzle-orm/pg-core",
+        vendor: "Neon",
+      };
+    case "base-supa":
+      return {
+        type: "postgres",
+        drizzleImport: "drizzle-orm/pg-core",
+        vendor: "Supabase",
+      };
+    case "sample-d1":
+      return {
+        type: "sqlite",
+        drizzleImport: "drizzle-orm/sqlite-core",
+        vendor: "Cloudflare D1",
+      };
+    default:
+      return null;
+  }
+}
+
 export async function getScaffoldedFiles(ctx: Context) {
-  const { sessionId, codeGenBaseUrl, codeGenApiKey } = ctx;
+  const { sessionId, codeGenBaseUrl, codeGenApiKey, template } = ctx;
 
   const baseUrl =
     codeGenBaseUrl || "https://honc-supercharger.mies.workers.dev";
@@ -29,6 +55,7 @@ export async function getScaffoldedFiles(ctx: Context) {
     prompt: prompt,
     indexFile: ctx.indexFile,
     schemaFile: ctx.schemaFile,
+    schemaContext: createDatabaseSchemaContext(template),
     seedFile: ctx.seedFile,
   };
 

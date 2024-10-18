@@ -21,6 +21,7 @@ import {
 } from "./lib/project-files";
 import type { Bindings, Variables } from "./lib/types";
 import { createLogger } from "./logger";
+import { SchemaContextSchema } from "./types";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -88,26 +89,41 @@ app.post(
     "json",
     z.object({
       prompt: z.string(),
-      indexFile: z.string().optional(),
-      schemaFile: z.string().optional(),
-      seedFile: z.string().optional(),
+      indexFile: z.string().nullish(),
+      schemaFile: z.string().nullish(),
+      schemaContext: SchemaContextSchema.nullish(),
+      seedFile: z.string().nullish(),
     }),
   ),
   async (c) => {
+    const logger = c.get("appLogger");
+
     // HACK - Set this true to return a mock response, not eat up API calls
     const USE_MOCK = false;
+    if (USE_MOCK) {
+      logger.warn("Using mock response for code generation");
+    }
 
     const db = c.get("db");
-    const logger = c.get("appLogger");
     const sessionId = c.req.param("sessionId");
     const body = c.req.valid("json");
-    const { prompt, indexFile, schemaFile, seedFile } = body;
+    const { prompt, indexFile, schemaFile, schemaContext, seedFile } = body;
 
     logger.debug("Project files:", {
       indexFile: indexFile ? "present" : "missing",
       schemaFile: schemaFile ? "present" : "missing",
       seedFile: seedFile ? "present" : "missing",
     });
+    logger.debug(
+      "Schema context:",
+      schemaContext
+        ? {
+            type: schemaContext?.type,
+            drizzleImport: schemaContext?.drizzleImport,
+            vendor: schemaContext?.vendor,
+          }
+        : "missing",
+    );
 
     const builder = USE_MOCK ? buildWithAnthropicMock : buildWithOpenAi;
 
@@ -117,6 +133,7 @@ app.post(
         apiKey: c.env.OPENAI_API_KEY,
         indexFile: indexFile || "<index file not provided />",
         schemaFile: schemaFile || "<schema file not provided />",
+        schemaContext,
         seedFile: seedFile || "<seed file not provided />",
         userPrompt: prompt,
       },
@@ -145,6 +162,7 @@ app.post(
             result,
             // NOTE - This is for future reference, if we change how and which files we modify
             filesModified: FILES_TO_MODIFY,
+            schemaContext,
           },
           type: "error",
         })
@@ -163,6 +181,7 @@ app.post(
         data: {
           // NOTE - This is for future reference, if we change how and which files we modify
           filesModified: FILES_TO_MODIFY,
+          schemaContext,
         },
         type: "success",
       })
