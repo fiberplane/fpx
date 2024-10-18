@@ -1,6 +1,45 @@
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createMistral } from "@ai-sdk/mistral";
+import { createOpenAI } from "@ai-sdk/openai";
 import type { Settings } from "@fiberplane/fpx-types";
-import { generateRequestWithAnthropic } from "./anthropic.js";
-import { generateRequestWithOpenAI } from "./openai.js";
+import { generateObject } from "ai";
+import logger from "../../logger.js";
+import { invokeRequestGenerationPrompt } from "./prompts.js";
+import { requestSchema } from "./tools.js";
+
+function configureProvider(
+  aiProvider: string,
+  providerConfig: {
+    apiKey: string;
+    baseUrl?: string | undefined;
+    model: string;
+  },
+) {
+  if (aiProvider === "openai") {
+    const openai = createOpenAI({
+      apiKey: providerConfig.apiKey,
+      baseURL: providerConfig.baseUrl ?? undefined,
+    });
+    return openai(providerConfig.model, { structuredOutputs: true });
+  }
+  if (aiProvider === "anthropic") {
+    const anthropic = createAnthropic({
+      apiKey: providerConfig.apiKey,
+      baseURL: providerConfig.baseUrl ?? undefined,
+    });
+    return anthropic(providerConfig.model);
+  }
+
+  if (aiProvider === "mistral") {
+    const mistral = createMistral({
+      apiKey: providerConfig.apiKey,
+      baseURL: providerConfig.baseUrl ?? undefined,
+    });
+    return mistral(providerConfig.model);
+  }
+
+  throw new Error("Unknown AI provider");
+}
 
 export async function generateRequestWithAiProvider({
   inferenceConfig,
@@ -29,67 +68,78 @@ export async function generateRequestWithAiProvider({
   }[];
   middlewareContext?: string;
 }) {
-  const {
-    openaiApiKey,
-    openaiModel,
-    openaiBaseUrl,
-    anthropicApiKey,
-    anthropicModel,
-    anthropicBaseUrl,
-    aiProviderType,
-  } = inferenceConfig;
-  if (aiProviderType === "openai") {
-    return generateRequestWithOpenAI({
-      apiKey: openaiApiKey ?? "",
-      model: openaiModel ?? "",
-      baseUrl: openaiBaseUrl,
-      persona,
-      method,
-      path,
-      handler,
-      handlerContext,
-      history,
-      openApiSpec,
-      middleware,
-      middlewareContext,
-    }).then(
-      (parsedArgs) => {
-        return { data: parsedArgs, error: null };
-      },
-      (error) => {
-        if (error instanceof Error) {
-          return { data: null, error: { message: error.message } };
-        }
-        return { data: null, error: { message: "Unknown error" } };
-      },
-    );
-  }
-  if (aiProviderType === "anthropic") {
-    return generateRequestWithAnthropic({
-      apiKey: anthropicApiKey ?? "",
-      baseUrl: anthropicBaseUrl,
-      model: anthropicModel ?? "",
-      persona,
-      method,
-      path,
-      handler,
-      handlerContext,
-      history,
-      openApiSpec,
-      middleware,
-      middlewareContext,
-    }).then(
-      (parsedArgs) => {
-        return { data: parsedArgs, error: null };
-      },
-      (error) => {
-        if (error instanceof Error) {
-          return { data: null, error: { message: error.message } };
-        }
-        return { data: null, error: { message: "Unknown error" } };
-      },
-    );
+  const { aiEnabled, aiProviderConfigurations, aiProvider } = inferenceConfig;
+  if (!aiEnabled) {
+    return { data: null, error: { message: "AI is not enabled" } };
   }
 
-  return { data: null, error: { message: "Unknown AI provider" } };
+  if (!aiProvider) {
+    return { data: null, error: { message: "AI provider is not set" } };
+  }
+
+  if (!aiProviderConfigurations || !aiProviderConfigurations[aiProvider]) {
+    return {
+      data: null,
+      error: { message: "AI provider is not configured properly" },
+    };
+  }
+
+  const providerConfig = aiProviderConfigurations[aiProvider];
+
+  const provider = configureProvider(aiProvider, providerConfig);
+
+  logger.debug("Generating request with AI provider", {
+    aiProvider,
+    providerConfig,
+  });
+
+  try {
+    const {
+      object: generatedObject,
+      warnings,
+      usage,
+    } = await generateObject({
+      model: provider,
+      schema: requestSchema,
+      prompt: await invokeRequestGenerationPrompt({
+        handler,
+        handlerContext,
+        history,
+        openApiSpec,
+        middleware,
+        middlewareContext,
+        persona,
+        method,
+        path,
+      }),
+    });
+
+    logger.debug("Generated object, warnings, usage", {
+      generatedObject,
+      warnings,
+      usage,
+    });
+
+    // Remove x-fpx-trace-id header from the generated object
+    const filteredHeaders = generatedObject?.headers?.filter(
+      (header) => header.key.toLowerCase() !== "x-fpx-trace-id",
+    );
+
+    return {
+      data: { ...generatedObject, headers: filteredHeaders },
+      error: null,
+    };
+  } catch (error) {
+    logger.error("Error generating request with AI provider", {
+      error,
+    });
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Error generating request with AI provider";
+    return {
+      data: null,
+      error: { message: errorMessage },
+    };
+  }
 }
