@@ -2,7 +2,7 @@ import { formatTimestamp } from "@/components/Log";
 import { Button } from "@/components/ui/button";
 import { SpanStatus } from "@/constants";
 import { isMizuOrphanLog } from "@/queries";
-import { type Waterfall, cn } from "@/utils";
+import { type Waterfall, cn, isIncomingRequestSpan } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
 import { type HTMLAttributes, useState } from "react";
@@ -29,6 +29,7 @@ export function Element({
   indent = 0,
 }: Props) {
   const isLog = isMizuOrphanLog(item);
+  const shouldShowDuration = !isLog && isIncomingRequestSpan(item.span);
   const bgColor = getBgColorForLevel(
     isLog
       ? item.level
@@ -140,6 +141,7 @@ export function Element({
                 level={getLevelForSpan(item)}
                 traceDuration={duration}
                 traceStartTime={minStart}
+                showDuration={shouldShowDuration}
               />
             )}
           </DivWithHover>
