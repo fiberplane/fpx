@@ -546,14 +546,17 @@ function findEnvVarFile() {
 }
 
 /**
- * Create an empty .dev.vars file in the project root
+ * Create an empty .dev.vars file in the project root or update its modification time if it exists
  */
 function touchDevVarsFile() {
+  const devVarsPath = path.join(PROJECT_ROOT_DIR, ".dev.vars");
   try {
-    fs.writeFileSync(path.join(PROJECT_ROOT_DIR, ".dev.vars"), "");
-    logger.info(chalk.dim("  ℹ️ Created an empty .dev.vars file"));
-  } catch {
-    logger.debug(chalk.red("  ❤️‍🩹 Failed to create .dev.vars file"));
+    fs.closeSync(fs.openSync(devVarsPath, "a"));
+    logger.info(chalk.dim("  ℹ️ Touched .dev.vars file"));
+  } catch (error) {
+    logger.debug(
+      chalk.red(`  ❤️‍🩹 Failed to touch .dev.vars file: ${error.message}`),
+    );
   }
 }
 
