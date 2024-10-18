@@ -16,12 +16,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn, isMac } from "@/utils";
-import { useHandler } from "@fiberplane/hooks";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useState } from "react";
 import { type AiTestingPersona, FRIENDLY, HOSTILE } from "../ai";
 
 type AiDropDownMenuProps = {
+  aiEnabled: boolean;
   isLoadingParameters: boolean;
   persona: string;
   onPersonaChange: (persona: AiTestingPersona) => void;
@@ -29,6 +29,7 @@ type AiDropDownMenuProps = {
 };
 
 export function AiDropDownMenu({
+  aiEnabled,
   isLoadingParameters,
   persona,
   onPersonaChange,
@@ -43,23 +44,27 @@ export function AiDropDownMenu({
     [onPersonaChange],
   );
 
-  const handleGenerateRequest = useHandler(() => {
-    fillInRequest();
+  const handleGenerateRequest = useCallback(() => {
+    if (aiEnabled) {
+      fillInRequest();
+    }
     setOpen(false);
-  });
+  }, [aiEnabled, fillInRequest]);
 
   // When the user shift+clicks of meta+clicks on the trigger,
   // automatically open the menu
   // I'm doing this because the caret is kinda hard to press...
   const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
-  const handleMagicWandButtonClick = useHandler(() => {
-    if (!open && isMetaOrShiftPressed) {
+  const handleMagicWandButtonClick = useCallback(() => {
+    if (!aiEnabled || (!open && isMetaOrShiftPressed)) {
       setOpen(true);
       return;
     }
 
-    fillInRequest();
-  });
+    if (aiEnabled) {
+      fillInRequest();
+    }
+  }, [aiEnabled, fillInRequest, isMetaOrShiftPressed, open]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -141,6 +146,22 @@ export function AiDropDownMenu({
             <span>{isLoadingParameters ? "Generating..." : "Generate"}</span>
           </Button>
         </div>
+        {!aiEnabled && (
+          <div className="absolute inset-0 bg-white/90 dark:bg-gray-800/90 flex flex-col items-center justify-center p-4 text-center">
+            <p className="mb-2 font-semibold">AI is disabled</p>
+            <p className="mb-4 text-sm">
+              Enable AI in the settings to use this feature.
+            </p>
+            <Button
+              onClick={() => {
+                alert("TODO");
+              }}
+              // className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Go to Settings
+            </Button>
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
