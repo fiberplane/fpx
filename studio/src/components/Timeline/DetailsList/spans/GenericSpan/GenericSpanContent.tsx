@@ -103,24 +103,42 @@ export function GenericSpanContent(props: Props) {
           />
         </SubSection>
       )}
-      <SubSection className="gap-0">
-        <SubSectionHeading>Metadata</SubSectionHeading>
-        <KeyValueTable
-          className="mt-0"
-          valueCellClassName="text-[10px]/3"
-          keyCellClassName="text-[10px]/3"
-          keyValue={metaData}
-        />
-      </SubSection>
+
       {isCfSpan ? (
-        <CloudflareSpan attributes={attributes} vendorInfo={vendorInfo} />
+        <>
+          <CloudflareSpan
+            attributes={attributes}
+            vendorInfo={vendorInfo}
+            metadata={
+              <SubSection className="gap-0">
+                <KeyValueTable
+                  className="mt-0"
+                  valueCellClassName="text-[10px]/3"
+                  keyCellClassName="text-[10px]/3"
+                  keyValue={metaData}
+                />
+              </SubSection>
+            }
+          />
+        </>
       ) : (
-        Object.keys(attributes).length > 0 && (
-          <SubSection>
-            <SubSectionHeading>Attributes</SubSectionHeading>
-            <KeyValueTable keyValue={attributeMap} />
+        <>
+          <SubSection className="gap-0">
+            <SubSectionHeading>Metadata</SubSectionHeading>
+            <KeyValueTable
+              className="mt-0"
+              valueCellClassName="text-[10px]/3"
+              keyCellClassName="text-[10px]/3"
+              keyValue={metaData}
+            />
           </SubSection>
-        )
+          {Object.keys(attributes).length > 0 && (
+            <SubSection>
+              <SubSectionHeading>Attributes</SubSectionHeading>
+              <KeyValueTable keyValue={attributeMap} />
+            </SubSection>
+          )}
+        </>
       )}
     </div>
   );

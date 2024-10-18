@@ -31,6 +31,7 @@ const script = (args[0] ?? "").trim();
 const scriptsToRun = !script ? ["migrate", "studio"] : [script];
 
 const validScripts = {
+  create: "dist/cli/index.js",
   migrate: "dist/migrate.js",
   studio: "dist/src/index.node.js",
 };
@@ -59,11 +60,45 @@ loadUserConfigIntoUserVars();
 
 runWizard();
 
+function createApp() {
+  // HACK - Clear the user's config dir (since we might have a placeholder config after the last steps)
+  //        so we start fresh when creating a new app
+  clearUserConfigDir();
+  runScript("create");
+}
+
 /**
  * Run the wizard to get the user's configuration for FPX
  * If there are valid values in .fpxconfig, we skip asking questions
  */
 async function runWizard() {
+  logger.debug("Running wizard");
+  logger.debug("scriptsToRun", scriptsToRun);
+  logger.debug("PROJECT_ROOT_DIR", PROJECT_ROOT_DIR);
+
+  const isRunningCreate = scriptsToRun.includes("create");
+
+  if (isRunningCreate) {
+    createApp();
+    return;
+  }
+
+  const MIGHT_BE_CREATING =
+    IS_INITIALIZING_FPX && !WRANGLER_TOML && !PACKAGE_JSON;
+
+  logger.debug("MIGHT_BE_CREATING", MIGHT_BE_CREATING);
+
+  const question = chalk.green("🕵️ No project detected. Create a new app?");
+  const isCreatingAnswer = MIGHT_BE_CREATING
+    ? await askUser(question, "y")
+    : "n";
+  const shouldCreateApp = cliAnswerToBool(isCreatingAnswer);
+
+  if (shouldCreateApp) {
+    createApp();
+    return;
+  }
+
   if (IS_INITIALIZING_FPX) {
     logger.info(chalk.dim("\nInitializing FPX...\n"));
   } else {
@@ -413,6 +448,11 @@ function readUserConfig() {
     initialized,
     config,
   };
+}
+
+function clearUserConfigDir() {
+  const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
+  fs.rmSync(configDir, { recursive: true });
 }
 
 /**

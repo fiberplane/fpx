@@ -1,6 +1,8 @@
 packages:
   - "studio"
   - "api"
+  - "cli"
+  - "honc-code-gen"
   - "packages/*"
   - "examples/*"
   - "webhonc"
