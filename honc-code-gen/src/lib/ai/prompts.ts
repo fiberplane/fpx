@@ -112,6 +112,15 @@ const [user] = await db.select().from(schema.users).where(eq(schema.users.id, "s
 // ...
 </drizzle-orm-example>
 
+<drizzle-orm-example description="Use greater than or equal to operator">
+import {{ gte }} from "drizzle-orm";
+// ...
+
+const [user] = await db.select().from(schema.users).where(gte(schema.users.age, 64));
+
+// ...
+</drizzle-orm-example>
+
 ===
 
 Please make the necessary changes to the template files to better suit the app I want to build.
