@@ -76,7 +76,18 @@ For the seed data file, a few tips:
 
 ===
 
-Here is the current index.ts file:
+The current index.ts file is below.
+
+Design a simple CRUD api for key resources in the app. Expose a REST api for creating, reading, updating, and deleting resources.
+
+For streaming or realtime apis, add a TODO comment with a link to the following documentation:
+
+Streaming:
+- https://hono.dev/docs/helpers/streaming#streaming-helper
+
+Realtime:
+- https://developers.cloudflare.com/durable-objects/
+- https://fiberplane.com/blog/creating-websocket-server-hono-durable-objects/
 
 <file language=typescript path=src/index.ts>
 {indexFile}
@@ -182,9 +193,17 @@ Also export default instrument(app); <-- do not modify that line. Keep instrumen
 
 ===
 
+Think in this order:
+
+1. What tables do I need?
+2. What columns do I need?
+3. What are the relationships between the tables?
+4. What simple data should I seed the database with?
+5. How do I design a CRUD api for the database?
+
 Remove existing code from the files that is no longer needed.
 
-If you keep existing code, make sure it is more thematically correct for the app. (Especially for seed data)
+If you keep existing code or seed data, make sure it is more *thematically correct* for the app. E.g., with user names.
 
 Pay attention to tips about working with the Drizzle ORM.
 
