@@ -132,6 +132,18 @@ const [user] = await db.select().from(schema.users).where(gte(schema.users.age, 
 // ...
 </drizzle-orm-example>
 
+<drizzle-orm-example description="Use the db.delete method to remove a user from the database">
+// ...
+
+  // WRONG! This will delete all entries in the users table
+  // await db.delete().where(eq(schema.users.id, id)).from(schema.users);
+
+  // CORRECT!
+  await db.delete(schema.users).where(eq(schema.users.id, id));
+
+// ...
+</drizzle-orm-example>
+
 ===
 
 Please make the necessary changes to the template files to better suit the app I want to build.
