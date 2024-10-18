@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { AppLogger } from "../../logger";
+import type { SchemaContext } from "../../types";
 import { SYSTEM_PROMPT, invokeScaffoldAppPrompt } from "./prompts";
 import { scaffoldAppTool as scaffoldAppToolBase } from "./tools";
 
@@ -25,10 +26,12 @@ export async function buildWithAnthropic(
     schemaFile,
     seedFile,
     userPrompt,
+    schemaContext,
   }: {
     apiKey: string;
     indexFile: string;
     schemaFile: string;
+    schemaContext: SchemaContext | null;
     seedFile: string;
     userPrompt: string;
   },
@@ -69,6 +72,7 @@ export async function buildWithAnthropic(
         content: await invokeScaffoldAppPrompt({
           indexFile,
           schemaFile,
+          schemaContext,
           seedFile,
           userPrompt,
         }),

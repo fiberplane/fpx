@@ -133,7 +133,7 @@ app.post(
         apiKey: c.env.OPENAI_API_KEY,
         indexFile: indexFile || "<index file not provided />",
         schemaFile: schemaFile || "<schema file not provided />",
-        schemaContext,
+        schemaContext: schemaContext || null,
         seedFile: seedFile || "<seed file not provided />",
         userPrompt: prompt,
       },
