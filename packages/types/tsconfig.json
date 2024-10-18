@@ -4,20 +4,11 @@
     "module": "NodeNext",
     "strict": true,
     "skipLibCheck": true,
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "declaration": true,
-    "paths": {
-      "memoize-one": [
-        "./src/memoize-one.d.ts"
-      ]
-    }
+    "declaration": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

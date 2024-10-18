@@ -134,7 +134,7 @@ importers:
         version: link:../../packages/client-library-otel
       '@langchain/core':
         specifier: ^0.2.18
-        version: 0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
+        version: 0.2.23(openai@4.55.4)
       hono:
         specifier: ^4.5.9
         version: 4.5.9
@@ -303,9 +303,6 @@ importers:
 
   packages/types:
     devDependencies:
-      memoize-one:
-        specifier: ^6.0.0
-        version: 6.0.0
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -432,9 +429,6 @@ importers:
       immer:
         specifier: ^10.1.1
         version: 10.1.1
-      memoize-one:
-        specifier: ^6.0.0
-        version: 6.0.0
       proxy-memoize:
         specifier: ^3.0.1
         version: 3.0.1
@@ -5433,9 +5427,6 @@ packages:
   mdn-data@2.0.30:
     resolution: {integrity: sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==}
 
-  memoize-one@6.0.0:
-    resolution: {integrity: sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==}
-
   merge-stream@2.0.0:
     resolution: {integrity: sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==}
 
@@ -8856,6 +8847,23 @@ snapshots:
       decamelize: 1.2.0
       js-tiktoken: 1.0.12
       langsmith: 0.1.41(@langchain/core@0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8)))(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
+      mustache: 4.2.0
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 10.0.0
+      zod: 3.23.8
+      zod-to-json-schema: 3.23.2(zod@3.23.8)
+    transitivePeerDependencies:
+      - langchain
+      - openai
+
+  '@langchain/core@0.2.23(openai@4.55.4)':
+    dependencies:
+      ansi-styles: 5.2.0
+      camelcase: 6.3.0
+      decamelize: 1.2.0
+      js-tiktoken: 1.0.12
+      langsmith: 0.1.41(@langchain/core@0.2.23(openai@4.55.4))(openai@4.55.4)
       mustache: 4.2.0
       p-queue: 6.6.2
       p-retry: 4.6.2
@@ -12338,6 +12346,18 @@ snapshots:
       '@langchain/core': 0.2.23(openai@4.55.4(encoding@0.1.13)(zod@3.23.8))
       openai: 4.55.4(encoding@0.1.13)(zod@3.23.8)
 
+  langsmith@0.1.41(@langchain/core@0.2.23(openai@4.55.4))(openai@4.55.4):
+    dependencies:
+      '@types/uuid': 9.0.8
+      commander: 10.0.1
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      semver: 7.6.3
+      uuid: 9.0.1
+    optionalDependencies:
+      '@langchain/core': 0.2.23(openai@4.55.4)
+      openai: 4.55.4(encoding@0.1.13)(zod@3.23.8)
+
   leven@4.0.0: {}
 
   libsql@0.3.19:
@@ -12629,8 +12649,6 @@ snapshots:
   mdn-data@2.0.28: {}
 
   mdn-data@2.0.30: {}
-
-  memoize-one@6.0.0: {}
 
   merge-stream@2.0.0: {}
 
