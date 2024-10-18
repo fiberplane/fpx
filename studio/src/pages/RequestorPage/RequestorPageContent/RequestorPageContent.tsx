@@ -114,7 +114,10 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const { togglePanel } = useRequestorStore("togglePanel");
+  const { togglePanel, setAIDropdownOpen } = useRequestorStore(
+    "togglePanel",
+    "setAIDropdownOpen",
+  );
 
   useHotkeys(
     "mod+g",
@@ -129,6 +132,9 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
           });
           fillInRequest();
         }
+      } else {
+        e.preventDefault();
+        setAIDropdownOpen(true);
       }
     },
     {
