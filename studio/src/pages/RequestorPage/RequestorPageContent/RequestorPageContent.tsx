@@ -269,8 +269,8 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         {bottomPanel && (
           <>
             <ResizableHandle
-              hitAreaMargins={{ coarse: 20, fine: 20 }}
-              className="mb-2 h-0"
+              hitAreaMargins={{ coarse: 15, fine: 10 }}
+              className="mb-0.5 h-0"
             />
             <ResizablePanel order={2} id="bottom-panel">
               <div
