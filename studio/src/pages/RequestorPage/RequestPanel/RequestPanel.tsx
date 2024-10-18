@@ -141,16 +141,15 @@ export const RequestPanel = memo(function RequestPanel(
           </CustomTabTrigger>
         )}
 
-        {aiEnabled && (
-          <div className="flex-grow ml-auto flex items-center justify-end text-white">
-            <AiDropDownMenu
-              persona={testingPersona}
-              onPersonaChange={setTestingPersona}
-              isLoadingParameters={isLoadingParameters}
-              fillInRequest={fillInRequest}
-            />
-          </div>
-        )}
+        <div className="flex-grow ml-auto flex items-center justify-end text-white">
+          <AiDropDownMenu
+            aiEnabled={aiEnabled}
+            persona={testingPersona}
+            onPersonaChange={setTestingPersona}
+            isLoadingParameters={isLoadingParameters}
+            fillInRequest={fillInRequest}
+          />
+        </div>
       </CustomTabsList>
       <CustomTabsContent
         value="params"

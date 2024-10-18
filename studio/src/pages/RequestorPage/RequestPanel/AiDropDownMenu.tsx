@@ -16,12 +16,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn, isMac } from "@/utils";
-import { useHandler } from "@fiberplane/hooks";
 import { CaretDownIcon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useState } from "react";
 import { type AiTestingPersona, FRIENDLY, HOSTILE } from "../ai";
+import { useRequestorStore } from "../store";
 
 type AiDropDownMenuProps = {
+  aiEnabled: boolean;
   isLoadingParameters: boolean;
   persona: string;
   onPersonaChange: (persona: AiTestingPersona) => void;
@@ -29,12 +30,21 @@ type AiDropDownMenuProps = {
 };
 
 export function AiDropDownMenu({
+  aiEnabled,
   isLoadingParameters,
   persona,
   onPersonaChange,
   fillInRequest,
 }: AiDropDownMenuProps) {
-  const [open, setOpen] = useState(false);
+  const {
+    aiDropdownOpen: open,
+    setAIDropdownOpen: setOpen,
+    setSettingsOpen,
+  } = useRequestorStore(
+    "aiDropdownOpen",
+    "setAIDropdownOpen",
+    "setSettingsOpen",
+  );
 
   const handleValueChange = useCallback(
     (value: string) => {
@@ -43,23 +53,27 @@ export function AiDropDownMenu({
     [onPersonaChange],
   );
 
-  const handleGenerateRequest = useHandler(() => {
-    fillInRequest();
+  const handleGenerateRequest = useCallback(() => {
+    if (aiEnabled) {
+      fillInRequest();
+    }
     setOpen(false);
-  });
+  }, [aiEnabled, fillInRequest, setOpen]);
 
   // When the user shift+clicks of meta+clicks on the trigger,
   // automatically open the menu
   // I'm doing this because the caret is kinda hard to press...
   const { isMetaOrShiftPressed } = useIsMetaOrShiftPressed();
-  const handleMagicWandButtonClick = useHandler(() => {
-    if (!open && isMetaOrShiftPressed) {
+  const handleMagicWandButtonClick = useCallback(() => {
+    if (!aiEnabled || (!open && isMetaOrShiftPressed)) {
       setOpen(true);
       return;
     }
 
-    fillInRequest();
-  });
+    if (aiEnabled) {
+      fillInRequest();
+    }
+  }, [aiEnabled, fillInRequest, isMetaOrShiftPressed, open, setOpen]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -95,52 +109,74 @@ export function AiDropDownMenu({
         </TooltipContent>
       </Tooltip>
 
-      <DropdownMenuContent className="min-w-60">
-        <DropdownMenuLabel>Generate Inputs</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="font-normal">
-          Testing Persona
-        </DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={persona}
-          onValueChange={handleValueChange}
-        >
-          <DropdownMenuRadioItem
-            value="Friendly"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onPersonaChange(FRIENDLY);
-            }}
+      <DropdownMenuContent className={cn("min-w-60")}>
+        <div className={cn({ "blur-sm": !aiEnabled })}>
+          <DropdownMenuLabel>Generate Inputs</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="font-normal">
+            Testing Persona
+          </DropdownMenuLabel>
+          <DropdownMenuRadioGroup
+            value={persona}
+            onValueChange={handleValueChange}
           >
-            Friendly
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem
-            value="QA"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onPersonaChange(HOSTILE);
-            }}
-          >
-            Hostile
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-        <DropdownMenuSeparator />
-        <div className="px-2 py-1">
-          <Button
-            style={{
-              background: "linear-gradient(90deg, #3B82F6 0%, #C53BF6 100%)",
-            }}
-            className="w-full text-white flex gap-2 items-center"
-            // FIXME - While it's loading... show a spinner? And implement a timeout / cancel
-            disabled={isLoadingParameters}
-            onClick={handleGenerateRequest}
-          >
-            <SparkleWand className="w-4 h-4" />
-            <span>{isLoadingParameters ? "Generating..." : "Generate"}</span>
-          </Button>
+            <DropdownMenuRadioItem
+              value="Friendly"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onPersonaChange(FRIENDLY);
+              }}
+            >
+              Friendly
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              value="QA"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onPersonaChange(HOSTILE);
+              }}
+            >
+              Hostile
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+          <DropdownMenuSeparator />
+          <div className="px-2 py-1">
+            <Button
+              style={{
+                background: "linear-gradient(90deg, #3B82F6 0%, #C53BF6 100%)",
+              }}
+              className="w-full text-white flex gap-2 items-center"
+              // FIXME - While it's loading... show a spinner? And implement a timeout / cancel
+              disabled={isLoadingParameters}
+              onClick={handleGenerateRequest}
+            >
+              <SparkleWand className="w-4 h-4" />
+              <span>{isLoadingParameters ? "Generating..." : "Generate"}</span>
+            </Button>
+          </div>
         </div>
+        {!aiEnabled && (
+          <>
+            <div className="absolute inset-0 dark:bg-gray-800/90 flex flex-col items-center justify-center p-4 text-center">
+              <p className="mb-2 font-semibold">Configure me!</p>
+              <p className="mb-4 text-sm text-white/90">
+                Add an API key in settings to use AI request generation.
+              </p>
+              <Button
+                onClick={() => {
+                  setSettingsOpen(true);
+                }}
+                size="sm"
+                variant="outline"
+                // className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                Open Settings
+              </Button>
+            </div>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

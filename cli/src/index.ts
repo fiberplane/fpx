@@ -11,6 +11,7 @@ import { actionGit, promptGit } from "./actions/git";
 import { HONC_TITLE } from "./const";
 import { getContext } from "./context";
 import { updateProjectName } from "./project-name";
+import { touchDevVars } from "./touch-dev-vars";
 import { isError } from "./types";
 import { handleCancel, handleError } from "./utils";
 
@@ -66,6 +67,9 @@ async function main() {
 
   // Update the project name in the package.json file and wrangler.toml file
   updateProjectName(context);
+
+  // Add the default FPX_ENDPOINT environment variable to the .dev.vars file
+  touchDevVars(context);
 
   const dbPreamble = context.flags.includes("setup-neon")
     ? "You can now navigate to the project folder and run the following commands to generate, apply the migrations and seed the database:"
