@@ -12,7 +12,7 @@ export function touchDevVars(context: Context): void {
   }
 
   try {
-    const projectDir = existsSync(context.path) ? context.path : context.cwd;
+    const projectDir = join(context.cwd, context.path);
 
     const devVarsPath = join(projectDir, ".dev.vars");
 
