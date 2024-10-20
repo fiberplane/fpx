@@ -1,0 +1,124 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`module imports 1`] = `
+{
+  "errorCount": 0,
+  "results": [
+    {
+      "entries": [
+        {
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 2,
+              "content": "import { cors } from "hono/cors";
+                    cors()",
+              "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/module-imports/index.ts",
+              "line": 7,
+            },
+            {
+              "character": 2,
+              "content": "() => cors()",
+              "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/module-imports/index.ts",
+              "line": 8,
+            },
+            {
+              "character": 2,
+              "content": "(c) => c.text("Hello, Hono!")",
+              "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/module-imports/index.ts",
+              "line": 9,
+            },
+          ],
+        },
+      ],
+      "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/module-imports/index.ts",
+      "name": "app",
+    },
+  ],
+}
+`;
+
+exports[`multiple files 1`] = `
+{
+  "errorCount": 0,
+  "results": [
+    {
+      "entries": [
+        {
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 13,
+              "content": "(c) => c.text("Hello, Hono!")",
+              "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/multiple/index.ts",
+              "line": 4,
+            },
+          ],
+        },
+      ],
+      "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/multiple/index.ts",
+      "name": "app",
+    },
+    {
+      "entries": [
+        {
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 13,
+              "content": "(c) => {
+  return c.json({});
+}",
+              "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/multiple/other.ts",
+              "line": 2,
+            },
+          ],
+        },
+        {
+          "method": "post",
+          "path": "/",
+          "sources": [
+            {
+              "character": 14,
+              "content": "(c) => c.json({ "hello": "world" })",
+              "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/multiple/other.ts",
+              "line": 5,
+            },
+          ],
+        },
+      ],
+      "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/multiple/other.ts",
+      "name": "app",
+    },
+  ],
+}
+`;
+
+exports[`single file 1`] = `
+{
+  "errorCount": 0,
+  "results": [
+    {
+      "entries": [
+        {
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 13,
+              "content": "(c) => c.text("Hello, Hono!")",
+              "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/single/index.ts",
+              "line": 4,
+            },
+          ],
+        },
+      ],
+      "fileName": "/Users/jaccoflenter/dev/fiberplane/fpx/lsp-analysis/test/test-case/single/index.ts",
+      "name": "app",
+    },
+  ],
+}
+`;

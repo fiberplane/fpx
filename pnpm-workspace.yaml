@@ -5,3 +5,4 @@ packages:
   - "examples/*"
   - "webhonc"
   - "www"
+  - "lsp-analysis"
