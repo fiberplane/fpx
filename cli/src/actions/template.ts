@@ -1,4 +1,4 @@
-import path from "node:path";
+import { join } from "node:path";
 import type { Context } from "@/context";
 import type { Template } from "@/types";
 import { safeReadFile } from "@/utils";
@@ -12,7 +12,7 @@ export async function promptTemplate(ctx: Context) {
       options: [
         {
           value: "base",
-          label: "Base template",
+          label: "Neon template",
           hint: "A barebones HONC project with a Neon database",
         },
         {
@@ -81,11 +81,11 @@ export async function actionTemplate(ctx: Context) {
       provider: "github",
     });
 
-    const indexFile = safeReadFile(path.join(ctx.path, "src", "index.ts"));
-    const schemaFile = safeReadFile(
-      path.join(ctx.path, "src", "db", "schema.ts"),
-    );
-    const seedFile = safeReadFile(path.join(ctx.path, "seed.ts"));
+    const projectDir = join(ctx.cwd, ctx.path);
+
+    const indexFile = safeReadFile(join(projectDir, "src", "index.ts"));
+    const schemaFile = safeReadFile(join(projectDir, "src", "db", "schema.ts"));
+    const seedFile = safeReadFile(join(projectDir, "seed.ts"));
 
     ctx.indexFile = indexFile?.toString();
     ctx.schemaFile = schemaFile?.toString();

@@ -13,7 +13,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
-import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Branding } from "../Branding";
 import { SettingsMenu, SettingsScreen } from "../Settings";
@@ -22,9 +21,11 @@ import { SidePanelTrigger } from "../SidePanel";
 import { LogsToggle } from "./LogsToggle";
 
 export function BottomBar() {
+  const { settingsOpen, setSettingsOpen } = useRequestorStore(
+    "settingsOpen",
+    "setSettingsOpen",
+  );
   const shouldShowProxyRequests = useProxyRequestsEnabled();
-
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { togglePanel } = useRequestorStore("togglePanel");
   const activeBottomPanel = useRequestorStoreRaw(

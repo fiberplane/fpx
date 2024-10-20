@@ -18,7 +18,7 @@ export function updateProjectName(context: Context): void {
     return;
   }
 
-  const projectDir = existsSync(context.path) ? context.path : context.cwd;
+  const projectDir = join(context.cwd, context.path);
 
   // Update package.json
   const packageJsonPath = join(projectDir, "package.json");
