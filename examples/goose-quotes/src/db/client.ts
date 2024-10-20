@@ -2,13 +2,14 @@ import { neon } from "@neondatabase/serverless";
 import { asc, eq, ilike } from "drizzle-orm";
 import type { drizzle } from "drizzle-orm/neon-http";
 import { geese } from "./schema";
+import { measure } from "@fiberplane/hono-otel";
 
-export const getAllGeese = async (db: ReturnType<typeof drizzle>) => {
+export const getAllGeese = measure("getAllGeese", async (db: ReturnType<typeof drizzle>) => {
   console.log("Fetching all geese");
   return await db.select().from(geese);
-};
+});
 
-export const searchGeese = async (
+export const searchGeese = measure("searchGeese", async (
   db: ReturnType<typeof drizzle>,
   name: string,
 ) => {
@@ -18,9 +19,9 @@ export const searchGeese = async (
     .from(geese)
     .where(ilike(geese.name, `%${name}%`))
     .orderBy(asc(geese.name));
-};
+});
 
-export const createGoose = async (
+export const createGoose = measure("createGoose", async (
   db: ReturnType<typeof drizzle>,
   gooseData: Partial<typeof geese.$inferInsert>,
 ) => {
@@ -54,22 +55,22 @@ export const createGoose = async (
       motivations: geese.motivations,
       location: geese.location,
     });
-};
+});
 
-export const getGooseById = async (
+export const getGooseById = measure("getGooseById", async (
   db: ReturnType<typeof drizzle>,
   id: number,
 ) => {
   console.log(`Fetching goose with id: ${id}`);
   return (await db.select().from(geese).where(eq(geese.id, id)))?.[0];
-};
+});
 
-export const getFlockLeaders = async (db: ReturnType<typeof drizzle>) => {
+export const getFlockLeaders = measure("getFlockLeaders", async (db: ReturnType<typeof drizzle>) => {
   console.log("Fetching flock leaders");
   return await db.select().from(geese).where(eq(geese.isFlockLeader, true));
-};
+});
 
-export const updateGooseName = async (
+export const updateGooseName = measure("updateGooseName", async (
   db: ReturnType<typeof drizzle>,
   id: number,
   name: string,
@@ -78,9 +79,9 @@ export const updateGooseName = async (
   return (
     await db.update(geese).set({ name }).where(eq(geese.id, id)).returning()
   )?.[0];
-};
+});
 
-export const getGeeseByLanguage = async (
+export const getGeeseByLanguage = measure("getGeeseByLanguage", async (
   db: ReturnType<typeof drizzle>,
   language: string,
 ) => {
@@ -89,9 +90,9 @@ export const getGeeseByLanguage = async (
     .select()
     .from(geese)
     .where(ilike(geese.programmingLanguage, `%${language}%`));
-};
+});
 
-export const updateGooseMotivations = async (
+export const updateGooseMotivations = measure("updateGooseMotivations", async (
   db: ReturnType<typeof drizzle>,
   id: number,
   motivations: string,
@@ -104,9 +105,9 @@ export const updateGooseMotivations = async (
       .where(eq(geese.id, id))
       .returning()
   )?.[0];
-};
+});
 
-export const updateGooseAvatar = async (
+export const updateGooseAvatar = measure("updateGooseAvatar", async (
   db: ReturnType<typeof drizzle>,
   id: number,
   avatarKey: string,
@@ -119,9 +120,9 @@ export const updateGooseAvatar = async (
       .where(eq(geese.id, id))
       .returning()
   )[0];
-};
+});
 
-export const updateGoose = async (
+export const updateGoose = measure("updateGoose", async (
   db: ReturnType<typeof drizzle>,
   id: number,
   updateData: Partial<typeof geese.$inferInsert>,
@@ -147,4 +148,4 @@ export const updateGoose = async (
 
   // Return the last result, which may not contain all updates
   return results[results.length - 1][0];
-};
+});

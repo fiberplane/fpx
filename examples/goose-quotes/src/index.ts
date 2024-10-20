@@ -423,7 +423,7 @@ app.post("/api/geese/:id/change-name-url-form", async (c) => {
     return c.json({ message: "Goose not found" }, 404);
   }
 
-  const form = await c.req.formData();
+  const form = await c.req.formData() as FormData;
   const name = form.get("name");
 
   if (!name) {
