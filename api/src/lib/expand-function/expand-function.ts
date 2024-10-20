@@ -23,6 +23,7 @@ import {
   openFile,
 } from "./tsserver/index.js";
 import type { FunctionContextType } from "./types.js";
+import { getDiagnostics } from "./tsserver/commands.js";
 
 type ExpandedFunctionContextEntry = {
   /** The name of the constant or utility in the code */
@@ -195,6 +196,7 @@ async function extractContext(
       const [sourceDefinition, textDocumentDefinition] = await Promise.all([
         getTsSourceDefinition(connection, funcFileUri, identifier.position),
         getTextDocumentDefinition(connection, funcFileUri, identifier.position),
+        getDiagnostics(connection, funcFileUri),
       ]);
 
       // Here we can filter out standard globals that are defined in the runtime

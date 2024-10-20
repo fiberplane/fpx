@@ -90,6 +90,20 @@ async function initializeTSServer(pathToProject: string) {
     new StreamMessageWriter(tsServer.stdin),
   );
 
+  tsServer.stderr.on("data", (data) => {
+    logger.error(`tsserver stderr: ${data.toString()}`);
+  });
+  tsServer.stdout.on("data", (data) => {
+    logger.info("tsserver stdout:", data.toString());
+  });
+
+  // Handle notifications and errors
+  connection.onError((error) => logger.error("Connection error:", error));
+  connection.onClose(() => logger.info("Connection closed."));
+  connection.onUnhandledNotification((notification) =>
+    logger.error("Unhandled notification:", notification),
+  );
+
   connection.listen();
 
   tsServer.on("close", (code) => {

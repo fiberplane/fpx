@@ -147,7 +147,8 @@ export async function safeReadTextBody(response: Response) {
 
 // NOTE - Copy-pasted from client-library-otel
 async function tryGetResponseBodyAsText(response: Response) {
-  const contentType = response.headers.get("content-type");
+  const headers = response.headers;
+  const contentType = headers.get("content-type");
   if (contentType?.includes("image/")) {
     return "#fpx.image";
   }
@@ -202,8 +203,8 @@ export async function serializeRequestBodyForFpxDb(ctx: Context) {
     | null
     | string
     | {
-        [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = null;
+      [x: string]: string | SerializedFile | (string | SerializedFile)[];
+    } = null;
   if (ctx.req.raw.body) {
     if (requestMethod === "GET" || requestMethod === "HEAD") {
       logger.warn(

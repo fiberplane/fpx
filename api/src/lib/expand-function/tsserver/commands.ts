@@ -34,38 +34,56 @@ export async function openFile(
   openedFiles.set(filePath, { content: fileContent, version });
 }
 
-export async function updateFile(
+// export async function updateFile(
+//   connection: MessageConnection,
+//   filePath: string,
+// ) {
+//   const fileUri = getFileUri(filePath);
+//   const newContent = fs.readFileSync(filePath, "utf-8");
+
+//   const existingFile = openedFiles.get(filePath);
+//   if (!existingFile) {
+//     logger.warn(
+//       "[warn] Attempting to update a file that wasn't opened:",
+//       filePath,
+//     );
+//     return await openFile(connection, filePath);
+//   }
+
+//   if (existingFile.content === newContent) {
+//     // logger.debug("[debug] [updateFile] File content unchanged:", filePath);
+//     return;
+//   }
+
+//   const newVersion = existingFile.version + 1;
+
+//   await connection.sendNotification("textDocument/didChange", {
+//     textDocument: {
+//       uri: fileUri,
+//       version: newVersion,
+//     },
+//     contentChanges: [{ text: newContent }],
+//   });
+//   openedFiles.set(filePath, { content: newContent, version: newVersion });
+//   logger.debug("[debug] Updated document:", fileUri);
+// }
+
+export async function getDiagnostics(
   connection: MessageConnection,
   filePath: string,
 ) {
-  const fileUri = getFileUri(filePath);
-  const newContent = fs.readFileSync(filePath, "utf-8");
+  // const fileUri = getFileUri(filePath);
 
-  const existingFile = openedFiles.get(filePath);
-  if (!existingFile) {
-    logger.warn(
-      "[warn] Attempting to update a file that wasn't opened:",
-      filePath,
-    );
-    return await openFile(connection, filePath);
-  }
-
-  if (existingFile.content === newContent) {
-    // logger.debug("[debug] [updateFile] File content unchanged:", filePath);
-    return;
-  }
-
-  const newVersion = existingFile.version + 1;
-
-  await connection.sendNotification("textDocument/didChange", {
-    textDocument: {
-      uri: fileUri,
-      version: newVersion,
-    },
-    contentChanges: [{ text: newContent }],
-  });
-  openedFiles.set(filePath, { content: newContent, version: newVersion });
-  logger.debug("[debug] Updated document:", fileUri);
+  // connection.d
+  // const diagnostics = await connection.sendRequest(
+  //   "textDocument/publishDiagnostics",
+  //   {
+  //     uri: fileUri,
+  //   },
+  // );
+  // console.log("diagnostics", diagnostics);
+  // return diagnostics;
+  return {};
 }
 
 /**
