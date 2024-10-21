@@ -20,6 +20,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.51",
     "@ai-sdk/mistral": "^0.0.42",
-    "@ai-sdk/openai": "^0.0.66"
+    "@ai-sdk/openai": "^0.0.66",
+    "ollama-ai-provider": "^0.15.2"
   }
 }
