@@ -61,7 +61,7 @@ app.post(
       );
     }
 
-    const provider = inferenceConfig.aiProviderType;
+    const provider = inferenceConfig.aiProvider;
 
     // Expand out of scope identifiers in the handler function, to add as additional context
     //
