@@ -21,6 +21,10 @@ const DEFAULT_VALUES = {
       model: "mistral-large-latest",
       apiKey: "",
     },
+    ollama: {
+      model: "llama3.1",
+      apiKey: "",
+    },
   },
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",
