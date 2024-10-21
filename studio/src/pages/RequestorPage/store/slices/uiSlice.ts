@@ -11,6 +11,16 @@ export const uiSlice: StateCreator<
   [["zustand/immer", never], ["zustand/devtools", never]]
 > = (set) => {
   return {
+    settingsOpen: false,
+    setSettingsOpen: (open: boolean) =>
+      set((state) => {
+        state.settingsOpen = open;
+      }),
+    aiDropdownOpen: false,
+    setAIDropdownOpen: (open: boolean) =>
+      set((state) => {
+        state.aiDropdownOpen = open;
+      }),
     sidePanel: isLgScreen() ? "open" : "closed",
     bottomPanels: validBottomPanelNames,
     bottomPanelIndex: undefined,

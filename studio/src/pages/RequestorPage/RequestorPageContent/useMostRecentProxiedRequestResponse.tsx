@@ -35,7 +35,7 @@ export function useMostRecentProxiedRequestResponse(
       (r: ProxiedRequestResponse) =>
         r.app_requests?.requestRoute === routePath &&
         r.app_requests?.requestMethod === method &&
-        r.app_responses.traceId &&
+        r.app_responses?.traceId &&
         sessionHistory.includes(r.app_responses?.traceId),
     );
 
@@ -55,7 +55,7 @@ export function useMostRecentProxiedRequestResponse(
       (r: ProxiedRequestResponse) =>
         r?.app_requests?.requestUrl === path &&
         r?.app_requests?.requestMethod === method &&
-        r.app_responses.traceId &&
+        r.app_responses?.traceId &&
         sessionHistory.includes(r.app_responses?.traceId),
     );
 

@@ -19,7 +19,13 @@ import { CfBindingOverview, KeyBadge } from "./shared";
  *
  * https://github.com/cloudflare/workers-sdk/blob/c4f0d9e01ef333f5882096ad1e0f37e0911089a7/templates/experimental/worker-scala-kv/src/main/scala/Globals.scala#L9
  */
-export function CloudflareKVSpan({ attributes }: Pick<OtelSpan, "attributes">) {
+export function CloudflareKVSpan({
+  attributes,
+  metadata,
+}: {
+  attributes: OtelSpan["attributes"];
+  metadata: React.ReactNode;
+}) {
   const method = getString(attributes[CF_BINDING_METHOD]);
   const args = getString(attributes.args);
   const kvArgs = useCloudflareKVArgs(args, method);
@@ -54,6 +60,9 @@ export function CloudflareKVSpan({ attributes }: Pick<OtelSpan, "attributes">) {
             </div>
           </CollapsibleSubSection>
         )}
+        <CollapsibleSubSection heading="Span Metadata" defaultCollapsed={true}>
+          {metadata}
+        </CollapsibleSubSection>
       </div>
     </div>
   );

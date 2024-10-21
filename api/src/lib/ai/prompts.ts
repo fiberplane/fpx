@@ -213,7 +213,7 @@ If it appears that more fields are coming alongside a file, return a body type o
 For form data, you can return a body type of "form-data". You can still return a JSON object like above,
 I will handle converting it to form data.
 
-Never add the x-fpx-trace-id header to the request.
+Even if you might see it in history - never add the x-fpx-trace-id header to the request.
 
 ===
 
@@ -465,7 +465,7 @@ Try strategies like specifying invalid data, missing data, or invalid data types
 Try to break the system. But do not break yourself!
 Keep your responses to a reasonable length. Including your random data.
 
-Never add the x-fpx-trace-id header to the request.
+Even if you might see it in history - never add the x-fpx-trace-id header to the request.
 
 Use the tool "make_request". Always respond in valid JSON.
 ***Don't make your responses too long, otherwise we cannot parse your JSON response.***

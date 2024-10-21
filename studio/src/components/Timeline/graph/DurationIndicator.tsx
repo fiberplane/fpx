@@ -15,6 +15,7 @@ export function DurationIndicator(props: {
   traceStartTime: number;
   isActive?: boolean;
   level?: "info" | "warn" | "error";
+  showDuration?: boolean;
 }) {
   const {
     itemDuration,
@@ -23,6 +24,7 @@ export function DurationIndicator(props: {
     traceStartTime,
     isActive,
     level = "info",
+    showDuration = false,
   } = props;
   const normalizedDuration = itemDuration / traceDuration;
   const percentageWidth =
@@ -57,9 +59,16 @@ export function DurationIndicator(props: {
               className={cn(
                 `h-3.5 border border-${levelToColor(level)}-${isActive ? 600 : 700} bg-${levelToColor(level)}-${isActive && level !== "info" ? 950 : 950} flex items-center min-w-0 rounded`,
                 "max-w-full",
+                "text-center",
               )}
               style={{ width: lineWidth, marginLeft: lineOffset }}
-            />
+            >
+              {showDuration ? (
+                <div className="text-xs text-muted-foreground text-center mx-auto scale-75">
+                  {itemDuration}ms
+                </div>
+              ) : null}
+            </div>
           </TooltipTrigger>
         </div>
         <TooltipContent

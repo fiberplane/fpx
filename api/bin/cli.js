@@ -31,6 +31,7 @@ const script = (args[0] ?? "").trim();
 const scriptsToRun = !script ? ["migrate", "studio"] : [script];
 
 const validScripts = {
+  create: "dist/cli/index.js",
   migrate: "dist/migrate.js",
   studio: "dist/src/index.node.js",
 };
@@ -59,11 +60,45 @@ loadUserConfigIntoUserVars();
 
 runWizard();
 
+function createApp() {
+  // HACK - Clear the user's config dir (since we might have a placeholder config after the last steps)
+  //        so we start fresh when creating a new app
+  clearUserConfigDir();
+  runScript("create");
+}
+
 /**
  * Run the wizard to get the user's configuration for FPX
  * If there are valid values in .fpxconfig, we skip asking questions
  */
 async function runWizard() {
+  logger.debug("Running wizard");
+  logger.debug("scriptsToRun", scriptsToRun);
+  logger.debug("PROJECT_ROOT_DIR", PROJECT_ROOT_DIR);
+
+  const isRunningCreate = scriptsToRun.includes("create");
+
+  if (isRunningCreate) {
+    createApp();
+    return;
+  }
+
+  const MIGHT_BE_CREATING =
+    IS_INITIALIZING_FPX && !WRANGLER_TOML && !PACKAGE_JSON;
+
+  logger.debug("MIGHT_BE_CREATING", MIGHT_BE_CREATING);
+
+  const question = chalk.green("🕵️ No project detected. Create a new app?");
+  const isCreatingAnswer = MIGHT_BE_CREATING
+    ? await askUser(question, "y")
+    : "n";
+  const shouldCreateApp = cliAnswerToBool(isCreatingAnswer);
+
+  if (shouldCreateApp) {
+    createApp();
+    return;
+  }
+
   if (IS_INITIALIZING_FPX) {
     logger.info(chalk.dim("\nInitializing FPX...\n"));
   } else {
@@ -415,6 +450,11 @@ function readUserConfig() {
   };
 }
 
+function clearUserConfigDir() {
+  const configDir = path.join(PROJECT_ROOT_DIR, CONFIG_DIR_NAME);
+  fs.rmSync(configDir, { recursive: true });
+}
+
 /**
  * Load the user's configuration into the USER_VARS object
  *
@@ -506,14 +546,17 @@ function findEnvVarFile() {
 }
 
 /**
- * Create an empty .dev.vars file in the project root
+ * Create an empty .dev.vars file in the project root or update its modification time if it exists
  */
 function touchDevVarsFile() {
+  const devVarsPath = path.join(PROJECT_ROOT_DIR, ".dev.vars");
   try {
-    fs.writeFileSync(path.join(PROJECT_ROOT_DIR, ".dev.vars"), "");
-    logger.info(chalk.dim("  ℹ️ Created an empty .dev.vars file"));
-  } catch {
-    logger.debug(chalk.red("  ❤️‍🩹 Failed to create .dev.vars file"));
+    fs.closeSync(fs.openSync(devVarsPath, "a"));
+    logger.info(chalk.dim("  ℹ️ Touched .dev.vars file"));
+  } catch (error) {
+    logger.debug(
+      chalk.red(`  ❤️‍🩹 Failed to touch .dev.vars file: ${error.message}`),
+    );
   }
 }
 

@@ -1,64 +1,119 @@
+import type { AnthropicProvider } from "@ai-sdk/anthropic";
+import type { MistralProvider } from "@ai-sdk/mistral";
+import type { OpenAIProvider } from "@ai-sdk/openai";
 import { z } from "zod";
 
-export const CLAUDE_3_5_SONNET = "claude-3-5-sonnet-20240620";
-export const CLAUDE_3_OPUS = "claude-3-opus-20240229";
-export const CLAUDE_3_SONNET = "claude-3-sonnet-20240229";
-export const CLAUDE_3_HAIKU = "claude-3-haiku-20240307";
+export type MistralModelOptionsType = MistralProvider extends (
+  modelId: infer T,
+  ...args: unknown[]
+) => unknown
+  ? T
+  : never;
 
-export const AnthropicModelOptions = {
-  [CLAUDE_3_5_SONNET]: "Claude 3.5 Sonnet",
-  [CLAUDE_3_OPUS]: "Claude 3 Opus",
-  [CLAUDE_3_SONNET]: "Claude 3 Sonnet",
-  [CLAUDE_3_HAIKU]: "Claude 3 Haiku",
-} as const;
+export const MistralModelOptions: Partial<
+  Record<MistralModelOptionsType, string>
+> = {
+  "open-mistral-7b": "Open Mistral 7B",
+  "open-mixtral-8x7b": "Open Mixtral 8x7B",
+  "open-mixtral-8x22b": "Open Mixtral 8x22B",
+  "open-mistral-nemo": "Open Mistral Nemo",
+  "mistral-small-latest": "Mistral Small (Latest)",
+  "mistral-large-latest": "Mistral Large (Latest)",
+};
+
+export const MistralModelSchema = z.union([
+  z.literal("open-mistral-7b"),
+  z.literal("open-mixtral-8x7b"),
+  z.literal("open-mixtral-8x22b"),
+  z.literal("open-mistral-nemo"),
+  z.literal("mistral-small-latest"),
+  z.literal("mistral-large-latest"),
+]);
+
+export type AnthropicModelOptionsType = AnthropicProvider extends (
+  modelId: infer T,
+  ...args: unknown[]
+) => unknown
+  ? T
+  : never;
+
+export const AnthropicModelOptions: Partial<
+  Record<AnthropicModelOptionsType, string>
+> = {
+  "claude-3-opus-20240229": "Claude 3 Opus",
+  "claude-3-sonnet-20240229": "Claude 3 Sonnet",
+  "claude-3-haiku-20240307": "Claude 3 Haiku",
+  "claude-3-5-sonnet-20240620": "Claude 3.5 Sonnet",
+};
 
 export const AnthropicModelSchema = z.union([
-  z.literal(CLAUDE_3_5_SONNET),
-  z.literal(CLAUDE_3_OPUS),
-  z.literal(CLAUDE_3_SONNET),
-  z.literal(CLAUDE_3_HAIKU),
+  z.literal("claude-3-opus-20240229"),
+  z.literal("claude-3-sonnet-20240229"),
+  z.literal("claude-3-haiku-20240307"),
+  z.literal("claude-3-5-sonnet-20240620"),
 ]);
 
 export type AnthropicModel = z.infer<typeof AnthropicModelSchema>;
 
-export const GPT_4o = "gpt-4o";
-export const GPT_4o_MINI = "gpt-4o-mini";
-export const GPT_4_TURBO = "gpt-4-turbo";
+export type OpenAIModelOptionsType = OpenAIProvider extends (
+  modelId: infer T,
+  ...args: unknown[]
+) => unknown
+  ? T
+  : never;
 
-export const OpenAiModelOptions = {
-  [GPT_4o]: "GPT-4o",
-  [GPT_4o_MINI]: "GPT-4o Mini",
-  [GPT_4_TURBO]: "GPT-4 Turbo",
-} as const;
+export const OpenAIModelOptions: Partial<
+  Record<OpenAIModelOptionsType, string>
+> = {
+  "gpt-4": "GPT-4",
+  "gpt-3.5-turbo": "GPT-3.5 Turbo",
+  "gpt-4o": "GPT-4o",
+  "gpt-4o-mini": "GPT-4o Mini",
+  "gpt-4-turbo": "GPT-4 Turbo",
+};
 
-export const OpenAiModelSchema = z.union([
-  z.literal(GPT_4o),
-  z.literal(GPT_4o_MINI),
-  z.literal(GPT_4_TURBO),
+export const OpenAIModelSchema = z.union([
+  z.literal("gpt-4"),
+  z.literal("gpt-3.5-turbo"),
+  z.literal("gpt-4o"),
+  z.literal("gpt-4o-mini"),
+  z.literal("gpt-4-turbo"),
 ]);
 
-export type OpenAiModel = z.infer<typeof OpenAiModelSchema>;
+export type OpenAIModel = z.infer<typeof OpenAIModelSchema>;
 
 export const ProviderOptions = {
   openai: "OpenAI",
   anthropic: "Anthropic",
   ollama: "Ollama",
+  mistral: "Mistral",
 } as const;
 
 export const AiProviderTypeSchema = z.union([
   z.literal("openai"),
   z.literal("anthropic"),
   z.literal("ollama"),
+  z.literal("mistral"),
 ]);
 
 export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;
 
 export const SettingsSchema = z.object({
   aiEnabled: z.boolean().optional(),
-  aiProviderType: AiProviderTypeSchema.optional(),
-  anthropicApiKey: z.string().optional(),
-  anthropicBaseUrl: z.string().optional(),
-  anthropicModel: AnthropicModelSchema.optional(),
+  aiProvider: AiProviderTypeSchema.optional(),
+  aiProviderConfigurations: z
+    .record(
+      AiProviderTypeSchema,
+      z.object({
+        apiKey: z.string(),
+        baseUrl: z.string().optional(),
+        model: z.string(),
+      }),
+    )
+    .optional(),
+  proxyBaseUrl: z.string().optional(),
+  proxyRequestsEnabled: z.boolean().optional(),
+  webhoncConnectionId: z.string().optional(),
   fpxWorkerProxy: z
     .object({
       enabled: z.boolean().optional(),
@@ -68,14 +123,6 @@ export const SettingsSchema = z.object({
       baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
     })
     .optional(),
-  ollamaModel: z.string().optional(),
-  ollamaBaseUrl: z.string().optional(),
-  openaiApiKey: z.string().optional(),
-  openaiBaseUrl: z.string().optional(),
-  openaiModel: OpenAiModelSchema.optional(),
-  proxyBaseUrl: z.string().optional(),
-  proxyRequestsEnabled: z.boolean().optional(),
-  webhoncConnectionId: z.string().optional(),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;
