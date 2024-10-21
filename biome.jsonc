@@ -72,7 +72,8 @@
         "packages/client-library-otel",
         "api",
         "cli",
-        "honc-code-gen"
+        "honc-code-gen",
+        "auth"
       ],
       "linter": {
         "enabled": true,
