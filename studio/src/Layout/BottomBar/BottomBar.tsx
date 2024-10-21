@@ -15,6 +15,8 @@ import {
 } from "@radix-ui/react-tooltip";
 import { useShallow } from "zustand/react/shallow";
 import { LoggedInUser } from "../LoggedInUser";
+import { Branding } from "../Branding";
+import { PromptPanel, PromptToggle } from "../PromptPanel";
 import { SettingsMenu, SettingsScreen } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
@@ -55,6 +57,8 @@ export function BottomBar() {
             setSettingsOpen={setSettingsOpen}
           />
         </div>
+        <PromptToggle />
+        <PromptPanel />
 
         <div className="flex items-center gap-2">
           {shouldShowProxyRequests && (
