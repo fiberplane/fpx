@@ -7,7 +7,7 @@ sidebar:
 
 import { Image } from "astro:assets";
 import fpxGenAiGenerateBody from "@/assets/gen-ai-requests--generate.gif";
-import fpxGenAiSettingsEnable from "@/assets/gen-ai-requests--settings-enable.png";
+import fpxGenAiSettings from "@/assets/gen-ai-requests--settings.png";
 import fpxGenAiSettingsProvider from "@/assets/gen-ai-requests--settings-provider.png";
 import fpxGenAiSettingsBaseUrl from "@/assets/gen-ai-requests--settings-baseurl.png";
 import fpxGenAiHostile from "@/assets/gen-ai-requests--hostile.png";
@@ -64,41 +64,50 @@ Before showing any more examples, though, let's talk about how to get this thing
 
 First, we need to enable AI features in Studio. Head on over to the Settings page and select the section "Request Autofill".
 
-Toggle "Enable Request Autofill", and then configure the AI provider and model you want to use.
-
 <Image
-  src={fpxGenAiSettingsEnable}
+  src={fpxGenAiSettings}
   alt="Settings Page - Enable AI Request Autofill"
 />
 
-As of writing, Studio supports both OpenAI and Anthropic as LLM providers, and allows selection of the following models:
+As of writing, Studio supports OpenAI, Anthropic, Mistral, and Ollama as LLM providers, and allows selection of the following models:
 
 <Tabs syncKey="aiProvider">
   <TabItem label="Anthropic">
-    - Claude 3.5 Sonnet - Claude 3 Opus - Claude 3 Sonnet - Claude 3 Haiku
+    - Claude 3.5 Sonnet
+    - Claude 3 Opus
+    - Claude 3 Sonnet
+    - Claude 3 Haiku
   </TabItem>
-  <TabItem label="OpenAI">- GPT-4o - GPT-4o Mini - GPT-4 Turbo</TabItem>
+  <TabItem label="OpenAI">
+    - GPT-4o
+    - GPT-4o Mini
+    - GPT-4 Turbo
+  </TabItem>
+  <TabItem label="Mistral">
+    - Open Mistral 7B
+    - Open Mixtral 8x7B
+    - Open Mixtral 8x22B
+    - Open Mistral Nemo
+    - Mistral Small (Latest)
+    - Mistral Large (Latest)
+  </TabItem>
+  <TabItem label="Ollama">
+    - Llama 3.1
+    - Llama 3.1 8B
+    - Llama 3.1 70B
+    - Llama 3.2
+    - Llama 3.2 1B
+    - Llama 3.2 3B
+  </TabItem>
 </Tabs>
 
 You can select the provider and model once you've enabled AI Request Autofill.
-
-<Image
-  src={fpxGenAiSettingsProvider}
-  alt="Settings Page - Select AI Provider"
-/>
 
 Once you've selected the provider and model, fill in your API key and click "Save". You're ready to go!
 
 The API key is stored locally in your project, and ignored by git by default. (Specifically, it's stored in a local database, which you can find in `.fpxconfig/fpx.db`.)
 
-### Using a different LLM provider
-
 If your LLM provider exposes an API that is compatible with OpenAI or Anthropic, you can use it. You just need to set the base URL in your provider configuration.
-
-<Image src={fpxGenAiSettingsBaseUrl} alt="Settings Page - Set Base URL" />
-
-This is a way to use a local AI, if you're so inclined! There are [instructions in our GitHub repo](https://github.com/fiberplane/fpx/tree/main/local-inference) on how to do this.
-Just be warned: in our experiments with running local models, request parameters would often take 10+ seconds to generate, which is a little slow 🐢.
 
 ## Example: Testing like a QA Engineer
 
