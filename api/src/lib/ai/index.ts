@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import type { Settings } from "@fiberplane/fpx-types";
 import { generateObject } from "ai";
 import logger from "../../logger.js";
+import { generateRequestWithFp } from "./fp.js";
 import { invokeRequestGenerationPrompt } from "./prompts.js";
 import { requestSchema } from "./tools.js";
 
@@ -86,6 +87,22 @@ export async function generateRequestWithAiProvider({
   }
 
   const providerConfig = aiProviderConfigurations[aiProvider];
+
+  if (aiProvider === "fp") {
+    // TODO - Invoke the fp request generation
+    return generateRequestWithFp({
+      apiKey: providerConfig.apiKey,
+      handler,
+      handlerContext,
+      history,
+      openApiSpec,
+      middleware,
+      middlewareContext,
+      persona,
+      method,
+      path,
+    });
+  }
 
   const provider = configureProvider(aiProvider, providerConfig);
 

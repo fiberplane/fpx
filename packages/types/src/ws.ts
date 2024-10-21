@@ -7,6 +7,10 @@ export const WsMessageSchema = z.discriminatedUnion("event", [
     payload: z.array(z.literal("mizuTraces")),
   }),
   z.object({
+    event: z.literal("login_success"),
+    payload: z.array(z.literal("userInfo")),
+  }),
+  z.object({
     event: z.literal("connection_open"),
     payload: z.object({
       connectionId: z.string(),

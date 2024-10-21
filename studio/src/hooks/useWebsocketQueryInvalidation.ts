@@ -21,6 +21,12 @@ export function useWebsocketQueryInvalidation() {
         break;
       }
 
+      case "login_success": {
+        console.debug("login_success");
+        queryClient.invalidateQueries({ queryKey: wsMessage.payload });
+        break;
+      }
+
       case "connection_open": {
         console.debug("connection_open - invalidating webhonc id");
         queryClient.invalidateQueries({
