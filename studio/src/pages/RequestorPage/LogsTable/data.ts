@@ -34,7 +34,7 @@ function neonSpanToEvent(span: OtelSpan): NeonEvent {
     responseBody && isJson(responseBody) ? safeParseJson(responseBody) : null;
   const rowCount =
     parsedResponseBody && "rowCount" in parsedResponseBody
-      ? (Number.parseInt(parsedResponseBody.rowCount ?? "") ?? null)
+      ? Number.parseInt(parsedResponseBody.rowCount ?? "") ?? null
       : null;
 
   // E.g., "SELECT"

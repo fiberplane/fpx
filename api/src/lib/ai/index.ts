@@ -1,9 +1,9 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createMistral } from "@ai-sdk/mistral";
 import { createOpenAI } from "@ai-sdk/openai";
-import { createOllama } from "ollama-ai-provider";
 import type { Settings } from "@fiberplane/fpx-types";
 import { generateObject } from "ai";
+import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool, requestSchema } from "./tools.js";

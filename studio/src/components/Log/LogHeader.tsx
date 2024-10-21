@@ -31,7 +31,7 @@ export function LogHeader(props: Props) {
       )}
 
       <div className="font-mono text-xs flex-grow truncate">
-        {typeof parsedMessage === "string" ? parsedMessage : (message ?? "")}
+        {typeof parsedMessage === "string" ? parsedMessage : message ?? ""}
       </div>
       {formattedTimestamp && (
         <div className="font-mono text-xs text-right whitespace-nowrap ml-2">
