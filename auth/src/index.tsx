@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { fpAuthenticate } from "./lib";
 import ai from "./routes/ai";
 import github from "./routes/github";
-import success from "./routes/success";
+// import success from "./routes/success";
 import type { FpAuthApp } from "./types";
 
 const app = new Hono<FpAuthApp>();
@@ -14,7 +14,7 @@ app.route("/github", github);
 app.route("/ai", ai);
 
 // TODO - REMOVE ME! This is here for testing the hacky UI on the success page
-app.route("/success", success);
+// app.route("/success", success);
 
 /**
  * Return currently logged in user.

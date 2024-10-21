@@ -1,8 +1,12 @@
 import { Hono } from "hono";
+import { Style, css, cx, keyframes } from "hono/css";
+import { html, raw } from "hono/html";
 
 const app = new Hono();
 
-// HACK - I could not figure out the type for `children`
+// NOTE - I could not figure out the proper type for `children` on a JSX element.
+//        (Hono docs uses `any` for `children`)
+//        So we are using one big page component for now.
 export const SuccessPage = (props: { nonce: string; token: string }) => {
   return (
     <html lang="en">
@@ -10,7 +14,7 @@ export const SuccessPage = (props: { nonce: string; token: string }) => {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Fiberplane Studio Auth</title>
-        <style>{`
+        <Style>{css`
           body {
             font-family: sans-serif;
             color: hsl(210, 40%, 98%);
@@ -24,14 +28,12 @@ export const SuccessPage = (props: { nonce: string; token: string }) => {
           .container {
             background-color: hsl(222.2, 84%, 4.9%);
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 2rem;
             text-align: center;
+            margin-bottom: 10%;
           }
-          #status {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
+          .hidden {
+            display: none;
           }
           .loading {
             font-family: sans-serif;
@@ -45,67 +47,39 @@ export const SuccessPage = (props: { nonce: string; token: string }) => {
             font-family: sans-serif;
             color: hsl(0, 62.8%, 50.6%);
           }
-        `}</style>
+          .status {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+          }
+          .hidden {
+            display: none;
+          }
+        `}</Style>
       </head>
       <body>
         <div className="container">
-          <div id="status" className="loading">
+          <div id="status" className="status loading">
             Loading...
           </div>
-          <p>Token: {props.token}</p>
+          <p id="success-message" className="hidden">
+            You can close this page and return to Studio.
+          </p>
+          <p id="error-message" className="hidden">
+            An error occurred authenticating with Studio.
+          </p>
         </div>
-        <script
-          nonce={props.nonce}
-          /* biome-ignore lint/security/noDangerouslySetInnerHtml: Need to hackily execute script */
-          dangerouslySetInnerHTML={{
-            __html: `
-          fetch(
-            'http://localhost:3579/v0/auth/success',
-            {
-              mode: "cors",
-              method: "POST",
-              body: JSON.stringify({ token: "${props.token}" }),
-              headers: {
-                'Content-Type': 'application/json'
-              },
-            }
-          )
-            .then(async response => {
-              if (!response.ok) {
-                console.error("Error sending token", JSON.stringify({ token: "${props.token}" }))
-                try {
-                  console.log("error response body:", await response.text())
-                } catch {
-                 console.error("could not parse error response body")
-                }
-                throw new Error(\`HTTP error! status: \${response.status}\`);
-              }
-              return response.text();
-            })
-            .then(data => {
-              console.log("Success:", data);
-              const statusEl = document.getElementById('status');
-              statusEl.textContent = 'Success';
-              statusEl.className = 'success';
-            })
-            .catch(error => {
-              console.error("Error:", error);
-              const statusEl = document.getElementById('status');
-              statusEl.textContent = 'Error: ' + error.message;
-              statusEl.className = 'error';
-            });
-        `,
-          }}
-        />
+        <ScriptPostToken token={props.token} nonce={props.nonce} />
       </body>
     </html>
   );
 };
 
 app.get("/test", async (c) => {
-  const token = "abc123";
+  const token = `test-${crypto.randomUUID()}`;
 
-  const nonce = generateNonce(); // Generate a unique nonce for each request
+  // Generate a unique nonce for each request
+  const nonce = generateNonce();
 
   // Set CSP header
   c.header("Content-Security-Policy", `script-src 'nonce-${nonce}'`);
@@ -120,4 +94,52 @@ export function generateNonce(): string {
   crypto.getRandomValues(array);
   // @ts-expect-error - works in practice
   return btoa(String.fromCharCode.apply(null, array));
+}
+
+function ScriptPostToken({ token, nonce }: { token: string; nonce: string }) {
+  return (
+    <>
+      {html`
+        <script nonce="${nonce}">
+          fetch(
+            'http://localhost:3579/v0/auth/success',
+            {
+              mode: "cors",
+              method: "POST",
+              body: JSON.stringify({ token: "${token}" }),
+              headers: {
+                'Content-Type': 'application/json'
+              },
+            }
+          )
+            .then(async response => {
+              if (!response.ok) {
+                console.error("Error sending token", JSON.stringify({ token: "${token}" }))
+                try {
+                  console.log("error response from api, body:", await response.text())
+                } catch {
+                  console.error("could not parse error response body")
+                }
+                throw new Error("HTTP error! status: " + response.status);
+              }
+              return response.text();
+            })
+            .then(data => {
+              console.log("Success:", data);
+              const statusEl = document.getElementById('status');
+              statusEl.textContent = 'Authenticated';
+              statusEl.classList.add('success');
+              const successMessageEl = document.getElementById('success-message');
+              successMessageEl.classList.remove('hidden');
+            })
+            .catch(error => {
+              console.error("Error:", error);
+              const statusEl = document.getElementById('status');
+              statusEl.textContent = 'Error: ' + error.message;
+              statusEl.classList.add('error');
+            });
+        </script>
+      `}
+    </>
+  );
 }
