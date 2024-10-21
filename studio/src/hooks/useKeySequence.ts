@@ -7,6 +7,7 @@ type KeySequenceOptions = {
   isEnabled?: boolean;
   description?: string;
   timeoutMs?: number;
+  ignoreSelector?: string;
 };
 
 /**
@@ -23,7 +24,7 @@ export function useKeySequence(
   onSequenceMatched: () => void,
   options?: KeySequenceOptions,
 ) {
-  const { isEnabled = true, timeoutMs = 2000 } = options ?? {};
+  const { isEnabled = true, timeoutMs = 2000, ignoreSelector } = options ?? {};
 
   const { isInputFocused } = useInputFocusDetection();
 
@@ -48,6 +49,14 @@ export function useKeySequence(
         return;
       }
 
+      if (
+        ignoreSelector &&
+        event.target instanceof HTMLElement &&
+        event.target.matches(ignoreSelector)
+      ) {
+        return;
+      }
+
       currentKeySequenceRef.current = [
         ...currentKeySequenceRef.current,
         event.key,
@@ -65,7 +74,13 @@ export function useKeySequence(
       }
       timeoutIdRef.current = setTimeout(resetKeySequence, timeoutMs);
     },
-    [targetKeySequence, timeoutMs, resetKeySequence, onSequenceMatchedRef],
+    [
+      targetKeySequence,
+      timeoutMs,
+      resetKeySequence,
+      onSequenceMatchedRef,
+      ignoreSelector,
+    ],
   );
 
   useEffect(() => {

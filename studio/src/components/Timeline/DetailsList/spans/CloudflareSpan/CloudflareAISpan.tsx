@@ -12,7 +12,13 @@ import { CfBindingOverview, CfResultAndError } from "./shared";
  * This component helps surface the model name and inputs.
  * It links to the Cloudflare docs for the given model, which might be risky!
  */
-export function CloudflareAISpan({ attributes }: Pick<OtelSpan, "attributes">) {
+export function CloudflareAISpan({
+  attributes,
+  metadata,
+}: {
+  attributes: OtelSpan["attributes"];
+  metadata: React.ReactNode;
+}) {
   const args = getString(attributes.args);
   const runAiArgs = useCloudflareAiArgs(args);
   const result = getString(attributes[CF_BINDING_RESULT]);
@@ -41,6 +47,9 @@ export function CloudflareAISpan({ attributes }: Pick<OtelSpan, "attributes">) {
           </CollapsibleSubSection>
         )}
         <CfResultAndError result={result} error={error} />
+        <CollapsibleSubSection heading="Span Metadata" defaultCollapsed={true}>
+          {metadata}
+        </CollapsibleSubSection>
       </div>
     </div>
   );

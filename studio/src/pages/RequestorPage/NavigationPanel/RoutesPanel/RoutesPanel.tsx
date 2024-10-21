@@ -1,6 +1,8 @@
+import { Button } from "@/components/ui/button";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +11,7 @@ import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
+import { useRefreshRoutes } from "./useRefreshRoutes";
 
 export function RoutesPanel() {
   const { routes, activeRoute, setActiveRoute } = useRequestorStore(
@@ -156,23 +159,25 @@ export function RoutesPanel() {
           </RoutesSection>
         )}
 
-        <RoutesSection title="Detected in app">
-          {detectedRoutes.map((route, index) => (
-            <RoutesItem
-              key={index}
-              index={userAddedRoutes.length + index}
-              route={route}
-              selectedRoute={
-                selectedRouteIndex === userAddedRoutes.length + index
-                  ? route
-                  : null
-              }
-              activeRoute={activeRoute}
-              handleRouteClick={handleRouteClick}
-              setSelectedRouteIndex={setSelectedRouteIndex}
-            />
-          ))}
-        </RoutesSection>
+        {allRoutes.length > 0 && (
+          <RoutesSection title={<DetectedRoutesTitle />}>
+            {detectedRoutes.map((route, index) => (
+              <RoutesItem
+                key={index}
+                index={userAddedRoutes.length + index}
+                route={route}
+                selectedRoute={
+                  selectedRouteIndex === userAddedRoutes.length + index
+                    ? route
+                    : null
+                }
+                activeRoute={activeRoute}
+                handleRouteClick={handleRouteClick}
+                setSelectedRouteIndex={setSelectedRouteIndex}
+              />
+            ))}
+          </RoutesSection>
+        )}
 
         {hasAnyOpenApiRoutes && (
           <RoutesSection title="OpenAPI">
@@ -200,41 +205,95 @@ export function RoutesPanel() {
   );
 }
 
+function DetectedRoutesTitle() {
+  const { refreshRoutes, isRefreshing } = useRefreshRoutes();
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        "flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors",
+        isRefreshing && "opacity-80",
+        isRefreshing && "cursor-default",
+      )}
+      disabled={isRefreshing}
+      onClick={() => {
+        if (!isRefreshing) {
+          refreshRoutes();
+        }
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          if (!isRefreshing) {
+            refreshRoutes();
+          }
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      Detected in app{" "}
+      <ReloadIcon className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
+    </button>
+  );
+}
+
+function RefreshRoutesButton() {
+  const { refreshRoutes, isRefreshing } = useRefreshRoutes();
+
+  return (
+    <Button
+      onClick={() => refreshRoutes()}
+      disabled={isRefreshing}
+      className={cn("bg-transparent text-muted-foreground")}
+      variant="outline"
+      size="sm"
+    >
+      <ReloadIcon
+        className={cn("w-4 h-4 mr-2", isRefreshing && "animate-spin")}
+      />
+      {isRefreshing ? "Checking..." : "Try Again"}
+    </Button>
+  );
+}
+
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center text-gray-300 h-full">
-      <div className="py-8 px-2 rounded-lg flex flex-col items-center text-center">
+    <div className="flex flex-col items-center justify-center text-gray-300">
+      <div className="mt-12 px-2 rounded-lg flex flex-col items-center text-center">
         <div className="rounded-lg p-2 bg-muted mb-2">
           <Icon
             icon="lucide:book-copy"
             className="w-12 h-12 text-gray-400 stroke-1"
           />
         </div>
-        <h2 className="text-lg font-normal mb-4">No routes detected</h2>
+        <h2 className="text-lg font-normal mb-2">No routes detected</h2>
+        <div className="flex items-center mb-4">
+          <RefreshRoutesButton />
+        </div>
         <div className="text-gray-400 text-left text-sm flex flex-col gap-2">
           <p className="text-gray-400 mb-4 text-sm">
             To enable route auto-detection:
           </p>
           <ol className="mb-4 flex flex-col gap-2">
             <li>
-              1. Install and add the client library:
-              <code className="block mt-1 bg-gray-800 p-1 pl-2 rounded">
-                npm i @fiberplane/hono-otel
-              </code>
-              Read more about using the client library on the{" "}
+              1. Add the client library (
               <a
                 className="underline"
                 href="https://fiberplane.com/docs/get-started"
               >
                 docs
               </a>
+              )
+              <code className="block mt-1 bg-gray-800 p-1 pl-2 rounded">
+                npm i @fiberplane/hono-otel
+              </code>
             </li>
             <li className="mt-2">
-              2. Set <code>FPX_ENDPOINT</code> environment variable to:
+              2. Set <code>FPX_ENDPOINT</code> env var to
               <code className="block mt-1 bg-gray-800 p-1 pl-2 rounded">
                 http://localhost:8788/v1/traces
               </code>
-              in the <code>.dev.vars</code> file in your project
             </li>
             <li className="mt-2">
               3. Restart your application and Fiberplane Studio
@@ -273,7 +332,7 @@ function EmptyState() {
 }
 
 type RoutesSectionProps = {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
 };
 
