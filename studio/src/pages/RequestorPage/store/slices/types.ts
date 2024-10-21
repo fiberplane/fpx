@@ -87,6 +87,7 @@ export interface UISlice {
   aiDropdownOpen: boolean;
   setAIDropdownOpen: (open: boolean) => void;
   sidePanel: PanelState;
+  promptPanel: PanelState;
   bottomPanels: BOTTOM_PANEL_NAMES[];
   bottomPanelIndex: undefined | number;
   timelineShowLogs: boolean;
@@ -94,7 +95,9 @@ export interface UISlice {
   toggleTimelineLogs: () => void;
   toggleTimelineAsTree: () => void;
   setBottomPanelIndex(index: number | undefined): void;
-  togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) => void;
+  togglePanel: (
+    panelName: "sidePanel" | "promptPanel" | BOTTOM_PANEL_NAMES,
+  ) => void;
 }
 
 export type BOTTOM_PANEL_NAMES = "logsPanel" | "timelinePanel" | "aiPanel";
