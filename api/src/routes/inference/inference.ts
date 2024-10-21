@@ -5,7 +5,10 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 import { USER_PROJECT_ROOT_DIR } from "../../constants.js";
 import * as schema from "../../db/schema.js";
-import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
+import {
+  generateRequestWithAiProvider,
+  translateCommands,
+} from "../../lib/ai/index.js";
 import { expandFunction } from "../../lib/expand-function/index.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
@@ -113,5 +116,35 @@ app.post(
     });
   },
 );
+
+app.post("/v0/translate-commands", cors(), async (ctx) => {
+  const commands = await ctx.req.text();
+
+  const db = ctx.get("db");
+  const inferenceConfig = await getInferenceConfig(db);
+
+  if (!inferenceConfig) {
+    return ctx.json(
+      {
+        message: "No inference configuration found",
+      },
+      403,
+    );
+  }
+
+  const { data: translatedCommands, error: translateError } =
+    await translateCommands({
+      inferenceConfig,
+      commands,
+    });
+
+  if (translateError) {
+    return ctx.json({ message: translateError.message }, 500);
+  }
+
+  return ctx.json({
+    commands: translatedCommands,
+  });
+});
 
 export default app;
