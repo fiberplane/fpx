@@ -61,6 +61,8 @@ app.post(
       );
     }
 
+    const provider = inferenceConfig.aiProvider;
+
     // Expand out of scope identifiers in the handler function, to add as additional context
     //
     // Uncomment console.time to see how long this takes
@@ -68,10 +70,13 @@ app.post(
     //
     // console.time("Handler and Middleware Expansion");
     const [handlerContextPerformant, middlewareContextPerformant] =
-      await expandHandler(handler, middleware ?? []).catch((error) => {
-        logger.error(`Error expanding handler and middleware: ${error}`);
-        return [null, null];
-      });
+      // HACK - Ditch the expand handler for ollama for now, it overwhelms llama 3.1-8b
+      provider !== "ollama"
+        ? await expandHandler(handler, middleware ?? []).catch((error) => {
+            logger.error(`Error expanding handler and middleware: ${error}`);
+            return [null, null];
+          })
+        : [null, null];
     // console.timeEnd("Handler and Middleware Expansion");
 
     // Generate the request
