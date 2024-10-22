@@ -9,7 +9,6 @@
     "preview": "astro preview",
     "staging": "wrangler pages deploy ./dist --env staging",
     "format": "prettier --write .",
-    "lint:ci": "prettier --check .",
     "astro": "astro"
   },
   "dependencies": {
