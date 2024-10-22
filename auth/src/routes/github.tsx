@@ -49,16 +49,15 @@ app.get("/", async (c) => {
     // Create a JWT payload
     const userId = userRecord?.id;
     const payload = {
+      // NOTE - Token expiration is set below
       sub: userId?.toString() ?? "anon", // Subject (user identifier)
       iat: Math.floor(Date.now() / 1000), // Issued at (current timestamp)
       nbf: Math.floor(Date.now() / 1000), // Not before (current timestamp)
-      // NOTE - Token expiration is set below
     };
 
     const token = await new jose.SignJWT(payload)
       .setProtectedHeader({ alg: "PS256" })
-      // TODO - Increase expiration?
-      .setExpirationTime("2h")
+      .setExpirationTime("7d")
       .sign(privateKey);
 
     const nonce = generateNonce(); // Generate a unique nonce for each request
