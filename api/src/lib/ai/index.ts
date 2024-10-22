@@ -2,7 +2,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createMistral } from "@ai-sdk/mistral";
 import { createOpenAI } from "@ai-sdk/openai";
 import type { Settings } from "@fiberplane/fpx-types";
-import { APICallError, generateObject } from "ai";
+import { type APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
