@@ -1,6 +1,17 @@
-import { inspect, parseArgs } from "node:util";
-import type { RouteEntry, RouteTree, TsLanguageService, TsLineAndCharacter, TsNode, TsProgram, TsReferenceEntry, TsSourceFile, TsStringLiteral, TsType } from "./types";
-import { isArrowFunction, isImportAttribute } from "typescript";
+import type {
+  ModuleReference,
+  RouteEntry,
+  RouteTree,
+  SourceReference,
+  TsArrowFunction,
+  TsLanguageService,
+  TsModuleResolutionHost,
+  TsNode,
+  TsProgram,
+  TsReferenceEntry,
+  TsSourceFile,
+  TsType,
+} from "./types";
 
 export function findHonoRoutes(
   server: TsLanguageService,
@@ -19,16 +30,17 @@ export function findHonoRoutes(
 
   const apps: Array<RouteTree> = [];
 
-  // 
   const files = program.getSourceFiles();
-  const fileMap: Record<string, TsSourceFile> = {}
+  const fileMap: Record<string, TsSourceFile> = {};
   for (const file of files) {
     fileMap[file.fileName] = file;
   }
 
   for (const sourceFile of files) {
     if (!sourceFile.isDeclarationFile) {
-      ts.forEachChild(sourceFile, (file: TsSourceFile) => visit(file, file.fileName));
+      ts.forEachChild(sourceFile, (file: TsSourceFile) =>
+        visit(file, file.fileName),
+      );
     }
   }
 
@@ -39,25 +51,20 @@ export function findHonoRoutes(
       if ("intrinsicName" in type && type.intrinsicName === "error") {
         errorCount++;
         console.error("Error in type check");
-        console.debug("In: ", node.getSourceFile().fileName);
-        console.debug("Ndoe text:", node.getFullText());
-
-        console.log("type information", type.getSymbol());
+        console.error("In: ", node.getSourceFile().fileName, node.kind);
+        console.error("Ndoe text:", node.getFullText());
+        console.error("type information", type.getSymbol());
       }
 
       if (typeName.startsWith("Hono<")) {
         const honoInstanceName = node.name.getText();
-        // console.log(`Found Hono instance: ${honoInstanceName}`);
-        // console.log("parent", node.parent.getText())
-        // console.log("parent.parent", node.parent.parent.getText())
-        // console.log("parent.parent.parent", node.parent.parent.parent.getText())
+
         const current: RouteTree = {
           name: honoInstanceName,
           fileName: node.getSourceFile().fileName,
           entries: [],
         };
 
-        // server.getReferencesAtPosition(fileName, arg.getStart());
         findRoutes(current, node.parent.parent.parent);
         apps.push(current);
       }
@@ -93,75 +100,73 @@ export function findHonoRoutes(
 
           for (const arg of args) {
             if (ts.isArrowFunction(arg)) {
-              // console.log('arrowww')
-              const sourceFile = arg.getSourceFile();
-              const position = sourceFile.getLineAndCharacterOfPosition(arg.getStart());
-              entry.sources.push({
-                character: position.character,
-                line: position.line,
-                fileName: sourceFile.fileName,
-                content: arg.getText(),
-              });
-              // console.log('entry.sources', entry.sources)
-            }
-            else if (ts.isCallExpression(arg)) {
-              const sourceFile = arg.getSourceFile();
-              const position = sourceFile.getLineAndCharacterOfPosition(arg.getStart());
+              // const source = extractArrowFunctionContext(arg, ts);
+              const source = extractReferencesFromArrowFunction(arg, program, ts);
+              // console.log('arg.content', arg.getText())
+              if (source) {
+                entry.sources.push(...source);
+              }
+              // const sourceFile = arg.getSourceFile();
+              // const position = sourceFile.getLineAndCharacterOfPosition(
+              //   arg.getStart(),
+              // );
               // entry.sources.push({
               //   character: position.character,
               //   line: position.line,
               //   fileName: sourceFile.fileName,
               //   content: arg.getText(),
+              //   references: [],
+              //   modules: {},
               // });
-              // const sourceFile = arg.getSourceFile();
-              const references = server.getReferencesAtPosition(sourceFile.fileName, arg.getStart());
-              //   const position = sourceFile.getLineAndCharacterOfPosition(arg.getStart());
-              // const isImported = references.find((ref) => {
-              //   return ref.fileName.indexOf("/node_modules/") !== -1;
-              // });
+              // console.log('entry.sources', entry.sources)
+            } else if (ts.isCallExpression(arg)) {
+              const sourceFile = arg.getSourceFile();
+              const position = sourceFile.getLineAndCharacterOfPosition(
+                arg.getStart(),
+              );
+              const references = server.getReferencesAtPosition(
+                sourceFile.fileName,
+                arg.getStart(),
+              );
 
+              const source = {
+                character: position.character,
+                line: position.line,
+                fileName: sourceFile.fileName,
+                content: arg.getText(),
+                references: [],
+                modules: {},
+              };
+              // Immediately add the source to the entry
+              // Though the source will be filled with references later
+              entry.sources.push(source);
 
-              // console.log('isImported', isImported, references);
-              //   // ts.isImportClause
+              let ref: TsReferenceEntry | undefined = references.shift();
+              while (ref) {
+                const currentFile = fileMap[ref.fileName];
+                if (!currentFile) {
+                  continue;
+                }
 
-
-              //   // let node: TsNode | undefined;
-              //   // let
-              let attributeNameInfo: undefined | {
-                ref: TsReferenceEntry,
-                node: TsNode,
-              }
-
-              for (const ref of references) {
-                if (ref.fileName.indexOf("/node_modules/") === -1) {
-
-                  const currentFile = fileMap[ref.fileName] || program.getSourceFile(ref.fileName);
-                  if (!currentFile) {
-                    continue;
-                  }
-                  const position2 = currentFile.getLineAndCharacterOfPosition(ref.textSpan.start);
-                  const node = findNodeAtPosition(ts, currentFile, position2);
-                  const definitionFileName = getImportTypeDefinitionFileName(ts, node, program);
-
-                  entry.sources.push({
-                    character: position.character,
-                    line: position.line,
-                    fileName: sourceFile.fileName,
-                    content: `${definitionFileName}
-                    ${arg.getText()}`,
-                  });
-
-                  console.log('definitionFileName', definitionFileName, ref)
+                const refNode = findNodeAtPosition(
+                  ts,
+                  currentFile,
+                  ref.textSpan.start,
+                );
+                const referencedModule = getImportTypeDefinitionFileName(
+                  ts,
+                  refNode,
+                  program,
+                );
+                if (referencedModule) {
+                  source.modules[referencedModule.name] = referencedModule;
                   break;
                 }
-              }
 
-              //   // if (attributeNameInfo) {
-              //   //   console.log('importAttributeName', attributeNameInfo.node.parent.getText(), attributeNameInfo.ref);
-              //   // }
+                ref = references.shift();
+              }
             }
           }
-          // console.log("Arguments", node.arguments.length, node.arguments);
         }
       }
 
@@ -177,52 +182,89 @@ export function findHonoRoutes(
   };
 }
 
-function getImportTypeDefinitionFileName(ts: TsType, node: TsNode, program: TsProgram): string | undefined {
+function createRootReferenceForArrowFunction(node: TsArrowFunction, ts: TsType): SourceReference {
+  const sourceFile = node.getSourceFile();
+  const position = sourceFile.getLineAndCharacterOfPosition(
+    node.getStart(),
+  );
+
+  return {
+    character: position.character,
+    line: position.line,
+    fileName: sourceFile.fileName,
+    content: node.getText(),
+    references: [],
+    modules: {},
+  }
+
+
+  // return current;
+}
+
+function getImportTypeDefinitionFileName(
+  ts: TsType,
+  node: TsNode,
+  program: TsProgram,
+): ModuleReference | undefined {
   const checker = program.getTypeChecker();
   const symbol = checker.getSymbolAtLocation(node);
 
-  if (symbol) {
-    const declarations = symbol.getDeclarations();
-    if (declarations && declarations.length > 0) {
-      const declaration = declarations[0];
-      const sourceFile = declaration.getSourceFile();
-      const n = declaration.parent.parent.parent;
-      return n.getText();
-      // let nextSibling = getNextSibling(n);
-      // while (nextSibling && nextSibling.kind !== ts.SyntaxKind.StringLiteral) {
-      //   console.log('kind', nextSibling.kind, nextSibling.getText())
-      //   nextSibling = getNextSibling(nextSibling);
-      // }
-      // if (nextSibling) {
-      //   console.log('found it', nextSibling.getText())
-      //   return nextSibling.getText();
-      //   // program.
-      //   // const options = ts.
-      //   // const something = checker.resolveName(nextSibling.getText(), nextSibling, ts.SymbolFlags., true);
-      //   // ts.resolveModuleName(nextSibling.getText(), sourceFile.fileName, {}, {}, undefined, undefined, undefined, undefined);
-      //   // console.log('something', something)
-      //   // , n, ts.SymbolFlags.Value, ts.SymbolFlags.Value, ts.SymbolFlags.Value, ts.SymbolFlags.Value);
-      // }
+  const declarations = symbol?.getDeclarations();
 
-      // let nextSibling = getNextSibling(n);
-      // nextSibling = getNextSibling(nextSibling);
-      // checker.resolveName()
-      // console.log("-------------------", nextSibling.getFullText())
-      // inspectNode(nextSibling, ts)
-      // console.log("-------------------")
-      // console.log(
-      //   sourceFile.getLineAndCharacterOfPosition(declaration.getStart()),
-      //   declaration.parent.getFullText())
-      // declaration
-      // console.log('declaration', declaration.getText(),
-      // declarations.length
-      // , sourceFile.fileName
-      // );
-      return sourceFile.fileName;
-    }
+  if (!declarations || declarations.length === 0) {
+    return;
   }
 
-  return undefined;
+  const declaration = declarations[0];
+  const n = declaration.parent.parent;
+
+  // Look for the import statement
+  let nextSibling = n && getNextSibling(n);
+  while (nextSibling && nextSibling.kind !== ts.SyntaxKind.StringLiteral) {
+    nextSibling = getNextSibling(nextSibling);
+  }
+
+  if (nextSibling) {
+    let text = nextSibling.getText();
+    try {
+      text = JSON.parse(text);
+    } catch {
+      // swallow error
+    }
+    const options = program.getCompilerOptions();
+    const host: TsModuleResolutionHost = {
+      fileExists: ts.sys.fileExists,
+      readFile: ts.sys.readFile,
+    };
+    const result = ts.resolveModuleName(
+      text,
+      node.getSourceFile().fileName,
+      options,
+      host,
+      undefined,
+      undefined,
+      undefined,
+    );
+
+
+    if (
+      result.resolvedModule?.isExternalLibraryImport
+    ) {
+      return {
+        import: node.getText(),
+        importPath: text,
+        name: result.resolvedModule.packageId.name,
+        version: result.resolvedModule.packageId.version,
+      };
+    }
+    if (text.startsWith("node:")) {
+      return {
+        import: node.getText(),
+        importPath: text,
+        name: text,
+      }
+    }
+  }
 }
 
 function getNextSibling(node: TsNode): TsNode | undefined {
@@ -235,17 +277,17 @@ function getNextSibling(node: TsNode): TsNode | undefined {
   const children = parent.getChildren();
   for (let i = 0; i < children.length; i++) {
     if (children[i] === node && i + 1 < children.length) {
-      // console.log('found it')
       return children[i + 1];
     }
   }
-  // console.log('fallback');
 
   return undefined;
 }
-function findNodeAtPosition(ts: TsType, sourceFile: TsSourceFile, lineAndCharacter: TsLineAndCharacter): TsNode | undefined {
-  const position = sourceFile.getPositionOfLineAndCharacter(lineAndCharacter.line, lineAndCharacter.character);
-
+function findNodeAtPosition(
+  ts: TsType,
+  sourceFile: TsSourceFile,
+  position: number,
+): TsNode | undefined {
   function find(node: TsNode): TsNode | undefined {
     if (position >= node.getStart() && position < node.getEnd()) {
       return ts.forEachChild(node, find) || node;
@@ -298,80 +340,54 @@ function inspectNode(node: TsNode, ts: TsType) {
   });
 }
 
-// function findImportSource(ts: TsType, sourceFile: TsSourceFile, importName: string): string | undefined {
-//   let importSource: string | undefined;
+// Extract references from the arrow function
+function extractReferencesFromArrowFunction(
+  arrowFunction: TsArrowFunction,
+  program: TsProgram,
+  ts: TsType,
+): Array<SourceReference> {
 
-//   function visit(node: TsNode) {
-//     if (ts.isImportDeclaration(node)) {
-//       const importClause = node.importClause;
-//       if (importClause && ts.isNamedImports(importClause.namedBindings)) {
-//         for (const element of importClause.namedBindings.elements) {
-//           if (element.name.getText() === importName) {
-//             importSource = (node.moduleSpecifier as TsStringLiteral).text;
-//             return;
-//           }
-//         }
-//       }
-//     }
-//     ts.forEachChild(node, visit);
+  const rootReference = createRootReferenceForArrowFunction(arrowFunction, ts);
+  const references: Array<SourceReference> = [
+    rootReference,
+  ];
+
+  function visit(node: TsNode) {
+    if (ts.isIdentifier(node)) {
+      const dependency = getImportTypeDefinitionFileName(ts, node, program);
+      if (dependency) {
+        if (
+          rootReference.modules[dependency.name] !== undefined
+        ) {
+          rootReference.modules[dependency.name].push(dependency)
+        } else {
+          rootReference.modules[dependency.name] = [dependency];
+        }
+        return;
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(arrowFunction);
+  return references;
+}
+
+// Function to analyze the arrow function and its references
+// function analyzeSource(filePath: string, program: TsProgram, ts: TsType) {
+//   const sourceFile = program.getSourceFile(filePath);
+
+//   if (!sourceFile) {
+//     throw new Error(`Cannot find source file: ${filePath}`);
 //   }
 
-//   visit(sourceFile);
-//   return importSource;
-// }
-
-// Example usage within your existing code
-// function findRoutes(routeTree: RouteTree, scope: TsNode) {
-//   const honoInstanceName = routeTree.name;
-
-//   function visit(node: TsNode) {
-//     if (
-//       ts.isCallExpression(node) &&
-//       ts.isPropertyAccessExpression(node.expression)
-//     ) {
-//       const methodName = node.expression.name.getText();
-//       const objectName = node.expression.expression.getText();
-
-//       if (
-//         objectName === honoInstanceName &&
-//         ["put", "get", "post", "all"].includes(methodName)
-//       ) {
-//         const [firstArgument, ...args] = node.arguments;
-//         const entry: RouteEntry = {
-//           method: methodName,
-//           path: JSON.parse(firstArgument.getText()),
-//           sources: [],
-//         };
-
-//         // Add the tree node to the list of entries
-//         // Later the entry will be filled with source references
-//         routeTree.entries.push(entry);
-
-//         for (const arg of args) {
-//           if (ts.isArrowFunction(arg)) {
-//             const sourceFile = arg.getSourceFile();
-//             const position = sourceFile.getLineAndCharacterOfPosition(arg.getStart());
-//             entry.sources.push({
-//               character: position.character,
-//               line: position.line,
-//               fileName: sourceFile.fileName,
-//               content: arg.getText(),
-//             });
-//           } else if (ts.isCallExpression(arg)) {
-//             console.log("Call expression", arg.getText());
-//             const sourceFile = arg.getSourceFile();
-//             const references = server.getReferencesAtPosition(sourceFile.fileName, arg.getStart());
-//             console.log('references', references)
-//             for (const ref of references) {
-//               ref
-//             }
-//           }
-//         }
-//       }
+//   function findArrowFunctions(node: TsNode) {
+//     if (ts.isArrowFunction(node)) {
+//       const references = extractReferencesFromArrowFunction(node, sourceFile, program);
+//       console.log(references);
 //     }
-
-//     ts.forEachChild(node, visit);
+//     ts.forEachChild(node, findArrowFunctions);
 //   }
 
-//   ts.forEachChild(scope, visit);
+//   findArrowFunctions(sourceFile);
 // }

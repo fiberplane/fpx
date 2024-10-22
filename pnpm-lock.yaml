@@ -22,7 +22,7 @@ importers:
         version: 5.5.4
       wrangler:
         specifier: ^3.73.0
-        version: 3.73.0(@cloudflare/workers-types@4.20241011.0)
+        version: 3.73.0(@cloudflare/workers-types@4.20241018.0)
 
   api:
     dependencies:
@@ -267,8 +267,8 @@ importers:
         specifier: ^3.2.3
         version: 3.2.3
       hono:
-        specifier: ^4.6.3
-        version: 4.6.4
+        specifier: ^4.6.6
+        version: 4.6.6
       resolve:
         specifier: ^1.22.8
         version: 1.22.8
@@ -298,8 +298,8 @@ importers:
         specifier: ^22.7.5
         version: 22.7.5
       typescript:
-        specifier: ^5.6.3
-        version: 5.6.3
+        specifier: 5.6.2
+        version: 5.6.2
       vite:
         specifier: ^5.4.8
         version: 5.4.8(@types/node@22.7.5)
@@ -657,7 +657,7 @@ importers:
         version: 0.14.1
       wrangler:
         specifier: ^3.78.5
-        version: 3.78.5(@cloudflare/workers-types@4.20241011.0)
+        version: 3.78.5(@cloudflare/workers-types@4.20241018.0)
 
 packages:
 
@@ -1014,6 +1014,9 @@ packages:
 
   '@cloudflare/workers-types@4.20241011.0':
     resolution: {integrity: sha512-emwBnuFB/2lS1z6NXAeBqrSL8Xwnr7YpgdLuchOmgu/igqBsLLNPBb4Qmgh3neFWUe9wbzQyx030836YF3c3Xw==}
+
+  '@cloudflare/workers-types@4.20241018.0':
+    resolution: {integrity: sha512-gGWumpaaqnjN/G6SI7CZQ13G4SpIUV+EM8QqvuN2D3cGDF6mKIm+ov7H4x7V/c+AdY90v0FCc8B5nmEEt90MvQ==}
 
   '@codemirror/autocomplete@6.18.0':
     resolution: {integrity: sha512-5DbOvBbY4qW5l57cjDsmmpDh3/TeK1vXfTHa+BUMrRzdWdcxKZ4U4V7vQaTtOpApNU4kLS4FQ6cINtLg245LXA==}
@@ -5143,8 +5146,8 @@ packages:
     resolution: {integrity: sha512-v+39817TgAhetmHUEli8O0uHDmxp2Up3DnhS4oUZXOl5IQ9np9tYtldd42e5zgdLVS0wsOoXQNZ6mx+BGmEvCA==}
     engines: {node: '>=16.9.0'}
 
-  hono@4.6.4:
-    resolution: {integrity: sha512-T5WqBkTOcIQblqBKB5mpzaH/A+dSpvVe938xZJCHOmOuYfF7DSwE/9/10+BMvwSPq9N/f6LiQ38HxrZSQOsXKw==}
+  hono@4.6.6:
+    resolution: {integrity: sha512-euUj5qwvtkG+p38GFs0LYacwaoS2hYRAGn9ysAggiwT2QBcPnT1XYUCW3hatW4C1KzAXTYuQ08BlVDJtAGuhlg==}
     engines: {node: '>=16.9.0'}
 
   html-escaper@3.0.3:
@@ -8367,6 +8370,9 @@ snapshots:
   '@cloudflare/workers-types@4.20240924.0': {}
 
   '@cloudflare/workers-types@4.20241011.0': {}
+
+  '@cloudflare/workers-types@4.20241018.0':
+    optional: true
 
   '@codemirror/autocomplete@6.18.0(@codemirror/language@6.10.2)(@codemirror/state@6.4.1)(@codemirror/view@6.33.0)(@lezer/common@1.2.1)':
     dependencies:
@@ -12487,7 +12493,7 @@ snapshots:
 
   hono@4.6.2: {}
 
-  hono@4.6.4: {}
+  hono@4.6.6: {}
 
   html-escaper@3.0.3: {}
 
@@ -15741,7 +15747,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  wrangler@3.73.0(@cloudflare/workers-types@4.20241011.0):
+  wrangler@3.73.0(@cloudflare/workers-types@4.20241018.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@cloudflare/workers-shared': 0.4.1
@@ -15762,7 +15768,7 @@ snapshots:
       workerd: 1.20240821.1
       xxhash-wasm: 1.0.2
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20241011.0
+      '@cloudflare/workers-types': 4.20241018.0
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil
@@ -15797,7 +15803,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  wrangler@3.78.5(@cloudflare/workers-types@4.20241011.0):
+  wrangler@3.78.5(@cloudflare/workers-types@4.20241018.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@cloudflare/workers-shared': 0.5.3
@@ -15818,7 +15824,7 @@ snapshots:
       workerd: 1.20240909.0
       xxhash-wasm: 1.0.2
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20241011.0
+      '@cloudflare/workers-types': 4.20241018.0
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil

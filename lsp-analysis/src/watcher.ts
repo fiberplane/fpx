@@ -336,7 +336,7 @@ export class Watcher extends EventEmitter<FileEvents> {
   // Public method to stop the watcher and the language service
   public teardown() {
     if (this.watcher) {
-      console.log("Stopping file watcher...");
+      // console.log("Stopping file watcher...");
       this.watcher.close();
       this.watcher = null;
     }

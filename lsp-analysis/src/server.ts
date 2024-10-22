@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import * as bundledTs from 'typescript';
-import type { TsLanguageServiceHost, TsType } from "./types";
+import type { TsCompilerOptions, TsLanguageServiceHost, TsType } from "./types";
 import relative from "resolve";
 import path from "node:path";
 import { isSubpath } from "./utils"
@@ -8,7 +8,7 @@ const relativeResolve = relative.sync;
 
 const require = createRequire(import.meta.url);
 
-function getOptions(location: string, ts: TsType) {
+export function getOptions(location: string, ts: TsType): TsCompilerOptions {
 
   const configPath = ts.findConfigFile(
     location,
@@ -18,45 +18,57 @@ function getOptions(location: string, ts: TsType) {
   if (!configPath) {
     throw new Error("Could not find a valid 'tsconfig.json'.");
   }
-  const { config } = ts.readConfigFile(configPath, ts.sys.readFile);
+  const { config, error } = ts.readConfigFile(configPath, ts.sys.readFile);
+  if (error) {
+    console.error("Error parsing tsconfig", error.messageText);
+  }
   const { options } = ts.parseJsonConfigFileContent(
     config,
     ts.sys,
     location,
   );
+  if (!options.baseUrl) {
+    options.baseUrl = location;
+  }
+  // if (!options.rootDir) {
+  //   options.rootDir = "./src";
+  // }
 
   if (options.types) {
-    options.types = options.types.map((type) => {
-      try {
-        const resolved = relativeResolve(`@types/${type}`, { basedir: location });
-        return require(resolved);
-      } catch (error) {
-        try {
-          const resolved = relativeResolve(type, { basedir: location, preserveSymlinks: true });
-          return require(resolved);
-        } catch (error) {
-          console.warn("Unable to resolve type", type, error);
-          return type;
-        }
-        // const resolved = relativeResolve(type, { basedir: location });
-        // return require(resolved);
-        // console.warn("Unable to resolve type", type, error);
-        // return type;
-      }
-    });
+    // console.log("types", JSON.stringify(options, null, 2))
+    // options.types = options.types.map((type) => {
+    //   // return `${location}/node_modules/${type}`;
+    //   try {
+    //     const resolved = relativeResolve(`@types/${type}`, { basedir: location });
+    //     return require(resolved);
+    //   } catch (error) {
+    //     try {
+    //       const resolved = relativeResolve(type, { basedir: location, preserveSymlinks: true });
+    //       return require(resolved);
+    //     } catch (error) {
+    //       console.warn("Unable to resolve type", type, error);
+    //       return type;
+    //     }
+    //     // const resolved = relativeResolve(type, { basedir: location });
+    //     // return require(resolved);
+    //     // console.warn("Unable to resolve type", type, error);
+    //     // return type;
+    //   }
+    // });
   }
+  // throw new Error("Boom");
+  // if (ts === bundledTs) {
+  // options.typeRoots = [
+  //   path.resolve(
+  //     path.join(location, "node_modules/@types")
+  //   ),
+  //   path.resolve(
+  //     path.join(location, "node_modules")
+  //   )
+  // ];
+  // }
 
-  if (ts === bundledTs) {
-    options.typeRoots = [
-      path.resolve(
-        path.join(location, "node_modules/@types")
-      ),
-      path.resolve(
-        path.join(location, "node_modules")
-      )
-    ];
-  }
-
+  // console.log(ts.getDefaultLibFilePath(options));
   return options;
 }
 
@@ -84,18 +96,48 @@ export function startServer(params: {
     getFileNames,
   } = params;
   const options = getOptions(location, ts);
-
+  console.log('location:', location)
   const host: TsLanguageServiceHost = {
     fileExists: (fileName) => {
-      if (isSubpath(location, fileName)) {
-        return getFileInfo(fileName) !== undefined;
-      }
-      // console.log('fileExists', fileName)
-
-      return ts.sys.fileExists(fileName);
+      const exists = getFileInfo(fileName) !== undefined || ts.sys.fileExists(fileName)
+      return exists;
     },
+
+    // resolveModuleNameLiterals: (
+    //   moduleLiterals: ReadonlyArray<bundledTs.StringLiteralLike>,
+    //   containingFile: string,
+    //   redirectedReference: bundledTs.ResolvedProjectReference | undefined,
+    //   options: bundledTs.CompilerOptions,
+    //   containingSourceFile: bundledTs.SourceFile,
+    //   reusedNames: readonly bundledTs.StringLiteralLike[] | undefined
+    // ): bundledTs.ResolvedModuleWithFailedLookupLocations[] => {
+    //   // ts.sys.resol
+    //   // return [];
+    //   return [...moduleLiterals].map((moduleName) => {
+    //     const resolved = ts.resolveModuleName(
+    //       moduleName,
+    //       containingFile,
+    //       options,
+    //       {
+    //         fileExists: ts.sys.fileExists,
+    //         readFile: ts.sys.readFile,
+    //       },
+    //     );
+
+    //     return resolved.resolvedModule?.resolvedFileName;
+    //   });
+    // },
+    // resolveModuleNames
+    // getCurrentDirectory: () => location,
     getCurrentDirectory: () => location,
-    getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
+    getDefaultLibFileName: (options) => {
+      // console.log('get default lib name', options);
+      return ts.getDefaultLibFilePath(options)
+    },
+    directoryExists: (directoryName) => {
+      // console.log('directory exists?', directoryName, ts.sys.directoryExists(directoryName))
+      return ts.sys.directoryExists(directoryName);
+    },
     getNewLine: () => "\n",
     getCompilationSettings() {
       return options;
@@ -105,13 +147,9 @@ export function startServer(params: {
       return getFileInfo(fileName)?.version.toString();
     },
     getScriptSnapshot: (fileName) => {
-      if (isSubpath(location, fileName)) {
-        const info = getFileInfo(fileName)
-        if (info) {
-          return ts.ScriptSnapshot.fromString(info.content);
-        }
-
-        return undefined;
+      const info = getFileInfo(fileName)
+      if (info) {
+        return ts.ScriptSnapshot.fromString(info.content);
       }
 
       const sourceText = ts.sys.readFile(fileName)
