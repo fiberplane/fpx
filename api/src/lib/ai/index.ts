@@ -2,7 +2,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createMistral } from "@ai-sdk/mistral";
 import { createOpenAI } from "@ai-sdk/openai";
 import type { Settings } from "@fiberplane/fpx-types";
-import { generateObject } from "ai";
+import { APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
@@ -213,15 +213,25 @@ Here is some additional context for the handler source code, if you need it:
     logger.error("Error generating request with AI provider", {
       error,
     });
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Error generating request with AI provider";
+    const errorMessage = createErrorMessage(error);
+    logger.debug("Error message", { errorMessage });
     return {
       data: null,
       error: { message: errorMessage },
     };
   }
+}
+
+function createErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null && "responseBody" in error) {
+    return `${(error as APICallError).message}: ${(error as APICallError).responseBody}`;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Error generating request with AI provider";
 }
 
 // NOTE - Copy-pasted from frontend
