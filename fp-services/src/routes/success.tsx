@@ -4,10 +4,16 @@ import { html, raw } from "hono/html";
 
 const app = new Hono();
 
+type SuccessPageProps = {
+  nonce: string;
+  token: string;
+  expiresAt: string;
+};
+
 // NOTE - I could not figure out the proper type for `children` on a JSX element.
 //        (Hono docs uses `any` for `children`)
 //        So we are using one big page component for now.
-export const SuccessPage = (props: { nonce: string; token: string }) => {
+export const SuccessPage = ({ nonce, token, expiresAt }: SuccessPageProps) => {
   return (
     <html lang="en">
       <head>
@@ -69,7 +75,7 @@ export const SuccessPage = (props: { nonce: string; token: string }) => {
             An error occurred authenticating with Studio.
           </p>
         </div>
-        <ScriptPostToken token={props.token} nonce={props.nonce} />
+        <ScriptPostToken token={token} nonce={nonce} expiresAt={expiresAt} />
       </body>
     </html>
   );
@@ -77,14 +83,14 @@ export const SuccessPage = (props: { nonce: string; token: string }) => {
 
 app.get("/test", async (c) => {
   const token = `test-${crypto.randomUUID()}`;
-
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   // Generate a unique nonce for each request
   const nonce = generateNonce();
 
   // Set CSP header
   c.header("Content-Security-Policy", `script-src 'nonce-${nonce}'`);
 
-  return c.render(<SuccessPage nonce={nonce} token={token} />);
+  return c.render(<SuccessPage nonce={nonce} token={token} expiresAt={expiresAt} />);
 });
 
 export default app;
@@ -96,7 +102,7 @@ export function generateNonce(): string {
   return btoa(String.fromCharCode.apply(null, array));
 }
 
-function ScriptPostToken({ token, nonce }: { token: string; nonce: string }) {
+function ScriptPostToken({ token, nonce, expiresAt }: SuccessPageProps) {
   return (
     <>
       {html`
@@ -106,7 +112,7 @@ function ScriptPostToken({ token, nonce }: { token: string; nonce: string }) {
             {
               mode: "cors",
               method: "POST",
-              body: JSON.stringify({ token: "${token}" }),
+              body: JSON.stringify({ token: "${token}", expiresAt: "${expiresAt}" }),
               headers: {
                 'Content-Type': 'application/json'
               },

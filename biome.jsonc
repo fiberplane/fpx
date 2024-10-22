@@ -73,7 +73,7 @@
         "api",
         "cli",
         "honc-code-gen",
-        "auth"
+        "fp-services"
       ],
       "linter": {
         "enabled": true,

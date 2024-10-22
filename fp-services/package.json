@@ -1,5 +1,5 @@
 {
-  "name": "auth",
+  "name": "fp-services",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",

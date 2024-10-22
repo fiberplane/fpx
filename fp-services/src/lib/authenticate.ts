@@ -31,24 +31,29 @@ export const fpAuthenticate: MiddlewareHandler<FpAuthApp> =
 
     const publicKey = await importKey("public", c.env.PUBLIC_KEY);
 
-    // TODO - Handle expired tokens
-    const verifiedToken = await jose.jwtVerify(bearerToken, publicKey);
+    try {
+      const verifiedToken = await jose.jwtVerify(bearerToken, publicKey);
+      c.set("verifiedToken", verifiedToken.payload);
+      const userId = Number.parseInt(verifiedToken?.payload?.sub ?? "");
+      if (!userId) {
+        return c.json({ message: "Unauthorized" }, 401);
+      }
 
-    c.set("verifiedToken", verifiedToken.payload);
+      const db = initDbConnect(c.env.DB);
+      const user = await getUserById(db, userId);
 
-    const userId = Number.parseInt(verifiedToken?.payload?.sub ?? "");
-    if (!userId) {
-      return c.json({ message: "Unauthorized" }, 401);
+      if (!user) {
+        return c.json({ message: "User not found" }, 404);
+      }
+
+      c.set("currentUser", user);
+
+      await next();
+    } catch (error) {
+      if (error instanceof jose.errors.JWTExpired) {
+        return c.json({ errorType: "token_expired", message: "Token expired" }, 401);
+      }
+      // Handle other JWT verification errors
+      return c.json({ errorType: "invalid_token", message: "Invalid token" }, 401);
     }
-
-    const db = initDbConnect(c.env.DB);
-    const user = await getUserById(db, userId);
-
-    if (!user) {
-      return c.json({ message: "User not found" }, 404);
-    }
-
-    c.set("currentUser", user);
-
-    await next();
   });

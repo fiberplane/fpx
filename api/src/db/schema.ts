@@ -185,6 +185,7 @@ export type NewSetting = typeof settings.$inferInsert;
 export const tokens = sqliteTable("tokens", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   value: text("value").notNull().unique(),
+  expiresAt: text("expires"),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });

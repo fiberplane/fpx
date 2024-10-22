@@ -30,6 +30,7 @@ app.get("/v0/auth/user", cors(), async (ctx) => {
   return ctx.json({
     ...user,
     token: token.value,
+    expiresAt: token.expiresAt,
   });
 });
 

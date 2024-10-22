@@ -55,6 +55,10 @@ app.get("/", async (c) => {
       nbf: Math.floor(Date.now() / 1000), // Not before (current timestamp)
     };
 
+    // HACK - Temporary workaround to communicate expiration to the client
+    //        I am being lazy
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
     const token = await new jose.SignJWT(payload)
       .setProtectedHeader({ alg: "PS256" })
       .setExpirationTime("7d")
@@ -65,7 +69,7 @@ app.get("/", async (c) => {
     // Set CSP header
     c.header("Content-Security-Policy", `script-src 'nonce-${nonce}'`);
 
-    return c.render(<SuccessPage nonce={nonce} token={token} />);
+    return c.render(<SuccessPage nonce={nonce} token={token} expiresAt={expiresAt} />);
   }
 
   // If no user information is available, return an error message
