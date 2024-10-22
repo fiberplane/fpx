@@ -23,7 +23,7 @@ export const searchGeese = measure("searchGeese", async (
 
 export const createGoose = measure("createGoose", async (
   db: ReturnType<typeof drizzle>,
-  gooseData: Partial<typeof geese.$inferInsert>,
+  gooseData: Partial<typeof geese.$inferInsert> & Pick<typeof geese.$inferInsert, "name">,
 ) => {
   const { name, isFlockLeader, programmingLanguage, motivations, location } =
     gooseData;
