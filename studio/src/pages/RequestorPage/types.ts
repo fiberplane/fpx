@@ -44,7 +44,7 @@ export const ProbedRouteSchema = z.object({
   id: z.number(),
   path: z.string(),
   method: RequestMethodSchema,
-  handler: z.string(),
+  handler: z.string().nullish(),
   handlerType: z.enum(["route", "middleware"]),
   currentlyRegistered: z.boolean(),
   registrationOrder: z.number().default(-1),
