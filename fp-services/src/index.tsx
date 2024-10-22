@@ -1,3 +1,4 @@
+import { instrument } from "@fiberplane/hono-otel";
 import { Hono } from "hono";
 import { ERROR_TYPE_NOT_FOUND, ERROR_TYPE_UNAUTHORIZED } from "./constants";
 import { fpAuthenticate } from "./lib";
@@ -44,4 +45,4 @@ app.get("/user", fpAuthenticate, async (c) => {
   });
 });
 
-export default app;
+export default instrument(app);

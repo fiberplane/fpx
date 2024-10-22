@@ -312,6 +312,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^0.0.66
         version: 0.0.66(zod@3.23.8)
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../packages/client-library-otel
       '@hono/oauth-providers':
         specifier: ^0.6.1
         version: 0.6.2(hono@4.6.5)

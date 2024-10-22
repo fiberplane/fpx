@@ -63,8 +63,9 @@ Makes use of GitHub OAuth and JWT-based authentication using Hono, Drizzle ORM, 
 
 ## API Endpoints
 
-- `/github`: GitHub OAuth callback endpoint
-- `/verify`: Endpoint to verify JWT tokens and generate new RSA key pairs
+- `GET /github`: GitHub OAuth callback endpoint
+- `GET /user`: Endpoint to verify JWT tokens and return the user
+- `POST /ai/request`: AI Request Generation
 
 ## Deployment
 
@@ -74,12 +75,28 @@ Deploy the app to Cloudflare Workers using the following command:
 pnpm run deploy
 ```
 
-Make sure to set up the necessary environment variables and bindings in your Cloudflare Worker's configuration.
+### Setting up Secrets
+
+Generate a new key pair if you must:
+
+```sh
+pnpx keypair:generate
+```
+
+Set the secrets from the commandline (although I preferred to set the keys in the Dashboard):
+
+```sh
+pnpx wrangler secret put OPENAI_API_KEY
+pnpx wrangler secret put GITHUB_ID
+pnpx wrangler secret put GITHUB_SECRET
+pnpx wrangler secret put PUBLIC_KEY
+pnpx wrangler secret put PRIVATE_KEY
+```
 
 ## Project Structure
 
-- `src/index.ts`: Main application file with route handlers and core logic
-- `src/crypto.ts`: Cryptographic functions for key generation and import
+- `src/index.tsx`: Main api file with route handlers and core logic
+- `src/lib/crypto.ts`: Cryptographic functions for key generation and imports
 - `src/db/index.ts`: Database initialization and connection
 - `src/db/schema.ts`: Database schema definition using Drizzle ORM
 

@@ -53,9 +53,9 @@ enabled = true
 
 [[d1_databases]]
 binding = "DB" # i.e. available in your Worker on env.DB
-database_name = "auth"
+database_name = "fp-services"
 # preview_database_id = "93c4319c-5689-4058-889e-07d356963e99"
-database_id = "82e419b8-7036-40f9-84d0-adcd21060c0a"
+database_id = "a834f249-3260-439c-b1a4-2ee40348347b"
 migrations_dir = "drizzle/migrations"
 
 # Bind a dispatch namespace. Use Workers for Platforms to deploy serverless functions programmatically on behalf of your customers.
