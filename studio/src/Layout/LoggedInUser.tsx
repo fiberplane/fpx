@@ -4,7 +4,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useUserInfo } from "@/queries";
-import { Link2Icon, PersonIcon } from "@radix-ui/react-icons";
+import { Link2Icon } from "@radix-ui/react-icons";
 
 export function LoggedInUser() {
   const user = useUserInfo();
