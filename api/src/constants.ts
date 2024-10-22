@@ -7,7 +7,7 @@ export const USER_PROJECT_ROOT_DIR = path.resolve(
 );
 
 /** The port on which to run our ephemeral, local authentication server */
-export const FPX_AUTH_SERVER_PORT = 3579;
+export const FPX_AUTH_SERVER_PORT = 6174;
 
 export const FPX_PORT = +(process.env.FPX_PORT ?? 8788);
 

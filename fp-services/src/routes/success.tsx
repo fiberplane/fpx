@@ -112,7 +112,7 @@ function ScriptPostToken({ token, nonce, expiresAt }: SuccessPageProps) {
       {html`
         <script nonce="${nonce}">
           fetch(
-            'http://localhost:3579/v0/auth/success',
+            'http://localhost:6174/v0/auth/success',
             {
               mode: "cors",
               method: "POST",
