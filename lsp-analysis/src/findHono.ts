@@ -4,6 +4,7 @@ import type {
   RouteTree,
   SourceReference,
   TsArrowFunction,
+  TsFunctionDeclaration,
   TsLanguageService,
   TsModuleResolutionHost,
   TsNode,
@@ -100,25 +101,15 @@ export function findHonoRoutes(
 
           for (const arg of args) {
             if (ts.isArrowFunction(arg)) {
-              // const source = extractArrowFunctionContext(arg, ts);
-              const source = extractReferencesFromArrowFunction(arg, program, ts);
-              // console.log('arg.content', arg.getText())
+              const source = extractReferencesFromFunctionLike(
+                arg,
+                program,
+                ts,
+                server,
+              );
               if (source) {
                 entry.sources.push(...source);
               }
-              // const sourceFile = arg.getSourceFile();
-              // const position = sourceFile.getLineAndCharacterOfPosition(
-              //   arg.getStart(),
-              // );
-              // entry.sources.push({
-              //   character: position.character,
-              //   line: position.line,
-              //   fileName: sourceFile.fileName,
-              //   content: arg.getText(),
-              //   references: [],
-              //   modules: {},
-              // });
-              // console.log('entry.sources', entry.sources)
             } else if (ts.isCallExpression(arg)) {
               const sourceFile = arg.getSourceFile();
               const position = sourceFile.getLineAndCharacterOfPosition(
@@ -129,7 +120,7 @@ export function findHonoRoutes(
                 arg.getStart(),
               );
 
-              const source = {
+              const source: SourceReference = {
                 character: position.character,
                 line: position.line,
                 fileName: sourceFile.fileName,
@@ -153,13 +144,18 @@ export function findHonoRoutes(
                   currentFile,
                   ref.textSpan.start,
                 );
-                const referencedModule = getImportTypeDefinitionFileName(
+                const moduleResult = getImportTypeDefinitionFileName(
                   ts,
                   refNode,
                   program,
                 );
-                if (referencedModule) {
-                  source.modules[referencedModule.name] = referencedModule;
+                if (moduleResult) {
+                  const { isExternalLibrary, location, ...dependency } =
+                    moduleResult;
+                  if (isExternalLibrary) {
+                    addDependencyToSourceReference(dependency, source);
+                  }
+
                   break;
                 }
 
@@ -182,11 +178,12 @@ export function findHonoRoutes(
   };
 }
 
-function createRootReferenceForArrowFunction(node: TsArrowFunction, ts: TsType): SourceReference {
+function createRootReferenceForFunctionLike(
+  node: TsArrowFunction | TsFunctionDeclaration,
+  ts: TsType,
+): SourceReference {
   const sourceFile = node.getSourceFile();
-  const position = sourceFile.getLineAndCharacterOfPosition(
-    node.getStart(),
-  );
+  const position = sourceFile.getLineAndCharacterOfPosition(node.getStart());
 
   return {
     character: position.character,
@@ -195,27 +192,64 @@ function createRootReferenceForArrowFunction(node: TsArrowFunction, ts: TsType):
     content: node.getText(),
     references: [],
     modules: {},
-  }
-
-
-  // return current;
+  };
 }
 
 function getImportTypeDefinitionFileName(
   ts: TsType,
   node: TsNode,
   program: TsProgram,
-): ModuleReference | undefined {
+):
+  | (ModuleReference & { isExternalLibrary: boolean; location: string })
+  | undefined {
   const checker = program.getTypeChecker();
   const symbol = checker.getSymbolAtLocation(node);
 
   const declarations = symbol?.getDeclarations();
-
   if (!declarations || declarations.length === 0) {
     return;
   }
 
   const declaration = declarations[0];
+  const declarationFileName = declaration.getSourceFile().fileName;
+  const nodeFileName = node.getSourceFile().fileName;
+  const compilerOptions = program.getCompilerOptions();
+  const host: TsModuleResolutionHost = {
+    fileExists: ts.sys.fileExists,
+    readFile: ts.sys.readFile,
+  };
+
+  // Is the type coming from another file than the current file? Then it
+  // probably comes from a type definition file (like
+  // `@cloudflare/workers-types` and is specified in compilerOptions.type section
+  // of the tsconfig
+  if (nodeFileName !== declarationFileName) {
+    // TODO: improve guessing of which module the import came from
+    if (compilerOptions.types) {
+      const type = compilerOptions.types.find((name) =>
+        nodeFileName.indexOf(name),
+      );
+      if (type) {
+        const result = ts.resolveModuleName(
+          type,
+          nodeFileName,
+          compilerOptions,
+          host,
+        );
+        if (result.resolvedModule.isExternalLibraryImport) {
+          return {
+            import: node.getText(),
+            importPath: type,
+            name: type,
+            version: result.resolvedModule.packageId.version,
+            isExternalLibrary: true,
+            location: result.resolvedModule.resolvedFileName,
+          };
+        }
+      }
+    }
+  }
+
   const n = declaration.parent.parent;
 
   // Look for the import statement
@@ -231,30 +265,21 @@ function getImportTypeDefinitionFileName(
     } catch {
       // swallow error
     }
-    const options = program.getCompilerOptions();
-    const host: TsModuleResolutionHost = {
-      fileExists: ts.sys.fileExists,
-      readFile: ts.sys.readFile,
-    };
     const result = ts.resolveModuleName(
       text,
-      node.getSourceFile().fileName,
-      options,
+      nodeFileName,
+      compilerOptions,
       host,
-      undefined,
-      undefined,
-      undefined,
     );
 
-
-    if (
-      result.resolvedModule?.isExternalLibraryImport
-    ) {
+    if (result.resolvedModule?.isExternalLibraryImport) {
       return {
         import: node.getText(),
         importPath: text,
         name: result.resolvedModule.packageId.name,
         version: result.resolvedModule.packageId.version,
+        isExternalLibrary: true,
+        location: result.resolvedModule.resolvedFileName,
       };
     }
     if (text.startsWith("node:")) {
@@ -262,15 +287,25 @@ function getImportTypeDefinitionFileName(
         import: node.getText(),
         importPath: text,
         name: text,
-      }
+        isExternalLibrary: true,
+        location: result.resolvedModule.resolvedFileName,
+      };
     }
+
+    return {
+      import: node.getText(),
+      importPath: text,
+      name: text,
+      isExternalLibrary: false,
+      location: result.resolvedModule.resolvedFileName,
+    };
+    // console.log('fallback', result.resolvedModule)
   }
 }
 
 function getNextSibling(node: TsNode): TsNode | undefined {
   const parent = node.parent;
   if (!parent) {
-    // console.log('no parent');
     return undefined;
   }
 
@@ -298,7 +333,6 @@ function findNodeAtPosition(
   return find(sourceFile);
 }
 
-// console.log("node", node.kind, ts.SyntaxKind[node.kind], node.getText());
 function inspectNode(node: TsNode, ts: TsType) {
   console.log("node", node.kind, ts.SyntaxKind[node.kind], node.getText());
   console.log("Inspecting node", {
@@ -340,31 +374,136 @@ function inspectNode(node: TsNode, ts: TsType) {
   });
 }
 
+function addDependencyToSourceReference(
+  dependency: ModuleReference,
+  sourceReference: SourceReference,
+) {
+  if (!sourceReference.modules[dependency.name]) {
+    sourceReference.modules[dependency.name] = [dependency];
+    return;
+  }
+
+  sourceReference.modules[dependency.name].push(dependency);
+}
+
 // Extract references from the arrow function
-function extractReferencesFromArrowFunction(
-  arrowFunction: TsArrowFunction,
+function extractReferencesFromFunctionLike(
+  arrowFunction: TsArrowFunction | TsFunctionDeclaration,
   program: TsProgram,
   ts: TsType,
+  server: TsLanguageService,
 ): Array<SourceReference> {
-
-  const rootReference = createRootReferenceForArrowFunction(arrowFunction, ts);
-  const references: Array<SourceReference> = [
-    rootReference,
-  ];
+  const rootReference = createRootReferenceForFunctionLike(arrowFunction, ts);
+  const references: Array<SourceReference> = [rootReference];
 
   function visit(node: TsNode) {
+    // if (ts.isCallExpression(node)) {
+    //   if (node.getText() === "getUser()") {
+    //     console.log('call expression yes!', node.getText(), node.getChildCount())
+    //     for (let index = 0; index < node.getChildCount(); index++) {
+    //       // const element = array[index];
+    //       const child = node.getChildAt(index);
+    //       console.log('child', child.getText(), child.kind, ts.SyntaxKind[child.kind])
+
+    //     }
+    //     // node.forEachChild((child) => {
+    //     // });
+    //   } else {
+    //     console.log("other", node.getText())
+    //   }
+    //   return;
+    // }
     if (ts.isIdentifier(node)) {
-      const dependency = getImportTypeDefinitionFileName(ts, node, program);
-      if (dependency) {
-        if (
-          rootReference.modules[dependency.name] !== undefined
-        ) {
-          rootReference.modules[dependency.name].push(dependency)
-        } else {
-          rootReference.modules[dependency.name] = [dependency];
+      const dependencyResult = getImportTypeDefinitionFileName(
+        ts,
+        node,
+        program,
+      );
+      if (dependencyResult) {
+        const { isExternalLibrary, location, ...dependency } = dependencyResult;
+        if (isExternalLibrary) {
+          // Add dependency to the root reference
+          addDependencyToSourceReference(dependency, rootReference);
+          // } else {
+          //   console.log("!!!", dependency);
+          return;
         }
+      }
+
+      const checker = program.getTypeChecker();
+      const symbol = checker.getSymbolAtLocation(node);
+
+      const declarations = symbol?.getDeclarations();
+      if (!declarations || declarations.length === 0) {
         return;
       }
+
+      const declaration = declarations[0];
+      const declSourceFile = declaration.getSourceFile();
+      const declarationFileName = declSourceFile.fileName;
+      const nodeFileName = node.getSourceFile().fileName;
+      if (node.getText() === "getUser") {
+        if (dependencyResult) {
+          // const host: TsModuleResolutionHost = {
+          //   fileExists: ts.sys.fileExists,
+          //   readFile: ts.sys.readFile,
+          // };
+
+          // const resolve = ts.resolveModuleName(dependencyResult.importPath, nodeFileName, program.getCompilerOptions(), host);
+          // console.log('getUser dependency result', dependencyResult)
+
+          const references = server.getReferencesAtPosition(
+            declSourceFile.fileName,
+            declaration.getStart(),
+          );
+          const reference = references.find(
+            (ref) => ref.fileName === dependencyResult.location,
+          );
+          if (reference) {
+            const refFile = program.getSourceFile(reference.fileName);
+            const refNode = findNodeAtPosition(
+              ts,
+              refFile,
+              reference.textSpan.start,
+            );
+            const symbol = checker.getSymbolAtLocation(refNode);
+            const declarations = symbol?.getDeclarations();
+            if (declarations?.length === 1) {
+              console.log("reference", declarations[0].getText());
+              const declaration = declarations[0];
+              const nodeValue = ts.isVariableDeclaration(declaration)
+                ? declaration.initializer
+                : declaration;
+              if (
+                ts.isFunctionDeclaration(nodeValue) ||
+                ts.isArrowFunction(nodeValue)
+              ) {
+                console.log("!!!", nodeValue);
+                rootReference.references.push(
+                  ...extractReferencesFromFunctionLike(
+                    nodeValue,
+                    program,
+                    ts,
+                    server,
+                  ),
+                );
+              }
+            }
+          }
+          // console.log("reference", reference);
+        }
+        // console.log('references', references)
+
+        // const position = declSourceFile.getLineAndCharacterOfPosition(declaration.getStart())
+        // const lineStart = declSourceFile.getLineStarts()[position.line];
+        // const lineEnd = declSourceFile.getLineStarts()[position.line + 1];
+        // const line = declSourceFile.getText().substring(lineStart, lineEnd);
+        // console.log("declaration", line)
+      }
+      // if (nodeFileName !== declarationFileName) {
+      //   console.log('other file declaration', node.getText(), nodeFileName, declarationFileName)
+      // }
+      // }
     }
     ts.forEachChild(node, visit);
   }
@@ -372,22 +511,3 @@ function extractReferencesFromArrowFunction(
   visit(arrowFunction);
   return references;
 }
-
-// Function to analyze the arrow function and its references
-// function analyzeSource(filePath: string, program: TsProgram, ts: TsType) {
-//   const sourceFile = program.getSourceFile(filePath);
-
-//   if (!sourceFile) {
-//     throw new Error(`Cannot find source file: ${filePath}`);
-//   }
-
-//   function findArrowFunctions(node: TsNode) {
-//     if (ts.isArrowFunction(node)) {
-//       const references = extractReferencesFromArrowFunction(node, sourceFile, program);
-//       console.log(references);
-//     }
-//     ts.forEachChild(node, findArrowFunctions);
-//   }
-
-//   findArrowFunctions(sourceFile);
-// }

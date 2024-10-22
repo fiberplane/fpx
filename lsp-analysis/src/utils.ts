@@ -27,7 +27,6 @@ function isFileUri(uri: string) {
   return uri.startsWith("file://");
 }
 
-
 export function isSubpath(parentPath: string, subPath: string): boolean {
   const resolvedParentPath = path.resolve(parentPath);
   const resolvedSubPath = path.resolve(subPath);

@@ -1,28 +1,28 @@
-// scanHonoRoutes.ts
-import * as bundledTs from 'typescript';
-import * as path from 'node:path';
+import * as path from "node:path";
 import relative from "resolve";
+// scanHonoRoutes.ts
+import type * as bundledTs from "typescript";
 
 const relativeResolve = relative.sync;
 // Alias some exported typescript types
 type TsType = typeof bundledTs;
-type TsLanguageService = bundledTs.LanguageService
+type TsLanguageService = bundledTs.LanguageService;
 type TsNode = bundledTs.Node;
 type TsLanguageServiceHost = bundledTs.LanguageServiceHost;
 
 type RouteTree = {
-  name: string,
-  fileName: string,
-  entries: RouteEntry[],
-}
+  name: string;
+  fileName: string;
+  entries: RouteEntry[];
+};
 
 type RouteEntry = {
-  method: string,
-  path: string,
-}
+  method: string;
+  path: string;
+};
 
+import { createRequire } from "node:module";
 import { Watcher } from "./src";
-import { createRequire } from 'node:module';
 
 async function go() {
   const projectRoot = path.resolve(path.join(process.cwd(), "../api"));
@@ -32,7 +32,9 @@ async function go() {
 
   // Only watch the src directory (if it exists)
   const possibleLocation = path.resolve(path.join(projectRoot, "src"));
-  const location = (ts.sys.directoryExists(possibleLocation)) ? possibleLocation : projectRoot;
+  const location = ts.sys.directoryExists(possibleLocation)
+    ? possibleLocation
+    : projectRoot;
   const watcher = new Watcher(location);
 
   const fileMap: Record<
@@ -48,7 +50,7 @@ async function go() {
   }
 
   function getFileNames() {
-    return Object.keys(fileMap)
+    return Object.keys(fileMap);
   }
 
   const server = startServer({
@@ -56,7 +58,7 @@ async function go() {
     getFileNames,
     location: projectRoot,
     ts,
-  })
+  });
 
   watcher.on("fileAdded", (event) => {
     fileMap[event.payload.fileName] = {

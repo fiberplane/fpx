@@ -6,7 +6,7 @@ const app = new Hono();
 
 app.get(
   "/",
-  // Use middleware as often inside a cloudflare worker 
+  // Use middleware as often inside a cloudflare worker
   () => cors(),
   (c) => c.text("Hello, Hono!"),
 );
@@ -24,8 +24,8 @@ app.get("/slow", cors(), async (c) => {
 
 // Endpoint that calls imported function from relative path
 app.get("user/1", cors(), async (c) => {
-  const user = await getUser()
-  return c.json(user)
-})
+  const user = await getUser();
+  return c.json(user);
+});
 
 export default app;

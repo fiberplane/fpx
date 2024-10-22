@@ -10,21 +10,21 @@
 
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { resolve } from "node:path";
-import { logger } from "./logger.js";
-import { isPublishDiagnosticsParams } from "./types";
-import { getFileUri } from "./utils";
-import type {
-  ConfigurationParams,
-  DidChangeConfigurationParams,
-  //   // createMessageConnection,
-  InitializeParams,
-} from "vscode-languageserver-protocol";
 import {
   type MessageConnection,
   StreamMessageReader,
   StreamMessageWriter,
   createMessageConnection,
 } from "vscode-jsonrpc/node.js";
+import type {
+  ConfigurationParams,
+  DidChangeConfigurationParams,
+  //   // createMessageConnection,
+  InitializeParams,
+} from "vscode-languageserver-protocol";
+import { logger } from "./logger.js";
+import { isPublishDiagnosticsParams } from "./types";
+import { getFileUri } from "./utils";
 // import { connect } from "node:http2";
 
 // let tsServerInstance: {
@@ -175,7 +175,7 @@ async function initializeTSServer(pathToProject: string) {
         // },
       },
     };
-    // const dcc = 
+    // const dcc =
     await connection.sendNotification(
       "workspace/didChangeConfiguration",
       configParams,

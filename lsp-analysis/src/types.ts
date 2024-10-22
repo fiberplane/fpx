@@ -1,6 +1,5 @@
-import * as bundledTs from "typescript";
-import * as path from "node:path";
 import relative from "resolve";
+import * as bundledTs from "typescript";
 
 export const bundledTypescript = bundledTs;
 export const relativeResolve = relative.sync;
@@ -17,10 +16,15 @@ export type TsReferenceEntry = bundledTs.ReferenceEntry;
 export type TsProgram = bundledTs.Program;
 export type TsCompilerOptions = bundledTs.CompilerOptions;
 export type TsModuleResolutionHost = bundledTs.ModuleResolutionHost;
+export type TsArrowFunction = bundledTs.ArrowFunction;
+export type TsFunctionDeclaration = bundledTs.FunctionDeclaration;
 
 export type RouteTree = {
   name: string;
   fileName: string;
+  // TODO: add source references
+  // The Hono type is a generic that can be used
+  // for instance to inject bindings/environment variables
   entries: RouteEntry[];
 };
 

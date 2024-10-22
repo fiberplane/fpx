@@ -13,8 +13,8 @@ app.get("/", (c) => {
   c.env.GOOSE_AVATARS.put("test", new ReadableStream(), {
     httpMetadata: { contentType: "application/json" },
   });
-  console.log('headers', headers);
-  return c.text("Hello, Hono!")
+  console.log("headers", headers);
+  return c.text("Hello, Hono!");
 });
 
 export default app;

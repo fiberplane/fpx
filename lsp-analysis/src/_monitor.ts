@@ -1,8 +1,8 @@
-import * as ts from "typescript";
-import * as path from "node:path";
-import * as fs from "node:fs";
-import { type FSWatcher, watch } from "chokidar";
 import { EventEmitter } from "node:events";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { type FSWatcher, watch } from "chokidar";
+import * as ts from "typescript";
 
 function debounce<T extends (...args: Parameters<T>) => void>(
   func: T,
@@ -105,10 +105,7 @@ export class Watcher extends EventEmitter {
           baseUrl: ".",
           // paths: {
           // },
-          typeRoots: [
-            "node_modules/@types",
-            "node_modules",
-          ],
+          typeRoots: ["node_modules/@types", "node_modules"],
         };
       },
       // installPackage: async (options) => {

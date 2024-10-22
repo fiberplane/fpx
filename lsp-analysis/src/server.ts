@@ -1,15 +1,14 @@
 import { createRequire } from "node:module";
-import * as bundledTs from 'typescript';
-import type { TsCompilerOptions, TsLanguageServiceHost, TsType } from "./types";
-import relative from "resolve";
 import path from "node:path";
-import { isSubpath } from "./utils"
+import relative from "resolve";
+import * as bundledTs from "typescript";
+import type { TsCompilerOptions, TsLanguageServiceHost, TsType } from "./types";
+import { isSubpath } from "./utils";
 const relativeResolve = relative.sync;
 
 const require = createRequire(import.meta.url);
 
 export function getOptions(location: string, ts: TsType): TsCompilerOptions {
-
   const configPath = ts.findConfigFile(
     location,
     ts.sys.fileExists,
@@ -22,11 +21,7 @@ export function getOptions(location: string, ts: TsType): TsCompilerOptions {
   if (error) {
     console.error("Error parsing tsconfig", error.messageText);
   }
-  const { options } = ts.parseJsonConfigFileContent(
-    config,
-    ts.sys,
-    location,
-  );
+  const { options } = ts.parseJsonConfigFileContent(config, ts.sys, location);
   if (!options.baseUrl) {
     options.baseUrl = location;
   }
@@ -74,11 +69,11 @@ export function getOptions(location: string, ts: TsType): TsCompilerOptions {
 
 export function getTsLib(projectRoot: string) {
   try {
-    const tsPath = relativeResolve('typescript', { basedir: projectRoot });
+    const tsPath = relativeResolve("typescript", { basedir: projectRoot });
     return require(tsPath);
   } catch (error) {
-    console.warn("Unable resolve typescript package", error)
-    console.log(`Using bundled in typescript (version ${bundledTs.version})`)
+    console.warn("Unable resolve typescript package", error);
+    console.log(`Using bundled in typescript (version ${bundledTs.version})`);
     return bundledTs;
   }
 }
@@ -86,20 +81,18 @@ export function getTsLib(projectRoot: string) {
 export function startServer(params: {
   ts: TsType;
   location: string;
-  getFileInfo: (fileName: string) => undefined | { version: number, content: string };
+  getFileInfo: (
+    fileName: string,
+  ) => undefined | { version: number; content: string };
   getFileNames: () => Array<string>;
 }) {
-  const {
-    ts,
-    location,
-    getFileInfo,
-    getFileNames,
-  } = params;
+  const { ts, location, getFileInfo, getFileNames } = params;
   const options = getOptions(location, ts);
-  console.log('location:', location)
+  console.log("location:", location);
   const host: TsLanguageServiceHost = {
     fileExists: (fileName) => {
-      const exists = getFileInfo(fileName) !== undefined || ts.sys.fileExists(fileName)
+      const exists =
+        getFileInfo(fileName) !== undefined || ts.sys.fileExists(fileName);
       return exists;
     },
 
@@ -132,7 +125,7 @@ export function startServer(params: {
     getCurrentDirectory: () => location,
     getDefaultLibFileName: (options) => {
       // console.log('get default lib name', options);
-      return ts.getDefaultLibFilePath(options)
+      return ts.getDefaultLibFilePath(options);
     },
     directoryExists: (directoryName) => {
       // console.log('directory exists?', directoryName, ts.sys.directoryExists(directoryName))
@@ -147,12 +140,12 @@ export function startServer(params: {
       return getFileInfo(fileName)?.version.toString();
     },
     getScriptSnapshot: (fileName) => {
-      const info = getFileInfo(fileName)
+      const info = getFileInfo(fileName);
       if (info) {
         return ts.ScriptSnapshot.fromString(info.content);
       }
 
-      const sourceText = ts.sys.readFile(fileName)
+      const sourceText = ts.sys.readFile(fileName);
       if (sourceText !== undefined) {
         return ts.ScriptSnapshot.fromString(sourceText);
       }

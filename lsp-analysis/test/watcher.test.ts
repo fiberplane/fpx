@@ -1,7 +1,7 @@
-import { expect, test, vi } from "vitest";
-import * as path from "node:path";
-import { Watcher } from "../src";
 import { copyFileSync, readdirSync, unlinkSync } from "node:fs";
+import * as path from "node:path";
+import { expect, test, vi } from "vitest";
+import { Watcher } from "../src";
 
 test.skip("Initial files (added)", async () => {
   const location = path.join(__dirname, "./test-case/simple");

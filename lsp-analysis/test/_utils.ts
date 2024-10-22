@@ -1,3 +1,4 @@
+import type { MessageConnection } from "vscode-jsonrpc";
 import type {
   CodeLensParams,
   Definition,
@@ -6,10 +7,9 @@ import type {
   Position,
   ReferenceParams,
 } from "vscode-languageserver-protocol";
-import type { MessageConnection } from "vscode-jsonrpc";
 import { logger } from "../src";
-import { getFileUri } from "../src/utils";
 import { isDefinitionsArray } from "../src/types";
+import { getFileUri } from "../src/utils";
 
 export function sendReferencesRequest(
   connection: MessageConnection,

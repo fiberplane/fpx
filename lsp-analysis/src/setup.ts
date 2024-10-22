@@ -61,7 +61,7 @@ export function setupMonitoring(projectRoot: string) {
     findHonoRoutes: () => findHonoRoutes(server, ts),
     teardown: () => {
       watcher.teardown();
-      server.dispose()
-    }
+      server.dispose();
+    },
   };
 }
