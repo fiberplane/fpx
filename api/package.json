@@ -62,7 +62,7 @@
     "drizzle-zod": "^0.5.1",
     "figlet": "^1.7.0",
     "giget": "^1.2.3",
-    "hono": "^4.6.2",
+    "hono": "^4.6.5",
     "minimatch": "^10.0.1",
     "ollama-ai-provider": "^0.15.2",
     "open": "^10.1.0",
