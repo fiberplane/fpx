@@ -25,15 +25,10 @@ export async function generateRequest({
     openApiSpec,
     middleware,
     middlewareContext,
-  }).then(
-    (parsedArgs) => {
-      return { data: parsedArgs, error: null };
-    },
-    (error) => {
-      if (error instanceof Error) {
-        return { data: null, error: { message: error.message } };
-      }
-      return { data: null, error: { message: "Unknown error" } };
-    },
-  );
+  }).catch((error) => {
+    if (error instanceof Error) {
+      return { data: null, error: { message: error.message } };
+    }
+    return { data: null, error: { message: "Unknown error" } };
+  });
 }

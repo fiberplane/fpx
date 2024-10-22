@@ -43,6 +43,7 @@ function configureProvider(
 }
 
 export async function generateRequestWithAiProvider({
+  fpApiKey,
   inferenceConfig,
   persona,
   method,
@@ -54,6 +55,7 @@ export async function generateRequestWithAiProvider({
   middleware,
   middlewareContext,
 }: {
+  fpApiKey?: string;
   inferenceConfig: Settings;
   persona: string;
   method: string;
@@ -89,9 +91,14 @@ export async function generateRequestWithAiProvider({
   const providerConfig = aiProviderConfigurations[aiProvider];
 
   if (aiProvider === "fp") {
-    // TODO - Invoke the fp request generation
+    if (!fpApiKey) {
+      return {
+        data: null,
+        error: { message: "Fiberplane token not found" },
+      };
+    }
     return generateRequestWithFp({
-      apiKey: providerConfig.apiKey,
+      fpApiKey,
       handler,
       handlerContext,
       history,

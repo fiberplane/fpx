@@ -2,7 +2,7 @@ import logger from "../../logger.js";
 import { makeFpAuthRequest } from "../fp-services/request.js";
 
 type GenerateRequestOptions = {
-  apiKey: string;
+  fpApiKey: string;
   persona: string;
   method: string;
   path: string;
@@ -19,7 +19,7 @@ type GenerateRequestOptions = {
 };
 
 export async function generateRequestWithFp({
-  apiKey,
+  fpApiKey,
   persona,
   method,
   path,
@@ -43,7 +43,7 @@ export async function generateRequestWithFp({
   );
 
   const response = await makeFpAuthRequest({
-    token: apiKey,
+    token: fpApiKey,
     method: "POST",
     path: "/ai/request",
     body: {

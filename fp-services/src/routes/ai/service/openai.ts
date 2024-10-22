@@ -1,7 +1,8 @@
-import OpenAI from "openai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateObject } from "ai";
 import type { GenerateRequestOptions } from "../types";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts";
-import { makeRequestTool } from "./tools";
+import { requestSchema } from "./schema";
 
 const logger = {
   debug: (...args: unknown[]) => console.debug(...args),
@@ -40,7 +41,10 @@ export async function generateRequestWithOpenAI({
     // `middleware: ${middleware}`,
     // `middlewareContext: ${middlewareContext}`,
   );
-  const openaiClient = new OpenAI({ apiKey });
+  const openaiClient = createOpenAI({
+    apiKey,
+  });
+
   const userPrompt = await invokeRequestGenerationPrompt({
     persona,
     method,
@@ -53,42 +57,36 @@ export async function generateRequestWithOpenAI({
     middlewareContext,
   });
 
-  const response = await openaiClient.chat.completions.create({
+  const openai = openaiClient(model, {
     // NOTE - Later models (gpt-4o, gpt-4-turbo) should guarantee function calling to have json output
-    model,
-    // NOTE - We can restrict the response to be from this single tool call
-    tool_choice: {
-      type: "function",
-      function: { name: makeRequestTool.function.name },
-    },
-    // Define the make_request tool
-    tools: [makeRequestTool],
-    messages: [
-      {
-        role: "system",
-        content: getSystemPrompt(persona),
-      },
-      {
-        role: "user",
-        content: userPrompt,
-      },
-    ],
-    temperature: 0.12,
-    max_tokens: 2048,
+    structuredOutputs: true,
   });
 
   const {
-    choices: [{ message }],
-  } = response;
+    object: generatedObject,
+    warnings,
+    usage,
+  } = await generateObject({
+    model: openai,
+    schema: requestSchema,
+    prompt: userPrompt,
+    system: getSystemPrompt(persona),
+    temperature: 0.12,
+  });
 
-  const makeRequestCall = message.tool_calls?.[0];
-  const toolArgs = makeRequestCall?.function?.arguments;
+  logger.debug("Generated object, warnings, usage", {
+    generatedObject,
+    warnings,
+    usage,
+  });
 
-  try {
-    const parsedArgs = toolArgs ? JSON.parse(toolArgs) : null;
-    return parsedArgs;
-  } catch (error) {
-    logger.error("Parsing tool-call response from OpenAI failed:", error);
-    throw new Error("Could not parse response from OpenAI");
-  }
+  // Remove x-fpx-trace-id header from the generated object
+  const filteredHeaders = generatedObject?.headers?.filter(
+    (header) => header.key.toLowerCase() !== "x-fpx-trace-id",
+  );
+
+  return {
+    data: { ...generatedObject, headers: filteredHeaders },
+    error: null,
+  };
 }
