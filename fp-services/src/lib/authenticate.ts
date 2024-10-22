@@ -1,6 +1,10 @@
 import type { MiddlewareHandler } from "hono";
 import { createFactory } from "hono/factory";
 import * as jose from "jose";
+import {
+  ERROR_TYPE_INVALID_TOKEN,
+  ERROR_TYPE_TOKEN_EXPIRED,
+} from "../constants";
 import { initDbConnect } from "../db";
 import type { FpAuthApp } from "../types";
 import { importKey } from "./crypto";
@@ -51,9 +55,15 @@ export const fpAuthenticate: MiddlewareHandler<FpAuthApp> =
       await next();
     } catch (error) {
       if (error instanceof jose.errors.JWTExpired) {
-        return c.json({ errorType: "token_expired", message: "Token expired" }, 401);
+        return c.json(
+          { errorType: ERROR_TYPE_TOKEN_EXPIRED, message: "Token expired" },
+          401,
+        );
       }
       // Handle other JWT verification errors
-      return c.json({ errorType: "invalid_token", message: "Invalid token" }, 401);
+      return c.json(
+        { errorType: ERROR_TYPE_INVALID_TOKEN, message: "Invalid token" },
+        401,
+      );
     }
   });

@@ -1,4 +1,12 @@
 import { URL } from "node:url";
+import {
+  ERROR_TYPE_INVALID_TOKEN,
+  ERROR_TYPE_TOKEN_EXPIRED,
+  ERROR_TYPE_UNAUTHORIZED,
+  InvalidTokenError,
+  TokenExpiredError,
+  UnauthorizedError,
+} from "./errors.js";
 import { makeFpAuthRequest } from "./request.js";
 
 export async function getUser(token: string) {
@@ -30,6 +38,7 @@ export async function getUser(token: string) {
  * Verify a token with the authentication API
  * @param token The token to verify
  * @returns A promise that resolves to the verification result
+ * @throws {Error} with specific error type for unauthorized, invalid token, or expired token
  */
 export async function verifyToken(token: string): Promise<unknown> {
   const baseUrl = process.env.FPX_AUTH_BASE_URL;
@@ -47,6 +56,22 @@ export async function verifyToken(token: string): Promise<unknown> {
         Authorization: `Bearer ${token}`,
       },
     });
+
+    if (response.status === 401) {
+      const errorData = await response.json();
+      switch (errorData?.errorType) {
+        case ERROR_TYPE_UNAUTHORIZED:
+          throw new UnauthorizedError();
+        case ERROR_TYPE_INVALID_TOKEN:
+          throw new InvalidTokenError();
+        case ERROR_TYPE_TOKEN_EXPIRED:
+          throw new TokenExpiredError();
+        default:
+          throw new UnauthorizedError(
+            `Unauthorized: ${errorData?.errorType || "unknown"}`,
+          );
+      }
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

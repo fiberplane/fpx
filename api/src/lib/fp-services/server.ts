@@ -121,9 +121,13 @@ function createAuthApp(fpxStudioPort: number) {
     "/v0/auth/success",
     zValidator("json", TokenPayloadSchema),
     async (c) => {
-      const { token } = c.req.valid("json");
+      const { token, expiresAt } = c.req.valid("json");
       try {
-        const success = await reportTokenToStudio(fpxStudioPort, token);
+        const success = await reportTokenToStudio(
+          fpxStudioPort,
+          token,
+          expiresAt,
+        );
         if (success) {
           return c.text("OK");
         }
@@ -145,14 +149,18 @@ function createAuthApp(fpxStudioPort: number) {
  * @param token - The user's JWT
  * @returns - true if we successfully reported the token to Studio, false otherwise
  */
-async function reportTokenToStudio(fpxStudioPort: number, token: string) {
+async function reportTokenToStudio(
+  fpxStudioPort: number,
+  token: string,
+  expiresAt: string,
+) {
   const localApiUrl = `http://localhost:${fpxStudioPort}/v0/auth/success`;
   const response = await fetch(localApiUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ token, expiresAt }),
   });
 
   if (!response.ok) {

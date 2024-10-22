@@ -4,7 +4,7 @@ import * as jose from "jose";
 import { initDbConnect } from "../db";
 import { importKey, upsertUser } from "../lib";
 import type { FpAuthApp } from "../types";
-import success, { generateNonce, SuccessPage } from "./success";
+import { SuccessPage, generateNonce } from "./success";
 
 const app = new Hono<FpAuthApp>();
 
@@ -57,7 +57,9 @@ app.get("/", async (c) => {
 
     // HACK - Temporary workaround to communicate expiration to the client
     //        I am being lazy
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
 
     const token = await new jose.SignJWT(payload)
       .setProtectedHeader({ alg: "PS256" })
@@ -69,7 +71,9 @@ app.get("/", async (c) => {
     // Set CSP header
     c.header("Content-Security-Policy", `script-src 'nonce-${nonce}'`);
 
-    return c.render(<SuccessPage nonce={nonce} token={token} expiresAt={expiresAt} />);
+    return c.render(
+      <SuccessPage nonce={nonce} token={token} expiresAt={expiresAt} />,
+    );
   }
 
   // If no user information is available, return an error message

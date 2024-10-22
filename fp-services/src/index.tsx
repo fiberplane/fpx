@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { ERROR_TYPE_NOT_FOUND, ERROR_TYPE_UNAUTHORIZED } from "./constants";
 import { fpAuthenticate } from "./lib";
 import ai from "./routes/ai";
 import github from "./routes/github";
@@ -23,12 +24,18 @@ app.route("/ai", ai);
 app.get("/user", fpAuthenticate, async (c) => {
   const verifiedToken = c.get("verifiedToken");
   if (!verifiedToken) {
-    return c.json({ message: "Unauthorized" }, 401);
+    return c.json(
+      { errorType: ERROR_TYPE_UNAUTHORIZED, message: "Unauthorized" },
+      401,
+    );
   }
 
   const user = c.get("currentUser");
   if (!user) {
-    return c.json({ message: "Not found" }, 404);
+    return c.json(
+      { errorType: ERROR_TYPE_NOT_FOUND, message: "Not found" },
+      404,
+    );
   }
 
   return c.json({

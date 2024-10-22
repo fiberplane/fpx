@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
 import { getUser, verifyToken } from "../lib/fp-services/auth.js";
+import { TokenExpiredError } from "../lib/fp-services/errors.js";
 import { TokenPayloadSchema } from "../lib/fp-services/types.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
@@ -62,6 +63,9 @@ app.post("/v0/auth/verify", cors(), async (ctx) => {
     logger.debug("Auth token verification successful");
     return ctx.json(true);
   } catch (error) {
+    if (error instanceof TokenExpiredError) {
+      return ctx.json({ error: "Token expired", type: error.name }, 401);
+    }
     logger.error("Verification failed", error);
     return ctx.json({ error: "Verification failed" }, 401);
   }
@@ -75,7 +79,7 @@ app.post(
   cors(),
   zValidator("json", TokenPayloadSchema),
   async (ctx) => {
-    const { token } = ctx.req.valid("json");
+    const { token, expiresAt } = ctx.req.valid("json");
 
     const db = ctx.get("db");
     const wsConnections = ctx.get("wsConnections");
@@ -83,6 +87,7 @@ app.post(
     try {
       await db.insert(schema.tokens).values({
         value: token,
+        expiresAt,
       });
 
       // Force the UI to refresh user information,
