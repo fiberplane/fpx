@@ -6,13 +6,8 @@ import { type APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
 import { generateRequestWithFp } from "./fp.js";
-import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
-import { makeRequestTool, requestSchema } from "./tools.js";
-import {
-  invokeCommandsPrompt,
-  invokeRequestGenerationPrompt,
-} from "./prompts.js";
-import { commandsSchema, requestSchema } from "./tools.js";
+import { getSystemPrompt, invokeCommandsPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
+import { makeRequestTool, commandsSchema, requestSchema } from "./tools.js";
 
 function configureProvider(
   aiProvider: string,
@@ -274,60 +269,11 @@ export async function translateCommands({
     return { data: null, error: { message: "AI is not enabled" } };
   }
 
-  if (!aiProvider) {
-    return { data: null, error: { message: "AI provider is not set" } };
+  if (error instanceof Error) {
+    return error.message;
   }
 
-  if (!aiProviderConfigurations || !aiProviderConfigurations[aiProvider]) {
-    return {
-      data: null,
-      error: { message: "AI provider is not configured properly" },
-    };
-  }
-
-  const providerConfig = aiProviderConfigurations[aiProvider];
-
-  const provider = configureProvider(aiProvider, providerConfig);
-
-  logger.debug("Generating request with AI provider", {
-    aiProvider,
-    providerConfig,
-  });
-
-  try {
-    const {
-      object: translatedCommands,
-      usage,
-      warnings,
-    } = await generateObject({
-      model: provider,
-      schema: commandsSchema,
-      prompt: await invokeCommandsPrompt({ commands }),
-    });
-
-    logger.debug("Generated object, warnings, usage", {
-      translatedCommands,
-      warnings,
-      usage,
-    });
-
-    return {
-      data: translatedCommands,
-      error: null,
-    };
-  } catch (error) {
-    logger.error("Error translating commands with AI provider", {
-      error,
-    });
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : "Error translating commands with AI provider";
-    return {
-      data: null,
-      error: { message: errorMessage },
-    };
-  }
+  return "Error generating request with AI provider";
 }
 
 // NOTE - Copy-pasted from frontend
