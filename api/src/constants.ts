@@ -11,5 +11,6 @@ export const FPX_AUTH_SERVER_PORT = 6174;
 
 export const FPX_PORT = +(process.env.FPX_PORT ?? 8788);
 
+// NOTE - Configure to http://localhost:3578 in .dev.vars if you want to run the fp-services worker locally
 export const FPX_AUTH_BASE_URL =
-  process.env.FPX_AUTH_BASE_URL || "http://localhost:3578";
+  process.env.FPX_AUTH_BASE_URL || "https://fp-services.mies.workers.dev";
