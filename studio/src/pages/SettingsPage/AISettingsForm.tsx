@@ -26,6 +26,7 @@ import {
   type AiProviderType,
   AnthropicModelOptions,
   MistralModelOptions,
+  OllamaModelOptions,
   OpenAIModelOptions,
   ProviderOptions,
   type Settings,
@@ -53,7 +54,9 @@ function useModelOptions(provider: AiProviderType) {
           ? AnthropicModelOptions
           : provider === "mistral"
             ? MistralModelOptions
-            : {},
+            : provider === "ollama"
+              ? OllamaModelOptions
+              : {},
     );
 
     // HACK - Anthropic models end in their date of release, so we sort by release date descending
@@ -229,26 +232,28 @@ export function AISettingsForm({
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name={
-                    `aiProviderConfigurations.${provider as AiProviderType}.apiKey` as const
-                  }
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>API Key</FormLabel>
-                      <FormControl>
-                        <ApiKeyInput
-                          value={field.value ?? ""}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} API Key`}
-                          // HACK - Prevent clipping of focus ring
-                          className="mx-[2px]"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                {provider !== "ollama" && (
+                  <FormField
+                    control={form.control}
+                    name={
+                      `aiProviderConfigurations.${provider as AiProviderType}.apiKey` as const
+                    }
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>API Key</FormLabel>
+                        <FormControl>
+                          <ApiKeyInput
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value)}
+                            placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} API Key`}
+                            // HACK - Prevent clipping of focus ring
+                            className="mx-[2px]"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
                 <FormField
                   control={form.control}
                   name={

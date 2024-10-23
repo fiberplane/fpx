@@ -127,7 +127,7 @@ const [user] = await db.select().from(schema.users).where(eq(schema.users.id, "s
 import {{ gte }} from "drizzle-orm";
 // ...
 
-const [user] = await db.select().from(schema.users).where(gte(schema.users.age, 64));
+const olderUsers = await db.select().from(schema.users).where(gte(schema.users.age, 64));
 
 // ...
 </drizzle-orm-example>

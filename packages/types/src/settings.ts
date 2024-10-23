@@ -1,14 +1,10 @@
 import type { AnthropicProvider } from "@ai-sdk/anthropic";
 import type { MistralProvider } from "@ai-sdk/mistral";
 import type { OpenAIProvider } from "@ai-sdk/openai";
+import type { OllamaProvider } from "ollama-ai-provider";
 import { z } from "zod";
 
-export type MistralModelOptionsType = MistralProvider extends (
-  modelId: infer T,
-  ...args: unknown[]
-) => unknown
-  ? T
-  : never;
+export type MistralModelOptionsType = Parameters<MistralProvider>[0];
 
 export const MistralModelOptions: Partial<
   Record<MistralModelOptionsType, string>
@@ -30,12 +26,7 @@ export const MistralModelSchema = z.union([
   z.literal("mistral-large-latest"),
 ]);
 
-export type AnthropicModelOptionsType = AnthropicProvider extends (
-  modelId: infer T,
-  ...args: unknown[]
-) => unknown
-  ? T
-  : never;
+export type AnthropicModelOptionsType = Parameters<AnthropicProvider>[0];
 
 export const AnthropicModelOptions: Partial<
   Record<AnthropicModelOptionsType, string>
@@ -55,12 +46,20 @@ export const AnthropicModelSchema = z.union([
 
 export type AnthropicModel = z.infer<typeof AnthropicModelSchema>;
 
-export type OpenAIModelOptionsType = OpenAIProvider extends (
-  modelId: infer T,
-  ...args: unknown[]
-) => unknown
-  ? T
-  : never;
+export type OllamaModelOptionsType = Parameters<OllamaProvider>[0];
+
+export const OllamaModelOptions: Partial<
+  Record<OllamaModelOptionsType, string>
+> = {
+  "llama3.1": "LLAMA 3.1",
+  "llama3.1:8b": "LLAMA 3.1 8B",
+  "llama3.1:70b": "LLAMA 3.1 70B",
+  "llama3.2": "LLAMA 3.2",
+  "llama3.2:1b": "LLAMA 3.2 1B",
+  "llama3.2:3b": "LLAMA 3.2 3B",
+};
+
+export type OpenAIModelOptionsType = Parameters<OpenAIProvider>[0];
 
 export const OpenAIModelOptions: Partial<
   Record<OpenAIModelOptionsType, string>
@@ -86,6 +85,7 @@ export const ProviderOptions = {
   openai: "OpenAI",
   anthropic: "Anthropic",
   fp: "Fiberplane",
+  ollama: "Ollama",
   mistral: "Mistral",
 } as const;
 
@@ -93,6 +93,7 @@ export const AiProviderTypeSchema = z.union([
   z.literal("openai"),
   z.literal("anthropic"),
   z.literal("fp"),
+  z.literal("ollama"),
   z.literal("mistral"),
 ]);
 
