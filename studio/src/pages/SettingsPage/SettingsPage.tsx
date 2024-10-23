@@ -1,12 +1,13 @@
-import SparkleWand from "@/assets/SparkleWand.svg";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFetchSettings } from "@/queries";
 import { cn } from "@/utils";
 import type { Settings } from "@fiberplane/fpx-types";
+import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { AISettingsForm } from "./AISettingsForm";
 import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
+import { Profile } from "./Profile";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 
 export function SettingsPage() {
@@ -31,16 +32,17 @@ export function SettingsPage() {
   );
 }
 
+const PROFILE_TAB = "Profile";
 const AI_TAB = "AI";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
 const FPX_WORKER_PROXY_TAB = "Production Ingestion";
 
 function SettingsLayout({ settings }: { settings: Settings }) {
-  const [activeTab, setActiveTab] = useState(AI_TAB);
+  const [activeTab, setActiveTab] = useState(PROFILE_TAB);
 
   return (
     <Tabs
-      defaultValue={AI_TAB}
+      defaultValue={PROFILE_TAB}
       value={activeTab}
       onValueChange={setActiveTab}
       className="grid h-full gap-8 overflow-hidden max-md:grid-rows-[auto_1fr] md:grid-cols-[auto_1fr] md:gap-2 lg:gap-4"
@@ -60,25 +62,43 @@ function SettingsLayout({ settings }: { settings: Settings }) {
       >
         <TabsTrigger
           className="whitespace-nowrap justify-start text-left pl-0 pr-4"
+          value={PROFILE_TAB}
+        >
+          <Icon icon="lucide:user" className={cn("w-3.5 h-3.5 mr-1.5")} />
+          You
+        </TabsTrigger>
+        <TabsTrigger
+          className="whitespace-nowrap justify-start text-left pl-0 pr-4"
           value={AI_TAB}
         >
-          <SparkleWand className="inline w-3.5 h-3.5 mr-1.5" />
+          <Icon
+            icon="lucide:wand-sparkles"
+            className={cn("w-3.5 h-3.5 mr-1.5")}
+          />
           Request Autofill
         </TabsTrigger>
         <TabsTrigger
           className="whitespace-nowrap justify-start text-left pl-0 pr-4"
           value={PROXY_REQUESTS_TAB}
         >
-          Proxy Requests
+          <Icon icon="lucide:waypoints" className={cn("w-3.5 h-3.5 mr-1.5")} />
+          Proxy
         </TabsTrigger>
         <TabsTrigger
           className="whitespace-nowrap justify-start text-left pl-0 pr-4"
           value={FPX_WORKER_PROXY_TAB}
         >
-          {FPX_WORKER_PROXY_TAB}
+          <Icon
+            icon="lucide:flask-round"
+            className={cn("w-3.5 h-3.5 mr-1.5")}
+          />
+          Production
         </TabsTrigger>
       </TabsList>
       <div className="w-full max-w-[680px] overflow-y-auto">
+        <TabsContent className="m-0" value={PROFILE_TAB}>
+          <Profile settings={settings} />
+        </TabsContent>
         <TabsContent className="m-0" value={AI_TAB}>
           <AISettingsForm settings={settings} />
         </TabsContent>

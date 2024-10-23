@@ -1,21 +1,35 @@
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useUserInfo } from "@/queries";
-import { Link2Icon } from "@radix-ui/react-icons";
+import { cn } from "@/utils";
+import { Icon } from "@iconify/react";
 
 export function LoggedInUser() {
   const user = useUserInfo();
   if (!user) {
-    return null;
+    return (
+      <div className="text-xs flex items-center border-l pl-2">
+        <Button
+          variant="link"
+          size="sm"
+          className="text-muted-foreground py-0.5 px-0.5"
+        >
+          Log in
+        </Button>
+      </div>
+    );
   }
   return (
-    <div className="text-xs text-blue-500 ml-2 flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity">
+    <div className="text-xs flex items-center">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link2Icon className="w-3.5 h-3.5" />
+          <Button variant="ghost" size="icon" className="p-0.5 h-6 w-6">
+            <Icon icon="lucide:circle-user" className={cn("w-3.5 h-3.5")} />
+          </Button>
         </TooltipTrigger>
         <TooltipContent className="border bg-background z-10 text-card-foreground/75">
           @{user.githubUsername}
@@ -23,14 +37,14 @@ export function LoggedInUser() {
             <>
               <span className="text-muted-foreground/80"> • </span>
               <span className="text-muted-foreground/80">
-                {user.aiRequestCredits} AI Requests Remaining
+                {user.aiRequestCredits}/50 ai requests remaining
               </span>
             </>
           ) : (
             <>
               <span className="text-muted-foreground/80"> • </span>
               <span className="text-muted-foreground/80">
-                No AI credits remaining &mdash; Credits refreshed daily
+                No AI credits remaining &mdash; credits refreshed daily
               </span>
             </>
           )}

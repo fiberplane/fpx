@@ -45,15 +45,17 @@ export function BottomBar() {
     <nav className="gap-4 bg-muted/50 py-2">
       <div className="flex justify-between px-2 items-center">
         <div className="flex items-center gap-2 sm:static sm:h-auto border-0 bg-transparent text-sm">
-          <SidePanelTrigger />
-          <SettingsMenu setSettingsOpen={setSettingsOpen} />
-          <FloatingSidePanel />
+          <div className="flex items-center gap-2">
+            <SidePanelTrigger />
+            <SettingsMenu setSettingsOpen={setSettingsOpen} />
+            <LoggedInUser />
+          </div>
           <SettingsScreen
             settingsOpen={settingsOpen}
             setSettingsOpen={setSettingsOpen}
           />
           <Branding />
-          <LoggedInUser />
+          <FloatingSidePanel />
         </div>
 
         <div className="flex items-center gap-2">
