@@ -1,0 +1,48 @@
+.wrangler
+shared/dist
+.env
+.envrc
+
+.dev.vars
+.prod.vars
+
+# Fpx
+.fpxconfig
+
+# Rust targets
+**/target
+target
+
+# Mac
+.DS_Store
+
+# VS Code
+.vscode
+*.code-workspace
+
+# CLion
+.idea
+
+# Package locks
+**/package-lock.json
+**/yarn.lock
+
+# TypeScript / Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+node_modules
+yarn-error.log
+
+# Build tools
+.parcel-cache*
+.nx/cache
+*.tsbuildinfo
+
+# Personal files
+start-dev.sh
+slam-geese.sh
+

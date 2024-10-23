@@ -5,6 +5,7 @@ import type { Settings } from "@fiberplane/fpx-types";
 import { type APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
+import { generateRequestWithFp } from "./fp.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool, requestSchema } from "./tools.js";
 
@@ -51,6 +52,7 @@ function configureProvider(
 }
 
 export async function generateRequestWithAiProvider({
+  fpApiKey,
   inferenceConfig,
   persona,
   method,
@@ -62,6 +64,7 @@ export async function generateRequestWithAiProvider({
   middleware,
   middlewareContext,
 }: {
+  fpApiKey?: string;
   inferenceConfig: Settings;
   persona: string;
   method: string;
@@ -95,6 +98,27 @@ export async function generateRequestWithAiProvider({
   }
 
   const providerConfig = aiProviderConfigurations[aiProvider];
+
+  if (aiProvider === "fp") {
+    if (!fpApiKey) {
+      return {
+        data: null,
+        error: { message: "Fiberplane token not found" },
+      };
+    }
+    return generateRequestWithFp({
+      fpApiKey,
+      handler,
+      handlerContext,
+      history,
+      openApiSpec,
+      middleware,
+      middlewareContext,
+      persona,
+      method,
+      path,
+    });
+  }
 
   const provider = configureProvider(aiProvider, providerConfig);
 

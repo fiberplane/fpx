@@ -1,3 +1,4 @@
+import { useLogout, useUserInfo } from "@/queries";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
@@ -23,6 +24,8 @@ export function SettingsMenu({
       menuBarTriggerRef.current.click();
     }
   });
+
+  const user = useUserInfo();
 
   return (
     <Menubar className="p-0">
@@ -58,6 +61,8 @@ export function SettingsMenu({
             Discord
           </MenuItemLink>
           <MenubarSeparator className="h-px bg-muted" />
+          {user ? <LogOut /> : <GitHubLogInLink />}
+          <MenubarSeparator className="h-px bg-muted" />
           <MenubarItem
             className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
             onClick={() => setSettingsOpen(true)}
@@ -70,6 +75,36 @@ export function SettingsMenu({
         </MenubarContent>
       </MenubarMenu>
     </Menubar>
+  );
+}
+
+function LogOut() {
+  const logout = useLogout();
+
+  return (
+    <MenubarItem
+      className="pointer-cursor-auto px-2 py-1 select-none focus:bg-accent focus:text-accent-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+      onClick={() => !logout.isPending && logout.mutate()}
+    >
+      <div className="flex items-center gap-2">
+        <Icon icon="lucide:user" />
+        {logout.isPending ? "Logging you out" : "Log out"}
+      </div>
+    </MenubarItem>
+  );
+}
+
+function GitHubLogInLink() {
+  return (
+    <MenuItemLink
+      // NOTE - Uncomment the localhost href to test fp-services locally
+      // TODO - Allow us to configure this url
+      // href="http://127.0.0.1:3578/github"
+      href="https://fp-services.mies.workers.dev/github"
+      icon={<Icon icon="lucide:user" />}
+    >
+      Log In
+    </MenuItemLink>
   );
 }
 

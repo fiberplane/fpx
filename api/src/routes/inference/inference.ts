@@ -1,8 +1,10 @@
 import { zValidator } from "@hono/zod-validator";
+import { desc } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { USER_PROJECT_ROOT_DIR } from "../../constants.js";
+import * as schema from "../../db/schema.js";
 import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
 import { expandFunction } from "../../lib/expand-function/index.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
@@ -79,9 +81,17 @@ app.post(
         : [null, null];
     // console.timeEnd("Handler and Middleware Expansion");
 
+    // HACK - Get latest token from db
+    const [token] = await db
+      .select()
+      .from(schema.tokens)
+      .orderBy(desc(schema.tokens.createdAt))
+      .limit(1);
+
     // Generate the request
     const { data: parsedArgs, error: generateError } =
       await generateRequestWithAiProvider({
+        fpApiKey: token?.value,
         inferenceConfig,
         persona,
         method,
