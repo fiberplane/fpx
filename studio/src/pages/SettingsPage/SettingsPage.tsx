@@ -89,7 +89,7 @@ function SettingsLayout({ settings }: { settings: Settings }) {
           value={FPX_WORKER_PROXY_TAB}
         >
           <Icon
-            icon="lucide:flask-round"
+            icon="lucide:cloud-upload"
             className={cn("w-3.5 h-3.5 mr-1.5")}
           />
           Production
