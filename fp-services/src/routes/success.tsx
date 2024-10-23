@@ -47,11 +47,11 @@ export const SuccessPage = ({ nonce, token, expiresAt }: SuccessPageProps) => {
           }
           .success {
             font-family: sans-serif;
-            color: hsl(142, 76%, 36%);
+            color: #6D84F7;
           }
           .error {
             font-family: sans-serif;
-            color: hsl(0, 62.8%, 50.6%);
+            color: #FF5E87;
           }
           .status {
             font-size: 1.8rem;
