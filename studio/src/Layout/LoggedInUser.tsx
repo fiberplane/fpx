@@ -5,12 +5,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { FP_SERVICES_LOGIN_URL } from "@/constants";
+import { useRequestorStore } from "@/pages/RequestorPage/store";
 import { useUserInfo } from "@/queries";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
 
 export function LoggedInUser() {
   const user = useUserInfo();
+  const { setSettingsOpen } = useRequestorStore("setSettingsOpen");
   if (!user) {
     return (
       <div className="text-xs flex items-center border-l pl-2">
@@ -35,7 +37,12 @@ export function LoggedInUser() {
     <div className="text-xs flex items-center">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="p-0.5 h-6 w-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="p-0.5 h-6 w-6"
+            onClick={setSettingsOpen}
+          >
             <Icon icon="lucide:circle-user" className={cn("w-3.5 h-3.5")} />
           </Button>
         </TooltipTrigger>
