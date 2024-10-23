@@ -4,6 +4,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { FP_SERVICES_LOGIN_URL } from "@/constants";
 import { useUserInfo } from "@/queries";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
@@ -17,8 +18,15 @@ export function LoggedInUser() {
           variant="link"
           size="sm"
           className="text-muted-foreground py-0.5 px-0.5"
+          asChild
         >
-          Log in
+          <a
+            href={FP_SERVICES_LOGIN_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            Log in
+          </a>
         </Button>
       </div>
     );

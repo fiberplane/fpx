@@ -1,3 +1,7 @@
+// NOTE - Change this value to http://localhost:3578/github to test against locally running fp-services
+export const FP_SERVICES_LOGIN_URL =
+  "https://fp-services.mies.workers.dev/github";
+
 /**
  * SEMATTRS_* are constants that should actually be exposed by the Samantic Conventions package
  * but are not. These are the ones that are used in the frontend and the client library.

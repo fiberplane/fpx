@@ -14,7 +14,6 @@ import {
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
 import { useShallow } from "zustand/react/shallow";
-import { Branding } from "../Branding";
 import { LoggedInUser } from "../LoggedInUser";
 import { SettingsMenu, SettingsScreen } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
@@ -54,7 +53,6 @@ export function BottomBar() {
             settingsOpen={settingsOpen}
             setSettingsOpen={setSettingsOpen}
           />
-          <Branding />
           <FloatingSidePanel />
         </div>
 

@@ -1,3 +1,4 @@
+import { FP_SERVICES_LOGIN_URL } from "@/constants";
 import { useLogout, useUserInfo } from "@/queries";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
@@ -97,10 +98,7 @@ function LogOut() {
 function GitHubLogInLink() {
   return (
     <MenuItemLink
-      // NOTE - Uncomment the localhost href to test fp-services locally
-      // TODO - Allow us to configure this url
-      // href="http://127.0.0.1:3578/github"
-      href="https://fp-services.mies.workers.dev/github"
+      href={FP_SERVICES_LOGIN_URL}
       icon={<Icon icon="lucide:user" />}
     >
       Log In
