@@ -30,6 +30,11 @@ function hasValidAiConfig(settings: Settings) {
       const model = mistral?.model;
       return !!apiKey && !!model;
     }
+    case "ollama": {
+      const ollama = settings.aiProviderConfigurations?.ollama;
+      const model = ollama?.model;
+      return !!model;
+    }
     default:
       return false;
   }

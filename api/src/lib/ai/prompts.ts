@@ -1,6 +1,11 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
-export const getSystemPrompt = (persona: string) => {
+export const getSystemPrompt = (persona: string, provider?: string) => {
+  if (provider === "ollama") {
+    return persona === "QA"
+      ? LLAMA_3_8B_QA_PARAMETER_GENERATION_SYSTEM_PROMPT
+      : LLAMA_3_8B_FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT;
+  }
   return persona === "QA"
     ? QA_PARAMETER_GENERATION_SYSTEM_PROMPT
     : FRIENDLY_PARAMETER_GENERATION_SYSTEM_PROMPT;
