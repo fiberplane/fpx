@@ -537,7 +537,6 @@ Use the tool "make_request". Always respond in valid JSON.
 ***Don't make your responses too long, otherwise we cannot parse your JSON response.***
 `);
 
-
 /**
  * Clean a prompt by trimming whitespace for each line and joining the lines.
  */

@@ -3,16 +3,16 @@ import { createMistral } from "@ai-sdk/mistral";
 import { createOpenAI } from "@ai-sdk/openai";
 import type { Settings } from "@fiberplane/fpx-types";
 import { type APICallError, generateObject } from "ai";
+import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
 import { generateRequestWithFp } from "./fp.js";
 import {
+  SAMPLE_PROMPT,
   getSystemPrompt,
   invokeCommandsPrompt,
   invokeRequestGenerationPrompt,
-  SAMPLE_PROMPT,
 } from "./prompts.js";
 import { commandsSchema, makeRequestTool, requestSchema } from "./tools.js";
-import { createOllama } from "ollama-ai-provider";
 
 function configureProvider(
   aiProvider: string,
