@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { getUser } from "./db";
+import { getProfile, getUser } from "./db";
 
 const app = new Hono();
 
@@ -12,7 +12,7 @@ app.get(
 );
 
 // Internally declared function
-async function sleep(duration: number) {
+export async function sleep(duration: number) {
   return new Promise((resolve) => setTimeout(resolve, duration));
 }
 
@@ -24,8 +24,11 @@ app.get("/slow", cors(), async (c) => {
 
 // Endpoint that calls imported function from relative path
 app.get("user/1", cors(), async (c) => {
-  const user = await getUser();
-  return c.json(user);
+  // await getUser();
+  const userDetails = await getProfile();
+  return c.json({
+    userDetails
+  });
 });
 
 export default app;

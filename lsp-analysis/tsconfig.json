@@ -2,6 +2,5 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "baseUrl": "./",
   } 
 }
