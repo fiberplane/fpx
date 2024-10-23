@@ -26,13 +26,16 @@ app.get("/v0/auth/user", cors(), async (ctx) => {
     return ctx.json(null);
   }
 
-  const user = await getUser(token.value);
-
-  return ctx.json({
-    ...user,
-    token: token.value,
-    expiresAt: token.expiresAt,
-  });
+  try {
+    const user = await getUser(token.value);
+    return ctx.json({
+      ...user,
+      token: token.value,
+      expiresAt: token.expiresAt,
+    });
+  } catch (_error) {
+    return ctx.json(null);
+  }
 });
 
 /**

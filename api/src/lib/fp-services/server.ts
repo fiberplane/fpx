@@ -108,9 +108,12 @@ function createAuthApp(fpxStudioPort: number) {
   app.use(
     "/v0/auth/success",
     cors({
-      // HACK - Trust the local auth service while testing
-      // TODO - Update origin to include Fiberplane services
-      origin: ["http://127.0.0.1:3578", "http://localhost:3578"],
+      // HACK - Trust the local auth service while testing by default
+      origin: [
+        "http://127.0.0.1:3578",
+        "http://localhost:3578",
+        "https://fp-services.mies.workers.dev",
+      ],
       allowMethods: ["GET", "POST", "OPTIONS"],
       allowHeaders: ["Content-Type"],
       exposeHeaders: ["Content-Length"],

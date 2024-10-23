@@ -4,6 +4,7 @@ shared/dist
 .envrc
 
 .dev.vars
+.prod.vars
 
 # Fpx
 .fpxconfig

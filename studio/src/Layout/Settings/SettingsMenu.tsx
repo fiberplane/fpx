@@ -97,9 +97,10 @@ function LogOut() {
 function GitHubLogInLink() {
   return (
     <MenuItemLink
-      // TODO - Change to production service loing
-      // IMPROVE - Allow us to configure this url
-      href="http://127.0.0.1:3578/github"
+      // NOTE - Uncomment the localhost href to test fp-services locally
+      // TODO - Allow us to configure this url
+      // href="http://127.0.0.1:3578/github"
+      href="https://fp-services.mies.workers.dev/github"
       icon={<Icon icon="lucide:user" />}
     >
       Log In

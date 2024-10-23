@@ -20,8 +20,16 @@ export function useFetchUserInfo() {
     queryFn: async () => {
       const response = await fetch("/v0/auth/user");
       const json = await response.json();
-      const user = UserInfoSchema.parse(json);
-      return user;
+      if (json === null) {
+        return null;
+      }
+      try {
+        const user = UserInfoSchema.parse(json);
+        return user;
+      } catch (error) {
+        console.error("Error parsing user info", error);
+        return null;
+      }
     },
   });
 }

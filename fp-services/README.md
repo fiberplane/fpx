@@ -93,6 +93,22 @@ pnpx wrangler secret put PUBLIC_KEY
 pnpx wrangler secret put PRIVATE_KEY
 ```
 
+### Migrating the Database
+
+Copy the production environment variables examples
+
+```sh
+cp .prod.vars.example .prod.vars
+```
+
+Fill in the variables.
+
+Run the migrations:
+
+```sh
+pnpm db:migrate:prod
+```
+
 ## Project Structure
 
 - `src/index.tsx`: Main api file with route handlers and core logic

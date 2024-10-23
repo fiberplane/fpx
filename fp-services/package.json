@@ -1,5 +1,6 @@
 {
   "name": "fp-services",
+  "type": "module",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
@@ -7,7 +8,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:touch": "wrangler d1 execute auth --local --command='SELECT 1'",
+    "db:touch": "wrangler d1 execute fp-services --local --command='SELECT 1'",
     "db:migrate:prod": "AUTH_ENV=production drizzle-kit migrate",
     "db:studio:prod": "AUTH_ENV=production drizzle-kit studio",
     "format": "biome check . --write",
@@ -34,7 +35,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@cloudflare/workers-types": "^4.20241004.0",
-    "drizzle-kit": "^0.25.0",
+    "drizzle-kit": "^0.24.2",
     "wrangler": "^3.80.1"
   }
 }
