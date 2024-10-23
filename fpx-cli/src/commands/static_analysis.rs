@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::{
-    fs::{self},
+    // fs::{self},
     path::Path,
 };
 
@@ -12,20 +12,22 @@ pub struct Args {
 
 pub async fn handle_command(args: Args) -> Result<()> {
     let entry_path = Path::new(&args.entry_path);
-    let source = fs::read_to_string(entry_path).expect("entry file missing");
+    // let source = fs::read_to_string(entry_path).expect("entry file missing");
 
-    // TODO: Integrate fpx.toml?
-    let detected_routes = fpx::static_analysis::ast::detect_routes(entry_path, &source);
+    fpx::static_analysis::ast::analyse(entry_path);
 
-    println!("Count: {}", detected_routes.len());
-
-    // TODO: Should probably serialize this to stdout?
-    for detected_route in detected_routes {
-        println!("==============");
-        println!("Handler:");
-        println!("{}", detected_route);
-        println!("==============");
-    }
+    // // TODO: Integrate fpx.toml?
+    // let detected_routes = fpx::static_analysis::ast::detect_routes(entry_path, &source);
+    //
+    // println!("Count: {}", detected_routes.len());
+    //
+    // // TODO: Should probably serialize this to stdout?
+    // for detected_route in detected_routes {
+    //     println!("==============");
+    //     println!("Handler:");
+    //     println!("{}", detected_route);
+    //     println!("==============");
+    // }
 
     Ok(())
 }
