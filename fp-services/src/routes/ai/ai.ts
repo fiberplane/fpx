@@ -27,11 +27,11 @@ app.post(
         ...requestOptions,
       });
       if (aiResult.error) {
-        return c.json({ message: "Error generating request " }, 500);
+        return c.json({ error: { message: "Error generating request " } }, 500);
       }
       // NOTE - Enqueue the ai credit derementing promise for after the worker finishes
       c.executionCtx.waitUntil(decrementAiCredits(db, currentUser.id));
-      return c.json(aiResult.data);
+      return c.json(aiResult);
     } catch (error) {
       console.error("Error processing request generation call", error);
       return c.json(

@@ -2,10 +2,11 @@ import { instrument } from "@fiberplane/hono-otel";
 import { Hono } from "hono";
 import { ERROR_TYPE_NOT_FOUND, ERROR_TYPE_UNAUTHORIZED } from "./constants";
 import { fpAuthenticate } from "./lib";
+import { refreshCredits } from "./lib/refresh-credits";
 import ai from "./routes/ai";
 import github from "./routes/github";
 // import success from "./routes/success";
-import type { FpAuthApp } from "./types";
+import type { Bindings, FpAuthApp } from "./types";
 
 const app = new Hono<FpAuthApp>();
 
@@ -45,4 +46,17 @@ app.get("/user", fpAuthenticate, async (c) => {
   });
 });
 
-export default instrument(app);
+export default {
+  ...instrument(app),
+  /**
+   * Cron job to refresh AI credits for all users
+   * Check wrangler.toml for the schedule
+   */
+  async scheduled(
+    _controller: ScheduledController,
+    env: Bindings,
+    ctx: ExecutionContext,
+  ) {
+    ctx.waitUntil(refreshCredits(env.DB));
+  },
+};

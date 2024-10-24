@@ -4,6 +4,9 @@ main = "src/index.tsx"
 compatibility_date = "2024-09-25"
 compatibility_flags = [ "nodejs_compat" ]
 
+[triggers]
+crons = ["0 * * * *"]
+
 [dev]
 port = 3578
 
