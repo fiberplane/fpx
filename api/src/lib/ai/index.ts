@@ -259,7 +259,7 @@ function createErrorMessage(error: unknown) {
 }
 
 // NOTE - Copy-pasted from frontend
-function hasValidAiConfig(settings: Settings) {
+export function hasValidAiConfig(settings: Settings) {
   const provider = settings.aiProvider;
   switch (provider) {
     // HACK - Special logic for OpenAI to support someone who has set a baseUrl

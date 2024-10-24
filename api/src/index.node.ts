@@ -13,10 +13,11 @@ import {
   USER_PROJECT_ROOT_DIR,
 } from "./constants.js";
 import * as schema from "./db/schema.js";
+import { hasValidAiConfig } from "./lib/ai/index.js";
 import { getTSServer } from "./lib/expand-function/tsserver/index.js";
 import { getAuthServer } from "./lib/fp-services/server.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
-import { getSetting } from "./lib/settings/index.js";
+import { getInferenceConfig, getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
 import * as webhonc from "./lib/webhonc/index.js";
 import logger from "./logger.js";
@@ -103,8 +104,9 @@ if (proxyRequestsEnabled ?? false) {
 }
 
 // check settings if ai is enabled, and proactively start the typescript language server
-const aiEnabled = await getSetting(db, "aiEnabled");
-if (aiEnabled ?? false) {
+const inferenceConfig = await getInferenceConfig(db);
+const aiEnabled = inferenceConfig ? hasValidAiConfig(inferenceConfig) : false;
+if (aiEnabled) {
   logger.debug(
     "AI Request Generation enabled. Starting typescript language server",
   );
