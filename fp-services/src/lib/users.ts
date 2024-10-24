@@ -5,7 +5,7 @@ import { type DBSchema, usersTable } from "../db";
 /**
  * Upserts a user in the database.
  * If the user exists, it simply updates the email.
- * If not, it inserts a new user and gives them 50 aiRequestCredits.
+ * If not, it inserts a new user and gives them 100 aiRequestCredits.
  */
 export async function upsertUser(
   db: DrizzleD1Database<DBSchema>,
@@ -15,7 +15,7 @@ export async function upsertUser(
     .insert(usersTable)
     .values({
       ...user,
-      aiRequestCredits: 50,
+      aiRequestCredits: 100,
     })
     .onConflictDoUpdate({
       target: usersTable.githubUsername,
