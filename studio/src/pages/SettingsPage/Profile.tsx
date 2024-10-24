@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { FP_SERVICES_LOGIN_URL } from "@/constants";
 import { useLogout, useUserInfo } from "@/queries";
 import { cn } from "@/utils";
@@ -90,28 +91,47 @@ export function RequestCreditsItem({
   const value =
     credits !== undefined ? (
       <>
-        {credits} requests remaining{" "}
+        {credits} requests remaining
+        {credits === 100 ? (
+          <>
+            {" "}
+            <span className="italic">&mdash; go make some requests!</span>
+          </>
+        ) : null}{" "}
         <span className="text-muted-foreground inline-block ml-1">
-          (refreshed daily)
+          (refreshes daily)
         </span>
       </>
     ) : (
       "N/A"
     );
-  return <ProfileItem icon="lucide:zap" label="AI Requests" value={value} />;
+  return (
+    <ProfileItem icon="lucide:zap" label="AI Requests" value={value}>
+      {typeof credits === "number" ? (
+        <Progress className="mt-2" value={credits} />
+      ) : null}
+    </ProfileItem>
+  );
 }
 
 export function ProfileItem({
   icon,
   label,
   value,
-}: { icon: string; label: string; value: React.ReactNode }) {
+  children,
+}: {
+  icon: string;
+  label: string;
+  value: React.ReactNode;
+  children?: React.ReactNode;
+}) {
   return (
     <div className={cn("rounded-lg border p-4 flex items-center space-x-4")}>
       <Icon icon={icon} className="h-5 w-5 text-gray-400" />
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 flex-grow">
         <p className="text-xs font-medium text-gray-500">{label}</p>
         <p className="text-sm">{value}</p>
+        {children}
       </div>
     </div>
   );

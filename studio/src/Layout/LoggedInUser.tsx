@@ -52,14 +52,14 @@ export function LoggedInUser() {
             <>
               <span className="text-muted-foreground/80"> • </span>
               <span className="text-muted-foreground/80">
-                {user.aiRequestCredits}/50 ai requests remaining
+                {user.aiRequestCredits}/100 ai requests remaining
               </span>
             </>
           ) : (
             <>
               <span className="text-muted-foreground/80"> • </span>
               <span className="text-muted-foreground/80">
-                No AI credits remaining &mdash; credits refreshed daily
+                no ai requests remaining &mdash; refreshed daily
               </span>
             </>
           )}

@@ -41,7 +41,7 @@ app.get("/v0/auth/user", cors(), async (ctx) => {
 });
 
 /**
- * Delete user info (effectively "logout")
+ * Delete all tokens in the database (effectively "logout")
  * @TODO - Make an authenticated request to remove the user from Fiberplane Services.
  * @NOTE - This won't delete the user from our OAuth app with GitHub.
  */
