@@ -368,12 +368,12 @@ function CodeSentToAiBanner() {
         <InfoCircledIcon className="w-3.5 h-3.5" />
       </div>
       <div className="grid gap-1.5">
-        <span className="font-semibold">What FPX sends to AI providers</span>
+        <span className="font-semibold">What is sent to AI providers</span>
         <div className="grid gap-1">
           <span className="">
-            To generate inputs for HTTP requests, FPX sends the source code of
-            route handlers along with short history of recent requests. Common
-            sensitive headers are redacted by default.
+            To generate inputs for HTTP requests, Fiberplane sends the source
+            code of route handlers along with short history of recent requests.
+            Common sensitive headers are redacted by default.
           </span>
         </div>
       </div>
