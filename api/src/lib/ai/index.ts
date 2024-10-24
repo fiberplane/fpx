@@ -90,15 +90,6 @@ export async function generateRequestWithAiProvider({
     return { data: null, error: { message: "AI provider is not set" } };
   }
 
-  if (!aiProviderConfigurations || !aiProviderConfigurations[aiProvider]) {
-    return {
-      data: null,
-      error: { message: "AI provider is not configured properly" },
-    };
-  }
-
-  const providerConfig = aiProviderConfigurations[aiProvider];
-
   if (aiProvider === "fp") {
     if (!fpApiKey) {
       return {
@@ -119,6 +110,15 @@ export async function generateRequestWithAiProvider({
       path,
     });
   }
+
+  if (!aiProviderConfigurations || !aiProviderConfigurations[aiProvider]) {
+    return {
+      data: null,
+      error: { message: "AI provider is not configured properly" },
+    };
+  }
+
+  const providerConfig = aiProviderConfigurations[aiProvider];
 
   const provider = configureProvider(aiProvider, providerConfig);
 
@@ -287,6 +287,9 @@ export function hasValidAiConfig(settings: Settings) {
       const ollama = settings.aiProviderConfigurations?.ollama;
       const model = ollama?.model;
       return !!model;
+    }
+    case "fp": {
+      return true;
     }
     default:
       return false;

@@ -13,13 +13,25 @@ export function Profile({ settings: _settings }: { settings: Settings }) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium">User Profile</h3>
+          <h3 className="text-lg font-medium">Your Account</h3>
         </div>
-        <div className="bg-primary/20 text-blue-300/90 text-sm px-6 py-8 rounded-lg shadow-md">
-          <h4 className="font-semibold mb-3">Anonymous User</h4>
+        <div>
+          <ProfileItem
+            icon="lucide:github"
+            label="GitHub Username"
+            value={
+              <span className="text-muted-foreground italic">
+                not logged in
+              </span>
+            }
+          />
+        </div>
+        <div className="bg-primary/10 text-blue-300/90 text-sm px-6 py-8 rounded-lg shadow-md">
+          <h4 className="font-semibold mb-3">Let's get acquainted</h4>
           <p className="mb-4">
-            We're adding features to make it easier to use AI in your workflows.
-            Log in with GitHub to get 50 free AI generated requests per day.
+            We're adding features to make it easier to use AI in your api
+            testing workflows. Log in with GitHub to get 100 free AI generated
+            requests per day.
           </p>
           <Button
             className="bg-blue-600 text-white w-full py-2 rounded-md"
@@ -64,31 +76,42 @@ export function Profile({ settings: _settings }: { settings: Settings }) {
           label="GitHub Username"
           value={user.githubUsername}
         />
-        <ProfileItem
-          icon="lucide:zap"
-          label="AI Request Credits"
-          value={
-            user.aiRequestCredits !== undefined
-              ? `${user.aiRequestCredits} credits`
-              : "N/A"
-          }
-        />
+        <RequestCreditsItem credits={user.aiRequestCredits} />
       </div>
     </div>
   );
+}
+
+export function RequestCreditsItem({
+  credits,
+}: {
+  credits?: number;
+}) {
+  const value =
+    credits !== undefined ? (
+      <>
+        {credits} requests remaining{" "}
+        <span className="text-muted-foreground inline-block ml-1">
+          (refreshed daily)
+        </span>
+      </>
+    ) : (
+      "N/A"
+    );
+  return <ProfileItem icon="lucide:zap" label="AI Requests" value={value} />;
 }
 
 export function ProfileItem({
   icon,
   label,
   value,
-}: { icon: string; label: string; value: string }) {
+}: { icon: string; label: string; value: React.ReactNode }) {
   return (
     <div className={cn("rounded-lg border p-4 flex items-center space-x-4")}>
       <Icon icon={icon} className="h-5 w-5 text-gray-400" />
-      <div>
-        <p className="text-sm font-medium text-gray-500">{label}</p>
-        <p className="text-base">{value}</p>
+      <div className="flex flex-col gap-1">
+        <p className="text-xs font-medium text-gray-500">{label}</p>
+        <p className="text-sm">{value}</p>
       </div>
     </div>
   );

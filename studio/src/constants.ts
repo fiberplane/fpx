@@ -1,4 +1,5 @@
 // NOTE - Change this value to http://localhost:3578/github to test against locally running fp-services
+// export const FP_SERVICES_LOGIN_URL = "http://localhost:3578/github"
 export const FP_SERVICES_LOGIN_URL =
   "https://fp-services.mies.workers.dev/github";
 

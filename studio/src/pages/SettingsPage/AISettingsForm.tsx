@@ -403,7 +403,8 @@ function FiberplaneSection({ user }: { user?: UserInfo | null }) {
         <span className="font-semibold">Connect to Fiberplane</span>
         <div className="grid gap-1">
           <span className="text-muted-foreground">
-            Log in with GitHub to get up and running with AI generated requests.
+            Log in with GitHub to get up and running with 100 AI generated
+            requests per day.
           </span>
         </div>
         <Button
