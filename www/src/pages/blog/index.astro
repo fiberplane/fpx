@@ -4,8 +4,25 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 
 const postsUnsorted = await getCollection("blog");
 const postsSortedByDateDesc = postsUnsorted.toSorted(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );
+
+const colorVariables = [
+  "--sl-color-blue",
+  "--sl-color-green",
+  "--sl-color-orange",
+  "--sl-color-purple",
+  "--sl-color-red"
+];
+
+function getColorValueBasedOnContent(content: string) {
+  let result = 0;
+  for (let index = 0; index < content.length; index++) {
+    result += content.codePointAt(index) ?? 1;
+  }
+
+  return colorVariables[result % colorVariables.length];
+}
 ---
 
 <StarlightPage
@@ -18,17 +35,32 @@ const postsSortedByDateDesc = postsUnsorted.toSorted(
   <ul class="blog-post-list">
     {
       postsSortedByDateDesc.map((post) => (
-        <li>
+        <li class="blog-post">
           <h4>
             <a href={`/blog/${post.slug}`}>{post.data.title}</a>
           </h4>
-          <span class="post-date">
+
+          <div class="date">
             {new Date(post.data.date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric"
+              year: "2-digit",
+              month: "2-digit",
+              day: "2-digit"
             })}
-          </span>
+          </div>
+
+          <ul class="tags">
+            {post.data.tags.toSorted().map((tag) => {
+              const colorVariable = getColorValueBasedOnContent(tag);
+
+              return (
+                <li>
+                  <span style={`--color-tag: var(${colorVariable});`}>
+                    {tag.toLowerCase()}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </li>
       ))
     }
@@ -36,24 +68,62 @@ const postsSortedByDateDesc = postsUnsorted.toSorted(
 </StarlightPage>
 
 <style>
-  .blog-post-list h4 > a:hover {
-    text-decoration: none;
+  ul.blog-post-list {
     color: var(--sl-color-accent);
-  }
-  ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  ul li {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-  ul h4 {
-    margin: 0;
-  }
-  .post-date {
-    margin-left: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+
+    &,
+    .tags {
+      list-style: none;
+      padding: 0;
+    }
+
+    li.blog-post {
+      display: grid;
+      grid: "title author date" auto "tags tags date" auto / auto auto 1fr;
+      gap: 0.5rem;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+
+      h4 {
+        font-size: 1rem;
+        grid-area: title;
+        margin: 0;
+      }
+
+      .date {
+        grid-area: date;
+        margin: 0;
+        align-self: start;
+        justify-self: end;
+        line-height: 1;
+      }
+
+      ul.tags {
+        grid-area: tags;
+        margin: 0;
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+
+        li {
+          margin: 0;
+        }
+
+        li span {
+          line-height: 1;
+          background: hsl(from var(--color-tag) h s l / 0.025);
+          border: var(--color-tag) 1px solid;
+          color: var(--color-tag);
+
+          font-size: 0.875rem;
+          padding: 0.125rem 0.25rem;
+          border-radius: 0.25rem;
+        }
+      }
+    }
   }
 </style>
