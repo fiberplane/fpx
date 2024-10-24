@@ -41,7 +41,7 @@ export function LoggedInUser() {
             variant="ghost"
             size="icon"
             className="p-0.5 h-6 w-6"
-            onClick={setSettingsOpen}
+            onClick={() => setSettingsOpen(true)}
           >
             <Icon icon="lucide:circle-user" className={cn("w-3.5 h-3.5")} />
           </Button>

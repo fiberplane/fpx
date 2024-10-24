@@ -49,11 +49,11 @@ export function BottomBar() {
             <SettingsMenu setSettingsOpen={setSettingsOpen} />
             <LoggedInUser />
           </div>
+          <FloatingSidePanel />
           <SettingsScreen
             settingsOpen={settingsOpen}
             setSettingsOpen={setSettingsOpen}
           />
-          <FloatingSidePanel />
         </div>
 
         <div className="flex items-center gap-2">

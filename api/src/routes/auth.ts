@@ -22,6 +22,8 @@ app.get("/v0/auth/user", cors(), async (ctx) => {
     .orderBy(desc(schema.tokens.createdAt))
     .limit(1);
 
+  console.log("token", token);
+
   if (!token) {
     return ctx.json(null);
   }

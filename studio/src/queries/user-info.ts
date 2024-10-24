@@ -10,6 +10,8 @@ const UserInfoSchema = z.object({
   aiRequestCredits: z.number().optional(),
 });
 
+export type UserInfo = z.infer<typeof UserInfoSchema>;
+
 // type UserInfo = z.infer<typeof UserInfoSchema>;
 
 const USER_INFO_QUERY_KEY = "userInfo";

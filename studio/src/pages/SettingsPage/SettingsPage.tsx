@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useFetchSettings } from "@/queries";
+import { type UserInfo, useFetchSettings, useUserInfo } from "@/queries";
 import { cn } from "@/utils";
 import type { Settings } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
@@ -11,6 +11,7 @@ import { Profile } from "./Profile";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
 
 export function SettingsPage() {
+  const user = useUserInfo();
   const { data, isPending, isError } = useFetchSettings();
 
   return (
@@ -26,7 +27,7 @@ export function SettingsPage() {
       ) : isError ? (
         <div>Error Loading Settings</div>
       ) : (
-        <SettingsLayout settings={data} />
+        <SettingsLayout settings={data} user={user} />
       )}
     </div>
   );
@@ -37,8 +38,11 @@ const AI_TAB = "AI";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
 const FPX_WORKER_PROXY_TAB = "Production Ingestion";
 
-function SettingsLayout({ settings }: { settings: Settings }) {
-  const [activeTab, setActiveTab] = useState(PROFILE_TAB);
+function SettingsLayout({
+  settings,
+  user,
+}: { settings: Settings; user?: UserInfo | null }) {
+  const [activeTab, setActiveTab] = useState(user ? PROFILE_TAB : AI_TAB);
 
   return (
     <Tabs
@@ -67,6 +71,7 @@ function SettingsLayout({ settings }: { settings: Settings }) {
           <Icon icon="lucide:user" className={cn("w-3.5 h-3.5 mr-1.5")} />
           You
         </TabsTrigger>
+
         <TabsTrigger
           className="whitespace-nowrap justify-start text-left pl-0 pr-4"
           value={AI_TAB}
