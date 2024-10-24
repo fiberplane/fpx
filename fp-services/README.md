@@ -8,6 +8,7 @@ Makes use of GitHub OAuth and JWT-based authentication using Hono, Drizzle ORM, 
 - User management with SQLite database (using Cloudflare D1)
 - JWT token generation and verification
 - RSA key pair generation and management
+- Scheduled job to refresh AI credits for all users on the daily
 
 ## Prerequisites
 
@@ -60,6 +61,15 @@ Makes use of GitHub OAuth and JWT-based authentication using Hono, Drizzle ORM, 
   * **USE `127.0.0.1` as the host**, do NOT use `localhost`. The hono GitHub OAuth middleware sets a cookie in order to verify the response.
 
 - Log in with GitHub
+
+
+#### Testing the Scheduled Job
+
+You need to launch wrangler with a special flag to test scheduled jobs. 
+Then you can hit the endpoint manually with curl.
+
+- `pnpm dev:cron`
+- `curl "http://localhost:3578/__scheduled?cron=*+*+*+*+*"`
 
 ## API Endpoints
 
