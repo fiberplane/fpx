@@ -3,6 +3,7 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
+    str::FromStr,
 };
 use tree_sitter::{Node, Parser, Tree, TreeCursor};
 use tree_sitter_typescript::LANGUAGE_TYPESCRIPT;
@@ -168,20 +169,90 @@ fn detect_imports(path: &Path, cursor: &mut TreeCursor, source: &str, imports: &
     }
 }
 
-fn relative_import_to_absolute_path(path: &Path, import_path: &str) -> PathBuf {
-    let path = if path.to_str().unwrap().ends_with(".ts") {
+fn relative_import_to_absolute_path(path: &Path, import_path_str: &str) -> PathBuf {
+    let path_str = path.to_str().unwrap();
+    let path = if path_str.ends_with(".ts")
+        || path_str.ends_with(".tsx")
+        || path_str.ends_with(".js")
+        || path_str.ends_with(".jsx")
+    {
         path.parent().unwrap()
     } else {
         path
     };
 
-    // TODO: Figure out the correct path
-    let mut import_path = import_path.replace("./", "");
-    import_path.push_str(".ts");
+    let mut import_path = PathBuf::from_str(import_path_str).unwrap();
+    if import_path.is_absolute() {
+        if import_path.exists() {
+            import_path
+        } else {
+            panic!(
+                "absolute import path does not exists: {}",
+                import_path.to_str().unwrap()
+            );
+        }
+    } else {
+        import_path.push(path);
+        import_path.push(import_path_str.replace("./", ""));
+        if import_path.is_dir() {
+            import_path.push("/index.ts");
+            if import_path.exists() {
+                return import_path;
+            }
 
-    let absolute_path = path.join(import_path).to_str().unwrap().into();
+            import_path.pop();
+            import_path.push("/index.tsx");
+            if import_path.exists() {
+                return import_path;
+            }
 
-    absolute_path
+            import_path.pop();
+            import_path.push("/index.js");
+            if import_path.exists() {
+                return import_path;
+            }
+
+            import_path.pop();
+            import_path.push("/index.jsx");
+            if import_path.exists() {
+                return import_path;
+            }
+
+            panic!("dunno");
+        } else {
+            import_path.set_extension("ts");
+            if import_path.exists() {
+                return import_path;
+            }
+
+            import_path.set_extension("tsx");
+            if import_path.exists() {
+                return import_path;
+            }
+
+            import_path.set_extension("js");
+            if import_path.exists() {
+                return import_path;
+            }
+
+            import_path.set_extension("jsx");
+            if import_path.exists() {
+                return import_path;
+            }
+
+            panic!("dunno");
+        }
+    }
+
+    // println!("{:?}", import_path);
+
+    // // TODO: Figure out the correct path
+    // let mut import_path = import_path_str.replace("./", "");
+    // import_path.push_str(".ts");
+    //
+    // let absolute_path = path.join(import_path).to_str().unwrap().into();
+    //
+    // absolute_path
 }
 
 pub fn detect_out_of_scope_identifier(
