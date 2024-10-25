@@ -114,7 +114,10 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const { togglePanel } = useRequestorStore("togglePanel");
+  const { togglePanel, setAIDropdownOpen } = useRequestorStore(
+    "togglePanel",
+    "setAIDropdownOpen",
+  );
 
   useHotkeys(
     "mod+g",
@@ -129,6 +132,9 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
           });
           fillInRequest();
         }
+      } else {
+        e.preventDefault();
+        setAIDropdownOpen(true);
       }
     },
     {
@@ -141,7 +147,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     () => {
       togglePanel("logsPanel");
     },
-    { description: "Open logs panel" },
+    { description: "Open logs panel", ignoreSelector: "[contenteditable]" },
   );
 
   useKeySequence(
@@ -149,7 +155,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     () => {
       togglePanel("timelinePanel");
     },
-    { description: "Open timeline panel" },
+    { description: "Open timeline panel", ignoreSelector: "[contenteditable]" },
   );
 
   useKeySequence(
@@ -159,6 +165,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     },
     {
       description: "Open AI assistant panel",
+      ignoreSelector: "[contenteditable]",
     },
   );
 
@@ -262,8 +269,8 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         {bottomPanel && (
           <>
             <ResizableHandle
-              hitAreaMargins={{ coarse: 20, fine: 20 }}
-              className="mb-2 h-0"
+              hitAreaMargins={{ coarse: 15, fine: 10 }}
+              className="mb-0.5 h-0"
             />
             <ResizablePanel order={2} id="bottom-panel">
               <div

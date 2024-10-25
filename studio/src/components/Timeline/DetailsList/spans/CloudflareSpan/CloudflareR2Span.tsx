@@ -23,7 +23,13 @@ import { CfBindingOverview, CfResultAndError, KeyBadge } from "./shared";
  *
  * https://developers.cloudflare.com/r2/api/workers/workers-api-reference/#bucket-method-definitions
  */
-export function CloudflareR2Span({ attributes }: Pick<OtelSpan, "attributes">) {
+export function CloudflareR2Span({
+  attributes,
+  metadata,
+}: {
+  attributes: OtelSpan["attributes"];
+  metadata: React.ReactNode;
+}) {
   const method = getString(attributes[CF_BINDING_METHOD]);
   const args = getString(attributes.args);
   const r2Args = useCloudflareR2Args(args, method);
@@ -41,6 +47,9 @@ export function CloudflareR2Span({ attributes }: Pick<OtelSpan, "attributes">) {
           </CollapsibleSubSection>
         )}
         <CfResultAndError result={result} error={error} />
+        <CollapsibleSubSection heading="Span Metadata" defaultCollapsed={true}>
+          {metadata}
+        </CollapsibleSubSection>
       </div>
     </div>
   );

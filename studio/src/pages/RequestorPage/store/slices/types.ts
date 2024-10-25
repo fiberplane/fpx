@@ -42,6 +42,9 @@ export interface RequestResponseSlice {
   setActiveHistoryResponseTraceId: (traceId: string | null) => void;
 
   activeResponse: RequestorActiveResponse | null;
+  /** A banner that tells the user they can view logs for a request */
+  showViewLogsBanner: boolean;
+  setShowViewLogsBanner: (showViewLogsBanner: boolean) => void;
 
   showResponseBodyFromHistory: (traceId: string) => void;
   clearResponseBodyFromHistory: () => void;
@@ -78,6 +81,10 @@ export interface WebsocketSlice {
 }
 
 export interface UISlice {
+  settingsOpen: boolean;
+  setSettingsOpen: (open: boolean) => void;
+  aiDropdownOpen: boolean;
+  setAIDropdownOpen: (open: boolean) => void;
   sidePanel: PanelState;
   bottomPanels: BOTTOM_PANEL_NAMES[];
   bottomPanelIndex: undefined | number;

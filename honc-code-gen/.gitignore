@@ -1,0 +1,25 @@
+node_modules
+dist
+.dev.vars
+.prod.vars
+honc.db
+
+# Change them to your taste:
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# mac
+.DS_Store
+
+# db
+mizu.db
+mizu-*.db
+fpx.db
+fpx-*.db
+
+# NOTE - usually it is safe to keep .neon in version control
+#        however, since everyone will be using their own database,
+#        it's better to make sure it's not checked in
+.neon

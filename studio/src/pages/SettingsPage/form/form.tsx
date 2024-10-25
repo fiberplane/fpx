@@ -1,20 +1,31 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useUpdateSettings } from "@/queries";
 import { errorHasMessage } from "@/utils";
-import {
-  CLAUDE_3_5_SONNET,
-  GPT_4o,
-  type Settings,
-  SettingsSchema,
-} from "@fiberplane/fpx-types";
+import { type Settings, SettingsSchema } from "@fiberplane/fpx-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 const DEFAULT_VALUES = {
   aiEnabled: false,
-  aiProviderType: "openai",
-  openaiModel: GPT_4o,
-  anthropicModel: CLAUDE_3_5_SONNET,
+  aiProvider: "openai",
+  aiProviderConfigurations: {
+    openai: {
+      model: "gpt-4o",
+      apiKey: "",
+    },
+    anthropic: {
+      model: "claude-3-5-sonnet-20240620",
+      apiKey: "",
+    },
+    mistral: {
+      model: "mistral-large-latest",
+      apiKey: "",
+    },
+    ollama: {
+      model: "llama3.1",
+      apiKey: "",
+    },
+  },
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",
 } satisfies Settings;
@@ -24,11 +35,16 @@ export function useSettingsForm(settings: Settings) {
 
   const { mutate: updateSettings } = useUpdateSettings();
 
+  // TODO - Derive default values from the fiberplane types package
   const form = useForm<Settings>({
     resolver: zodResolver(SettingsSchema),
     defaultValues: {
       ...DEFAULT_VALUES,
       ...settings,
+      aiProviderConfigurations: {
+        ...DEFAULT_VALUES.aiProviderConfigurations,
+        ...settings.aiProviderConfigurations,
+      },
     },
   });
 

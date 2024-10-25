@@ -16,11 +16,13 @@ import {
 import { isWsRequest } from "../types";
 import type { WebSocketState } from "../useMakeWebsocketRequest";
 import { FailedRequest, ResponseBody } from "./ResponseBody";
+import { ViewLogsBanner } from "./ViewLogsBanner";
 import {
   FailedWebsocket,
   NoWebsocketConnection,
   WebsocketMessages,
 } from "./Websocket";
+import { useIgnoreViewLogsBanner } from "./useViewLogsBanner";
 
 type Props = {
   tracedResponse?: ProxiedRequestResponse;
@@ -38,12 +40,25 @@ export const ResponsePanel = memo(function ResponsePanel({
     visibleResponsePanelTabs,
     activeResponsePanelTab,
     setActiveResponsePanelTab,
+    showViewLogsBanner,
+    setShowViewLogsBanner,
   } = useRequestorStore(
     "activeResponse",
     "visibleResponsePanelTabs",
     "activeResponsePanelTab",
     "setActiveResponsePanelTab",
+    "showViewLogsBanner",
+    "setShowViewLogsBanner",
   );
+
+  // NOTE - This is kind of annoying so I commented it out for now
+  //
+  // useEffect(() => {
+  //   if (tracedResponse) {
+  //     setShowViewLogsBanner(true);
+  //   }
+  // }, [tracedResponse, setShowViewLogsBanner]);
+
   const shouldShowResponseTab = (tab: ResponsePanelTab): boolean => {
     return visibleResponsePanelTabs.includes(tab);
   };
@@ -64,6 +79,9 @@ export const ResponsePanel = memo(function ResponsePanel({
     : responseToRender?.app_responses?.responseHeaders;
 
   const shouldShowMessages = shouldShowResponseTab("messages");
+
+  const { ignoreViewLogsBanner, setIgnoreViewLogsBanner } =
+    useIgnoreViewLogsBanner();
 
   return (
     <div className="overflow-x-hidden overflow-y-auto h-full relative">
@@ -132,6 +150,12 @@ export const ResponsePanel = memo(function ResponsePanel({
               )
             }
           >
+            {/** NOT IN USE YET */}
+            <ViewLogsBanner
+              showViewLogsBanner={!ignoreViewLogsBanner && !!showViewLogsBanner}
+              setShowViewLogsBanner={setShowViewLogsBanner}
+              setIgnoreViewLogsBanner={setIgnoreViewLogsBanner}
+            />
             <div className={cn("grid grid-rows-[auto_1fr]")}>
               <ResponseBody
                 response={responseToRender}

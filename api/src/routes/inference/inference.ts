@@ -1,11 +1,9 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import OpenAI from "openai";
 import { z } from "zod";
 import { USER_PROJECT_ROOT_DIR } from "../../constants.js";
 import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
-import { cleanPrompt } from "../../lib/ai/prompts.js";
 import { expandFunction } from "../../lib/expand-function/index.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
@@ -63,6 +61,8 @@ app.post(
       );
     }
 
+    const provider = inferenceConfig.aiProvider;
+
     // Expand out of scope identifiers in the handler function, to add as additional context
     //
     // Uncomment console.time to see how long this takes
@@ -70,10 +70,13 @@ app.post(
     //
     // console.time("Handler and Middleware Expansion");
     const [handlerContextPerformant, middlewareContextPerformant] =
-      await expandHandler(handler, middleware ?? []).catch((error) => {
-        logger.error(`Error expanding handler and middleware: ${error}`);
-        return [null, null];
-      });
+      // HACK - Ditch the expand handler for ollama for now, it overwhelms llama 3.1-8b
+      provider !== "ollama"
+        ? await expandHandler(handler, middleware ?? []).catch((error) => {
+            logger.error(`Error expanding handler and middleware: ${error}`);
+            return [null, null];
+          })
+        : [null, null];
     // console.timeEnd("Handler and Middleware Expansion");
 
     // Generate the request
@@ -97,66 +100,6 @@ app.post(
 
     return ctx.json({
       request: parsedArgs,
-    });
-  },
-);
-
-app.post(
-  "/v0/analyze-error",
-  cors(),
-  zValidator(
-    "json",
-    z.object({ errorMessage: z.string(), handlerSourceCode: z.string() }),
-  ),
-  async (ctx) => {
-    const { handlerSourceCode, errorMessage } = ctx.req.valid("json");
-
-    const db = ctx.get("db");
-    const inferenceConfig = await getInferenceConfig(db);
-    if (!inferenceConfig) {
-      return ctx.json(
-        {
-          error: "No OpenAI configuration found",
-        },
-        403,
-      );
-    }
-    const { openaiApiKey, openaiModel } = inferenceConfig;
-    const openaiClient = new OpenAI({
-      apiKey: openaiApiKey,
-    });
-    const response = await openaiClient.chat.completions.create({
-      model: openaiModel ?? "gpt-4o", // TODO - Update this to use correct model and provider (later problem)
-      messages: [
-        {
-          role: "system",
-          content: cleanPrompt(`
-            You are a code debugging assistant for apps that use Hono (web framework),
-            Neon (serverless postgres), Drizzle (ORM), and run on Cloudflare workers.
-            You are given a function and an error message.
-            Provide a succinct suggestion to fix the error, or say "I need more context to help fix this".
-          `),
-        },
-        {
-          role: "user",
-          content: cleanPrompt(`
-            I hit the following error:
-            ${errorMessage}
-            This error originated in the following route handler for my Hono application:
-            ${handlerSourceCode}
-          `),
-        },
-      ],
-      temperature: 0,
-      max_tokens: 2048,
-    });
-
-    const {
-      choices: [{ message }],
-    } = response;
-
-    return ctx.json({
-      suggestion: message.content,
     });
   },
 );

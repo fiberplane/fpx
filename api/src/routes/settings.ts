@@ -31,10 +31,10 @@ app.post("/v0/settings", cors(), async (ctx) => {
 
   const parsedContent = SettingsSchema.parse(content);
   // Remove the stored api key if the feature is disabled
-  if (!parsedContent.aiEnabled) {
-    parsedContent.openaiApiKey = undefined;
-    parsedContent.anthropicApiKey = undefined;
-  }
+  // if (!parsedContent.aiEnabled) {
+  //   parsedContent.aiProviderConfigurations?.openai?.apiKey = "";
+  //   parsedContent.aiProviderConfigurations?.anthropic?.apiKey = "";
+  // }
 
   logger.debug("Updating settings", { content });
 

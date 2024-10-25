@@ -35,7 +35,7 @@ import {
 } from "../lib/utils.js";
 import { getWebHoncConnectionId } from "../lib/webhonc/store.js";
 import logger from "../logger.js";
-import { resolveServiceArg } from "../probe-routes.js";
+import { resolveServiceArg, routerProbe } from "../probe-routes.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -50,6 +50,16 @@ app.get("/v0/app-routes", async (ctx) => {
     baseUrl,
     routes,
   });
+});
+
+/**
+ * Allow users to manually refresh the app routes list
+ */
+app.post("/v0/refresh-app-routes", async (ctx) => {
+  const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
+  const serviceUrl = resolveServiceArg(serviceTargetArgument);
+  await routerProbe(serviceUrl);
+  return ctx.text("OK");
 });
 
 app.post(
