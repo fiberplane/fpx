@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-import { type DBSchema, usersTable } from "../db";
+import { type DBSchema, users } from "../db";
 
 /**
  * Upserts a user in the database.
@@ -9,16 +9,16 @@ import { type DBSchema, usersTable } from "../db";
  */
 export async function upsertUser(
   db: DrizzleD1Database<DBSchema>,
-  user: typeof usersTable.$inferInsert,
+  user: typeof users.$inferInsert,
 ) {
   return await db
-    .insert(usersTable)
+    .insert(users)
     .values({
       ...user,
       aiRequestCredits: 100,
     })
     .onConflictDoUpdate({
-      target: usersTable.githubUsername,
+      target: users.githubUsername,
       set: {
         email: user.email,
       },
@@ -30,10 +30,7 @@ export async function getUserById(
   db: DrizzleD1Database<DBSchema>,
   userId: number,
 ) {
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.id, userId));
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
 
   if (!user) {
     console.warn("user not found, id:", userId);
@@ -51,13 +48,13 @@ export async function decrementAiCredits(
   const decrementedCredits = user.aiRequestCredits - 1;
 
   return await db
-    .insert(usersTable)
+    .insert(users)
     .values({
       ...user,
       aiRequestCredits: decrementedCredits,
     })
     .onConflictDoUpdate({
-      target: usersTable.githubUsername,
+      target: users.githubUsername,
       set: {
         aiRequestCredits: decrementedCredits,
       },

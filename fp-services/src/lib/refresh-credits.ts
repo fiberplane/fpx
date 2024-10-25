@@ -4,7 +4,7 @@ import * as schema from "../db/schema";
 export async function refreshCredits(d1: D1Database) {
   const db = initDbConnect(d1);
   const result = await db
-    .update(schema.usersTable)
+    .update(schema.users)
     .set({
       aiRequestCredits: 100,
     })
