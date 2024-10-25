@@ -23,5 +23,3 @@ export const GenerateRequestOptionsSchema = z.object({
 export type GenerateRequestOptions = z.infer<
   typeof GenerateRequestOptionsSchema
 >;
-
-// ... rest of the existing code ...
