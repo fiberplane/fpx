@@ -7,9 +7,6 @@ type SuccessPageProps = {
   expiresAt: string;
 };
 
-// NOTE - I could not figure out the proper type for `children` on a JSX element.
-//        (Hono docs uses `any` for `children`)
-//        So we are using one big page component for now.
 export const SuccessPage = ({ nonce, token, expiresAt }: SuccessPageProps) => {
   return (
     <Layout>

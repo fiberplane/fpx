@@ -1,5 +1,8 @@
 import { Style, css } from "hono/css";
 
+// NOTE - I could not figure out the proper type for `children` on a JSX element.
+//        (Hono docs uses `any` for `children`)
+//
 // biome-ignore lint/suspicious/noExplicitAny: Getting children properly typed is a pain
 export const Layout = ({ children }: { children: any }) => {
   return (
