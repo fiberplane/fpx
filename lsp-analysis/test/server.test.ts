@@ -41,7 +41,7 @@ test.each([
     console.log(
       `Duration for ${name}: ${(performance.now() - start).toFixed(4)}`,
     );
-    // expect(result).toMatchSnapshot();
+    expect(result).toMatchSnapshot();
   } finally {
     teardown();
   }
