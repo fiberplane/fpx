@@ -1,1 +1,1 @@
-export { SettingsPage } from "./SettingsPage";
+export { SettingsPage, AI_TAB } from "./SettingsPage";

@@ -82,7 +82,8 @@ export interface WebsocketSlice {
 
 export interface UISlice {
   settingsOpen: boolean;
-  setSettingsOpen: (open: boolean) => void;
+  defaultSettingsTab: string | null;
+  setSettingsOpen: (open: boolean, defaultSettingsTab?: string | null) => void;
   aiDropdownOpen: boolean;
   setAIDropdownOpen: (open: boolean) => void;
   sidePanel: PanelState;

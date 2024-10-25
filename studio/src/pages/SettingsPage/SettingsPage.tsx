@@ -5,6 +5,7 @@ import { cn } from "@/utils";
 import type { Settings } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
+import { useRequestorStore } from "../RequestorPage/store";
 import { AISettingsForm } from "./AISettingsForm";
 import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
 import { Profile } from "./Profile";
@@ -34,15 +35,34 @@ export function SettingsPage() {
 }
 
 const PROFILE_TAB = "Profile";
-const AI_TAB = "AI";
+// Exported allow us to navigate to this tab from the requestor page
+export const AI_TAB = "AI";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
 const FPX_WORKER_PROXY_TAB = "Production Ingestion";
+
+export const isValidSettingsTab = (
+  tab: string,
+): tab is
+  | typeof PROFILE_TAB
+  | typeof AI_TAB
+  | typeof PROXY_REQUESTS_TAB
+  | typeof FPX_WORKER_PROXY_TAB => {
+  return (
+    tab === PROFILE_TAB ||
+    tab === AI_TAB ||
+    tab === PROXY_REQUESTS_TAB ||
+    tab === FPX_WORKER_PROXY_TAB
+  );
+};
 
 function SettingsLayout({
   settings,
   user,
 }: { settings: Settings; user?: UserInfo | null }) {
-  const [activeTab, setActiveTab] = useState(user ? PROFILE_TAB : AI_TAB);
+  const { defaultSettingsTab } = useRequestorStore("defaultSettingsTab");
+  const settingsTabFallback = user ? PROFILE_TAB : AI_TAB;
+  const defaultTab = defaultSettingsTab ?? settingsTabFallback;
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   return (
     <Tabs
