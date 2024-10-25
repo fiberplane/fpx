@@ -19,7 +19,6 @@ export async function getUser(token: string) {
     });
 
     // NOTE - The API will return 404 for no matching user for token
-    // TODO - Delete associated token on our end
     if (response?.status === 404) {
       return null;
     }

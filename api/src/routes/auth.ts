@@ -22,14 +22,28 @@ app.get("/v0/auth/user", cors(), async (ctx) => {
     .orderBy(desc(schema.tokens.createdAt))
     .limit(1);
 
-  console.log("token", token);
-
   if (!token) {
     return ctx.json(null);
   }
 
   try {
     const user = await getUser(token.value);
+
+    if (!user) {
+      await db
+        .delete(schema.tokens)
+        .where(eq(schema.tokens.value, token.value))
+        .catch((error) => {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          logger.error(
+            "Error deleting token for user that was not found",
+            errorMessage,
+          );
+        });
+      return ctx.json(null);
+    }
+
     return ctx.json({
       ...user,
       token: token.value,
