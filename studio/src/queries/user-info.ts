@@ -1,18 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
-// Define a schema for user info
 const UserInfoSchema = z.object({
   id: z.number(),
   githubUsername: z.string(),
   email: z.string().email(),
   token: z.string(),
   aiRequestCredits: z.number().optional(),
+  expiresAt: z.string().nullable(),
 });
 
 export type UserInfo = z.infer<typeof UserInfoSchema>;
-
-// type UserInfo = z.infer<typeof UserInfoSchema>;
 
 const USER_INFO_QUERY_KEY = "userInfo";
 
@@ -36,11 +34,19 @@ export function useFetchUserInfo() {
   });
 }
 
+/**
+ * Get the user info (null or UserInfo)
+ * @returns The user info directly (no loading state)
+ */
 export function useUserInfo() {
   const { data } = useFetchUserInfo();
   return data;
 }
 
+/**
+ * Logout the user
+ * @returns A mutation to logout the user, deletes all tokens in the database
+ */
 export function useLogout() {
   const queryClient = useQueryClient();
 
@@ -56,7 +62,7 @@ export function useLogout() {
     onSuccess: () => {
       // Clear the user info from the cache
       queryClient.setQueryData([USER_INFO_QUERY_KEY], null);
-      // Optionally, invalidate the query to refetch
+      // Invalidate the query to refetch
       queryClient.invalidateQueries({ queryKey: [USER_INFO_QUERY_KEY] });
     },
   });
