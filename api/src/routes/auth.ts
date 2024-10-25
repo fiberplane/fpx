@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
@@ -35,7 +35,19 @@ app.get("/v0/auth/user", cors(), async (ctx) => {
       token: token.value,
       expiresAt: token.expiresAt,
     });
-  } catch (_error) {
+  } catch (error) {
+    if (error instanceof TokenExpiredError) {
+      logger.debug("Token expired, deleting from database");
+      // NOTE - We catch errors so as not to throw if deletion fails
+      await db
+        .delete(schema.tokens)
+        .where(eq(schema.tokens.value, token.value))
+        .catch((error) => {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          logger.error("Error deleting expired token:", errorMessage);
+        });
+    }
     return ctx.json(null);
   }
 });

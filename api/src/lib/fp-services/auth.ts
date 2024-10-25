@@ -1,4 +1,5 @@
 import { URL } from "node:url";
+import logger from "../../logger.js";
 import {
   ERROR_TYPE_INVALID_TOKEN,
   ERROR_TYPE_TOKEN_EXPIRED,
@@ -22,6 +23,23 @@ export async function getUser(token: string) {
     if (response?.status === 404) {
       return null;
     }
+
+    if (response.status === 401) {
+      const errorData = await response.json();
+      switch (errorData?.errorType) {
+        case ERROR_TYPE_UNAUTHORIZED:
+          throw new UnauthorizedError();
+        case ERROR_TYPE_INVALID_TOKEN:
+          throw new InvalidTokenError();
+        case ERROR_TYPE_TOKEN_EXPIRED:
+          throw new TokenExpiredError();
+        default:
+          throw new UnauthorizedError(
+            `Unauthorized: ${errorData?.errorType || "unknown"}`,
+          );
+      }
+    }
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -29,7 +47,9 @@ export async function getUser(token: string) {
     const verifiedToken = await response.json();
     return verifiedToken;
   } catch (error) {
-    console.error("Error verifying token:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    logger.error("Error verifying token:", errorMessage);
     throw error;
   }
 }
@@ -80,7 +100,9 @@ export async function verifyToken(token: string): Promise<unknown> {
     const verifiedToken = await response.json();
     return verifiedToken;
   } catch (error) {
-    console.error("Error verifying token:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    logger.error("Error verifying token:", errorMessage);
     throw error;
   }
 }
