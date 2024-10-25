@@ -1,4 +1,3 @@
-import { SourceReferenceManager } from "./SourceReferenceManager";
 import type {
   RouteEntry,
   RouteTree,
@@ -10,12 +9,9 @@ import type {
   TsSourceFile,
   TsType,
 } from "../types";
-import { extractReferencesFromFunctionLike } from "./functionLike";
-import {
-  findNodeAtPosition,
-  getImportTypeDefinitionFileName,
-  getNextSibling,
-} from "./utils";
+import { SourceReferenceManager } from "./SourceReferenceManager";
+import { createSourceReferenceForNode } from "./extractReferences";
+import { findNodeAtPosition, getImportTypeDefinitionFileName } from "./utils";
 
 export type SearchContext = {
   sourceReferenceManager: SourceReferenceManager;
@@ -27,7 +23,7 @@ export type SearchContext = {
   getFile: (fileName: string) => TsSourceFile | undefined;
 };
 
-export function findHonoRoutes(
+export function extractRouteTrees(
   server: TsLanguageService,
   ts: TsType,
 ): {
@@ -40,10 +36,7 @@ export function findHonoRoutes(
     throw new Error("Program not found");
   }
 
-  const checker = program.getTypeChecker();
-
   const apps: Array<RouteTree> = [];
-
   const files = program.getSourceFiles();
   const fileMap: Record<string, TsSourceFile> = {};
   for (const file of files) {
@@ -59,7 +52,9 @@ export function findHonoRoutes(
     addRoute: (route: RouteTree) => {
       apps.push(route);
     },
-    getFile: (fileName: string) => fileMap[fileName],
+    getFile: (fileName: string) => {
+      return fileMap[fileName];
+    },
   };
 
   for (const sourceFile of files) {
@@ -75,7 +70,6 @@ export function findHonoRoutes(
     errorCount: context.errorCount,
   };
 }
-
 
 function visit(node: TsNode, fileName: string, context: SearchContext) {
   const { ts, program, addRoute } = context;
@@ -101,15 +95,18 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
       };
 
       findRoutes(current, node.parent.parent.parent, context);
-      addRoute(current);;
-      // apps.push(current);
+      addRoute(current);
     }
   }
 
   ts.forEachChild(node, (child) => visit(child, fileName, context));
 }
 
-function findRoutes(routeTree: RouteTree, scope: TsNode, context: SearchContext) {
+function findRoutes(
+  routeTree: RouteTree,
+  scope: TsNode,
+  context: SearchContext,
+) {
   const honoInstanceName = routeTree.name;
   const { ts, program, server, sourceReferenceManager, getFile } = context;
   function visit(node: TsNode) {
@@ -137,19 +134,21 @@ function findRoutes(routeTree: RouteTree, scope: TsNode, context: SearchContext)
 
         for (const arg of args) {
           if (ts.isArrowFunction(arg)) {
-            const source = extractReferencesFromFunctionLike(arg, context);
+            const source = createSourceReferenceForNode(arg, context);
             if (source) {
               entry.sources.push(source);
             }
           } else if (ts.isCallExpression(arg)) {
+            // ts.Cache
             const sourceFile = arg.getSourceFile();
             const position = sourceFile.getLineAndCharacterOfPosition(
               arg.getStart(),
             );
-            const references = server.getReferencesAtPosition(
-              sourceFile.fileName,
-              arg.getStart(),
-            );
+            const references: Array<TsReferenceEntry> | undefined =
+              server.getReferencesAtPosition(
+                sourceFile.fileName,
+                arg.getStart(),
+              ) || [];
 
             const source: SourceReference = {
               character: position.character,
@@ -161,8 +160,7 @@ function findRoutes(routeTree: RouteTree, scope: TsNode, context: SearchContext)
             };
             sourceReferenceManager.addReference(
               source.fileName,
-              source.line,
-              source.character,
+              arg.getStart(),
               source,
             );
             // Immediately add the source to the entry
@@ -173,6 +171,7 @@ function findRoutes(routeTree: RouteTree, scope: TsNode, context: SearchContext)
             while (ref) {
               const currentFile = getFile(ref.fileName);
               if (!currentFile) {
+                console.log("no file found", ref.fileName);
                 continue;
               }
 
@@ -182,9 +181,8 @@ function findRoutes(routeTree: RouteTree, scope: TsNode, context: SearchContext)
                 ref.textSpan.start,
               );
               const moduleResult = getImportTypeDefinitionFileName(
-                ts,
                 refNode,
-                program,
+                context,
               );
 
               if (moduleResult) {
@@ -193,8 +191,7 @@ function findRoutes(routeTree: RouteTree, scope: TsNode, context: SearchContext)
                 if (isExternalLibrary) {
                   context.sourceReferenceManager.addModuleToReference(
                     sourceFile.fileName,
-                    position.line,
-                    position.character,
+                    arg.getStart(),
                     dependency,
                   );
                 }

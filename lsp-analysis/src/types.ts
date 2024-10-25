@@ -6,18 +6,24 @@ export const relativeResolve = relative.sync;
 
 // Alias some exported typescript types
 export type TsType = typeof bundledTs;
-export type TsSourceFile = bundledTs.SourceFile;
+export type TsArrowFunction = bundledTs.ArrowFunction;
+export type TsCallExpression = bundledTs.CallExpression;
+export type TsCompilerOptions = bundledTs.CompilerOptions;
+export type TsDeclaration = bundledTs.Declaration;
+export type TsExportSpecifier = bundledTs.ExportSpecifier;
+export type TsFunctionDeclaration = bundledTs.FunctionDeclaration;
 export type TsLanguageService = bundledTs.LanguageService;
-export type TsNode = bundledTs.Node;
 export type TsLanguageServiceHost = bundledTs.LanguageServiceHost;
 export type TsLineAndCharacter = bundledTs.LineAndCharacter;
-export type TsStringLiteral = bundledTs.StringLiteral;
-export type TsReferenceEntry = bundledTs.ReferenceEntry;
-export type TsProgram = bundledTs.Program;
-export type TsCompilerOptions = bundledTs.CompilerOptions;
 export type TsModuleResolutionHost = bundledTs.ModuleResolutionHost;
-export type TsArrowFunction = bundledTs.ArrowFunction;
-export type TsFunctionDeclaration = bundledTs.FunctionDeclaration;
+export type TsNode = bundledTs.Node;
+export type TsProgram = bundledTs.Program;
+export type TsReferenceEntry = bundledTs.ReferenceEntry;
+export type TsSourceFile = bundledTs.SourceFile;
+export type TsStringLiteral = bundledTs.StringLiteral;
+export type TsSyntaxKind = bundledTs.SyntaxKind;
+export type TsTypeAliasDeclaration = bundledTs.TypeAliasDeclaration;
+export type TsVariableDeclaration = bundledTs.VariableDeclaration;
 
 export type RouteTree = {
   name: string;

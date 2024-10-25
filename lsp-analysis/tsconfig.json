@@ -2,5 +2,11 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-  } 
+    "noEmit": true,
+    "skipLibCheck": true,
+    "target": "ESNext" 
+  },
+  "exclude": [
+    "test/test-case"
+  ]
 }

@@ -1,12 +1,15 @@
 import { measure } from "@fiberplane/hono-otel";
-import { sleep } from ".";
-import type { User } from "./types";
+import type { User } from "../types";
+import { sleep } from "../utils";
+
+const DEFAULT_USER_NAME = "John Doe";
+const DEFAULT_EMAIL = "john@doe.com";
 
 export const getUser = measure("getUser", async () => {
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await sleep(100);
   const value: User = {
-    name: "John Doe",
-    email: "john@doe.com",
+    name: DEFAULT_USER_NAME,
+    email: DEFAULT_EMAIL,
   };
   return value;
 });

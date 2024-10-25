@@ -1,27 +1,28 @@
+import type { SearchContext } from ".";
 import type {
   ModuleReference,
   TsModuleResolutionHost,
   TsNode,
-  TsProgram,
   TsSourceFile,
   TsType,
 } from "../types";
 
-export function getNextSibling(node: TsNode): TsNode | undefined {
-  const parent = node.parent;
-  if (!parent) {
-    return undefined;
-  }
+// export function getNextSibling(node: TsNode): TsNode | undefined {
+//   const parent = node.parent;
+//   if (!parent) {
+//     return undefined;
+//   }
 
-  const children = parent.getChildren();
-  for (let i = 0; i < children.length; i++) {
-    if (children[i] === node && i + 1 < children.length) {
-      return children[i + 1];
-    }
-  }
+//   const children = parent.getChildren();
+//   for (let i = 0; i < children.length; i++) {
+//     if (children[i] === node && i + 1 < children.length) {
+//       return children[i + 1];
+//     }
+//   }
 
-  return undefined;
-}
+//   return undefined;
+// }
+
 export function findNodeAtPosition(
   ts: TsType,
   sourceFile: TsSourceFile,
@@ -79,12 +80,12 @@ export function inspectNode(node: TsNode, ts: TsType) {
 }
 
 export function getImportTypeDefinitionFileName(
-  ts: TsType,
   node: TsNode,
-  program: TsProgram,
+  context: SearchContext,
 ):
   | (ModuleReference & { isExternalLibrary: boolean; location: string })
   | undefined {
+  const { ts, program } = context;
   const checker = program.getTypeChecker();
   const symbol = checker.getSymbolAtLocation(node);
 
@@ -107,7 +108,7 @@ export function getImportTypeDefinitionFileName(
   // `@cloudflare/workers-types` and is specified in compilerOptions.type section
   // of the tsconfig
   if (nodeFileName !== declarationFileName) {
-    // TODO: improve guessing of which module the import came from
+    // Check if the type is specified in the types section of the tsconfig
     if (compilerOptions.types) {
       const type = compilerOptions.types.find((name) =>
         nodeFileName.indexOf(name),
@@ -120,71 +121,100 @@ export function getImportTypeDefinitionFileName(
           host,
         );
         if (result.resolvedModule.isExternalLibraryImport) {
-          return {
-            import: node.getText(),
-            importPath: type,
-            name: type,
-            version: result.resolvedModule.packageId.version,
-            isExternalLibrary: true,
-            location: result.resolvedModule.resolvedFileName,
-          };
+          return;
+          // return {
+          //   import: node.getText(),
+          //   importPath: type,
+          //   name: type,
+          //   version: result.resolvedModule.packageId.version,
+          //   isExternalLibrary: true,
+          //   location: result.resolvedModule.resolvedFileName,
+          // };
         }
       }
     }
   }
 
-  const n = declaration.parent.parent;
+  // Node kinds:
+  // - ImportDeclaration
+  // - Parameter
+  // - VariableDeclaration
+  // - CallExpression
+  // - ExportSpecifier
+  // - PropertyAccessExpression
 
-  // Look for the import statement
-  let nextSibling = n && getNextSibling(n);
-  while (nextSibling && nextSibling.kind !== ts.SyntaxKind.StringLiteral) {
-    nextSibling = getNextSibling(nextSibling);
+  // console.log("node", declaration.kind);
+  // const n = declaration.parent.parent;
+  let target = declaration.parent;
+  while (
+    target &&
+    !ts.isImportDeclaration(target) &&
+    !ts.isExportDeclaration(target)
+  ) {
+    target = target.parent;
   }
 
-  if (nextSibling) {
-    let text = nextSibling.getText();
-    try {
-      text = JSON.parse(text);
-    } catch {
-      // swallow error
-    }
-    const result = ts.resolveModuleName(
-      text,
-      nodeFileName,
-      compilerOptions,
-      host,
-    );
+  if (
+    !target ||
+    (!ts.isImportDeclaration(target) && !ts.isExportDeclaration(target))
+  ) {
+    return;
+  }
 
-    // Handle external imports
-    if (result.resolvedModule?.isExternalLibraryImport) {
-      return {
-        import: node.getText(),
-        importPath: text,
-        name: result.resolvedModule.packageId.name,
-        version: result.resolvedModule.packageId.version,
-        isExternalLibrary: true,
-        location: result.resolvedModule.resolvedFileName,
-      };
-    }
+  // if (node.getText() === "getUser") {
+  //   console.log("target", target.getText());
+  // }
+  // // Look for the import statement
+  // let nextSibling = n && getNextSibling(n);
+  // while (nextSibling && nextSibling.kind !== ts.SyntaxKind.StringLiteral) {
+  //   nextSibling = getNextSibling(nextSibling);
+  // }
 
-    // Handle build in modules
-    if (text.startsWith("node:")) {
-      return {
-        import: node.getText(),
-        importPath: text,
-        name: text,
-        isExternalLibrary: true,
-        location: node.getText(),
-      };
-    }
+  // if (nextSibling) {
+  const text = target.moduleSpecifier.getText().slice(1, -1);
 
-    // Other module
+  const result = ts.resolveModuleName(
+    text,
+    nodeFileName,
+    compilerOptions,
+    host,
+  );
+
+  // Handle external imports
+  if (result.resolvedModule?.isExternalLibraryImport) {
+    return {
+      import: node.getText(),
+      importPath: text,
+      name: result.resolvedModule.packageId.name,
+      version: result.resolvedModule.packageId.version,
+      isExternalLibrary: true,
+      location: result.resolvedModule.resolvedFileName,
+    };
+  }
+
+  // Handle build in modules
+  if (text.startsWith("node:")) {
     return {
       import: node.getText(),
       importPath: text,
       name: text,
-      isExternalLibrary: false,
-      location: result.resolvedModule.resolvedFileName,
+      isExternalLibrary: true,
+      location: node.getText(),
     };
   }
+
+  // Other module
+  return {
+    import: node.getText(),
+    importPath: text,
+    name: text,
+    isExternalLibrary: false,
+    location: result.resolvedModule.resolvedFileName,
+  };
+  // }
+  // if (ts.isExportSpecifier(declaration)) {
+  //   console.log('export specifier', declaration.getText());
+  // } else {
+  //   console.log("No sibling found", node.kind, node.getText())
+  // }
 }
