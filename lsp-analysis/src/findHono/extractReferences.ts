@@ -1,3 +1,4 @@
+import { J } from "vitest/dist/chunks/reporters.C4ZHgdxQ.js";
 import type { SearchContext } from ".";
 import type {
   SourceReference,
@@ -60,6 +61,7 @@ function visit(
   context: SearchContext,
   rootReference: SourceReference,
   startPosition: number,
+  rootNodeReference: TsNode = currentNode,
 ) {
   const { ts, program, sourceReferenceManager, getFile } = context;
   const sourceFile = getFile(rootReference.fileName);
@@ -106,18 +108,24 @@ function visit(
     }
 
     if (
-      ts.isFunctionDeclaration(nodeValue) ||
-      ts.isArrowFunction(nodeValue) ||
-      ts.isCallExpression(nodeValue) ||
-      ts.isTypeAliasDeclaration(nodeValue) ||
-      ts.isExportSpecifier(nodeValue) ||
-      ts.isVariableDeclaration(nodeValue)
+      (rootNodeReference.getStart() > nodeValue.getEnd() || rootNodeReference.getEnd() < nodeValue.getStart()) && (
+        ts.isFunctionDeclaration(nodeValue) ||
+        ts.isArrowFunction(nodeValue) ||
+        ts.isCallExpression(nodeValue) ||
+        ts.isTypeAliasDeclaration(nodeValue) ||
+        ts.isExportSpecifier(nodeValue) ||
+        ts.isVariableDeclaration(nodeValue)
+      )
     ) {
+
       const sourceReference =
         sourceReferenceManager.getReference(
           nodeValue.getSourceFile().fileName,
           nodeValue.getStart(),
         ) || createSourceReferenceForNode(nodeValue, context);
+      if (currentNode.getText() === "user") {
+        console.log('nodeValue', currentNode.parent.kind, !!dependencyResult);
+      }
       rootReference.references.push(sourceReference);
       return;
     }
@@ -195,7 +203,7 @@ function visit(
   }
 
   ts.forEachChild(currentNode, (node) =>
-    visit(node, context, rootReference, startPosition),
+    visit(node, context, rootReference, startPosition, rootNodeReference),
   );
 }
 
@@ -258,7 +266,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-      currentNode.getSourceFile().fileName
+    currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }
@@ -310,6 +318,39 @@ class NodeTypeNotSupportedError extends Error {
   }
 }
 
+function createSourceReferenceContentForNode(
+  node:
+    | TsArrowFunction
+    | TsFunctionDeclaration
+    | TsCallExpression
+    | TsTypeAliasDeclaration
+    | TsExportSpecifier
+    | TsVariableDeclaration,
+  context: SearchContext,
+) {
+
+  const { ts } = context
+  if (
+    ts.isCallExpression(node) &&
+    ts.isVariableDeclarationList(node.parent.parent)
+  ) {
+    return node.parent.parent.getText();
+  }
+
+  if (
+    ts.isVariableDeclaration(node) &&
+    ts.isVariableDeclarationList(node.parent)
+  ) {
+    return node.parent.getText();
+  }
+
+  if (ts.isExportSpecifier(node)) {
+    return `export { ${node.getText()} } from ${node.parent.parent.moduleSpecifier.getText()}`;
+    // return findModulePathFromExportSpecified(node);
+  }
+  return node.getText();
+}
+
 function createInitialSourceReferenceForNode(
   node:
     | TsArrowFunction
@@ -323,26 +364,11 @@ function createInitialSourceReferenceForNode(
   const sourceFile = node.getSourceFile();
   const position = sourceFile.getLineAndCharacterOfPosition(node.getStart());
 
-  let repositionedNode: TsNode = node;
-  if (
-    context.ts.isCallExpression(repositionedNode) &&
-    context.ts.isVariableDeclarationList(repositionedNode.parent.parent)
-  ) {
-    repositionedNode = repositionedNode.parent.parent;
-  } else if (
-    context.ts.isVariableDeclaration(repositionedNode) &&
-    context.ts.isVariableDeclarationList(repositionedNode.parent)
-  ) {
-    repositionedNode = repositionedNode.parent;
-  }
-
-  // if (sourceFile.fileName.includes("/db/")) {
-  // }
   return {
     character: position.character,
     line: position.line,
     fileName: sourceFile.fileName,
-    content: repositionedNode.getText(),
+    content: createSourceReferenceContentForNode(node, context),
     references: [],
     modules: {},
   };
