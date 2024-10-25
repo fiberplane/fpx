@@ -4,7 +4,6 @@ export const ERROR_TYPE_NOT_FOUND = "NotFoundError";
 export const ERROR_TYPE_INVALID_TOKEN = "InvalidTokenError";
 export const ERROR_TYPE_TOKEN_EXPIRED = "TokenExpiredError";
 
-// New error classes
 export class UnauthorizedError extends Error {
   constructor(message = "Unauthorized") {
     super(message);
