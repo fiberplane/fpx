@@ -12,9 +12,14 @@ export const uiSlice: StateCreator<
 > = (set) => {
   return {
     settingsOpen: false,
-    setSettingsOpen: (open: boolean) =>
+    defaultSettingsTab: null,
+    setSettingsOpen: (
+      open: boolean,
+      defaultSettingsTab: string | null = null,
+    ) =>
       set((state) => {
         state.settingsOpen = open;
+        state.defaultSettingsTab = defaultSettingsTab;
       }),
     aiDropdownOpen: false,
     setAIDropdownOpen: (open: boolean) =>

@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
 import { useShallow } from "zustand/react/shallow";
-import { Branding } from "../Branding";
+import { LoggedInUser } from "../LoggedInUser";
 import { SettingsMenu, SettingsScreen } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
@@ -44,14 +44,16 @@ export function BottomBar() {
     <nav className="gap-4 bg-muted/50 py-2">
       <div className="flex justify-between px-2 items-center">
         <div className="flex items-center gap-2 sm:static sm:h-auto border-0 bg-transparent text-sm">
-          <SidePanelTrigger />
-          <SettingsMenu setSettingsOpen={setSettingsOpen} />
+          <div className="flex items-center gap-2">
+            <SidePanelTrigger />
+            <SettingsMenu setSettingsOpen={setSettingsOpen} />
+            <LoggedInUser />
+          </div>
           <FloatingSidePanel />
           <SettingsScreen
             settingsOpen={settingsOpen}
             setSettingsOpen={setSettingsOpen}
           />
-          <Branding />
         </div>
 
         <div className="flex items-center gap-2">

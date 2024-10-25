@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `ai_request_credits` integer DEFAULT 0 NOT NULL;

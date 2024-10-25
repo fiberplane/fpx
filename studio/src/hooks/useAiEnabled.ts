@@ -35,6 +35,9 @@ function hasValidAiConfig(settings: Settings) {
       const model = ollama?.model;
       return !!model;
     }
+    case "fp": {
+      return true;
+    }
     default:
       return false;
   }

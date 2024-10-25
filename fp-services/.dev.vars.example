@@ -1,0 +1,8 @@
+GITHUB_ID=<your-github-oauth-app-client-id>
+GITHUB_SECRET=<your-github-oauth-app-client-secret>
+PUBLIC_KEY=<your-local-public-key>
+PRIVATE_KEY=<your-local-private-key>
+
+OPENAI_API_KEY=""
+
+FPX_ENDPOINT=""

@@ -5,6 +5,7 @@ import type { Settings } from "@fiberplane/fpx-types";
 import { type APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
+import { generateRequestWithFp } from "./fp.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool, requestSchema } from "./tools.js";
 
@@ -51,6 +52,7 @@ function configureProvider(
 }
 
 export async function generateRequestWithAiProvider({
+  fpApiKey,
   inferenceConfig,
   persona,
   method,
@@ -62,6 +64,7 @@ export async function generateRequestWithAiProvider({
   middleware,
   middlewareContext,
 }: {
+  fpApiKey?: string;
   inferenceConfig: Settings;
   persona: string;
   method: string;
@@ -85,6 +88,27 @@ export async function generateRequestWithAiProvider({
 
   if (!aiProvider) {
     return { data: null, error: { message: "AI provider is not set" } };
+  }
+
+  if (aiProvider === "fp") {
+    if (!fpApiKey) {
+      return {
+        data: null,
+        error: { message: "Fiberplane token not found" },
+      };
+    }
+    return generateRequestWithFp({
+      fpApiKey,
+      handler,
+      handlerContext,
+      history,
+      openApiSpec,
+      middleware,
+      middlewareContext,
+      persona,
+      method,
+      path,
+    });
   }
 
   if (!aiProviderConfigurations || !aiProviderConfigurations[aiProvider]) {
@@ -235,7 +259,7 @@ function createErrorMessage(error: unknown) {
 }
 
 // NOTE - Copy-pasted from frontend
-function hasValidAiConfig(settings: Settings) {
+export function hasValidAiConfig(settings: Settings) {
   const provider = settings.aiProvider;
   switch (provider) {
     // HACK - Special logic for OpenAI to support someone who has set a baseUrl
@@ -263,6 +287,9 @@ function hasValidAiConfig(settings: Settings) {
       const ollama = settings.aiProviderConfigurations?.ollama;
       const model = ollama?.model;
       return !!model;
+    }
+    case "fp": {
+      return true;
     }
     default:
       return false;
