@@ -1,0 +1,50 @@
+---
+title: "Create sample request data with AI for API debugging - now with all major LLMs!"
+description: Test your API locally like a QA engineer with AI generated sample request data. Now with Mistral and Ollama support.
+slug: ollama-mistral-llm-support
+date: 2024-10-23
+author: Micha Hernandez van Leuffen
+tags:
+  - Hono.js
+  - Ollama
+  - Mistral
+  - AI
+---
+
+import PackageManagers from "@/components/PackageManagers.astro";
+
+In the workflow of building and debugging a new API, creating sample request data is a common and often tedious task.
+There are specifying parameters, different data formats, authentication mechanisms, and making sure the request structure
+is retrieving the right data.
+
+That’s why in Fiberplane Studio, we help you generate request payloads using the LLM of your choice.
+[AI Request Autofill](https://fiberplane.com/docs/features/generating-with-ai/) is an easy and fast way to really test the resiliency of your API like the QA engineer professional
+you already are.
+
+We just added support for Mistral and Ollama in addition to previously existing Anthropic and OpenAI.
+Check out how it works below.
+
+## How to enable and generate a sample payload
+
+After you [enable AI features](https://fiberplane.com/docs/features/generating-with-ai/#enabling-request-autofill) in Studio and select your LLM provider,
+toggle back to your main UI. By default, Studio will generate request data that takes inspiration from the most recent
+requests you’ve made to your API, and it will try to help you test the happy path.
+
+![Fiberplane Settings LLM](@/assets/blog/2024-10-23-llm-support.png)
+
+If you want to change to a more challenging behavior, select the “Hostile” approach under the testing persona.
+
+Under the hood, Studio keeps track of the most recent requests you’ve made to your API and the current handler code
+in order to generate request data that follows your current testing path. If you have imported your routes via an
+OpenAPI spec, the AI will also generate requests based on the definitions in the spec.
+
+Besides generating a request body, Studio can also prefill data for URL path parameters, query parameters,
+and request headers.
+
+Certain sensitive headers are redacted by default like Authorization and Cookie though note we recommend
+using this feature when debugging locally, vs working with sensitive production data.
+
+## Debug your Hono APIs
+
+Fiberplane Studio is a local debugging companion designed to help you to build, test, and develop [Hono](https://hono.dev) APIs.
+It’s open source and available to try now - check out [the getting started guide here](https://fiberplane.com/docs/get-started/).
