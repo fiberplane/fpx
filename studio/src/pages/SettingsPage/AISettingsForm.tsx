@@ -41,7 +41,7 @@ import {
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
-import { ProfileItem } from "./Profile";
+import { RequestCreditsItem } from "./Profile";
 import { useSettingsForm } from "./form";
 
 const getAnthropicModelReleaseDate = (model: string) => {
@@ -384,17 +384,12 @@ function CodeSentToAiBanner() {
 function FiberplaneSection({ user }: { user?: UserInfo | null }) {
   if (user) {
     return (
-      <>
-        <ProfileItem
-          icon="lucide:zap"
-          label="AI Requests"
-          value={
-            user.aiRequestCredits !== undefined
-              ? `${user.aiRequestCredits} requests remaining`
-              : "N/A"
-          }
-        />
-      </>
+      <div className="w-full text-sm pt-2 rounded-md gap-2.5">
+        <div className="grid gap-1.5">
+          <span className="font-semibold">Connected to Fiberplane</span>
+          <RequestCreditsItem credits={user.aiRequestCredits} />
+        </div>
+      </div>
     );
   }
   return (
