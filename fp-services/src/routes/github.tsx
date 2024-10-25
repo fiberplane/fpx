@@ -1,12 +1,34 @@
 import { githubAuth } from "@hono/oauth-providers/github";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import * as jose from "jose";
+import { GenericErrorPage } from "../components/GenericErrorPage";
+import { SuccessPage } from "../components/SuccessPage";
 import { initDbConnect } from "../db";
 import { importKey, upsertUser } from "../lib";
 import type { FpAuthApp } from "../types";
-import { SuccessPage, generateNonce } from "./success";
+import { generateNonce } from "./utils";
 
 const app = new Hono<FpAuthApp>();
+
+/**
+ * Handle the 401 error from GitHub OAuth if something goes wrong
+ */
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    if (err.status === 401) {
+      return c.html(
+        <GenericErrorPage
+          statusCode={401}
+          message="Something went wrong while authenticating!"
+        />,
+        401,
+      );
+    }
+    return err.getResponse();
+  }
+  return c.text("Internal server error", 500);
+});
 
 /**
  * Set up OAuth middleware for GitHub
