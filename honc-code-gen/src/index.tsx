@@ -4,8 +4,8 @@ import { Hono } from "hono";
 import { logger as honoLogger } from "hono/logger";
 import * as schema from "./db/schema";
 
-import type { HatchApp } from "./types";
 import { createLogger } from "./logger";
+import type { HatchApp } from "./types";
 import v0Api from "./v0";
 import v1Api from "./v1";
 import { HomePage } from "./v1/components/HomePage";

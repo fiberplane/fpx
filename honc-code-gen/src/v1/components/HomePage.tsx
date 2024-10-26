@@ -1,4 +1,6 @@
 import { html } from "hono/html";
+import { useState } from "hono/jsx";
+import type { InputEvent } from "hono/jsx";
 import { Layout } from "./Layout";
 
 type HomePageProps = {
@@ -6,27 +8,54 @@ type HomePageProps = {
 };
 
 export const HomePage = ({ nonce }: HomePageProps) => {
+  const [selectedDbType, setSelectedDbType] = useState("d1");
+
+  const handleDbTypeChange = (event: InputEvent) => {
+    setSelectedDbType(event.target.value);
+  };
+
   return (
     <Layout>
       <div className="container">
         <form id="hatchForm">
           <div className="form-group">
             <label htmlFor="prompt">Prompt:</label>
-            <textarea id="prompt" name="prompt" rows={4} required/>
+            <textarea id="prompt" name="prompt" rows={4} required />
           </div>
           <div className="form-group">
             <label>Database Type:</label>
             <div className="radio-group">
               <div className="radio-option">
-                <input type="radio" id="neon" name="dbType" value="neon" required />
+                <input
+                  type="radio"
+                  id="neon"
+                  name="dbType"
+                  value="neon"
+                  checked={selectedDbType === "neon"}
+                  onChange={handleDbTypeChange}
+                />
                 <label htmlFor="neon">Neon</label>
               </div>
               <div className="radio-option">
-                <input type="radio" id="postgres" name="dbType" value="postgres" />
+                <input
+                  type="radio"
+                  id="postgres"
+                  name="dbType"
+                  value="postgres"
+                  checked={selectedDbType === "postgres"}
+                  onChange={handleDbTypeChange}
+                />
                 <label htmlFor="postgres">Postgres</label>
               </div>
               <div className="radio-option">
-                <input type="radio" id="d1" name="dbType" value="d1" />
+                <input
+                  type="radio"
+                  id="d1"
+                  name="dbType"
+                  value="d1"
+                  checked={selectedDbType === "d1"}
+                  onChange={handleDbTypeChange}
+                />
                 <label htmlFor="d1">D1 (SQLite)</label>
               </div>
             </div>

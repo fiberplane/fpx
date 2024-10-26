@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 import * as schema from "../db/schema";
+import type { HatchApp } from "../types";
 import {
   FILES_TO_MODIFY,
   // NOTE - Had to swap out Anthropic for OpenAI because of rate limiting concerns
@@ -17,7 +18,6 @@ import {
   writeSeedFile,
 } from "./lib/project-files";
 import { SchemaContextSchema } from "./lib/types";
-import type { HatchApp } from "../types";
 
 const app = new Hono<HatchApp>();
 
@@ -69,10 +69,10 @@ app.post(
       "Schema context:",
       schemaContext
         ? {
-          type: schemaContext?.type,
-          drizzleImport: schemaContext?.drizzleImport,
-          vendor: schemaContext?.vendor,
-        }
+            type: schemaContext?.type,
+            drizzleImport: schemaContext?.drizzleImport,
+            vendor: schemaContext?.vendor,
+          }
         : "missing",
     );
 
