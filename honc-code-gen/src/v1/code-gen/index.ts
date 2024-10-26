@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { generateApiRoutes } from "./api-routes";
+import { addCloudflareBindings } from "./cloudflare-bindings";
 // import { addCloudflareBindings } from "./cloudflare-bindings";
 import { getActiveModel } from "./models";
 import { generatePlan } from "./planner";
@@ -12,6 +13,14 @@ dotenv.config();
 // TODO - Save intermediary steps to R2, or use a real LLM observability pipeline
 const SAVE_OUTPUT_NOOP = async (_path: string, _content: unknown) => {
   // noop
+};
+
+// TODO - Implement this when we have a real RAG pipeline
+const getDocumentation = async (_query: string, _bindings: string[]) => {
+  return {
+    results: [],
+    content: "TODO",
+  };
 };
 
 function generateTraceId(appName = "app"): string {
@@ -112,33 +121,38 @@ export async function generateApi(
   await saveOutput("04-api-routes.ts", apiRoutes.indexTs);
 
   // TODO - Add Cloudflare bindings (needs integration with RAG pipeline)
-  const cloudflareBindings = { indexTs: null };
-  // let cloudflareBindings: null | Awaited<ReturnType<typeof addCloudflareBindings>> = null;
-  //
-  // if (plan.cloudflareBindings?.bindings.length) {
-  // 	const cloudflareBindingsStartTime = Date.now();
-  // 	cloudflareBindings = await addCloudflareBindings(aiProvider, {
-  // 		reasoning: plan.cloudflareBindings?.reasoning ?? "",
-  // 		bindings: plan.cloudflareBindings?.bindings ?? [],
-  // 		apiRoutes: apiRoutes.indexTs,
-  // 	});
-  // 	timings.addCloudflareBindings = Date.now() - cloudflareBindingsStartTime;
+  let cloudflareBindings: null | Awaited<
+    ReturnType<typeof addCloudflareBindings>
+  > = null;
 
-  // 	await saveOutput("05-cf-bindings-prompt.txt", cloudflareBindings.prompt);
-  // 	await saveOutput(
-  // 		"05-cf-bindings-reasoning.txt",
-  // 		cloudflareBindings.reasoning,
-  // 	);
-  // 	await saveOutput("05-cf-bindings.ts", cloudflareBindings.indexTs);
-  // 	await saveOutput(
-  // 		"05-cf-bindings-documentation",
-  // 		cloudflareBindings.documentation,
-  // 	);
-  // 	await saveOutput(
-  // 		"05-cf-bindings-documentation-content.txt",
-  // 		cloudflareBindings.documentation.content,
-  // 	);
-  // }
+  if (plan.cloudflareBindings?.bindings.length) {
+    const cloudflareBindingsStartTime = Date.now();
+    cloudflareBindings = await addCloudflareBindings(
+      aiProvider,
+      {
+        reasoning: plan.cloudflareBindings?.reasoning ?? "",
+        bindings: plan.cloudflareBindings?.bindings ?? [],
+        apiRoutes: apiRoutes.indexTs,
+      },
+      getDocumentation,
+    );
+    timings.addCloudflareBindings = Date.now() - cloudflareBindingsStartTime;
+
+    await saveOutput("05-cf-bindings-prompt.txt", cloudflareBindings.prompt);
+    await saveOutput(
+      "05-cf-bindings-reasoning.txt",
+      cloudflareBindings.reasoning,
+    );
+    await saveOutput("05-cf-bindings.ts", cloudflareBindings.indexTs);
+    await saveOutput(
+      "05-cf-bindings-documentation",
+      cloudflareBindings.documentation,
+    );
+    await saveOutput(
+      "05-cf-bindings-documentation-content.txt",
+      cloudflareBindings.documentation.content,
+    );
+  }
 
   const totalTime = Date.now() - startTime;
   timings.total = totalTime;

@@ -1,12 +1,14 @@
 import * as readline from "node:readline/promises";
 import dotenv from "dotenv";
 import { generateApiRoutes } from "../../src/v1/code-gen/api-routes";
+import { addCloudflareBindings } from "../../src/v1/code-gen/cloudflare-bindings";
 import { getActiveModel } from "../../src/v1/code-gen/models";
 import { generatePlan } from "../../src/v1/code-gen/planner";
 import { generateSchema } from "../../src/v1/code-gen/schema";
 import { generateSeed } from "../../src/v1/code-gen/seed";
 import { generateWranglerConfig } from "../../src/v1/code-gen/wrangler";
-import { addCloudflareBindings } from "./cloudflare-bindings";
+import { getDocumentation } from "./get-cloudflare-bindings-docs";
+
 import {
   getCurrentTraceId,
   initializeTraceId,
@@ -120,11 +122,15 @@ export async function generateApi(apiKey: string) {
   // Add Cloudflare bindings
   if (plan.cloudflareBindings?.bindings.length) {
     const cloudflareBindingsStartTime = Date.now();
-    const cloudflareBindings = await addCloudflareBindings(aiProvider, {
-      reasoning: plan.cloudflareBindings?.reasoning ?? "",
-      bindings: plan.cloudflareBindings?.bindings ?? [],
-      apiRoutes: apiRoutes.indexTs,
-    });
+    const cloudflareBindings = await addCloudflareBindings(
+      aiProvider,
+      {
+        reasoning: plan.cloudflareBindings?.reasoning ?? "",
+        bindings: plan.cloudflareBindings?.bindings ?? [],
+        apiRoutes: apiRoutes.indexTs,
+      },
+      getDocumentation,
+    );
     timings.addCloudflareBindings = Date.now() - cloudflareBindingsStartTime;
 
     await saveOutput("05-cf-bindings-prompt.txt", cloudflareBindings.prompt);

@@ -1,8 +1,5 @@
 import { type LanguageModelV1, generateObject } from "ai";
-import { type MetadataFilter, MetadataMode } from "llamaindex";
 import { z } from "zod";
-import { STORAGE_DIR } from "../rag/constants";
-import { loadVectorIndex } from "../rag/shared";
 
 export async function addCloudflareBindings(
   model: LanguageModelV1,
@@ -15,6 +12,19 @@ export async function addCloudflareBindings(
     bindings: string[];
     apiRoutes: string;
   },
+  getDocumentation: (
+    query: string,
+    bindings: string[],
+  ) => Promise<{
+    results: Array<{
+      binding: string;
+      docs: Array<{
+        score: number;
+        content: string;
+      }>;
+    }>;
+    content: string;
+  }>,
 ) {
   const documentation = await getDocumentation(reasoning, bindings);
   // TODO
@@ -65,95 +75,6 @@ Modify the API routes file to include the necessary Cloudflare bindings.
   };
 }
 
-/**
- * 
- * @param query 
-export declare enum FilterOperator {
-    EQ = "==",// default operator (string, number)
-    IN = "in",// In array (string or number)
-    GT = ">",// greater than (number)
-    LT = "<",// less than (number)
-    NE = "!=",// not equal to (string, number)
-    GTE = ">=",// greater than or equal to (number)
-    LTE = "<=",// less than or equal to (number)
-    NIN = "nin",// Not in array (string or number)
-    ANY = "any",// Contains any (array of strings)
-    ALL = "all",// Contains all (array of strings)
-    TEXT_MATCH = "text_match",// full text match (allows you to search for a specific substring, token or phrase within the text field)
-    CONTAINS = "contains",// metadata array contains value (string or number)
-    IS_EMPTY = "is_empty"
-}
- */
-export async function getDocumentation(query: string, bindings: string[]) {
-  const results: Array<{
-    binding: string;
-    docs: Array<{
-      score: number;
-      content: string;
-    }>;
-  }> = [];
-  // TODO - Parallelize this
-  for (const binding of bindings) {
-    const bindingName = mapBinding(binding);
-    const bindingFilter: MetadataFilter[] = bindingName
-      ? [{ key: "tag", value: bindingName, operator: "==" }]
-      : [];
-    // Load the vector index from storage here
-    // If you haven't created an index yet, you gotta do that first!
-    const vectorIndex = await loadVectorIndex(STORAGE_DIR);
-    const retriever = vectorIndex.asRetriever({
-      similarityTopK: 3,
-      filters: {
-        filters: [
-          { key: "vendor", value: "cloudflare", operator: "==" },
-          ...bindingFilter,
-        ],
-      },
-    });
-
-    const nodesWithScore = await retriever.retrieve({ query });
-
-    // NOTE - Only take the top result for now
-    // TODO - Record all results for review
-    if (nodesWithScore.length > 0) {
-      results.push({
-        binding,
-        docs: nodesWithScore.map((node) => ({
-          score: node.score ?? Number.NaN,
-          content: node.node.getContent(MetadataMode.NONE),
-        })),
-      });
-    }
-  }
-
-  return {
-    results,
-    content: results
-      .map((result) => docsToString(result.binding, result.docs))
-      .join("\n\n"),
-  };
-}
-
-function docsToString(
-  binding: string,
-  docs: Array<{
-    score: number;
-    content: string;
-  }>,
-) {
-  return docs
-    .map((doc) =>
-      `
-  <${binding}>
-    <section>
-      ${doc.content}
-    </section>
-  </${binding}>
-`.trim(),
-    )
-    .join("\n");
-}
-
 // TODO - Create constants for these values
 function mapBinding(binding: string) {
   switch (binding?.toLowerCase()) {
@@ -174,7 +95,7 @@ function mapBinding(binding: string) {
 
 // NOTE - This will be our recipes for using the bindings in Hono
 function getHonoExamples(bindings: string[]) {
-  const examples = [];
+  const examples: string[] = [];
   for (const binding of bindings) {
     const bindingName = mapBinding(binding);
     if (bindingName) {
