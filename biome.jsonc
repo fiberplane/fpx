@@ -71,7 +71,6 @@
       "include": [
         "packages/client-library-otel",
         "api",
-        "cli",
         "honc-code-gen",
         "fp-services"
       ],
