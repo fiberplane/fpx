@@ -1,4 +1,4 @@
-import { generateObject, type LanguageModelV1 } from "ai";
+import { type LanguageModelV1, generateObject } from "ai";
 import { z } from "zod";
 
 const TEMPLATE_SEED = `
@@ -70,15 +70,15 @@ function getLocalD1DB() {
 `;
 
 export async function generateSeed(
-	model: LanguageModelV1,
-	{
-		dbSchema,
-	}: {
-		dbSchema: string;
-	},
-	example = TEMPLATE_SEED,
+  model: LanguageModelV1,
+  {
+    dbSchema,
+  }: {
+    dbSchema: string;
+  },
+  example = TEMPLATE_SEED,
 ) {
-	const PROMPT = `
+  const PROMPT = `
 You are a helpful Typescript developer assistant that generates seed data for a database.
 
 I am using Cloudflare D1 to store relational data for my api.
@@ -111,14 +111,14 @@ ${dbSchema}
 
 Think step by step. Output your reasoning and the final seed file.
 `;
-	const result = await generateObject({
-		model,
-		schema: z.object({
-			reasoning: z.string().describe("Your reasoning for the seed data"),
-			seedTs: z.string().describe("The final seed.ts file"),
-		}),
-		prompt: PROMPT,
-	});
+  const result = await generateObject({
+    model,
+    schema: z.object({
+      reasoning: z.string().describe("Your reasoning for the seed data"),
+      seedTs: z.string().describe("The final seed.ts file"),
+    }),
+    prompt: PROMPT,
+  });
 
-	return result.object;
+  return result.object;
 }

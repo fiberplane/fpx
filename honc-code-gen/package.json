@@ -29,18 +29,19 @@
     "format": "biome check . --write",
     "lint": "biome lint .",
     "studio": "pnpx @fiberplane/studio@canary",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest --run"
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest --run",
+    "play:codegen": "tsx --tsconfig tsconfig.playground.json playground/code-gen/index.ts",
+    "play:trace": "tsx --tsconfig tsconfig.playground.json playground/code-gen/utils/scripts/latest-trace.ts",
+    "play:index:cloudflare": "tsx --tsconfig tsconfig.playground.json playground/rag/scripts/index-cloudflare.ts",
+    "play:index:drizzle": "tsx --tsconfig tsconfig.playground.json playground/rag/scripts/index-drizzle.ts",
+    "play:r2": "tsx --tsconfig tsconfig.playground.json playground/rag/scripts/r2-test.ts"
   },
   "publishConfig": {
     "access": "public"
   },
   "license": "MIT or Apache 2",
-  "keywords": [
-    "honc",
-    "fiberplane",
-    "ai"
-  ],
+  "keywords": ["honc", "fiberplane", "ai"],
   "dependencies": {
     "@ai-sdk/openai": "^0.0.66",
     "@anthropic-ai/sdk": "^0.29.0",
@@ -56,12 +57,20 @@
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
     "hono": "^4.6.2",
+    "llamaindex": "^0.7.0",
     "openai": "^4.67.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/node": "^22.7.7",
+    "@xenova/transformers": "^2.17.2",
+    "chalk": "^5.3.0",
+    "cli-highlight": "^2.1.11",
+    "dotenv": "^16.4.5",
+    "highlight.js": "^11.10.0",
     "ts-to-zod": "^3.8.5",
-    "tsx": "^4.10.5",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.1",
     "typescript": "^5.5.4",
     "vitest": "^1.6.0",
     "wrangler": "^3.80.1"

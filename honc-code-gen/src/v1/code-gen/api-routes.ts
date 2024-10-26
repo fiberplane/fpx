@@ -1,4 +1,4 @@
-import { generateObject, type LanguageModelV1 } from "ai";
+import { type LanguageModelV1, generateObject } from "ai";
 import { z } from "zod";
 
 const TEMPLATE_EXAMPLE = `
@@ -38,11 +38,11 @@ export default instrument(app);
 `;
 
 export async function generateApiRoutes(
-	model: LanguageModelV1,
-	{ dbSchema, apiPlan }: { dbSchema: string; apiPlan: string },
-	example = TEMPLATE_EXAMPLE,
+  model: LanguageModelV1,
+  { dbSchema, apiPlan }: { dbSchema: string; apiPlan: string },
+  example = TEMPLATE_EXAMPLE,
 ): Promise<{ reasoning: string; indexTs: string }> {
-	const PROMPT = `
+  const PROMPT = `
 You are a friendly, expert full-stack typescript engineer 
 and an API building assistant for apps that use Hono,
 a typescript web framework similar to express.
@@ -137,22 +137,22 @@ Think step by step in this order:
 - What are the endpoints that I need to implement?
 `.trim();
 
-	const result = await generateObject({
-		model,
-		schema: z.object({
-			reasoning: z.string(),
-			indexTs: z
-				.string()
-				.describe("The generated api routes file, in typescript"),
-		}),
-		prompt: PROMPT,
-	});
+  const result = await generateObject({
+    model,
+    schema: z.object({
+      reasoning: z.string(),
+      indexTs: z
+        .string()
+        .describe("The generated api routes file, in typescript"),
+    }),
+    prompt: PROMPT,
+  });
 
-	return result.object;
+  return result.object;
 }
 
 function getDrizzleOrmExamples() {
-	return `
+  return `
 <drizzle-orm-example description="Count the number of users in the database">
 import {{ count, eq, sql }} from "drizzle-orm";
 // ...

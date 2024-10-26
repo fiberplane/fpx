@@ -1,8 +1,8 @@
-import { generateObject, type LanguageModelV1 } from "ai";
+import { type LanguageModelV1, generateObject } from "ai";
 import { z } from "zod";
 
 export async function generatePlan(model: LanguageModelV1, idea: string) {
-	const PROMPT = `
+  const PROMPT = `
 You are a world class software engineer.
 You are an expert in the following:
 - Typescript data apis
@@ -41,29 +41,29 @@ Here is the idea for the api:
 ${idea}
 `.trim();
 
-	const result = await generateObject({
-		model,
-		schema: z.object({
-			reasoning: z.string(),
-			appName: z.string(),
-			databaseSchema: z.string(),
-			apiRoutes: z.string(),
-			cloudflareBindings: z
-				.object({
-					reasoning: z.string(),
-					bindings: z.array(z.enum(["KV", "R2", "AI", "Durable Objects"])),
-				})
-				.nullable(),
-			dependencies: z
-				.object({
-					reasoning: z.string(),
-					dependencies: z.array(z.string()),
-				})
-				.nullable(),
-			// TODO - Handle case where idea is nonsense
-		}),
-		prompt: PROMPT,
-	});
+  const result = await generateObject({
+    model,
+    schema: z.object({
+      reasoning: z.string(),
+      appName: z.string(),
+      databaseSchema: z.string(),
+      apiRoutes: z.string(),
+      cloudflareBindings: z
+        .object({
+          reasoning: z.string(),
+          bindings: z.array(z.enum(["KV", "R2", "AI", "Durable Objects"])),
+        })
+        .nullable(),
+      dependencies: z
+        .object({
+          reasoning: z.string(),
+          dependencies: z.array(z.string()),
+        })
+        .nullable(),
+      // TODO - Handle case where idea is nonsense
+    }),
+    prompt: PROMPT,
+  });
 
-	return result.object;
+  return result.object;
 }

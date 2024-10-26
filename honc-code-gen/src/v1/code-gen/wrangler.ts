@@ -1,4 +1,4 @@
-import { generateObject, type LanguageModelV1 } from "ai";
+import { type LanguageModelV1, generateObject } from "ai";
 import { z } from "zod";
 
 const TEMPLATE_WRANGLER_TOML = `
@@ -35,18 +35,18 @@ enabled = true
 
 // TODO - We can actually do this without an LLM
 export async function generateWranglerConfig(
-	model: LanguageModelV1,
-	bindings: Array<string>,
-	example = TEMPLATE_WRANGLER_TOML,
+  model: LanguageModelV1,
+  bindings: Array<string>,
+  example = TEMPLATE_WRANGLER_TOML,
 ) {
-	if (bindings.length === 0) {
-		return {
-			reasoning: "No bindings to enable",
-			wranglerToml: example,
-		};
-	}
+  if (bindings.length === 0) {
+    return {
+      reasoning: "No bindings to enable",
+      wranglerToml: example,
+    };
+  }
 
-	const PROMPT = `
+  const PROMPT = `
 You are a Cloudflare developer expert.
 
 I am using Cloudflare Workers to host my api.
@@ -70,20 +70,20 @@ Tips:
 - Preserve existing comments when possible.
 `.trim();
 
-	const result = await generateObject({
-		model,
-		schema: z.object({
-			reasoning: z
-				.string()
-				.describe("Your reasoning for the wrangler.toml file"),
-			wranglerToml: z.string().describe("The final wrangler.toml file"),
-		}),
-		prompt: PROMPT,
-	});
+  const result = await generateObject({
+    model,
+    schema: z.object({
+      reasoning: z
+        .string()
+        .describe("Your reasoning for the wrangler.toml file"),
+      wranglerToml: z.string().describe("The final wrangler.toml file"),
+    }),
+    prompt: PROMPT,
+  });
 
-	return result.object;
+  return result.object;
 }
 
 function formatBindings(bindings: Array<string>) {
-	return bindings.map((binding) => `  * ${binding}`).join("\n");
+  return bindings.map((binding) => `  * ${binding}`).join("\n");
 }

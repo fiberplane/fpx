@@ -1,12 +1,15 @@
-import { generateObject, type LanguageModelV1 } from "ai";
+import { type LanguageModelV1, generateObject } from "ai";
 import { z } from "zod";
 
 type SchemaContext = {
-	type: "postgres" | "sqlite";
+  type: "postgres" | "sqlite";
 };
 
-export async function generateSchema(model: LanguageModelV1, databaseSchema: string) {
-	const PROMPT = `
+export async function generateSchema(
+  model: LanguageModelV1,
+  databaseSchema: string,
+) {
+  const PROMPT = `
 You are a world class software engineer.
 You are an expert in Drizzle ORM, a relational database query building library written in Typescript.
 
@@ -25,22 +28,22 @@ Here is the database schema plan:
 ${databaseSchema}
 `.trim();
 
-	const result = await generateObject({
-		model,
-		schema: z.object({
-			reasoning: z.string(),
-			dbSchemaTs: z.string(),
-		}),
-		prompt: PROMPT,
-	});
+  const result = await generateObject({
+    model,
+    schema: z.object({
+      reasoning: z.string(),
+      dbSchemaTs: z.string(),
+    }),
+    prompt: PROMPT,
+  });
 
-	return result.object;
+  return result.object;
 }
 
 // TODO - Update JSONB example to have type safety?
 function getDrizzleSchemaExamples(schemaContext: SchemaContext) {
-	if (schemaContext.type === "postgres") {
-		return `
+  if (schemaContext.type === "postgres") {
+    return `
 Here are some examples of how to use the Drizzle ORM to define tables:
 
 <example type="timestamps">
@@ -82,10 +85,10 @@ Here are some examples of how to use the Drizzle ORM to define tables:
 </example>
 ${getDrizzleRelationsExample(schemaContext)}
     `;
-	}
+  }
 
-	if (schemaContext.type === "sqlite") {
-		return `
+  if (schemaContext.type === "sqlite") {
+    return `
 Here are some examples of how to use the Drizzle ORM to define tables:
 
 <example type="numbers,booleans,timestamps">
@@ -114,14 +117,14 @@ Here are some examples of how to use the Drizzle ORM to define tables:
 </example>
 ${getDrizzleRelationsExample(schemaContext)}
     `;
-	}
+  }
 
-	return "";
+  return "";
 }
 
 function getDrizzleRelationsExample(schemaContext: SchemaContext) {
-	if (schemaContext.type === "postgres") {
-		return `
+  if (schemaContext.type === "postgres") {
+    return `
 <example type="relations" relationType="one-to-one">
   <description>
     An example of a one-to-one relation between users and users, where a user can invite another (this example uses a self reference):
@@ -233,9 +236,9 @@ function getDrizzleRelationsExample(schemaContext: SchemaContext) {
   </typescript>
 </example>
     `;
-	}
-	if (schemaContext.type === "sqlite") {
-		return `
+  }
+  if (schemaContext.type === "sqlite") {
+    return `
 <example type="relations" relationType="one-to-one">
   <description>
     An example of a one-to-one relation between users and users, where a user can invite another (this example uses a self reference):
@@ -347,12 +350,12 @@ function getDrizzleRelationsExample(schemaContext: SchemaContext) {
   </typescript>
 </example>
     `;
-	}
-	return "";
+  }
+  return "";
 }
 
 function getD1SchemaExample() {
-	return `
+  return `
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 

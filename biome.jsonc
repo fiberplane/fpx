@@ -95,6 +95,10 @@
       // API related
       "meta/*.json",
 
+      // Honc code gen playground outputs
+      "honc-code-gen/outputs/**/*",
+      "honc-code-gen/storage/**/*",
+
       // Client library and website related
       "dist",
       "www/",

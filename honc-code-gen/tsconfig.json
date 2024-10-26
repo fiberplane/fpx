@@ -14,5 +14,13 @@
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
-  }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "outputs",
+    "storage",
+    "node_modules"
+  ]
 }

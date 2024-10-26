@@ -1,23 +1,24 @@
-// import { STORAGE_DIR } from "@/rag/constants";
-// import { loadVectorIndex } from "@/rag/shared";
-import { generateObject, type LanguageModelV1 } from "ai";
-// import { type MetadataFilter, MetadataMode } from "llamaindex";
+import { type LanguageModelV1, generateObject } from "ai";
+import { type MetadataFilter, MetadataMode } from "llamaindex";
 import { z } from "zod";
+import { STORAGE_DIR } from "../rag/constants";
+import { loadVectorIndex } from "../rag/shared";
 
 export async function addCloudflareBindings(
-	model: LanguageModelV1,
-	{
-		reasoning,
-		bindings,
-		apiRoutes,
-}: {
-	reasoning: string;
-	bindings: string[];
-	apiRoutes: string;
-}) {
-	const documentation = await getDocumentation(reasoning, bindings);
-	// TODO
-	const PROMPT = `
+  model: LanguageModelV1,
+  {
+    reasoning,
+    bindings,
+    apiRoutes,
+  }: {
+    reasoning: string;
+    bindings: string[];
+    apiRoutes: string;
+  },
+) {
+  const documentation = await getDocumentation(reasoning, bindings);
+  // TODO
+  const PROMPT = `
 You are a Cloudflare developer expert who works with Hono.js on Cloudflare workers.
 
 You are helping use Cloudflare bindings to implement certain requirements of an api.
@@ -45,23 +46,23 @@ ${apiRoutes}
 Modify the API routes file to include the necessary Cloudflare bindings.
 `.trim();
 
-	const result = await generateObject({
-		model,
-		schema: z.object({
-			reasoning: z.string(),
-			indexTs: z
-				.string()
-				.describe("The generated api routes file, in typescript"),
-		}),
-		prompt: PROMPT,
-	});
+  const result = await generateObject({
+    model,
+    schema: z.object({
+      reasoning: z.string(),
+      indexTs: z
+        .string()
+        .describe("The generated api routes file, in typescript"),
+    }),
+    prompt: PROMPT,
+  });
 
-	return {
-		reasoning: result.object.reasoning,
-		indexTs: result.object.indexTs,
-		documentation,
-		prompt: PROMPT,
-	};
+  return {
+    reasoning: result.object.reasoning,
+    indexTs: result.object.indexTs,
+    documentation,
+    prompt: PROMPT,
+  };
 }
 
 /**
@@ -84,116 +85,116 @@ export declare enum FilterOperator {
 }
  */
 export async function getDocumentation(query: string, bindings: string[]) {
-	const results: Array<{
-		binding: string;
-		docs: Array<{
-			score: number;
-			content: string;
-		}>;
-	}> = [];
-	// TODO - Parallelize this
-	for (const binding of bindings) {
-		const bindingName = mapBinding(binding);
-		const bindingFilter: MetadataFilter[] = bindingName
-			? [{ key: "tag", value: bindingName, operator: "==" }]
-			: [];
-		// Load the vector index from storage here
-		// If you haven't created an index yet, you gotta do that first!
-		const vectorIndex = await loadVectorIndex(STORAGE_DIR);
-		const retriever = vectorIndex.asRetriever({
-			similarityTopK: 3,
-			filters: {
-				filters: [
-					{ key: "vendor", value: "cloudflare", operator: "==" },
-					...bindingFilter,
-				],
-			},
-		});
+  const results: Array<{
+    binding: string;
+    docs: Array<{
+      score: number;
+      content: string;
+    }>;
+  }> = [];
+  // TODO - Parallelize this
+  for (const binding of bindings) {
+    const bindingName = mapBinding(binding);
+    const bindingFilter: MetadataFilter[] = bindingName
+      ? [{ key: "tag", value: bindingName, operator: "==" }]
+      : [];
+    // Load the vector index from storage here
+    // If you haven't created an index yet, you gotta do that first!
+    const vectorIndex = await loadVectorIndex(STORAGE_DIR);
+    const retriever = vectorIndex.asRetriever({
+      similarityTopK: 3,
+      filters: {
+        filters: [
+          { key: "vendor", value: "cloudflare", operator: "==" },
+          ...bindingFilter,
+        ],
+      },
+    });
 
-		const nodesWithScore = await retriever.retrieve({ query });
+    const nodesWithScore = await retriever.retrieve({ query });
 
-		// NOTE - Only take the top result for now
-		// TODO - Record all results for review
-		if (nodesWithScore.length > 0) {
-			results.push({
-				binding,
-				docs: nodesWithScore.map((node) => ({
-					score: node.score ?? Number.NaN,
-					content: node.node.getContent(MetadataMode.NONE),
-				})),
-			});
-		}
-	}
+    // NOTE - Only take the top result for now
+    // TODO - Record all results for review
+    if (nodesWithScore.length > 0) {
+      results.push({
+        binding,
+        docs: nodesWithScore.map((node) => ({
+          score: node.score ?? Number.NaN,
+          content: node.node.getContent(MetadataMode.NONE),
+        })),
+      });
+    }
+  }
 
-	return {
-		results,
-		content: results
-			.map((result) => docsToString(result.binding, result.docs))
-			.join("\n\n"),
-	};
+  return {
+    results,
+    content: results
+      .map((result) => docsToString(result.binding, result.docs))
+      .join("\n\n"),
+  };
 }
 
 function docsToString(
-	binding: string,
-	docs: Array<{
-		score: number;
-		content: string;
-	}>,
+  binding: string,
+  docs: Array<{
+    score: number;
+    content: string;
+  }>,
 ) {
-	return docs
-		.map((doc) =>
-			`
+  return docs
+    .map((doc) =>
+      `
   <${binding}>
     <section>
       ${doc.content}
     </section>
   </${binding}>
 `.trim(),
-		)
-		.join("\n");
+    )
+    .join("\n");
 }
 
 // TODO - Create constants for these values
 function mapBinding(binding: string) {
-	switch (binding?.toLowerCase()) {
-		case "r2":
-			return "r2";
-		case "d1":
-			return "d1";
-		case "ai":
-			return "ai";
-		case "kv":
-			return "kv";
-		case "durable objects":
-			return "durable-objects";
-		default:
-			return null;
-	}
+  switch (binding?.toLowerCase()) {
+    case "r2":
+      return "r2";
+    case "d1":
+      return "d1";
+    case "ai":
+      return "ai";
+    case "kv":
+      return "kv";
+    case "durable objects":
+      return "durable-objects";
+    default:
+      return null;
+  }
 }
 
 // NOTE - This will be our recipes for using the bindings in Hono
 function getHonoExamples(bindings: string[]) {
-	const examples = [];
-	for (const binding of bindings) {
-		const bindingName = mapBinding(binding);
-		if (bindingName) {
-			examples.push(getHonoExample(bindingName));
-		}
-	}
-	return examples.join("\n");
+  const examples = [];
+  for (const binding of bindings) {
+    const bindingName = mapBinding(binding);
+    if (bindingName) {
+      examples.push(getHonoExample(bindingName));
+    }
+  }
+  return examples.join("\n");
 }
 
 function getHonoExample(binding: string) {
-	switch (binding) {
-		case "r2":
-			return getHonoR2Example();
-		default:
-			return "";
-	}
+  switch (binding) {
+    case "r2":
+      return getHonoR2Example();
+    default:
+      return "";
+  }
 }
 
 function getHonoR2Example() {
-	return `
+  return `
 <r2>
   <example description="Upload a file to R2">
     import { Hono } from "hono";

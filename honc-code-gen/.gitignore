@@ -4,6 +4,19 @@ dist
 .prod.vars
 honc.db
 
+# playground
+playground-dist
+## llamaindex local storage
+storage/
+## hand-baked chain outputs
+outputs/
+## playground environment variables
+.env
+.env.local
+.env.*.local
+## tsup
+.tsup/
+
 # Change them to your taste:
 package-lock.json
 yarn.lock
