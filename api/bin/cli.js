@@ -31,7 +31,7 @@ const script = (args[0] ?? "").trim();
 const scriptsToRun = !script ? ["migrate", "studio"] : [script];
 
 const validScripts = {
-  create: "dist/cli/index.js",
+  create: "npm create honc-app@latest --hatch",
   migrate: "dist/migrate.js",
   studio: "dist/src/index.node.js",
 };
@@ -351,6 +351,14 @@ function runScript(scriptName) {
       `Invalid script "${scriptName}". Valid scripts are: ${Object.keys(validScripts).join(", ")}`,
     );
     process.exit(1);
+  }
+
+  if (scriptName === "create") {
+    execSync(scriptPath, {
+      stdio: "inherit",
+      env: { ...USER_VARS, ...process.env },
+    });
+    return;
   }
 
   // Get the root directory of this script's project
