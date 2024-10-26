@@ -39,7 +39,9 @@ const RequestorPageContentBottomPanel: React.FC<
         {label === "logs" ? (
           <LogsLabel traceId={traceId} />
         ) : (
-          <div className="capitalize">{label}</div>
+          <div className="capitalize">
+            {label?.toLowerCase() === "ai" ? "AI" : label}
+          </div>
         )}
       </CustomTabTrigger>
     );

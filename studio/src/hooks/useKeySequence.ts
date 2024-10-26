@@ -10,6 +10,9 @@ type KeySequenceOptions = {
   ignoreSelector?: string;
 };
 
+// Special selector for elements whose input should always be ignored
+const ALWAYS_IGNORE_SELECTOR = "[data-ignore-key-sequence]";
+
 /**
  * Hook that allows you to define a key sequence and execute a callback when it is matched.
  *
@@ -53,6 +56,13 @@ export function useKeySequence(
         ignoreSelector &&
         event.target instanceof HTMLElement &&
         event.target.matches(ignoreSelector)
+      ) {
+        return;
+      }
+
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.matches(ALWAYS_IGNORE_SELECTOR)
       ) {
         return;
       }
