@@ -1,6 +1,6 @@
 import OpenAI from "openai";
-import type { AppLogger } from "../../logger";
-import type { SchemaContext } from "../../types";
+import type { AppLogger } from "../../../logger";
+import type { SchemaContext } from "../types";
 import { SYSTEM_PROMPT, invokeScaffoldAppPrompt } from "./prompts";
 import { scaffoldAppTool } from "./tools";
 

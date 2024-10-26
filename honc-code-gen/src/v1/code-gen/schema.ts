@@ -1,233 +1,46 @@
-import { PromptTemplate } from "@langchain/core/prompts";
-import type { SchemaContext } from "../types";
+import { generateObject, type LanguageModelV1 } from "ai";
+import { z } from "zod";
 
-export const invokeScaffoldAppPrompt = async ({
-  indexFile,
-  schemaFile,
-  schemaContext,
-  seedFile,
-  userPrompt,
-}: {
-  indexFile: string;
-  schemaFile: string;
-  schemaContext: SchemaContext | null;
-  seedFile: string;
-  userPrompt: string;
-}) => {
-  let databaseDescription = "";
-  let drizzleSchemaExample = "";
-  if (schemaContext) {
-    drizzleSchemaExample = getDrizzleSchemaExample(schemaContext);
-    databaseDescription = cleanPrompt(`
-      I am using a ${schemaContext.type} database, hosted by ${schemaContext.vendor}.
-      The Drizzle import path is: ${schemaContext.drizzleImport}
-    `);
-  }
-
-  const userPromptInterface = await scaffoldAppPrompt.invoke({
-    indexFile,
-    schemaFile,
-    databaseDescription,
-    drizzleSchemaExample,
-    seedFile,
-    userPrompt,
-  });
-  return userPromptInterface.value;
+type SchemaContext = {
+	type: "postgres" | "sqlite";
 };
 
-export const scaffoldAppPrompt = PromptTemplate.fromTemplate(
-  `
-I need to scaffold a Hono API. I bootstrapped the app with a template.
+export async function generateSchema(model: LanguageModelV1, databaseSchema: string) {
+	const PROMPT = `
+You are a world class software engineer.
+You are an expert in Drizzle ORM, a relational database query building library written in Typescript.
 
-However, I want to modify these template files to better suit my app idea.
+I will give you a written plan for a database schema, and you should turn it into code for a Drizzle ORM database schema definition.
 
-===
+Here is a simple database schema example for D1:
 
-{databaseDescription}
+${getD1SchemaExample()}
 
-Here is the Drizzle schema for the database:
+Here are some additionalcode references:
 
-<file language=typescript path=src/db/schema.ts>
-{schemaFile}
-</file>
+${getDrizzleSchemaExamples({ type: "sqlite" })}
 
-{drizzleSchemaExample}
+Here is the database schema plan:
 
-Tips:
+${databaseSchema}
+`.trim();
 
-- Do not change the database adapter (postgres, sqlite, etc). It is correct.
-- Avoid defining complex relations if you can. Just give me a good start.
+	const result = await generateObject({
+		model,
+		schema: z.object({
+			reasoning: z.string(),
+			dbSchemaTs: z.string(),
+		}),
+		prompt: PROMPT,
+	});
 
-===
-
-Here is the current seed file:
-
-<file language=typescript name=seed.ts>
-{seedFile}
-</file>
-
-For the seed data file, a few tips:
-
-- Import the schema like this: \`import * as schema from "./src/db/schema"\`.
-- Keep any dotenv configuration \`config({{ path: ".dev.vars" }})\`
-- If you need to load the database url from an env variable, use \`process.env.DATABASE_URL\`
-- Preserve comments when possible
-- Add your own comments to explain your thought process and choices to future developers
-
-===
-
-The current index.ts file is below.
-
-Design a simple CRUD api for key resources in the app. Expose a REST api for creating, reading, updating, and deleting resources.
-
-For streaming or realtime apis, add a TODO comment with a link to the following documentation:
-
-Streaming:
-- https://hono.dev/docs/helpers/streaming#streaming-helper
-
-Realtime:
-- https://developers.cloudflare.com/durable-objects/
-- https://fiberplane.com/blog/creating-websocket-server-hono-durable-objects/
-
-<file language=typescript path=src/index.ts>
-{indexFile}
-</file>
-
-If you need to make any database queries, take these examples of how the Drizzle ORM and query builder work:
-
-<drizzle-orm-example description="Count the number of users in the database">
-import {{ count, eq, sql }} from "drizzle-orm";
-// ...
-
-  // Rename destructured property to avoid name collision
-  const [ {{ count: usersCount }} ] = await db.select({{ count: count() }}).from(schema.users);
-
-// ...
-</drizzle-orm-example>
-
-<drizzle-orm-example description="Order items by createdAt field in descending order">
-import {{ desc }} from "drizzle-orm";
-// ...
-
-  const orderedItems = await db.select().from(schema.items).orderBy(desc(schema.items.createdAt));
-
-// ...
-</drizzle-orm-example>
-
-<drizzle-orm-example description="Select a user by id using the eq operator">
-import {{ eq, sql }} from "drizzle-orm";
-// ...
-
-const [user] = await db.select().from(schema.users).where(eq(schema.users.id, "some-user-id"));
-
-// ...
-</drizzle-orm-example>
-
-<drizzle-orm-example description="Use greater than or equal to operator">
-import {{ gte }} from "drizzle-orm";
-// ...
-
-const olderUsers = await db.select().from(schema.users).where(gte(schema.users.age, 64));
-
-// ...
-</drizzle-orm-example>
-
-<drizzle-orm-example description="Use the db.delete method to remove a user from the database">
-// ...
-
-  // WRONG! This will delete all entries in the users table
-  // await db.delete().where(eq(schema.users.id, id)).from(schema.users);
-
-  // CORRECT!
-  await db.delete(schema.users).where(eq(schema.users.id, id));
-
-// ...
-</drizzle-orm-example>
-
-===
-
-Please make the necessary changes to the template files to better suit the app I want to build.
-
-Follow these guidelines:
-
-- Always respond in valid JSON
-- Prefer Number.parseInt over parseInt
-- All import paths are correct, so don't modify import paths
-- Add new imports from the Drizzle ORM if you need new sql helper functions (like {{ sql }}, {{ gte }}, etc)
-- If the file was not provided, return an empty string for that file
-
-This is the description of the app I want to build:
-
-{userPrompt}
-
-Please adapt the files I provided to help me build the app I described.
-
-This is imporant to my career.
-
-`.trim(),
-);
-
-export const SYSTEM_PROMPT = cleanPrompt(`
-You are a friendly, expert full-stack engineer and an API building assistant for apps that use Hono,
-a typescript web framework similar to express.
-
-You are using the HONC stack:
-
-- Hono for the API
-- Drizzle ORM for the database
-- Neon for the database (serverless postgres)
-- Cloudflare Workers for the deployment target
-
-You will be given an index file, a schema file, and a seed data file.
-
-You will also be provided a user prompt that describes the API you need to build.
-
-You need to change the files to help the user layout the basics of their API, based on what they describe.
-
-A few tips:
-
-For Hono apis on Cloudflare Workers, you must access environment variables from a context parameter within the request handler functions.
-
-So, in "index.ts", you might see something like this:
-
-\`\`\`typescript
-app.get("/", (c) => {
-  const DATABASE_URL = c.env.DATABASE_URL;
-  // ...
-});
-\`\`\`
-
-That is correct, do not modify it to use process.env!
-
-In the seed file, you can use process.env.DATABASE_URL directly, as this is not running inside the API. It is a script.
-
-Also export default instrument(app); <-- do not modify that line. Keep instrumenting the app as is, if it is instrumented.
-
-===
-
-Think in this order:
-
-1. What tables do I need?
-2. What columns do I need?
-3. What are the relationships between the tables?
-4. What simple data should I seed the database with?
-5. How do I design a CRUD api for the database?
-
-Remove existing code from the files that is no longer needed.
-
-If you keep existing code or seed data, make sure it is more *thematically correct* for the app. E.g., with user names.
-
-Pay attention to tips about working with the Drizzle ORM.
-
-Do not return the files unchanged.
-
-Use the tool "scaffold_app". Always respond in valid JSON.
-`);
+	return result.object;
+}
 
 // TODO - Update JSONB example to have type safety?
-function getDrizzleSchemaExample(schemaContext: SchemaContext) {
-  if (schemaContext.type === "postgres") {
-    return `
+function getDrizzleSchemaExamples(schemaContext: SchemaContext) {
+	if (schemaContext.type === "postgres") {
+		return `
 Here are some examples of how to use the Drizzle ORM to define tables:
 
 <example type="timestamps">
@@ -269,10 +82,10 @@ Here are some examples of how to use the Drizzle ORM to define tables:
 </example>
 ${getDrizzleRelationsExample(schemaContext)}
     `;
-  }
+	}
 
-  if (schemaContext.type === "sqlite") {
-    return `
+	if (schemaContext.type === "sqlite") {
+		return `
 Here are some examples of how to use the Drizzle ORM to define tables:
 
 <example type="numbers,booleans,timestamps">
@@ -301,14 +114,14 @@ Here are some examples of how to use the Drizzle ORM to define tables:
 </example>
 ${getDrizzleRelationsExample(schemaContext)}
     `;
-  }
+	}
 
-  return "";
+	return "";
 }
 
 function getDrizzleRelationsExample(schemaContext: SchemaContext) {
-  if (schemaContext.type === "postgres") {
-    return `
+	if (schemaContext.type === "postgres") {
+		return `
 <example type="relations" relationType="one-to-one">
   <description>
     An example of a one-to-one relation between users and users, where a user can invite another (this example uses a self reference):
@@ -420,9 +233,9 @@ function getDrizzleRelationsExample(schemaContext: SchemaContext) {
   </typescript>
 </example>
     `;
-  }
-  if (schemaContext.type === "sqlite") {
-    return `
+	}
+	if (schemaContext.type === "sqlite") {
+		return `
 <example type="relations" relationType="one-to-one">
   <description>
     An example of a one-to-one relation between users and users, where a user can invite another (this example uses a self reference):
@@ -534,17 +347,21 @@ function getDrizzleRelationsExample(schemaContext: SchemaContext) {
   </typescript>
 </example>
     `;
-  }
-  return "";
+	}
+	return "";
 }
 
-/**
- * Clean a prompt by trimming whitespace for each line and joining the lines.
- */
-export function cleanPrompt(prompt: string) {
-  return prompt
-    .trim()
-    .split("\n")
-    .map((l) => l.trim())
-    .join("\n");
+function getD1SchemaExample() {
+	return `
+import { sql } from "drizzle-orm";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const users = sqliteTable("users", {
+  id: integer("id", { mode: "number" }).primaryKey(),
+  name: text("name").notNull(),
+  email: text("email"),
+  createdAt: text("created_at").notNull().default(sql\`(CURRENT_TIMESTAMP)\`),
+  updatedAt: text("updated_at").notNull().default(sql\`(CURRENT_TIMESTAMP)\`),
+});
+`.trim();
 }

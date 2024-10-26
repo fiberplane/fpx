@@ -1,7 +1,7 @@
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { z } from "zod";
-import type * as schema from "../db/schema";
-import type { createLogger } from "../logger";
+import type * as schema from "../../db/schema";
+import type { createLogger } from "../../logger";
 
 export type Bindings = {
   DB: D1Database;

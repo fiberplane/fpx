@@ -9,7 +9,7 @@ import { StateGraph } from "@langchain/langgraph";
 import { Annotation, MemorySaver } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { z } from "zod";
-import type { AppLogger } from "../../logger";
+import type { AppLogger } from "../../../logger";
 
 // Define the graph state
 // See here for more info: https://langchain-ai.github.io/langgraphjs/how-tos/define-state/
