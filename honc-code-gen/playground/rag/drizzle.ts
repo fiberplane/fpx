@@ -22,6 +22,7 @@ export async function createDrizzleVectorIndex() {
       "..",
       "..",
       "..",
+      "..",
       "cv-codegen-hackathon",
       "drizzle-orm-docs",
       "src",

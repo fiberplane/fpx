@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const cloudflareDocsDir = resolve(
-  `${__dirname}/../../../cv-codegen-hackathon/cloudflare-docs`,
+  `${__dirname}/../../../../cv-codegen-hackathon/cloudflare-docs`,
 );
 
 // Array of directories to load documents from

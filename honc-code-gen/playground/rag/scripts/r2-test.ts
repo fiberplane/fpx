@@ -20,6 +20,11 @@ export async function getContext(query: string) {
 
   const nodesWithScore = await retriever.retrieve({ query });
 
+  if (nodesWithScore.length === 0) {
+    console.log("No nodes found");
+    return [];
+  }
+
   // TODO!!!!
   for (const nodeWithScore of nodesWithScore) {
     console.log("--------------------------------");

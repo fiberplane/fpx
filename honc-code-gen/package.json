@@ -14,7 +14,6 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "types": "./src/lib/types.ts",
   "scripts": {
     "dev": "wrangler dev src/index.tsx",
     "deploy": "wrangler deploy --minify src/index.tsx",
@@ -31,11 +30,11 @@
     "studio": "pnpx @fiberplane/studio@canary",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "test": "vitest --run",
-    "play:codegen": "tsx --tsconfig tsconfig.playground.json playground/code-gen/index.ts",
-    "play:trace": "tsx --tsconfig tsconfig.playground.json playground/code-gen/utils/scripts/latest-trace.ts",
-    "play:index:cloudflare": "tsx --tsconfig tsconfig.playground.json playground/rag/scripts/index-cloudflare.ts",
-    "play:index:drizzle": "tsx --tsconfig tsconfig.playground.json playground/rag/scripts/index-drizzle.ts",
-    "play:r2": "tsx --tsconfig tsconfig.playground.json playground/rag/scripts/r2-test.ts"
+    "play:codegen": "tsx --tsconfig ./tsconfig.playground.json playground/code-gen/index.ts",
+    "play:trace": "tsx --tsconfig ./tsconfig.playground.json playground/code-gen/utils/scripts/latest-trace.ts",
+    "play:index:cloudflare": "tsx --tsconfig ./tsconfig.playground.json playground/rag/scripts/index-cloudflare.ts",
+    "play:index:drizzle": "tsx --tsconfig ./tsconfig.playground.json playground/rag/scripts/index-drizzle.ts",
+    "play:r2": "tsx --tsconfig ./tsconfig.playground.json playground/rag/scripts/r2-test.ts"
   },
   "publishConfig": {
     "access": "public"

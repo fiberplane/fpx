@@ -15,11 +15,7 @@
     "noImplicitReturns": true,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./playground/*"]
-    },
-    "outDir": "./playground-dist"
+    "baseUrl": "."
   },
-  "include": ["playgorund"]
+  "include": ["playground"]
 }
