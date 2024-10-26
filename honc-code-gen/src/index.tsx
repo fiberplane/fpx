@@ -7,6 +7,8 @@ import * as schema from "./db/schema";
 import type { HatchApp } from "./types";
 import { createLogger } from "./logger";
 import v0Api from "./v0";
+import v1Api from "./v1";
+import { HomePage } from "./v1/components/HomePage";
 
 const app = new Hono<HatchApp>();
 
@@ -59,8 +61,22 @@ app.use((c, next) =>
   })(c, next),
 );
 
-app.get("/", (c) => c.text("Hello, world!"));
+// Add nonce generation function
+function generateNonce(): string {
+  return crypto.randomUUID();
+}
+
+app.get("/", (c) => {
+  // Generate a unique nonce for each request
+  const nonce = generateNonce();
+
+  // Set CSP header
+  c.header("Content-Security-Policy", `script-src 'nonce-${nonce}'`);
+
+  return c.render(<HomePage nonce={nonce} />);
+});
 
 app.route("/v0", v0Api);
+app.route("/v1", v1Api);
 
 export default instrument(app);
