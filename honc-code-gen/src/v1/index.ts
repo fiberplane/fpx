@@ -1,7 +1,23 @@
+import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { z } from "zod";
 import type { HatchApp } from "../types";
+import { generateName } from "./ai-name-generation";
 
 const v1Api = new Hono<HatchApp>();
+
+const validatePrompt = zValidator(
+  "json",
+  z.object({
+    prompt: z.string(),
+  }),
+);
+
+v1Api.post("/hatch/name", validatePrompt, async (c) => {
+  const prompt = c.req.valid("json").prompt;
+  const name = await generateName(c.env.AI, prompt);
+  return c.json({ name }, 200);
+});
 
 v1Api.post("/hatch", async (c) => {
   const body = await c.req.json();

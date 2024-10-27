@@ -5,6 +5,7 @@ import type { createLogger } from "./logger";
 export type Bindings = {
   DB: D1Database;
   R2: R2Bucket;
+  AI: Ai;
   OPENAI_API_KEY: string;
   ANTHROPIC_API_KEY: string;
   HONC_LOG_LEVEL: string;

@@ -25,6 +25,7 @@
     "db:migrate:prod": "HONC_CODE_GEN_ENV=production drizzle-kit migrate",
     "db:studio:prod": "HONC_CODE_GEN_ENV=production drizzle-kit studio",
     "build": "pnpm run db:generate && tsc",
+    "fiberplane": "pnpx @fiberplane/studio@canary",
     "format": "biome check . --write",
     "lint": "biome lint .",
     "studio": "pnpx @fiberplane/studio@canary",
