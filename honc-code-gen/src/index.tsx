@@ -1,4 +1,5 @@
-import { instrument } from "@fiberplane/hono-otel";
+// NOTE - Client library breaks SSE :( so i need to remove it for now
+// import { instrument } from "@fiberplane/hono-otel";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { logger as honoLogger } from "hono/logger";
@@ -79,4 +80,4 @@ app.get("/", (c) => {
 app.route("/v0", v0Api);
 app.route("/v1", v1Api);
 
-export default instrument(app);
+export default app;

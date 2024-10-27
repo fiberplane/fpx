@@ -46,7 +46,7 @@
     "@ai-sdk/openai": "^0.0.66",
     "@anthropic-ai/sdk": "^0.29.0",
     "@cloudflare/workers-types": "^4.20241011.0",
-    "@fiberplane/hono-otel": "^0.2.0",
+    "@fiberplane/hono-otel": "workspace:*",
     "@hono/zod-validator": "^0.2.2",
     "@langchain/anthropic": "^0.3.3",
     "@langchain/core": "^0.2.36",

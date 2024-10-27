@@ -79,33 +79,73 @@ function ScriptSubmitForm({ nonce }: { nonce: string }) {
           document.getElementById('hatchForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            let statusContainer = document.getElementById('status-container');
+            if (!statusContainer) {
+              statusContainer = document.createElement('div');
+              statusContainer.id = 'status-container';
+              e.target.after(statusContainer);
+            } else {
+              statusContainer.innerHTML = '';
+            }
+            
             const formData = new FormData(e.target);
-            const data = {
-              prompt: formData.get('prompt'),
-              dbType: formData.get('dbType')
+            const prompt = formData.get('prompt');
+            const dbType = formData.get('dbType');
+
+            // Add debug message for URL
+            const params = new URLSearchParams({
+                prompt: prompt,
+                dbType: dbType
+            });
+            const url = "/v1/hatch/stream?" + params.toString();
+            console.log('Connecting to SSE endpoint:', url);
+
+            const eventSource = new EventSource(url);
+
+            // Log when connection is established
+            eventSource.onopen = (event) => {
+              console.log('SSE Connection opened:', event);
+              const div = document.createElement('div');
+              div.innerHTML = '<strong>Status:</strong> Connected to server';
+              statusContainer.appendChild(div);
             };
 
-            fetch('/v1/hatch', {
-              method: "POST",
-              body: JSON.stringify(data),
-              headers: {
-                'Content-Type': 'application/json'
-              },
-            })
-            .then(async response => {
-              if (!response.ok) {
-                throw new Error("HTTP error! status: " + response.status);
-              }
-              return response.text();
-            })
-            .then(data => {
-              console.log("Success:", data);
-              window.alert('Success: ' + data);
-            })
-            .catch(error => {
-              console.error("Error:", error);
-              window.alert('Error: ' + error.message);
+            eventSource.addEventListener('plan-generated', (e) => {
+              console.log('Received plan-generated event:', e);
+              const data = JSON.parse(e.data);
+              const div = document.createElement('div');
+              div.innerHTML = '<strong>Plan Generated:</strong> ' + data.message;
+              statusContainer.appendChild(div);
             });
+
+            eventSource.addEventListener('writing-schema', (e) => {
+              console.log('Received writing-schema event:', e);
+              const data = JSON.parse(e.data);
+              const div = document.createElement('div');
+              div.innerHTML = '<strong>Schema Update:</strong> ' + data.message;
+              statusContainer.appendChild(div);
+              eventSource.close();
+            });
+
+            // Enhanced error handling
+            eventSource.onerror = (error) => {
+              console.error('EventSource failed:', error);
+              console.log('EventSource readyState:', eventSource.readyState);
+              
+              // Get response status if available
+              fetch(url).then(response => {
+                console.log('Endpoint status:', response.status);
+                console.log('Response headers:', response.headers);
+              }).catch(err => {
+                console.error('Fetch test failed:', err);
+              });
+
+              eventSource.close();
+              const div = document.createElement('div');
+              div.innerHTML = '<strong>Error:</strong> Connection failed. Check console for details.';
+              div.style.color = 'red';
+              statusContainer.appendChild(div);
+            };
           });
         </script>
       `}
