@@ -349,8 +349,8 @@ importers:
         specifier: ^4.20241011.0
         version: 4.20241011.0
       '@fiberplane/hono-otel':
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: workspace:*
+        version: link:../packages/client-library-otel
       '@hono/zod-validator':
         specifier: ^0.2.2
         version: 0.2.2(hono@4.6.2)(zod@3.23.8)
@@ -2388,9 +2388,6 @@ packages:
   '@fastify/busboy@2.1.1':
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
-
-  '@fiberplane/hono-otel@0.2.0':
-    resolution: {integrity: sha512-e8OJWWwKWp7dpsXE1l0rcX/OPWcm5ZDMSqkHfbLzpuvQpI3LsDPWp4wDxAUeWdMIJMZqP9e6LI+XHhjhVMxUUA==}
 
   '@fiberplane/hooks@0.3.0':
     resolution: {integrity: sha512-A48RhHoUTdnxsQt5LHnbug6wAJz8lV2V88RazaYkU5k/l09DPk27m5p6wFGhmVEh5nLofIKOg8SLzjsPXRYjUQ==}
@@ -12232,17 +12229,6 @@ snapshots:
       '@expressive-code/core': 0.35.6
 
   '@fastify/busboy@2.1.1': {}
-
-  '@fiberplane/hono-otel@0.2.0':
-    dependencies:
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/exporter-trace-otlp-http': 0.52.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-trace-otlp-proto': 0.52.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources': 1.25.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-base': 1.25.1(@opentelemetry/api@1.9.0)
-      '@opentelemetry/semantic-conventions': 1.25.1
-      '@types/shimmer': 1.2.0
-      shimmer: 1.2.1
 
   '@fiberplane/hooks@0.3.0': {}
 
