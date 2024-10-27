@@ -288,6 +288,25 @@ importers:
         specifier: ^4.7.1
         version: 4.17.0
 
+  examples/server-side-events:
+    dependencies:
+      '@fiberplane/hono-otel':
+        specifier: workspace:*
+        version: link:../../packages/client-library-otel
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
+      hono:
+        specifier: ^4.5.9
+        version: 4.6.5
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20240821.1
+        version: 4.20241011.0
+      wrangler:
+        specifier: ^3.73.0
+        version: 3.80.4(@cloudflare/workers-types@4.20241011.0)
+
   examples/test-static-analysis:
     dependencies:
       '@fiberplane/hono-otel':
