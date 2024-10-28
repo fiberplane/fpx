@@ -4,8 +4,25 @@ import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 
 const postsUnsorted = await getCollection("blog");
 const postsSortedByDateDesc = postsUnsorted.toSorted(
-  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
 );
+
+const colorVariables = [
+  "--color-tag-blue",
+  "--color-tag-green",
+  "--color-tag-orange",
+  "--color-tag-purple",
+  "--color-tag-yellow"
+];
+
+function getColorValueBasedOnContent(content: string) {
+  let result = 0;
+  for (let index = 0; index < content.length; index++) {
+    result += content.codePointAt(index) ?? 1;
+  }
+
+  return colorVariables[result % colorVariables.length];
+}
 ---
 
 <StarlightPage
@@ -18,17 +35,32 @@ const postsSortedByDateDesc = postsUnsorted.toSorted(
   <ul class="blog-post-list">
     {
       postsSortedByDateDesc.map((post) => (
-        <li>
+        <li class="blog-post">
           <h4>
             <a href={`/blog/${post.slug}`}>{post.data.title}</a>
           </h4>
-          <span class="post-date">
+
+          <div class="date">
             {new Date(post.data.date).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "short",
-              day: "numeric"
+              year: "2-digit",
+              month: "2-digit",
+              day: "2-digit"
             })}
-          </span>
+          </div>
+
+          <ul class="tags">
+            {post.data.tags.toSorted().map((tag) => {
+              const colorVariable = getColorValueBasedOnContent(tag);
+
+              return (
+                <li>
+                  <span style={`--color-tag: var(${colorVariable});`}>
+                    {tag.toLowerCase()}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </li>
       ))
     }
@@ -36,24 +68,87 @@ const postsSortedByDateDesc = postsUnsorted.toSorted(
 </StarlightPage>
 
 <style>
-  .blog-post-list h4 > a:hover {
-    text-decoration: none;
+  :root {
+    --color-tag-blue: #2563eb;
+    --color-tag-green: #8db844;
+    --color-tag-orange: #f25a60;
+    --color-tag-purple: #c38bf0;
+    --color-tag-yellow: #e1a847;
+  }
+
+  ul.blog-post-list {
     color: var(--sl-color-accent);
-  }
-  ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  ul li {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+    flex-direction: column;
+    gap: 1.5rem;
+    container: blog-post-list / inline-size;
+
+    &,
+    .tags {
+      list-style: none;
+      padding: 0;
+    }
+
+    li.blog-post {
+      display: grid;
+      gap: 0.5rem;
+
+      h4 {
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      .date {
+        margin: 0;
+        align-self: start;
+        line-height: 1;
+        font-family: monospace;
+        color: var(--sl-color-gray-3);
+      }
+
+      ul.tags {
+        margin: 0;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        line-height: 1;
+        flex-wrap: wrap;
+
+        li {
+          margin: 0;
+        }
+
+        li span {
+          line-height: 1;
+          background: hsl(from var(--color-tag) h s l / 0.025);
+          border: var(--color-tag) 1px solid;
+          color: var(--color-tag);
+
+          font-size: 0.875rem;
+          font-weight: 500;
+          padding: 0.025em 0.25em;
+          border-radius: 0.25rem;
+        }
+      }
+    }
   }
-  ul h4 {
-    margin: 0;
-  }
-  .post-date {
-    margin-left: 1rem;
+
+  @container blog-post-list (width > 400px) {
+    li.blog-post {
+      grid: "title author date" auto "tags tags date" auto / auto auto max-content;
+
+      h4 {
+        grid-area: title;
+      }
+
+      .date {
+        grid-area: date;
+        justify-self: end;
+      }
+
+      ul.tags {
+        grid-area: tags;
+      }
+    }
   }
 </style>
