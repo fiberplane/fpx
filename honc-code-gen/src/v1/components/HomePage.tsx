@@ -112,45 +112,25 @@ function ScriptSubmitForm({ nonce }: { nonce: string }) {
 
             eventSource.addEventListener('status-update', (e) => {
               console.log('Received status-update event:', e);
-              const data = JSON.parse(e.data);
+              let data; 
+              try {
+                data = JSON.parse(e.data);
+              } catch (error) {
+                data = e.data;
+              }
               const div = document.createElement('div');
-              div.innerHTML = '<strong>Status:</strong> ' + data.message;
+              div.innerHTML = '<strong>Status:</strong> ' + (data.message || data);
               statusContainer.appendChild(div);
-            });
-
-            eventSource.addEventListener('plan-generated', (e) => {
-              console.log('Received plan-generated event:', e);
-              const data = JSON.parse(e.data);
-              const div = document.createElement('div');
-              div.innerHTML = '<strong>Plan Generated:</strong> ' + data.message;
-              statusContainer.appendChild(div);
-            });
-
-            eventSource.addEventListener('writing-schema', (e) => {
-              console.log('Received writing-schema event:', e);
-              const data = JSON.parse(e.data);
-              const div = document.createElement('div');
-              div.innerHTML = '<strong>Schema Update:</strong> ' + data.message;
-              statusContainer.appendChild(div);
-              eventSource.close();
             });
 
             // Enhanced error handling
             eventSource.onerror = (error) => {
               console.error('EventSource failed:', error);
               console.log('EventSource readyState:', eventSource.readyState);
-              
-              // Get response status if available
-              fetch(url).then(response => {
-                console.log('Endpoint status:', response.status);
-                console.log('Response headers:', response.headers);
-              }).catch(err => {
-                console.error('Fetch test failed:', err);
-              });
 
               eventSource.close();
               const div = document.createElement('div');
-              div.innerHTML = '<strong>Error:</strong> Connection failed. Check console for details.';
+              div.innerHTML = '<strong>Error:</strong> Connection failed (possibly closed by server). Check console for details.';
               div.style.color = 'red';
               statusContainer.appendChild(div);
             };

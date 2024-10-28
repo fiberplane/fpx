@@ -2,6 +2,7 @@
 import { instrument } from "@fiberplane/hono-otel";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
+import { contextStorage } from "hono/context-storage";
 import { logger as honoLogger } from "hono/logger";
 import * as schema from "./db/schema";
 
@@ -15,6 +16,8 @@ import { HomePage } from "./v1/components/HomePage";
 export { GooseEgg };
 
 const app = new Hono<HatchApp>();
+
+app.use(contextStorage());
 
 // Add a scoped logger on the context, since our logger depends on the env variables
 app.use(async (c, next) => {

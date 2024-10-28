@@ -1,6 +1,8 @@
 import { DurableObject } from "cloudflare:workers";
 import type { Context } from "hono";
+import { getContext } from "hono/context-storage";
 import { type SSEStreamingApi, streamSSE } from "hono/streaming";
+import { modifiedStreamSSE } from "./streaming-help";
 import type { Bindings, HatchApp } from "./types";
 
 export class GooseEgg extends DurableObject<Bindings> {
@@ -46,6 +48,51 @@ export class GooseEgg extends DurableObject<Bindings> {
         //   })
         //   await stream.sleep(1000)
         // }
+      },
+      async (_e, stream) => {
+        console.error("Error streaming SSE:", _e?.message);
+        this.clients.delete(stream);
+      },
+    );
+  }
+
+  async fetch(request: Request) {
+    return modifiedStreamSSE(
+      request,
+      async (stream) => {
+        this.clients.add(stream);
+
+        // TODO - When the status is `finished` or `failed`, report the status and close the stream
+
+        // This *should* be called when the client disconnects
+        stream.onAbort(() => {
+          this.clients.delete(stream);
+        });
+
+        stream.writeSSE({
+          event: "status-update",
+          data: "Hello, world!",
+          id: crypto.randomUUID(),
+        });
+
+        await stream.sleep(1000);
+
+        // NOTE - Could do interval polling here, might be simpler than pushing updates when status is updated
+        //
+        while (
+          !stream.aborted &&
+          !stream.closed &&
+          this.status !== "finished" &&
+          this.status !== "failed"
+        ) {
+          const currentStatus = this.status;
+          await stream.writeSSE({
+            data: currentStatus,
+            event: "status-update",
+            id: crypto.randomUUID(),
+          });
+          await stream.sleep(2000);
+        }
       },
       async (_e, stream) => {
         console.error("Error streaming SSE:", _e?.message);

@@ -50,7 +50,7 @@ v1Api.get("/hatch/:id/status", async (c) => {
   // TODO - Look up session in the database
   const id = c.env.GOOSE_EGG.idFromName(c.req.param("id"));
   const stub = c.env.GOOSE_EGG.get(id);
-  return stub.handleSSE(c);
+  return stub.fetch(c.req.raw);
 });
 
 // HACK - Just to test the SSE endpoint, manually set the status
