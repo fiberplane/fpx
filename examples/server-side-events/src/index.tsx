@@ -8,7 +8,7 @@ const app = new Hono();
 /**
  * Home page
  *
- * If `shouldHonk` query parameter is present, then print "Honk honk!"
+ * A simple page that allows you to start a streaming connection to the /sse endpoint.
  */
 app.get("/", (c) => {
   return c.html(
