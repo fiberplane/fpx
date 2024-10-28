@@ -85,8 +85,8 @@ export function getImportTypeDefinitionFileName(
 ):
   | (ModuleReference & { isExternalLibrary: boolean; location: string })
   | undefined {
-  const { ts, program } = context;
-  const checker = program.getTypeChecker();
+  const { ts, checker, program } = context;
+  // const checker = program.getTypeChecker();
   const symbol = checker.getSymbolAtLocation(node);
 
   const declarations = symbol?.getDeclarations();

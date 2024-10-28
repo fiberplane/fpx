@@ -63,7 +63,7 @@ function visit(
   startPosition: number,
   rootNodeReference: TsNode = currentNode,
 ) {
-  const { ts, program, sourceReferenceManager, getFile } = context;
+  const { ts, checker, sourceReferenceManager, getFile } = context;
   const sourceFile = getFile(rootReference.fileName);
 
   if (ts.isIdentifier(currentNode)) {
@@ -83,7 +83,7 @@ function visit(
         return;
       }
     }
-    const checker = program.getTypeChecker();
+    // const checker = program.getTypeChecker();
     const symbol = checker.getSymbolAtLocation(currentNode);
 
     const declarations = symbol?.getDeclarations();
@@ -108,23 +108,22 @@ function visit(
     }
 
     if (
-      (rootNodeReference.getStart() > nodeValue.getEnd() || rootNodeReference.getEnd() < nodeValue.getStart()) && (
-        ts.isFunctionDeclaration(nodeValue) ||
+      (rootNodeReference.getStart() > nodeValue.getEnd() ||
+        rootNodeReference.getEnd() < nodeValue.getStart()) &&
+      (ts.isFunctionDeclaration(nodeValue) ||
         ts.isArrowFunction(nodeValue) ||
         ts.isCallExpression(nodeValue) ||
         ts.isTypeAliasDeclaration(nodeValue) ||
         ts.isExportSpecifier(nodeValue) ||
-        ts.isVariableDeclaration(nodeValue)
-      )
+        ts.isVariableDeclaration(nodeValue))
     ) {
-
       const sourceReference =
         sourceReferenceManager.getReference(
           nodeValue.getSourceFile().fileName,
           nodeValue.getStart(),
         ) || createSourceReferenceForNode(nodeValue, context);
       if (currentNode.getText() === "user") {
-        console.log('nodeValue', currentNode.parent.kind, !!dependencyResult);
+        console.log("nodeValue", currentNode.parent.kind, !!dependencyResult);
       }
       rootReference.references.push(sourceReference);
       return;
@@ -212,11 +211,11 @@ function getNodeValueForDependency(
   context: SearchContext,
   declaration: TsDeclaration,
 ) {
-  const { server, getFile, program, ts } = context;
+  const { service, getFile, program, ts } = context;
 
   const declSourceFile = declaration.getSourceFile();
   const references: Array<TsReferenceEntry> =
-    server.getReferencesAtPosition(
+    service.getReferencesAtPosition(
       declSourceFile.fileName,
       declaration.getStart(),
     ) || [];
@@ -266,7 +265,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-    currentNode.getSourceFile().fileName
+      currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }
@@ -328,8 +327,7 @@ function createSourceReferenceContentForNode(
     | TsVariableDeclaration,
   context: SearchContext,
 ) {
-
-  const { ts } = context
+  const { ts } = context;
   if (
     ts.isCallExpression(node) &&
     ts.isVariableDeclarationList(node.parent.parent)

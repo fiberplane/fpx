@@ -21,8 +21,10 @@ export type TsProgram = bundledTs.Program;
 export type TsReferenceEntry = bundledTs.ReferenceEntry;
 export type TsSourceFile = bundledTs.SourceFile;
 export type TsStringLiteral = bundledTs.StringLiteral;
+export type TsSymbol = bundledTs.Symbol;
 export type TsSyntaxKind = bundledTs.SyntaxKind;
 export type TsTypeAliasDeclaration = bundledTs.TypeAliasDeclaration;
+export type TsTypeChecker = bundledTs.TypeChecker;
 export type TsVariableDeclaration = bundledTs.VariableDeclaration;
 
 export type RouteTree = {
@@ -31,10 +33,22 @@ export type RouteTree = {
   // TODO: add source references
   // The Hono type is a generic that can be used
   // for instance to inject bindings/environment variables
-  entries: RouteEntry[];
+  entries: Array<Entry>;
 };
 
+type Entry = RouteEntry | RouteTreeReference;
+
+export type RouteTreeReference = {
+  type: "ROUTE_TREE_REFERENCE";
+  // `.routes()` accepts a path parameter
+  path: string;
+
+  // Identifier for the route tree
+  name: string;
+  filename: string;
+};
 export type RouteEntry = {
+  type: "ROUTE_ENTRY";
   method: string;
   path: string;
   sources: SourceReference[];
