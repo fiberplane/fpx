@@ -7,7 +7,14 @@ export async function listRecentWorkspaces() {
   return await invoke<Array<string>>("list_recent_workspaces");
 }
 
-export async function openWorkspace(path: string) {
+export async function createWorkspaceConfig(listenPort: number, path: string) {
+  return await invoke<boolean>("create_workspace_config", {
+    listenPort,
+    path,
+  });
+}
+
+export async function openWorkspaceByPath(path: string) {
   return await invoke<Workspace | undefined>("open_workspace_by_path", {
     path,
   });
@@ -27,7 +34,7 @@ export async function showOpenWorkspaceDialog() {
     return;
   }
 
-  return await openWorkspace(selected);
+  return await openWorkspaceByPath(selected);
 }
 
 async function handleDirectorySelection() {

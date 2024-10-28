@@ -6,7 +6,7 @@
 use anyhow::Result;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::fs::read_to_string;
+use std::fs::{self, read_to_string};
 use std::path::PathBuf;
 use std::{env, ops::Range};
 use thiserror::Error;
@@ -49,6 +49,16 @@ impl FpxConfig {
             })?;
 
         Ok((config, config_file_path))
+    }
+
+    pub fn save(&self, path: String) -> Result<(), ()> {
+        let content = toml::to_string(&self).unwrap();
+        fs::write(path, content).unwrap();
+        Ok(())
+    }
+
+    pub fn set_listen_port(&mut self, listen_port: u32) {
+        self.listen_port = Some(listen_port);
     }
 
     /// Unwraps the configured listen_port in the workspace' `fpx.toml` if it's set or return the
