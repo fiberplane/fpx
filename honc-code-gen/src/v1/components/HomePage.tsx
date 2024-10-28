@@ -97,7 +97,7 @@ function ScriptSubmitForm({ nonce }: { nonce: string }) {
                 prompt: prompt,
                 dbType: dbType
             });
-            const url = "/v1/hatch/stream?" + params.toString();
+            const url = "/v1/hatch/123/status?" + params.toString();
             console.log('Connecting to SSE endpoint:', url);
 
             const eventSource = new EventSource(url);
@@ -109,6 +109,14 @@ function ScriptSubmitForm({ nonce }: { nonce: string }) {
               div.innerHTML = '<strong>Status:</strong> Connected to server';
               statusContainer.appendChild(div);
             };
+
+            eventSource.addEventListener('status-update', (e) => {
+              console.log('Received status-update event:', e);
+              const data = JSON.parse(e.data);
+              const div = document.createElement('div');
+              div.innerHTML = '<strong>Status:</strong> ' + data.message;
+              statusContainer.appendChild(div);
+            });
 
             eventSource.addEventListener('plan-generated', (e) => {
               console.log('Received plan-generated event:', e);

@@ -15,6 +15,7 @@
     "node": ">=16.0.0"
   },
   "scripts": {
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "dev": "wrangler dev src/index.tsx",
     "deploy": "wrangler deploy --minify src/index.tsx",
     "db:generate": "drizzle-kit generate",

@@ -16,7 +16,8 @@
     "jsxImportSource": "hono/jsx"
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "worker-configuration.d.ts"
   ],
   "exclude": [
     "outputs",

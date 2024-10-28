@@ -32,6 +32,36 @@ v1Api.post("/hatch", async (c) => {
   return c.json({ message: "Hatch request processed successfully" }, 200);
 });
 
+/**
+ * Any uncaught exceptions thrown by a Durable Object or thrown by Durable Objects’ infrastructure
+ * (such as overloads or network errors)
+ * will be propagated to the callsite of the client.
+ * Catching these exceptions allows you to retry creating the DurableObjectStub and sending requests.
+ *
+ * JavaScript Errors with the property .retryable set to True are suggested to be retried
+ * if requests to the Durable Object are idempotent,
+ * or can be applied multiple times without changing the response.
+ * If requests are not idempotent, then you will need to decide what is best for your application.
+ *
+ * JavaScript Errors with the property .overloaded set to True should not be retried.
+ * If a Durable Object is overloaded, then retrying will worsen the overload and increase the overall error rate.
+ */
+v1Api.get("/hatch/:id/status", async (c) => {
+  // TODO - Look up session in the database
+  const id = c.env.GOOSE_EGG.idFromName(c.req.param("id"));
+  const stub = c.env.GOOSE_EGG.get(id);
+  return stub.handleSSE(c);
+});
+
+// HACK - Just to test the SSE endpoint, manually set the status
+v1Api.post("/hatch/:id/status", async (c) => {
+  // TODO - Look up session in the database
+  const id = c.env.GOOSE_EGG.idFromName(c.req.param("id"));
+  const stub = c.env.GOOSE_EGG.get(id);
+  await stub.setStatus("finished");
+  return c.json({ message: "Status set to finished" }, 200);
+});
+
 // Change to GET with query parameters
 v1Api.get("/hatch/stream", async (c) => {
   const prompt = c.req.query("prompt");
@@ -40,11 +70,6 @@ v1Api.get("/hatch/stream", async (c) => {
   if (!prompt || !dbType) {
     return c.json({ error: "Missing required parameters" }, 400);
   }
-
-  // Set required headers for SSE
-  c.header("Content-Type", "text/event-stream");
-  c.header("Cache-Control", "no-cache");
-  c.header("Connection", "keep-alive");
 
   return streamSSE(c, async (stream) => {
     const logger = c.get("appLogger");
