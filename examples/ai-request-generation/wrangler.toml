@@ -1,5 +1,5 @@
 name = "showcase-request-gen"
-compatibility_date = "2024-08-27"
+compatibility_date = "2024-10-28"
 compatibility_flags = ["nodejs_compat"]
 
 [ai]
