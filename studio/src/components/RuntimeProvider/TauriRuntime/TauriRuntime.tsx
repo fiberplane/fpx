@@ -12,7 +12,7 @@ import { useTauriEventHandler } from "./hooks";
 import {
   closeWorkspace,
   getCurrentWorkspace,
-  openWorkspace,
+  openWorkspaceByPath,
   showOpenWorkspaceDialog,
 } from "./utils";
 
@@ -21,7 +21,7 @@ export function TauriRuntime({ children }: RuntimeProviderProps) {
   const [error, setError] = useState<OpenWorkspaceError | undefined>();
 
   const handleOpenWorkspaceByPath = useHandler(async (path: string) => {
-    const workspace = await openWorkspace(path);
+    const workspace = await openWorkspaceByPath(path);
     setWorkspace(workspace);
   });
 

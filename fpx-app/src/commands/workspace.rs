@@ -9,6 +9,14 @@ use tauri_plugin_store::Store;
 const RECENT_WORKSPACES_STORE_KEY: &str = "recent_workspaces";
 
 #[tauri::command]
+pub fn create_workspace_config(listen_port: u32, path: String) -> bool {
+    let mut config = FpxConfig::new();
+    config.set_listen_port(listen_port);
+
+    matches!(config.save(path), Ok(()))
+}
+
+#[tauri::command]
 pub fn list_recent_workspaces(store: State<'_, Store<Wry>>) -> Vec<String> {
     store
         .with_store(|store| {
@@ -41,7 +49,13 @@ pub fn open_workspace_by_path(
 ) -> Result<Workspace, OpenWorkspaceError> {
     api_manager.stop_api();
 
-    let path_buf = PathBuf::from(path.clone());
+    let mut path_buf = PathBuf::from(path.clone());
+
+    // TODO: FpxConfig::load doesn't support paths with the fpx.toml included
+    if path_buf.ends_with("fpx.toml") {
+        path_buf.pop();
+    }
+
     let config = match FpxConfig::load(Some(path_buf)) {
         Ok((config, _config_path)) => config,
         Err(err) => {

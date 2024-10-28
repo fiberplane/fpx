@@ -137,6 +137,7 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::workspace::create_workspace_config,
             commands::workspace::close_workspace,
             commands::workspace::get_current_workspace,
             commands::workspace::list_recent_workspaces,
