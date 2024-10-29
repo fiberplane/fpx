@@ -1,4 +1,4 @@
-import type { ModuleReference, SourceReference } from "../types";
+import type { ModuleReference, SourceReference } from "./types";
 
 // Class that manages SourceReferences, Source references are unique to a file & start position
 export class SourceReferenceManager {
@@ -52,12 +52,13 @@ export class SourceReferenceManager {
     if (sourceReference.modules[module.name] === undefined) {
       sourceReference.modules[module.name] = [];
     }
+    const moduleImports = sourceReference.modules[module.name];
 
-    if (sourceReference.modules[module.name].find(item => item.import === module.import && item.importPath === module.importPath)) {
+    if (moduleImports.find(item => item.import === module.import && item.importPath === module.importPath)) {
       return;
     }
 
-    sourceReference.modules[module.name].push(module);
+    moduleImports.push(module);
   }
 
   clearReferences(): void {

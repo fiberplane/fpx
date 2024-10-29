@@ -1,6 +1,6 @@
 import relative from "resolve";
 import * as bundledTs from "typescript";
-import { SourceReferenceManager } from "./findHono/SourceReferenceManager";
+import type { SourceReferenceManager } from "./SourceReferenceManager";
 
 export const bundledTypescript = bundledTs;
 export const relativeResolve = relative.sync;

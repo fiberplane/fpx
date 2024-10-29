@@ -12,7 +12,7 @@ import {
   HONO_HTTP_METHODS,
 } from "../types";
 import { createSourceReferenceForNode } from "./extractReferences";
-import { SourceReferenceManager } from "./SourceReferenceManager";
+import { SourceReferenceManager } from "../SourceReferenceManager";
 import { findNodeAtPosition } from "./utils";
 
 export function extractRouteTrees(
