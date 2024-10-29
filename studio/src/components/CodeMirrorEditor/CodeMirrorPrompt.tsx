@@ -94,8 +94,11 @@ const promptBaseStylesExtension = EditorView.theme({
     lineHeight: "1.25rem",
   },
   ".cm-scroller": {
-    overflow: "hidden !important",
-    maxWidth: "100% !important",
+    overflow: "auto !important",
+  },
+  ".cm-content": {
+    whiteSpace: "pre-wrap !important",
+    wordBreak: "break-word !important",
   },
 });
 
@@ -186,6 +189,7 @@ function routeDecorations(routes: ProbedRoute[]) {
         for (const { from, to } of view.visibleRanges) {
           const text = view.state.doc.sliceString(from, to);
           let match: RegExpExecArray | null;
+          // biome-ignore lint/suspicious/noAssignInExpressions: shut up biome
           while ((match = pattern.exec(text)) !== null) {
             const start = from + match.index;
             const end = start + match[0].length;
@@ -232,26 +236,11 @@ export function CodeMirrorPrompt(props: CodeMirrorPromptProps) {
       hiddenGutterExtension,
       promptBaseStylesExtension,
       EditorView.lineWrapping,
-      isFocused
-        ? noopExtension
-        : EditorView.theme({
-            ".cm-content": {
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              width: "100%",
-            },
-            ".cm-line": {
-              textOverflow: "ellipsis",
-              overflow: "hidden",
-              width: "100%",
-            },
-          }),
       createOnSubmitKeymap(onSubmit),
       customTheme,
       routeDecorations(routes),
     ];
-  }, [isFocused, onSubmit, completions, routes]);
+  }, [onSubmit, completions, routes]);
   const handleChange = useCallback(
     (value?: string) => {
       if (value !== undefined) {
@@ -277,14 +266,14 @@ export function CodeMirrorPrompt(props: CodeMirrorPromptProps) {
         "h-full",
         "rounded border border-transparent",
         "cursor-text",
-        "overflow-hidden whitespace-nowrap text-ellipsis",
-        "focus-within:overflow-visible focus-within:whitespace-normal focus-within:text-clip",
+        "overflow-hidden",
         "focus-within:border-blue-600",
         className,
       )}
     >
       <CodeMirror
         minHeight="200px"
+        width="100%"
         value={value}
         onChange={handleChange}
         theme={[promptTheme]}

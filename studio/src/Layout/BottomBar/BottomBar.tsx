@@ -21,11 +21,13 @@ import { SettingsMenu, SettingsScreen } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
 import { LogsToggle } from "./LogsToggle";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export function BottomBar() {
-  const { settingsOpen, setSettingsOpen } = useRequestorStore(
+  const { settingsOpen, setSettingsOpen, promptPanel } = useRequestorStore(
     "settingsOpen",
     "setSettingsOpen",
+    "promptPanel",
   );
   const shouldShowProxyRequests = useProxyRequestsEnabled();
 
@@ -41,6 +43,8 @@ export function BottomBar() {
   const timelinePanel =
     activeBottomPanel === "timelinePanel" ? "open" : "closed";
   const aiPanel = activeBottomPanel === "aiPanel" ? "open" : "closed";
+
+  useHotkeys("mod+i", () => togglePanel("promptPanel"));
 
   return (
     <nav className="gap-4 bg-muted/50 py-2">
@@ -58,7 +62,7 @@ export function BottomBar() {
           />
         </div>
         <PromptToggle />
-        <PromptPanel />
+        {promptPanel === "open" && <PromptPanel />}
 
         <div className="flex items-center gap-2">
           {shouldShowProxyRequests && (
