@@ -74,7 +74,16 @@ fn detect_route_handlers(
                             .utf8_text(source.as_bytes())
                             .unwrap();
 
-                        if let Some(handler_node) = route_node.child(3) {
+                        let mut cursor = route_node.walk();
+                        let handler_param = route_node
+                            .children(&mut cursor)
+                            .filter(|node| {
+                                node.kind() == "call_expression" || node.kind() == "arrow_function"
+                            })
+                            .last();
+
+                        if let Some(handler_node) = handler_param {
+                            // route_node.child(3) {
                             let route_handler = handler_node.utf8_text(source.as_bytes()).unwrap();
 
                             let mut cursor = handler_node.walk();
@@ -572,7 +581,7 @@ mod tests {
                 DetectedRoute {
                     route_path: "/slow".into(),
                     route_method: "get".into(),
-                    route_handler: r#"(c) => {
+                    route_handler: r#"async (c) => {
   await sleep(1000);
   return c.text("Hello, Hono (slow)!");
 }"#
@@ -583,9 +592,9 @@ mod tests {
                     out_of_scope_sources: vec![]
                 },
                 DetectedRoute {
-                    route_path: "/user/1".into(),
+                    route_path: "user/1".into(),
                     route_method: "get".into(),
-                    route_handler: r#"(c) => {
+                    route_handler: r#"async (c) => {
   // await getUser();
   const user = await getUser();
   return c.json(user);
@@ -649,9 +658,9 @@ mod tests {
         assert_eq!(
             vec![
                 DetectedRoute {
-                    route_path: "/user/1".into(),
+                    route_path: "user/1".into(),
                     route_method: "get".into(),
-                    route_handler: r#"(c) => {
+                    route_handler: r#"async (c) => {
   // await getUser();
   const user = await getUser();
   return c.json(user);
