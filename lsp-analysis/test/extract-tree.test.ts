@@ -112,14 +112,8 @@ function flattenRouteTree(routeTree: RouteTree, path?: string) {
         current.imports.push(imports);
       }
 
-      // console.log(current.imports, Object.keys(routeSources.modules))
-      // for (const reference of routeSources.references) {
-
-      // }
       routeSources.references.forEach(parseSource);
-      // parseSource(routeSources);
     }
-    // if
   }
 
   function parseSource(sourceReference: SourceReference) {
@@ -154,9 +148,7 @@ ${file.imports.join("\n")}
 
 ${lines.join("\n\n")}`;
   }
-  // files[entry.fileName] = files[entry.fileName] || {};
-  // files[entry.fileName][entry.line] = entry.sources
-  // }
+
   return `${serializeFile(routeTree.fileName)}
 import { Hono } from "hono";
 
