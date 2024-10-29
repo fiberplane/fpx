@@ -64,6 +64,7 @@ tree-sitter = "0.24.3"
 tree-sitter-typescript = "0.23.0"
 url = { version = "2.5", default-features = false }
 wasm-bindgen = { version = "0.2", default-features = false, optional = true }
+pretty_assertions = "1.4.1"
 
 [dev-dependencies]
 http-body-util = { version = "0.1", default-features = false }

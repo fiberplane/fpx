@@ -1,5 +1,5 @@
 use schemars::JsonSchema;
-use std::fmt::Display;
+use std::{cmp::Ordering, fmt::Display};
 
 #[derive(JsonSchema, Debug, PartialEq)]
 pub struct DetectedRoute {
@@ -11,6 +11,8 @@ pub struct DetectedRoute {
     pub source_end_point: Point,
     pub out_of_scope_sources: Vec<String>,
 }
+
+impl Eq for DetectedRoute {}
 
 #[derive(JsonSchema, Debug, PartialEq)]
 pub struct Point {
@@ -24,6 +26,18 @@ impl From<tree_sitter::Point> for Point {
             row: point.row,
             column: point.column,
         }
+    }
+}
+
+impl Ord for DetectedRoute {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.route_path.cmp(&other.route_path)
+    }
+}
+
+impl PartialOrd for DetectedRoute {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(&other))
     }
 }
 

@@ -1,4 +1,3 @@
-use super::detected_route::DetectedRoute;
 use std::{
     collections::HashMap,
     fs,
@@ -7,6 +6,8 @@ use std::{
 };
 use tree_sitter::{Node, Parser, Tree, TreeCursor};
 use tree_sitter_typescript::LANGUAGE_TYPESCRIPT;
+
+use super::detected_route::DetectedRoute;
 
 type ModuleMap = HashMap<PathBuf, (String, ImportMap)>;
 type ImportMap = HashMap<PathBuf, Vec<String>>;
@@ -22,20 +23,22 @@ pub fn analyse(entry_path: &Path) -> Vec<DetectedRoute> {
         let root_node = tree.root_node();
         let mut cursor = root_node.walk();
         detect_route_handlers(path, source, &mut cursor, &mut handlers, imports, &modules);
-        println!("{:?}\n{}\n=============", path, source);
-        println!("Imports:");
+        // println!("{:?}\n{}\n=============", path, source);
+        // println!("Imports:");
         for (path, identifiers) in imports {
-            println!("{}:", path.to_str().unwrap());
+            // println!("{}:", path.to_str().unwrap());
             for identifier in identifiers {
-                println!("{}", identifier);
+                // println!("{}", identifier);
             }
         }
-        println!("==========");
+        // println!("==========");
     }
 
     for handler in &handlers {
-        println!("{}", handler);
+        // println!("{}", handler);
     }
+
+    handlers.sort();
 
     handlers
 }
@@ -382,42 +385,308 @@ fn collect_out_of_scope_identifiers(
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use tree_sitter::Point;
-//
-//     use super::*;
-//
-//     #[test]
-//     fn named_hono_import() {
-//         let source_code = r#"
-// import { Hono } from "hono"
-// import { instrument } from "@fiberplane/hono-otel";
-//
-// const app = new Hono();
-//
-// app.get("/", (c) => {
-//   return c.text("Hello Hono!");
-// });
-//
-// export default instrument(app);
-//         "#
-//         .trim();
-//
-//         #[allow(clippy::needless_borrow)]
-//         let handlers = detect_routes(&Path::new("src/index.ts"), source_code);
-//
-//         assert_eq!(
-//             handlers,
-//             vec![DetectedRoute {
-//                 route_path: "/".into(),
-//                 route_method: "get".into(),
-//                 route_handler: "(c) => {\n  return c.text(\"Hello Hono!\");\n}".into(),
-//                 source_path: "src/index.ts".into(),
-//                 source_start_point: Point { row: 5, column: 0 }.into(),
-//                 source_end_point: Point { row: 7, column: 2 }.into(),
-//                 out_of_scope_sources: vec![],
-//             }]
-//         )
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::static_analysis::detected_route::Point;
+    use pretty_assertions::assert_eq;
+    use std::env;
+
+    fn get_test_case_path(test_path: &str) -> PathBuf {
+        let mut path = env::current_dir().unwrap();
+        path.push("src/static_analysis/test-case");
+        path.push(test_path);
+        path
+    }
+
+    #[test]
+    fn empty() {
+        let path = get_test_case_path("empty/.empty");
+
+        let detected_routes = analyse(path.as_path());
+
+        assert_eq!(Vec::<DetectedRoute>::new(), detected_routes);
+    }
+
+    #[test]
+    fn single() {
+        let path = get_test_case_path("single/index.ts");
+
+        let detected_routes = analyse(path.as_path());
+
+        assert_eq!(
+            vec![DetectedRoute {
+                route_path: "/".into(),
+                route_method: "get".into(),
+                route_handler: r#"(c) => c.text("Hello, Hono!")"#.into(),
+                source_path: path.as_path().to_str().unwrap().into(),
+                source_start_point: Point { row: 4, column: 0 },
+                source_end_point: Point { row: 4, column: 43 },
+                out_of_scope_sources: vec![]
+            }],
+            detected_routes
+        );
+    }
+
+    #[test]
+    fn multiple() {
+        let path = get_test_case_path("multiple/index.ts");
+
+        let detected_routes = analyse(path.as_path());
+
+        assert_eq!(
+            vec![
+                DetectedRoute {
+                    route_path: "/".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => c.text("Hello, Hono!")"#.into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 4, column: 0 },
+                    source_end_point: Point { row: 4, column: 43 },
+                    out_of_scope_sources: vec![]
+                },
+                DetectedRoute {
+                    route_path: "/".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => {
+  return c.json({});
+}"#
+                    .into(),
+                    source_path: get_test_case_path("multiple/other.ts")
+                        .as_path()
+                        .to_str()
+                        .unwrap()
+                        .into(),
+                    source_start_point: Point { row: 3, column: 14 },
+                    source_end_point: Point { row: 5, column: 1 },
+                    out_of_scope_sources: vec![]
+                },
+                DetectedRoute {
+                    route_path: "/".into(),
+                    route_method: "post".into(),
+                    route_handler: r#"(c) => c.json({ hello: "world" })"#.into(),
+                    source_path: get_test_case_path("multiple/other.ts")
+                        .as_path()
+                        .to_str()
+                        .unwrap()
+                        .into(),
+                    source_start_point: Point { row: 6, column: 15 },
+                    source_end_point: Point { row: 6, column: 47 },
+                    out_of_scope_sources: vec![]
+                }
+            ],
+            detected_routes
+        );
+    }
+
+    #[test]
+    fn split_routes() {
+        let path = get_test_case_path("split-routes/index.ts");
+
+        let detected_routes = analyse(path.as_path());
+
+        assert_eq!(
+            vec![
+                DetectedRoute {
+                    route_path: "/api/v1/projects".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => {
+  return c.json(PROJECTS);
+}"#
+                    .into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 18, column: 0 },
+                    source_end_point: Point { row: 20, column: 2 },
+                    out_of_scope_sources: vec![]
+                },
+                DetectedRoute {
+                    route_path: "/api/v1/projects/:id".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => {
+  const id = Number.parseInt(c.req.param("id"));
+  const project = PROJECTS.find((p) => p.id === id);
+  return c.json(project);
+}"#
+                    .into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 22, column: 0 },
+                    source_end_point: Point { row: 26, column: 2 },
+                    out_of_scope_sources: vec![]
+                },
+                DetectedRoute {
+                    route_path: "/api/v1/users".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => {
+  return c.json(USERS);
+}"#
+                    .into(),
+                    source_path: get_test_case_path("split-routes/users.ts")
+                        .as_path()
+                        .to_str()
+                        .unwrap()
+                        .into(),
+                    source_start_point: Point { row: 17, column: 0 },
+                    source_end_point: Point { row: 19, column: 2 },
+                    out_of_scope_sources: vec![]
+                },
+                DetectedRoute {
+                    route_path: "/api/v1/users/:id".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => {
+  const id = Number.parseInt(c.req.param("id"));
+  const user = USERS.find((u) => u.id === id);
+  return c.json(user);
+}"#
+                    .into(),
+                    source_path: get_test_case_path("split-routes/users.ts")
+                        .as_path()
+                        .to_str()
+                        .unwrap()
+                        .into(),
+                    source_start_point: Point { row: 21, column: 0 },
+                    source_end_point: Point { row: 25, column: 2 },
+                    out_of_scope_sources: vec![]
+                },
+            ],
+            detected_routes
+        );
+    }
+
+    #[test]
+    fn module_imports() {
+        let path = get_test_case_path("module-imports/index.ts");
+
+        let detected_routes = analyse(path.as_path());
+
+        assert_eq!(
+            vec![
+                DetectedRoute {
+                    route_path: "/".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => c.text("Hello, Hono!")"#.into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 6, column: 0 },
+                    source_end_point: Point { row: 11, column: 1 },
+                    out_of_scope_sources: vec![]
+                },
+                DetectedRoute {
+                    route_path: "/slow".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => {
+  await sleep(1000);
+  return c.text("Hello, Hono (slow)!");
+}"#
+                    .into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 19, column: 0 },
+                    source_end_point: Point { row: 22, column: 2 },
+                    out_of_scope_sources: vec![]
+                },
+                DetectedRoute {
+                    route_path: "/user/1".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => {
+  // await getUser();
+  const user = await getUser();
+  return c.json(user);
+}"#
+                    .into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 32, column: 0 },
+                    source_end_point: Point { row: 36, column: 2 },
+                    out_of_scope_sources: vec![
+                        r#"export const getUser = measure("getUser", async () => {
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  const value: User = {
+    name: "John Doe",
+    email: "john@doe.com",
+  };
+  return value;
+});
+"#
+                        .into()
+                    ]
+                }
+            ],
+            detected_routes
+        );
+    }
+
+    #[test]
+    fn bindings() {
+        let path = get_test_case_path("bindings/index.ts");
+
+        let detected_routes = analyse(path.as_path());
+
+        assert_eq!(
+            vec![DetectedRoute {
+                route_path: "/".into(),
+                route_method: "get".into(),
+                route_handler: r#"(c) => {
+  const headers = new Headers();
+  c.env.GOOSE_AVATARS.put("test", new ReadableStream(), {
+    httpMetadata: { contentType: "application/json" },
+  });
+  console.log("headers", headers);
+  return c.text("Hello, Hono!");
+}"#
+                .into(),
+                source_path: path.as_path().to_str().unwrap().into(),
+                source_start_point: Point { row: 10, column: 0 },
+                source_end_point: Point { row: 17, column: 2 },
+                out_of_scope_sources: vec![]
+            }],
+            detected_routes
+        );
+    }
+
+    #[test]
+    fn barrel_files() {
+        let path = get_test_case_path("barrel-files/index.ts");
+
+        let detected_routes = analyse(path.as_path());
+
+        assert_eq!(
+            vec![
+                DetectedRoute {
+                    route_path: "/user/1".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => {
+  // await getUser();
+  const user = await getUser();
+  return c.json(user);
+}"#
+                    .into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 13, column: 0 },
+                    source_end_point: Point { row: 17, column: 2 },
+                    out_of_scope_sources: vec![
+                        r#"export const getUser = measure("getUser", async () => {
+  await sleep(100);
+  const value: User = {
+    name: DEFAULT_USER_NAME,
+    email: DEFAULT_EMAIL,
+  };
+  return value;
+});
+"#
+                        .into()
+                    ]
+                },
+                DetectedRoute {
+                    route_path: "/".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"(c) => c.text("Hello, Hono!")"#.into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 20, column: 0 },
+                    source_end_point: Point {
+                        row: 20,
+                        column: 43
+                    },
+                    out_of_scope_sources: vec![]
+                }
+            ],
+            detected_routes
+        );
+    }
+}
