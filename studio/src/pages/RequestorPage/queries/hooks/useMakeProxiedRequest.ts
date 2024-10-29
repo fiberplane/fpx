@@ -46,7 +46,7 @@ export function useMakeProxiedRequest() {
   return mutation;
 }
 
-function makeProxiedRequest({
+export function makeProxiedRequest({
   addServiceUrlIfBarePath,
   path,
   method,
