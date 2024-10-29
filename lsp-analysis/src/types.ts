@@ -32,13 +32,16 @@ export type TsVariableDeclaration = bundledTs.VariableDeclaration;
 export type TsNodeArray<T extends TsNode> = bundledTs.NodeArray<T>;
 
 export type RouteTree = {
+  type: "ROUTE_TREE";
   id: string;
   name: string;
   fileName: string;
   baseUrl: string;
-  // TODO: add source references
-  // The Hono type is a generic that can be used
-  // for instance to inject bindings/environment variables
+  /**
+   * TODO: add source references
+   * The Hono type is a generic that can be used
+   * for instance to inject bindings/environment variables
+   */
   entries: Array<Entry>;
 };
 
@@ -46,11 +49,16 @@ type Entry = RouteEntry | RouteTreeReference | MiddlewareEntry;
 
 export type RouteTreeReference = {
   type: "ROUTE_TREE_REFERENCE";
-  id: string;
-  // `.routes()` accepts a path parameter
+
+  targetId: string;
+  /**
+   *  `.routes()` accepts a path parameter
+   */
   path: string;
 
-  // Identifier for the route tree
+  /**
+   * Identifier for the route tree
+   */
   name: string;
   fileName: string;
 };
@@ -105,11 +113,22 @@ export type SourceReference = {
 };
 
 export type ModuleReference = {
-  // The name of the module
+  /* The name of the module */
   name: string;
-  // The import path of the module, this can be the same as the name or a subpath
-  // For instance for hono it can be hono/cors and while the name of the package is still hono
+  /**
+   * The import path of the module, this can be the same as the name or a subpath
+   * For instance for hono it can be hono/cors and while the name of the package is still hono
+   */
   importPath: string;
   version?: string;
   import: string;
 };
+
+/**
+ * Different types of elements that can be part of a route tree
+ */
+export type RouteElement =
+  | RouteTree
+  | RouteEntry
+  | RouteTreeReference
+  | MiddlewareEntry;

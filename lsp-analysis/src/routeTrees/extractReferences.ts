@@ -83,7 +83,8 @@ function visitIdentifier(
   startPosition: number,
   rootNodeReference: TsNode = currentNode,
 ) {
-  const { ts, getFile, checker, sourceReferenceManager, asAbsolutePath } = context;
+  const { ts, getFile, checker, sourceReferenceManager, asAbsolutePath } =
+    context;
   const sourceFile = getFile(asAbsolutePath(rootReference.fileName));
   const dependencyResult = getImportTypeDefinitionFileName(
     currentNode,
@@ -198,7 +199,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-    currentNode.getSourceFile().fileName
+      currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }

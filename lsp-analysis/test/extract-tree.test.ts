@@ -29,6 +29,10 @@ test.each([
     name: "split routes",
     location: "./test-case/split-routes",
   },
+  {
+    name: "hono factory",
+    location: "./test-case/hono-factory",
+  },
   // {
   //   name: "goose-quotes",
   //   location: "../../examples/goose-quotes",
@@ -57,7 +61,6 @@ test.each([
     teardown();
   }
 });
-
 
 function flattenRouteTree(routeTree: RouteTree, path?: string) {
   type FileInfo = {

@@ -45,10 +45,14 @@ export function extractRouteTrees(
   }
 
   const asRelativePath = (absolutePath: string) =>
-    path.isAbsolute(absolutePath) ? path.relative(projectRoot, absolutePath) : absolutePath;
+    path.isAbsolute(absolutePath)
+      ? path.relative(projectRoot, absolutePath)
+      : absolutePath;
 
   const asAbsolutePath = (relativePath: string) =>
-    path.isAbsolute(relativePath) ? relativePath : path.join(projectRoot, relativePath);
+    path.isAbsolute(relativePath)
+      ? relativePath
+      : path.join(projectRoot, relativePath);
 
   const context: SearchContext = {
     errorCount: 0,
@@ -110,6 +114,7 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
           const honoInstanceName = declaration.name.getText();
 
           const current: RouteTree = {
+            type: "ROUTE_TREE",
             id: getId(fileName, declaration.name.getStart()),
             baseUrl: "",
             name: honoInstanceName,
@@ -248,13 +253,14 @@ function handleRoute(
   for (const referencedSymbol of references) {
     // TODO: investigate whether there are other cases we should support
     // Check if it's a variable like const, let or var
-    if (!SUPPORTED_VARIABLE_KINDS.includes(referencedSymbol.definition.kind)) {
+    if (SUPPORTED_VARIABLE_KINDS.includes(referencedSymbol.definition.kind)) {
       // If so, find the node
       const variableDeclarationChild = findNodeAtPosition(
         ts,
         getFile(referencedSymbol.definition.fileName),
         referencedSymbol.definition.textSpan.start,
       );
+
       // Access the parent & verify that's a variable declaration
       // As the node will point to the identifier and not the declaration
       if (
@@ -274,7 +280,7 @@ function handleRoute(
   const filename = target.getSourceFile().fileName;
   routeTree.entries.push({
     type: "ROUTE_TREE_REFERENCE",
-    id: getId(filename, target.getStart()),
+    targetId: getId(filename, target.getStart()),
     fileName: asRelativePath(filename),
     name: target.name.getText(),
     path,
