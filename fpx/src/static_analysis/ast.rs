@@ -207,30 +207,33 @@ fn relative_import_to_absolute_path(path: &Path, import_path_str: &str) -> PathB
         import_path.push(path);
         import_path.push(import_path_str.replace("./", ""));
         if import_path.is_dir() {
-            import_path.push("/index.ts");
+            import_path.push("index.ts");
             if import_path.exists() {
                 return import_path;
             }
 
             import_path.pop();
-            import_path.push("/index.tsx");
+            import_path.push("index.tsx");
             if import_path.exists() {
                 return import_path;
             }
 
             import_path.pop();
-            import_path.push("/index.js");
+            import_path.push("index.js");
             if import_path.exists() {
                 return import_path;
             }
 
             import_path.pop();
-            import_path.push("/index.jsx");
+            import_path.push("index.jsx");
             if import_path.exists() {
                 return import_path;
             }
 
-            panic!("dunno");
+            panic!(
+                "1. absolute import path does not exist:\n{:?}\n{:?}",
+                path, import_path
+            );
         } else {
             import_path.set_extension("ts");
             if import_path.exists() {
@@ -252,7 +255,10 @@ fn relative_import_to_absolute_path(path: &Path, import_path_str: &str) -> PathB
                 return import_path;
             }
 
-            panic!("dunno");
+            panic!(
+                "2. absolute import path does not exist:\n{:?}\n{:?}",
+                path, import_path
+            );
         }
     }
 
@@ -288,14 +294,31 @@ fn traverse_for_export_identifier(
     let node = cursor.node();
 
     if node.kind() == "lexical_declaration" || node.kind() == "variable_declaration" {
-        let block_node = node.named_child(0).unwrap();
-        let identifier_node = block_node.child(0).unwrap();
-        let variable_name = identifier_node.utf8_text(source.as_bytes()).unwrap();
+        if let Some(block_node) = node.named_child(0) {
+            if let Some(identifier_node) = block_node.child(0) {
+                if let Ok(variable_name) = identifier_node.utf8_text(source.as_bytes()) {
+                    if variable_name == identifier {
+                        let mut is_exported = false;
 
-        if variable_name == identifier {
-            // TODO: Include block / export declaration
-            let block_text = block_node.utf8_text(source.as_bytes()).unwrap();
-            out_of_scope_sources.push(block_text.to_string());
+                        if let Some(parent) = node.parent() {
+                            is_exported = parent.kind() == "export_statement";
+                        }
+                        if !is_exported {
+                            if let Some(prev_sibling) = node.prev_sibling() {
+                                is_exported = prev_sibling.kind() == "export_statement";
+                            }
+                        }
+
+                        let declaration_prefix = if is_exported {
+                            "export const "
+                        } else {
+                            "const "
+                        };
+                        let block_text = block_node.utf8_text(source.as_bytes()).unwrap();
+                        out_of_scope_sources.push(format!("{}{}", declaration_prefix, block_text));
+                    }
+                }
+            }
         }
     }
 
@@ -620,8 +643,7 @@ mod tests {
     email: "john@doe.com",
   };
   return value;
-});
-"#
+})"#
                         .into()
                     ]
                 }
@@ -667,31 +689,6 @@ mod tests {
         assert_eq!(
             vec![
                 DetectedRoute {
-                    route_path: "user/1".into(),
-                    route_method: "get".into(),
-                    route_handler: r#"async (c) => {
-  // await getUser();
-  const user = await getUser();
-  return c.json(user);
-}"#
-                    .into(),
-                    source_path: path.as_path().to_str().unwrap().into(),
-                    source_start_point: Point { row: 13, column: 0 },
-                    source_end_point: Point { row: 17, column: 2 },
-                    out_of_scope_sources: vec![
-                        r#"export const getUser = measure("getUser", async () => {
-  await sleep(100);
-  const value: User = {
-    name: DEFAULT_USER_NAME,
-    email: DEFAULT_EMAIL,
-  };
-  return value;
-});
-"#
-                        .into()
-                    ]
-                },
-                DetectedRoute {
                     route_path: "/".into(),
                     route_method: "get".into(),
                     route_handler: r#"(c) => c.text("Hello, Hono!")"#.into(),
@@ -702,7 +699,31 @@ mod tests {
                         column: 43
                     },
                     out_of_scope_sources: vec![]
-                }
+                },
+                DetectedRoute {
+                    route_path: "/user/1".into(),
+                    route_method: "get".into(),
+                    route_handler: r#"async (c) => {
+  // await getUser();
+  const user = await getUser();
+  return c.json(user);
+}"#
+                    .into(),
+                    source_path: path.as_path().to_str().unwrap().into(),
+                    source_start_point: Point { row: 14, column: 0 },
+                    source_end_point: Point { row: 18, column: 2 },
+                    out_of_scope_sources: vec![
+                        r#"export const getUser = measure("getUser", async () => {
+  await sleep(100);
+  const value: User = {
+    name: DEFAULT_USER_NAME,
+    email: DEFAULT_EMAIL,
+  };
+  return value;
+})"#
+                        .into(),
+                    ]
+                },
             ],
             detected_routes
         );
