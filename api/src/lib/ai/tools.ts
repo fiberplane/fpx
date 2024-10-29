@@ -35,7 +35,7 @@ export const requestSchema = z.object({
         value: z.string(),
       }),
     )
-    .nullable(),
+    // .nullable(),
 });
 
 export const makeRequestTool = {

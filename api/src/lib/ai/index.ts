@@ -185,7 +185,9 @@ export async function generateRequestWithAiProvider({
                   email: "john@example.com",
                 }),
                 bodyType: { type: "json", isMultipart: false },
-                headers: [],
+                headers: [
+                  { key: "Content-Type", value: "application/json" },
+                ],
               }),
             },
           ],
