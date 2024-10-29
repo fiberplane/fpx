@@ -121,15 +121,6 @@ Method: ${route.method}]
     setPromptValue("");
   };
 
-  const handleRouteClick = (route?: ProbedRoute) => {
-    if (route) {
-      setActiveRoute(route);
-      navigate("/", { replace: true });
-    } else {
-      console.warn("Route click handler called without a route");
-    }
-  };
-
   return (
     <div className="fixed bottom-8 left-0 right-0 flex justify-center">
       <div className="w-full max-w-lg h-72 bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,auto,1fr,auto]">
@@ -143,7 +134,6 @@ Method: ${route.method}]
           handlePromptChange={handlePromptChange}
           handlePromptSubmit={handlePromptSubmit}
           routeCompletions={routeCompletions}
-          handleRouteClick={handleRouteClick}
           translateCommandsMutation={translateCommandsMutation}
           allRoutes={routes}
         />
@@ -192,7 +182,6 @@ function PromptPanelContent({
   handlePromptChange,
   handlePromptSubmit,
   routeCompletions,
-  handleRouteClick,
   translateCommandsMutation,
 }: {
   routesInAction: ProbedRoute[] | undefined;
@@ -201,7 +190,6 @@ function PromptPanelContent({
   handlePromptChange: (value?: string) => void;
   handlePromptSubmit: () => Promise<void>;
   routeCompletions: Completion[];
-  handleRouteClick: (route?: ProbedRoute) => void;
   translateCommandsMutation: UseMutationResult<
     { commands: { routeId: number }[] },
     unknown,
@@ -210,10 +198,7 @@ function PromptPanelContent({
   >;
 }) {
   return routesInAction ? (
-    <ActiveCommandsList
-      routesInAction={routesInAction}
-      handleRouteClick={handleRouteClick}
-    />
+    <ActiveCommandsList routesInAction={routesInAction} />
   ) : (
     <PromptInput
       promptValue={promptValue}
@@ -228,10 +213,8 @@ function PromptPanelContent({
 
 function ActiveCommandsList({
   routesInAction,
-  handleRouteClick,
 }: {
   routesInAction: ProbedRoute[];
-  handleRouteClick: (route?: ProbedRoute) => void;
 }) {
   const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
   const currentRoute = routesInAction[currentCommandIndex];
@@ -254,7 +237,6 @@ function ActiveCommandsList({
           <ActiveCommand
             key={route.id}
             route={route}
-            handleRouteClick={handleRouteClick}
             isActive={route === currentRoute}
             onSuccess={onSuccess}
             onError={onError}
@@ -267,32 +249,32 @@ function ActiveCommandsList({
 
 function ActiveCommand({
   route,
-  handleRouteClick,
   isActive,
   onSuccess,
   onError,
 }: {
   route: ProbedRoute;
-  handleRouteClick: (route?: ProbedRoute) => void;
   isActive: boolean;
   onSuccess: () => void;
   onError: (error: unknown) => void;
 }) {
-  const { getMatchingMiddleware, serviceBaseUrl } = useRequestorStore(
-    "getMatchingMiddleware",
-    "serviceBaseUrl",
-  );
+  const { getMatchingMiddleware, serviceBaseUrl, setActiveRoute } =
+    useRequestorStore(
+      "getMatchingMiddleware",
+      "serviceBaseUrl",
+      "setActiveRoute",
+    );
+  const navigate = useNavigate();
 
   const [progress, setProgress] = useState<
     "idle" | "generating" | "requesting" | "success" | "error"
   >("idle");
 
-  useQuery({
-    queryKey: ["runActionRoute"],
+  const { data: response } = useQuery({
+    queryKey: ["runActionRoute", route.id.toString()],
     queryFn: async () => {
       try {
         setProgress("generating");
-        console.log("Generating request data for route:", route);
         const { request } = await fetchAiRequestData(
           route,
           getMatchingMiddleware(),
@@ -302,19 +284,11 @@ function ActiveCommand({
         );
 
         setProgress("requesting");
-        console.log(
-          "Proxying a request to route:",
-          route,
-          "with request:",
-          request,
-        );
         const queryParams = createKeyValueParameters(request.queryParams ?? []);
         const headers = createKeyValueParameters(request.headers ?? []);
         const pathParams = createKeyValueParameters(request.pathParams ?? []);
         const body =
           createBodyFromAiResponse(request.body, request.bodyType) ?? null;
-
-        console.log("headers", headers, "request-gen", request?.headers);
 
         const response = await makeProxiedRequest({
           addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
@@ -323,7 +297,7 @@ function ActiveCommand({
           body:
             route.method === "GET" || route.method === "HEAD" || !body
               ? { type: "text" }
-              : body, //HACK: this might not be json
+              : body,
           headers,
           queryParams,
           pathParams,
@@ -343,12 +317,10 @@ function ActiveCommand({
           throw new Error(failureReason);
         }
 
-        console.log("Request completed for route:", route);
         setProgress("success");
         onSuccess();
         return response;
       } catch (error) {
-        console.error("Request failed for route:", route, error);
         setProgress("error");
         onError(error);
         throw error;
@@ -358,10 +330,19 @@ function ActiveCommand({
     enabled: isActive,
   });
 
+  const handleRouteClick = () => {
+    if (response?.traceId) {
+      navigate(`/request/${response.traceId}`, { replace: true });
+    } else {
+      setActiveRoute(route);
+      navigate("/", { replace: true });
+    }
+  };
+
   return (
     <button
       type="button"
-      onClick={() => handleRouteClick(route)}
+      onClick={handleRouteClick}
       className={`
         inline-flex items-center gap-2 rounded-lg justify-between 
         ${progress === "error" ? "border-red-500 bg-red-500/20" : ""}
