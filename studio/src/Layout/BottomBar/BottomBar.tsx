@@ -13,6 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
 import { LoggedInUser } from "../LoggedInUser";
 import { Branding } from "../Branding";
@@ -21,7 +22,6 @@ import { SettingsMenu, SettingsScreen } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
 import { LogsToggle } from "./LogsToggle";
-import { useHotkeys } from "react-hotkeys-hook";
 
 export function BottomBar() {
   const { settingsOpen, setSettingsOpen, promptPanel } = useRequestorStore(

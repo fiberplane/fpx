@@ -1,12 +1,12 @@
 import { CodeMirrorPrompt } from "@/components/CodeMirrorEditor";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
+import { createKeyValueParameters } from "@/pages/RequestorPage/KeyValueForm/data";
 import { createBodyFromAiResponse } from "@/pages/RequestorPage/ai/ai";
 import {
   fetchAiRequestData,
   useAiRequestData,
 } from "@/pages/RequestorPage/ai/generate-request-data";
-import { createKeyValueParameters } from "@/pages/RequestorPage/KeyValueForm/data";
 import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
@@ -15,9 +15,9 @@ import { isMac } from "@/utils";
 import type { Completion } from "@codemirror/autocomplete";
 import { Icon } from "@iconify/react";
 import {
+  type UseMutationResult,
   useMutation,
   useQuery,
-  type UseMutationResult,
 } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
