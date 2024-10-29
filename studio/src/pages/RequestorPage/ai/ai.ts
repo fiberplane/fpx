@@ -88,52 +88,8 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
       const pathParams = data.request?.pathParams;
       const headers = data.request?.headers;
 
-      if (body || typeof body === "string") {
-        const nextBodyType = isRequestorBodyType(aiBodyType?.type)
-          ? aiBodyType?.type
-          : ("json" as const);
-
-        let nextBody: RequestorBody = {
-          type: nextBodyType,
-          value: "",
-        };
-
-        if (aiBodyType?.type === "form-data") {
-          if (aiBodyType?.isMultipart) {
-            nextBody = {
-              type: "form-data" as const,
-              isMultipart: true,
-              // TODO - Parse the form data, but also handle file placeholders from the AI
-              value: tryParseFormData(body) ?? [],
-            };
-          } else {
-            nextBody = {
-              type: "form-data" as const,
-              isMultipart: false,
-              value: tryParseFormData(body) ?? [],
-            };
-          }
-        }
-
-        if (aiBodyType?.type === "file") {
-          nextBody = {
-            type: "file" as const,
-            // HACK - Clear the body for files, maybe add a random file later?
-            value: undefined,
-          };
-        }
-
-        if (nextBody.type === "json") {
-          const prettyBody = tryPrettify(body);
-          if (isJson(prettyBody)) {
-            nextBody.value = prettyBody;
-          } else if (typeof body === "string") {
-            // NOTE - The AI might deliberately be setting the wrong content type...
-            //        So we do not fall back to type: text
-            nextBody.value = body;
-          }
-        }
-
+      const nextBody = createBodyFromAiResponse(body, aiBodyType);
+      if (nextBody) {
         setBody(nextBody);
       }
 
@@ -209,6 +165,51 @@ function validateKeyValueParamsFromResponse(
       return isKeyValueParamReplacement(qp);
     })
   );
+}
+
+export function createBodyFromAiResponse(
+  body: unknown,
+  aiBodyType?: { type?: string; isMultipart?: boolean },
+): RequestorBody | undefined {
+  if (!body && typeof body !== "string") {
+    return undefined;
+  }
+
+  const bodyType = isRequestorBodyType(aiBodyType?.type)
+    ? aiBodyType.type
+    : "json";
+
+  if (bodyType === "form-data") {
+    return {
+      type: "form-data",
+      isMultipart: !!aiBodyType?.isMultipart,
+      value: tryParseFormData(body as string) ?? [],
+    };
+  }
+
+  if (bodyType === "file") {
+    return {
+      type: "file",
+      value: undefined,
+    };
+  }
+
+  if (bodyType === "json") {
+    const prettyBody = tryPrettify(body as string);
+    return {
+      type: "json",
+      value: isJson(prettyBody)
+        ? prettyBody
+        : typeof body === "string"
+          ? body
+          : undefined,
+    };
+  }
+
+  return {
+    type: "text",
+    value: typeof body === "string" ? body : undefined,
+  };
 }
 
 /**
