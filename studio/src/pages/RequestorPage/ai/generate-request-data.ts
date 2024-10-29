@@ -17,7 +17,7 @@ export const expandFunction = (handler: string | undefined) => {
   });
 };
 
-const fetchAiRequestData = async (
+export const fetchAiRequestData = async (
   route: ProbedRoute | null,
   middleware: ProbedRoute[] | null,
   bodyType: RequestBodyType,
@@ -62,12 +62,13 @@ export function useAiRequestData(
   bodyType: RequestBodyType,
   history: Array<ProxiedRequestResponse>,
   persona = "Friendly",
+  enabled = false,
 ) {
   return useQuery({
     queryKey: ["generateRequest"],
     queryFn: () =>
       fetchAiRequestData(route, matchingMiddleware, bodyType, history, persona),
-    enabled: false,
+    enabled,
     retry: false,
   });
 }
