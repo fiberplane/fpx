@@ -269,6 +269,8 @@ I will handle converting it to form data.
 
 Even if you might see it in history - never add the x-fpx-trace-id header to the request.
 
+Never return empty string for headers. An empty array is fine.
+
 ===
 
 Use the tool "make_request". Always respond in valid JSON. Help the user test the happy path.
