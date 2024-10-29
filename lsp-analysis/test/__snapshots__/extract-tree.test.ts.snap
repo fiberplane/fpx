@@ -1,0 +1,771 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`run test 'barrel files' with location './test-case/barrel-files' 1`] = `
+{
+  "errorCount": 0,
+  "results": [
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "index.ts@407",
+          "method": "get",
+          "path": "/user/1",
+          "sources": [
+            {
+              "character": 19,
+              "content": "cors()",
+              "fileName": "index.ts",
+              "id": "index.ts@426",
+              "line": 14,
+              "modules": {
+                "hono": [
+                  {
+                    "import": "cors",
+                    "importPath": "hono/cors",
+                    "name": "hono",
+                    "version": "4.6.6",
+                  },
+                ],
+              },
+              "references": [],
+            },
+            {
+              "character": 27,
+              "content": "async (c) => {
+  // await getUser();
+  const user = await getUser();
+  return c.json(user);
+}",
+              "fileName": "index.ts",
+              "id": "index.ts@434",
+              "line": 14,
+              "modules": {},
+              "references": [
+                {
+                  "character": 9,
+                  "content": "export { getUser } from "./getUser"",
+                  "fileName": "db/index.ts",
+                  "id": "db/index.ts@9",
+                  "line": 0,
+                  "modules": {},
+                  "references": [
+                    {
+                      "character": 23,
+                      "content": "const getUser = measure("getUser", async () => {
+  await sleep(100);
+  const value: User = {
+    name: DEFAULT_USER_NAME,
+    email: DEFAULT_EMAIL,
+  };
+  return value;
+})",
+                      "fileName": "db/getUser.ts",
+                      "id": "db/getUser.ts@222",
+                      "line": 7,
+                      "modules": {
+                        "@fiberplane/hono-otel": [
+                          {
+                            "import": "measure",
+                            "importPath": "@fiberplane/hono-otel",
+                            "name": "@fiberplane/hono-otel",
+                            "version": "0.3.1",
+                          },
+                        ],
+                      },
+                      "references": [
+                        {
+                          "character": 0,
+                          "content": "export async function sleep(duration: number) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}",
+                          "fileName": "utils.ts",
+                          "id": "utils.ts@0",
+                          "line": 0,
+                          "modules": {},
+                          "references": [],
+                        },
+                        {
+                          "character": 0,
+                          "content": "export type User = {
+  name: string;
+  email: Email;
+};",
+                          "fileName": "types.ts",
+                          "id": "types.ts@29",
+                          "line": 2,
+                          "modules": {},
+                          "references": [
+                            {
+                              "character": 0,
+                              "content": "export type Email = string;",
+                              "fileName": "types.ts",
+                              "id": "types.ts@0",
+                              "line": 0,
+                              "modules": {},
+                              "references": [],
+                            },
+                          ],
+                        },
+                        {
+                          "character": 6,
+                          "content": "const DEFAULT_USER_NAME = "John Doe"",
+                          "fileName": "db/getUser.ts",
+                          "id": "db/getUser.ts@128",
+                          "line": 4,
+                          "modules": {},
+                          "references": [],
+                        },
+                        {
+                          "character": 6,
+                          "content": "const DEFAULT_EMAIL = "john@doe.com"",
+                          "fileName": "db/getUser.ts",
+                          "id": "db/getUser.ts@166",
+                          "line": 5,
+                          "modules": {},
+                          "references": [],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+        {
+          "id": "index.ts@531",
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 13,
+              "content": "(c) => c.text("Hello, Hono!")",
+              "fileName": "index.ts",
+              "id": "index.ts@544",
+              "line": 20,
+              "modules": {},
+              "references": [],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+      ],
+      "fileName": "index.ts",
+      "id": "index.ts@102",
+      "name": "app",
+    },
+  ],
+}
+`;
+
+exports[`run test 'module imports' with location './test-case/module-imports' 1`] = `
+{
+  "errorCount": 0,
+  "results": [
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "index.ts@133",
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 2,
+              "content": "() => cors()",
+              "fileName": "index.ts",
+              "id": "index.ts@207",
+              "line": 9,
+              "modules": {
+                "hono": [
+                  {
+                    "import": "cors",
+                    "importPath": "hono/cors",
+                    "name": "hono",
+                    "version": "4.6.6",
+                  },
+                ],
+              },
+              "references": [],
+            },
+            {
+              "character": 2,
+              "content": "(c) => c.text("Hello, Hono!")",
+              "fileName": "index.ts",
+              "id": "index.ts@223",
+              "line": 10,
+              "modules": {},
+              "references": [],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+        {
+          "id": "index.ts@456",
+          "method": "get",
+          "path": "/slow",
+          "sources": [
+            {
+              "character": 17,
+              "content": "cors()",
+              "fileName": "index.ts",
+              "id": "index.ts@473",
+              "line": 19,
+              "modules": {
+                "hono": [
+                  {
+                    "import": "cors",
+                    "importPath": "hono/cors",
+                    "name": "hono",
+                    "version": "4.6.6",
+                  },
+                ],
+              },
+              "references": [],
+            },
+            {
+              "character": 25,
+              "content": "async (c) => {
+  await sleep(1000);
+  return c.text("Hello, Hono (slow)!");
+}",
+              "fileName": "index.ts",
+              "id": "index.ts@481",
+              "line": 19,
+              "modules": {},
+              "references": [
+                {
+                  "character": 0,
+                  "content": "export async function sleep(duration: number) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}",
+                  "fileName": "index.ts",
+                  "id": "index.ts@290",
+                  "line": 14,
+                  "modules": {},
+                  "references": [],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+        {
+          "id": "index.ts@848",
+          "method": "get",
+          "path": "user/1",
+          "sources": [
+            {
+              "character": 18,
+              "content": "cors()",
+              "fileName": "index.ts",
+              "id": "index.ts@866",
+              "line": 32,
+              "modules": {
+                "hono": [
+                  {
+                    "import": "cors",
+                    "importPath": "hono/cors",
+                    "name": "hono",
+                    "version": "4.6.6",
+                  },
+                ],
+              },
+              "references": [],
+            },
+            {
+              "character": 26,
+              "content": "async (c) => {
+  // await getUser();
+  const user = await getUser();
+  return c.json(user);
+}",
+              "fileName": "index.ts",
+              "id": "index.ts@874",
+              "line": 32,
+              "modules": {},
+              "references": [
+                {
+                  "character": 23,
+                  "content": "const getUser = measure("getUser", async () => {
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  const value: User = {
+    name: "John Doe",
+    email: "john@doe.com",
+  };
+  return value;
+})",
+                  "fileName": "db.ts",
+                  "id": "db.ts@137",
+                  "line": 4,
+                  "modules": {
+                    "@fiberplane/hono-otel": [
+                      {
+                        "import": "measure",
+                        "importPath": "@fiberplane/hono-otel",
+                        "name": "@fiberplane/hono-otel",
+                        "version": "0.3.1",
+                      },
+                    ],
+                  },
+                  "references": [
+                    {
+                      "character": 0,
+                      "content": "export type User = {
+  name: string;
+  email: Email;
+};",
+                      "fileName": "types.ts",
+                      "id": "types.ts@29",
+                      "line": 2,
+                      "modules": {},
+                      "references": [
+                        {
+                          "character": 0,
+                          "content": "export type Email = string;",
+                          "fileName": "types.ts",
+                          "id": "types.ts@0",
+                          "line": 0,
+                          "modules": {},
+                          "references": [],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+      ],
+      "fileName": "index.ts",
+      "id": "index.ts@114",
+      "name": "app",
+    },
+  ],
+}
+`;
+
+exports[`run test 'multiple files' with location './test-case/multiple' 1`] = `
+{
+  "errorCount": 0,
+  "results": [
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "index.ts@55",
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 13,
+              "content": "(c) => c.text("Hello, Hono!")",
+              "fileName": "index.ts",
+              "id": "index.ts@68",
+              "line": 4,
+              "modules": {},
+              "references": [],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+      ],
+      "fileName": "index.ts",
+      "id": "index.ts@36",
+      "name": "app",
+    },
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "other.ts@53",
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 13,
+              "content": "(c) => {
+  return c.json({});
+}",
+              "fileName": "other.ts",
+              "id": "other.ts@66",
+              "line": 2,
+              "modules": {},
+              "references": [],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+        {
+          "id": "other.ts@100",
+          "method": "post",
+          "path": "/",
+          "sources": [
+            {
+              "character": 14,
+              "content": "(c) => c.json({ hello: "world" })",
+              "fileName": "other.ts",
+              "id": "other.ts@114",
+              "line": 5,
+              "modules": {},
+              "references": [],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+      ],
+      "fileName": "other.ts",
+      "id": "other.ts@35",
+      "name": "app",
+    },
+  ],
+}
+`;
+
+exports[`run test 'single file' with location './test-case/single' 1`] = `
+{
+  "errorCount": 0,
+  "results": [
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "index.ts@55",
+          "method": "get",
+          "path": "/",
+          "sources": [
+            {
+              "character": 13,
+              "content": "(c) => c.text("Hello, Hono!")",
+              "fileName": "index.ts",
+              "id": "index.ts@68",
+              "line": 4,
+              "modules": {},
+              "references": [],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+      ],
+      "fileName": "index.ts",
+      "id": "index.ts@36",
+      "name": "app",
+    },
+  ],
+}
+`;
+
+exports[`run test 'split routes' with location './test-case/split-routes' 1`] = `
+{
+  "errorCount": 0,
+  "results": [
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "users.ts@179",
+          "method": "get",
+          "path": "/api/v1/users",
+          "sources": [
+            {
+              "character": 27,
+              "content": "(c) => {
+  return c.json(USERS);
+}",
+              "fileName": "users.ts",
+              "id": "users.ts@206",
+              "line": 17,
+              "modules": {},
+              "references": [
+                {
+                  "character": 6,
+                  "content": "const USERS = [
+  {
+    id: 1,
+    name: "Alice",
+    age: 25,
+  },
+  {
+    id: 2,
+    name: "Bob",
+    age: 30,
+  },
+]",
+                  "fileName": "users.ts",
+                  "id": "users.ts@63",
+                  "line": 4,
+                  "modules": {},
+                  "references": [],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+        {
+          "id": "users.ts@244",
+          "method": "get",
+          "path": "/api/v1/users/:id",
+          "sources": [
+            {
+              "character": 31,
+              "content": "(c) => {
+  const id = Number.parseInt(c.req.param("id"));
+  const user = USERS.find((u) => u.id === id);
+  return c.json(user);
+}",
+              "fileName": "users.ts",
+              "id": "users.ts@275",
+              "line": 21,
+              "modules": {},
+              "references": [
+                {
+                  "character": 6,
+                  "content": "const USERS = [
+  {
+    id: 1,
+    name: "Alice",
+    age: 25,
+  },
+  {
+    id: 2,
+    name: "Bob",
+    age: 30,
+  },
+]",
+                  "fileName": "users.ts",
+                  "id": "users.ts@63",
+                  "line": 4,
+                  "modules": {},
+                  "references": [],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+      ],
+      "fileName": "users.ts",
+      "id": "users.ts@36",
+      "name": "users",
+    },
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "index.ts@320",
+          "method": "get",
+          "path": "/api/v1/projects",
+          "sources": [
+            {
+              "character": 33,
+              "content": "(c) => {
+  return c.json(PROJECTS);
+}",
+              "fileName": "index.ts",
+              "id": "index.ts@353",
+              "line": 19,
+              "modules": {},
+              "references": [
+                {
+                  "character": 6,
+                  "content": "const PROJECTS = [
+  {
+    id: 1,
+    name: "Project A",
+    description: "Project A description",
+  },
+  {
+    id: 2,
+    name: "Project B",
+    description: "Project B description",
+  },
+]",
+                  "fileName": "index.ts",
+                  "id": "index.ts@133",
+                  "line": 6,
+                  "modules": {},
+                  "references": [],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+        {
+          "id": "index.ts@394",
+          "method": "get",
+          "path": "/api/v1/projects/:id",
+          "sources": [
+            {
+              "character": 37,
+              "content": "(c) => {
+  const id = Number.parseInt(c.req.param("id"));
+  const project = PROJECTS.find((p) => p.id === id);
+  return c.json(project);
+}",
+              "fileName": "index.ts",
+              "id": "index.ts@431",
+              "line": 23,
+              "modules": {},
+              "references": [
+                {
+                  "character": 6,
+                  "content": "const PROJECTS = [
+  {
+    id: 1,
+    name: "Project A",
+    description: "Project A description",
+  },
+  {
+    id: 2,
+    name: "Project B",
+    description: "Project B description",
+  },
+]",
+                  "fileName": "index.ts",
+                  "id": "index.ts@133",
+                  "line": 6,
+                  "modules": {},
+                  "references": [],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+      ],
+      "fileName": "index.ts",
+      "id": "index.ts@103",
+      "name": "projects",
+    },
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "index.ts@619",
+          "path": "/",
+          "sources": [
+            {
+              "character": 8,
+              "content": "cors()",
+              "fileName": "index.ts",
+              "id": "index.ts@627",
+              "line": 32,
+              "modules": {
+                "hono": [
+                  {
+                    "import": "cors",
+                    "importPath": "hono/cors",
+                    "name": "hono",
+                    "version": "4.6.6",
+                  },
+                ],
+              },
+              "references": [],
+            },
+          ],
+          "type": "MIDDLEWARE_ENTRY",
+        },
+      ],
+      "fileName": "index.ts",
+      "id": "index.ts@601",
+      "name": "app",
+    },
+    {
+      "baseUrl": "",
+      "entries": [
+        {
+          "id": "projects.ts@253",
+          "method": "get",
+          "path": "/api/v1/projects",
+          "sources": [
+            {
+              "character": 33,
+              "content": "(c) => {
+  return c.json(PROJECTS);
+}",
+              "fileName": "projects.ts",
+              "id": "projects.ts@286",
+              "line": 17,
+              "modules": {},
+              "references": [
+                {
+                  "character": 6,
+                  "content": "const PROJECTS = [
+  {
+    id: 1,
+    name: "Project A",
+    description: "Project A description",
+  },
+  {
+    id: 2,
+    name: "Project B",
+    description: "Project B description",
+  },
+]",
+                  "fileName": "projects.ts",
+                  "id": "projects.ts@66",
+                  "line": 4,
+                  "modules": {},
+                  "references": [],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+        {
+          "id": "projects.ts@327",
+          "method": "get",
+          "path": "/api/v1/projects/:id",
+          "sources": [
+            {
+              "character": 37,
+              "content": "(c) => {
+  const id = Number.parseInt(c.req.param("id"));
+  const project = PROJECTS.find((p) => p.id === id);
+  return c.json(project);
+}",
+              "fileName": "projects.ts",
+              "id": "projects.ts@364",
+              "line": 21,
+              "modules": {},
+              "references": [
+                {
+                  "character": 6,
+                  "content": "const PROJECTS = [
+  {
+    id: 1,
+    name: "Project A",
+    description: "Project A description",
+  },
+  {
+    id: 2,
+    name: "Project B",
+    description: "Project B description",
+  },
+]",
+                  "fileName": "projects.ts",
+                  "id": "projects.ts@66",
+                  "line": 4,
+                  "modules": {},
+                  "references": [],
+                },
+              ],
+            },
+          ],
+          "type": "ROUTE_ENTRY",
+        },
+      ],
+      "fileName": "projects.ts",
+      "id": "projects.ts@36",
+      "name": "projects",
+    },
+  ],
+}
+`;

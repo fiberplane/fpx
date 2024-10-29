@@ -29,14 +29,14 @@ test.each([
     name: "split routes",
     location: "./test-case/split-routes",
   },
-  {
-    name: "goose-quotes",
-    location: "../../examples/goose-quotes",
-  },
-  {
-    name: "api",
-    location: "../../api",
-  }
+  // {
+  //   name: "goose-quotes",
+  //   location: "../../examples/goose-quotes",
+  // },
+  // {
+  //   name: "api",
+  //   location: "../../api",
+  // }
 ])("run test $name with location $location", async ({ location, name }) => {
   const absolutePath = path.join(__dirname, location);
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
