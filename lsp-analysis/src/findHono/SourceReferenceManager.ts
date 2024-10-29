@@ -50,7 +50,10 @@ export class SourceReferenceManager {
     }
 
     if (sourceReference.modules[module.name] === undefined) {
-      sourceReference.modules[module.name] = [module];
+      sourceReference.modules[module.name] = [];
+    }
+
+    if (sourceReference.modules[module.name].find(item => item.import === module.import && item.importPath === module.importPath)) {
       return;
     }
 

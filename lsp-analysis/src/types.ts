@@ -1,5 +1,6 @@
 import relative from "resolve";
 import * as bundledTs from "typescript";
+import { SourceReferenceManager } from "./findHono/SourceReferenceManager";
 
 export const bundledTypescript = bundledTs;
 export const relativeResolve = relative.sync;
@@ -47,12 +48,35 @@ export type RouteTreeReference = {
   name: string;
   filename: string;
 };
-export type RouteEntry = {
-  type: "ROUTE_ENTRY";
-  method: string;
+
+export const HONO_HTTP_METHODS = ["get", "post", "put", "delete", "patch", "options"] as const;
+export type HonoHttpMethod = typeof HONO_HTTP_METHODS[number];
+
+type RouteDetails = {
   path: string;
   sources: SourceReference[];
 };
+
+export type RouteEntry = {
+  type: "ROUTE_ENTRY";
+  method?: string;
+} & RouteDetails;
+
+export type MiddlewareEntry = {
+  type: "MIDDLEWARE_ENTRY";
+} & RouteDetails;
+
+export type SearchContext = {
+  sourceReferenceManager: SourceReferenceManager;
+  service: TsLanguageService;
+  ts: TsType;
+  errorCount: number;
+  program: TsProgram;
+  checker: TsTypeChecker;
+  addRouteTree: (route: RouteTree) => void;
+  getFile: (fileName: string) => TsSourceFile | undefined;
+};
+
 
 export type SourceReference = {
   fileName: string;

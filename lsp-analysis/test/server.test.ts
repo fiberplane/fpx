@@ -28,10 +28,10 @@ test.each([
     name: "split routes",
     location: path.join(__dirname, "./test-case/split-routes"),
   },
-  // {
-  //   name: "goose-quotes",
-  //   location: path.join(__dirname, "../../examples/goose-quotes"),
-  // },
+  {
+    name: "goose-quotes",
+    location: path.join(__dirname, "../../examples/goose-quotes"),
+  },
   // {
   //   name: "api",
   //   location: path.join(__dirname, "../../api"),
@@ -156,8 +156,8 @@ const ${routeTree.name} = new Hono();
 ${routes.join("\n\n")}
 
 ${Object.keys(files)
-  .filter((file) => file !== routeTree.fileName)
-  .map((file) => serializeFile(file))
-  .join("\n\n")}
+      .filter((file) => file !== routeTree.fileName)
+      .map((file) => serializeFile(file))
+      .join("\n\n")}
 `;
 }

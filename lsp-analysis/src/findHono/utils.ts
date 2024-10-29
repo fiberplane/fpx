@@ -1,4 +1,4 @@
-import type { SearchContext } from ".";
+import type { SearchContext } from "../types";
 import type {
   ModuleReference,
   TsModuleResolutionHost,

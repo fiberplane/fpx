@@ -1,5 +1,4 @@
-import { J } from "vitest/dist/chunks/reporters.C4ZHgdxQ.js";
-import type { SearchContext } from ".";
+import type { SearchContext } from "../types";
 import type {
   SourceReference,
   TsArrowFunction,
@@ -16,10 +15,9 @@ import type {
 import {
   findNodeAtPosition,
   getImportTypeDefinitionFileName,
-  inspectNode,
 } from "./utils";
 
-// Extract references from the arrow function
+// Extract references for a node and its children
 export function createSourceReferenceForNode(
   rootNode:
     | TsArrowFunction
@@ -43,6 +41,7 @@ export function createSourceReferenceForNode(
       fileName,
       start: rootNode.getStart(),
     });
+    return existingReference;
   }
 
   const rootReference = createInitialSourceReferenceForNode(rootNode, context);
@@ -265,7 +264,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-      currentNode.getSourceFile().fileName
+    currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }
