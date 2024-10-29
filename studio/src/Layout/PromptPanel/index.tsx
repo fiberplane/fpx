@@ -3,11 +3,7 @@ import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { createKeyValueParameters } from "@/pages/RequestorPage/KeyValueForm/data";
 import { createBodyFromAiResponse } from "@/pages/RequestorPage/ai/ai";
-import {
-  fetchAiRequestData,
-  useAiRequestData,
-} from "@/pages/RequestorPage/ai/generate-request-data";
-import { useMakeProxiedRequest } from "@/pages/RequestorPage/queries";
+import { fetchAiRequestData } from "@/pages/RequestorPage/ai/generate-request-data";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
 import type { ProbedRoute } from "@/pages/RequestorPage/types";
@@ -19,7 +15,7 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const translateCommands = async (commands: string) => {

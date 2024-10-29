@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { errorHasMessage, isJson, safeParseJson } from "@/utils";
+import { errorHasMessage } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";

@@ -19,7 +19,7 @@ import CodeMirror, {
   type Extension,
   gutter,
 } from "@uiw/react-codemirror";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
 
 import type { ProbedRoute } from "@/pages/RequestorPage/types";
@@ -84,8 +84,6 @@ const CODE_MIRROR_BASIC_SETUP = {
   completionKeymap: true,
   lintKeymap: false,
 };
-
-const noopExtension = EditorView.theme({});
 
 const promptBaseStylesExtension = EditorView.theme({
   ".cm-placeholder": {
@@ -226,7 +224,6 @@ export function CodeMirrorPrompt(props: CodeMirrorPromptProps) {
     routes,
   } = props;
 
-  const [isFocused, setIsFocused] = useState(false);
   const extensions = useMemo(() => {
     return [
       ...(completions?.map(({ data, character }) =>
@@ -251,12 +248,10 @@ export function CodeMirrorPrompt(props: CodeMirrorPromptProps) {
   );
 
   const handleFocus = useCallback(() => {
-    setIsFocused(true);
     onFocus?.();
   }, [onFocus]);
 
   const handleBlur = useCallback(() => {
-    setIsFocused(false);
     onBlur?.();
   }, [onBlur]);
 
