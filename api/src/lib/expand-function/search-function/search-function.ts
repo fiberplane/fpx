@@ -32,6 +32,7 @@ export async function searchFunction(
   options: SearchFunctionOptions = {},
 ): Promise<SearchFunctionResult | null> {
   const debug = options.debug || false;
+
   // HACK - Allows us to run tests without source maps
   if (options.skipSourceMap) {
     // Attempt to search the function directly in the source.
@@ -62,7 +63,6 @@ export async function searchFunction(
       projectPath,
       functionString,
     );
-    console.log("sourceFunction", sourceFunction);
     if (sourceFunction?.text) {
       if (debug) {
         logger.debug(
