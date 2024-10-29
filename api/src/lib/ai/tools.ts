@@ -28,14 +28,13 @@ export const requestSchema = z.object({
       isMultipart: z.boolean(),
     })
     .nullable(),
-  headers: z
-    .array(
-      z.object({
-        key: z.string(),
-        value: z.string(),
-      }),
-    )
-    // .nullable(),
+  headers: z.array(
+    z.object({
+      key: z.string(),
+      value: z.string(),
+    }),
+  ),
+  // .nullable(),
 });
 
 export const makeRequestTool = {
