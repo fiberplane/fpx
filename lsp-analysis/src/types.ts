@@ -27,6 +27,7 @@ export type TsSyntaxKind = bundledTs.SyntaxKind;
 export type TsTypeAliasDeclaration = bundledTs.TypeAliasDeclaration;
 export type TsTypeChecker = bundledTs.TypeChecker;
 export type TsVariableDeclaration = bundledTs.VariableDeclaration;
+export type TsIdentifier = bundledTs.Identifier;
 
 export type RouteTree = {
   name: string;
@@ -49,8 +50,15 @@ export type RouteTreeReference = {
   filename: string;
 };
 
-export const HONO_HTTP_METHODS = ["get", "post", "put", "delete", "patch", "options"] as const;
-export type HonoHttpMethod = typeof HONO_HTTP_METHODS[number];
+export const HONO_HTTP_METHODS = [
+  "get",
+  "post",
+  "put",
+  "delete",
+  "patch",
+  "options",
+] as const;
+export type HonoHttpMethod = (typeof HONO_HTTP_METHODS)[number];
 
 type RouteDetails = {
   path: string;
@@ -76,7 +84,6 @@ export type SearchContext = {
   addRouteTree: (route: RouteTree) => void;
   getFile: (fileName: string) => TsSourceFile | undefined;
 };
-
 
 export type SourceReference = {
   fileName: string;

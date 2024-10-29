@@ -1,4 +1,4 @@
-import type { SearchContext } from "../types";
+import type { SearchContext, TsIdentifier } from "../types";
 import type {
   SourceReference,
   TsArrowFunction,
@@ -8,14 +8,10 @@ import type {
   TsFunctionDeclaration,
   TsNode,
   TsReferenceEntry,
-  TsSyntaxKind,
   TsTypeAliasDeclaration,
   TsVariableDeclaration,
 } from "../types";
-import {
-  findNodeAtPosition,
-  getImportTypeDefinitionFileName,
-} from "./utils";
+import { findNodeAtPosition, getImportTypeDefinitionFileName } from "./utils";
 
 // Extract references for a node and its children
 export function createSourceReferenceForNode(
@@ -62,147 +58,87 @@ function visit(
   startPosition: number,
   rootNodeReference: TsNode = currentNode,
 ) {
-  const { ts, checker, sourceReferenceManager, getFile } = context;
-  const sourceFile = getFile(rootReference.fileName);
+  const { ts } = context;
 
   if (ts.isIdentifier(currentNode)) {
-    const dependencyResult = getImportTypeDefinitionFileName(
+    visitIdentifier(
       currentNode,
       context,
+      rootReference,
+      startPosition,
+      rootNodeReference,
     );
-    if (dependencyResult) {
-      const { isExternalLibrary, location, ...dependency } = dependencyResult;
-      if (isExternalLibrary) {
-        // Add dependency to the root reference
-        context.sourceReferenceManager.addModuleToReference(
-          sourceFile.fileName,
-          startPosition,
-          dependency,
-        );
-        return;
-      }
-    }
-    // const checker = program.getTypeChecker();
-    const symbol = checker.getSymbolAtLocation(currentNode);
-
-    const declarations = symbol?.getDeclarations();
-    if (
-      !declarations ||
-      declarations.length === 0 ||
-      symbol?.flags === ts.SymbolFlags.FunctionScopedVariable
-    ) {
-      return;
-    }
-
-    const declaration = declarations[0];
-    // const declSourceFile = declaration.getSourceFile();
-
-    const nodeValue = dependencyResult
-      ? getNodeValueForDependency(dependencyResult, context, declaration)
-      : getLocalDeclaration(declaration, currentNode);
-
-    // No valid node value found? Skip
-    if (!nodeValue) {
-      return;
-    }
-
-    if (
-      (rootNodeReference.getStart() > nodeValue.getEnd() ||
-        rootNodeReference.getEnd() < nodeValue.getStart()) &&
-      (ts.isFunctionDeclaration(nodeValue) ||
-        ts.isArrowFunction(nodeValue) ||
-        ts.isCallExpression(nodeValue) ||
-        ts.isTypeAliasDeclaration(nodeValue) ||
-        ts.isExportSpecifier(nodeValue) ||
-        ts.isVariableDeclaration(nodeValue))
-    ) {
-      const sourceReference =
-        sourceReferenceManager.getReference(
-          nodeValue.getSourceFile().fileName,
-          nodeValue.getStart(),
-        ) || createSourceReferenceForNode(nodeValue, context);
-      if (currentNode.getText() === "user") {
-        console.log("nodeValue", currentNode.parent.kind, !!dependencyResult);
-      }
-      rootReference.references.push(sourceReference);
-      return;
-    }
-    if (
-      ts.isBindingElement(nodeValue) ||
-      ts.isPropertySignature(nodeValue) ||
-      ts.isPropertyAssignment(nodeValue) ||
-      ts.isTypeParameterDeclaration(nodeValue)
-    ) {
-      // console.log('binding element', nodeValue.getText(), symbol.getFlags(), symbol.getName());
-      return;
-    }
-
-    // console.log(
-    //   "nodeValue",
-    //   nodeValue.kind,
-    //   //   nodeValue.getText(),
-    //   //   nodeValue.getStart(),
-    //   //   currentNode.getText(),
-    //   //   currentNode.getStart(),
-    // );
-    // console.log(
-    //   {
-    //     currentNode: currentNode.getText(),
-    //     declSourceFile: nodeValue.getSourceFile().fileName,
-    //     sourceFile: sourceFile.fileName,
-    //     "currentNode.getStart": currentNode.getStart(),
-    //     "declaration.getStart": declaration.getStart(),
-    //     "currentNode.getEnd": currentNode.getEnd(),
-    //     "declaration.getEnd": declaration.getEnd(),
-    //     "same file": nodeValue.getSourceFile().fileName === sourceFile.fileName,
-    //     "inside range": (currentNode.getStart() < declaration.getStart() &&
-    //       currentNode.getEnd() > declaration.getEnd())
-    //   }
-    // )
-
-    // inspectNode(nodeValue, context.ts);
-    // console.log("nodeValue", currentNode.getText(), nodeValue.kind, possibleReferences.length);
-
-    // throw new NodeTypeNotSupportedError(nodeValue);
-
-    // }
-    // }
-
-    // console.log("We should not get here", currentNode.getText())
-    // } else {
-    // if (currentNode.getText() === "DEFAULT_USER_NAME") {
-    // console.log(
-    //   {
-    //     currentNode: currentNode.getText(),
-    //     declSourceFile: declSourceFile.fileName,
-    //     sourceFile: sourceFile.fileName,
-    //     "currentNode.getStart": currentNode.getStart(),
-    //     "declaration.getStart": declaration.getStart(),
-    //     "currentNode.getEnd": currentNode.getEnd(),
-    //     "declaration.getEnd": declaration.getEnd(),
-    //     "same file": declSourceFile.fileName === sourceFile.fileName,
-    //     "inside range": (currentNode.getStart() < declaration.getStart() &&
-    //       currentNode.getEnd() > declaration.getEnd())
-    //   }
-    // )
-    // if (
-    //   declSourceFile.fileName === sourceFile.fileName &&
-    //   (currentNode.getStart() > declaration.getStart() &&
-    //     currentNode.getEnd() < declaration.getEnd())
-    // ) {
-    //   console.log('declaration', declaration.kind)
-    // }
-    // } else {
-    //   console.log('eh', currentNode.getText(), currentNode.parent.kind, sourceFile.fileName);
-    // }
-    // console.log('symbol', symbol, 'declarations', declarations);
-    // console.log('no dependency result?', rootReference.fileName, currentNode.getText(), declaration.kind);
-    // }
+    return;
   }
 
   ts.forEachChild(currentNode, (node) =>
     visit(node, context, rootReference, startPosition, rootNodeReference),
   );
+}
+
+function visitIdentifier(
+  currentNode: TsIdentifier,
+  context: SearchContext,
+  rootReference: SourceReference,
+  startPosition: number,
+  rootNodeReference: TsNode = currentNode,
+) {
+  const { ts, getFile, checker, sourceReferenceManager } = context;
+  const sourceFile = getFile(rootReference.fileName);
+  const dependencyResult = getImportTypeDefinitionFileName(
+    currentNode,
+    context,
+  );
+  if (dependencyResult) {
+    const { isExternalLibrary, location, ...dependency } = dependencyResult;
+    if (isExternalLibrary) {
+      // Add dependency to the root reference
+      context.sourceReferenceManager.addModuleToReference(
+        sourceFile.fileName,
+        startPosition,
+        dependency,
+      );
+      return;
+    }
+  }
+
+  const symbol = checker.getSymbolAtLocation(currentNode);
+  const declarations = symbol?.getDeclarations() || [];
+  const [declaration] = declarations;
+  if (!declaration || symbol?.flags === ts.SymbolFlags.FunctionScopedVariable) {
+    return;
+  }
+
+  const nodeValue = dependencyResult
+    ? getNodeValueForDependency(dependencyResult, context, declaration)
+    : getLocalDeclaration(declaration, currentNode);
+
+  // No valid node value found? Skip
+  if (!nodeValue) {
+    return;
+  }
+
+  if (
+    (rootNodeReference.getStart() > nodeValue.getEnd() ||
+      rootNodeReference.getEnd() < nodeValue.getStart()) &&
+    (ts.isFunctionDeclaration(nodeValue) ||
+      ts.isArrowFunction(nodeValue) ||
+      ts.isCallExpression(nodeValue) ||
+      ts.isTypeAliasDeclaration(nodeValue) ||
+      ts.isExportSpecifier(nodeValue) ||
+      ts.isVariableDeclaration(nodeValue))
+  ) {
+    const sourceReference =
+      sourceReferenceManager.getReference(
+        nodeValue.getSourceFile().fileName,
+        nodeValue.getStart(),
+      ) || createSourceReferenceForNode(nodeValue, context);
+    if (currentNode.getText() === "user") {
+      console.log("nodeValue", currentNode.parent.kind, !!dependencyResult);
+    }
+    rootReference.references.push(sourceReference);
+    return;
+  }
 }
 
 function getNodeValueForDependency(
@@ -220,10 +156,8 @@ function getNodeValueForDependency(
     ) || [];
 
   if (!references) {
-    console.log(
-      "Wait there are no references",
-      declSourceFile.fileName,
-      declaration.getText(),
+    console.warn(
+      `No references found: (file: ${declSourceFile.fileName} at position: ${declaration.getStart()})`,
     );
     return;
   }
@@ -264,55 +198,9 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-    currentNode.getSourceFile().fileName
+      currentNode.getSourceFile().fileName
   ) {
     return declaration;
-  }
-
-  // if (currentNode.getText() === "DEFAULT_USER_NAME") {
-  //   console.log("fall through", {
-  //     before: declaration.getEnd() < currentNode.getStart(),
-  //     "after?": declaration.getStart() > currentNode.getEnd(),
-  //     "same file":
-  //       declaration.getSourceFile().fileName ===
-  //       currentNode.getSourceFile().fileName,
-  //     currentNode: currentNode.getText(),
-  //     declaration: declaration.getText(),
-  //   });
-  // }
-}
-class NodeTypeNotSupportedError extends Error {
-  fileName: string;
-  line: number;
-  character: number;
-  text: string;
-  kind: TsSyntaxKind;
-
-  constructor(node: TsNode) {
-    const { fileName, line, character, text, kind } =
-      NodeTypeNotSupportedError.extractNodeMetadata(node);
-    const message = `Node of kind ${kind} is not supported at ${fileName}:${line}:${character}\nNode text: ${text}`;
-    super(message);
-    this.name = "NodeTypeNotSupportedError";
-    this.fileName = fileName;
-    this.line = line;
-    this.character = character;
-    this.text = text;
-    this.kind = kind;
-  }
-
-  private static extractNodeMetadata(node: TsNode) {
-    const fileName = node.getSourceFile().fileName;
-    const { line, character } = node
-      .getSourceFile()
-      .getLineAndCharacterOfPosition(node.getStart());
-    const text = node.getText();
-    const kind = node.kind;
-    return { fileName, line, character, text, kind };
-  }
-
-  toString() {
-    return `${this.name}: ${this.message}`;
   }
 }
 
@@ -343,7 +231,6 @@ function createSourceReferenceContentForNode(
 
   if (ts.isExportSpecifier(node)) {
     return `export { ${node.getText()} } from ${node.parent.parent.moduleSpecifier.getText()}`;
-    // return findModulePathFromExportSpecified(node);
   }
   return node.getText();
 }
@@ -369,12 +256,4 @@ function createInitialSourceReferenceForNode(
     references: [],
     modules: {},
   };
-}
-
-function findModulePathFromExportSpecified(node: TsExportSpecifier): string {
-  const exportDeclaration = node.parent.parent;
-  return exportDeclaration.moduleSpecifier.getText();
-  // const exportStatement = exportDeclaration.parent;
-  // const moduleSpecifier = exportStatement.moduleSpecifier;
-  // return moduleSpecifier.getText();
 }

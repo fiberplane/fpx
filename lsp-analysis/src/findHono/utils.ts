@@ -7,22 +7,6 @@ import type {
   TsType,
 } from "../types";
 
-// export function getNextSibling(node: TsNode): TsNode | undefined {
-//   const parent = node.parent;
-//   if (!parent) {
-//     return undefined;
-//   }
-
-//   const children = parent.getChildren();
-//   for (let i = 0; i < children.length; i++) {
-//     if (children[i] === node && i + 1 < children.length) {
-//       return children[i + 1];
-//     }
-//   }
-
-//   return undefined;
-// }
-
 export function findNodeAtPosition(
   ts: TsType,
   sourceFile: TsSourceFile,
@@ -86,7 +70,6 @@ export function getImportTypeDefinitionFileName(
   | (ModuleReference & { isExternalLibrary: boolean; location: string })
   | undefined {
   const { ts, checker, program } = context;
-  // const checker = program.getTypeChecker();
   const symbol = checker.getSymbolAtLocation(node);
 
   const declarations = symbol?.getDeclarations();
@@ -122,29 +105,11 @@ export function getImportTypeDefinitionFileName(
         );
         if (result.resolvedModule.isExternalLibraryImport) {
           return;
-          // return {
-          //   import: node.getText(),
-          //   importPath: type,
-          //   name: type,
-          //   version: result.resolvedModule.packageId.version,
-          //   isExternalLibrary: true,
-          //   location: result.resolvedModule.resolvedFileName,
-          // };
         }
       }
     }
   }
 
-  // Node kinds:
-  // - ImportDeclaration
-  // - Parameter
-  // - VariableDeclaration
-  // - CallExpression
-  // - ExportSpecifier
-  // - PropertyAccessExpression
-
-  // console.log("node", declaration.kind);
-  // const n = declaration.parent.parent;
   let target = declaration.parent;
   while (
     target &&
@@ -161,16 +126,6 @@ export function getImportTypeDefinitionFileName(
     return;
   }
 
-  // if (node.getText() === "getUser") {
-  //   console.log("target", target.getText());
-  // }
-  // // Look for the import statement
-  // let nextSibling = n && getNextSibling(n);
-  // while (nextSibling && nextSibling.kind !== ts.SyntaxKind.StringLiteral) {
-  //   nextSibling = getNextSibling(nextSibling);
-  // }
-
-  // if (nextSibling) {
   const text = target.moduleSpecifier.getText().slice(1, -1);
 
   const result = ts.resolveModuleName(
@@ -211,10 +166,4 @@ export function getImportTypeDefinitionFileName(
     isExternalLibrary: false,
     location: result.resolvedModule.resolvedFileName,
   };
-  // }
-  // if (ts.isExportSpecifier(declaration)) {
-  //   console.log('export specifier', declaration.getText());
-  // } else {
-  //   console.log("No sibling found", node.kind, node.getText())
-  // }
 }

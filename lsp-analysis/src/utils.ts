@@ -1,5 +1,5 @@
 import path from "node:path";
-import { TsNode, TsType, TsTypeChecker } from "./types";
+import type { TsNode, TsType, TsTypeChecker } from "./types";
 
 /**
  * Gets the file uri to be used in the typescript language server
@@ -35,14 +35,18 @@ export function isSubpath(parentPath: string, subPath: string): boolean {
   return resolvedSubPath.startsWith(resolvedParentPath);
 }
 
-export function debugSymbolAtLocation(node: TsNode, checker: TsTypeChecker, ts: TsType) {
+export function debugSymbolAtLocation(
+  node: TsNode,
+  checker: TsTypeChecker,
+  ts: TsType,
+) {
   function logSymbolInfo(node: TsNode, depth: number) {
     const symbol = checker.getSymbolAtLocation(node);
-    console.log('Node Kind:', ts.SyntaxKind[node.kind]);
+    console.log("Node Kind:", ts.SyntaxKind[node.kind]);
     // console.log('Node Text:', node.getText());
     // console.log('Symbol:', symbol);
     if (symbol) {
-      console.log('Symbol Name:', symbol.getName());
+      console.log("Symbol Name:", symbol.getName());
     }
     if (depth > 0 && node.parent) {
       logSymbolInfo(node.parent, depth - 1);

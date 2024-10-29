@@ -1,6 +1,7 @@
+import { SourceReferenceManager } from "../SourceReferenceManager";
 import {
+  HONO_HTTP_METHODS,
   type RouteEntry,
-  type TsVariableDeclaration,
   type RouteTree,
   type SearchContext,
   type TsCallExpression,
@@ -9,10 +10,9 @@ import {
   type TsReferenceEntry,
   type TsSourceFile,
   type TsType,
-  HONO_HTTP_METHODS,
+  type TsVariableDeclaration,
 } from "../types";
 import { createSourceReferenceForNode } from "./extractReferences";
-import { SourceReferenceManager } from "../SourceReferenceManager";
 import { findNodeAtPosition } from "./utils";
 
 export function extractRouteTrees(
@@ -167,9 +167,7 @@ function handleHonoMethodCall(
     routeTree.entries.push(entry);
 
     for (const arg of args) {
-      if (ts.isArrowFunction(arg) ||
-        ts.isCallExpression(arg)
-      ) {
+      if (ts.isArrowFunction(arg) || ts.isCallExpression(arg)) {
         const source = createSourceReferenceForNode(arg, context);
         if (source) {
           entry.sources.push(source);

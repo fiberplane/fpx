@@ -25,45 +25,6 @@ export function getOptions(location: string, ts: TsType): TsCompilerOptions {
   if (!options.baseUrl) {
     options.baseUrl = location;
   }
-  // if (!options.rootDir) {
-  //   options.rootDir = "./src";
-  // }
-
-  if (options.types) {
-    // console.log("types", JSON.stringify(options, null, 2))
-    // options.types = options.types.map((type) => {
-    //   // return `${location}/node_modules/${type}`;
-    //   try {
-    //     const resolved = relativeResolve(`@types/${type}`, { basedir: location });
-    //     return require(resolved);
-    //   } catch (error) {
-    //     try {
-    //       const resolved = relativeResolve(type, { basedir: location, preserveSymlinks: true });
-    //       return require(resolved);
-    //     } catch (error) {
-    //       console.warn("Unable to resolve type", type, error);
-    //       return type;
-    //     }
-    //     // const resolved = relativeResolve(type, { basedir: location });
-    //     // return require(resolved);
-    //     // console.warn("Unable to resolve type", type, error);
-    //     // return type;
-    //   }
-    // });
-  }
-  // throw new Error("Boom");
-  // if (ts === bundledTs) {
-  // options.typeRoots = [
-  //   path.resolve(
-  //     path.join(location, "node_modules/@types")
-  //   ),
-  //   path.resolve(
-  //     path.join(location, "node_modules")
-  //   )
-  // ];
-  // }
-
-  // console.log(ts.getDefaultLibFilePath(options));
   return options;
 }
 
@@ -95,33 +56,6 @@ export function startServer(params: {
         getFileInfo(fileName) !== undefined || ts.sys.fileExists(fileName);
       return exists;
     },
-
-    // resolveModuleNameLiterals: (
-    //   moduleLiterals: ReadonlyArray<bundledTs.StringLiteralLike>,
-    //   containingFile: string,
-    //   redirectedReference: bundledTs.ResolvedProjectReference | undefined,
-    //   options: bundledTs.CompilerOptions,
-    //   containingSourceFile: bundledTs.SourceFile,
-    //   reusedNames: readonly bundledTs.StringLiteralLike[] | undefined
-    // ): bundledTs.ResolvedModuleWithFailedLookupLocations[] => {
-    //   // ts.sys.resol
-    //   // return [];
-    //   return [...moduleLiterals].map((moduleName) => {
-    //     const resolved = ts.resolveModuleName(
-    //       moduleName,
-    //       containingFile,
-    //       options,
-    //       {
-    //         fileExists: ts.sys.fileExists,
-    //         readFile: ts.sys.readFile,
-    //       },
-    //     );
-
-    //     return resolved.resolvedModule?.resolvedFileName;
-    //   });
-    // },
-    // resolveModuleNames
-    // getCurrentDirectory: () => location,
     getCurrentDirectory: () => location,
     getDefaultLibFileName: (options) => {
       // console.log('get default lib name', options);

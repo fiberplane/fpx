@@ -54,7 +54,13 @@ export class SourceReferenceManager {
     }
     const moduleImports = sourceReference.modules[module.name];
 
-    if (moduleImports.find(item => item.import === module.import && item.importPath === module.importPath)) {
+    if (
+      moduleImports.find(
+        (item) =>
+          item.import === module.import &&
+          item.importPath === module.importPath,
+      )
+    ) {
       return;
     }
 

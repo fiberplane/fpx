@@ -3,7 +3,6 @@ import { fileURLToPath } from "node:url";
 import util from "node:util";
 import { expandFunction } from "../expand-function.js";
 import { getTSServer } from "../tsserver/server.js";
-import { debug } from "node:console";
 
 // Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
