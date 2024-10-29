@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { errorHasMessage, isJson } from "@/utils";
+import { errorHasMessage, isJson, safeParseJson } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
@@ -90,7 +90,15 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
 
       const nextBody = createBodyFromAiResponse(body, aiBodyType);
       if (nextBody) {
-        setBody(nextBody);
+        const prettifiedBody = tryPrettify(nextBody.value as string);
+        if (prettifiedBody) {
+          setBody({
+            type: "json",
+            value: prettifiedBody,
+          });
+        } else {
+          setBody(nextBody);
+        }
       }
 
       // NOTE - We need to be clear on the types here, otherwise this could wreak havoc on our form data
@@ -195,14 +203,9 @@ export function createBodyFromAiResponse(
   }
 
   if (bodyType === "json") {
-    const prettyBody = tryPrettify(body as string);
     return {
       type: "json",
-      value: isJson(prettyBody)
-        ? prettyBody
-        : typeof body === "string"
-          ? body
-          : undefined,
+      value: JSON.stringify(body),
     };
   }
 
