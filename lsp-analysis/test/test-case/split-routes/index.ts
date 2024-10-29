@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { users } from "./users";
 
 const projects = new Hono();
@@ -29,7 +30,7 @@ projects.get("/api/v1/projects/:id", (c) => {
 export { projects };
 
 const app = new Hono();
-
+app.use(cors());
 app.route("/", users);
 app.route("/", projects);
 

@@ -83,8 +83,8 @@ function visitIdentifier(
   startPosition: number,
   rootNodeReference: TsNode = currentNode,
 ) {
-  const { ts, getFile, checker, sourceReferenceManager } = context;
-  const sourceFile = getFile(rootReference.fileName);
+  const { ts, getFile, checker, sourceReferenceManager, asAbsolutePath } = context;
+  const sourceFile = getFile(asAbsolutePath(rootReference.fileName));
   const dependencyResult = getImportTypeDefinitionFileName(
     currentNode,
     context,
@@ -198,7 +198,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-      currentNode.getSourceFile().fileName
+    currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }
@@ -245,13 +245,15 @@ function createInitialSourceReferenceForNode(
     | TsVariableDeclaration,
   context: SearchContext,
 ): SourceReference {
+  const { getId, asRelativePath } = context;
   const sourceFile = node.getSourceFile();
   const position = sourceFile.getLineAndCharacterOfPosition(node.getStart());
 
   return {
+    id: getId(sourceFile.fileName, node.getStart()),
     character: position.character,
     line: position.line,
-    fileName: sourceFile.fileName,
+    fileName: asRelativePath(sourceFile.fileName),
     content: createSourceReferenceContentForNode(node, context),
     references: [],
     modules: {},

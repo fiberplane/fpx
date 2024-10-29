@@ -1,0 +1,353 @@
+import path from "node:path";
+import { SourceReferenceManager } from "../SourceReferenceManager";
+import {
+  HONO_HTTP_METHODS,
+  type MiddlewareEntry,
+  type RouteEntry,
+  type RouteTree,
+  type SearchContext,
+  type TsArrowFunction,
+  type TsCallExpression,
+  type TsExpression,
+  type TsFunctionDeclaration,
+  type TsLanguageService,
+  type TsNode,
+  type TsNodeArray,
+  type TsReferenceEntry,
+  type TsSourceFile,
+  type TsType,
+  type TsVariableDeclaration,
+} from "../types";
+import { createSourceReferenceForNode } from "./extractReferences";
+import { findNodeAtPosition } from "./utils";
+
+export function extractRouteTrees(
+  service: TsLanguageService,
+  ts: TsType,
+  projectRoot,
+): {
+  errorCount?: number;
+  results: Array<RouteTree>;
+} {
+  const sourceReferenceManager = new SourceReferenceManager();
+  const program = service.getProgram();
+  const checker = program.getTypeChecker();
+
+  if (!program) {
+    throw new Error("Program not found");
+  }
+
+  const apps: Array<RouteTree> = [];
+  const files = program.getSourceFiles();
+  const fileMap: Record<string, TsSourceFile> = {};
+  for (const file of files) {
+    fileMap[file.fileName] = file;
+  }
+
+  const asRelativePath = (absolutePath: string) =>
+    path.isAbsolute(absolutePath) ? path.relative(projectRoot, absolutePath) : absolutePath;
+
+  const asAbsolutePath = (relativePath: string) =>
+    path.isAbsolute(relativePath) ? relativePath : path.join(projectRoot, relativePath);
+
+  const context: SearchContext = {
+    errorCount: 0,
+    program,
+    service,
+    checker,
+    ts,
+    sourceReferenceManager,
+    addRouteTree: (route: RouteTree) => {
+      apps.push(route);
+    },
+    getFile: (fileName: string) => {
+      return fileMap[fileName];
+    },
+    getId: (fileName: string, location) => {
+      return `${asRelativePath(fileName)}@${location}`;
+    },
+    asRelativePath,
+    asAbsolutePath,
+  };
+
+  for (const sourceFile of files) {
+    if (!sourceFile.isDeclarationFile) {
+      ts.forEachChild(sourceFile, (node: TsNode) => {
+        visit(node, sourceFile.fileName, context);
+      });
+    }
+  }
+
+  return {
+    results: apps,
+    errorCount: context.errorCount,
+  };
+}
+
+function visit(node: TsNode, fileName: string, context: SearchContext) {
+  const { ts, addRouteTree, checker, asRelativePath, getId } = context;
+
+  if (ts.isVariableStatement(node)) {
+    for (const declaration of node.declarationList.declarations) {
+      if (declaration.initializer) {
+        const type = checker.getTypeAtLocation(declaration.initializer);
+        const typeName = checker.typeToString(type);
+        if ("intrinsicName" in type && type.intrinsicName === "error") {
+          context.errorCount++;
+          console.error("Error in type check");
+          console.error("In: ", node.getSourceFile().fileName, node.kind);
+          console.error("Node text:", node.getFullText());
+          console.error("type information", type.getSymbol());
+        }
+
+        if (typeName.startsWith("Hono<")) {
+          // TODO: Check how the hono instance is created, if it's not with `new Hono...` we should
+          // probably investigate how that hono instance was created (i.e. there might be routes already
+          // defined on that hono instance
+
+          // TODO: use the type information to get the name of the hono instance
+          // TODO: (edge case) handle reassignments of the same variable. It's possible reuse a variable for different hono instances
+          const honoInstanceName = declaration.name.getText();
+
+          const current: RouteTree = {
+            id: getId(fileName, declaration.name.getStart()),
+            baseUrl: "",
+            name: honoInstanceName,
+            fileName: asRelativePath(node.getSourceFile().fileName),
+            entries: [],
+          };
+
+          // Add route early
+          addRouteTree(current);
+
+          const references = context.service
+            .getReferencesAtPosition(fileName, declaration.name.getStart())
+            .filter(
+              (reference) =>
+                reference.fileName === fileName &&
+                reference.textSpan.start !== declaration.name.getStart(),
+            );
+          for (const entry of references) {
+            followReference(current, entry, context);
+          }
+        }
+      }
+    }
+  }
+}
+
+function followReference(
+  routeTree: RouteTree,
+  reference: TsReferenceEntry,
+  context: SearchContext,
+) {
+  const { getFile, ts } = context;
+
+  const sourceFile = getFile(reference.fileName);
+  if (!sourceFile) {
+    console.warn("no file found", reference.fileName);
+    return;
+  }
+
+  const node = findNodeAtPosition(ts, sourceFile, reference.textSpan.start);
+  if (!node) {
+    console.warn("no node found", reference.textSpan.start);
+    return;
+  }
+
+  const accessExpression = node.parent;
+  const callExpression = node.parent?.parent;
+  if (
+    accessExpression &&
+    ts.isPropertyAccessExpression(accessExpression) &&
+    callExpression &&
+    ts.isCallExpression(callExpression)
+  ) {
+    const methodName = accessExpression.name.text;
+    handleHonoMethodCall(callExpression, methodName, routeTree, context);
+  }
+}
+
+function handleHonoMethodCall(
+  callExpression: TsCallExpression,
+  methodName: string,
+  routeTree: RouteTree,
+  context: SearchContext,
+) {
+  const { ts } = context;
+
+  if (methodName === "route") {
+    return handleRoute(callExpression, routeTree, context);
+  }
+
+  if (methodName === "use") {
+    return handleUse(callExpression, routeTree, context);
+  }
+
+  if (methodName === "baseUrl") {
+    if (ts.isStringLiteral(callExpression.arguments[0])) {
+      routeTree.baseUrl = callExpression.arguments[0].text;
+    }
+  }
+
+  if ([...HONO_HTTP_METHODS, "all", "use"].includes(methodName)) {
+    const [firstArgument, ...args] = callExpression.arguments;
+    const entry: RouteEntry = {
+      type: "ROUTE_ENTRY",
+      id: context.getId(
+        callExpression.getSourceFile().fileName,
+        callExpression.getStart(),
+      ),
+      method: methodName === "all" ? undefined : methodName,
+      path: JSON.parse(firstArgument.getText()),
+      sources: [],
+    };
+
+    // Add the tree node to the list of entries
+    // Later the entry will be filled with source references
+    routeTree.entries.push(entry);
+
+    for (const arg of args) {
+      if (ts.isArrowFunction(arg) || ts.isCallExpression(arg)) {
+        const source = createSourceReferenceForNode(arg, context);
+        if (source) {
+          entry.sources.push(source);
+        }
+      }
+    }
+  }
+}
+
+function handleRoute(
+  callExpression: TsCallExpression,
+  routeTree: RouteTree,
+  context: SearchContext,
+) {
+  const { ts, getFile, asRelativePath, getId } = context;
+
+  // There should be 2 arguments
+  const [firstArgument = undefined, appNode = undefined] =
+    callExpression.arguments;
+
+  if (!appNode) {
+    return;
+  }
+
+  const path = ts.isStringLiteral(firstArgument) ? firstArgument.text : "";
+  const SUPPORTED_VARIABLE_KINDS = [
+    ts.ScriptElementKind.constElement,
+    ts.ScriptElementKind.letElement,
+    ts.ScriptElementKind.variableElement,
+  ];
+  const references = context.service.findReferences(
+    appNode.getSourceFile().fileName,
+    appNode.getStart(),
+  );
+
+  let target: TsVariableDeclaration | undefined;
+  for (const referencedSymbol of references) {
+    // TODO: investigate whether there are other cases we should support
+    // Check if it's a variable like const, let or var
+    if (!SUPPORTED_VARIABLE_KINDS.includes(referencedSymbol.definition.kind)) {
+      // If so, find the node
+      const variableDeclarationChild = findNodeAtPosition(
+        ts,
+        getFile(referencedSymbol.definition.fileName),
+        referencedSymbol.definition.textSpan.start,
+      );
+      // Access the parent & verify that's a variable declaration
+      // As the node will point to the identifier and not the declaration
+      if (
+        variableDeclarationChild?.parent &&
+        ts.isVariableDeclaration(variableDeclarationChild.parent)
+      ) {
+        target = variableDeclarationChild.parent;
+        break;
+      }
+    }
+  }
+
+  if (!target) {
+    return;
+  }
+
+  const filename = target.getSourceFile().fileName;
+  routeTree.entries.push({
+    type: "ROUTE_TREE_REFERENCE",
+    id: getId(filename, target.getStart()),
+    fileName: asRelativePath(filename),
+    name: target.name.getText(),
+    path,
+  });
+}
+
+function extractPathFromUseArguments(
+  callExpressionArgs: TsNodeArray<TsExpression>,
+  context: SearchContext,
+) {
+  if (callExpressionArgs.length === 0) {
+    return "/";
+  }
+
+  const { ts } = context;
+  const [firstArgument] = callExpressionArgs;
+  if (ts.isStringLiteral(firstArgument)) {
+    return firstArgument.text;
+  }
+
+  return "/";
+}
+
+type PossibleMiddleware =
+  | TsArrowFunction
+  | TsCallExpression
+  | TsFunctionDeclaration;
+function isPossibleMiddleware(
+  node: TsNode,
+  context: SearchContext,
+): node is PossibleMiddleware {
+  const { ts } = context;
+  return (
+    ts.isArrowFunction(node) ||
+    ts.isCallExpression(node) ||
+    ts.isFunctionDeclaration(node)
+  );
+}
+
+function extractAppsFromUseArguments(
+  callExpressionArgs: TsNodeArray<TsExpression>,
+  context: SearchContext,
+) {
+  return callExpressionArgs.filter((arg) => isPossibleMiddleware(arg, context));
+}
+
+function handleUse(
+  callExpression: TsCallExpression,
+  routeTree: RouteTree,
+  context: SearchContext,
+) {
+  const path = extractPathFromUseArguments(callExpression.arguments, context);
+  const middleware = extractAppsFromUseArguments(
+    callExpression.arguments,
+    context,
+  );
+
+  const entry: MiddlewareEntry = {
+    id: context.getId(
+      callExpression.getSourceFile().fileName,
+      callExpression.getStart(),
+    ),
+    type: "MIDDLEWARE_ENTRY",
+    path,
+    sources: [],
+  };
+
+  routeTree.entries.push(entry);
+
+  for (const arg of middleware) {
+    const source = createSourceReferenceForNode(arg, context);
+    if (source) {
+      entry.sources.push(source);
+    }
+  }
+}

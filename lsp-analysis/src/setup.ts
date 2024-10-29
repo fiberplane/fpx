@@ -1,5 +1,5 @@
 import path from "node:path";
-import { extractRouteTrees } from "./findHono";
+import { extractRouteTrees } from "./routeTrees";
 import { getTsLib, startServer } from "./server";
 import type { TsType } from "./types";
 import { Watcher } from "./watcher";
@@ -58,7 +58,7 @@ export function setupMonitoring(projectRoot: string) {
 
   return {
     watcher,
-    findHonoRoutes: () => extractRouteTrees(server, ts),
+    findHonoRoutes: () => extractRouteTrees(server, ts, projectRoot),
     teardown: () => {
       watcher.teardown();
       server.dispose();

@@ -12,7 +12,9 @@ export type TsCallExpression = bundledTs.CallExpression;
 export type TsCompilerOptions = bundledTs.CompilerOptions;
 export type TsDeclaration = bundledTs.Declaration;
 export type TsExportSpecifier = bundledTs.ExportSpecifier;
+export type TsExpression = bundledTs.Expression;
 export type TsFunctionDeclaration = bundledTs.FunctionDeclaration;
+export type TsIdentifier = bundledTs.Identifier;
 export type TsLanguageService = bundledTs.LanguageService;
 export type TsLanguageServiceHost = bundledTs.LanguageServiceHost;
 export type TsLineAndCharacter = bundledTs.LineAndCharacter;
@@ -27,27 +29,30 @@ export type TsSyntaxKind = bundledTs.SyntaxKind;
 export type TsTypeAliasDeclaration = bundledTs.TypeAliasDeclaration;
 export type TsTypeChecker = bundledTs.TypeChecker;
 export type TsVariableDeclaration = bundledTs.VariableDeclaration;
-export type TsIdentifier = bundledTs.Identifier;
+export type TsNodeArray<T extends TsNode> = bundledTs.NodeArray<T>;
 
 export type RouteTree = {
+  id: string;
   name: string;
   fileName: string;
+  baseUrl: string;
   // TODO: add source references
   // The Hono type is a generic that can be used
   // for instance to inject bindings/environment variables
   entries: Array<Entry>;
 };
 
-type Entry = RouteEntry | RouteTreeReference;
+type Entry = RouteEntry | RouteTreeReference | MiddlewareEntry;
 
 export type RouteTreeReference = {
   type: "ROUTE_TREE_REFERENCE";
+  id: string;
   // `.routes()` accepts a path parameter
   path: string;
 
   // Identifier for the route tree
   name: string;
-  filename: string;
+  fileName: string;
 };
 
 export const HONO_HTTP_METHODS = [
@@ -61,6 +66,7 @@ export const HONO_HTTP_METHODS = [
 export type HonoHttpMethod = (typeof HONO_HTTP_METHODS)[number];
 
 type RouteDetails = {
+  id: string;
   path: string;
   sources: SourceReference[];
 };
@@ -83,9 +89,13 @@ export type SearchContext = {
   checker: TsTypeChecker;
   addRouteTree: (route: RouteTree) => void;
   getFile: (fileName: string) => TsSourceFile | undefined;
+  getId: (fileName: string, location: number) => string;
+  asRelativePath(fileName: string): string;
+  asAbsolutePath(fileName: string): string;
 };
 
 export type SourceReference = {
+  id: string;
   fileName: string;
   content: string;
   line: number;

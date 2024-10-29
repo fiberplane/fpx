@@ -6,38 +6,40 @@ import type { RouteTree, SourceReference } from "../src/types";
 test.each([
   {
     name: "single file",
-    location: path.join(__dirname, "./test-case/single"),
+
+    location: "./test-case/single",
   },
   {
     name: "multiple files",
-    location: path.join(__dirname, "./test-case/multiple"),
+    location: "./test-case/multiple",
   },
   {
     name: "module imports",
-    location: path.join(__dirname, "./test-case/module-imports"),
+    location: "./test-case/module-imports",
   },
   {
     name: "barrel files",
-    location: path.join(__dirname, "./test-case/barrel-files"),
+    location: "./test-case/barrel-files",
   },
   // {
   //   name: "bindings",
-  //   location: path.join(__dirname, "./test-case/bindings"),
+  //   location: "./test-case/bindings",
   // },
   {
     name: "split routes",
-    location: path.join(__dirname, "./test-case/split-routes"),
+    location: "./test-case/split-routes",
   },
-  // {
-  //   name: "goose-quotes",
-  //   location: path.join(__dirname, "../../examples/goose-quotes"),
-  // },
-  // {
-  //   name: "api",
-  //   location: path.join(__dirname, "../../api"),
-  // }
+  {
+    name: "goose-quotes",
+    location: "../../examples/goose-quotes",
+  },
+  {
+    name: "api",
+    location: "../../api",
+  }
 ])("run test $name with location $location", async ({ location, name }) => {
-  const { watcher, findHonoRoutes, teardown } = setupMonitoring(location);
+  const absolutePath = path.join(__dirname, location);
+  const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
     watcher.start();
     // findHonoRoutes();
@@ -55,6 +57,7 @@ test.each([
     teardown();
   }
 });
+
 
 function flattenRouteTree(routeTree: RouteTree, path?: string) {
   type FileInfo = {
@@ -79,6 +82,12 @@ function flattenRouteTree(routeTree: RouteTree, path?: string) {
       (path && entry.path !== path) ||
       entry.type === "ROUTE_TREE_REFERENCE"
     ) {
+      console.log("Encountered unsupported route tree reference", entry);
+      continue;
+    }
+
+    if (entry.type === "MIDDLEWARE_ENTRY") {
+      console.log("Encountered unsupported middleware entry", entry);
       continue;
     }
 

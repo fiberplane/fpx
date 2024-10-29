@@ -8,8 +8,8 @@ export class SourceReferenceManager {
     this.references = new Map();
   }
 
-  getId(filename: string, position: number) {
-    return `${filename}@${position}`;
+  getId(fileName: string, position: number) {
+    return `${fileName}@${position}`;
   }
 
   addReference(

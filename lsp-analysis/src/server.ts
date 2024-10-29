@@ -50,6 +50,7 @@ export function startServer(params: {
   const { ts, location, getFileInfo, getFileNames } = params;
   const options = getOptions(location, ts);
   console.log("location:", location);
+
   const host: TsLanguageServiceHost = {
     fileExists: (fileName) => {
       const exists =
@@ -58,11 +59,9 @@ export function startServer(params: {
     },
     getCurrentDirectory: () => location,
     getDefaultLibFileName: (options) => {
-      // console.log('get default lib name', options);
       return ts.getDefaultLibFilePath(options);
     },
     directoryExists: (directoryName) => {
-      // console.log('directory exists?', directoryName, ts.sys.directoryExists(directoryName))
       return ts.sys.directoryExists(directoryName);
     },
     getNewLine: () => "\n",
@@ -83,15 +82,11 @@ export function startServer(params: {
       if (sourceText !== undefined) {
         return ts.ScriptSnapshot.fromString(sourceText);
       }
-
-      return undefined;
     },
     readFile: ts.sys.readFile,
     useCaseSensitiveFileNames: () => true,
     writeFile: ts.sys.writeFile,
   };
 
-  const server = ts.createLanguageService(host, ts.createDocumentRegistry());
-
-  return server;
+  return ts.createLanguageService(host, ts.createDocumentRegistry());
 }
