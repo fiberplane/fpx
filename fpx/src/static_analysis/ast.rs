@@ -444,16 +444,25 @@ mod tests {
         let detected_routes = analyse(path.as_path());
 
         assert_eq!(
+            vec![DetectedRoute {
+                route_path: "/".into(),
+                route_method: "get".into(),
+                route_handler: r#"(c) => c.text("Hello, Hono!")"#.into(),
+                source_path: path.as_path().to_str().unwrap().into(),
+                source_start_point: Point { row: 4, column: 0 },
+                source_end_point: Point { row: 4, column: 43 },
+                out_of_scope_sources: vec![]
+            }],
+            detected_routes
+        );
+
+        // TODO: Maybe iterate by directory instead of entry file? Like the ts impl
+        let path = get_test_case_path("multiple/other.ts");
+
+        let detected_routes = analyse(path.as_path());
+
+        assert_eq!(
             vec![
-                DetectedRoute {
-                    route_path: "/".into(),
-                    route_method: "get".into(),
-                    route_handler: r#"(c) => c.text("Hello, Hono!")"#.into(),
-                    source_path: path.as_path().to_str().unwrap().into(),
-                    source_start_point: Point { row: 4, column: 0 },
-                    source_end_point: Point { row: 4, column: 43 },
-                    out_of_scope_sources: vec![]
-                },
                 DetectedRoute {
                     route_path: "/".into(),
                     route_method: "get".into(),
@@ -466,8 +475,8 @@ mod tests {
                         .to_str()
                         .unwrap()
                         .into(),
-                    source_start_point: Point { row: 3, column: 14 },
-                    source_end_point: Point { row: 5, column: 1 },
+                    source_start_point: Point { row: 2, column: 0 },
+                    source_end_point: Point { row: 4, column: 2 },
                     out_of_scope_sources: vec![]
                 },
                 DetectedRoute {
@@ -479,8 +488,8 @@ mod tests {
                         .to_str()
                         .unwrap()
                         .into(),
-                    source_start_point: Point { row: 6, column: 15 },
-                    source_end_point: Point { row: 6, column: 47 },
+                    source_start_point: Point { row: 5, column: 0 },
+                    source_end_point: Point { row: 5, column: 48 },
                     out_of_scope_sources: vec![]
                 }
             ],
