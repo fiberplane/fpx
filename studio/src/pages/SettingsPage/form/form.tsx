@@ -25,6 +25,10 @@ const DEFAULT_VALUES = {
       model: "llama3.1",
       apiKey: "",
     },
+    fp: {
+      model: "",
+      apiKey: "",
+    },
   },
   proxyRequestsEnabled: false,
   proxyBaseUrl: "https://webhonc.mies.workers.dev",

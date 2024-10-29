@@ -1,5 +1,11 @@
+// NOTE - Change this value to http://127.0.0.1:3578/github to test against locally running fp-services
+// NOTE - If testing locally, make sure the host lines up with your callback in the OAuth app settings
+// export const FP_SERVICES_LOGIN_URL = "http://127.0.0.1:3578/github";
+export const FP_SERVICES_LOGIN_URL =
+  "https://fp-services.mies.workers.dev/github";
+
 /**
- * SEMATTRS_* are constants that should actually be exposed by the Samantic Conventions package
+ * SEMATTRS_* are constants that should actually be exposed by the Semantic Conventions package
  * but are not. These are the ones that are used in the frontend and the client library.
  */
 export const EXTRA_SEMATTRS_HTTP_REQUEST_METHOD = "http.request.method";

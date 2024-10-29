@@ -21,6 +21,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { FP_SERVICES_LOGIN_URL } from "@/constants";
+import { type UserInfo, useUserInfo } from "@/queries";
 import { cn } from "@/utils";
 import {
   type AiProviderType,
@@ -31,6 +33,7 @@ import {
   ProviderOptions,
   type Settings,
 } from "@fiberplane/fpx-types";
+import { Icon } from "@iconify/react";
 import {
   CaretDownIcon,
   EyeClosedIcon,
@@ -38,6 +41,7 @@ import {
   InfoCircledIcon,
 } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
+import { RequestCreditsItem } from "./Profile";
 import { useSettingsForm } from "./form";
 
 const getAnthropicModelReleaseDate = (model: string) => {
@@ -110,6 +114,7 @@ export function AISettingsForm({
 }: {
   settings: Settings;
 }) {
+  const user = useUserInfo();
   const { form, onSubmit } = useSettingsForm(settings);
 
   const isAiDirty =
@@ -128,6 +133,8 @@ export function AISettingsForm({
   const activeProvider = Object.keys(ProviderOptions).find(
     (provider) => provider === selectedProvider,
   ) as AiProviderType;
+
+  const shouldShowBannerAndSave = !(!user && activeProvider === "fp");
 
   const modelOptions = useModelOptions(activeProvider);
 
@@ -196,43 +203,45 @@ export function AISettingsForm({
                 <h4 className="hidden text-md font-medium">
                   {ProviderOptions[provider as AiProviderType]}
                 </h4>
-                <FormField
-                  control={form.control}
-                  name={
-                    `aiProviderConfigurations.${provider as AiProviderType}.model` as const
-                  }
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="pr-2">Model</FormLabel>
-                      <FormControl>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                              {field.value || "Select Model"}
-                              <CaretDownIcon className="ml-2 h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuRadioGroup
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              {modelOptions.map(([option, label]) => (
-                                <DropdownMenuRadioItem
-                                  key={option}
-                                  value={option}
-                                >
-                                  {label as React.ReactNode}
-                                </DropdownMenuRadioItem>
-                              ))}
-                            </DropdownMenuRadioGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                {provider !== "ollama" && (
+                {provider !== "fp" && (
+                  <FormField
+                    control={form.control}
+                    name={
+                      `aiProviderConfigurations.${provider as AiProviderType}.model` as const
+                    }
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="pr-2">Model</FormLabel>
+                        <FormControl>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline">
+                                {field.value || "Select Model"}
+                                <CaretDownIcon className="ml-2 h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuRadioGroup
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                {modelOptions.map(([option, label]) => (
+                                  <DropdownMenuRadioItem
+                                    key={option}
+                                    value={option}
+                                  >
+                                    {label as React.ReactNode}
+                                  </DropdownMenuRadioItem>
+                                ))}
+                              </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
+                {provider !== "ollama" && provider !== "fp" && (
                   <FormField
                     control={form.control}
                     name={
@@ -254,42 +263,54 @@ export function AISettingsForm({
                     )}
                   />
                 )}
-                <FormField
-                  control={form.control}
-                  name={
-                    `aiProviderConfigurations.${provider as AiProviderType}.baseUrl` as const
-                  }
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Base URL</FormLabel>
-                      <FormControl>
-                        <Input
-                          value={field.value ?? ""}
-                          onChange={field.onChange}
-                          placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} Base URL`}
-                          // HACK - Match API Key input styles and prevent clipping of focus ring
-                          className="w-[calc(100%-4px)] font-mono mx-[2px]"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                {provider !== "fp" && (
+                  <FormField
+                    control={form.control}
+                    name={
+                      `aiProviderConfigurations.${provider as AiProviderType}.baseUrl` as const
+                    }
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Base URL{" "}
+                          <span className="text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            placeholder={`Enter ${ProviderOptions[provider as AiProviderType]} Base URL`}
+                            // HACK - Match API Key input styles and prevent clipping of focus ring
+                            className="w-[calc(100%-4px)] font-mono mx-[2px]"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
             ))}
           </div>
         </div>
-        <CodeSentToAiBanner />
-        <div className="text-right">
-          <Button
-            className={cn("text-white", {
-              "opacity-50": !isAiDirty,
-            })}
-            type="submit"
-            disabled={form.formState.isSubmitting}
-          >
-            {isAiDirty ? "Update AI Settings" : "Save"}
-          </Button>
-        </div>
+        {activeProvider === "fp" && <FiberplaneSection user={user} />}
+        {shouldShowBannerAndSave && (
+          <>
+            <CodeSentToAiBanner />
+            <div className="text-right">
+              <Button
+                className={cn("text-white", {
+                  "opacity-50": !isAiDirty,
+                })}
+                type="submit"
+                disabled={form.formState.isSubmitting}
+              >
+                {isAiDirty ? "Update AI Settings" : "Save"}
+              </Button>
+            </div>
+          </>
+        )}
       </form>
     </Form>
   );
@@ -347,14 +368,54 @@ function CodeSentToAiBanner() {
         <InfoCircledIcon className="w-3.5 h-3.5" />
       </div>
       <div className="grid gap-1.5">
-        <span className="font-semibold">What FPX sends to AI providers</span>
+        <span className="font-semibold">What is sent to AI providers</span>
         <div className="grid gap-1">
           <span className="">
-            To generate inputs for HTTP requests, FPX sends the source code of
-            route handlers along with short history of recent requests. Common
-            sensitive headers are redacted by default.
+            To generate inputs for HTTP requests, Fiberplane sends the source
+            code of route handlers along with short history of recent requests.
+            Common sensitive headers are redacted by default.
           </span>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function FiberplaneSection({ user }: { user?: UserInfo | null }) {
+  if (user) {
+    return (
+      <div className="w-full text-sm pt-2 rounded-md gap-2.5">
+        <div className="grid gap-1.5">
+          <span className="font-semibold">Connected to Fiberplane</span>
+          <RequestCreditsItem credits={user.aiRequestCredits} />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="w-full text-sm py-4 mt-4 rounded-md gap-2.5 mb-2">
+      <div className="grid gap-1.5">
+        <span className="font-semibold">Connect to Fiberplane</span>
+        <div className="grid gap-1">
+          <span className="text-muted-foreground">
+            Log in with GitHub to get up and running with 100 AI generated
+            requests per day.
+          </span>
+        </div>
+        <Button
+          className="mt-2 bg-transparent text-white w-full py-2 rounded-md border border-slate-800"
+          variant="link"
+          asChild
+        >
+          <a
+            href={FP_SERVICES_LOGIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon icon="lucide:github" className="mr-2 h-5 w-5" />
+            Sign in with GitHub
+          </a>
+        </Button>
       </div>
     </div>
   );

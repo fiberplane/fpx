@@ -9,6 +9,10 @@ const FpxWebsocketMessageSchema = z.discriminatedUnion("event", [
     payload: z.array(z.enum([MIZU_TRACES_KEY, PROBED_ROUTES_KEY])),
   }),
   z.object({
+    event: z.literal("login_success"),
+    payload: z.array(z.literal("userInfo")),
+  }),
+  z.object({
     event: z.literal("connection_open"),
     payload: z.object({
       connectionId: z.string(),

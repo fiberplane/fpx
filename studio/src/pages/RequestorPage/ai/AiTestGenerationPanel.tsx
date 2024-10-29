@@ -54,8 +54,8 @@ export function AiTestGenerationPanel({
   const prompt = usePrompt(lastMatchingRequest, userInput);
 
   return (
-    <div className="overflow-x-hidden h-full relative border-l">
-      <div className="w-full max-w-[1000px]">
+    <div className="overflow-x-hidden h-full relative">
+      <div className="w-full">
         <h3 className="">Close the Loop</h3>
         <div className="text-sm text-muted-foreground py-2">
           Describe the problem you encountered or a test you wish to write. FPX
@@ -74,12 +74,15 @@ export function AiTestGenerationPanel({
               </div>
             )}
           </div>
-          <div className="mt-4">
+          <div className="mt-4 px-0.5">
             <div className="text-sm text-gray-200">Description</div>
             <div className="mt-2">
               <Textarea
+                data-ignore-key-sequence
                 value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
+                onChange={(e) => {
+                  setUserInput(e.target.value);
+                }}
                 className="w-full"
                 placeholder={
                   'Example: "I expected to get a 404, but the api returned a 500"'

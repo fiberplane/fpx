@@ -168,6 +168,9 @@ const messageHandlers: {
   trace_created: async (_message, _config) => {
     logger.debug("trace_created message received, no action required");
   },
+  login_success: async () => {
+    logger.debug("login_success message received, this should never happen");
+  },
   connection_open: async (message, config) => {
     const { connectionId } = message.payload;
     logger.debug(
