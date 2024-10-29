@@ -7,6 +7,15 @@ import { generateName } from "./ai-name-generation";
 
 const v1Api = new Hono<HatchApp>();
 
+// Production feature flag
+v1Api.use(async (c, next) => {
+  if (c.env.HONC_CODE_GEN_V1_ENABLED === "true") {
+    await next();
+  } else {
+    return c.json({ error: "Feature not enabled" }, 403);
+  }
+});
+
 const validatePrompt = zValidator(
   "json",
   z.object({

@@ -10,6 +10,7 @@ export type Bindings = {
   AI: Ai;
   OPENAI_API_KEY: string;
   ANTHROPIC_API_KEY: string;
+  HONC_CODE_GEN_V1_ENABLED: "true" | undefined;
   HONC_LOG_LEVEL: string;
   HONC_PASSWORD: string;
   HONC_IS_LOCAL: string;

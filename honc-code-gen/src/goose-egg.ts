@@ -1,6 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
 import type { Context } from "hono";
-import { getContext } from "hono/context-storage";
 import { type SSEStreamingApi, streamSSE } from "hono/streaming";
 import { modifiedStreamSSE } from "./streaming-help";
 import type { Bindings, HatchApp } from "./types";

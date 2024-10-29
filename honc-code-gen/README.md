@@ -8,10 +8,15 @@ There is also a separate "playground" project that is used to test the code gene
 
 ### Testing API Locally
 
-Configure `.dev.vars` with an OpenAI API key.
+Configure `.dev.vars` with an OpenAI API key and enable "is local" flag.
+
+Enable the v1 code generation feature if you're working on that api:
 
 ```sh
 OPENAI_API_KEY=<api-key>
+HONC_IS_LOCAL=true
+# Optional - only if you're working on the v1 api
+HONC_CODE_GEN_V1_ENABLED=true
 ```
 
 Start the api
