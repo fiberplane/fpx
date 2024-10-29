@@ -306,33 +306,56 @@ function ActiveCommand({
         );
 
         setProgress("requesting");
-        console.log("Proxying a request to route:", route);
+        console.log(
+          "Proxying a request to route:",
+          route,
+          "with request:",
+          request,
+        );
         const queryParams = createKeyValueParameters(request.queryParams ?? []);
         const headers = createKeyValueParameters(request.headers ?? []);
         const pathParams = createKeyValueParameters(request.pathParams ?? []);
         const body =
           createBodyFromAiResponse(request.body, request.bodyType) ?? null;
 
-        await makeProxiedRequest({
+        console.log("headers", headers, "request-gen", request?.headers);
+
+        const response = await makeProxiedRequest({
           addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
           path: route.path,
           method: route.method,
           body:
             route.method === "GET" || route.method === "HEAD" || !body
               ? { type: "text" }
-              : body,
+              : body, //HACK: this might not be json
           headers,
           queryParams,
           pathParams,
         });
 
+        // Check if the request failed based on the response
+        const isFailure =
+          response.isFailure ||
+          (response.responseStatusCode &&
+            Number.parseInt(response.responseStatusCode, 10) >= 400);
+
+        if (isFailure) {
+          const failureReason =
+            response.responseBody.type === "error"
+              ? response.responseBody.value || "Request failed"
+              : "Request failed";
+          throw new Error(failureReason);
+        }
+
         console.log("Request completed for route:", route);
         setProgress("success");
         onSuccess();
+        return response;
       } catch (error) {
         console.error("Request failed for route:", route, error);
         setProgress("error");
         onError(error);
+        throw error;
       }
     },
     retry: false,
@@ -344,8 +367,9 @@ function ActiveCommand({
       type="button"
       onClick={() => handleRouteClick(route)}
       className={`
-        inline-flex items-center gap-2 rounded-lg 
-        ${progress === "error" ? "border-red-500" : ""}
+        inline-flex items-center gap-2 rounded-lg justify-between 
+        ${progress === "error" ? "border-red-500 bg-red-500/20" : ""}
+        ${progress === "success" ? "border-green-500 bg-green-500/20" : ""}
         text-gray-400 border-2 hover:bg-secondary px-3 py-1 
         text-sm font-medium font-mono
       `}
@@ -364,9 +388,9 @@ function ActiveCommand({
           className="h-4 w-4 animate-spin text-purple-500"
         />
       )}
-      {/* {status === "active" && (
-        <Icon icon="lucide:play" className="h-4 w-4 text-blue-500" />
-      )} */}
+      {progress === "success" && (
+        <Icon icon="lucide:check-circle" className="h-4 w-4 text-green-500" />
+      )}
       {progress === "idle" && (
         <Icon icon="lucide:circle" className="h-4 w-4 text-gray-400" />
       )}
