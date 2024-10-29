@@ -151,6 +151,7 @@ export async function generateRequestWithAiProvider({
     } = await generateObject({
       model: provider,
       schema: requestSchema,
+      temperature: 0.3,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: SAMPLE_PROMPT },

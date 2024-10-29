@@ -19,7 +19,9 @@ export const requestSchema = z.object({
       }),
     )
     .nullable(),
-  body: z.string().nullable(),
+  body: z
+    .union([z.string(), z.record(z.string(), z.any()), z.array(z.any())])
+    .nullable(),
   bodyType: z
     .object({
       type: z.enum(["json", "text", "form-data", "file"]),
@@ -47,10 +49,10 @@ export const makeRequestTool = {
 };
 
 export const commandsSchema = z.object({
+  // we use the routeId so that the LLMs know to reference that
   commands: z.array(
     z.object({
       routeId: z.number(),
-      requestData: requestSchema,
     }),
   ),
 });
