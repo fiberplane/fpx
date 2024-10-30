@@ -1,8 +1,8 @@
+import { measure } from "@fiberplane/hono-otel";
 import { neon } from "@neondatabase/serverless";
 import { asc, eq, ilike } from "drizzle-orm";
 import type { drizzle } from "drizzle-orm/neon-http";
 import { geese } from "./schema";
-import { measure } from "@fiberplane/hono-otel";
 
 export const getAllGeese = measure(
   "getAllGeese",
