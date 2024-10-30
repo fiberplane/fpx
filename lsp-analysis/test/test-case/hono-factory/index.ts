@@ -1,10 +1,5 @@
 import { Hono } from "hono";
-
-function createApp() {
-  const app = new Hono();
-  app.get("/", (c) => c.text("Hello, Hono!"));
-  return app;
-}
+import { createApp } from "./factory";
 
 const app = createApp();
 

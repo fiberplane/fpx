@@ -20,8 +20,10 @@ export type TsLanguageServiceHost = bundledTs.LanguageServiceHost;
 export type TsLineAndCharacter = bundledTs.LineAndCharacter;
 export type TsModuleResolutionHost = bundledTs.ModuleResolutionHost;
 export type TsNode = bundledTs.Node;
+export type TsNodeArray<T extends TsNode> = bundledTs.NodeArray<T>;
 export type TsProgram = bundledTs.Program;
 export type TsReferenceEntry = bundledTs.ReferenceEntry;
+export type TsReturnStatement = bundledTs.ReturnStatement;
 export type TsSourceFile = bundledTs.SourceFile;
 export type TsStringLiteral = bundledTs.StringLiteral;
 export type TsSymbol = bundledTs.Symbol;
@@ -29,7 +31,7 @@ export type TsSyntaxKind = bundledTs.SyntaxKind;
 export type TsTypeAliasDeclaration = bundledTs.TypeAliasDeclaration;
 export type TsTypeChecker = bundledTs.TypeChecker;
 export type TsVariableDeclaration = bundledTs.VariableDeclaration;
-export type TsNodeArray<T extends TsNode> = bundledTs.NodeArray<T>;
+export type TsFunctionExpression = bundledTs.FunctionExpression;
 
 export type RouteTree = {
   type: "ROUTE_TREE";
@@ -88,20 +90,6 @@ export type MiddlewareEntry = {
   type: "MIDDLEWARE_ENTRY";
 } & RouteDetails;
 
-export type SearchContext = {
-  sourceReferenceManager: SourceReferenceManager;
-  service: TsLanguageService;
-  ts: TsType;
-  errorCount: number;
-  program: TsProgram;
-  checker: TsTypeChecker;
-  addRouteTree: (route: RouteTree) => void;
-  getFile: (fileName: string) => TsSourceFile | undefined;
-  getId: (fileName: string, location: number) => string;
-  asRelativePath(fileName: string): string;
-  asAbsolutePath(fileName: string): string;
-};
-
 export type SourceReference = {
   id: string;
   fileName: string;
@@ -121,6 +109,13 @@ export type ModuleReference = {
    */
   importPath: string;
   version?: string;
+  /**
+   * What is imported from the module
+   * 
+   * Like in case of hono it will be Hono when the import is this:
+   * 
+   * import { Hono } from "hono";
+   */
   import: string;
 };
 
@@ -132,3 +127,17 @@ export type RouteElement =
   | RouteEntry
   | RouteTreeReference
   | MiddlewareEntry;
+
+export type SearchContext = {
+  sourceReferenceManager: SourceReferenceManager;
+  service: TsLanguageService;
+  ts: TsType;
+  errorCount: number;
+  program: TsProgram;
+  checker: TsTypeChecker;
+  addRouteTree: (route: RouteTree) => void;
+  getFile: (fileName: string) => TsSourceFile | undefined;
+  getId: (fileName: string, location: number) => string;
+  asRelativePath(fileName: string): string;
+  asAbsolutePath(fileName: string): string;
+};

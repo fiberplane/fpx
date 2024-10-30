@@ -93,16 +93,16 @@ export function analyze(treeItems: Array<RouteTree>): RouteTree | null {
     }
   }
 
-  const keys = complexityMap.keys();
-  // console.log('complexityMap', complexityMap.keys());
-  const totalMap: Record<string, number> = {};
-  for (const key of keys) {
-    const stat = complexityMap.get(key);
-    if (stat) {
-      totalMap[key] = stat.total;
-    }
-  }
-  console.log("totalMap", totalMap);
+  // const keys = complexityMap.keys();
+  // // console.log('complexityMap', complexityMap.keys());
+  // const totalMap: Record<string, number> = {};
+  // for (const key of keys) {
+  //   const stat = complexityMap.get(key);
+  //   if (stat) {
+  //     totalMap[key] = stat.total;
+  //   }
+  // }
+  // console.log("totalMap", totalMap);
   return mostComplexItem;
 }
 

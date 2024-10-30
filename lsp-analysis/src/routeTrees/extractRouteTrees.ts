@@ -2,6 +2,9 @@ import path from "node:path";
 import { SourceReferenceManager } from "../SourceReferenceManager";
 import {
   HONO_HTTP_METHODS,
+  TsDeclaration,
+  TsFunctionExpression,
+  TsReturnStatement,
   type MiddlewareEntry,
   type RouteEntry,
   type RouteTree,
@@ -20,6 +23,7 @@ import {
 } from "../types";
 import { createSourceReferenceForNode } from "./extractReferences";
 import { findNodeAtPosition } from "./utils";
+import { debugSymbolAtLocation } from "../utils";
 
 export function extractRouteTrees(
   service: TsLanguageService,
@@ -89,54 +93,129 @@ export function extractRouteTrees(
 }
 
 function visit(node: TsNode, fileName: string, context: SearchContext) {
-  const { ts, addRouteTree, checker, asRelativePath, getId } = context;
-
+  const { ts, addRouteTree, checker, asRelativePath, getId, getFile } = context;
   if (ts.isVariableStatement(node)) {
     for (const declaration of node.declarationList.declarations) {
-      if (declaration.initializer) {
-        const type = checker.getTypeAtLocation(declaration.initializer);
-        const typeName = checker.typeToString(type);
-        if ("intrinsicName" in type && type.intrinsicName === "error") {
-          context.errorCount++;
-          console.error("Error in type check");
-          console.error("In: ", node.getSourceFile().fileName, node.kind);
-          console.error("Node text:", node.getFullText());
-          console.error("type information", type.getSymbol());
+      // Check if the variable is of type Hono
+      const type = checker.getTypeAtLocation(declaration.initializer || declaration);
+      const typeName = checker.typeToString(type);
+      if ("intrinsicName" in type && type.intrinsicName === "error") {
+        context.errorCount++;
+        console.error("Error in type check");
+        console.error("In: ", node.getSourceFile().fileName, node.kind);
+        console.error("Node text:", node.getFullText());
+        console.error("type information", type.getSymbol());
+      }
+
+      if (typeName.startsWith("Hono<")) {
+        // TODO: use the type information to get the name of the hono instance
+        // TODO: (edge case) handle reassignments of the same variable. It's possible reuse a variable for different hono instances
+        const honoInstanceName = declaration.name.getText();
+
+        const current: RouteTree = {
+          type: "ROUTE_TREE",
+          id: getId(fileName, declaration.name.getStart()),
+          baseUrl: "",
+          name: honoInstanceName,
+          fileName: asRelativePath(node.getSourceFile().fileName),
+          entries: [],
+        };
+
+        // Add route early
+        addRouteTree(current);
+
+        // TODO: add support for late initialization of the hono instance
+        // What if people do something like:
+        // 
+        // ``` ts
+        // let app: Hono;
+        // app = new Hono();
+        // ``` 
+        // 
+        // Or have some other kind of initialization:
+        // 
+        // ``` ts
+        // let app: Hono;
+        // app = createApp();
+        // ```
+
+        if (
+          declaration.initializer &&
+          ts.isCallExpression(declaration.initializer)
+        ) {
+          handleInitializerCallExpression(declaration.initializer, current, context);
         }
 
-        if (typeName.startsWith("Hono<")) {
-          // TODO: Check how the hono instance is created, if it's not with `new Hono...` we should
-          // probably investigate how that hono instance was created (i.e. there might be routes already
-          // defined on that hono instance
-
-          // TODO: use the type information to get the name of the hono instance
-          // TODO: (edge case) handle reassignments of the same variable. It's possible reuse a variable for different hono instances
-          const honoInstanceName = declaration.name.getText();
-
-          const current: RouteTree = {
-            type: "ROUTE_TREE",
-            id: getId(fileName, declaration.name.getStart()),
-            baseUrl: "",
-            name: honoInstanceName,
-            fileName: asRelativePath(node.getSourceFile().fileName),
-            entries: [],
-          };
-
-          // Add route early
-          addRouteTree(current);
-
-          const references = context.service
-            .getReferencesAtPosition(fileName, declaration.name.getStart())
-            .filter(
-              (reference) =>
-                reference.fileName === fileName &&
-                reference.textSpan.start !== declaration.name.getStart(),
-            );
-          for (const entry of references) {
-            followReference(current, entry, context);
-          }
+        const references = context.service
+          .getReferencesAtPosition(fileName, declaration.name.getStart())
+          .filter(
+            (reference) =>
+              reference.fileName === fileName &&
+              reference.textSpan.start !== declaration.name.getStart(),
+          );
+        for (const entry of references) {
+          followReference(current, entry, context);
         }
       }
+    }
+  }
+}
+
+function handleInitializerCallExpression(
+  callExpression: TsCallExpression,
+  routeTree: RouteTree,
+  context: SearchContext,
+) {
+  const { ts, getFile, getId, asRelativePath } = context;
+  const fileName = callExpression.getSourceFile().fileName;
+  const references = context.service.findReferences(
+    fileName,
+    callExpression.getStart(),
+  );
+  const reference = references.find(
+    (ref) =>
+      ref.definition.kind === ts.ScriptElementKind.functionElement,
+  );
+  const declarationFileName = reference.definition.fileName;
+  const functionNode =
+    reference &&
+    findNodeAtPosition(
+      ts,
+      getFile(declarationFileName),
+      reference.definition.textSpan.start,
+    );
+  if (
+    functionNode?.parent &&
+    ts.isFunctionDeclaration(functionNode.parent) &&
+    functionNode.parent.body
+  ) {
+    const functionBody = functionNode.parent.body;
+    // console.log('declarationFileName', declarationFileName, functionBody.getText())
+    functionBody.forEachChild((child) => {
+      visit(child, declarationFileName, context);
+    });
+
+    // Now find the return statements in the function body to construct the route tree reference
+    const returnStatements = findReturnStatementsInFunction(
+      functionNode.parent,
+      context,
+    );
+
+    const variables = returnStatements.flatMap((returnStatement) =>
+      analyzeReturnStatement(returnStatement, context),
+    );
+
+    for (const variable of variables) {
+      routeTree.entries.push({
+        type: "ROUTE_TREE_REFERENCE",
+        targetId: getId(
+          variable.getSourceFile().fileName,
+          variable.getStart(),
+        ),
+        fileName: asRelativePath(variable.getSourceFile().fileName),
+        name: variable.name.getText(),
+        path: "/",
+      })
     }
   }
 }
@@ -356,4 +435,51 @@ function handleUse(
       entry.sources.push(source);
     }
   }
+}
+
+
+function findReturnStatementsInFunction(
+  node: TsFunctionDeclaration | TsFunctionExpression,
+  context: SearchContext
+): TsReturnStatement[] {
+  const { ts } = context;
+
+  const returnStatements: TsReturnStatement[] = [];
+
+  function visit(node: TsNode) {
+    if (ts.isReturnStatement(node)) {
+      returnStatements.push(node);
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  if (node.body) {
+    visit(node.body);
+  }
+
+  return returnStatements;
+}
+
+function analyzeReturnStatement(returnStatement: TsReturnStatement, context: SearchContext
+): TsVariableDeclaration[] {
+  const { checker, ts } = context;
+  const variables: TsVariableDeclaration[] = [];
+
+  function visit(node: TsNode) {
+    if (ts.isIdentifier(node)) {
+      const symbol = checker.getSymbolAtLocation(node);
+      const declaration = symbol?.declarations?.[0];
+      // console.log('declaration', declaration && ts.SyntaxKind[declaration.kind])
+      if (declaration && ts.isVariableDeclaration(declaration)) {
+        variables.push(declaration);
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  if (returnStatement.expression) {
+    visit(returnStatement.expression);
+  }
+
+  return variables;
 }
