@@ -203,8 +203,8 @@ export async function serializeRequestBodyForFpxDb(ctx: Context) {
     | null
     | string
     | {
-      [x: string]: string | SerializedFile | (string | SerializedFile)[];
-    } = null;
+        [x: string]: string | SerializedFile | (string | SerializedFile)[];
+      } = null;
   if (ctx.req.raw.body) {
     if (requestMethod === "GET" || requestMethod === "HEAD") {
       logger.warn(

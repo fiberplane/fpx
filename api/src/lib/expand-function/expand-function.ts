@@ -15,6 +15,7 @@ import {
   resolveModulePath,
 } from "./imports/index.js";
 import { searchFunction } from "./search-function/index.js";
+import { getDiagnostics } from "./tsserver/commands.js";
 import {
   getFileUri,
   getTSServer,
@@ -23,7 +24,6 @@ import {
   openFile,
 } from "./tsserver/index.js";
 import type { FunctionContextType } from "./types.js";
-import { getDiagnostics } from "./tsserver/commands.js";
 
 type ExpandedFunctionContextEntry = {
   /** The name of the constant or utility in the code */
