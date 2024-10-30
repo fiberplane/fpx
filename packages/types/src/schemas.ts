@@ -27,6 +27,20 @@ export const ClientMessageSchema = memoizeOne(() =>
 
 export type ClientMessage = z.infer<ReturnType<typeof ClientMessageSchema>>;
 
+export const DetectedRouteSchema = memoizeOne(() =>
+  z.object({
+    out_of_scope_sources: z.array(z.string()),
+    route_handler: z.string(),
+    route_method: z.string(),
+    route_path: z.string(),
+    source_end_point: z.lazy(PointSchema),
+    source_path: z.string(),
+    source_start_point: z.lazy(PointSchema),
+  }),
+);
+
+export type DetectedRoute = z.infer<ReturnType<typeof DetectedRouteSchema>>;
+
 export const FpxConfigSchema = memoizeOne(() =>
   z.object({ listen_port: z.union([z.number().int(), z.null()]) }),
 );
@@ -58,6 +72,12 @@ export const OpenWorkspaceErrorSchema = memoizeOne(() =>
 export type OpenWorkspaceError = z.infer<
   ReturnType<typeof OpenWorkspaceErrorSchema>
 >;
+
+export const PointSchema = memoizeOne(() =>
+  z.object({ column: z.number().int(), row: z.number().int() }),
+);
+
+export type Point = z.infer<ReturnType<typeof PointSchema>>;
 
 export const Range_of_uintSchema = memoizeOne(() =>
   z.object({ end: z.number().int(), start: z.number().int() }),

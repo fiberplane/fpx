@@ -20,11 +20,12 @@ pub async fn handle_command(args: Args) -> Result<()> {
     let schemas = Vec::from([
         schema_for!(fpx::api::models::ClientMessage),
         schema_for!(fpx::api::models::ServerMessage),
-        schema_for!(fpx_app::state::AppState),
-        schema_for!(fpx_app::models::workspace::OpenWorkspaceError),
-        schema_for!(fpx_app::models::workspace::Workspace),
         schema_for!(fpx::config::FpxConfig),
         schema_for!(fpx::config::FpxConfigError),
+        schema_for!(fpx::static_analysis::detected_route::DetectedRoute),
+        schema_for!(fpx_app::models::workspace::OpenWorkspaceError),
+        schema_for!(fpx_app::models::workspace::Workspace),
+        schema_for!(fpx_app::state::AppState),
     ]);
 
     let zod_schema = generate_zod_schemas(schemas)?;
