@@ -1,6 +1,7 @@
+use serde::Deserialize;
 use std::{
     collections::HashMap,
-    fs,
+    fs::{self, File},
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -11,9 +12,14 @@ use super::detected_route::DetectedRoute;
 
 type ModuleMap = HashMap<PathBuf, (String, ImportMap)>;
 type ImportMap = HashMap<PathBuf, Vec<String>>;
+type DependencyMap = HashMap<String, String>;
 
 pub fn analyse(entry_path: &Path) -> Vec<DetectedRoute> {
     let mut modules = ModuleMap::new();
+    let mut dependencies = DependencyMap::new();
+
+    get_dependencies(entry_path, &mut dependencies);
+    // println!("{:?}", dependencies);
 
     traverse_modules(entry_path, &mut modules);
 
@@ -41,6 +47,33 @@ pub fn analyse(entry_path: &Path) -> Vec<DetectedRoute> {
     handlers.sort();
 
     handlers
+}
+
+#[derive(Debug, Deserialize)]
+struct PackageJson {
+    dependencies: HashMap<String, String>,
+    #[serde(rename = "devDependencies")]
+    dev_dependencies: HashMap<String, String>,
+}
+
+fn get_dependencies(entry_path: &Path, dependencies: &mut DependencyMap) {
+    // TODO: Traverse down to the root from the source to try to find the package.json
+    let mut package_path = PathBuf::from(entry_path);
+    package_path.pop();
+    package_path.pop();
+    package_path.push("package.json");
+
+    if let Ok(file) = File::open(package_path) {
+        let package_json: PackageJson = serde_json::from_reader(file).unwrap();
+
+        for (package, version) in package_json.dependencies {
+            dependencies.insert(package, version);
+        }
+
+        for (package, version) in package_json.dev_dependencies {
+            dependencies.insert(package, version);
+        }
+    }
 }
 
 fn detect_route_handlers(
