@@ -72,18 +72,16 @@ export async function getDiagnostics(
   connection: MessageConnection,
   filePath: string,
 ) {
-  // const fileUri = getFileUri(filePath);
+  const fileUri = getFileUri(filePath);
 
-  // connection.d
-  // const diagnostics = await connection.sendRequest(
-  //   "textDocument/publishDiagnostics",
-  //   {
-  //     uri: fileUri,
-  //   },
-  // );
-  // console.log("diagnostics", diagnostics);
-  // return diagnostics;
-  return {};
+  const diagnostics = await connection.sendRequest(
+    "textDocument/publishDiagnostics",
+    {
+      uri: fileUri,
+    },
+  );
+  console.log("diagnostics", diagnostics);
+  return diagnostics;
 }
 
 /**
