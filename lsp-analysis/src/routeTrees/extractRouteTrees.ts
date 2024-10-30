@@ -2,28 +2,28 @@ import path from "node:path";
 import { SourceReferenceManager } from "../SourceReferenceManager";
 import {
   HONO_HTTP_METHODS,
-  TsDeclaration,
-  TsFunctionExpression,
-  TsReturnStatement,
   type MiddlewareEntry,
   type RouteEntry,
   type RouteTree,
   type SearchContext,
   type TsArrowFunction,
   type TsCallExpression,
+  TsDeclaration,
   type TsExpression,
   type TsFunctionDeclaration,
+  type TsFunctionExpression,
   type TsLanguageService,
   type TsNode,
   type TsNodeArray,
   type TsReferenceEntry,
+  type TsReturnStatement,
   type TsSourceFile,
   type TsType,
   type TsVariableDeclaration,
 } from "../types";
+import { debugSymbolAtLocation } from "../utils";
 import { createSourceReferenceForNode } from "./extractReferences";
 import { findNodeAtPosition } from "./utils";
-import { debugSymbolAtLocation } from "../utils";
 
 export function extractRouteTrees(
   service: TsLanguageService,
@@ -97,7 +97,9 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
   if (ts.isVariableStatement(node)) {
     for (const declaration of node.declarationList.declarations) {
       // Check if the variable is of type Hono
-      const type = checker.getTypeAtLocation(declaration.initializer || declaration);
+      const type = checker.getTypeAtLocation(
+        declaration.initializer || declaration,
+      );
       const typeName = checker.typeToString(type);
       if ("intrinsicName" in type && type.intrinsicName === "error") {
         context.errorCount++;
@@ -126,14 +128,14 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
 
         // TODO: add support for late initialization of the hono instance
         // What if people do something like:
-        // 
+        //
         // ``` ts
         // let app: Hono;
         // app = new Hono();
-        // ``` 
-        // 
+        // ```
+        //
         // Or have some other kind of initialization:
-        // 
+        //
         // ``` ts
         // let app: Hono;
         // app = createApp();
@@ -143,7 +145,11 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
           declaration.initializer &&
           ts.isCallExpression(declaration.initializer)
         ) {
-          handleInitializerCallExpression(declaration.initializer, current, context);
+          handleInitializerCallExpression(
+            declaration.initializer,
+            current,
+            context,
+          );
         }
 
         const references = context.service
@@ -173,8 +179,7 @@ function handleInitializerCallExpression(
     callExpression.getStart(),
   );
   const reference = references.find(
-    (ref) =>
-      ref.definition.kind === ts.ScriptElementKind.functionElement,
+    (ref) => ref.definition.kind === ts.ScriptElementKind.functionElement,
   );
   const declarationFileName = reference.definition.fileName;
   const functionNode =
@@ -208,14 +213,11 @@ function handleInitializerCallExpression(
     for (const variable of variables) {
       routeTree.entries.push({
         type: "ROUTE_TREE_REFERENCE",
-        targetId: getId(
-          variable.getSourceFile().fileName,
-          variable.getStart(),
-        ),
+        targetId: getId(variable.getSourceFile().fileName, variable.getStart()),
         fileName: asRelativePath(variable.getSourceFile().fileName),
         name: variable.name.getText(),
         path: "/",
-      })
+      });
     }
   }
 }
@@ -437,10 +439,9 @@ function handleUse(
   }
 }
 
-
 function findReturnStatementsInFunction(
   node: TsFunctionDeclaration | TsFunctionExpression,
-  context: SearchContext
+  context: SearchContext,
 ): TsReturnStatement[] {
   const { ts } = context;
 
@@ -460,7 +461,9 @@ function findReturnStatementsInFunction(
   return returnStatements;
 }
 
-function analyzeReturnStatement(returnStatement: TsReturnStatement, context: SearchContext
+function analyzeReturnStatement(
+  returnStatement: TsReturnStatement,
+  context: SearchContext,
 ): TsVariableDeclaration[] {
   const { checker, ts } = context;
   const variables: TsVariableDeclaration[] = [];

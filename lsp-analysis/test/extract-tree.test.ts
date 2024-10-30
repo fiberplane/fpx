@@ -160,8 +160,8 @@ const ${routeTree.name} = new Hono();
 ${routes.join("\n\n")}
 
 ${Object.keys(files)
-      .filter((file) => file !== routeTree.fileName)
-      .map((file) => serializeFile(file))
-      .join("\n\n")}
+  .filter((file) => file !== routeTree.fileName)
+  .map((file) => serializeFile(file))
+  .join("\n\n")}
 `;
 }

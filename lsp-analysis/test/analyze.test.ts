@@ -42,12 +42,12 @@ test("single nested route", async () => {
   expect(result.id).toBe("root");
 });
 
-test('analyze hono-factory', async () => {
+test("analyze hono-factory", async () => {
   const location = "./test-case/hono-factory";
   const absolutePath = path.join(__dirname, location);
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
-    console.log('absolutePath', absolutePath);
+    console.log("absolutePath", absolutePath);
     watcher.start();
     const result = findHonoRoutes();
     const treeItems = result.results;
@@ -56,13 +56,12 @@ test('analyze hono-factory', async () => {
     // const node = treeItems.find((item) => item.id === 'src/index.node.ts@1428');
     // console.log(node)
     const root = analyze(treeItems);
-    console.log('root', root);
+    console.log("root", root);
     expect(root).not.toBeNull();
   } finally {
     teardown();
   }
 });
-
 
 // test('test api', async () => {
 //   const location = "../../api";

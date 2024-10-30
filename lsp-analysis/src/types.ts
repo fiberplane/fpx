@@ -111,9 +111,9 @@ export type ModuleReference = {
   version?: string;
   /**
    * What is imported from the module
-   * 
+   *
    * Like in case of hono it will be Hono when the import is this:
-   * 
+   *
    * import { Hono } from "hono";
    */
   import: string;
