@@ -143,7 +143,7 @@ export const updateGoose = async (
   );
 
   // Wait for all updates to complete
-  const results = await Promise.all(updatePromises);
+  const results = await Promise.alla(updatePromises);
 
   // Return the last result, which may not contain all updates
   return results[results.length - 1][0];

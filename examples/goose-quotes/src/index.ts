@@ -1,5 +1,4 @@
-import { Hono, type HonoRequest } from "hono";
-
+import { Hono } from "hono";
 import { instrument, measure } from "@fiberplane/hono-otel";
 import { neon } from "@neondatabase/serverless";
 import { asc, eq, ilike } from "drizzle-orm";
@@ -334,7 +333,7 @@ app.patch("/api/geese/:id", async (c) => {
     },
   );
 
-  await Promise.all(updatePromises);
+  // await Promise.all(updatePromises);
 
   const updatedGoose = await measure("getGooseById", () =>
     getGooseById(db, +id),
@@ -458,10 +457,13 @@ app.post("/api/geese/:id/avatar", async (c) => {
 
   // Save the avatar to the bucket
   const bucketKey = `goose-${id}-avatar-${Date.now()}.${fileExtension}`;
-  await measure("uploadAvatar", () =>
-    c.env.GOOSE_AVATARS.put(bucketKey, avatar.stream(), {
-      httpMetadata: { contentType: avatar.type },
-    }),
+  await measure(
+    "uploadAvatar",
+    () =>
+      // c.env.GOOSE_AVATARS.put(bucketKey, avatar.stream(), {
+      // httpMetadata: { contentType: avatar.type },
+      // }),
+      "",
   )();
 
   console.log(`Avatar uploaded for goose ${id}: ${bucketKey}`);
@@ -499,8 +501,11 @@ app.get("/api/geese/:id/avatar", async (c) => {
 
   console.log(`Fetching avatar for goose ${id}: ${avatarKey}`);
 
-  const avatar = await measure("getAvatar", () =>
-    c.env.GOOSE_AVATARS.get(avatarKey),
+  const avatar = await measure(
+    "getAvatar",
+    () =>
+      // c.env.GOOSE_AVATARS.get(avatarKey),
+      "",
   )();
 
   if (!avatar) {

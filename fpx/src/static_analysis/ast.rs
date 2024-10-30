@@ -12,45 +12,249 @@ use super::detected_route::DetectedRoute;
 type ModuleMap = HashMap<PathBuf, (String, ImportMap)>;
 type ImportMap = HashMap<PathBuf, Vec<String>>;
 
-pub fn analyse(entry_path: &Path) -> Vec<DetectedRoute> {
-    let mut modules = ModuleMap::new();
+#[derive(Debug, PartialEq)]
+pub struct ImportDef {
+    /// The path where the module comes from. Could be a relative path to
+    /// indicate a local import, but could also be a package name.
+    import_path: String,
 
-    traverse_modules(entry_path, &mut modules);
-
-    let mut handlers: Vec<DetectedRoute> = vec![];
-    for (path, (source, imports)) in &modules {
-        let tree = get_source_tree(source);
-        let root_node = tree.root_node();
-        let mut cursor = root_node.walk();
-        detect_route_handlers(path, source, &mut cursor, &mut handlers, imports, &modules);
-        // println!("{:?}\n{}\n=============", path, source);
-        // println!("Imports:");
-        for (path, identifiers) in imports {
-            // println!("{}:", path.to_str().unwrap());
-            for identifier in identifiers {
-                // println!("{}", identifier);
-            }
-        }
-        // println!("==========");
-    }
-
-    for handler in &handlers {
-        // println!("{}", handler);
-    }
-
-    handlers.sort();
-
-    handlers
+    /// The imported types from the module.
+    identifiers: Vec<ImportIdentifier>,
+    //
+    // TODO: add enum or fn to verify whether this is a local import or a
+    // package import.
 }
 
-fn detect_route_handlers(
-    path: &Path,
-    source: &str,
-    cursor: &mut TreeCursor,
-    routes: &mut Vec<DetectedRoute>,
-    imports: &ImportMap,
-    modules: &ModuleMap,
-) {
+impl ImportDef {
+    pub fn new(import_path: impl Into<String>, identifiers: Vec<ImportIdentifier>) -> Self {
+        Self {
+            import_path: import_path.into(),
+            identifiers,
+        }
+    }
+
+    /// Returns whether this import is referring to a local module.
+    ///
+    /// Note: this currently is a pretty naive solution as it doesn't take into
+    /// account of aliases.
+    pub fn is_local(&self) -> bool {
+        self.import_path.starts_with("./")
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct ImportIdentifier {
+    /// The name of the identifier
+    pub name: String,
+
+    /// The alias for the identifier, if any.
+    pub alias: Option<String>,
+}
+
+impl ImportIdentifier {
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            alias: None,
+        }
+    }
+
+    pub fn alias(name: impl Into<String>, alias: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            alias: Some(alias.into()),
+        }
+    }
+}
+
+struct Resolver {
+    // Things like aliases from  tsconfig
+}
+
+impl Resolver {
+    fn new() -> Self {
+        Self {}
+    }
+
+    // Resolves an import path to an absolute path.
+    pub fn resolve_import(&self, parent_module: &PathBuf, import_path: &str) -> Option<PathBuf> {
+        // Check if it matches a alias,
+        // check if it matches something from the package.json
+        // Otherwise it _should_ be a relative import... right?
+
+        // TODO: Implement logic described above
+        Some(relative_import_to_absolute_path(
+            &parent_module,
+            import_path,
+        ))
+    }
+}
+
+pub fn analyze(entry_path: &PathBuf) -> Vec<DetectedRoute> {
+    let resolver = Resolver::new();
+
+    let mut visited_files = vec![];
+    let mut module_queue = vec![entry_path.clone()];
+
+    // Load the entry file and every subsequent found module.
+    while let Some(path) = module_queue.pop() {
+        // Check if file is already visited - otherwise skip
+        if visited_files.contains(&path) {
+            continue;
+        } else {
+            visited_files.push(path.clone());
+        }
+
+        // Do the actual code parsing
+        let module_imports = analyze_file(&path);
+
+        // Add any module that were found in the file
+        module_queue.extend(
+            module_imports
+                .iter()
+                .filter_map(|import| resolver.resolve_import(&entry_path, &import.import_path)),
+        );
+    }
+
+    // let result = analyze_file(entry_path);
+
+    // for pp in result.iter().filter(|import| import.is_local()) {
+    //     let path = relative_import_to_absolute_path(entry_path, &pp.import_path);
+    //     if !visited_files.contains(&path.as_path()) {
+    //         let result = analyze_file(&path);
+    //     }
+    // }
+
+    // Check if file is already visited - otherwise return
+    // Read the file (mark as visited)
+    // Parse with tree sitter
+    // Get imports
+    // Follow code
+
+    // Parse result as Vec<DetectedRoute
+
+    // =================
+    // let mut modules = ModuleMap::new();
+
+    // let tree = get_source_tree(entry_path);
+
+    // let imported_modules = get_imported_modules(&source);
+
+    // // traverse_modules(entry_path, &mut modules);
+
+    // let mut handlers: Vec<DetectedRoute> = vec![];
+    // for (path, (source, imports)) in &modules {
+    //     let tree = get_source_tree(source);
+    //     let root_node = tree.root_node();
+    //     let mut cursor = root_node.walk();
+
+    //     detect_route_handlers(path, source, &mut cursor, &mut handlers, imports, &modules);
+    //     // println!("{:?}\n{}\n=============", path, source);
+    //     // println!("Imports:");
+    //     for (path, identifiers) in imports {
+    //         // println!("{}:", path.to_str().unwrap());
+    //         for identifier in identifiers {
+    //             // println!("{}", identifier);
+    //         }
+    //     }
+    //     // println!("==========");
+    // }
+
+    // for handler in &handlers {
+    //     // println!("{}", handler);
+    // }
+
+    // handlers.sort();
+
+    // handlers
+
+    todo!()
+}
+
+fn analyze_file(path: &PathBuf) -> Vec<ImportDef> {
+    let source = fs::read_to_string(path).expect("file missing");
+
+    analyze_source(&source)
+}
+
+fn analyze_source(source: &str) -> Vec<ImportDef> {
+    let tree = get_source_tree(source);
+
+    let imports = get_imported_modules(&tree, source);
+    let endpoints = get_route_handlers(&tree, source, &imports);
+
+    imports
+}
+
+/// Given a tree and source code find all the import statements.
+fn get_imported_modules(tree: &Tree, source: &str) -> Vec<ImportDef> {
+    let root_node = tree.root_node();
+    let mut cursor = root_node.walk();
+    cursor.goto_first_child();
+
+    let mut imports = vec![];
+    let node = cursor.node();
+
+    loop {
+        if node.kind() == "import_statement" {
+            imports.push(parse_import_statement(&source, &node));
+        }
+
+        if !cursor.goto_next_sibling() {
+            break;
+        }
+    }
+
+    imports
+}
+
+/// On a node.kind() == "import_statement" parse the node as a ImportFed.
+fn parse_import_statement(source: &str, node: &Node) -> ImportDef {
+    debug_assert_eq!(node.kind(), "import_statement");
+
+    let mut cursor = node.walk();
+    let mut identifiers = vec![];
+    let mut import_path = String::new();
+
+    for child in node.children(&mut cursor) {
+        if child.kind() == "import_clause"
+            || child.kind() == "namespace_import"
+            || child.kind() == "import_specifier"
+        {
+            let named_imports = child.child(0).unwrap();
+            let mut cursor = named_imports.walk();
+
+            for named_import in named_imports.children(&mut cursor) {
+                if named_import.kind() == "import_specifier" {
+                    let identifier = named_import
+                        .utf8_text(source.as_bytes())
+                        .unwrap()
+                        .to_string();
+
+                    identifiers.push(ImportIdentifier::new(identifier));
+                }
+            }
+        }
+
+        if child.kind() == "string" {
+            import_path = child
+                .child(1)
+                .unwrap()
+                .utf8_text(source.as_bytes())
+                .unwrap()
+                .to_string()
+                .trim_matches('"')
+                .to_string();
+        }
+    }
+
+    ImportDef::new(import_path, identifiers)
+}
+
+fn get_route_handlers(source: &str, tree: Tree, imports: Vec<ImportDef>) -> Vec<DetectedRoute> {
+    let routes = vec![];
+
+    let cursor = tree.root_node().walk();
     let node = cursor.node();
 
     if node.kind() == "call_expression" {
@@ -122,6 +326,18 @@ fn detect_route_handlers(
         }
         cursor.goto_parent();
     }
+
+    routes
+}
+
+fn detect_route_handlers(
+    path: &Path,
+    source: &str,
+    cursor: &mut TreeCursor,
+    routes: &mut Vec<DetectedRoute>,
+    imports: &ImportMap,
+    modules: &ModuleMap,
+) {
 }
 
 fn traverse_modules(path: &Path, modules: &mut ModuleMap) {
@@ -435,7 +651,7 @@ mod tests {
     fn empty() {
         let path = get_test_case_path("empty/.empty");
 
-        let detected_routes = analyse(path.as_path());
+        let detected_routes = analyze(path.as_path());
 
         assert_eq!(Vec::<DetectedRoute>::new(), detected_routes);
     }
@@ -444,7 +660,7 @@ mod tests {
     fn single() {
         let path = get_test_case_path("single/index.ts");
 
-        let detected_routes = analyse(path.as_path());
+        let detected_routes = analyze(path.as_path());
 
         assert_eq!(
             vec![DetectedRoute {
@@ -464,7 +680,7 @@ mod tests {
     fn multiple() {
         let path = get_test_case_path("multiple/index.ts");
 
-        let detected_routes = analyse(path.as_path());
+        let detected_routes = analyze(path.as_path());
 
         assert_eq!(
             vec![DetectedRoute {
@@ -482,7 +698,7 @@ mod tests {
         // TODO: Maybe iterate by directory instead of entry file? Like the ts impl
         let path = get_test_case_path("multiple/other.ts");
 
-        let detected_routes = analyse(path.as_path());
+        let detected_routes = analyze(path.as_path());
 
         assert_eq!(
             vec![
@@ -524,7 +740,7 @@ mod tests {
     fn split_routes() {
         let path = get_test_case_path("split-routes/index.ts");
 
-        let detected_routes = analyse(path.as_path());
+        let detected_routes = analyze(path.as_path());
 
         assert_eq!(
             vec![
@@ -597,7 +813,7 @@ mod tests {
     fn module_imports() {
         let path = get_test_case_path("module-imports/index.ts");
 
-        let detected_routes = analyse(path.as_path());
+        let detected_routes = analyze(path.as_path());
 
         assert_eq!(
             vec![
@@ -656,7 +872,7 @@ mod tests {
     fn bindings() {
         let path = get_test_case_path("bindings/index.ts");
 
-        let detected_routes = analyse(path.as_path());
+        let detected_routes = analyze(path.as_path());
 
         assert_eq!(
             vec![DetectedRoute {
@@ -684,7 +900,7 @@ mod tests {
     fn barrel_files() {
         let path = get_test_case_path("barrel-files/index.ts");
 
-        let detected_routes = analyse(path.as_path());
+        let detected_routes = analyze(path.as_path());
 
         assert_eq!(
             vec![
@@ -726,6 +942,56 @@ mod tests {
                 },
             ],
             detected_routes
+        );
+    }
+
+    #[test]
+    fn get_imported_modules_no_imports() {
+        let source = r#"
+
+            "#;
+
+        let tree = get_source_tree(source);
+
+        let result = get_imported_modules(&tree, &source);
+        assert_eq!(0, result.len());
+    }
+
+    #[test]
+    fn get_imported_modules_single_import() {
+        let source = r#"
+            import { Hono } from "hono";
+        "#;
+
+        let tree = get_source_tree(source);
+
+        let result = get_imported_modules(&tree, &source);
+        assert_eq!(1, result.len());
+        assert_eq!(
+            ImportDef::new("hono", vec![ImportIdentifier::new("Hono")]),
+            result[0]
+        );
+    }
+
+    #[test]
+    fn get_imported_modules_multiple_identifiers_import() {
+        let source = r#"
+            import { Hono, Request } from "hono";
+        "#;
+
+        let tree = get_source_tree(source);
+
+        let result = get_imported_modules(&tree, &source);
+        assert_eq!(1, result.len());
+        assert_eq!(
+            ImportDef::new(
+                "hono",
+                vec![
+                    ImportIdentifier::new("Hono"),
+                    ImportIdentifier::new("Request")
+                ]
+            ),
+            result[0]
         );
     }
 }
