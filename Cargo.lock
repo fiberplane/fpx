@@ -4035,14 +4035,14 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.10.6"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4219d74c6b67a3654a9fbebc4b419e22126d13d2f3c4a07ee0cb61ff79a79619"
+checksum = "38200e5ee88914975b69f657f0801b6f6dccafd44fd9326302a4aaeecfacb1d8"
 dependencies = [
  "aho-corasick",
  "memchr",
- "regex-automata 0.4.7",
- "regex-syntax 0.8.4",
+ "regex-automata 0.4.8",
+ "regex-syntax 0.8.5",
 ]
 
 [[package]]
@@ -4056,13 +4056,13 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38caf58cc5ef2fed281f89292ef23f6365465ed9a41b7a7754eb4e26496c92df"
+checksum = "368758f23274712b504848e9d5a6f010445cc8b87a7cdb4d7cbee666c1288da3"
 dependencies = [
  "aho-corasick",
  "memchr",
- "regex-syntax 0.8.4",
+ "regex-syntax 0.8.5",
 ]
 
 [[package]]
@@ -4073,9 +4073,9 @@ checksum = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1"
 
 [[package]]
 name = "regex-syntax"
-version = "0.8.4"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
+checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "reqwest"
@@ -4306,6 +4306,7 @@ version = "0.8.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09c024468a378b7e36765cd36702b7a90cc3cba11654f6685c8f233408e89e92"
 dependencies = [
+ "chrono",
  "dyn-clone",
  "indexmap 1.9.3",
  "schemars_derive",
@@ -4313,6 +4314,16 @@ dependencies = [
  "serde_json",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "schemars-zod"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d93f9994db2562b356d3dffeaddd26e54ae9a05bad8590aa4179ec8a2b700ae"
+dependencies = [
+ "schemars",
+ "serde_json",
 ]
 
 [[package]]
@@ -5786,7 +5797,7 @@ checksum = "f9871f16d6cf5c4757dcf30d5d2172a2df6987c510c017bbb7abfb7f9aa24d06"
 dependencies = [
  "cc",
  "regex",
- "regex-syntax 0.8.4",
+ "regex-syntax 0.8.5",
  "streaming-iterator",
  "tree-sitter-language",
 ]
@@ -6866,7 +6877,9 @@ dependencies = [
  "clap",
  "fpx",
  "fpx-app",
+ "regex",
  "schemars",
+ "schemars-zod",
  "serde",
  "serde_json",
  "tokio",
