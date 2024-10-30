@@ -83,7 +83,6 @@ fn detect_route_handlers(
                             .last();
 
                         if let Some(handler_node) = handler_param {
-                            // route_node.child(3) {
                             let route_handler = handler_node.utf8_text(source.as_bytes()).unwrap();
 
                             let mut cursor = handler_node.walk();
@@ -538,7 +537,19 @@ mod tests {
                     source_path: path.as_path().to_str().unwrap().into(),
                     source_start_point: Point { row: 18, column: 0 },
                     source_end_point: Point { row: 20, column: 2 },
-                    out_of_scope_sources: vec![]
+                    out_of_scope_sources: vec![r#"const PROJECTS = [
+  {
+    id: 1,
+    name: "Project A",
+    description: "Project A description",
+  },
+  {
+    id: 2,
+    name: "Project B",
+    description: "Project B description",
+  },
+];"#
+                    .into()]
                 },
                 DetectedRoute {
                     route_path: "/api/v1/projects/:id".into(),
@@ -552,7 +563,19 @@ mod tests {
                     source_path: path.as_path().to_str().unwrap().into(),
                     source_start_point: Point { row: 22, column: 0 },
                     source_end_point: Point { row: 26, column: 2 },
-                    out_of_scope_sources: vec![]
+                    out_of_scope_sources: vec![r#"const PROJECTS = [
+  {
+    id: 1,
+    name: "Project A",
+    description: "Project A description",
+  },
+  {
+    id: 2,
+    name: "Project B",
+    description: "Project B description",
+  },
+];"#
+                    .into()]
                 },
                 DetectedRoute {
                     route_path: "/api/v1/users".into(),
@@ -568,7 +591,19 @@ mod tests {
                         .into(),
                     source_start_point: Point { row: 17, column: 0 },
                     source_end_point: Point { row: 19, column: 2 },
-                    out_of_scope_sources: vec![]
+                    out_of_scope_sources: vec![r#"const USERS = [
+  {
+    id: 1,
+    name: "Alice",
+    age: 25,
+  },
+  {
+    id: 2,
+    name: "Bob",
+    age: 30,
+  },
+];"#
+                    .into()]
                 },
                 DetectedRoute {
                     route_path: "/api/v1/users/:id".into(),
@@ -586,7 +621,19 @@ mod tests {
                         .into(),
                     source_start_point: Point { row: 21, column: 0 },
                     source_end_point: Point { row: 25, column: 2 },
-                    out_of_scope_sources: vec![]
+                    out_of_scope_sources: vec![r#"const USERS = [
+  {
+    id: 1,
+    name: "Alice",
+    age: 25,
+  },
+  {
+    id: 2,
+    name: "Bob",
+    age: 30,
+  },
+];"#
+                    .into()]
                 },
             ],
             detected_routes
@@ -721,6 +768,12 @@ mod tests {
   };
   return value;
 })"#
+                        .into(),
+                        r#"const DEFAULT_USER_NAME = "John Doe";"#.into(),
+                        r#"const DEFAULT_EMAIL = "john@doe.com";"#.into(),
+                        r#"export async function sleep(duration: number) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}"#
                         .into(),
                     ]
                 },
