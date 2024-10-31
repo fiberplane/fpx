@@ -32,6 +32,7 @@
   "homepage": "https://github.com/fiberplane/fpx#readme",
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
+    "@changesets/cli": "^2.27.9",
     "pkg-pr-new": "^0.0.20",
     "rimraf": "^5.0.7",
     "typescript": "^5.5.4",
