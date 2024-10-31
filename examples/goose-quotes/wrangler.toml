@@ -1,5 +1,5 @@
 name = "goose-quotes"
-compatibility_date = "2024-07-23"
+compatibility_date = "2024-10-28"
 compatibility_flags = [ "nodejs_compat" ]
 
 # [dev]
