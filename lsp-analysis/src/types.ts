@@ -2,6 +2,7 @@ import relative from "resolve";
 import type { Tagged } from "type-fest";
 import * as bundledTs from "typescript";
 import type { ResourceManager } from "./ResourceManager";
+import { Hono } from "hono";
 
 export const bundledTypescript = bundledTs;
 export const relativeResolve = relative.sync;

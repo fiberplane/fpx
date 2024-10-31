@@ -34,7 +34,7 @@ export class AppFactory {
   // return this.trees.find((tree) => tree.id === id);
   // }
 
-  public getApp(entryId: RouteEntryId): Hono {
+  public getApp(entryId: RouteTreeId): Hono {
     // const root = this.trees.find((tree) => tree.id === entryId);
     const root = this.resources[entryId] as RouteTree;
     this.resetHistory();
