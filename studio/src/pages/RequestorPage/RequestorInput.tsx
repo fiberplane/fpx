@@ -70,7 +70,7 @@ export function RequestorInput({
           routeOrigin: "custom",
           handler: "",
           handlerType: "route",
-        }
+        },
       ]);
       toast({
         description: "Added new route",

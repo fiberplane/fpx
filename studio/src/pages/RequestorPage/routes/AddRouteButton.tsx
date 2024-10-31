@@ -266,7 +266,7 @@ function CustomRouteForm({
         routeOrigin: "custom",
         handlerType: "route",
         requestType: isWs ? "websocket" : "http",
-      }
+      },
     ]);
     setOpen(false);
   };
