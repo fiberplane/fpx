@@ -24,28 +24,30 @@ export function createSourceReferenceForNode(
     | TsVariableDeclaration,
   context: SearchContext,
 ): SourceReference {
-  const { sourceReferenceManager } = context;
+  const { resourceManager } = context;
   const sourceFile = rootNode.getSourceFile();
   const fileName = sourceFile.fileName;
-  const existingReference = sourceReferenceManager.getReference(
+  const id = resourceManager.getId(
+    "SOURCE_REFERENCE" as const,
     fileName,
     rootNode.getStart(),
   );
+  const existingReference = resourceManager.getResource(id);
 
   if (existingReference) {
     console.debug("Warning: source reference already exists", {
       fileName,
       start: rootNode.getStart(),
     });
-    return existingReference;
+    return existingReference as SourceReference;
   }
 
   const rootReference = createInitialSourceReferenceForNode(rootNode, context);
-  sourceReferenceManager.addReference(
-    fileName,
-    rootNode.getStart(),
-    rootReference,
-  );
+  // sourceReferenceManager.addReference(
+  //   fileName,
+  //   rootNode.getStart(),
+  //   rootReference,
+  // );
 
   visit(rootNode, context, rootReference, rootNode.getStart());
   return rootReference;
@@ -83,8 +85,7 @@ function visitIdentifier(
   startPosition: number,
   rootNodeReference: TsNode = currentNode,
 ) {
-  const { ts, getFile, checker, sourceReferenceManager, asAbsolutePath } =
-    context;
+  const { ts, getFile, checker, resourceManager, asAbsolutePath } = context;
   const sourceFile = getFile(asAbsolutePath(rootReference.fileName));
   const dependencyResult = getImportTypeDefinitionFileName(
     currentNode,
@@ -94,7 +95,7 @@ function visitIdentifier(
     const { isExternalLibrary, location, ...dependency } = dependencyResult;
     if (isExternalLibrary) {
       // Add dependency to the root reference
-      context.sourceReferenceManager.addModuleToReference(
+      resourceManager.addModuleToSourceReference(
         sourceFile.fileName,
         startPosition,
         dependency,
@@ -129,20 +130,25 @@ function visitIdentifier(
       ts.isExportSpecifier(nodeValue) ||
       ts.isVariableDeclaration(nodeValue))
   ) {
-    const sourceReference =
-      sourceReferenceManager.getReference(
-        nodeValue.getSourceFile().fileName,
-        nodeValue.getStart(),
+    const sourceReference: SourceReference =
+      resourceManager.getResource(
+        resourceManager.getId(
+          "SOURCE_REFERENCE",
+          nodeValue.getSourceFile().fileName,
+          nodeValue.getStart(),
+        ),
       ) || createSourceReferenceForNode(nodeValue, context);
+
     if (currentNode.getText() === "user") {
       console.log("nodeValue", currentNode.parent.kind, !!dependencyResult);
     }
-    rootReference.references.push(sourceReference);
+
+    rootReference.references.push(sourceReference.id);
     return;
   }
 }
 
-function getNodeValueForDependency(
+export function getNodeValueForDependency(
   dependencyResult: ReturnType<typeof getImportTypeDefinitionFileName>,
   context: SearchContext,
   declaration: TsDeclaration,
@@ -246,17 +252,23 @@ function createInitialSourceReferenceForNode(
     | TsVariableDeclaration,
   context: SearchContext,
 ): SourceReference {
-  const { getId, asRelativePath } = context;
+  const { resourceManager, asRelativePath } = context;
   const sourceFile = node.getSourceFile();
   const position = sourceFile.getLineAndCharacterOfPosition(node.getStart());
 
-  return {
-    id: getId(sourceFile.fileName, node.getStart()),
+  const params = {
+    type: "SOURCE_REFERENCE" as const,
     character: position.character,
     line: position.line,
     fileName: asRelativePath(sourceFile.fileName),
+    position: node.getStart(),
     content: createSourceReferenceContentForNode(node, context),
     references: [],
-    modules: {},
+    modules: [],
   };
+
+  return resourceManager.createSourceReference(params);
+  // return {
+  //   // id: getId(sourceFile.fileName, node.getStart()),
+  // };
 }

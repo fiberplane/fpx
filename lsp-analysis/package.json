@@ -26,6 +26,7 @@
     "chokidar": "^4.0.1",
     "consola": "^3.2.3",
     "resolve": "^1.22.8",
+    "type-fest": "^4.26.1",
     "typescript-language-server": "^4.3.3",
     "vscode-jsonrpc": "^8.2.1",
     "vscode-languageclient": "^9.0.1",

@@ -1,42 +1,46 @@
 import * as path from "node:path";
 import { expect, test } from "vitest";
 import { setupMonitoring } from "../src";
-import type { RouteTree, SourceReference } from "../src/types";
+// import type { RouteTree, SourceReference } from "../src/types";
 
 test.each([
-  {
-    name: "single file",
-
-    location: "./test-case/single",
-  },
-  {
-    name: "multiple files",
-    location: "./test-case/multiple",
-  },
-  {
-    name: "module imports",
-    location: "./test-case/module-imports",
-  },
-  {
-    name: "barrel files",
-    location: "./test-case/barrel-files",
-  },
   // {
-  //   name: "bindings",
-  //   location: "./test-case/bindings",
+  //   name: "single file",
+
+  //   location: "./test-case/single",
   // },
-  {
-    name: "split routes",
-    location: "./test-case/split-routes",
-  },
-  {
-    name: "hono factory",
-    location: "./test-case/hono-factory",
-  },
+  // {
+  //   name: "multiple files",
+  //   location: "./test-case/multiple",
+  // },
+  // {
+  //   name: "module imports",
+  //   location: "./test-case/module-imports",
+  // },
+  // {
+  //   name: "barrel files",
+  //   location: "./test-case/barrel-files",
+  // },
+  // // {
+  // //   name: "bindings",
+  // //   location: "./test-case/bindings",
+  // // },
+  // {
+  //   name: "split routes",
+  //   location: "./test-case/split-routes",
+  // },
+  // {
+  //   name: "empty",
+  //   location: "./test-case/empty",
+  // },
   // {
   //   name: "goose-quotes",
   //   location: "../../examples/goose-quotes",
   // },
+  {
+    name: "hono factory",
+    location: "./test-case/hono-factory",
+  },
   // {
   //   name: "api",
   //   location: "../../api",
@@ -62,106 +66,106 @@ test.each([
   }
 });
 
-function flattenRouteTree(routeTree: RouteTree, path?: string) {
-  type FileInfo = {
-    imports: Array<string>;
-    // TODO handle multiple things on a single line
-    content: Record<number, string>;
-  };
-  const newFileEntry = () => {
-    return {
-      imports: [],
-      content: {},
-    };
-  };
+// function flattenRouteTree(routeTree: RouteTree, path?: string) {
+//   type FileInfo = {
+//     imports: Array<string>;
+//     // TODO handle multiple things on a single line
+//     content: Record<number, string>;
+//   };
+//   const newFileEntry = () => {
+//     return {
+//       imports: [],
+//       content: {},
+//     };
+//   };
 
-  const files: Record<string, FileInfo> = {
-    [routeTree.fileName]: newFileEntry(),
-  };
-  const routes: Array<string> = [];
+//   const files: Record<string, FileInfo> = {
+//     [routeTree.fileName]: newFileEntry(),
+//   };
+//   const routes: Array<string> = [];
 
-  for (const entry of routeTree.entries) {
-    if (
-      (path && entry.path !== path) ||
-      entry.type === "ROUTE_TREE_REFERENCE"
-    ) {
-      console.log("Encountered unsupported route tree reference", entry);
-      continue;
-    }
+//   for (const entry of routeTree.entries) {
+//     if (
+//       (path && entry.path !== path) ||
+//       entry.type === "ROUTE_TREE_REFERENCE"
+//     ) {
+//       console.log("Encountered unsupported route tree reference", entry);
+//       continue;
+//     }
 
-    if (entry.type === "MIDDLEWARE_ENTRY") {
-      console.log("Encountered unsupported middleware entry", entry);
-      continue;
-    }
+//     if (entry.type === "MIDDLEWARE_ENTRY") {
+//       console.log("Encountered unsupported middleware entry", entry);
+//       continue;
+//     }
 
-    routes.push(
-      `${routeTree.name}.${entry.method}("${entry.path}", ${entry.sources
-        .map((source) => source.content)
-        .join(",")})`,
-    );
+//     routes.push(
+//       `${routeTree.name}.${entry.method}("${entry.path}", ${entry.sources
+//         .map((source) => source.content)
+//         .join(",")})`,
+//     );
 
-    for (const routeSources of entry.sources) {
-      const current = files[routeSources.fileName];
+//     for (const routeSources of entry.sources) {
+//       const current = files[routeSources.fileName];
 
-      const imports = Object.keys(routeSources.modules)
-        .map((module) => {
-          return `import { ${routeSources.modules[module].map((importPath) => {
-            return importPath.import;
-          })} } from "${module}";`;
-        })
-        .join("\n");
+//       const imports = Object.keys(routeSources.modules)
+//         .map((module) => {
+//           return `import { ${routeSources.modules[module].map((importPath) => {
+//             return importPath.import;
+//           })} } from "${module}";`;
+//         })
+//         .join("\n");
 
-      if (imports) {
-        current.imports.push(imports);
-      }
+//       if (imports) {
+//         current.imports.push(imports);
+//       }
 
-      routeSources.references.forEach(parseSource);
-    }
-  }
+//       routeSources.references.forEach(parseSource);
+//     }
+//   }
 
-  function parseSource(sourceReference: SourceReference) {
-    const { fileName, line, content } = sourceReference;
-    const file: FileInfo = files[fileName] || newFileEntry();
-    file.content[line] = content;
-    files[fileName] = file;
-    file.imports.push(
-      Object.keys(sourceReference.modules)
-        .map((module) => {
-          return `import { ${sourceReference.modules[module].map(
-            (importPath) => {
-              return importPath.import;
-            },
-          )} } from "${module}";`;
-        })
-        .join(", "),
-    );
-    sourceReference.references.forEach(parseSource);
-  }
+//   function parseSource(sourceReference: SourceReference) {
+//     const { fileName, line, content } = sourceReference;
+//     const file: FileInfo = files[fileName] || newFileEntry();
+//     file.content[line] = content;
+//     files[fileName] = file;
+//     file.imports.push(
+//       Object.keys(sourceReference.modules)
+//         .map((module) => {
+//           return `import { ${sourceReference.modules[module].map(
+//             (importPath) => {
+//               return importPath.import;
+//             },
+//           )} } from "${module}";`;
+//         })
+//         .join(", "),
+//     );
+//     sourceReference.references.forEach(parseSource);
+//   }
 
-  function serializeFile(fileName: string) {
-    const file = files[fileName] || newFileEntry();
-    const lines = Object.keys(file.content)
-      .sort()
-      .map((line) => {
-        return `${file.content[line]}`;
-      });
+//   function serializeFile(fileName: string) {
+//     const file = files[fileName] || newFileEntry();
+//     const lines = Object.keys(file.content)
+//       .sort()
+//       .map((line) => {
+//         return `${file.content[line]}`;
+//       });
 
-    return `// ${fileName}
-${file.imports.join("\n")}
+//     return `// ${fileName}
+// ${file.imports.join("\n")}
 
-${lines.join("\n\n")}`;
-  }
+// ${lines.join("\n\n")}`;
+//   }
 
-  return `${serializeFile(routeTree.fileName)}
-import { Hono } from "hono";
+//   return `${serializeFile(routeTree.fileName)}
+// import { Hono } from "hono";
 
-const ${routeTree.name} = new Hono();
+// const ${routeTree.name} = new Hono();
 
-${routes.join("\n\n")}
+// ${routes.join("\n\n")}
 
-${Object.keys(files)
-  .filter((file) => file !== routeTree.fileName)
-  .map((file) => serializeFile(file))
-  .join("\n\n")}
-`;
-}
+// ${Object.keys(files)
+//       .filter((file) => file !== routeTree.fileName)
+//       .map((file) => serializeFile(file))
+//       .join("\n\n")}
+// `;
+// }

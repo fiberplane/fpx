@@ -1,6 +1,7 @@
 import relative from "resolve";
+import type { Tagged } from "type-fest";
 import * as bundledTs from "typescript";
-import type { SourceReferenceManager } from "./SourceReferenceManager";
+import type { ResourceManager } from "./ResourceManager";
 
 export const bundledTypescript = bundledTs;
 export const relativeResolve = relative.sync;
@@ -33,26 +34,42 @@ export type TsTypeChecker = bundledTs.TypeChecker;
 export type TsVariableDeclaration = bundledTs.VariableDeclaration;
 export type TsFunctionExpression = bundledTs.FunctionExpression;
 
+export type RouteTreeId = Tagged<string, "RouteTreeId">;
+export type RouteTreeReferenceId = Tagged<string, "RouteTreeReferenceId">;
+export type RouteTreeEntryId = Tagged<string, "RouteTreeEntryId">;
+export type MiddlewareEntryId = Tagged<string, "MiddlewareEntryId">;
+export type RouteEntryId = Tagged<string, "RouteEntryId">;
+export type SourceReferenceId = Tagged<string, "SourceReferenceId">;
+export type ModuleReferenceId = Tagged<string, "ModuleReferenceId">;
+
+type FileReference = {
+  fileName: string;
+  position: number;
+};
+
 export type RouteTree = {
   type: "ROUTE_TREE";
-  id: string;
+  id: RouteTreeId;
   name: string;
-  fileName: string;
   baseUrl: string;
   /**
    * TODO: add source references
    * The Hono type is a generic that can be used
    * for instance to inject bindings/environment variables
    */
-  entries: Array<Entry>;
-};
+  entries: Array<RouteTreeEntryIds>;
+} & FileReference;
 
-type Entry = RouteEntry | RouteTreeReference | MiddlewareEntry;
+export type RouteTreeEntryIds =
+  | RouteTreeEntryId
+  | RouteTreeReferenceId
+  | MiddlewareEntryId;
 
 export type RouteTreeReference = {
   type: "ROUTE_TREE_REFERENCE";
+  id: RouteTreeReferenceId;
 
-  targetId: string;
+  targetId: RouteTreeId;
   /**
    *  `.routes()` accepts a path parameter
    */
@@ -63,6 +80,9 @@ export type RouteTreeReference = {
    */
   name: string;
   fileName: string;
+  position: number;
+
+  // TODO: support route tree references from external dependencies
 };
 
 export const HONO_HTTP_METHODS = [
@@ -78,29 +98,35 @@ export type HonoHttpMethod = (typeof HONO_HTTP_METHODS)[number];
 type RouteDetails = {
   id: string;
   path: string;
-  sources: SourceReference[];
-};
+  sources: SourceReferenceId[];
+  modules: Array<ModuleReferenceId>;
+} & FileReference;
 
 export type RouteEntry = {
   type: "ROUTE_ENTRY";
+  id: RouteTreeEntryId;
   method?: string;
 } & RouteDetails;
 
 export type MiddlewareEntry = {
   type: "MIDDLEWARE_ENTRY";
+  id: MiddlewareEntryId;
 } & RouteDetails;
 
 export type SourceReference = {
-  id: string;
-  fileName: string;
+  type: "SOURCE_REFERENCE";
+  id: SourceReferenceId;
   content: string;
   line: number;
   character: number;
-  modules: Record<string, Array<ModuleReference>>;
-  references: Array<SourceReference>;
-};
+  modules: Array<ModuleReferenceId>;
+  references: Array<SourceReferenceId>;
+} & FileReference;
 
+// TODO: handle export ... from ... cases
 export type ModuleReference = {
+  type: "MODULE_REFERENCE";
+  id: ModuleReferenceId;
   /* The name of the module */
   name: string;
   /**
@@ -128,16 +154,25 @@ export type RouteElement =
   | RouteTreeReference
   | MiddlewareEntry;
 
+export type TreeResource =
+  | RouteTree
+  | RouteEntry
+  | RouteTreeReference
+  | MiddlewareEntry
+  | SourceReference
+  | ModuleReference;
+export type ResourceType = TreeResource["type"];
+
 export type SearchContext = {
-  sourceReferenceManager: SourceReferenceManager;
+  resourceManager: ResourceManager;
   service: TsLanguageService;
   ts: TsType;
   errorCount: number;
   program: TsProgram;
   checker: TsTypeChecker;
-  addRouteTree: (route: RouteTree) => void;
+  // addRouteTree: (route: RouteTree) => void;
   getFile: (fileName: string) => TsSourceFile | undefined;
-  getId: (fileName: string, location: number) => string;
+  // getId: (fileName: string, location: number) => string;
   asRelativePath(fileName: string): string;
   asAbsolutePath(fileName: string): string;
 };

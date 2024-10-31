@@ -47,50 +47,50 @@ export class AppFactory {
       return next();
     });
 
-    for (const entry of tree.entries) {
-      switch (entry.type) {
-        case "ROUTE_ENTRY": {
-          app.get(entry.path, (c) => {
-            this.history.set(entry.id, entry);
-            return c.text("Ok");
-          });
-          continue;
-        }
+    // for (const entry of tree.entries) {
+    //   switch (entry.type) {
+    //     case "ROUTE_ENTRY": {
+    //       app.get(entry.path, (c) => {
+    //         this.history.set(entry.id, entry);
+    //         return c.text("Ok");
+    //       });
+    //       continue;
+    //     }
 
-        case "ROUTE_TREE_REFERENCE": {
-          if (this.apps.has(entry.targetId)) {
-            const targetApp = this.apps.get(entry.targetId);
-            app.route(entry.path, targetApp);
-          } else {
-            const tree = this.trees.find((tree) => tree.id === entry.targetId);
-            if (tree) {
-              const targetApp = this.createApp(tree);
-              app.route(entry.path, targetApp);
-            }
-          }
-          continue;
-        }
+    //     case "ROUTE_TREE_REFERENCE": {
+    //       if (this.apps.has(entry.targetId)) {
+    //         const targetApp = this.apps.get(entry.targetId);
+    //         app.route(entry.path, targetApp);
+    //       } else {
+    //         const tree = this.trees.find((tree) => tree.id === entry.targetId);
+    //         if (tree) {
+    //           const targetApp = this.createApp(tree);
+    //           app.route(entry.path, targetApp);
+    //         }
+    //       }
+    //       continue;
+    //     }
 
-        case "MIDDLEWARE_ENTRY": {
-          const middlewareFunc = async (c, next) => {
-            this.history.set(entry.id, entry);
-            await next();
-          };
-          if (entry.path) {
-            app.use(entry.path, middlewareFunc);
-          } else {
-            app.use(middlewareFunc);
-          }
-          continue;
-        }
+    //     case "MIDDLEWARE_ENTRY": {
+    //       const middlewareFunc = async (c, next) => {
+    //         this.history.set(entry.id, entry);
+    //         await next();
+    //       };
+    //       if (entry.path) {
+    //         app.use(entry.path, middlewareFunc);
+    //       } else {
+    //         app.use(middlewareFunc);
+    //       }
+    //       continue;
+    //     }
 
-        default: {
-          const exhaustiveCheck: never = entry;
-          // Typescript should never happen
-          throw new Error(`Unsupported entry type: ${exhaustiveCheck}`);
-        }
-      }
-    }
+    //     default: {
+    //       const exhaustiveCheck: never = entry;
+    //       // Typescript should never happen
+    //       throw new Error(`Unsupported entry type: ${exhaustiveCheck}`);
+    //     }
+    //   }
+    // }
 
     return app;
   }

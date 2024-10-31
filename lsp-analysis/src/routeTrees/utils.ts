@@ -69,7 +69,7 @@ export function getImportTypeDefinitionFileName(
 ):
   | (ModuleReference & { isExternalLibrary: boolean; location: string })
   | undefined {
-  const { ts, checker, program, asRelativePath } = context;
+  const { ts, checker, program, resourceManager } = context;
   const symbol = checker.getSymbolAtLocation(node);
 
   const declarations = symbol?.getDeclarations();
@@ -138,6 +138,8 @@ export function getImportTypeDefinitionFileName(
   // Handle external imports
   if (result.resolvedModule?.isExternalLibraryImport) {
     return {
+      type: "MODULE_REFERENCE",
+      id: resourceManager.getId("MODULE_REFERENCE", node.getText(), text),
       import: node.getText(),
       importPath: text,
       name: result.resolvedModule.packageId.name,
@@ -150,6 +152,8 @@ export function getImportTypeDefinitionFileName(
   // Handle build in modules
   if (text.startsWith("node:")) {
     return {
+      type: "MODULE_REFERENCE",
+      id: resourceManager.getId("MODULE_REFERENCE", node.getText(), text),
       import: node.getText(),
       importPath: text,
       name: text,
@@ -160,6 +164,8 @@ export function getImportTypeDefinitionFileName(
 
   // Other module
   return {
+    type: "MODULE_REFERENCE",
+    id: resourceManager.getId("MODULE_REFERENCE", node.getText(), text),
     import: node.getText(),
     importPath: text,
     name: text,

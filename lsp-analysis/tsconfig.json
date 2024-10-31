@@ -4,7 +4,7 @@
     "moduleResolution": "Bundler",
     "noEmit": true,
     "skipLibCheck": true,
-    "target": "ESNext" 
+    "target": "ESNext"
   },
   "exclude": [
     "test/test-case"
