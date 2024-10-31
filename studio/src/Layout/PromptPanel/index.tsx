@@ -310,11 +310,8 @@ function ActiveCommand({
             Number.parseInt(response.responseStatusCode, 10) >= 400);
 
         if (isFailure) {
-          const failureReason =
-            response.responseBody.type === "error"
-              ? response.responseBody.value || "Request failed"
-              : "Request failed";
-          throw new Error(failureReason);
+          setProgress("error");
+          return response;
         }
 
         setProgress("success");
