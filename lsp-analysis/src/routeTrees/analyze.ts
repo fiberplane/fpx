@@ -2,6 +2,7 @@ import type {
   RouteTree,
   RouteTreeId,
   RouteTreeReference,
+  RouteTreeReferenceId,
   TreeResource,
 } from "../types";
 
@@ -47,24 +48,29 @@ interface SimpleGraphStat {
 }
 
 export function analyze(
-  resources: Map<string, TreeResource>,
+  resources: Record<string, TreeResource>,
 ): RouteTree | null {
   const complexityMap = new Map<string, SimpleGraphStat>();
 
   // Find all route treeItems
-  const treeItems: Array<RouteTree> = Array.from(resources.keys())
+  const treeItems: Array<RouteTree> = Object.keys(resources)
     .filter((key) => key.startsWith("ROUTE_TREE:"))
-    .map((key) => resources.get(key) as RouteTree);
+    .map((key) => resources[key] as RouteTree);
 
-  console.log("treeItems", treeItems);
+  // console.log("treeItems", treeItems);
   // Step 1: Initialize complexity map with base values
   for (const item of treeItems) {
     const base = item.entries.length;
     const references: Array<RouteTreeId> = [];
     for (const entry of item.entries) {
       if (entry.startsWith("ROUTE_TREE_REFERENCE:")) {
-        const treeReference = resources.get(entry) as RouteTreeReference;
-        references.push(treeReference.targetId);
+        const treeReference = resources[entry as RouteTreeReferenceId];
+        //  as RouteTreeReference;
+        if (!treeReference) {
+          console.warn("Resource not found", entry);
+          continue;
+        }
+        references.push((treeReference as RouteTreeReference).targetId);
       }
     }
     complexityMap.set(item.id, { base, total: base, references });
@@ -117,7 +123,7 @@ export function analyze(
   //   }
   // }
   // console.log("totalMap", totalMap);
-  console.log("totalMap", complexityMap);
+  // console.log("totalMap", complexityMap);
   return mostComplexItem;
 }
 

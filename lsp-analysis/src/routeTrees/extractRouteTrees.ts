@@ -1,13 +1,8 @@
-import path from "node:path";
-import type { Simplify } from "type-fest";
-import { ModuleReference } from "typescript";
-import { symbol } from "zod";
 import { ResourceManager } from "../ResourceManager";
 // import { SourceReferenceManager } from "../SourceReferenceManager";
 import {
   HONO_HTTP_METHODS,
   type MiddlewareEntry,
-  ModuleReferenceId,
   type RouteEntry,
   type RouteTree,
   type RouteTreeReference,
@@ -28,28 +23,26 @@ import {
   type TsType,
   type TsVariableDeclaration,
 } from "../types";
-import {
-  createSourceReferenceForNode,
-  getNodeValueForDependency,
-} from "./extractReferences";
-import { findNodeAtPosition, getImportTypeDefinitionFileName } from "./utils";
+import { createSourceReferenceForNode } from "./extractReferences";
+import { findNodeAtPosition } from "./utils";
 
 export function extractRouteTrees(
   service: TsLanguageService,
   ts: TsType,
-  projectRoot,
+  projectRoot: string,
 ): {
   errorCount?: number;
-  results: Map<string, TreeResource>;
+  resources: Record<string, TreeResource>;
 } {
   // const sourceReferenceManager = new SourceReferenceManager();
   const resourceManager = new ResourceManager(projectRoot);
   const program = service.getProgram();
-  const checker = program.getTypeChecker();
 
   if (!program) {
     throw new Error("Program not found");
   }
+
+  const checker = program.getTypeChecker();
 
   // const apps: Array<RouteTreeId> = [];
   const files = program.getSourceFiles();
@@ -94,13 +87,13 @@ export function extractRouteTrees(
   }
 
   return {
-    results: resourceManager.getResources(),
+    resources: resourceManager.getResources(),
     errorCount: context.errorCount,
   };
 }
 
 function visit(node: TsNode, fileName: string, context: SearchContext) {
-  const { ts, checker, asRelativePath, resourceManager, getFile } = context;
+  const { ts, checker, asRelativePath, resourceManager, service } = context;
   if (ts.isVariableStatement(node)) {
     for (const declaration of node.declarationList.declarations) {
       // Check if the variable is of type Hono
@@ -162,13 +155,13 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
           );
         }
 
-        const references = context.service
-          .getReferencesAtPosition(fileName, declaration.name.getStart())
-          .filter(
-            (reference) =>
-              reference.fileName === fileName &&
-              reference.textSpan.start !== declaration.name.getStart(),
-          );
+        const references = (
+          service.getReferencesAtPosition(fileName, position) ?? []
+        ).filter(
+          (reference) =>
+            reference.fileName === fileName &&
+            reference.textSpan.start !== position,
+        );
         for (const entry of references) {
           // if (fileName.includes("src/app.ts")) {
           //   console.log('entry', entry, current.id)
@@ -186,21 +179,27 @@ function handleInitializerCallExpression(
   routeTree: RouteTree,
   context: SearchContext,
 ) {
-  const { ts, getFile, asRelativePath, resourceManager } = context;
+  const { ts, getFile, asRelativePath, resourceManager, program } = context;
   const fileName = callExpression.getSourceFile().fileName;
   const references = context.service.findReferences(
     fileName,
     callExpression.getStart(),
   );
-  const reference = references.find(
+  const reference = references?.find(
     (ref) => ref.definition.kind === ts.ScriptElementKind.functionElement,
   );
+  if (!reference) {
+    console.warn("no reference found for", callExpression.getText());
+    return;
+  }
   const declarationFileName = reference.definition.fileName;
+  const targetSourceFile =
+    getFile(declarationFileName) || program.getSourceFile(declarationFileName);
   const functionNode =
-    reference &&
+    targetSourceFile &&
     findNodeAtPosition(
       ts,
-      getFile(declarationFileName),
+      targetSourceFile,
       reference.definition.textSpan.start,
     );
   if (
@@ -344,7 +343,10 @@ function handleRoute(
     return;
   }
 
-  const path = ts.isStringLiteral(firstArgument) ? firstArgument.text : "";
+  const path =
+    firstArgument && ts.isStringLiteral(firstArgument)
+      ? firstArgument.text
+      : "";
   const SUPPORTED_VARIABLE_KINDS = [
     ts.ScriptElementKind.constElement,
     ts.ScriptElementKind.letElement,
@@ -356,34 +358,38 @@ function handleRoute(
   // console.log(appNode.getText(), 'referencedSymbol', referencedSymbol.references)
   // }
 
-  const references = service.findReferences(
-    appNode.getSourceFile().fileName,
-    appNode.getStart(),
-  );
+  // const references = service.findReferences(
+  //   appNode.getSourceFile().fileName,
+  //   appNode.getStart(),
+  // );
 
   let target: TsVariableDeclaration | undefined;
-  const variableReference = references.find((ref) =>
-    SUPPORTED_VARIABLE_KINDS.includes(ref.definition.kind),
-  );
-  if (variableReference) {
-    const variableDeclarationChild = findNodeAtPosition(
-      ts,
-      getFile(variableReference.definition.fileName),
-      variableReference.definition.textSpan.start,
-    );
+  // const variableReference = references.find((ref) =>
+  //   SUPPORTED_VARIABLE_KINDS.includes(ref.definition.kind),
+  // );
+  // if (variableReference) {
+  //   const variableDeclarationChild = findNodeAtPosition(
+  //     ts,
+  //     getFile(variableReference.definition.fileName),
+  //     variableReference.definition.textSpan.start,
+  //   );
 
-    // Access the parent & verify that's a variable declaration
-    // As the node will point to the identifier and not the declaration
-    if (
-      variableDeclarationChild?.parent &&
-      ts.isVariableDeclaration(variableDeclarationChild.parent)
-    ) {
-      target = variableDeclarationChild.parent;
-    }
-  }
+  //   // Access the parent & verify that's a variable declaration
+  //   // As the node will point to the identifier and not the declaration
+  //   if (
+  //     variableDeclarationChild?.parent &&
+  //     ts.isVariableDeclaration(variableDeclarationChild.parent)
+  //   ) {
+  //     target = variableDeclarationChild.parent;
+  //   }
+  // }
 
   const symbol = checker.getSymbolAtLocation(appNode);
   const declaration = symbol?.declarations?.[0];
+
+  if (declaration && ts.isVariableDeclaration(declaration)) {
+    target = declaration;
+  }
   if (!target) {
     if (symbol && isAlias(symbol, context)) {
       let alias = symbol;

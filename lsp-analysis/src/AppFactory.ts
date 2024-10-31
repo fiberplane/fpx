@@ -1,33 +1,42 @@
 import { Hono } from "hono";
-import type { RouteElement, RouteTree } from "./types";
+import type { Next } from "hono/types";
+import type {
+  RouteEntryId,
+  RouteTree,
+  RouteTreeEntry,
+  RouteTreeId,
+  TreeResource,
+} from "./types";
 
 export class AppFactory {
-  private trees: Array<RouteTree>;
-  private apps: Map<string, Hono> = new Map();
-  private history: Map<string, RouteElement>;
+  private resources: Record<string, TreeResource>;
+  private apps: Map<RouteTreeId, Hono> = new Map();
+  private history: Array<TreeResource["id"]>;
 
-  constructor(trees: Array<RouteTree>) {
-    this.trees = trees;
+  constructor(resources: Record<string, TreeResource>) {
+    this.resources = resources;
+    this.history = [];
   }
 
   public resetHistory() {
-    this.history = new Map();
+    this.history = [];
   }
 
-  public hasVisited(id: string): boolean {
-    return this.history.has(id);
+  public hasVisited(id: TreeResource["id"]): boolean {
+    return this.history.includes(id);
   }
 
   public getHistoryLength(): number {
-    return this.history.size;
+    return this.history.length;
   }
 
-  public getVisitedNode(id: string) {
-    return this.trees.find((tree) => tree.id === id);
-  }
+  // public getVisitedNode(id: string) {
+  // return this.trees.find((tree) => tree.id === id);
+  // }
 
-  public getApp(entryId: string): Hono {
-    const root = this.trees.find((tree) => tree.id === entryId);
+  public getApp(entryId: RouteEntryId): Hono {
+    // const root = this.trees.find((tree) => tree.id === entryId);
+    const root = this.resources[entryId] as RouteTree;
     this.resetHistory();
 
     if (!root) {
@@ -43,54 +52,66 @@ export class AppFactory {
     this.apps.set(tree.id, app);
 
     app.use((c, next) => {
-      this.history.set(tree.id, tree);
+      this.history.push(tree.id);
       return next();
     });
 
-    // for (const entry of tree.entries) {
-    //   switch (entry.type) {
-    //     case "ROUTE_ENTRY": {
-    //       app.get(entry.path, (c) => {
-    //         this.history.set(entry.id, entry);
-    //         return c.text("Ok");
-    //       });
-    //       continue;
-    //     }
+    for (const entry of tree.entries) {
+      const resource = this.resources[entry] as RouteTreeEntry | undefined;
+      if (!resource) {
+        console.warn("Resource not found", entry);
+        continue;
+      }
 
-    //     case "ROUTE_TREE_REFERENCE": {
-    //       if (this.apps.has(entry.targetId)) {
-    //         const targetApp = this.apps.get(entry.targetId);
-    //         app.route(entry.path, targetApp);
-    //       } else {
-    //         const tree = this.trees.find((tree) => tree.id === entry.targetId);
-    //         if (tree) {
-    //           const targetApp = this.createApp(tree);
-    //           app.route(entry.path, targetApp);
-    //         }
-    //       }
-    //       continue;
-    //     }
+      switch (resource.type) {
+        case "ROUTE_ENTRY": {
+          app.get(resource.path, (c) => {
+            this.history.push(resource.id);
+            return c.text("Ok");
+          });
+          continue;
+        }
 
-    //     case "MIDDLEWARE_ENTRY": {
-    //       const middlewareFunc = async (c, next) => {
-    //         this.history.set(entry.id, entry);
-    //         await next();
-    //       };
-    //       if (entry.path) {
-    //         app.use(entry.path, middlewareFunc);
-    //       } else {
-    //         app.use(middlewareFunc);
-    //       }
-    //       continue;
-    //     }
+        case "ROUTE_TREE_REFERENCE": {
+          let targetApp = this.apps.get(resource.targetId);
+          if (targetApp) {
+            app.route(resource.path, targetApp);
+          } else {
+            const tree = this.resources[resource.targetId] as
+              | RouteTree
+              | undefined;
+            if (!tree) {
+              console.warn("Referring resource not found", resource.targetId);
+              continue;
+            }
 
-    //     default: {
-    //       const exhaustiveCheck: never = entry;
-    //       // Typescript should never happen
-    //       throw new Error(`Unsupported entry type: ${exhaustiveCheck}`);
-    //     }
-    //   }
-    // }
+            targetApp = this.createApp(tree);
+            if (targetApp) {
+              app.route(resource.path, targetApp);
+            }
+          }
+          continue;
+        }
+
+        case "MIDDLEWARE_ENTRY": {
+          const middlewareFunc = async (_: unknown, next: Next) => {
+            this.history.push(resource.id);
+            await next();
+          };
+          if (resource.path) {
+            app.use(resource.path, middlewareFunc);
+          } else {
+            app.use(middlewareFunc);
+          }
+          continue;
+        }
+
+        default: {
+          // Typescript should never happen
+          throw new Error(`Unsupported entry type: ${entry}` as never);
+        }
+      }
+    }
 
     return app;
   }

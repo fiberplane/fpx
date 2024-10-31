@@ -103,7 +103,7 @@ export function getImportTypeDefinitionFileName(
           compilerOptions,
           host,
         );
-        if (result.resolvedModule.isExternalLibraryImport) {
+        if (result.resolvedModule?.isExternalLibraryImport) {
           return;
         }
       }
@@ -121,12 +121,13 @@ export function getImportTypeDefinitionFileName(
 
   if (
     !target ||
-    (!ts.isImportDeclaration(target) && !ts.isExportDeclaration(target))
+    (!ts.isImportDeclaration(target) && !ts.isExportDeclaration(target)) ||
+    !target.moduleSpecifier
   ) {
     return;
   }
 
-  const text = target.moduleSpecifier.getText().slice(1, -1);
+  const text = target.moduleSpecifier.getText().slice(1, -1) || "";
 
   const result = ts.resolveModuleName(
     text,
@@ -142,8 +143,10 @@ export function getImportTypeDefinitionFileName(
       id: resourceManager.getId("MODULE_REFERENCE", node.getText(), text),
       import: node.getText(),
       importPath: text,
-      name: result.resolvedModule.packageId.name,
-      version: result.resolvedModule.packageId.version,
+      // TODO handle packageId being empty?
+      name: result.resolvedModule.packageId?.name || "",
+      // TODO handle packageId being empty?
+      version: result.resolvedModule.packageId?.version || "",
       isExternalLibrary: true,
       location: result.resolvedModule.resolvedFileName,
     };
@@ -170,6 +173,7 @@ export function getImportTypeDefinitionFileName(
     importPath: text,
     name: text,
     isExternalLibrary: false,
-    location: result.resolvedModule.resolvedFileName,
+    // TODO: Handle resolvedModule being undefined
+    location: result.resolvedModule?.resolvedFileName || "",
   };
 }

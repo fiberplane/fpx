@@ -70,7 +70,7 @@ export function startServer(params: {
     },
     getScriptFileNames: getFileNames,
     getScriptVersion: (fileName) => {
-      return getFileInfo(fileName)?.version.toString();
+      return getFileInfo(fileName)?.version.toString() ?? "0";
     },
     getScriptSnapshot: (fileName) => {
       const info = getFileInfo(fileName);

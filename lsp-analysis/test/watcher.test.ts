@@ -3,8 +3,8 @@ import * as path from "node:path";
 import { expect, test, vi } from "vitest";
 import { Watcher } from "../src";
 
-test.skip("Initial files (added)", async () => {
-  const location = path.join(__dirname, "./test-case/simple");
+test("Initial files (added)", async () => {
+  const location = path.join(__dirname, "./test-case/multiple");
   const watcher = new Watcher(location);
   const handler = vi.fn();
   watcher.addListener("fileAdded", handler);
@@ -34,9 +34,9 @@ test.skip("Initial files (added)", async () => {
   }
 });
 
-test.skip("Empty folder", async () => {
+test("Empty folder", async () => {
   const location = path.join(__dirname, "./test-case/empty");
-  const simpleLocation = path.join(__dirname, "./test-case/simple");
+  const simpleLocation = path.join(__dirname, "./test-case/single");
 
   // Avoid test from failing due to dirty initial state
   // Remove old files (if they still exist)

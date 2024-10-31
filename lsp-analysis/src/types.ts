@@ -60,10 +60,8 @@ export type RouteTree = {
   entries: Array<RouteTreeEntryIds>;
 } & FileReference;
 
-export type RouteTreeEntryIds =
-  | RouteTreeEntryId
-  | RouteTreeReferenceId
-  | MiddlewareEntryId;
+export type RouteTreeEntry = RouteEntry | RouteTreeReference | MiddlewareEntry;
+export type RouteTreeEntryIds = RouteTreeEntry["id"];
 
 export type RouteTreeReference = {
   type: "ROUTE_TREE_REFERENCE";

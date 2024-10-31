@@ -4,35 +4,35 @@ import { setupMonitoring } from "../src";
 // import type { RouteTree, SourceReference } from "../src/types";
 
 test.each([
-  // {
-  //   name: "single file",
+  {
+    name: "single file",
 
-  //   location: "./test-case/single",
-  // },
+    location: "./test-case/single",
+  },
+  {
+    name: "multiple files",
+    location: "./test-case/multiple",
+  },
+  {
+    name: "module imports",
+    location: "./test-case/module-imports",
+  },
+  {
+    name: "barrel files",
+    location: "./test-case/barrel-files",
+  },
   // {
-  //   name: "multiple files",
-  //   location: "./test-case/multiple",
+  //   name: "bindings",
+  //   location: "./test-case/bindings",
   // },
-  // {
-  //   name: "module imports",
-  //   location: "./test-case/module-imports",
-  // },
-  // {
-  //   name: "barrel files",
-  //   location: "./test-case/barrel-files",
-  // },
-  // // {
-  // //   name: "bindings",
-  // //   location: "./test-case/bindings",
-  // // },
-  // {
-  //   name: "split routes",
-  //   location: "./test-case/split-routes",
-  // },
-  // {
-  //   name: "empty",
-  //   location: "./test-case/empty",
-  // },
+  {
+    name: "split routes",
+    location: "./test-case/split-routes",
+  },
+  {
+    name: "empty",
+    location: "./test-case/empty",
+  },
   // {
   //   name: "goose-quotes",
   //   location: "../../examples/goose-quotes",

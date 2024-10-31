@@ -2,11 +2,8 @@ import path from "node:path";
 import type {
   MiddlewareEntry,
   ModuleReference,
-  ResourceType,
   RouteEntry,
-  RouteEntryId,
   RouteTree,
-  RouteTreeId,
   RouteTreeReference,
   SourceReference,
   TreeResource,
@@ -273,7 +270,7 @@ export class ResourceManager {
   }
 
   getResources() {
-    return this.references;
+    return Object.fromEntries(this.references);
   }
 }
 

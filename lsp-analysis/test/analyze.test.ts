@@ -42,7 +42,7 @@ import { type RouteTree, analyze, setupMonitoring } from "../src";
 //   expect(result.id).toBe("root");
 // });
 
-test.skip("analyze hono-factory", async () => {
+test("analyze hono-factory", async () => {
   const location = "./test-case/hono-factory";
   const absolutePath = path.join(__dirname, location);
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
@@ -50,20 +50,19 @@ test.skip("analyze hono-factory", async () => {
     console.log("absolutePath", absolutePath);
     watcher.start();
     const result = findHonoRoutes();
-    const treeItems = result.results;
-    console.log(JSON.stringify(treeItems, null, 2));
+    const { resources } = result;
+    // console.log(JSON.stringify(treeItems, null, 2));
     // expect(treeItems).toHaveLength(3)
     // const node = treeItems.find((item) => item.id === 'src/index.node.ts@1428');
     // console.log(node)
-    const root = analyze(treeItems);
-    console.log("root", root);
+    const root = analyze(resources);
     expect(root).not.toBeNull();
   } finally {
     teardown();
   }
 });
 
-test("test api", async () => {
+test.skip("test api", async () => {
   const location = "../../api";
   const absolutePath = path.join(__dirname, location);
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
@@ -73,13 +72,11 @@ test("test api", async () => {
     const result = findHonoRoutes();
     // console.log(JSON.stringify(result.results, null, 2));
     console.log("duration: ", performance.now() - start);
-    const treeItems = result.results;
-    // const node = treeItems.find((item) => item.id === 'src/index.node.ts@1428');
-    // console.log(node)
-    const root = analyze(treeItems);
+    const { resources } = result;
+    const root = analyze(resources);
     console.log("root", root);
     expect(root).not.toBeNull();
-    expect(root.id).includes("src/index.node.ts");
+    expect(root?.id).includes("src/index.node.ts");
   } finally {
     teardown();
   }

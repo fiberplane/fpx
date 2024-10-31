@@ -85,13 +85,14 @@ function visitIdentifier(
   startPosition: number,
   rootNodeReference: TsNode = currentNode,
 ) {
-  const { ts, getFile, checker, resourceManager, asAbsolutePath } = context;
+  const { ts, getFile, checker, resourceManager, asAbsolutePath, program } =
+    context;
   const sourceFile = getFile(asAbsolutePath(rootReference.fileName));
   const dependencyResult = getImportTypeDefinitionFileName(
     currentNode,
     context,
   );
-  if (dependencyResult) {
+  if (dependencyResult && sourceFile) {
     const { isExternalLibrary, location, ...dependency } = dependencyResult;
     if (isExternalLibrary) {
       // Add dependency to the root reference
@@ -170,16 +171,23 @@ export function getNodeValueForDependency(
   }
 
   // Find reference in the right file
-  const possibleReferences = references.filter(
-    (ref) => ref.fileName === dependencyResult.location,
-  );
+  const possibleReferences = dependencyResult
+    ? references.filter((ref) => ref.fileName === dependencyResult.location)
+    : references;
 
   const checker = program.getTypeChecker();
   for (const reference of possibleReferences) {
     const refFile =
       getFile(reference.fileName) || program.getSourceFile(reference.fileName);
+    if (!refFile) {
+      console.warn(`No file found for reference: ${reference.fileName}`);
+      continue;
+    }
     const refNode = findNodeAtPosition(ts, refFile, reference.textSpan.start);
-
+    if (!refNode) {
+      console.warn(`No node found for reference: ${reference.textSpan.start}`);
+      continue;
+    }
     const symbol = checker.getSymbolAtLocation(refNode);
     const declarations = symbol?.getDeclarations();
     if (declarations?.length === 1) {
@@ -237,7 +245,8 @@ function createSourceReferenceContentForNode(
   }
 
   if (ts.isExportSpecifier(node)) {
-    return `export { ${node.getText()} } from ${node.parent.parent.moduleSpecifier.getText()}`;
+    // TODO: handle moduleSpecifier being empty
+    return `export { ${node.getText()} } from ${node.parent.parent.moduleSpecifier?.getText() || "NO_MODULE_SPECIFIER_FOUND"}`;
   }
   return node.getText();
 }
