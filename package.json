@@ -20,6 +20,7 @@
     "clean:cli": "rimraf cli/dist",
     "format": "biome check . --write",
     "lint": "pnpm --recursive lint",
+    "release:studio": "pnpm build:types && pnpm build:fpx-studio && changeset publish",
     "typecheck": "pnpm --recursive typecheck"
   },
   "repository": {
