@@ -7,11 +7,7 @@ import { hasValidAiConfig } from "../lib/ai/index.js";
 import { getUser, verifyToken } from "../lib/fp-services/auth.js";
 import { TokenExpiredError } from "../lib/fp-services/errors.js";
 import { TokenPayloadSchema } from "../lib/fp-services/types.js";
-import {
-  getAllSettings,
-  getInferenceConfig,
-  upsertSettings,
-} from "../lib/settings/index.js";
+import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
