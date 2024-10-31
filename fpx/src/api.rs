@@ -5,6 +5,7 @@ use crate::service::Service;
 use axum::extract::FromRef;
 use axum::routing::{delete, get, post};
 use http::StatusCode;
+use std::sync::{Arc, RwLock};
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::decompression::RequestDecompressionLayer;
@@ -13,10 +14,16 @@ pub mod errors;
 pub mod handlers;
 pub mod models;
 
+#[derive(Clone, Debug)]
+pub struct ApiConfig {
+    pub base_url: Arc<RwLock<String>>,
+}
+
 #[derive(Clone)]
 pub struct ApiState {
     service: Service,
     store: BoxedStore,
+    config: ApiConfig,
 }
 
 impl FromRef<ApiState> for BoxedStore {
@@ -28,6 +35,12 @@ impl FromRef<ApiState> for BoxedStore {
 impl FromRef<ApiState> for Service {
     fn from_ref(state: &ApiState) -> Self {
         state.service.clone()
+    }
+}
+
+impl FromRef<ApiState> for ApiConfig {
+    fn from_ref(state: &ApiState) -> Self {
+        state.config.clone()
     }
 }
 
@@ -57,8 +70,12 @@ impl Builder {
     }
 
     /// Create an API and expose it through an axum router.
-    pub fn build(self, service: Service, store: BoxedStore) -> axum::Router {
-        let api_state = ApiState { service, store };
+    pub fn build(self, service: Service, store: BoxedStore, config: ApiConfig) -> axum::Router {
+        let api_state = ApiState {
+            service,
+            store,
+            config,
+        };
 
         let mut router = axum::Router::new()
             .route("/v1/traces", post(handlers::otel::trace_collector_handler))

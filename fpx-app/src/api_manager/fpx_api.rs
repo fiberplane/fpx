@@ -1,9 +1,10 @@
 use fpx::api;
+use fpx::api::ApiConfig;
 use fpx::config::FpxConfig;
 use fpx::data::libsql_store::LibsqlStore;
 use fpx::events::memory::InMemoryEvents;
 use fpx::service::Service;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use tauri::async_runtime::spawn;
 use tokio::sync::broadcast::error::RecvError;
 use tracing::{error, info, trace, warn};
@@ -64,10 +65,17 @@ impl ApiManager {
 
             let service = Service::new(store.clone(), events.clone());
 
+            let config = ApiConfig {
+                base_url: Arc::new(RwLock::new(fpx_config.app_endpoint.map_or_else(
+                    || "http://localhost:8787".to_string(),
+                    |url| url.to_string(),
+                ))),
+            };
+
             let app = api::Builder::new()
                 .enable_compression()
                 .allow_origin_any()
-                .build(service.clone(), store.clone());
+                .build(service.clone(), store.clone(), config);
 
             let listener = tokio::net::TcpListener::from_std(listener).unwrap();
             let api_server = axum::serve(listener, app).with_graceful_shutdown(async {

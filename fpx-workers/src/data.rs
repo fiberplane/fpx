@@ -28,19 +28,9 @@ impl D1Store {
     where
         T: for<'a> Deserialize<'a>,
     {
-        let prepared_statement = self
-            .database
-            .prepare(query)
-            .bind(values)
-            .map_err(|err| DbError::InternalError(err.to_string()))?; // TODO: Correct error;
-
-        let result = prepared_statement
-            .first(None)
-            .await
-            .map_err(|err| DbError::InternalError(err.to_string()))? // TODO: Correct error;
-            .ok_or(DbError::NotFound)?;
-
-        Ok(result)
+        self.fetch_optional(query, values)
+            .await?
+            .ok_or(DbError::NotFound)
     }
 
     async fn fetch_optional<T>(
@@ -60,8 +50,7 @@ impl D1Store {
         let result = prepared_statement
             .first(None)
             .await
-            .map_err(|err| DbError::InternalError(err.to_string()))? // TODO: Correct error;
-            ;
+            .map_err(|err| DbError::InternalError(err.to_string()))?; // TODO: Correct error;
 
         Ok(result)
     }

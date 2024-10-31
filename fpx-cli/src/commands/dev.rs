@@ -1,6 +1,7 @@
 use crate::grpc::GrpcService;
 use crate::initialize_fpx_dir;
 use anyhow::{Context, Result};
+use fpx::api::ApiConfig;
 use fpx::data::libsql_store::LibsqlStore;
 use fpx::events::memory::InMemoryEvents;
 use fpx::{api, service};
@@ -8,9 +9,10 @@ use opentelemetry_proto::tonic::collector::trace::v1::trace_service_server::Trac
 use std::future::IntoFuture;
 use std::path::PathBuf;
 use std::process::exit;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tokio::select;
 use tracing::{error, info, warn};
+use url::Url;
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -29,6 +31,9 @@ pub struct Args {
     /// Enable in-memory database. Useful when debugging.
     #[clap(long, env, hide = true)]
     pub in_memory_database: bool,
+
+    #[arg(from_global)]
+    pub app_endpoint: Option<Url>,
 
     /// fpx directory
     #[arg(from_global)]
@@ -55,9 +60,17 @@ pub async fn handle_command(args: Args) -> Result<()> {
 
     let service = service::Service::new(store.clone(), events.clone());
 
-    let app = api::Builder::new()
-        .enable_compression()
-        .build(service.clone(), store.clone());
+    let config = ApiConfig {
+        base_url: Arc::new(RwLock::new(args.app_endpoint.map_or_else(
+            || "http://localhost:8787".to_string(),
+            |url| url.to_string(),
+        ))),
+    };
+
+    let app =
+        api::Builder::new()
+            .enable_compression()
+            .build(service.clone(), store.clone(), config);
     let grpc_service = GrpcService::new(service);
 
     let listener = tokio::net::TcpListener::bind(&args.listen_address)

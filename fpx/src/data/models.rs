@@ -5,7 +5,8 @@ use libsql::params::IntoValue;
 use libsql::Value;
 use serde::de::{Error, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
-use std::fmt::Formatter;
+use std::fmt;
+use std::fmt::Display;
 use std::ops::Deref;
 use std::str::FromStr;
 
@@ -102,9 +103,13 @@ pub enum RouteOrigin {
     OpenApi,
 }
 
-impl ToString for RouteOrigin {
-    fn to_string(&self) -> String {
-        serde_json::to_string(&self).expect("serialization to always work")
+impl Display for RouteOrigin {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            serde_json::to_string(&self).expect("serialization to always work")
+        )
     }
 }
 
@@ -122,9 +127,13 @@ pub enum RequestType {
     Websocket,
 }
 
-impl ToString for RequestType {
-    fn to_string(&self) -> String {
-        serde_json::to_string(&self).expect("serialization to always work")
+impl Display for RequestType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            serde_json::to_string(&self).expect("serialization to always work")
+        )
     }
 }
 
@@ -241,7 +250,7 @@ struct HexEncodedIdVisitor;
 impl<'de> Visitor<'de> for HexEncodedIdVisitor {
     type Value = HexEncodedId;
 
-    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("a hex-represented string")
     }
 

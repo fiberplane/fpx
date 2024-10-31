@@ -11,11 +11,15 @@ use std::path::PathBuf;
 use std::{env, ops::Range};
 use thiserror::Error;
 use tracing::error;
+use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Hash, PartialEq, Eq, Default, JsonSchema)]
 pub struct FpxConfig {
     /// The port on which the API server should listen.
     pub listen_port: Option<u32>,
+
+    /// The endpoint where the app is running on
+    pub app_endpoint: Option<Url>,
 }
 
 impl FpxConfig {

@@ -1,4 +1,5 @@
 use crate::api::errors::{ApiServerError, CommonError};
+use crate::api::ApiConfig;
 use crate::data::models::{AllRoutes, ProbedRoutes, Route};
 use crate::data::{BoxedStore, DbError};
 use axum::extract::{Path, State};
@@ -9,9 +10,10 @@ use thiserror::Error;
 use tracing::error;
 use tracing::instrument;
 
-#[instrument(skip(store))]
+#[instrument(skip(store, config))]
 pub async fn route_get(
     State(store): State<BoxedStore>,
+    State(config): State<ApiConfig>,
 ) -> Result<Json<AllRoutes>, ApiServerError<RoutesGetError>> {
     let tx = store.start_readonly_transaction().await?;
 
@@ -19,10 +21,14 @@ pub async fn route_get(
 
     store.commit_transaction(tx).await?;
 
-    Ok(Json(AllRoutes {
-        base_url: "http://localhost:8787".to_string(), // todo: get the right base url
-        routes,
-    }))
+    // different block so the guard gets dropped early. need this because the lock is not a `tokio::RwLock`
+    // so holding it across an .await point would cause a deadlock
+    let base_url = {
+        let guard = config.base_url.read().expect("lock to not be poisoned");
+        guard.clone()
+    };
+
+    Ok(Json(AllRoutes { base_url, routes }))
 }
 
 #[derive(Debug, Serialize, Deserialize, Error, ApiError)]
@@ -72,7 +78,7 @@ impl From<DbError> for ApiServerError<RouteProbeError> {
 #[instrument(skip(store))]
 pub async fn route_create(
     State(store): State<BoxedStore>,
-    Json(route): Json<Route>, // TODO: the ts api also accepts a array of routes as input, have to figure out a Either-style way to do that
+    Json(route): Json<Route>,
 ) -> Result<Json<Route>, ApiServerError<RouteCreateError>> {
     let tx = store.start_readwrite_transaction().await?;
 

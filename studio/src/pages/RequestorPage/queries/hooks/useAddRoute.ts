@@ -13,7 +13,7 @@ export type Route = {
   isDraft?: boolean;
 };
 
-async function addRoutes(routes: Route | Route[]) {
+async function addRoutes(routes: Route[]) {
   return fetch("/v0/app-routes", {
     method: "POST",
     headers: {

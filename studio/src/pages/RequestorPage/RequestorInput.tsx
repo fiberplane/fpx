@@ -62,14 +62,14 @@ export function RequestorInput({
 
   const handleAddRoute = useHandler(() => {
     if (canSaveDraftRoute) {
-      addRoutes({
+      addRoutes([{
         method: requestType === "websocket" ? "GET" : method,
         path: path ?? "",
         requestType: requestType,
         routeOrigin: "custom",
         handler: "",
         handlerType: "route",
-      });
+      }]);
       toast({
         description: "Added new route",
       });

@@ -2,9 +2,10 @@ use axum::async_trait;
 use axum::routing::get;
 use data::D1Store;
 use fpx::api::models::ServerMessage;
+use fpx::api::ApiConfig;
 use fpx::events::ServerEvents;
 use fpx::{api, service};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tower_service::Service;
 use tracing_subscriber::fmt::format::Pretty;
 use tracing_subscriber::fmt::time::UtcTime;
@@ -53,7 +54,12 @@ async fn fetch(
     let boxed_store = Arc::new(store);
 
     let service = service::Service::new(boxed_store.clone(), boxed_events.clone());
-    let api_router = api::Builder::new().build(service, boxed_store);
+
+    let config = ApiConfig {
+        base_url: Arc::new(RwLock::new("http://localhost:8787".to_string())), // todo: find out a way to get the app url in workers
+    };
+
+    let api_router = api::Builder::new().build(service, boxed_store, config);
 
     let mut router: axum::Router = axum::Router::new()
         .route("/api/ws", get(ws_connect))
