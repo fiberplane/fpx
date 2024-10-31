@@ -11,6 +11,7 @@ use std::path::PathBuf;
 use std::{env, ops::Range};
 use thiserror::Error;
 use tracing::error;
+use url::Url;
 
 const DEFAULT_PORT: u32 = 8788;
 
@@ -18,6 +19,9 @@ const DEFAULT_PORT: u32 = 8788;
 pub struct FpxConfig {
     /// The port on which the API server should listen.
     pub listen_port: Option<u32>,
+
+    /// The endpoint where the app is running on
+    pub app_endpoint: Option<Url>,
 }
 
 impl FpxConfig {
