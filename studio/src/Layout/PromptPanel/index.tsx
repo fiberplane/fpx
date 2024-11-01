@@ -14,11 +14,7 @@ import { isMac } from "@/utils";
 import { cn } from "@/utils";
 import type { Completion } from "@codemirror/autocomplete";
 import { Icon } from "@iconify/react";
-import {
-  type UseMutationResult,
-  useMutation,
-  useQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -66,7 +62,7 @@ function PromptFooter({
   isPending: boolean;
 }) {
   return (
-    <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 grid justify-items-end">
+    <div className="border-t-1 border-gray-700 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 grid justify-items-end">
       <Button
         variant="ghost"
         size="sm"
@@ -197,7 +193,7 @@ function PromptPanelHeader({ onReset }: { onReset: () => void }) {
           onClick={onReset}
           className="h-6 w-6 justify-self-end"
         >
-          <Icon icon="lucide:eraser" className="h-4 w-4" />
+          <Icon icon="lucide:eraser" className="h-3 w-3" />
         </Button>
         <Button
           variant="ghost"
@@ -205,7 +201,7 @@ function PromptPanelHeader({ onReset }: { onReset: () => void }) {
           onClick={() => togglePanel("promptPanel")}
           className="h-6 w-6 justify-self-end"
         >
-          <Icon icon="lucide:x" className="h-4 w-4" />
+          <Icon icon="lucide:minus" className="h-3 w-3" />
         </Button>
       </div>
     </div>
@@ -266,7 +262,7 @@ function ActiveCommandsList({
 
   return (
     <div className="px-4 overflow-y-auto">
-      <Separator decorative={true} className="my-2 divide-dashed" />
+      <Separator decorative={true} className="my-2 dashed" />
       <div className="grid grid-cols-1 gap-1">
         {routesInAction.map((route, index) => (
           <ActiveCommand
