@@ -41,7 +41,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.51",
     "@ai-sdk/mistral": "^0.0.42",
-    "@ai-sdk/openai": "^0.0.66",
+    "@ai-sdk/openai": "^0.0.70",
     "@anthropic-ai/sdk": "^0.24.3",
     "@clack/core": "^0.3.4",
     "@clack/prompts": "^0.7.0",
