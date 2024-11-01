@@ -262,7 +262,6 @@ export function CodeMirrorPrompt(props: CodeMirrorPromptProps) {
         "rounded border border-transparent",
         "cursor-text",
         "overflow-hidden",
-        "focus-within:border-blue-600",
         className,
       )}
     >
