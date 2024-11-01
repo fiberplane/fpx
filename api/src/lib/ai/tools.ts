@@ -19,9 +19,7 @@ export const requestSchema = z.object({
       }),
     )
     .nullable(),
-  body: z
-    .union([z.string(), z.record(z.string(), z.any()), z.array(z.any())])
-    .nullable(),
+  body: z.string().nullable(),
   bodyType: z
     .object({
       type: z.enum(["json", "text", "form-data", "file"]),
