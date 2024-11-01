@@ -44,7 +44,7 @@
   "license": "MIT or Apache 2",
   "keywords": ["honc", "fiberplane", "ai"],
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.66",
+    "@ai-sdk/openai": "^0.0.71",
     "@anthropic-ai/sdk": "^0.29.0",
     "@cloudflare/workers-types": "^4.20241011.0",
     "@fiberplane/hono-otel": "0.4.0-canary.0",
@@ -52,7 +52,7 @@
     "@langchain/anthropic": "^0.3.3",
     "@langchain/core": "^0.2.36",
     "@langchain/langgraph": "^0.2.14",
-    "ai": "^3.4.10",
+    "ai": "^3.4.31",
     "dotenv": "^16.4.5",
     "drizzle-kit": "^0.24.2",
     "drizzle-orm": "^0.33.0",

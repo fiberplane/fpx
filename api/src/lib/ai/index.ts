@@ -222,9 +222,11 @@ export async function generateRequestWithAiProvider({
 }
 
 export async function translateCommands({
+  fpApiKey,
   inferenceConfig,
   commands,
 }: {
+  fpApiKey?: string;
   inferenceConfig: Settings;
   commands: string;
 }) {
@@ -243,6 +245,19 @@ export async function translateCommands({
       data: null,
       error: { message: "AI provider is not configured properly" },
     };
+  }
+
+  if (aiProvider === "fp") {
+    if (!fpApiKey) {
+      return {
+        data: null,
+        error: { message: "Fiberplane token not found" },
+      };
+    }
+    return {
+      data: null,
+      error: { message: "Fiberplane AI provider does not support command translation" },
+    }
   }
 
   const providerConfig = aiProviderConfigurations[aiProvider];

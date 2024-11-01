@@ -20,13 +20,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.66",
+    "@ai-sdk/openai": "^0.0.71",
     "@fiberplane/hono-otel": "0.4.0-canary.0",
     "@hono/oauth-providers": "^0.6.1",
     "@hono/zod-validator": "^0.4.1",
     "@langchain/core": "^0.3.11",
     "@libsql/client": "^0.14.0",
-    "ai": "^3.4.10",
+    "ai": "^3.4.31",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.34.1",
     "hono": "^4.6.3",

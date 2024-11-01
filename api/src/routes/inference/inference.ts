@@ -132,8 +132,16 @@ app.post("/v0/translate-commands", cors(), async (ctx) => {
     );
   }
 
+  // HACK - Get latest token from db
+  const [fpToken] = inferenceConfig.aiProvider === "fp" ? await db
+    .select()
+    .from(schema.tokens)
+    .orderBy(desc(schema.tokens.createdAt))
+    .limit(1) : [null];
+
   const { data: translatedCommands, error: translateError } =
     await translateCommands({
+      fpApiKey: fpToken?.value,
       inferenceConfig,
       commands,
     });
