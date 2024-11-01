@@ -1,6 +1,9 @@
-name = "app"
-compatibility_date = "2024-10-28"
+name = "server-side-events-example"
+compatibility_date = "2024-07-23"
 compatibility_flags = [ "nodejs_compat" ]
+
+# [dev]
+# port = 3001
 
 # [vars]
 # MY_VAR = "my-variable"
@@ -10,14 +13,13 @@ compatibility_flags = [ "nodejs_compat" ]
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # [[r2_buckets]]
-# binding = "MY_BUCKET"
+# binding = "R2"
 # bucket_name = "my-bucket"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "my-database"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-migrations_dir = "drizzle/migrations"
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "my-database"
+# database_id = ""
 
 # [ai]
 # binding = "AI"
