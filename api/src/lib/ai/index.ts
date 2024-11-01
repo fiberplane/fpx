@@ -256,8 +256,10 @@ export async function translateCommands({
     }
     return {
       data: null,
-      error: { message: "Fiberplane AI provider does not support command translation" },
-    }
+      error: {
+        message: "Fiberplane AI provider does not support command translation",
+      },
+    };
   }
 
   const providerConfig = aiProviderConfigurations[aiProvider];

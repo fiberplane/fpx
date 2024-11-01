@@ -2,6 +2,7 @@ import { CodeMirrorPrompt } from "@/components/CodeMirrorEditor";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
 import { createKeyValueParameters } from "@/pages/RequestorPage/KeyValueForm/data";
 import { createBodyFromAiResponse } from "@/pages/RequestorPage/ai/ai";
 import { fetchAiRequestData } from "@/pages/RequestorPage/ai/generate-request-data";
@@ -104,8 +105,17 @@ export function PromptPanel() {
 
   const navigate = useNavigate();
 
+  const { toast } = useToast();
+
   const translateCommandsMutation = useMutation({
     mutationFn: translateCommands,
+    onError: (error) => {
+      toast({
+        title: "Error running composer",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const routeCompletions: Completion[] = routes.map((route) => ({
