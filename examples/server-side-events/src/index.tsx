@@ -15,7 +15,7 @@ app.get("/", (c) => {
     <html lang="en">
       <body>
         <h1>Server Side Events Example</h1>
-        <div className="streaming-container"></div>
+        <div className="streaming-container" />
         <button type="button" id="start-streaming">
           Start Streaming
         </button>

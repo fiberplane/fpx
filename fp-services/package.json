@@ -16,11 +16,12 @@
     "format": "biome check . --write",
     "keypair:generate": "tsx keypair-generate.ts",
     "lint": "biome lint .",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.66",
-    "@fiberplane/hono-otel": "workspace:*",
+    "@fiberplane/hono-otel": "0.4.0-canary.0",
     "@hono/oauth-providers": "^0.6.1",
     "@hono/zod-validator": "^0.4.1",
     "@langchain/core": "^0.3.11",
@@ -36,8 +37,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
-    "@cloudflare/workers-types": "^4.20241004.0",
+    "@cloudflare/workers-types": "^4.20241022.0",
     "drizzle-kit": "^0.24.2",
-    "wrangler": "^3.80.1"
+    "wrangler": "^3.83.0"
   }
 }
