@@ -34,17 +34,33 @@ HONC_BASE_URL=http://localhost:4468 pnpm dev
 
 ### Deployment
 
-Set the Anthropic API key and Honc password in the production wrangler environment:
+Set the OpenAI API key and Honc password in the production wrangler environment:
 
 ```sh
-pnpx wrangler secret put ANTHROPIC_API_KEY
+pnpx wrangler secret put OPENAI_API_KEY
 ```
+
+To add a Honc password, which needs to be set in the `create-honc-app` cli, run:
 
 ```sh
 pnpx wrangler secret put HONC_PASSWORD
 ```
 
+To disable password protection, set the `HONC_IS_LOCAL` secret to `true`.
+
+```sh
+pnpx wrangler secret put HONC_IS_LOCAL
+```
+
+To turn on the V1 code generation feature (**note: this is not yet ready for production use as of writing**), set the `HONC_CODE_GEN_V1_ENABLED` secret to `true`.
+
+```sh
+pnpx wrangler secret put HONC_CODE_GEN_V1_ENABLED
+```
+
 ## Playground
+
+> Contact Brett before playing in the playground. It will be easier to go through the setup process together.
 
 The "playground" is a separate project that is used to test the code generation API. It is not deployed to Cloudflare.
 
