@@ -16,7 +16,11 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
+import { useRequestorHistory } from "@/pages/RequestorPage/useRequestorHistory";
+import { cn } from "@/utils";
+import { Separator } from "@/components/ui/separator";
 
 const translateCommands = async (commands: string) => {
   const response = await fetch("/v0/translate-commands", {
@@ -49,8 +53,40 @@ export function PromptToggle() {
       className="gap-2 text-muted-foreground px-2 py-0"
     >
       <Icon icon="lucide:workflow" className="h-4 w-4 p-0" />
-      Workflows
+      Composer
     </Button>
+  );
+}
+
+function PromptFooter({
+  handlePromptSubmit,
+  isPending,
+}: {
+  handlePromptSubmit: () => Promise<void>;
+  isPending: boolean;
+}) {
+  return (
+    <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 grid justify-items-end">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-xs rounded-lg font-mono"
+        onClick={handlePromptSubmit}
+        disabled={isPending}
+      >
+        {isPending ? (
+          "Running..."
+        ) : (
+          <>
+            Run{" "}
+            <span className="ml-1 inline-flex items-center gap-1">
+              <KeyboardShortcutKey>{isMac ? "⌘" : "Ctrl"}</KeyboardShortcutKey>
+              <KeyboardShortcutKey>⏎</KeyboardShortcutKey>
+            </span>
+          </>
+        )}
+      </Button>
+    </div>
   );
 }
 
@@ -117,59 +153,60 @@ Method: ${route.method}]
   };
 
   const handleReset = () => {
-    setTranslatedCommands(null);
     setPromptValue("");
+    setTranslatedCommands(null);
   };
 
   return (
     <div className="fixed bottom-8 left-0 right-0 flex justify-center">
-      <div className="w-full max-w-lg h-72 bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,auto,1fr,auto]">
-        <PromptPanelHeader
-          routesInAction={routesInAction}
-          handleReset={handleReset}
-        />
-        <PromptPanelContent
-          routesInAction={routesInAction}
-          promptValue={promptValue}
-          handlePromptChange={handlePromptChange}
+      <div className="max-w-lg w-full bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,1fr,auto]">
+        <PromptPanelHeader onReset={handleReset} />
+        <div className="overflow-y-auto relative">
+          <PromptPanelContent
+            routesInAction={routesInAction}
+            promptValue={promptValue}
+            handlePromptChange={handlePromptChange}
+            handlePromptSubmit={handlePromptSubmit}
+            routeCompletions={routeCompletions}
+            allRoutes={routes}
+          />
+        </div>
+        <PromptFooter
           handlePromptSubmit={handlePromptSubmit}
-          routeCompletions={routeCompletions}
-          translateCommandsMutation={translateCommandsMutation}
-          allRoutes={routes}
+          isPending={translateCommandsMutation.isPending}
         />
       </div>
     </div>
   );
 }
 
-function PromptPanelHeader({
-  routesInAction,
-  handleReset,
-}: {
-  routesInAction: ProbedRoute[] | undefined;
-  handleReset: () => void;
-}) {
+function PromptPanelHeader({ onReset }: { onReset: () => void }) {
+  const { togglePanel } = useRequestorStore("togglePanel");
+
   return (
-    <div className="pt-4 px-4 grid grid-cols-[auto,1fr] gap-2">
-      {routesInAction && (
+    <div className="p-4 grid grid-cols-[1fr,auto] gap-2 items-center">
+      <div>
+        <p className="text-xs text-muted-foreground">
+          Emulate user interaction flows and generate sequences of API calls.
+        </p>
+      </div>
+      <div>
         <Button
           variant="ghost"
-          size="sm"
-          onClick={handleReset}
-          className="text-muted-foreground -ml-2"
+          size="icon"
+          onClick={onReset}
+          className="h-6 w-6 justify-self-end"
         >
-          <Icon icon="lucide:chevron-left" className="h-4 w-4" />
+          <Icon icon="lucide:eraser" className="h-4 w-4" />
         </Button>
-      )}
-      <div>
-        <h2 className="text-lg font-semibold grid grid-cols-[auto,1fr] items-center">
-          {routesInAction ? "Running flow" : "User flow assistant"}
-        </h2>
-        {!routesInAction && (
-          <p className="text-sm text-muted-foreground">
-            Emulate user interaction flows and generate sequences of API calls.
-          </p>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => togglePanel("promptPanel")}
+          className="h-6 w-6 justify-self-end"
+        >
+          <Icon icon="lucide:x" className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
@@ -182,7 +219,6 @@ function PromptPanelContent({
   handlePromptChange,
   handlePromptSubmit,
   routeCompletions,
-  translateCommandsMutation,
 }: {
   routesInAction: ProbedRoute[] | undefined;
   allRoutes: ProbedRoute[];
@@ -190,24 +226,19 @@ function PromptPanelContent({
   handlePromptChange: (value?: string) => void;
   handlePromptSubmit: () => Promise<void>;
   routeCompletions: Completion[];
-  translateCommandsMutation: UseMutationResult<
-    { commands: { routeId: number }[] },
-    unknown,
-    string,
-    unknown
-  >;
 }) {
-  return routesInAction ? (
-    <ActiveCommandsList routesInAction={routesInAction} />
-  ) : (
-    <PromptInput
-      promptValue={promptValue}
-      handlePromptChange={handlePromptChange}
-      handlePromptSubmit={handlePromptSubmit}
-      allRoutes={allRoutes}
-      routeCompletions={routeCompletions}
-      translateCommandsMutation={translateCommandsMutation}
-    />
+  return (
+    <div className="grid gap-4 pb-4 content-start">
+      <PromptInput
+        promptValue={promptValue}
+        handlePromptChange={handlePromptChange}
+        handlePromptSubmit={handlePromptSubmit}
+        allRoutes={allRoutes}
+        routeCompletions={routeCompletions}
+        isCompact={!!routesInAction}
+      />
+      {routesInAction && <ActiveCommandsList routesInAction={routesInAction} />}
+    </div>
   );
 }
 
@@ -220,6 +251,9 @@ function ActiveCommandsList({
   const currentRoute = routesInAction[currentCommandIndex];
   const isLastCommand = currentCommandIndex === routesInAction.length - 1;
 
+  const { history } = useRequestorHistory();
+  const previousResponses = history.slice(0, currentCommandIndex);
+
   const onSuccess = () => {
     if (!isLastCommand) {
       setCurrentCommandIndex((prev) => prev + 1);
@@ -231,15 +265,17 @@ function ActiveCommandsList({
   };
 
   return (
-    <div className="p-4 grid grid-rows-[1fr] gap-4 overflow-y-auto">
-      <div className="grid grid-cols-1 gap-1 overflow-y-auto">
-        {routesInAction.map((route) => (
+    <div className="px-4 overflow-y-auto">
+      <Separator decorative={true} className="my-2 divide-dashed" />
+      <div className="grid grid-cols-1 gap-1">
+        {routesInAction.map((route, index) => (
           <ActiveCommand
             key={route.id}
             route={route}
-            isActive={route === currentRoute}
+            isActive={index === currentCommandIndex}
             onSuccess={onSuccess}
             onError={onError}
+            previousResponses={previousResponses}
           />
         ))}
       </div>
@@ -252,11 +288,13 @@ function ActiveCommand({
   isActive,
   onSuccess,
   onError,
+  previousResponses,
 }: {
   route: ProbedRoute;
   isActive: boolean;
   onSuccess: () => void;
   onError: (error: unknown) => void;
+  previousResponses: ProxiedRequestResponse[];
 }) {
   const { getMatchingMiddleware, serviceBaseUrl, setActiveRoute } =
     useRequestorStore(
@@ -264,7 +302,6 @@ function ActiveCommand({
       "serviceBaseUrl",
       "setActiveRoute",
     );
-  const navigate = useNavigate();
 
   const [progress, setProgress] = useState<
     "idle" | "generating" | "requesting" | "success" | "error"
@@ -279,7 +316,7 @@ function ActiveCommand({
           route,
           getMatchingMiddleware(),
           "json",
-          [],
+          previousResponses,
           "Friendly",
         );
 
@@ -327,29 +364,20 @@ function ActiveCommand({
     enabled: isActive,
   });
 
-  const handleRouteClick = () => {
-    if (response?.traceId) {
-      navigate(`/request/${response.traceId}`, { replace: true });
-    } else {
-      setActiveRoute(route);
-      navigate("/", { replace: true });
-    }
-  };
+  // Determine the to prop based on response and route state
+  const to = response?.traceId
+    ? `/request/${response.traceId}?filter-tab=requests`
+    : `/route/${route.id}?filter-tab=routes`;
 
   return (
-    <button
-      type="button"
-      onClick={handleRouteClick}
-      className={`
-        inline-flex items-center gap-2 rounded-lg justify-between 
-        ${progress === "error" ? "border-red-500 bg-red-500/20" : ""}
-        ${progress === "success" ? "border-green-500 bg-green-500/20" : ""}
-        text-gray-400 border-2 hover:bg-secondary px-3 py-1 
-        text-sm font-medium font-mono
-      `}
+    <Link
+      to={to}
+      className={cn(
+        "grid grid-cols-[auto,1fr] gap-2 items-center rounded-lg px-3 py-1",
+        "text-sm font-medium font-mono text-gray-400",
+        "hover:bg-secondary no-underline",
+      )}
     >
-      <span>{`${route.method} ${route.path}`}</span>
-
       {progress === "generating" && (
         <Icon
           icon="lucide:loader-circle"
@@ -371,7 +399,9 @@ function ActiveCommand({
       {progress === "error" && (
         <Icon icon="lucide:x-circle" className="h-4 w-4 text-red-500" />
       )}
-    </button>
+
+      <span className="text-left">{`${route.method} ${route.path}`}</span>
+    </Link>
   );
 }
 
@@ -381,61 +411,32 @@ function PromptInput({
   handlePromptSubmit,
   allRoutes,
   routeCompletions,
-  translateCommandsMutation,
+  isCompact,
 }: {
   promptValue: string;
   handlePromptChange: (value?: string) => void;
   handlePromptSubmit: () => Promise<void>;
   allRoutes: ProbedRoute[];
   routeCompletions: Completion[];
-  translateCommandsMutation: UseMutationResult<
-    { commands: { routeId: number }[] },
-    unknown,
-    string,
-    unknown
-  >;
+  isCompact: boolean;
 }) {
   return (
-    <>
-      <div className="pt-4 px-4 overflow-hidden">
-        <CodeMirrorPrompt
-          onBlur={() => {}}
-          onChange={handlePromptChange}
-          onSubmit={handlePromptSubmit}
-          value={promptValue}
-          placeholder="Enter a prompt. Use @ to reference a route."
-          routes={allRoutes}
-          completions={[
-            {
-              data: routeCompletions,
-              character: "@",
-            },
-          ]}
-          className="h-full"
-        />
-      </div>
-      <div className="flex justify-end p-2">
-        <Button
-          size="sm"
-          className="text-sm rounded-lg"
-          onClick={handlePromptSubmit}
-          disabled={translateCommandsMutation.isPending}
-        >
-          {translateCommandsMutation.isPending ? (
-            "Running..."
-          ) : (
-            <>
-              Run{" "}
-              <span className="ml-1 inline-flex items-center">
-                <KeyboardShortcutKey>
-                  {isMac ? "⌘" : "Ctrl"}
-                </KeyboardShortcutKey>
-                <KeyboardShortcutKey>Enter</KeyboardShortcutKey>
-              </span>
-            </>
-          )}
-        </Button>
-      </div>
-    </>
+    <div className="px-4">
+      <CodeMirrorPrompt
+        onBlur={() => {}}
+        onChange={handlePromptChange}
+        onSubmit={handlePromptSubmit}
+        value={promptValue}
+        placeholder="Describe a sequence of API calls. Use @ to add a route."
+        routes={allRoutes}
+        completions={[
+          {
+            data: routeCompletions,
+            character: "@",
+          },
+        ]}
+        className={isCompact ? "h-12" : "h-24"}
+      />
+    </div>
   );
 }
