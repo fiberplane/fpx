@@ -15,7 +15,7 @@ import {
 } from "@radix-ui/react-tooltip";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
-import { Branding } from "../Branding";
+// import { Branding } from "../Branding";
 import { LoggedInUser } from "../LoggedInUser";
 import { PromptPanel, PromptToggle } from "../PromptPanel";
 import { SettingsMenu, SettingsScreen } from "../Settings";

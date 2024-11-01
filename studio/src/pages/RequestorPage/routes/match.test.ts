@@ -8,6 +8,7 @@ const toRoute = (
   currentlyRegistered = false,
   registrationOrder = -1,
 ) => ({
+  id: 2345345,
   path,
   method,
   requestType,

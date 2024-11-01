@@ -5,6 +5,7 @@ import type { Settings } from "@fiberplane/fpx-types";
 import { type APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
+import { makeFpAuthRequest } from "../fp-services/request.js";
 import { generateRequestWithFp } from "./fp.js";
 import {
   SAMPLE_PROMPT,
@@ -254,12 +255,28 @@ export async function translateCommands({
         error: { message: "Fiberplane token not found" },
       };
     }
-    return {
-      data: null,
-      error: {
-        message: "Fiberplane AI provider does not support command translation",
+
+    const response = await makeFpAuthRequest({
+      token: fpApiKey,
+      method: "POST",
+      path: "/ai/translate-commands",
+      body: {
+        commands,
       },
-    };
+    })
+      .then((res) => res.json())
+      .catch((error) => {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Error translating commands with AI provider";
+        return {
+          data: null,
+          error: { message: errorMessage },
+        };
+      });
+
+    return response;
   }
 
   const providerConfig = aiProviderConfigurations[aiProvider];
