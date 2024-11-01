@@ -1,13 +1,17 @@
 import { CodeMirrorPrompt } from "@/components/CodeMirrorEditor";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { createKeyValueParameters } from "@/pages/RequestorPage/KeyValueForm/data";
 import { createBodyFromAiResponse } from "@/pages/RequestorPage/ai/ai";
 import { fetchAiRequestData } from "@/pages/RequestorPage/ai/generate-request-data";
+import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
 import type { ProbedRoute } from "@/pages/RequestorPage/types";
+import { useRequestorHistory } from "@/pages/RequestorPage/useRequestorHistory";
 import { isMac } from "@/utils";
+import { cn } from "@/utils";
 import type { Completion } from "@codemirror/autocomplete";
 import { Icon } from "@iconify/react";
 import {
@@ -16,11 +20,7 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
-import { useRequestorHistory } from "@/pages/RequestorPage/useRequestorHistory";
-import { cn } from "@/utils";
-import { Separator } from "@/components/ui/separator";
+import { Link, useNavigate } from "react-router-dom";
 
 const translateCommands = async (commands: string) => {
   const response = await fetch("/v0/translate-commands", {
