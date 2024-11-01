@@ -298,24 +298,6 @@ function createErrorMessage(error: unknown) {
     return error.message;
   }
   return "Error generating request with AI provider";
-export async function translateCommands({
-  inferenceConfig,
-  commands,
-}: {
-  inferenceConfig: Settings;
-  commands: string;
-}) {
-  const { aiProviderConfigurations, aiProvider } = inferenceConfig;
-  const aiEnabled = hasValidAiConfig(inferenceConfig);
-  if (!aiEnabled) {
-    return { data: null, error: { message: "AI is not enabled" } };
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Error generating request with AI provider";
 }
 
 // NOTE - Copy-pasted from frontend
