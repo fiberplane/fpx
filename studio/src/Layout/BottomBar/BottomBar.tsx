@@ -48,7 +48,7 @@ export function BottomBar() {
 
   return (
     <nav className="gap-4 bg-muted/50 py-2">
-      <div className="flex justify-between px-2 items-center">
+      <div className="grid grid-cols-[1fr,1fr,auto] justify-between px-2 items-center">
         <div className="flex items-center gap-2 sm:static sm:h-auto border-0 bg-transparent text-sm">
           <div className="flex items-center gap-2">
             <SidePanelTrigger />
@@ -61,8 +61,10 @@ export function BottomBar() {
             setSettingsOpen={setSettingsOpen}
           />
         </div>
-        <PromptToggle />
-        {promptPanel === "open" && <PromptPanel />}
+        <div>
+          <PromptToggle />
+          {promptPanel === "open" && <PromptPanel />}
+        </div>
 
         <div className="flex items-center gap-2">
           {shouldShowProxyRequests && (
