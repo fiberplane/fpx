@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.66",
-    "@fiberplane/hono-otel": "workspace:*",
+    "@fiberplane/hono-otel": "0.4.0-canary.0",
     "@hono/oauth-providers": "^0.6.1",
     "@hono/zod-validator": "^0.4.1",
     "@langchain/core": "^0.3.11",
