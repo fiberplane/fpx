@@ -16,7 +16,8 @@
     "format": "biome check . --write",
     "keypair:generate": "tsx keypair-generate.ts",
     "lint": "biome lint .",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.66",
