@@ -31,7 +31,7 @@ const script = (args[0] ?? "").trim();
 const scriptsToRun = !script ? ["migrate", "studio"] : [script];
 
 const validScripts = {
-  create: "npm create honc-app@latest --hatch",
+  create: "npm create honc-app@latest -- --hatch",
   migrate: "dist/migrate.js",
   studio: "dist/src/index.node.js",
 };
