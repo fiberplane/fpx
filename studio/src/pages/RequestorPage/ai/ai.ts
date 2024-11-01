@@ -203,9 +203,10 @@ export function createBodyFromAiResponse(
   }
 
   if (bodyType === "json") {
+    const prettifiedBody = tryPrettify(body as string);
     return {
       type: "json",
-      value: JSON.stringify(body),
+      value: prettifiedBody ?? JSON.stringify(body),
     };
   }
 
