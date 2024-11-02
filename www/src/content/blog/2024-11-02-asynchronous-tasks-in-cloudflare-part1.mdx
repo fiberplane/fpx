@@ -14,52 +14,56 @@ tags:
 import PackageManagers from "@/components/PackageManagers.astro";
 
 Many user requests require us to perform asynchronous tasks in the background, such as database operations, sending emails, or interacting with external systems.
-If a request hits our API and we run all the necessary actions sequentially, the response would be delayed, blocking the return. 
+If a request hits our API and we run all the necessary actions sequentially, the response would be delayed, blocking the return.
 This increases latency for the user or, worse, can result in failed responses—such as when one of the asynchronous tasks encounters an error.
 
-Handling asynchronous tasks is like running a marathon for our system: 
-it requires endurance, coordination, retries, and error handling at the right points. 
+Handling asynchronous tasks is like running a marathon for our system:
+it requires endurance, coordination, retries, and error handling at the right points.
 There are multiple ways to handle asynchronous tasks. In part 1 of this blog post series, I will explore how we can manage asynchronous tasks within a single Cloudflare Worker.
 
-The scenario is simple: imagine we are organizing a marathon and providing a platform for runners to sign up. 
+The scenario is simple: imagine we are organizing a marathon and providing a platform for runners to sign up.
 Our Cloudflare Worker stores the runners' information in a database and sends a confirmation email with all the important details.
 In this example, data will be stored in a [Neon database](https://neon.tech/docs/introduction), and we use [Resend](https://resend.com/docs/introduction) to send out emails for us.
 
 There is a repo with the code examples [here](https://github.com/Nlea/cloudflare-handling-asynchronous-tasks-)
 
-
 ## Sequential Execution
 
-Let's start by looking at running all tasks sequentially. 
+Let's start by looking at running all tasks sequentially.
 
 ```typescript
-app.post('/api/marathon-sequential',async (c) => {
- 
-  const { firstName, lastName, email, address, distance } = await c.req.json()
+app.post("/api/marathon-sequential", async (c) => {
+  const { firstName, lastName, email, address, distance } = await c.req.json();
 
-  await insertData(firstName, lastName, email, address, distance, c.env.DATABASE_URL);
-  await sendMail(email, c.env.RESEND_API, firstName)
+  await insertData(
+    firstName,
+    lastName,
+    email,
+    address,
+    distance,
+    c.env.DATABASE_URL
+  );
+  await sendMail(email, c.env.RESEND_API, firstName);
 
-  return c.text('Thanks for registering for our Marathon', 200)
-
-})
+  return c.text("Thanks for registering for our Marathon", 200);
+});
 ```
 
 In the code above, we first insert the runner's data into the database and then send the confirmation email.
-All the asynchronous tasks (functions) are called sequentially. Blocking the request to return quickly to the user. 
-Although this code works, it slows down the return to the user. 
+All the asynchronous tasks (functions) are called sequentially. Blocking the request to return quickly to the user.
+Although this code works, it slows down the return to the user.
 
 If we look into the trace provided in the [Fiberplane studio](https://fiberplane.com/docs/get-started/) we see that tasks are running in sequential order and that the total response time depends on the whole sequence
 
 ![Sequential trace in Fiberplane](@/assets/blog/2024-11-02-sequential-trace.png)
 
-
 ## Fire and Forget
-One way to return quickly is by not waiting for other tasks to complete successfully. 
-Generally, this can be useful if, from a business perspective, it doesn’t matter whether the email is eventually sent or not. 
+
+One way to return quickly is by not waiting for other tasks to complete successfully.
+Generally, this can be useful if, from a business perspective, it doesn’t matter whether the email is eventually sent or not.
 If you don’t need a guarantee that the email will be sent (e.g., for non-critical notifications), you can simply fire the promise and proceed without waiting for it.
 
-While it is essential for a successful registration to store the runner’s details in the database, we can argue that the email we send is not mission-critical, so we don’t need to wait for the promise to return. 
+While it is essential for a successful registration to store the runner’s details in the database, we can argue that the email we send is not mission-critical, so we don’t need to wait for the promise to return.
 This approach might look something like this:
 
 ```typescript
@@ -80,7 +84,7 @@ app.post("/api/marathon-fire-and-forget", async (c) => {
 });
 ```
 
-However, Cloudflare Workers are ephemeral, and might terminate after you return a Response. This means dangling promises may not finish successfully, which could result in the email never being sent. 
+However, Cloudflare Workers are ephemeral, and might terminate after you return a Response. This means dangling promises may not finish successfully, which could result in the email never being sent.
 Therefore, when working with Cloudflare Workers, we should ensure they are built in a way that gives promises a chance to complete.
 
 As we can see here in the trace, the response returns after the database insert, but we cannot know whether the email was sent, because the worker shut down before the promise was resolved.
@@ -89,30 +93,27 @@ As we can see here in the trace, the response returns after the database insert,
 
 On another note: Do you want your support team assisting runners who didn't receive a confirmation email and are now worried they haven't signed up for the race? (Probably not!)
 
-
 ## Concurrent execution and task dependencies
 
-If we want to return a response to the user while still performing tasks in our Cloudflare Worker in the background, we can use `executionCtx.waitUntil()`. 
+If we want to return a response to the user while still performing tasks in our Cloudflare Worker in the background, we can use `executionCtx.waitUntil()`.
 This allows us to send a response immediately and handle tasks like database entries and email sending in the background.
 
-If there are multiple tasks to run in parallel, we can use `Promise.all()` to group them. 
+If there are multiple tasks to run in parallel, we can use `Promise.all()` to group them.
 
 ```typescript
 const tasks = [
   sendMail(email, c.env.RESEND_API, firstName),
-  insertData(firstName, lastName, email, address, distance, c.env.DATABASE_URL),
+  insertData(firstName, lastName, email, address, distance, c.env.DATABASE_URL)
 ];
 c.executionCtx.waitUntil(Promise.all(tasks));
-
-
 ```
+
 If we now look at the trace, we see the response returns immediately, and after a short while, The client instrumentation also shows the other two tasks related to the trace.
 This method leads to the parallel execution of both tasks:
 
 ![Parallel execution in Fiberplane](@/assets/blog/2024-11-02-parallel.png)
 
-
-However, in our example, we want to ensure that the user’s data is stored in the database before returning a response to the user. 
+However, in our example, we want to ensure that the user’s data is stored in the database before returning a response to the user.
 Without this step, we can’t confirm their registration in the system.
 So, we do have a dependency on the database insert and a required sequential flow.
 
@@ -133,21 +134,18 @@ app.post("/api/marathon-waituntil", async (c) => {
   c.executionCtx.waitUntil(sendMail(email, c.env.RESEND_API, firstName));
   return c.text("Thanks for registering for our Marathon", 201);
 });
+```
 
-``` 
 Similar to the fire and forget trace we see that the response returns after the database insert, but the email is sent after the response is returned and starts sequentially after the database insert.
-
 
 ![WaitUntil trace in Fiberplane](@/assets/blog/2024-11-02-waituntil.png)
 
-
 ## Error handling and retries
+
 In our scenario, the approach using `waitUntil()` for sending the email is the most suitable. However, there are still a few more considerations.
 
-What happens if sending the email fails? How can we ensure that tasks are retried if they encounter an error? 
+What happens if sending the email fails? How can we ensure that tasks are retried if they encounter an error?
 While we could implement custom logic for retries and error handling, this isn’t always the most effective solution.
 
-This is where we can consider decomposing tasks into separate workers and using a queue to manage them. 
+This is where we could break down tasks across separate workers to streamline handling and retries.
 In the next part of this blog post series, we’ll explore how to manage asynchronous tasks across multiple workers and ensure tasks are retried if they fail.
-
-
