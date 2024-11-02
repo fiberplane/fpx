@@ -71,7 +71,6 @@
       "include": [
         "packages/client-library-otel",
         "api",
-        "cli",
         "honc-code-gen",
         "fp-services"
       ],
@@ -95,6 +94,10 @@
     "ignore": [
       // API related
       "meta/*.json",
+
+      // Honc code gen playground outputs
+      "honc-code-gen/outputs/**/*",
+      "honc-code-gen/storage/**/*",
 
       // Client library and website related
       "dist",

@@ -27,3 +27,12 @@ migrations_dir = "drizzle/migrations"
 
 [ai]
 binding = "AI"
+
+[durable_objects]
+bindings = [
+  { name = "GOOSE_EGG", class_name = "GooseEgg" }
+]
+
+[[migrations]]
+tag = "v1" # Should be unique for each entry
+new_classes = ["GooseEgg"] # Array of new classes
