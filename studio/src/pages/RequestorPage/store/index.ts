@@ -16,6 +16,8 @@ import type { Store } from "./slices/types";
 import { uiSlice } from "./slices/uiSlice";
 import { websocketSlice } from "./slices/websocketSlice";
 import { _getActiveRoute } from "./utils";
+import { promptSlice } from "./slices/promptSlice";
+
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
 
 export type RequestorState = Store;
@@ -27,6 +29,7 @@ export const useRequestorStoreRaw = create<RequestorState>()(
       ...tabsSlice(...a),
       ...requestResponseSlice(...a),
       ...uiSlice(...a),
+      ...promptSlice(...a),
     })),
     { name: "RequestorStore" },
   ),

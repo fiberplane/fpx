@@ -114,4 +114,26 @@ export type Store = RequestResponseSlice &
   RoutesSlice &
   TabsSlice &
   WebsocketSlice &
-  UISlice;
+  UISlice &
+  PromptPanelSlice;
+
+export interface PromptPanelSlice {
+  promptText: string;
+  setPromptText: (promptText: string) => void;
+  plan: Plan | undefined;
+  setPlan: (plan: Plan | undefined) => void;
+}
+
+export type Plan = PlanItem[];
+
+export type PlanItem = {
+  routeId: number;
+  route: Pick<ProbedRoute, "id" | "path" | "method">;
+  payload: {
+    headers: KeyValueParameter[];
+    queryParameters: KeyValueParameter[];
+    pathParameters: KeyValueParameter[];
+    // biome-ignore lint/suspicious/noExplicitAny: for now body is any valid JSON
+    body: any;
+  };
+};
