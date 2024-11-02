@@ -9,6 +9,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { useShallow } from "zustand/react/shallow";
+import { promptSlice } from "./slices/promptSlice";
 import { requestResponseSlice } from "./slices/requestResponseSlice";
 import { routesSlice } from "./slices/routesSlice";
 import { tabsSlice } from "./slices/tabsSlice";
@@ -16,7 +17,6 @@ import type { Store } from "./slices/types";
 import { uiSlice } from "./slices/uiSlice";
 import { websocketSlice } from "./slices/websocketSlice";
 import { _getActiveRoute } from "./utils";
-import { promptSlice } from "./slices/promptSlice";
 
 export { useServiceBaseUrl } from "./useServiceBaseUrl";
 
