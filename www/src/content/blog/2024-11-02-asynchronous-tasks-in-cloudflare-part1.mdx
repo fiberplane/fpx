@@ -50,10 +50,11 @@ app.post("/api/marathon-sequential", async (c) => {
 ```
 
 In the code above, we first insert the runner's data into the database and then send the confirmation email.
-All the asynchronous tasks (functions) are called sequentially. Blocking the request to return quickly to the user.
+All the asynchronous tasks (functions) are called sequentially. This blocking execution delays the response, which slows down the response to the user.
 Although this code works, it slows down the return to the user.
 
-If we look into the trace provided in the [Fiberplane studio](https://fiberplane.com/docs/get-started/) we see that tasks are running in sequential order and that the total response time depends on the whole sequence
+If we look into the trace provided in the [Fiberplane studio](https://fiberplane.com/docs/get-started/) we see that tasks are running in sequential order and that the total response time depends on the whole sequence.
+This visualization helps us understand the performance impact of sequential execution on our application:
 
 ![Sequential trace in Fiberplane](@/assets/blog/2024-11-02-sequential-trace.png)
 
@@ -87,7 +88,7 @@ app.post("/api/marathon-fire-and-forget", async (c) => {
 However, Cloudflare Workers are ephemeral, and might terminate after you return a Response. This means dangling promises may not finish successfully, which could result in the email never being sent.
 Therefore, when working with Cloudflare Workers, we should ensure they are built in a way that gives promises a chance to complete.
 
-As we can see here in the trace, the response returns after the database insert, but we cannot know whether the email was sent, because the worker shut down before the promise was resolved.
+As we can see here in the trace, the response returns after the database insert, but we cannot know whether the email was sent, because the worker shut down before the promise was resolved. The trace helps us identify potential issues with unfinished tasks in our fire-and-forget approach.
 
 ![Fire and Forget trace in Fiberplane](@/assets/blog/2024-11-02-fire-and-forget.png)
 
@@ -109,7 +110,7 @@ c.executionCtx.waitUntil(Promise.all(tasks));
 ```
 
 If we now look at the trace, we see the response returns immediately, and after a short while, The client instrumentation also shows the other two tasks related to the trace.
-This method leads to the parallel execution of both tasks:
+This method leads to the parallel execution of both tasks, and the trace clearly shows how this improves our response time compared to the sequential approach:
 
 ![Parallel execution in Fiberplane](@/assets/blog/2024-11-02-parallel.png)
 
@@ -136,7 +137,7 @@ app.post("/api/marathon-waituntil", async (c) => {
 });
 ```
 
-Similar to the fire and forget trace we see that the response returns after the database insert, but the email is sent after the response is returned and starts sequentially after the database insert.
+Similar to the fire and forget trace, we see that the response is sent after the database insert, but the email is sent after the response is returned and starts sequentially after the database insert. The trace confirms our intended execution order while showing improved response times.
 
 ![WaitUntil trace in Fiberplane](@/assets/blog/2024-11-02-waituntil.png)
 
