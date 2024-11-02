@@ -11,21 +11,35 @@ tags:
   - asynchronous programming
 ---
 
+import { LinkCard } from "@astrojs/starlight/components";
 import PackageManagers from "@/components/PackageManagers.astro";
 
-Many user requests require us to perform asynchronous tasks in the background, such as database operations, sending emails, or interacting with external systems.
-If a request hits our API and we run all the necessary actions sequentially, the response would be delayed, blocking the return.
-This increases latency for the user or, worse, can result in failed responses—such as when one of the asynchronous tasks encounters an error.
+In modern data APIs, asynchronous background tasks are not just common—they're fundamental to almost every operation. Whether it's database operations, sending emails, or processing webhooks, these behind-the-scenes tasks form the backbone of most services.
+
+Most importantly: The way you manage asynchronous operations in your API handlers can significantly impact your service's overall performance and reliability.
+
+When a request hits our API and we run all of its logic sequentially, the response can end up being unnecessarily delayed.
+This increases latency for the end user or, worse, can result in failed responses—such as when one of the asynchronous tasks encounters an error.
 
 Handling asynchronous tasks is like running a marathon for our system:
 it requires endurance, coordination, retries, and error handling at the right points.
 There are multiple ways to handle asynchronous tasks. In part 1 of this blog post series, I will explore how we can manage asynchronous tasks within a single Cloudflare Worker.
 
-The scenario is simple: imagine we are organizing a marathon and providing a platform for runners to sign up.
-Our Cloudflare Worker stores the runners' information in a database and sends a confirmation email with all the important details.
-In this example, data will be stored in a [Neon database](https://neon.tech/docs/introduction), and we use [Resend](https://resend.com/docs/introduction) to send out emails for us.
+## Example: A Marathon Registration API
 
-There is a repo with the code examples [here](https://github.com/Nlea/cloudflare-handling-asynchronous-tasks-)
+Imagine this: We are organizing a marathon and need to build an api to register participants.
+We set up a simple data API with [Hono](https://hono.dev/) on Cloudflare Workers, which stores the runners' information in a database. After a successful registration, we send a confirmation email with all the important details for the race.
+
+In this example, we will store registration data in a [Neon database](https://neon.tech/docs/introduction), and we'll use [Resend](https://resend.com/docs/introduction) to send out emails for us.
+
+<LinkCard
+  title="Follow along on GitHub"
+  description="Here is a repo with the code examples for this post"
+  href="https://github.com/Nlea/cloudflare-handling-asynchronous-tasks-"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
 
 ## Sequential Execution
 
