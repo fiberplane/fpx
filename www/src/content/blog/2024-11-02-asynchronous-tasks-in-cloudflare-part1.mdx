@@ -64,7 +64,7 @@ app.post("/api/marathon-sequential", async (c) => {
 ```
 
 In the code above, we first insert the runner's data into the database and then send the confirmation email.
-All the asynchronous tasks (functions) are called sequentially. This blocking execution delays the response, which slows down the response to the user.
+All the asynchronous tasks (functions) are called sequentially. This blocking execution delays the response unnecessarily.
 Although this code works, it slows down the return to the user.
 
 If we look into the trace provided in the [Fiberplane studio](https://fiberplane.com/docs/get-started/) we see that tasks are running in sequential order and that the total response time depends on the whole sequence.
