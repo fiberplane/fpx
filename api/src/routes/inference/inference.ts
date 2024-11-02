@@ -1,3 +1,5 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { zValidator } from "@hono/zod-validator";
 import type { CoreMessage } from "ai";
 import { desc } from "drizzle-orm";
@@ -17,6 +19,57 @@ import logger from "../../logger.js";
 import { expandHandler } from "./expand-handler.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+// Cache directory for expanded route handlers while testing for hackathon ((will save us time))
+const CACHE_DIR = path.join(
+  process.cwd(),
+  "hackathon-route-handlers-expanded-cache",
+);
+
+app.get("/v0/david", async (ctx) => {
+  const db = ctx.get("db");
+  const routes = await db.select().from(schema.appRoutes);
+  const activeRoutes = routes.filter(
+    (r) => r.currentlyRegistered && r.handlerType === "route" && r.handler,
+  );
+
+  // Ensure cache directory exists
+  await fs.mkdir(CACHE_DIR, { recursive: true });
+
+  const expandedRouteHandlers: string[] = [];
+  for (const route of activeRoutes) {
+    const cacheFile = path.join(CACHE_DIR, `route-${route.id}.json`);
+
+    try {
+      // Try to read from cache first
+      const cached = await fs.readFile(cacheFile, "utf-8");
+      const [expandedHandler] = JSON.parse(cached);
+      console.debug(
+        `Cache hit for route ${route.id} (${route.method} ${route.path})`,
+      );
+
+      if (expandedHandler) {
+        expandedRouteHandlers.push(expandedHandler);
+        continue;
+      }
+    } catch (error) {
+      console.error(`Error reading cache file ${cacheFile}: ${error}`);
+      // Cache miss or invalid cache, proceed with expansion
+    }
+
+    // Cache miss - expand and cache the result
+    console.debug(
+      `Cache miss for route ${route.id} (${route.method} ${route.path}), expanding...`,
+    );
+    const result = await expandHandler(route.handler ?? "", []);
+    if (result[0]) {
+      expandedRouteHandlers.push(result[0]);
+      await fs.writeFile(cacheFile, JSON.stringify(result));
+    }
+  }
+
+  return ctx.json({ routeHandlers: expandedRouteHandlers });
+});
 
 /**
  * This route is just here to quickly test the expand-function helper
