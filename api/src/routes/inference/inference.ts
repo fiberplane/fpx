@@ -36,7 +36,12 @@ app.get("/v0/david", async (ctx) => {
   // Ensure cache directory exists
   await fs.mkdir(CACHE_DIR, { recursive: true });
 
-  const expandedRouteHandlers: string[] = [];
+  const expandedRouteHandlers: {
+    context: string;
+    method: string;
+    path: string;
+    routeId: number;
+  }[] = [];
   for (const route of activeRoutes) {
     const cacheFile = path.join(CACHE_DIR, `route-${route.id}.json`);
 
@@ -63,12 +68,19 @@ app.get("/v0/david", async (ctx) => {
     );
     const result = await expandHandler(route.handler ?? "", []);
     if (result[0]) {
-      expandedRouteHandlers.push(result[0]);
+      expandedRouteHandlers.push({
+        context: result[0],
+        routeId: route.id,
+        method: route.method ?? "",
+        path: route.path ?? "",
+      });
       await fs.writeFile(cacheFile, JSON.stringify(result));
     }
   }
 
-  return ctx.json({ routeHandlers: expandedRouteHandlers });
+  return ctx.json({
+    routeHandlers: expandedRouteHandlers,
+  });
 });
 
 /**
