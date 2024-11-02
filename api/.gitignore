@@ -2,6 +2,9 @@ node_modules
 dist
 .dev.vars
 
+# hackathon
+hackathon-route-handlers-expanded-cache/
+
 # Change them to your taste:
 package-lock.json
 yarn.lock

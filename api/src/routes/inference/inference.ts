@@ -1,4 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
+import type { CoreMessage } from "ai";
 import { desc } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -117,90 +118,125 @@ app.post(
   },
 );
 
-app.post("/v0/create-plan", cors(), async (ctx) => {
-  // TODO: do the actual plan creation - for now just hardcode a plan
-  const plan = [
-    {
-      routeId: 1,
-      route: {
-        id: 1,
-        path: "/api/geese",
-        method: "POST",
-      },
-      payload: {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: {
-          name: "Grace Gooseper",
-          isFlockLeader: true,
-          programmingLanguage: "COBOL",
-          motivations: {
-            primary: "Making computing accessible to everyone",
-            secondary: "Honking at bugs until they go away",
-          },
-          location: "Pond Valley Tech Campus",
-        },
-      },
-    },
-    {
-      routeId: 2,
-      route: {
-        id: 2,
-        path: "/api/geese/:id/bio",
-        method: "POST",
-      },
-      payload: {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        pathParameters: {
-          id: "1",
-        },
-      },
-    },
-    {
-      routeId: 3,
-      route: {
-        id: 3,
-        path: "/api/geese/:id/generate",
-        method: "POST",
-      },
-      payload: {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        pathParameters: {
-          id: "1",
-        },
-      },
-    },
-    {
-      routeId: 4,
-      route: {
-        id: 4,
-        path: "/api/geese/:id/honk",
-        method: "POST",
-      },
-      payload: {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        pathParameters: {
-          id: "1",
-        },
-      },
-    },
-  ];
-
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  return ctx.json(plan);
+/**
+ * Schema for the create plan request
+ *
+ * When you send this along, you will want
+ */
+const CreatePlanSchema = z.object({
+  prompt: z.string().describe("The prompt to use for the plan creation"),
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string(),
+      }),
+    )
+    .optional()
+    .describe(
+      "The history of messages between the user and the AI, in ascending order (oldest messages first)",
+    ),
 });
+
+app.post(
+  "/v0/create-plan",
+  cors(),
+  zValidator("json", CreatePlanSchema),
+  async (ctx) => {
+    const createPlanPayload: {
+      prompt: string;
+      messages?: CoreMessage[];
+    } = ctx.req.valid("json");
+
+    const { prompt, messages } = createPlanPayload;
+
+    // hack - linter
+    console.log(prompt, messages);
+
+    // TODO: do the actual plan creation - for now just hardcode a plan
+    const plan = [
+      {
+        routeId: 1,
+        route: {
+          id: 1,
+          path: "/api/geese",
+          method: "POST",
+        },
+        payload: {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: {
+            name: "Grace Gooseper",
+            isFlockLeader: true,
+            programmingLanguage: "COBOL",
+            motivations: {
+              primary: "Making computing accessible to everyone",
+              secondary: "Honking at bugs until they go away",
+            },
+            location: "Pond Valley Tech Campus",
+          },
+        },
+      },
+      {
+        routeId: 2,
+        route: {
+          id: 2,
+          path: "/api/geese/:id/bio",
+          method: "POST",
+        },
+        payload: {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          pathParameters: {
+            id: "1",
+          },
+        },
+      },
+      {
+        routeId: 3,
+        route: {
+          id: 3,
+          path: "/api/geese/:id/generate",
+          method: "POST",
+        },
+        payload: {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          pathParameters: {
+            id: "1",
+          },
+        },
+      },
+      {
+        routeId: 4,
+        route: {
+          id: 4,
+          path: "/api/geese/:id/honk",
+          method: "POST",
+        },
+        payload: {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          pathParameters: {
+            id: "1",
+          },
+        },
+      },
+    ];
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    return ctx.json(plan);
+  },
+);
 
 app.post("/v0/translate-commands", cors(), async (ctx) => {
   const commands = await ctx.req.text();
