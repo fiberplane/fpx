@@ -47,7 +47,7 @@ app.post('/api/marathon-sequential',async (c) => {
 
 In the code above, we first insert the runner's data into the database and then send the confirmation email.
 All the asynchronous tasks (functions) are called sequentially. Blocking the request to return quickly to the user. 
-Although this code works it slows down the return to the user. 
+Although this code works, it slows down the return to the user. 
 
 If we look into the trace provided in the [Fiberplane studio](https://fiberplane.com/docs/get-started/) we see that tasks are running in sequential order and that the total response time depends on the whole sequence
 
@@ -80,15 +80,14 @@ app.post("/api/marathon-fire-and-forget", async (c) => {
 });
 ```
 
-However, when it comes to Cloudflare Workers, we are limited by the runtime of the Cloudflare Worker itself. 
-This means that these promises may not finish successfully, which could result in the email never being sent. 
+However, Cloudflare Workers are ephemeral, and might terminate after you return a Response. This means dangling promises may not finish successfully, which could result in the email never being sent. 
 Therefore, when working with Cloudflare Workers, we should ensure they are built in a way that gives promises a chance to complete.
 
-As we can see here in the trace, the response returns after the database insert, but the email is not sent, because the worker shut down before the promise was resolved.
+As we can see here in the trace, the response returns after the database insert, but we cannot know whether the email was sent, because the worker shut down before the promise was resolved.
 
 ![Fire and Forget trace in Fiberplane](@/assets/blog/2024-11-02-fire-and-forget.png)
 
-On another note, let’s be honest: Do you want your support team assisting runners who didn’t receive a confirmation email and are now worried they haven’t signed up for the race?
+On another note: Do you want your support team assisting runners who didn't receive a confirmation email and are now worried they haven't signed up for the race? (Probably not!)
 
 
 ## Concurrent execution and task dependencies
