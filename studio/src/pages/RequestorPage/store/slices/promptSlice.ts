@@ -10,9 +10,25 @@ export const promptSlice: StateCreator<
     set((state) => {
       state.promptText = promptText;
     }),
+  activePlanStepIdx: undefined,
+  setActivePlanStepIdx: (activePlanStepId) =>
+    set((state) => {
+      state.activePlanStepIdx = activePlanStepId;
+    }),
   plan: undefined,
   setPlan: (plan) =>
     set((state) => {
       state.plan = plan;
+    }),
+  updatePlanStep: (idx, update) =>
+    set((state) => {
+      if (state?.plan?.[idx]) {
+        state.plan[idx] = { ...state.plan[idx], ...update };
+      }
+    }),
+  workflowState: "idle",
+  setWorkflowState: (workflowState) =>
+    set((state) => {
+      state.workflowState = workflowState;
     }),
 });

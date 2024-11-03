@@ -120,13 +120,18 @@ export type Store = RequestResponseSlice &
 export interface PromptPanelSlice {
   promptText: string;
   setPromptText: (promptText: string) => void;
+  activePlanStepIdx: number | undefined;
+  setActivePlanStepId: (activePlanStepId: number | undefined) => void;
   plan: Plan | undefined;
   setPlan: (plan: Plan | undefined) => void;
+  updatePlanStep: (idx: number, update: Partial<PlanStep>) => void;
+  workflowState: PromptWorkflowState;
+  setWorkflowState: (workflowState: PromptWorkflowState) => void;
 }
 
-export type Plan = PlanItem[];
+export type Plan = PlanStep[];
 
-export type PlanItem = {
+export type PlanStep = {
   routeId: number;
   route: Pick<ProbedRoute, "id" | "path" | "method">;
   payload: {
@@ -137,3 +142,5 @@ export type PlanItem = {
     body: any;
   };
 };
+
+export type PromptWorkflowState = "editing" | "planning" | "executing" | "idle";
