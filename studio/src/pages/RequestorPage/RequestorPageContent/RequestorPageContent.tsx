@@ -9,7 +9,7 @@ import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
 import { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { type To, useNavigate } from "react-router-dom";
+import { type To, useNavigate, useSearchParams } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
@@ -29,6 +29,15 @@ interface RequestorPageContentProps {
   historyLoading: boolean;
   overrideTraceId?: string;
   generateNavigation: (traceId: string) => To;
+}
+
+function getIgnoreRecentResponse(searchParams: URLSearchParams): boolean {
+  const ignoreRecentResponse = searchParams.get("ignore-recent-response");
+  if (ignoreRecentResponse === "true") {
+    return true;
+  }
+
+  return false;
 }
 
 export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
@@ -55,8 +64,15 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     );
   const navigate = useNavigate();
 
+  const [params, setParams] = useSearchParams();
+
+  const ignoreRecentResponse = getIgnoreRecentResponse(params);
   useEffect(() => {
-    if (traceId && traceId !== activeHistoryResponseTraceId) {
+    if (
+      traceId &&
+      traceId !== activeHistoryResponseTraceId &&
+      !ignoreRecentResponse
+    ) {
       setActiveHistoryResponseTraceId(traceId);
       navigate(generateNavigation(traceId), { replace: true });
     }
@@ -66,6 +82,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     generateNavigation,
     navigate,
     setActiveHistoryResponseTraceId,
+    ignoreRecentResponse,
   ]);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =

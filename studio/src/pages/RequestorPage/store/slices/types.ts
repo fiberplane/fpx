@@ -60,6 +60,7 @@ export interface RoutesSlice {
   activeRoute: ProbedRoute | null;
   setRoutes: (routes: ProbedRoute[]) => void;
   setActiveRoute: (route: ProbedRoute) => void;
+  setActiveRouteById: (routeId: number) => void;
 
   routesAndMiddleware: ProbedRoute[];
   getMatchingMiddleware: () => null | ProbedRoute[];

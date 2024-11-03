@@ -182,8 +182,8 @@ Method: ${route.method}]
   };
 
   return (
-    <div className="fixed bottom-8 left-0 right-0 flex justify-center">
-      <div className="max-w-lg w-full min-h-[400px] bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,1fr,auto]">
+    <div className="fixed bottom-8 left-0 right-0 flex justify-center pointer-events-none">
+      <div className="max-w-lg w-full min-h-[400px] bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,1fr,auto] pointer-events-auto">
         <PromptPanelHeader onReset={handleReset} />
         <div className="overflow-y-auto relative">
           <PromptPanelContent
@@ -325,7 +325,10 @@ function ActiveCommand({
 }) {
   const {
     activePlanStepIdx,
+    setActiveRouteById,
     body,
+    path: currentPath,
+    method,
     // NOTE - WE determine matching middleware on the backend now, do not need this! SO don't implement it
     // getMatchingMiddleware,
     pathParams,
@@ -345,6 +348,9 @@ function ActiveCommand({
     workflowState,
   } = useRequestorStore(
     "activePlanStepIdx",
+    "setActiveRouteById",
+    "path",
+    "method",
     "body",
     "updateMethod",
     "updatePath",
@@ -387,7 +393,7 @@ function ActiveCommand({
             request.route.method === "GET" ||
             request.route.method === "HEAD" ||
             !request.payload.body
-              ? { type: "text" }
+              ? { type: "json" }
               : request.payload.body,
           headers: request.payload.headers,
           queryParams: request.payload.queryParameters,
@@ -421,6 +427,9 @@ function ActiveCommand({
 
   const navigate = useNavigate();
 
+  // If the user is inspecting the current step, highlight it
+  const isInspecting = activePlanStepIdx === index;
+
   // Determine the to prop based on response and route state
   const requestHistoryRoute = `/request/${response?.traceId}?filter-tab=requests`;
   const routeRoute = `/route/${route.id}?filter-tab=routes`;
@@ -428,7 +437,8 @@ function ActiveCommand({
 
   return (
     <Link
-      // to={to}
+      // TODO - comment this out for now, since it might race condition
+      to={to}
       onClick={(e) => {
         // HACK - Since we are overriding `onClick`
         //        we need to call preventDefault to prevent a route transition
@@ -437,15 +447,20 @@ function ActiveCommand({
         e.stopPropagation();
         console.log("BOOTS: Navigating to", to);
 
+        if (activePlanStepIdx === index) {
+          return;
+        }
+
         // NOTE: kinda jank but kinda cool way to reuse the request data editor
         // UI for updating the workflow plans
         if (activePlanStepIdx) {
           updatePlanStep(activePlanStepIdx, {
             payload: {
-              body: body,
+              path: currentPath,
+              body: body.value,
               // HACK - Always json
               bodyType: {
-                type: "json",
+                type: body.type,
                 isMultipart: false,
               },
               pathParameters: pathParams,
@@ -457,6 +472,7 @@ function ActiveCommand({
         const selectedStep = plan?.[index];
         console.log("BOOTS: Selected step", selectedStep);
         if (selectedStep) {
+          setActiveRouteById(selectedStep.route.id);
           // const bodyType = isRequestorBodyType(selectedStep.payload.bodyType.type)
           //   ? selectedStep.payload.bodyType.type
           //   : "json";
@@ -489,6 +505,8 @@ function ActiveCommand({
           console.log("BOOTS: Updating method to", selectedStep.route.method);
           updateMethod(selectedStep.route.method);
 
+          // NOTE - might not even need this since we can just select the active route!!
+          //
           // if (selectedStep.payload.pathParameters) {
           //   const modPathParams = selectedStep.payload.pathParameters.map(p => ({
           //     ...p,
@@ -506,13 +524,14 @@ function ActiveCommand({
         setActivePlanStepIdx(index);
 
         // HACK - Always navigate to the route...
-        // navigate(routeRoute);
+        navigate(`${routeRoute}&ignore-recent-response=true`);
         // navigate(to);
         // console.log("BOOTS: Navigating to", to);
       }}
       className={cn(
         "grid grid-cols-[auto,1fr] gap-2 items-center rounded-lg px-3 py-1",
         "text-sm font-medium font-mono text-gray-400",
+        isInspecting && "border-primary border",
         "hover:bg-secondary no-underline",
       )}
     >
