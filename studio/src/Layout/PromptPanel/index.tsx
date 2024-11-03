@@ -8,6 +8,7 @@ import { createBodyFromAiResponse } from "@/pages/RequestorPage/ai/ai";
 import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
+import { isRequestorBodyType } from "@/pages/RequestorPage/store/request-body";
 import type { ProbedRoute } from "@/pages/RequestorPage/types";
 import { useRequestorHistory } from "@/pages/RequestorPage/useRequestorHistory";
 import { isMac } from "@/utils";
@@ -116,7 +117,7 @@ export function PromptPanel() {
     ?.flatMap((command) => routes.find((r) => r.id === command.routeId))
     .filter((route) => route !== undefined);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const { toast } = useToast();
 
@@ -165,8 +166,9 @@ Method: ${route.method}]
       //   await translateCommandsMutation.mutateAsync(replacedPrompt);
       // setTranslatedCommands(commands);
 
-      const plan = await createPlanMutation.mutateAsync(replacedPrompt);
-      setPlan(plan);
+      // NOTE - { plan, description } is the format we expect from the API
+      const planResponse = await createPlanMutation.mutateAsync(replacedPrompt);
+      setPlan(planResponse?.plan);
 
       // Start executing the pipeline
     } catch (error) {
@@ -293,7 +295,7 @@ function ActiveCommandsList({
         {routesInAction.map((route, index) => (
           <ActiveCommand
             key={route.id}
-            index={currentCommandIndex}
+            index={index}
             route={route}
             isActive={index === currentCommandIndex}
             onSuccess={onSuccess}
@@ -324,15 +326,19 @@ function ActiveCommand({
   const {
     activePlanStepIdx,
     body,
-    getMatchingMiddleware,
+    // NOTE - WE determine matching middleware on the backend now, do not need this! SO don't implement it
+    // getMatchingMiddleware,
     pathParams,
     queryParams,
+    updateMethod,
+    updatePath,
     requestHeaders,
     serviceBaseUrl,
     plan,
     setActivePlanStepIdx,
     setBody,
     setPathParams,
+    updatePathParamValues,
     setQueryParams,
     setRequestHeaders,
     updatePlanStep,
@@ -340,7 +346,8 @@ function ActiveCommand({
   } = useRequestorStore(
     "activePlanStepIdx",
     "body",
-    "getMatchingMiddleware",
+    "updateMethod",
+    "updatePath",
     "pathParams",
     "plan",
     "queryParams",
@@ -349,6 +356,8 @@ function ActiveCommand({
     "setActivePlanStepIdx",
     "setBody",
     "setPathParams",
+    "updatePathParamValues",
+    "clearPathParams",
     "setQueryParams",
     "setRequestHeaders",
     "updatePlanStep",
@@ -410,21 +419,35 @@ function ActiveCommand({
     refetchOnWindowFocus: false,
   });
 
+  const navigate = useNavigate();
+
   // Determine the to prop based on response and route state
-  const to = response?.traceId
-    ? `/request/${response.traceId}?filter-tab=requests`
-    : `/route/${route.id}?filter-tab=routes`;
+  const requestHistoryRoute = `/request/${response?.traceId}?filter-tab=requests`;
+  const routeRoute = `/route/${route.id}?filter-tab=routes`;
+  const to = response?.traceId ? requestHistoryRoute : routeRoute;
 
   return (
     <Link
-      to={to}
-      onClick={() => {
+      // to={to}
+      onClick={(e) => {
+        // HACK - Since we are overriding `onClick`
+        //        we need to call preventDefault to prevent a route transition
+        //        because otherwise it will reset the page
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("BOOTS: Navigating to", to);
+
         // NOTE: kinda jank but kinda cool way to reuse the request data editor
         // UI for updating the workflow plans
         if (activePlanStepIdx) {
           updatePlanStep(activePlanStepIdx, {
             payload: {
               body: body,
+              // HACK - Always json
+              bodyType: {
+                type: "json",
+                isMultipart: false,
+              },
               pathParameters: pathParams,
               queryParameters: queryParams,
               headers: requestHeaders,
@@ -432,13 +455,60 @@ function ActiveCommand({
           });
         }
         const selectedStep = plan?.[index];
+        console.log("BOOTS: Selected step", selectedStep);
         if (selectedStep) {
-          setBody(selectedStep.payload.body);
-          setPathParams(selectedStep.payload.pathParameters);
-          setQueryParams(selectedStep.payload.queryParameters);
-          setRequestHeaders(selectedStep.payload.headers);
+          // const bodyType = isRequestorBodyType(selectedStep.payload.bodyType.type)
+          //   ? selectedStep.payload.bodyType.type
+          //   : "json";
+          if (selectedStep.payload.bodyType.type === "json") {
+            console.log(
+              "BOOTS: Setting JSON body to",
+              selectedStep.payload.body,
+            );
+            setBody({
+              type: "json",
+              value:
+                typeof selectedStep.payload.body === "string"
+                  ? JSON.stringify(
+                      JSON.parse(selectedStep.payload.body),
+                      null,
+                      2,
+                    )
+                  : JSON.stringify(selectedStep.payload.body ?? {}, null, 2),
+            });
+          } else {
+            console.log(
+              "BOOTS: Setting TEXT body to",
+              selectedStep.payload.body,
+            );
+            // TODO - handle other body types
+            setBody(selectedStep.payload.body);
+          }
+
+          updatePath(selectedStep.payload.path ?? selectedStep.route.path);
+          console.log("BOOTS: Updating method to", selectedStep.route.method);
+          updateMethod(selectedStep.route.method);
+
+          // if (selectedStep.payload.pathParameters) {
+          //   const modPathParams = selectedStep.payload.pathParameters.map(p => ({
+          //     ...p,
+          //     key: p.key?.startsWith(":") ? p.key : `:${p.key}`
+          //   }))
+          //   console.log("BOOTS: Updating path params to", modPathParams);
+          //   updatePathParamValues(modPathParams);
+          // } else {
+          //   console.log("BOOTS: Setting path params to", selectedStep.payload.pathParameters);
+          //   setPathParams(selectedStep.payload.pathParameters ?? []);
+          // }
+          setQueryParams(selectedStep.payload.queryParameters ?? []);
+          setRequestHeaders(selectedStep.payload.headers ?? []);
         }
         setActivePlanStepIdx(index);
+
+        // HACK - Always navigate to the route...
+        // navigate(routeRoute);
+        // navigate(to);
+        // console.log("BOOTS: Navigating to", to);
       }}
       className={cn(
         "grid grid-cols-[auto,1fr] gap-2 items-center rounded-lg px-3 py-1",

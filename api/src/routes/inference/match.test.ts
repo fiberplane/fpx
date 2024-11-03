@@ -1,10 +1,10 @@
-import type { ProbedRoute, RequestMethod, RequestType } from "../types";
-import { findFirstSmartRouterMatch } from "./match";
+import { findFirstSmartRouterMatch } from "./match.js";
+import type { AppRoute } from "../../db/schema.js";
 
 const toRoute = (
   path: string,
-  method: RequestMethod,
-  requestType: RequestType,
+  method: string,
+  requestType: "http" | "websocket",
   currentlyRegistered = false,
   registrationOrder = -1,
 ) => ({
@@ -17,11 +17,11 @@ const toRoute = (
   currentlyRegistered,
   registrationOrder,
   routeOrigin: "custom" as const,
-  isDraft: false,
+  openApiSpec: null,
 });
 
 describe("findSmartRouterMatch", () => {
-  const routes: ProbedRoute[] = [
+  const routes: AppRoute[] = [
     toRoute("/test", "GET", "http"),
     toRoute("/test", "POST", "http"),
     toRoute("/users/:userId", "GET", "http"),
@@ -60,7 +60,7 @@ describe("findSmartRouterMatch", () => {
 });
 
 describe("findFirstSmartRouterMatch - registered routes precedence", () => {
-  const routes: ProbedRoute[] = [
+  const routes: AppRoute[] = [
     // Unregesterd route - should not be matched first
     toRoute("/test/:k", "GET", "http", false, -1),
     // Registered route - should be matched first

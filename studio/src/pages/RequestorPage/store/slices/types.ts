@@ -121,7 +121,7 @@ export interface PromptPanelSlice {
   promptText: string;
   setPromptText: (promptText: string) => void;
   activePlanStepIdx: number | undefined;
-  setActivePlanStepId: (activePlanStepId: number | undefined) => void;
+  setActivePlanStepIdx: (activePlanStepId: number | undefined) => void;
   plan: Plan | undefined;
   setPlan: (plan: Plan | undefined) => void;
   updatePlanStep: (idx: number, update: Partial<PlanStep>) => void;
@@ -135,11 +135,16 @@ export type PlanStep = {
   routeId: number;
   route: Pick<ProbedRoute, "id" | "path" | "method">;
   payload: {
+    path: string;
     headers: KeyValueParameter[];
     queryParameters: KeyValueParameter[];
     pathParameters: KeyValueParameter[];
     // biome-ignore lint/suspicious/noExplicitAny: for now body is any valid JSON
     body: any;
+    bodyType: {
+      type: RequestBodyType;
+      isMultipart: boolean;
+    };
   };
 };
 

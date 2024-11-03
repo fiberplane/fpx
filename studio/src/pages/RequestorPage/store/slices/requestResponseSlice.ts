@@ -179,6 +179,7 @@ export const requestResponseSlice: StateCreator<
           state.body = body;
           updateContentTypeHeaderInState(state);
         } else {
+          console.log("BOOTS: Setting body directly to", body);
           state.body = body;
         }
       }
