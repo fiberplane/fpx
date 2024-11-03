@@ -3,9 +3,6 @@ import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
-import { createKeyValueParameters } from "@/pages/RequestorPage/KeyValueForm/data";
-import { createBodyFromAiResponse } from "@/pages/RequestorPage/ai/ai";
-import { fetchAiRequestData } from "@/pages/RequestorPage/ai/generate-request-data";
 import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
@@ -15,22 +12,23 @@ import { isMac } from "@/utils";
 import { cn } from "@/utils";
 import type { Completion } from "@codemirror/autocomplete";
 import { Icon } from "@iconify/react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 
-const translateCommands = async (commands: string) => {
-  const response = await fetch("/v0/translate-commands", {
+const createPlan = async (prompt: string) => {
+  const response = await fetch("/v0/create-plan", {
     method: "POST",
     headers: {
-      "Content-Type": "text/plain",
+      "Content-Type": "application/json",
     },
-    body: commands,
+    body: JSON.stringify({
+      prompt,
+    }),
   });
 
   if (!response.ok) {
-    const error = new Error("Failed to translate commands");
-    console.error("Translation request failed:", {
+    const error = new Error("Failed to create plan");
+    console.error("Plan creation request failed:", {
       status: response.status,
       statusText: response.statusText,
     });
@@ -88,27 +86,46 @@ function PromptFooter({
 }
 
 export function PromptPanel() {
-  const [promptValue, setPromptValue] = useState("");
-  const [translatedCommands, setTranslatedCommands] = useState<
-    { routeId: number }[] | null
-  >(null);
-
-  const { routes, setActiveRoute } = useRequestorStore(
+  const {
+    body,
+    pathParams,
+    plan,
+    promptText,
+    queryParams,
+    requestHeaders,
+    executingPlanStepIdx,
+    setPlanStepProgress,
+    routes,
+    setPlan,
+    setPromptText,
+    incrementExecutingPlanStepIdx,
+    setWorkflowState,
+    serviceBaseUrl,
+    clearPlan,
+    setPlanStepResponse,
+  } = useRequestorStore(
+    "body",
+    "pathParams",
+    "plan",
+    "promptText",
+    "queryParams",
+    "requestHeaders",
     "routes",
-    "setActiveRoute",
+    "setPlan",
+    "setPromptText",
+    "executingPlanStepIdx",
+    "incrementExecutingPlanStepIdx",
+    "setWorkflowState",
+    "serviceBaseUrl",
+    "setPlanStepProgress",
+    "clearPlan",
+    "setPlanStepResponse",
   );
-
-  // this is the derived state of the routes that are currently in action from the prompt input (in the order they are in the prompt)
-  const routesInAction = translatedCommands
-    ?.flatMap((command) => routes.find((r) => r.id === command.routeId))
-    .filter((route) => route !== undefined);
-
-  const navigate = useNavigate();
 
   const { toast } = useToast();
 
-  const translateCommandsMutation = useMutation({
-    mutationFn: translateCommands,
+  const createPlanMutation = useMutation({
+    mutationFn: createPlan,
     onError: (error) => {
       toast({
         title: "Error running composer",
@@ -125,13 +142,102 @@ export function PromptPanel() {
 
   const handlePromptChange = (value?: string) => {
     if (value !== undefined) {
-      setPromptValue(value);
+      setPromptText(value);
     }
   };
 
+  const executePlanStep = async (index: number) => {
+    const onSuccess = () => {
+      // const isLastCommand = executingPlanStepIdx === routesInPlan.length - 1;
+      // if (!isLastCommand) {
+      //   incrementExecutingPlanStepIdx();
+      // }
+      incrementExecutingPlanStepIdx();
+    };
+
+    const onError = (error: unknown) => {
+      const currentRoute = plan?.steps?.[executingPlanStepIdx ?? 0];
+      console.error("Command execution failed for route:", currentRoute, error);
+    };
+
+    try {
+      setPlanStepProgress(index, "requesting");
+      const request = plan?.steps?.[index];
+
+      if (!request) {
+        throw new Error("No request found for step");
+      }
+
+      // TODO - Turn this into a plan step confirmation with `executePlanStep` via the API...
+      //        Gives us a chance to fill in template vars along the way
+
+      const response = await makeProxiedRequest({
+        addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
+        path: request.payload.path ?? request.route.path,
+        method: request.route.method,
+        body:
+          request.route.method === "GET" ||
+          request.route.method === "HEAD" ||
+          !request.payload.body
+            ? { type: "json" }
+            : {
+                type: "json",
+                value:
+                  typeof request.payload.body === "string"
+                    ? JSON.stringify(JSON.parse(request.payload.body))
+                    : JSON.stringify(request.payload.body),
+              },
+        headers: request.payload.headers ?? [
+          { key: "Content-Type", value: "application/json" },
+        ],
+        queryParams: request.payload.queryParameters ?? [],
+        pathParams: request.payload.pathParameters ?? [],
+      });
+
+      // Check if the request failed based on the response
+      const isFailure =
+        response.isFailure ||
+        (response.responseStatusCode &&
+          Number.parseInt(response.responseStatusCode, 10) >= 400);
+
+      if (isFailure) {
+        setPlanStepProgress(index, "error");
+        setPlanStepResponse(index, response);
+        return response;
+      }
+
+      setPlanStepProgress(index, "success");
+      setPlanStepResponse(index, response);
+      // NOTE - just increments the plan step
+      onSuccess();
+      return response;
+    } catch (error) {
+      setPlanStepProgress(index, "error");
+      onError(error);
+      throw error;
+    }
+  };
+
+  // const { data: response } = useQuery({
+  //   queryKey: ["runActionRoute", route.id.toString()],
+  //   queryFn: ,
+  //   retry: false,
+  //   enabled: isActive && workflowState === "executing",
+  //   refetchOnWindowFocus: false,
+  // });
+
   const handlePromptSubmit = async () => {
+    // HACK - If we have a plan loaded and the user submits, we start executing it.
+    if (plan) {
+      setWorkflowState("executing");
+      console.log("BOOTS: Executing plan step", executingPlanStepIdx);
+      executePlanStep(executingPlanStepIdx ?? 0);
+      // TODO - Execute requests from here for each step
+      return;
+    }
+
     // Replace route references in the prompt
-    const replacedPrompt = promptValue.replace(
+    const replacedPrompt = promptText.replace(
       /@\[route:(\d+)\]/g,
       (match, routeId) => {
         const route = routes.find((r) => r.id === Number.parseInt(routeId, 10));
@@ -148,9 +254,16 @@ Method: ${route.method}]
     );
 
     try {
-      const { commands } =
-        await translateCommandsMutation.mutateAsync(replacedPrompt);
-      setTranslatedCommands(commands.commands);
+      // const { commands } =
+      //   await translateCommandsMutation.mutateAsync(replacedPrompt);
+      // setTranslatedCommands(commands);
+
+      // NOTE - { plan, description } is the format we expect from the API
+      const planResponse = await createPlanMutation.mutateAsync(replacedPrompt);
+      setPlan({
+        steps: planResponse?.plan,
+        description: planResponse?.description,
+      });
 
       // Start executing the pipeline
     } catch (error) {
@@ -159,18 +272,17 @@ Method: ${route.method}]
   };
 
   const handleReset = () => {
-    setPromptValue("");
-    setTranslatedCommands(null);
+    setPromptText("");
+    clearPlan();
   };
 
   return (
-    <div className="fixed bottom-8 left-0 right-0 flex justify-center">
-      <div className="max-w-lg w-full bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,1fr,auto]">
+    <div className="fixed bottom-8 left-0 right-0 flex justify-center pointer-events-none">
+      <div className="max-w-lg w-full min-h-[400px] bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,1fr,auto] pointer-events-auto">
         <PromptPanelHeader onReset={handleReset} />
         <div className="overflow-y-auto relative">
           <PromptPanelContent
-            routesInAction={routesInAction}
-            promptValue={promptValue}
+            promptValue={promptText}
             handlePromptChange={handlePromptChange}
             handlePromptSubmit={handlePromptSubmit}
             routeCompletions={routeCompletions}
@@ -179,7 +291,7 @@ Method: ${route.method}]
         </div>
         <PromptFooter
           handlePromptSubmit={handlePromptSubmit}
-          isPending={translateCommandsMutation.isPending}
+          isPending={createPlanMutation.isPending}
         />
       </div>
     </div>
@@ -219,20 +331,23 @@ function PromptPanelHeader({ onReset }: { onReset: () => void }) {
 }
 
 function PromptPanelContent({
-  routesInAction,
   allRoutes,
   promptValue,
   handlePromptChange,
   handlePromptSubmit,
   routeCompletions,
 }: {
-  routesInAction: ProbedRoute[] | undefined;
   allRoutes: ProbedRoute[];
   promptValue: string;
   handlePromptChange: (value?: string) => void;
   handlePromptSubmit: () => Promise<void>;
   routeCompletions: Completion[];
 }) {
+  const { getRoutesInPlan } = useRequestorStore("getRoutesInPlan");
+
+  // this is the derived state of the routes that are currently in action from the prompt input (in the order they are in the prompt)
+  const routesInPlan = getRoutesInPlan(allRoutes);
+
   return (
     <div className="grid gap-4 pb-4 content-start">
       <PromptInput
@@ -241,46 +356,33 @@ function PromptPanelContent({
         handlePromptSubmit={handlePromptSubmit}
         allRoutes={allRoutes}
         routeCompletions={routeCompletions}
-        isCompact={!!routesInAction}
+        isCompact={!!routesInPlan}
       />
-      {routesInAction && <ActiveCommandsList routesInAction={routesInAction} />}
+      {routesInPlan && <ActiveCommandsList routesInPlan={routesInPlan} />}
     </div>
   );
 }
 
 function ActiveCommandsList({
-  routesInAction,
+  routesInPlan,
 }: {
-  routesInAction: ProbedRoute[];
+  routesInPlan: ProbedRoute[];
 }) {
-  const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
-  const currentRoute = routesInAction[currentCommandIndex];
-  const isLastCommand = currentCommandIndex === routesInAction.length - 1;
+  const { executingPlanStepIdx } = useRequestorStore("executingPlanStepIdx");
 
   const { history } = useRequestorHistory();
-  const previousResponses = history.slice(0, currentCommandIndex);
-
-  const onSuccess = () => {
-    if (!isLastCommand) {
-      setCurrentCommandIndex((prev) => prev + 1);
-    }
-  };
-
-  const onError = (error: unknown) => {
-    console.error("Command execution failed for route:", currentRoute, error);
-  };
+  const previousResponses = history.slice(0, executingPlanStepIdx);
 
   return (
     <div className="px-4 overflow-y-auto">
       <Separator decorative={true} className="my-2 dashed" />
       <div className="grid grid-cols-1 gap-1">
-        {routesInAction.map((route, index) => (
+        {routesInPlan.map((route, index) => (
           <ActiveCommand
             key={route.id}
+            index={index}
             route={route}
-            isActive={index === currentCommandIndex}
-            onSuccess={onSuccess}
-            onError={onError}
+            isActive={index === executingPlanStepIdx}
             previousResponses={previousResponses}
           />
         ))}
@@ -291,105 +393,183 @@ function ActiveCommandsList({
 
 function ActiveCommand({
   route,
-  isActive,
-  onSuccess,
-  onError,
-  previousResponses,
+  // previousResponses,
+  index,
 }: {
   route: ProbedRoute;
   isActive: boolean;
-  onSuccess: () => void;
-  onError: (error: unknown) => void;
   previousResponses: ProxiedRequestResponse[];
+  index: number;
 }) {
-  const { getMatchingMiddleware, serviceBaseUrl, setActiveRoute } =
-    useRequestorStore(
-      "getMatchingMiddleware",
-      "serviceBaseUrl",
-      "setActiveRoute",
-    );
+  const {
+    activePlanStepIdx,
+    setActiveRouteById,
+    body,
+    path: currentPath,
+    // method,
+    //
+    // NOTE - WE determine matching middleware on the backend now, do not need this! SO don't implement it
+    // getMatchingMiddleware,
+    pathParams,
+    queryParams,
+    updateMethod,
+    updatePath,
+    requestHeaders,
+    plan,
+    setActivePlanStepIdx,
+    setBody,
+    // setPathParams,
+    // updatePathParamValues,
+    setQueryParams,
+    setRequestHeaders,
+    updatePlanStep,
+    // workflowState,
+    getPlanStepProgress,
+    getPlanStepResponse,
+  } = useRequestorStore(
+    "activePlanStepIdx",
+    "setActiveRouteById",
+    "path",
+    "method",
+    "body",
+    "updateMethod",
+    "updatePath",
+    "pathParams",
+    "plan",
+    "queryParams",
+    "requestHeaders",
+    "serviceBaseUrl",
+    "setActivePlanStepIdx",
+    "setBody",
+    "setPathParams",
+    "updatePathParamValues",
+    "clearPathParams",
+    "setQueryParams",
+    "setRequestHeaders",
+    "updatePlanStep",
+    "workflowState",
+    "getPlanStepProgress",
+    "getPlanStepResponse",
+  );
 
-  const [progress, setProgress] = useState<
-    "idle" | "generating" | "requesting" | "success" | "error"
-  >("idle");
+  const progress = getPlanStepProgress(index);
+  const navigate = useNavigate();
 
-  const { data: response } = useQuery({
-    queryKey: ["runActionRoute", route.id.toString()],
-    queryFn: async () => {
-      try {
-        setProgress("generating");
-        const { request } = await fetchAiRequestData(
-          route,
-          getMatchingMiddleware(),
-          "json",
-          previousResponses,
-          "Friendly",
-        );
+  // If the user is inspecting the current step, highlight it
+  const isInspecting = activePlanStepIdx === index;
 
-        setProgress("requesting");
-        const queryParams = createKeyValueParameters(request.queryParams ?? []);
-        const headers = createKeyValueParameters(request.headers ?? []);
-        const pathParams = createKeyValueParameters(request.pathParams ?? []);
-        const body =
-          createBodyFromAiResponse(request.body, request.bodyType) ?? null;
-
-        const response = await makeProxiedRequest({
-          addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
-          path: route.path,
-          method: route.method,
-          body:
-            route.method === "GET" || route.method === "HEAD" || !body
-              ? { type: "text" }
-              : body,
-          headers,
-          queryParams,
-          pathParams,
-        });
-
-        // Check if the request failed based on the response
-        const isFailure =
-          response.isFailure ||
-          (response.responseStatusCode &&
-            Number.parseInt(response.responseStatusCode, 10) >= 400);
-
-        if (isFailure) {
-          setProgress("error");
-          return response;
-        }
-
-        setProgress("success");
-        onSuccess();
-        return response;
-      } catch (error) {
-        setProgress("error");
-        onError(error);
-        throw error;
-      }
-    },
-    retry: false,
-    enabled: isActive,
-  });
+  const response = getPlanStepResponse(index);
+  console.log("BOOTS: step index, response", index, response);
 
   // Determine the to prop based on response and route state
-  const to = response?.traceId
-    ? `/request/${response.traceId}?filter-tab=requests`
-    : `/route/${route.id}?filter-tab=routes`;
+  const requestHistoryRoute = `/request/${response?.traceId}?filter-tab=requests`;
+  const routeRoute = `/route/${route.id}?filter-tab=routes`;
+  const to = response?.traceId ? requestHistoryRoute : routeRoute;
+
+  if (progress !== "idle") {
+    console.log("plan step index,progress", index, progress);
+  }
 
   return (
     <Link
+      // TODO - comment this out for now, since it might race condition
       to={to}
+      onClick={(e) => {
+        // HACK - Since we are overriding `onClick`
+        //        we need to call preventDefault to prevent a route transition
+        //        because otherwise it will reset the page
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("BOOTS: Navigating to", to);
+
+        if (activePlanStepIdx === index) {
+          return;
+        }
+
+        // NOTE: kinda jank but kinda cool way to reuse the request data editor
+        // UI for updating the workflow plans
+        if (activePlanStepIdx) {
+          updatePlanStep(activePlanStepIdx, {
+            payload: {
+              path: currentPath,
+              body: body.value,
+              // HACK - Always json
+              bodyType: {
+                type: body.type,
+                isMultipart: false,
+              },
+              pathParameters: pathParams,
+              queryParameters: queryParams,
+              headers: requestHeaders,
+            },
+          });
+        }
+        const selectedStep = plan?.steps?.[index];
+        console.log("BOOTS: Selected step", selectedStep);
+        if (selectedStep) {
+          setActiveRouteById(selectedStep.route.id);
+          // const bodyType = isRequestorBodyType(selectedStep.payload.bodyType.type)
+          //   ? selectedStep.payload.bodyType.type
+          //   : "json";
+          if (selectedStep.payload.bodyType.type === "json") {
+            console.log(
+              "BOOTS: Setting JSON body to",
+              selectedStep.payload.body,
+            );
+            setBody({
+              type: "json",
+              value:
+                typeof selectedStep.payload.body === "string"
+                  ? JSON.stringify(
+                      JSON.parse(selectedStep.payload.body),
+                      null,
+                      2,
+                    )
+                  : JSON.stringify(selectedStep.payload.body ?? {}, null, 2),
+            });
+          } else {
+            console.log(
+              "BOOTS: Setting TEXT body to",
+              selectedStep.payload.body,
+            );
+            // TODO - handle other body types
+            setBody(selectedStep.payload.body);
+          }
+
+          updatePath(selectedStep.payload.path ?? selectedStep.route.path);
+          console.log("BOOTS: Updating method to", selectedStep.route.method);
+          updateMethod(selectedStep.route.method);
+
+          // NOTE - might not even need this since we can just select the active route!!
+          //
+          // if (selectedStep.payload.pathParameters) {
+          //   const modPathParams = selectedStep.payload.pathParameters.map(p => ({
+          //     ...p,
+          //     key: p.key?.startsWith(":") ? p.key : `:${p.key}`
+          //   }))
+          //   console.log("BOOTS: Updating path params to", modPathParams);
+          //   updatePathParamValues(modPathParams);
+          // } else {
+          //   console.log("BOOTS: Setting path params to", selectedStep.payload.pathParameters);
+          //   setPathParams(selectedStep.payload.pathParameters ?? []);
+          // }
+          setQueryParams(selectedStep.payload.queryParameters ?? []);
+          setRequestHeaders(selectedStep.payload.headers ?? []);
+        }
+        setActivePlanStepIdx(index);
+
+        // HACK - Always navigate to the route...
+        navigate(`${routeRoute}&ignore-recent-response=true`);
+        // navigate(to);
+        // console.log("BOOTS: Navigating to", to);
+      }}
       className={cn(
         "grid grid-cols-[auto,1fr] gap-2 items-center rounded-lg px-3 py-1",
         "text-sm font-medium font-mono text-gray-400",
+        isInspecting && "border-primary border",
         "hover:bg-secondary no-underline",
       )}
     >
-      {progress === "generating" && (
-        <Icon
-          icon="lucide:loader-circle"
-          className="h-4 w-4 animate-spin text-blue-500"
-        />
-      )}
       {progress === "requesting" && (
         <Icon
           icon="lucide:loader-circle"

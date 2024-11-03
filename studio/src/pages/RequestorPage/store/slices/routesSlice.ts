@@ -43,6 +43,50 @@ export const routesSlice: StateCreator<
       state.pathParams = nextPathParams;
     }),
 
+  // HACK - copy-pasted logic from setActiveRoute
+  setActiveRouteById: (routeId) =>
+    set((state) => {
+      const route = state.routes.find((r) => r.id === routeId);
+      if (!route) {
+        return;
+      }
+      const nextMethod = probedRouteToInputMethod(route);
+      const nextRequestType = route.requestType;
+
+      state.activeRoute = route;
+      state.path = addBaseUrl(state.serviceBaseUrl, route.path, {
+        requestType: nextRequestType,
+      });
+      state.method = nextMethod;
+      state.requestType = nextRequestType;
+      state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
+      state.activeHistoryResponseTraceId = null;
+      state.activeResponse = null;
+
+      // Update tabs (you might want to move this logic to a separate slice)
+      state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
+        requestType: nextRequestType,
+        method: nextMethod,
+      });
+      state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
+        state.activeRequestsPanelTab,
+      )
+        ? state.activeRequestsPanelTab
+        : state.visibleRequestsPanelTabs[0];
+
+      state.visibleResponsePanelTabs = getVisibleResponsePanelTabs({
+        requestType: nextRequestType,
+      });
+      state.activeResponsePanelTab = state.visibleResponsePanelTabs.includes(
+        state.activeResponsePanelTab,
+      )
+        ? state.activeResponsePanelTab
+        : state.visibleResponsePanelTabs[0];
+
+      // Add content type header (you might want to move this to a separate function)
+      updateContentTypeHeaderInState(state);
+    }),
+
   setActiveRoute: (route) =>
     set((state) => {
       const nextMethod = probedRouteToInputMethod(route);
