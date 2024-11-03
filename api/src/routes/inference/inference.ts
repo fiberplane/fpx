@@ -1,8 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { google } from "@ai-sdk/google";
 import { zValidator } from "@hono/zod-validator";
-import type { CoreMessage } from "ai";
+import { type CoreMessage, generateObject } from "ai";
 import { desc } from "drizzle-orm";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
@@ -17,6 +19,7 @@ import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
 import logger from "../../logger.js";
 import { expandHandler } from "./expand-handler.js";
+import { getMatchingMiddleware } from "./middleware.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -26,14 +29,169 @@ const CACHE_DIR = path.join(
   "hackathon-route-handlers-expanded-cache",
 );
 
-app.get("/v0/david", async (ctx) => {
-  const db = ctx.get("db");
+const PLANNER_SYSTEM_PROMPT = `You are an end-to-end api tester. 
+
+You translate user stories describing a testing flow of a json API into the correct routes to hit for that api.
+
+The user will describe some functionality they want to test for their api. You will receive a list of routes. 
+
+Determine the order in which these routes should be executed.
+
+Populate request data for each route in your plan, according to the request schema.
+
+You will be provided the source code of a route handler for an API route, and you should generate
+query parameters, a request body, and headers that will test the request.
+
+Be clever and creative with test data. Avoid just writing things like "test".
+
+For example, if you get a route like \`/users/:id\`, you should return a URL like
+\`/users/10\` and a pathParams parameter like this:
+
+{ "path": "/users/10", "pathParams": { "key": ":id", "value": "10" } }
+
+*Remember to keep the colon in the pathParam key!*
+
+If you get a route like \`POST /users/:id\` with a handler like:
+
+\`\`\`ts
+async (c) => {
+  const token = c.req.headers.get("authorization")?.split(" ")[1]
+
+  const auth = c.get("authService");
+  const isAuthorized = await auth.isAuthorized(token)
+  if (!isAuthorized) {
+    return c.json({ message: "Unauthorized" }, 401)
+  }
+
+  const db = c.get("db");
+
+  const id = c.req.param('id');
+  const { email } = await c.req.json()
+
+  const user = (await db.update(user).set({ email }).where(eq(user.id, +id)).returning())?.[0];
+
+  if (!user) {
+    return c.json({ message: 'User not found' }, 404);
+  }
+
+  return c.json(user);
+}
+\`\`\`
+
+You should return a URL like:
+
+\`/users/64\` and a pathParams like:
+
+{ "path": "/users/64", "pathParams": { "key": ":id", "value": "64" } }
+
+and a header like:
+
+{ "headers": { "key": "authorization", "value": "Bearer <jwt>" } }
+
+and a body like:
+
+{ email: "paul@beatles.music" }
+
+with a body type of "json"
+`.trim();
+
+const createPlanUserPrompt = (userStory: string, routes: string) =>
+  `
+User story: ${userStory}
+
+Routes: ${routes}
+`.trim();
+
+// NOTE - Gemini does not play nicely with unions
+//        So I removed `nullable` from the request schema
+const geminiRequestSchema = z.object({
+  path: z.string(),
+  pathParams: z.array(
+    z.object({
+      key: z.string(),
+      value: z.string(),
+    }),
+  ),
+  queryParams: z.array(
+    z.object({
+      key: z.string(),
+      value: z.string(),
+    }),
+  ),
+  body: z.string(),
+  bodyType: z.object({
+    type: z.enum(["json", "text", "form-data", "file"]),
+    isMultipart: z.boolean(),
+  }),
+  headers: z.array(
+    z.object({
+      key: z.string(),
+      value: z.string(),
+    }),
+  ),
+});
+
+// NOTE - We cannot use `.optional` from zod because it does not play nicely with structured output from openai... or gemini
+export const geminiPlanSchema = z.object({
+  stepByStepReasoning: z.string(),
+  executionPlanSteps: z.array(
+    z.object({
+      routeId: z.number(),
+      route: z.object({
+        id: z.number(),
+        path: z.string(),
+        method: z.string(),
+      }),
+      exampleRequest: geminiRequestSchema.describe(
+        "Example request for the route handler",
+      ),
+    }),
+  ),
+});
+
+app.get("/v0/google-generative-ai-test", async (ctx) => {
+  const userStory = "I want to test CRUD functionality for the goose api";
+  const model = google("gemini-1.5-pro-latest");
+  try {
+    const db = ctx.get("db");
+    const expandedRouteHandlers = await getExpandedRouteHandlers(db);
+
+    const result = await generateObject({
+      model: model,
+      schema: geminiPlanSchema,
+      system: PLANNER_SYSTEM_PROMPT,
+      prompt: createPlanUserPrompt(
+        userStory,
+        expandedRouteHandlers
+          .map(
+            (r) => `Route ${r.routeId}: ${r.method} ${r.path}\n\n${r.context}`,
+          )
+          .join("\n\n"),
+      ),
+      temperature: 0.1,
+      // messages: []
+    });
+    const { object } = result;
+    return ctx.json({
+      expandedRouteHandlers,
+      response: object,
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return ctx.json({ error: errorMessage }, 500);
+  }
+});
+
+async function getExpandedRouteHandlers(db: LibSQLDatabase<typeof schema>) {
   const routes = await db.select().from(schema.appRoutes);
   const activeRoutes = routes.filter(
     (r) => r.currentlyRegistered && r.handlerType === "route" && r.handler,
   );
+  const routesAndMiddleware = routes.filter(
+    (r) => r.currentlyRegistered && !r.path?.startsWith("http"),
+  );
 
-  // Ensure cache directory exists
   await fs.mkdir(CACHE_DIR, { recursive: true });
 
   const expandedRouteHandlers: {
@@ -42,13 +200,13 @@ app.get("/v0/david", async (ctx) => {
     path: string;
     routeId: number;
   }[] = [];
+
   for (const route of activeRoutes) {
     const cacheFile = path.join(CACHE_DIR, `route-${route.id}.json`);
 
     try {
-      // Try to read from cache first
       const cached = await fs.readFile(cacheFile, "utf-8");
-      const [expandedHandler] = JSON.parse(cached);
+      const expandedHandler = JSON.parse(cached);
       console.debug(
         `Cache hit for route ${route.id} (${route.method} ${route.path})`,
       );
@@ -59,24 +217,39 @@ app.get("/v0/david", async (ctx) => {
       }
     } catch (error) {
       console.error(`Error reading cache file ${cacheFile}: ${error}`);
-      // Cache miss or invalid cache, proceed with expansion
     }
 
-    // Cache miss - expand and cache the result
     console.debug(
       `Cache miss for route ${route.id} (${route.method} ${route.path}), expanding...`,
     );
-    const result = await expandHandler(route.handler ?? "", []);
-    if (result[0]) {
-      expandedRouteHandlers.push({
-        context: result[0],
+    const middleware = getMatchingMiddleware(
+      routes,
+      routesAndMiddleware,
+      route.path ?? "",
+      route.method ?? "",
+      "http",
+    )?.map((m) => ({ ...m, handler: m.handler ?? "" }));
+
+    const context = await expandHandler(route.handler ?? "", middleware ?? []);
+
+    if (context?.[0]) {
+      const expandedHandler = {
+        context: JSON.stringify(context, null, 2),
         routeId: route.id,
         method: route.method ?? "",
         path: route.path ?? "",
-      });
-      await fs.writeFile(cacheFile, JSON.stringify(result));
+      };
+      expandedRouteHandlers.push(expandedHandler);
+      await fs.writeFile(cacheFile, JSON.stringify(expandedHandler));
     }
   }
+
+  return expandedRouteHandlers;
+}
+
+app.get("/v0/david", async (ctx) => {
+  const db = ctx.get("db");
+  const expandedRouteHandlers = await getExpandedRouteHandlers(db);
 
   return ctx.json({
     routeHandlers: expandedRouteHandlers,
