@@ -152,6 +152,12 @@ export interface PromptPanelSlice {
   updatePlanStep: (idx: number, update: Partial<PlanStep>) => void;
   workflowState: PromptWorkflowState;
   setWorkflowState: (workflowState: PromptWorkflowState) => void;
+
+  shouldKeepGoing: boolean;
+  setShouldKeepGoing: (shouldKeepGoing: boolean) => void;
+
+  awaitingInputMessage: string | undefined;
+  setAwaitingInputMessage: (awaitingInputMessage: string | undefined) => void;
 }
 
 export type Plan = {

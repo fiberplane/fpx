@@ -11,7 +11,11 @@ import { useToast } from "@/components/ui/use-toast";
 import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
-import type { Plan, PlanStep } from "@/pages/RequestorPage/store/slices/types";
+import type {
+  Plan,
+  PlanStep,
+  PromptWorkflowState,
+} from "@/pages/RequestorPage/store/slices/types";
 import type { RequestorActiveResponse } from "@/pages/RequestorPage/store/types";
 import type { ProbedRoute } from "@/pages/RequestorPage/types";
 import { useRequestorHistory } from "@/pages/RequestorPage/useRequestorHistory";
@@ -20,6 +24,7 @@ import { cn } from "@/utils";
 import type { Completion } from "@codemirror/autocomplete";
 import { Icon } from "@iconify/react";
 import { useMutation } from "@tanstack/react-query";
+import { useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const createPlan = async (prompt: string) => {
@@ -142,8 +147,13 @@ export function PromptPanel() {
     setExecutingPlanStepIdx,
     planStepResponseMap,
     updatePlanStep,
+    workflowState,
+    getPlanStepProgress,
+    shouldKeepGoing,
+    setShouldKeepGoing,
   } = useRequestorStore(
     "body",
+    "workflowState",
     "pathParams",
     "plan",
     "promptText",
@@ -162,6 +172,9 @@ export function PromptPanel() {
     "setExecutingPlanStepIdx",
     "planStepResponseMap",
     "updatePlanStep",
+    "getPlanStepProgress",
+    "shouldKeepGoing",
+    "setShouldKeepGoing",
   );
 
   const { toast } = useToast();
@@ -188,135 +201,205 @@ export function PromptPanel() {
     }
   };
 
-  const executePlanStep = async (index: number) => {
-    const onSuccess = () => {
-      // const isLastCommand = executingPlanStepIdx === routesInPlan.length - 1;
-      // if (!isLastCommand) {
-      //   incrementExecutingPlanStepIdx();
-      // }
-      incrementExecutingPlanStepIdx();
-    };
+  // Effect that sets workflow state to completed if we have executed all steps
+  useEffect(() => {
+    if (
+      plan &&
+      executingPlanStepIdx &&
+      executingPlanStepIdx > plan?.steps.length - 1
+    ) {
+      setWorkflowState("completed");
+    }
+  }, [setWorkflowState, executingPlanStepIdx, plan]);
 
-    const onError = (error: unknown) => {
-      const currentRoute = plan?.steps?.[executingPlanStepIdx ?? 0];
-      console.error("Command execution failed for route:", currentRoute, error);
-    };
+  /**
+   * Callback that will execute a single step of the plan
+   */
+  const executePlanStep = useCallback(
+    async (index: number, shouldAwaitAfter = true) => {
+      setWorkflowState("executing");
 
-    try {
-      setPlanStepProgress(index, "requesting");
-      let request = plan?.steps?.[index];
+      // Simple logging when we fail
+      const onError = (error: unknown) => {
+        const currentRoute = plan?.steps?.[executingPlanStepIdx ?? 0];
+        console.error(
+          "Command execution failed for route:",
+          currentRoute,
+          error,
+        );
+      };
 
-      if (!request) {
-        throw new Error("No request found for step");
-      }
+      try {
+        setPlanStepProgress(index, "requesting");
+        let request = plan?.steps?.[index];
 
-      if (!plan) {
-        throw new Error("No plan!");
-      }
-
-      const previousResponses: RequestorActiveResponse[] = [];
-      for (let i = 0; i < index; i++) {
-        const prevRes = planStepResponseMap?.[i];
-        if (prevRes) {
-          previousResponses.push(prevRes);
+        if (index && plan && index > plan.steps.length - 1) {
+          setWorkflowState("completed");
+          setShouldKeepGoing(false);
         }
-      }
 
-      const evaluationResponse = await evaluatePlanStep(
-        plan,
-        index,
-        previousResponses,
-      );
-      console.log("BOOTS: Evaluation response", evaluationResponse);
+        if (!request) {
+          throw new Error("No request found for step");
+        }
 
-      if (
-        evaluationResponse?.action !== "execute" &&
-        evaluationResponse?.action !== "awaitInput"
-      ) {
-        throw new Error("I do not know what to do");
-      }
+        if (!plan) {
+          throw new Error("No plan!");
+        }
 
-      if (evaluationResponse?.action === "awaitInput") {
-        // TODO - Implement this
-        setWorkflowState("awaitingInput");
-        return;
-      }
+        const previousResponses: RequestorActiveResponse[] = [];
+        for (let i = 0; i < index; i++) {
+          const prevRes = planStepResponseMap?.[i];
+          if (prevRes) {
+            previousResponses.push(prevRes);
+          }
+        }
 
-      // EXECUTE MODIFIED STEP
-      if (evaluationResponse?.action === "execute") {
-        // HACK - Coerce type
-        const modifiedStep: PlanStep = evaluationResponse.modifiedStep;
+        const evaluationResponse = await evaluatePlanStep(
+          plan,
+          index,
+          previousResponses,
+        );
+        console.log("BOOTS: Evaluation response", evaluationResponse);
 
-        // NOTE - Update step in store! for accurate history
-        updatePlanStep(index, modifiedStep);
+        if (
+          evaluationResponse?.action !== "execute" &&
+          evaluationResponse?.action !== "awaitInput"
+        ) {
+          setWorkflowState("error");
+          setShouldKeepGoing(false);
+          throw new Error("I do not know what to do");
+        }
 
-        request = modifiedStep ?? request;
+        if (evaluationResponse?.action === "awaitInput") {
+          // TODO - Implement this
+          setWorkflowState("awaitingInput");
+          return;
+        }
 
-        // TODO - Turn this into a plan step confirmation with `executePlanStep` via the API...
-        //        Gives us a chance to fill in template vars along the way
+        // EXECUTE MODIFIED STEP - this will have filled in and updated template vars
+        if (evaluationResponse?.action === "execute") {
+          // HACK - Coerce type
+          const modifiedStep: PlanStep = evaluationResponse.modifiedStep;
 
-        const response = await makeProxiedRequest({
-          addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
-          path: request.payload.path ?? request.route.path,
-          method: request.route.method,
-          body:
-            request.route.method === "GET" ||
-            request.route.method === "HEAD" ||
-            !request.payload.body
-              ? { type: "json" }
-              : {
-                  type: "json",
-                  value:
-                    typeof request.payload.body === "string"
-                      ? JSON.stringify(JSON.parse(request.payload.body))
-                      : JSON.stringify(request.payload.body),
-                },
-          headers: request.payload.headers ?? [
-            { key: "Content-Type", value: "application/json" },
-          ],
-          queryParams: request.payload.queryParameters ?? [],
-          pathParams: request.payload.pathParameters ?? [],
-        });
+          // NOTE - Update step in store! for accurate history
+          updatePlanStep(index, modifiedStep);
 
-        // Check if the request failed based on the response
-        const isFailure =
-          response.isFailure ||
-          (response.responseStatusCode &&
-            Number.parseInt(response.responseStatusCode, 10) >= 400);
+          request = modifiedStep ?? request;
 
-        if (isFailure) {
-          setPlanStepProgress(index, "error");
+          const response = await makeProxiedRequest({
+            addServiceUrlIfBarePath: (path: string) =>
+              `${serviceBaseUrl}${path}`,
+            path: request.payload.path ?? request.route.path,
+            method: request.route.method,
+            body:
+              request.route.method === "GET" ||
+              request.route.method === "HEAD" ||
+              !request.payload.body
+                ? { type: "json" }
+                : {
+                    type: "json",
+                    value:
+                      typeof request.payload.body === "string"
+                        ? JSON.stringify(JSON.parse(request.payload.body))
+                        : JSON.stringify(request.payload.body),
+                  },
+            headers: request.payload.headers ?? [
+              { key: "Content-Type", value: "application/json" },
+            ],
+            queryParams: request.payload.queryParameters ?? [],
+            pathParams: request.payload.pathParameters ?? [],
+          });
+
+          // TODO - evaluate failure using ai...
+
+          // Check if the request failed based on the response
+          const isFailure =
+            response.isFailure ||
+            (response.responseStatusCode &&
+              Number.parseInt(response.responseStatusCode, 10) >= 400);
+
+          if (isFailure) {
+            setPlanStepProgress(index, "error");
+            setShouldKeepGoing(false);
+            setPlanStepResponse(index, response);
+            return response;
+          }
+
+          setPlanStepProgress(index, "success");
           setPlanStepResponse(index, response);
+          // TODO - Remove for "ENTIRE PLAN" flow... depends if we want to step or not
+          if (shouldAwaitAfter) {
+            setWorkflowState("awaitingInput");
+          } else {
+            incrementExecutingPlanStepIdx();
+          }
           return response;
         }
-
-        setPlanStepProgress(index, "success");
-        setPlanStepResponse(index, response);
-        // NOTE - just increments the plan step
-        onSuccess();
-        return response;
+      } catch (error) {
+        setPlanStepProgress(index, "error");
+        setShouldKeepGoing(false);
+        setWorkflowState("error");
+        onError(error);
+        throw error;
       }
-    } catch (error) {
-      setPlanStepProgress(index, "error");
-      onError(error);
-      throw error;
+    },
+    [
+      setShouldKeepGoing,
+      plan,
+      executingPlanStepIdx,
+      planStepResponseMap,
+      setPlanStepProgress,
+      setPlanStepResponse,
+      setWorkflowState,
+      updatePlanStep,
+      serviceBaseUrl,
+      incrementExecutingPlanStepIdx,
+    ],
+  );
+
+  useEffect(() => {
+    if (executingPlanStepIdx === undefined) {
+      return;
     }
-  };
+
+    if (workflowState !== "executing") {
+      return;
+    }
+
+    const progress = getPlanStepProgress(executingPlanStepIdx);
+
+    if (progress === "idle") {
+      executePlanStep(executingPlanStepIdx, !shouldKeepGoing);
+    }
+  }, [
+    executingPlanStepIdx,
+    workflowState,
+    getPlanStepProgress,
+    executePlanStep,
+    shouldKeepGoing,
+  ]);
 
   const executeNextStep = () => {
     // TODO - if paused, increment?
+    setShouldKeepGoing(false);
     setWorkflowState("executing");
     if (executingPlanStepIdx === undefined) {
       setExecutingPlanStepIdx(0);
       executePlanStep(0);
     } else {
-      executePlanStep(executingPlanStepIdx);
+      executePlanStep(executingPlanStepIdx, true);
     }
   };
 
   const executeEntirePlan = () => {
-    // TODO - Implement runner
-    throw new Error("Not implemented");
+    setShouldKeepGoing(true);
+    setWorkflowState("executing");
+    if (executingPlanStepIdx === undefined) {
+      setExecutingPlanStepIdx(0);
+      executePlanStep(0, false);
+    } else {
+      executePlanStep(executingPlanStepIdx, false);
+    }
   };
 
   const handlePromptSubmit = async () => {
@@ -326,9 +409,9 @@ export function PromptPanel() {
       console.log("BOOTS: Executing plan step", executingPlanStepIdx);
       if (executingPlanStepIdx === undefined) {
         setExecutingPlanStepIdx(0);
-        executePlanStep(0);
+        executePlanStep(0, !shouldKeepGoing);
       } else {
-        executePlanStep(executingPlanStepIdx);
+        executePlanStep(executingPlanStepIdx, !shouldKeepGoing);
       }
       // TODO - Execute requests from here for each step
       return;
@@ -665,7 +748,16 @@ function ActiveCommand({
         setActivePlanStepIdx(index);
 
         // HACK - Always navigate to the route...
-        navigate(`${routeRoute}&ignore-recent-response=true`);
+        const shouldIgnoreRecentResponse =
+          progress !== "success" && progress !== "error";
+        if (shouldIgnoreRecentResponse) {
+          navigate(
+            `${routeRoute}&ignore-recent-response=${shouldIgnoreRecentResponse}`,
+          );
+        } else {
+          // TODO this probably does not work
+          navigate(to);
+        }
         // navigate(to);
         // console.log("BOOTS: Navigating to", to);
       }}
@@ -716,7 +808,13 @@ function PromptInput({
   routeCompletions: Completion[];
   isCompact: boolean;
 }) {
-  const { plan, workflowState } = useRequestorStore("plan", "workflowState");
+  const { plan, workflowState, executingPlanStepIdx, awaitingInputMessage } =
+    useRequestorStore(
+      "plan",
+      "workflowState",
+      "executingPlanStepIdx",
+      "awaitingInputMessage",
+    );
   return (
     <div className="px-4">
       <CodeMirrorPrompt
@@ -736,40 +834,96 @@ function PromptInput({
       />
 
       {!!plan && (
-        <div className="flex items-center gap-1 justify-end">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={executeNextStep}
-              >
-                <Icon icon="lucide:arrow-down-to-dot" className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>Execute next plan step</p>
-            </TooltipContent>
-          </Tooltip>
+        <div className="flex items-center">
+          <WorkflowStateMessage
+            workflowState={workflowState}
+            executingPlanStepIdx={executingPlanStepIdx}
+            awaitingInputMessage={awaitingInputMessage}
+          />
+          <div className="flex items-center gap-1 flex-grow justify-end">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={executeNextStep}
+                >
+                  <Icon icon="lucide:arrow-down-to-dot" className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>Execute next plan step</p>
+              </TooltipContent>
+            </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={executeEntirePlan}
-              >
-                <Icon icon="lucide:circle-play" className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>Execute entire plan</p>
-            </TooltipContent>
-          </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={executeEntirePlan}
+                >
+                  <Icon icon="lucide:circle-play" className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Execute entire plan</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function WorkflowStateMessage({
+  workflowState,
+  executingPlanStepIdx,
+  awaitingInputMessage,
+}: {
+  workflowState: PromptWorkflowState;
+  executingPlanStepIdx: number | undefined;
+  awaitingInputMessage: string | undefined;
+}) {
+  let content: null | React.ReactNode = null;
+  if (workflowState !== "idle" && workflowState !== "completed") {
+    content = (
+      <>
+        {workflowState}: step {(executingPlanStepIdx ?? 0) + 1}
+        {"—"}
+      </>
+    );
+  }
+  if (workflowState === "completed") {
+    content = "plan completed";
+  }
+  if (workflowState === "idle") {
+    content = (
+      <span className="text-yellow-200/80">
+        review plan then click a button over there ➡️
+      </span>
+    );
+  }
+  if (workflowState === "awaitingInput") {
+    content = (
+      <span className="text-yellow-200/80">
+        <span className="animate-ping">Confirm</span> continue - you can edit
+        the request or add instructions {awaitingInputMessage}
+      </span>
+    );
+  }
+  return (
+    <div
+      className={cn(
+        "text-sm text-muted-foreground italic",
+        workflowState === "executing" && "animate-pulse",
+        workflowState === "completed" && "animate-in text-green-500",
+      )}
+    >
+      {content}
     </div>
   );
 }

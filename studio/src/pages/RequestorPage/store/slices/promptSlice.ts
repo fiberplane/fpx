@@ -87,4 +87,16 @@ export const promptSlice: StateCreator<
     set((state) => {
       state.workflowState = workflowState;
     }),
+
+  shouldKeepGoing: false,
+  setShouldKeepGoing: (shouldKeepGoing) =>
+    set((state) => {
+      state.shouldKeepGoing = shouldKeepGoing;
+    }),
+
+  awaitingInputMessage: undefined,
+  setAwaitingInputMessage: (awaitingInputMessage) =>
+    set((state) => {
+      state.awaitingInputMessage = awaitingInputMessage;
+    }),
 });
