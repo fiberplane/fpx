@@ -1,12 +1,12 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { google } from "@ai-sdk/google";
 import { zValidator } from "@hono/zod-validator";
-import { type CoreMessage, generateObject } from "ai";
+import { type CoreMessage, generateObject, jsonSchema, streamObject } from "ai";
 import { desc } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { z } from "zod";
 import { USER_PROJECT_ROOT_DIR } from "../../constants.js";
 import * as schema from "../../db/schema.js";
@@ -20,6 +20,7 @@ import type { Bindings, Variables } from "../../lib/types.js";
 import logger from "../../logger.js";
 import { expandHandler } from "./expand-handler.js";
 import { getMatchingMiddleware } from "./middleware.js";
+import { GENERATE_FLOW_PLAN_SYSTEM_PROMPT } from "../../lib/ai/prompts.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -321,9 +322,9 @@ app.post(
       // HACK - Ditch the expand handler for ollama for now, it overwhelms llama 3.1-8b
       provider !== "ollama"
         ? await expandHandler(handler, middleware ?? []).catch((error) => {
-            logger.error(`Error expanding handler and middleware: ${error}`);
-            return [null, null];
-          })
+          logger.error(`Error expanding handler and middleware: ${error}`);
+          return [null, null];
+        })
         : [null, null];
     // console.timeEnd("Handler and Middleware Expansion");
 
@@ -491,8 +492,8 @@ function transformPlanStep(
     body: step.exampleRequest.body
       ? step.exampleRequest.bodyType.type === "json"
         ? // NOTE - The safeParse here will return the input as-is if it is not valid JSON
-          //        This is to support things like form bodies
-          safeParseJson(step.exampleRequest.body)
+        //        This is to support things like form bodies
+        safeParseJson(step.exampleRequest.body)
         : step.exampleRequest.body
       : undefined,
     bodyType: step.exampleRequest.bodyType,
@@ -523,7 +524,65 @@ app.post(
     // hack - linter
     console.log(prompt, messages);
 
-    // TODO: do the actual plan creation - for now just hardcode a plan
+    const outputSchema = jsonSchema({//output schema to use for plan generation
+      "type": "object",
+      "properties": {
+        "executionPlan": {
+          "type": "array",
+          "description": "a list of steps for this execution plan",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "verb",
+              "parameters",
+              "reasoning",
+              "expected output"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "the path of the api endpoint"
+              },
+              "verb": {
+                "type": "string",
+                "description": "the HTTP verb (GET, POST, PUT, DELTE)"
+              },
+              "parameters": {
+                "type": "string",
+                "description": "JSON representation of all parameters and values to use. empty object {} if none provided"
+              },
+              "reasoning": {
+                "type": "string",
+                "description": "the reason for calling this endpoint at this point in the sequence"
+              },
+              "expected output": {
+                "type": "string",
+                "description": "a summary of the expected output for this api call"
+              },
+              "dependencies": {
+                "type": "array",
+                "description": "the fully qualified dotpath of the dependencies on other steps in the execution plan",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    );
+
+    const realPlan = await generateObject({
+      model: google("gemini-1.5-pro-002"),
+      schema: outputSchema,
+      system: GENERATE_FLOW_PLAN_SYSTEM_PROMPT,
+      messages,
+      temperature: 0,
+      seed: 123,
+    });
+
     const plan = [
       {
         routeId: 1,
@@ -602,7 +661,7 @@ app.post(
       },
     ];
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
 
     return ctx.json({ plan });
   },
@@ -627,10 +686,10 @@ app.post("/v0/translate-commands", cors(), async (ctx) => {
   const [fpToken] =
     inferenceConfig.aiProvider === "fp"
       ? await db
-          .select()
-          .from(schema.tokens)
-          .orderBy(desc(schema.tokens.createdAt))
-          .limit(1)
+        .select()
+        .from(schema.tokens)
+        .orderBy(desc(schema.tokens.createdAt))
+        .limit(1)
       : [null];
 
   const { data: translatedCommands, error: translateError } =
