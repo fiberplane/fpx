@@ -176,4 +176,10 @@ export type PlanStep = {
   };
 };
 
-export type PromptWorkflowState = "editing" | "planning" | "executing" | "idle" | "error" | "completed";
+export type PromptWorkflowState =
+  | "editing"
+  | "planning"
+  | "executing"
+  | "idle"
+  | "error"
+  | "completed";
