@@ -651,646 +651,648 @@ export default app;
 
 function getMockCreatePlanResponse() {
   return {
-    "description": "1. **GET /api/geese**: Start by retrieving all geese to understand the current state.\n2. **POST /api/geese**: Create a new goose with sample data.\n3. **GET /api/geese/:id**: Retrieve the newly created goose by ID to verify its creation.\n4. **POST /api/geese/:id/bio**: Update the goose's bio.\n5. **POST /api/geese/:id/generate**: Generate content for the goose.\n6. **POST /api/geese/:id/honk**: Increment the goose's honk count.\n7. **PATCH /api/geese/:id**: Update the goose with a new name.\n8. **PATCH /api/geese/:id/motivations**: Update the goose's motivations.\n9. **POST /api/geese/:id/change-name-url-form**: Change the goose's name and location using URL-encoded form data.\n10. **GET /api/geese/flock-leaders**: Retrieve all flock leaders.\n11. **GET /api/geese/language/:language**: Retrieve geese filtered by programming language.",
-    "plan": [
+    description:
+      "1. **GET /api/geese**: Start by retrieving all geese to understand the current state.\n2. **POST /api/geese**: Create a new goose with sample data.\n3. **GET /api/geese/:id**: Retrieve the newly created goose by ID to verify its creation.\n4. **POST /api/geese/:id/bio**: Update the goose's bio.\n5. **POST /api/geese/:id/generate**: Generate content for the goose.\n6. **POST /api/geese/:id/honk**: Increment the goose's honk count.\n7. **PATCH /api/geese/:id**: Update the goose with a new name.\n8. **PATCH /api/geese/:id/motivations**: Update the goose's motivations.\n9. **POST /api/geese/:id/change-name-url-form**: Change the goose's name and location using URL-encoded form data.\n10. **GET /api/geese/flock-leaders**: Retrieve all flock leaders.\n11. **GET /api/geese/language/:language**: Retrieve geese filtered by programming language.",
+    plan: [
       {
-        "routeId": 3083,
-        "route": {
-          "id": 3083,
-          "path": "/api/geese",
-          "method": "GET"
+        routeId: 3083,
+        route: {
+          id: 3083,
+          path: "/api/geese",
+          method: "GET",
         },
-        "payload": {
-          "path": "/api/geese",
-          "pathParams": [],
-          "queryParams": [],
-          "body": null,
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+        payload: {
+          path: "/api/geese",
+          pathParams: [],
+          queryParams: [],
+          body: null,
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+        cutePayload: {
+          headers: {},
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3085,
-        "route": {
-          "id": 3085,
-          "path": "/api/geese",
-          "method": "POST"
+        routeId: 3085,
+        route: {
+          id: 3085,
+          path: "/api/geese",
+          method: "POST",
         },
-        "payload": {
-          "path": "/api/geese",
-          "pathParams": [],
-          "queryParams": [],
-          "body": "{\"name\":\"Honk\",\"isFlockLeader\":true,\"programmingLanguage\":\"Python\",\"motivations\":{\"honking\":\"loudly\",\"flying\":\"high\"},\"location\":\"Silicon Valley\"}",
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+        payload: {
+          path: "/api/geese",
+          pathParams: [],
+          queryParams: [],
+          body: '{"name":"Honk","isFlockLeader":true,"programmingLanguage":"Python","motivations":{"honking":"loudly","flying":"high"},"location":"Silicon Valley"}',
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "body": {
-            "name": "Honk",
-            "isFlockLeader": true,
-            "programmingLanguage": "Python",
-            "motivations": {
-              "honking": "loudly",
-              "flying": "high"
+        cutePayload: {
+          headers: {},
+          body: {
+            name: "Honk",
+            isFlockLeader: true,
+            programmingLanguage: "Python",
+            motivations: {
+              honking: "loudly",
+              flying: "high",
             },
-            "location": "Silicon Valley"
+            location: "Silicon Valley",
           },
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3088,
-        "route": {
-          "id": 3088,
-          "path": "/api/geese/:id",
-          "method": "GET"
+        routeId: 3088,
+        route: {
+          id: 3088,
+          path: "/api/geese/:id",
+          method: "GET",
         },
-        "payload": {
-          "path": "/api/geese/1",
-          "pathParams": [
+        payload: {
+          path: "/api/geese/1",
+          pathParams: [
             {
-              "key": ":id",
-              "value": "1"
-            }
+              key: ":id",
+              value: "1",
+            },
           ],
-          "queryParams": [],
-          "body": null,
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+          queryParams: [],
+          body: null,
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "pathParameters": {
-            "id": "1"
+        cutePayload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3089,
-        "route": {
-          "id": 3089,
-          "path": "/api/geese/:id/bio",
-          "method": "POST"
+        routeId: 3089,
+        route: {
+          id: 3089,
+          path: "/api/geese/:id/bio",
+          method: "POST",
         },
-        "payload": {
-          "path": "/api/geese/1/bio",
-          "pathParams": [
+        payload: {
+          path: "/api/geese/1/bio",
+          pathParams: [
             {
-              "key": ":id",
-              "value": "1"
-            }
+              key: ":id",
+              value: "1",
+            },
           ],
-          "queryParams": [],
-          "body": "{\"bio\":\"A very honky goose.\"}",
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+          queryParams: [],
+          body: '{"bio":"A very honky goose."}',
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "pathParameters": {
-            "id": "1"
+        cutePayload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "body": {
-            "bio": "A very honky goose."
+          body: {
+            bio: "A very honky goose.",
           },
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3086,
-        "route": {
-          "id": 3086,
-          "path": "/api/geese/:id/generate",
-          "method": "POST"
+        routeId: 3086,
+        route: {
+          id: 3086,
+          path: "/api/geese/:id/generate",
+          method: "POST",
         },
-        "payload": {
-          "path": "/api/geese/1/generate",
-          "pathParams": [
+        payload: {
+          path: "/api/geese/1/generate",
+          pathParams: [
             {
-              "key": ":id",
-              "value": "1"
-            }
+              key: ":id",
+              value: "1",
+            },
           ],
-          "queryParams": [],
-          "body": null,
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+          queryParams: [],
+          body: null,
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "pathParameters": {
-            "id": "1"
+        cutePayload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3090,
-        "route": {
-          "id": 3090,
-          "path": "/api/geese/:id/honk",
-          "method": "POST"
+        routeId: 3090,
+        route: {
+          id: 3090,
+          path: "/api/geese/:id/honk",
+          method: "POST",
         },
-        "payload": {
-          "path": "/api/geese/1/honk",
-          "pathParams": [
+        payload: {
+          path: "/api/geese/1/honk",
+          pathParams: [
             {
-              "key": ":id",
-              "value": "1"
-            }
+              key: ":id",
+              value: "1",
+            },
           ],
-          "queryParams": [],
-          "body": null,
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+          queryParams: [],
+          body: null,
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "pathParameters": {
-            "id": "1"
+        cutePayload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3091,
-        "route": {
-          "id": 3091,
-          "path": "/api/geese/:id",
-          "method": "PATCH"
+        routeId: 3091,
+        route: {
+          id: 3091,
+          path: "/api/geese/:id",
+          method: "PATCH",
         },
-        "payload": {
-          "path": "/api/geese/1",
-          "pathParams": [
+        payload: {
+          path: "/api/geese/1",
+          pathParams: [
             {
-              "key": ":id",
-              "value": "1"
-            }
+              key: ":id",
+              value: "1",
+            },
           ],
-          "queryParams": [],
-          "body": "{\"name\":\"Honker\"}",
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+          queryParams: [],
+          body: '{"name":"Honker"}',
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "pathParameters": {
-            "id": "1"
+        cutePayload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "body": {
-            "name": "Honker"
+          body: {
+            name: "Honker",
           },
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3093,
-        "route": {
-          "id": 3093,
-          "path": "/api/geese/:id/motivations",
-          "method": "PATCH"
+        routeId: 3093,
+        route: {
+          id: 3093,
+          path: "/api/geese/:id/motivations",
+          method: "PATCH",
         },
-        "payload": {
-          "path": "/api/geese/1/motivations",
-          "pathParams": [
+        payload: {
+          path: "/api/geese/1/motivations",
+          pathParams: [
             {
-              "key": ":id",
-              "value": "1"
-            }
+              key: ":id",
+              value: "1",
+            },
           ],
-          "queryParams": [],
-          "body": "{\"newMotivations\":{\"swimming\":\"fast\"}}",
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+          queryParams: [],
+          body: '{"newMotivations":{"swimming":"fast"}}',
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "pathParameters": {
-            "id": "1"
+        cutePayload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "body": {
-            "newMotivations": {
-              "swimming": "fast"
-            }
+          body: {
+            newMotivations: {
+              swimming: "fast",
+            },
           },
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3094,
-        "route": {
-          "id": 3094,
-          "path": "/api/geese/:id/change-name-url-form",
-          "method": "POST"
+        routeId: 3094,
+        route: {
+          id: 3094,
+          path: "/api/geese/:id/change-name-url-form",
+          method: "POST",
         },
-        "payload": {
-          "path": "/api/geese/1/change-name-url-form",
-          "pathParams": [
+        payload: {
+          path: "/api/geese/1/change-name-url-form",
+          pathParams: [
             {
-              "key": ":id",
-              "value": "1"
-            }
+              key: ":id",
+              value: "1",
+            },
           ],
-          "queryParams": [],
-          "body": "new_name=Goose&new_location=Seattle",
-          "bodyType": {
-            "type": "form-data",
-            "isMultipart": false
+          queryParams: [],
+          body: "new_name=Goose&new_location=Seattle",
+          bodyType: {
+            type: "form-data",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "pathParameters": {
-            "id": "1"
+        cutePayload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "body": "new_name=Goose&new_location=Seattle",
-          "bodyType": {
-            "type": "form-data",
-            "isMultipart": false
-          }
-        }
+          body: "new_name=Goose&new_location=Seattle",
+          bodyType: {
+            type: "form-data",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3087,
-        "route": {
-          "id": 3087,
-          "path": "/api/geese/flock-leaders",
-          "method": "GET"
+        routeId: 3087,
+        route: {
+          id: 3087,
+          path: "/api/geese/flock-leaders",
+          method: "GET",
         },
-        "payload": {
-          "path": "/api/geese/flock-leaders",
-          "pathParams": [],
-          "queryParams": [],
-          "body": null,
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+        payload: {
+          path: "/api/geese/flock-leaders",
+          pathParams: [],
+          queryParams: [],
+          body: null,
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
+        cutePayload: {
+          headers: {},
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
       },
       {
-        "routeId": 3092,
-        "route": {
-          "id": 3092,
-          "path": "/api/geese/language/:language",
-          "method": "GET"
+        routeId: 3092,
+        route: {
+          id: 3092,
+          path: "/api/geese/language/:language",
+          method: "GET",
         },
-        "payload": {
-          "path": "/api/geese/language/Python",
-          "pathParams": [
+        payload: {
+          path: "/api/geese/language/Python",
+          pathParams: [
             {
-              "key": ":language",
-              "value": "Python"
-            }
+              key: ":language",
+              value: "Python",
+            },
           ],
-          "queryParams": [],
-          "body": null,
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
+          queryParams: [],
+          body: null,
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "headers": []
+          headers: [],
         },
-        "cutePayload": {
-          "headers": {},
-          "pathParameters": {
-            "language": "Python"
+        cutePayload: {
+          headers: {},
+          pathParameters: {
+            language: "Python",
           },
-          "bodyType": {
-            "type": "json",
-            "isMultipart": false
-          }
-        }
-      }
-    ]
-  }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
+      },
+    ],
+  };
 }
 
 // NOTE - This is the version that uses the "cutePayload" as the payload instead of the format of data expected by the store in the UI
 function getMockCreatePlanResponseCute() {
   return {
-    "description": "1. **GET /api/geese**: Start by retrieving all geese to understand the current state of the data.\n2. **POST /api/geese**: Create a new goose with sample data. This will give us an ID to use for subsequent requests.\n3. **GET /api/geese/:id**: Retrieve the newly created goose by ID to verify its creation and data.\n4. **POST /api/geese/:id/bio**: Update the goose's bio.\n5. **POST /api/geese/:id/generate**: Generate content for the goose.\n6. **POST /api/geese/:id/honk**: Increment the goose's honk count.\n7. **PATCH /api/geese/:id**: Update the goose with a new name.\n8. **PATCH /api/geese/:id/motivations**: Update the goose's motivations.\n9. **POST /api/geese/:id/change-name-url-form**: Change the goose's name using URL form encoded data.\n10. **GET /api/geese/language/:language**: Retrieve geese filtered by programming language.\n11. **GET /api/geese/flock-leaders**: Retrieve all flock leaders.\n12. **GET /api/geese-with-avatar**: Retrieve all geese with avatars.\n13. **POST /api/geese/:id/avatar**: Upload an avatar for the goose.\n14. **GET /api/geese/:id/avatar**: Retrieve the goose's avatar.",
-      "plan": [
-        {
-          "routeId": 3083,
-          "route": {
-            "id": 3083,
-            "path": "/api/geese",
-            "method": "GET"
-          },
-          "payload": {
-            "headers": {},
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+    description:
+      "1. **GET /api/geese**: Start by retrieving all geese to understand the current state of the data.\n2. **POST /api/geese**: Create a new goose with sample data. This will give us an ID to use for subsequent requests.\n3. **GET /api/geese/:id**: Retrieve the newly created goose by ID to verify its creation and data.\n4. **POST /api/geese/:id/bio**: Update the goose's bio.\n5. **POST /api/geese/:id/generate**: Generate content for the goose.\n6. **POST /api/geese/:id/honk**: Increment the goose's honk count.\n7. **PATCH /api/geese/:id**: Update the goose with a new name.\n8. **PATCH /api/geese/:id/motivations**: Update the goose's motivations.\n9. **POST /api/geese/:id/change-name-url-form**: Change the goose's name using URL form encoded data.\n10. **GET /api/geese/language/:language**: Retrieve geese filtered by programming language.\n11. **GET /api/geese/flock-leaders**: Retrieve all flock leaders.\n12. **GET /api/geese-with-avatar**: Retrieve all geese with avatars.\n13. **POST /api/geese/:id/avatar**: Upload an avatar for the goose.\n14. **GET /api/geese/:id/avatar**: Retrieve the goose's avatar.",
+    plan: [
+      {
+        routeId: 3083,
+        route: {
+          id: 3083,
+          path: "/api/geese",
+          method: "GET",
         },
-        {
-          "routeId": 3085,
-          "route": {
-            "id": 3085,
-            "path": "/api/geese",
-            "method": "POST"
+        payload: {
+          headers: {},
+          bodyType: {
+            type: "json",
+            isMultipart: false,
           },
-          "payload": {
-            "headers": {},
-            "body": {
-              "name": "Paul",
-              "isFlockLeader": true,
-              "programmingLanguage": "typescript",
-              "motivations": ["music", "peace"],
-              "location": "Liverpool"
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
         },
-        {
-          "routeId": 3088,
-          "route": {
-            "id": 3088,
-            "path": "/api/geese/:id",
-            "method": "GET"
-          },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+      },
+      {
+        routeId: 3085,
+        route: {
+          id: 3085,
+          path: "/api/geese",
+          method: "POST",
         },
-        {
-          "routeId": 3089,
-          "route": {
-            "id": 3089,
-            "path": "/api/geese/:id/bio",
-            "method": "POST"
+        payload: {
+          headers: {},
+          body: {
+            name: "Paul",
+            isFlockLeader: true,
+            programmingLanguage: "typescript",
+            motivations: ["music", "peace"],
+            location: "Liverpool",
           },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "body": {
-              "bio": "Paul is a musician and songwriter."
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
         },
-        {
-          "routeId": 3086,
-          "route": {
-            "id": 3086,
-            "path": "/api/geese/:id/generate",
-            "method": "POST"
-          },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+      },
+      {
+        routeId: 3088,
+        route: {
+          id: 3088,
+          path: "/api/geese/:id",
+          method: "GET",
         },
-        {
-          "routeId": 3090,
-          "route": {
-            "id": 3090,
-            "path": "/api/geese/:id/honk",
-            "method": "POST"
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
         },
-        {
-          "routeId": 3091,
-          "route": {
-            "id": 3091,
-            "path": "/api/geese/:id",
-            "method": "PATCH"
-          },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "body": {
-              "name": "Sir Paul"
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+      },
+      {
+        routeId: 3089,
+        route: {
+          id: 3089,
+          path: "/api/geese/:id/bio",
+          method: "POST",
         },
-        {
-          "routeId": 3093,
-          "route": {
-            "id": 3093,
-            "path": "/api/geese/:id/motivations",
-            "method": "PATCH"
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "body": {
-              "motivations": ["music", "peace", "activism"]
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+          body: {
+            bio: "Paul is a musician and songwriter.",
+          },
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
         },
-        {
-          "routeId": 3094,
-          "route": {
-            "id": 3094,
-            "path": "/api/geese/:id/change-name-url-form",
-            "method": "POST"
-          },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "body": "new_name=Paul%20McCartney",
-            "bodyType": {
-              "type": "form-data",
-              "isMultipart": false
-            }
-          }
+      },
+      {
+        routeId: 3086,
+        route: {
+          id: 3086,
+          path: "/api/geese/:id/generate",
+          method: "POST",
         },
-        {
-          "routeId": 3092,
-          "route": {
-            "id": 3092,
-            "path": "/api/geese/language/:language",
-            "method": "GET"
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "language": "typescript"
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
         },
-        {
-          "routeId": 3087,
-          "route": {
-            "id": 3087,
-            "path": "/api/geese/flock-leaders",
-            "method": "GET"
-          },
-          "payload": {
-            "headers": {},
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+      },
+      {
+        routeId: 3090,
+        route: {
+          id: 3090,
+          path: "/api/geese/:id/honk",
+          method: "POST",
         },
-        {
-          "routeId": 3084,
-          "route": {
-            "id": 3084,
-            "path": "/api/geese-with-avatar",
-            "method": "GET"
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "payload": {
-            "headers": {},
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
         },
-        {
-          "routeId": 3095,
-          "route": {
-            "id": 3095,
-            "path": "/api/geese/:id/avatar",
-            "method": "POST"
-          },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "bodyType": {
-              "type": "file",
-              "isMultipart": false
-            }
-          }
+      },
+      {
+        routeId: 3091,
+        route: {
+          id: 3091,
+          path: "/api/geese/:id",
+          method: "PATCH",
         },
-        {
-          "routeId": 3096,
-          "route": {
-            "id": 3096,
-            "path": "/api/geese/:id/avatar",
-            "method": "GET"
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
           },
-          "payload": {
-            "headers": {},
-            "pathParameters": {
-              "id": "1"
-            },
-            "bodyType": {
-              "type": "json",
-              "isMultipart": false
-            }
-          }
-        }
-      ]
-  }
+          body: {
+            name: "Sir Paul",
+          },
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
+      },
+      {
+        routeId: 3093,
+        route: {
+          id: 3093,
+          path: "/api/geese/:id/motivations",
+          method: "PATCH",
+        },
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
+          },
+          body: {
+            motivations: ["music", "peace", "activism"],
+          },
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
+      },
+      {
+        routeId: 3094,
+        route: {
+          id: 3094,
+          path: "/api/geese/:id/change-name-url-form",
+          method: "POST",
+        },
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
+          },
+          body: "new_name=Paul%20McCartney",
+          bodyType: {
+            type: "form-data",
+            isMultipart: false,
+          },
+        },
+      },
+      {
+        routeId: 3092,
+        route: {
+          id: 3092,
+          path: "/api/geese/language/:language",
+          method: "GET",
+        },
+        payload: {
+          headers: {},
+          pathParameters: {
+            language: "typescript",
+          },
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
+      },
+      {
+        routeId: 3087,
+        route: {
+          id: 3087,
+          path: "/api/geese/flock-leaders",
+          method: "GET",
+        },
+        payload: {
+          headers: {},
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
+      },
+      {
+        routeId: 3084,
+        route: {
+          id: 3084,
+          path: "/api/geese-with-avatar",
+          method: "GET",
+        },
+        payload: {
+          headers: {},
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
+      },
+      {
+        routeId: 3095,
+        route: {
+          id: 3095,
+          path: "/api/geese/:id/avatar",
+          method: "POST",
+        },
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
+          },
+          bodyType: {
+            type: "file",
+            isMultipart: false,
+          },
+        },
+      },
+      {
+        routeId: 3096,
+        route: {
+          id: 3096,
+          path: "/api/geese/:id/avatar",
+          method: "GET",
+        },
+        payload: {
+          headers: {},
+          pathParameters: {
+            id: "1",
+          },
+          bodyType: {
+            type: "json",
+            isMultipart: false,
+          },
+        },
+      },
+    ],
+  };
 }

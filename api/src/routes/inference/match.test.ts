@@ -1,5 +1,5 @@
-import { findFirstSmartRouterMatch } from "./match.js";
 import type { AppRoute } from "../../db/schema.js";
+import { findFirstSmartRouterMatch } from "./match.js";
 
 const toRoute = (
   path: string,

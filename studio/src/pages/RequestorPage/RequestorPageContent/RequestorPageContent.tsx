@@ -64,7 +64,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     );
   const navigate = useNavigate();
 
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
 
   const ignoreRecentResponse = getIgnoreRecentResponse(params);
   useEffect(() => {

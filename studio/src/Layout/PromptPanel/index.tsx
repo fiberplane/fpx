@@ -3,20 +3,16 @@ import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
-import { createKeyValueParameters } from "@/pages/RequestorPage/KeyValueForm/data";
-import { createBodyFromAiResponse } from "@/pages/RequestorPage/ai/ai";
 import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
-import { isRequestorBodyType } from "@/pages/RequestorPage/store/request-body";
 import type { ProbedRoute } from "@/pages/RequestorPage/types";
 import { useRequestorHistory } from "@/pages/RequestorPage/useRequestorHistory";
 import { isMac } from "@/utils";
 import { cn } from "@/utils";
 import type { Completion } from "@codemirror/autocomplete";
 import { Icon } from "@iconify/react";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 
 const createPlan = async (prompt: string) => {
@@ -97,9 +93,16 @@ export function PromptPanel() {
     promptText,
     queryParams,
     requestHeaders,
+    executingPlanStepIdx,
+    setPlanStepProgress,
     routes,
     setPlan,
     setPromptText,
+    incrementExecutingPlanStepIdx,
+    setWorkflowState,
+    serviceBaseUrl,
+    clearPlan,
+    setPlanStepResponse,
   } = useRequestorStore(
     "body",
     "pathParams",
@@ -110,14 +113,14 @@ export function PromptPanel() {
     "routes",
     "setPlan",
     "setPromptText",
+    "executingPlanStepIdx",
+    "incrementExecutingPlanStepIdx",
+    "setWorkflowState",
+    "serviceBaseUrl",
+    "setPlanStepProgress",
+    "clearPlan",
+    "setPlanStepResponse",
   );
-
-  // this is the derived state of the routes that are currently in action from the prompt input (in the order they are in the prompt)
-  const routesInAction = plan
-    ?.flatMap((command) => routes.find((r) => r.id === command.routeId))
-    .filter((route) => route !== undefined);
-
-  // const navigate = useNavigate();
 
   const { toast } = useToast();
 
@@ -143,7 +146,96 @@ export function PromptPanel() {
     }
   };
 
+  const executePlanStep = async (index: number) => {
+    const onSuccess = () => {
+      // const isLastCommand = executingPlanStepIdx === routesInPlan.length - 1;
+      // if (!isLastCommand) {
+      //   incrementExecutingPlanStepIdx();
+      // }
+      incrementExecutingPlanStepIdx();
+    };
+
+    const onError = (error: unknown) => {
+      const currentRoute = plan?.steps?.[executingPlanStepIdx ?? 0];
+      console.error("Command execution failed for route:", currentRoute, error);
+    };
+
+    try {
+      setPlanStepProgress(index, "requesting");
+      const request = plan?.steps?.[index];
+
+      if (!request) {
+        throw new Error("No request found for step");
+      }
+
+      // TODO - Turn this into a plan step confirmation with `executePlanStep` via the API...
+      //        Gives us a chance to fill in template vars along the way
+
+      const response = await makeProxiedRequest({
+        addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
+        path: request.payload.path ?? request.route.path,
+        method: request.route.method,
+        body:
+          request.route.method === "GET" ||
+          request.route.method === "HEAD" ||
+          !request.payload.body
+            ? { type: "json" }
+            : {
+                type: "json",
+                value:
+                  typeof request.payload.body === "string"
+                    ? JSON.stringify(JSON.parse(request.payload.body))
+                    : JSON.stringify(request.payload.body),
+              },
+        headers: request.payload.headers ?? [
+          { key: "Content-Type", value: "application/json" },
+        ],
+        queryParams: request.payload.queryParameters ?? [],
+        pathParams: request.payload.pathParameters ?? [],
+      });
+
+      // Check if the request failed based on the response
+      const isFailure =
+        response.isFailure ||
+        (response.responseStatusCode &&
+          Number.parseInt(response.responseStatusCode, 10) >= 400);
+
+      if (isFailure) {
+        setPlanStepProgress(index, "error");
+        setPlanStepResponse(index, response);
+        return response;
+      }
+
+      setPlanStepProgress(index, "success");
+      setPlanStepResponse(index, response);
+      // NOTE - just increments the plan step
+      onSuccess();
+      return response;
+    } catch (error) {
+      setPlanStepProgress(index, "error");
+      onError(error);
+      throw error;
+    }
+  };
+
+  // const { data: response } = useQuery({
+  //   queryKey: ["runActionRoute", route.id.toString()],
+  //   queryFn: ,
+  //   retry: false,
+  //   enabled: isActive && workflowState === "executing",
+  //   refetchOnWindowFocus: false,
+  // });
+
   const handlePromptSubmit = async () => {
+    // HACK - If we have a plan loaded and the user submits, we start executing it.
+    if (plan) {
+      setWorkflowState("executing");
+      console.log("BOOTS: Executing plan step", executingPlanStepIdx);
+      executePlanStep(executingPlanStepIdx ?? 0);
+      // TODO - Execute requests from here for each step
+      return;
+    }
+
     // Replace route references in the prompt
     const replacedPrompt = promptText.replace(
       /@\[route:(\d+)\]/g,
@@ -168,7 +260,10 @@ Method: ${route.method}]
 
       // NOTE - { plan, description } is the format we expect from the API
       const planResponse = await createPlanMutation.mutateAsync(replacedPrompt);
-      setPlan(planResponse?.plan);
+      setPlan({
+        steps: planResponse?.plan,
+        description: planResponse?.description,
+      });
 
       // Start executing the pipeline
     } catch (error) {
@@ -178,7 +273,7 @@ Method: ${route.method}]
 
   const handleReset = () => {
     setPromptText("");
-    setPlan(undefined);
+    clearPlan();
   };
 
   return (
@@ -187,7 +282,6 @@ Method: ${route.method}]
         <PromptPanelHeader onReset={handleReset} />
         <div className="overflow-y-auto relative">
           <PromptPanelContent
-            routesInAction={routesInAction}
             promptValue={promptText}
             handlePromptChange={handlePromptChange}
             handlePromptSubmit={handlePromptSubmit}
@@ -237,20 +331,23 @@ function PromptPanelHeader({ onReset }: { onReset: () => void }) {
 }
 
 function PromptPanelContent({
-  routesInAction,
   allRoutes,
   promptValue,
   handlePromptChange,
   handlePromptSubmit,
   routeCompletions,
 }: {
-  routesInAction: ProbedRoute[] | undefined;
   allRoutes: ProbedRoute[];
   promptValue: string;
   handlePromptChange: (value?: string) => void;
   handlePromptSubmit: () => Promise<void>;
   routeCompletions: Completion[];
 }) {
+  const { getRoutesInPlan } = useRequestorStore("getRoutesInPlan");
+
+  // this is the derived state of the routes that are currently in action from the prompt input (in the order they are in the prompt)
+  const routesInPlan = getRoutesInPlan(allRoutes);
+
   return (
     <div className="grid gap-4 pb-4 content-start">
       <PromptInput
@@ -259,47 +356,33 @@ function PromptPanelContent({
         handlePromptSubmit={handlePromptSubmit}
         allRoutes={allRoutes}
         routeCompletions={routeCompletions}
-        isCompact={!!routesInAction}
+        isCompact={!!routesInPlan}
       />
-      {routesInAction && <ActiveCommandsList routesInAction={routesInAction} />}
+      {routesInPlan && <ActiveCommandsList routesInPlan={routesInPlan} />}
     </div>
   );
 }
 
 function ActiveCommandsList({
-  routesInAction,
+  routesInPlan,
 }: {
-  routesInAction: ProbedRoute[];
+  routesInPlan: ProbedRoute[];
 }) {
-  const [currentCommandIndex, setCurrentCommandIndex] = useState(0);
-  const currentRoute = routesInAction[currentCommandIndex];
-  const isLastCommand = currentCommandIndex === routesInAction.length - 1;
+  const { executingPlanStepIdx } = useRequestorStore("executingPlanStepIdx");
 
   const { history } = useRequestorHistory();
-  const previousResponses = history.slice(0, currentCommandIndex);
-
-  const onSuccess = () => {
-    if (!isLastCommand) {
-      setCurrentCommandIndex((prev) => prev + 1);
-    }
-  };
-
-  const onError = (error: unknown) => {
-    console.error("Command execution failed for route:", currentRoute, error);
-  };
+  const previousResponses = history.slice(0, executingPlanStepIdx);
 
   return (
     <div className="px-4 overflow-y-auto">
       <Separator decorative={true} className="my-2 dashed" />
       <div className="grid grid-cols-1 gap-1">
-        {routesInAction.map((route, index) => (
+        {routesInPlan.map((route, index) => (
           <ActiveCommand
             key={route.id}
             index={index}
             route={route}
-            isActive={index === currentCommandIndex}
-            onSuccess={onSuccess}
-            onError={onError}
+            isActive={index === executingPlanStepIdx}
             previousResponses={previousResponses}
           />
         ))}
@@ -310,16 +393,11 @@ function ActiveCommandsList({
 
 function ActiveCommand({
   route,
-  isActive,
-  onSuccess,
-  onError,
-  previousResponses,
+  // previousResponses,
   index,
 }: {
   route: ProbedRoute;
   isActive: boolean;
-  onSuccess: () => void;
-  onError: (error: unknown) => void;
   previousResponses: ProxiedRequestResponse[];
   index: number;
 }) {
@@ -328,7 +406,8 @@ function ActiveCommand({
     setActiveRouteById,
     body,
     path: currentPath,
-    method,
+    // method,
+    //
     // NOTE - WE determine matching middleware on the backend now, do not need this! SO don't implement it
     // getMatchingMiddleware,
     pathParams,
@@ -336,16 +415,17 @@ function ActiveCommand({
     updateMethod,
     updatePath,
     requestHeaders,
-    serviceBaseUrl,
     plan,
     setActivePlanStepIdx,
     setBody,
-    setPathParams,
-    updatePathParamValues,
+    // setPathParams,
+    // updatePathParamValues,
     setQueryParams,
     setRequestHeaders,
     updatePlanStep,
-    workflowState,
+    // workflowState,
+    getPlanStepProgress,
+    getPlanStepResponse,
   } = useRequestorStore(
     "activePlanStepIdx",
     "setActiveRouteById",
@@ -368,72 +448,27 @@ function ActiveCommand({
     "setRequestHeaders",
     "updatePlanStep",
     "workflowState",
+    "getPlanStepProgress",
+    "getPlanStepResponse",
   );
 
-  const [progress, setProgress] = useState<
-    "idle" | "requesting" | "success" | "error"
-  >("idle");
-
-  const { data: response } = useQuery({
-    queryKey: ["runActionRoute", route.id.toString()],
-    queryFn: async () => {
-      try {
-        setProgress("requesting");
-        const request = plan?.[index];
-
-        if (!request) {
-          throw new Error("No request found for step");
-        }
-
-        const response = await makeProxiedRequest({
-          addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
-          path: request.route.path,
-          method: request.route.method,
-          body:
-            request.route.method === "GET" ||
-            request.route.method === "HEAD" ||
-            !request.payload.body
-              ? { type: "json" }
-              : request.payload.body,
-          headers: request.payload.headers,
-          queryParams: request.payload.queryParameters,
-          pathParams: request.payload.pathParameters,
-        });
-
-        // Check if the request failed based on the response
-        const isFailure =
-          response.isFailure ||
-          (response.responseStatusCode &&
-            Number.parseInt(response.responseStatusCode, 10) >= 400);
-
-        if (isFailure) {
-          setProgress("error");
-          return response;
-        }
-
-        setProgress("success");
-        onSuccess();
-        return response;
-      } catch (error) {
-        setProgress("error");
-        onError(error);
-        throw error;
-      }
-    },
-    retry: false,
-    enabled: isActive && workflowState === "executing",
-    refetchOnWindowFocus: false,
-  });
-
+  const progress = getPlanStepProgress(index);
   const navigate = useNavigate();
 
   // If the user is inspecting the current step, highlight it
   const isInspecting = activePlanStepIdx === index;
 
+  const response = getPlanStepResponse(index);
+  console.log("BOOTS: step index, response", index, response);
+
   // Determine the to prop based on response and route state
   const requestHistoryRoute = `/request/${response?.traceId}?filter-tab=requests`;
   const routeRoute = `/route/${route.id}?filter-tab=routes`;
   const to = response?.traceId ? requestHistoryRoute : routeRoute;
+
+  if (progress !== "idle") {
+    console.log("plan step index,progress", index, progress);
+  }
 
   return (
     <Link
@@ -469,7 +504,7 @@ function ActiveCommand({
             },
           });
         }
-        const selectedStep = plan?.[index];
+        const selectedStep = plan?.steps?.[index];
         console.log("BOOTS: Selected step", selectedStep);
         if (selectedStep) {
           setActiveRouteById(selectedStep.route.id);

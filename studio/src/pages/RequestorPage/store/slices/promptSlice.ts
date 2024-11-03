@@ -1,15 +1,63 @@
 import type { StateCreator } from "zustand";
-import type { PromptPanelSlice } from "./types";
+import type { ProbedRoute } from "../../types";
+import type { PlanStepProgress, PromptPanelSlice } from "./types";
 
 export const promptSlice: StateCreator<
   PromptPanelSlice,
   [["zustand/immer", never], ["zustand/devtools", never]]
-> = (set) => ({
+> = (set, get) => ({
   promptText: "",
   setPromptText: (promptText) =>
     set((state) => {
       state.promptText = promptText;
     }),
+
+  planStepProgressMap: null,
+  setPlanStepProgress: (index, planStepProgress) =>
+    set((state) => {
+      state.planStepProgressMap = state.planStepProgressMap ?? {};
+      state.planStepProgressMap[index] = planStepProgress;
+    }),
+  getPlanStepProgress: (index) => get().planStepProgressMap?.[index] ?? "idle",
+
+  planStepResponseMap: null,
+  setPlanStepResponse: (index, planStepResponse) =>
+    set((state) => {
+      state.planStepResponseMap = state.planStepResponseMap ?? {};
+      state.planStepResponseMap[index] = planStepResponse;
+    }),
+  getPlanStepResponse: (index) => get().planStepResponseMap?.[index],
+  getRoutesInPlan: (routes: ProbedRoute[]) => {
+    const state = get();
+    return state.plan?.steps
+      ?.flatMap((command) => routes.find((r) => r.id === command.routeId))
+      .filter((route) => route !== undefined);
+  },
+
+  // executing as in we are in a running plan and executing steps
+  executingPlanStepIdx: undefined,
+  setExecutingPlanStepIdx: (executingPlanStepId) =>
+    set((state) => {
+      state.executingPlanStepIdx = executingPlanStepId;
+    }),
+  incrementExecutingPlanStepIdx: () =>
+    set((state) => {
+      if (typeof state.executingPlanStepIdx === "number") {
+        state.executingPlanStepIdx = state.executingPlanStepIdx + 1;
+      } else {
+        state.executingPlanStepIdx = 0;
+      }
+    }),
+
+  // hacky way to pause for input...
+  planRunAwaitingInput: false,
+  setPlanRunAwaitingIntput: (awaitingInput: boolean) => {
+    set((state) => {
+      state.planRunAwaitingInput = awaitingInput;
+    });
+  },
+
+  // active as in actively editing
   activePlanStepIdx: undefined,
   setActivePlanStepIdx: (activePlanStepId) =>
     set((state) => {
@@ -20,10 +68,18 @@ export const promptSlice: StateCreator<
     set((state) => {
       state.plan = plan;
     }),
+  clearPlan: () =>
+    set((state) => {
+      state.planStepProgressMap = null;
+      state.planStepResponseMap = null;
+      state.executingPlanStepIdx = undefined;
+      state.plan = undefined;
+    }),
+
   updatePlanStep: (idx, update) =>
     set((state) => {
-      if (state?.plan?.[idx]) {
-        state.plan[idx] = { ...state.plan[idx], ...update };
+      if (state?.plan?.steps?.[idx]) {
+        state.plan.steps[idx] = { ...state.plan.steps[idx], ...update };
       }
     }),
   workflowState: "idle",
