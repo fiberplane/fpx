@@ -228,7 +228,12 @@ export function PromptPanel() {
   const executeNextStep = () => {
     // TODO - if paused, increment?
     setWorkflowState("executing");
-    executePlanStep(executingPlanStepIdx ?? 0);
+    if (executingPlanStepIdx === undefined) {
+      setExecutingPlanStepIdx(0);
+      executePlanStep(0);
+    } else {
+      executePlanStep(executingPlanStepIdx);
+    }
   };
 
   const executeEntirePlan = () => {

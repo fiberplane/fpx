@@ -14,6 +14,7 @@ import {
   generateRequestWithAiProvider,
   translateCommands,
 } from "../../lib/ai/index.js";
+import { STEP_EVALUATION_SYSTEM_PROMPT } from "../../lib/ai/prompts.js";
 import { expandFunction } from "../../lib/expand-function/index.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
@@ -132,22 +133,22 @@ const geminiRequestSchema = z.object({
   ),
 });
 
+const PlanStepSchema = z.object({
+  routeId: z.number(),
+  route: z.object({
+    id: z.number(),
+    path: z.string(),
+    method: z.string(),
+  }),
+  exampleRequest: geminiRequestSchema.describe(
+    "Example request for the route handler",
+  ),
+});
+
 // NOTE - We cannot use `.optional` from zod because it does not play nicely with structured output from openai... or gemini
 const geminiPlanSchema = z.object({
   stepByStepReasoning: z.string(),
-  executionPlanSteps: z.array(
-    z.object({
-      routeId: z.number(),
-      route: z.object({
-        id: z.number(),
-        path: z.string(),
-        method: z.string(),
-      }),
-      exampleRequest: geminiRequestSchema.describe(
-        "Example request for the route handler",
-      ),
-    }),
-  ),
+  executionPlanSteps: z.array(PlanStepSchema),
 });
 
 app.get("/v0/google-generative-ai-test", async (ctx) => {
@@ -381,9 +382,73 @@ const CreatePlanSchema = z.object({
     ),
 });
 
-// const CreatePlanResponseSchema = z.object({
-//   plan: geminiPlanSchema,
-// });
+const NextStepSchema = z.object({
+  plan: z.object({
+    description: z.string(),
+    steps: z.array(PlanStepSchema),
+  }),
+  currentStepIdx: z.number(),
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string(),
+      }),
+    )
+    .optional(),
+  previousResults: z
+    .array(
+      z.object({
+        // todo
+        status: z.string(),
+      }),
+    )
+    .nullable(),
+});
+
+const EvaluateNextStepAiResponseSchema = z.object({
+  action: z.enum(["execute", "awaitInput"]),
+  message: z.string().describe("A message to the user about the next step"),
+  modifiedStep: PlanStepSchema,
+});
+
+const createStepEvaluationUserPrompt = () => {
+  return `TODO`;
+};
+
+app.post(
+  "/v0/evaluate-next-step",
+  cors(),
+  zValidator("json", NextStepSchema),
+  async (ctx) => {
+    const { plan, currentStepIdx, messages: history } = ctx.req.valid("json");
+    const currentStep = plan.steps[currentStepIdx];
+    if (!currentStep) {
+      return ctx.json({ error: "Current step not found" }, 400);
+    }
+
+    const model = google("gemini-1.5-pro-latest");
+
+    const messages = [
+      ...(history ?? []),
+      { role: "user" as const, content: createStepEvaluationUserPrompt() },
+    ];
+
+    const aiResponse = await generateObject({
+      model,
+      schema: EvaluateNextStepAiResponseSchema,
+      system: STEP_EVALUATION_SYSTEM_PROMPT,
+      temperature: 0.1,
+      messages,
+    });
+
+    return ctx.json({
+      action: aiResponse.object.action,
+      message: aiResponse.object.message,
+      modifiedStep: aiResponse.object.modifiedStep,
+    });
+  },
+);
 
 app.post(
   "/v0/create-plan",
