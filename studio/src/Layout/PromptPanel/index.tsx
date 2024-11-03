@@ -392,7 +392,12 @@ export function PromptPanel() {
       setExecutingPlanStepIdx(0);
       executePlanStep(0);
     } else {
-      executePlanStep(executingPlanStepIdx, true);
+      if (executingPlanStepIdx === (plan?.steps?.length ?? 0) - 1) {
+        setWorkflowState("completed");
+        setShouldKeepGoing(false);
+      } else {
+        executePlanStep(executingPlanStepIdx, true);
+      }
     }
   };
 
