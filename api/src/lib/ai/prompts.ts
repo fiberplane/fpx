@@ -527,6 +527,912 @@ Use the tool "make_request". Always respond in valid JSON.
 ***Don't make your responses too long, otherwise we cannot parse your JSON response.***
 `);
 
+export const GENERATE_FLOW_PLAN_SYSTEM_PROMPT = cleanPrompt(`
+Generate a list of API endpoints to call in order to achieve a user's desired outcome, structured according to the specified JSON schema.
+
+Follow these guidelines to ensure your task list is well-structured, actionable, and useful:
+
+1. **Understand the Desired Outcome**: Carefully read the user's input to comprehend the end goal. Ensure you fully understand what the user wants to achieve, especially focusing on tasks that will involve tool interactions.
+2. **Identify Key Milestones**: Break down the desired outcome into key milestones or phases that logically group related tasks together. This helps in organizing the steps in a coherent manner.
+3. **Generate Clear and Detailed Tasks**: For each milestone, list out specific, actionable tasks that need to be completed. Each task should be concise and clear, specifying:
+   - What needs to be done.
+   - All parameter values.
+   - The subsequent actions based on the response.
+4. **Ensure Logical Order**: Arrange the tasks in a logical sequence, ensuring that each task builds upon the previous ones. If there are dependencies or prerequisites, note them explicitly.
+5. **Include Tools and Resources**: Where applicable, suggest any tools, resources, or information that might be necessary to complete each task, such as tool descriptions or required input parameters.
+6. **Review for Completeness**: Finally, review the entire sequence of tasks to ensure nothing important has been missed and that the tasks cover the entire process from start to finish.
+
+# Output Format
+
+The output should be structured as a JSON object following this schema:
+\`\`\`json
+{
+  "executionPlan": [
+    {
+      "path": <string>,
+      "verb": <string>,
+      "parameters": <string>,
+      "reasoning": <string>,
+      "expected output": <string>,
+      "dependencies": <array>
+    }
+  ]
+}
+\`\`\`
+Ensure that each entry in the \`executionPlan\` array includes the \`path\`, \`verb\`, \`parameters\`, \`reasoning\`, \`expected output\`, and any \`dependencies\` on other steps in the execution plan.
+
+# Examples
+
+- **Example 1**
+  - **Input**: "create a goose named honky then make him honk!"
+  - **Output**: 
+    {
+      "executionPlan": [
+        {
+          "path": "/api/geese",
+          "verb": "POST",
+          "parameters": "{\"name\": \"Honky\"}",
+          "reasoning": "Create a goose with the provided name.",
+          "expected output": "The ID of the created goose.",
+          "dependencies": []
+        },
+        {
+          "path": "/api/geese/$.executionPlan[0].output.id/honk",
+          "verb": "POST",
+          "parameters": "{}",
+          "reasoning": "Make the created goose honk.",
+          "expected output": "Updated number of honks",
+          "dependencies": ["$.executionPlan[0].output.id"]
+        }
+      ]
+    }
+
+- **Example 2**
+  - **Input**: "get all geese then update a goose's avatar by id"
+  - **Output**: 
+    {
+      "executionPlan": [
+        {
+          "path": "/api/geese",
+          "verb": "GET",
+          "parameters": "{}",
+          "reasoning": "Retrieve a list of all geese.",
+          "expected output": "Get a list of all geese with their IDs.",
+          "dependencies": []
+        },
+        {
+          "path": "/api/geese/:id/avatar",
+          "verb": "PUT",
+          "parameters": "{}",
+          "reasoning": "Update the avatar of the specified goose.",
+          "expected output": "Successfully update the goose's avatar.",
+          "dependencies": ["$.executionPlan[0].output.id"]
+        }
+      ]
+    }
+
+# Notes
+
+- Ensure that the tasks are actionable and clearly defined.
+- The output should reflect a logical sequence of API calls based on the user's goal.
+- Review the execution plan for completeness and clarity before finalizing the output.
+
+# Available Endpoints
+
+Here are the available routes (each array item is a rout):
+[
+  {
+    "title": "Get All Geese",
+    "description": "Retrieves all geese from the database.",
+    "path": "/",
+    "method": "GET",
+    "input": {},
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID of the goose"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the goose"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the goose"
+          },
+          "isFlockLeader": {
+            "type": "boolean",
+            "description": "Is the goose a flock leader?"
+          },
+          "programmingLanguage": {
+            "type": "string",
+            "description": "Favorite programming language of the goose"
+          },
+          "motivations": {
+            "type": "object",
+            "description": "Motivations of the goose"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the goose"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Biography of the goose"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "Avatar URL of the goose"
+          },
+          "honks": {
+            "type": "integer",
+            "description": "Number of honks"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Update timestamp"
+          }
+        }
+      }
+    }
+  },
+  {
+    "title": "Get All Geese",
+    "description": "Retrieves all geese from the database.",
+    "path": "/api/geese",
+    "method": "GET",
+    "input": {},
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID of the goose"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the goose"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the goose"
+          },
+          "isFlockLeader": {
+            "type": "boolean",
+            "description": "Is the goose a flock leader?"
+          },
+          "programmingLanguage": {
+            "type": "string",
+            "description": "Favorite programming language of the goose"
+          },
+          "motivations": {
+            "type": "object",
+            "description": "Motivations of the goose"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the goose"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Biography of the goose"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "Avatar URL of the goose"
+          },
+          "honks": {
+            "type": "integer",
+            "description": "Number of honks"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Update timestamp"
+          }
+        }
+      }
+    }
+  },
+  {
+    "title": "Get Geese with Avatar",
+    "description": "Retrieves all geese that have an avatar URL.",
+    "path": "/api/geese-with-avatar",
+    "method": "GET",
+    "input": {},
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID of the goose"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the goose"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the goose"
+          },
+          "isFlockLeader": {
+            "type": "boolean",
+            "description": "Is the goose a flock leader?"
+          },
+          "programmingLanguage": {
+            "type": "string",
+            "description": "Favorite programming language of the goose"
+          },
+          "motivations": {
+            "type": "object",
+            "description": "Motivations of the goose"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the goose"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Biography of the goose"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "Avatar URL of the goose"
+          },
+          "honks": {
+            "type": "integer",
+            "description": "Number of honks"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Update timestamp"
+          }
+        }
+      }
+    }
+  },
+  {
+    "title": "Create Goose",
+    "description": "Creates a new goose entry in the database.",
+    "path": "/api/geese",
+    "method": "POST",
+    "input": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the goose"
+        },
+        "isFlockLeader": {
+          "type": "boolean",
+          "description": "Is the goose a flock leader?"
+        },
+        "programmingLanguage": {
+          "type": "string",
+          "description": "Favorite programming language of the goose"
+        },
+        "motivations": {
+          "type": "object",
+          "description": "Motivations of the goose"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the goose"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID of the newly created goose"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the goose"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the goose"
+          },
+          "isFlockLeader": {
+            "type": "boolean",
+            "description": "Is the goose a flock leader?"
+          },
+          "programmingLanguage": {
+            "type": "string",
+            "description": "Favorite programming language of the goose"
+          },
+          "motivations": {
+            "type": "object",
+            "description": "Motivations of the goose"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the goose"
+          }
+        }
+      }
+    }
+  },
+  {
+    "title": "Generate Goose Content",
+    "description": "Generates content for a goose based on its ID.",
+    "path": "/api/geese/:id/generate",
+    "method": "POST",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "The ID of the goose."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "Generated content for the goose."
+        }
+      }
+    }
+  },
+  {
+    "title": "Get Flock Leaders",
+    "description": "Retrieves all geese that are flock leaders.",
+    "path": "/api/geese/flock-leaders",
+    "method": "GET",
+    "input": {},
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID of the goose"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the goose"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the goose"
+          },
+          "isFlockLeader": {
+            "type": "boolean",
+            "description": "Is the goose a flock leader?"
+          },
+          "programmingLanguage": {
+            "type": "string",
+            "description": "Favorite programming language of the goose"
+          },
+          "motivations": {
+            "type": "object",
+            "description": "Motivations of the goose"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the goose"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Biography of the goose"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "Avatar URL of the goose"
+          },
+          "honks": {
+            "type": "integer",
+            "description": "Number of honks"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Update timestamp"
+          }
+        }
+      }
+    }
+  },
+  {
+    "title": "Get Goose by ID",
+    "description": "Retrieves a specific goose from the database based on its ID.",
+    "path": "/api/geese/:id",
+    "method": "GET",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the goose to retrieve"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the goose"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the goose"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the goose"
+        },
+        "isFlockLeader": {
+          "type": "boolean",
+          "description": "Is the goose a flock leader?"
+        },
+        "programmingLanguage": {
+          "type": "string",
+          "description": "Favorite programming language of the goose"
+        },
+        "motivations": {
+          "type": "object",
+          "description": "Motivations of the goose"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the goose"
+        },
+        "bio": {
+          "type": "string",
+          "description": "Biography of the goose"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Avatar URL of the goose"
+        },
+        "honks": {
+          "type": "integer",
+          "description": "Number of honks"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Update timestamp"
+        }
+      }
+    }
+  },
+  {
+    "title": "Update Goose Bio",
+    "description": "Updates the biography of a specific goose.",
+    "path": "/api/geese/:id/bio",
+    "method": "POST",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "The ID of the goose to update."
+        },
+        "bio": {
+          "type": "string",
+          "description": "The new biography of the goose."
+        }
+      },
+      "required": [
+        "id",
+        "bio"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "The ID of the updated goose."
+        },
+        "bio": {
+          "type": "string",
+          "description": "The updated biography of the goose."
+        }
+      }
+    }
+  },
+  {
+    "title": "Honk Goose",
+    "description": "Increments the honk count of a goose by one.",
+    "path": "/api/geese/:id/honk",
+    "method": "POST",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Goose ID"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "honks": {
+          "type": "integer",
+          "description": "Updated number of honks"
+        }
+      }
+    }
+  },
+  {
+    "title": "Update Goose",
+    "description": "Updates a goose entry in the database.",
+    "path": "/api/geese/:id",
+    "method": "PATCH",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the goose to update"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the goose"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the goose"
+        },
+        "isFlockLeader": {
+          "type": "boolean",
+          "description": "Is the goose a flock leader?"
+        },
+        "programmingLanguage": {
+          "type": "string",
+          "description": "Favorite programming language of the goose"
+        },
+        "motivations": {
+          "type": "object",
+          "description": "Motivations of the goose"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location of the goose"
+        },
+        "bio": {
+          "type": "string",
+          "description": "Biography of the goose"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Avatar URL of the goose"
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the updated goose"
+        },
+        "name": {
+          "type": "string",
+          "description": "Updated name of the goose"
+        },
+        "description": {
+          "type": "string",
+          "description": "Updated description of the goose"
+        },
+        "isFlockLeader": {
+          "type": "boolean",
+          "description": "Updated flock leader status of the goose"
+        },
+        "programmingLanguage": {
+          "type": "string",
+          "description": "Updated favorite programming language of the goose"
+        },
+        "motivations": {
+          "type": "object",
+          "description": "Updated motivations of the goose"
+        },
+        "location": {
+          "type": "string",
+          "description": "Updated location of the goose"
+        },
+        "bio": {
+          "type": "string",
+          "description": "Updated biography of the goose"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Updated avatar URL of the goose"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Update timestamp"
+        }
+      }
+    }
+  },
+  {
+    "title": "Get Geese by Language",
+    "description": "Retrieves geese that match the provided programming language.",
+    "path": "/api/geese/language/:language",
+    "method": "GET",
+    "input": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string",
+          "description": "The programming language to search for."
+        }
+      },
+      "required": [
+        "language"
+      ]
+    },
+    "output": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID of the goose"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the goose"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the goose"
+          },
+          "isFlockLeader": {
+            "type": "boolean",
+            "description": "Is the goose a flock leader?"
+          },
+          "programmingLanguage": {
+            "type": "string",
+            "description": "Favorite programming language of the goose"
+          },
+          "motivations": {
+            "type": "object",
+            "description": "Motivations of the goose"
+          },
+          "location": {
+            "type": "string",
+            "description": "Location of the goose"
+          },
+          "bio": {
+            "type": "string",
+            "description": "Biography of the goose"
+          },
+          "avatar": {
+            "type": "string",
+            "description": "Avatar URL of the goose"
+          },
+          "honks": {
+            "type": "integer",
+            "description": "Number of honks"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Update timestamp"
+          }
+        }
+      }
+    }
+  },
+  {
+    "title": "Update Goose Motivations",
+    "description": "Updates the motivations of a specific goose in the database.",
+    "path": "/api/geese/:id/motivations",
+    "method": "PATCH",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Goose ID"
+        },
+        "motivations": {
+          "type": "object",
+          "description": "New motivations data"
+        }
+      },
+      "required": [
+        "id",
+        "motivations"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the updated goose"
+        },
+        "motivations": {
+          "type": "object",
+          "description": "Updated motivations of the goose"
+        }
+      }
+    }
+  },
+  {
+    "title": "Change Goose Name and URL Form",
+    "description": "Changes the name and URL of a goose by ID.",
+    "path": "/api/geese/:id/change-name-url-form",
+    "method": "POST",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Goose ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "New name for the goose"
+        },
+        "url": {
+          "type": "string",
+          "description": "New URL for the goose"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "url"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the updated goose"
+        },
+        "name": {
+          "type": "string",
+          "description": "Updated name of the goose"
+        },
+        "url": {
+          "type": "string",
+          "description": "Updated URL of the goose"
+        }
+      }
+    }
+  },
+  {
+    "title": "Update Goose Avatar",
+    "description": "Updates the avatar of a goose by ID.",
+    "path": "/api/geese/:id/avatar",
+    "method": "POST",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Goose ID"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "New avatar URL"
+        }
+      },
+      "required": [
+        "id",
+        "avatar"
+      ]
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "ID of the updated goose"
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Updated avatar URL"
+        }
+      }
+    }
+  },
+  {
+    "title": "Get Goose Avatar",
+    "description": "Retrieves the avatar of a goose by ID.",
+    "path": "/api/geese/:id/avatar",
+    "method": "GET",
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "The ID of the goose."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "output": {
+      "type": "string",
+      "description": "The URL of the goose's avatar."
+    }
+  }
+]
+`);
+
+const FLOW_EXECUTION_SYSTEM_PROMPT = cleanPrompt(`
+Your are an intelligent task executor whose purpose it is to execute all tasks as provided to you in sequence by calling
+the appropriate tools while outputting the requested information.
+
+You're provided with the following:
+1. A user's goal, which you are to execute against.
+2. A list of tasks to accomplish.
+3. A list of API endpoints to execute the tasks against. Map them against the respective tasks by name.
+
+You may skip tasks as necessary.
+
+Execute all tasks in order. Only respond once you've either run into an error you can't resolve or are finished.
+`);
+
 /**
  * Clean a prompt by trimming whitespace for each line and joining the lines.
  */
