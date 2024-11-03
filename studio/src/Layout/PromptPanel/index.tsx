@@ -11,6 +11,8 @@ import { useToast } from "@/components/ui/use-toast";
 import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
+import type { Plan, PlanStep } from "@/pages/RequestorPage/store/slices/types";
+import type { RequestorActiveResponse } from "@/pages/RequestorPage/store/types";
 import type { ProbedRoute } from "@/pages/RequestorPage/types";
 import { useRequestorHistory } from "@/pages/RequestorPage/useRequestorHistory";
 import { isMac } from "@/utils";
@@ -34,6 +36,35 @@ const createPlan = async (prompt: string) => {
   if (!response.ok) {
     const error = new Error("Failed to create plan");
     console.error("Plan creation request failed:", {
+      status: response.status,
+      statusText: response.statusText,
+    });
+    throw error;
+  }
+
+  return response.json();
+};
+
+const evaluatePlanStep = async (
+  plan: Plan,
+  currentStepIdx: number,
+  previousResults: RequestorActiveResponse[],
+) => {
+  const response = await fetch("/v0/evaluate-next-step", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      plan,
+      currentStepIdx,
+      previousResults,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = new Error("Failed to evaluate plan step");
+    console.error("Plan evaluation request failed:", {
       status: response.status,
       statusText: response.statusText,
     });
@@ -109,6 +140,8 @@ export function PromptPanel() {
     clearPlan,
     setPlanStepResponse,
     setExecutingPlanStepIdx,
+    planStepResponseMap,
+    updatePlanStep,
   } = useRequestorStore(
     "body",
     "pathParams",
@@ -127,6 +160,8 @@ export function PromptPanel() {
     "clearPlan",
     "setPlanStepResponse",
     "setExecutingPlanStepIdx",
+    "planStepResponseMap",
+    "updatePlanStep",
   );
 
   const { toast } = useToast();
@@ -169,55 +204,98 @@ export function PromptPanel() {
 
     try {
       setPlanStepProgress(index, "requesting");
-      const request = plan?.steps?.[index];
+      let request = plan?.steps?.[index];
 
       if (!request) {
         throw new Error("No request found for step");
       }
 
-      // TODO - Turn this into a plan step confirmation with `executePlanStep` via the API...
-      //        Gives us a chance to fill in template vars along the way
-
-      const response = await makeProxiedRequest({
-        addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
-        path: request.payload.path ?? request.route.path,
-        method: request.route.method,
-        body:
-          request.route.method === "GET" ||
-          request.route.method === "HEAD" ||
-          !request.payload.body
-            ? { type: "json" }
-            : {
-                type: "json",
-                value:
-                  typeof request.payload.body === "string"
-                    ? JSON.stringify(JSON.parse(request.payload.body))
-                    : JSON.stringify(request.payload.body),
-              },
-        headers: request.payload.headers ?? [
-          { key: "Content-Type", value: "application/json" },
-        ],
-        queryParams: request.payload.queryParameters ?? [],
-        pathParams: request.payload.pathParameters ?? [],
-      });
-
-      // Check if the request failed based on the response
-      const isFailure =
-        response.isFailure ||
-        (response.responseStatusCode &&
-          Number.parseInt(response.responseStatusCode, 10) >= 400);
-
-      if (isFailure) {
-        setPlanStepProgress(index, "error");
-        setPlanStepResponse(index, response);
-        return response;
+      if (!plan) {
+        throw new Error("No plan!");
       }
 
-      setPlanStepProgress(index, "success");
-      setPlanStepResponse(index, response);
-      // NOTE - just increments the plan step
-      onSuccess();
-      return response;
+      const previousResponses: RequestorActiveResponse[] = [];
+      for (let i = 0; i < index; i++) {
+        const prevRes = planStepResponseMap?.[i];
+        if (prevRes) {
+          previousResponses.push(prevRes);
+        }
+      }
+
+      const evaluationResponse = await evaluatePlanStep(
+        plan,
+        index,
+        previousResponses,
+      );
+      console.log("BOOTS: Evaluation response", evaluationResponse);
+
+      if (
+        evaluationResponse?.action !== "execute" &&
+        evaluationResponse?.action !== "awaitInput"
+      ) {
+        throw new Error("I do not know what to do");
+      }
+
+      if (evaluationResponse?.action === "awaitInput") {
+        // TODO - Implement this
+        setWorkflowState("awaitingInput");
+        return;
+      }
+
+      // EXECUTE MODIFIED STEP
+      if (evaluationResponse?.action === "execute") {
+        // HACK - Coerce type
+        const modifiedStep: PlanStep = evaluationResponse.modifiedStep;
+
+        // NOTE - Update step in store! for accurate history
+        updatePlanStep(index, modifiedStep);
+
+        request = modifiedStep ?? request;
+
+        // TODO - Turn this into a plan step confirmation with `executePlanStep` via the API...
+        //        Gives us a chance to fill in template vars along the way
+
+        const response = await makeProxiedRequest({
+          addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
+          path: request.payload.path ?? request.route.path,
+          method: request.route.method,
+          body:
+            request.route.method === "GET" ||
+            request.route.method === "HEAD" ||
+            !request.payload.body
+              ? { type: "json" }
+              : {
+                  type: "json",
+                  value:
+                    typeof request.payload.body === "string"
+                      ? JSON.stringify(JSON.parse(request.payload.body))
+                      : JSON.stringify(request.payload.body),
+                },
+          headers: request.payload.headers ?? [
+            { key: "Content-Type", value: "application/json" },
+          ],
+          queryParams: request.payload.queryParameters ?? [],
+          pathParams: request.payload.pathParameters ?? [],
+        });
+
+        // Check if the request failed based on the response
+        const isFailure =
+          response.isFailure ||
+          (response.responseStatusCode &&
+            Number.parseInt(response.responseStatusCode, 10) >= 400);
+
+        if (isFailure) {
+          setPlanStepProgress(index, "error");
+          setPlanStepResponse(index, response);
+          return response;
+        }
+
+        setPlanStepProgress(index, "success");
+        setPlanStepResponse(index, response);
+        // NOTE - just increments the plan step
+        onSuccess();
+        return response;
+      }
     } catch (error) {
       setPlanStepProgress(index, "error");
       onError(error);
@@ -487,16 +565,16 @@ function ActiveCommand({
   const isInspecting = activePlanStepIdx === index;
 
   const response = getPlanStepResponse(index);
-  console.log("BOOTS: step index, response", index, response);
+  // console.log("BOOTS: step index, response", index, response);
 
   // Determine the to prop based on response and route state
   const requestHistoryRoute = `/request/${response?.traceId}?filter-tab=requests`;
   const routeRoute = `/route/${route.id}?filter-tab=routes`;
   const to = response?.traceId ? requestHistoryRoute : routeRoute;
 
-  if (progress !== "idle") {
-    console.log("plan step index,progress", index, progress);
-  }
+  // if (progress !== "idle") {
+  //   console.log("plan step index,progress", index, progress);
+  // }
 
   return (
     <Link

@@ -180,6 +180,7 @@ export type PromptWorkflowState =
   | "editing"
   | "planning"
   | "executing"
+  | "awaitingInput"
   | "idle"
   | "error"
   | "completed";

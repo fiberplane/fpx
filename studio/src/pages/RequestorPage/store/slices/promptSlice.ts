@@ -1,6 +1,6 @@
 import type { StateCreator } from "zustand";
 import type { ProbedRoute } from "../../types";
-import type { PlanStepProgress, PromptPanelSlice } from "./types";
+import type { PromptPanelSlice } from "./types";
 
 export const promptSlice: StateCreator<
   PromptPanelSlice,

@@ -98,29 +98,40 @@ app.get("/api/geese-with-avatar", async (c) => {
  *
  * Only requires a `name` parameter in the request body
  */
-app.post("/api/geese", async (c) => {
-  const sql = neon(c.env.DATABASE_URL);
-  const db = drizzle(sql);
+app.post(
+  "/api/geese",
+  async (c, next) => {
+    // TODO -- Add a token or whatever the fuck
+    const token = c.req.header("Authorization")?.split(" ")[1];
+    if (token !== process.env.STUPID_API_TOKEN) {
+      return c.json({ message: "Unauthorized" }, 401);
+    }
+    await next();
+  },
+  async (c) => {
+    const sql = neon(c.env.DATABASE_URL);
+    const db = drizzle(sql);
 
-  const { name, isFlockLeader, programmingLanguage, motivations, location } =
-    await c.req.json();
-  const description = `A person named ${name} who talks like a Goose`;
+    const { name, isFlockLeader, programmingLanguage, motivations, location } =
+      await c.req.json();
+    const description = `A person named ${name} who talks like a Goose`;
 
-  console.log(`Creating new goose: ${name}`);
+    console.log(`Creating new goose: ${name}`);
 
-  const created = await measure("createGoose", () =>
-    createGoose(db, {
-      name,
-      description,
-      isFlockLeader,
-      programmingLanguage,
-      motivations,
-      location,
-    }),
-  )();
-  console.log({ action: "create_goose", id: created[0].id, name });
-  return c.json(created);
-});
+    const created = await measure("createGoose", () =>
+      createGoose(db, {
+        name,
+        description,
+        isFlockLeader,
+        programmingLanguage,
+        motivations,
+        location,
+      }),
+    )();
+    console.log({ action: "create_goose", id: created[0].id, name });
+    return c.json(created);
+  },
+);
 
 /**
  * Generate Goose Quotes
