@@ -5,7 +5,6 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { createKeyValueParameters } from "@/pages/RequestorPage/KeyValueForm/data";
 import { createBodyFromAiResponse } from "@/pages/RequestorPage/ai/ai";
-import { fetchAiRequestData } from "@/pages/RequestorPage/ai/generate-request-data";
 import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
@@ -19,18 +18,20 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const translateCommands = async (commands: string) => {
-  const response = await fetch("/v0/translate-commands", {
+const createPlan = async (prompt: string) => {
+  const response = await fetch("/v0/create-plan", {
     method: "POST",
     headers: {
-      "Content-Type": "text/plain",
+      "Content-Type": "application/json",
     },
-    body: commands,
+    body: JSON.stringify({
+      prompt,
+    }),
   });
 
   if (!response.ok) {
-    const error = new Error("Failed to translate commands");
-    console.error("Translation request failed:", {
+    const error = new Error("Failed to create plan");
+    console.error("Plan creation request failed:", {
       status: response.status,
       statusText: response.statusText,
     });
@@ -88,18 +89,30 @@ function PromptFooter({
 }
 
 export function PromptPanel() {
-  const [promptValue, setPromptValue] = useState("");
-  const [translatedCommands, setTranslatedCommands] = useState<
-    { routeId: number }[] | null
-  >(null);
-
-  const { routes, setActiveRoute } = useRequestorStore(
+  const {
+    body,
+    pathParams,
+    plan,
+    promptText,
+    queryParams,
+    requestHeaders,
+    routes,
+    setPlan,
+    setPromptText,
+  } = useRequestorStore(
+    "body",
+    "pathParams",
+    "plan",
+    "promptText",
+    "queryParams",
+    "requestHeaders",
     "routes",
-    "setActiveRoute",
+    "setPlan",
+    "setPromptText",
   );
 
   // this is the derived state of the routes that are currently in action from the prompt input (in the order they are in the prompt)
-  const routesInAction = translatedCommands
+  const routesInAction = plan
     ?.flatMap((command) => routes.find((r) => r.id === command.routeId))
     .filter((route) => route !== undefined);
 
@@ -107,8 +120,8 @@ export function PromptPanel() {
 
   const { toast } = useToast();
 
-  const translateCommandsMutation = useMutation({
-    mutationFn: translateCommands,
+  const createPlanMutation = useMutation({
+    mutationFn: createPlan,
     onError: (error) => {
       toast({
         title: "Error running composer",
@@ -125,13 +138,13 @@ export function PromptPanel() {
 
   const handlePromptChange = (value?: string) => {
     if (value !== undefined) {
-      setPromptValue(value);
+      setPromptText(value);
     }
   };
 
   const handlePromptSubmit = async () => {
     // Replace route references in the prompt
-    const replacedPrompt = promptValue.replace(
+    const replacedPrompt = promptText.replace(
       /@\[route:(\d+)\]/g,
       (match, routeId) => {
         const route = routes.find((r) => r.id === Number.parseInt(routeId, 10));
@@ -148,9 +161,12 @@ Method: ${route.method}]
     );
 
     try {
-      const { commands } =
-        await translateCommandsMutation.mutateAsync(replacedPrompt);
-      setTranslatedCommands(commands.commands);
+      // const { commands } =
+      //   await translateCommandsMutation.mutateAsync(replacedPrompt);
+      // setTranslatedCommands(commands);
+
+      const plan = await createPlanMutation.mutateAsync(replacedPrompt);
+      setPlan(plan);
 
       // Start executing the pipeline
     } catch (error) {
@@ -159,18 +175,18 @@ Method: ${route.method}]
   };
 
   const handleReset = () => {
-    setPromptValue("");
-    setTranslatedCommands(null);
+    setPromptText("");
+    setPlan(undefined);
   };
 
   return (
     <div className="fixed bottom-8 left-0 right-0 flex justify-center">
-      <div className="max-w-lg w-full bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,1fr,auto]">
+      <div className="max-w-lg w-full min-h-[400px] bg-background border rounded-lg shadow-lg overflow-hidden grid grid-rows-[auto,1fr,auto]">
         <PromptPanelHeader onReset={handleReset} />
         <div className="overflow-y-auto relative">
           <PromptPanelContent
             routesInAction={routesInAction}
-            promptValue={promptValue}
+            promptValue={promptText}
             handlePromptChange={handlePromptChange}
             handlePromptSubmit={handlePromptSubmit}
             routeCompletions={routeCompletions}
@@ -179,7 +195,7 @@ Method: ${route.method}]
         </div>
         <PromptFooter
           handlePromptSubmit={handlePromptSubmit}
-          isPending={translateCommandsMutation.isPending}
+          isPending={createPlanMutation.isPending}
         />
       </div>
     </div>
@@ -277,6 +293,7 @@ function ActiveCommandsList({
         {routesInAction.map((route, index) => (
           <ActiveCommand
             key={route.id}
+            index={currentCommandIndex}
             route={route}
             isActive={index === currentCommandIndex}
             onSuccess={onSuccess}
@@ -295,55 +312,77 @@ function ActiveCommand({
   onSuccess,
   onError,
   previousResponses,
+  index,
 }: {
   route: ProbedRoute;
   isActive: boolean;
   onSuccess: () => void;
   onError: (error: unknown) => void;
   previousResponses: ProxiedRequestResponse[];
+  index: number;
 }) {
-  const { getMatchingMiddleware, serviceBaseUrl, setActiveRoute } =
-    useRequestorStore(
-      "getMatchingMiddleware",
-      "serviceBaseUrl",
-      "setActiveRoute",
-    );
+  const {
+    activePlanStepIdx,
+    body,
+    getMatchingMiddleware,
+    pathParams,
+    queryParams,
+    requestHeaders,
+    serviceBaseUrl,
+    plan,
+    setActivePlanStepIdx,
+    setBody,
+    setPathParams,
+    setQueryParams,
+    setRequestHeaders,
+    updatePlanStep,
+    workflowState,
+  } = useRequestorStore(
+    "activePlanStepIdx",
+    "body",
+    "getMatchingMiddleware",
+    "pathParams",
+    "plan",
+    "queryParams",
+    "requestHeaders",
+    "serviceBaseUrl",
+    "setActivePlanStepIdx",
+    "setBody",
+    "setPathParams",
+    "setQueryParams",
+    "setRequestHeaders",
+    "updatePlanStep",
+    "workflowState",
+  );
 
   const [progress, setProgress] = useState<
-    "idle" | "generating" | "requesting" | "success" | "error"
+    "idle" | "requesting" | "success" | "error"
   >("idle");
 
   const { data: response } = useQuery({
     queryKey: ["runActionRoute", route.id.toString()],
     queryFn: async () => {
       try {
-        setProgress("generating");
-        const { request } = await fetchAiRequestData(
-          route,
-          getMatchingMiddleware(),
-          "json",
-          previousResponses,
-          "Friendly",
-        );
-
         setProgress("requesting");
-        const queryParams = createKeyValueParameters(request.queryParams ?? []);
-        const headers = createKeyValueParameters(request.headers ?? []);
-        const pathParams = createKeyValueParameters(request.pathParams ?? []);
-        const body =
-          createBodyFromAiResponse(request.body, request.bodyType) ?? null;
+        const request = plan?.[index];
+
+        if (!request) {
+          throw new Error("No request found for step");
+        }
 
         const response = await makeProxiedRequest({
           addServiceUrlIfBarePath: (path: string) => `${serviceBaseUrl}${path}`,
-          path: route.path,
-          method: route.method,
+          path: request.route.path,
+          method: request.route.method,
           body:
-            route.method === "GET" || route.method === "HEAD" || !body
+            request.route.method === "GET" ||
+            request.route.method === "HEAD" ||
+            !request.payload.body
               ? { type: "text" }
-              : body,
-          headers,
-          queryParams,
-          pathParams,
+              : request.payload.body,
+          headers: request.payload.headers,
+          queryParams: request.payload.queryParameters,
+          pathParams: request.payload.pathParameters,
         });
 
         // Check if the request failed based on the response
@@ -367,7 +406,8 @@ function ActiveCommand({
       }
     },
     retry: false,
-    enabled: isActive,
+    enabled: isActive && workflowState === "executing",
+    refetchOnWindowFocus: false,
   });
 
   // Determine the to prop based on response and route state
@@ -378,18 +418,34 @@ function ActiveCommand({
   return (
     <Link
       to={to}
+      onClick={() => {
+        // NOTE: kinda jank but kinda cool way to reuse the request data editor
+        // UI for updating the workflow plans
+        if (activePlanStepIdx) {
+          updatePlanStep(activePlanStepIdx, {
+            payload: {
+              body: body,
+              pathParameters: pathParams,
+              queryParameters: queryParams,
+              headers: requestHeaders,
+            },
+          });
+        }
+        const selectedStep = plan?.[index];
+        if (selectedStep) {
+          setBody(selectedStep.payload.body);
+          setPathParams(selectedStep.payload.pathParameters);
+          setQueryParams(selectedStep.payload.queryParameters);
+          setRequestHeaders(selectedStep.payload.headers);
+        }
+        setActivePlanStepIdx(index);
+      }}
       className={cn(
         "grid grid-cols-[auto,1fr] gap-2 items-center rounded-lg px-3 py-1",
         "text-sm font-medium font-mono text-gray-400",
         "hover:bg-secondary no-underline",
       )}
     >
-      {progress === "generating" && (
-        <Icon
-          icon="lucide:loader-circle"
-          className="h-4 w-4 animate-spin text-blue-500"
-        />
-      )}
       {progress === "requesting" && (
         <Icon
           icon="lucide:loader-circle"
