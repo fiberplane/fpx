@@ -2,6 +2,11 @@ import { CodeMirrorPrompt } from "@/components/CodeMirrorEditor";
 import { KeyboardShortcutKey } from "@/components/KeyboardShortcut";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import type { ProxiedRequestResponse } from "@/pages/RequestorPage/queries";
 import { makeProxiedRequest } from "@/pages/RequestorPage/queries/hooks/useMakeProxiedRequest";
@@ -103,6 +108,7 @@ export function PromptPanel() {
     serviceBaseUrl,
     clearPlan,
     setPlanStepResponse,
+    setExecutingPlanStepIdx,
   } = useRequestorStore(
     "body",
     "pathParams",
@@ -120,6 +126,7 @@ export function PromptPanel() {
     "setPlanStepProgress",
     "clearPlan",
     "setPlanStepResponse",
+    "setExecutingPlanStepIdx",
   );
 
   const { toast } = useToast();
@@ -218,20 +225,28 @@ export function PromptPanel() {
     }
   };
 
-  // const { data: response } = useQuery({
-  //   queryKey: ["runActionRoute", route.id.toString()],
-  //   queryFn: ,
-  //   retry: false,
-  //   enabled: isActive && workflowState === "executing",
-  //   refetchOnWindowFocus: false,
-  // });
+  const executeNextStep = () => {
+    // TODO - if paused, increment?
+    setWorkflowState("executing");
+    executePlanStep(executingPlanStepIdx ?? 0);
+  };
+
+  const executeEntirePlan = () => {
+    // TODO - Implement runner
+    throw new Error("Not implemented");
+  };
 
   const handlePromptSubmit = async () => {
     // HACK - If we have a plan loaded and the user submits, we start executing it.
     if (plan) {
       setWorkflowState("executing");
       console.log("BOOTS: Executing plan step", executingPlanStepIdx);
-      executePlanStep(executingPlanStepIdx ?? 0);
+      if (executingPlanStepIdx === undefined) {
+        setExecutingPlanStepIdx(0);
+        executePlanStep(0);
+      } else {
+        executePlanStep(executingPlanStepIdx);
+      }
       // TODO - Execute requests from here for each step
       return;
     }
@@ -285,6 +300,8 @@ Method: ${route.method}]
             promptValue={promptText}
             handlePromptChange={handlePromptChange}
             handlePromptSubmit={handlePromptSubmit}
+            executeNextStep={executeNextStep}
+            executeEntirePlan={executeEntirePlan}
             routeCompletions={routeCompletions}
             allRoutes={routes}
           />
@@ -335,12 +352,16 @@ function PromptPanelContent({
   promptValue,
   handlePromptChange,
   handlePromptSubmit,
+  executeNextStep,
+  executeEntirePlan,
   routeCompletions,
 }: {
   allRoutes: ProbedRoute[];
   promptValue: string;
   handlePromptChange: (value?: string) => void;
   handlePromptSubmit: () => Promise<void>;
+  executeNextStep: () => void;
+  executeEntirePlan: () => void;
   routeCompletions: Completion[];
 }) {
   const { getRoutesInPlan } = useRequestorStore("getRoutesInPlan");
@@ -354,6 +375,8 @@ function PromptPanelContent({
         promptValue={promptValue}
         handlePromptChange={handlePromptChange}
         handlePromptSubmit={handlePromptSubmit}
+        executeNextStep={executeNextStep}
+        executeEntirePlan={executeEntirePlan}
         allRoutes={allRoutes}
         routeCompletions={routeCompletions}
         isCompact={!!routesInPlan}
@@ -595,6 +618,8 @@ function PromptInput({
   promptValue,
   handlePromptChange,
   handlePromptSubmit,
+  executeNextStep,
+  executeEntirePlan,
   allRoutes,
   routeCompletions,
   isCompact,
@@ -602,10 +627,13 @@ function PromptInput({
   promptValue: string;
   handlePromptChange: (value?: string) => void;
   handlePromptSubmit: () => Promise<void>;
+  executeNextStep: () => void;
+  executeEntirePlan: () => void;
   allRoutes: ProbedRoute[];
   routeCompletions: Completion[];
   isCompact: boolean;
 }) {
+  const { plan, workflowState } = useRequestorStore("plan", "workflowState");
   return (
     <div className="px-4">
       <CodeMirrorPrompt
@@ -623,6 +651,42 @@ function PromptInput({
         ]}
         className={isCompact ? "h-12" : "h-24"}
       />
+
+      {!!plan && (
+        <div className="flex items-center gap-1 justify-end">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={executeNextStep}
+              >
+                <Icon icon="lucide:arrow-down-to-dot" className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Execute next plan step</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={executeEntirePlan}
+              >
+                <Icon icon="lucide:circle-play" className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Execute entire plan</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 }

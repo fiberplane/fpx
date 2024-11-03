@@ -391,7 +391,7 @@ app.post(
   async (ctx) => {
     const USE_MOCK_DATA = true;
     if (USE_MOCK_DATA) {
-      await new Promise((resolve) => setTimeout(resolve, 2400));
+      await new Promise((resolve) => setTimeout(resolve, 1600));
       return ctx.json(getMockCreatePlanResponse());
     }
 
