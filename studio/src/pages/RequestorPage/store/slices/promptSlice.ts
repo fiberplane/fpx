@@ -82,6 +82,10 @@ export const promptSlice: StateCreator<
         state.plan.steps[idx] = { ...state.plan.steps[idx], ...update };
       }
     }),
+  removePlanStep: (idx) =>
+    set((state) => {
+      state.plan?.steps?.splice(idx, 1);
+    }),
   workflowState: "idle",
   setWorkflowState: (workflowState) =>
     set((state) => {

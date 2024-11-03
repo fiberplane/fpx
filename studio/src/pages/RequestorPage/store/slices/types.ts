@@ -150,6 +150,7 @@ export interface PromptPanelSlice {
   setPlan: (plan: Plan | undefined) => void;
   clearPlan: () => void;
   updatePlanStep: (idx: number, update: Partial<PlanStep>) => void;
+  removePlanStep: (idx: number) => void;
   workflowState: PromptWorkflowState;
   setWorkflowState: (workflowState: PromptWorkflowState) => void;
 

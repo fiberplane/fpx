@@ -239,7 +239,12 @@ export function PromptPanel() {
         }
 
         if (!request) {
-          throw new Error("No request found for step");
+          if (index === plan?.steps.length) {
+            setWorkflowState("completed");
+            setShouldKeepGoing(false);
+          } else {
+            throw new Error("No request found for step");
+          }
         }
 
         if (!plan) {
@@ -568,7 +573,7 @@ function ActiveCommandsList({
       <div className="grid grid-cols-1 gap-1">
         {routesInPlan.map((route, index) => (
           <ActiveCommand
-            key={route.id}
+            key={`${route.id}-${index}`}
             index={index}
             route={route}
             isActive={index === executingPlanStepIdx}
@@ -888,12 +893,15 @@ function WorkflowStateMessage({
   executingPlanStepIdx: number | undefined;
   awaitingInputMessage: string | undefined;
 }) {
+  const { getPlanStepProgress } = useRequestorStore("getPlanStepProgress");
   let content: null | React.ReactNode = null;
   if (workflowState !== "idle" && workflowState !== "completed") {
+    const progress = getPlanStepProgress(executingPlanStepIdx ?? 0);
     content = (
       <>
         {workflowState}: step {(executingPlanStepIdx ?? 0) + 1}
         {"—"}
+        {progress}
       </>
     );
   }
@@ -910,7 +918,7 @@ function WorkflowStateMessage({
   if (workflowState === "awaitingInput") {
     content = (
       <span className="text-yellow-200/80">
-        <span className="animate-ping">Confirm</span> continue - you can edit
+        <span className="animate-ping">Confirm continue</span> - you can edit
         the request or add instructions {awaitingInputMessage}
       </span>
     );
