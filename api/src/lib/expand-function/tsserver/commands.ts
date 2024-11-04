@@ -68,21 +68,21 @@ export async function openFile(
 //   logger.debug("[debug] Updated document:", fileUri);
 // }
 
-export async function getDiagnostics(
-  connection: MessageConnection,
-  filePath: string,
-) {
-  const fileUri = getFileUri(filePath);
+// export async function getDiagnostics(
+//   connection: MessageConnection,
+//   filePath: string,
+// ) {
+//   const fileUri = getFileUri(filePath);
 
-  const diagnostics = await connection.sendRequest(
-    "textDocument/publishDiagnostics",
-    {
-      uri: fileUri,
-    },
-  );
-  console.log("diagnostics", diagnostics);
-  return diagnostics;
-}
+//   const diagnostics = await connection.sendRequest(
+//     "textDocument/publishDiagnostics",
+//     {
+//       uri: fileUri,
+//     },
+//   );
+//   console.log("diagnostics", diagnostics);
+//   return diagnostics;
+// }
 
 /**
  * Get the source definition of a TypeScript file at a given position by executing
