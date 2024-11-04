@@ -14,7 +14,10 @@ import {
   generateRequestWithAiProvider,
   translateCommands,
 } from "../../lib/ai/index.js";
-import { STEP_EVALUATION_SYSTEM_PROMPT } from "../../lib/ai/prompts.js";
+import {
+  STEP_REQUEST_EVALUATION_SYSTEM_PROMPT,
+  STEP_RESPONSE_EVALUATION_SYSTEM_PROMPT,
+} from "../../lib/ai/prompts.js";
 import { GENERATE_FLOW_PLAN_SYSTEM_PROMPT } from "../../lib/ai/prompts.js";
 import { expandFunction } from "../../lib/expand-function/index.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
@@ -96,7 +99,13 @@ and a body like:
 
 with a body type of "json"
 
+# Important
+
 If a route requires auth, record that as a dependency in some form. We will likely need user input while executing to to complete an auth flow.
+
+Feel free to use template-style strings in request fields, as we can substitute them in later.
+For example, "<created-resource-id>" can be a placeholder for a resource id that we will learn in a previous step.
+
 `.trim();
 
 const createPlanUserPrompt = (userStory: string, routes: string) =>
@@ -422,6 +431,35 @@ const EvaluateNextStepAiResponseSchema = z.object({
   modifiedStep: PlanStepSchema,
 });
 
+const EvaluateStepResponseAiResponseSchema = z.object({
+  action: z.enum(["continue", "awaitInput"]),
+  message: z.string().describe("A message to the user about the next step"),
+});
+
+const createStepResponseEvaluationUserPrompt = (
+  step: PlanStep,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  stepResponse: any,
+) => {
+  return `
+You are an evaluator for a testing workflow.
+
+I need you to confirm that my most recent response for a step is expected, given our testing plan.
+
+If so, respond with "continue".
+If not, respond with "awaitInput".
+
+# Step
+${JSON.stringify(step, null, 2)}
+
+# Response
+${JSON.stringify(stepResponse, null, 2)}
+
+# Further instructions for you
+Provide CONCISE reasoning for why in plaintext. no markdown.
+`.trim();
+};
+
 const createStepEvaluationUserPrompt = (
   currentStep: z.infer<typeof PlanStepSchema>,
   previousResults: z.infer<typeof NextStepSchema>["previousResults"],
@@ -474,7 +512,7 @@ app.post(
     const aiResponse = await generateObject({
       model,
       schema: EvaluateNextStepAiResponseSchema,
-      system: STEP_EVALUATION_SYSTEM_PROMPT,
+      system: STEP_REQUEST_EVALUATION_SYSTEM_PROMPT,
       temperature: 0.1,
       messages,
     });
@@ -486,6 +524,41 @@ app.post(
     });
   },
 );
+
+app.post("/v0/evaluate-step-response", cors(), async (ctx) => {
+  const { plan, currentStepIdx, response: stepResponse } = await ctx.req.json();
+
+  const currentStep = plan.steps[currentStepIdx];
+  if (!currentStep) {
+    return ctx.json({ error: "Current step not found" }, 400);
+  }
+
+  const model = google("gemini-1.5-pro-latest");
+
+  const messages = [
+    { role: "assistant" as const, content: JSON.stringify(plan) },
+    {
+      role: "user" as const,
+      content: createStepResponseEvaluationUserPrompt(
+        currentStep,
+        stepResponse,
+      ),
+    },
+  ];
+
+  const aiResponse = await generateObject({
+    model,
+    schema: EvaluateStepResponseAiResponseSchema,
+    system: STEP_RESPONSE_EVALUATION_SYSTEM_PROMPT,
+    temperature: 0.4,
+    messages,
+  });
+
+  return ctx.json({
+    action: aiResponse.object.action,
+    message: aiResponse.object.message,
+  });
+});
 
 app.post(
   "/v0/create-plan",

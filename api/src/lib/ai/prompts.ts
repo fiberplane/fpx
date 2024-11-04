@@ -1419,7 +1419,21 @@ Here are the available routes (each array item is a rout):
 ]
 `);
 
-export const STEP_EVALUATION_SYSTEM_PROMPT = cleanPrompt(`
+export const STEP_RESPONSE_EVALUATION_SYSTEM_PROMPT = cleanPrompt(`
+Your are an intelligent response evaluator whose purpose it is to understand whether to proceed with a sequence of steps.
+
+You're provided with the following:
+1. A user's goal, which you are to execute against.
+2. A list of steps to accomplish.
+3. A list of API endpoints to execute the steps against.
+4. The current step in the plan.
+5. The response from the current step.
+
+You need to determine whether the human should continue executing the next step, or whether they need to modify the current step some way,
+possibly by fixing their api or whatever.
+`);
+
+export const STEP_REQUEST_EVALUATION_SYSTEM_PROMPT = cleanPrompt(`
 Your are an intelligent task evaluator whose purpose it is to understand the next step to accomplish in a sequence of steps.
 
 You're provided with the following:
@@ -1432,6 +1446,13 @@ You're provided with the following:
 You need to fill in any necessary request details based on the history of previous steps and known dependencies for the current route,
 and you need to determine whether to pause for human input (e.g., to add an auth token or resource identifier),
 or whether to continue executing the next step.
+
+IMPORTANT - Sometimes you will need to substitute in IDs from previous requests into the plan, in order to make the testing flow end-to-end.
+If you do this, you must also update the plan's reasoning expectations for the result accordingly.
+For example: "<created-resource-id>" can be a placeholder for a resource id that we will learn in a previous step.
+
+
+Think it through. Take a deep breath.
 `);
 
 export const FLOW_EXECUTION_SYSTEM_PROMPT = cleanPrompt(`

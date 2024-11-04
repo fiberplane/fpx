@@ -27,7 +27,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const createPlan = async (prompt: string) => {
+const createPlan = async (
+  prompt: string,
+  messages?: { role: "user" | "assistant"; content: string }[],
+) => {
   const response = await fetch("/v0/create-plan", {
     method: "POST",
     headers: {
@@ -35,12 +38,42 @@ const createPlan = async (prompt: string) => {
     },
     body: JSON.stringify({
       prompt,
+      messages,
     }),
   });
 
   if (!response.ok) {
     const error = new Error("Failed to create plan");
     console.error("Plan creation request failed:", {
+      status: response.status,
+      statusText: response.statusText,
+    });
+    throw error;
+  }
+
+  return response.json();
+};
+
+const evaluateStepResponse = async (
+  plan: Plan,
+  currentStepIdx: number,
+  stepResponse: RequestorActiveResponse,
+) => {
+  const response = await fetch("/v0/evaluate-step-response", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      plan,
+      currentStepIdx,
+      response: stepResponse,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = new Error("Failed to evaluate step response");
+    console.error("Step response evaluation request failed:", {
       status: response.status,
       statusText: response.statusText,
     });
@@ -151,6 +184,10 @@ export function PromptPanel() {
     getPlanStepProgress,
     shouldKeepGoing,
     setShouldKeepGoing,
+    setAwaitingInputMessage,
+    addPromptMessage,
+    setPromptMessages,
+    promptMessages,
   } = useRequestorStore(
     "body",
     "workflowState",
@@ -175,6 +212,11 @@ export function PromptPanel() {
     "getPlanStepProgress",
     "shouldKeepGoing",
     "setShouldKeepGoing",
+    "awaitingInputMessage",
+    "setAwaitingInputMessage",
+    "addPromptMessage",
+    "setPromptMessages",
+    "promptMessages",
   );
 
   const { toast } = useToast();
@@ -278,6 +320,8 @@ export function PromptPanel() {
         if (evaluationResponse?.action === "awaitInput") {
           // TODO - Implement this
           setWorkflowState("awaitingInput");
+          setPlanStepProgress(index, "warning");
+
           return;
         }
 
@@ -316,25 +360,57 @@ export function PromptPanel() {
           });
 
           // TODO - evaluate failure using ai...
+          const responseEvaluation = await evaluateStepResponse(
+            plan,
+            index,
+            response,
+          );
 
-          // Check if the request failed based on the response
-          const isFailure =
-            response.isFailure ||
-            (response.responseStatusCode &&
-              Number.parseInt(response.responseStatusCode, 10) >= 400);
+          console.log(
+            "BOOTS: Step response evaluation response",
+            evaluationResponse,
+          );
 
-          if (isFailure) {
-            setPlanStepProgress(index, "error");
-            setShouldKeepGoing(false);
-            setPlanStepResponse(index, response);
-            return response;
+          const shouldContinue = responseEvaluation?.action === "continue";
+          const shouldAwaitInput = responseEvaluation?.action === "awaitInput";
+
+          if (!shouldContinue && !shouldAwaitInput) {
+            setWorkflowState("error");
+            throw new Error("I do not know what to do");
           }
+
+          if (shouldAwaitInput) {
+            setShouldKeepGoing(false);
+            setWorkflowState("awaitingInput");
+            setAwaitingInputMessage(responseEvaluation?.message);
+            toast({
+              title: "Awaiting input",
+              description: responseEvaluation?.message ?? "No message",
+            });
+            return;
+          }
+
+          // OLD CODE - Automatically fails...
+          //
+          // Check if the request failed based on the response
+          // const isFailure =
+          //   response.isFailure ||
+          //   (response.responseStatusCode &&
+          //     Number.parseInt(response.responseStatusCode, 10) >= 400);
+
+          // if (isFailure) {
+          //   setPlanStepProgress(index, "error");
+          //   setShouldKeepGoing(false);
+          //   setPlanStepResponse(index, response);
+          //   return response;
+          // }
 
           setPlanStepProgress(index, "success");
           setPlanStepResponse(index, response);
           // TODO - Remove for "ENTIRE PLAN" flow... depends if we want to step or not
           if (shouldAwaitAfter) {
             setWorkflowState("awaitingInput");
+            incrementExecutingPlanStepIdx();
           } else {
             incrementExecutingPlanStepIdx();
           }
@@ -359,6 +435,7 @@ export function PromptPanel() {
       updatePlanStep,
       serviceBaseUrl,
       incrementExecutingPlanStepIdx,
+      setAwaitingInputMessage,
     ],
   );
 
@@ -414,7 +491,7 @@ export function PromptPanel() {
 
   const handlePromptSubmit = async () => {
     // HACK - If we have a plan loaded and the user submits, we start executing it.
-    if (plan) {
+    if (plan && workflowState !== "awaitingInput") {
       setWorkflowState("executing");
       console.log("BOOTS: Executing plan step", executingPlanStepIdx);
       if (executingPlanStepIdx === undefined) {
@@ -426,6 +503,8 @@ export function PromptPanel() {
       // TODO - Execute requests from here for each step
       return;
     }
+
+    // TODO - do something with awaiting input...
 
     // Replace route references in the prompt
     const replacedPrompt = promptText.replace(
@@ -444,17 +523,28 @@ Method: ${route.method}]
       },
     );
 
+    // if (workflowState === "awaitingInput") {
+    //   console.log("BOOTS: Updating plan step with input?", executingPlanStepIdx);
+    //   // TODO - Implement this
+    //   return;
+    // }
+
     try {
       // const { commands } =
       //   await translateCommandsMutation.mutateAsync(replacedPrompt);
       // setTranslatedCommands(commands);
 
       // NOTE - { plan, description } is the format we expect from the API
-      const planResponse = await createPlanMutation.mutateAsync(replacedPrompt);
+      const planResponse = await createPlanMutation.mutateAsync(
+        replacedPrompt,
+        promptMessages,
+      );
       setPlan({
         steps: planResponse?.plan,
         description: planResponse?.description,
       });
+
+      addPromptMessage({ role: "user", content: replacedPrompt });
 
       // Start executing the pipeline
     } catch (error) {
@@ -464,7 +554,10 @@ Method: ${route.method}]
 
   const handleReset = () => {
     setPromptText("");
+    setWorkflowState("idle");
+    setShouldKeepGoing(false);
     clearPlan();
+    setPromptMessages([]);
   };
 
   return (
@@ -594,6 +687,7 @@ function ActiveCommand({
   route,
   // previousResponses,
   index,
+  isActive,
 }: {
   route: ProbedRoute;
   isActive: boolean;
@@ -790,6 +884,12 @@ function ActiveCommand({
       {progress === "idle" && (
         <Icon icon="lucide:circle" className="h-4 w-4 text-gray-400" />
       )}
+      {progress === "warning" && (
+        <Icon
+          icon="lucide:alert-circle"
+          className={cn("h-4 w-4 text-yellow-500", isActive && "animate-pulse")}
+        />
+      )}
       {progress === "error" && (
         <Icon icon="lucide:x-circle" className="h-4 w-4 text-red-500" />
       )}
@@ -922,10 +1022,10 @@ function WorkflowStateMessage({
   }
   if (workflowState === "awaitingInput") {
     content = (
-      <span className="text-yellow-200/80">
+      <div className="text-yellow-200/80">
         <span className="animate-ping">Confirm continue</span> - you can edit
         the request or add instructions {awaitingInputMessage}
-      </span>
+      </div>
     );
   }
   return (

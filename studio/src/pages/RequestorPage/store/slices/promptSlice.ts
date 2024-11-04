@@ -12,6 +12,16 @@ export const promptSlice: StateCreator<
       state.promptText = promptText;
     }),
 
+  promptMessages: [],
+  setPromptMessages: (promptMessages) =>
+    set((state) => {
+      state.promptMessages = promptMessages;
+    }),
+  addPromptMessage: (promptMessage) =>
+    set((state) => {
+      state.promptMessages.push(promptMessage);
+    }),
+
   planStepProgressMap: null,
   setPlanStepProgress: (index, planStepProgress) =>
     set((state) => {

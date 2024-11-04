@@ -118,11 +118,29 @@ export type Store = RequestResponseSlice &
   UISlice &
   PromptPanelSlice;
 
-export type PlanStepProgress = "idle" | "requesting" | "success" | "error";
+export type PlanStepProgress =
+  | "idle"
+  | "requesting"
+  | "warning"
+  | "success"
+  | "error";
 
 export interface PromptPanelSlice {
   promptText: string;
   setPromptText: (promptText: string) => void;
+
+  promptMessages: { role: "user" | "assistant"; content: string }[];
+  setPromptMessages: (
+    promptMessages: {
+      role: "user" | "assistant";
+      content: string;
+    }[],
+  ) => void;
+  addPromptMessage: (promptMessage: {
+    role: "user" | "assistant";
+    content: string;
+  }) => void;
+
   activePlanStepIdx: number | undefined;
   setActivePlanStepIdx: (activePlanStepId: number | undefined) => void;
 
