@@ -140,7 +140,7 @@ export function getImportTypeDefinitionFileName(
   if (result.resolvedModule?.isExternalLibraryImport) {
     return {
       type: "MODULE_REFERENCE",
-      id: resourceManager.getId("MODULE_REFERENCE", node.getText(), text),
+      id: resourceManager.getId("MODULE_REFERENCE", text, node.getText()),
       import: node.getText(),
       importPath: text,
       // TODO handle packageId being empty?

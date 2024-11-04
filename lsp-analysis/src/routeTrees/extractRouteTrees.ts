@@ -1,5 +1,4 @@
-import { ResourceManager } from "../ResourceManager";
-// import { SourceReferenceManager } from "../SourceReferenceManager";
+import type { ResourceManager } from "../ResourceManager";
 import {
   HONO_HTTP_METHODS,
   type MiddlewareEntry,
@@ -30,12 +29,11 @@ export function extractRouteTrees(
   service: TsLanguageService,
   ts: TsType,
   projectRoot: string,
+  resourceManager: ResourceManager,
 ): {
   errorCount?: number;
   resources: Record<string, TreeResource>;
 } {
-  // const sourceReferenceManager = new SourceReferenceManager();
-  const resourceManager = new ResourceManager(projectRoot);
   const program = service.getProgram();
 
   if (!program) {
@@ -85,6 +83,19 @@ export function extractRouteTrees(
       });
     }
   }
+
+  // const honoReference =
+  // const moduleId = resourceManager.getId("MODULE_REFERENCE", "hono", "Hono");
+  // const moduleReference = resourceManager.createModuleReference({
+  //   type: "MODULE_REFERENCE",
+  //   importPath: "hono",
+  //   import: "Hono",
+  //   name: "Hono",
+  //   // version: "1.0.0",
+  // });
+  // resourceManager.addResource({
+  //   id: resourceManager.getId("MODULE_REFERENCE", )
+  // })
 
   return {
     resources: resourceManager.getResources(),

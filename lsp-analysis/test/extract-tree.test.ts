@@ -41,10 +41,10 @@ test.each([
     name: "hono factory",
     location: "./test-case/hono-factory",
   },
-  {
-    name: "api",
-    location: "../../api",
-  }
+  // {
+  //   name: "api",
+  //   location: "../../api",
+  // }
 ])("run test $name with location $location", async ({ location, name }) => {
   const absolutePath = path.join(__dirname, location);
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);

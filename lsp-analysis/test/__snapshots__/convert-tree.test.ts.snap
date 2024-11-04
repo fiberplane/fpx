@@ -1,0 +1,92 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`barrel-files 1`] = `
+"//@ Start file: index.ts
+import { cors } from "hono/cors";
+
+const app = new Hono();
+app.baseUrl = "";
+          
+// Route entry:ROUTE_ENTRY:index.ts@407
+app.get("/user/1", cors()async (c) => {
+  // await getUser();
+  const user = await getUser();
+  return c.json(user);
+}
+// Route entry:ROUTE_ENTRY:index.ts@531
+app.get("/", (c) => c.text("Hello, Hono!")
+//@ EOF file: index.ts
+
+
+//@ Start file: db/index.ts
+
+
+
+//@ EOF file: db/index.ts
+"
+`;
+
+exports[`hono-factory 1`] = `
+"//@ Start file: index.ts
+
+
+const subHello = new Hono();
+subHello.baseUrl = "";
+          
+// Route entry:ROUTE_ENTRY:index.ts@124
+subHello.get("/", (c) => c.text("Hello, sub!")
+// Route entry:ROUTE_ENTRY:index.ts@173
+subHello.get("/bye", (c) => c.text("Bye, sub!")
+const app = new Hono();
+app.baseUrl = "";
+          
+//@ EOF file: index.ts
+
+
+//@ Start file: factory.ts
+
+
+const app = new Hono();
+app.baseUrl = "";
+          
+// Route entry:ROUTE_ENTRY:factory.ts@281
+app.get("/", (c) => c.text("Hello, Hono!")
+//@ EOF file: factory.ts
+
+
+//@ Start file: bye.ts
+
+
+const bye = new Hono();
+bye.baseUrl = "";
+          
+// Route entry:ROUTE_ENTRY:bye.ts@54
+bye.get("/bye", (c) => c.text("Bye, sub!")
+//@ EOF file: bye.ts
+
+
+//@ Start file: silence.ts
+
+
+const silence = new Hono();
+silence.baseUrl = "";
+          
+// Route entry:ROUTE_ENTRY:silence.ts@58
+silence.get("/", (c) => c.text("...")
+//@ EOF file: silence.ts
+
+
+//@ Start file: panic.ts
+
+
+const app = new Hono();
+app.baseUrl = "";
+          
+// Route entry:ROUTE_ENTRY:panic.ts@54
+app.get("/", (c) => {
+  c.status(500);
+  return c.text("Panic!");
+}
+//@ EOF file: panic.ts
+"
+`;

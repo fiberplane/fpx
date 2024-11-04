@@ -1,4 +1,5 @@
 import path from "node:path";
+import { ResourceManager } from "./ResourceManager";
 import { extractRouteTrees } from "./routeTrees";
 import { getTsLib, startServer } from "./server";
 import type { TsType } from "./types";
@@ -56,9 +57,13 @@ export function setupMonitoring(projectRoot: string) {
     delete fileMap[event.payload.fileName];
   });
 
+  const resourceManager = new ResourceManager(projectRoot);
+
   return {
     watcher,
-    findHonoRoutes: () => extractRouteTrees(server, ts, projectRoot),
+    findHonoRoutes: () =>
+      extractRouteTrees(server, ts, projectRoot, resourceManager),
+    resourceManager,
     teardown: () => {
       watcher.teardown();
       server.dispose();

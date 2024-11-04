@@ -1,19 +1,29 @@
 import path from "node:path";
 import type {
+  LocalFileResource,
+  LocalFileResourceId,
   MiddlewareEntry,
+  MiddlewareEntryId,
   ModuleReference,
+  ModuleReferenceId,
   RouteEntry,
+  RouteEntryId,
   RouteTree,
+  RouteTreeEntry,
+  RouteTreeEntryId,
+  RouteTreeId,
   RouteTreeReference,
   SourceReference,
+  SourceReferenceId,
   TreeResource,
+  TreeResourceId,
 } from "./types";
 
 // type NotModuleTreeReference = Exclude<TreeResource, ModuleReference>;
 
 // Class that manages tree resources
 export class ResourceManager {
-  private references: Map<string, TreeResource>;
+  private references: Map<TreeResourceId, TreeResource>;
   private projectRoot: string;
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
@@ -68,16 +78,27 @@ export class ResourceManager {
     resourceType: TreeResource["type"],
     param1: string,
     param2: string | number,
-  ): TreeResource["id"] {
+  ): TreeResourceId {
     if (resourceType === "MODULE_REFERENCE") {
-      const importPath = param1;
-      const importName = param2 as string;
-      return `${resourceType}:${importPath}@${importName}` as TreeResource["id"];
+      const importPath = encodeURIComponent(param1);
+      const importName = encodeURIComponent(param2 as string);
+      return `${resourceType}:${importPath}@${importName}` as ModuleReference["id"];
     }
 
-    const fileName = this.asRelativePath(param1);
+    const fileName = encodeURIComponent(this.asRelativePath(param1));
     const position = param2 as number;
-    return `${resourceType}:${fileName}@${position}` as TreeResource["id"];
+    return `${resourceType}:${fileName}@${position}` as TreeResourceId;
+  }
+
+  decodeId(id: TreeResourceId) {
+    const parts = id.split(":");
+    const type = parts[0] as TreeResource["type"];
+    const [fileName, position] = parts[1].split("@");
+    return {
+      type,
+      fileName: this.asAbsolutePath(decodeURIComponent(fileName)),
+      position: Number(position),
+    };
   }
 
   createRouteTree(props: Omit<RouteTree, "id">): RouteTree {
@@ -106,7 +127,7 @@ export class ResourceManager {
     return resource;
   }
 
-  addResource(resource: TreeResource) {
+  private addResource(resource: TreeResource) {
     this.references.set(resource.id, resource);
   }
 
@@ -143,8 +164,10 @@ export class ResourceManager {
     }
     const resource = { id, ...props };
     this.references.set(id, resource);
+    console.log("created module", resource.id);
     return resource;
   }
+
   createRouteTreeReference(
     props: Omit<RouteTreeReference, "id">,
   ): RouteTreeReference {
@@ -160,40 +183,23 @@ export class ResourceManager {
     return resource;
   }
 
-  //   private createResource(props: CreateOptions): {
-  //     if(isCreateModelReference(props)) {
-  //     const id =
-  //       this.getId(props.type, props.importPath, props.import);
-  //     if (this.references.has(id)) {
-  //       console.log("Warning resource already exists", id);
-  //     }
-  //     const resource = { id, ...props } as T;
-  //     this.references.set(id, resource);
-  //     return resource;
-  //   }
-
-  //   const id =
-  //     this.getId(
-  //       props.type,
-  //       props.fileName,
-  //       props.position,
-  //     );
-
-  //   if(this.references.has(id)) {
-  //   console.log("Warning resource already exists", id);
-  // }
-
-  // const resource = { id, ...p } as T;
-  // this.references.set(id, resource);
-  // return resource;
-  //   }
-
-  // getResource(id: )
-  getResource<T extends TreeResource>(id: T["id"]): T | undefined {
-    return this.references.get(id) as T | undefined;
+  // Overloaded getResource function
+  getResource(id: RouteTreeId): RouteTree | undefined;
+  getResource(id: RouteEntryId): RouteEntry | undefined;
+  getResource(id: RouteTreeEntryId): RouteTreeEntry | undefined;
+  getResource(id: MiddlewareEntryId): MiddlewareEntry | undefined;
+  getResource(id: SourceReferenceId): SourceReference | undefined;
+  getResource(id: ModuleReferenceId): ModuleReference | undefined;
+  getResource(
+    id: RouteTreeEntryId | RouteTreeId,
+  ): RouteTreeEntry | RouteTree | undefined;
+  getResource(id: LocalFileResourceId): LocalFileResource | undefined;
+  // Actual implementation
+  getResource(id: TreeResourceId): TreeResource | undefined {
+    return this.references.get(id);
   }
 
-  removeResource(id: string) {
+  removeResource(id: TreeResourceId) {
     this.references.delete(id);
   }
 
@@ -204,6 +210,11 @@ export class ResourceManager {
   ): void {
     const id = this.getId("SOURCE_REFERENCE", fileName, position);
     const sourceReference = this.getResource(id) as SourceReference;
+
+    if (!this.references.has(module.id)) {
+      this.addResource(module);
+    }
+
     if (!sourceReference) {
       console.log(
         `Missing SourceReference for (fileName: ${fileName}, position: ${position}, id: ${id}`,
@@ -214,22 +225,7 @@ export class ResourceManager {
       );
     }
 
-    // if (sourceReference.modules[module.name] === undefined) {
-    //   sourceReference.modules[module.name] = [];
-    // }
-    // const moduleImports = sourceReference.modules[module.name];
-
-    // if (
-    //   moduleImports.find(
-    //     (item) =>
-    //       item.import === module.import &&
-    //       item.importPath === module.importPath,
-    //   )
-    // ) {
-    //   return;
-    // }
     sourceReference.modules.push(module.id);
-    // moduleImports.push(module);
   }
 
   // addModuleToReference(

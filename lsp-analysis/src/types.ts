@@ -1,8 +1,8 @@
+import { Hono } from "hono";
 import relative from "resolve";
 import type { Tagged } from "type-fest";
 import * as bundledTs from "typescript";
 import type { ResourceManager } from "./ResourceManager";
-import { Hono } from "hono";
 
 export const bundledTypescript = bundledTs;
 export const relativeResolve = relative.sync;
@@ -37,17 +37,26 @@ export type TsFunctionExpression = bundledTs.FunctionExpression;
 
 export type RouteTreeId = Tagged<string, "RouteTreeId">;
 export type RouteTreeReferenceId = Tagged<string, "RouteTreeReferenceId">;
-export type RouteTreeEntryId = Tagged<string, "RouteTreeEntryId">;
+// export type RouteTreeEntryId = Tagged<string, "RouteTreeEntryId">;
 export type MiddlewareEntryId = Tagged<string, "MiddlewareEntryId">;
 export type RouteEntryId = Tagged<string, "RouteEntryId">;
 export type SourceReferenceId = Tagged<string, "SourceReferenceId">;
 export type ModuleReferenceId = Tagged<string, "ModuleReferenceId">;
+
+/// Basic types
 
 type FileReference = {
   fileName: string;
   position: number;
 };
 
+type RouteDetails = {
+  path: string;
+  sources: SourceReferenceId[];
+  modules: Array<ModuleReferenceId>;
+} & FileReference;
+
+// Specific route related types
 export type RouteTree = {
   type: "ROUTE_TREE";
   id: RouteTreeId;
@@ -58,11 +67,8 @@ export type RouteTree = {
    * The Hono type is a generic that can be used
    * for instance to inject bindings/environment variables
    */
-  entries: Array<RouteTreeEntryIds>;
+  entries: Array<RouteTreeEntryId>;
 } & FileReference;
-
-export type RouteTreeEntry = RouteEntry | RouteTreeReference | MiddlewareEntry;
-export type RouteTreeEntryIds = RouteTreeEntry["id"];
 
 export type RouteTreeReference = {
   type: "ROUTE_TREE_REFERENCE";
@@ -80,47 +86,7 @@ export type RouteTreeReference = {
   name: string;
   fileName: string;
   position: number;
-
-  // TODO: support route tree references from external dependencies
 };
-
-export const HONO_HTTP_METHODS = [
-  "get",
-  "post",
-  "put",
-  "delete",
-  "patch",
-  "options",
-] as const;
-export type HonoHttpMethod = (typeof HONO_HTTP_METHODS)[number];
-
-type RouteDetails = {
-  id: string;
-  path: string;
-  sources: SourceReferenceId[];
-  modules: Array<ModuleReferenceId>;
-} & FileReference;
-
-export type RouteEntry = {
-  type: "ROUTE_ENTRY";
-  id: RouteTreeEntryId;
-  method?: string;
-} & RouteDetails;
-
-export type MiddlewareEntry = {
-  type: "MIDDLEWARE_ENTRY";
-  id: MiddlewareEntryId;
-} & RouteDetails;
-
-export type SourceReference = {
-  type: "SOURCE_REFERENCE";
-  id: SourceReferenceId;
-  content: string;
-  line: number;
-  character: number;
-  modules: Array<ModuleReferenceId>;
-  references: Array<SourceReferenceId>;
-} & FileReference;
 
 // TODO: handle export ... from ... cases
 export type ModuleReference = {
@@ -144,6 +110,43 @@ export type ModuleReference = {
   import: string;
 };
 
+export type SourceReference = {
+  type: "SOURCE_REFERENCE";
+  id: SourceReferenceId;
+  content: string;
+  line: number;
+  character: number;
+  modules: Array<ModuleReferenceId>;
+  references: Array<SourceReferenceId>;
+} & FileReference;
+
+export const HONO_HTTP_METHODS = [
+  "get",
+  "post",
+  "put",
+  "delete",
+  "patch",
+  "options",
+] as const;
+export type HonoHttpMethod = (typeof HONO_HTTP_METHODS)[number];
+
+export type RouteEntry = {
+  type: "ROUTE_ENTRY";
+  id: RouteEntryId;
+  method?: string;
+} & RouteDetails;
+
+export type MiddlewareEntry = {
+  type: "MIDDLEWARE_ENTRY";
+  id: MiddlewareEntryId;
+} & RouteDetails;
+
+export type RouteTreeEntry = RouteEntry | RouteTreeReference | MiddlewareEntry;
+export type RouteTreeEntryId =
+  | RouteEntryId
+  | RouteTreeReferenceId
+  | MiddlewareEntryId;
+
 /**
  * Different types of elements that can be part of a route tree
  */
@@ -160,7 +163,16 @@ export type TreeResource =
   | MiddlewareEntry
   | SourceReference
   | ModuleReference;
-export type ResourceType = TreeResource["type"];
+
+export type TreeResourceType = TreeResource["type"];
+export type TreeResourceId = TreeResource["id"];
+export type LocalFileResource =
+  | RouteTree
+  | RouteEntry
+  | MiddlewareEntry
+  | SourceReference
+  | RouteTreeReference;
+export type LocalFileResourceId = LocalFileResource["id"];
 
 export type SearchContext = {
   resourceManager: ResourceManager;
