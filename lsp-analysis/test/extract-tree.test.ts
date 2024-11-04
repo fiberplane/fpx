@@ -50,23 +50,12 @@ test.each([
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
     watcher.start();
-    // findHonoRoutes();
     const start = performance.now();
     const result = findHonoRoutes();
     console.log(
       `Duration for ${name}: ${(performance.now() - start).toFixed(4)}`,
     );
     expect(result).toMatchSnapshot();
-
-    for (let i = 0; i < 5; i++) {
-      const start2 = performance.now();
-      findHonoRoutes();
-      console.log(
-        `Duration ${i + 2} for ${name}: ${(performance.now() - start2).toFixed(4)}`,
-      );
-
-    }
-
 
     // console.log(result.results[0].entries);
     // console.log(flattenRouteTree(result.results[0], "/api/geese/:id/generate"));

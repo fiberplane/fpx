@@ -14,5 +14,14 @@
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
-  }
+  },
+  "include": [
+    "src/**/*",
+    "worker-configuration.d.ts"
+  ],
+  "exclude": [
+    "outputs",
+    "storage",
+    "node_modules"
+  ]
 }

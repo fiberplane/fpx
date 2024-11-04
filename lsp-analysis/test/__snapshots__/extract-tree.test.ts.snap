@@ -167,56 +167,56 @@ exports[`run test 'api' with location '../../api' 1`] = `
       ],
       "type": "ROUTE_ENTRY",
     },
-    "ROUTE_ENTRY:src/routes/auth.ts@2241": {
+    "ROUTE_ENTRY:src/routes/auth.ts@2371": {
       "fileName": "src/routes/auth.ts",
-      "id": "ROUTE_ENTRY:src/routes/auth.ts@2241",
+      "id": "ROUTE_ENTRY:src/routes/auth.ts@2371",
       "method": "delete",
       "modules": [],
       "path": "/v0/auth/user",
-      "position": 2241,
+      "position": 2371,
       "sources": [
-        "SOURCE_REFERENCE:src/routes/auth.ts@2269",
-        "SOURCE_REFERENCE:src/routes/auth.ts@2277",
+        "SOURCE_REFERENCE:src/routes/auth.ts@2399",
+        "SOURCE_REFERENCE:src/routes/auth.ts@2407",
       ],
       "type": "ROUTE_ENTRY",
     },
-    "ROUTE_ENTRY:src/routes/auth.ts@2539": {
+    "ROUTE_ENTRY:src/routes/auth.ts@2669": {
       "fileName": "src/routes/auth.ts",
-      "id": "ROUTE_ENTRY:src/routes/auth.ts@2539",
+      "id": "ROUTE_ENTRY:src/routes/auth.ts@2669",
       "method": "post",
       "modules": [],
       "path": "/v0/auth/verify",
-      "position": 2539,
+      "position": 2669,
       "sources": [
-        "SOURCE_REFERENCE:src/routes/auth.ts@2567",
-        "SOURCE_REFERENCE:src/routes/auth.ts@2575",
+        "SOURCE_REFERENCE:src/routes/auth.ts@2697",
+        "SOURCE_REFERENCE:src/routes/auth.ts@2705",
       ],
       "type": "ROUTE_ENTRY",
     },
-    "ROUTE_ENTRY:src/routes/auth.ts@3212": {
+    "ROUTE_ENTRY:src/routes/auth.ts@3342": {
       "fileName": "src/routes/auth.ts",
-      "id": "ROUTE_ENTRY:src/routes/auth.ts@3212",
+      "id": "ROUTE_ENTRY:src/routes/auth.ts@3342",
       "method": "post",
       "modules": [],
       "path": "/v0/auth/success",
-      "position": 3212,
+      "position": 3342,
       "sources": [
-        "SOURCE_REFERENCE:src/routes/auth.ts@3246",
-        "SOURCE_REFERENCE:src/routes/auth.ts@3256",
-        "SOURCE_REFERENCE:src/routes/auth.ts@3298",
+        "SOURCE_REFERENCE:src/routes/auth.ts@3376",
+        "SOURCE_REFERENCE:src/routes/auth.ts@3386",
+        "SOURCE_REFERENCE:src/routes/auth.ts@3428",
       ],
       "type": "ROUTE_ENTRY",
     },
-    "ROUTE_ENTRY:src/routes/auth.ts@637": {
+    "ROUTE_ENTRY:src/routes/auth.ts@767": {
       "fileName": "src/routes/auth.ts",
-      "id": "ROUTE_ENTRY:src/routes/auth.ts@637",
+      "id": "ROUTE_ENTRY:src/routes/auth.ts@767",
       "method": "get",
       "modules": [],
       "path": "/v0/auth/user",
-      "position": 637,
+      "position": 767,
       "sources": [
-        "SOURCE_REFERENCE:src/routes/auth.ts@662",
-        "SOURCE_REFERENCE:src/routes/auth.ts@670",
+        "SOURCE_REFERENCE:src/routes/auth.ts@792",
+        "SOURCE_REFERENCE:src/routes/auth.ts@800",
       ],
       "type": "ROUTE_ENTRY",
     },
@@ -354,7 +354,7 @@ exports[`run test 'api' with location '../../api' 1`] = `
         "MIDDLEWARE_ENTRY:src/app.ts@948",
         "MIDDLEWARE_ENTRY:src/app.ts@1135",
         "MIDDLEWARE_ENTRY:src/app.ts@1538",
-        "ROUTE_TREE_REFERENCE:src/routes/auth.ts@497",
+        "ROUTE_TREE_REFERENCE:src/routes/auth.ts@627",
         "ROUTE_TREE_REFERENCE:src/routes/traces.ts@568",
         "ROUTE_TREE_REFERENCE:src/routes/inference/inference.ts@647",
         "ROUTE_TREE_REFERENCE:src/routes/source.ts@370",
@@ -399,18 +399,18 @@ exports[`run test 'api' with location '../../api' 1`] = `
       "position": 1073,
       "type": "ROUTE_TREE",
     },
-    "ROUTE_TREE:src/routes/auth.ts@497": {
+    "ROUTE_TREE:src/routes/auth.ts@627": {
       "baseUrl": "",
       "entries": [
-        "ROUTE_ENTRY:src/routes/auth.ts@637",
-        "ROUTE_ENTRY:src/routes/auth.ts@2241",
-        "ROUTE_ENTRY:src/routes/auth.ts@2539",
-        "ROUTE_ENTRY:src/routes/auth.ts@3212",
+        "ROUTE_ENTRY:src/routes/auth.ts@767",
+        "ROUTE_ENTRY:src/routes/auth.ts@2371",
+        "ROUTE_ENTRY:src/routes/auth.ts@2669",
+        "ROUTE_ENTRY:src/routes/auth.ts@3342",
       ],
       "fileName": "src/routes/auth.ts",
-      "id": "ROUTE_TREE:src/routes/auth.ts@497",
+      "id": "ROUTE_TREE:src/routes/auth.ts@627",
       "name": "app",
-      "position": 497,
+      "position": 627,
       "type": "ROUTE_TREE",
     },
     "ROUTE_TREE:src/routes/inference/inference.ts@647": {
@@ -481,13 +481,13 @@ exports[`run test 'api' with location '../../api' 1`] = `
       "targetId": "ROUTE_TREE:src/routes/app-routes.ts@1073",
       "type": "ROUTE_TREE_REFERENCE",
     },
-    "ROUTE_TREE_REFERENCE:src/routes/auth.ts@497": {
+    "ROUTE_TREE_REFERENCE:src/routes/auth.ts@627": {
       "fileName": "src/routes/auth.ts",
-      "id": "ROUTE_TREE_REFERENCE:src/routes/auth.ts@497",
+      "id": "ROUTE_TREE_REFERENCE:src/routes/auth.ts@627",
       "name": "app",
       "path": "/",
-      "position": 497,
-      "targetId": "ROUTE_TREE:src/routes/auth.ts@497",
+      "position": 627,
+      "targetId": "ROUTE_TREE:src/routes/auth.ts@627",
       "type": "ROUTE_TREE_REFERENCE",
     },
     "ROUTE_TREE_REFERENCE:src/routes/inference/inference.ts@647": {
@@ -944,6 +944,54 @@ exports[`run test 'api' with location '../../api' 1`] = `
         "MODULE_REFERENCE:sql@drizzle-orm",
       ],
       "position": 6483,
+      "references": [],
+      "type": "SOURCE_REFERENCE",
+    },
+    "SOURCE_REFERENCE:src/lib/ai/index.ts@6689": {
+      "character": 0,
+      "content": "export function hasValidAiConfig(settings: Settings) {
+  const provider = settings.aiProvider;
+  switch (provider) {
+    // HACK - Special logic for OpenAI to support someone who has set a baseUrl
+    //        to use an openai compatible api
+    case "openai": {
+      const openai = settings.aiProviderConfigurations?.openai;
+      const apiKey = openai?.apiKey;
+      const model = openai?.model;
+      const baseUrl = openai?.baseUrl;
+      return (!!apiKey && !!model) || (!!baseUrl && !!model);
+    }
+    case "anthropic": {
+      const anthropic = settings.aiProviderConfigurations?.anthropic;
+      const apiKey = anthropic?.apiKey;
+      const model = anthropic?.model;
+      return !!apiKey && !!model;
+    }
+    case "mistral": {
+      const mistral = settings.aiProviderConfigurations?.mistral;
+      const apiKey = mistral?.apiKey;
+      const model = mistral?.model;
+      return !!apiKey && !!model;
+    }
+    case "ollama": {
+      const ollama = settings.aiProviderConfigurations?.ollama;
+      const model = ollama?.model;
+      return !!model;
+    }
+    case "fp": {
+      return true;
+    }
+    default:
+      return false;
+  }
+}",
+      "fileName": "src/lib/ai/index.ts",
+      "id": "SOURCE_REFERENCE:src/lib/ai/index.ts@6689",
+      "line": 261,
+      "modules": [
+        "MODULE_REFERENCE:Settings@@fiberplane/fpx-types",
+      ],
+      "position": 6689,
       "references": [],
       "type": "SOURCE_REFERENCE",
     },
@@ -3113,6 +3161,44 @@ exports[`run test 'api' with location '../../api' 1`] = `
       ],
       "type": "SOURCE_REFERENCE",
     },
+    "SOURCE_REFERENCE:src/lib/settings/index.ts@337": {
+      "character": 0,
+      "content": "export async function upsertSettings(
+  db: LibSQLDatabase<typeof schema>,
+  content: Settings,
+) {
+  const parsedSettings = SettingsSchema.parse(content);
+
+  const rows = Object.entries(parsedSettings).map(([key, value]) => ({
+    key,
+    value: JSON.stringify(value),
+  }));
+
+  return await db
+    .insert(settings)
+    .values(rows)
+    .onConflictDoUpdate({
+      target: [settings.key],
+      set: { value: sql\`excluded.value\` },
+    })
+    .returning();
+}",
+      "fileName": "src/lib/settings/index.ts",
+      "id": "SOURCE_REFERENCE:src/lib/settings/index.ts@337",
+      "line": 11,
+      "modules": [
+        "MODULE_REFERENCE:LibSQLDatabase@drizzle-orm/libsql",
+        "MODULE_REFERENCE:Settings@@fiberplane/fpx-types",
+        "MODULE_REFERENCE:SettingsSchema@@fiberplane/fpx-types",
+        "MODULE_REFERENCE:sql@drizzle-orm",
+      ],
+      "position": 337,
+      "references": [
+        "SOURCE_REFERENCE:src/db/schema.ts@6483",
+        "SOURCE_REFERENCE:src/db/schema.ts@6483",
+      ],
+      "type": "SOURCE_REFERENCE",
+    },
     "SOURCE_REFERENCE:src/lib/utils.ts@208": {
       "character": 0,
       "content": "export function isJson(str: unknown) {
@@ -3857,20 +3943,20 @@ exports[`run test 'api' with location '../../api' 1`] = `
       ],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@2269": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@2399": {
       "character": 28,
       "content": "cors()",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@2269",
-      "line": 73,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@2399",
+      "line": 75,
       "modules": [
         "MODULE_REFERENCE:cors@hono/cors",
       ],
-      "position": 2269,
+      "position": 2399,
       "references": [],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@2277": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@2407": {
       "character": 36,
       "content": "async (ctx) => {
   logger.debug("Deleting user details");
@@ -3880,27 +3966,27 @@ exports[`run test 'api' with location '../../api' 1`] = `
   return ctx.body(null, 204);
 }",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@2277",
-      "line": 73,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@2407",
+      "line": 75,
       "modules": [],
-      "position": 2277,
+      "position": 2407,
       "references": [],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@2567": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@2697": {
       "character": 28,
       "content": "cors()",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@2567",
-      "line": 84,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@2697",
+      "line": 86,
       "modules": [
         "MODULE_REFERENCE:cors@hono/cors",
       ],
-      "position": 2567,
+      "position": 2697,
       "references": [],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@2575": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@2705": {
       "character": 36,
       "content": "async (ctx) => {
   const token = ctx.req.header("Authorization")?.split(" ")?.[1];
@@ -3922,42 +4008,42 @@ exports[`run test 'api' with location '../../api' 1`] = `
   }
 }",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@2575",
-      "line": 84,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@2705",
+      "line": 86,
       "modules": [],
-      "position": 2575,
+      "position": 2705,
       "references": [],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@3246": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@3376": {
       "character": 2,
       "content": "cors()",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@3246",
-      "line": 109,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@3376",
+      "line": 111,
       "modules": [
         "MODULE_REFERENCE:cors@hono/cors",
       ],
-      "position": 3246,
+      "position": 3376,
       "references": [],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@3256": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@3386": {
       "character": 2,
       "content": "zValidator("json", TokenPayloadSchema)",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@3256",
-      "line": 110,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@3386",
+      "line": 112,
       "modules": [
         "MODULE_REFERENCE:zValidator@@hono/zod-validator",
       ],
-      "position": 3256,
+      "position": 3386,
       "references": [
         "SOURCE_REFERENCE:src/lib/fp-services/types.ts@107",
       ],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@3298": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@3428": {
       "character": 2,
       "content": "async (ctx) => {
     const { token, expiresAt } = ctx.req.valid("json");
@@ -3970,6 +4056,29 @@ exports[`run test 'api' with location '../../api' 1`] = `
         value: token,
         expiresAt,
       });
+
+      // HACK - We do two updates to settings when a user logs in
+      //        1. If AI is not enabled, just switch to Fiberplane provider
+      //        2. If proxy requests are not enabled, just enable them
+      const settings = await getAllSettings(db);
+      const aiEnabled = settings ? hasValidAiConfig(settings) : false;
+      if (!aiEnabled) {
+        await upsertSettings(db, {
+          aiProvider: "fp",
+          aiProviderConfigurations: {
+            ...settings?.aiProviderConfigurations,
+            fp: {
+              model: "",
+              apiKey: "",
+            },
+          },
+        });
+      }
+      if (!settings?.proxyRequestsEnabled) {
+        await upsertSettings(db, {
+          proxyRequestsEnabled: true,
+        });
+      }
 
       // Force the UI to refresh user information,
       // effectively logging the user in.
@@ -3991,27 +4100,32 @@ exports[`run test 'api' with location '../../api' 1`] = `
     }
   }",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@3298",
-      "line": 111,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@3428",
+      "line": 113,
       "modules": [],
-      "position": 3298,
-      "references": [],
+      "position": 3428,
+      "references": [
+        "SOURCE_REFERENCE:src/lib/settings/index.ts@1609",
+        "SOURCE_REFERENCE:src/lib/ai/index.ts@6689",
+        "SOURCE_REFERENCE:src/lib/settings/index.ts@337",
+        "SOURCE_REFERENCE:src/lib/settings/index.ts@337",
+      ],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@662": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@792": {
       "character": 25,
       "content": "cors()",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@662",
-      "line": 16,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@792",
+      "line": 18,
       "modules": [
         "MODULE_REFERENCE:cors@hono/cors",
       ],
-      "position": 662,
+      "position": 792,
       "references": [],
       "type": "SOURCE_REFERENCE",
     },
-    "SOURCE_REFERENCE:src/routes/auth.ts@670": {
+    "SOURCE_REFERENCE:src/routes/auth.ts@800": {
       "character": 33,
       "content": "async (ctx) => {
   const db = ctx.get("db");
@@ -4065,14 +4179,14 @@ exports[`run test 'api' with location '../../api' 1`] = `
   }
 }",
       "fileName": "src/routes/auth.ts",
-      "id": "SOURCE_REFERENCE:src/routes/auth.ts@670",
-      "line": 16,
+      "id": "SOURCE_REFERENCE:src/routes/auth.ts@800",
+      "line": 18,
       "modules": [
         "MODULE_REFERENCE:desc@drizzle-orm",
         "MODULE_REFERENCE:eq@drizzle-orm",
         "MODULE_REFERENCE:eq@drizzle-orm",
       ],
-      "position": 670,
+      "position": 800,
       "references": [],
       "type": "SOURCE_REFERENCE",
     },

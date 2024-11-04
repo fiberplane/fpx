@@ -3,9 +3,11 @@ import { desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
+import { hasValidAiConfig } from "../lib/ai/index.js";
 import { getUser, verifyToken } from "../lib/fp-services/auth.js";
 import { TokenExpiredError } from "../lib/fp-services/errors.js";
 import { TokenPayloadSchema } from "../lib/fp-services/types.js";
+import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
 
@@ -120,6 +122,29 @@ app.post(
         value: token,
         expiresAt,
       });
+
+      // HACK - We do two updates to settings when a user logs in
+      //        1. If AI is not enabled, just switch to Fiberplane provider
+      //        2. If proxy requests are not enabled, just enable them
+      const settings = await getAllSettings(db);
+      const aiEnabled = settings ? hasValidAiConfig(settings) : false;
+      if (!aiEnabled) {
+        await upsertSettings(db, {
+          aiProvider: "fp",
+          aiProviderConfigurations: {
+            ...settings?.aiProviderConfigurations,
+            fp: {
+              model: "",
+              apiKey: "",
+            },
+          },
+        });
+      }
+      if (!settings?.proxyRequestsEnabled) {
+        await upsertSettings(db, {
+          proxyRequestsEnabled: true,
+        });
+      }
 
       // Force the UI to refresh user information,
       // effectively logging the user in.
