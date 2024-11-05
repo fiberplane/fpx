@@ -2,6 +2,17 @@
 
 exports[`barrel-files 1`] = `
 "//@ Start file: index.ts
+const app = new Hono();
+app.baseUrl = "";
+          
+// Route entry:ROUTE_ENTRY:index.ts@531
+app.get("/", (c) => c.text("Hello, Hono!")
+//@ EOF file: index.ts
+"
+`;
+
+exports[`barrel-files 2`] = `
+"//@ Start file: index.ts
 import { cors } from "hono/cors";
 
 const app = new Hono();
@@ -13,14 +24,10 @@ app.get("/user/1", cors()async (c) => {
   const user = await getUser();
   return c.json(user);
 }
-// Route entry:ROUTE_ENTRY:index.ts@531
-app.get("/", (c) => c.text("Hello, Hono!")
 //@ EOF file: index.ts
 
 
 //@ Start file: db/index.ts
-
-
 // Source reference:SOURCE_REFERENCE:db%2Findex.ts@9
 export { getUser } from "./getUser"
 //@ EOF file: db/index.ts
@@ -46,8 +53,6 @@ const getUser = measure("getUser", async () => {
 
 
 //@ Start file: utils.ts
-
-
 // Source reference:SOURCE_REFERENCE:utils.ts@0
 export async function sleep(duration: number) {
   return new Promise((resolve) => setTimeout(resolve, duration));
@@ -56,8 +61,6 @@ export async function sleep(duration: number) {
 
 
 //@ Start file: types.ts
-
-
 // Source reference:SOURCE_REFERENCE:types.ts@0
 export type Email = string;
 // Source reference:SOURCE_REFERENCE:types.ts@29
@@ -71,15 +74,6 @@ export type User = {
 
 exports[`hono-factory 1`] = `
 "//@ Start file: index.ts
-
-
-const subHello = new Hono();
-subHello.baseUrl = "";
-          
-// Route entry:ROUTE_ENTRY:index.ts@124
-subHello.get("/", (c) => c.text("Hello, sub!")
-// Route entry:ROUTE_ENTRY:index.ts@173
-subHello.get("/bye", (c) => c.text("Bye, sub!")
 const app = new Hono();
 app.baseUrl = "";
           
@@ -87,49 +81,11 @@ app.baseUrl = "";
 
 
 //@ Start file: factory.ts
-
-
 const app = new Hono();
 app.baseUrl = "";
           
 // Route entry:ROUTE_ENTRY:factory.ts@281
 app.get("/", (c) => c.text("Hello, Hono!")
 //@ EOF file: factory.ts
-
-
-//@ Start file: bye.ts
-
-
-const bye = new Hono();
-bye.baseUrl = "";
-          
-// Route entry:ROUTE_ENTRY:bye.ts@54
-bye.get("/bye", (c) => c.text("Bye, sub!")
-//@ EOF file: bye.ts
-
-
-//@ Start file: silence.ts
-
-
-const silence = new Hono();
-silence.baseUrl = "";
-          
-// Route entry:ROUTE_ENTRY:silence.ts@58
-silence.get("/", (c) => c.text("...")
-//@ EOF file: silence.ts
-
-
-//@ Start file: panic.ts
-
-
-const app = new Hono();
-app.baseUrl = "";
-          
-// Route entry:ROUTE_ENTRY:panic.ts@54
-app.get("/", (c) => {
-  c.status(500);
-  return c.text("Panic!");
-}
-//@ EOF file: panic.ts
 "
 `;

@@ -163,7 +163,10 @@ export class AppFactory {
       }
     }
 
-    function visit(id: LocalFileResourceId, appName: string) {
+    function visit(
+      id: LocalFileResourceId,
+      appName: string,
+    ): string | undefined {
       if (visited.has(id)) {
         return;
       }
@@ -186,10 +189,8 @@ export class AppFactory {
           currentFile.sections[resource.position] = `const ${resource.name} = new Hono();
 ${resource.name}.baseUrl = "${resource.baseUrl}";
           `;
-          for (const entry of resource.entries) {
-            visit(entry, resource.name);
-          }
-          break;
+
+          return resource.name;
         }
         case "MIDDLEWARE_ENTRY": {
           if (!appName) {
@@ -274,8 +275,6 @@ ${appName}.route("${resource.path}", ${target.name});`;
             );
             currentFile.modules[importPath] = [target.name];
           }
-
-          visit(resource.targetId, appName);
           break;
         }
         case "SOURCE_REFERENCE": {
@@ -297,8 +296,12 @@ ${resource.content}`;
       }
     }
 
+    let name = "";
     for (const id of this.history) {
-      visit(id, "");
+      const newName = visit(id, name);
+      if (newName) {
+        name = newName;
+      }
     }
 
     const files: Record<string, string> = {};
@@ -325,7 +328,7 @@ ${resource.content}`;
         })
         .join("\n");
 
-      files[fileName] = `${imports}\n\n${sections}`;
+      files[fileName] = imports ? `${imports}\n\n${sections}` : sections;
     }
 
     return Object.entries(files)

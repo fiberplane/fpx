@@ -62,13 +62,20 @@ test("barrel-files", async () => {
     }
 
     const app = factory.getApp(root.id);
-    const request = new Request("http://localhost/", { method: "GET" });
-    const response = await app.fetch(request);
+    let request = new Request("http://localhost/", { method: "GET" });
+    let response = await app.fetch(request);
     expect(await response.text()).toEqual("Ok");
     expect(factory.getHistoryLength()).toBe(2);
-
     expect(factory.hasVisited(root.id)).toBeTruthy();
-    // Expect the app from the factory file to be visited
+    expect(factory.getFilesForHistory()).toMatchSnapshot();
+    // Reset the history
+    factory.resetHistory();
+
+    request = new Request("http://localhost/user/1", { method: "GET" });
+    response = await app.fetch(request);
+    expect(await response.text()).toEqual("Ok");
+    expect(factory.getHistoryLength()).toBe(2);
+    expect(factory.hasVisited(root.id)).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
   } finally {
     teardown();

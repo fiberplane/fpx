@@ -115,9 +115,6 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
 
         const current = resourceManager.createRouteTree(params);
 
-        // Add route early
-        // addRouteTree(current);
-
         // TODO: add support for late initialization of the hono instance
         // What if people do something like:
         //
