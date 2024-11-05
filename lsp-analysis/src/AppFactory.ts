@@ -1,4 +1,3 @@
-// import { ModuleReference } from "typescript";
 import path from "node:path";
 import { Hono } from "hono";
 import type { Next } from "hono/types";
@@ -75,7 +74,6 @@ export class AppFactory {
 
     for (const entry of tree.entries) {
       const resource = this.resourceManager.getResource(entry);
-      // this.resources[entry] as RouteTreeEntry | undefined;
       if (!resource) {
         console.warn("Resource not found", entry);
         continue;

@@ -6,41 +6,6 @@ import type {
   TreeResource,
 } from "../types";
 
-// type SimpleGraphStat = {
-//   base: number;
-//   total: number
-//   references: Array<string>
-// }
-
-// // This is a simple/naive implementation of a graph analysis
-// export function analyze(treeItems: Array<RouteTree>) {
-//   // Where string is the key of the RouteTree and number is the nr of references
-//   const complexityMap = new Map<string, SimpleGraphStat>();
-//   for (const item of treeItems) {
-//     const base = item.entries.length;
-//     const references: Array<string> = [];
-//     for (const entry of item.entries) {
-//       if (entry.type === "ROUTE_TREE_REFERENCE") {
-//         references.push(entry.targetId);
-//       }
-//     }
-//     complexityMap.set(item.id, { base, total: base, references });
-//   }
-
-//   // Add references
-
-// }
-
-// interface RouteTree {
-//   id: string;
-//   entries: Array<RouteEntry>;
-// }
-
-// interface RouteEntry {
-//   type: string;
-//   targetId?: string;
-// }
-
 interface SimpleGraphStat {
   base: number;
   total: number;
@@ -52,13 +17,10 @@ export function analyze(
 ): RouteTree | null {
   const complexityMap = new Map<string, SimpleGraphStat>();
 
-  // Find all route treeItems
+  // Step 1: Find all tree items and initialize complexity map with base values
   const treeItems: Array<RouteTree> = Object.keys(resources)
     .filter((key) => key.startsWith("ROUTE_TREE:"))
     .map((key) => resources[key] as RouteTree);
-
-  // console.log("treeItems", treeItems);
-  // Step 1: Initialize complexity map with base values
   for (const item of treeItems) {
     const base = item.entries.length;
     const references: Array<RouteTreeId> = [];
@@ -113,42 +75,5 @@ export function analyze(
     }
   }
 
-  // const keys = complexityMap.keys();
-  // // console.log('complexityMap', complexityMap.keys());
-  // const totalMap: Record<string, number> = {};
-  // for (const key of keys) {
-  //   const stat = complexityMap.get(key);
-  //   if (stat) {
-  //     totalMap[key] = stat.total;
-  //   }
-  // }
-  // console.log("totalMap", totalMap);
-  // console.log("totalMap", complexityMap);
   return mostComplexItem;
 }
-
-// // Example usage
-// const treeItems: Array<RouteTree> = [
-//   {
-//     id: "1",
-//     entries: [
-//       { type: "ROUTE_ENTRY" },
-//       { type: "ROUTE_TREE_REFERENCE", targetId: "2" },
-//     ],
-//   },
-//   {
-//     id: "2",
-//     entries: [
-//       { type: "ROUTE_ENTRY" },
-//       { type: "ROUTE_ENTRY" },
-//       { type: "ROUTE_TREE_REFERENCE", targetId: "3" },
-//     ],
-//   },
-//   {
-//     id: "3",
-//     entries: [{ type: "ROUTE_ENTRY" }],
-//   },
-// ];
-
-// const mostComplexItem = analyze(treeItems);
-// console.log("Most complex RouteTree item:", mostComplexItem);

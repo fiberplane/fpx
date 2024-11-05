@@ -224,7 +224,6 @@ export class ResourceManager {
       console.log(
         `Missing SourceReference for (fileName: ${fileName}, position: ${position}, id: ${id}`,
       );
-      console.log("References", this.references.keys());
       throw new Error(
         "Missing source reference. Attempting to add a module to a non-existing reference",
       );

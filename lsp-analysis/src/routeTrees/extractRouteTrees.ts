@@ -41,7 +41,6 @@ export function extractRouteTrees(
   const resourceManager = new ResourceManager(projectRoot);
   const checker = program.getTypeChecker();
 
-  // const apps: Array<RouteTreeId> = [];
   const files = program.getSourceFiles();
   const fileMap: Record<string, TsSourceFile> = {};
   for (const file of files) {
@@ -75,19 +74,6 @@ export function extractRouteTrees(
       });
     }
   }
-
-  // const honoReference =
-  // const moduleId = resourceManager.getId("MODULE_REFERENCE", "hono", "Hono");
-  // const moduleReference = resourceManager.createModuleReference({
-  //   type: "MODULE_REFERENCE",
-  //   importPath: "hono",
-  //   import: "Hono",
-  //   name: "Hono",
-  //   // version: "1.0.0",
-  // });
-  // resourceManager.addResource({
-  //   id: resourceManager.getId("MODULE_REFERENCE", )
-  // })
 
   return {
     resourceManager,
@@ -166,10 +152,6 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
             reference.textSpan.start !== position,
         );
         for (const entry of references) {
-          // if (fileName.includes("src/app.ts")) {
-          //   console.log('entry', entry, current.id)
-          // }
-
           followReference(current, entry, context);
         }
       }
@@ -211,7 +193,6 @@ function handleInitializerCallExpression(
     functionNode.parent.body
   ) {
     const functionBody = functionNode.parent.body;
-    // console.log('declarationFileName', declarationFileName, functionBody.getText())
     functionBody.forEachChild((child) => {
       visit(child, declarationFileName, context);
     });
@@ -356,36 +337,7 @@ function handleRoute(
     ts.ScriptElementKind.variableElement,
   ];
 
-  // checker.getSymbolAtLocation()
-  // if (routeTree.id === "ROUTE_TREE:src/app.ts@785") {
-  // console.log(appNode.getText(), 'referencedSymbol', referencedSymbol.references)
-  // }
-
-  // const references = service.findReferences(
-  //   appNode.getSourceFile().fileName,
-  //   appNode.getStart(),
-  // );
-
   let target: TsVariableDeclaration | undefined;
-  // const variableReference = references.find((ref) =>
-  //   SUPPORTED_VARIABLE_KINDS.includes(ref.definition.kind),
-  // );
-  // if (variableReference) {
-  //   const variableDeclarationChild = findNodeAtPosition(
-  //     ts,
-  //     getFile(variableReference.definition.fileName),
-  //     variableReference.definition.textSpan.start,
-  //   );
-
-  //   // Access the parent & verify that's a variable declaration
-  //   // As the node will point to the identifier and not the declaration
-  //   if (
-  //     variableDeclarationChild?.parent &&
-  //     ts.isVariableDeclaration(variableDeclarationChild.parent)
-  //   ) {
-  //     target = variableDeclarationChild.parent;
-  //   }
-  // }
 
   const symbol = checker.getSymbolAtLocation(appNode);
   const declaration = symbol?.declarations?.[0];
@@ -397,121 +349,21 @@ function handleRoute(
     if (symbol && isAlias(symbol, context)) {
       let alias = symbol;
       while (alias && isAlias(alias, context)) {
-        // console.log('alias', alias.flags)
         alias = checker.getAliasedSymbol(symbol);
         if (
           alias.valueDeclaration &&
           ts.isVariableDeclaration(alias.valueDeclaration)
         ) {
-          // console.log('assigning', alias)
-          // console.log('aliasedSymbolValue', ts.SyntaxKind[aliasedSymbol.valueDeclaration.kind])
           target = alias.valueDeclaration;
         }
       }
-      // if ()
-      // console.log('aliasDeclaration', aliasedSymbol.flags)
     }
-    // console.log(isAlias, "no target found for", appNode.getText());
-    // let currentAlias = checker.
   }
-  // for (const referencedSymbol of references) {
-
-  //   // if (referencedSymbol.definition.kind === ts.ScriptElementKind.alias) {
-
-  //   //   const node = findNodeAtPosition(referencedSymbol.references[0].fileName
-  //   // }
-
-  //   // TODO: investigate whether there are other cases we should support
-  //   // Check if it's a variable like const, let or var
-  //   if (SUPPORTED_VARIABLE_KINDS.includes(referencedSymbol.definition.kind)) {
-  //     // If so, find the node
-  //   }
-  // }
-
-  // const modules: Array<ModuleReferenceId> = [];
-  // if (!target && declaration) {
-  //   const dependencyResult = getImportTypeDefinitionFileName(appNode, context);
-  //   if (dependencyResult) {
-  //     if (dependencyResult.isExternalLibrary) {
-  //       const { id } = resourceManager.createModuleReference({
-  //         type: "MODULE_REFERENCE",
-  //         // location: dependencyResult.location,
-  //         // isExternalLibrary: true,
-  //         // fileName: asRelativePath(appNode.getSourceFile().fileName),
-  //         // position: appNode.getStart(),
-  //         importPath: dependencyResult.importPath,
-  //         import: dependencyResult.import,
-  //         name: dependencyResult.name,
-  //         version: dependencyResult.version,
-  //       });
-  //       modules.push(id);
-  //     } else {
-  //       // console.log("local dependencyResult", dependencyResult);
-  //       const nodeValue = getNodeValueForDependency(
-  //         dependencyResult,
-  //         context,
-  //         declaration,
-  //       );
-  //       console.log(appNode.getText(), 'nodeValue', nodeValue)
-  //       //   dependencyResult,
-  //       //   context,
-  //       //   declaration,
-  //       // );
-  //       // if (nodeValue) {
-  //       //   const source = createSourceReferenceForNode(nodeValue, context);
-  //       //   if (source) {
-  //       //     modules.push(source.id);
-  //       //   }
-  //       // }
-  //     }
-  //   }
-  //   // let destination: TsNode | undefined = declaration;
-  //   // let current = declaration;
-  //   // while (current) {
-  //   //   if (ts.isImportClause(current)) {
-  //   //     const importDeclaration = current.parent;
-  //   //     const moduleSpecifier = importDeclaration.moduleSpecifier;
-  //   //     if (ts.isStringLiteral(moduleSpecifier)) {
-  //   //       const filename = moduleSpecifier.text;
-
-  //   //       const targetFile = getFile(filename);
-  //   //       if (targetFile) {
-  //   //         const targetNode = findNodeAtPosition(ts, targetFile, moduleSpecifier.getStart());
-  //   //         if (targetNode) {
-  //   //           destination = targetNode;
-  //   //           break;
-  //   //         }
-  //   //       }
-  //   //     }
-  //   //     // destination = current;
-  //   //     // break;
-  //   //   }
-  //   // }
-  // }
-  // // more imports
-  // console.log(
-  //   routeTree.id,
-  //   " declaration ",
-  //   declaration && {
-  //     kind: ts.SyntaxKind[declaration.kind],
-  //     fileName: declaration.getSourceFile().fileName,
-  //     position: declaration.getStart(),
-  //   },
-  //   "referenceKinds",
-  //   references.map((ref) => {
-  //     return {
-  //       kind: ref.definition.kind,
-  //       fileName: ref.definition.fileName,
-  //       position: ref.definition.textSpan.start,
-  //     };
-  //   }),
-  // );
 
   if (!target) {
-    console.log("what? no target?", appNode.getText());
+    console.log("No target found for", appNode.getText());
     return;
   }
-  // console.log("it did work for", target.getText());
 
   const filename = target.getSourceFile().fileName;
   const position = target.getStart();

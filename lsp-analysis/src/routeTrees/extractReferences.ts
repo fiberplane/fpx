@@ -43,12 +43,6 @@ export function createSourceReferenceForNode(
   }
 
   const rootReference = createInitialSourceReferenceForNode(rootNode, context);
-  // sourceReferenceManager.addReference(
-  //   fileName,
-  //   rootNode.getStart(),
-  //   rootReference,
-  // );
-
   visit(rootNode, context, rootReference, rootNode.getStart());
   return rootReference;
 }
@@ -277,7 +271,4 @@ function createInitialSourceReferenceForNode(
   };
 
   return resourceManager.createSourceReference(params);
-  // return {
-  //   // id: getId(sourceFile.fileName, node.getStart()),
-  // };
 }
