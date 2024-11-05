@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "typecheck": "tsc --noEmit",
     "format": "biome check . --write",
-    "lint": "biome lint . && pnpm run typecheck",
+    "lint": "biome ci . && pnpm run typecheck",
     "preview": "vite preview",
     "test": "vitest"
   },
