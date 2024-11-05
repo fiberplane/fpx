@@ -1,36 +1,36 @@
 import * as path from "node:path";
 import { expect, test } from "vitest";
-import { setupMonitoring } from "../src";
+import { setupMonitoring } from "..";
 
 test.each([
   {
     name: "single file",
 
-    location: "./test-case/single",
+    location: "../../test-case/single",
   },
   {
     name: "multiple files",
-    location: "./test-case/multiple",
+    location: "../../test-case/multiple",
   },
   {
     name: "module imports",
-    location: "./test-case/module-imports",
+    location: "../../test-case/module-imports",
   },
   {
     name: "barrel files",
-    location: "./test-case/barrel-files",
+    location: "../../test-case/barrel-files",
   },
   // {
   //   name: "bindings",
-  //   location: "./test-case/bindings",
+  //   location: "../../test-case/bindings",
   // },
   {
     name: "split routes",
-    location: "./test-case/split-routes",
+    location: "../../test-case/split-routes",
   },
   {
     name: "empty",
-    location: "./test-case/empty",
+    location: "../../test-case/empty",
   },
   // {
   //   name: "goose-quotes",
@@ -38,7 +38,7 @@ test.each([
   // },
   {
     name: "hono factory",
-    location: "./test-case/hono-factory",
+    location: "../../test-case/hono-factory",
   },
   // {
   //   name: "api",

@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`run test 'barrel files' with location './test-case/barrel-files' 1`] = `
+exports[`run test 'barrel files' with location '../../test-case/barrel-files' 1`] = `
 {
   "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure": {
     "id": "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure",
@@ -199,9 +199,9 @@ exports[`run test 'barrel files' with location './test-case/barrel-files' 1`] = 
 }
 `;
 
-exports[`run test 'empty' with location './test-case/empty' 1`] = `{}`;
+exports[`run test 'empty' with location '../../test-case/empty' 1`] = `{}`;
 
-exports[`run test 'hono factory' with location './test-case/hono-factory' 1`] = `
+exports[`run test 'hono factory' with location '../../test-case/hono-factory' 1`] = `
 {
   "ROUTE_ENTRY:bye.ts@54": {
     "fileName": "bye.ts",
@@ -463,7 +463,7 @@ exports[`run test 'hono factory' with location './test-case/hono-factory' 1`] = 
 }
 `;
 
-exports[`run test 'module imports' with location './test-case/module-imports' 1`] = `
+exports[`run test 'module imports' with location '../../test-case/module-imports' 1`] = `
 {
   "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure": {
     "id": "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure",
@@ -681,7 +681,7 @@ exports[`run test 'module imports' with location './test-case/module-imports' 1`
 }
 `;
 
-exports[`run test 'multiple files' with location './test-case/multiple' 1`] = `
+exports[`run test 'multiple files' with location '../../test-case/multiple' 1`] = `
 {
   "ROUTE_ENTRY:index.ts@55": {
     "fileName": "index.ts",
@@ -780,7 +780,7 @@ exports[`run test 'multiple files' with location './test-case/multiple' 1`] = `
 }
 `;
 
-exports[`run test 'single file' with location './test-case/single' 1`] = `
+exports[`run test 'single file' with location '../../test-case/single' 1`] = `
 {
   "ROUTE_ENTRY:index.ts@55": {
     "fileName": "index.ts",
@@ -819,7 +819,7 @@ exports[`run test 'single file' with location './test-case/single' 1`] = `
 }
 `;
 
-exports[`run test 'split routes' with location './test-case/split-routes' 1`] = `
+exports[`run test 'split routes' with location '../../test-case/split-routes' 1`] = `
 {
   "MIDDLEWARE_ENTRY:index.ts@619": {
     "fileName": "index.ts",

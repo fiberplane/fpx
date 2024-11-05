@@ -242,7 +242,7 @@ export class Watcher extends EventEmitter<FileEvents> {
   }
 
   private rawBatchWarmUp() {
-    console.log("raw batch warm up");
+    // console.log("raw batch warm up");
     if (this.warmUpBacklog.length === 0) {
       return;
     }
@@ -312,9 +312,10 @@ export class Watcher extends EventEmitter<FileEvents> {
 
     if (this.fileVersions[fileName]) {
       const content = fs.readFileSync(fileName, "utf-8");
-      if (this.fileVersions[fileName].content === content) {
-        return;
-      }
+      // const content = "";
+      // if (this.fileVersions[fileName].content === content) {
+      //   return;
+      // }
 
       this.fileVersions[fileName].version++;
       this.fileVersions[fileName].content = content;

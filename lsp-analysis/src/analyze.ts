@@ -4,18 +4,18 @@ import type {
   RouteTreeReference,
   RouteTreeReferenceId,
   TreeResource,
-} from "../types";
+} from "./types";
 
-interface SimpleGraphStat {
-  base: number;
-  total: number;
+interface TreeStatistic {
+  baseCount: number;
+  totalCount: number;
   references: Array<string>;
 }
 
 export function analyze(
   resources: Record<string, TreeResource>,
 ): RouteTree | null {
-  const complexityMap = new Map<string, SimpleGraphStat>();
+  const complexityMap = new Map<string, TreeStatistic>();
 
   // Step 1: Find all tree items and initialize complexity map with base values
   const treeItems: Array<RouteTree> = Object.keys(resources)
@@ -26,8 +26,7 @@ export function analyze(
     const references: Array<RouteTreeId> = [];
     for (const entry of item.entries) {
       if (entry.startsWith("ROUTE_TREE_REFERENCE:")) {
-        const treeReference = resources[entry as RouteTreeReferenceId];
-        //  as RouteTreeReference;
+        const treeReference = resources[entry];
         if (!treeReference) {
           console.warn("Resource not found", entry);
           continue;
@@ -35,7 +34,11 @@ export function analyze(
         references.push((treeReference as RouteTreeReference).targetId);
       }
     }
-    complexityMap.set(item.id, { base, total: base, references });
+    complexityMap.set(item.id, {
+      baseCount: base,
+      totalCount: base,
+      references,
+    });
   }
 
   // Step 2: Resolve references and update total complexity
@@ -50,12 +53,12 @@ export function analyze(
       return 0; // Item not found, return 0
     }
 
-    let totalComplexity = stat.base;
+    let totalComplexity = stat.baseCount;
     for (const refId of stat.references) {
       totalComplexity += resolveReferences(refId, visited);
     }
 
-    stat.total = totalComplexity;
+    stat.totalCount = totalComplexity;
     return totalComplexity;
   }
 
@@ -69,8 +72,8 @@ export function analyze(
 
   for (const item of treeItems) {
     const stat = complexityMap.get(item.id);
-    if (stat && stat.total > maxComplexity) {
-      maxComplexity = stat.total;
+    if (stat && stat.totalCount > maxComplexity) {
+      maxComplexity = stat.totalCount;
       mostComplexItem = item;
     }
   }

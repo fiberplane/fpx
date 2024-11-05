@@ -1,9 +1,12 @@
 import path from "node:path";
 import { assert, expect, test } from "vitest";
-import { AppFactory, analyze, setupMonitoring } from "../src";
+import { AppFactory } from ".";
+import { analyze } from "../analyze";
+import { setupMonitoring } from "../setup";
 
 test("hono-factory", async () => {
-  const absolutePath = path.join(__dirname, "./test-case/hono-factory");
+  console.log("analyze", analyze);
+  const absolutePath = path.join(__dirname, "../../test-case/hono-factory");
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
     watcher.start();
@@ -43,11 +46,10 @@ test("hono-factory", async () => {
 });
 
 test("barrel-files", async () => {
-  const absolutePath = path.join(__dirname, "./test-case/barrel-files");
+  const absolutePath = path.join(__dirname, "../../test-case/barrel-files");
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
     watcher.start();
-    // findHonoRoutes();
     const start = performance.now();
     const result = findHonoRoutes();
     console.log(

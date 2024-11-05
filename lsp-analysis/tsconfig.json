@@ -8,6 +8,6 @@
     "strict": true
   },
   "exclude": [
-    "test/test-case"
+    "test-case"
   ]
 }

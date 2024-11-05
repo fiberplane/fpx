@@ -1,7 +1,7 @@
 import path from "node:path";
 import { Hono } from "hono";
 import type { Next } from "hono/types";
-import type { ResourceManager } from "./ResourceManager";
+import type { ResourceManager } from "../ResourceManager";
 import type {
   LocalFileResource,
   LocalFileResourceId,
@@ -12,7 +12,7 @@ import type {
   RouteTreeId,
   RouteTreeReferenceId,
   TreeResourceId,
-} from "./types";
+} from "../types";
 
 type HistoryId =
   | RouteEntryId
@@ -46,12 +46,7 @@ export class AppFactory {
     return this.history.length;
   }
 
-  // public getVisitedNode(id: string) {
-  // return this.trees.find((tree) => tree.id === id);
-  // }
-
   public getApp(entryId: RouteTreeId): Hono {
-    // const root = this.trees.find((tree) => tree.id === entryId);
     const root = this.resourceManager.getResource(entryId);
     this.resetHistory();
 
