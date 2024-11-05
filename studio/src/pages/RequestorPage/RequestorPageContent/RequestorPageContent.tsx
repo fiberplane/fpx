@@ -136,6 +136,14 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     "setAIDropdownOpen",
   );
 
+  const { setActivePlanStepIdx } = useRequestorStore("setActivePlanStepIdx");
+
+  // HACK - When the user hits `escape` clear the "activePlanStepIdx"
+  //
+  useHotkeys("esc", (_e) => {
+    setActivePlanStepIdx(undefined);
+  });
+
   useHotkeys(
     "mod+g",
     (e) => {

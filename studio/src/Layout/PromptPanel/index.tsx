@@ -461,7 +461,10 @@ export function PromptPanel() {
     shouldKeepGoing,
   ]);
 
+  const { setActivePlanStepIdx } = useRequestorStore("setActivePlanStepIdx");
+
   const executeNextStep = () => {
+    setActivePlanStepIdx(undefined);
     // TODO - if paused, increment?
     setShouldKeepGoing(false);
     setWorkflowState("executing");
@@ -479,6 +482,7 @@ export function PromptPanel() {
   };
 
   const executeEntirePlan = () => {
+    setActivePlanStepIdx(undefined);
     setShouldKeepGoing(true);
     setWorkflowState("executing");
     if (executingPlanStepIdx === undefined) {
@@ -490,6 +494,7 @@ export function PromptPanel() {
   };
 
   const handlePromptSubmit = async () => {
+    setActivePlanStepIdx(undefined);
     // HACK - If we have a plan loaded and the user submits, we start executing it.
     if (plan && workflowState !== "awaitingInput") {
       setWorkflowState("executing");
