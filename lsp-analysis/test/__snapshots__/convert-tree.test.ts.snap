@@ -21,8 +21,51 @@ app.get("/", (c) => c.text("Hello, Hono!")
 //@ Start file: db/index.ts
 
 
-
+// Source reference:SOURCE_REFERENCE:db%2Findex.ts@9
+export { getUser } from "./getUser"
 //@ EOF file: db/index.ts
+
+
+//@ Start file: db/getUser.ts
+import { measure } from "@fiberplane/hono-otel";
+
+// Source reference:SOURCE_REFERENCE:db%2FgetUser.ts@128
+const DEFAULT_USER_NAME = "John Doe"
+// Source reference:SOURCE_REFERENCE:db%2FgetUser.ts@166
+const DEFAULT_EMAIL = "john@doe.com"
+// Source reference:SOURCE_REFERENCE:db%2FgetUser.ts@222
+const getUser = measure("getUser", async () => {
+  await sleep(100);
+  const value: User = {
+    name: DEFAULT_USER_NAME,
+    email: DEFAULT_EMAIL,
+  };
+  return value;
+})
+//@ EOF file: db/getUser.ts
+
+
+//@ Start file: utils.ts
+
+
+// Source reference:SOURCE_REFERENCE:utils.ts@0
+export async function sleep(duration: number) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}
+//@ EOF file: utils.ts
+
+
+//@ Start file: types.ts
+
+
+// Source reference:SOURCE_REFERENCE:types.ts@0
+export type Email = string;
+// Source reference:SOURCE_REFERENCE:types.ts@29
+export type User = {
+  name: string;
+  email: Email;
+};
+//@ EOF file: types.ts
 "
 `;
 

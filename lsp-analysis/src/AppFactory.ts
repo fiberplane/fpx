@@ -160,7 +160,7 @@ export class AppFactory {
         if (!file.modules[module.importPath]) {
           file.modules[module.importPath] = [];
         }
-        console.log("module", module);
+
         file.modules[module.importPath].push(module.import);
       }
     }
@@ -176,18 +176,14 @@ export class AppFactory {
         return;
       }
 
-      if (
-        resource.type !== "ROUTE_TREE" &&
-        resource.type !== "ROUTE_TREE_REFERENCE"
-      ) {
-        console.log("resource", resource.modules);
-      }
       visited.add(id);
       if (!fileMap[resource.fileName]) {
         fileMap[resource.fileName] = createFileInfo();
       }
+
       const currentFile = fileMap[resource.fileName];
-      switch (resource.type) {
+      const resourceType = resource.type;
+      switch (resourceType) {
         case "ROUTE_TREE": {
           currentFile.sections[resource.position] = `const ${resource.name} = new Hono();
 ${resource.name}.baseUrl = "${resource.baseUrl}";
@@ -231,18 +227,9 @@ ${resource.name}.baseUrl = "${resource.baseUrl}";
           middleware += middlewareFunctions.join(", ");
           middleware += ");";
 
-          // middleware += `/* Source reference ${source.id} */ ${source.content}`;
-          // if (!currentFile.modules[source.fileName]) {
-          //   currentFile.modules[source.fileName] = [];
-          // }
-          // currentFile.modules[source.fileName].push(source.position.toString());
           currentFile.sections[resource.position] = middleware;
           break;
         }
-        // currentFile.sections[resource.position.toString()] = "// Middleware entry";
-        //           currentFile.sections[resource.position.toString()] = `// Middleware entry
-        // ${appName}.use(${resource.path ? `"${resource.path}" ,`:""}`;
-        // }
         case "ROUTE_ENTRY": {
           if (!appName) {
             console.warn("Route entry outside of route tree");
@@ -292,15 +279,22 @@ ${appName}.route("${resource.path}", ${target.name});`;
 
           visit(resource.targetId, appName);
           break;
-          // if (!fileMap[target.fileName]) {
-          //   fileMap[target.fileName] = createFileInfo();
-          // }
-          // for (const entry of target.entries) {
-          //   visit(entry, appName);
-          // }
+        }
+        case "SOURCE_REFERENCE": {
+          currentFile.sections[resource.position] =
+            `// Source reference:${resource.id}
+${resource.content}`;
+          addModules(currentFile, resource.modules);
+          for (const child of resource.references) {
+            visit(child, appName);
+          }
+          break;
         }
         default: {
-          console.warn("Unsupported resource type", resource.type);
+          // If there's an error directly below:
+          // the switch statement isn't covering all cases
+          const _exhaustiveCheck: never = resourceType;
+          throw new Error(`Unsupported entry type: ${resourceType}` as never);
         }
       }
     }
@@ -317,7 +311,6 @@ ${appName}.route("${resource.path}", ${target.name});`;
         })
         .join("\n");
 
-      console.log("imports", fileInfo.modules);
       const sections = Object.entries(fileInfo.sections)
         .sort(([a], [b]) => {
           if (a > b) {
@@ -339,52 +332,11 @@ ${appName}.route("${resource.path}", ${target.name});`;
 
     return Object.entries(files)
       .map(([fileName, content]) => {
-        return `//@ Start file: ${fileName}
+        return `//@ Start file: ${decodeURIComponent(fileName)}
 ${content}
-//@ EOF file: ${fileName}
+//@ EOF file: ${decodeURIComponent(fileName)}
 `;
       })
       .join("\n\n");
-    // Object.entries(fileMap)
-
-    // .forEach(([fileName, fileInfo]) => {
-    // .map(([_, content]) => {
-    //       return content;
-    //     }).join("\n");
-
-    //     return `${imports}\n\n${sections}`;
-    //   })
-    // );
-    // if (resource.type === "ROUTE_TREE") {
-    //   for (const entry of resource.entries) {
-    //     if (entry.type === "ROUTE_TREE_REFERENCE") {
-    //       visit(entry.targetId);
-    //     }
-    //   }
-    // }
-    // }
-    //   for(const id of this.history) {
-    //     const resource = this.resourceManager.getResource(id);
-    //     if (!resource) {
-    //       console.warn("Resource not found", id);
-    //       continue;
-    //     }
-
-    //     if (resource.type === "ROUTE_TREE")
-    //       // const data = this.resourceManager.decodeId(id);
-    //       // if
-    //       // if (data.type === "MODULE_REFERENCE") {
-
-    //       // fileMap[resource.fileName] = true;
-    //     }
-    //   // return this.history.map((id) => {
-    //   //   const resource = this.resources[id];
-    //   //   if (!resource) {
-    //   //     console.warn("Resource not found", id);
-    //   //     return "";
-    //   //   }
-
-    //   //   return resource.fileName;
-    //   // });
   }
 }

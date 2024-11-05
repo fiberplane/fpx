@@ -157,17 +157,16 @@ import { AppFactory, analyze, setupMonitoring } from "../src";
 // });
 test("hono-factory", async () => {
   const absolutePath = path.join(__dirname, "./test-case/hono-factory");
-  const { watcher, findHonoRoutes, teardown, resourceManager } =
-    setupMonitoring(absolutePath);
+  const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
     watcher.start();
-    // findHonoRoutes();
     const start = performance.now();
     const result = findHonoRoutes();
     console.log(
       `Duration for hono-factory: ${(performance.now() - start).toFixed(4)}`,
     );
-    const root = analyze(result.resources);
+    const { resourceManager } = result;
+    const root = analyze(resourceManager.getResources());
     expect(root).not.toBeNull();
     assert(root !== null);
     const factory = new AppFactory(resourceManager);
@@ -191,14 +190,6 @@ test("hono-factory", async () => {
       history.find((item) => item.startsWith("ROUTE_ENTRY:factory.ts@")),
     ).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
-    // console.log(factory.getHistory());
-
-    //   console.log(JSON.stringify(result.resources, null, 2));
-    //   // expect(result).toMatchSnapshot();
-    //   // console.log(result.results[0].entries);
-    //   // console.log(flattenRouteTree(result.results[0], "/api/geese/:id/generate"));
-    //   // console.log(flattenRouteTree(result.results[0]));
-    //   // flatten
   } finally {
     teardown();
   }
@@ -206,8 +197,7 @@ test("hono-factory", async () => {
 
 test("barrel-files", async () => {
   const absolutePath = path.join(__dirname, "./test-case/barrel-files");
-  const { watcher, findHonoRoutes, teardown, resourceManager } =
-    setupMonitoring(absolutePath);
+  const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
     watcher.start();
     // findHonoRoutes();
@@ -216,11 +206,10 @@ test("barrel-files", async () => {
     console.log(
       `Duration for barrel files: ${(performance.now() - start).toFixed(4)}`,
     );
-    console.log("result", Object.keys(result.resources));
-    const root = analyze(result.resources);
+    const root = analyze(result.resourceManager.getResources());
     expect(root).not.toBeNull();
     assert(root !== null);
-    const factory = new AppFactory(resourceManager);
+    const factory = new AppFactory(result.resourceManager);
     if (!root) {
       throw new Error("Root is null");
     }
@@ -233,17 +222,7 @@ test("barrel-files", async () => {
 
     expect(factory.hasVisited(root.id)).toBeTruthy();
     // Expect the app from the factory file to be visited
-    // expect(history.find(item => item.startsWith("ROUTE_TREE:factory.ts@"))).toBeTruthy();
-    // expect(history.find(item => item.startsWith("ROUTE_ENTRY:factory.ts@"))).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
-    // console.log(factory.getHistory());
-
-    //   console.log(JSON.stringify(result.resources, null, 2));
-    //   // expect(result).toMatchSnapshot();
-    //   // console.log(result.results[0].entries);
-    //   // console.log(flattenRouteTree(result.results[0], "/api/geese/:id/generate"));
-    //   // console.log(flattenRouteTree(result.results[0]));
-    //   // flatten
   } finally {
     teardown();
   }

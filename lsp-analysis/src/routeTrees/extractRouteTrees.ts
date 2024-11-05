@@ -1,4 +1,4 @@
-import type { ResourceManager } from "../ResourceManager";
+import { ResourceManager } from "../ResourceManager";
 import {
   HONO_HTTP_METHODS,
   type MiddlewareEntry,
@@ -29,17 +29,16 @@ export function extractRouteTrees(
   service: TsLanguageService,
   ts: TsType,
   projectRoot: string,
-  resourceManager: ResourceManager,
 ): {
   errorCount?: number;
-  resources: Record<string, TreeResource>;
+  resourceManager: ResourceManager;
 } {
   const program = service.getProgram();
-
   if (!program) {
     throw new Error("Program not found");
   }
 
+  const resourceManager = new ResourceManager(projectRoot);
   const checker = program.getTypeChecker();
 
   // const apps: Array<RouteTreeId> = [];
@@ -62,16 +61,9 @@ export function extractRouteTrees(
     checker,
     ts,
     resourceManager,
-    // addRouteTree: (route: RouteTree) => {
-    //   resourceManager.addResource(route)
-    //   // apps.push(route);
-    // },
     getFile: (fileName: string) => {
       return fileMap[fileName];
     },
-    // getId: (fileName: string, location) => {
-    //   return `${asRelativePath(fileName)}@${location}`;
-    // },
     asRelativePath,
     asAbsolutePath,
   };
@@ -98,7 +90,7 @@ export function extractRouteTrees(
   // })
 
   return {
-    resources: resourceManager.getResources(),
+    resourceManager,
     errorCount: context.errorCount,
   };
 }
