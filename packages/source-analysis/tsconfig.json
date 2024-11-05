@@ -2,10 +2,13 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "noEmit": true,
     "skipLibCheck": true,
     "target": "ESNext",
-    "strict": true
+    "strict": true,
+    "lib": [
+      "ESNext"
+    ],
+    "outDir": "./dist",
   },
   "exclude": [
     "test-case"

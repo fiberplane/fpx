@@ -1,14 +1,17 @@
 {
-  "name": "analysis",
+  "name": "@fiberplane/source-analysis",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
     "format": "biome check . --write",
-    "lint": "biome ci . && pnpm run typecheck",
+    "lint": "biome lint . && pnpm run typecheck",
     "preview": "vite preview",
     "test": "vitest"
   },
@@ -16,6 +19,7 @@
     "@cloudflare/workers-types": "^4.20241011.0",
     "@fiberplane/hono-otel": "^0.3.1",
     "@types/node": "^22.7.5",
+    "consola": "^3.2.3",
     "hono": "^4.6.6",
     "typescript": "5.6.2",
     "vite": "^5.4.8",
@@ -24,12 +28,8 @@
   "dependencies": {
     "@types/resolve": "^1.20.6",
     "chokidar": "^4.0.1",
-    "consola": "^3.2.3",
     "resolve": "^1.22.8",
     "type-fest": "^4.26.1",
-    "typescript-language-server": "^4.3.3",
-    "vscode-jsonrpc": "^8.2.1",
-    "vscode-languageclient": "^9.0.1",
     "vscode-languageserver-protocol": "^3.17.5",
     "vscode-languageserver-textdocument": "^1.0.12",
     "vscode-uri": "^3.0.8",

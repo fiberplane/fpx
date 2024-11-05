@@ -37,7 +37,6 @@ export type TsFunctionExpression = bundledTs.FunctionExpression;
 
 export type RouteTreeId = Tagged<string, "RouteTreeId">;
 export type RouteTreeReferenceId = Tagged<string, "RouteTreeReferenceId">;
-// export type RouteTreeEntryId = Tagged<string, "RouteTreeEntryId">;
 export type MiddlewareEntryId = Tagged<string, "MiddlewareEntryId">;
 export type RouteEntryId = Tagged<string, "RouteEntryId">;
 export type SourceReferenceId = Tagged<string, "SourceReferenceId">;
@@ -186,4 +185,12 @@ export type SearchContext = {
   // getId: (fileName: string, location: number) => string;
   asRelativePath(fileName: string): string;
   asAbsolutePath(fileName: string): string;
+};
+
+/**
+ * An event describing a change to a text document. If only a text is provided
+ * it is considered to be the full content of the document.
+ */
+export type TextDocumentContentChangeEvent = {
+  text: string;
 };
