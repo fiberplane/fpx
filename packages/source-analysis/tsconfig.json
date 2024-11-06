@@ -1,16 +1,25 @@
 {
   "compilerOptions": {
+    "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "skipLibCheck": true,
-    "target": "ESNext",
+    "moduleResolution": "Node",
     "strict": true,
-    "lib": [
-      "ESNext"
-    ],
+    "skipLibCheck": true,
+    "lib": ["ESNext"],
+    "esModuleInterop": true,
     "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true
   },
   "exclude": [
-    "test-case"
-  ]
+    "test-case",
+    "src/**/*.test.ts",
+    "dist",
+    "vite.config.ts"
+  ],
+  "include": ["src"],
+  "tsc-alias": {
+    "verbose": true,
+    "resolveFullPaths": true,
+  }
 }

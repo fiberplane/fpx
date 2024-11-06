@@ -1,46 +1,35 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`barrel-files 1`] = `
-"//@ Start file: index.ts
+"/* index.ts */
 const app = new Hono();
-app.baseUrl = "";
-          
-// Route entry:ROUTE_ENTRY:index.ts@531
+
 app.get("/", (c) => c.text("Hello, Hono!")
-//@ EOF file: index.ts
-"
+/* EOF: index.ts */"
 `;
 
 exports[`barrel-files 2`] = `
-"//@ Start file: index.ts
+"/* index.ts */
 import { cors } from "hono/cors";
-
 const app = new Hono();
-app.baseUrl = "";
-          
-// Route entry:ROUTE_ENTRY:index.ts@407
+
 app.get("/user/1", cors()async (c) => {
   // await getUser();
   const user = await getUser();
   return c.json(user);
 }
-//@ EOF file: index.ts
+/* EOF: index.ts */
+/* db/index.ts */
 
-
-//@ Start file: db/index.ts
-// Source reference:SOURCE_REFERENCE:db%2Findex.ts@9
 export { getUser } from "./getUser"
-//@ EOF file: db/index.ts
-
-
-//@ Start file: db/getUser.ts
+/* EOF: db/index.ts */
+/* db/getUser.ts */
 import { measure } from "@fiberplane/hono-otel";
 
-// Source reference:SOURCE_REFERENCE:db%2FgetUser.ts@128
 const DEFAULT_USER_NAME = "John Doe"
-// Source reference:SOURCE_REFERENCE:db%2FgetUser.ts@166
+
 const DEFAULT_EMAIL = "john@doe.com"
-// Source reference:SOURCE_REFERENCE:db%2FgetUser.ts@222
+
 const getUser = measure("getUser", async () => {
   await sleep(100);
   const value: User = {
@@ -49,43 +38,51 @@ const getUser = measure("getUser", async () => {
   };
   return value;
 })
-//@ EOF file: db/getUser.ts
+/* EOF: db/getUser.ts */
+/* utils.ts */
 
-
-//@ Start file: utils.ts
-// Source reference:SOURCE_REFERENCE:utils.ts@0
 export async function sleep(duration: number) {
   return new Promise((resolve) => setTimeout(resolve, duration));
 }
-//@ EOF file: utils.ts
+/* EOF: utils.ts */
+/* types.ts */
 
-
-//@ Start file: types.ts
-// Source reference:SOURCE_REFERENCE:types.ts@0
 export type Email = string;
-// Source reference:SOURCE_REFERENCE:types.ts@29
+
 export type User = {
   name: string;
   email: Email;
 };
-//@ EOF file: types.ts
-"
+/* EOF: types.ts */"
+`;
+
+exports[`goose-quotes 1`] = `
+"/* src/index.ts */
+const app = new Hono();
+
+app.get("/", (c) => {
+  const honk = shouldHonk(c.req) ? "Honk honk!" : "";
+  console.log(\`Home page accessed. Honk: \${honk}\`);
+  return c.text(\`Hello Goose Quotes! \${honk}\`.trim());
+}
+/* EOF: src/index.ts */
+/* src/utils.ts */
+import { HonoRequest } from "hono";
+
+export function shouldHonk(r: HonoRequest) {
+  const { shouldHonk } = r.query();
+  return typeof shouldHonk !== "undefined";
+}
+/* EOF: src/utils.ts */"
 `;
 
 exports[`hono-factory 1`] = `
-"//@ Start file: index.ts
+"/* index.ts */
 const app = new Hono();
-app.baseUrl = "";
-          
-//@ EOF file: index.ts
-
-
-//@ Start file: factory.ts
+/* EOF: index.ts */
+/* factory.ts */
 const app = new Hono();
-app.baseUrl = "";
-          
-// Route entry:ROUTE_ENTRY:factory.ts@281
+
 app.get("/", (c) => c.text("Hello, Hono!")
-//@ EOF file: factory.ts
-"
+/* EOF: factory.ts */"
 `;

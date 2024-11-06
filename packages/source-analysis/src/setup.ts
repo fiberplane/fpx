@@ -1,6 +1,6 @@
 import path from "node:path";
 import { extractRouteTrees } from "./routeTrees";
-import { getTsLib, startServer } from "./server";
+import { getTsLib, startServer } from "./service";
 import type { TsType } from "./types";
 import { Watcher } from "./watcher";
 
@@ -30,7 +30,7 @@ export function setupMonitoring(projectRoot: string) {
     return Object.keys(fileMap);
   }
 
-  const server = startServer({
+  const service = startServer({
     getFileInfo,
     getFileNames,
     location: projectRoot,
@@ -42,7 +42,7 @@ export function setupMonitoring(projectRoot: string) {
       version: 0,
       content: event.payload.content,
     };
-    server.getProgram()?.getSourceFile(event.payload.fileName);
+    service.getProgram()?.getSourceFile(event.payload.fileName);
   });
 
   watcher.on("fileUpdated", (event) => {
@@ -58,10 +58,10 @@ export function setupMonitoring(projectRoot: string) {
 
   return {
     watcher,
-    findHonoRoutes: () => extractRouteTrees(server, ts, projectRoot),
+    findHonoRoutes: () => extractRouteTrees(service, ts, projectRoot, watcher),
     teardown: () => {
       watcher.teardown();
-      server.dispose();
+      service.dispose();
     },
   };
 }

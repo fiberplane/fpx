@@ -4,11 +4,11 @@ import { expect, test, vi } from "vitest";
 import { Watcher } from "./watcher";
 
 test("Initial files (added)", async () => {
-  const location = path.join(__dirname, "../test-case/multiple");
+  const location = path.join(__dirname, "../test-cases/multiple");
   const watcher = new Watcher(location);
   const handler = vi.fn();
   watcher.addListener("fileAdded", handler);
-  watcher.start();
+  await watcher.start();
   try {
     expect(handler).toHaveBeenCalledTimes(3);
 
@@ -35,8 +35,8 @@ test("Initial files (added)", async () => {
 });
 
 test("Empty folder", async () => {
-  const location = path.join(__dirname, "../test-case/empty");
-  const simpleLocation = path.join(__dirname, "../test-case/single");
+  const location = path.join(__dirname, "../test-cases/empty");
+  const simpleLocation = path.join(__dirname, "../test-cases/single");
 
   // Avoid test from failing due to dirty initial state
   // Remove old files (if they still exist)
@@ -52,7 +52,7 @@ test("Empty folder", async () => {
   watcher.addListener("fileAdded", addHandler);
   watcher.addListener("fileUpdated", updateHandler);
   watcher.addListener("fileRemoved", removeHandler);
-  watcher.start();
+  await watcher.start();
 
   try {
     expect(addHandler).toHaveBeenCalledTimes(0);

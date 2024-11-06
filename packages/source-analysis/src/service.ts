@@ -1,12 +1,8 @@
 import { createRequire } from "node:module";
-import path from "node:path";
 import relative from "resolve";
 import * as bundledTs from "typescript";
 import type { TsCompilerOptions, TsLanguageServiceHost, TsType } from "./types";
-import { isSubpath } from "./utils";
 const relativeResolve = relative.sync;
-
-const require = createRequire(import.meta.url);
 
 export function getOptions(location: string, ts: TsType): TsCompilerOptions {
   const configPath = ts.findConfigFile(
@@ -29,6 +25,7 @@ export function getOptions(location: string, ts: TsType): TsCompilerOptions {
 }
 
 export function getTsLib(projectRoot: string) {
+  const require = createRequire(projectRoot);
   try {
     const tsPath = relativeResolve("typescript", { basedir: projectRoot });
     return require(tsPath);
@@ -49,7 +46,6 @@ export function startServer(params: {
 }) {
   const { ts, location, getFileInfo, getFileNames } = params;
   const options = getOptions(location, ts);
-  console.log("location:", location);
 
   const host: TsLanguageServiceHost = {
     fileExists: (fileName) => {

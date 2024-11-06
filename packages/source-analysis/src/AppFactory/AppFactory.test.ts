@@ -5,11 +5,10 @@ import { analyze } from "../analyze";
 import { setupMonitoring } from "../setup";
 
 test("hono-factory", async () => {
-  console.log("analyze", analyze);
-  const absolutePath = path.join(__dirname, "../../test-case/hono-factory");
+  const absolutePath = path.join(__dirname, "../../test-cases/hono-factory");
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
-    watcher.start();
+    await watcher.start();
     const start = performance.now();
     const result = findHonoRoutes();
     console.log(
@@ -24,7 +23,7 @@ test("hono-factory", async () => {
       throw new Error("Root is null");
     }
 
-    const app = factory.getApp(root.id);
+    const app = factory.setRootTree(root.id);
     const request = new Request("http://localhost/", { method: "GET" });
     const response = await app.fetch(request);
     expect(await response.text()).toEqual("Ok");
@@ -46,10 +45,10 @@ test("hono-factory", async () => {
 });
 
 test("barrel-files", async () => {
-  const absolutePath = path.join(__dirname, "../../test-case/barrel-files");
+  const absolutePath = path.join(__dirname, "../../test-cases/barrel-files");
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
-    watcher.start();
+    await watcher.start();
     const start = performance.now();
     const result = findHonoRoutes();
     console.log(
@@ -63,7 +62,7 @@ test("barrel-files", async () => {
       throw new Error("Root is null");
     }
 
-    const app = factory.getApp(root.id);
+    const app = factory.setRootTree(root.id);
     let request = new Request("http://localhost/", { method: "GET" });
     let response = await app.fetch(request);
     expect(await response.text()).toEqual("Ok");
@@ -79,6 +78,41 @@ test("barrel-files", async () => {
     expect(factory.getHistoryLength()).toBe(2);
     expect(factory.hasVisited(root.id)).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
+  } finally {
+    teardown();
+  }
+});
+
+test("goose-quotes", async () => {
+  const absolutePath = path.join(
+    __dirname,
+    "../../../../examples/goose-quotes",
+  );
+  const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
+  try {
+    await watcher.start();
+    const start = performance.now();
+    const result = findHonoRoutes();
+    console.log(
+      `Duration for goose-quotes files: ${(performance.now() - start).toFixed(4)}`,
+    );
+    const root = analyze(result.resourceManager.getResources());
+    expect(root).not.toBeNull();
+    assert(root !== null);
+    const factory = new AppFactory(result.resourceManager);
+    if (!root) {
+      throw new Error("Root is null");
+    }
+
+    const app = factory.setRootTree(root.id);
+    const request = new Request("http://localhost/", { method: "GET" });
+    const response = await app.fetch(request);
+    expect(await response.text()).toEqual("Ok");
+    expect(factory.getHistoryLength()).toBe(2);
+    expect(factory.hasVisited(root.id)).toBeTruthy();
+    const content = factory.getFilesForHistory();
+    console.log(content);
+    expect(content).toMatchSnapshot();
   } finally {
     teardown();
   }

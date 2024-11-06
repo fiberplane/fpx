@@ -5,50 +5,49 @@ import { setupMonitoring } from "..";
 test.each([
   {
     name: "single file",
-
-    location: "../../test-case/single",
+    location: "../../test-cases/single",
   },
   {
     name: "multiple files",
-    location: "../../test-case/multiple",
+    location: "../../test-cases/multiple",
   },
   {
     name: "module imports",
-    location: "../../test-case/module-imports",
+    location: "../../test-cases/module-imports",
   },
   {
     name: "barrel files",
-    location: "../../test-case/barrel-files",
+    location: "../../test-cases/barrel-files",
   },
   // {
   //   name: "bindings",
-  //   location: "../../test-case/bindings",
+  //   location: "../../test-cases/bindings",
   // },
   {
     name: "split routes",
-    location: "../../test-case/split-routes",
-  },
-  {
-    name: "empty",
-    location: "../../test-case/empty",
+    location: "../../test-cases/split-routes",
   },
   // {
-  //   name: "goose-quotes",
-  //   location: "../../examples/goose-quotes",
+  //   name: "empty",
+  //   location: "../../test-cases/empty",
   // },
   {
-    name: "hono factory",
-    location: "../../test-case/hono-factory",
+    name: "goose-quotes",
+    location: "../../../../examples/goose-quotes",
   },
-  // {
-  //   name: "api",
-  //   location: "../../api",
-  // }
+  {
+    name: "hono factory",
+    location: "../../test-cases/hono-factory",
+  },
+  // // {
+  // //   name: "api",
+  // //   location: "../../api",
+  // // }
 ])("run test $name with location $location", async ({ location, name }) => {
   const absolutePath = path.join(__dirname, location);
   const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
   try {
-    watcher.start();
+    await watcher.start();
     const start = performance.now();
     const result = findHonoRoutes();
     console.log(

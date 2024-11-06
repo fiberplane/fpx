@@ -44,6 +44,7 @@
     "@ai-sdk/openai": "^0.0.66",
     "@anthropic-ai/sdk": "^0.24.3",
     "@fiberplane/fpx-types": "workspace:*",
+    "@fiberplane/source-analysis": "workspace:*",
     "@hono/node-server": "^1.11.1",
     "@hono/zod-validator": "^0.2.2",
     "@iarna/toml": "^2.2.5",

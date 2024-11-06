@@ -5,6 +5,22 @@ import { type FSWatcher, watch } from "chokidar";
 import type { MapLike } from "typescript";
 import type { TextDocumentContentChangeEvent } from "./types";
 
+function debounce<T extends (...args: Parameters<T>) => void>(
+  func: T,
+  wait: number,
+) {
+  let debounceTimeout: NodeJS.Timeout | null = null;
+
+  return (...args: Parameters<T>) => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    debounceTimeout = setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
+}
+
 type FileAddedEvent = {
   type: "fileAdded";
   payload: {
@@ -36,31 +52,39 @@ type FileEvents = {
 
 export class Watcher extends EventEmitter<FileEvents> {
   private folderPath: string;
-  private fileVersions: MapLike<{ version: number; content: string }> = {};
+  private knownFileNames = new Set<string>();
+  // private fileVersions: MapLike<{
+  //   version: number;
+  //   // content: string
+  // }> = {};
   private watcher: FSWatcher | null = null;
   constructor(folderPath: string) {
     super();
     this.folderPath = path.normalize(folderPath);
   }
 
-  public start() {
-    this.initFileVersions(this.getAllTsFiles(this.folderPath));
+  public async start() {
+    // Get all files under this.folderPath
+    const files = await this.getAllTsFiles(this.folderPath);
+    // Initialize file versions for existing files
+    await this.initFileVersions(files);
+    // Initialize the file system watcher
     this.initializeWatcher();
   }
 
   // Initialize file versions for existing files
-  private initFileVersions(fileNames: string[]) {
+  private async initFileVersions(fileNames: string[]) {
     for (const fileName of fileNames) {
-      this.addFile(fileName);
+      await this.addFile(fileName);
     }
   }
 
   // Recursively get all .ts and .tsx files from a directory
-  private getAllTsFiles(folderPath: string): string[] {
+  private async getAllTsFiles(folderPath: string): Promise<string[]> {
     const tsFiles: string[] = [];
 
-    function getFilesFromDir(dir: string) {
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
+    async function getFilesFromDir(dir: string) {
+      const entries = await fs.promises.readdir(dir, { withFileTypes: true });
 
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
@@ -75,7 +99,7 @@ export class Watcher extends EventEmitter<FileEvents> {
       }
     }
 
-    getFilesFromDir(folderPath);
+    await getFilesFromDir(folderPath);
     return tsFiles;
   }
 
@@ -88,13 +112,14 @@ export class Watcher extends EventEmitter<FileEvents> {
   }
 
   // Add a new file to the language service
-  private addFile(fileName: string) {
+  private async addFile(fileName: string) {
     if (!fileName.endsWith(".ts") && !fileName.endsWith(".tsx")) {
       return;
     }
 
-    const content = fs.readFileSync(fileName, "utf-8");
-    this.fileVersions[fileName] = { version: 0, content };
+    const content = await fs.promises.readFile(fileName, "utf-8");
+    this.knownFileNames.add(fileName);
+
     const event: FileEvents["fileAdded"][0] = {
       type: "fileAdded" as const,
       payload: {
@@ -112,7 +137,8 @@ export class Watcher extends EventEmitter<FileEvents> {
       return;
     }
 
-    delete this.fileVersions[fileName];
+    this.knownFileNames.delete(fileName);
+
     this.emit("fileRemoved", {
       type: "fileRemoved",
       payload: {
@@ -122,16 +148,13 @@ export class Watcher extends EventEmitter<FileEvents> {
   }
 
   // Update a file's content and version (when modified)
-  private updateFile(fileName: string) {
+  private async updateFile(fileName: string) {
     if (!fileName.endsWith(".ts") && !fileName.endsWith(".tsx")) {
       return;
     }
 
-    if (this.fileVersions[fileName]) {
-      const content = fs.readFileSync(fileName, "utf-8");
-
-      this.fileVersions[fileName].version++;
-      this.fileVersions[fileName].content = content;
+    if (this.knownFileNames.has(fileName)) {
+      const content = await fs.promises.readFile(fileName, "utf-8");
 
       const change: TextDocumentContentChangeEvent = {
         text: content,

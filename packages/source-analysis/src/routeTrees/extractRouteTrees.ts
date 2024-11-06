@@ -22,6 +22,7 @@ import {
   type TsType,
   type TsVariableDeclaration,
 } from "../types";
+import type { Watcher } from "../watcher";
 import { createSourceReferenceForNode } from "./extractReferences";
 import { findNodeAtPosition } from "./utils";
 
@@ -29,6 +30,7 @@ export function extractRouteTrees(
   service: TsLanguageService,
   ts: TsType,
   projectRoot: string,
+  watcher: Watcher,
 ): {
   errorCount?: number;
   resourceManager: ResourceManager;
@@ -61,7 +63,7 @@ export function extractRouteTrees(
     ts,
     resourceManager,
     getFile: (fileName: string) => {
-      return fileMap[fileName];
+      return program.getSourceFile(fileName);
     },
     asRelativePath,
     asAbsolutePath,

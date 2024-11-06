@@ -14,7 +14,6 @@ import {
 } from "./constants.js";
 import * as schema from "./db/schema.js";
 import { hasValidAiConfig } from "./lib/ai/index.js";
-import { getTSServer } from "./lib/expand-function/tsserver/index.js";
 import { getAuthServer } from "./lib/fp-services/server.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getInferenceConfig, getSetting } from "./lib/settings/index.js";
@@ -26,6 +25,9 @@ import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
+
+import { setupMonitoring } from "@fiberplane/source-analysis";
+import { setupCodeAnalysis } from "./routes/inference/inference.js";
 
 config({ path: ".dev.vars" });
 
@@ -103,6 +105,12 @@ if (proxyRequestsEnabled ?? false) {
   await webhonc.start();
 }
 
+const { watcher, findHonoRoutes: findRoutes } = setupMonitoring(
+  USER_PROJECT_ROOT_DIR,
+);
+
+// export const findHonoRoutes = findRoutes;
+
 // check settings if ai is enabled, and proactively start the typescript language server
 const inferenceConfig = await getInferenceConfig(db);
 const aiEnabled = inferenceConfig ? hasValidAiConfig(inferenceConfig) : false;
@@ -111,7 +119,16 @@ if (aiEnabled) {
     "AI Request Generation enabled. Starting typescript language server",
   );
   try {
-    await getTSServer(USER_PROJECT_ROOT_DIR);
+    watcher.start().then(() => {
+      // const start = performance.now();
+      // const result = findRoutes()
+      setupCodeAnalysis({
+        findHonoRoutes: findRoutes,
+        watcher,
+      });
+      // console.log('result', performance.now() - start, result)
+    });
+    // await getTSServer(USER_PROJECT_ROOT_DIR);
   } catch (error) {
     logger.error("Error starting TSServer:", error);
   }
