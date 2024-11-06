@@ -2,7 +2,7 @@ import path from "node:path";
 import { WsMessageSchema } from "@fiberplane/fpx-types";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import WebSocket from "ws";
-import type { z } from "zod";
+import { z } from "zod";
 import * as schema from "../../db/schema.js";
 import logger from "../../logger.js";
 import { resolveServiceArg } from "../../probe-routes.js";
@@ -20,6 +20,27 @@ type WebhoncManagerConfig = {
   db: LibSQLDatabase<typeof schema>;
   wsConnections: Set<WebSocket>;
 };
+
+const WebhoncOutgoingResponseSchema = z.object({
+  status: z.number(),
+  body: z.string(),
+  headers: z.record(z.string()),
+});
+
+type WebhoncOutgoingResponse = z.infer<typeof WebhoncOutgoingResponseSchema>;
+
+function isWebhoncOutgoingResponse(
+  value: unknown,
+): value is WebhoncOutgoingResponse {
+  const parseResult = WebhoncOutgoingResponseSchema.safeParse(value);
+  if (!parseResult.success) {
+    logger.error(
+      "Invalid webhonc outgoing response",
+      parseResult.error.format(),
+    );
+  }
+  return parseResult.success;
+}
 
 let socket: WebSocket | undefined = undefined;
 let reconnectTimeout: NodeJS.Timeout | undefined = undefined;
@@ -96,7 +117,18 @@ function setupSocketListeners() {
   socket.onmessage = async (event) => {
     logger.debug("Received message from the webhonc service:", event.data);
     try {
-      await handleMessage(event);
+      const response = await handleMessage(event);
+      // NOTE - We want to notify webhonc about the response so that it can "proxy" it
+      if (socket && response && isWebhoncOutgoingResponse(response)) {
+        socket.send(
+          JSON.stringify({
+            event: "response_outgoing",
+            payload: response,
+            // @ts-expect-error - AHHHHH
+            correlationId: response?.correlationId,
+          }),
+        );
+      }
     } catch (error) {
       logger.error("Error handling message from webhonc:", error);
     }
@@ -147,29 +179,42 @@ async function handleMessage(event: WebSocket.MessageEvent) {
     JSON.parse(event.data.toString()),
   );
 
-  const handler = messageHandlers[parsedMessage.event] as (
-    message: typeof parsedMessage,
-    config: WebhoncManagerConfig,
-  ) => Promise<void>;
+  let correlationId = "NA";
+  try {
+    if (parsedMessage.event === "request_incoming") {
+      const reparsedMessage = JSON.parse(event.data.toString());
+      if (typeof reparsedMessage?.correlationId === "string") {
+        correlationId = reparsedMessage?.correlationId;
+      }
+    }
+  } catch (_err) {
+    console.warn("[webhonc] Failed to parse correlation id");
+  }
+
+  const handler = messageHandlers[parsedMessage.event];
 
   if (handler) {
-    await handler(parsedMessage, config);
-  } else {
-    logger.error(`Unhandled event type: ${parsedMessage.event}`);
+    // @ts-expect-error - TODO: fix this type error
+    return await handler({ ...parsedMessage, correlationId }, config);
   }
+
+  logger.error(`Unhandled event type: ${parsedMessage.event}`);
+  return null;
 }
 
 const messageHandlers: {
   [K in z.infer<typeof WsMessageSchema>["event"]]: (
     message: Extract<z.infer<typeof WsMessageSchema>, { event: K }>,
     config: WebhoncManagerConfig,
-  ) => Promise<void>;
+  ) => Promise<null | WebhoncOutgoingResponse>;
 } = {
   trace_created: async (_message, _config) => {
     logger.debug("trace_created message received, no action required");
+    return null;
   },
   login_success: async () => {
     logger.debug("login_success message received, this should never happen");
+    return null;
   },
   connection_open: async (message, config) => {
     const { connectionId } = message.payload;
@@ -187,8 +232,10 @@ const messageHandlers: {
         }),
       );
     }
+    return null;
   },
   request_incoming: async (message, config) => {
+    console.log("REQUEST INCOMING", message);
     // no trace id is coming from the websocket, so we generate one
     const db = config.db;
     const traceId = generateOtelTraceId();
@@ -244,13 +291,33 @@ const messageHandlers: {
 
       const duration = Date.now() - startTime;
 
-      await handleSuccessfulRequest(db, requestId, duration, response, traceId);
+      const { responseBody, responseHeaders } = await handleSuccessfulRequest(
+        db,
+        requestId,
+        duration,
+        response,
+        traceId,
+      );
 
-      // Store the request in the database
+      return {
+        status: response.status,
+        body: responseBody ?? "",
+        headers: responseHeaders,
+        // @ts-expect-error - I did not want to update the package types for webhonc messages
+        correlationId: message?.correlationId ?? "HI",
+        fullMessage: message,
+      };
     } catch (error) {
       logger.error("Error making request", error);
       const duration = Date.now() - startTime;
       await handleFailedRequest(db, requestId, traceId, duration, error);
+      return {
+        status: 500,
+        body: "Internal server error",
+        headers: {},
+        // @ts-expect-error - I did not want to update the package types for webhonc messages
+        correlationId: message?.correlationId ?? "HI",
+      };
     }
   },
 };

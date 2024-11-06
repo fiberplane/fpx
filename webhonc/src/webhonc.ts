@@ -4,17 +4,25 @@ import type { Bindings } from "./types";
 
 export class WebHonc extends DurableObject<Bindings> {
   sessions: Map<string, WebSocket>;
+  // TODO - Use KV instead with an expiration time on the keys
+  pendingResponses: Map<string, string | null>;
 
   constructor(ctx: DurableObjectState, env: Bindings) {
     super(ctx, env);
     this.ctx = ctx;
     this.env = env;
     this.sessions = new Map();
+    this.pendingResponses = new Map();
 
     for (const ws of this.ctx.getWebSockets()) {
       const { connectionId } = ws.deserializeAttachment();
       this.sessions.set(connectionId, ws);
     }
+
+    ctx.blockConcurrencyWhile(async () => {
+      this.pendingResponses =
+        (await ctx.storage.get("pendingResponses")) || this.pendingResponses;
+    });
   }
 
   async fetch(_req: Request) {
@@ -40,6 +48,26 @@ export class WebHonc extends DurableObject<Bindings> {
 
   webSocketMessage(_ws: WebSocket, message: string | ArrayBuffer) {
     console.debug("Received message from WS connection:", message);
+    try {
+      const messageString =
+        message instanceof ArrayBuffer
+          ? new TextDecoder().decode(message)
+          : message;
+
+      const parsedMessage = JSON.parse(messageString);
+      console.log("parsedMessage", parsedMessage);
+      const { event, payload, correlationId } = parsedMessage;
+      if (event === "response_outgoing" && correlationId) {
+        console.debug(
+          "Setting pending response VALUE for correlationId:",
+          payload.correlationId,
+        );
+        const payloadString = JSON.stringify(payload);
+        this.pendingResponses.set(correlationId, payloadString);
+      }
+    } catch (error) {
+      console.error("Error parsing message from WS connection:", error);
+    }
   }
 
   async webSocketClose(
@@ -65,9 +93,37 @@ export class WebHonc extends DurableObject<Bindings> {
   public async pushWebhookData(connectionId: string, data: WsMessage) {
     console.debug("Serializing and sending data to connection:", connectionId);
     const ws = this.sessions.get(connectionId);
-    const payload = JSON.stringify(data);
+    const correlationId = crypto.randomUUID();
+    const payload = JSON.stringify({
+      ...data,
+      correlationId,
+    });
+
+    console.log("boots - sending payload", payload);
+
+    console.debug(
+      "Awaiting pending response for correlationId:",
+      correlationId,
+    );
+
+    this.pendingResponses.set(correlationId, null);
     if (ws) {
       ws.send(payload);
     }
+
+    // Try for ~5 seconds to get the response, sleeping 150ms between attempts
+    for (let i = 0; i < 33; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      const response = this.pendingResponses.get(correlationId);
+      if (response) {
+        this.pendingResponses.delete(correlationId);
+        return response;
+      }
+    }
+
+    return JSON.stringify({
+      status: 500,
+      body: "Timeout waiting for response",
+    });
   }
 }

@@ -81,7 +81,7 @@ app.all(
       headersJson[key] = value;
     }
 
-    await webhonc.pushWebhookData(id, {
+    const stringifiedResponse = await webhonc.pushWebhookData(id, {
       event: "request_incoming",
       payload: {
         headers: headersJson,
@@ -92,7 +92,30 @@ app.all(
       },
     });
 
-    return c.text("OK");
+    let textOrJson: "text" | "json" = "text";
+
+    // TODO - Validate
+    const parsedResponse = JSON.parse(stringifiedResponse);
+
+    const proxiedHeaders = new Headers();
+    for (const [key, value] of Object.entries(parsedResponse?.headers ?? {})) {
+      // TODO - handle octet stream?
+      if (key.toLowerCase() === "content-length") {
+        if ((value as string)?.toLowerCase()?.startsWith("application/json")) {
+          textOrJson = "json";
+        }
+        continue;
+      }
+      proxiedHeaders.set(key, value as string);
+    }
+
+    const proxiedBody = parsedResponse?.body as string;
+    const proxiedStatus = parsedResponse?.status as number;
+
+    return c.newResponse(proxiedBody, {
+      headers: proxiedHeaders,
+      status: proxiedStatus,
+    });
   },
 );
 
