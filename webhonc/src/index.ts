@@ -92,27 +92,36 @@ app.all(
       },
     });
 
-    let textOrJson: "text" | "json" = "text";
-
     // TODO - Validate
     const parsedResponse = JSON.parse(stringifiedResponse);
 
+    const shouldRespondWithJson = isContentTypeJson(
+      parsedResponse?.headers ?? {},
+    );
+
     const proxiedHeaders = new Headers();
     for (const [key, value] of Object.entries(parsedResponse?.headers ?? {})) {
-      // TODO - handle octet stream?
+      // TODO - handle octet stream content type?
+
+      // NOTE - Skipping content-length as it's calculated dynamically by the response
       if (key.toLowerCase() === "content-length") {
-        if ((value as string)?.toLowerCase()?.startsWith("application/json")) {
-          textOrJson = "json";
-        }
         continue;
       }
       proxiedHeaders.set(key, value as string);
     }
 
+    // HACK - Type coercions
     const proxiedBody = parsedResponse?.body as string;
     const proxiedStatus = parsedResponse?.status as number;
 
-    return c.newResponse(proxiedBody, {
+    if (shouldRespondWithJson) {
+      return c.json(JSON.parse(proxiedBody), {
+        headers: proxiedHeaders,
+        status: proxiedStatus,
+      });
+    }
+
+    return c.text(proxiedBody, {
       headers: proxiedHeaders,
       status: proxiedStatus,
     });
@@ -122,3 +131,14 @@ app.all(
 export { WebHonc };
 
 export default app;
+
+function isContentTypeJson(headers: Record<string, string>) {
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === "content-length") {
+      if ((value as string)?.toLowerCase()?.startsWith("application/json")) {
+        return true;
+      }
+    }
+  }
+  return false;
+}

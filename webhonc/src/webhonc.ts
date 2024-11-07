@@ -4,7 +4,7 @@ import type { Bindings } from "./types";
 
 export class WebHonc extends DurableObject<Bindings> {
   sessions: Map<string, WebSocket>;
-  // TODO - Use KV instead with an expiration time on the keys
+  // IMPROVE - Use Cloudflare KV instead, with an expiration time on the keys
   pendingResponses: Map<string, string | null>;
 
   constructor(ctx: DurableObjectState, env: Bindings) {
@@ -19,6 +19,7 @@ export class WebHonc extends DurableObject<Bindings> {
       this.sessions.set(connectionId, ws);
     }
 
+    // Load the pending responses from storage
     ctx.blockConcurrencyWhile(async () => {
       this.pendingResponses =
         (await ctx.storage.get("pendingResponses")) || this.pendingResponses;
@@ -55,13 +56,18 @@ export class WebHonc extends DurableObject<Bindings> {
           : message;
 
       const parsedMessage = JSON.parse(messageString);
-      console.log("parsedMessage", parsedMessage);
-      const { event, payload, correlationId } = parsedMessage;
+      const event = parsedMessage?.event;
+      const payload = parsedMessage?.payload;
+      const correlationId = parsedMessage?.correlationId;
+
+      // The Fiberplane Studio API sends responses back to us with a correlationId
+      // If we're receiving a response, we need to store the response in our pending responses map
       if (event === "response_outgoing" && correlationId) {
         console.debug(
-          "Setting pending response VALUE for correlationId:",
+          "Setting pending response value for correlationId:",
           payload.correlationId,
         );
+        // Re-serialize the payload to ensure it's a valid JSON string
         const payloadString = JSON.stringify(payload);
         this.pendingResponses.set(correlationId, payloadString);
       }
@@ -85,36 +91,27 @@ export class WebHonc extends DurableObject<Bindings> {
     );
     try {
       ws.close(code);
+      for (const [correlationId, response] of this.pendingResponses.entries()) {
+        if (response === null) {
+          this.pendingResponses.delete(correlationId);
+        }
+      }
     } catch (error) {
       console.error("Error closing WebSocket:", error);
     }
   }
 
-  public async pushWebhookData(connectionId: string, data: WsMessage) {
-    console.debug("Serializing and sending data to connection:", connectionId);
-    const ws = this.sessions.get(connectionId);
-    const correlationId = crypto.randomUUID();
-    const payload = JSON.stringify({
-      ...data,
-      correlationId,
-    });
+  private async waitForWebhookResponse(
+    correlationId: string,
+    timeoutMs = 5000,
+  ): Promise<string> {
+    const pollIntervalMs = 150;
+    const maxAttempts = Math.ceil(timeoutMs / pollIntervalMs);
 
-    console.log("boots - sending payload", payload);
-
-    console.debug(
-      "Awaiting pending response for correlationId:",
-      correlationId,
-    );
-
-    this.pendingResponses.set(correlationId, null);
-    if (ws) {
-      ws.send(payload);
-    }
-
-    // Try for ~5 seconds to get the response, sleeping 150ms between attempts
-    for (let i = 0; i < 33; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 150));
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
       const response = this.pendingResponses.get(correlationId);
+
       if (response) {
         this.pendingResponses.delete(correlationId);
         return response;
@@ -123,7 +120,38 @@ export class WebHonc extends DurableObject<Bindings> {
 
     return JSON.stringify({
       status: 500,
-      body: "Timeout waiting for response",
+      body: "Webhook response timeout exceeded",
     });
+  }
+
+  public async pushWebhookData(connectionId: string, data: WsMessage) {
+    const correlationId = crypto.randomUUID();
+
+    console.debug(
+      `Serializing and sending data to (ConnectionId: ${connectionId}, CorrelationId: ${correlationId})`,
+    );
+    const ws = this.sessions.get(connectionId);
+
+    const payload = JSON.stringify({
+      ...data,
+      correlationId,
+    });
+
+    console.debug(
+      "Sending payload to Studio with correlationId:",
+      correlationId,
+    );
+
+    this.pendingResponses.set(correlationId, null);
+    if (ws) {
+      ws.send(payload);
+    }
+
+    console.debug(
+      "Awaiting pending response for correlationId:",
+      correlationId,
+    );
+
+    return this.waitForWebhookResponse(correlationId);
   }
 }
