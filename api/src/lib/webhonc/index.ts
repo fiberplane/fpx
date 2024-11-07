@@ -1,46 +1,12 @@
-import path from "node:path";
-import { WsMessageSchema } from "@fiberplane/fpx-types";
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import { type WsMessage, WsMessageSchema } from "@fiberplane/fpx-types";
 import WebSocket from "ws";
-import { z } from "zod";
-import * as schema from "../../db/schema.js";
 import logger from "../../logger.js";
-import { resolveServiceArg } from "../../probe-routes.js";
-import { generateOtelTraceId } from "../otel/index.js";
+import { handleMessage } from "./handlers.js";
+import { getWebHoncConnectionId } from "./store.js";
 import {
-  executeProxyRequest,
-  handleFailedRequest,
-  handleSuccessfulRequest,
-} from "../proxy-request/index.js";
-import { resolveUrlQueryParams } from "../utils.js";
-import { getWebHoncConnectionId, setWebHoncConnectionId } from "./store.js";
-
-type WebhoncManagerConfig = {
-  host: string;
-  db: LibSQLDatabase<typeof schema>;
-  wsConnections: Set<WebSocket>;
-};
-
-const WebhoncOutgoingResponseSchema = z.object({
-  status: z.number(),
-  body: z.string(),
-  headers: z.record(z.string()),
-});
-
-type WebhoncOutgoingResponse = z.infer<typeof WebhoncOutgoingResponseSchema>;
-
-function isWebhoncOutgoingResponse(
-  value: unknown,
-): value is WebhoncOutgoingResponse {
-  const parseResult = WebhoncOutgoingResponseSchema.safeParse(value);
-  if (!parseResult.success) {
-    logger.error(
-      "Invalid webhonc outgoing response",
-      parseResult.error.format(),
-    );
-  }
-  return parseResult.success;
-}
+  type WebhoncManagerConfig,
+  isWebhoncOutgoingResponse,
+} from "./types.js";
 
 let socket: WebSocket | undefined = undefined;
 let reconnectTimeout: NodeJS.Timeout | undefined = undefined;
@@ -117,15 +83,16 @@ function setupSocketListeners() {
   socket.onmessage = async (event) => {
     logger.debug("Received message from the webhonc service:", event.data);
     try {
-      const response = await handleMessage(event);
+      const response = await dispatchMessage(event);
+      const shouldNotifyResponse =
+        response && isWebhoncOutgoingResponse(response);
       // NOTE - We want to notify webhonc about the response so that it can "proxy" it
-      if (socket && response && isWebhoncOutgoingResponse(response)) {
+      if (socket && shouldNotifyResponse) {
         socket.send(
           JSON.stringify({
             event: "response_outgoing",
             payload: response,
-            // @ts-expect-error - AHHHHH
-            correlationId: response?.correlationId,
+            correlationId: response.correlationId,
           }),
         );
       }
@@ -168,7 +135,10 @@ function scheduleReconnect() {
   }, reconnectDelay);
 }
 
-async function handleMessage(event: WebSocket.MessageEvent) {
+/**
+ * Dispatches a websocket message to the appropriate handler on the api
+ */
+async function dispatchMessage(event: WebSocket.MessageEvent) {
   if (!config) {
     return;
   }
@@ -179,6 +149,21 @@ async function handleMessage(event: WebSocket.MessageEvent) {
     JSON.parse(event.data.toString()),
   );
 
+  const correlationId = extractCorrelationId(event, parsedMessage);
+
+  return handleMessage(parsedMessage, config, correlationId);
+}
+
+/**
+ * Extracts the correlation id from the message
+ *
+ * This is a HACK to avoid having to specify the correlation id on the strict fiberplane package types
+ */
+function extractCorrelationId(
+  event: WebSocket.MessageEvent,
+  parsedMessage: WsMessage,
+): string | undefined {
+  // HACK - We need to extract the correlation id from the message
   let correlationId = "NA";
   try {
     if (parsedMessage.event === "request_incoming") {
@@ -190,134 +175,5 @@ async function handleMessage(event: WebSocket.MessageEvent) {
   } catch (_err) {
     console.warn("[webhonc] Failed to parse correlation id");
   }
-
-  const handler = messageHandlers[parsedMessage.event];
-
-  if (handler) {
-    // @ts-expect-error - TODO: fix this type error
-    return await handler({ ...parsedMessage, correlationId }, config);
-  }
-
-  logger.error(`Unhandled event type: ${parsedMessage.event}`);
-  return null;
+  return correlationId;
 }
-
-const messageHandlers: {
-  [K in z.infer<typeof WsMessageSchema>["event"]]: (
-    message: Extract<z.infer<typeof WsMessageSchema>, { event: K }>,
-    config: WebhoncManagerConfig,
-  ) => Promise<null | WebhoncOutgoingResponse>;
-} = {
-  trace_created: async (_message, _config) => {
-    logger.debug("trace_created message received, no action required");
-    return null;
-  },
-  login_success: async () => {
-    logger.debug("login_success message received, this should never happen");
-    return null;
-  },
-  connection_open: async (message, config) => {
-    const { connectionId } = message.payload;
-    logger.debug(
-      "connection_open message received, setting webhonc connection id:",
-      connectionId,
-    );
-    // Await this call so that the webhonc id is set before the query on the studio side is invalidated
-    await setWebHoncConnectionId(config.db, connectionId);
-    for (const ws of config.wsConnections) {
-      ws.send(
-        JSON.stringify({
-          event: "connection_open",
-          payload: { connectionId },
-        }),
-      );
-    }
-    return null;
-  },
-  request_incoming: async (message, config) => {
-    console.log("REQUEST INCOMING", message);
-    // no trace id is coming from the websocket, so we generate one
-    const db = config.db;
-    const traceId = generateOtelTraceId();
-
-    const serviceTarget = resolveServiceArg(process.env.FPX_SERVICE_TARGET);
-    const resolvedPath = path.join(serviceTarget, ...message.payload.path);
-    const requestUrl = resolveUrlQueryParams(
-      resolvedPath,
-      message.payload.query,
-    );
-
-    const startTime = Date.now();
-
-    const newRequest: schema.NewAppRequest = {
-      requestMethod: message.payload
-        .method as schema.NewAppRequest["requestMethod"],
-      requestUrl,
-      requestHeaders: message.payload.headers,
-      requestPathParams: {},
-      requestQueryParams: message.payload.query,
-      requestBody: message.payload.body,
-      requestRoute: message.payload.path.join("/"),
-    };
-
-    const webhoncId = await getWebHoncConnectionId(db);
-
-    const supplementedHeaders = {
-      "x-fpx-trace-id": traceId,
-      "x-fpx-webhonc-id": webhoncId ?? "",
-    };
-
-    if (newRequest?.requestHeaders) {
-      newRequest.requestHeaders = {
-        ...newRequest?.requestHeaders,
-        ...supplementedHeaders,
-      };
-    } else {
-      newRequest.requestHeaders = supplementedHeaders;
-    }
-
-    const [{ id: requestId }] = await db
-      .insert(schema.appRequests)
-      .values(newRequest)
-      .returning({ id: schema.appRequests.id });
-
-    try {
-      const response = await executeProxyRequest({
-        requestHeaders: newRequest.requestHeaders,
-        requestMethod: newRequest.requestMethod,
-        requestBody: newRequest.requestBody,
-        requestUrl,
-      });
-
-      const duration = Date.now() - startTime;
-
-      const { responseBody, responseHeaders } = await handleSuccessfulRequest(
-        db,
-        requestId,
-        duration,
-        response,
-        traceId,
-      );
-
-      return {
-        status: response.status,
-        body: responseBody ?? "",
-        headers: responseHeaders,
-        // @ts-expect-error - I did not want to update the package types for webhonc messages
-        correlationId: message?.correlationId ?? "HI",
-        fullMessage: message,
-      };
-    } catch (error) {
-      logger.error("Error making request", error);
-      const duration = Date.now() - startTime;
-      await handleFailedRequest(db, requestId, traceId, duration, error);
-      return {
-        status: 500,
-        body: "Internal server error",
-        headers: {},
-        // @ts-expect-error - I did not want to update the package types for webhonc messages
-        correlationId: message?.correlationId ?? "HI",
-      };
-    }
-  },
-};
