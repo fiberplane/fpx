@@ -1,6 +1,5 @@
 import path from "node:path";
-// biome-ignore lint/style/useImportType: it's fine
-import { WsMessageSchema } from "@fiberplane/fpx-types";
+import type { WsMessageSchema } from "@fiberplane/fpx-types";
 import type { z } from "zod";
 import * as schema from "../../db/schema.js";
 import logger from "../../logger.js";
