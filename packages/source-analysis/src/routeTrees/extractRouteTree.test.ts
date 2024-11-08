@@ -39,6 +39,10 @@ test.each([
     name: "hono factory",
     location: "../../test-cases/hono-factory",
   },
+  {
+    name: "import as",
+    location: "../../test-cases/import-as",
+  },
   // // {
   // //   name: "api",
   // //   location: "../../api",

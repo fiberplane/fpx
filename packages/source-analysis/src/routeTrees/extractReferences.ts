@@ -1,4 +1,9 @@
-import type { SearchContext, TsIdentifier } from "../types";
+import type {
+  ModuleReferenceId,
+  SearchContext,
+  SourceReferenceId,
+  TsIdentifier,
+} from "../types";
 import type {
   SourceReference,
   TsArrowFunction,
@@ -11,7 +16,11 @@ import type {
   TsTypeAliasDeclaration,
   TsVariableDeclaration,
 } from "../types";
-import { findNodeAtPosition, getImportTypeDefinitionFileName } from "./utils";
+import {
+  findNodeAtPosition,
+  getImportTypeDefinitionFileName,
+  isExternalPackage,
+} from "./utils";
 
 // Extract references for a node and its children
 export function createSourceReferenceForNode(
@@ -50,9 +59,9 @@ export function createSourceReferenceForNode(
 function visit(
   currentNode: TsNode,
   context: SearchContext,
-  rootReference: SourceReference,
+  rootSourceReference: SourceReference,
   startPosition: number,
-  rootNodeReference: TsNode = currentNode,
+  rootNode: TsNode = currentNode,
 ) {
   const { ts } = context;
 
@@ -60,40 +69,41 @@ function visit(
     visitIdentifier(
       currentNode,
       context,
-      rootReference,
+      rootSourceReference,
       startPosition,
-      rootNodeReference,
+      rootNode,
     );
     return;
   }
 
   ts.forEachChild(currentNode, (node) =>
-    visit(node, context, rootReference, startPosition, rootNodeReference),
+    visit(node, context, rootSourceReference, startPosition, rootNode),
   );
 }
 
 function visitIdentifier(
   currentNode: TsIdentifier,
   context: SearchContext,
-  rootReference: SourceReference,
+  rootSourceReference: SourceReference,
   startPosition: number,
-  rootNodeReference: TsNode = currentNode,
+  rootNode: TsNode = currentNode,
 ) {
   const { ts, getFile, checker, resourceManager, asAbsolutePath, program } =
     context;
-  const sourceFile = getFile(asAbsolutePath(rootReference.fileName));
+  const sourceFile = getFile(asAbsolutePath(rootSourceReference.fileName));
+
   const dependencyResult = getImportTypeDefinitionFileName(
     currentNode,
     context,
   );
   if (dependencyResult && sourceFile) {
     const { isExternalLibrary, location, ...dependency } = dependencyResult;
+    // Add dependency to the root reference
     if (isExternalLibrary) {
-      // Add dependency to the root reference
       resourceManager.addModuleToSourceReference(
+        dependency,
         sourceFile.fileName,
         startPosition,
-        dependency,
       );
       return;
     }
@@ -102,22 +112,37 @@ function visitIdentifier(
   const symbol = checker.getSymbolAtLocation(currentNode);
   const declarations = symbol?.getDeclarations() || [];
   const [declaration] = declarations;
-  if (!declaration || symbol?.flags === ts.SymbolFlags.FunctionScopedVariable) {
+  if (
+    !declaration ||
+    symbol?.flags === ts.SymbolFlags.FunctionScopedVariable ||
+    isExternalPackage(declaration.getSourceFile().fileName, context)
+  ) {
     return;
   }
 
-  const nodeValue = dependencyResult
-    ? getNodeValueForDependency(dependencyResult, context, declaration)
-    : getLocalDeclaration(declaration, currentNode);
+  const nodeValue =
+    (dependencyResult
+      ? getNodeValueForDependency(dependencyResult, context, declaration)
+      : getLocalDeclaration(declaration, currentNode)) ?? declaration;
 
-  // No valid node value found? Skip
-  if (!nodeValue) {
-    return;
+  if (
+    dependencyResult &&
+    (ts.isImportSpecifier(declaration) || ts.isNamespaceImport(declaration))
+  ) {
+    // if (currentNode.getText() === "getUserProfile" && ts.isImportSpecifier(declaration)) {
+    // If the declaration is an import specifier
+    // Maybe we should add the module to the source reference
+    const { isExternalLibrary, location, ...module } = dependencyResult;
+    resourceManager.addModuleToSourceReference(
+      module,
+      rootSourceReference.fileName,
+      startPosition,
+    );
   }
 
   if (
-    (rootNodeReference.getStart() > nodeValue.getEnd() ||
-      rootNodeReference.getEnd() < nodeValue.getStart()) &&
+    (rootNode.getStart() > nodeValue.getEnd() ||
+      rootNode.getEnd() < nodeValue.getStart()) &&
     (ts.isFunctionDeclaration(nodeValue) ||
       ts.isArrowFunction(nodeValue) ||
       ts.isCallExpression(nodeValue) ||
@@ -134,11 +159,7 @@ function visitIdentifier(
         ),
       ) || createSourceReferenceForNode(nodeValue, context);
 
-    if (currentNode.getText() === "user") {
-      console.log("nodeValue", currentNode.parent.kind, !!dependencyResult);
-    }
-
-    rootReference.references.push(sourceReference.id);
+    rootSourceReference.references.add(sourceReference.id);
     return;
   }
 }
@@ -224,10 +245,22 @@ function createSourceReferenceContentForNode(
   context: SearchContext,
 ) {
   const { ts } = context;
+
+  // TODO: Figure out if the node is also being exported (and include that information)
   if (
     ts.isCallExpression(node) &&
     ts.isVariableDeclarationList(node.parent.parent)
   ) {
+    if (
+      ts.isVariableStatement(node.parent.parent.parent) &&
+      node.parent.parent.parent.modifiers?.some(
+        (mod) => mod.kind === ts.SyntaxKind.ExportKeyword,
+      )
+    ) {
+      // TODO: handle multiple declarations in one line
+      return node.parent.parent.parent.getText();
+    }
+
     return node.parent.parent.getText();
   }
 
@@ -235,6 +268,16 @@ function createSourceReferenceContentForNode(
     ts.isVariableDeclaration(node) &&
     ts.isVariableDeclarationList(node.parent)
   ) {
+    if (
+      ts.isVariableStatement(node.parent.parent) &&
+      node.parent.parent.modifiers?.some(
+        (mod) => mod.kind === ts.SyntaxKind.ExportKeyword,
+      )
+    ) {
+      // TODO: handle multiple declarations in one line
+      return node.parent.parent.getText();
+    }
+
     return node.parent.getText();
   }
 
@@ -266,8 +309,8 @@ function createInitialSourceReferenceForNode(
     fileName: asRelativePath(sourceFile.fileName),
     position: node.getStart(),
     content: createSourceReferenceContentForNode(node, context),
-    references: [],
-    modules: [],
+    references: new Set<SourceReferenceId>(),
+    modules: new Set<ModuleReferenceId>(),
   };
 
   return resourceManager.createSourceReference(params);

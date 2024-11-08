@@ -139,8 +139,8 @@ export class AppFactory {
 
   public getFilesForHistory() {
     type FileInfo = {
-      modules: Record<string, Array<string>>;
-      sections: Record<number, string>;
+      modules: Map<string, Array<string>>;
+      sections: Map<number, string>;
     };
 
     const fileMap: Record<LocalFileResource["fileName"], FileInfo> = {};
@@ -150,12 +150,12 @@ export class AppFactory {
 
     function createFileInfo() {
       return {
-        modules: {},
-        sections: {},
+        modules: new Map<string, Array<string>>(),
+        sections: new Map<number, string>(),
       };
     }
 
-    function addModules(file: FileInfo, moduleIds: Array<ModuleReferenceId>) {
+    function addModules(file: FileInfo, moduleIds: Set<ModuleReferenceId>) {
       for (const moduleId of moduleIds) {
         const module = self.resourceManager.getResource(moduleId);
         if (!module) {
@@ -163,11 +163,17 @@ export class AppFactory {
           continue;
         }
 
-        if (!file.modules[module.importPath]) {
-          file.modules[module.importPath] = [];
+        if (!file.modules.has(module.importPath)) {
+          file.modules.set(module.importPath, []);
         }
 
-        file.modules[module.importPath].push(module.import);
+        const modules = file.modules.get(module.importPath);
+        if (!modules) {
+          // Given the logic above the modules should always be set
+          throw new Error("The modules array is empty");
+        }
+
+        modules.push(module.import);
       }
     }
 
@@ -203,7 +209,8 @@ export class AppFactory {
           if (resource.baseUrl) {
             content += `\n${resource.name}.baseUrl = "${resource.baseUrl}";`;
           }
-          currentFile.sections[resource.position] = content;
+
+          currentFile.sections.set(resource.position, content);
 
           return resource.name;
         }
@@ -220,7 +227,7 @@ export class AppFactory {
             middleware += `${appName}.use(`;
           }
 
-          const middlewareFunctions = resource.sources
+          const middlewareFunctions = Array.from(resource.sources)
             .map((referenceId) => {
               const source = self.resourceManager.getResource(referenceId);
               if (!source) {
@@ -241,7 +248,7 @@ export class AppFactory {
           middleware += middlewareFunctions.join(", ");
           middleware += ");";
 
-          currentFile.sections[resource.position] = middleware;
+          currentFile.sections.set(resource.position, middleware);
           break;
         }
         case "ROUTE_ENTRY": {
@@ -268,7 +275,7 @@ ${appName}.${resource.method ?? "all"}("${resource.path}", `;
 
             entry += source.content;
           }
-          currentFile.sections[resource.position] = entry;
+          currentFile.sections.set(resource.position, entry);
           break;
         }
         case "ROUTE_TREE_REFERENCE": {
@@ -278,24 +285,29 @@ ${appName}.${resource.method ?? "all"}("${resource.path}", `;
             break;
           }
 
-          currentFile.sections[resource.position] =
+          currentFile.sections.set(
+            resource.position,
             `${includeIds ? `// id:${resource.id}` : ""}
-${appName}.route("${resource.path}", ${target.name});`;
+${appName}.route("${resource.path}", ${target.name});`,
+          );
 
-          // Is this something that should be imported?
-          if (target.fileName !== resource.fileName) {
-            const importPath = path.relative(
-              resource.fileName,
-              target.fileName,
-            );
-            currentFile.modules[importPath] = [target.name];
-          }
+          // // Is this something that should be imported?
+          // if (target.fileName !== resource.fileName) {
+          //   const importPath = path.relative(
+          //     resource.fileName,
+          //     target.fileName,
+          //   );
+          //   addMos
+          //   currentFile.modules.set(importPath,[target.name]);
+          // }
           break;
         }
         case "SOURCE_REFERENCE": {
-          currentFile.sections[resource.position] =
+          currentFile.sections.set(
+            resource.position,
             `${includeIds ? `// id:${resource.id}` : ""}
-${resource.content}`;
+${resource.content}`,
+          );
           addModules(currentFile, resource.modules);
           for (const child of resource.references) {
             visit(child, appName);
@@ -321,29 +333,53 @@ ${resource.content}`;
 
     const files: Record<string, string> = {};
     for (const [fileName, fileInfo] of Object.entries(fileMap)) {
-      const imports = Object.entries(fileInfo.modules)
-        .map(([importPath, modules]) => {
-          return `import { ${modules.join(", ")} } from "${importPath}";`;
-        })
-        .join("\n");
+      const imports = Array.from(
+        fileInfo.modules.entries().map(([importPath, modules]) => {
+          const asteriskModules = modules.filter((module) =>
+            module.trim().startsWith("*"),
+          );
+          const nonAsteriskModules = modules.filter(
+            (module) => !module.trim().startsWith("*"),
+          );
 
-      const sections = Object.entries(fileInfo.sections)
-        .sort(([a], [b]) => {
-          if (a > b) {
-            return 1;
+          let returnValue = asteriskModules
+            .map((module) => {
+              return `import ${module} from "${importPath}";`;
+            })
+            .join("\n");
+
+          if (nonAsteriskModules.length) {
+            if (returnValue) {
+              returnValue += "\n";
+            }
+            returnValue += `import { ${nonAsteriskModules.join(",")} } from "${importPath}";`;
           }
 
-          if (a < b) {
-            return -1;
-          }
+          return returnValue;
+        }),
+      ).join("\n");
 
-          return 0;
-        })
-        .map(([eh, content]) => {
-          return content;
-        })
-        .join("\n");
+      // Object.keys(fileInfo.sections);
+      const keys = Array.from(fileInfo.sections.keys()).sort((a, b) => {
+        if (a > b) {
+          return 1;
+        }
 
+        if (a < b) {
+          return -1;
+        }
+
+        return 0;
+      });
+
+      let sections = "";
+      for (const key of keys) {
+        if (sections.length > 0) {
+          sections += "\n";
+        }
+
+        sections += fileInfo.sections.get(key) ?? "";
+      }
       files[fileName] = imports ? `${imports}\n${sections}` : sections;
     }
 

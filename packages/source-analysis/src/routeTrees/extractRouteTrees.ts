@@ -2,10 +2,12 @@ import { ResourceManager } from "../ResourceManager";
 import {
   HONO_HTTP_METHODS,
   type MiddlewareEntry,
+  type ModuleReferenceId,
   type RouteEntry,
   type RouteTree,
   type RouteTreeReference,
   type SearchContext,
+  type SourceReferenceId,
   type TreeResource,
   type TsArrowFunction,
   type TsCallExpression,
@@ -113,6 +115,8 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
           fileName: asRelativePath(node.getSourceFile().fileName),
           position,
           entries: [],
+          modules: new Set<ModuleReferenceId>(),
+          sources: new Set<SourceReferenceId>(),
         };
 
         const current = resourceManager.createRouteTree(params);
@@ -289,8 +293,8 @@ function handleHonoMethodCall(
       position: callExpression.getStart(),
       method: methodName === "all" ? undefined : methodName,
       path: JSON.parse(firstArgument.getText()),
-      modules: [],
-      sources: [],
+      modules: new Set(),
+      sources: new Set(),
     };
 
     const entry = resourceManager.createRouteEntry(params);
@@ -303,7 +307,7 @@ function handleHonoMethodCall(
       if (ts.isArrowFunction(arg) || ts.isCallExpression(arg)) {
         const source = createSourceReferenceForNode(arg, context);
         if (source) {
-          entry.sources.push(source.id);
+          entry.sources.add(source.id);
         }
       }
     }
@@ -438,8 +442,8 @@ function handleUse(
   const params: Omit<MiddlewareEntry, "id"> = {
     type: "MIDDLEWARE_ENTRY",
     path,
-    modules: [],
-    sources: [],
+    modules: new Set(),
+    sources: new Set(),
     fileName: callExpression.getSourceFile().fileName,
     position: callExpression.getStart(),
   };
@@ -450,7 +454,7 @@ function handleUse(
   for (const arg of middleware) {
     const source = createSourceReferenceForNode(arg, context);
     if (source) {
-      entry.sources.push(source.id);
+      entry.sources.add(source.id);
     }
   }
 }

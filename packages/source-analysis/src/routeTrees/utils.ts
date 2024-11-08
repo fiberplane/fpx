@@ -78,7 +78,7 @@ export function getImportTypeDefinitionFileName(
   }
   const declaration = declarations[0];
 
-  const declarationFileName = declaration.getSourceFile().fileName;
+  // const declarationFileName = declaration.getSourceFile().fileName;
   const nodeFileName = node.getSourceFile().fileName;
   const compilerOptions = program.getCompilerOptions();
   const host: TsModuleResolutionHost = {
@@ -86,29 +86,39 @@ export function getImportTypeDefinitionFileName(
     readFile: ts.sys.readFile,
   };
 
-  // Is the type coming from another file than the current file? Then it
-  // probably comes from a type definition file (like
-  // `@cloudflare/workers-types` and is specified in compilerOptions.type section
-  // of the tsconfig
-  if (nodeFileName !== declarationFileName) {
-    // Check if the type is specified in the types section of the tsconfig
-    if (compilerOptions.types) {
-      const type = compilerOptions.types.find((name) =>
-        nodeFileName.indexOf(name),
-      );
-      if (type) {
-        const result = ts.resolveModuleName(
-          type,
-          nodeFileName,
-          compilerOptions,
-          host,
-        );
-        if (result.resolvedModule?.isExternalLibraryImport) {
-          return;
-        }
-      }
-    }
-  }
+  // // Is the type coming from another file than the current file? Then it
+  // // probably comes from a type definition file (like
+  // // `@cloudflare/workers-types` and is specified in compilerOptions.type section
+  // // of the tsconfig
+  // if (nodeFileName !== declarationFileName) {
+  //   console.log('compileroptions.types', compilerOptions.types);
+  //   // Check if the type is specified in the types section of the tsconfig
+  //   if (compilerOptions.types) {
+  //     const type = compilerOptions.types.find((name) =>
+  //       nodeFileName.indexOf(name) !== -1,
+  //     );
+  //     // // declaration.moduleSpecifier
+  //     // if (type) {
+  //     const result = ts.resolveModuleName(
+  //       nodeFileName,
+  //       nodeFileName,
+  //       compilerOptions,
+  //       host,
+  //     );
+  //     // console.log('declaration', ts.SyntaxKind[declaration.kind], declaration.getText());
+  //     // if (result.resolvedModule?.isExternalLibraryImport) {
+  //     console.log('result', result.resolvedModule?.isExternalLibraryImport);
+  //     if (result.resolvedModule?.isExternalLibraryImport) {
+  //       if (node.getText() === "geese") {
+  //         console.log('early exit', nodeFileName, declarationFileName,
+  //           'type', type, 'for name',);
+  //       }
+  //       // console.log('not for', node.getText(), result.resolvedModule);
+  //       return;
+  //       // }
+  //     }
+  //   }
+  // }
 
   let target = declaration.parent;
   while (
@@ -118,6 +128,11 @@ export function getImportTypeDefinitionFileName(
   ) {
     target = target.parent;
   }
+  // if (node.getText() === "geese") {
+  //   console.log("import", node.parent.parent.getText(),
+  //     'same file?', nodeFileName === declarationFileName, declarationFileName,
+  //     ts.SyntaxKind[declaration.kind], declaration.pos, node.pos);
+  // }
 
   if (
     !target ||
@@ -143,6 +158,7 @@ export function getImportTypeDefinitionFileName(
       id: resourceManager.getId("MODULE_REFERENCE", text, node.getText()),
       import: node.getText(),
       importPath: text,
+      pathId: text,
       // TODO handle packageId being empty?
       name: result.resolvedModule.packageId?.name || "",
       // TODO handle packageId being empty?
@@ -159,21 +175,49 @@ export function getImportTypeDefinitionFileName(
       id: resourceManager.getId("MODULE_REFERENCE", node.getText(), text),
       import: node.getText(),
       importPath: text,
+      pathId: text,
       name: text,
       isExternalLibrary: true,
       location: node.getText(),
     };
   }
 
+  const importText =
+    ts.isNamespaceImport(declaration) || ts.isImportSpecifier(declaration)
+      ? declaration.getText()
+      : node.getText();
+
   // Other module
   return {
     type: "MODULE_REFERENCE",
     id: resourceManager.getId("MODULE_REFERENCE", node.getText(), text),
-    import: node.getText(),
     importPath: text,
+    pathId: text,
+    import: importText,
     name: text,
     isExternalLibrary: false,
     // TODO: Handle resolvedModule being undefined
     location: result.resolvedModule?.resolvedFileName || "",
   };
+}
+
+export function isExternalPackage(
+  fileName: string,
+  context: SearchContext,
+): boolean {
+  const { ts, program } = context;
+  const compilerOptions = program.getCompilerOptions();
+  const host: TsModuleResolutionHost = {
+    fileExists: ts.sys.fileExists,
+    readFile: ts.sys.readFile,
+  };
+
+  const result = ts.resolveModuleName(
+    fileName,
+    fileName,
+    compilerOptions,
+    host,
+  );
+
+  return result.resolvedModule?.isExternalLibraryImport ?? false;
 }

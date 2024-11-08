@@ -51,8 +51,8 @@ type FileReference = {
 
 type RouteDetails = {
   path: string;
-  sources: SourceReferenceId[];
-  modules: Array<ModuleReferenceId>;
+  sources: Set<SourceReferenceId>;
+  modules: Set<ModuleReferenceId>;
 } & FileReference;
 
 // Specific route related types
@@ -67,6 +67,9 @@ export type RouteTree = {
    * for instance to inject bindings/environment variables
    */
   entries: Array<RouteTreeEntryId>;
+
+  sources: Set<SourceReferenceId>;
+  modules: Set<ModuleReferenceId>;
 } & FileReference;
 
 export type RouteTreeReference = {
@@ -91,22 +94,41 @@ export type RouteTreeReference = {
 export type ModuleReference = {
   type: "MODULE_REFERENCE";
   id: ModuleReferenceId;
-  /* The name of the module */
+  /**
+   * The name of the module
+   *
+   * For hono it will be hono, even if the import path is hono/cors
+   ***/
   name: string;
   /**
    * The import path of the module, this can be the same as the name or a subpath
    * For instance for hono it can be hono/cors and while the name of the package is still hono
    */
   importPath: string;
+  /**
+   * The path id of the module, which is typically the import path of the module
+   * unless it's a local import/module
+   */
+  pathId: string;
   version?: string;
   /**
    * What is imported from the module
    *
-   * Like in case of hono it will be Hono when the import is this:
+   * Like in case of hono it will be: Hono
+   * Here's what the import would look like:
    *
    * import { Hono } from "hono";
+   *
+   * However this can also be an aliased import:
+   *
+   * import { Hono as Hon } from "hono";
    */
   import: string;
+  // /**
+  //  * Alias for the import
+  //  *
+  //  */
+  // importAlias?: string;
 };
 
 export type SourceReference = {
@@ -115,8 +137,8 @@ export type SourceReference = {
   content: string;
   line: number;
   character: number;
-  modules: Array<ModuleReferenceId>;
-  references: Array<SourceReferenceId>;
+  modules: Set<ModuleReferenceId>;
+  references: Set<SourceReferenceId>;
 } & FileReference;
 
 export const HONO_HTTP_METHODS = [
@@ -180,9 +202,7 @@ export type SearchContext = {
   errorCount: number;
   program: TsProgram;
   checker: TsTypeChecker;
-  // addRouteTree: (route: RouteTree) => void;
   getFile: (fileName: string) => TsSourceFile | undefined;
-  // getId: (fileName: string, location: number) => string;
   asRelativePath(fileName: string): string;
   asAbsolutePath(fileName: string): string;
 };

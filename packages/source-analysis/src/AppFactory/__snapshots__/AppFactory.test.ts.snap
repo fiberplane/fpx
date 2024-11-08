@@ -11,6 +11,7 @@ app.get("/", (c) => c.text("Hello, Hono!")
 exports[`barrel-files 2`] = `
 "/* index.ts */
 import { cors } from "hono/cors";
+import { getUser } from "./db";
 const app = new Hono();
 
 app.get("/user/1", cors()async (c) => {
@@ -25,19 +26,21 @@ export { getUser } from "./getUser"
 /* EOF: db/index.ts */
 /* db/getUser.ts */
 import { measure } from "@fiberplane/hono-otel";
+import { sleep } from "../utils";
+import { User } from "../types";
 
 const DEFAULT_USER_NAME = "John Doe"
 
 const DEFAULT_EMAIL = "john@doe.com"
 
-const getUser = measure("getUser", async () => {
+export const getUser = measure("getUser", async () => {
   await sleep(100);
   const value: User = {
     name: DEFAULT_USER_NAME,
     email: DEFAULT_EMAIL,
   };
   return value;
-})
+});
 /* EOF: db/getUser.ts */
 /* utils.ts */
 
@@ -58,6 +61,7 @@ export type User = {
 
 exports[`goose-quotes 1`] = `
 "/* src/index.ts */
+import { shouldHonk } from "./utils";
 const app = new Hono();
 
 app.get("/", (c) => {
@@ -76,6 +80,68 @@ export function shouldHonk(r: HonoRequest) {
 /* EOF: src/utils.ts */"
 `;
 
+exports[`goosify 1`] = `
+"/* src/index.ts */
+import { drizzle } from "drizzle-orm/d1";
+import * as schema from "./db";
+const app = new Hono();
+
+app.get("/api/geese", async (c) => {
+  // NOTE - This is equivalent to a raw D1 query
+  // const geese = await c.env.DB.prepare("SELECT * FROM geese").all();
+  const db = drizzle(c.env.DB);
+  const geese = await db.select().from(schema.geese);
+  return c.json({ geese });
+}
+/* EOF: src/index.ts */
+/* src/db/index.ts */
+
+export { geese } from "./schema"
+/* EOF: src/db/index.ts */
+/* src/db/schema.ts */
+import { sqliteTable,integer,text } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
+
+export const geese = sqliteTable("geese", {
+  id: integer("id", { mode: "number" }).primaryKey(),
+  name: text("name").notNull(),
+  avatar: text("avatar"),
+  createdAt: text("created_at").notNull().default(sql\`(CURRENT_TIMESTAMP)\`),
+  updatedAt: text("updated_at").notNull().default(sql\`(CURRENT_TIMESTAMP)\`),
+});
+/* EOF: src/db/schema.ts */"
+`;
+
+exports[`goosify 2`] = `
+"/* src/index.ts */
+const app = new Hono();
+
+app.get("/api/Gans", async (c) => {
+  const prompt = c.req.query("prompt") || "What's happenin' Gans?";
+
+  const messages = [
+    {
+      role: "system",
+      content:
+        "You are a friendly German Gans. You speak only of Geese. You speak only in German. You are a little grumpy",
+    },
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
+  const response = await c.env.AI.run(
+    "@cf/thebloke/discolm-german-7b-v1-awq",
+    // NOTE - This is an issue with the types
+    // https://github.com/cloudflare/workerd/issues/2181
+    { messages } as BaseAiTextGeneration["inputs"],
+  );
+
+  return c.json(response);
+}
+/* EOF: src/index.ts */"
+`;
+
 exports[`hono-factory 1`] = `
 "/* index.ts */
 const app = new Hono();
@@ -85,4 +151,69 @@ const app = new Hono();
 
 app.get("/", (c) => c.text("Hello, Hono!")
 /* EOF: factory.ts */"
+`;
+
+exports[`import-as 1`] = `
+"/* index.ts */
+import { cors } from "hono/cors";
+import * as db from "./db";
+const app = new Hono();
+
+app.get("/user/1", cors()async (c) => {
+  const user = await db.getUser();
+  return c.json(user);
+}
+/* EOF: index.ts */
+/* db.ts */
+import { measure } from "@fiberplane/hono-otel";
+
+const sleep = (duration = 100) =>
+  new Promise((resolve) => setTimeout(resolve, duration))
+
+export const getUser = measure("getUser", async () => {
+  await sleep();
+  const value = {
+    name: "John Doe",
+    email: "john@doe.com",
+  };
+  return value;
+});
+/* EOF: db.ts */"
+`;
+
+exports[`import-as 2`] = `
+"/* index.ts */
+import { cors } from "hono/cors";
+import { getProfile as getUserProfile } from "./db";
+const app = new Hono();
+
+app.get("/user/1/profile", cors()async (c) => {
+  const profile = await getUserProfile();
+  return c.json(profile);
+}
+/* EOF: index.ts */
+/* db.ts */
+import { measure } from "@fiberplane/hono-otel";
+
+const sleep = (duration = 100) =>
+  new Promise((resolve) => setTimeout(resolve, duration))
+
+export const getUser = measure("getUser", async () => {
+  await sleep();
+  const value = {
+    name: "John Doe",
+    email: "john@doe.com",
+  };
+  return value;
+});
+
+export async function getProfile() {
+  const user = await getUser();
+  await sleep(10);
+  return {
+    ...user,
+    image: "https://xsgames.co/randomusers/avatar.php?g=pixel",
+  };
+}
+/* EOF: db.ts */"
 `;

@@ -157,27 +157,24 @@ app.post(
       // HACK - Ditch the expand handler for ollama for now, it overwhelms llama 3.1-8b
       provider !== "ollama"
         ? // ? await expandHandler(handler, middleware ?? []).catch((error) => {
-        await appFactoryPromise
-          .then(async (factory) => {
-            const url = new URL("http://localhost");
-            url.pathname = path;
-            const request = new Request(url, { method: "GET" });
-            const app = factory.currentApp;
-            factory.resetHistory();
-            const response = await app.fetch(request);
-            console.log("response", response.statusText);
-            return [factory.getFilesForHistory(), null];
-          })
-          .catch((error) => {
-            // await expandHandler(handler, []).catch((error) => {
-            logger.error(`Error expanding handler and middleware: ${error}`);
-            return [null, null];
-          })
+          await appFactoryPromise
+            .then(async (factory) => {
+              const url = new URL("http://localhost");
+              url.pathname = path;
+              const request = new Request(url, { method: "GET" });
+              const app = factory.currentApp;
+              factory.resetHistory();
+              const response = await app.fetch(request);
+              console.log("response", response.statusText);
+              return [factory.getFilesForHistory(), null];
+            })
+            .catch((error) => {
+              // await expandHandler(handler, []).catch((error) => {
+              logger.error(`Error expanding handler and middleware: ${error}`);
+              return [null, null];
+            })
         : [null, null];
-    // console.timeEnd("Handler and Middleware Expansion");
-    console.log("-----");
-    console.log("handlerContextPerformant", handlerContextPerformant);
-    // throw new Error('not implemented');
+
     // HACK - Get latest token from db
     const [token] = await db
       .select()

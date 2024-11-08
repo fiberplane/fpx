@@ -163,7 +163,7 @@ export class ResourceManager {
   public createModuleReference(
     props: Omit<ModuleReference, "id">,
   ): ModuleReference {
-    const id = this.getId(props.type, props.importPath, props.import);
+    const id = this.getId(props.type, props.pathId, props.import);
     if (this.references.has(id)) {
       console.log("Warning resource already exists", id);
     }
@@ -208,12 +208,21 @@ export class ResourceManager {
     this.references.delete(id);
   }
 
+  /**
+   * @param module
+   * @param sourceReferenceFileName The file name of the related source reference
+   * @param sourceReferencePosition The position in the that file where the reference is located
+   */
   public addModuleToSourceReference(
-    fileName: string,
-    position: number,
     module: ModuleReference,
+    sourceReferenceFileName: string,
+    sourceReferencePosition: number,
   ): void {
-    const id = this.getId("SOURCE_REFERENCE", fileName, position);
+    const id = this.getId(
+      "SOURCE_REFERENCE",
+      sourceReferenceFileName,
+      sourceReferencePosition,
+    );
     const sourceReference = this.getResource(id) as SourceReference;
 
     if (!this.references.has(module.id)) {
@@ -222,14 +231,14 @@ export class ResourceManager {
 
     if (!sourceReference) {
       console.log(
-        `Missing SourceReference for (fileName: ${fileName}, position: ${position}, id: ${id}`,
+        `Missing SourceReference for (fileName: ${sourceReferenceFileName}, position: ${sourceReferencePosition}, id: ${id}`,
       );
       throw new Error(
         "Missing source reference. Attempting to add a module to a non-existing reference",
       );
     }
 
-    sourceReference.modules.push(module.id);
+    sourceReference.modules.add(module.id);
   }
 
   public clearResources(): void {

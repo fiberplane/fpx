@@ -10,6 +10,7 @@ export function getOptions(location: string, ts: TsType): TsCompilerOptions {
     ts.sys.fileExists,
     "tsconfig.json",
   );
+
   if (!configPath) {
     throw new Error("Could not find a valid 'tsconfig.json'.");
   }
@@ -21,6 +22,32 @@ export function getOptions(location: string, ts: TsType): TsCompilerOptions {
   if (!options.baseUrl) {
     options.baseUrl = location;
   }
+
+  // if (options.types) {
+  //   console.log('got me some types', options.types);
+  //   options.types = options.types.map((type) => {
+  //     // return `${location}/node_modules/${type}`;
+  //     try {
+  //       const resolved = relativeResolve(`@types/${type}`, { basedir: location });
+  //       return require(resolved);
+  //     } catch (error) {
+  //       try {
+  //         const resolved = relativeResolve(type, { basedir: location, preserveSymlinks: true });
+  //         return require(resolved);
+  //       } catch (error) {
+  //         console.warn("Unable to resolve type", type, error);
+  //         return type;
+  //       }
+  //       // const resolved = relativeResolve(type, { basedir: location });
+  //       // return require(resolved);
+  //       // console.warn("Unable to resolve type", type, error);
+  //       // return type;
+  //     }
+  //   });
+  //   // options.types.map((type) => {
+  //   //   returnts.resolveModuleName(type, configPath, options, ts.sys);
+  //   // });
+  // }
   return options;
 }
 
