@@ -1,3 +1,4 @@
+import path from "node:path";
 import { measure } from "@fiberplane/hono-otel";
 
 const sleep = (duration = 100) =>
@@ -5,6 +6,10 @@ const sleep = (duration = 100) =>
 
 export const getUser = measure("getUser", async () => {
   await sleep();
+
+  // Do something silly with the path module
+  const parent = path.resolve(__dirname, "..");
+  console.log("parent folder", parent);
   const value = {
     name: "John Doe",
     email: "john@doe.com",

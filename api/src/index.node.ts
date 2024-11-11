@@ -27,6 +27,7 @@ import {
 } from "./serve-frontend-build.js";
 
 import { createRoutesMonitor } from "@fiberplane/source-analysis";
+import { getTSServer } from "./lib/expand-function/tsserver/server.js";
 import { setupCodeAnalysis } from "./routes/inference/inference.js";
 
 config({ path: ".dev.vars" });
@@ -106,11 +107,6 @@ if (proxyRequestsEnabled ?? false) {
 }
 
 const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR);
-// const { internals: { watcher, findHonoRoutes: findRoutes } } = setupMonitoring(
-//   USER_PROJECT_ROOT_DIR,
-// );
-
-// export const findHonoRoutes = findRoutes;
 
 // check settings if ai is enabled, and proactively start the typescript language server
 const inferenceConfig = await getInferenceConfig(db);
@@ -121,16 +117,8 @@ if (aiEnabled) {
   );
   try {
     setupCodeAnalysis(monitor);
-    // watcher.start().then(() => {
-    //   // const start = performance.now();
-    //   // const result = findRoutes()
-    //   setupCodeAnalysis({
-    //     findHonoRoutes: findRoutes,
-    //     watcher,
-    //   });
-    //   // console.log('result', performance.now() - start, result)
-    // });
-    // await getTSServer(USER_PROJECT_ROOT_DIR);
+    // The old flow
+    await getTSServer(USER_PROJECT_ROOT_DIR);
   } catch (error) {
     logger.error("Error starting TSServer:", error);
   }

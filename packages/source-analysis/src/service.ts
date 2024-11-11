@@ -23,6 +23,8 @@ export function getOptions(location: string, ts: TsType): TsCompilerOptions {
     options.baseUrl = location;
   }
 
+  console.log("configPath", configPath, options.types);
+
   // if (options.types) {
   //   console.log('got me some types', options.types);
   //   options.types = options.types.map((type) => {

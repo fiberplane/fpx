@@ -7,10 +7,11 @@ test("analyze hono-factory", async () => {
   const location = "../test-cases/hono-factory";
   const absolutePath = path.join(__dirname, location);
   const monitor = createRoutesMonitor(absolutePath);
+  monitor.autoUpdate = false;
   try {
-    monitor.autoUpdate = false;
     await monitor.start();
-    // await watcher.start();
+
+    // Manually get the route resources
     const result = monitor.findHonoRoutes();
     const { resourceManager } = result;
     const resources = resourceManager.getResources();

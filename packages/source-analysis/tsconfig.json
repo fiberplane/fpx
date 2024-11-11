@@ -6,6 +6,7 @@
     "strict": true,
     "skipLibCheck": true,
     "lib": ["ESNext"],
+    "types": ["node"],
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./src",

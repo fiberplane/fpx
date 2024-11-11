@@ -22,47 +22,6 @@ export function findNodeAtPosition(
   return find(sourceFile);
 }
 
-// export function inspectNode(node: TsNode, ts: TsType) {
-//   console.log("node", node.kind, ts.SyntaxKind[node.kind], node.getText());
-//   console.log("Inspecting node", {
-//     // isFunctionExpression: ts.isFunctionExpression(node),
-//     // isArrowFunction: ts.isArrowFunction(node),
-//     // isFunctionDeclaration: ts.isFunctionDeclaration(node),
-//     // isFunctionTypeNode: ts.isFunctionTypeNode(node),
-//     // isCallExpression: ts.isCallExpression(node),
-//     // isPropertyAccessExpression: ts.isPropertyAccessExpression(node),
-//     // isIdentifier: ts.isIdentifier(node),
-//     // isStringLiteral: ts.isStringLiteral(node),
-//     // isNumericLiteral: ts.isNumericLiteral(node),
-//     // isObjectLiteralExpression: ts.isObjectLiteralExpression(node),
-//     // isTypeLiteralNode: ts.isTypeLiteralNode(node),
-//     // isTypeReferenceNode: ts.isTypeReferenceNode(node),
-//     // isTypeQueryNode: ts.isTypeQueryNode(node),
-//     // isTypePredicateNode: ts.isTypePredicateNode(node),
-//     // // isTypeAssertion: ts.isTypeAssertion(node),
-//     // isAsExpression: ts.isAsExpression(node),
-//     // isNonNullExpression: ts.isNonNullExpression(node),
-//     // isNonNullChain: ts.isNonNullChain(node),
-//     // isParenthesizedExpression: ts.isParenthesizedExpression(node),
-//     // isSpreadElement: ts.isSpreadElement(node),
-//     // isShorthandPropertyAssignment: ts.isShorthandPropertyAssignment(node),
-//     // isPropertyAssignment: ts.isPropertyAssignment(node),
-//     // isPropertyDeclaration: ts.isPropertyDeclaration(node),
-//     // isPropertySignature: ts.isPropertySignature(node),
-//     // isAccessor: ts.isAccessor(node),
-//     isImportAttribute: ts.isImportAttribute(node),
-//     isImportAttributeName: ts.isImportAttributeName(node),
-//     isImportAttributes: ts.isImportAttributes(node),
-//     isImportClause: ts.isImportClause(node),
-//     isImportDeclaration: ts.isImportDeclaration(node),
-//     isImportEqualsDeclaration: ts.isImportEqualsDeclaration(node),
-//     isImportOrExportSpecifier: ts.isImportOrExportSpecifier(node),
-//     isImportSpecifier: ts.isImportSpecifier(node),
-//     isImportTypeAssertionContainer: ts.isImportTypeAssertionContainer(node),
-//     isImportTypeNode: ts.isImportTypeNode(node),
-//   });
-// }
-
 export function getImportTypeDefinitionFileName(
   node: TsNode,
   context: SearchContext,
@@ -78,7 +37,6 @@ export function getImportTypeDefinitionFileName(
   }
   const declaration = declarations[0];
 
-  // const declarationFileName = declaration.getSourceFile().fileName;
   const nodeFileName = node.getSourceFile().fileName;
   const compilerOptions = program.getCompilerOptions();
   const host: TsModuleResolutionHost = {
@@ -86,44 +44,14 @@ export function getImportTypeDefinitionFileName(
     readFile: ts.sys.readFile,
   };
 
-  // // Is the type coming from another file than the current file? Then it
-  // // probably comes from a type definition file (like
-  // // `@cloudflare/workers-types` and is specified in compilerOptions.type section
-  // // of the tsconfig
-  // if (nodeFileName !== declarationFileName) {
-  //   console.log('compileroptions.types', compilerOptions.types);
-  //   // Check if the type is specified in the types section of the tsconfig
-  //   if (compilerOptions.types) {
-  //     const type = compilerOptions.types.find((name) =>
-  //       nodeFileName.indexOf(name) !== -1,
-  //     );
-  //     // // declaration.moduleSpecifier
-  //     // if (type) {
-  //     const result = ts.resolveModuleName(
-  //       nodeFileName,
-  //       nodeFileName,
-  //       compilerOptions,
-  //       host,
-  //     );
-  //     // console.log('declaration', ts.SyntaxKind[declaration.kind], declaration.getText());
-  //     // if (result.resolvedModule?.isExternalLibraryImport) {
-  //     console.log('result', result.resolvedModule?.isExternalLibraryImport);
-  //     if (result.resolvedModule?.isExternalLibraryImport) {
-  //       if (node.getText() === "geese") {
-  //         console.log('early exit', nodeFileName, declarationFileName,
-  //           'type', type, 'for name',);
-  //       }
-  //       // console.log('not for', node.getText(), result.resolvedModule);
-  //       return;
-  //       // }
-  //     }
-  //   }
-  // }
   if (!declaration) {
     console.warn("No declaration found for symbol", symbol);
     return;
   }
-  let target = declaration.parent;
+
+  let target: TsNode | undefined = declaration.parent;
+
+  // Walk up to the import/export declaration
   while (
     target &&
     !ts.isImportDeclaration(target) &&
@@ -131,17 +59,8 @@ export function getImportTypeDefinitionFileName(
   ) {
     target = target.parent;
   }
-  // if (node.getText() === "geese") {
-  //   console.log("import", node.parent.parent.getText(),
-  //     'same file?', nodeFileName === declarationFileName, declarationFileName,
-  //     ts.SyntaxKind[declaration.kind], declaration.pos, node.pos);
-  // }
 
-  if (
-    !target ||
-    (!ts.isImportDeclaration(target) && !ts.isExportDeclaration(target)) ||
-    !target.moduleSpecifier
-  ) {
+  if (!target || !target.moduleSpecifier) {
     return;
   }
 
@@ -162,7 +81,11 @@ export function getImportTypeDefinitionFileName(
       import: node.getText(),
       importPath: text,
       pathId: text,
+
       // TODO handle packageId being empty?
+      // This could happen when dealing with Non-NPM packages
+      // or perhaps when it is a built-in module, but in my local
+      // testing, the lookup seems to fail for built-in modules
       name: result.resolvedModule.packageId?.name || "",
       // TODO handle packageId being empty?
       version: result.resolvedModule.packageId?.version || "",

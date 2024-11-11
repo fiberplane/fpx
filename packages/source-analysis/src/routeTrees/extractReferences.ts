@@ -121,14 +121,13 @@ function visitIdentifier(
 
   const nodeValue =
     (dependencyResult
-      ? getNodeValueForDependency(dependencyResult, context, declaration)
+      ? getNodeValueForLocalModule(dependencyResult, context, declaration)
       : getLocalDeclaration(declaration, currentNode)) ?? declaration;
 
   if (
     dependencyResult &&
     (ts.isImportSpecifier(declaration) || ts.isNamespaceImport(declaration))
   ) {
-    // if (currentNode.getText() === "getUserProfile" && ts.isImportSpecifier(declaration)) {
     // If the declaration is an import specifier
     // Maybe we should add the module to the source reference
     const { isExternalLibrary, location, ...module } = dependencyResult;
@@ -140,7 +139,8 @@ function visitIdentifier(
   }
 
   if (
-    (rootNode.getStart() > nodeValue.getEnd() ||
+    (rootNode.getSourceFile().fileName !== nodeValue.getSourceFile().fileName ||
+      rootNode.getStart() > nodeValue.getEnd() ||
       rootNode.getEnd() < nodeValue.getStart()) &&
     (ts.isFunctionDeclaration(nodeValue) ||
       ts.isArrowFunction(nodeValue) ||
@@ -163,7 +163,10 @@ function visitIdentifier(
   }
 }
 
-export function getNodeValueForDependency(
+/**
+ * Try to find the declaration in another local file
+ */
+export function getNodeValueForLocalModule(
   dependencyResult: ReturnType<typeof getImportTypeDefinitionFileName>,
   context: SearchContext,
   declaration: TsDeclaration,
@@ -204,11 +207,11 @@ export function getNodeValueForDependency(
     }
     const symbol = checker.getSymbolAtLocation(refNode);
     const declarations = symbol?.getDeclarations();
-    const declaration = declarations?.[0];
-    if (declaration) {
-      const nodeValue = ts.isVariableDeclaration(declaration)
-        ? declaration.initializer
-        : declaration;
+    const currentDeclaration = declarations?.[0];
+    if (currentDeclaration) {
+      const nodeValue = ts.isVariableDeclaration(currentDeclaration)
+        ? currentDeclaration.initializer
+        : currentDeclaration;
 
       return nodeValue;
     }

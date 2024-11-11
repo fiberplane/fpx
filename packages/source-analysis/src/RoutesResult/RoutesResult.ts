@@ -49,18 +49,6 @@ export class RoutesResult {
     return this.history.length;
   }
 
-  // public setRootTree(entryId: RouteTreeId): Hono {
-  //   const root = this.resourceManager.getResource(entryId);
-  //   this.resetHistory();
-
-  //   if (!root) {
-  //     throw new Error("Could not find root tree");
-  //   }
-
-  //   this._currentApp = this.createApp(root);
-  //   return this._currentApp;
-  // }
-
   public get currentApp() {
     if (!this._currentApp) {
       throw new Error("No current app set");
