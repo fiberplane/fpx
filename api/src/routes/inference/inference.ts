@@ -1,8 +1,4 @@
-import {
-  AppFactory,
-  analyze,
-  type setupMonitoring,
-} from "@fiberplane/source-analysis";
+import type { RoutesMonitor, RoutesResult } from "@fiberplane/source-analysis";
 import { zValidator } from "@hono/zod-validator";
 import { desc } from "drizzle-orm";
 import { Hono } from "hono";
@@ -16,74 +12,66 @@ import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
 import logger from "../../logger.js";
 
-type Result = ReturnType<typeof setupMonitoring>;
+// Getter function for results, this is overwritten in setupCodeAnalysis
+let getResult = async (): Promise<RoutesResult> => {
+  return Promise.reject(new Error("Routes not yet parsed"));
+};
 
-let pending = false;
-// This can contain a reference to the resolve function of the initial appFactoryPromise
-let initialResolve: ((value: AppFactory) => void) | null;
-// This promise will resolve to the AppFactory once the routes have been parsed
-let appFactoryPromise: Promise<AppFactory> = new Promise((resolve) => {
-  initialResolve = resolve;
-});
+export function setupCodeAnalysis(monitor: RoutesMonitor) {
+  let pending: Promise<void> | null = null;
 
-function debounce<T extends (...args: Array<unknown>) => void | Promise<void>>(
-  func: T,
-  wait: number,
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
+  // Actual implementation of the getResult function
+  getResult = async () => {
+    // The result uses a promise/race pattern to wait a certain amount of time for the analysis to complete
+    // or use the last known result if it's available
 
-  return (...args: Parameters<T>) => {
-    if (timeout !== null) {
-      clearTimeout(timeout);
+    // Wait for the pending promise to resolve (or timeout)
+    await Promise.race([pending, new Promise((r) => setTimeout(r, 100))]);
+
+    // If there's no result and there's a pending promise, wait for it to resolve
+    if (!monitor.lastSuccessfulResult && pending) {
+      await pending;
     }
 
-    timeout = setTimeout(() => {
-      func(...args);
-    }, wait);
-  };
-}
+    // If there's a result? return it
+    if (monitor.lastSuccessfulResult) {
+      return monitor.lastSuccessfulResult;
+    }
 
-export function setupCodeAnalysis({
-  findHonoRoutes,
-  watcher,
-}: Pick<Result, "watcher" | "findHonoRoutes">) {
-  const rawParseRoutes = () => {
+    // Otherwise wait for the next analysis to complete
     if (pending) {
-      // Already busy
-      return;
+      await pending;
     }
-    pending = true;
-    appFactoryPromise = Promise.resolve().then(() => {
-      const result = findHonoRoutes();
-      const root = analyze(result.resourceManager.getResources());
-      if (!root) {
-        pending = false;
-        // Todo: better handle errors like this
-        // we should (probably) display a message to the user
-        throw new Error("No root node found");
-      }
 
-      const factory = new AppFactory(result.resourceManager);
-      factory.setRootTree(root.id);
+    // If there's a result? return it
+    if (monitor.lastSuccessfulResult) {
+      return monitor.lastSuccessfulResult;
+    }
 
-      pending = false;
-
-      // Also resolve the initial promise
-      if (initialResolve) {
-        initialResolve(factory);
-        initialResolve = null;
-      }
-      return factory;
-    });
+    throw new Error("Failed to get routes");
   };
 
-  const parseRoutes = debounce(rawParseRoutes, 10);
+  // Add a listener to start the analysis
+  monitor.addListener("analysisStarted", () => {
+    // If there's a pending promise, create a new promise that resolves when the analysis is complete
+    const current = new Promise<void>((resolve) => {
+      const completedHandler = () => {
+        // Check if this promise is still the current one
+        if (pending === current) {
+          null;
+        }
 
-  rawParseRoutes();
-  console.log("setting up event listeners");
-  watcher.on("fileAdded", parseRoutes);
-  watcher.on("fileUpdated", parseRoutes);
-  watcher.on("fileRemoved", parseRoutes);
+        monitor.removeListener("analysisCompleted", completedHandler);
+        resolve();
+      };
+
+      monitor.addListener("analysisCompleted", completedHandler);
+    });
+    // Set the current promise as the pending promise
+    pending = current;
+  });
+
+  monitor.start();
 }
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -123,15 +111,8 @@ app.post(
   cors(),
   zValidator("json", generateRequestSchema),
   async (ctx) => {
-    const {
-      handler,
-      method,
-      path,
-      history,
-      persona,
-      openApiSpec,
-      //  middleware
-    } = ctx.req.valid("json");
+    const { handler, method, path, history, persona, openApiSpec } =
+      ctx.req.valid("json");
 
     const db = ctx.get("db");
     const inferenceConfig = await getInferenceConfig(db);
@@ -156,17 +137,20 @@ app.post(
     const [handlerContextPerformant, middlewareContextPerformant] =
       // HACK - Ditch the expand handler for ollama for now, it overwhelms llama 3.1-8b
       provider !== "ollama"
-        ? // ? await expandHandler(handler, middleware ?? []).catch((error) => {
-          await appFactoryPromise
-            .then(async (factory) => {
+        ? await getResult()
+            .then(async (routesResult) => {
               const url = new URL("http://localhost");
               url.pathname = path;
               const request = new Request(url, { method: "GET" });
-              const app = factory.currentApp;
-              factory.resetHistory();
+              const app = routesResult.currentApp;
+              routesResult.resetHistory();
               const response = await app.fetch(request);
-              console.log("response", response.statusText);
-              return [factory.getFilesForHistory(), null];
+              // console.log("response", response.statusText);
+              if ((await response.text()) !== "Ok") {
+                console.warn("Failed to fetch route for context expansion");
+                return [null, null];
+              }
+              return [routesResult.getFilesForHistory(), null];
             })
             .catch((error) => {
               // await expandHandler(handler, []).catch((error) => {
@@ -175,6 +159,7 @@ app.post(
             })
         : [null, null];
 
+    console.log("handlerContextPerformant", handlerContextPerformant);
     // HACK - Get latest token from db
     const [token] = await db
       .select()

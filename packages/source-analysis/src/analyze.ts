@@ -2,7 +2,6 @@ import type {
   RouteTree,
   RouteTreeId,
   RouteTreeReference,
-  RouteTreeReferenceId,
   TreeResource,
 } from "./types";
 

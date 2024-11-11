@@ -92,7 +92,7 @@ export class ResourceManager {
   public decodeId(id: TreeResourceId) {
     const parts = id.split(":");
     const type = parts[0] as TreeResource["type"];
-    const [fileName, position] = parts[1].split("@");
+    const [fileName = "", position = ""] = (parts[1] ?? "").split("@");
     return {
       type,
       fileName: this.asAbsolutePath(decodeURIComponent(fileName)),

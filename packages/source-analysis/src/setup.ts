@@ -1,67 +1,57 @@
-import path from "node:path";
-import { extractRouteTrees } from "./routeTrees";
-import { getTsLib, startServer } from "./service";
-import type { TsType } from "./types";
-import { Watcher } from "./watcher";
+import { RoutesMonitor } from "./RoutesMonitor";
 
-export function setupMonitoring(projectRoot: string) {
-  const ts: TsType = getTsLib(projectRoot);
+// export type Monitoring = {
+//   /**
+//    * Internal utilities used for monitoring
+//    */
+//   internals: {
+//     fileWatcher: FileWatcher;
+//     findHonoRoutes: () => ReturnType<typeof extractRouteTrees>;
+//   },
+//   /**
+//    *
+//    * @returns a factory that can be used to get a mock hono app
+//    */
+//   createFactory: () => AppFactory;
+//   teardown: () => void;
+// }
+export function createRoutesMonitor(projectRoot: string) {
+  return new RoutesMonitor(projectRoot);
+  // const ts: TsType = getTsLib(projectRoot);
 
   // Only watch the src directory (if it exists)
-  const possibleLocation = path.resolve(path.join(projectRoot, "src"));
-  const location = ts.sys.directoryExists(possibleLocation)
-    ? possibleLocation
-    : projectRoot;
-  const watcher = new Watcher(location);
+  // const possibleLocation = path.resolve(path.join(projectRoot, "src"));
+  // const location = ts.sys.directoryExists(possibleLocation)
+  //   ? possibleLocation
+  //   : projectRoot;
+  // const fileWatcher = new FileWatcher(location);
 
-  const fileMap: Record<
-    string,
-    {
-      version: number;
-      content: string;
-    }
-  > = {};
+  // // const findHonoRoutes = () => extractRouteTrees(service, ts, projectRoot)
+  // return {
+  //   internals: {
+  //     watcher: fileWatcher,
+  //     findHonoRoutes,
+  //   },
+  //   createFactory: () => {
+  //     const result = findHonoRoutes();
+  //     if (result.errorCount) {
+  //       console.warn(`${result.errorCount} error(s) found while analyzing routes`);
+  //     }
 
-  function getFileInfo(fileName: string) {
-    return fileMap[fileName];
-  }
+  //     // Find root route
+  //     const root = analyze(result.resourceManager.getResources());
 
-  function getFileNames() {
-    return Object.keys(fileMap);
-  }
+  //     if (!root) {
+  //       throw new Error("No root route found");
+  //     }
 
-  const service = startServer({
-    getFileInfo,
-    getFileNames,
-    location: projectRoot,
-    ts,
-  });
-
-  watcher.on("fileAdded", (event) => {
-    fileMap[event.payload.fileName] = {
-      version: 0,
-      content: event.payload.content,
-    };
-    service.getProgram()?.getSourceFile(event.payload.fileName);
-  });
-
-  watcher.on("fileUpdated", (event) => {
-    fileMap[event.payload.fileName] = {
-      version: fileMap[event.payload.fileName].version + 1,
-      content: event.payload.changes[0].text,
-    };
-  });
-
-  watcher.on("fileRemoved", (event) => {
-    delete fileMap[event.payload.fileName];
-  });
-
-  return {
-    watcher,
-    findHonoRoutes: () => extractRouteTrees(service, ts, projectRoot, watcher),
-    teardown: () => {
-      watcher.teardown();
-      service.dispose();
-    },
-  };
+  //     const factory = new AppFactory(result.resourceManager);
+  //     factory.rootId = root.id;
+  //     return factory;
+  //   },
+  //   teardown: () => {
+  //     fileWatcher.teardown();
+  //     service.dispose();
+  //   },
+  // };
 }

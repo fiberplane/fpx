@@ -1,11 +1,11 @@
 import { copyFileSync, readdirSync, unlinkSync } from "node:fs";
 import * as path from "node:path";
 import { expect, test, vi } from "vitest";
-import { Watcher } from "./watcher";
+import { FileWatcher } from "./FileWatcher";
 
 test("Initial files (added)", async () => {
   const location = path.join(__dirname, "../test-cases/multiple");
-  const watcher = new Watcher(location);
+  const watcher = new FileWatcher(location);
   const handler = vi.fn();
   watcher.addListener("fileAdded", handler);
   await watcher.start();
@@ -48,7 +48,7 @@ test("Empty folder", async () => {
   const removeHandler = vi.fn();
 
   // Initialize watcher
-  const watcher = new Watcher(location);
+  const watcher = new FileWatcher(location);
   watcher.addListener("fileAdded", addHandler);
   watcher.addListener("fileUpdated", updateHandler);
   watcher.addListener("fileRemoved", removeHandler);

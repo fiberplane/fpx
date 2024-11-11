@@ -1,4 +1,3 @@
-import { Hono } from "hono";
 import relative from "resolve";
 import type { Tagged } from "type-fest";
 import * as bundledTs from "typescript";
@@ -154,7 +153,7 @@ export type HonoHttpMethod = (typeof HONO_HTTP_METHODS)[number];
 export type RouteEntry = {
   type: "ROUTE_ENTRY";
   id: RouteEntryId;
-  method?: string;
+  method?: string | undefined;
 } & RouteDetails;
 
 export type MiddlewareEntry = {

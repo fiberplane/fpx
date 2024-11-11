@@ -26,7 +26,7 @@ import {
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
 
-import { setupMonitoring } from "@fiberplane/source-analysis";
+import { createRoutesMonitor } from "@fiberplane/source-analysis";
 import { setupCodeAnalysis } from "./routes/inference/inference.js";
 
 config({ path: ".dev.vars" });
@@ -105,9 +105,10 @@ if (proxyRequestsEnabled ?? false) {
   await webhonc.start();
 }
 
-const { watcher, findHonoRoutes: findRoutes } = setupMonitoring(
-  USER_PROJECT_ROOT_DIR,
-);
+const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR);
+// const { internals: { watcher, findHonoRoutes: findRoutes } } = setupMonitoring(
+//   USER_PROJECT_ROOT_DIR,
+// );
 
 // export const findHonoRoutes = findRoutes;
 
@@ -119,15 +120,16 @@ if (aiEnabled) {
     "AI Request Generation enabled. Starting typescript language server",
   );
   try {
-    watcher.start().then(() => {
-      // const start = performance.now();
-      // const result = findRoutes()
-      setupCodeAnalysis({
-        findHonoRoutes: findRoutes,
-        watcher,
-      });
-      // console.log('result', performance.now() - start, result)
-    });
+    setupCodeAnalysis(monitor);
+    // watcher.start().then(() => {
+    //   // const start = performance.now();
+    //   // const result = findRoutes()
+    //   setupCodeAnalysis({
+    //     findHonoRoutes: findRoutes,
+    //     watcher,
+    //   });
+    //   // console.log('result', performance.now() - start, result)
+    // });
     // await getTSServer(USER_PROJECT_ROOT_DIR);
   } catch (error) {
     logger.error("Error starting TSServer:", error);

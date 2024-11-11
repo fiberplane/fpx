@@ -2,26 +2,9 @@ import { EventEmitter } from "node:events";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { type FSWatcher, watch } from "chokidar";
-import type { MapLike } from "typescript";
 import type { TextDocumentContentChangeEvent } from "./types";
 
-function debounce<T extends (...args: Parameters<T>) => void>(
-  func: T,
-  wait: number,
-) {
-  let debounceTimeout: NodeJS.Timeout | null = null;
-
-  return (...args: Parameters<T>) => {
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-    debounceTimeout = setTimeout(() => {
-      func(...args);
-    }, wait);
-  };
-}
-
-type FileAddedEvent = {
+export type FileAddedEvent = {
   type: "fileAdded";
   payload: {
     fileName: string;
@@ -29,14 +12,14 @@ type FileAddedEvent = {
   };
 };
 
-type FileRemovedEvent = {
+export type FileRemovedEvent = {
   type: "fileRemoved";
   payload: {
     fileName: string;
   };
 };
 
-type FileUpdatedEvent = {
+export type FileUpdatedEvent = {
   type: "fileUpdated";
   payload: {
     fileName: string;
@@ -50,14 +33,11 @@ type FileEvents = {
   fileUpdated: [FileUpdatedEvent];
 };
 
-export class Watcher extends EventEmitter<FileEvents> {
-  private folderPath: string;
+export class FileWatcher extends EventEmitter<FileEvents> {
+  public readonly folderPath: string;
   private knownFileNames = new Set<string>();
-  // private fileVersions: MapLike<{
-  //   version: number;
-  //   // content: string
-  // }> = {};
   private watcher: FSWatcher | null = null;
+
   constructor(folderPath: string) {
     super();
     this.folderPath = path.normalize(folderPath);

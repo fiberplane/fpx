@@ -119,7 +119,10 @@ export function getImportTypeDefinitionFileName(
   //     }
   //   }
   // }
-
+  if (!declaration) {
+    console.warn("No declaration found for symbol", symbol);
+    return;
+  }
   let target = declaration.parent;
   while (
     target &&

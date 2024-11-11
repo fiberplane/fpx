@@ -8,7 +8,6 @@ import {
   type RouteTreeReference,
   type SearchContext,
   type SourceReferenceId,
-  type TreeResource,
   type TsArrowFunction,
   type TsCallExpression,
   type TsExpression,
@@ -24,7 +23,6 @@ import {
   type TsType,
   type TsVariableDeclaration,
 } from "../types";
-import type { Watcher } from "../watcher";
 import { createSourceReferenceForNode } from "./extractReferences";
 import { findNodeAtPosition } from "./utils";
 
@@ -32,7 +30,6 @@ export function extractRouteTrees(
   service: TsLanguageService,
   ts: TsType,
   projectRoot: string,
-  watcher: Watcher,
 ): {
   errorCount?: number;
   resourceManager: ResourceManager;
@@ -280,18 +277,25 @@ function handleHonoMethodCall(
   }
 
   if (methodName === "baseUrl") {
-    if (ts.isStringLiteral(callExpression.arguments[0])) {
-      routeTree.baseUrl = callExpression.arguments[0].text;
+    const [firstArgument] = callExpression.arguments;
+    if (firstArgument && ts.isStringLiteral(firstArgument)) {
+      routeTree.baseUrl = firstArgument.text;
     }
   }
 
   if ([...HONO_HTTP_METHODS, "all", "use"].includes(methodName)) {
     const [firstArgument, ...args] = callExpression.arguments;
+    if (!firstArgument) {
+      // No first argument for the hono.{method} call
+      console.warn("No first argument for", callExpression.getText());
+      context.errorCount++;
+      return;
+    }
     const params: Omit<RouteEntry, "id"> = {
       type: "ROUTE_ENTRY",
       fileName: callExpression.getSourceFile().fileName,
       position: callExpression.getStart(),
-      method: methodName === "all" ? undefined : methodName,
+      method: methodName !== "all" ? methodName : undefined,
       path: JSON.parse(firstArgument.getText()),
       modules: new Set(),
       sources: new Set(),
@@ -319,8 +323,7 @@ function handleRoute(
   routeTree: RouteTree,
   context: SearchContext,
 ) {
-  const { ts, getFile, asRelativePath, resourceManager, checker, service } =
-    context;
+  const { ts, asRelativePath, resourceManager, checker } = context;
 
   // There should be 2 arguments
   const [firstArgument = undefined, appNode = undefined] =
@@ -334,11 +337,6 @@ function handleRoute(
     firstArgument && ts.isStringLiteral(firstArgument)
       ? firstArgument.text
       : "";
-  const SUPPORTED_VARIABLE_KINDS = [
-    ts.ScriptElementKind.constElement,
-    ts.ScriptElementKind.letElement,
-    ts.ScriptElementKind.variableElement,
-  ];
 
   let target: TsVariableDeclaration | undefined;
 
@@ -397,7 +395,7 @@ function extractPathFromUseArguments(
 
   const { ts } = context;
   const [firstArgument] = callExpressionArgs;
-  if (ts.isStringLiteral(firstArgument)) {
+  if (firstArgument && ts.isStringLiteral(firstArgument)) {
     return firstArgument.text;
   }
 

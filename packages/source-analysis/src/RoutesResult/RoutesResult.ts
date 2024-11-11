@@ -1,4 +1,3 @@
-import path from "node:path";
 import { Hono } from "hono";
 import type { Next } from "hono/types";
 import type { ResourceManager } from "../ResourceManager";
@@ -20,12 +19,13 @@ type HistoryId =
   | RouteTreeReferenceId
   | MiddlewareEntryId;
 
-export class AppFactory {
+export class RoutesResult {
   private resourceManager: ResourceManager;
   private apps: Map<RouteTreeId, Hono> = new Map();
   private history: Array<HistoryId>;
   private _currentApp: Hono | null = null;
   private includeIds = false;
+  private _rootId: RouteTreeId | null = null;
 
   constructor(resourceManager: ResourceManager, includeIds = false) {
     this.resourceManager = resourceManager;
@@ -49,17 +49,17 @@ export class AppFactory {
     return this.history.length;
   }
 
-  public setRootTree(entryId: RouteTreeId): Hono {
-    const root = this.resourceManager.getResource(entryId);
-    this.resetHistory();
+  // public setRootTree(entryId: RouteTreeId): Hono {
+  //   const root = this.resourceManager.getResource(entryId);
+  //   this.resetHistory();
 
-    if (!root) {
-      throw new Error("Could not find root tree");
-    }
+  //   if (!root) {
+  //     throw new Error("Could not find root tree");
+  //   }
 
-    this._currentApp = this.createApp(root);
-    return this._currentApp;
-  }
+  //   this._currentApp = this.createApp(root);
+  //   return this._currentApp;
+  // }
 
   public get currentApp() {
     if (!this._currentApp) {
@@ -69,12 +69,26 @@ export class AppFactory {
     return this._currentApp;
   }
 
+  public get rootId(): RouteTreeId | null {
+    return this._rootId;
+  }
+
+  public set rootId(rootId: RouteTreeId) {
+    const tree = this.resourceManager.getResource(rootId);
+    if (!tree) {
+      throw new Error("Root tree not found");
+    }
+
+    this._currentApp = this.createApp(tree);
+    this._rootId = rootId;
+  }
+
   private createApp(tree: RouteTree) {
     const app = new Hono();
 
     this.apps.set(tree.id, app);
 
-    app.use((c, next) => {
+    app.use((_, next) => {
       this.history.push(tree.id);
       return next();
     });
@@ -197,6 +211,9 @@ export class AppFactory {
       }
 
       const currentFile = fileMap[resource.fileName];
+      if (!currentFile) {
+        throw new Error("Current file is not set");
+      }
       const resourceType = resource.type;
       switch (resourceType) {
         case "ROUTE_TREE": {
@@ -317,8 +334,10 @@ ${resource.content}`,
         default: {
           // If there's an error directly below:
           // the switch statement isn't covering all cases
-          const _exhaustiveCheck: never = resourceType;
-          throw new Error(`Unsupported entry type: ${resourceType}` as never);
+          const exhaustiveCheck: never = resourceType;
+          throw new Error(
+            `Unsupported entry type: ${exhaustiveCheck}` as never,
+          );
         }
       }
     }

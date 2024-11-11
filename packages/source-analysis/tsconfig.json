@@ -9,11 +9,16 @@
     "esModuleInterop": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "declaration": true
+    "declaration": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true
   },
   "exclude": [
     "test-case",
-    "src/**/*.test.ts",
+    "test-casestest.ts",
     "dist",
     "vite.config.ts"
   ],

@@ -1,6 +1,8 @@
 import * as path from "node:path";
 import { expect, test } from "vitest";
-import { setupMonitoring } from "..";
+import { createRoutesMonitor } from "../setup";
+// import { setupMonitoring } from "..";
+// import { create} from"
 
 test.each([
   {
@@ -49,11 +51,13 @@ test.each([
   // // }
 ])("run test $name with location $location", async ({ location, name }) => {
   const absolutePath = path.join(__dirname, location);
-  const { watcher, findHonoRoutes, teardown } = setupMonitoring(absolutePath);
+  const monitor = createRoutesMonitor(absolutePath);
+  monitor.autoUpdate = false;
   try {
-    await watcher.start();
+    // await watcher.start();
+    await monitor.start();
     const start = performance.now();
-    const result = findHonoRoutes();
+    const result = monitor.findHonoRoutes();
     console.log(
       `Duration for ${name}: ${(performance.now() - start).toFixed(4)}`,
     );
@@ -61,6 +65,6 @@ test.each([
     const resources = result.resourceManager.getResources();
     expect(resources).toMatchSnapshot();
   } finally {
-    teardown();
+    monitor.teardown();
   }
 });

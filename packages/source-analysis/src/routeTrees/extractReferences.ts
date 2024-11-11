@@ -88,8 +88,7 @@ function visitIdentifier(
   startPosition: number,
   rootNode: TsNode = currentNode,
 ) {
-  const { ts, getFile, checker, resourceManager, asAbsolutePath, program } =
-    context;
+  const { ts, getFile, checker, resourceManager, asAbsolutePath } = context;
   const sourceFile = getFile(asAbsolutePath(rootSourceReference.fileName));
 
   const dependencyResult = getImportTypeDefinitionFileName(
@@ -205,8 +204,8 @@ export function getNodeValueForDependency(
     }
     const symbol = checker.getSymbolAtLocation(refNode);
     const declarations = symbol?.getDeclarations();
-    if (declarations?.length === 1) {
-      const declaration = declarations[0];
+    const declaration = declarations?.[0];
+    if (declaration) {
       const nodeValue = ts.isVariableDeclaration(declaration)
         ? declaration.initializer
         : declaration;
