@@ -1,7 +1,12 @@
 import { createRequire } from "node:module";
 import relative from "resolve";
 import * as bundledTs from "typescript";
-import type { TsCompilerOptions, TsLanguageServiceHost, TsType } from "./types";
+import type {
+  TsCompilerOptions,
+  TsISnapShot,
+  TsLanguageServiceHost,
+  TsType,
+} from "./types";
 const relativeResolve = relative.sync;
 
 export function getOptions(location: string, ts: TsType): TsCompilerOptions {
@@ -23,36 +28,51 @@ export function getOptions(location: string, ts: TsType): TsCompilerOptions {
     options.baseUrl = location;
   }
 
-  console.log("configPath", configPath, options.types);
+  // ts.createProgram({
 
+  // })
   // if (options.types) {
-  //   console.log('got me some types', options.types);
-  //   options.types = options.types.map((type) => {
-  //     // return `${location}/node_modules/${type}`;
-  //     try {
-  //       const resolved = relativeResolve(`@types/${type}`, { basedir: location });
-  //       return require(resolved);
-  //     } catch (error) {
-  //       try {
-  //         const resolved = relativeResolve(type, { basedir: location, preserveSymlinks: true });
-  //         return require(resolved);
-  //       } catch (error) {
-  //         console.warn("Unable to resolve type", type, error);
-  //         return type;
-  //       }
-  //       // const resolved = relativeResolve(type, { basedir: location });
-  //       // return require(resolved);
-  //       // console.warn("Unable to resolve type", type, error);
-  //       // return type;
-  //     }
-  //   });
-  //   // options.types.map((type) => {
-  //   //   returnts.resolveModuleName(type, configPath, options, ts.sys);
-  //   // });
+  //   // console.log('got me some types', options.types);
+  //   options.types.map((typeName) => {
+  //     // for (const typeName of options.types) {
+  //     const result = ts.resolveModuleName(typeName, configPath, options, ts.sys);
+  //     console.log('options.types', result)
+  //     return typeName;
+  //     // }
+  //   }
+  //   )
+
+  //   //   options.types = options.types.map((type) => {
+  //   //     // return `${location}/node_modules/${type}`;
+  //   //     try {
+  //   //       const resolved = relativeResolve(`@types/${type}`, { basedir: location });
+  //   //       return require(resolved);
+  //   //     } catch (error) {
+  //   //       try {
+  //   //         const resolved = relativeResolve(type, { basedir: location, preserveSymlinks: true });
+  //   //         return require(resolved);
+  //   //       } catch (error) {
+  //   //         console.warn("Unable to resolve type", type, error);
+  //   //         return type;
+  //   //       }
+  //   //       // const resolved = relativeResolve(type, { basedir: location });
+  //   //       // return require(resolved);
+  //   //       // console.warn("Unable to resolve type", type, error);
+  //   //       // return type;
+  //   //     }
+  //   //   });
+  //   //   // options.types.map((type) => {
+  //   //   //   returnts.resolveModuleName(type, configPath, options, ts.sys);
+  //   //   // });
   // }
   return options;
 }
 
+/**
+ * Find the typescript library to use
+ *
+ * Uses this project's typescript version if no typescript package is found in the project
+ */
 export function getTsLib(projectRoot: string) {
   const require = createRequire(projectRoot);
   try {
@@ -65,17 +85,22 @@ export function getTsLib(projectRoot: string) {
   }
 }
 
+/**
+ * Starts the typescript language service
+ */
 export function startServer(params: {
   ts: TsType;
   location: string;
   getFileInfo: (
     fileName: string,
-  ) => undefined | { version: number; content: string };
+  ) => undefined | { version: number; content: string; snapshot: TsISnapShot };
   getFileNames: () => Array<string>;
 }) {
   const { ts, location, getFileInfo, getFileNames } = params;
   const options = getOptions(location, ts);
 
+  // const snapshotCache =
+  const snapshotSet = new Set<string>();
   const host: TsLanguageServiceHost = {
     fileExists: (fileName) => {
       const exists =
@@ -98,9 +123,15 @@ export function startServer(params: {
       return getFileInfo(fileName)?.version.toString() ?? "0";
     },
     getScriptSnapshot: (fileName) => {
+      // console.log('getScriptSnapshot', fileName)
+      if (snapshotSet.has(fileName)) {
+        console.log("could have cached it", fileName);
+      }
+      // snapshotSet.add
       const info = getFileInfo(fileName);
       if (info) {
-        return ts.ScriptSnapshot.fromString(info.content);
+        return info.snapshot;
+        // return ts.ScriptSnapshot.fromString(info.content);
       }
 
       const sourceText = ts.sys.readFile(fileName);

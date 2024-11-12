@@ -44,36 +44,36 @@ exports[`run test 'barrel files' with location '../../test-cases/barrel-files' 1
     "pathId": "../utils",
     "type": "MODULE_REFERENCE",
   },
-  "ROUTE_ENTRY:index.ts@407": {
+  "ROUTE_ENTRY:index.ts@181": {
     "fileName": "index.ts",
-    "id": "ROUTE_ENTRY:index.ts@407",
+    "id": "ROUTE_ENTRY:index.ts@181",
     "method": "get",
     "modules": Set {},
     "path": "/user/1",
-    "position": 407,
+    "position": 181,
     "sources": Set {
-      "SOURCE_REFERENCE:index.ts@426",
-      "SOURCE_REFERENCE:index.ts@434",
+      "SOURCE_REFERENCE:index.ts@200",
+      "SOURCE_REFERENCE:index.ts@208",
     },
     "type": "ROUTE_ENTRY",
   },
-  "ROUTE_ENTRY:index.ts@531": {
+  "ROUTE_ENTRY:index.ts@305": {
     "fileName": "index.ts",
-    "id": "ROUTE_ENTRY:index.ts@531",
+    "id": "ROUTE_ENTRY:index.ts@305",
     "method": "get",
     "modules": Set {},
     "path": "/",
-    "position": 531,
+    "position": 305,
     "sources": Set {
-      "SOURCE_REFERENCE:index.ts@544",
+      "SOURCE_REFERENCE:index.ts@318",
     },
     "type": "ROUTE_ENTRY",
   },
   "ROUTE_TREE:index.ts@102": {
     "baseUrl": "",
     "entries": [
-      "ROUTE_ENTRY:index.ts@407",
-      "ROUTE_ENTRY:index.ts@531",
+      "ROUTE_ENTRY:index.ts@181",
+      "ROUTE_ENTRY:index.ts@305",
     ],
     "fileName": "index.ts",
     "id": "ROUTE_TREE:index.ts@102",
@@ -145,20 +145,20 @@ exports[`run test 'barrel files' with location '../../test-cases/barrel-files' 1
     },
     "type": "SOURCE_REFERENCE",
   },
-  "SOURCE_REFERENCE:index.ts@426": {
+  "SOURCE_REFERENCE:index.ts@200": {
     "character": 19,
     "content": "cors()",
     "fileName": "index.ts",
-    "id": "SOURCE_REFERENCE:index.ts@426",
-    "line": 14,
+    "id": "SOURCE_REFERENCE:index.ts@200",
+    "line": 7,
     "modules": Set {
       "MODULE_REFERENCE:hono%2Fcors@cors",
     },
-    "position": 426,
+    "position": 200,
     "references": Set {},
     "type": "SOURCE_REFERENCE",
   },
-  "SOURCE_REFERENCE:index.ts@434": {
+  "SOURCE_REFERENCE:index.ts@208": {
     "character": 27,
     "content": "async (c) => {
   // await getUser();
@@ -166,25 +166,25 @@ exports[`run test 'barrel files' with location '../../test-cases/barrel-files' 1
   return c.json(user);
 }",
     "fileName": "index.ts",
-    "id": "SOURCE_REFERENCE:index.ts@434",
-    "line": 14,
+    "id": "SOURCE_REFERENCE:index.ts@208",
+    "line": 7,
     "modules": Set {
       "MODULE_REFERENCE:getUser@.%2Fdb",
     },
-    "position": 434,
+    "position": 208,
     "references": Set {
       "SOURCE_REFERENCE:db%2Findex.ts@9",
     },
     "type": "SOURCE_REFERENCE",
   },
-  "SOURCE_REFERENCE:index.ts@544": {
+  "SOURCE_REFERENCE:index.ts@318": {
     "character": 13,
     "content": "(c) => c.text("Hello, Hono!")",
     "fileName": "index.ts",
-    "id": "SOURCE_REFERENCE:index.ts@544",
-    "line": 20,
+    "id": "SOURCE_REFERENCE:index.ts@318",
+    "line": 13,
     "modules": Set {},
-    "position": 544,
+    "position": 318,
     "references": Set {},
     "type": "SOURCE_REFERENCE",
   },
@@ -596,7 +596,7 @@ exports[`run test 'import as' with location '../../test-cases/import-as' 1`] = `
 
   // Do something silly with the path module
   const parent = path.resolve(__dirname, "..");
-  console.log('parent folder', parent)
+  console.log("parent folder", parent);
   const value = {
     name: "John Doe",
     email: "john@doe.com",
@@ -616,7 +616,7 @@ exports[`run test 'import as' with location '../../test-cases/import-as' 1`] = `
     },
     "type": "SOURCE_REFERENCE",
   },
-  "SOURCE_REFERENCE:db.ts@473": {
+  "SOURCE_REFERENCE:db.ts@474": {
     "character": 0,
     "content": "export async function getProfile() {
   const user = await getUser();
@@ -627,10 +627,10 @@ exports[`run test 'import as' with location '../../test-cases/import-as' 1`] = `
   };
 }",
     "fileName": "db.ts",
-    "id": "SOURCE_REFERENCE:db.ts@473",
+    "id": "SOURCE_REFERENCE:db.ts@474",
     "line": 19,
     "modules": Set {},
-    "position": 473,
+    "position": 474,
     "references": Set {
       "SOURCE_REFERENCE:db.ts@187",
       "SOURCE_REFERENCE:db.ts@86",
@@ -676,7 +676,7 @@ exports[`run test 'import as' with location '../../test-cases/import-as' 1`] = `
     },
     "position": 205,
     "references": Set {
-      "SOURCE_REFERENCE:db.ts@473",
+      "SOURCE_REFERENCE:db.ts@474",
     },
     "type": "SOURCE_REFERENCE",
   },
@@ -974,10 +974,10 @@ exports[`run test 'multiple files' with location '../../test-cases/multiple' 1`]
     "id": "ROUTE_ENTRY:other.ts@102",
     "method": "post",
     "modules": Set {},
-    "path": "/",
+    "path": "/hello-world",
     "position": 102,
     "sources": Set {
-      "SOURCE_REFERENCE:other.ts@116",
+      "SOURCE_REFERENCE:other.ts@127",
     },
     "type": "ROUTE_ENTRY",
   },
@@ -1031,14 +1031,14 @@ exports[`run test 'multiple files' with location '../../test-cases/multiple' 1`]
     "references": Set {},
     "type": "SOURCE_REFERENCE",
   },
-  "SOURCE_REFERENCE:other.ts@116": {
-    "character": 14,
+  "SOURCE_REFERENCE:other.ts@127": {
+    "character": 25,
     "content": "(c) => c.json({ hello: "world" })",
     "fileName": "other.ts",
-    "id": "SOURCE_REFERENCE:other.ts@116",
+    "id": "SOURCE_REFERENCE:other.ts@127",
     "line": 7,
     "modules": Set {},
-    "position": 116,
+    "position": 127,
     "references": Set {},
     "type": "SOURCE_REFERENCE",
   },

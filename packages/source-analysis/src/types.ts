@@ -33,6 +33,7 @@ export type TsTypeAliasDeclaration = bundledTs.TypeAliasDeclaration;
 export type TsTypeChecker = bundledTs.TypeChecker;
 export type TsVariableDeclaration = bundledTs.VariableDeclaration;
 export type TsFunctionExpression = bundledTs.FunctionExpression;
+export type TsISnapShot = bundledTs.IScriptSnapshot;
 
 export type RouteTreeId = Tagged<string, "RouteTreeId">;
 export type RouteTreeReferenceId = Tagged<string, "RouteTreeReferenceId">;
@@ -149,11 +150,14 @@ export const HONO_HTTP_METHODS = [
   "options",
 ] as const;
 export type HonoHttpMethod = (typeof HONO_HTTP_METHODS)[number];
+export function isHonoMethod(unknown: string): unknown is HonoHttpMethod {
+  return HONO_HTTP_METHODS.includes(unknown as HonoHttpMethod);
+}
 
 export type RouteEntry = {
   type: "ROUTE_ENTRY";
   id: RouteEntryId;
-  method?: string | undefined;
+  method?: HonoHttpMethod | undefined;
 } & RouteDetails;
 
 export type MiddlewareEntry = {

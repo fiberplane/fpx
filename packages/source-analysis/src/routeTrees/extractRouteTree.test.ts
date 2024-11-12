@@ -59,7 +59,7 @@ test.each([
 
   // Disable auto creation/updating of the route results
   // because we want to manually call findHonoRoutes
-  monitor.autoUpdate = false;
+  monitor.autoCreateResult = false;
   try {
     // Start monitoring the filesystem
     await monitor.start();

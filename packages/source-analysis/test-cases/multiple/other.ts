@@ -5,6 +5,6 @@ app.get("/", (c) => {
   return c.json({});
 });
 
-app.post("/", (c) => c.json({ hello: "world" }));
+app.post("/hello-world", (c) => c.json({ hello: "world" }));
 
 export { Hono } from "hono";

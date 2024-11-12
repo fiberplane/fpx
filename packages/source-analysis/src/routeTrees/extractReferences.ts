@@ -109,8 +109,7 @@ function visitIdentifier(
   }
 
   const symbol = checker.getSymbolAtLocation(currentNode);
-  const declarations = symbol?.getDeclarations() || [];
-  const [declaration] = declarations;
+  const [declaration] = symbol?.getDeclarations() || [];
   if (
     !declaration ||
     symbol?.flags === ts.SymbolFlags.FunctionScopedVariable ||

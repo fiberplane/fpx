@@ -20,35 +20,67 @@ type HistoryId =
   | MiddlewareEntryId;
 
 export class RoutesResult {
-  private resourceManager: ResourceManager;
-  private apps: Map<RouteTreeId, Hono> = new Map();
-  private history: Array<HistoryId>;
+  /**
+   * The resource manager used to keep track of resources
+   */
+  private _resourceManager: ResourceManager;
+
+  /**
+   * A map of all apps created
+   */
+  private _apps: Map<RouteTreeId, Hono> = new Map();
+
+  /**
+   * The history of visited resources. Can be reset using the `resetHistory` method
+   *
+   * The id's are the id's of the resources visited in the order they were visited
+   */
+  private _history: Array<HistoryId>;
+
+  /**
+   * The current app being built
+   */
   private _currentApp: Hono | null = null;
-  private includeIds = false;
+  private _includeIds = false;
   private _rootId: RouteTreeId | null = null;
 
   constructor(resourceManager: ResourceManager, includeIds = false) {
-    this.resourceManager = resourceManager;
-    this.history = [];
-    this.includeIds = includeIds;
+    this._resourceManager = resourceManager;
+    this._history = [];
+    this._includeIds = includeIds;
   }
 
+  /**
+   * Resets the history of visited resources
+   */
   public resetHistory() {
-    this.history = [];
+    this._history = [];
   }
 
+  /**
+   * Checks if a resource is in the history list
+   */
   public hasVisited(id: HistoryId): boolean {
-    return this.history.includes(id);
+    return this._history.includes(id);
   }
 
+  /**
+   * Return the history array
+   */
   public getHistory(): Array<TreeResourceId> {
-    return this.history;
+    return [...this._history];
   }
 
+  /**
+   * Get the length of the history array
+   */
   public getHistoryLength(): number {
-    return this.history.length;
+    return this._history.length;
   }
 
+  /**
+   * Get the current app (throws an error if no app is set)
+   */
   public get currentApp() {
     if (!this._currentApp) {
       throw new Error("No current app set");
@@ -57,12 +89,20 @@ export class RoutesResult {
     return this._currentApp;
   }
 
+  /**
+   * Set the root tree id (mostly useful for testing)
+   */
   public get rootId(): RouteTreeId | null {
     return this._rootId;
   }
 
+  /**
+   * Set the root tree id.
+   *
+   * (this updates the current app references)
+   */
   public set rootId(rootId: RouteTreeId) {
-    const tree = this.resourceManager.getResource(rootId);
+    const tree = this._resourceManager.getResource(rootId);
     if (!tree) {
       throw new Error("Root tree not found");
     }
@@ -71,38 +111,46 @@ export class RoutesResult {
     this._rootId = rootId;
   }
 
+  /**
+   * Internal function used to create an app from a route tree
+   */
   private createApp(tree: RouteTree) {
+    // Create the app and add it to the apps map
     const app = new Hono();
+    this._apps.set(tree.id, app);
 
-    this.apps.set(tree.id, app);
-
+    // Add middleware to add the RouteTreeId to the history
     app.use((_, next) => {
-      this.history.push(tree.id);
+      this._history.push(tree.id);
       return next();
     });
 
-    for (const entry of tree.entries) {
-      const resource = this.resourceManager.getResource(entry);
+    // Add all the entries of the current route tree
+    for (const entryResourceId of tree.entries) {
+      const resource = this._resourceManager.getResource(entryResourceId);
+
       if (!resource) {
-        console.warn("Resource not found", entry);
+        console.warn("Resource not found", entryResourceId);
         continue;
       }
 
       switch (resource.type) {
         case "ROUTE_ENTRY": {
-          app.get(resource.path, (c) => {
-            this.history.push(resource.id);
+          const method = resource.method ?? "all";
+
+          app[method](resource.path, (c) => {
+            this._history.push(resource.id);
             return c.text("Ok");
           });
           continue;
         }
 
         case "ROUTE_TREE_REFERENCE": {
-          let targetApp = this.apps.get(resource.targetId);
+          let targetApp = this._apps.get(resource.targetId);
           if (targetApp) {
             app.route(resource.path, targetApp);
           } else {
-            const tree = this.resourceManager.getResource(resource.targetId);
+            const tree = this._resourceManager.getResource(resource.targetId);
             if (!tree) {
               console.warn("Referring resource not found", resource.targetId);
               continue;
@@ -118,7 +166,7 @@ export class RoutesResult {
 
         case "MIDDLEWARE_ENTRY": {
           const middlewareFunc = async (_: unknown, next: Next) => {
-            this.history.push(resource.id);
+            this._history.push(resource.id);
             await next();
           };
           if (resource.path) {
@@ -131,7 +179,9 @@ export class RoutesResult {
 
         default: {
           // Typescript should never happen
-          throw new Error(`Unsupported entry type: ${entry}` as never);
+          throw new Error(
+            `Unsupported entry type: ${entryResourceId}` as never,
+          );
         }
       }
     }
@@ -148,7 +198,7 @@ export class RoutesResult {
     const fileMap: Record<LocalFileResource["fileName"], FileInfo> = {};
     const visited = new Set<string>();
     const self = this;
-    const includeIds = this.includeIds;
+    const includeIds = this._includeIds;
 
     function createFileInfo() {
       return {
@@ -159,7 +209,7 @@ export class RoutesResult {
 
     function addModules(file: FileInfo, moduleIds: Set<ModuleReferenceId>) {
       for (const moduleId of moduleIds) {
-        const module = self.resourceManager.getResource(moduleId);
+        const module = self._resourceManager.getResource(moduleId);
         if (!module) {
           console.warn("Module not found", moduleId, "module", module);
           continue;
@@ -187,7 +237,7 @@ export class RoutesResult {
         return;
       }
 
-      const resource = self.resourceManager.getResource(id);
+      const resource = self._resourceManager.getResource(id);
       if (!resource) {
         console.warn("Resource not found", id);
         return;
@@ -234,7 +284,7 @@ export class RoutesResult {
 
           const middlewareFunctions = Array.from(resource.sources)
             .map((referenceId) => {
-              const source = self.resourceManager.getResource(referenceId);
+              const source = self._resourceManager.getResource(referenceId);
               if (!source) {
                 console.warn("Source not found", referenceId);
                 return;
@@ -266,7 +316,7 @@ export class RoutesResult {
 ${appName}.${resource.method ?? "all"}("${resource.path}", `;
 
           for (const sourceId of resource.sources) {
-            const source = self.resourceManager.getResource(sourceId);
+            const source = self._resourceManager.getResource(sourceId);
             if (!source) {
               console.warn("Source not found", sourceId);
               continue;
@@ -284,7 +334,7 @@ ${appName}.${resource.method ?? "all"}("${resource.path}", `;
           break;
         }
         case "ROUTE_TREE_REFERENCE": {
-          const target = self.resourceManager.getResource(resource.targetId);
+          const target = self._resourceManager.getResource(resource.targetId);
           if (!target) {
             console.warn("Target not found", resource.targetId);
             break;
@@ -331,7 +381,7 @@ ${resource.content}`,
     }
 
     let name = "";
-    for (const id of this.history) {
+    for (const id of this._history) {
       const newName = visit(id, name);
       if (newName) {
         name = newName;

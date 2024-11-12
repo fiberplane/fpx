@@ -9,7 +9,7 @@ import { RoutesResult } from "./RoutesResult";
 import { analyze } from "./analyze";
 import { extractRouteTrees } from "./routeTrees";
 import { getTsLib, startServer } from "./service";
-import type { TsLanguageService, TsType } from "./types";
+import type { TsISnapShot, TsLanguageService, TsType } from "./types";
 
 type AnalysisStarted = {
   type: "analysisStarted";
@@ -30,18 +30,23 @@ type AnalysisCompletedPayload =
       error: string;
     };
 
-type FileEvents = {
+type AnalysisEvents = {
   analysisCompleted: [AnalysisCompleted];
   analysisStarted: [AnalysisStarted];
 };
 
-export class RoutesMonitor extends EventEmitter<FileEvents> {
+export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
+  // Cache last known successful result
   private _lastSuccessfulResult: RoutesResult | null = null;
 
+  // Root directory of the project
   public readonly projectRoot: string;
 
+  // Whether the monitor is running
   private _isRunning = false;
-  public autoUpdate = true;
+
+  // Whether to automatically create the routes result
+  public autoCreateResult = true;
   private ts: TsType;
   private service: TsLanguageService | null = null;
 
@@ -51,6 +56,7 @@ export class RoutesMonitor extends EventEmitter<FileEvents> {
     {
       version: number;
       content: string;
+      snapshot: TsISnapShot;
     }
   > = {};
 
@@ -143,6 +149,7 @@ export class RoutesMonitor extends EventEmitter<FileEvents> {
       this.fileMap[event.payload.fileName] = {
         version: 0,
         content: event.payload.content,
+        snapshot: this.ts.ScriptSnapshot.fromString(event.payload.content),
       };
 
       if (!this.service) {
@@ -155,7 +162,7 @@ export class RoutesMonitor extends EventEmitter<FileEvents> {
 
       this.service.getProgram()?.getSourceFile(event.payload.fileName);
 
-      if (this.autoUpdate) {
+      if (this.autoCreateResult) {
         this.debouncedUpdateRoutesResult();
       }
     });
@@ -174,15 +181,16 @@ export class RoutesMonitor extends EventEmitter<FileEvents> {
       this.fileMap[event.payload.fileName] = {
         version: current.version + 1,
         content,
+        snapshot: this.ts.ScriptSnapshot.fromString(content),
       };
-      if (this.autoUpdate) {
+      if (this.autoCreateResult) {
         this.debouncedUpdateRoutesResult();
       }
     });
 
     this.fileWatcher.on("fileRemoved", (event: FileRemovedEvent) => {
       delete this.fileMap[event.payload.fileName];
-      if (this.autoUpdate) {
+      if (this.autoCreateResult) {
         this.debouncedUpdateRoutesResult();
       }
     });

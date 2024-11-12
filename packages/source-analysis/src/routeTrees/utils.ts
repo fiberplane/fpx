@@ -29,29 +29,16 @@ export function getImportTypeDefinitionFileName(
   | (ModuleReference & { isExternalLibrary: boolean; location: string })
   | undefined {
   const { ts, checker, program, resourceManager } = context;
+
   const symbol = checker.getSymbolAtLocation(node);
-
-  const declarations = symbol?.getDeclarations();
-  if (!declarations || declarations.length === 0) {
-    return;
-  }
-  const declaration = declarations[0];
-
-  const nodeFileName = node.getSourceFile().fileName;
-  const compilerOptions = program.getCompilerOptions();
-  const host: TsModuleResolutionHost = {
-    fileExists: ts.sys.fileExists,
-    readFile: ts.sys.readFile,
-  };
-
+  const [declaration] = symbol?.getDeclarations() || [];
   if (!declaration) {
     console.warn("No declaration found for symbol", symbol);
     return;
   }
 
-  let target: TsNode | undefined = declaration.parent;
-
   // Walk up to the import/export declaration
+  let target: TsNode | undefined = declaration.parent;
   while (
     target &&
     !ts.isImportDeclaration(target) &&
@@ -66,6 +53,12 @@ export function getImportTypeDefinitionFileName(
 
   const text = target.moduleSpecifier.getText().slice(1, -1) || "";
 
+  const nodeFileName = node.getSourceFile().fileName;
+  const compilerOptions = program.getCompilerOptions();
+  const host: TsModuleResolutionHost = {
+    fileExists: ts.sys.fileExists,
+    readFile: ts.sys.readFile,
+  };
   const result = ts.resolveModuleName(
     text,
     nodeFileName,
@@ -94,8 +87,8 @@ export function getImportTypeDefinitionFileName(
     };
   }
 
-  // Handle build in modules
-  if (text.startsWith("node:")) {
+  // If a module is not resolved, treat it as a built-in module
+  if (!result.resolvedModule) {
     return {
       type: "MODULE_REFERENCE",
       id: resourceManager.getId("MODULE_REFERENCE", node.getText(), text),
@@ -104,7 +97,7 @@ export function getImportTypeDefinitionFileName(
       pathId: text,
       name: text,
       isExternalLibrary: true,
-      location: node.getText(),
+      location: "",
     };
   }
 
@@ -122,7 +115,6 @@ export function getImportTypeDefinitionFileName(
     import: importText,
     name: text,
     isExternalLibrary: false,
-    // TODO: Handle resolvedModule being undefined
     location: result.resolvedModule?.resolvedFileName || "",
   };
 }

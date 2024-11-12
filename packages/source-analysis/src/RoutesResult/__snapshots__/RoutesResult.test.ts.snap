@@ -93,7 +93,7 @@ export const getUser = measure("getUser", async () => {
 
   // Do something silly with the path module
   const parent = path.resolve(__dirname, "..");
-  console.log('parent folder', parent)
+  console.log("parent folder", parent);
   const value = {
     name: "John Doe",
     email: "john@doe.com",
@@ -126,7 +126,7 @@ export const getUser = measure("getUser", async () => {
 
   // Do something silly with the path module
   const parent = path.resolve(__dirname, "..");
-  console.log('parent folder', parent)
+  console.log("parent folder", parent);
   const value = {
     name: "John Doe",
     email: "john@doe.com",
@@ -143,4 +143,28 @@ export async function getProfile() {
   };
 }
 /* EOF: db.ts */"
+`;
+
+exports[`multiple 1`] = `
+"/* other.ts */
+const app = new Hono();
+
+app.get("/", (c) => {
+  return c.json({});
+}
+/* EOF: other.ts */"
+`;
+
+exports[`multiple 2`] = `
+"/* other.ts */
+const app = new Hono();
+/* EOF: other.ts */"
+`;
+
+exports[`multiple 3`] = `
+"/* other.ts */
+const app = new Hono();
+
+app.post("/hello-world", (c) => c.json({ hello: "world" })
+/* EOF: other.ts */"
 `;

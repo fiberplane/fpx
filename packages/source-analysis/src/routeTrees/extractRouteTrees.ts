@@ -22,6 +22,7 @@ import {
   type TsSymbol,
   type TsType,
   type TsVariableDeclaration,
+  isHonoMethod,
 } from "../types";
 import { createSourceReferenceForNode } from "./extractReferences";
 import { findNodeAtPosition } from "./utils";
@@ -291,11 +292,14 @@ function handleHonoMethodCall(
       context.errorCount++;
       return;
     }
+
+    const method = isHonoMethod(methodName) ? methodName : undefined;
+
     const params: Omit<RouteEntry, "id"> = {
       type: "ROUTE_ENTRY",
       fileName: callExpression.getSourceFile().fileName,
       position: callExpression.getStart(),
-      method: methodName !== "all" ? methodName : undefined,
+      method,
       path: JSON.parse(firstArgument.getText()),
       modules: new Set(),
       sources: new Set(),
