@@ -6,7 +6,7 @@ date: 2024-11-13
 author: Brett Beutell
 tags:
   - HONC
-  - pgvector
+  - RAG
   - Semantic search
 ---
 
@@ -34,8 +34,8 @@ We’ll build a small semantic search engine for Cloudflare's documentation, giv
 Before we get started, let's go over some basic concepts. This will be especially helpful if you're not already familiar with vectors and embeddings.
 
 <Aside type="tip" title="Already familiar with embeddings?">
-  Skip this section if you already know about vectors and embeddings and all
-  that jazz.
+  [Skip past](#how-do-we-start) this section if you already know about vectors
+  and embeddings and all that jazz.
 </Aside>
 
 ### Vectors
@@ -56,9 +56,7 @@ My favorite analogy for why these are useful and how they work comes from from A
 
 If we wanted to mix some red into the named color `"blue"` and make a new color that’s just a _little_ more purple, how would we do that?
 
-Well, if all we have is the name of the color, there’s not much we can do. We’d just invent a new color and give it a new name, like `"purpleish blue"`.
-
-With an RGB value, though, we can simply “add” some red:
+Well, if all we have is the name of the color, there’s not much we can do. We’d just invent a new color and give it a new name, like `"purpleish blue"`. With an RGB value, though, we can simply “add” some red:
 
 `rgb(20, 0 , 0) + rgb(0, 0, 255) = rgb(20, 0, 255)`
 
@@ -69,7 +67,6 @@ Embeddings are a way for us to do this kind of math on human language. Embedding
 How would you “do math on human language” though? Borrowing an example from the trusty Internet, let’s say we have a vector for the word `"king"`, and a vector for the words `"man"` and `"woman"`.
 
 If we subtract the vector for `"man"` from the vector for `"king"` , then add the vector for the word `"woman"`. What would you expect we get?
-
 Wild enough, we would get a vector _very very close_ to the one for the word `"queen"`.
 
 Pretty neat, huh?
@@ -83,7 +80,7 @@ In this case, we think of similarity in terms of distance. Two vectors that are 
 So, in a database that stores vectors, we can calculate the distance between an input vector, and all vectors in the database, and return only the ones that are most similar.
 In this post, you will see a reference to "cosine similarity", which is a way to calculate the distance between two vectors. So, don't get freaked if we start talking about cosines.
 
-Basically, instead of looking for exact matches, keyword matches, or fuzzy matches of a user's search query, we look for “semantically similar matches” based off of cosine distance.
+Basically, instead of looking for exact matches or keyword matches for a user's query, we look for “semantically similar matches” based off of cosine distance.
 
 ## How Do We Start?
 
@@ -94,29 +91,33 @@ To perform semantic search, we need:
 - a way to search for similar vectors in the database
 
 To be entirely frank, the hardest part of building semantic search is knowing how to parse and split up your target documents text into meaningful chunks.
+
 I spent most of my time on this project just pulling down, compiling, and chunking the Cloudflare documentation. After that, the search part was easy-peasy.
-I gloss over the tedious parts of this below, but there is a link to the script that does the heavy lifting.
+I will gloss over the tedious parts of this below, but I've provided a link to the script that processes the documentation, for anyone who is interested.
 
 That said, let's go over the stack and database models we'll be using for the actual searching part.
 
 ### The Stack
 
+We want to expose a simple API for users to search the Cloudflare documentation. Then we want some tools for storing the documents and their embeddings, as well as querying them.
+
+Here's the stack we'll be using for all of this:
+
 - **Hono**: A lightweight web framework for building typesafe APIs
-- **Postgres Neon**: Serverless postgres for storing documents and vector embeddings
-- **OpenAI Embeddings**: To vectorize documentation content
-- **Drizzle ORM**: For type-safe database operations and sql helpers
+- **Neon Postgres**: Serverless postgres database for storing documents and vector embeddings
+- **OpenAI**: To vectorize documentation content and user queries
+- **Drizzle ORM**: For constructing type-safe database operations
 - **Cloudflare Workers**: To host the API on a serverless compute platform
 
 ### Setting up the Database
 
 First, we define a schema using Drizzle ORM.
 
-When we think of our database models, we have to think of what kind of search results we want to return.
-
+When we craft our database models, we have to think of what kind of search results we want to return.
 This leads us to the idea of "chunking", which is the process of splitting up the text into smaller chunks.
 
-The logic is: We don't want to match a user's query entire documents, because that would return a lot of irrelevant results.
-Instead, we should split up each document page into smaller chunks, and match the user's query to the most semantically similar chunks.
+The logic is: We don't want to match a user's query to entire documents, because that would return a lot of irrelevant results.
+Instead, we should split up each documentation page into smaller chunks, and match the user's query to the most semantically similar chunks.
 
 Since we're working witha relational database, we can define a schema for the documents and chunks, where each document can have many chunks.
 
@@ -148,22 +149,22 @@ export const chunks = pgTable("chunks", {
 ```
 
 Once we define a schema, we can create the tables in our database.
-If you're following along on GitHub, you can run the command below to create the tables.
+If you're following along on GitHub, you can run the commands below to create the tables.
 Under the hood, we use Drizzle to generate migration files and apply them to the database.
 
 ```bash
-pnpm run db:generate
-pnpm run db:migrate
+pnpm db:generate
+pnpm db:migrate
 ```
 
-Normally, we would have to specifically enable `pgvector` in our Postgres database, but since we're using Neon, this is all taken care of for us.
+Normally, we would have to specifically enable a postgres extension called `pgvector` in our Postgres database in order to store and search vectors, but since we're using Neon, this is all taken care of for us.
 
 Now, with our database set up, we can move on to processing the documentation itself into vector embeddings.
 
 ### Processing Documentation
 
 The heart of our system is the document processing pipeline. It's a bit of a beast.
-I'm going to gloss over the details, but you can see the full implementation in
+I'm going to move through this quickly, but you can see the full implementation in
 [`./src/scripts/create-vectors.ts`](https://github.com/fiberplane/create-honc-app/blob/main/examples/cf-retrieval-augmented-goose/scripts/create-vectors.ts).
 
 This script:
@@ -177,7 +178,7 @@ Once this runs, we have a database full of document chunks and their embeddings,
 Probably the most interesting part of this script is how we use GPT-4o to clean and chunk the content. In some cases, this might be
 cost prohibitive, but for our use case, it was a no-brainer. We only need to run this once, and it was a lot smarter than any heuristics I would've defined myself.
 
-If you're following along on GitHub, I commend you. You can run these commands to process the documentation.
+If you're following along on GitHub, I commend you. You can run these commands to process the documentation. (Please file an issue if you run into any problems.)
 
 ```bash
 # Process the Cloudflare documentation
@@ -188,20 +189,18 @@ cd ../
 pnpm run vectors:create
 ```
 
-Please file an issue if you run into any problems.
-
 ## The Search API
 
 When a user makes a search request, we do the following:
 
 1. Convert their query into a vector embedding
-2. Use cosine similarity to find the most relevant chunks
-3. Return the top matches
+2. Use cosine similarity to find the most relevant chunks for their query
+3. Return the top matches back to the user
 
-Why convert their query into a vector embedding? We want to find the most semantically similar chunks, so we need to represent their query in the same format as our database chunks.
+Why convert their query into a vector embedding? We want to find the most semantically similar chunks,
+so we need to represent their query in the same format as our database chunks.
 
 The search endpoint is surprisingly simple thanks to Hono.
-
 We define a `GET` route that takes `query` and `similarity` parameters.
 
 ```tsx {6-9} title="src/index.tsx"
@@ -217,32 +216,28 @@ app.get("/search", async (c) => {
 });
 ```
 
-Then, we create an embedding for the search query.
+Then, we make a request to OpenAI to create an embedding for the user's search query.
 
-```tsx title="src/index.tsx"
+```tsx {8-12} title="src/index.tsx"
 app.get("/search", async (c) => {
   // ...
 
   // Initialize the OpenAI client
-  const openai = new OpenAI({
-    apiKey: c.env.OPENAI_API_KEY,
-    fetch: globalThis.fetch
-  });
+  const openai = new OpenAI({ apiKey: c.env.OPENAI_API_KEY });
 
   // Create embedding for the search query
-  const embedding = await openai.embeddings.create({
+  const embeddingResult = await openai.embeddings.create({
     model: "text-embedding-3-small",
     input: query
   });
-
-  const queryEmbedding = embedding.data[0].embedding;
+  const userQueryEmbedding = embeddingResult.data[0].embedding;
 
   // ...
 });
 ```
 
-And finally, we craft a similarity search based on the cosine distance between the query embedding and each chunk embedding.
-Here, the `drizzleSql` helper is the `sql` helper provided by Drizzle, which has been renamed for clarity.
+Finally, we craft a similarity search based on the cosine distance between the query embedding and each chunk's embedding.
+Here, the `drizzleSql` helper is the `sql` helper exported by Drizzle, which has been renamed for clarity.
 It allows us to construct type-safe sql expressions.
 
 ```tsx title="src/index.tsx"
@@ -269,7 +264,9 @@ app.get("/search", async (c) => {
 });
 ```
 
-That leaves us with a list of chunks that are semantically similar to the user's query! We can choose to render them however we see fit.
+That leaves us with a list of chunks that are semantically similar to the user's query!
+
+We can choose to render these results however we see fit.
 
 And that's it! We've built a semantic search engine with the HONC stack.
 
@@ -277,11 +274,20 @@ And that's it! We've built a semantic search engine with the HONC stack.
 
 What makes this more powerful than regular text search? Again, vector embeddings capture semantic meaning. For example, a search for "how to handle errors in Workers" will find relevant results even if they don't contain those exact words.
 
-Neon postgres makes this simple, easy, and scalable by allowing efficient similarity searches over high-dimensional vectors _out of the box_.
+Neon makes this simple, easy, and scalable by allowing efficient similarity searches over high-dimensional vectors _out of the box_.
 
-However, that doesn't mean that vector search is always the right tool. Any robust retrieval system should consider the trade-offs of vector search vs. keyword search, and likely combine the two.
+However, that doesn't mean that vector search is _the only_ tool for retrieval. Any robust system should consider the trade-offs of vector search vs. keyword search, and likely combine the two.
 
 ## Deployment
+
+<LinkCard
+  title="See it in action"
+  description="Here is a live demo of the search API"
+  href="https://cf-retrieval-augmented-goose.mies.workers.dev/"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
 
 Deploying to Cloudflare Workers is straightforward. We just push the code and set the secrets.
 
@@ -295,29 +301,16 @@ pnpm run deploy
 
 ```
 
-## Future Improvements
-
-Some ways to enhance the project:
-
-- Add the ability to filter results by documentation section
-- Implement caching for frequent queries
-- Add streaming responses with AI-generated summaries
-
 ## Conclusion
 
 If you're looking for a quick way to get up and running with semantic search, this should give you a solid starting point.
-There are a lot of libraries that try to abstract away the details of building RAG systems, but I think it's valuable to understand the core concepts.
-For example, I've built small tools with Llamaindex and Langchain, and for simpler use cases, I found myself wading through documentation and GitHub issues more than I'd like.
-(They can be very helpful for bigger applications, but for something this simple, I think the core concepts are valuable to implement and understand.)
 
-While I was working on this, the two sticking points for me were:
+Worth noting: there are a lot of libraries out there that can take care of the heavy lifting of building RAG systems.
+At Fiberplane, we've built smaller systems with [Llamaindex](https://www.llamaindex.ai/) and [Langchain](https://www.langchain.com/),
+but for simpler use cases, I found myself wading through documentation and GitHub issues more than I'd like.
+A higher-level library can be very helpful for bigger applications, but for something this simple, I think the core concepts are valuable to implement and understand.
 
-- Pre-processing the documentation
-- Crafting the similarity search query in Drizzle
-
-The full code for everything in this post is available on GitHub, and you can adapt it for your own needs.
-
-Check out the [HONC stack](https://honc.dev/) for more examples of building with Hono, Drizzle, Neon, and Cloudflare.
+To that end, the full code for everything in this post is available on GitHub, and you can adapt it for your own needs.
 
 <LinkCard
   title="Get the code on GitHub"
@@ -327,3 +320,5 @@ Check out the [HONC stack](https://honc.dev/) for more examples of building with
   target="_blank"
   rel="noopener noreferrer"
 />
+
+Otherwise, don't forget to check out the [HONC stack](https://honc.dev/) for more examples of building with Hono, Drizzle, Neon, and Cloudflare.
