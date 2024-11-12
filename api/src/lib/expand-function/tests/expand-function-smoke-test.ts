@@ -40,7 +40,6 @@ async function main() {
     const result = await expandFunction(
       projectRoot,
       functionWithHelperInAnotherFile,
-      { debug: true },
     );
     console.log(result);
   } catch (error) {

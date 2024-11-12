@@ -195,7 +195,6 @@ async function extractContext(
       const [sourceDefinition, textDocumentDefinition] = await Promise.all([
         getTsSourceDefinition(connection, funcFileUri, identifier.position),
         getTextDocumentDefinition(connection, funcFileUri, identifier.position),
-        // getDiagnostics(connection, funcFileUri),
       ]);
 
       // Here we can filter out standard globals that are defined in the runtime
