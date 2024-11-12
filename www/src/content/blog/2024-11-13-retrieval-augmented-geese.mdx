@@ -265,8 +265,12 @@ app.get("/search", async (c) => {
 ```
 
 That leaves us with a list of chunks that are semantically similar to the user's query!
-
 We can choose to render these results however we see fit.
+
+When we use Fiberplane to test the search API, we can see the timeline of the request, including the embedding generation, similarity search, and result rendering.
+We can also see the raw SQL that was executed, which is a little unwieldy since we're dealing with vectorized queries:
+
+![timeline of search request](@/assets/blog/2024-11-13-retrieval-augmented-goose-timeline.png)
 
 And that's it! We've built a semantic search engine with the HONC stack.
 
