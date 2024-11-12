@@ -124,9 +124,9 @@ const tasks = [
 c.executionCtx.waitUntil(Promise.all(tasks));
 ```
 
-If we now look at the trace, we see the response returns immediately, 
+If we now look at the trace, we see the response returns immediately,
 and after a short while, the client instrumentation also shows the other two tasks related to the trace.
-This method leads to the parallel execution of both tasks, 
+This method leads to the parallel execution of both tasks,
 and the trace clearly shows how this improves our response time compared to the sequential approach:
 
 ![Parallel execution in Fiberplane](@/assets/blog/2024-11-02-parallel.png)
