@@ -198,6 +198,10 @@ export type LocalFileResource =
   | RouteTreeReference;
 export type LocalFileResourceId = LocalFileResource["id"];
 
+/**
+ * This "context" is used to provide access to resources
+ * like the language service/program/etc.
+ */
 export type SearchContext = {
   resourceManager: ResourceManager;
   service: TsLanguageService;
