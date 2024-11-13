@@ -100,14 +100,6 @@ app.get("/api/geese-with-avatar", async (c) => {
  */
 app.post(
   "/api/geese",
-  async (c, next) => {
-    // TODO -- Add a token or whatever the fuck
-    const token = c.req.header("Authorization")?.split(" ")[1];
-    if (token !== process.env.STUPID_API_TOKEN) {
-      return c.json({ message: "Unauthorized" }, 401);
-    }
-    await next();
-  },
   async (c) => {
     const sql = neon(c.env.DATABASE_URL);
     const db = drizzle(sql);
