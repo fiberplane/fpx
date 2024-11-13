@@ -8,10 +8,12 @@ import {
 import { RoutesResult } from "./RoutesResult";
 import { analyze } from "./analyze";
 import { extractRouteTrees } from "./routeTrees";
-import { getTsLib, startServer } from "./service";
+import { getParsedTsConfig, getTsLib, startServer } from "./service";
 import type {
   TsISnapShot,
-  TsLanguageService, TsProgram, TsType
+  TsLanguageService,
+  TsProgram,
+  TsType,
 } from "./types";
 
 type AnalysisStarted = {
@@ -54,13 +56,26 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
   private service: TsLanguageService | null = null;
   /**
    * The program used to analyze the routes
-   * 
+   *
    * This is cached to avoid re-analyzing the routes, however when there is a code change
-   * it gets reset to null. 
+   * it gets reset to null.
    */
   private program: TsProgram | null = null;
 
+  /**
+   * Whether to turn up the aggressive caching or not
+   * This is useful for debugging purposes
+   */
+  private aggressiveCaching = true;
+
+  /**
+   * Reference to the file watcher
+   */
   public readonly fileWatcher: FileWatcher;
+
+  /**
+   * Map of files that have been added
+   */
   private fileMap: Record<
     string,
     {
@@ -70,20 +85,36 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     }
   > = {};
 
+  /**
+   * Debounced function to update the routes result. Used when
+   * `autoCreateResult` is set to true
+   */
   private debouncedUpdateRoutesResult: () => void;
 
   constructor(projectRoot: string) {
     super();
     this.projectRoot = projectRoot;
-
-    // Only watch the src directory (if it exists)
-    const possibleLocation = path.resolve(path.join(projectRoot, "src"));
     this.ts = getTsLib(this.projectRoot);
+    const options = getParsedTsConfig(this.projectRoot, this.ts);
 
-    const location = this.ts.sys.directoryExists(possibleLocation)
-      ? possibleLocation
-      : projectRoot;
-    this.fileWatcher = new FileWatcher(location);
+    const include: Array<string> = Array.isArray(options.raw?.include) ? options.raw?.include : [];
+    const configPath = options.configPath ? path.dirname(options.configPath) : projectRoot;
+    const locations = include
+      .filter(loc => typeof loc === "string")
+      .map((loc) => {
+        return path.isAbsolute(loc) ? loc : path.resolve(path.join(configPath, loc));
+      });
+
+    if (locations.length === 0) {
+      // Only watch the src directory (if it exists)
+      const possibleLocation = path.resolve(path.join(projectRoot, "src"));
+      const location = this.directoryExists(possibleLocation)
+        ? possibleLocation
+        : projectRoot;
+      locations.push(path.join(location, "**", "*"));
+    }
+
+    this.fileWatcher = new FileWatcher(locations);
 
     this.debouncedUpdateRoutesResult = debounce(() => {
       try {
@@ -96,12 +127,15 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
 
   private fileExistsCache: Record<string, boolean> = {};
   public fileExists(fileName: string) {
-    const cached = this.fileExistsCache[fileName];
-    if (cached !== undefined) {
-      return cached;
+    if (this.aggressiveCaching) {
+      const cached = this.fileExistsCache[fileName];
+      if (cached !== undefined) {
+        return cached;
+      }
     }
 
-    const exists = this.getFileInfo(fileName) !== undefined ||
+    const exists =
+      this.getFileInfo(fileName) !== undefined ||
       this.ts.sys.fileExists(fileName);
     this.fileExistsCache[fileName] = exists;
     return exists;
@@ -109,9 +143,11 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
 
   private directoryExistsCache: Record<string, boolean> = {};
   public directoryExists(directory: string) {
-    const cached = this.directoryExistsCache[directory];
-    if (cached !== undefined) {
-      return cached;
+    if (this.aggressiveCaching) {
+      const cached = this.directoryExistsCache[directory];
+      if (cached !== undefined) {
+        return cached;
+      }
     }
 
     const exists = this.ts.sys.directoryExists(directory);
@@ -124,22 +160,22 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       return;
     }
 
-    this.service = startServer({
-      directoryExists: (directory) => this.directoryExists(directory),
-      fileExists: (fileName) => this.fileExists(fileName),
-      getFileInfo: (fileName) => this.getFileInfo(fileName),
-      getFileNames: () => this.getFileNames(),
-      location: this.projectRoot,
-      ts: this.ts,
-    });
-
-
     this.addEventListenersToFileWatcher();
     await this.fileWatcher.start();
+
+    this.service = startServer({
+      directoryExists: this.directoryExists.bind(this),
+      fileExists: this.fileExists.bind(this),
+      getFileInfo: this.getFileInfo.bind(this),
+      getScriptSnapshot: this.getScriptSnapshot.bind(this),
+      getFileNames: () => this.getFileNames(),
+      location: this.projectRoot,
+      readFile: this.readFile.bind(this),
+      ts: this.ts,
+    });
     this.program = this.service.getProgram() ?? null;
     this._isRunning = true;
   }
-
 
   public updateRoutesResult() {
     if (!this.isRunning) {
@@ -184,8 +220,31 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     return factory;
   }
 
-  private addEventListenersToFileWatcher() {
+  private readFile(fileName: string) {
+    if (this.aggressiveCaching) {
+      const info = this.getFileInfo(fileName);
+      if (info) {
+        return info.content;
+      }
+    }
 
+    return this.ts.sys.readFile(fileName);
+  }
+
+  private getScriptSnapshot(fileName: string): TsISnapShot | undefined {
+    if (this.aggressiveCaching) {
+      const info = this.getFileInfo(fileName);
+      if (info) {
+        return info.snapshot;
+      }
+    }
+    const sourceText = this.ts.sys.readFile(fileName);
+    if (sourceText !== undefined) {
+      return this.ts.ScriptSnapshot.fromString(sourceText);
+    }
+  }
+
+  private addEventListenersToFileWatcher() {
     this.fileWatcher.on("fileAdded", (event) => {
       this.fileMap[event.payload.fileName] = {
         version: 0,
@@ -249,7 +308,12 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       throw new Error("Program not initialized");
     }
 
-    return extractRouteTrees(this.service, this.program, this.ts, this.projectRoot);
+    return extractRouteTrees(
+      this.service,
+      this.program,
+      this.ts,
+      this.projectRoot,
+    );
   }
 
   public async teardown() {

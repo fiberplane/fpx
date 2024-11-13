@@ -16,4 +16,14 @@
     "exactOptionalPropertyTypes": true,
     "noPropertyAccessFromIndexSignature": true
   },
+  "exclude": [
+    "test-case",
+    "dist",
+    "vite.config.ts"
+  ],
+  "include": ["."],
+  "tsc-alias": {
+    "verbose": true,
+    "resolveFullPaths": true,
+  }
 }

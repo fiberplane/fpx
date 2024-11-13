@@ -2,6 +2,12 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    pool: "forks",
+    poolOptions: {
+      //   forks: 1
+      maxWorkers: 1,
+    },
+
     // // Run tests with profiling enabled
     // pool: 'forks',
     // poolOptions: {

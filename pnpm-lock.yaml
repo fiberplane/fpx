@@ -490,8 +490,8 @@ importers:
   packages/source-analysis:
     dependencies:
       chokidar:
-        specifier: ^4.0.1
-        version: 4.0.1
+        specifier: ^3.0.1
+        version: 3.6.0
       hono:
         specifier: ^4.6.6
         version: 4.6.9

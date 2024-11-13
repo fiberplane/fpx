@@ -33,7 +33,6 @@ export function createSourceReferenceForNode(
     | TsVariableDeclaration,
   context: SearchContext,
 ): SourceReference {
-
   const { resourceManager } = context;
   const sourceFile = rootNode.getSourceFile();
   const fileName = sourceFile.fileName;
@@ -78,7 +77,13 @@ function sourceReferenceVisit(
   }
 
   ts.forEachChild(currentNode, (node) =>
-    sourceReferenceVisit(node, context, rootSourceReference, startPosition, rootNode),
+    sourceReferenceVisit(
+      node,
+      context,
+      rootSourceReference,
+      startPosition,
+      rootNode,
+    ),
   );
 }
 
@@ -90,7 +95,9 @@ function visitIdentifier(
   rootNode: TsNode = currentNode,
 ) {
   const { ts, getFile, checker, resourceManager } = context;
-  const sourceFile = getFile(resourceManager.asAbsolutePath(rootSourceReference.fileName));
+  const sourceFile = getFile(
+    resourceManager.asAbsolutePath(rootSourceReference.fileName),
+  );
 
   const dependencyResult = getImportTypeDefinitionFileName(
     currentNode,
@@ -230,7 +237,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-    currentNode.getSourceFile().fileName
+      currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }

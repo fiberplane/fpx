@@ -30,7 +30,7 @@ test("analyze multiple", async () => {
   monitor.autoCreateResult = false;
   try {
     await monitor.start();
-
+    console.log("array", monitor.fileWatcher.knownFileNamesArray);
     // Manually get the route resources
     const result = monitor.findHonoRoutes();
     const { resourceManager } = result;

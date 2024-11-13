@@ -1,6 +1,5 @@
 import { EventEmitter } from "node:events";
 import * as fs from "node:fs";
-import * as path from "node:path";
 import { type FSWatcher, watch } from "chokidar";
 import type { TextDocumentContentChangeEvent } from "./types";
 
@@ -34,61 +33,38 @@ type FileEvents = {
 };
 
 export class FileWatcher extends EventEmitter<FileEvents> {
-  public readonly folderPath: string;
+  public readonly locations: Array<string>;
   private knownFileNames = new Set<string>();
   private watcher: FSWatcher | null = null;
 
-  constructor(folderPath: string) {
+  constructor(locations: Array<string>) {
     super();
-    this.folderPath = path.normalize(folderPath);
+    this.locations = locations;
   }
 
   public async start() {
-    // Get all files under this.folderPath
-    const files = await this.getAllTsFiles(this.folderPath);
-    // Initialize file versions for existing files
-    await this.initFileVersions(files);
-    // Initialize the file system watcher
-    this.initializeWatcher();
-  }
-
-  // Initialize file versions for existing files
-  private async initFileVersions(fileNames: string[]) {
-    for (const fileName of fileNames) {
-      await this.addFile(fileName);
-    }
-  }
-
-  // Recursively get all .ts and .tsx files from a directory
-  private async getAllTsFiles(folderPath: string): Promise<string[]> {
-    const tsFiles: string[] = [];
-
-    async function getFilesFromDir(dir: string) {
-      const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          getFilesFromDir(fullPath);
-        } else if (
-          entry.isFile() &&
-          (fullPath.endsWith(".ts") || fullPath.endsWith(".tsx"))
-        ) {
-          tsFiles.push(fullPath);
-        }
-      }
-    }
-
-    await getFilesFromDir(folderPath);
-    return tsFiles;
+    await this.initializeWatcher();
   }
 
   // Initialize the file system watcher
-  private initializeWatcher() {
-    this.watcher = watch([this.folderPath]);
+  private async initializeWatcher() {
+    const watcher = watch(this.locations,);
+    this.watcher = watcher;
+
+    // Wait for ready event
+    const ready = new Promise<void>((r) => {
+      const readyHandler = () => {
+        watcher.off("ready", readyHandler);
+        r();
+      }
+
+      watcher.on("ready", readyHandler);
+    });
+
     this.watcher.on("add", (fileName) => this.addFile(fileName));
     this.watcher.on("change", (fileName) => this.updateFile(fileName));
     this.watcher.on("unlink", (fileName) => this.removeFile(fileName));
+    await ready;
   }
 
   // Add a new file to the language service
@@ -107,7 +83,6 @@ export class FileWatcher extends EventEmitter<FileEvents> {
         content,
       },
     };
-
     this.emit(event.type, event);
   }
 
@@ -148,6 +123,10 @@ export class FileWatcher extends EventEmitter<FileEvents> {
         },
       });
     }
+  }
+
+  public get knownFileNamesArray() {
+    return Array.from(this.knownFileNames);
   }
 
   // Public method to stop the watcher and the language service

@@ -5,10 +5,11 @@ import { FileWatcher } from "./FileWatcher";
 
 test("Initial files (added)", async () => {
   const location = path.join(__dirname, "../test-cases/multiple");
-  const watcher = new FileWatcher(location);
+  const watcher = new FileWatcher([path.join(location, "**", "*")]);
   const handler = vi.fn();
   watcher.addListener("fileAdded", handler);
   await watcher.start();
+  console.log("call length", handler.mock.calls.length)
   try {
     expect(handler).toHaveBeenCalledTimes(3);
 
@@ -48,7 +49,7 @@ test("Empty folder", async () => {
   const removeHandler = vi.fn();
 
   // Initialize watcher
-  const watcher = new FileWatcher(location);
+  const watcher = new FileWatcher([path.join(location, "**", "*")]);
   watcher.addListener("fileAdded", addHandler);
   watcher.addListener("fileUpdated", updateHandler);
   watcher.addListener("fileRemoved", removeHandler);

@@ -90,7 +90,7 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
     const type = checker.getTypeAtLocation(
       declaration.initializer || declaration,
     );
-    const typeName = checker.typeToString(type);
+
     if ("intrinsicName" in type && type.intrinsicName === "error") {
       context.errorCount++;
       console.error("Error in type check");
@@ -99,11 +99,11 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
       console.error("type information", type.getSymbol());
     }
 
+    const typeName = checker.typeToString(type);
     if (typeName.startsWith("Hono<")) {
       // TODO: use the type information to get the name of the hono instance
       // TODO: (edge case) handle reassignments of the same variable. It's possible reuse a variable for different hono instances
       const honoInstanceName = declaration.name.getText();
-
       const position = declaration.name.getStart();
       const params = {
         type: "ROUTE_TREE" as const,

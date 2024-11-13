@@ -50,37 +50,41 @@ test.each([
   // {
   //   name: "api",
   //   location: "../../../../api",
-  // }
-])("run test $name with location $location", async ({ location, name }) => {
-  // Get the exact location
-  const absolutePath = path.join(__dirname, location);
-  // Create a monitor for the routes
-  const monitor = createRoutesMonitor(absolutePath);
+  // },
+])(
+  "run test $name with location $location",
+  async ({ location, name }) => {
+    // Get the exact location
+    const absolutePath = path.join(__dirname, location);
+    // Create a monitor for the routes
+    const monitor = createRoutesMonitor(absolutePath);
 
-  // Disable auto creation/updating of the route results
-  // because we want to manually call findHonoRoutes
-  monitor.autoCreateResult = false;
-  try {
-    // Start monitoring the filesystem
-    await monitor.start();
+    // Disable auto creation/updating of the route results
+    // because we want to manually call findHonoRoutes
+    monitor.autoCreateResult = false;
+    try {
+      // Start monitoring the filesystem
+      await monitor.start();
 
-    const start = performance.now();
-    const result = monitor.findHonoRoutes();
-    console.log(
-      `Duration for ${name}: ${(performance.now() - start).toFixed(4)}`,
-    );
+      const start = performance.now();
+      const result = monitor.findHonoRoutes();
+      console.log(
+        `Duration for ${name}: ${(performance.now() - start).toFixed(4)}`,
+      );
 
-    // Expect no errors
-    expect(result.errorCount).toBe(0);
+      // Expect no errors
+      expect(result.errorCount).toBe(0);
 
-    // Get all found resources
-    const resources = result.resourceManager.getResources();
+      // Get all found resources
+      const resources = result.resourceManager.getResources();
 
-    // Compare to snapshot
-    expect(resources).toMatchSnapshot();
-  } finally {
-    monitor.teardown();
-  }
-}, {
-  timeout: 100000,
-});
+      // Compare to snapshot
+      expect(resources).toMatchSnapshot();
+    } finally {
+      monitor.teardown();
+    }
+  },
+  {
+    timeout: 100000,
+  },
+);
