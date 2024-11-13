@@ -33,6 +33,7 @@ export function createSourceReferenceForNode(
     | TsVariableDeclaration,
   context: SearchContext,
 ): SourceReference {
+
   const { resourceManager } = context;
   const sourceFile = rootNode.getSourceFile();
   const fileName = sourceFile.fileName;
@@ -52,11 +53,11 @@ export function createSourceReferenceForNode(
   }
 
   const rootReference = createInitialSourceReferenceForNode(rootNode, context);
-  visit(rootNode, context, rootReference, rootNode.getStart());
+  sourceReferenceVisit(rootNode, context, rootReference, rootNode.getStart());
   return rootReference;
 }
 
-function visit(
+function sourceReferenceVisit(
   currentNode: TsNode,
   context: SearchContext,
   rootSourceReference: SourceReference,
@@ -77,7 +78,7 @@ function visit(
   }
 
   ts.forEachChild(currentNode, (node) =>
-    visit(node, context, rootSourceReference, startPosition, rootNode),
+    sourceReferenceVisit(node, context, rootSourceReference, startPosition, rootNode),
   );
 }
 
@@ -88,8 +89,8 @@ function visitIdentifier(
   startPosition: number,
   rootNode: TsNode = currentNode,
 ) {
-  const { ts, getFile, checker, resourceManager, asAbsolutePath } = context;
-  const sourceFile = getFile(asAbsolutePath(rootSourceReference.fileName));
+  const { ts, getFile, checker, resourceManager } = context;
+  const sourceFile = getFile(resourceManager.asAbsolutePath(rootSourceReference.fileName));
 
   const dependencyResult = getImportTypeDefinitionFileName(
     currentNode,
@@ -229,7 +230,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-      currentNode.getSourceFile().fileName
+    currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }
@@ -299,7 +300,7 @@ function createInitialSourceReferenceForNode(
     | TsVariableDeclaration,
   context: SearchContext,
 ): SourceReference {
-  const { resourceManager, asRelativePath } = context;
+  const { resourceManager } = context;
   const sourceFile = node.getSourceFile();
   const position = sourceFile.getLineAndCharacterOfPosition(node.getStart());
 
@@ -307,7 +308,7 @@ function createInitialSourceReferenceForNode(
     type: "SOURCE_REFERENCE" as const,
     character: position.character,
     line: position.line,
-    fileName: asRelativePath(sourceFile.fileName),
+    fileName: resourceManager.asRelativePath(sourceFile.fileName),
     position: node.getStart(),
     content: createSourceReferenceContentForNode(node, context),
     references: new Set<SourceReferenceId>(),

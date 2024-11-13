@@ -16,6 +16,7 @@ import {
   type TsLanguageService,
   type TsNode,
   type TsNodeArray,
+  type TsProgram,
   type TsReferenceEntry,
   type TsReturnStatement,
   type TsSourceFile,
@@ -29,16 +30,19 @@ import { findNodeAtPosition } from "./utils";
 
 export function extractRouteTrees(
   service: TsLanguageService,
+  program: TsProgram,
   ts: TsType,
   projectRoot: string,
 ): {
   errorCount?: number;
   resourceManager: ResourceManager;
 } {
-  const program = service.getProgram();
-  if (!program) {
-    throw new Error("Program not found");
-  }
+  // const now = performance.now();
+  // const program = service.getProgram();
+  // if (!program) {
+  // throw new Error("Program not found");
+  // }
+  // console.log('program', performance.now() - now)
 
   const resourceManager = new ResourceManager(projectRoot);
   const checker = program.getTypeChecker();
@@ -48,12 +52,6 @@ export function extractRouteTrees(
   for (const file of files) {
     fileMap[file.fileName] = file;
   }
-
-  const asRelativePath = (absolutePath: string) =>
-    resourceManager.asRelativePath(absolutePath);
-
-  const asAbsolutePath = (relativePath: string) =>
-    resourceManager.asAbsolutePath(relativePath);
 
   const context: SearchContext = {
     errorCount: 0,
@@ -65,8 +63,6 @@ export function extractRouteTrees(
     getFile: (fileName: string) => {
       return program.getSourceFile(fileName);
     },
-    asRelativePath,
-    asAbsolutePath,
   };
 
   for (const sourceFile of files) {
@@ -84,77 +80,79 @@ export function extractRouteTrees(
 }
 
 function visit(node: TsNode, fileName: string, context: SearchContext) {
-  const { ts, checker, asRelativePath, resourceManager, service } = context;
-  if (ts.isVariableStatement(node)) {
-    for (const declaration of node.declarationList.declarations) {
-      // Check if the variable is of type Hono
-      const type = checker.getTypeAtLocation(
-        declaration.initializer || declaration,
-      );
-      const typeName = checker.typeToString(type);
-      if ("intrinsicName" in type && type.intrinsicName === "error") {
-        context.errorCount++;
-        console.error("Error in type check");
-        console.error("In: ", node.getSourceFile().fileName, node.kind);
-        console.error("Node text:", node.getFullText());
-        console.error("type information", type.getSymbol());
+  const { ts, checker, resourceManager, service } = context;
+  if (!ts.isVariableStatement(node)) {
+    return;
+  }
+
+  for (const declaration of node.declarationList.declarations) {
+    // Check if the variable is of type Hono
+    const type = checker.getTypeAtLocation(
+      declaration.initializer || declaration,
+    );
+    const typeName = checker.typeToString(type);
+    if ("intrinsicName" in type && type.intrinsicName === "error") {
+      context.errorCount++;
+      console.error("Error in type check");
+      console.error("In: ", node.getSourceFile().fileName, node.kind);
+      console.error("Node text:", node.getFullText());
+      console.error("type information", type.getSymbol());
+    }
+
+    if (typeName.startsWith("Hono<")) {
+      // TODO: use the type information to get the name of the hono instance
+      // TODO: (edge case) handle reassignments of the same variable. It's possible reuse a variable for different hono instances
+      const honoInstanceName = declaration.name.getText();
+
+      const position = declaration.name.getStart();
+      const params = {
+        type: "ROUTE_TREE" as const,
+        baseUrl: "",
+        name: honoInstanceName,
+        fileName: resourceManager.asRelativePath(node.getSourceFile().fileName),
+        position,
+        entries: [],
+        modules: new Set<ModuleReferenceId>(),
+        sources: new Set<SourceReferenceId>(),
+      };
+
+      const current = resourceManager.createRouteTree(params);
+
+      // TODO: add support for late initialization of the hono instance
+      // What if people do something like:
+      //
+      // ``` ts
+      // let app: Hono;
+      // app = new Hono();
+      // ```
+      //
+      // Or have some other kind of initialization:
+      //
+      // ``` ts
+      // let app: Hono;
+      // app = createApp();
+      // ```
+
+      if (
+        declaration.initializer &&
+        ts.isCallExpression(declaration.initializer)
+      ) {
+        handleInitializerCallExpression(
+          declaration.initializer,
+          current,
+          context,
+        );
       }
 
-      if (typeName.startsWith("Hono<")) {
-        // TODO: use the type information to get the name of the hono instance
-        // TODO: (edge case) handle reassignments of the same variable. It's possible reuse a variable for different hono instances
-        const honoInstanceName = declaration.name.getText();
-
-        const position = declaration.name.getStart();
-        const params = {
-          type: "ROUTE_TREE" as const,
-          baseUrl: "",
-          name: honoInstanceName,
-          fileName: asRelativePath(node.getSourceFile().fileName),
-          position,
-          entries: [],
-          modules: new Set<ModuleReferenceId>(),
-          sources: new Set<SourceReferenceId>(),
-        };
-
-        const current = resourceManager.createRouteTree(params);
-
-        // TODO: add support for late initialization of the hono instance
-        // What if people do something like:
-        //
-        // ``` ts
-        // let app: Hono;
-        // app = new Hono();
-        // ```
-        //
-        // Or have some other kind of initialization:
-        //
-        // ``` ts
-        // let app: Hono;
-        // app = createApp();
-        // ```
-
-        if (
-          declaration.initializer &&
-          ts.isCallExpression(declaration.initializer)
-        ) {
-          handleInitializerCallExpression(
-            declaration.initializer,
-            current,
-            context,
-          );
-        }
-
-        const references = (
-          service.getReferencesAtPosition(fileName, position) ?? []
-        ).filter(
-          (reference) =>
-            reference.fileName === fileName &&
-            reference.textSpan.start !== position,
-        );
-        for (const entry of references) {
-          followReference(current, entry, context);
-        }
+      const references = (
+        service.getReferencesAtPosition(fileName, position) ?? []
+      ).filter(
+        (reference) =>
+          reference.fileName === fileName &&
+          reference.textSpan.start !== position,
+      );
+      for (const entry of references) {
+        followReference(current, entry, context);
       }
     }
   }
@@ -165,7 +163,7 @@ function handleInitializerCallExpression(
   routeTree: RouteTree,
   context: SearchContext,
 ) {
-  const { ts, getFile, asRelativePath, resourceManager, program } = context;
+  const { ts, getFile, resourceManager, program } = context;
   const fileName = callExpression.getSourceFile().fileName;
   const references = context.service.findReferences(
     fileName,
@@ -218,7 +216,7 @@ function handleInitializerCallExpression(
           variableFileName,
           variablePosition,
         ),
-        fileName: asRelativePath(variableFileName),
+        fileName: resourceManager.asRelativePath(variableFileName),
         position: variablePosition,
         name: variable.name.getText(),
         path: "/",
@@ -327,7 +325,7 @@ function handleRoute(
   routeTree: RouteTree,
   context: SearchContext,
 ) {
-  const { ts, asRelativePath, resourceManager, checker } = context;
+  const { ts, resourceManager, checker } = context;
 
   // There should be 2 arguments
   const [firstArgument = undefined, appNode = undefined] =
@@ -380,7 +378,7 @@ function handleRoute(
   const params: Omit<RouteTreeReference, "id"> = {
     type: "ROUTE_TREE_REFERENCE",
     targetId,
-    fileName: asRelativePath(filename),
+    fileName: resourceManager.asRelativePath(filename),
     position,
     name: target.name.getText(),
     path,

@@ -33,7 +33,8 @@ export function getImportTypeDefinitionFileName(
   const symbol = checker.getSymbolAtLocation(node);
   const [declaration] = symbol?.getDeclarations() || [];
   if (!declaration) {
-    console.warn("No declaration found for symbol", symbol);
+    // If no declaration is found typescript doesn't know the type of the symbol
+    // so we can't resolve the import
     return;
   }
 

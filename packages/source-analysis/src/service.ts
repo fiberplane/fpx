@@ -91,29 +91,30 @@ export function getTsLib(projectRoot: string) {
 export function startServer(params: {
   ts: TsType;
   location: string;
+  fileExists: (fileName: string) => boolean;
+  directoryExists: (directory: string) => boolean;
   getFileInfo: (
     fileName: string,
-  ) => undefined | { version: number; content: string; snapshot: TsISnapShot };
+  ) => undefined | {
+    version: number; content: string;
+    snapshot: TsISnapShot
+  };
   getFileNames: () => Array<string>;
 }) {
-  const { ts, location, getFileInfo, getFileNames } = params;
+  const { ts, location, getFileInfo, getFileNames,
+    fileExists, directoryExists
+  } = params;
   const options = getOptions(location, ts);
 
-  // const snapshotCache =
-  const snapshotSet = new Set<string>();
   const host: TsLanguageServiceHost = {
-    fileExists: (fileName) => {
-      const exists =
-        getFileInfo(fileName) !== undefined || ts.sys.fileExists(fileName);
-      return exists;
-    },
+    // fileExists: ts.sys.fileExists,
+    fileExists,
     getCurrentDirectory: () => location,
     getDefaultLibFileName: (options) => {
       return ts.getDefaultLibFilePath(options);
     },
-    directoryExists: (directoryName) => {
-      return ts.sys.directoryExists(directoryName);
-    },
+    // directoryExists: ts.sys.directoryExists,
+    directoryExists,
     getNewLine: () => "\n",
     getCompilationSettings() {
       return options;
@@ -123,15 +124,9 @@ export function startServer(params: {
       return getFileInfo(fileName)?.version.toString() ?? "0";
     },
     getScriptSnapshot: (fileName) => {
-      // console.log('getScriptSnapshot', fileName)
-      if (snapshotSet.has(fileName)) {
-        console.log("could have cached it", fileName);
-      }
-      // snapshotSet.add
       const info = getFileInfo(fileName);
       if (info) {
         return info.snapshot;
-        // return ts.ScriptSnapshot.fromString(info.content);
       }
 
       const sourceText = ts.sys.readFile(fileName);

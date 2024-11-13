@@ -180,7 +180,7 @@ export class ResourceManager {
     const id = this.getId(props.type, fileName, props.position);
 
     if (this.references.has(id)) {
-      console.warn("Resource already exists", id);
+      console.warn("Resource already exis1", id);
     }
 
     const resource = { id, ...props, fileName };

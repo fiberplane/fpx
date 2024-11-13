@@ -210,8 +210,6 @@ export type SearchContext = {
   program: TsProgram;
   checker: TsTypeChecker;
   getFile: (fileName: string) => TsSourceFile | undefined;
-  asRelativePath(fileName: string): string;
-  asAbsolutePath(fileName: string): string;
 };
 
 /**

@@ -106,11 +106,21 @@ if (proxyRequestsEnabled ?? false) {
   await webhonc.start();
 }
 
+let start = performance.now()
+// console.log('performance.now', performance.now());
 const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR);
 
 // check settings if ai is enabled, and proactively start the typescript language server
 const inferenceConfig = await getInferenceConfig(db);
 const aiEnabled = inferenceConfig ? hasValidAiConfig(inferenceConfig) : false;
+
+monitor.addListener("analysisStarted", async () => {
+  // console.log('performance.now', performance.now());
+  start = performance.now();
+})
+monitor.addListener("analysisCompleted", async () => {
+  console.log('performance.now', performance.now() - start);
+});
 if (aiEnabled) {
   logger.debug(
     "AI Request Generation enabled. Starting typescript language server",

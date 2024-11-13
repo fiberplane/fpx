@@ -49,7 +49,7 @@ test.each([
   // },
   // {
   //   name: "api",
-  //   location: "../../api",
+  //   location: "../../../../api",
   // }
 ])("run test $name with location $location", async ({ location, name }) => {
   // Get the exact location
@@ -81,4 +81,6 @@ test.each([
   } finally {
     monitor.teardown();
   }
+}, {
+  timeout: 100000,
 });

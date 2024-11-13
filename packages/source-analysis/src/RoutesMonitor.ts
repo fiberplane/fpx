@@ -9,7 +9,10 @@ import { RoutesResult } from "./RoutesResult";
 import { analyze } from "./analyze";
 import { extractRouteTrees } from "./routeTrees";
 import { getTsLib, startServer } from "./service";
-import type { TsISnapShot, TsLanguageService, TsType } from "./types";
+import type {
+  TsISnapShot,
+  TsLanguageService, TsProgram, TsType
+} from "./types";
 
 type AnalysisStarted = {
   type: "analysisStarted";
@@ -22,13 +25,13 @@ type AnalysisCompleted = {
 
 type AnalysisCompletedPayload =
   | {
-      success: true;
-      factory: RoutesResult;
-    }
+    success: true;
+    factory: RoutesResult;
+  }
   | {
-      success: false;
-      error: string;
-    };
+    success: false;
+    error: string;
+  };
 
 type AnalysisEvents = {
   analysisCompleted: [AnalysisCompleted];
@@ -49,6 +52,13 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
   public autoCreateResult = true;
   private ts: TsType;
   private service: TsLanguageService | null = null;
+  /**
+   * The program used to analyze the routes
+   * 
+   * This is cached to avoid re-analyzing the routes, however when there is a code change
+   * it gets reset to null. 
+   */
+  private program: TsProgram | null = null;
 
   public readonly fileWatcher: FileWatcher;
   private fileMap: Record<
@@ -81,7 +91,32 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       } catch (e) {
         console.error("Error while updating factory", e);
       }
-    }, 5);
+    }, 50);
+  }
+
+  private fileExistsCache: Record<string, boolean> = {};
+  public fileExists(fileName: string) {
+    const cached = this.fileExistsCache[fileName];
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    const exists = this.getFileInfo(fileName) !== undefined ||
+      this.ts.sys.fileExists(fileName);
+    this.fileExistsCache[fileName] = exists;
+    return exists;
+  }
+
+  private directoryExistsCache: Record<string, boolean> = {};
+  public directoryExists(directory: string) {
+    const cached = this.directoryExistsCache[directory];
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    const exists = this.ts.sys.directoryExists(directory);
+    this.directoryExistsCache[directory] = exists;
+    return exists;
   }
 
   public async start() {
@@ -90,17 +125,21 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     }
 
     this.service = startServer({
+      directoryExists: (directory) => this.directoryExists(directory),
+      fileExists: (fileName) => this.fileExists(fileName),
       getFileInfo: (fileName) => this.getFileInfo(fileName),
       getFileNames: () => this.getFileNames(),
       location: this.projectRoot,
       ts: this.ts,
     });
 
+
     this.addEventListenersToFileWatcher();
     await this.fileWatcher.start();
-
+    this.program = this.service.getProgram() ?? null;
     this._isRunning = true;
   }
+
 
   public updateRoutesResult() {
     if (!this.isRunning) {
@@ -108,6 +147,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     }
 
     this.emit("analysisStarted", { type: "analysisStarted" });
+
     const result = this.findHonoRoutes();
     if (result.errorCount) {
       console.warn(
@@ -145,6 +185,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
   }
 
   private addEventListenersToFileWatcher() {
+
     this.fileWatcher.on("fileAdded", (event) => {
       this.fileMap[event.payload.fileName] = {
         version: 0,
@@ -152,16 +193,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
         snapshot: this.ts.ScriptSnapshot.fromString(event.payload.content),
       };
 
-      if (!this.service) {
-        console.warn(
-          "Monitor added before service was initialized",
-          event.payload.fileName,
-        );
-        return;
-      }
-
-      this.service.getProgram()?.getSourceFile(event.payload.fileName);
-
+      this.program = null;
       if (this.autoCreateResult) {
         this.debouncedUpdateRoutesResult();
       }
@@ -177,18 +209,21 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
         return;
       }
       const content = event.payload.changes[0]?.text ?? "";
+      this.program = null;
 
       this.fileMap[event.payload.fileName] = {
         version: current.version + 1,
         content,
         snapshot: this.ts.ScriptSnapshot.fromString(content),
       };
+
       if (this.autoCreateResult) {
         this.debouncedUpdateRoutesResult();
       }
     });
 
     this.fileWatcher.on("fileRemoved", (event: FileRemovedEvent) => {
+      this.program = null;
       delete this.fileMap[event.payload.fileName];
       if (this.autoCreateResult) {
         this.debouncedUpdateRoutesResult();
@@ -197,11 +232,24 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
   }
 
   public findHonoRoutes() {
+    this.fileExistsCache = {};
+
     if (!this.service) {
       throw new Error("Service not initialized");
     }
 
-    return extractRouteTrees(this.service, this.ts, this.projectRoot);
+    // Only create the program if it hasn't been created yet
+    // This is to avoid re-creating the program on every file change
+    // and the getProgram call is slow.
+    if (!this.program) {
+      this.program = this.service.getProgram() ?? null;
+    }
+
+    if (!this.program) {
+      throw new Error("Program not initialized");
+    }
+
+    return extractRouteTrees(this.service, this.program, this.ts, this.projectRoot);
   }
 
   public async teardown() {
