@@ -1,0 +1,142 @@
+---
+title: "Building Honcanator: the AI goose generator"
+description: A quick look at how to use Cloudflare AI and R2 to generate and store images with the HONC stack
+slug: ai-goose-generator
+date: 2024-11-13
+author: Mari Steiner
+tags:
+  - honc
+  - ai
+  - r2
+---
+
+Recently we needed some example apps to showcase how to build a HONC app with Fiberplane
+Studio for our Honcathon, so I decided to build [Honcanator][0]: The AI goose generator.
+
+The example app is pretty simple and uses the following:
+
+* Hono as the API layer
+* ORM (Drizzle) to interact with the database
+* Neon as the Postgresql database
+* Cloudflare workers as the serverless deploy platform
+
+as well as
+
+* Cloudflare R2 as object storage
+* Cloudflare AI to generate images
+
+Lets take a quick look at how I've built this app.
+
+# Configuring the basics
+
+In order to use Cloudflare services like R2 and AI, we have to configure bindings with Hono.
+That was as simple as editing the `wrangler.toml`:
+
+```toml ins={8-12} title="wrangler.toml"
+name = "honc-neon-template"
+compatibility_date = "2024-10-28"
+compatibility_flags = [ "nodejs_compat" ]
+
+[observability]
+enabled = true
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "geese"
+
+[ai]
+binding = "AI"
+```
+
+then we could add it to our bindings in Hono:
+
+```ts ins={3-4} title="src/index.ts"
+type Bindings = {
+  DATABASE_URL: string;
+  R2_BUCKET: R2Bucket;
+  AI: Ai;
+};
+```
+
+The `R2Bucket` and `AI` types are Cloudflare special types which will give you a typed
+interface for interacting with these services.
+
+# Routes
+
+The majority of our routes were simple CRUD routes which simply query the database and return
+some stuff from it so I won't bore you with the boring part, lets get to the actual interesting
+route: The creation endpoint.
+
+The first few lines of the `POST /api/geese/:name` are simply a check to see whenever
+a goose with that name already exists. After those checks are done, we get to the really
+interesting part:
+
+## Image generation
+
+This is where we see the Cloudflare bindings really shine. Creating a image is as simple
+as three lines of code:
+
+```ts title="src/index.ts" 
+const model = "@cf/black-forest-labs/flux-1-schnell" as BaseAiTextToImageModels;
+const prompt = `Please generate a image of a goose. Its name is ${name}. Make it in the style of comic or anime please`;
+
+const response = await c.env.AI.run(model, {
+  prompt,
+});
+```
+
+The list of models available on Cloudflare AI can be found [here][1]. The list of image
+generation models is pretty small at the moment, there is currently a few Stable Diffusion
+models and the FLUX.1 [schnell] which we are using in this example.
+
+As we used a image generation model, the response comes back Base 64 encoded, so we'll
+use the built-in Node.js `Buffer` to get something we can actually work with:
+
+```ts title="src/index.ts" 
+const base64image = response.image;
+const buffer = Buffer.from(base64image, "base64");
+```
+
+<!-- TODO: maybe add a Aside mentioning how cloudflare types display 
+this as wrong even thought this is right and works --->
+
+## Saving to object storage
+
+With our generated image now available to us as a `Buffer`, putting it into R2 is as simple
+as writing one line of code:
+
+```ts title="src/index.ts" 
+await c.env.R2_BUCKET.put(`${name}.png`, buffer);
+```
+
+This shows how powerful the Hono bindings for Cloudflare are, we have just generated an
+image and stored it in object storage with like 6 lines of code. Amazing!
+
+Retrieving it is as simple as:
+
+```ts title="src/index.ts" 
+const image = await c.env.R2_BUCKET.get(`${name}.png`);
+```
+
+which comes in handy for our `GET /api/geese/:name` route.
+
+# Parting words
+
+In conclusion, making a small app which generates images and stores them in object storage
+and a database really is no big feat with the HONC stack, which means you'll be able to build
+powerful apps in no time - amazing!
+
+To wrap things up, the code for everything discussed in this blog post can be found
+on GitHub, available for you to adapt and build upon how you wish:
+
+<LinkCard
+  title="Honcanator on GitHub"
+  description="Here is the repo with the full code for this post"
+  href="https://github.com/fiberplane/create-honc-app/tree/main/examples/honcanator"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
+[0]: https://github.com/fiberplane/create-honc-app/tree/main/examples/honcanator
+[1]: https://developers.cloudflare.com/workers-ai/models/
