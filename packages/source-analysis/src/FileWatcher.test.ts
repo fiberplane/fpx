@@ -9,7 +9,6 @@ test("Initial files (added)", async () => {
   const handler = vi.fn();
   watcher.addListener("fileAdded", handler);
   await watcher.start();
-  console.log("call length", handler.mock.calls.length)
   try {
     expect(handler).toHaveBeenCalledTimes(3);
 

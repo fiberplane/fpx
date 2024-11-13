@@ -10,7 +10,10 @@ import type {
 } from "./types";
 const relativeResolve = relative.sync;
 
-export function getParsedTsConfig(location: string, ts: TsType): ConfigFileContent {
+export function getParsedTsConfig(
+  location: string,
+  ts: TsType,
+): ConfigFileContent {
   const configPath = ts.findConfigFile(
     location,
     ts.sys.fileExists,
@@ -25,13 +28,12 @@ export function getParsedTsConfig(location: string, ts: TsType): ConfigFileConte
 
     return {
       ...ts.parseJsonConfigFileContent(config, ts.sys, location),
-      configPath
+      configPath,
     };
-
   }
   console.warn("Could not find a 'tsconfig.json'.");
   return {
-    options: ts.getDefaultCompilerOptions()
+    options: ts.getDefaultCompilerOptions(),
   };
 }
 
@@ -70,10 +72,10 @@ export function startServer(params: {
   getFileInfo: (fileName: string) =>
     | undefined
     | {
-      version: number;
-      content: string;
-      snapshot: TsISnapShot;
-    };
+        version: number;
+        content: string;
+        snapshot: TsISnapShot;
+      };
   getFileNames: () => Array<string>;
   getScriptSnapshot: (fileName: string) => TsISnapShot | undefined;
   location: string;

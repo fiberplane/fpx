@@ -37,14 +37,14 @@ export const staticServerMiddleware = serveStatic({
   },
 });
 
-export const frontendRoutesHandler = factory.createHandlers((c) => {
+export const [frontendRoutesHandler] = factory.createHandlers((c) => {
   const frontendFolder = getPathToFrontendFolder();
   if (!frontendFolder) {
     return c.text("Frontend not found", 500);
   }
   const indexAbsolutePath = path.resolve(frontendFolder, "index.html");
   return c.html(fs.readFileSync(indexAbsolutePath, "utf-8"));
-})[0];
+});
 
 /**
  * Helper function that tries to create a relative path to the ui build.

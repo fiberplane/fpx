@@ -34,9 +34,12 @@ export type TsTypeChecker = bundledTs.TypeChecker;
 export type TsVariableDeclaration = bundledTs.VariableDeclaration;
 export type TsFunctionExpression = bundledTs.FunctionExpression;
 export type TsISnapShot = bundledTs.IScriptSnapshot;
-export type ConfigFileContent = Pick<ReturnType<typeof bundledTs.parseJsonConfigFileContent>, "options" | "raw"> & {
+export type ConfigFileContent = Pick<
+  ReturnType<typeof bundledTs.parseJsonConfigFileContent>,
+  "options" | "raw"
+> & {
   configPath?: string;
-}
+};
 
 export type RouteTreeId = Tagged<string, "RouteTreeId">;
 export type RouteTreeReferenceId = Tagged<string, "RouteTreeReferenceId">;

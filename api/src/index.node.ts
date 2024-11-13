@@ -5,6 +5,7 @@ import chalk from "chalk";
 import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/libsql";
 import figlet from "figlet";
+import type { MiddlewareHandler } from "hono";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
 import {
@@ -28,6 +29,7 @@ import {
 
 import { createRoutesMonitor } from "@fiberplane/source-analysis";
 import { getTSServer } from "./lib/expand-function/tsserver/server.js";
+import type { Bindings, Variables } from "./lib/types.js";
 import { setupCodeAnalysis } from "./routes/inference/inference.js";
 
 config({ path: ".dev.vars" });
@@ -46,7 +48,14 @@ const app = createApp(db, webhonc, wsConnections);
 /**
  * Serve all the frontend static files
  */
-app.use("/*", staticServerMiddleware);
+// Typecast to please the typescript overlords
+app.use(
+  "/*",
+  staticServerMiddleware as unknown as MiddlewareHandler<{
+    Bindings: Bindings;
+    Variables: Variables;
+  }>,
+);
 
 /**
  * Fallback route that just serves the frontend index.html file,
@@ -106,7 +115,6 @@ if (proxyRequestsEnabled ?? false) {
   await webhonc.start();
 }
 
-let start = performance.now()
 // console.log('performance.now', performance.now());
 const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR);
 
@@ -114,13 +122,6 @@ const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR);
 const inferenceConfig = await getInferenceConfig(db);
 const aiEnabled = inferenceConfig ? hasValidAiConfig(inferenceConfig) : false;
 
-monitor.addListener("analysisStarted", async () => {
-  // console.log('performance.now', performance.now());
-  start = performance.now();
-})
-monitor.addListener("analysisCompleted", async () => {
-  console.log('performance.now', performance.now() - start);
-});
 if (aiEnabled) {
   logger.debug(
     "AI Request Generation enabled. Starting typescript language server",

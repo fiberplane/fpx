@@ -48,7 +48,7 @@ export class FileWatcher extends EventEmitter<FileEvents> {
 
   // Initialize the file system watcher
   private async initializeWatcher() {
-    const watcher = watch(this.locations,);
+    const watcher = watch(this.locations);
     this.watcher = watcher;
 
     // Wait for ready event
@@ -56,7 +56,7 @@ export class FileWatcher extends EventEmitter<FileEvents> {
       const readyHandler = () => {
         watcher.off("ready", readyHandler);
         r();
-      }
+      };
 
       watcher.on("ready", readyHandler);
     });
