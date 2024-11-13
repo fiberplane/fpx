@@ -5,9 +5,15 @@ import type { Settings } from "@fiberplane/fpx-types";
 import { type APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
 import logger from "../../logger.js";
+import { makeFpAuthRequest } from "../fp-services/request.js";
 import { generateRequestWithFp } from "./fp.js";
-import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
-import { makeRequestTool, requestSchema } from "./tools.js";
+import {
+  SAMPLE_PROMPT,
+  getSystemPrompt,
+  invokeCommandsPrompt,
+  invokeRequestGenerationPrompt,
+} from "./prompts.js";
+import { commandsSchema, makeRequestTool, requestSchema } from "./tools.js";
 
 function configureProvider(
   aiProvider: string,
@@ -44,7 +50,6 @@ function configureProvider(
     const ollama = createOllama({
       baseURL: providerConfig.baseUrl ?? undefined,
     });
-
     return ollama(providerConfig.model);
   }
 
@@ -128,47 +133,18 @@ export async function generateRequestWithAiProvider({
   });
 
   try {
-    const samplePrompt = `
-I need to make a request to one of my Hono api handlers.
-
-Here are some recent requests/responses, which you can use as inspiration for future requests.
-E.g., if we recently created a resource, you can look that resource up.
-
-<history>
-</history>
-
-The request you make should be a GET request to route: /api/geese/:id
-
-Here is the OpenAPI spec for the handler:
-<openapi/>
-
-Here is the middleware that will be applied to the request:
-<middleware/>
-
-Here is some additional context for the middleware that will be applied to the request:
-<middlewareContext/>
-
-Here is the code for the handler:
-<code/>
-
-Here is some additional context for the handler source code, if you need it:
-<context/>
-`;
-
+    const systemPrompt = await getSystemPrompt(persona, aiProvider);
     const userPrompt = await invokeRequestGenerationPrompt({
-      persona,
-      method,
-      path,
       handler,
       handlerContext,
       history,
       openApiSpec,
       middleware,
       middlewareContext,
+      persona,
+      method,
+      path,
     });
-
-    const systemPrompt = getSystemPrompt(persona, aiProvider);
-
     const {
       object: generatedObject,
       warnings,
@@ -176,9 +152,10 @@ Here is some additional context for the handler source code, if you need it:
     } = await generateObject({
       model: provider,
       schema: requestSchema,
+      temperature: 0.3,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: samplePrompt },
+        { role: "user", content: SAMPLE_PROMPT },
         {
           role: "assistant",
           content: [
@@ -209,7 +186,7 @@ Here is some additional context for the handler source code, if you need it:
                   email: "john@example.com",
                 }),
                 bodyType: { type: "json", isMultipart: false },
-                headers: [],
+                headers: [{ key: "Content-Type", value: "application/json" }],
               }),
             },
           ],
@@ -238,7 +215,108 @@ Here is some additional context for the handler source code, if you need it:
       error,
     });
     const errorMessage = createErrorMessage(error);
-    logger.debug("Error message", { errorMessage });
+    return {
+      data: null,
+      error: { message: errorMessage },
+    };
+  }
+}
+
+export async function translateCommands({
+  fpApiKey,
+  inferenceConfig,
+  commands,
+}: {
+  fpApiKey?: string;
+  inferenceConfig: Settings;
+  commands: string;
+}) {
+  const { aiProviderConfigurations, aiProvider } = inferenceConfig;
+  const aiEnabled = hasValidAiConfig(inferenceConfig);
+  if (!aiEnabled) {
+    return { data: null, error: { message: "AI is not enabled" } };
+  }
+
+  if (!aiProvider) {
+    return { data: null, error: { message: "AI provider is not set" } };
+  }
+
+  if (!aiProviderConfigurations || !aiProviderConfigurations[aiProvider]) {
+    return {
+      data: null,
+      error: { message: "AI provider is not configured properly" },
+    };
+  }
+
+  if (aiProvider === "fp") {
+    if (!fpApiKey) {
+      return {
+        data: null,
+        error: { message: "Fiberplane token not found" },
+      };
+    }
+
+    const response = await makeFpAuthRequest({
+      token: fpApiKey,
+      method: "POST",
+      path: "/ai/translate-commands",
+      body: {
+        commands,
+      },
+    })
+      .then((res) => res.json())
+      .catch((error) => {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Error translating commands with AI provider";
+        return {
+          data: null,
+          error: { message: errorMessage },
+        };
+      });
+
+    return response;
+  }
+
+  const providerConfig = aiProviderConfigurations[aiProvider];
+
+  const provider = configureProvider(aiProvider, providerConfig);
+
+  logger.debug("Generating request with AI provider", {
+    aiProvider,
+    providerConfig,
+  });
+
+  try {
+    const {
+      object: translatedCommands,
+      usage,
+      warnings,
+    } = await generateObject({
+      model: provider,
+      schema: commandsSchema,
+      prompt: await invokeCommandsPrompt({ commands }),
+    });
+
+    logger.debug("Generated object, warnings, usage", {
+      translatedCommands,
+      warnings,
+      usage,
+    });
+
+    return {
+      data: translatedCommands,
+      error: null,
+    };
+  } catch (error) {
+    logger.error("Error translating commands with AI provider", {
+      error,
+    });
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Error translating commands with AI provider";
     return {
       data: null,
       error: { message: errorMessage },
@@ -250,11 +328,9 @@ function createErrorMessage(error: unknown) {
   if (typeof error === "object" && error !== null && "responseBody" in error) {
     return `${(error as APICallError).message}: ${(error as APICallError).responseBody}`;
   }
-
   if (error instanceof Error) {
     return error.message;
   }
-
   return "Error generating request with AI provider";
 }
 

@@ -13,17 +13,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useShallow } from "zustand/react/shallow";
+// import { Branding } from "../Branding";
 import { LoggedInUser } from "../LoggedInUser";
+import { PromptPanel, PromptToggle } from "../PromptPanel";
 import { SettingsMenu, SettingsScreen } from "../Settings";
 import { FloatingSidePanel } from "../SidePanel";
 import { SidePanelTrigger } from "../SidePanel";
 import { LogsToggle } from "./LogsToggle";
 
 export function BottomBar() {
-  const { settingsOpen, setSettingsOpen } = useRequestorStore(
+  const { settingsOpen, setSettingsOpen, promptPanel } = useRequestorStore(
     "settingsOpen",
     "setSettingsOpen",
+    "promptPanel",
   );
   const shouldShowProxyRequests = useProxyRequestsEnabled();
 
@@ -40,9 +44,11 @@ export function BottomBar() {
     activeBottomPanel === "timelinePanel" ? "open" : "closed";
   const aiPanel = activeBottomPanel === "aiPanel" ? "open" : "closed";
 
+  useHotkeys("mod+i", () => togglePanel("promptPanel"));
+
   return (
     <nav className="gap-4 bg-muted/50 py-2">
-      <div className="flex justify-between px-2 items-center">
+      <div className="grid grid-cols-[1fr,1fr,auto] justify-between px-2 items-center">
         <div className="flex items-center gap-2 sm:static sm:h-auto border-0 bg-transparent text-sm">
           <div className="flex items-center gap-2">
             <SidePanelTrigger />
@@ -54,6 +60,10 @@ export function BottomBar() {
             settingsOpen={settingsOpen}
             setSettingsOpen={setSettingsOpen}
           />
+        </div>
+        <div>
+          <PromptToggle />
+          {promptPanel === "open" && <PromptPanel />}
         </div>
 
         <div className="flex items-center gap-2">

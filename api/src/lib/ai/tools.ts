@@ -45,3 +45,21 @@ export const makeRequestTool = {
     parameters: requestSchema,
   },
 };
+
+export const commandsSchema = z.object({
+  // we use the routeId so that the LLMs know to reference that
+  commands: z.array(
+    z.object({
+      routeId: z.number(),
+    }),
+  ),
+});
+
+export const commandsTool = {
+  type: "function",
+  function: {
+    name: "commands",
+    description: "Translates natural language commands to request sequences",
+    parameters: commandsSchema,
+  },
+};

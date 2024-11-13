@@ -27,6 +27,7 @@ export const uiSlice: StateCreator<
         state.aiDropdownOpen = open;
       }),
     sidePanel: isLgScreen() ? "open" : "closed",
+    promptPanel: "closed",
     bottomPanels: validBottomPanelNames,
     bottomPanelIndex: undefined,
     timelineShowLogs: true,
@@ -39,7 +40,9 @@ export const uiSlice: StateCreator<
       set((state) => {
         state.timelineShowLogs = !state.timelineShowLogs;
       }),
-    togglePanel: (panelName: "sidePanel" | BOTTOM_PANEL_NAMES) =>
+    togglePanel: (
+      panelName: "sidePanel" | "promptPanel" | BOTTOM_PANEL_NAMES,
+    ) =>
       set((state) => {
         if (!isBottomPanelName(panelName)) {
           state[panelName] = state[panelName] === "open" ? "closed" : "open";

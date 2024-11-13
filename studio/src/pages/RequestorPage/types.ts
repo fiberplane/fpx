@@ -17,6 +17,7 @@ export const RequestMethodSchema = z.enum([
   "OPTIONS",
   "PATCH",
   "HEAD",
+  "ALL",
 ]);
 
 export type RequestMethod = z.infer<typeof RequestMethodSchema>;
@@ -40,14 +41,15 @@ export const isWsRequest = (requestType: RequestType) =>
   WEBSOCKETS_ENABLED && requestType === "websocket";
 
 export const ProbedRouteSchema = z.object({
+  id: z.number(),
   path: z.string(),
   method: RequestMethodSchema,
-  handler: z.string(),
+  handler: z.string().nullish(),
   handlerType: z.enum(["route", "middleware"]),
   currentlyRegistered: z.boolean(),
   registrationOrder: z.number().default(-1),
   routeOrigin: z.enum(["discovered", "custom", "open_api"]),
-  openApiSpec: z.string().optional(),
+  openApiSpec: z.string().nullish(),
   requestType: RequestTypeSchema,
   // NOTE - Added on the frontend, not stored in DB
   isDraft: z

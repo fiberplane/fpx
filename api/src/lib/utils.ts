@@ -269,6 +269,8 @@ export function resolveUrlQueryParams(
     return url;
   }
 
+  console.log("url, queryParams", url, queryParams);
+
   const urlObject = new URL(url);
   for (const [key, value] of Object.entries(queryParams)) {
     urlObject.searchParams.set(key, value);

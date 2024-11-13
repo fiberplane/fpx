@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const TranslateCommandsSchema = z.object({
+  commands: z.string(),
+});
+
 export const GenerateRequestOptionsSchema = z.object({
   persona: z.string(),
   method: z.string(),
