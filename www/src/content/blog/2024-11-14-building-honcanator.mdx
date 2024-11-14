@@ -65,7 +65,7 @@ type Bindings = {
 };
 ```
 
-The `R2Bucket` and `AI` types are Cloudflare special types which will give you a typed
+The `R2Bucket` and `Ai` types are Cloudflare special types which will give you a typed
 interface for interacting with these services.
 
 ## Routes
@@ -140,7 +140,7 @@ image and stored it in object storage with like 6 lines of code.
 
 Retrieving it is as simple as:
 
-```ts
+```ts title="src/index.ts" 
 const image = await c.env.R2_BUCKET.get(`${name}.png`);
 ```
 
