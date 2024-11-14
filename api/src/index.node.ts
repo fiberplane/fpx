@@ -27,10 +27,8 @@ import {
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
 
-import { createRoutesMonitor } from "@fiberplane/source-analysis";
-import { getTSServer } from "./lib/expand-function/tsserver/server.js";
 import type { Bindings, Variables } from "./lib/types.js";
-import { setupCodeAnalysis } from "./routes/inference/inference.js";
+import { enableCodeAnalysis } from "./lib/code-analysis.js";
 
 config({ path: ".dev.vars" });
 
@@ -115,22 +113,10 @@ if (proxyRequestsEnabled ?? false) {
   await webhonc.start();
 }
 
-// console.log('performance.now', performance.now());
-const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR);
-
 // check settings if ai is enabled, and proactively start the typescript language server
 const inferenceConfig = await getInferenceConfig(db);
-const aiEnabled = inferenceConfig ? hasValidAiConfig(inferenceConfig) : false;
+const aiEnabled = hasValidAiConfig(inferenceConfig);
 
 if (aiEnabled) {
-  logger.debug(
-    "AI Request Generation enabled. Starting typescript language server",
-  );
-  try {
-    setupCodeAnalysis(monitor);
-    // The old flow
-    await getTSServer(USER_PROJECT_ROOT_DIR);
-  } catch (error) {
-    logger.error("Error starting TSServer:", error);
-  }
+  enableCodeAnalysis()
 }

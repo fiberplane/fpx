@@ -48,6 +48,7 @@ function configureProvider(
     return ollama(providerConfig.model);
   }
 
+  // TODO add support for fp
   throw new Error("Unknown AI provider");
 }
 
@@ -259,7 +260,10 @@ function createErrorMessage(error: unknown) {
 }
 
 // NOTE - Copy-pasted from frontend
-export function hasValidAiConfig(settings: Settings) {
+export function hasValidAiConfig(settings: Settings | undefined) {
+  if (!settings) {
+    return false;
+  }
   const provider = settings.aiProvider;
   switch (provider) {
     // HACK - Special logic for OpenAI to support someone who has set a baseUrl
