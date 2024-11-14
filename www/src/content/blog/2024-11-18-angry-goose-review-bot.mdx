@@ -1,0 +1,112 @@
+---
+title: "Angry Goose Pull Request Reviewer"
+description: Building an AI-Powered Code Review Bot with Cloudflare Workers and Claude
+slug: angry-goose-review-bot
+date: 2024-11-18
+author: Micha "mies" Hernandez van Leuffen
+tags:
+  - HONC
+  - codereview
+  - Anthropic
+  - Claude
+---
+
+import { Aside, Card, LinkCard } from "@astrojs/starlight/components";
+
+Ever wished you had a slightly unhinged waterfowl reviewing your pull requests? Today, we'll explore how to build a GitHub code review bot that channels the energy of an angry goose while leveraging the power of Claude AI to provide insightful code reviews.
+
+## The Stack: Simplicity Meets Power
+
+Our application is built on the HONC stack - a modern, serverless-first approach combining Hono (a lightweight web framework), OpenTelemetry (for observability), Neon (serverless Postgres), and Claude (Anthropic's AI model). Running on Cloudflare Workers provides us with a globally distributed, highly available platform without the hassle of managing servers.
+
+<LinkCard
+  title="Follow along on GitHub"
+  description="Here is a repo with the code examples for this post"
+  href="https://github.com/fiberplane/create-honc-app/tree/main/examples/goose-review-bot"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
+## How It Works
+
+When a pull request is opened, our bot springs into action through a series of well-orchestrated steps:
+
+1. A GitHub webhook triggers our `/api/pull-requests` endpoint
+2. The application fetches the diff content using GitHub's API
+3. This diff is sent to Claude, along with instructions to embody an angry goose engineering manager
+4. The AI-generated review is posted back to GitHub and stored in our Neon database
+
+<Aside type="tip" title="Webhooks?">
+  Fiberplane has a built-in way to test [webhooks](https://fiberplane.com/docs/features/webhooks/).
+</Aside>
+
+Most of the heavy lifting in done in the POST `/api/pull-requests` endpoint, that listens for incoming pull requests and initiates the review process.
+
+## The Secret Sauce: Personality Meets Precision
+
+What makes this bot unique is its combination of technical precision and personality. Here's how we achieve this balance:
+
+```javascript
+async function generateCodeReview(
+  anthropic: Anthropic,
+  diffContent: string,
+): Promise<string> {
+  const message = await anthropic.messages.create({
+    model: "claude-3-5-sonnet-20241022",
+    max_tokens: 1500,
+    messages: [
+      {
+        role: "user",
+        content: `You are an angry goose engineering manager.
+        Please review this code diff and provide a detailed code review, but be goosey and angry. Focus on:
+      1. Potential bugs and issues
+      2. Security concerns
+      3. Performance implications
+      4. Code style and best practices
+      5. Suggestions for improvement
+
+      Here's the diff:
+      ${diffContent}`,
+      },
+    ],
+  });
+  return message.content[0].text;
+```
+
+The AI review focuses on critical aspects like potential bugs, security concerns, and performance implications, all while maintaining the persona of an irritated waterfowl. It's both entertaining and valuable - a rare combination in developer tools.
+
+## Data Persistence and API Design
+
+Using Drizzle ORM with Neon provides a type-safe and efficient way to manage our database operations. The schema is straightforward but effective:
+
+- `pull_requests` table tracks PR metadata and GitHub references
+- `reviews` table stores the AI-generated reviews and their status
+
+This setup allows for easy querying of review history and potential future analytics on review patterns and common issues.
+
+## Looking Forward
+
+While the current implementation is fully functional, there's room for exciting enhancements:
+
+- Implementing real-time updates using Durable Objects
+- Adding streaming responses for longer code reviews
+- Expanding the AI's review capabilities with more specialized focuses
+- Turning the bot into a GitHub app (instead of using a personal access token)
+
+## Conclusion
+
+Building this bot demonstrates how modern serverless technologies and AI can come together to create developer tools that are both useful and enjoyable to interact with. The combination of Cloudflare Workers' edge computing capabilities, Neon's serverless database, and Claude's AI prowess makes for a powerful and scalable solution.
+
+Whether you're looking to improve code quality, add some personality to your development process, or just want to be honked at about your coding style, this bot provides a foundation that can be adapted and expanded to suit your team's needs.
+
+<LinkCard
+  title="Get the code on GitHub"
+  description="Here is the repo with the full code for this post"
+  href="https://github.com/fiberplane/create-honc-app/tree/main/examples/goose-review-bot"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
+Remember: Sometimes the best code reviews come from an angry goose! 🪿
