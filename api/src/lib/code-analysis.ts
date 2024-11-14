@@ -3,7 +3,10 @@ import { USER_PROJECT_ROOT_DIR } from "../constants.js";
 import logger from "../logger.js";
 import { setupCodeAnalysis } from "../routes/inference/inference.js";
 
-const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR);
+const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR, {
+  ...logger,
+  log: logger.info,
+});
 
 export async function enableCodeAnalysis() {
   logger.debug("Enabling code analysis");

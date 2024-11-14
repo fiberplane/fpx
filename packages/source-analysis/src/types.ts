@@ -6,6 +6,10 @@ import type { ResourceManager } from "./ResourceManager";
 export const bundledTypescript = bundledTs;
 export const relativeResolve = relative.sync;
 
+export type Logger = {
+  log: (...args: unknown[]) => void;
+};
+
 // Alias some exported typescript types
 export type TsType = typeof bundledTs;
 export type TsArrowFunction = bundledTs.ArrowFunction;
