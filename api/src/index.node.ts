@@ -74,7 +74,8 @@ server.on("listening", () => {
   const runningMessage = "FPX Studio is up!";
   const localhostLink = chalk.blue(`http://localhost:${port}`);
   const visitMessage = `Visit ${localhostLink} to get started`;
-  logger.info(`${fpxLogo}\n${runningMessage} ${visitMessage}\n`);
+  logger.info(`${fpxLogo}`);
+  logger.info(`${runningMessage} ${visitMessage}`);
 });
 
 server.on("error", (err) => {
