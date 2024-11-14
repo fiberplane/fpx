@@ -1,7 +1,7 @@
-import { createRoutesMonitor } from "@fiberplane/source-analysis";
-import { USER_PROJECT_ROOT_DIR } from "../constants.js";
-import type { MessageConnection } from "vscode-jsonrpc";
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
+import { createRoutesMonitor } from "@fiberplane/source-analysis";
+import type { MessageConnection } from "vscode-jsonrpc";
+import { USER_PROJECT_ROOT_DIR } from "../constants.js";
 import logger from "../logger.js";
 import { setupCodeAnalysis } from "../routes/inference/inference.js";
 import { getTSServer } from "./expand-function/tsserver/server.js";
@@ -23,10 +23,8 @@ export async function enableCodeAnalysis() {
     setupCodeAnalysis(monitor);
 
     // The old flow
-    logger.debug(
-      "Code analysis enabled. Starting typescript language server",
-    );
-    tsServer = await getTSServer(USER_PROJECT_ROOT_DIR);;
+    logger.debug("Code analysis enabled. Starting typescript language server");
+    tsServer = await getTSServer(USER_PROJECT_ROOT_DIR);
   } catch (error) {
     logger.error("Error starting TSServer:", error);
   }

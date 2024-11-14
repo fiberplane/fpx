@@ -1,11 +1,14 @@
 import { SettingsSchema } from "@fiberplane/fpx-types";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { hasValidAiConfig } from "../lib/ai/index.js";
+import {
+  disableCodeAnalysis,
+  enableCodeAnalysis,
+} from "../lib/code-analysis.js";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger.js";
-import { hasValidAiConfig } from "../lib/ai/index.js";
-import { disableCodeAnalysis, enableCodeAnalysis } from "../lib/code-analysis.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 

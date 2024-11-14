@@ -4,10 +4,8 @@ import { desc } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
-import { USER_PROJECT_ROOT_DIR } from "../../constants.js";
 import * as schema from "../../db/schema.js";
 import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
-import { expandFunction } from "../../lib/expand-function/expand-function.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
 import logger from "../../logger.js";
@@ -76,18 +74,6 @@ export function setupCodeAnalysis(monitor: RoutesMonitor) {
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-/**
- * This route is just here to quickly test the expand-function helper
- */
-app.post("/v0/expand-function", cors(), async (ctx) => {
-  const { handler } = await ctx.req.json();
-  const projectRoot = USER_PROJECT_ROOT_DIR;
-
-  const expandedFunction = await expandFunction(projectRoot, handler);
-
-  return ctx.json({ content: expandedFunction });
-});
-
 const generateRequestSchema = z.object({
   handler: z.string(),
   method: z.string(),
@@ -95,15 +81,6 @@ const generateRequestSchema = z.object({
   history: z.array(z.string()).nullish(),
   persona: z.string(),
   openApiSpec: z.string().nullish(),
-  // middleware: z
-  //   .array(
-  //     z.object({
-  //       handler: z.string(),
-  //       method: z.string(),
-  //       path: z.string(),
-  //     }),
-  //   )
-  //   .nullish(),
 });
 
 app.post(
@@ -129,33 +106,30 @@ app.post(
     const provider = inferenceConfig.aiProvider;
 
     // Expand out of scope identifiers in the handler function, to add as additional context
-    //
-    // Uncomment console.time to see how long this takes
-    // It should be slow on the first request, but fast-ish on subsequent requests
-    //
-    // console.time("Handler and Middleware Expansion");
     const [handlerContextPerformant, middlewareContextPerformant] =
       // HACK - Ditch the expand handler for ollama for now, it overwhelms llama 3.1-8b
       provider !== "ollama"
         ? await getResult()
-          .then(async (routesResult) => {
-            const url = new URL("http://localhost");
-            url.pathname = path;
-            const request = new Request(url, { method });
-            routesResult.resetHistory();
-            const response = await routesResult.currentApp.fetch(request);
-            const responseText = await response.text();
-            if ((responseText) !== "Ok") {
-              console.warn("Failed to fetch route for context expansion", responseText);
+            .then(async (routesResult) => {
+              const url = new URL("http://localhost");
+              url.pathname = path;
+              const request = new Request(url, { method });
+              routesResult.resetHistory();
+              const response = await routesResult.currentApp.fetch(request);
+              const responseText = await response.text();
+              if (responseText !== "Ok") {
+                console.warn(
+                  "Failed to fetch route for context expansion",
+                  responseText,
+                );
+                return [null, null];
+              }
+              return [routesResult.getFilesForHistory(), null];
+            })
+            .catch((error) => {
+              logger.error(`Error expanding handler and middleware: ${error}`);
               return [null, null];
-            }
-            return [routesResult.getFilesForHistory(), null];
-          })
-          .catch((error) => {
-            // await expandHandler(handler, []).catch((error) => {
-            logger.error(`Error expanding handler and middleware: ${error}`);
-            return [null, null];
-          })
+            })
         : [null, null];
 
     console.log("handlerContextPerformant", handlerContextPerformant);
