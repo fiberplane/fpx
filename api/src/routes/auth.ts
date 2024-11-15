@@ -4,13 +4,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
 import { hasValidAiConfig } from "../lib/ai/index.js";
+import { enableCodeAnalysis } from "../lib/code-analysis.js";
 import { getUser, verifyToken } from "../lib/fp-services/auth.js";
 import { TokenExpiredError } from "../lib/fp-services/errors.js";
 import { TokenPayloadSchema } from "../lib/fp-services/types.js";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
 import logger from "../logger/index.js";
-import { enableCodeAnalysis } from "../lib/code-analysis.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
