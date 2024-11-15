@@ -192,3 +192,10 @@ export const tokens = sqliteTable("tokens", {
 
 export type Token = typeof tokens.$inferSelect;
 export type NewToken = typeof tokens.$inferInsert;
+
+// New schema for logs of ai requests
+export const aiRequestLogs = sqliteTable("ai_request_logs", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  log: text("log", { mode: "json" }).notNull(),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+});

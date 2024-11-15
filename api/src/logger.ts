@@ -1,9 +1,9 @@
 import {
   type ConsolaOptions,
-  createConsola,
   LogLevels,
   type LogObject,
   type LogType,
+  createConsola,
 } from "consola";
 import { getColor } from "consola/utils";
 
@@ -15,8 +15,7 @@ export const TYPE_COLOR_MAP = {
   start: "bgMagenta",
 } as const;
 
-
-let last = Date.now()
+let last = Date.now();
 const consola = createConsola({
   fancy: false,
   formatOptions: {
@@ -32,19 +31,20 @@ const consola = createConsola({
           options: ConsolaOptions;
         },
       ) => {
-
         const { type: logType, date } = logObj;
         const logTypeBlock = formatLogTypeBlock(logType);
-        const dateString = getColor("green")(formatTime(date.getTime() - last).padEnd(8, " "));
+        const dateString = getColor("green")(
+          formatTime(date.getTime() - last).padEnd(8, " "),
+        );
         last = date.getTime();
         const leftColumn = `${dateString} ${logTypeBlock}`;
 
         const leftColumnSize = 18;
         ctx.options.stdout?.write(
-          `${leftColumn} ${formatWithPadding(logObj.args.map(
-            (arg) =>
-              arg.toString()
-          ).join(" "), leftColumnSize)}\n`,
+          `${leftColumn} ${formatWithPadding(
+            logObj.args.map((arg) => arg.toString()).join(" "),
+            leftColumnSize,
+          )}\n`,
         );
       },
     },
@@ -52,12 +52,10 @@ const consola = createConsola({
 });
 function formatWithPadding(str: string, padding: number) {
   const lines = str.split("\n");
-  return lines.map(
-    line => `${"".padStart(padding, " ")}${line}`
-  )
+  return lines
+    .map((line) => `${"".padStart(padding, " ")}${line}`)
     .join("\n")
-    .trim()
-
+    .trim();
 }
 
 function formatTime(ms: number): string {

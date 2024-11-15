@@ -141,22 +141,29 @@ app.post(
       .limit(1);
 
     // Generate the request
+    const generateRequestOptions = {
+      fpApiKey: token?.value,
+      inferenceConfig,
+      persona,
+      method,
+      path,
+      handler,
+      handlerContext: handlerContextPerformant ?? undefined,
+      history: history ?? undefined,
+      // TODO handle openApiSpec
+      openApiSpec: openApiSpec ?? undefined,
+      // middleware: middleware ?? undefined,
+      middleware: undefined,
+      middlewareContext: middlewareContextPerformant ?? undefined,
+    };
+
     const { data: parsedArgs, error: generateError } =
-      await generateRequestWithAiProvider({
-        fpApiKey: token?.value,
-        inferenceConfig,
-        persona,
-        method,
-        path,
-        handler,
-        handlerContext: handlerContextPerformant ?? undefined,
-        history: history ?? undefined,
-        // TODO handle openApiSpec
-        openApiSpec: openApiSpec ?? undefined,
-        // middleware: middleware ?? undefined,
-        middleware: undefined,
-        middlewareContext: middlewareContextPerformant ?? undefined,
-      });
+      await generateRequestWithAiProvider(generateRequestOptions);
+
+    // Log the request data for future inspection
+    await db.insert(schema.aiRequestLogs).values({
+      log: JSON.stringify(generateRequestOptions),
+    });
 
     if (generateError) {
       return ctx.json({ message: generateError.message }, 500);
@@ -167,5 +174,18 @@ app.post(
     });
   },
 );
+
+app.get("/v0/ai-request-logs", cors(), async (ctx) => {
+  const db = ctx.get("db");
+
+  // Fetch the last 100 aiRequestLogs from the database
+  const logs = await db
+    .select()
+    .from(schema.aiRequestLogs)
+    .orderBy(desc(schema.aiRequestLogs.createdAt))
+    .limit(100);
+
+  return ctx.json(logs);
+});
 
 export default app;

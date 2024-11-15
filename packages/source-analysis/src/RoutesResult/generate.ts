@@ -291,7 +291,7 @@ function extractRouteTreeContent(includeIds: boolean, resource: RouteTree) {
 
 function serializeFileMap(fileInfo: FileInfo): string {
   const imports = Array.from(
-    fileInfo.modules.entries().map(([importPath, modules]) => {
+    Array.from(fileInfo.modules.entries()).map(([importPath, modules]) => {
       const asteriskModules = modules.filter((module) =>
         module.trim().startsWith("*"),
       );
