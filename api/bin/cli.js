@@ -105,8 +105,6 @@ async function runWizard() {
     logger.info(chalk.dim(`\nLoading FPX config from ${CONFIG_DIR_NAME}...`));
   }
 
-  logger.info(chalk.bold("\nTime   Level   Message"));
-  // logger.info(chalk.bold("\nElapsed Level  Message"));
   const FPX_PORT = await getFpxPort();
 
   await updateEnvFileWithFpxEndpoint(FPX_PORT);
@@ -361,6 +359,10 @@ function runScript(scriptName) {
       env: { ...USER_VARS, ...process.env },
     });
     return;
+  }
+
+  if (scriptName === "studio") {
+    logger.info(chalk.bold("\nTime   Level   Message"));
   }
 
   // Get the root directory of this script's project

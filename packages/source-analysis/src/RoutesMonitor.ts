@@ -28,13 +28,13 @@ type AnalysisCompleted = {
 
 type AnalysisCompletedPayload =
   | {
-      success: true;
-      factory: RoutesResult;
-    }
+    success: true;
+    routesResult: RoutesResult;
+  }
   | {
-      success: false;
-      error: string;
-    };
+    success: false;
+    error: string;
+  };
 
 type AnalysisEvents = {
   analysisCompleted: [AnalysisCompleted];
@@ -203,16 +203,10 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     this._isRunning = true;
   }
 
-  private _updating = false;
   public updateRoutesResult() {
     if (!this.isRunning) {
       throw new Error("Monitor not running");
     }
-
-    if (this._updating) {
-      logger.warn("Already updating routes result");
-    }
-    this._updating = true;
 
     this.emit("analysisStarted", { type: "analysisStarted" });
 
@@ -236,20 +230,19 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       throw new Error("No root route found");
     }
 
-    const factory = new RoutesResult(result.resourceManager);
-    factory.rootId = root.id;
+    const routesResult = new RoutesResult(result.resourceManager);
+    routesResult.rootId = root.id;
 
-    this._lastSuccessfulResult = factory;
+    this._lastSuccessfulResult = routesResult;
     this.emit("analysisCompleted", {
       type: "analysisCompleted",
       payload: {
         success: true,
-        factory,
+        routesResult: routesResult,
       },
     });
-    this._updating = false;
 
-    return factory;
+    return routesResult;
   }
 
   private readFile(fileName: string) {
@@ -348,12 +341,12 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     );
   }
 
-  public async teardown() {
+  public async stop() {
     if (!this.isRunning) {
       return;
     }
 
-    this.fileWatcher.teardown();
+    this.fileWatcher.stop();
     this.fileWatcher.removeAllListeners();
     this._isRunning = false;
   }

@@ -76,17 +76,17 @@ export class ResourceManager {
   // Implementation of getId function
   public getId(
     resourceType: TreeResource["type"],
-    param1: string,
-    param2: string | number,
+    fileNameOrImportPath: string,
+    positionOrImportName: string | number,
   ): TreeResourceId {
     if (resourceType === "MODULE_REFERENCE") {
-      const importPath = encodeURIComponent(param1);
-      const importName = encodeURIComponent(param2 as string);
+      const importPath = encodeURIComponent(fileNameOrImportPath);
+      const importName = encodeURIComponent(positionOrImportName as string);
       return `${resourceType}:${importPath}@${importName}` as ModuleReference["id"];
     }
 
-    const fileName = encodeURIComponent(this.asRelativePath(param1));
-    const position = param2 as number;
+    const fileName = encodeURIComponent(this.asRelativePath(fileNameOrImportPath));
+    const position = positionOrImportName as number;
     return `${resourceType}:${fileName}@${position}` as TreeResourceId;
   }
 

@@ -5,9 +5,10 @@ import chalk from "chalk";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { FPX_AUTH_SERVER_PORT } from "../../constants.js";
-import logger from "../../logger/index.js";
+import rootLogger from "../../logger/index.js";
 import { TokenPayloadSchema } from "./types.js";
 
+const logger = rootLogger.withTag("auth-server");
 type AuthServer = ReturnType<typeof serve>;
 
 let currentAuthServer: null | AuthServer = null;
@@ -38,7 +39,7 @@ export async function closeAuthServer() {
 }
 
 /**
- * Spin up a small authenitcation server on a known port,
+ * Spin up a small authentication server on a known port,
  * in order to receive the user's JWT from the external Fiberplane service.
  *
  * @param fpxStudioPort - The port on which the Studio API is running
@@ -60,7 +61,7 @@ export function serveAuth(fpxStudioPort: number): Promise<AuthServer> {
       server.on("listening", () => {
         logger.debug(
           chalk.dim(
-            `[auth-server] Auth server listening on http://localhost:${FPX_AUTH_SERVER_PORT}`,
+            `Auth server listening on http://localhost:${FPX_AUTH_SERVER_PORT}`,
           ),
         );
         resolve(server);
@@ -71,10 +72,10 @@ export function serveAuth(fpxStudioPort: number): Promise<AuthServer> {
         currentAuthServer = null;
         if ("code" in err && err.code === "EADDRINUSE") {
           logger.error(
-            `[auth-server] Port ${FPX_AUTH_SERVER_PORT} is already in use. Please choose a different port for FPX.`,
+            `Port ${FPX_AUTH_SERVER_PORT} is already in use. Please choose a different port for FPX.`,
           );
         } else {
-          logger.error("[auth-server] Auth server error:", err);
+          logger.error("Auth server error:", err);
         }
 
         // FIXME - The server may have already been listening, so
@@ -89,7 +90,7 @@ export function serveAuth(fpxStudioPort: number): Promise<AuthServer> {
         currentAuthServer = null;
       });
     } catch (error) {
-      logger.error("Failed to create authentication server", error);
+      rootLogger.error("Failed to create authentication server", error);
       reject(error);
     }
   });

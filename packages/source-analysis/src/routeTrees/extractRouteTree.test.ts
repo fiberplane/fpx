@@ -81,7 +81,7 @@ test.each([
       // Compare to snapshot
       expect(resources).toMatchSnapshot();
     } finally {
-      monitor.teardown();
+      monitor.stop();
     }
   },
   {

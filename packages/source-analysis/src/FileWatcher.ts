@@ -42,6 +42,11 @@ export class FileWatcher extends EventEmitter<FileEvents> {
     this.locations = locations;
   }
 
+  /**
+   * Start the file watcher 
+   * 
+   * It resolves when all files have been added
+   */
   public async start() {
     await this.initializeWatcher();
   }
@@ -130,7 +135,7 @@ export class FileWatcher extends EventEmitter<FileEvents> {
   }
 
   // Public method to stop the watcher and the language service
-  public teardown() {
+  public stop() {
     if (this.watcher) {
       this.watcher.close();
       this.watcher = null;

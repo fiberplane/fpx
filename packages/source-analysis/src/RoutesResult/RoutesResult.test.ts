@@ -28,7 +28,7 @@ test("hono-factory", async () => {
     ).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
   } finally {
-    monitor.teardown();
+    monitor.stop();
   }
 });
 
@@ -57,7 +57,7 @@ test("barrel-files", async () => {
     expect(factory.hasVisited(factory.rootId)).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
   } finally {
-    monitor.teardown();
+    monitor.stop();
   }
 });
 
@@ -85,7 +85,7 @@ test("import-as", async () => {
     expect(factory.hasVisited(factory.rootId)).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
   } finally {
-    monitor.teardown();
+    monitor.stop();
   }
 });
 
@@ -123,6 +123,6 @@ test("multiple", async () => {
     expect(factory.hasVisited(factory.rootId)).toBeTruthy();
     expect(factory.getFilesForHistory()).toMatchSnapshot();
   } finally {
-    monitor.teardown();
+    monitor.stop();
   }
 });

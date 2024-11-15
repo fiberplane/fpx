@@ -19,5 +19,5 @@ export async function enableCodeAnalysis() {
 
 export async function disableCodeAnalysis() {
   logger.debug("Disabling code analysis");
-  monitor.teardown();
+  monitor.stop();
 }

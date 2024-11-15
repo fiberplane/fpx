@@ -30,7 +30,7 @@ test("Initial files (added)", async () => {
     );
     expect(otherFile).toBeDefined();
   } finally {
-    watcher.teardown();
+    watcher.stop();
   }
 });
 
@@ -81,7 +81,7 @@ test("Empty folder", async () => {
     expect(addHandler).toHaveBeenCalledTimes(0);
     expect(updateHandler).toHaveBeenCalledTimes(0);
   } finally {
-    watcher.teardown();
+    watcher.stop();
     removeTypescriptFiles(location);
   }
 });
