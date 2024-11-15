@@ -21,7 +21,7 @@ const currentLogLevel: LogLevel = isLogLevel(process.env.FPX_LOG_LEVEL)
 consola.level = LogLevels[currentLogLevel];
 
 /**
- * Create a wrapper around the consola instance to provide a (subset of) more traditional console.log/warn/etc style api
+ * Create a wrapper around the (internal) consola instance to provide a (subset of) more traditional console.log/warn/etc style api
  */
 function wrapConsola(logInstance: ConsolaInstance): Logger {
   return {
