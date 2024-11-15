@@ -85,7 +85,9 @@ export class ResourceManager {
       return `${resourceType}:${importPath}@${importName}` as ModuleReference["id"];
     }
 
-    const fileName = encodeURIComponent(this.asRelativePath(fileNameOrImportPath));
+    const fileName = encodeURIComponent(
+      this.asRelativePath(fileNameOrImportPath),
+    );
     const position = positionOrImportName as number;
     return `${resourceType}:${fileName}@${position}` as TreeResourceId;
   }

@@ -43,8 +43,8 @@ export class FileWatcher extends EventEmitter<FileEvents> {
   }
 
   /**
-   * Start the file watcher 
-   * 
+   * Start the file watcher
+   *
    * It resolves when all files have been added
    */
   public async start() {

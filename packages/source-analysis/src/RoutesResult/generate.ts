@@ -278,11 +278,12 @@ function generateMiddlewareEntry(
 }
 
 function extractRouteTreeContent(includeIds: boolean, resource: RouteTree) {
-  let content = `${includeIds
+  let content = `${
+    includeIds
       ? `// id:${resource.id}
 `
       : ""
-    }const ${resource.name} = new Hono();`;
+  }const ${resource.name} = new Hono();`;
   if (resource.baseUrl) {
     content += `\n${resource.name}.baseUrl = "${resource.baseUrl}";`;
   }
