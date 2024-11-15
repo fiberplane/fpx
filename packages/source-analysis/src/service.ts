@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import relative from "resolve";
 import * as bundledTs from "typescript";
+import { logger } from "./logger";
 import type {
   ConfigFileContent,
   TsCompilerOptions,
@@ -8,7 +9,6 @@ import type {
   TsLanguageServiceHost,
   TsType,
 } from "./types";
-import { logger } from "./logger";
 const relativeResolve = relative.sync;
 
 export function getParsedTsConfig(
@@ -73,10 +73,10 @@ export function startServer(params: {
   getFileInfo: (fileName: string) =>
     | undefined
     | {
-      version: number;
-      content: string;
-      snapshot: TsISnapShot;
-    };
+        version: number;
+        content: string;
+        snapshot: TsISnapShot;
+      };
   getFileNames: () => Array<string>;
   getScriptSnapshot: (fileName: string) => TsISnapShot | undefined;
   location: string;

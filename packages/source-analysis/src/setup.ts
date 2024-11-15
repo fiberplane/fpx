@@ -1,7 +1,10 @@
-import { logger, type Logger } from "./logger";
 import { RoutesMonitor } from "./RoutesMonitor";
+import { type Logger, logger } from "./logger";
 
-export function createRoutesMonitor(projectRoot: string, overrideLogger?: Logger): RoutesMonitor {
+export function createRoutesMonitor(
+  projectRoot: string,
+  overrideLogger?: Logger,
+): RoutesMonitor {
   if (overrideLogger) {
     logger.logger = overrideLogger;
   }

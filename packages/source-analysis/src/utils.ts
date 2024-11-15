@@ -1,6 +1,6 @@
 import path from "node:path";
-import type { TsNode, TsType, TsTypeChecker } from "./types";
 import { logger } from "./logger";
+import type { TsNode, TsType, TsTypeChecker } from "./types";
 
 /**
  * Gets the file uri to be used in the typescript language server

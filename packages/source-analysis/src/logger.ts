@@ -6,8 +6,7 @@ export type Logger = {
   warn: LogFn;
   error: LogFn;
   log: LogFn;
-}
-
+};
 
 let _logger: Logger = console;
 
@@ -38,5 +37,5 @@ export const logger = {
 
   get error(): LogFn {
     return _logger.error;
-  }
+  },
 };

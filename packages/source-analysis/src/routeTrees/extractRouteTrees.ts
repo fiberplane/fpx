@@ -1,5 +1,5 @@
-import { logger } from "../logger";
 import { ResourceManager } from "../ResourceManager";
+import { logger } from "../logger";
 import {
   HONO_HTTP_METHODS,
   type MiddlewareEntry,

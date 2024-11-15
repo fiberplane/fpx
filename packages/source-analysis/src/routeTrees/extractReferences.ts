@@ -238,7 +238,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-    currentNode.getSourceFile().fileName
+      currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }

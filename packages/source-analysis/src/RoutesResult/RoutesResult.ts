@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { Next } from "hono/types";
 import type { ResourceManager } from "../ResourceManager";
+import { logger } from "../logger";
 import type {
   MiddlewareEntryId,
   RouteEntryId,
@@ -10,7 +11,6 @@ import type {
   TreeResourceId,
 } from "../types";
 import { generate } from "./generate";
-import { logger } from "../logger";
 
 export type HistoryId =
   | RouteEntryId

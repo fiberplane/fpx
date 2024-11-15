@@ -7,6 +7,7 @@ import {
 } from "./FileWatcher";
 import { RoutesResult } from "./RoutesResult";
 import { analyze } from "./analyze";
+import { logger } from "./logger";
 import { extractRouteTrees } from "./routeTrees";
 import { getParsedTsConfig, getTsLib, startServer } from "./service";
 import type {
@@ -15,7 +16,6 @@ import type {
   TsProgram,
   TsType,
 } from "./types";
-import { logger } from "./logger";
 
 type AnalysisStarted = {
   type: "analysisStarted";
@@ -28,13 +28,13 @@ type AnalysisCompleted = {
 
 type AnalysisCompletedPayload =
   | {
-    success: true;
-    factory: RoutesResult;
-  }
+      success: true;
+      factory: RoutesResult;
+    }
   | {
-    success: false;
-    error: string;
-  };
+      success: false;
+      error: string;
+    };
 
 type AnalysisEvents = {
   analysisCompleted: [AnalysisCompleted];
@@ -141,7 +141,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
 
     this.debouncedUpdateRoutesResult = debounce(() => {
       try {
-        const start = performance.now()
+        const start = performance.now();
         this.updateRoutesResult();
         logger.debug(`Finished parsing result ${performance.now() - start}ms`);
       } catch (e) {
@@ -218,9 +218,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
 
     const result = this.findHonoRoutes();
     if (result.errorCount) {
-      logger.warn(
-        `${result.errorCount} error(s) found while analyzing routes`,
-      );
+      logger.warn(`${result.errorCount} error(s) found while analyzing routes`);
     }
 
     // Find root route

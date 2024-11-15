@@ -1,4 +1,5 @@
 import path from "node:path";
+import { logger } from "./logger";
 import type {
   LocalFileResource,
   LocalFileResourceId,
@@ -18,7 +19,6 @@ import type {
   TreeResource,
   TreeResourceId,
 } from "./types";
-import { logger } from "./logger";
 
 // Class that manages tree resources
 export class ResourceManager {

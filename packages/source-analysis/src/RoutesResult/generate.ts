@@ -1,5 +1,5 @@
-import { logger } from "../logger";
 import type { ResourceManager } from "../ResourceManager";
+import { logger } from "../logger";
 import type {
   LocalFileResourceId,
   MiddlewareEntry,
@@ -278,11 +278,12 @@ function generateMiddlewareEntry(
 }
 
 function extractRouteTreeContent(includeIds: boolean, resource: RouteTree) {
-  let content = `${includeIds
+  let content = `${
+    includeIds
       ? `// id:${resource.id}
 `
       : ""
-    }const ${resource.name} = new Hono();`;
+  }const ${resource.name} = new Hono();`;
   if (resource.baseUrl) {
     content += `\n${resource.name}.baseUrl = "${resource.baseUrl}";`;
   }
@@ -291,7 +292,7 @@ function extractRouteTreeContent(includeIds: boolean, resource: RouteTree) {
 
 function serializeFileMap(fileInfo: FileInfo): string {
   const imports = Array.from(
-    fileInfo.modules.entries().map(([importPath, modules]) => {
+    Array.from(fileInfo.modules.entries()).map(([importPath, modules]) => {
       const asteriskModules = modules.filter((module) =>
         module.trim().startsWith("*"),
       );
