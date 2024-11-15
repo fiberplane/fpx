@@ -10,7 +10,6 @@ import { analyze } from "./analyze";
 import { extractRouteTrees } from "./routeTrees";
 import { getParsedTsConfig, getTsLib, startServer } from "./service";
 import type {
-  Logger,
   TsISnapShot,
   TsLanguageService,
   TsProgram,
@@ -107,7 +106,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
    */
   private debouncedUpdateRoutesResult: () => void;
 
-  constructor(projectRoot: string, logger?: Logger) {
+  constructor(projectRoot: string) {
     super();
     this.projectRoot = projectRoot;
     this._ts = getTsLib(this.projectRoot);
@@ -128,8 +127,6 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
           : path.resolve(path.join(configPath, loc));
       });
 
-    logger?.log("BOOTS: locations pre-check", locations);
-
     if (locations.length === 0) {
       // Only watch the src directory (if it exists)
       const possibleLocation = path.resolve(path.join(projectRoot, "src"));
@@ -139,13 +136,10 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       locations.push(path.join(location, "**", "*"));
     }
 
-    logger?.log("BOOTS: Watching locations", locations);
-
     this.fileWatcher = new FileWatcher(locations);
 
     this.debouncedUpdateRoutesResult = debounce(() => {
       try {
-        console.log("BOOTS: debouncedUpdateRoutesResult firing");
         this.updateRoutesResult();
       } catch (e) {
         console.error("Error while updating factory", e);
