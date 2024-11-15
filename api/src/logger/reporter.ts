@@ -6,7 +6,7 @@ import { colors } from "consola/utils";
 import prettyMs from "pretty-ms";
 
 export const TYPE_COLOR_MAP = {
-  info: colors.bgBlackBright,
+  info: (str: string) => colors.bgBlue(colors.white(str)),
   error: colors.bgRed,
   success: colors.bgGreen,
   warn: colors.bgYellow,

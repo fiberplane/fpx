@@ -50,7 +50,3 @@ export default logger;
 function isLogLevel(level: unknown): level is LogLevel {
   return logLevels.includes(level as LogLevel);
 }
-
-const err = new Error("This is an error");
-logger.error(err);
-console.error(err);

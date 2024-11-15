@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { findSourceFunctions } from "../lib/find-source-function/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
+import logger from "../logger/index.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -34,7 +35,7 @@ app.get(
       const message = getValueFromObject(err, "message", "Unknown error");
       const name = getValueFromObject(err, "name", "");
 
-      console.error("Could not read source file", message);
+      logger.error("Could not read source file", message);
       return ctx.json(
         {
           error: "Error reading file",
@@ -56,7 +57,7 @@ app.post("/v0/source-function", cors(), async (ctx) => {
       functionText: result?.[0]?.sourceFunction ?? null,
     });
   } catch (err) {
-    console.error("Could not find function in source", source);
+    logger.error("Could not find function in source", source);
     const message = getValueFromObject(err, "message", "Unknown error");
     const name = getValueFromObject(err, "name", "");
 

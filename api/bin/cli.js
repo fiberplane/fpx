@@ -105,6 +105,8 @@ async function runWizard() {
     logger.info(chalk.dim(`\nLoading FPX config from ${CONFIG_DIR_NAME}...`));
   }
 
+  logger.info(chalk.bold("\nTime   Level   Message"));
+  // logger.info(chalk.bold("\nElapsed Level  Message"));
   const FPX_PORT = await getFpxPort();
 
   await updateEnvFileWithFpxEndpoint(FPX_PORT);
