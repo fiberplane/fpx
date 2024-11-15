@@ -1,6 +1,6 @@
 import { type WsMessage, WsMessageSchema } from "@fiberplane/fpx-types";
 import WebSocket from "ws";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 import { handleMessage } from "./handlers.js";
 import { getWebHoncConnectionId } from "./store.js";
 import {

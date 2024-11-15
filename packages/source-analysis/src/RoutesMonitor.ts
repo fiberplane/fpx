@@ -15,6 +15,7 @@ import type {
   TsProgram,
   TsType,
 } from "./types";
+import { logger } from "./logger";
 
 type AnalysisStarted = {
   type: "analysisStarted";
@@ -27,13 +28,13 @@ type AnalysisCompleted = {
 
 type AnalysisCompletedPayload =
   | {
-      success: true;
-      factory: RoutesResult;
-    }
+    success: true;
+    factory: RoutesResult;
+  }
   | {
-      success: false;
-      error: string;
-    };
+    success: false;
+    error: string;
+  };
 
 type AnalysisEvents = {
   analysisCompleted: [AnalysisCompleted];
@@ -140,9 +141,11 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
 
     this.debouncedUpdateRoutesResult = debounce(() => {
       try {
+        const start = performance.now()
         this.updateRoutesResult();
+        logger.debug(`Finished parsing result ${performance.now() - start}ms`);
       } catch (e) {
-        console.error("Error while updating factory", e);
+        logger.error("Error while updating factory", e);
       }
     }, 50);
   }
@@ -182,6 +185,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
       return;
     }
 
+    logger.debug("Starting to monitor", this.projectRoot);
     this.addEventListenersToFileWatcher();
     await this.fileWatcher.start();
 
@@ -199,16 +203,22 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     this._isRunning = true;
   }
 
+  private _updating = false;
   public updateRoutesResult() {
     if (!this.isRunning) {
       throw new Error("Monitor not running");
     }
 
+    if (this._updating) {
+      logger.warn("Already updating routes result");
+    }
+    this._updating = true;
+
     this.emit("analysisStarted", { type: "analysisStarted" });
 
     const result = this.findHonoRoutes();
     if (result.errorCount) {
-      console.warn(
+      logger.warn(
         `${result.errorCount} error(s) found while analyzing routes`,
       );
     }
@@ -239,6 +249,8 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
         factory,
       },
     });
+    this._updating = false;
+
     return factory;
   }
 
@@ -283,7 +295,7 @@ export class RoutesMonitor extends EventEmitter<AnalysisEvents> {
     this.fileWatcher.on("fileUpdated", (event: FileUpdatedEvent) => {
       const current = this.fileMap[event.payload.fileName];
       if (!current) {
-        console.warn(
+        logger.warn(
           "Watcher::File updated that wasn't added",
           event.payload.fileName,
         );

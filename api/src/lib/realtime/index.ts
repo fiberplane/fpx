@@ -1,6 +1,6 @@
 import type { Server } from "node:http";
 import { type WebSocket, WebSocketServer } from "ws";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 
 interface RealtimeServiceOptions {
   server: Server;

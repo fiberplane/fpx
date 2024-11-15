@@ -1,3 +1,4 @@
+import { logger } from "../logger";
 import type { ResourceManager } from "../ResourceManager";
 import type {
   LocalFileResourceId,
@@ -42,7 +43,7 @@ function addModules({
   for (const moduleId of moduleIds) {
     const module = resourceManager.getResource(moduleId);
     if (!module) {
-      console.warn("Module not found", moduleId, "module", module);
+      logger.warn("Module not found", moduleId, "module", module);
       continue;
     }
 
@@ -110,7 +111,7 @@ function visitResource(
 
   const resource = resourceManager.getResource(id);
   if (!resource) {
-    console.warn("Resource not found", id);
+    logger.warn("Resource not found", id);
     return;
   }
 
@@ -134,7 +135,7 @@ function visitResource(
     }
     case "MIDDLEWARE_ENTRY": {
       if (!appName) {
-        console.warn("Middleware entry outside of route tree");
+        logger.warn("Middleware entry outside of route tree");
         break;
       }
 
@@ -150,7 +151,7 @@ function visitResource(
     }
     case "ROUTE_ENTRY": {
       if (!appName) {
-        console.warn("Route entry outside of route tree");
+        logger.warn("Route entry outside of route tree");
         break;
       }
 
@@ -166,7 +167,7 @@ function visitResource(
     case "ROUTE_TREE_REFERENCE": {
       const target = resourceManager.getResource(resource.targetId);
       if (!target) {
-        console.warn("Target not found", resource.targetId);
+        logger.warn("Target not found", resource.targetId);
         break;
       }
 
@@ -216,7 +217,7 @@ ${appName}.${resource.method ?? "all"}("${resource.path}", `;
   for (const sourceId of resource.sources) {
     const source = resourceManager.getResource(sourceId);
     if (!source) {
-      console.warn("Source not found", sourceId);
+      logger.warn("Source not found", sourceId);
       continue;
     }
 
@@ -253,7 +254,7 @@ function generateMiddlewareEntry(
     .map((referenceId) => {
       const source = resourceManager.getResource(referenceId);
       if (!source) {
-        console.warn("Source not found", referenceId);
+        logger.warn("Source not found", referenceId);
         return;
       }
 
@@ -277,12 +278,11 @@ function generateMiddlewareEntry(
 }
 
 function extractRouteTreeContent(includeIds: boolean, resource: RouteTree) {
-  let content = `${
-    includeIds
+  let content = `${includeIds
       ? `// id:${resource.id}
 `
       : ""
-  }const ${resource.name} = new Hono();`;
+    }const ${resource.name} = new Hono();`;
   if (resource.baseUrl) {
     content += `\n${resource.name}.baseUrl = "${resource.baseUrl}";`;
   }

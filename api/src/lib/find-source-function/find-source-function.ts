@@ -7,7 +7,7 @@ import {
   type RawSourceMap,
   SourceMapConsumer,
 } from "source-map";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 
 const readFileAsync = promisify(fs.readFile);
 

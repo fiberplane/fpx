@@ -1,5 +1,5 @@
 import { FPX_AUTH_BASE_URL } from "../../constants.js";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 
 type FpAuthRequestOptions = {
   token: string;

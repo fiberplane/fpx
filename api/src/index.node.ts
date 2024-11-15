@@ -20,7 +20,7 @@ import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getInferenceConfig, getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
 import * as webhonc from "./lib/webhonc/index.js";
-import logger from "./logger.js";
+import logger from "./logger/index.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
 import {
   frontendRoutesHandler,

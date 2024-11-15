@@ -1,3 +1,4 @@
+import { logger } from "../logger";
 import { ResourceManager } from "../ResourceManager";
 import {
   HONO_HTTP_METHODS,
@@ -42,7 +43,7 @@ export function extractRouteTrees(
   // if (!program) {
   // throw new Error("Program not found");
   // }
-  // console.log('program', performance.now() - now)
+  // logger.log('program', performance.now() - now)
 
   const resourceManager = new ResourceManager(projectRoot);
   const checker = program.getTypeChecker();
@@ -93,10 +94,10 @@ function visit(node: TsNode, fileName: string, context: SearchContext) {
 
     if ("intrinsicName" in type && type.intrinsicName === "error") {
       context.errorCount++;
-      console.error("Error in type check");
-      console.error("In: ", node.getSourceFile().fileName, node.kind);
-      console.error("Node text:", node.getFullText());
-      console.error("type information", type.getSymbol());
+      logger.error("Error in type check");
+      logger.error("In: ", node.getSourceFile().fileName, node.kind);
+      logger.error("Node text:", node.getFullText());
+      logger.error("type information", type.getSymbol());
     }
 
     const typeName = checker.typeToString(type);
@@ -173,7 +174,7 @@ function handleInitializerCallExpression(
     (ref) => ref.definition.kind === ts.ScriptElementKind.functionElement,
   );
   if (!reference) {
-    console.warn("no reference found for", callExpression.getText());
+    logger.warn("no reference found for", callExpression.getText());
     return;
   }
   const declarationFileName = reference.definition.fileName;
@@ -236,13 +237,13 @@ function followReference(
 
   const sourceFile = getFile(reference.fileName);
   if (!sourceFile) {
-    console.warn("no file found", reference.fileName);
+    logger.warn("no file found", reference.fileName);
     return;
   }
 
   const node = findNodeAtPosition(ts, sourceFile, reference.textSpan.start);
   if (!node) {
-    console.warn("no node found", reference.textSpan.start);
+    logger.warn("no node found", reference.textSpan.start);
     return;
   }
 
@@ -286,7 +287,7 @@ function handleHonoMethodCall(
     const [firstArgument, ...args] = callExpression.arguments;
     if (!firstArgument) {
       // No first argument for the hono.{method} call
-      console.warn("No first argument for", callExpression.getText());
+      logger.warn("No first argument for", callExpression.getText());
       context.errorCount++;
       return;
     }
@@ -364,7 +365,7 @@ function handleRoute(
   }
 
   if (!target) {
-    console.log("No target found for", appNode.getText());
+    logger.log("No target found for", appNode.getText());
     return;
   }
 
@@ -492,7 +493,7 @@ function analyzeReturnStatement(
     if (ts.isIdentifier(node)) {
       const symbol = checker.getSymbolAtLocation(node);
       const declaration = symbol?.declarations?.[0];
-      // console.log('declaration', declaration && ts.SyntaxKind[declaration.kind])
+      // logger.log('declaration', declaration && ts.SyntaxKind[declaration.kind])
       if (declaration && ts.isVariableDeclaration(declaration)) {
         variables.push(declaration);
       }

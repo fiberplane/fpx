@@ -18,6 +18,7 @@ import type {
   TreeResource,
   TreeResourceId,
 } from "./types";
+import { logger } from "./logger";
 
 // Class that manages tree resources
 export class ResourceManager {
@@ -105,7 +106,7 @@ export class ResourceManager {
     const id = this.getId(props.type, fileName, props.position);
 
     if (this.references.has(id)) {
-      console.warn("Resource already exists", id);
+      logger.warn("Resource already exists", id);
     }
 
     const resource = { id, ...props, fileName };
@@ -118,7 +119,7 @@ export class ResourceManager {
     const id = this.getId(props.type, fileName, props.position);
 
     if (this.references.has(id)) {
-      console.warn("Resource already exists", id);
+      logger.warn("Resource already exists", id);
     }
 
     const resource = { id, ...props, fileName };
@@ -137,7 +138,7 @@ export class ResourceManager {
     const id = this.getId(props.type, fileName, props.position);
 
     if (this.references.has(id)) {
-      console.warn("Resource already exists", id);
+      logger.warn("Resource already exists", id);
     }
 
     const resource = { id, ...props, fileName };
@@ -152,7 +153,7 @@ export class ResourceManager {
     const id = this.getId(props.type, fileName, props.position);
 
     if (this.references.has(id)) {
-      console.warn("Resource already exists", id);
+      logger.warn("Resource already exists", id);
     }
 
     const resource = { id, ...props, fileName };
@@ -165,7 +166,7 @@ export class ResourceManager {
   ): ModuleReference {
     const id = this.getId(props.type, props.pathId, props.import);
     if (this.references.has(id)) {
-      console.warn("Resource already exists", id);
+      logger.warn("Resource already exists", id);
     }
 
     const resource = { id, ...props };
@@ -180,7 +181,7 @@ export class ResourceManager {
     const id = this.getId(props.type, fileName, props.position);
 
     if (this.references.has(id)) {
-      console.warn("Resource already exis1", id);
+      logger.warn("Resource already exis1", id);
     }
 
     const resource = { id, ...props, fileName };
@@ -230,7 +231,7 @@ export class ResourceManager {
     }
 
     if (!sourceReference) {
-      console.error(
+      logger.error(
         `Missing SourceReference for (fileName: ${sourceReferenceFileName}, position: ${sourceReferencePosition}, id: ${id}`,
       );
       throw new Error(

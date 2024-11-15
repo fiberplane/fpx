@@ -1,3 +1,4 @@
+import { logger } from "../logger";
 import type {
   ModuleReferenceId,
   SearchContext,
@@ -44,7 +45,7 @@ export function createSourceReferenceForNode(
   const existingReference = resourceManager.getResource(id);
 
   if (existingReference) {
-    console.debug("Warning: source reference already exists", {
+    logger.debug("Warning: source reference already exists", {
       fileName,
       start: rootNode.getStart(),
     });
@@ -188,7 +189,7 @@ export function getNodeValueForLocalModule(
     ) || [];
 
   if (!references) {
-    console.warn(
+    logger.warn(
       `No references found: (file: ${declSourceFile.fileName} at position: ${declaration.getStart()})`,
     );
     return;
@@ -204,12 +205,12 @@ export function getNodeValueForLocalModule(
     const refFile =
       getFile(reference.fileName) || program.getSourceFile(reference.fileName);
     if (!refFile) {
-      console.warn(`No file found for reference: ${reference.fileName}`);
+      logger.warn(`No file found for reference: ${reference.fileName}`);
       continue;
     }
     const refNode = findNodeAtPosition(ts, refFile, reference.textSpan.start);
     if (!refNode) {
-      console.warn(`No node found for reference: ${reference.textSpan.start}`);
+      logger.warn(`No node found for reference: ${reference.textSpan.start}`);
       continue;
     }
     const symbol = checker.getSymbolAtLocation(refNode);
@@ -237,7 +238,7 @@ function getLocalDeclaration(declaration: TsDeclaration, currentNode: TsNode) {
     (declaration.getEnd() < currentNode.getStart() ||
       declaration.getStart() > currentNode.getEnd()) &&
     declaration.getSourceFile().fileName ===
-      currentNode.getSourceFile().fileName
+    currentNode.getSourceFile().fileName
   ) {
     return declaration;
   }

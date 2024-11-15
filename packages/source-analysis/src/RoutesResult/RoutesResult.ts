@@ -10,6 +10,7 @@ import type {
   TreeResourceId,
 } from "../types";
 import { generate } from "./generate";
+import { logger } from "../logger";
 
 export type HistoryId =
   | RouteEntryId
@@ -128,7 +129,7 @@ export class RoutesResult {
       const resource = this._resourceManager.getResource(entryResourceId);
 
       if (!resource) {
-        console.warn("Resource not found", entryResourceId);
+        logger.warn("Resource not found", entryResourceId);
         continue;
       }
 
@@ -150,7 +151,7 @@ export class RoutesResult {
           } else {
             const tree = this._resourceManager.getResource(resource.targetId);
             if (!tree) {
-              console.warn("Referring resource not found", resource.targetId);
+              logger.warn("Referring resource not found", resource.targetId);
               continue;
             }
 

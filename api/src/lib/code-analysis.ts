@@ -1,9 +1,12 @@
 import { createRoutesMonitor } from "@fiberplane/source-analysis";
 import { USER_PROJECT_ROOT_DIR } from "../constants.js";
-import logger from "../logger.js";
+import logger from "../logger/index.js";
 import { setupCodeAnalysis } from "../routes/inference/inference.js";
 
-const monitor = createRoutesMonitor(USER_PROJECT_ROOT_DIR);
+const monitor = createRoutesMonitor(
+  USER_PROJECT_ROOT_DIR,
+  logger.withTag("code-analysis"),
+);
 
 export async function enableCodeAnalysis() {
   logger.debug("Enabling code analysis");

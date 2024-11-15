@@ -4,7 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import type { Settings } from "@fiberplane/fpx-types";
 import { type APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 import { generateRequestWithFp } from "./fp.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool, requestSchema } from "./tools.js";

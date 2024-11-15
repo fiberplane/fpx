@@ -5,7 +5,7 @@ import chalk from "chalk";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { FPX_AUTH_SERVER_PORT } from "../../constants.js";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 import { TokenPayloadSchema } from "./types.js";
 
 type AuthServer = ReturnType<typeof serve>;

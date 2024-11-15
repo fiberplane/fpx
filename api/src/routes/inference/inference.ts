@@ -8,7 +8,7 @@ import * as schema from "../../db/schema.js";
 import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
 import { getInferenceConfig } from "../../lib/settings/index.js";
 import type { Bindings, Variables } from "../../lib/types.js";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 
 // Getter function for results, this is overwritten in setupCodeAnalysis
 let getResult = async (): Promise<RoutesResult> => {

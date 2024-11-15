@@ -3,7 +3,7 @@ import path from "node:path";
 import type { Context } from "hono";
 import { minimatch } from "minimatch";
 import { type Schema, any } from "zod";
-import logger from "../logger.js";
+import logger from "../logger/index.js";
 
 export function isJson(str: unknown) {
   if (typeof str !== "string") {

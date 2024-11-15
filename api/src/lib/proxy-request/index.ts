@@ -4,7 +4,7 @@ import {
   appResponseInsertSchema,
   appResponses,
 } from "../../db/schema.js";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 
 import { z } from "zod";
 import type * as schema from "../../db/schema.js";

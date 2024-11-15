@@ -5,7 +5,7 @@ import type { WebSocket } from "ws";
 
 import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
-import logger from "./logger.js";
+import logger from "./logger/index.js";
 
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";

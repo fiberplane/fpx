@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 import type {
   RouteTree,
   RouteTreeId,
@@ -27,7 +28,7 @@ export function analyze(
       if (entry.startsWith("ROUTE_TREE_REFERENCE:")) {
         const treeReference = resources[entry];
         if (!treeReference) {
-          console.warn("Resource not found", entry);
+          logger.warn("Resource not found", entry);
           continue;
         }
         references.push((treeReference as RouteTreeReference).targetId);

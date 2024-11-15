@@ -8,6 +8,7 @@ import type {
   TsLanguageServiceHost,
   TsType,
 } from "./types";
+import { logger } from "./logger";
 const relativeResolve = relative.sync;
 
 export function getParsedTsConfig(
@@ -23,7 +24,7 @@ export function getParsedTsConfig(
   if (configPath) {
     const { config, error } = ts.readConfigFile(configPath, ts.sys.readFile);
     if (error) {
-      console.error("Error parsing tsconfig", error.messageText);
+      logger.error("Error parsing tsconfig", error.messageText);
     }
 
     return {
@@ -31,7 +32,7 @@ export function getParsedTsConfig(
       configPath,
     };
   }
-  console.warn("Could not find a 'tsconfig.json'.");
+  logger.warn("Could not find a 'tsconfig.json'.");
   return {
     options: ts.getDefaultCompilerOptions(),
   };
@@ -57,8 +58,8 @@ export function getTsLib(projectRoot: string) {
     const tsPath = relativeResolve("typescript", { basedir: projectRoot });
     return require(tsPath);
   } catch (error) {
-    console.warn("Unable resolve typescript package", error);
-    console.log(`Using bundled in typescript (version ${bundledTs.version})`);
+    logger.warn("Unable resolve typescript package", error);
+    logger.log(`Using bundled in typescript (version ${bundledTs.version})`);
     return bundledTs;
   }
 }
@@ -72,10 +73,10 @@ export function startServer(params: {
   getFileInfo: (fileName: string) =>
     | undefined
     | {
-        version: number;
-        content: string;
-        snapshot: TsISnapShot;
-      };
+      version: number;
+      content: string;
+      snapshot: TsISnapShot;
+    };
   getFileNames: () => Array<string>;
   getScriptSnapshot: (fileName: string) => TsISnapShot | undefined;
   location: string;
