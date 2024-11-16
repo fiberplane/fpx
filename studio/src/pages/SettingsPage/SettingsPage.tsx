@@ -10,6 +10,7 @@ import { AISettingsForm } from "./AISettingsForm";
 import { FpxWorkerProxySettingsForm } from "./FpxWorkerProxySettingsForm";
 import { Profile } from "./Profile";
 import { ProxyRequestsSettingsForm } from "./ProxyRequestsSettingsForm";
+import { Integrations } from "./Integrations";
 
 export function SettingsPage() {
   const user = useUserInfo();
@@ -39,6 +40,7 @@ const PROFILE_TAB = "Profile";
 export const AI_TAB = "AI";
 const PROXY_REQUESTS_TAB = "Proxy Requests";
 const FPX_WORKER_PROXY_TAB = "Production Ingestion";
+const INTEGRATIONS_TAB = "Integrations";
 
 export const isValidSettingsTab = (
   tab: string,
@@ -46,12 +48,14 @@ export const isValidSettingsTab = (
   | typeof PROFILE_TAB
   | typeof AI_TAB
   | typeof PROXY_REQUESTS_TAB
-  | typeof FPX_WORKER_PROXY_TAB => {
+  | typeof FPX_WORKER_PROXY_TAB
+  | typeof INTEGRATIONS_TAB => {
   return (
     tab === PROFILE_TAB ||
     tab === AI_TAB ||
     tab === PROXY_REQUESTS_TAB ||
-    tab === FPX_WORKER_PROXY_TAB
+    tab === FPX_WORKER_PROXY_TAB ||
+    tab === INTEGRATIONS_TAB
   );
 };
 
@@ -85,7 +89,7 @@ function SettingsLayout({
         )}
       >
         <TabsTrigger
-          className="whitespace-nowrap justify-start text-left pl-0 pr-4"
+          className="justify-start pl-0 pr-4 text-left whitespace-nowrap"
           value={PROFILE_TAB}
         >
           <Icon icon="lucide:user" className={cn("w-3.5 h-3.5 mr-1.5")} />
@@ -93,7 +97,7 @@ function SettingsLayout({
         </TabsTrigger>
 
         <TabsTrigger
-          className="whitespace-nowrap justify-start text-left pl-0 pr-4"
+          className="justify-start pl-0 pr-4 text-left whitespace-nowrap"
           value={AI_TAB}
         >
           <Icon
@@ -103,14 +107,14 @@ function SettingsLayout({
           Request Autofill
         </TabsTrigger>
         <TabsTrigger
-          className="whitespace-nowrap justify-start text-left pl-0 pr-4"
+          className="justify-start pl-0 pr-4 text-left whitespace-nowrap"
           value={PROXY_REQUESTS_TAB}
         >
           <Icon icon="lucide:waypoints" className={cn("w-3.5 h-3.5 mr-1.5")} />
           Proxy
         </TabsTrigger>
         <TabsTrigger
-          className="whitespace-nowrap justify-start text-left pl-0 pr-4"
+          className="justify-start pl-0 pr-4 text-left whitespace-nowrap"
           value={FPX_WORKER_PROXY_TAB}
         >
           <Icon
@@ -118,6 +122,13 @@ function SettingsLayout({
             className={cn("w-3.5 h-3.5 mr-1.5")}
           />
           Production
+        </TabsTrigger>
+        <TabsTrigger
+          className="justify-start pl-0 pr-4 text-left whitespace-nowrap"
+          value={INTEGRATIONS_TAB}
+        >
+          <Icon icon="lucide:blocks" className={cn("w-3.5 h-3.5 mr-1.5")} />
+          Integrations
         </TabsTrigger>
       </TabsList>
       <div className="w-full max-w-[680px] overflow-y-auto">
@@ -133,6 +144,9 @@ function SettingsLayout({
         <TabsContent className="m-0" value={FPX_WORKER_PROXY_TAB}>
           <FpxWorkerProxySettingsForm settings={settings} />
         </TabsContent>
+        <TabsContent className="m-0" value={INTEGRATIONS_TAB}>
+          <Integrations settings={settings} />
+        </TabsContent>
       </div>
     </Tabs>
   );
@@ -143,10 +157,10 @@ function SettingsSkeleton() {
     <div className="grid gap-4 lg:grid-cols-[auto_1fr] lg:gap-4">
       <div className="w-full max-w-[680px] lg:w-[200px] space-y-2">
         <Skeleton className="w-full h-9" />
-        <Skeleton className="w-full h-9 hidden lg:block" />
-        <Skeleton className="w-full h-9 hidden lg:block" />
-        <Skeleton className="w-full h-9 hidden lg:block" />
-        <Skeleton className="w-full h-9 hidden lg:block" />
+        <Skeleton className="hidden w-full h-9 lg:block" />
+        <Skeleton className="hidden w-full h-9 lg:block" />
+        <Skeleton className="hidden w-full h-9 lg:block" />
+        <Skeleton className="hidden w-full h-9 lg:block" />
       </div>
       <div className="flex flex-col gap-2">
         <Skeleton className="w-full max-w-[680px] h-36" />
