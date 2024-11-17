@@ -20,7 +20,7 @@ The goal is to find all routes of a users' hono application, knowing that we'd l
 The typical way of using it is as follows:
 
 ``` ts
-import { createRoutesMonitor } from "@fiberplane/source-analysis
+import { createRoutesMonitor } from "@fiberplane/source-analysis"
 
 const location = process.cwd();
 const monitor = createRoutesMonitor(location);
