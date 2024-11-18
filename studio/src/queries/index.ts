@@ -4,8 +4,6 @@ export {
   MIZU_TRACES_KEY,
 } from "./queries";
 
-export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
-
 export { useFetchSettings, useUpdateSettings } from "./settings";
 
 export { PROBED_ROUTES_KEY, useRefreshRoutesMutation } from "./app-routes";
