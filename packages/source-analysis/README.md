@@ -9,7 +9,7 @@ It uses the user's typescript library and configuration (but falls back to the b
 Given the current approach, the project this package is trying to analyze should:
 
 * use typescript
-* not use custom extensions (right now only `.ts` and `.tsx` is used)
+* use standard typescript file extensions (right now only `.ts` and `.tsx` is used)
 
 ## Goal of analyzing the source code
 
@@ -26,6 +26,7 @@ const location = process.cwd();
 const monitor = createRoutesMonitor(location);
 monitor.start()
   .then(() => {
+    // All files have been found 
     console.log('ready');
 
     // By default the monitor will immediately start to analyze the code
@@ -103,7 +104,7 @@ There are several strategies that we've been thinking about, specify the main en
 A high level description of the approach is:
 * extracting routes. Go through all code and map all apps, routes, middleware and links between apps. Also keep track of what code is related to the app/route/middleware and keep track of what code that code might refer to (etc). All this is stored in a `ResourceManager` under the hood. 
 * analyzing routes. Once all code has been converted into our own data structure, we find the hono apps and see which one has the most routes/entries (and if routes refer to each other their value is added as well). The app with the highest number is treated as the entry point.
-* the final product: `RoutesResult`. This is contains:
+* the final product: `RoutesResult`. This contains:
   *  a reference to a hono app which can be used to find out what code is executed for a given method/request 
   * `getFilesForHistory()` method that can be called to see all code that can be executed for a request to an endpoint.
   * `resetHistory()` method so you can reset the result to the initial state.
@@ -143,7 +144,18 @@ export type RouteTreeEntry = RouteEntry | RouteTreeReference | MiddlewareEntry;
 
 In order to capture/store information about other code the packages uses two other data structures:
 
-- `SourceReference` This is a reference to section of code (like a function, a constant, etc). A source reference, is 
-- `ModuleReference` this represents a link to another file/external package and is typically (a part) of an import statement. 
+- `SourceReference` This is a reference to section of code (like a function, a constant, etc).  A source reference can refer to one or more `SourceReference` as well as one or more `ModuleReferences`
+- A `ModuleReference` represents a link to another file/external package and is source code (part of) an import statement. 
 
 All data structures (apart from `ModuleReference` can contain references to either modules or source references). 
+
+## Analysis
+
+
+
+
+
+## Open issues:
+
+* Test if path aliases (`compilerOptions.paths`) actually work (https://www.typescriptlang.org/tsconfig/#paths)
+* ensure export statements are included in the generated result. Right now for instance apps are found, but we don't really check if/how they are exported, cases where a variable declared and the export is done elsewhere are probably not covered.
