@@ -4,10 +4,7 @@ export {
   MIZU_TRACES_KEY,
 } from "./queries";
 
-export {
-  getVSCodeLinkFromCallerLocation,
-  getVSCodeLinkFromError,
-} from "./vscodeLinks";
+export { getVSCodeLinkFromCallerLocation } from "./vscodeLinks";
 
 export { useHandlerSourceCode, fetchSourceLocation } from "./source-code";
 
