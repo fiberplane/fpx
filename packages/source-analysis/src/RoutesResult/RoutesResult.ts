@@ -89,7 +89,7 @@ export class RoutesResult {
   }
 
   /**
-   * Set the root tree id (mostly useful for testing)
+   * Get the root tree id (mostly useful for testing)
    */
   public get rootId(): RouteTreeId | null {
     return this._rootId;
