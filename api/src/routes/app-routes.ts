@@ -34,7 +34,7 @@ import {
   safeParseJson,
 } from "../lib/utils.js";
 import { getWebHoncConnectionId } from "../lib/webhonc/store.js";
-import logger from "../logger.js";
+import logger from "../logger/index.js";
 import { resolveServiceArg, routerProbe } from "../probe-routes.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();

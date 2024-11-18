@@ -4,12 +4,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import * as schema from "../db/schema.js";
 import { hasValidAiConfig } from "../lib/ai/index.js";
+import { enableCodeAnalysis } from "../lib/code-analysis.js";
 import { getUser, verifyToken } from "../lib/fp-services/auth.js";
 import { TokenExpiredError } from "../lib/fp-services/errors.js";
 import { TokenPayloadSchema } from "../lib/fp-services/types.js";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import logger from "../logger.js";
+import logger from "../logger/index.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -112,6 +113,8 @@ app.post(
   cors(),
   zValidator("json", TokenPayloadSchema),
   async (ctx) => {
+    const webhonc = ctx.get("webhonc");
+
     const { token, expiresAt } = ctx.req.valid("json");
 
     const db = ctx.get("db");
@@ -139,11 +142,17 @@ app.post(
             },
           },
         });
+        // Need to enable code analysis after updating AI settings
+        enableCodeAnalysis();
       }
       if (!settings?.proxyRequestsEnabled) {
         await upsertSettings(db, {
           proxyRequestsEnabled: true,
         });
+        logger.debug(
+          "Proxy requests enabled after logging in user, starting webhonc",
+        );
+        await webhonc.start();
       }
 
       // Force the UI to refresh user information,

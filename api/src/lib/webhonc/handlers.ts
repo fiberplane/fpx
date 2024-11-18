@@ -2,7 +2,7 @@ import path from "node:path";
 import type { WsMessageSchema } from "@fiberplane/fpx-types";
 import type { z } from "zod";
 import * as schema from "../../db/schema.js";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 import { resolveServiceArg } from "../../probe-routes.js";
 import { generateOtelTraceId } from "../otel/index.js";
 import {

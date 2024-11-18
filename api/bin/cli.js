@@ -361,6 +361,10 @@ function runScript(scriptName) {
     return;
   }
 
+  if (scriptName === "studio") {
+    logger.info(chalk.bold("\nTime   Level   Message"));
+  }
+
   // Get the root directory of this script's project
   const scriptDir = path.resolve(__dirname, "../");
 

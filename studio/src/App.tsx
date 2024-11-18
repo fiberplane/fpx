@@ -10,6 +10,8 @@ import {
   REQUEST_DETAILS_TRACE_ROUTE,
   ROOT_ROUTE,
 } from "./constants";
+import { AiRequestLogDetailsPage } from "./pages/AiRequestLogsPage/AiRequestLogDetailsPage";
+import { AiRequestLogsPage } from "./pages/AiRequestLogsPage/AiRequestLogsPage";
 import { RequestDetailsPage } from "./pages/RequestDetailsPage/RequestDetailsPage";
 import { RequestorPage } from "./pages/RequestorPage";
 import { RequestsPage } from "./pages/RequestsPage/RequestsPage";
@@ -32,6 +34,11 @@ export function App() {
               />
               <Route path={ROOT_ROUTE} element={<RequestorPage />} />
               <Route path={REQUESTOR_TRACE_ROUTE} element={<RequestorPage />} />
+              <Route path="/internal/ai-logs" element={<AiRequestLogsPage />} />
+              <Route
+                path="/internal/ai-logs/:id"
+                element={<AiRequestLogDetailsPage />}
+              />
             </Routes>
           </Layout>
           <Toaster />

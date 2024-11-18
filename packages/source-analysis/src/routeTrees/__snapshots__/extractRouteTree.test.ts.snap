@@ -1,0 +1,1447 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`run test 'barrel files' with location '../../test-cases/barrel-files' 1`] = `
+{
+  "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure": {
+    "id": "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure",
+    "import": "measure",
+    "importPath": "@fiberplane/hono-otel",
+    "name": "@fiberplane/hono-otel",
+    "pathId": "@fiberplane/hono-otel",
+    "type": "MODULE_REFERENCE",
+    "version": "0.3.1",
+  },
+  "MODULE_REFERENCE:User@..%2Ftypes": {
+    "id": "MODULE_REFERENCE:User@..%2Ftypes",
+    "import": "User",
+    "importPath": "../types",
+    "name": "../types",
+    "pathId": "../types",
+    "type": "MODULE_REFERENCE",
+  },
+  "MODULE_REFERENCE:getUser@.%2Fdb": {
+    "id": "MODULE_REFERENCE:getUser@.%2Fdb",
+    "import": "getUser",
+    "importPath": "./db",
+    "name": "./db",
+    "pathId": "./db",
+    "type": "MODULE_REFERENCE",
+  },
+  "MODULE_REFERENCE:hono%2Fcors@cors": {
+    "id": "MODULE_REFERENCE:hono%2Fcors@cors",
+    "import": "cors",
+    "importPath": "hono/cors",
+    "name": "hono",
+    "pathId": "hono/cors",
+    "type": "MODULE_REFERENCE",
+    "version": "4.6.9",
+  },
+  "MODULE_REFERENCE:sleep@..%2Futils": {
+    "id": "MODULE_REFERENCE:sleep@..%2Futils",
+    "import": "sleep",
+    "importPath": "../utils",
+    "name": "../utils",
+    "pathId": "../utils",
+    "type": "MODULE_REFERENCE",
+  },
+  "ROUTE_ENTRY:index.ts@181": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@181",
+    "method": "get",
+    "modules": Set {},
+    "path": "/user/1",
+    "position": 181,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@200",
+      "SOURCE_REFERENCE:index.ts@208",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@305": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@305",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 305,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@318",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_TREE:index.ts@102": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:index.ts@181",
+      "ROUTE_ENTRY:index.ts@305",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@102",
+    "modules": Set {},
+    "name": "app",
+    "position": 102,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "SOURCE_REFERENCE:db%2FgetUser.ts@128": {
+    "character": 6,
+    "content": "const DEFAULT_USER_NAME = "John Doe"",
+    "fileName": "db/getUser.ts",
+    "id": "SOURCE_REFERENCE:db%2FgetUser.ts@128",
+    "line": 4,
+    "modules": Set {},
+    "position": 128,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:db%2FgetUser.ts@166": {
+    "character": 6,
+    "content": "const DEFAULT_EMAIL = "john@doe.com"",
+    "fileName": "db/getUser.ts",
+    "id": "SOURCE_REFERENCE:db%2FgetUser.ts@166",
+    "line": 5,
+    "modules": Set {},
+    "position": 166,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:db%2FgetUser.ts@222": {
+    "character": 23,
+    "content": "export const getUser = measure("getUser", async () => {
+  await sleep(100);
+  const value: User = {
+    name: DEFAULT_USER_NAME,
+    email: DEFAULT_EMAIL,
+  };
+  return value;
+});",
+    "fileName": "db/getUser.ts",
+    "id": "SOURCE_REFERENCE:db%2FgetUser.ts@222",
+    "line": 7,
+    "modules": Set {
+      "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure",
+      "MODULE_REFERENCE:sleep@..%2Futils",
+      "MODULE_REFERENCE:User@..%2Ftypes",
+    },
+    "position": 222,
+    "references": Set {
+      "SOURCE_REFERENCE:utils.ts@0",
+      "SOURCE_REFERENCE:types.ts@29",
+      "SOURCE_REFERENCE:db%2FgetUser.ts@128",
+      "SOURCE_REFERENCE:db%2FgetUser.ts@166",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:db%2Findex.ts@9": {
+    "character": 9,
+    "content": "export { getUser } from "./getUser"",
+    "fileName": "db/index.ts",
+    "id": "SOURCE_REFERENCE:db%2Findex.ts@9",
+    "line": 0,
+    "modules": Set {},
+    "position": 9,
+    "references": Set {
+      "SOURCE_REFERENCE:db%2FgetUser.ts@222",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@200": {
+    "character": 19,
+    "content": "cors()",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@200",
+    "line": 7,
+    "modules": Set {
+      "MODULE_REFERENCE:hono%2Fcors@cors",
+    },
+    "position": 200,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@208": {
+    "character": 27,
+    "content": "async (c) => {
+  // await getUser();
+  const user = await getUser();
+  return c.json(user);
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@208",
+    "line": 7,
+    "modules": Set {
+      "MODULE_REFERENCE:getUser@.%2Fdb",
+    },
+    "position": 208,
+    "references": Set {
+      "SOURCE_REFERENCE:db%2Findex.ts@9",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@318": {
+    "character": 13,
+    "content": "(c) => c.text("Hello, Hono!")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@318",
+    "line": 13,
+    "modules": Set {},
+    "position": 318,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:types.ts@0": {
+    "character": 0,
+    "content": "export type Email = string;",
+    "fileName": "types.ts",
+    "id": "SOURCE_REFERENCE:types.ts@0",
+    "line": 0,
+    "modules": Set {},
+    "position": 0,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:types.ts@29": {
+    "character": 0,
+    "content": "export type User = {
+  name: string;
+  email: Email;
+};",
+    "fileName": "types.ts",
+    "id": "SOURCE_REFERENCE:types.ts@29",
+    "line": 2,
+    "modules": Set {},
+    "position": 29,
+    "references": Set {
+      "SOURCE_REFERENCE:types.ts@0",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:utils.ts@0": {
+    "character": 0,
+    "content": "export async function sleep(duration: number) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}",
+    "fileName": "utils.ts",
+    "id": "SOURCE_REFERENCE:utils.ts@0",
+    "line": 0,
+    "modules": Set {},
+    "position": 0,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+}
+`;
+
+exports[`run test 'hono factory' with location '../../test-cases/hono-factory' 1`] = `
+{
+  "ROUTE_ENTRY:bye.ts@54": {
+    "fileName": "bye.ts",
+    "id": "ROUTE_ENTRY:bye.ts@54",
+    "method": "get",
+    "modules": Set {},
+    "path": "/bye",
+    "position": 54,
+    "sources": Set {
+      "SOURCE_REFERENCE:bye.ts@70",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:factory.ts@281": {
+    "fileName": "factory.ts",
+    "id": "ROUTE_ENTRY:factory.ts@281",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 281,
+    "sources": Set {
+      "SOURCE_REFERENCE:factory.ts@294",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@124": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@124",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 124,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@142",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@173": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@173",
+    "method": "get",
+    "modules": Set {},
+    "path": "/bye",
+    "position": 173,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@194",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:panic.ts@54": {
+    "fileName": "panic.ts",
+    "id": "ROUTE_ENTRY:panic.ts@54",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 54,
+    "sources": Set {
+      "SOURCE_REFERENCE:panic.ts@67",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:silence.ts@58": {
+    "fileName": "silence.ts",
+    "id": "ROUTE_ENTRY:silence.ts@58",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 58,
+    "sources": Set {
+      "SOURCE_REFERENCE:silence.ts@75",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_TREE:bye.ts@36": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:bye.ts@54",
+    ],
+    "fileName": "bye.ts",
+    "id": "ROUTE_TREE:bye.ts@36",
+    "modules": Set {},
+    "name": "bye",
+    "position": 36,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:factory.ts@248": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:factory.ts@281",
+      "ROUTE_TREE_REFERENCE:bye.ts@36",
+      "ROUTE_TREE_REFERENCE:silence.ts@36",
+      "ROUTE_TREE_REFERENCE:panic.ts@36",
+    ],
+    "fileName": "factory.ts",
+    "id": "ROUTE_TREE:factory.ts@248",
+    "modules": Set {},
+    "name": "app",
+    "position": 248,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:index.ts@101": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:index.ts@124",
+      "ROUTE_ENTRY:index.ts@173",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@101",
+    "modules": Set {},
+    "name": "subHello",
+    "position": 101,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:index.ts@75": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_TREE_REFERENCE:factory.ts@248",
+      "ROUTE_TREE_REFERENCE:index.ts@101",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@75",
+    "modules": Set {},
+    "name": "app",
+    "position": 75,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:panic.ts@36": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:panic.ts@54",
+    ],
+    "fileName": "panic.ts",
+    "id": "ROUTE_TREE:panic.ts@36",
+    "modules": Set {},
+    "name": "app",
+    "position": 36,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:silence.ts@36": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:silence.ts@58",
+    ],
+    "fileName": "silence.ts",
+    "id": "ROUTE_TREE:silence.ts@36",
+    "modules": Set {},
+    "name": "silence",
+    "position": 36,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE_REFERENCE:bye.ts@36": {
+    "fileName": "bye.ts",
+    "id": "ROUTE_TREE_REFERENCE:bye.ts@36",
+    "name": "bye",
+    "path": "/bye",
+    "position": 36,
+    "targetId": "ROUTE_TREE:bye.ts@36",
+    "type": "ROUTE_TREE_REFERENCE",
+  },
+  "ROUTE_TREE_REFERENCE:factory.ts@248": {
+    "fileName": "factory.ts",
+    "id": "ROUTE_TREE_REFERENCE:factory.ts@248",
+    "name": "app",
+    "path": "/",
+    "position": 248,
+    "targetId": "ROUTE_TREE:factory.ts@248",
+    "type": "ROUTE_TREE_REFERENCE",
+  },
+  "ROUTE_TREE_REFERENCE:index.ts@101": {
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE_REFERENCE:index.ts@101",
+    "name": "subHello",
+    "path": "/sub",
+    "position": 101,
+    "targetId": "ROUTE_TREE:index.ts@101",
+    "type": "ROUTE_TREE_REFERENCE",
+  },
+  "ROUTE_TREE_REFERENCE:panic.ts@36": {
+    "fileName": "panic.ts",
+    "id": "ROUTE_TREE_REFERENCE:panic.ts@36",
+    "name": "app",
+    "path": "/panic",
+    "position": 36,
+    "targetId": "ROUTE_TREE:panic.ts@36",
+    "type": "ROUTE_TREE_REFERENCE",
+  },
+  "ROUTE_TREE_REFERENCE:silence.ts@36": {
+    "fileName": "silence.ts",
+    "id": "ROUTE_TREE_REFERENCE:silence.ts@36",
+    "name": "silence",
+    "path": "/silence",
+    "position": 36,
+    "targetId": "ROUTE_TREE:silence.ts@36",
+    "type": "ROUTE_TREE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:bye.ts@70": {
+    "character": 16,
+    "content": "(c) => c.text("Bye, sub!")",
+    "fileName": "bye.ts",
+    "id": "SOURCE_REFERENCE:bye.ts@70",
+    "line": 3,
+    "modules": Set {},
+    "position": 70,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:factory.ts@294": {
+    "character": 15,
+    "content": "(c) => c.text("Hello, Hono!")",
+    "fileName": "factory.ts",
+    "id": "SOURCE_REFERENCE:factory.ts@294",
+    "line": 9,
+    "modules": Set {},
+    "position": 294,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@142": {
+    "character": 18,
+    "content": "(c) => c.text("Hello, sub!")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@142",
+    "line": 6,
+    "modules": Set {},
+    "position": 142,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@194": {
+    "character": 21,
+    "content": "(c) => c.text("Bye, sub!")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@194",
+    "line": 7,
+    "modules": Set {},
+    "position": 194,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:panic.ts@67": {
+    "character": 13,
+    "content": "(c) => {
+  c.status(500);
+  return c.text("Panic!");
+}",
+    "fileName": "panic.ts",
+    "id": "SOURCE_REFERENCE:panic.ts@67",
+    "line": 3,
+    "modules": Set {},
+    "position": 67,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:silence.ts@75": {
+    "character": 17,
+    "content": "(c) => c.text("...")",
+    "fileName": "silence.ts",
+    "id": "SOURCE_REFERENCE:silence.ts@75",
+    "line": 3,
+    "modules": Set {},
+    "position": 75,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+}
+`;
+
+exports[`run test 'import as' with location '../../test-cases/import-as' 1`] = `
+{
+  "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure": {
+    "id": "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure",
+    "import": "measure",
+    "importPath": "@fiberplane/hono-otel",
+    "name": "@fiberplane/hono-otel",
+    "pathId": "@fiberplane/hono-otel",
+    "type": "MODULE_REFERENCE",
+    "version": "0.3.1",
+  },
+  "MODULE_REFERENCE:db@.%2Fdb": {
+    "id": "MODULE_REFERENCE:db@.%2Fdb",
+    "import": "* as db",
+    "importPath": "./db",
+    "name": "./db",
+    "pathId": "./db",
+    "type": "MODULE_REFERENCE",
+  },
+  "MODULE_REFERENCE:getUserProfile@.%2Fdb": {
+    "id": "MODULE_REFERENCE:getUserProfile@.%2Fdb",
+    "import": "getProfile as getUserProfile",
+    "importPath": "./db",
+    "name": "./db",
+    "pathId": "./db",
+    "type": "MODULE_REFERENCE",
+  },
+  "MODULE_REFERENCE:hono%2Fcors@cors": {
+    "id": "MODULE_REFERENCE:hono%2Fcors@cors",
+    "import": "cors",
+    "importPath": "hono/cors",
+    "name": "hono",
+    "pathId": "hono/cors",
+    "type": "MODULE_REFERENCE",
+    "version": "4.6.9",
+  },
+  "MODULE_REFERENCE:path@node%3Apath": {
+    "id": "MODULE_REFERENCE:path@node%3Apath",
+    "import": "path",
+    "importPath": "node:path",
+    "name": "node:path",
+    "pathId": "node:path",
+    "type": "MODULE_REFERENCE",
+  },
+  "ROUTE_ENTRY:index.ts@170": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@170",
+    "method": "get",
+    "modules": Set {},
+    "path": "/user/1/profile",
+    "position": 170,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@197",
+      "SOURCE_REFERENCE:index.ts@205",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@293": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@293",
+    "method": "get",
+    "modules": Set {},
+    "path": "/user/1",
+    "position": 293,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@312",
+      "SOURCE_REFERENCE:index.ts@320",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_TREE:index.ts@151": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:index.ts@170",
+      "ROUTE_ENTRY:index.ts@293",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@151",
+    "modules": Set {},
+    "name": "app",
+    "position": 151,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "SOURCE_REFERENCE:db.ts@187": {
+    "character": 13,
+    "content": "export const getUser = measure("getUser", async () => {
+  await sleep();
+
+  // Do something silly with the path module
+  const parent = path.resolve(__dirname, "..");
+  console.log("parent folder", parent);
+  const value = {
+    name: "John Doe",
+    email: "john@doe.com",
+  };
+  return value;
+});",
+    "fileName": "db.ts",
+    "id": "SOURCE_REFERENCE:db.ts@187",
+    "line": 6,
+    "modules": Set {
+      "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure",
+      "MODULE_REFERENCE:path@node%3Apath",
+    },
+    "position": 187,
+    "references": Set {
+      "SOURCE_REFERENCE:db.ts@86",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:db.ts@474": {
+    "character": 0,
+    "content": "export async function getProfile() {
+  const user = await getUser();
+  await sleep(10);
+  return {
+    ...user,
+    image: "https://xsgames.co/randomusers/avatar.php?g=pixel",
+  };
+}",
+    "fileName": "db.ts",
+    "id": "SOURCE_REFERENCE:db.ts@474",
+    "line": 19,
+    "modules": Set {},
+    "position": 474,
+    "references": Set {
+      "SOURCE_REFERENCE:db.ts@187",
+      "SOURCE_REFERENCE:db.ts@86",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:db.ts@86": {
+    "character": 6,
+    "content": "const sleep = (duration = 100) =>
+  new Promise((resolve) => setTimeout(resolve, duration))",
+    "fileName": "db.ts",
+    "id": "SOURCE_REFERENCE:db.ts@86",
+    "line": 3,
+    "modules": Set {},
+    "position": 86,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@197": {
+    "character": 27,
+    "content": "cors()",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@197",
+    "line": 7,
+    "modules": Set {
+      "MODULE_REFERENCE:hono%2Fcors@cors",
+    },
+    "position": 197,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@205": {
+    "character": 35,
+    "content": "async (c) => {
+  const profile = await getUserProfile();
+  return c.json(profile);
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@205",
+    "line": 7,
+    "modules": Set {
+      "MODULE_REFERENCE:getUserProfile@.%2Fdb",
+    },
+    "position": 205,
+    "references": Set {
+      "SOURCE_REFERENCE:db.ts@474",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@312": {
+    "character": 19,
+    "content": "cors()",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@312",
+    "line": 12,
+    "modules": Set {
+      "MODULE_REFERENCE:hono%2Fcors@cors",
+    },
+    "position": 312,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@320": {
+    "character": 27,
+    "content": "async (c) => {
+  const user = await db.getUser();
+  return c.json(user);
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@320",
+    "line": 12,
+    "modules": Set {
+      "MODULE_REFERENCE:db@.%2Fdb",
+    },
+    "position": 320,
+    "references": Set {
+      "SOURCE_REFERENCE:db.ts@187",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+}
+`;
+
+exports[`run test 'module imports' with location '../../test-cases/module-imports' 1`] = `
+{
+  "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure": {
+    "id": "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure",
+    "import": "measure",
+    "importPath": "@fiberplane/hono-otel",
+    "name": "@fiberplane/hono-otel",
+    "pathId": "@fiberplane/hono-otel",
+    "type": "MODULE_REFERENCE",
+    "version": "0.3.1",
+  },
+  "MODULE_REFERENCE:User@.%2Ftypes": {
+    "id": "MODULE_REFERENCE:User@.%2Ftypes",
+    "import": "User",
+    "importPath": "./types",
+    "name": "./types",
+    "pathId": "./types",
+    "type": "MODULE_REFERENCE",
+  },
+  "MODULE_REFERENCE:getUser@.%2Fdb": {
+    "id": "MODULE_REFERENCE:getUser@.%2Fdb",
+    "import": "getUser",
+    "importPath": "./db",
+    "name": "./db",
+    "pathId": "./db",
+    "type": "MODULE_REFERENCE",
+  },
+  "MODULE_REFERENCE:hono%2Fcors@cors": {
+    "id": "MODULE_REFERENCE:hono%2Fcors@cors",
+    "import": "cors",
+    "importPath": "hono/cors",
+    "name": "hono",
+    "pathId": "hono/cors",
+    "type": "MODULE_REFERENCE",
+    "version": "4.6.9",
+  },
+  "ROUTE_ENTRY:index.ts@133": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@133",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 133,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@207",
+      "SOURCE_REFERENCE:index.ts@223",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@456": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@456",
+    "method": "get",
+    "modules": Set {},
+    "path": "/slow",
+    "position": 456,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@473",
+      "SOURCE_REFERENCE:index.ts@481",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@848": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@848",
+    "method": "get",
+    "modules": Set {},
+    "path": "user/1",
+    "position": 848,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@866",
+      "SOURCE_REFERENCE:index.ts@874",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_TREE:index.ts@114": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:index.ts@133",
+      "ROUTE_ENTRY:index.ts@456",
+      "ROUTE_ENTRY:index.ts@848",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@114",
+    "modules": Set {},
+    "name": "app",
+    "position": 114,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "SOURCE_REFERENCE:db.ts@137": {
+    "character": 23,
+    "content": "export const getUser = measure("getUser", async () => {
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  const value: User = {
+    name: "John Doe",
+    email: "john@doe.com",
+  };
+  return value;
+});",
+    "fileName": "db.ts",
+    "id": "SOURCE_REFERENCE:db.ts@137",
+    "line": 4,
+    "modules": Set {
+      "MODULE_REFERENCE:%40fiberplane%2Fhono-otel@measure",
+      "MODULE_REFERENCE:User@.%2Ftypes",
+    },
+    "position": 137,
+    "references": Set {
+      "SOURCE_REFERENCE:types.ts@29",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@207": {
+    "character": 2,
+    "content": "() => cors()",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@207",
+    "line": 9,
+    "modules": Set {
+      "MODULE_REFERENCE:hono%2Fcors@cors",
+    },
+    "position": 207,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@223": {
+    "character": 2,
+    "content": "(c) => c.text("Hello, Hono!")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@223",
+    "line": 10,
+    "modules": Set {},
+    "position": 223,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@290": {
+    "character": 0,
+    "content": "export async function sleep(duration: number) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@290",
+    "line": 14,
+    "modules": Set {},
+    "position": 290,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@473": {
+    "character": 17,
+    "content": "cors()",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@473",
+    "line": 19,
+    "modules": Set {
+      "MODULE_REFERENCE:hono%2Fcors@cors",
+    },
+    "position": 473,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@481": {
+    "character": 25,
+    "content": "async (c) => {
+  await sleep(1000);
+  return c.text("Hello, Hono (slow)!");
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@481",
+    "line": 19,
+    "modules": Set {},
+    "position": 481,
+    "references": Set {
+      "SOURCE_REFERENCE:index.ts@290",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@866": {
+    "character": 18,
+    "content": "cors()",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@866",
+    "line": 32,
+    "modules": Set {
+      "MODULE_REFERENCE:hono%2Fcors@cors",
+    },
+    "position": 866,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@874": {
+    "character": 26,
+    "content": "async (c) => {
+  // await getUser();
+  const user = await getUser();
+  return c.json(user);
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@874",
+    "line": 32,
+    "modules": Set {
+      "MODULE_REFERENCE:getUser@.%2Fdb",
+    },
+    "position": 874,
+    "references": Set {
+      "SOURCE_REFERENCE:db.ts@137",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:types.ts@0": {
+    "character": 0,
+    "content": "export type Email = string;",
+    "fileName": "types.ts",
+    "id": "SOURCE_REFERENCE:types.ts@0",
+    "line": 0,
+    "modules": Set {},
+    "position": 0,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:types.ts@29": {
+    "character": 0,
+    "content": "export type User = {
+  name: string;
+  email: Email;
+};",
+    "fileName": "types.ts",
+    "id": "SOURCE_REFERENCE:types.ts@29",
+    "line": 2,
+    "modules": Set {},
+    "position": 29,
+    "references": Set {
+      "SOURCE_REFERENCE:types.ts@0",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+}
+`;
+
+exports[`run test 'multiple files' with location '../../test-cases/multiple' 1`] = `
+{
+  "ROUTE_ENTRY:index.ts@55": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@55",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 55,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@68",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:other.ts@102": {
+    "fileName": "other.ts",
+    "id": "ROUTE_ENTRY:other.ts@102",
+    "method": "post",
+    "modules": Set {},
+    "path": "/hello-world",
+    "position": 102,
+    "sources": Set {
+      "SOURCE_REFERENCE:other.ts@127",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:other.ts@54": {
+    "fileName": "other.ts",
+    "id": "ROUTE_ENTRY:other.ts@54",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 54,
+    "sources": Set {
+      "SOURCE_REFERENCE:other.ts@67",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_TREE:index.ts@36": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:index.ts@55",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@36",
+    "modules": Set {},
+    "name": "app",
+    "position": 36,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:other.ts@35": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:other.ts@54",
+      "ROUTE_ENTRY:other.ts@102",
+    ],
+    "fileName": "other.ts",
+    "id": "ROUTE_TREE:other.ts@35",
+    "modules": Set {},
+    "name": "app",
+    "position": 35,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "SOURCE_REFERENCE:index.ts@68": {
+    "character": 13,
+    "content": "(c) => c.text("Hello, Hono!")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@68",
+    "line": 4,
+    "modules": Set {},
+    "position": 68,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:other.ts@127": {
+    "character": 25,
+    "content": "(c) => c.json({ hello: "world" })",
+    "fileName": "other.ts",
+    "id": "SOURCE_REFERENCE:other.ts@127",
+    "line": 7,
+    "modules": Set {},
+    "position": 127,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:other.ts@67": {
+    "character": 13,
+    "content": "(c) => {
+  return c.json({});
+}",
+    "fileName": "other.ts",
+    "id": "SOURCE_REFERENCE:other.ts@67",
+    "line": 3,
+    "modules": Set {},
+    "position": 67,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+}
+`;
+
+exports[`run test 'single file' with location '../../test-cases/single' 1`] = `
+{
+  "ROUTE_ENTRY:index.ts@55": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@55",
+    "method": "get",
+    "modules": Set {},
+    "path": "/",
+    "position": 55,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@68",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_TREE:index.ts@36": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:index.ts@55",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@36",
+    "modules": Set {},
+    "name": "app",
+    "position": 36,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "SOURCE_REFERENCE:index.ts@68": {
+    "character": 13,
+    "content": "(c) => c.text("Hello, Hono!")",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@68",
+    "line": 4,
+    "modules": Set {},
+    "position": 68,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+}
+`;
+
+exports[`run test 'split routes' with location '../../test-cases/split-routes' 1`] = `
+{
+  "MIDDLEWARE_ENTRY:index.ts@619": {
+    "fileName": "index.ts",
+    "id": "MIDDLEWARE_ENTRY:index.ts@619",
+    "modules": Set {},
+    "path": "/",
+    "position": 619,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@627",
+    },
+    "type": "MIDDLEWARE_ENTRY",
+  },
+  "MODULE_REFERENCE:hono%2Fcors@cors": {
+    "id": "MODULE_REFERENCE:hono%2Fcors@cors",
+    "import": "cors",
+    "importPath": "hono/cors",
+    "name": "hono",
+    "pathId": "hono/cors",
+    "type": "MODULE_REFERENCE",
+    "version": "4.6.9",
+  },
+  "ROUTE_ENTRY:index.ts@320": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@320",
+    "method": "get",
+    "modules": Set {},
+    "path": "/api/v1/projects",
+    "position": 320,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@353",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:index.ts@394": {
+    "fileName": "index.ts",
+    "id": "ROUTE_ENTRY:index.ts@394",
+    "method": "get",
+    "modules": Set {},
+    "path": "/api/v1/projects/:id",
+    "position": 394,
+    "sources": Set {
+      "SOURCE_REFERENCE:index.ts@431",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:projects.ts@253": {
+    "fileName": "projects.ts",
+    "id": "ROUTE_ENTRY:projects.ts@253",
+    "method": "get",
+    "modules": Set {},
+    "path": "/api/v1/projects",
+    "position": 253,
+    "sources": Set {
+      "SOURCE_REFERENCE:projects.ts@286",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:projects.ts@327": {
+    "fileName": "projects.ts",
+    "id": "ROUTE_ENTRY:projects.ts@327",
+    "method": "get",
+    "modules": Set {},
+    "path": "/api/v1/projects/:id",
+    "position": 327,
+    "sources": Set {
+      "SOURCE_REFERENCE:projects.ts@364",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:users.ts@179": {
+    "fileName": "users.ts",
+    "id": "ROUTE_ENTRY:users.ts@179",
+    "method": "get",
+    "modules": Set {},
+    "path": "/api/v1/users",
+    "position": 179,
+    "sources": Set {
+      "SOURCE_REFERENCE:users.ts@206",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_ENTRY:users.ts@244": {
+    "fileName": "users.ts",
+    "id": "ROUTE_ENTRY:users.ts@244",
+    "method": "get",
+    "modules": Set {},
+    "path": "/api/v1/users/:id",
+    "position": 244,
+    "sources": Set {
+      "SOURCE_REFERENCE:users.ts@275",
+    },
+    "type": "ROUTE_ENTRY",
+  },
+  "ROUTE_TREE:index.ts@103": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:index.ts@320",
+      "ROUTE_ENTRY:index.ts@394",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@103",
+    "modules": Set {},
+    "name": "projects",
+    "position": 103,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:index.ts@601": {
+    "baseUrl": "",
+    "entries": [
+      "MIDDLEWARE_ENTRY:index.ts@619",
+      "ROUTE_TREE_REFERENCE:users.ts@36",
+      "ROUTE_TREE_REFERENCE:index.ts@103",
+    ],
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE:index.ts@601",
+    "modules": Set {},
+    "name": "app",
+    "position": 601,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:projects.ts@36": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:projects.ts@253",
+      "ROUTE_ENTRY:projects.ts@327",
+    ],
+    "fileName": "projects.ts",
+    "id": "ROUTE_TREE:projects.ts@36",
+    "modules": Set {},
+    "name": "projects",
+    "position": 36,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE:users.ts@36": {
+    "baseUrl": "",
+    "entries": [
+      "ROUTE_ENTRY:users.ts@179",
+      "ROUTE_ENTRY:users.ts@244",
+    ],
+    "fileName": "users.ts",
+    "id": "ROUTE_TREE:users.ts@36",
+    "modules": Set {},
+    "name": "users",
+    "position": 36,
+    "sources": Set {},
+    "type": "ROUTE_TREE",
+  },
+  "ROUTE_TREE_REFERENCE:index.ts@103": {
+    "fileName": "index.ts",
+    "id": "ROUTE_TREE_REFERENCE:index.ts@103",
+    "name": "projects",
+    "path": "/",
+    "position": 103,
+    "targetId": "ROUTE_TREE:index.ts@103",
+    "type": "ROUTE_TREE_REFERENCE",
+  },
+  "ROUTE_TREE_REFERENCE:users.ts@36": {
+    "fileName": "users.ts",
+    "id": "ROUTE_TREE_REFERENCE:users.ts@36",
+    "name": "users",
+    "path": "/",
+    "position": 36,
+    "targetId": "ROUTE_TREE:users.ts@36",
+    "type": "ROUTE_TREE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@133": {
+    "character": 6,
+    "content": "const PROJECTS = [
+  {
+    id: 1,
+    name: "Project A",
+    description: "Project A description",
+  },
+  {
+    id: 2,
+    name: "Project B",
+    description: "Project B description",
+  },
+]",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@133",
+    "line": 6,
+    "modules": Set {},
+    "position": 133,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@353": {
+    "character": 33,
+    "content": "(c) => {
+  return c.json(PROJECTS);
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@353",
+    "line": 19,
+    "modules": Set {},
+    "position": 353,
+    "references": Set {
+      "SOURCE_REFERENCE:index.ts@133",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@431": {
+    "character": 37,
+    "content": "(c) => {
+  const id = Number.parseInt(c.req.param("id"));
+  const project = PROJECTS.find((p) => p.id === id);
+  return c.json(project);
+}",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@431",
+    "line": 23,
+    "modules": Set {},
+    "position": 431,
+    "references": Set {
+      "SOURCE_REFERENCE:index.ts@133",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:index.ts@627": {
+    "character": 8,
+    "content": "cors()",
+    "fileName": "index.ts",
+    "id": "SOURCE_REFERENCE:index.ts@627",
+    "line": 32,
+    "modules": Set {
+      "MODULE_REFERENCE:hono%2Fcors@cors",
+    },
+    "position": 627,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:projects.ts@286": {
+    "character": 33,
+    "content": "(c) => {
+  return c.json(PROJECTS);
+}",
+    "fileName": "projects.ts",
+    "id": "SOURCE_REFERENCE:projects.ts@286",
+    "line": 17,
+    "modules": Set {},
+    "position": 286,
+    "references": Set {
+      "SOURCE_REFERENCE:projects.ts@66",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:projects.ts@364": {
+    "character": 37,
+    "content": "(c) => {
+  const id = Number.parseInt(c.req.param("id"));
+  const project = PROJECTS.find((p) => p.id === id);
+  return c.json(project);
+}",
+    "fileName": "projects.ts",
+    "id": "SOURCE_REFERENCE:projects.ts@364",
+    "line": 21,
+    "modules": Set {},
+    "position": 364,
+    "references": Set {
+      "SOURCE_REFERENCE:projects.ts@66",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:projects.ts@66": {
+    "character": 6,
+    "content": "const PROJECTS = [
+  {
+    id: 1,
+    name: "Project A",
+    description: "Project A description",
+  },
+  {
+    id: 2,
+    name: "Project B",
+    description: "Project B description",
+  },
+]",
+    "fileName": "projects.ts",
+    "id": "SOURCE_REFERENCE:projects.ts@66",
+    "line": 4,
+    "modules": Set {},
+    "position": 66,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:users.ts@206": {
+    "character": 27,
+    "content": "(c) => {
+  return c.json(USERS);
+}",
+    "fileName": "users.ts",
+    "id": "SOURCE_REFERENCE:users.ts@206",
+    "line": 17,
+    "modules": Set {},
+    "position": 206,
+    "references": Set {
+      "SOURCE_REFERENCE:users.ts@63",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:users.ts@275": {
+    "character": 31,
+    "content": "(c) => {
+  const id = Number.parseInt(c.req.param("id"));
+  const user = USERS.find((u) => u.id === id);
+  return c.json(user);
+}",
+    "fileName": "users.ts",
+    "id": "SOURCE_REFERENCE:users.ts@275",
+    "line": 21,
+    "modules": Set {},
+    "position": 275,
+    "references": Set {
+      "SOURCE_REFERENCE:users.ts@63",
+    },
+    "type": "SOURCE_REFERENCE",
+  },
+  "SOURCE_REFERENCE:users.ts@63": {
+    "character": 6,
+    "content": "const USERS = [
+  {
+    id: 1,
+    name: "Alice",
+    age: 25,
+  },
+  {
+    id: 2,
+    name: "Bob",
+    age: 30,
+  },
+]",
+    "fileName": "users.ts",
+    "id": "SOURCE_REFERENCE:users.ts@63",
+    "line": 4,
+    "modules": Set {},
+    "position": 63,
+    "references": Set {},
+    "type": "SOURCE_REFERENCE",
+  },
+}
+`;

@@ -2,7 +2,7 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import type WebSocket from "ws";
 import { z } from "zod";
 import type * as schema from "../../db/schema.js";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 
 export type WebhoncManagerConfig = {
   host: string;

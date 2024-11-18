@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { serveStatic } from "@hono/node-server/serve-static";
 import chalk from "chalk";
 import { createFactory } from "hono/factory";
-import logger from "./logger.js";
+import logger from "./logger/index.js";
 
 // Shim __filename and __dirname since we're using esm
 const __filename = fileURLToPath(import.meta.url);
@@ -37,14 +37,14 @@ export const staticServerMiddleware = serveStatic({
   },
 });
 
-export const frontendRoutesHandler = factory.createHandlers((c) => {
+export const [frontendRoutesHandler] = factory.createHandlers((c) => {
   const frontendFolder = getPathToFrontendFolder();
   if (!frontendFolder) {
     return c.text("Frontend not found", 500);
   }
   const indexAbsolutePath = path.resolve(frontendFolder, "index.html");
   return c.html(fs.readFileSync(indexAbsolutePath, "utf-8"));
-})[0];
+});
 
 /**
  * Helper function that tries to create a relative path to the ui build.
@@ -63,7 +63,7 @@ function getRelativePathToFrontendDist() {
 
   for (const possiblePath of possiblePaths) {
     if (fs.existsSync(possiblePath)) {
-      logger.debug(chalk.dim(`[debug] Found frontend folder! ${possiblePath}`));
+      logger.debug(chalk.dim(`Found frontend folder! ${possiblePath}`));
 
       const relativePathToFrontend = path.relative(
         currentWorkingDir,
@@ -72,7 +72,7 @@ function getRelativePathToFrontendDist() {
 
       logger.debug(
         chalk.dim(
-          `[debug] Relative path to frontend folder: ${relativePathToFrontend}`,
+          `Relative path to frontend folder: ${relativePathToFrontend}`,
         ),
       );
 

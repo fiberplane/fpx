@@ -5,14 +5,13 @@ import type { WebSocket } from "ws";
 
 import type * as schema from "./db/schema.js";
 import type { Bindings, Variables } from "./lib/types.js";
-import logger from "./logger.js";
+import logger from "./logger/index.js";
 
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
 import auth from "./routes/auth.js";
 import inference from "./routes/inference/index.js";
 import settings from "./routes/settings.js";
-import source from "./routes/source.js";
 import traces from "./routes/traces.js";
 
 export function createApp(
@@ -57,7 +56,6 @@ export function createApp(
   app.route("/", auth);
   app.route("/", traces);
   app.route("/", inference);
-  app.route("/", source);
   app.route("/", appRoutes);
   app.route("/", settings);
 

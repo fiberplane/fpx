@@ -3,7 +3,7 @@ import path from "node:path";
 import type { Context } from "hono";
 import { minimatch } from "minimatch";
 import { type Schema, any } from "zod";
-import logger from "../logger.js";
+import logger from "../logger/index.js";
 
 export function isJson(str: unknown) {
   if (typeof str !== "string") {
@@ -105,7 +105,7 @@ export function getIgnoredPaths() {
 
     return defaultIgnoredPaths.concat(...gitignoredPaths.flat());
   } catch (error) {
-    console.error("Error reading .gitignore files", error);
+    logger.error("Error reading .gitignore files", error);
     return defaultIgnoredPaths;
   }
 }
@@ -147,7 +147,8 @@ export async function safeReadTextBody(response: Response) {
 
 // NOTE - Copy-pasted from client-library-otel
 async function tryGetResponseBodyAsText(response: Response) {
-  const contentType = response.headers.get("content-type");
+  const headers = response.headers;
+  const contentType = headers.get("content-type");
   if (contentType?.includes("image/")) {
     return "#fpx.image";
   }

@@ -1,5 +1,5 @@
 import { URL } from "node:url";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 import {
   ERROR_TYPE_INVALID_TOKEN,
   ERROR_TYPE_TOKEN_EXPIRED,

@@ -10,7 +10,7 @@ import * as schema from "../db/schema.js";
 import { fromCollectorRequest } from "../lib/otel/index.js";
 import { getSetting } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import logger from "../logger.js";
+import logger from "../logger/index.js";
 
 const { otelSpans } = schema;
 

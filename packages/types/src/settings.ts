@@ -100,7 +100,6 @@ export const AiProviderTypeSchema = z.union([
 export type AiProviderType = z.infer<typeof AiProviderTypeSchema>;
 
 export const SettingsSchema = z.object({
-  aiEnabled: z.boolean().optional(),
   aiProvider: AiProviderTypeSchema.optional(),
   aiProviderConfigurations: z
     .record(

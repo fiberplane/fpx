@@ -4,7 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import type { Settings } from "@fiberplane/fpx-types";
 import { type APICallError, generateObject } from "ai";
 import { createOllama } from "ollama-ai-provider";
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 import { generateRequestWithFp } from "./fp.js";
 import { getSystemPrompt, invokeRequestGenerationPrompt } from "./prompts.js";
 import { makeRequestTool, requestSchema } from "./tools.js";
@@ -48,6 +48,7 @@ function configureProvider(
     return ollama(providerConfig.model);
   }
 
+  // TODO add support for fp
   throw new Error("Unknown AI provider");
 }
 
@@ -259,7 +260,10 @@ function createErrorMessage(error: unknown) {
 }
 
 // NOTE - Copy-pasted from frontend
-export function hasValidAiConfig(settings: Settings) {
+export function hasValidAiConfig(settings: Settings | undefined) {
+  if (!settings) {
+    return false;
+  }
   const provider = settings.aiProvider;
   switch (provider) {
     // HACK - Special logic for OpenAI to support someone who has set a baseUrl

@@ -1,9 +1,14 @@
 import { SettingsSchema } from "@fiberplane/fpx-types";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { hasValidAiConfig } from "../lib/ai/index.js";
+import {
+  disableCodeAnalysis,
+  enableCodeAnalysis,
+} from "../lib/code-analysis.js";
 import { getAllSettings, upsertSettings } from "../lib/settings/index.js";
 import type { Bindings, Variables } from "../lib/types.js";
-import logger from "../logger.js";
+import logger from "../logger/index.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -30,11 +35,12 @@ app.post("/v0/settings", cors(), async (ctx) => {
   };
 
   const parsedContent = SettingsSchema.parse(content);
-  // Remove the stored api key if the feature is disabled
-  // if (!parsedContent.aiEnabled) {
-  //   parsedContent.aiProviderConfigurations?.openai?.apiKey = "";
-  //   parsedContent.aiProviderConfigurations?.anthropic?.apiKey = "";
-  // }
+
+  if (hasValidAiConfig(parsedContent)) {
+    enableCodeAnalysis();
+  } else {
+    disableCodeAnalysis();
+  }
 
   logger.debug("Updating settings", { content });
 

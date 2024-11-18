@@ -1,4 +1,4 @@
-import logger from "../../logger.js";
+import logger from "../../logger/index.js";
 import { makeFpAuthRequest } from "../fp-services/request.js";
 
 type GenerateRequestOptions = {

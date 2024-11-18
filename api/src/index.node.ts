@@ -5,6 +5,7 @@ import chalk from "chalk";
 import { config } from "dotenv";
 import { drizzle } from "drizzle-orm/libsql";
 import figlet from "figlet";
+import type { MiddlewareHandler } from "hono";
 import type { WebSocket } from "ws";
 import { createApp } from "./app.js";
 import {
@@ -14,18 +15,20 @@ import {
 } from "./constants.js";
 import * as schema from "./db/schema.js";
 import { hasValidAiConfig } from "./lib/ai/index.js";
-import { getTSServer } from "./lib/expand-function/tsserver/index.js";
 import { getAuthServer } from "./lib/fp-services/server.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getInferenceConfig, getSetting } from "./lib/settings/index.js";
 import { resolveWebhoncUrl } from "./lib/utils.js";
 import * as webhonc from "./lib/webhonc/index.js";
-import logger from "./logger.js";
+import logger from "./logger/index.js";
 import { startRouteProbeWatcher } from "./probe-routes.js";
 import {
   frontendRoutesHandler,
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
+
+import { enableCodeAnalysis } from "./lib/code-analysis.js";
+import type { Bindings, Variables } from "./lib/types.js";
 
 config({ path: ".dev.vars" });
 
@@ -43,7 +46,14 @@ const app = createApp(db, webhonc, wsConnections);
 /**
  * Serve all the frontend static files
  */
-app.use("/*", staticServerMiddleware);
+// Typecast to please the typescript overlords
+app.use(
+  "/*",
+  staticServerMiddleware as unknown as MiddlewareHandler<{
+    Bindings: Bindings;
+    Variables: Variables;
+  }>,
+);
 
 /**
  * Fallback route that just serves the frontend index.html file,
@@ -64,7 +74,8 @@ server.on("listening", () => {
   const runningMessage = "FPX Studio is up!";
   const localhostLink = chalk.blue(`http://localhost:${port}`);
   const visitMessage = `Visit ${localhostLink} to get started`;
-  logger.info(`${fpxLogo}\n${runningMessage} ${visitMessage}\n`);
+  logger.info(`${fpxLogo}`);
+  logger.info(`${runningMessage} ${visitMessage}`);
 });
 
 server.on("error", (err) => {
@@ -105,14 +116,8 @@ if (proxyRequestsEnabled ?? false) {
 
 // check settings if ai is enabled, and proactively start the typescript language server
 const inferenceConfig = await getInferenceConfig(db);
-const aiEnabled = inferenceConfig ? hasValidAiConfig(inferenceConfig) : false;
+const aiEnabled = hasValidAiConfig(inferenceConfig);
+
 if (aiEnabled) {
-  logger.debug(
-    "AI Request Generation enabled. Starting typescript language server",
-  );
-  try {
-    await getTSServer(USER_PROJECT_ROOT_DIR);
-  } catch (error) {
-    logger.error("Error starting TSServer:", error);
-  }
+  enableCodeAnalysis();
 }

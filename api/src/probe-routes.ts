@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { getIgnoredPaths, shouldIgnoreFile } from "./lib/utils.js";
-import logger from "./logger.js";
+import logger from "./logger/index.js";
 
 let debounceTimeout: NodeJS.Timeout | null = null;
 
