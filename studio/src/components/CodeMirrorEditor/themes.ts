@@ -7,3 +7,9 @@ export const customTheme = EditorView.theme({
     background: "transparent !important",
   },
 });
+
+export const duotonePlaintextOverride = EditorView.theme({
+  ".cm-line": {
+    color: "#eeebff",
+  },
+});
