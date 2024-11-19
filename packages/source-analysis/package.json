@@ -1,7 +1,7 @@
 {
   "name": "@fiberplane/source-analysis",
-  "private": true,
-  "version": "0.0.0",
+  "private": false,
+  "version": "0.1.0",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {

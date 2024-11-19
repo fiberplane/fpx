@@ -16,7 +16,10 @@ import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
-import { CodeMirrorJsonEditor } from "@/components/CodeMirrorEditor";
+import {
+  CodeMirrorJsonEditor,
+  CodeMirrorTextEditor,
+} from "@/components/CodeMirrorEditor";
 import { useRequestorStore } from "../store";
 
 type RequestPanelProps = {
@@ -236,9 +239,20 @@ export const RequestPanel = memo(function RequestPanel(
               setBody(undefined);
             }}
           />
-          {(body.type === "json" || body.type === "text") && (
-            <CodeMirrorJsonEditor
+          {/* TODO - Have a proper text editor */}
+          {body.type === "text" && (
+            <CodeMirrorTextEditor
               onChange={setBody}
+              value={body.value}
+              maxHeight="800px"
+              onSubmit={onSubmit}
+            />
+          )}
+          {body.type === "json" && (
+            <CodeMirrorJsonEditor
+              onChange={(bodyValue) =>
+                setBody({ type: "json", value: bodyValue })
+              }
               value={body.value}
               maxHeight="800px"
               onSubmit={onSubmit}
