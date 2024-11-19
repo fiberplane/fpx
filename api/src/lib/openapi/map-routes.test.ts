@@ -1,7 +1,7 @@
-import { correlatePaths } from "./map-routes.js";
+import { mapOpenApiToHonoRoutes } from "./map-routes.js";
 import type { OpenAPIOperation, OpenApiSpec } from "./types.js";
 
-describe("correlatePaths", () => {
+describe("mapOpenApiToHonoRoutes", () => {
   it("should convert OpenAPI paths to Hono paths", () => {
     const mockSpec: OpenApiSpec = {
       paths: {
@@ -20,7 +20,7 @@ describe("correlatePaths", () => {
       },
     };
 
-    const result = correlatePaths(mockSpec);
+    const result = mapOpenApiToHonoRoutes(mockSpec);
 
     expect(result).toEqual([
       {
@@ -51,7 +51,7 @@ describe("correlatePaths", () => {
       paths: {},
     };
 
-    const result = correlatePaths(mockSpec);
+    const result = mapOpenApiToHonoRoutes(mockSpec);
 
     expect(result).toEqual([]);
   });
