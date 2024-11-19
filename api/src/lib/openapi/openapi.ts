@@ -1,6 +1,6 @@
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import { resolveServiceArg } from "../../probe-routes.js";
 import type * as schema from "../../db/schema.js";
+import { resolveServiceArg } from "../../probe-routes.js";
 import { getAllSettings } from "../settings/index.js";
 
 /**
@@ -28,9 +28,9 @@ export function resolveSpecUrl(specUrl: string) {
   } catch {
     const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
     const serviceUrl = resolveServiceArg(serviceTargetArgument);
-    
+
     // Remove leading slash if present to avoid double slashes
-    const cleanSpecUrl = specUrl.startsWith('/') ? specUrl.slice(1) : specUrl;
+    const cleanSpecUrl = specUrl.startsWith("/") ? specUrl.slice(1) : specUrl;
     return `${serviceUrl}/${cleanSpecUrl}`;
   }
 }
