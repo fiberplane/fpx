@@ -1,36 +1,46 @@
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type { z } from "zod";
 import type * as schema from "../../db/schema.js";
-import { resolveServiceArg } from "../../probe-routes.js";
-import { getAllSettings } from "../settings/index.js";
+import type { schemaProbedRoutes } from "../../lib/app-routes.js";
+import logger from "../../logger/index.js";
+import { fetchOpenApiSpec } from "./fetch.js";
+import { mapOpenApiToHonoRoutes } from "./map-routes.js";
 
-/**
- * Get the OpenAPI spec URL from the settings record in the database.
- */
-export async function getSpecUrl(db: LibSQLDatabase<typeof schema>) {
-  const settingsRecord = await getAllSettings(db);
-  return settingsRecord.openApiSpecUrl;
-}
+type Routes = z.infer<typeof schemaProbedRoutes>["routes"];
 
-/**
- * Resolve the OpenAPI spec URL to an absolute URL.
- *
- * @param specUrl - The spec URL to resolve.
- * @returns The resolved spec URL or null if the spec URL is not provided.
- */
-export function resolveSpecUrl(specUrl: string) {
-  if (!specUrl) {
-    return null;
+export async function addOpenApiSpecToRoutes(
+  db: LibSQLDatabase<typeof schema>,
+  routes: Routes,
+) {
+  const spec = await fetchOpenApiSpec(db);
+  if (!spec) {
+    logger.debug("No OpenAPI spec found");
+    return [];
   }
-  try {
-    // Try parsing as URL to check if it's already absolute
-    new URL(specUrl);
-    return specUrl;
-  } catch {
-    const serviceTargetArgument = process.env.FPX_SERVICE_TARGET;
-    const serviceUrl = resolveServiceArg(serviceTargetArgument);
-
-    // Remove leading slash if present to avoid double slashes
-    const cleanSpecUrl = specUrl.startsWith("/") ? specUrl.slice(1) : specUrl;
-    return `${serviceUrl}/${cleanSpecUrl}`;
-  }
+  const openApiRoutes = mapOpenApiToHonoRoutes(spec);
+  const appRoutes = Array.isArray(routes) ? routes : [routes];
+  logger.info("[addOpenApiSpecToRoutes] length of appRoutes", appRoutes.length);
+  return appRoutes.map((route) => {
+    logger.debug(
+      `Mapping OpenAPI spec to route ${route.path} ${route.method} (handlerType: ${route.handlerType})`,
+    );
+    // console.log(openApiRoutes);
+    const openApiRoute = openApiRoutes.find(
+      (r) =>
+        route.handlerType === "route" &&
+        r.honoPath === route.path &&
+        r.method === route.method,
+    );
+    logger.debug(`Found OpenAPI route ${openApiRoute ? "yes" : "no"}`);
+    const result = {
+      ...route,
+      openApiSpec: openApiRoute?.operation
+        ? JSON.stringify(openApiRoute.operation)
+        : null,
+    };
+    if (openApiRoute) {
+      logger.debug(`YES Result: ${JSON.stringify(result, null, 2)}`);
+    }
+    return result;
+  });
 }

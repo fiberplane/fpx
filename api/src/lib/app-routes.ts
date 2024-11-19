@@ -12,6 +12,7 @@ export const schemaProbedRoutes = z.object({
       path: z.string(),
       handler: z.string(),
       handlerType: z.string(),
+      openApiSpec: z.string().nullish(),
     }),
   ),
 });
@@ -70,6 +71,8 @@ export async function reregisterRoutes(
             handler: route.handler,
             currentlyRegistered: true,
             registrationOrder: index,
+            openApiSpec:
+              route.handlerType === "route" ? route.openApiSpec : null,
           })
           .where(eq(appRoutes.id, routeToUpdate.id));
       } else {

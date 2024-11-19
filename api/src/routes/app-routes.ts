@@ -11,6 +11,7 @@ import {
   appRoutesInsertSchema,
 } from "../db/schema.js";
 import { reregisterRoutes, schemaProbedRoutes } from "../lib/app-routes.js";
+import { addOpenApiSpecToRoutes } from "../lib/openapi/index.js";
 import {
   OTEL_TRACE_ID_REGEX,
   generateOtelTraceId,
@@ -93,12 +94,15 @@ app.post(
   zValidator("json", schemaProbedRoutes),
   async (ctx) => {
     const db = ctx.get("db");
+
     const { routes } = ctx.req.valid("json");
+
+    const routesWithOpenApiSpec = await addOpenApiSpecToRoutes(db, routes);
 
     try {
       if (routes.length > 0) {
         // "Re-register" all current app routes in a database transaction
-        await reregisterRoutes(db, { routes });
+        await reregisterRoutes(db, { routes: routesWithOpenApiSpec });
 
         // TODO - Detect if anything actually changed before invalidating the query on the frontend
         //        This would be more of an optimization, but is friendlier to the frontend
