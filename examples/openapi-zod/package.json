@@ -1,0 +1,26 @@
+{
+  "name": "zod-openapi",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply zod-openapi --local",
+    "db:studio": "drizzle-kit studio",
+    "db:touch": "wrangler d1 execute zod-openapi --local --command='SELECT 1'",
+    "db:migrate:prod": "GOOSIFY_ENV=production drizzle-kit migrate",
+    "db:studio:prod": "GOOSIFY_ENV=production drizzle-kit studio"
+  },
+  "dependencies": {
+    "@fiberplane/hono-otel": "workspace:*",
+    "@hono/zod-openapi": "^0.18.0",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.35.3",
+    "hono": "^4.6.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241112.0",
+    "drizzle-kit": "^0.26.2",
+    "wrangler": "^3.87.0"
+  }
+}

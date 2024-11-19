@@ -67,7 +67,6 @@
     "@xenova/transformers": "^2.17.2",
     "chalk": "^5.3.0",
     "cli-highlight": "^2.1.11",
-    "dotenv": "^16.4.5",
     "highlight.js": "^11.10.0",
     "ts-to-zod": "^3.8.5",
     "tsup": "^8.3.0",
