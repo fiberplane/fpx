@@ -103,7 +103,7 @@ As can be seen above it concatenates all files into a single file with some comm
 There are several strategies that we've been thinking about, one approach is to specify the main entry of an application, find the hono app in that file and go through the source code from there. The downside to this, is that the entry file would need to be specified (or found out by our code base).
 An alternative approach is to analyze all source code and find variables that are of the `Hono<` generic type and use some heuristics to determine the entry point/main app. This is the strategy this package uses.
 On a high level what needs to happen is as follows:
-1. extracting routes. Go through all code and map all apps, routes, middleware and links between apps. Also keep track of what code is related to the app/route/middleware and keep track of what code that code might refer to (etc). All this is stored in a `ResourceManager` under the hood. 
+1. extracting routes. Go through all code and map all apps, routes, middleware and links between apps. Also keep track of what code is related to the app/route/middleware and keep track of what code that code might refer to (etc). This data is stored in the `ResourceManager`. 
 2. analyzing routes. Once all code has been converted into our own data structure, we find the hono apps and see which one has the most routes/entries (and if routes refer to each other their value is added as well). The app with the highest number is treated as the entry point.
 3. the intermediate result: `RoutesResult`. This contains:
 
@@ -149,7 +149,7 @@ In order to capture/store information about other code the packages uses two oth
 - `SourceReference` This is a reference to section of code (like a function, a constant, etc).  A source reference can refer to one or more `SourceReference` as well as one or more `ModuleReferences`
 - A `ModuleReference` represents a link to another file/external package and is source code (part of) an import statement. 
 
-All data structures (apart from `ModuleReference` can contain references to either modules or source references) . All resources are stored using their id in a `Map` in the ResourceManager. Although `Id`s are basically strings -which always start with the basic type like `ROUTE_TREE`, `SOURCE_REFERENCE`, etc - in typescript land they are made specific using [type tagging](https://medium.com/@KevinBGreene/surviving-the-typescript-ecosystem-branding-and-type-tagging-6cf6e516523d) (using type-fest). This way typescript is aware what kind of a resource is being returned when calling `ResourceManager.getResource`.
+All data structures (apart from `ModuleReference` can contain references to either modules or source references) . All resources are stored using their id in a `Map` in the ResourceManager. Although `ID`s are basically strings -which always start with the basic type like `ROUTE_TREE`, `SOURCE_REFERENCE`, etc - in typescript land they are made specific using [type tagging](https://medium.com/@KevinBGreene/surviving-the-typescript-ecosystem-branding-and-type-tagging-6cf6e516523d) (using type-fest). This way typescript is aware what kind of a resource is being returned when calling `ResourceManager.getResource`.
 
 ## Extracting the code for a route
 
@@ -166,24 +166,24 @@ const history: Array<HistoryId> = [];
 const routingApp = new Hono();
 routingApp.use((_, next) => {
   // Append main RouteTreeId to history
-  history.push("SOME_ROUTE_TREE_ID")
+  history.push("SOME_ROUTE_TREE_ID");
   return next();
-})
+});
 
 routingApp.get("/", (c) => {
   // Append RouteEntryId to history
-  history.push("SOME_ROUTE_ENTRY_ID")
+  history.push("SOME_ROUTE_ENTRY_ID");
   return c.text("Ok");
 });
 
 routingApp.get("/profile", () => {
   // Append  RouteEntryId to history
-  history.push("SOME_OTHER_ROUTE_ENTRY_ID")
+  history.push("SOME_OTHER_ROUTE_ENTRY_ID");
   return c.text("Ok");
 });
 ```
 
-Now if the routingApp handles a request, the history array will contain all id's involved in handling a request for a specific method/url.  Given those id's it is possible to generate the code by converting the data structures back into code and include all things that these structures refer to. This way only code is included that might actually get executed for the request.
+Now, if the `routingApp` handles a request, the history array will contain all IDs involved in handling a request for a specific method/URL. Given those IDs, it is possible to generate the code by converting the data structures back into code and include all things that these structures refer to. This way only code is included that might actually get executed for the request.
 
 ## Performance
 
