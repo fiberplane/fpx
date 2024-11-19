@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "chokidar": "^3.0.1",
-    "hono": "^4.6.6",
+    "hono": "^4.6.5",
     "resolve": "^1.22.8",
     "rimraf": "^6.0.1",
     "tsc-alias": "^1.8.10",
