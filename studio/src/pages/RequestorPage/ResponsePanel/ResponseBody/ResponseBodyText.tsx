@@ -1,3 +1,4 @@
+import { CodeMirrorTextEditor } from "@/components/CodeMirrorEditor/CodeMirrorTextEditor";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils";
 import { useMemo, useState } from "react";
@@ -8,29 +9,35 @@ export function ResponseBodyText({
   maxPreviewLines = null,
   defaultExpanded = false,
   className,
+  minHeight = "100px",
 }: {
   body: string;
   maxPreviewLength?: number | null;
   maxPreviewLines?: number | null;
   defaultExpanded?: boolean;
   className?: string;
+  minHeight?: string;
 }) {
   const [isExpanded, setIsExpanded] = useState(!!defaultExpanded);
   const toggleIsExpanded = () => setIsExpanded((e) => !e);
 
-  // For text responses, just split into lines and render with rudimentary line numbers
-  const { lines, hiddenLinesCount, hiddenCharsCount, shouldShowExpandButton } =
-    useTextPreview(body, isExpanded, maxPreviewLength, maxPreviewLines);
-
-  // TODO - if response is empty, show that in a ux friendly way, with 204 for example
+  const {
+    previewBody,
+    hiddenLinesCount,
+    hiddenCharsCount,
+    shouldShowExpandButton,
+  } = useTextPreview(body, isExpanded, maxPreviewLength, maxPreviewLines);
 
   return (
-    <div
-      className={cn("overflow-hidden overflow-y-auto w-full py-2", className)}
-    >
-      <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
-        <code className="h-full">{lines}</code>
-      </pre>
+    <div className={cn("w-full", className)}>
+      <CodeMirrorTextEditor
+        value={isExpanded ? body : previewBody}
+        readOnly={true}
+        onChange={() => {}}
+        minHeight={minHeight}
+        maxHeight={isExpanded ? "800px" : "300px"}
+      />
+
       {shouldShowExpandButton && (
         <div
           className={cn(
@@ -78,7 +85,7 @@ function useTextPreview(
       ? allLinesCount > maxPreviewLines
       : false;
 
-    // If we're not expanded, we want to show a preview of the body depending on the maxPreviewLength
+    // If we're not expanded, we want to show a preview of the body
     let previewBody = body;
     if (maxPreviewLength && exceedsMaxPreviewLength && !isExpanded) {
       previewBody = body ? `${body.slice(0, maxPreviewLength)}...` : "";
@@ -96,19 +103,8 @@ function useTextPreview(
       hiddenLinesCount = allLinesCount - previewLines.length;
     }
 
-    const lines = (isExpanded ? body : previewBody)
-      ?.split("\n")
-      ?.map((line, index) => (
-        <div key={index} className="flex h-full">
-          <span className="w-8 text-right pr-2 text-gray-500 bg-muted mr-1">
-            {index + 1}
-          </span>
-          <span>{line}</span>
-        </div>
-      ));
-
     return {
-      lines,
+      previewBody,
       shouldShowExpandButton: exceedsMaxPreviewLength || exceedsMaxPreviewLines,
       hiddenLinesCount,
       hiddenCharsCount,

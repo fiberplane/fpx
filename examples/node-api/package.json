@@ -7,7 +7,7 @@
   "dependencies": {
     "@fiberplane/hono-otel": "workspace:*",
     "@hono/node-server": "^1.13.3",
-    "hono": "^4.6.7"
+    "hono": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",

@@ -16,7 +16,7 @@
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.35.3",
     "drizzle-zod": "^0.5.1",
-    "hono": "^4.6.7",
+    "hono": "^4.6.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

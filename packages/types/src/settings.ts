@@ -34,14 +34,17 @@ export const AnthropicModelOptions: Partial<
   "claude-3-opus-20240229": "Claude 3 Opus",
   "claude-3-sonnet-20240229": "Claude 3 Sonnet",
   "claude-3-haiku-20240307": "Claude 3 Haiku",
-  "claude-3-5-sonnet-20240620": "Claude 3.5 Sonnet",
+  "claude-3-5-haiku-20241022": "Claude 3.5 Haiku",
+  "claude-3-5-sonnet-20241022": "Claude 3.5 Sonnet",
 };
 
 export const AnthropicModelSchema = z.union([
   z.literal("claude-3-opus-20240229"),
   z.literal("claude-3-sonnet-20240229"),
   z.literal("claude-3-haiku-20240307"),
+  z.literal("claude-3-5-haiku-20241022"),
   z.literal("claude-3-5-sonnet-20240620"),
+  z.literal("claude-3-5-sonnet-20241022"),
 ]);
 
 export type AnthropicModel = z.infer<typeof AnthropicModelSchema>;

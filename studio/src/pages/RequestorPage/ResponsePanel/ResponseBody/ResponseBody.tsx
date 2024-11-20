@@ -52,7 +52,12 @@ export function ResponseBody({
         <div
           className={cn("overflow-hidden overflow-y-auto w-full", className)}
         >
-          <ResponseBodyText body={body.value} className={className} />
+          <ResponseBodyText
+            body={body.value}
+            className={className}
+            defaultExpanded
+            minHeight="0"
+          />
         </div>
       );
     }
@@ -110,12 +115,15 @@ export function ResponseBody({
       );
     }
 
-    // For text responses, just split into lines and render with rudimentary line numbers
     // TODO - if response is empty, show that in a ux friendly way, with 204 for example
-
     return (
       <div className={cn("overflow-hidden overflow-y-auto w-full", className)}>
-        <ResponseBodyText body={body ?? ""} className={className} />
+        <ResponseBodyText
+          body={body ?? ""}
+          className={className}
+          defaultExpanded
+          minHeight="0"
+        />
       </div>
     );
   }
