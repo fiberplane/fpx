@@ -1,9 +1,9 @@
 {
   "name": "@fiberplane/source-analysis",
-  "private": false,
   "version": "0.1.0",
   "type": "module",
   "types": "./dist/index.d.ts",
+  "author": "Fiberplane<info@fiberplane.com>",
   "exports": {
     ".": "./dist/index.js"
   },
@@ -15,6 +15,10 @@
     "preview": "vite preview",
     "test": "vitest"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT or Apache 2",
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241011.0",
     "@fiberplane/hono-otel": "^0.3.1",
