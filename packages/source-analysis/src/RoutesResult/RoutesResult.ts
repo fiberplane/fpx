@@ -191,4 +191,9 @@ export class RoutesResult {
   public getFilesForHistory() {
     return generate(this._resourceManager, this._history, this._includeIds);
   }
+
+  public getRouteEntries() {
+    const resources = Object.values(this._resourceManager.getResources());
+    return resources.filter((resource) => resource.type === "ROUTE_ENTRY");
+  }
 }

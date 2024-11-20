@@ -3,6 +3,7 @@ import { desc } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
+import type { RouteEntry } from "../../../../packages/source-analysis/dist/types.js";
 import * as schema from "../../db/schema.js";
 import { generateRequestWithAiProvider } from "../../lib/ai/index.js";
 import { getResult } from "../../lib/code-analysis.js";
@@ -125,5 +126,53 @@ app.get("/v0/ai-request-logs", cors(), async (ctx) => {
 
   return ctx.json(logs);
 });
+
+app.get("/v0/file-tree", async (ctx) => {
+  const result = await getResult();
+  const entries = result.getRouteEntries();
+
+  const otherOut = buildRouteTree(entries);
+
+  return ctx.json(otherOut);
+});
+
+type Route = {
+  path: string;
+  method?: string;
+  fileName: string;
+  position: number;
+};
+
+type TreeNode = {
+  path: string;
+  routes: Route[];
+  children: TreeNode[];
+};
+
+function buildRouteTree(routes: RouteEntry[]): TreeNode[] {
+  const rootNodes: TreeNode[] = [];
+
+  for (const route of routes) {
+    const filePathParts = route.fileName.split("/");
+    let currentNodeArray = rootNodes;
+
+    for (const [index, part] of filePathParts.entries()) {
+      let childNode = currentNodeArray.find((child) => child.path === part);
+
+      if (!childNode) {
+        childNode = { path: part, routes: [], children: [] };
+        currentNodeArray.push(childNode);
+      }
+
+      if (index === filePathParts.length - 1) {
+        childNode.routes.push(route);
+      }
+
+      currentNodeArray = childNode.children;
+    }
+  }
+
+  return rootNodes;
+}
 
 export default app;

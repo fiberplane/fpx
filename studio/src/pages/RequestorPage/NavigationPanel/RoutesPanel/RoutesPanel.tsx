@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFetchFileTreeRoutes } from "@/queries/app-routes";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import { FileIcon, ListBulletIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +13,7 @@ import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
+import { RoutesTreeGroup } from "./RoutesTreeGroup";
 import { useRefreshRoutes } from "./useRefreshRoutes";
 
 export function RoutesPanel() {
@@ -124,6 +127,8 @@ export function RoutesPanel() {
     }
   };
 
+  const { data: fileTreeRoutes } = useFetchFileTreeRoutes();
+
   return (
     <div className={cn("h-full", "flex", "flex-col")}>
       <div>
@@ -160,23 +165,40 @@ export function RoutesPanel() {
         )}
 
         {allRoutes.length > 0 && (
-          <RoutesSection title={<DetectedRoutesTitle />}>
-            {detectedRoutes.map((route, index) => (
-              <RoutesItem
-                key={index}
-                index={userAddedRoutes.length + index}
-                route={route}
-                selectedRoute={
-                  selectedRouteIndex === userAddedRoutes.length + index
-                    ? route
-                    : null
-                }
-                activeRoute={activeRoute}
-                handleRouteClick={handleRouteClick}
-                setSelectedRouteIndex={setSelectedRouteIndex}
-              />
-            ))}
-          </RoutesSection>
+          <Tabs defaultValue="list">
+            <RoutesSection title={<DetectedRoutesTitle />}>
+              <TabsContent value="list">
+                {detectedRoutes.map((route, index) => (
+                  <RoutesItem
+                    key={index}
+                    index={userAddedRoutes.length + index}
+                    route={route}
+                    selectedRoute={
+                      selectedRouteIndex === userAddedRoutes.length + index
+                        ? route
+                        : null
+                    }
+                    activeRoute={activeRoute}
+                    handleRouteClick={handleRouteClick}
+                    setSelectedRouteIndex={setSelectedRouteIndex}
+                  />
+                ))}
+              </TabsContent>
+              <TabsContent value="fileTree">
+                {fileTreeRoutes?.map((tree) => (
+                  <RouteTree
+                    key={tree.path}
+                    tree={tree}
+                    activeRoute={activeRoute}
+                    userAddedRoutes={userAddedRoutes}
+                    handleRouteClick={handleRouteClick}
+                    setSelectedRouteIndex={setSelectedRouteIndex}
+                    selectedRouteIndex={selectedRouteIndex}
+                  />
+                ))}
+              </TabsContent>
+            </RoutesSection>
+          </Tabs>
         )}
 
         {hasAnyOpenApiRoutes && (
@@ -209,32 +231,41 @@ function DetectedRoutesTitle() {
   const { refreshRoutes, isRefreshing } = useRefreshRoutes();
 
   return (
-    <button
-      type="button"
-      className={cn(
-        "flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors",
-        isRefreshing && "opacity-80",
-        isRefreshing && "cursor-default",
-      )}
-      disabled={isRefreshing}
-      onClick={() => {
-        if (!isRefreshing) {
-          refreshRoutes();
-        }
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
+    <div className="flex">
+      <button
+        type="button"
+        className={cn(
+          "flex items-center gap-2 cursor-pointer hover:text-foreground transition-colors",
+          isRefreshing && "opacity-80",
+          isRefreshing && "cursor-default",
+        )}
+        disabled={isRefreshing}
+        onClick={() => {
           if (!isRefreshing) {
             refreshRoutes();
           }
-        }
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      Detected in app{" "}
-      <ReloadIcon className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
-    </button>
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            if (!isRefreshing) {
+              refreshRoutes();
+            }
+          }
+        }}
+        tabIndex={0}
+      >
+        Detected in app{" "}
+        <ReloadIcon className={cn("w-3 h-3", isRefreshing && "animate-spin")} />
+      </button>
+      <TabsList className="ml-auto">
+        <TabsTrigger value="list">
+          <ListBulletIcon />
+        </TabsTrigger>
+        <TabsTrigger value="fileTree">
+          <FileIcon />
+        </TabsTrigger>
+      </TabsList>
+    </div>
   );
 }
 
@@ -348,5 +379,112 @@ export function RoutesSection(props: RoutesSectionProps) {
         {children}
       </div>
     </section>
+  );
+}
+
+type Route = {
+  path: string;
+  method?: string;
+  fileName: string;
+  position: number;
+};
+
+type TreeNode = {
+  path: string;
+  routes: Route[];
+  children: TreeNode[];
+};
+
+function RouteTree({
+  tree,
+  activeRoute,
+  userAddedRoutes,
+  selectedRouteIndex,
+  handleRouteClick,
+  setSelectedRouteIndex,
+}: {
+  activeRoute: {
+    path: string;
+    method: "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS" | "PATCH" | "HEAD";
+    requestType: "http" | "websocket";
+    handler: string;
+    handlerType: "route" | "middleware";
+    currentlyRegistered: boolean;
+    registrationOrder: number;
+    routeOrigin: "custom" | "discovered" | "open_api";
+    openApiSpec?: string | undefined;
+    isDraft?: boolean | undefined;
+  } | null;
+  tree: TreeNode;
+  userAddedRoutes: Array<{
+    path: string;
+    method: "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS" | "PATCH" | "HEAD";
+    requestType: "http" | "websocket";
+    handler: string;
+    handlerType: "route" | "middleware";
+    currentlyRegistered: boolean;
+    registrationOrder: number;
+    routeOrigin: "custom" | "discovered" | "open_api";
+    openApiSpec?: string | undefined;
+    isDraft?: boolean | undefined;
+  }>;
+  handleRouteClick: (route: ProbedRoute) => void;
+  setSelectedRouteIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  selectedRouteIndex: number | null;
+}) {
+  return (
+    <RoutesTreeGroup key={tree.path} filePath={tree.path}>
+      {tree.children.map((child) => (
+        <RouteTree
+          key={child.path}
+          tree={child}
+          userAddedRoutes={userAddedRoutes}
+          handleRouteClick={handleRouteClick}
+          setSelectedRouteIndex={setSelectedRouteIndex}
+          selectedRouteIndex={selectedRouteIndex}
+          activeRoute={activeRoute}
+        />
+      ))}
+      {tree.routes.map((route, index) => (
+        <RoutesItem
+          key={index}
+          index={userAddedRoutes.length + index}
+          route={{
+            handler: "",
+            handlerType: "route",
+            currentlyRegistered: true,
+            registrationOrder: 0,
+            routeOrigin: "discovered",
+            requestType: "http",
+            openApiSpec: undefined,
+            isDraft: false,
+            ...route,
+            method:
+              (route.method?.toUpperCase() as ProbedRoute["method"]) ?? "GET",
+          }}
+          selectedRoute={
+            selectedRouteIndex === userAddedRoutes.length + index
+              ? {
+                  handler: "",
+                  handlerType: "route",
+                  currentlyRegistered: true,
+                  registrationOrder: 0,
+                  routeOrigin: "discovered",
+                  requestType: "http",
+                  openApiSpec: undefined,
+                  isDraft: false,
+                  ...route,
+                  method:
+                    (route.method?.toUpperCase() as ProbedRoute["method"]) ??
+                    "GET",
+                }
+              : null
+          }
+          activeRoute={activeRoute}
+          handleRouteClick={handleRouteClick}
+          setSelectedRouteIndex={setSelectedRouteIndex}
+        />
+      ))}
+    </RoutesTreeGroup>
   );
 }

@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const PROBED_ROUTES_KEY = "appRoutes";
 
@@ -30,5 +30,30 @@ export const refreshAppRoutes = async () => {
 export function useRefreshRoutesMutation() {
   return useMutation({
     mutationFn: refreshAppRoutes,
+  });
+}
+
+type Route = {
+  path: string;
+  method?: string;
+  fileName: string;
+  position: number;
+};
+
+type TreeNode = {
+  path: string;
+  routes: Route[];
+  children: TreeNode[];
+};
+
+export function useFetchFileTreeRoutes() {
+  return useQuery({
+    queryKey: ["fileTreeRoutes"],
+    queryFn: async () => {
+      const response = await fetch("/v0/file-tree");
+      // TODO: types
+      const json = (await response.json()) as Array<TreeNode>;
+      return json;
+    },
   });
 }
