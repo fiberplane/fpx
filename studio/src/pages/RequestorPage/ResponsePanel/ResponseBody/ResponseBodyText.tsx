@@ -1,7 +1,7 @@
+import { CodeMirrorTextEditor } from "@/components/CodeMirrorEditor/CodeMirrorTextEditor";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils";
 import { useMemo, useState } from "react";
-import { CodeMirrorTextEditor } from "@/components/CodeMirrorEditor/CodeMirrorTextEditor";
 
 export function ResponseBodyText({
   body,
@@ -9,18 +9,24 @@ export function ResponseBodyText({
   maxPreviewLines = null,
   defaultExpanded = false,
   className,
+  minHeight = "100px",
 }: {
   body: string;
   maxPreviewLength?: number | null;
   maxPreviewLines?: number | null;
   defaultExpanded?: boolean;
   className?: string;
+  minHeight?: string;
 }) {
   const [isExpanded, setIsExpanded] = useState(!!defaultExpanded);
   const toggleIsExpanded = () => setIsExpanded((e) => !e);
 
-  const { previewBody, hiddenLinesCount, hiddenCharsCount, shouldShowExpandButton } =
-    useTextPreview(body, isExpanded, maxPreviewLength, maxPreviewLines);
+  const {
+    previewBody,
+    hiddenLinesCount,
+    hiddenCharsCount,
+    shouldShowExpandButton,
+  } = useTextPreview(body, isExpanded, maxPreviewLength, maxPreviewLines);
 
   return (
     <div className={cn("w-full", className)}>
@@ -28,10 +34,10 @@ export function ResponseBodyText({
         value={isExpanded ? body : previewBody}
         readOnly={true}
         onChange={() => {}}
-        minHeight="100px"
-        maxHeight={isExpanded ? undefined : "300px"}
+        minHeight={minHeight}
+        maxHeight={isExpanded ? "800px" : "300px"}
       />
-      
+
       {shouldShowExpandButton && (
         <div
           className={cn(
@@ -87,7 +93,11 @@ function useTextPreview(
     }
 
     let previewLines = previewBody?.split("\n");
-    if (maxPreviewLines && !isExpanded && previewLines.length > maxPreviewLines) {
+    if (
+      maxPreviewLines &&
+      !isExpanded &&
+      previewLines.length > maxPreviewLines
+    ) {
       previewLines = previewLines.slice(0, maxPreviewLines);
       previewBody = `${previewLines.join("\n")}...`;
       hiddenLinesCount = allLinesCount - previewLines.length;
