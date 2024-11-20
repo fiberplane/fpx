@@ -10,6 +10,7 @@ import {
   addBaseUrl,
   extractMatchedPathParams,
   extractPathParams,
+  extractQueryParamsFromOpenApiDefinition,
   mapPathParamKey,
   pathHasValidBaseUrl,
   removeBaseUrl,
@@ -57,6 +58,10 @@ export const routesSlice: StateCreator<
       state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
       state.activeHistoryResponseTraceId = null;
       state.activeResponse = null;
+      state.queryParams = extractQueryParamsFromOpenApiDefinition(
+        state.queryParams,
+        route,
+      );
 
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({

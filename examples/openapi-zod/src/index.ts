@@ -1,7 +1,7 @@
 import { instrument } from "@fiberplane/hono-otel";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { createRoute, z } from "@hono/zod-openapi";
-
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./db/schema";
 // TODO - Figure out how to use drizzle with "@hono/zod-openapi"
@@ -82,6 +82,26 @@ const getUserRoute = createRoute({
   },
 });
 
+const listUsersRoute = createRoute({
+  method: "get",
+  path: "/users",
+  request: {
+    query: z.object({
+      name: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(UserSchema),
+        },
+      },
+      description: "List all users",
+    },
+  },
+});
+
 const createUserRoute = createRoute({
   method: "post",
   path: "/users",
@@ -121,6 +141,20 @@ app.openapi(getUserRoute, (c) => {
     },
     200,
   );
+});
+
+app.openapi(listUsersRoute, async (c) => {
+  const { name } = c.req.valid("query");
+  const db = drizzle(c.env.DB);
+
+  // Only apply where clause if name is provided and not empty
+  const query = db.select().from(schema.users);
+  if (name && name.trim() !== "") {
+    query.where(eq(schema.users.name, name));
+  }
+
+  const result = await query;
+  return c.json(result, 200);
 });
 
 app.openapi(createUserRoute, async (c) => {
