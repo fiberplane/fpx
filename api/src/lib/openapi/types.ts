@@ -6,7 +6,7 @@ export type OpenApiSpec = {
   paths: {
     [path: string]: OpenApiPathItem;
   };
-  // components?: any;
+  components?: OpenAPIComponents;
 };
 
 // Define types for OpenAPI operation objects
@@ -49,3 +49,28 @@ export type OpenAPIOperation = {
   };
   tags?: string[];
 };
+
+export type OpenAPIComponents = {
+  schemas?: Record<string, OpenAPISchema>;
+  parameters?: Record<string, OpenAPIParameter>;
+  responses?: Record<string, OpenAPIResponse>;
+  requestBodies?: Record<string, OpenAPIRequestBody>;
+};
+
+export type OpenAPISchema = {
+  type?: string;
+  properties?: Record<string, OpenAPISchema>;
+  items?: OpenAPISchema;
+  $ref?: string;
+  // Add other schema properties as needed
+};
+
+export type OpenAPIRequestBody = {
+  content: {
+    [mediaType: string]: {
+      schema: Record<string, unknown>;
+    };
+  };
+};
+
+export type RefCache = Map<string, unknown>;

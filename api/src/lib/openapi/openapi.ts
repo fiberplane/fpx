@@ -3,8 +3,14 @@ import type { z } from "zod";
 import type * as schema from "../../db/schema.js";
 import type { schemaProbedRoutes } from "../../lib/app-routes.js";
 import logger from "../../logger/index.js";
+import {
+  CircularReferenceError,
+  MissingReferenceError,
+  dereferenceSchema,
+} from "./dereference.js";
 import { fetchOpenApiSpec } from "./fetch.js";
 import { mapOpenApiToHonoRoutes } from "./map-routes.js";
+import type { OpenAPIOperation } from "./types.js";
 
 type Routes = z.infer<typeof schemaProbedRoutes>["routes"];
 
@@ -19,28 +25,42 @@ export async function addOpenApiSpecToRoutes(
   }
   const openApiRoutes = mapOpenApiToHonoRoutes(spec);
   const appRoutes = Array.isArray(routes) ? routes : [routes];
-  logger.info("[addOpenApiSpecToRoutes] length of appRoutes", appRoutes.length);
+
   return appRoutes.map((route) => {
-    logger.debug(
-      `Mapping OpenAPI spec to route ${route.path} ${route.method} (handlerType: ${route.handlerType})`,
-    );
-    // console.log(openApiRoutes);
     const openApiRoute = openApiRoutes.find(
       (r) =>
         route.handlerType === "route" &&
         r.honoPath === route.path &&
         r.method === route.method,
     );
-    logger.debug(`Found OpenAPI route ${openApiRoute ? "yes" : "no"}`);
+
+    let operation = openApiRoute?.operation;
+    if (operation) {
+      try {
+        operation = dereferenceSchema<OpenAPIOperation>(
+          operation,
+          spec.components ?? {},
+          new Set(),
+          new Map(),
+        );
+      } catch (error) {
+        if (
+          error instanceof CircularReferenceError ||
+          error instanceof MissingReferenceError
+        ) {
+          logger.warn(`Failed to dereference OpenAPI spec: ${error.message}`);
+          operation = undefined;
+        } else {
+          throw error;
+        }
+      }
+    }
+
     const result = {
       ...route,
-      openApiSpec: openApiRoute?.operation
-        ? JSON.stringify(openApiRoute.operation)
-        : null,
+      openApiSpec: operation ? JSON.stringify(operation) : null,
     };
-    if (openApiRoute) {
-      logger.debug(`YES Result: ${JSON.stringify(result, null, 2)}`);
-    }
+
     return result;
   });
 }
