@@ -11,8 +11,6 @@ type RoutesItemProps = {
   selectedRoute: ProbedRoute | null;
   handleRouteClick: (route: ProbedRoute) => void;
   setSelectedRouteIndex: (index: number | null) => void;
-  routeActions?: React.ReactNode;
-  className?: string;
 };
 
 export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
@@ -23,8 +21,6 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
     selectedRoute,
     handleRouteClick,
     setSelectedRouteIndex,
-    routeActions,
-    className,
   } = props;
   const { mutate: deleteRoute } = useDeleteRoute();
   const canDeleteRoute =
@@ -63,7 +59,6 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
           "focus:ring-inset focus:ring-1 focus:ring-blue-500 focus:ring-opacity-25 bg-muted":
             isSelected,
         },
-        className,
       )}
       id={`route-${index}`}
     >
@@ -75,7 +70,6 @@ export const RoutesItem = memo(function RoutesItem(props: RoutesItemProps) {
       <span className="ml-2 overflow-hidden text-ellipsis whitespace-nowrap">
         {route.path}
       </span>
-      {routeActions}
       {canDeleteRoute && (
         <div className="ml-auto flex items-center group">
           <TrashIcon
