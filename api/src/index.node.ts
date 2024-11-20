@@ -39,7 +39,9 @@ const wsConnections = new Set<WebSocket>();
 const sql = createClient({
   url: process.env.FPX_DATABASE_URL ?? DEFAULT_DATABASE_URL,
 });
-const db = drizzle(sql, { schema });
+const db = drizzle(sql, {
+  schema,
+});
 // Set up the api routes
 const app = createApp(db, webhonc, wsConnections);
 

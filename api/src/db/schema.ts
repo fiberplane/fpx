@@ -1,6 +1,11 @@
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { relations, sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -199,3 +204,58 @@ export const aiRequestLogs = sqliteTable("ai_request_logs", {
   log: text("log", { mode: "json" }).notNull(),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });
+
+export const groups = sqliteTable("groups", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  name: text("name").notNull().unique(),
+  createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export const newGroupSchema = createInsertSchema(groups);
+export const selectGroupSchema = createSelectSchema(groups);
+
+export type Group = z.infer<typeof selectGroupSchema>;
+export type NewGroup = z.infer<typeof newGroupSchema>;
+
+// Define the app route -> group relationship
+export const groupsAppRoutes = sqliteTable(
+  "groups_app_routes",
+  {
+    groupId: integer("group_id")
+      .references(() => groups.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+    appRouteId: integer("app_route_id")
+      .references(() => appRoutes.id, {
+        onDelete: "cascade",
+      })
+      .notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.appRouteId, t.groupId] }),
+  }),
+);
+
+export const appRoutesRelations = relations(appRoutes, ({ many }) => ({
+  groups: many(groupsAppRoutes),
+}));
+
+export const groupRelations = relations(groups, ({ many }) => ({
+  groupsAppRoutes: many(groupsAppRoutes),
+}));
+
+export const groupsAppRoutesRelations = relations(
+  groupsAppRoutes,
+  ({ one }) => ({
+    group: one(groups, {
+      fields: [groupsAppRoutes.groupId],
+      references: [groups.id],
+    }),
+    appRoute: one(appRoutes, {
+      fields: [groupsAppRoutes.appRouteId],
+      references: [appRoutes.id],
+    }),
+  }),
+);

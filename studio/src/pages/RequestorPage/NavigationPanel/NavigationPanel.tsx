@@ -6,7 +6,7 @@ import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
 
 const FILTER_TAB_KEY = "filter-tab";
-const TAB_KEYS = ["routes", "requests"] as const;
+const TAB_KEYS = ["routes", "requests", "groups"] as const;
 type NavigationTab = (typeof TAB_KEYS)[number];
 
 function getTab(searchParams: URLSearchParams): NavigationTab {
@@ -40,6 +40,13 @@ export function NavigationPanel() {
     },
     { ignoreSelector: "[contenteditable]" },
   );
+  useKeySequence(
+    ["g", "g"],
+    () => {
+      setTab("groups");
+    },
+    { ignoreSelector: "[contenteditable]" },
+  );
 
   return (
     <Tabs
@@ -47,7 +54,7 @@ export function NavigationPanel() {
       className="h-full"
       onValueChange={(tabValue: string) => setTab(tabValue as NavigationTab)}
     >
-      <TabsList className="w-full grid grid-cols-2">
+      <TabsList className="w-full grid grid-cols-3">
         {TAB_KEYS.map((tabKey) => (
           <TabsTrigger key={tabKey} value={tabKey}>
             {tabKey.charAt(0).toUpperCase() + tabKey.slice(1)}
@@ -59,6 +66,9 @@ export function NavigationPanel() {
       </TabsContent>
       <TabsContent value="requests" className="h-[calc(100%-40px)] pt-4">
         <RequestsPanel />
+      </TabsContent>
+      <TabsContent value="collections" className="h-[calc(100%-40px)] pt-4">
+        <div>Collections</div>
       </TabsContent>
     </Tabs>
   );

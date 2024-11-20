@@ -124,6 +124,7 @@ export function RoutesPanel() {
     }
   };
 
+  console.log("routes", routes);
   return (
     <div className={cn("h-full", "flex", "flex-col")}>
       <div>

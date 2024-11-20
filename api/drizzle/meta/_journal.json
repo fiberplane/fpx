@@ -134,6 +134,13 @@
       "when": 1731628433547,
       "tag": "0018_exotic_rafael_vega",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1732118636168,
+      "tag": "0019_fixed_bucky",
+      "breakpoints": true
     }
   ]
 }

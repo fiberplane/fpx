@@ -9,6 +9,7 @@ import {
   appResponses,
   appRoutes,
   appRoutesInsertSchema,
+  groupsAppRoutes,
 } from "../db/schema.js";
 import { reregisterRoutes, schemaProbedRoutes } from "../lib/app-routes.js";
 import {
@@ -41,7 +42,13 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.get("/v0/app-routes", async (ctx) => {
   const db = ctx.get("db");
-  const routes = await db.select().from(appRoutes);
+
+  const routes = await db.query.appRoutes.findMany({
+    with: {
+      groups: true,
+    },
+  });
+
   const baseUrl = resolveServiceArg(
     env(ctx).FPX_SERVICE_TARGET as string,
     "http://localhost:8787",
@@ -130,7 +137,7 @@ app.delete("/v0/app-routes/:method/:path", async (ctx) => {
   const db = ctx.get("db");
   const { method, path } = ctx.req.param();
   const decodedPath = decodeURIComponent(path);
-  const createdRoute = await db
+  const deletedRoute = await db
     .delete(appRoutes)
     .where(
       and(
@@ -142,13 +149,14 @@ app.delete("/v0/app-routes/:method/:path", async (ctx) => {
       ),
     )
     .returning();
-  return ctx.json(createdRoute?.[0]);
+  return ctx.json(deletedRoute?.[0]);
 });
 
 app.delete("/v0/app-requests/", async (ctx) => {
   const db = ctx.get("db");
   await db.delete(appResponses);
   await db.delete(appRequests);
+  await db.delete(groupsAppRoutes);
   return ctx.text("OK");
 });
 
@@ -268,8 +276,8 @@ app.all(
       | null
       | string
       | {
-          [x: string]: string | SerializedFile | (string | SerializedFile)[];
-        } = null;
+        [x: string]: string | SerializedFile | (string | SerializedFile)[];
+      } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {
