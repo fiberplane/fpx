@@ -175,9 +175,9 @@ export function extractJsonBodyFromOpenApiDefinition(
   }
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 function generateSampleFromSchema(
   schema: z.infer<typeof JsonSchemaProperty>,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 ): any {
   if (schema.example !== undefined) {
     return schema.example;

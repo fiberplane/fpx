@@ -15,7 +15,7 @@ import {
   removeBaseUrl,
 } from "../utils";
 import {
-  extractJsonBodyFromOpenApiDefinition,
+  // extractJsonBodyFromOpenApiDefinition,
   extractQueryParamsFromOpenApiDefinition,
   filterDisabledEmptyQueryParams,
 } from "../utils-openapi";
@@ -71,7 +71,11 @@ export const routesSlice: StateCreator<
         route,
       );
 
-      state.body = extractJsonBodyFromOpenApiDefinition(state.body, route);
+      // TODO - Instead of automatically setting body here,
+      //        have a button? Idk.
+      //        All I know is it'd take some bookkeeping to do "automagical bodies" elegantly
+      //
+      // state.body = extractJsonBodyFromOpenApiDefinition(state.body, route);
 
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
