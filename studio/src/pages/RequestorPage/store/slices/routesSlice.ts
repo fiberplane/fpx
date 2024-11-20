@@ -10,12 +10,15 @@ import {
   addBaseUrl,
   extractMatchedPathParams,
   extractPathParams,
-  extractQueryParamsFromOpenApiDefinition,
-  filterDisabledEmptyQueryParams,
   mapPathParamKey,
   pathHasValidBaseUrl,
   removeBaseUrl,
 } from "../utils";
+import {
+  extractJsonBodyFromOpenApiDefinition,
+  extractQueryParamsFromOpenApiDefinition,
+  filterDisabledEmptyQueryParams,
+} from "../utils-openapi";
 import type { RoutesSlice, Store } from "./types";
 
 export const routesSlice: StateCreator<
@@ -67,6 +70,8 @@ export const routesSlice: StateCreator<
         state.queryParams,
         route,
       );
+
+      state.body = extractJsonBodyFromOpenApiDefinition(state.body, route);
 
       // Update tabs (you might want to move this logic to a separate slice)
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
