@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { Icon } from "@iconify/react";
-import { ReloadIcon } from "@radix-ui/react-icons";
+import { DotsHorizontalIcon, ReloadIcon } from "@radix-ui/react-icons";
 import { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
@@ -171,9 +171,22 @@ export function RoutesPanel() {
                     ? route
                     : null
                 }
+                className="group"
                 activeRoute={activeRoute}
                 handleRouteClick={handleRouteClick}
                 setSelectedRouteIndex={setSelectedRouteIndex}
+                routeActions={
+                  <div className="ml-auto flex items-center">
+                    <DotsHorizontalIcon
+                      className="w-3.5 h-3.5 cursor-pointer pointer-events-none group-hover:pointer-events-auto invisible group-hover:visible"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.alert("TODO");
+                        // TODO
+                      }}
+                    />
+                  </div>
+                }
               />
             ))}
           </RoutesSection>
