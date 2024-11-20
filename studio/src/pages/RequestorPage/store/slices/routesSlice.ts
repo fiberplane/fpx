@@ -11,6 +11,7 @@ import {
   extractMatchedPathParams,
   extractPathParams,
   extractQueryParamsFromOpenApiDefinition,
+  filterDisabledEmptyQueryParams,
   mapPathParamKey,
   pathHasValidBaseUrl,
   removeBaseUrl,
@@ -58,6 +59,10 @@ export const routesSlice: StateCreator<
       state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
       state.activeHistoryResponseTraceId = null;
       state.activeResponse = null;
+      // Filter out disabled and empty query params
+      // TODO - Only do this if the route has an open api definition?
+      state.queryParams = filterDisabledEmptyQueryParams(state.queryParams);
+      // Extract query params from the open api definition, if it exists
       state.queryParams = extractQueryParamsFromOpenApiDefinition(
         state.queryParams,
         route,
