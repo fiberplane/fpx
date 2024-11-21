@@ -14,6 +14,17 @@ export class MissingReferenceError extends Error {
   }
 }
 
+/**
+ * Resolves a reference string to its corresponding object in the OpenAPI components.
+ *
+ * @param ref - The reference string to resolve (e.g., "#/components/schemas/Pet")
+ * @param components - The OpenAPI components object containing all definitions
+ * @param refStack - Set to track reference paths for circular reference detection
+ * @param cache - Map to cache resolved references for better performance
+ * @returns The resolved object from the components
+ * @throws {CircularReferenceError} When a circular reference is detected
+ * @throws {MissingReferenceError} When the referenced object cannot be found
+ */
 export function resolveRef(
   ref: string,
   components: OpenAPIComponents,
@@ -33,6 +44,7 @@ export function resolveRef(
   refStack.add(ref);
 
   const path = ref.replace("#/components/", "").split("/");
+  // TODO - The `unknown` type is to avoid writing our own types for openapi schemas for now
   const resolved = path.reduce<Record<string, unknown>>(
     (acc, part) => {
       if (!acc || typeof acc !== "object") {
@@ -55,6 +67,17 @@ export function resolveRef(
   return resolved;
 }
 
+/**
+ * Dereferences all $ref properties in an OpenAPI schema object, replacing them with their actual values.
+ * Handles nested objects and arrays recursively.
+ *
+ * @param obj - The object to dereference, as of writing this is an OpenAPI operation
+ * @param components - The OpenAPI components object containing all definitions
+ * @param refStack - Set to track reference paths for circular reference detection
+ * @param cache - Map to cache resolved references for better performance
+ * @returns A new object with all references resolved
+ * @template T - The type of the input object
+ */
 export function dereferenceSchema<T extends { [key: string]: unknown }>(
   obj: T,
   components: OpenAPIComponents,
