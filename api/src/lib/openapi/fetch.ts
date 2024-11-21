@@ -5,6 +5,19 @@ import { resolveServiceArg } from "../../probe-routes.js";
 import { getAllSettings } from "../settings/index.js";
 import type { OpenApiSpec } from "./types.js";
 
+/**
+ * Fetches and parses an OpenAPI specification from a configured URL.
+ *
+ * @NOTE This function does not validate the payload returned by the OpenAPI spec URL,
+ *       it only makes a type assertion.
+ *
+ * @param db - The database instance to retrieve settings from
+ * @returns Promise that resolves to the parsed OpenAPI specification object, or null if:
+ *          - No spec URL is configured
+ *          - The URL cannot be resolved
+ *          - The fetch request fails
+ *          - The response cannot be parsed as JSON
+ */
 export async function fetchOpenApiSpec(db: LibSQLDatabase<typeof schema>) {
   const specUrl = await getSpecUrl(db);
   if (!specUrl) {
@@ -40,7 +53,10 @@ export async function fetchOpenApiSpec(db: LibSQLDatabase<typeof schema>) {
 }
 
 /**
- * Get the OpenAPI spec URL from the settings record in the database.
+ * Retrieves the OpenAPI specification URL from the application settings stored in the database.
+ *
+ * @param db - The database instance to query settings from
+ * @returns Promise that resolves to the configured OpenAPI spec URL, or undefined if not set
  */
 async function getSpecUrl(db: LibSQLDatabase<typeof schema>) {
   const settingsRecord = await getAllSettings(db);
@@ -48,10 +64,12 @@ async function getSpecUrl(db: LibSQLDatabase<typeof schema>) {
 }
 
 /**
- * Resolve the OpenAPI spec URL to an absolute URL.
+ * Resolves a potentially relative OpenAPI specification URL to an absolute URL.
+ * If the input URL is relative, it will be resolved against the service URL
+ * obtained from the FPX_SERVICE_TARGET environment variable.
  *
- * @param specUrl - The spec URL to resolve.
- * @returns The resolved spec URL or null if the spec URL is not provided.
+ * @param specUrl - The OpenAPI specification URL to resolve (can be absolute or relative)
+ * @returns The resolved absolute URL, or null if the input URL is empty or invalid
  */
 function resolveSpecUrl(specUrl: string) {
   if (!specUrl) {

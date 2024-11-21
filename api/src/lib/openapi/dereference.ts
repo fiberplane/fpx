@@ -60,6 +60,12 @@ export function resolveRef(
     throw new MissingReferenceError(ref);
   }
 
+  // If the resolved value contains another reference, resolve it
+  if (typeof resolved === "object" && resolved !== null && "$ref" in resolved) {
+    const nestedRef = resolved.$ref as string;
+    return resolveRef(nestedRef, components, refStack, cache);
+  }
+
   // Cache the result
   cache.set(ref, resolved);
   refStack.delete(ref);
