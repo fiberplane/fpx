@@ -7,7 +7,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type To, useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
@@ -23,6 +23,7 @@ import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
 import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
 import { useMostRecentProxiedRequestResponse } from "./useMostRecentProxiedRequestResponse";
 import { getMainSectionWidth } from "./util";
+import { CommandBar } from "../CommandBar/CommandBar";
 
 interface RequestorPageContentProps {
   history: ProxiedRequestResponse[];
@@ -169,6 +170,19 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     },
   );
 
+  const [commandBarOpen, setCommandBarOpen] = useState(false);
+
+  useHotkeys(
+    "mod+k",
+    (e) => {
+      e.preventDefault();
+      setCommandBarOpen(true);
+    },
+    {
+      enableOnFormTags: ["input"],
+    }
+  );
+
   const requestContent = (
     <RequestPanel
       aiEnabled={aiEnabled}
@@ -225,6 +239,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         "overflow-hidden",
       )}
     >
+      <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
       <RequestorInput
         onSubmit={onSubmit}
         disconnectWebsocket={disconnectWebsocket}
