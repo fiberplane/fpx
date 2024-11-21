@@ -15,16 +15,13 @@ type Bindings = {
 const app = new OpenAPIHono<{ Bindings: Bindings }>();
 
 const ParamsSchema = z.object({
-  id: z
-    .number()
-    // .min(1)
-    .openapi({
-      param: {
-        name: "id",
-        in: "path",
-      },
-      example: 1212121,
-    }),
+  id: z.string().openapi({
+    param: {
+      name: "id",
+      in: "path",
+    },
+    example: "1212121",
+  }),
 });
 
 const NewUserSchema = z
