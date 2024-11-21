@@ -18,6 +18,7 @@ export const GenerateRequestOptionsSchema = z.object({
     )
     .optional(),
   middlewareContext: z.string().optional(),
+  prompt: z.string().optional(),
 });
 
 export type GenerateRequestOptions = z.infer<
