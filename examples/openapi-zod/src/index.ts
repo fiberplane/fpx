@@ -3,6 +3,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { createRoute, z } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
+import { basicAuth } from "hono/basic-auth";
 import * as schema from "./db/schema";
 // TODO - Figure out how to use drizzle with "@hono/zod-openapi"
 //
@@ -15,13 +16,16 @@ type Bindings = {
 const app = new OpenAPIHono<{ Bindings: Bindings }>();
 
 const ParamsSchema = z.object({
-  id: z.string().openapi({
-    param: {
-      name: "id",
-      in: "path",
-    },
-    example: "1212121",
-  }),
+  id: z
+    .string()
+    .regex(/^\d+$/)
+    .openapi({
+      param: {
+        name: "id",
+        in: "path",
+      },
+      example: "123",
+    }),
 });
 
 const NewUserSchema = z
@@ -131,6 +135,45 @@ const createUserRoute = createRoute({
   },
 });
 
+const deleteUserRoute = createRoute({
+  method: "delete",
+  path: "/users/{id}",
+  security: [
+    {
+      basicAuth: [],
+    },
+  ],
+  middleware: [
+    basicAuth({
+      username: "goose",
+      password: "honkhonk",
+    }),
+  ] as const, // Use `as const` to ensure TypeScript infers the middleware's Context
+  request: {
+    params: ParamsSchema,
+  },
+  responses: {
+    204: {
+      description: "User deleted",
+    },
+    401: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            error: z.string(),
+          }),
+        },
+      },
+      description: "Unauthorized - Invalid credentials",
+    },
+  },
+});
+
+app.openAPIRegistry.registerComponent("securitySchemes", "basicAuth", {
+  type: "http",
+  scheme: "basic",
+});
+
 app.openapi(getUserRoute, async (c) => {
   const { id } = c.req.valid("param");
   const db = drizzle(c.env.DB);
@@ -179,12 +222,19 @@ app.openapi(createUserRoute, async (c) => {
   return c.json(result, 201);
 });
 
+app.openapi(deleteUserRoute, async (c) => {
+  const { id } = c.req.valid("param");
+  const db = drizzle(c.env.DB);
+  await db.delete(schema.users).where(eq(schema.users.id, +id));
+  return c.body(null, 204);
+});
+
 // The OpenAPI documentation will be available at /doc
 app.doc("/doc", {
   openapi: "3.0.0",
   info: {
     version: "1.0.0",
-    title: "My API",
+    title: "Simple Hono OpenAPI API",
   },
 });
 

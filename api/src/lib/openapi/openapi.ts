@@ -10,7 +10,7 @@ import {
 } from "./dereference.js";
 import { fetchOpenApiSpec } from "./fetch.js";
 import { mapOpenApiToHonoRoutes } from "./map-routes.js";
-import type { OpenAPIOperation } from "./types.js";
+import { type OpenAPIOperation, isOpenApiSpec } from "./types.js";
 
 type Routes = z.infer<typeof schemaProbedRoutes>["routes"];
 
@@ -38,8 +38,13 @@ type Routes = z.infer<typeof schemaProbedRoutes>["routes"];
 export async function addOpenApiSpecToRoutes(
   db: LibSQLDatabase<typeof schema>,
   routes: Routes,
+  openApiSpec: unknown,
 ): Promise<Routes> {
-  const spec = await fetchOpenApiSpec(db, 0);
+  // Validate openApiSpec is a valid OpenAPI spec object before using it
+  const spec =
+    openApiSpec && isOpenApiSpec(openApiSpec)
+      ? openApiSpec
+      : await fetchOpenApiSpec(db);
   if (!spec) {
     return routes;
   }

@@ -95,10 +95,13 @@ app.post(
   async (ctx) => {
     const db = ctx.get("db");
 
-    const { routes } = ctx.req.valid("json");
-
-    const routesWithOpenApiSpec = await addOpenApiSpecToRoutes(db, routes);
-    console.log("routesWithOpenApiSpec", routesWithOpenApiSpec);
+    const { routes, openApiSpec } = ctx.req.valid("json");
+    console.log("openApiSpec", JSON.stringify(openApiSpec, null, 2));
+    const routesWithOpenApiSpec = await addOpenApiSpecToRoutes(
+      db,
+      routes,
+      openApiSpec,
+    );
     try {
       if (routes.length > 0) {
         // "Re-register" all current app routes in a database transaction

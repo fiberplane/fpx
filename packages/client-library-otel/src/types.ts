@@ -50,6 +50,8 @@ export type HonoLikeFetch = (
 export type HonoLikeApp = {
   fetch: HonoLikeFetch;
   routes: RouterRoute[];
+  // NOTE - This exists on instances of OpenAPIHono
+  getOpenAPIDocument?: () => unknown;
 };
 
 type RouterRoute = {
