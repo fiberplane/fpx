@@ -17,17 +17,17 @@ type Routes = z.infer<typeof schemaProbedRoutes>["routes"];
 /**
  * Enriches API routes with their corresponding OpenAPI specifications by fetching and mapping
  * OpenAPI definitions to Hono routes. This function handles both single routes and arrays of routes.
- *
+ * 
  * @param db - LibSQL database instance containing the OpenAPI specifications. Used to fetch the latest spec.
  * @param routes - Single route or array of routes to be enriched. Each route should contain path, method,
  *                and handlerType properties for proper matching with OpenAPI specs.
- *
+ * 
  * @returns Array of enriched routes. Each route will contain all original properties plus an
  *          `openApiSpec` property that is either:
  *          - A stringified OpenAPI operation object if a match is found and dereferencing succeeds
  *          - null if no matching OpenAPI spec exists or if dereferencing fails
  *          If any error occurs during enrichment, returns the original routes unchanged.
- *
+ * 
  * @example
  * const routes = [
  *   { path: "/api/users", method: "get", handlerType: "route" }
