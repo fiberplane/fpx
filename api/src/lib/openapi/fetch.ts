@@ -5,6 +5,64 @@ import { resolveServiceArg } from "../../probe-routes.js";
 import { getAllSettings } from "../settings/index.js";
 import type { OpenApiSpec } from "./types.js";
 
+type CachedResponse = {
+  data: OpenApiSpec;
+  timestamp: number;
+};
+
+// HACK - We need to cache the OpenAPI spec fetch to avoid infinite loops
+//        when the OpenAPI spec is fetched from Studio.
+//
+//        If the user has a version of @fiberplane/hono-otel >= 0.4.1,
+//        then we can remove this cache.
+const specResponseCache = new Map<string, CachedResponse>();
+const CACHE_TTL_MS = 3000; // 3 seconds
+
+/**
+ * Fetches an OpenAPI specification from a URL with caching support.
+ *
+ * @param url - The URL to fetch the OpenAPI specification from
+ * @param options - Fetch options with an optional TTL override
+ * @param options.ttl - Cache time-to-live in milliseconds (defaults to CACHE_TTL_MS)
+ * @returns Promise that resolves to the parsed OpenAPI specification, or null if:
+ *          - The fetch request fails
+ *          - The response status is not OK
+ *          - The response cannot be parsed as JSON
+ */
+async function cachedSpecFetch(
+  url: string,
+  options: RequestInit & { ttl?: number } = {},
+): Promise<OpenApiSpec | null> {
+  const { ttl = CACHE_TTL_MS, ...fetchOptions } = options;
+
+  // Check cache
+  const cached = specResponseCache.get(url);
+  if (cached && Date.now() - cached.timestamp < ttl) {
+    logger.debug(`Returning cached response for ${url}`);
+    return cached.data;
+  }
+
+  try {
+    const response = await fetch(url, fetchOptions);
+    if (!response.ok) {
+      logger.error(`Error fetching from ${url}: ${response.statusText}`);
+      return null;
+    }
+    const data = (await response.json()) as OpenApiSpec;
+
+    // Update cache
+    specResponseCache.set(url, {
+      data,
+      timestamp: Date.now(),
+    });
+
+    return data;
+  } catch (error) {
+    logger.error(`Error making fetch to ${url}: ${error}`);
+    return null;
+  }
+}
+
 /**
  * Fetches and parses an OpenAPI specification from a configured URL.
  *
@@ -18,7 +76,10 @@ import type { OpenApiSpec } from "./types.js";
  *          - The fetch request fails
  *          - The response cannot be parsed as JSON
  */
-export async function fetchOpenApiSpec(db: LibSQLDatabase<typeof schema>) {
+export async function fetchOpenApiSpec(
+  db: LibSQLDatabase<typeof schema>,
+  responseTtlMs?: number,
+): Promise<OpenApiSpec | null> {
   const specUrl = await getSpecUrl(db);
   if (!specUrl) {
     logger.debug("No OpenAPI spec URL found");
@@ -29,27 +90,21 @@ export async function fetchOpenApiSpec(db: LibSQLDatabase<typeof schema>) {
     logger.debug("No resolved OpenAPI spec URL found");
     return null;
   }
-  try {
-    const response = await fetch(resolvedSpecUrl, {
-      headers: {
-        // NOTE - This is to avoid infinite loops when the OpenAPI spec is fetched from Studio
-        //        We need to make sure that the user has instrumented their app with @fiberplane/hono-otel >= 0.4.1
-        "x-fpx-ignore": "true",
-      },
-    });
-    if (!response.ok) {
-      logger.error(
-        `Error fetching OpenAPI spec from ${resolvedSpecUrl}: ${response.statusText}`,
-      );
-      return null;
-    }
-    return response.json() as Promise<OpenApiSpec>;
-  } catch (error) {
-    logger.error(
-      `Error making fetch to OpenAPI spec at ${resolvedSpecUrl}: ${error}`,
-    );
-    return null;
-  }
+
+  // NOTE - This is to avoid infinite loops when the OpenAPI spec is fetched from Studio
+  //        I.e., it's possible that the OpenAPI spec is fetched from the target service,
+  //        in which case, making a request to the target service from Studio will result in the app reporting its routes to Studio,
+  //        which will then re-trigger a fetch of the OpenAPI spec from Studio, and so on.
+  //
+  //        If we want to rely on `x-fpx-ignore`, then we need to make sure that the user has instrumented their app with @fiberplane/hono-otel >= 0.4.1
+  //        Since we don't have a way to check the version of @fiberplane/hono-otel in the app yet, we're going with the hacky cache for now.
+  //
+  return cachedSpecFetch(resolvedSpecUrl, {
+    headers: {
+      "x-fpx-ignore": "true",
+    },
+    ttl: responseTtlMs,
+  });
 }
 
 /**

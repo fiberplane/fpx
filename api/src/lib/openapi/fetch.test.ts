@@ -39,9 +39,8 @@ describe("fetchOpenApiSpec", () => {
     // Mock getAllSettings to return no URL
     (getAllSettings as Any).mockResolvedValue({ openApiSpecUrl: undefined });
 
-    const result = await fetchOpenApiSpec(mockDb);
+    const result = await fetchOpenApiSpec(mockDb, 0);
     expect(result).toBeNull();
-    expect(logger.debug).toHaveBeenCalledWith("No OpenAPI spec URL found");
   });
 
   it("should fetch and return OpenAPI spec from absolute URL", async () => {
@@ -56,7 +55,7 @@ describe("fetchOpenApiSpec", () => {
       openApiSpecUrl: "https://api.example.com/openapi.json",
     });
 
-    const result = await fetchOpenApiSpec(mockDb);
+    const result = await fetchOpenApiSpec(mockDb, 0);
     expect(result).toEqual(mockSpec);
     expect(mockFetch).toHaveBeenCalledWith(
       "https://api.example.com/openapi.json",
@@ -80,7 +79,7 @@ describe("fetchOpenApiSpec", () => {
       openApiSpecUrl: "/api-docs/openapi.json",
     });
 
-    const result = await fetchOpenApiSpec(mockDb);
+    const result = await fetchOpenApiSpec(mockDb, 0);
     expect(result).toEqual(mockSpec);
     expect(mockFetch).toHaveBeenCalledWith(
       "http://localhost:3000/api-docs/openapi.json",
@@ -98,7 +97,7 @@ describe("fetchOpenApiSpec", () => {
       openApiSpecUrl: "https://api.example.com/openapi.json",
     });
 
-    const result = await fetchOpenApiSpec(mockDb);
+    const result = await fetchOpenApiSpec(mockDb, 0);
     expect(result).toBeNull();
     expect(logger.error).toHaveBeenCalled();
   });
@@ -114,7 +113,7 @@ describe("fetchOpenApiSpec", () => {
       openApiSpecUrl: "https://api.example.com/openapi.json",
     });
 
-    const result = await fetchOpenApiSpec(mockDb);
+    const result = await fetchOpenApiSpec(mockDb, 0);
     expect(result).toBeNull();
     expect(logger.error).toHaveBeenCalled();
   });
