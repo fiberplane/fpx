@@ -35,9 +35,13 @@ export function OpenAPISettingsForm({ settings }: OpenAPISettingsFormProps) {
         className="w-full space-y-4 pb-8 px-0.5"
       >
         <div>
-          <h3 className="md:block md:mb-4 text-lg font-medium">
-            OpenAPI Settings
+          <h3 className="md:block mb-1 md:mb-2 text-lg font-medium">
+            OpenAPI Integration (Experimental)
           </h3>
+          <div className="mb-2 md:mb-4 text-sm text-muted-foreground">
+            Enrich your detected API routes with their corresponding OpenAPI
+            specifications.
+          </div>
           <div className="space-y-4 mt-4">
             <FormField
               control={form.control}
