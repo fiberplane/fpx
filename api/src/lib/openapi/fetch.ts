@@ -16,15 +16,27 @@ export async function fetchOpenApiSpec(db: LibSQLDatabase<typeof schema>) {
     logger.debug("No resolved OpenAPI spec URL found");
     return null;
   }
-  logger.debug(`Fetching OpenAPI spec from ${resolvedSpecUrl}`);
-  const response = await fetch(resolvedSpecUrl, {
-    headers: {
-      // NOTE - This is to avoid infinite loops when the OpenAPI spec is fetched from Studio
-      //        We need to make sure that the user has instrumented their app with @fiberplane/hono-otel >= 0.4.1
-      "x-fpx-ignore": "true",
-    },
-  });
-  return response.json() as Promise<OpenApiSpec>;
+  try {
+    const response = await fetch(resolvedSpecUrl, {
+      headers: {
+        // NOTE - This is to avoid infinite loops when the OpenAPI spec is fetched from Studio
+        //        We need to make sure that the user has instrumented their app with @fiberplane/hono-otel >= 0.4.1
+        "x-fpx-ignore": "true",
+      },
+    });
+    if (!response.ok) {
+      logger.error(
+        `Error fetching OpenAPI spec from ${resolvedSpecUrl}: ${response.statusText}`,
+      );
+      return null;
+    }
+    return response.json() as Promise<OpenApiSpec>;
+  } catch (error) {
+    logger.error(
+      `Error making fetch to OpenAPI spec at ${resolvedSpecUrl}: ${error}`,
+    );
+    return null;
+  }
 }
 
 /**
