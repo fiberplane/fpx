@@ -14,53 +14,80 @@ import type { OpenAPIOperation } from "./types.js";
 
 type Routes = z.infer<typeof schemaProbedRoutes>["routes"];
 
+/**
+ * Enriches API routes with their corresponding OpenAPI specifications by fetching and mapping
+ * OpenAPI definitions to Hono routes. This function handles both single routes and arrays of routes.
+ * 
+ * @param db - LibSQL database instance containing the OpenAPI specifications. Used to fetch the latest spec.
+ * @param routes - Single route or array of routes to be enriched. Each route should contain path, method,
+ *                and handlerType properties for proper matching with OpenAPI specs.
+ * 
+ * @returns Array of enriched routes. Each route will contain all original properties plus an
+ *          `openApiSpec` property that is either:
+ *          - A stringified OpenAPI operation object if a match is found and dereferencing succeeds
+ *          - null if no matching OpenAPI spec exists or if dereferencing fails
+ *          If any error occurs during enrichment, returns the original routes unchanged.
+ * 
+ * @example
+ * const routes = [
+ *   { path: "/api/users", method: "get", handlerType: "route" }
+ * ];
+ * const enrichedRoutes = await addOpenApiSpecToRoutes(db, routes);
+ * // enrichedRoutes[0].openApiSpec will contain the stringified OpenAPI operation or null
+ */
 export async function addOpenApiSpecToRoutes(
   db: LibSQLDatabase<typeof schema>,
   routes: Routes,
-) {
-  const spec = await fetchOpenApiSpec(db);
+): Promise<Routes> {
+  const spec = await fetchOpenApiSpec(db, 0);
   if (!spec) {
-    logger.debug("No OpenAPI spec found");
-    return [];
+    return routes;
   }
   const openApiRoutes = mapOpenApiToHonoRoutes(spec);
   const appRoutes = Array.isArray(routes) ? routes : [routes];
 
-  return appRoutes.map((route) => {
-    const openApiRoute = openApiRoutes.find(
-      (r) =>
-        route.handlerType === "route" &&
-        r.honoPath === route.path &&
-        r.method === route.method,
-    );
+  try {
+    const enrichedRoutes = appRoutes.map((route) => {
+      const openApiRoute = openApiRoutes.find(
+        (r) =>
+          route.handlerType === "route" &&
+          r.honoPath === route.path &&
+          r.method === route.method,
+      );
 
-    let operation = openApiRoute?.operation;
-    if (operation) {
-      try {
-        operation = dereferenceSchema<OpenAPIOperation>(
-          operation,
-          spec.components ?? {},
-          new Set(),
-          new Map(),
-        );
-      } catch (error) {
-        if (
-          error instanceof CircularReferenceError ||
-          error instanceof MissingReferenceError
-        ) {
-          logger.warn(`Failed to dereference OpenAPI spec: ${error.message}`);
-          operation = undefined;
-        } else {
-          throw error;
+      let operation = openApiRoute?.operation;
+      if (operation) {
+        try {
+          operation = dereferenceSchema<OpenAPIOperation>(
+            operation,
+            spec.components ?? {},
+            new Set(),
+            new Map(),
+          );
+        } catch (error) {
+          if (
+            error instanceof CircularReferenceError ||
+            error instanceof MissingReferenceError
+          ) {
+            logger.warn(`Failed to dereference OpenAPI spec: ${error.message}`);
+            operation = undefined;
+          } else {
+            throw error;
+          }
         }
       }
-    }
 
-    const result = {
-      ...route,
-      openApiSpec: operation ? JSON.stringify(operation) : null,
-    };
+      const result = {
+        ...route,
+        openApiSpec: operation ? JSON.stringify(operation) : null,
+      };
 
-    return result;
-  });
+      return result;
+    });
+
+    return enrichedRoutes;
+  } catch (error) {
+    logger.error(`Error enriching routes with OpenAPI spec: ${error}`);
+    return appRoutes;
+  }
 }
