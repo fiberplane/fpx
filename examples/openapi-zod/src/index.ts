@@ -76,6 +76,14 @@ const getUserRoute = createRoute({
       },
       description: "Invalid ID",
     },
+    404: {
+      content: {
+        "application/json": {
+          schema: z.object({ error: z.string() }),
+        },
+      },
+      description: "User not found",
+    },
   },
 });
 
@@ -123,21 +131,25 @@ const createUserRoute = createRoute({
   },
 });
 
-app.openapi(getUserRoute, (c) => {
+app.openapi(getUserRoute, async (c) => {
   const { id } = c.req.valid("param");
+  const db = drizzle(c.env.DB);
 
   const idNumber = +id;
   if (Number.isNaN(idNumber) || idNumber < 1) {
     return c.json({ error: "Invalid ID" }, 400);
   }
-  return c.json(
-    {
-      id: idNumber,
-      age: 20,
-      name: "Ultra-user",
-    },
-    200,
-  );
+
+  const [result] = await db
+    .select()
+    .from(schema.users)
+    .where(eq(schema.users.id, idNumber));
+
+  if (!result) {
+    return c.json({ error: "User not found" }, 404);
+  }
+
+  return c.json(result, 200);
 });
 
 app.openapi(listUsersRoute, async (c) => {

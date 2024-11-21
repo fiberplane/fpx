@@ -98,7 +98,7 @@ app.post(
     const { routes } = ctx.req.valid("json");
 
     const routesWithOpenApiSpec = await addOpenApiSpecToRoutes(db, routes);
-
+    console.log("routesWithOpenApiSpec", routesWithOpenApiSpec);
     try {
       if (routes.length > 0) {
         // "Re-register" all current app routes in a database transaction
