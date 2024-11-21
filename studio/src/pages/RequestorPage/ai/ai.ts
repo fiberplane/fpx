@@ -30,6 +30,7 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
     body,
     activeRoute,
     getMatchingMiddleware,
+    currentAiPrompt,
   } = useRequestorStore(
     "setBody",
     "setQueryParams",
@@ -39,6 +40,7 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
     "body",
     "activeRoute",
     "getMatchingMiddleware",
+    "currentAiPrompt",
   );
 
   const { ignoreAiInputsBanner, setIgnoreAiInputsBanner } =
@@ -65,6 +67,7 @@ export function useAi(requestHistory: Array<ProxiedRequestResponse>) {
       bodyType,
       recentHistory,
       testingPersona,
+      currentAiPrompt,
     );
 
   const fillInRequest = useHandler(() => {

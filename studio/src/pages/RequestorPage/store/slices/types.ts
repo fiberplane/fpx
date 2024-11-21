@@ -107,8 +107,14 @@ export const validBottomPanelNames: BOTTOM_PANEL_NAMES[] = [
 
 export type PanelState = "open" | "closed";
 
+export type AiState = {
+  currentAiPrompt: string | undefined;
+  setAiPrompt: (prompt?: string) => void;
+};
+
 export type Store = RequestResponseSlice &
   RoutesSlice &
   TabsSlice &
   WebsocketSlice &
-  UISlice;
+  UISlice &
+  AiState;

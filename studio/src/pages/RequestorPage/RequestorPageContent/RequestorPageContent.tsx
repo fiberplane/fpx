@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type To, useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
+import { AiPromptInput } from "../CommandBar/AiPromptInput";
 import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
@@ -23,7 +24,6 @@ import { useRequestorSubmitHandler } from "../useRequestorSubmitHandler";
 import RequestorPageContentBottomPanel from "./RequestorPageContentBottomPanel";
 import { useMostRecentProxiedRequestResponse } from "./useMostRecentProxiedRequestResponse";
 import { getMainSectionWidth } from "./util";
-import { CommandBar } from "../CommandBar/CommandBar";
 
 interface RequestorPageContentProps {
   history: ProxiedRequestResponse[];
@@ -115,10 +115,13 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const { togglePanel, setAIDropdownOpen } = useRequestorStore(
+  const { togglePanel, setAIDropdownOpen, setAiPrompt } = useRequestorStore(
     "togglePanel",
     "setAIDropdownOpen",
+    "setAiPrompt",
   );
+
+  const [aiPromptOpen, setAiPromptOpen] = useState(false);
 
   useHotkeys(
     "mod+g",
@@ -135,6 +138,21 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         }
       } else {
         e.preventDefault();
+        setAIDropdownOpen(true);
+      }
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
+  );
+
+  useHotkeys(
+    "mod+shift+g",
+    (e) => {
+      e.preventDefault();
+      if (aiEnabled && !isLoadingParameters) {
+        setAiPromptOpen(true);
+      } else {
         setAIDropdownOpen(true);
       }
     },
@@ -168,19 +186,6 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       description: "Open AI assistant panel",
       ignoreSelector: "[contenteditable]",
     },
-  );
-
-  const [commandBarOpen, setCommandBarOpen] = useState(false);
-
-  useHotkeys(
-    "mod+k",
-    (e) => {
-      e.preventDefault();
-      setCommandBarOpen(true);
-    },
-    {
-      enableOnFormTags: ["input"],
-    }
   );
 
   const requestContent = (
@@ -239,7 +244,22 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
         "overflow-hidden",
       )}
     >
-      <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
+      <AiPromptInput
+        open={aiPromptOpen}
+        setOpen={setAiPromptOpen}
+        setAiPrompt={setAiPrompt}
+        onGenerateRequest={(prompt) => {
+          if (aiEnabled && !isLoadingParameters) {
+            toast({
+              duration: 3000,
+              description: prompt
+                ? `Generating request with prompt: ${prompt}`
+                : "Generating request parameters with AI",
+            });
+            fillInRequest();
+          }
+        }}
+      />
       <RequestorInput
         onSubmit={onSubmit}
         disconnectWebsocket={disconnectWebsocket}

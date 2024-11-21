@@ -8,39 +8,93 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { 
-  LayoutIcon, 
-  FileTextIcon, 
-  ChatBubbleIcon, 
-  ClockIcon 
+import {
+  ChatBubbleIcon,
+  ClockIcon,
+  FileTextIcon,
+  LayoutIcon,
+  MagicWandIcon,
 } from "@radix-ui/react-icons";
+import React from "react";
 
 interface CommandBarProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onGenerateRequest?: (prompt?: string) => void;
+  togglePanel: (panel: "timelinePanel" | "logsPanel" | "aiPanel") => void;
 }
 
-export function CommandBar({ open, setOpen }: CommandBarProps) {
+export function CommandBar({
+  open,
+  setOpen,
+  onGenerateRequest,
+  togglePanel,
+}: CommandBarProps) {
+  const [inputValue, setInputValue] = React.useState("");
+
+  const handleGenerateRequest = (currentInput: string) => {
+    // Extract any text after "generate" as the prompt
+    const prompt = currentInput.replace(/^generate\s*/, "").trim();
+    onGenerateRequest?.(prompt.length > 0 ? prompt : undefined);
+    setOpen(false);
+    setInputValue("");
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="overflow-hidden p-0 shadow-lg max-w-[500px] mx-auto">
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
-          <CommandInput 
-            placeholder="Type a command or search..." 
+        <Command
+          className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
+          value={inputValue}
+          onValueChange={setInputValue}
+        >
+          <CommandInput
+            placeholder="Type a command or search..."
             className="h-11 border-none focus:ring-0"
           />
           <CommandList className="max-h-[300px] overflow-y-auto overflow-x-hidden">
             <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Actions" className="py-2">
+              <CommandItem
+                className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer"
+                onSelect={() => handleGenerateRequest(inputValue)}
+              >
+                <MagicWandIcon className="flex-shrink-0" />
+                <span>Generate Request Data</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  Type additional text for custom prompt
+                </span>
+              </CommandItem>
+            </CommandGroup>
+            <CommandSeparator className="mx-2" />
             <CommandGroup heading="Navigation" className="py-2">
-              <CommandItem className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer">
+              <CommandItem
+                className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer"
+                onSelect={() => {
+                  togglePanel("timelinePanel");
+                  setOpen(false);
+                }}
+              >
                 <LayoutIcon className="flex-shrink-0" />
                 <span>Toggle Timeline Panel</span>
               </CommandItem>
-              <CommandItem className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer">
+              <CommandItem
+                className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer"
+                onSelect={() => {
+                  togglePanel("logsPanel");
+                  setOpen(false);
+                }}
+              >
                 <FileTextIcon className="flex-shrink-0" />
                 <span>Toggle Logs Panel</span>
               </CommandItem>
-              <CommandItem className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer">
+              <CommandItem
+                className="flex items-center gap-2 px-2 hover:bg-accent rounded-sm cursor-pointer"
+                onSelect={() => {
+                  togglePanel("aiPanel");
+                  setOpen(false);
+                }}
+              >
                 <ChatBubbleIcon className="flex-shrink-0" />
                 <span>Toggle AI Panel</span>
               </CommandItem>
@@ -57,4 +111,4 @@ export function CommandBar({ open, setOpen }: CommandBarProps) {
       </DialogContent>
     </Dialog>
   );
-} 
+}
