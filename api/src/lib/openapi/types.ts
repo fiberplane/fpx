@@ -9,7 +9,6 @@ export type OpenApiSpec = {
   components?: OpenAPIComponents;
 };
 
-// Define types for OpenAPI operation objects
 type OpenAPIParameter = {
   name: string;
   in: "query" | "header" | "path" | "cookie";
@@ -62,7 +61,6 @@ export type OpenAPISchema = {
   properties?: Record<string, OpenAPISchema>;
   items?: OpenAPISchema;
   $ref?: string;
-  // Add other schema properties as needed
 };
 
 export type OpenAPIRequestBody = {
