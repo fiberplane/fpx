@@ -47,8 +47,7 @@ export function OpenAPISettingsForm({ settings }: OpenAPISettingsFormProps) {
                   <div className="flex flex-col gap-2">
                     <FormLabel>OpenAPI Specification URL</FormLabel>
                     <FormDescription>
-                      Enter the URL of your OpenAPI specification file (JSON or
-                      YAML format).
+                      Enter the URL of your JSON OpenAPI specification file.
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -73,9 +72,8 @@ export function OpenAPISettingsForm({ settings }: OpenAPISettingsFormProps) {
             <span className="font-semibold">About OpenAPI Integration</span>
             <div className="grid gap-1">
               <span>
-                The OpenAPI specification will be used to enhance request
-                validation and provide better suggestions for request
-                parameters.
+                The OpenAPI specification will be used to provide better
+                suggestions for request parameters in the UI.
               </span>
             </div>
           </div>
