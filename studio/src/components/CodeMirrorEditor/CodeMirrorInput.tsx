@@ -135,7 +135,8 @@ const headerKeyCompletions = autocompletion({
       return {
         from: word.from,
         options: REQUEST_HEADERS.map((header) => ({
-          label: header,
+          label: header.label,
+          info: `${header.info}\n\n Example:\n ${header.example}`,
           type: "keyword",
         })),
         // Add these options to control appearance
