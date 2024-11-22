@@ -115,18 +115,10 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const {
-    togglePanel,
-    setAIDropdownOpen,
-    setAiPrompt,
-    visibleRequestsPanelTabs,
-    setActiveRequestsPanelTab,
-  } = useRequestorStore(
+  const { togglePanel, setAIDropdownOpen, setAiPrompt } = useRequestorStore(
     "togglePanel",
     "setAIDropdownOpen",
     "setAiPrompt",
-    "visibleRequestsPanelTabs",
-    "setActiveRequestsPanelTab",
   );
 
   const [commandBarOpen, setCommandBarOpen] = useState(false);
