@@ -1,25 +1,49 @@
 ---
-title: "Adding code analysis to studio"
-description: A quick look at how code is analyzed in Fiberplane Studio
+title: "Smart as a WIP: How Studio Analyzes Hono Apps"
+description: A quick look at how Hono api code is statically analyzed in Fiberplane Studio
 slug: code-analysis
-date: 2024-11-20
+date: 2024-11-22
 author: Jacco Flenter
 tags:
   - typescript
-  - analysis
-  - studio
+  - static analysis
   - Hono
 ---
 
 import { Aside, LinkCard } from "@astrojs/starlight/components";
 
-Recently we improved the way source code analysis is done in Fiberplane Studio. This blog post will give you a quick overview of how code analysis works in Studio.
+
+**TL;DR:** We've implemented static code analysis into Fiberplane Studio to 
+help developers better understand and debug their Hono APIs. 
+This post explains how we went about analyzing TypeScript code to extract route information from Hono APIs.
+
+***
+
+When building APIs with [Hono](https://hono.dev), understanding how your routes interact with middleware, validation, and database schemas can become complex. 
+We recently improved how Fiberplane Studio analyzes your source code to provide better insights into these relationships.
+
+Right now, this powers our "[Generate Request](https://fiberplane.com/docs/features/generating-with-ai/)" feature, which uses LLMs to generate request data.
+Going forward, we will add some of this code intelligence to make Studio feel even more like a powerful IDE for testing and debugging Hono APIs.
 
 <center>
 ![Fiberplane Studio generate request parameters](@/assets/blog/2024-11-20-generate-request.jpg)
 </center>
 
-The meat of the code analysis lives in its own package which you can find here:
+## Understanding the Goals
+
+Our code analysis serves two primary purposes:
+- Discover all routes in a Hono application
+- Identify the supporting code (validation, schemas, middleware) associated with each route
+
+The goal is to find all routes in a Hono application, 
+and then for each route, we'd like to find out which code is actually used to handle a request. 
+This way, we can provide an LLM with context around what the application accepts/uses (like database schema, zod validation schemas, etc).
+
+The end result is similar to writing a specification for your API, without the immense amount of boilerplate and overhead of doing so from day 1.
+
+## How `@fiberplane/source-analysis` works
+
+All of our code analysis logic is open source and lives in a dedicated npm package:
 
 <LinkCard
   title="@fiberplane/source-analysis"
@@ -30,32 +54,36 @@ The meat of the code analysis lives in its own package which you can find here:
   rel="noopener noreferrer"
 />
 
+The first thing we needed to do is to find all routes in a Hono api.
+After that, we needed to find out all the code that is associated with each route,
+_including its middleware_.
 
-## Goal of analyzing the source code
+We considered several strategies.
+One approach was to specify the main entry of an application, find the Hono app in that file, and go through the source code from there. 
+The downside to this is that the entry file would need to be specified (or found out by our code base).
 
-The goal is to find all routes of a users' hono application, knowing that we'd like to find out which code is actually used for that. This way we can provide an LLM with context around what the application accepts/uses (like database schema, zod validation schemas, etc). 
+An alternative approach, which we went with, is to analyze all source code 
+and find any variables that are of the `Hono<` generic type. 
+From there, we can apply some heuristics to determine the entry point/main app.
 
-## How `@fiberplane/source-analysis` works
-
-There are several strategies that we've been thinking about, one approach is to specify the main entry of an application, find the hono app in that file and go through the source code from there. The downside to this, is that the entry file would need to be specified (or found out by our code base).
-An alternative approach is to analyze all source code and find variables that are of the `Hono<` generic type and use some heuristics to determine the entry point/main app. This is the strategy this package uses.
 On a high level what needs to happen is as follows:
-1. extracting routes. Go through all code and map all apps, routes, middleware and links between apps. Also keep track of what code is related to the app/route/middleware and keep track of what code that code might refer to (etc). This data is stored in the `ResourceManager`. 
-2. analyzing routes. Once all code has been converted into our own data structure, we find the hono apps and see which one has the most routes/entries (and if routes refer to each other their value is added as well). The app with the highest number is treated as the entry point.
-3. the intermediate result: `RoutesResult`. This contains:
+1. **Extract routes** — Go through all code and map all apps, routes, middleware and links between apps. Also keep track of what code is related to the app/route/middleware and keep track of what code that code might refer to (etc). This data is stored in the `ResourceManager`. 
+2. **Analyze routes** — Once all code has been converted into our own data structure, we find the hono apps and see which one has the most routes/entries (and if routes refer to each other their value is added as well). The app with the highest number is treated as the entry point.
+3. **Describe routes** — Create an intermediate result: `RoutesResult`, which contains:
 
-    *  a reference to a hono app which can be used to find out what code is executed for a given method/request 
+    *  A reference to a dummy Hono app, which can be used to find out what code is executed for a given method/request.
     * `getFilesForHistory()` method that can be called to see all code that can be executed for a request to an endpoint.
     * `resetHistory()` method so you can reset the result to the initial state.
 
-### Extracting routes, the data structures
+### The data structures used to extract routes
 
-The `@fiberplane/source-analysis` package uses several key data structures to represent the elements of your TypeScript project. Understanding these data structures can be helpful if you want to work in this package.
-
+The `@fiberplane/source-analysis` package uses several key data structures to represent the elements of a Hono project. 
+Understanding these data structures can be helpful if you want to work in this package.
 
 #### `RouteTree`
 
-The `RouteTree` type represents a reference to an `app` instance created with `new Hono()`. It contains a list of `entries`, which includes information about calls to the `app` (such as `app.get()`, `app.use()`, and `app.route()`).
+The `RouteTree` type represents a reference to an `app` instance created with `new Hono()`.
+It contains a list of `entries`, which includes information about any calls to the `app` that add routes (such as `app.get()`, `app.use()`, and `app.route()`).
 
 ```typescript
 export type RouteTree = {
@@ -70,9 +98,9 @@ export type RouteTree = {
 
 The `RouteTreeEntry` type represents an entry in a route tree. It can be one of the following types:
 
-- `RouteEntry`. This represents a call to `app.get()`
-- `RouteTreeReference`. This is the data structure for `app.route()`
-- `MiddlewareEntry`. Represents calls to `app.use()`
+- `RouteEntry` — This represents a call to `app.get()`
+- `RouteTreeReference` — This is the data structure for `app.route()`
+- `MiddlewareEntry` — Represents calls to `app.use()`
 
 ```typescript
 export type RouteTreeEntry = RouteEntry | RouteTreeReference | MiddlewareEntry;
@@ -80,7 +108,7 @@ export type RouteTreeEntry = RouteEntry | RouteTreeReference | MiddlewareEntry;
 
 #### Other data structures
 
-In order to capture/store information about other code the packages uses two other data structures:
+In order to capture information about other code the packages uses two other data structures:
 
 - `SourceReference` This is a reference to section of code (like a function, a constant, etc).  A source reference can refer to one or more `SourceReference` as well as one or more `ModuleReferences`
 - A `ModuleReference` represents a link to another file/external package and is source code (part of) an import statement. 
