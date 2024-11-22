@@ -11,3 +11,4 @@ export { useInputFocusDetection } from "./useInputFocusDetection.ts";
 export { useLatest } from "./useLatest.ts";
 export { useOrphanLogs } from "./useOrphanLogs.ts";
 export { useActiveTraceId } from "./useActiveTraceId.ts";
+export { useShake } from "./useShake.ts";

@@ -1,11 +1,6 @@
 import type { OtelSpan } from "@fiberplane/fpx-types";
 import { relations, sql } from "drizzle-orm";
-import {
-  integer,
-  primaryKey,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -219,24 +214,19 @@ export type Group = z.infer<typeof selectGroupSchema>;
 export type NewGroup = z.infer<typeof newGroupSchema>;
 
 // Define the app route -> group relationship
-export const groupsAppRoutes = sqliteTable(
-  "groups_app_routes",
-  {
-    groupId: integer("group_id")
-      .references(() => groups.id, {
-        onDelete: "cascade",
-      })
-      .notNull(),
-    appRouteId: integer("app_route_id")
-      .references(() => appRoutes.id, {
-        onDelete: "cascade",
-      })
-      .notNull(),
-  },
-  (t) => ({
-    pk: primaryKey({ columns: [t.appRouteId, t.groupId] }),
-  }),
-);
+export const groupsAppRoutes = sqliteTable("groups_app_routes", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  groupId: integer("group_id")
+    .references(() => groups.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  appRouteId: integer("app_route_id")
+    .references(() => appRoutes.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+});
 
 export const appRoutesRelations = relations(appRoutes, ({ many }) => ({
   groups: many(groupsAppRoutes),

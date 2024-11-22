@@ -71,6 +71,7 @@ export const REQUESTS_ROUTE = "/requests";
 export const REQUEST_DETAILS_OTEL_ROUTE = "/requests/otel/:traceId";
 export const REQUEST_DETAILS_TRACE_ROUTE = "/requests/:traceId";
 export const ROOT_ROUTE = "/";
+export const GROUP_ROUTE = "/groups/:groupId";
 export const REQUESTOR_TRACE_ROUTE = "/:requestType/:traceId";
 
 export const TRACE_ID_ROUTES = [

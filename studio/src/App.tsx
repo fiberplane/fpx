@@ -4,6 +4,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Layout } from "./Layout";
 import { Toaster } from "./components/ui/toaster";
 import {
+  GROUP_ROUTE,
   REQUESTOR_TRACE_ROUTE,
   REQUESTS_ROUTE,
   REQUEST_DETAILS_OTEL_ROUTE,
@@ -33,6 +34,7 @@ export function App() {
                 element={<RequestDetailsPage />}
               />
               <Route path={ROOT_ROUTE} element={<RequestorPage />} />
+              <Route path={GROUP_ROUTE} element={<RequestorPage />} />
               <Route path={REQUESTOR_TRACE_ROUTE} element={<RequestorPage />} />
               <Route path="/internal/ai-logs" element={<AiRequestLogsPage />} />
               <Route

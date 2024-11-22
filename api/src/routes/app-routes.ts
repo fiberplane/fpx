@@ -276,8 +276,8 @@ app.all(
       | null
       | string
       | {
-        [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = null;
+          [x: string]: string | SerializedFile | (string | SerializedFile)[];
+        } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {

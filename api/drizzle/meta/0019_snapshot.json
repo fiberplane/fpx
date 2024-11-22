@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "e7354afb-7f4f-4bc1-9a3c-a76dcb9b4b6a",
+  "id": "1e082a5c-4799-4c1f-8db5-074686977fa2",
   "prevId": "c3ab23ee-d285-4ddc-89da-ba6475fe9c2b",
   "tables": {
     "ai_request_logs": {
@@ -359,6 +359,13 @@
     "groups_app_routes": {
       "name": "groups_app_routes",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
         "group_id": {
           "name": "group_id",
           "type": "integer",
@@ -403,15 +410,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "groups_app_routes_app_route_id_group_id_pk": {
-          "columns": [
-            "app_route_id",
-            "group_id"
-          ],
-          "name": "groups_app_routes_app_route_id_group_id_pk"
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
     "mizu_logs": {

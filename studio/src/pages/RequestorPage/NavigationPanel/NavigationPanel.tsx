@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useKeySequence } from "@/hooks/useKeySequence";
 import { useHandler } from "@fiberplane/hooks";
 import { useSearchParams } from "react-router-dom";
+import { GroupsPanel } from "./GroupsPanel/GroupsPanel";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
 
@@ -67,8 +68,8 @@ export function NavigationPanel() {
       <TabsContent value="requests" className="h-[calc(100%-40px)] pt-4">
         <RequestsPanel />
       </TabsContent>
-      <TabsContent value="collections" className="h-[calc(100%-40px)] pt-4">
-        <div>Collections</div>
+      <TabsContent value="groups" className="h-[calc(100%-40px)] pt-4">
+        <GroupsPanel />
       </TabsContent>
     </Tabs>
   );
