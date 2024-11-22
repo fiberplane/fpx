@@ -20,8 +20,8 @@ The example app is pretty simple and uses a standard HONC setup (Hono, Drizzle, 
 
 To create and store images, we also needed to use two Cloudflare services:
 
-* Cloudflare R2 as object storage (_like AWS S3_)
-* Cloudflare AI to generate images
+- Cloudflare R2 as object storage (_like AWS S3_)
+- Cloudflare AI to generate images
 
 Let's take a quick look at how I've built this app.
 
@@ -90,7 +90,7 @@ app.get("/api/geese/:name", async (c) => {
     return c.json({ error: "doesnt_exist" }, 404);
   }
   //...
-})
+});
 ```
 
 After those checks are done, we get to the really
@@ -101,12 +101,12 @@ interesting part: Making geese!
 This is where Cloudflare really shines. Creating an image is as simple
 as three lines of code:
 
-```ts title="src/index.ts" 
+```ts title="src/index.ts"
 const model = "@cf/black-forest-labs/flux-1-schnell" as BaseAiTextToImageModels;
 const prompt = `Please generate a image of a goose. Its name is ${name}. Make it in the style of comic or anime please`;
 
 const response = await c.env.AI.run(model, {
-  prompt,
+  prompt
 });
 ```
 
@@ -117,13 +117,15 @@ models and [Flux-1-Schnell](https://developers.cloudflare.com/workers-ai/models/
 The response from the AI call comes back as a base64 encoded string, so we'll
 use the built-in Node.js `Buffer` to get something that we can work with:
 
-```ts title="src/index.ts" 
+```ts title="src/index.ts"
 const base64image = response.image;
 const buffer = Buffer.from(base64image, "base64");
 ```
 
 <Aside type="caution" title="Don't mind the red squiggle">
-Cloudflare Workers's types are a little funky at the moment for AI models, so the code above might show a red squiggly error line in your IDE. The issue is being tracked [here](https://github.com/cloudflare/workerd/issues/2181).
+  Cloudflare Workers's types are a little funky at the moment for AI models, so
+  the code above might show a red squiggly error line in your IDE. The issue is
+  being tracked [here](https://github.com/cloudflare/workerd/issues/2181).
 </Aside>
 
 ## Saving to object storage
@@ -131,7 +133,7 @@ Cloudflare Workers's types are a little funky at the moment for AI models, so th
 With our generated image now available to us as a `Buffer`, putting it into R2 is as simple
 as writing one line of code:
 
-```ts title="src/index.ts" 
+```ts title="src/index.ts"
 await c.env.R2_BUCKET.put(`${name}.png`, buffer);
 ```
 
@@ -140,7 +142,7 @@ image and stored it in object storage with like 6 lines of code.
 
 Retrieving it is as simple as:
 
-```ts title="src/index.ts" 
+```ts title="src/index.ts"
 const image = await c.env.R2_BUCKET.get(`${name}.png`);
 ```
 
@@ -168,9 +170,7 @@ on GitHub, available for you to adapt and build upon how you wish:
   rel="noopener noreferrer"
 />
 
-***
-
-
+---
 
 [0]: https://github.com/fiberplane/create-honc-app/tree/main/examples/honcanator
 [1]: https://developers.cloudflare.com/workers-ai/models/
