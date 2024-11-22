@@ -37,7 +37,6 @@ export async function reregisterRoutes(
   db: LibSQLDatabase<typeof schema>,
   { routes }: z.infer<typeof schemaProbedRoutes>,
 ) {
-  console.log("reregisterRoutes", routes);
   return db.transaction(async (tx) => {
     // Unregister all routes
     await tx

@@ -96,7 +96,7 @@ app.post(
     const db = ctx.get("db");
 
     const { routes, openApiSpec } = ctx.req.valid("json");
-    console.log("openApiSpec", JSON.stringify(openApiSpec, null, 2));
+
     const routesWithOpenApiSpec = await addOpenApiSpecToRoutes(
       db,
       routes,
