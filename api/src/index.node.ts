@@ -27,7 +27,7 @@ import {
   staticServerMiddleware,
 } from "./serve-frontend-build.js";
 
-import { enableCodeAnalysis } from "./lib/code-analysis.js";
+// import { enableCodeAnalysis } from "./lib/code-analysis.js";
 import type { Bindings, Variables } from "./lib/types.js";
 
 config({ path: ".dev.vars" });
@@ -119,5 +119,5 @@ const inferenceConfig = await getInferenceConfig(db);
 const aiEnabled = hasValidAiConfig(inferenceConfig);
 
 if (aiEnabled) {
-  enableCodeAnalysis();
+  // enableCodeAnalysis();
 }

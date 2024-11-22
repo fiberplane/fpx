@@ -126,6 +126,8 @@ export const SettingsSchema = z.object({
       baseUrl: z.union([z.literal(""), z.string().trim().url()]).optional(),
     })
     .optional(),
+  supabaseApiKey: z.string().optional(),
+  supabaseProjectId: z.string().optional(),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;

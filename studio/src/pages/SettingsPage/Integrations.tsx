@@ -3,17 +3,28 @@ import { cn } from "@/utils";
 import type { Settings } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { ApiKeyInput } from "./AISettingsForm";
+import { useSettingsForm } from "./form";
 
-export function Integrations({ settings: _settings }: { settings: Settings }) {
-  const [supabaseKey, setSupabaseKey] = useState("");
+export function Integrations({ settings }: { settings: Settings }) {
+  const { form, onSubmit } = useSettingsForm(settings);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const supabaseApiKey = form.watch("supabaseApiKey");
+  const isConnected = Boolean(supabaseApiKey);
+
   const handleSupabaseConnect = () => {
-    // TODO: Implement Supabase connection logic
-    console.log("Connecting with key:", supabaseKey);
-    setSupabaseKey("");
+    if (!supabaseApiKey) {
+      return;
+    }
+
+    onSubmit(form.getValues());
     setIsExpanded(false);
+  };
+
+  const handleDisconnect = () => {
+    form.setValue("supabaseApiKey", "");
+    onSubmit(form.getValues());
   };
 
   return (
@@ -25,22 +36,33 @@ export function Integrations({ settings: _settings }: { settings: Settings }) {
         <IntegrationItem
           label="Supabase"
           description="Enable auth integration and user impersonation for endpoint testing"
-          button="Add Supabase"
-          onClick={() => setIsExpanded(!isExpanded)}
+          button={isConnected ? "Disconnect" : "Add Supabase"}
+          onClick={() => {
+            if (isConnected) {
+              handleDisconnect();
+            } else {
+              setIsExpanded(!isExpanded);
+            }
+          }}
+          connected={isConnected}
           expanded={isExpanded}
         >
           <div className="mt-4 space-y-4">
-            <Input
-              type="password"
+            <ApiKeyInput
+              value={form.getValues("supabaseApiKey") ?? ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                form.setValue("supabaseApiKey", e.target.value)
+              }
               placeholder="Enter your Supabase API key"
-              value={supabaseKey}
-              onChange={(e) => setSupabaseKey(e.target.value)}
             />
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setIsExpanded(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSupabaseConnect} disabled={!supabaseKey}>
+              <Button
+                onClick={handleSupabaseConnect}
+                disabled={!form.getValues("supabaseApiKey")}
+              >
                 Connect
               </Button>
             </div>
@@ -92,7 +114,10 @@ function IntegrationItem({
               </>
             ) : (
               <>
-                <Icon icon={expanded ? "lucide:minus" : "lucide:plus"} className="w-4 h-4 mr-2" />
+                <Icon
+                  icon={expanded ? "lucide:minus" : "lucide:plus"}
+                  className="w-4 h-4 mr-2"
+                />
                 {button}
               </>
             )

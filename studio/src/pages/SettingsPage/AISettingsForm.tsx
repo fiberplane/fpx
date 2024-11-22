@@ -146,18 +146,16 @@ export function AISettingsForm({
             onSubmit(data);
           },
           (error) => {
-            // TODO - Show error to user
-            //        This can show up with the new settings form in a bad way
             console.error("Form submission error:", error);
           },
         )}
-        className="w-full space-y-4 pb-8"
+        className="w-full pb-8 space-y-4"
       >
         <div>
-          <h3 className="md:block md:mb-4 text-lg font-medium">
+          <h3 className="text-lg font-medium md:block md:mb-4">
             Request Autofill Settings
           </h3>
-          <div className="space-y-4 mt-4">
+          <div className="mt-4 space-y-4">
             <FormField
               control={form.control}
               name="aiProvider"
@@ -200,7 +198,7 @@ export function AISettingsForm({
                   hidden: provider !== activeProvider,
                 })}
               >
-                <h4 className="hidden text-md font-medium">
+                <h4 className="hidden font-medium text-md">
                   {ProviderOptions[provider as AiProviderType]}
                 </h4>
                 {provider !== "fp" && (
@@ -217,7 +215,7 @@ export function AISettingsForm({
                             <DropdownMenuTrigger asChild>
                               <Button variant="outline">
                                 {field.value || "Select Model"}
-                                <CaretDownIcon className="ml-2 h-4 w-4" />
+                                <CaretDownIcon className="w-4 h-4 ml-2" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -316,7 +314,7 @@ export function AISettingsForm({
   );
 }
 
-const ApiKeyInput = ({
+export const ApiKeyInput = ({
   value,
   onChange,
   placeholder,
@@ -353,7 +351,7 @@ const ApiKeyInput = ({
             {passwordShown ? <EyeClosedIcon /> : <EyeOpenIcon />}
           </Button>
         </TooltipTrigger>
-        <TooltipContent className="bg-slate-950 text-white" align="start">
+        <TooltipContent className="text-white bg-slate-950" align="start">
           {passwordShown ? "Hide" : "Show"}
         </TooltipContent>
       </Tooltip>
@@ -403,7 +401,7 @@ function FiberplaneSection({ user }: { user?: UserInfo | null }) {
           </span>
         </div>
         <Button
-          className="mt-2 bg-transparent text-white w-full py-2 rounded-md border border-slate-800"
+          className="w-full py-2 mt-2 text-white bg-transparent border rounded-md border-slate-800"
           variant="link"
           asChild
         >
@@ -412,7 +410,7 @@ function FiberplaneSection({ user }: { user?: UserInfo | null }) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Icon icon="lucide:github" className="mr-2 h-5 w-5" />
+            <Icon icon="lucide:github" className="w-5 h-5 mr-2" />
             Sign in with GitHub
           </a>
         </Button>
