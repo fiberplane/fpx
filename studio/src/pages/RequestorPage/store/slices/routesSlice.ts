@@ -81,6 +81,7 @@ export const routesSlice: StateCreator<
       state.visibleRequestsPanelTabs = getVisibleRequestPanelTabs({
         requestType: nextRequestType,
         method: nextMethod,
+        openApiSpec: route?.openApiSpec,
       });
       state.activeRequestsPanelTab = state.visibleRequestsPanelTabs.includes(
         state.activeRequestsPanelTab,

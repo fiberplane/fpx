@@ -109,16 +109,13 @@ export const RequestPanel = memo(function RequestPanel(
 
   const shouldShowBody = shouldShowRequestTab("body");
   const shouldShowMessages = shouldShowRequestTab("messages");
-  const openApiSpec = useMemo(
-    () => {
-      try {
-        return JSON.parse(activeRoute?.openApiSpec ?? "{}");
-      } catch (_e) {
-        return null;
-      }
-    },
-    [activeRoute?.openApiSpec],
-  );
+  const openApiSpec = useMemo(() => {
+    try {
+      return JSON.parse(activeRoute?.openApiSpec ?? "{}");
+    } catch (_e) {
+      return null;
+    }
+  }, [activeRoute?.openApiSpec]);
   const shouldShowDocs = isValidOpenApiSpec(openApiSpec);
 
   return (
@@ -158,9 +155,7 @@ export const RequestPanel = memo(function RequestPanel(
           </CustomTabTrigger>
         )}
         {shouldShowDocs && (
-          <CustomTabTrigger value="docs">
-            Docs
-          </CustomTabTrigger>
+          <CustomTabTrigger value="docs">Docs</CustomTabTrigger>
         )}
         {shouldShowMessages && (
           <CustomTabTrigger value="messages">
