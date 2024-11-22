@@ -1,5 +1,5 @@
 ---
-title: "Angry Goose Pull Request Reviewer"
+title: "Towards Angrier, Goosier Code Reviews"
 description: Building an AI-Powered Code Review Bot with Cloudflare Workers and Claude
 slug: angry-goose-review-bot
 date: 2024-11-18
@@ -38,7 +38,8 @@ When a pull request is opened, our bot springs into action through a series of w
 4. The AI-generated review is posted back to GitHub and stored in our Neon database
 
 <Aside type="tip" title="Webhooks?">
-  Fiberplane has a built-in way to test [webhooks](https://fiberplane.com/docs/features/webhooks/).
+  Fiberplane has a built-in way to test
+  [webhooks](https://fiberplane.com/docs/features/webhooks/).
 </Aside>
 
 Most of the heavy lifting is done in the POST `/api/pull-requests` endpoint, that listens for incoming pull requests and initiates the review process.
