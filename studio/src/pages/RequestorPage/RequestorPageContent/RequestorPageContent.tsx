@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { type To, useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
-import { AiPromptInput } from "../CommandBar/AiPromptInput";
+import { AiPromptInput, CommandBar } from "../CommandBar";
 import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
 import { ResponsePanel } from "../ResponsePanel";
@@ -115,13 +115,33 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
 
   const isLgScreen = useIsLgScreen();
 
-  const { togglePanel, setAIDropdownOpen, setAiPrompt } = useRequestorStore(
+  const {
+    togglePanel,
+    setAIDropdownOpen,
+    setAiPrompt,
+    visibleRequestsPanelTabs,
+    setActiveRequestsPanelTab,
+  } = useRequestorStore(
     "togglePanel",
     "setAIDropdownOpen",
     "setAiPrompt",
+    "visibleRequestsPanelTabs",
+    "setActiveRequestsPanelTab",
   );
 
+  const [commandBarOpen, setCommandBarOpen] = useState(false);
   const [aiPromptOpen, setAiPromptOpen] = useState(false);
+
+  useHotkeys(
+    "mod+k",
+    (e) => {
+      e.preventDefault();
+      setCommandBarOpen(true);
+    },
+    {
+      enableOnFormTags: ["input"],
+    },
+  );
 
   useHotkeys(
     "mod+g",
@@ -260,6 +280,7 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
           }
         }}
       />
+      <CommandBar open={commandBarOpen} setOpen={setCommandBarOpen} />
       <RequestorInput
         onSubmit={onSubmit}
         disconnectWebsocket={disconnectWebsocket}
