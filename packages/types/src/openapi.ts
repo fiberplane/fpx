@@ -43,7 +43,7 @@ const OpenAPIResponseSchema = z.object({
 type OpenAPISchemaTypeExplicit = {
   type?: string;
   description?: string;
-  example?: string;
+  example?: string | number | boolean;
   properties?: Record<string, OpenAPISchemaTypeExplicit>;
   items?: OpenAPISchemaTypeExplicit;
   $ref?: string;
@@ -59,7 +59,7 @@ const OpenAPISchemaSchema: z.ZodType<OpenAPISchemaTypeExplicit> = z.lazy(() =>
   z.object({
     type: z.string().optional(),
     description: z.string().optional(),
-    example: z.string().optional(),
+    example: z.union([z.string(), z.number(), z.boolean()]).optional(),
     properties: z.record(OpenAPISchemaSchema).optional(),
     items: OpenAPISchemaSchema.optional(),
     $ref: z.string().optional(),
