@@ -5,6 +5,7 @@ export const RequestsPanelTabSchema = z.enum([
   "params",
   "headers",
   "body",
+  "docs",
   "messages",
 ]);
 
