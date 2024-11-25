@@ -1,0 +1,117 @@
+---
+title: "Adding client-side logic to your Hono app"
+description: A guide to adding client-side logic to your Hono app.
+slug: client-side-logic
+date: 2024-11-25
+author: Oscar van Zijverden
+tags:
+  - guide
+  - tutorial
+  - honc
+  - hono
+  - javascript
+  - api
+---
+
+import { Aside, FileTree, TabItem, Tabs } from "@astrojs/starlight/components";
+
+You just built a great app that gets rendered server-side with Hono.
+But now you want to add some client-side logic to it - and Hono ships their own
+React-like API to do just that!
+
+In this guide we'll be going over on how to add client-side logic to a Hono app
+and unlock the full potential of your project.
+
+## Before getting started
+
+We're building an app that uses Hono running in Cloudflare Workers, leveraging
+[static asset bindings](https://developers.cloudflare.com/workers/static-assets/binding/)
+to serve the app, though the same principles apply to any other way of serving
+your app.
+
+As Hono is a server-side app by default, we'll need to make a distinction
+between server-side and client-side logic and adjust our build step to
+facilitate this.\
+We'll be using [Vite](https://vitejs.dev) with a few plugins to make this
+happen.
+
+## Let's build!
+
+First, let's get started with a new Hono app by running the following command:
+
+<Tabs>
+<TabItem label="npm">
+```sh
+npm create hono@latest hono-client
+```
+</TabItem>
+
+<TabItem label="yarn">
+```sh
+yarn create hono hono-client
+```
+</TabItem>
+
+<TabItem label="pnpm">
+```sh
+pnpm create hono hono-client
+```
+</TabItem>
+
+<TabItem label="bun">
+```sh
+bunx create-hono hono-client
+```
+</TabItem>
+</Tabs>
+
+<Aside>
+Make sure to select the `cloudflare-workers` template when prompted.
+</Aside>
+
+The `src` directory will contain a single `index.ts` file with a simple Hono
+app. We'll be adding three other files to the `src` directory:
+
+<FileTree>
+
+- src
+  - index.ts
+  - **api.ts** api routes
+  - **web.ts** client routes
+  - client
+    - **index.tsx** this file will contain the logic to mount the app on the client
+
+</FileTree>
+
+To run and build the app, we're going to install Vite and two Hono plugins to
+facilitate client-side logic:
+
+<Tabs>
+<TabItem label="npm">
+```sh
+npm install vite
+npm install -D @hono/vite-build @hono/vite-dev-server
+```
+</TabItem>
+
+<TabItem label="yarn">
+```sh
+yarn add vite
+yarn add -D @hono/vite-build @hono/vite-dev-server
+```
+</TabItem>
+
+<TabItem label="pnpm">
+```sh
+pnpm add vite
+pnpm add -D @hono/vite-build @hono/vite-dev-server
+```
+</TabItem>
+
+<TabItem label="bun">
+```sh
+bun add vite
+bun add -D @hono/vite-build @hono/vite-dev-server
+```
+</TabItem>
+</Tabs>
