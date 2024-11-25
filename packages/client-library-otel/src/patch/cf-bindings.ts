@@ -262,7 +262,8 @@ function isCloudflareBinding(o: unknown): o is object {
     isCloudflareAiBinding(o) ||
     isCloudflareR2Binding(o) ||
     isCloudflareD1Binding(o) ||
-    isCloudflareKVBinding(o)
+    isCloudflareKVBinding(o) ||
+    isCloudflareWorkerBinding(o)
   );
 }
 
@@ -289,6 +290,21 @@ function isCloudflareR2Binding(o: unknown) {
 function isCloudflareD1Binding(o: unknown) {
   const constructorName = getConstructorName(o);
   if (constructorName !== "D1Database") {
+    return false;
+  }
+
+  return true;
+}
+
+function isCloudflareWorkerBinding(o: unknown) {
+  // TODO figure out an actual way to figure out if a type is of a worker
+  // for now we just check if it isnt any of the others
+  // as the patching method checks if a binding is an actual object
+  // this could be a maybe perhaps valid way but i rly need to double check this
+  if (isCloudflareAiBinding(o) ||
+      isCloudflareR2Binding(o) ||
+      isCloudflareD1Binding(o) ||
+      isCloudflareKVBinding(o)) {
     return false;
   }
 
