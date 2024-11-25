@@ -10,7 +10,6 @@ tags:
   - honc
   - hono
   - javascript
-  - api
 ---
 
 import { Aside, FileTree, TabItem, Tabs } from "@astrojs/starlight/components";
@@ -35,9 +34,9 @@ facilitate this.\
 We'll be using [Vite](https://vitejs.dev) with a few plugins to make this
 happen.
 
-## Let's build!
+## Let us build!
 
-First, let's get started with a new Hono app by running the following command:
+First, let's get started with scaffolding a new Hono app:
 
 <Tabs>
 <TabItem label="npm">
@@ -70,18 +69,78 @@ Make sure to select the `cloudflare-workers` template when prompted.
 </Aside>
 
 The `src` directory will contain a single `index.ts` file with a simple Hono
-app. We'll be adding three other files to the `src` directory:
+app. We'll be adding a `client` directory with an index and component:
 
 <FileTree>
 
 - src
   - index.ts
-  - **api.ts** api routes
-  - **web.ts** client routes
-  - client
-    - **index.tsx** this file will contain the logic to mount the app on the client
+  - **client**
+    - **index.tsx** logic to mount the app on the client
+    - **Counter.tsx** component to demonstrate client-side logic
 
 </FileTree>
+
+We set up a simple counter component that increments a count when a button is
+clicked:
+
+```tsx title="src/client/Counter.tsx"
+import { useState } from "hono/jsx";
+
+export function Counter() {
+	const [count, setCount] = useState(0);
+
+	return (
+		<div>
+			<button onClick={() => setCount((c) => c + 1)} type="button">
+				Increase count
+			</button>
+			<span>Count: {count}</span>
+		</div>
+	);
+}
+```
+
+// add client/index.tsx setup
+
+We're going to add some JSX to the `src/index.ts` file, so we first need to
+change the file extension to `.tsx`.
+Once that's done, we can add Hono's
+[JSX renderer middleware](https://hono.dev/docs/middleware/builtin/jsx-renderer)
+to the `/` route and return the `<Counter />` component:
+
+```tsx title="src/index.tsx" {2, 4, 8-23, 26}
+import { Hono } from "hono";
+import { jsxRenderer } from "hono/jsx-renderer";
+
+import { Counter } from "./client/Counter";
+
+const app = new Hono();
+
+app.use(
+	"/",
+	jsxRenderer(
+		({ children }) => (
+			<html lang="en">
+				<head>
+					<meta charSet="utf-8" />
+					<meta content="width=device-width, initial-scale=1" name="viewport" />
+					<title>hono</title>
+				</head>
+				<body>{children}</body>
+			</html>
+		),
+		{ docType: true },
+	),
+);
+
+app.get("/", (c) => {
+	return c.render(<Counter />);
+});
+
+export default app;
+```
+
 
 To run and build the app, we're going to install Vite and two Hono plugins to
 facilitate client-side logic:
