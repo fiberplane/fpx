@@ -32,6 +32,7 @@ const NewUserSchema = z
   .object({
     name: z.string().openapi({
       example: "John Doe",
+      description: "The name of the user",
     }),
     age: z.number().openapi({
       example: 42,
