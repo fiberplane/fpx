@@ -1,4 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "./queries";
+import { ProbedRoute } from "@/pages/RequestorPage/types";
 
 export const PROBED_ROUTES_KEY = "appRoutes";
 
@@ -30,19 +32,37 @@ export const refreshAppRoutes = async () => {
 export function useRefreshRoutesMutation() {
   return useMutation({
     mutationFn: refreshAppRoutes,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["fileTreeRoutes"] });
+    },
   });
 }
 
-type Route = {
-  path: string;
-  method?: string;
+type RouteTreeResponse = {
+  tree: Array<TreeNode>;
+  unmatched: Array<ProbedRoute>;
+};
+
+type AppRoute = {
+  id: number;
+  path: string | null;
+  method: string | null;
+  handler: string | null;
+  handlerType: string | null;
+  currentlyRegistered: boolean | null;
+  registrationOrder: number | null;
+  routeOrigin: "custom" | "discovered" | "open_api" | null;
+  openApiSpec: string | null;
+  requestType: "http" | "websocket" | null;
+};
+
+type AppRouteWithSourceMetadata = AppRoute & {
   fileName: string;
-  position: number;
 };
 
 type TreeNode = {
   path: string;
-  routes: Route[];
+  routes: Array<AppRouteWithSourceMetadata>;
   children: TreeNode[];
 };
 
@@ -50,9 +70,9 @@ export function useFetchFileTreeRoutes() {
   return useQuery({
     queryKey: ["fileTreeRoutes"],
     queryFn: async () => {
-      const response = await fetch("/v0/file-tree");
+      const response = await fetch("/v0/app-routes-file-tree");
       // TODO: types
-      const json = (await response.json()) as Array<TreeNode>;
+      const json = (await response.json()) as RouteTreeResponse;
       return json;
     },
   });

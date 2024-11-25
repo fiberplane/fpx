@@ -1,8 +1,4 @@
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  ChevronUpIcon,
-} from "@radix-ui/react-icons";
+import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import {
   type ReactNode,
   createContext,

@@ -3,7 +3,9 @@ import { and, eq } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { env } from "hono/adapter";
 import { z } from "zod";
+import type { RouteEntryId } from "../../../packages/source-analysis/dist/types.js";
 import {
+  type AppRoute,
   type NewAppRequest,
   appRequests,
   appResponses,
@@ -11,6 +13,7 @@ import {
   appRoutesInsertSchema,
 } from "../db/schema.js";
 import { reregisterRoutes, schemaProbedRoutes } from "../lib/app-routes.js";
+import { getResult } from "../lib/code-analysis.js";
 import {
   OTEL_TRACE_ID_REGEX,
   generateOtelTraceId,
@@ -41,7 +44,7 @@ const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.get("/v0/app-routes", async (ctx) => {
   const db = ctx.get("db");
-  const routes = await db.select().from(appRoutes);
+  const routes = await db.query.appRoutes.findMany();
   const baseUrl = resolveServiceArg(
     env(ctx).FPX_SERVICE_TARGET as string,
     "http://localhost:8787",
@@ -51,6 +54,102 @@ app.get("/v0/app-routes", async (ctx) => {
     routes,
   });
 });
+
+app.get("/v0/app-routes-file-tree", async (ctx) => {
+  const db = ctx.get("db");
+  const routes = await db.query.appRoutes.findMany({
+    where: (appRoutes, { and, eq }) =>
+      and(
+        eq(appRoutes.currentlyRegistered, true),
+        eq(appRoutes.handlerType, "route"),
+        eq(appRoutes.routeOrigin, "discovered"),
+      ),
+  });
+
+  const result = await getResult();
+
+  const routeEntries = [];
+  for (const currentRoute of routes) {
+    const url = new URL("http://localhost");
+    url.pathname = currentRoute.path ?? "DADADA";
+    const request = new Request(url, {
+      method: currentRoute.method ?? "DIDIDI",
+    });
+    result.resetHistory();
+    const response = await result.currentApp.fetch(request);
+    const responseText = await response.text();
+
+    if (responseText !== "Ok") {
+      logger.warn("Failed to fetch route for context expansion", responseText);
+      continue;
+    }
+
+    const history = result.getHistory();
+    const routeEntryId = history[history.length - 1];
+    const routeEntry = result.getRouteEntryById(routeEntryId as RouteEntryId);
+
+    routeEntries.push({
+      ...currentRoute,
+      fileName: routeEntry?.fileName,
+    });
+  }
+
+  const tree = buildRouteTree(
+    routeEntries.filter(
+      (route) => route?.fileName !== undefined,
+    ) as Array<AppRouteWithSourceMetadata>,
+  );
+
+  return ctx.json(tree);
+});
+
+type AppRouteTreeRersponse = {
+  tree: Array<TreeNode>;
+  unmatched: Array<AppRoute>;
+};
+
+type AppRouteWithSourceMetadata = AppRoute & {
+  fileName?: string;
+};
+
+type TreeNode = {
+  path: string;
+  routes: Array<AppRouteWithSourceMetadata>;
+  children: Array<TreeNode>;
+};
+
+function buildRouteTree(
+  entries: Array<AppRouteWithSourceMetadata>,
+): AppRouteTreeRersponse {
+  const tree: Array<TreeNode> = [];
+  const unmatched: Array<AppRoute> = [];
+
+  for (const entry of entries) {
+    if (!entry.fileName) {
+      unmatched.push(entry);
+    } else {
+      const filePathParts = entry.fileName.split("/");
+      let currentNodeArray = tree;
+
+      for (const [index, part] of filePathParts.entries()) {
+        let childNode = currentNodeArray.find((child) => child.path === part);
+
+        if (!childNode) {
+          childNode = { path: part, routes: [], children: [] };
+          currentNodeArray.push(childNode);
+        }
+
+        if (index === filePathParts.length - 1) {
+          childNode.routes.push(entry);
+        }
+
+        currentNodeArray = childNode.children;
+      }
+    }
+  }
+
+  return { tree, unmatched };
+}
 
 /**
  * Allow users to manually refresh the app routes list
@@ -268,8 +367,8 @@ app.all(
       | null
       | string
       | {
-          [x: string]: string | SerializedFile | (string | SerializedFile)[];
-        } = null;
+        [x: string]: string | SerializedFile | (string | SerializedFile)[];
+      } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {

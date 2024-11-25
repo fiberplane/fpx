@@ -13,8 +13,8 @@ import { useRequestorStore } from "../../store";
 import type { ProbedRoute } from "../../types";
 import { Search } from "../Search";
 import { RoutesItem } from "./RoutesItem";
-import { RoutesTreeGroup } from "./RoutesTreeGroup";
 import { useRefreshRoutes } from "./useRefreshRoutes";
+import { RouteTree } from "./RouteTree";
 
 export function RoutesPanel() {
   const { routes, activeRoute, setActiveRoute } = useRequestorStore(
@@ -185,17 +185,37 @@ export function RoutesPanel() {
                 ))}
               </TabsContent>
               <TabsContent value="fileTree">
-                {fileTreeRoutes?.map((tree) => (
+                {fileTreeRoutes?.tree.map((tree) => (
                   <RouteTree
                     key={tree.path}
                     tree={tree}
                     activeRoute={activeRoute}
                     userAddedRoutes={userAddedRoutes}
                     handleRouteClick={handleRouteClick}
-                    setSelectedRouteIndex={setSelectedRouteIndex}
-                    selectedRouteIndex={selectedRouteIndex}
                   />
                 ))}
+                {fileTreeRoutes && fileTreeRoutes.unmatched.length > 0 && (
+                  <div className="mt-4">
+                    <span className="font-medium font-mono text-xs text-muted-foreground">
+                      Unmatched routes
+                    </span>
+                    {fileTreeRoutes.unmatched.map((route, index) => (
+                      <RoutesItem
+                        key={index}
+                        index={userAddedRoutes.length + index}
+                        route={route}
+                        selectedRoute={
+                          selectedRouteIndex === userAddedRoutes.length + index
+                            ? route
+                            : null
+                        }
+                        activeRoute={activeRoute}
+                        handleRouteClick={handleRouteClick}
+                        setSelectedRouteIndex={setSelectedRouteIndex}
+                      />
+                    ))}
+                  </div>
+                )}
               </TabsContent>
             </RoutesSection>
           </Tabs>
@@ -210,7 +230,7 @@ export function RoutesPanel() {
                 route={route}
                 selectedRoute={
                   selectedRouteIndex ===
-                  userAddedRoutes.length + detectedRoutes.length + index
+                    userAddedRoutes.length + detectedRoutes.length + index
                     ? route
                     : null
                 }
@@ -379,112 +399,5 @@ export function RoutesSection(props: RoutesSectionProps) {
         {children}
       </div>
     </section>
-  );
-}
-
-type Route = {
-  path: string;
-  method?: string;
-  fileName: string;
-  position: number;
-};
-
-type TreeNode = {
-  path: string;
-  routes: Route[];
-  children: TreeNode[];
-};
-
-function RouteTree({
-  tree,
-  activeRoute,
-  userAddedRoutes,
-  selectedRouteIndex,
-  handleRouteClick,
-  setSelectedRouteIndex,
-}: {
-  activeRoute: {
-    path: string;
-    method: "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS" | "PATCH" | "HEAD";
-    requestType: "http" | "websocket";
-    handler: string;
-    handlerType: "route" | "middleware";
-    currentlyRegistered: boolean;
-    registrationOrder: number;
-    routeOrigin: "custom" | "discovered" | "open_api";
-    openApiSpec?: string | undefined;
-    isDraft?: boolean | undefined;
-  } | null;
-  tree: TreeNode;
-  userAddedRoutes: Array<{
-    path: string;
-    method: "GET" | "POST" | "PUT" | "DELETE" | "OPTIONS" | "PATCH" | "HEAD";
-    requestType: "http" | "websocket";
-    handler: string;
-    handlerType: "route" | "middleware";
-    currentlyRegistered: boolean;
-    registrationOrder: number;
-    routeOrigin: "custom" | "discovered" | "open_api";
-    openApiSpec?: string | undefined;
-    isDraft?: boolean | undefined;
-  }>;
-  handleRouteClick: (route: ProbedRoute) => void;
-  setSelectedRouteIndex: React.Dispatch<React.SetStateAction<number | null>>;
-  selectedRouteIndex: number | null;
-}) {
-  return (
-    <RoutesTreeGroup key={tree.path} filePath={tree.path}>
-      {tree.children.map((child) => (
-        <RouteTree
-          key={child.path}
-          tree={child}
-          userAddedRoutes={userAddedRoutes}
-          handleRouteClick={handleRouteClick}
-          setSelectedRouteIndex={setSelectedRouteIndex}
-          selectedRouteIndex={selectedRouteIndex}
-          activeRoute={activeRoute}
-        />
-      ))}
-      {tree.routes.map((route, index) => (
-        <RoutesItem
-          key={index}
-          index={userAddedRoutes.length + index}
-          route={{
-            handler: "",
-            handlerType: "route",
-            currentlyRegistered: true,
-            registrationOrder: 0,
-            routeOrigin: "discovered",
-            requestType: "http",
-            openApiSpec: undefined,
-            isDraft: false,
-            ...route,
-            method:
-              (route.method?.toUpperCase() as ProbedRoute["method"]) ?? "GET",
-          }}
-          selectedRoute={
-            selectedRouteIndex === userAddedRoutes.length + index
-              ? {
-                  handler: "",
-                  handlerType: "route",
-                  currentlyRegistered: true,
-                  registrationOrder: 0,
-                  routeOrigin: "discovered",
-                  requestType: "http",
-                  openApiSpec: undefined,
-                  isDraft: false,
-                  ...route,
-                  method:
-                    (route.method?.toUpperCase() as ProbedRoute["method"]) ??
-                    "GET",
-                }
-              : null
-          }
-          activeRoute={activeRoute}
-          handleRouteClick={handleRouteClick}
-          setSelectedRouteIndex={setSelectedRouteIndex}
-        />
-      ))}
-    </RoutesTreeGroup>
   );
 }
