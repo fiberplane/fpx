@@ -5,35 +5,27 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useHandler } from "@fiberplane/hooks";
+import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState } from "react";
-import { AddRouteForm } from "./AddRouteForm";
+import { AddToRouteForm } from "./AddToRouteForm";
 
-type Props = {
-  groupId: string;
-};
-
-export function AddRoute(props: Props) {
-  const { groupId } = props;
-
+export function AddRouteToGroup() {
   const [open, setOpen] = useState(false);
-  const handleSuccess = useHandler(
-    (
-      // group: Group
-    ) => {
-      setOpen(false);
-      // selectGroup(group);
-    },
-  );
+  const handleSuccess = useHandler(() => {
+    setOpen(false);
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button size="sm" variant="outline" className="ms-3 w-auto">
-          + Add route
-        </Button>
+        <div>
+          <Button size="icon-xs" variant="ghost">
+            <Icon icon="lucide:folder" />
+          </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-96 max-lg:hidden">
-        <AddRouteForm groupId={groupId} onSuccess={handleSuccess} />
+        <AddToRouteForm onSuccess={handleSuccess} />
       </PopoverContent>
     </Popover>
   );

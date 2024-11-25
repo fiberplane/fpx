@@ -13,6 +13,7 @@ import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { RequestDetailsPageV2 } from "../RequestDetailsPage/RequestDetailsPageV2";
+import { AddRouteToGroup } from "./AddRouteToGroup/AddRouteToGroup";
 import { NavigationFrame, NavigationPanel } from "./NavigationPanel";
 import { RequestorPageContent } from "./RequestorPageContent";
 import { useRoutes } from "./routes";
@@ -115,6 +116,12 @@ export const RequestorPage = () => {
           </>
         )}
         <ResizablePanel id="main" order={1}>
+          <div className="grid grid-cols-[1fr_auto] h-10 items-center">
+            <div className="text-muted-foreground ms-3 text-sm">
+              Home &gt; Route
+            </div>
+            <AddRouteToGroup />
+          </div>
           {requestType === "history" && !!id ? (
             <RequestDetailsPageV2
               traceId={id}

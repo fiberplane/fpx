@@ -1,19 +1,34 @@
-import { RequestMethod } from "@/components/Timeline";
-import { Button } from "@/components/ui/button";
-import { Status } from "@/components/ui/status";
-import { useInputFocusDetection } from "@/hooks";
+// import { RequestMethod } from "@/components/Timeline";
+// import { Button } from "@/components/ui/button";
+// import { Status } from "@/components/ui/status";
+// import { useInputFocusDetection } from "@/hooks";
 import { useActiveTraceId } from "@/hooks";
 import { type GroupWithAppRouteList, useGroups } from "@/queries";
 import { cn } from "@/utils";
 import type { Group } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
-import { Link, type To, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  memo,
+  //  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+// import { useHotkeys } from "react-hotkeys-hook";
+import {
+  Link,
+  type To,
+  //  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { Method } from "../../RequestorHistory";
-import type { ProxiedRequestResponse } from "../../queries";
-import { useRequestorStore, useServiceBaseUrl } from "../../store";
-import { RoutesItem } from "../RoutesPanel";
+// import type { ProxiedRequestResponse } from "../../queries";
+import {
+  useRequestorStore,
+  //  useServiceBaseUrl
+} from "../../store";
+// import { RoutesItem } from "../RoutesPanel";
 import { Search } from "../Search";
 import { AddRoute } from "./AddRoute";
 import { CreateGroup } from "./CreateGroup";
