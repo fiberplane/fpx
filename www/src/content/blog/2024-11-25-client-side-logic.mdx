@@ -20,22 +20,26 @@ import {
   Tabs
 } from "@astrojs/starlight/components";
 
-You just built a great app that gets rendered server-side with Hono.
-But now you want to add some client-side logic to it - and Hono ships their own
-React-like API to do just that!
+[Hono](https://hono.dev) is a great framework to build serverless apps with
+familiar APIs using Web Standards. It comes with a ton of features out of the
+box.\
+One of these features is the ability to render JSX server-side, which is great
+static content. But what if you want to add some client-side logic to your app?
 
 In this guide we'll go over on how to add client-side logic to a Hono app and
-unlock the full potential of your project.
+unlock the full potential of your projects.
 
-## Before getting started
+## What are we building?
 
 We're building an app that uses Hono running in Cloudflare Workers, leveraging
 [static asset bindings](https://developers.cloudflare.com/workers/static-assets/binding)
-\- though the same principles apply to other supported environments too.
+\- though the same principles apply to the other supported environments too.
 
-As Hono is a server-side app by default, we'll need to make a distinction
-between server-side and client-side logic and adjust our build step to
-facilitate this.\
+We'll be adding a route that serves a simple counter component that gets
+rendered server-side and hydrated client-side.
+
+This is done by make a distinction between server-side and client-side logic and
+adjust our build step to facilitate this.\
 We'll be using [Vite](https://vitejs.dev) with a few plugins to make this
 happen.
 
@@ -81,8 +85,8 @@ bunx create-hono hono-client
   Make sure to select the `cloudflare-workers` template when prompted.
 </Aside>
 
-The `src` directory will contain a single `index.ts` file with a simple Hono
-app. We'll be adding a `client` directory with an index and component:
+The `src` directory contains a single `index.ts` file with a simple Hono app.
+We're adding a `client` directory with an index and component:
 
 <FileTree>
 
@@ -96,8 +100,8 @@ app. We'll be adding a `client` directory with an index and component:
 
 ### Adding component & mounting point
 
-We set up a simple counter component that increments a count when a button is
-clicked:
+Let's start with setting up a simple counter component that increments a count
+when a button is clicked:
 
 ```tsx title="src/client/Counter.tsx"
 import { useState } from "hono/jsx";
@@ -144,7 +148,7 @@ hydrateRoot(
   GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
 </Aside>
 
-You code editor might give you a hint that `document` is not defined. Given we
+Your code editor might give you a hint that `document` is not defined. Given we
 added the client-side logic, we need to tell TypeScript that we're running in a
 browser environment:
 
@@ -165,7 +169,7 @@ We're going to add some JSX to the `src/index.ts` file, so we first need to
 change the file extension to `.tsx`.
 Once that's done, we can add Hono's
 [JSX renderer middleware](https://hono.dev/docs/middleware/builtin/jsx-renderer)
-to the `/` route and return the `<Counter />` component:
+to the `/` route and return the statically rendered `<Counter />` component:
 
 ```tsx title="src/index.tsx" ins={2, 4, 8-23, 26} del={25}
 import { Hono } from "hono";
@@ -200,13 +204,13 @@ export default app;
 ```
 
 We're almost there. If you run the app now with the `dev` script, you'll get an
-error. Let's fix that!
+error. Let's fix that by fixing the build steps!
 
-### Adding build step and scripts
+### Adding build steps and scripts
 
-As we just added client-side logic. This needs to be built separately from the
-Wrangler build step. We'll be using Vite and two plugins to facilitate both
-build steps:
+At this point we both have server-side and client-side logic, and need to add
+two build steps to our project. Let's install Vite and two plugins to facilitate
+this:
 
 <Tabs syncKey="package-manager">
 <TabItem label="npm">
@@ -237,8 +241,8 @@ config for both the client-side build and the server-side build.
 
 Note that for the client build the `outDir` is set to `./public`. As mentioned
 earlier we're using Cloudflare Workers with static asset bindings. If we're not
-defining these bindings ourselves, the worker will automagically find the files
-in the `public` directory.
+defining these bindings ourselves, the worker will automagically find the built
+files in the `public` directory.
 
 ```ts title="vite.config.ts"
 import build from "@hono/vite-build/cloudflare-workers";
@@ -277,9 +281,9 @@ export default defineConfig(({ mode }) => {
 Now we need to adjust the `package.json` scripts to facilitate the new build
 steps. Additionally, we set the type to `module` to allow for ESM imports:
 
-```json title="package.json" del={5} ins={6, 7}
+```json title="package.json" del={5} ins={3, 6, 7}
 {
-  // ...
+  "name": "hono-client",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
@@ -297,8 +301,8 @@ As a final step we need to load the client-side script. We'll add a script tag
 to the JSX renderer.\
 We need to make a distinction between a development and
 production environment. Vite allows us to do this easily with it's
-[built-in env](https://vite.dev/guide/env-and-mode#env-variables);
-for the dev environment we can load the client's `.tsx` file; for production we
+[built-in env](https://vite.dev/guide/env-and-mode#env-variables).
+For the dev environment we can load the client's `.tsx` file; for production we
 can get it from the `public` directory.
 
 First we add the `vite/client` types to the TypeScript config:
@@ -349,6 +353,8 @@ app.use(
 );
 // ...
 ```
+
+#### Run locally
 
 That's it! You can now run the app with the `dev` script and see the counter
 component in action.
@@ -411,6 +417,12 @@ main = "dist/index.js"
   // ...
 }
 ```
+
+<Aside>
+Note that the `wrangler deploy` has the ``--no-bundle`` flag. The build is done
+by Vite, so we don't need Wrangler to bundle the code; merely deploy it to the
+Cloudflare Workers platform.
+</Aside>
 
 <Card title="GitHub repo" icon="github">
 Check out the [GitHub example repo](https://github.com/oscarvz/cf-workers-hono-client-side)
