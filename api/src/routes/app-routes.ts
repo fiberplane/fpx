@@ -148,7 +148,28 @@ function buildRouteTree(
     }
   }
 
-  return { tree, unmatched };
+  return { tree: consolidateSingleChildNodes(tree), unmatched };
+}
+
+function consolidateSingleChildNodes(nodes: Array<TreeNode>): Array<TreeNode> {
+  return nodes.map((node) => {
+    if (node.children.length === 1) {
+      const child = node.children[0];
+
+      return consolidateSingleChildNodes([
+        {
+          path: `${node.path}/${child.path}`,
+          routes: [...node.routes, ...child.routes],
+          children: child.children,
+        },
+      ])[0];
+    }
+
+    return {
+      ...node,
+      children: consolidateSingleChildNodes(node.children),
+    };
+  });
 }
 
 /**
@@ -367,8 +388,8 @@ app.all(
       | null
       | string
       | {
-        [x: string]: string | SerializedFile | (string | SerializedFile)[];
-      } = null;
+          [x: string]: string | SerializedFile | (string | SerializedFile)[];
+        } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {
