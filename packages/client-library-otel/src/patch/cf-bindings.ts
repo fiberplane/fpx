@@ -182,34 +182,6 @@ function proxyServiceBinding(o: object, bindingName: string) {
       }
 
       if (typeof serviceValue === "function") {
-        // Create a function proxy with apply trap
-        // const functionProxy = new Proxy(serviceValue, {
-        //   apply(targetFunc, thisArg, argumentsList) {
-        //     // Integrate with the measure function
-        //     return measure(
-        //       {
-        //         name: `${bindingName}.${serviceMethod}`,
-        //         attributes: getCfBindingAttributes("Worker", bindingName, serviceMethod),
-        //         onStart: (span, args) => {
-        //           span.setAttributes({
-        //             args: [] // safelySerializeJSON(args),
-        //           });
-        //         },
-        //         onSuccess: (span, result) => {
-        //           addResultAttribute(span, "");
-        //         },
-        //         onError: handleError,
-        //       },
-        //       () => targetFunc.apply(thisArg, argumentsList),
-        //       // targetFunc,
-        //       // targetFunc.bind(serviceTarget),
-        //       // targetFunc.bind(receiver),
-        //     )();
-        //   },
-        // });
-
-        // return functionProxy;
-
         const bindingType = "Worker";
 
         // The name for the span, which will show up in the UI
