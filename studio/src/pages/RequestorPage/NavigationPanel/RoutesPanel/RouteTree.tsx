@@ -30,7 +30,8 @@ export function RouteTree({
         <RoutesItem
           key={index}
           index={userAddedRoutes.length + index}
-          route={route}
+          // HACk: nullish into optional workaround
+          route={{ ...route, openApiSpec: route.openApiSpec ?? undefined }}
           selectedRoute={null}
           activeRoute={activeRoute}
           handleRouteClick={handleRouteClick}
