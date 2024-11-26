@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "./queries";
-import { ProbedRoute } from "@/pages/RequestorPage/types";
+import type { ProbedRoute } from "@/pages/RequestorPage/types";
 
 export const PROBED_ROUTES_KEY = "appRoutes";
 
@@ -38,12 +38,12 @@ export function useRefreshRoutesMutation() {
   });
 }
 
-type RouteTreeResponse = {
+export type RouteTreeResponse = {
   tree: Array<TreeNode>;
   unmatched: Array<ProbedRoute>;
 };
 
-type AppRoute = {
+export type AppRoute = {
   id: number;
   path: string | null;
   method: string | null;
@@ -56,11 +56,11 @@ type AppRoute = {
   requestType: "http" | "websocket" | null;
 };
 
-type AppRouteWithSourceMetadata = AppRoute & {
+export type AppRouteWithSourceMetadata = AppRoute & {
   fileName: string;
 };
 
-type TreeNode = {
+export type TreeNode = {
   path: string;
   routes: Array<AppRouteWithSourceMetadata>;
   children: TreeNode[];

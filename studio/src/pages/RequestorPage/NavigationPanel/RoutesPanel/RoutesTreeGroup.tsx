@@ -21,19 +21,21 @@ export const RoutesTreeGroup = memo(function RoutesTreeGroup({
 
   return (
     <LevelContext.Provider value={level + 1}>
-      <button
-        type="button"
-        className="flex gap-2 px-2 rounded items-center text-muted-foreground border-l hover:bg-muted"
-        onClick={toggleCollapsed}
-      >
-        <span className="font-medium font-mono text-xs leading-8">
-          {filePath}
-        </span>
-        <span className="ml-auto">
-          {!collapsed ? <ChevronDownIcon /> : <ChevronRightIcon />}
-        </span>
-      </button>
-      {!collapsed && <div className="pl-4 border-l">{children}</div>}
+      <div className="border-l border-l-input">
+        <button
+          type="button"
+          className="ml-2 mb-2 flex gap-2 px-2 rounded items-center text-muted-foreground hover:bg-muted"
+          onClick={toggleCollapsed}
+        >
+          <span className="font-medium font-mono text-xs leading-8">
+            {filePath}
+          </span>
+          <span className="ml-auto">
+            {!collapsed ? <ChevronDownIcon /> : <ChevronRightIcon />}
+          </span>
+        </button>
+        {!collapsed && <div className="pl-4">{children}</div>}
+      </div>
     </LevelContext.Provider>
   );
 });

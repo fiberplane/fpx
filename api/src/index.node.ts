@@ -14,7 +14,6 @@ import {
   USER_PROJECT_ROOT_DIR,
 } from "./constants.js";
 import * as schema from "./db/schema.js";
-import { hasValidAiConfig } from "./lib/ai/index.js";
 import { getAuthServer } from "./lib/fp-services/server.js";
 import { setupRealtimeService } from "./lib/realtime/index.js";
 import { getInferenceConfig, getSetting } from "./lib/settings/index.js";
@@ -116,8 +115,5 @@ if (proxyRequestsEnabled ?? false) {
 
 // check settings if ai is enabled, and proactively start the typescript language server
 const inferenceConfig = await getInferenceConfig(db);
-const aiEnabled = hasValidAiConfig(inferenceConfig);
 
-if (aiEnabled) {
-  enableCodeAnalysis();
-}
+enableCodeAnalysis();
