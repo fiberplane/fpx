@@ -30,7 +30,12 @@ let _resultGetter = async (): Promise<RoutesResult> => {
   return Promise.reject(new Error("Routes not yet parsed"));
 };
 
-// Public export that uses latest value of `_resultGetter` function to get the RoutesResult
+/**
+ * Public export that uses latest value of `_resultGetter` function to get the RoutesResult
+ * @NOTE The {@link RoutesResult} has some state on it that needs to be reset across invocations.
+ *       When we move into scenarios that require parallel analysis for routes, we will need to call `.clone` on the RouteResult
+ *       to avoid race conditions on the returned object.
+ */
 export const getResult = async (): Promise<RoutesResult> => {
   return _resultGetter();
 };

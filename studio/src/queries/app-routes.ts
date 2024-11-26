@@ -39,8 +39,13 @@ export function useRefreshRoutesMutation() {
   });
 }
 
-const AppRouteWithFileNameSchema = ProbedRouteSchema.extend({
-  filename: z.string(),
+// Make sure the types are modeled after the db schema
+const AppRouteSchema = ProbedRouteSchema.extend({
+  openApiSpec: z.string().nullish().optional(),
+});
+
+const AppRouteWithFileNameSchema = AppRouteSchema.extend({
+  fileName: z.string(),
 });
 
 export type AppRouteWithFileName = z.infer<typeof AppRouteWithFileNameSchema>;
@@ -78,5 +83,6 @@ export function useFetchFileTreeRoutes() {
       const json = await response.json();
       return AppRoutesTreeResponseSchema.parse(json);
     },
+    throwOnError: true,
   });
 }

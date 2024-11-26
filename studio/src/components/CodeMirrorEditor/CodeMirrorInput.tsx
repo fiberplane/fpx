@@ -1,6 +1,8 @@
 import "./CodeMirrorEditorCssOverrides.css";
 
+import { REQUEST_HEADERS } from "@/constants";
 import { cn } from "@/utils";
+import { autocompletion } from "@codemirror/autocomplete";
 import CodeMirror, { EditorView, gutter, keymap } from "@uiw/react-codemirror";
 import { useMemo, useState } from "react";
 import { createOnSubmitKeymap, escapeKeymap } from "./keymaps";
@@ -94,6 +96,61 @@ const readonlyExtension = EditorView.theme({
 // Hide the gutter on the code mirror instance
 const hiddenGutterExtension = gutter({ class: "hidden border-none" });
 
+// Add this new theme extension for autocompletion styling
+const autocompletionTheme = EditorView.theme({
+  ".cm-tooltip": {
+    backgroundColor: "hsl(var(--popover))",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: "calc(var(--radius) - 2px)",
+  },
+  ".cm-tooltip.cm-tooltip-autocomplete": {
+    "& > ul": {
+      backgroundColor: "transparent",
+      border: "none",
+      maxHeight: "20em",
+      minWidth: "15em",
+    },
+    "& > ul > li": {
+      padding: "4px 8px",
+      lineHeight: "1.25rem",
+      color: "hsl(var(--popover-foreground))",
+    },
+    "& > ul > li[aria-selected]": {
+      backgroundColor: "hsl(var(--accent))",
+      color: "hsl(var(--accent-foreground))",
+    },
+  },
+});
+
+// Add this new extension for header key autocompletion
+const headerKeyCompletions = autocompletion({
+  override: [
+    (context) => {
+      const word = context.matchBefore(/[\w-]*/);
+      if (!word) {
+        return null;
+      }
+      console.log("word", word);
+
+      return {
+        from: word.from,
+        options: REQUEST_HEADERS.map((header) => ({
+          label: header.label,
+          info: `${header.info}\n\n Example:\n ${header.example}`,
+          type: "keyword",
+        })),
+        // Add these options to control appearance
+        tooltip: {
+          position: "below",
+          createTooltip: undefined,
+        },
+      };
+    },
+  ],
+});
+
+export type CodeMirrorInputType = "header-key" | "header-value";
+
 type CodeMirrorInputProps = {
   readOnly?: boolean;
   className?: string;
@@ -101,6 +158,8 @@ type CodeMirrorInputProps = {
   onChange: (value?: string) => void;
   placeholder?: string;
   onSubmit?: () => void;
+  // A marker to add header completions: in the future other string enum values are possible
+  inputType?: CodeMirrorInputType;
 };
 
 const preventNewlineInFirefox = keymap.of([
@@ -141,8 +200,12 @@ export function CodeMirrorInput(props: CodeMirrorInputProps) {
       readOnly ? readonlyExtension : noopExtension,
       isFocused ? noopExtension : inputTrucateExtension,
       createOnSubmitKeymap(onSubmit),
+      // Add header key completions and its theme if this is a header key input
+      props.inputType === "header-key"
+        ? [headerKeyCompletions, autocompletionTheme]
+        : noopExtension,
     ];
-  }, [isFocused, readOnly, onSubmit]);
+  }, [isFocused, readOnly, onSubmit, props.inputType]);
 
   return (
     <div

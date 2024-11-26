@@ -64,7 +64,7 @@ function ScriptPostToken({ token, nonce, expiresAt }: SuccessPageProps) {
             .then(data => {
               console.log("Success:", data);
               const statusEl = document.getElementById('status');
-              statusEl.textContent = 'Authenticated';
+              statusEl.textContent = '🎉 Authenticated';
               statusEl.classList.add('success');
               const successMessageEl = document.getElementById('success-message');
               successMessageEl.classList.remove('hidden');

@@ -16,7 +16,10 @@ import { BottomToolbar } from "./BottomToolbar";
 import { FileUploadForm } from "./FileUploadForm";
 import { PathParamForm } from "./PathParamForm";
 import "./styles.css";
-import { CodeMirrorJsonEditor } from "@/components/CodeMirrorEditor";
+import {
+  CodeMirrorJsonEditor,
+  CodeMirrorTextEditor,
+} from "@/components/CodeMirrorEditor";
 import { useRequestorStore } from "../store";
 
 type RequestPanelProps = {
@@ -111,7 +114,7 @@ export const RequestPanel = memo(function RequestPanel(
         <CustomTabTrigger value="params">
           Params
           {queryParams?.length > 1 && (
-            <span className="ml-1 text-gray-400 font-mono text-xs">
+            <span className="ml-1 font-mono text-xs text-gray-400">
               ({queryParams.length - 1})
             </span>
           )}
@@ -119,7 +122,7 @@ export const RequestPanel = memo(function RequestPanel(
         <CustomTabTrigger value="headers">
           Headers
           {requestHeaders?.length > 1 && (
-            <span className="ml-1 text-gray-400 font-mono text-xs">
+            <span className="ml-1 font-mono text-xs text-gray-400">
               ({requestHeaders.length - 1})
             </span>
           )}
@@ -128,7 +131,7 @@ export const RequestPanel = memo(function RequestPanel(
           <CustomTabTrigger value="body">
             Body
             {!isBodyEmpty(body) && (
-              <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
+              <span className="inline-block w-2 h-2 ml-2 bg-orange-300 rounded-full" />
             )}
           </CustomTabTrigger>
         )}
@@ -136,12 +139,12 @@ export const RequestPanel = memo(function RequestPanel(
           <CustomTabTrigger value="messages">
             Message
             {(websocketMessage?.length ?? 0) > 0 && (
-              <span className="ml-2 w-2 h-2 inline-block rounded-full bg-orange-300" />
+              <span className="inline-block w-2 h-2 ml-2 bg-orange-300 rounded-full" />
             )}
           </CustomTabTrigger>
         )}
 
-        <div className="flex-grow ml-auto flex items-center justify-end text-white">
+        <div className="flex items-center justify-end flex-grow ml-auto text-white">
           <AiDropDownMenu
             aiEnabled={aiEnabled}
             persona={testingPersona}
@@ -214,6 +217,8 @@ export const RequestPanel = memo(function RequestPanel(
             setRequestHeaders(headers);
           }}
           onSubmit={onSubmit}
+          keyInputType="header-key"
+          valueInputType="header-value"
         />
       </CustomTabsContent>
       {shouldShowBody && (
@@ -236,9 +241,20 @@ export const RequestPanel = memo(function RequestPanel(
               setBody(undefined);
             }}
           />
-          {(body.type === "json" || body.type === "text") && (
-            <CodeMirrorJsonEditor
+          {/* TODO - Have a proper text editor */}
+          {body.type === "text" && (
+            <CodeMirrorTextEditor
               onChange={setBody}
+              value={body.value}
+              maxHeight="800px"
+              onSubmit={onSubmit}
+            />
+          )}
+          {body.type === "json" && (
+            <CodeMirrorJsonEditor
+              onChange={(bodyValue) =>
+                setBody({ type: "json", value: bodyValue })
+              }
               value={body.value}
               maxHeight="800px"
               onSubmit={onSubmit}
