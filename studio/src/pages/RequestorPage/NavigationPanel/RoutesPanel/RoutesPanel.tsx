@@ -266,7 +266,7 @@ export function RoutesPanel() {
                 route={route}
                 selectedRoute={
                   selectedRouteIndex ===
-                    userAddedRoutes.length + detectedRoutes.length + index
+                  userAddedRoutes.length + detectedRoutes.length + index
                     ? route
                     : null
                 }

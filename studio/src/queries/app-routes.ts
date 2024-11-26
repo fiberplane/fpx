@@ -1,7 +1,7 @@
 import { ProbedRouteSchema } from "@/pages/RequestorPage/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { queryClient } from "./queries";
 import { z } from "zod";
+import { queryClient } from "./queries";
 
 export const PROBED_ROUTES_KEY = "appRoutes";
 

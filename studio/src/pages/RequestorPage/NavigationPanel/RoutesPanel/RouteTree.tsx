@@ -1,8 +1,8 @@
+import type { TreeNode } from "@/queries/app-routes";
 import { noop } from "@/utils";
 import type { ProbedRoute } from "../../types";
 import { RoutesItem } from "./RoutesItem";
 import { RoutesTreeGroup } from "./RoutesTreeGroup";
-import type { TreeNode } from "@/queries/app-routes";
 
 export function RouteTree({
   tree,
