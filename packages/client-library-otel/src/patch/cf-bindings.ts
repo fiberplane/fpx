@@ -1,4 +1,3 @@
-import { WorkerEntrypoint } from "cloudflare:workers";
 import type { Span } from "@opentelemetry/api";
 import {
   CF_BINDING_ERROR,
@@ -58,13 +57,23 @@ export function patchCloudflareBindings(
  * @returns A proxied binding
  */
 function patchCloudflareBinding(o: object, bindingName: string) {
+  // HACK - Check this first...
+  if (isCloudflareWorkerBinding(o)) {
+    return proxyServiceBinding(o, bindingName);
+  }
+
   if (!isCloudflareBinding(o)) {
+    console.log("Is not bindnding:", bindingName, o);
     return o;
   }
+
+  console.log("We have a binding", bindingName);
 
   if (isAlreadyProxied(o)) {
     return o;
   }
+
+  console.log("Proxying binding", bindingName);
 
   // HACK - Special logic for D1, since we only really care about the `_send` and `_sendOrThrow` methods,
   //        not about the `prepare`, etc, methods.
@@ -78,6 +87,7 @@ function patchCloudflareBinding(o: object, bindingName: string) {
 
       if (typeof value === "function") {
         const methodName = String(prop);
+        console.log("Proxied method", methodName);
 
         // OPTIMIZE - Do we want to do these lookups / this wrapping every time the property is accessed?
         const bindingType = getConstructorName(target);
@@ -115,6 +125,125 @@ function patchCloudflareBinding(o: object, bindingName: string) {
 
   // We need to mark the binding as proxied so that we don't proxy it again in the future,
   // since Workers can re-use env vars across requests.
+  markAsProxied(proxiedBinding);
+
+  return proxiedBinding;
+}
+
+/**
+ * Proxy a Service binding to add instrumentation
+ *
+ * @param o - The Service binding to proxy
+ *
+ * @returns A proxied binding
+ */
+function proxyServiceBinding(o: object, bindingName: string) {
+  if (!isCloudflareWorkerBinding(o)) {
+    return o;
+  }
+
+  if (isAlreadyProxied(o)) {
+    return o;
+  }
+
+  console.log("Proxying service binding!!!", bindingName);
+
+  const proxiedBinding = new Proxy(o, {
+    get(serviceTarget, serviceProp) {
+      const serviceMethod = String(serviceProp);
+      if (serviceMethod === "bark") {
+        console.log("barking mad!");
+      }
+      console.log("Proxying service method", serviceMethod);
+      const serviceValue = Reflect.get(serviceTarget, serviceProp);
+      console.log("service value", serviceValue);
+
+      // NOTE - Should ignore "toJSON"
+      if (serviceMethod === "toJSON") {
+        return serviceValue;
+      }
+
+      // NOTE - Can probably throw this away...
+      if (serviceMethod === "apply") {
+        console.log("Skipping proxying of apply", serviceValue);
+        return serviceValue;
+      }
+
+      if (serviceMethod === "fetch") {
+        return serviceValue;
+      }
+
+      if (serviceMethod === "connect") {
+        return serviceValue;
+      }
+
+      if (serviceMethod === "constructor") {
+        return serviceValue;
+      }
+
+      if (typeof serviceValue === "function") {
+        // Create a function proxy with apply trap
+        // const functionProxy = new Proxy(serviceValue, {
+        //   apply(targetFunc, thisArg, argumentsList) {
+        //     // Integrate with the measure function
+        //     return measure(
+        //       {
+        //         name: `${bindingName}.${serviceMethod}`,
+        //         attributes: getCfBindingAttributes("Worker", bindingName, serviceMethod),
+        //         onStart: (span, args) => {
+        //           span.setAttributes({
+        //             args: [] // safelySerializeJSON(args),
+        //           });
+        //         },
+        //         onSuccess: (span, result) => {
+        //           addResultAttribute(span, "");
+        //         },
+        //         onError: handleError,
+        //       },
+        //       () => targetFunc.apply(thisArg, argumentsList),
+        //       // targetFunc,
+        //       // targetFunc.bind(serviceTarget),
+        //       // targetFunc.bind(receiver),
+        //     )();
+        //   },
+        // });
+
+        // return functionProxy;
+
+        const bindingType = "Worker";
+
+        // The name for the span, which will show up in the UI
+        const name = `${bindingName}.${serviceMethod}`;
+
+        const measuredBinding = measure(
+          {
+            name,
+            attributes: getCfBindingAttributes(
+              bindingType,
+              bindingName,
+              serviceMethod,
+            ),
+            onStart: (span, args) => {
+              span.setAttributes({
+                args: safelySerializeJSON(args),
+              });
+            },
+            onSuccess: (span, result) => {
+              addResultAttribute(span, result);
+            },
+            onError: handleError,
+          },
+          serviceValue,
+        );
+
+        // TODO - Should we bind here?
+        return measuredBinding.bind(serviceTarget);
+      }
+
+      return serviceValue;
+    },
+  });
+
   markAsProxied(proxiedBinding);
 
   return proxiedBinding;
@@ -260,11 +389,11 @@ function handleError(span: Span, error: unknown) {
 // TODO - Remove this, it is temporary
 function isCloudflareBinding(o: unknown): o is object {
   return (
+    isCloudflareWorkerBinding(o) ||
     isCloudflareAiBinding(o) ||
     isCloudflareR2Binding(o) ||
     isCloudflareD1Binding(o) ||
-    isCloudflareKVBinding(o) ||
-    isCloudflareWorkerBinding(o)
+    isCloudflareKVBinding(o)
   );
 }
 
@@ -297,17 +426,21 @@ function isCloudflareD1Binding(o: unknown) {
   return true;
 }
 
-function isCloudflareWorkerBinding(o: unknown) {
-  if (
-    isCloudflareAiBinding(o) ||
-    isCloudflareR2Binding(o) ||
-    isCloudflareD1Binding(o) ||
-    isCloudflareKVBinding(o)
-  ) {
-    return false;
-  }
-
-  return o instanceof WorkerEntrypoint;
+/**
+ * Check if an object is a Cloudflare Worker binding
+ *
+ * This uses some heuristics to check for a Worker binding, since `instanceof WorkerEntrypoint` does not work.
+ *
+ * @param o - The object to check
+ * @returns `true` if the object is a Cloudflare Worker binding, `false` otherwise
+ */
+function isCloudflareWorkerBinding(o: unknown): boolean {
+  const isFetcher = getConstructorName(o) === "Fetcher";
+  return (
+    isFetcher &&
+    hasFunctionWithName(o, "fetch") &&
+    hasFunctionWithName(o, "connect")
+  );
 }
 
 function hasCloudflareD1Session(
@@ -346,12 +479,47 @@ function getConstructorName(o: unknown) {
 }
 
 /**
+ * Check if an object has a function property with a given name
+ *
+ * @param o - The object to check
+ * @param name - The name of the function to check for
+ * @returns `true` if the object has a function with the given name, `false` otherwise
+ */
+function hasFunctionWithName(o: unknown, name: string): boolean {
+  const result =
+    o &&
+    typeof o === "object" &&
+    name in o &&
+    typeof (o as Record<string, unknown>)[name] === "function";
+
+  return !!result;
+}
+
+/**
  * Check if a Cloudflare binding is already proxied by us
  *
  * @param o - The binding to check
  * @returns `true` if the binding is already proxied, `false` otherwise
  */
 function isAlreadyProxied(o: object) {
+  console.log("Checking if already proxied", o);
+
+  // This is crazy, but it seems like any property access on a worker binding will be true,
+  // since the property access returns a ... function with native code?!
+  //
+  if (isCloudflareWorkerBinding(o)) {
+    console.log("Checking if worker binding is already proxied...");
+    const descriptor = getProxiedKey(o);
+    console.log("the descriptor", descriptor);
+    return !!descriptor;
+    // biome-ignore lint/correctness/noUnreachable: <explanation>
+    return (
+      IS_PROXIED_KEY in o &&
+      typeof o[IS_PROXIED_KEY] === "boolean" &&
+      o[IS_PROXIED_KEY]
+    );
+  }
+
   if (IS_PROXIED_KEY in o) {
     return !!o[IS_PROXIED_KEY];
   }
@@ -370,4 +538,8 @@ function markAsProxied(o: object) {
     writable: true,
     configurable: true,
   });
+}
+
+function getProxiedKey(o: object) {
+  return Object.getOwnPropertyDescriptor(o, IS_PROXIED_KEY);
 }
