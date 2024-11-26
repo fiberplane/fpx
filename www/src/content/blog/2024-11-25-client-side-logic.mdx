@@ -1,8 +1,8 @@
 ---
-title: "Adding client-side logic to your Hono app"
+title: "Guide: Adding client-side logic to your Hono app"
 description: A guide to adding client-side logic to your Hono app.
 slug: client-side-logic
-date: 2024-11-25
+date: 2024-11-26
 author: Oscar van Zijverden
 tags:
   - guide
@@ -25,8 +25,7 @@ and unlock the full potential of your project.
 
 We're building an app that uses Hono running in Cloudflare Workers, leveraging
 [static asset bindings](https://developers.cloudflare.com/workers/static-assets/binding/)
-to serve the app, though the same principles apply to any other way of serving
-your app.
+\- though the same principles apply to other supported environments too.
 
 As Hono is a server-side app by default, we'll need to make a distinction
 between server-side and client-side logic and adjust our build step to
@@ -38,7 +37,7 @@ happen.
 
 First, let's get started with scaffolding a new Hono app:
 
-<Tabs>
+<Tabs syncKey="package-manager">
 <TabItem label="npm">
 ```sh
 npm create hono@latest hono-client
@@ -81,6 +80,8 @@ app. We'll be adding a `client` directory with an index and component:
 
 </FileTree>
 
+### Adding component & mounting point
+
 We set up a simple counter component that increments a count when a button is
 clicked:
 
@@ -101,7 +102,50 @@ export function Counter() {
 }
 ```
 
-// add client/index.tsx setup
+Then we import the component & hydrate it in the client entry file:
+
+```tsx title="src/client/index.tsx"
+import { StrictMode } from "hono/jsx";
+import { hydrateRoot } from "hono/jsx/dom/client";
+
+import { Counter } from "./Counter";
+
+const root = document.getElementById("root");
+if (!root) {
+	throw new Error("Root element not found");
+}
+
+hydrateRoot(
+	root,
+	<StrictMode>
+		<Counter />
+	</StrictMode>,
+);
+```
+
+<Aside>
+We're _hydrating_ the app as opposed to _rendering_ it, as we'll render the
+component server-side with Hono.
+If you're interested in client-side rendering only, check out the [example on
+GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
+</Aside>
+
+You code editor might give you a hint that `document` is not defined. Given we
+added the client-side logic, we need to tell TypeScript that we're running in a
+browser environment:
+
+```json title="tsconfig.json" ins={6}
+{
+  "compilerOptions": {
+    //...
+    "lib": [
+      "ESNext",
+      "DOM",
+    ],
+    // ...
+  },
+}
+```
 
 We're going to add some JSX to the `src/index.ts` file, so we first need to
 change the file extension to `.tsx`.
@@ -109,7 +153,7 @@ Once that's done, we can add Hono's
 [JSX renderer middleware](https://hono.dev/docs/middleware/builtin/jsx-renderer)
 to the `/` route and return the `<Counter />` component:
 
-```tsx title="src/index.tsx" {2, 4, 8-23, 26}
+```tsx title="src/index.tsx" ins={2, 4, 8-24, 27} del={26}
 import { Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 
@@ -118,16 +162,15 @@ import { Counter } from "./client/Counter";
 const app = new Hono();
 
 app.use(
-	"/",
 	jsxRenderer(
 		({ children }) => (
 			<html lang="en">
 				<head>
 					<meta charSet="utf-8" />
 					<meta content="width=device-width, initial-scale=1" name="viewport" />
-					<title>hono</title>
+					<title>hono-client</title>
 				</head>
-				<body>{children}</body>
+				<div id="root">{children}</div>
 			</html>
 		),
 		{ docType: true },
@@ -135,17 +178,23 @@ app.use(
 );
 
 app.get("/", (c) => {
+  return c.text("Hello Hono!");
 	return c.render(<Counter />);
 });
 
 export default app;
 ```
 
+We're almost there. If you run the app now with the `dev` script, you'll get an
+error. Let's fix that!
 
-To run and build the app, we're going to install Vite and two Hono plugins to
-facilitate client-side logic:
+### Adding build step and scripts
 
-<Tabs>
+As we just added client-side logic. This needs to be built separately from the
+Wrangler build step. We'll be using Vite and two plugins to facilitate both
+build steps:
+
+<Tabs syncKey="package-manager">
 <TabItem label="npm">
 ```sh
 npm install vite
@@ -174,3 +223,132 @@ bun add -D @hono/vite-build @hono/vite-dev-server
 ```
 </TabItem>
 </Tabs>
+
+In the root of your project, create a `vite.config.ts` file. We'll define the
+config for both the client-side build and the server-side build.
+
+Note that for the client build the `outDir` is set to `./public`. As mentioned
+earlier we're using Cloudflare Workers with static asset bindings. If we're not
+defining these bindings ourselves, the worker will automagically find the files
+in the `public` directory.
+
+```ts title="vite.config.ts"
+import build from "@hono/vite-build/cloudflare-workers";
+import devServer from "@hono/vite-dev-server";
+import cloudflareAdapter from "@hono/vite-dev-server/cloudflare";
+import { defineConfig } from "vite";
+
+export default defineConfig(({ mode }) => {
+	if (mode === "client") {
+		return {
+			build: {
+				rollupOptions: {
+					input: "./src/client/index.tsx",
+				},
+				outDir: "./public",
+			},
+		};
+	}
+
+	const entry = "./src/index.tsx";
+	return {
+		server: { port: 8787 },
+		plugins: [
+			devServer({ adapter: cloudflareAdapter, entry }),
+			build({ entry }),
+		],
+	};
+});
+```
+
+Now we need to adjust the `package.json` scripts to facilitate the new build
+steps. Additionally, we set the type to `module` to allow for ESM imports:
+
+```json title="package.json" del={5} ins={6, 7}
+{
+  // ...
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev": "vite dev",
+    "build": "vite build --mode client && vite build",
+  }
+  // ...
+}
+```
+
+### Access the built script
+
+As a final step we need to load the client-side script. We'll add a script tag
+to the JSX renderer.\
+We need to make a distinction between a development and
+production environment. Vite allows us to do this easily with it's
+[built-in env](https://vite.dev/guide/env-and-mode#env-variables);
+for the dev environment we can load the client's `.tsx` file; for production we
+can get it from the `public` directory.
+
+First we add the `vite/client` types to the TypeScript config:
+
+```json file="tsconfig.json" ins={6}
+{
+  "compilerOptions": {
+    //...
+    "types": [
+      // ...
+      "vite/client",
+    ],
+    //...
+  },
+}
+```
+
+Then we adjust the `src/index.tsx` file to load the client-side script,
+depending on the environment:
+
+```tsx title="src/index.tsx" ins={12-17}
+// ...
+app.use(
+	jsxRenderer(
+		({ children }) => (
+			<html lang="en">
+				<head>
+					<meta charSet="utf-8" />
+					<meta content="width=device-width, initial-scale=1" name="viewport" />
+					<title>hono-client</title>
+
+					{import.meta.env.PROD ? (
+						<script src="/assets/index.js" type="module" />
+					) : (
+						<script src="/src/client/index.tsx" type="module" />
+					)}
+				</head>
+				<body>
+					<div id="root">{children}</div>
+				</body>
+			</html>
+		),
+		{
+			docType: true,
+		},
+	),
+);
+// ...
+```
+
+## Deploying
+
+cargo.toml update
+script update
+
+```json title="package.json" del={6} ins={7}
+{
+  // ...
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build --mode client && vite build",
+    "deploy": "wrangler deploy --minify",
+    "deploy": "$npm_execpath run build && wrangler deploy --no-bundle",
+  }
+  // ...
+}
+```
