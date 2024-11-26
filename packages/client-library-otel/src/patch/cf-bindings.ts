@@ -1,3 +1,4 @@
+import { WorkerEntrypoint } from "cloudflare:workers";
 import type { Span } from "@opentelemetry/api";
 import {
   CF_BINDING_ERROR,
@@ -297,18 +298,16 @@ function isCloudflareD1Binding(o: unknown) {
 }
 
 function isCloudflareWorkerBinding(o: unknown) {
-  // TODO figure out an actual way to figure out if a type is of a worker
-  // for now we just check if it isnt any of the others
-  // as the patching method checks if a binding is an actual object
-  // this could be a maybe perhaps valid way but i rly need to double check this
-  if (isCloudflareAiBinding(o) ||
-      isCloudflareR2Binding(o) ||
-      isCloudflareD1Binding(o) ||
-      isCloudflareKVBinding(o)) {
+  if (
+    isCloudflareAiBinding(o) ||
+    isCloudflareR2Binding(o) ||
+    isCloudflareD1Binding(o) ||
+    isCloudflareKVBinding(o)
+  ) {
     return false;
   }
 
-  return true;
+  return o instanceof WorkerEntrypoint;
 }
 
 function hasCloudflareD1Session(
