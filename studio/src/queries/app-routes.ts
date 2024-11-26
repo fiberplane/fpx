@@ -1,6 +1,7 @@
+import { ProbedRouteSchema } from "@/pages/RequestorPage/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "./queries";
-import type { ProbedRoute } from "@/pages/RequestorPage/types";
+import { z } from "zod";
 
 export const PROBED_ROUTES_KEY = "appRoutes";
 
@@ -33,47 +34,49 @@ export function useRefreshRoutesMutation() {
   return useMutation({
     mutationFn: refreshAppRoutes,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["fileTreeRoutes"] });
+      queryClient.invalidateQueries({ queryKey: ["routesFileTree"] });
     },
   });
 }
 
-export type RouteTreeResponse = {
-  tree: Array<TreeNode>;
-  unmatched: Array<ProbedRoute>;
-};
+const AppRouteWithFileNameSchema = ProbedRouteSchema.extend({
+  filename: z.string(),
+});
 
-export type AppRoute = {
-  id: number;
-  path: string | null;
-  method: string | null;
-  handler: string | null;
-  handlerType: string | null;
-  currentlyRegistered: boolean | null;
-  registrationOrder: number | null;
-  routeOrigin: "custom" | "discovered" | "open_api" | null;
-  openApiSpec: string | null;
-  requestType: "http" | "websocket" | null;
-};
+export type AppRouteWithFileName = z.infer<typeof AppRouteWithFileNameSchema>;
 
-export type AppRouteWithSourceMetadata = AppRoute & {
-  fileName: string;
-};
-
-export type TreeNode = {
+const TreeNodeSchema: z.ZodType<{
   path: string;
-  routes: Array<AppRouteWithSourceMetadata>;
-  children: TreeNode[];
-};
+  routes: Array<AppRouteWithFileName>;
+  children: Array<TreeNode>;
+}> = z.lazy(() =>
+  z.object({
+    path: z.string(),
+    routes: z.array(
+      AppRouteWithFileNameSchema.extend({
+        registrationOrder: z.number(), // Required to make the recursion types work for some reason
+      }),
+    ),
+    children: z.array(TreeNodeSchema),
+  }),
+);
+
+export type TreeNode = z.infer<typeof TreeNodeSchema>;
+
+const AppRoutesTreeResponseSchema = z.object({
+  tree: z.array(TreeNodeSchema),
+  unmatched: z.array(ProbedRouteSchema),
+});
+
+export type AppRoutesTreeResponse = z.infer<typeof AppRoutesTreeResponseSchema>;
 
 export function useFetchFileTreeRoutes() {
   return useQuery({
-    queryKey: ["fileTreeRoutes"],
+    queryKey: ["routesFileTree"],
     queryFn: async () => {
       const response = await fetch("/v0/app-routes-file-tree");
-      // TODO: types
-      const json = (await response.json()) as RouteTreeResponse;
-      return json;
+      const json = await response.json();
+      return AppRoutesTreeResponseSchema.parse(json);
     },
   });
 }

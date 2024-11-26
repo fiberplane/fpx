@@ -5,14 +5,18 @@ import { env } from "hono/adapter";
 import { z } from "zod";
 import type { RouteEntryId } from "../../../packages/source-analysis/dist/types.js";
 import {
-  type AppRoute,
   type NewAppRequest,
   appRequests,
   appResponses,
   appRoutes,
   appRoutesInsertSchema,
 } from "../db/schema.js";
-import { reregisterRoutes, schemaProbedRoutes } from "../lib/app-routes.js";
+import {
+  buildRouteTree,
+  reregisterRoutes,
+  schemaProbedRoutes,
+} from "../lib/app-routes/index.js";
+import type { AppRouteWithFileName } from "../lib/app-routes/types.js";
 import { getResult } from "../lib/code-analysis.js";
 import {
   OTEL_TRACE_ID_REGEX,
@@ -97,80 +101,11 @@ app.get("/v0/app-routes-file-tree", async (ctx) => {
   const tree = buildRouteTree(
     routeEntries.filter(
       (route) => route?.fileName !== undefined,
-    ) as Array<AppRouteWithSourceMetadata>,
+    ) as Array<AppRouteWithFileName>,
   );
 
   return ctx.json(tree);
 });
-
-type AppRouteTreeRersponse = {
-  tree: Array<TreeNode>;
-  unmatched: Array<AppRoute>;
-};
-
-type AppRouteWithSourceMetadata = AppRoute & {
-  fileName?: string;
-};
-
-type TreeNode = {
-  path: string;
-  routes: Array<AppRouteWithSourceMetadata>;
-  children: Array<TreeNode>;
-};
-
-function buildRouteTree(
-  entries: Array<AppRouteWithSourceMetadata>,
-): AppRouteTreeRersponse {
-  const tree: Array<TreeNode> = [];
-  const unmatched: Array<AppRoute> = [];
-
-  for (const entry of entries) {
-    if (!entry.fileName) {
-      unmatched.push(entry);
-    } else {
-      const filePathParts = entry.fileName.split("/");
-      let currentNodeArray = tree;
-
-      for (const [index, part] of filePathParts.entries()) {
-        let childNode = currentNodeArray.find((child) => child.path === part);
-
-        if (!childNode) {
-          childNode = { path: part, routes: [], children: [] };
-          currentNodeArray.push(childNode);
-        }
-
-        if (index === filePathParts.length - 1) {
-          childNode.routes.push(entry);
-        }
-
-        currentNodeArray = childNode.children;
-      }
-    }
-  }
-
-  return { tree: consolidateSingleChildNodes(tree), unmatched };
-}
-
-function consolidateSingleChildNodes(nodes: Array<TreeNode>): Array<TreeNode> {
-  return nodes.map((node) => {
-    if (node.children.length === 1) {
-      const child = node.children[0];
-
-      return consolidateSingleChildNodes([
-        {
-          path: `${node.path}/${child.path}`,
-          routes: [...node.routes, ...child.routes],
-          children: child.children,
-        },
-      ])[0];
-    }
-
-    return {
-      ...node,
-      children: consolidateSingleChildNodes(node.children),
-    };
-  });
-}
 
 /**
  * Allow users to manually refresh the app routes list
@@ -388,8 +323,8 @@ app.all(
       | null
       | string
       | {
-          [x: string]: string | SerializedFile | (string | SerializedFile)[];
-        } = null;
+        [x: string]: string | SerializedFile | (string | SerializedFile)[];
+      } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {
