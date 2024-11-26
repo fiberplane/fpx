@@ -1,12 +1,12 @@
 import { instrument } from "@fiberplane/hono-otel";
 import { Hono } from "hono";
 
-export interface MeowWorker {
+export interface WoofWorker {
   add(a: number, b: number): Promise<number>;
 }
 
 type Bindings = {
-  WORKER: MeowWorker;
+  WORKER: WoofWorker;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
