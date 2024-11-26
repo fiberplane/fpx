@@ -18,13 +18,13 @@ You just built a great app that gets rendered server-side with Hono.
 But now you want to add some client-side logic to it - and Hono ships their own
 React-like API to do just that!
 
-In this guide we'll be going over on how to add client-side logic to a Hono app
-and unlock the full potential of your project.
+In this guide we'll go over on how to add client-side logic to a Hono app and
+unlock the full potential of your project.
 
 ## Before getting started
 
 We're building an app that uses Hono running in Cloudflare Workers, leveraging
-[static asset bindings](https://developers.cloudflare.com/workers/static-assets/binding/)
+[static asset bindings](https://developers.cloudflare.com/workers/static-assets/binding)
 \- though the same principles apply to other supported environments too.
 
 As Hono is a server-side app by default, we'll need to make a distinction
@@ -153,7 +153,7 @@ Once that's done, we can add Hono's
 [JSX renderer middleware](https://hono.dev/docs/middleware/builtin/jsx-renderer)
 to the `/` route and return the `<Counter />` component:
 
-```tsx title="src/index.tsx" ins={2, 4, 8-24, 27} del={26}
+```tsx title="src/index.tsx" ins={2, 4, 8-23, 26} del={25}
 import { Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 
@@ -272,6 +272,7 @@ steps. Additionally, we set the type to `module` to allow for ESM imports:
     "dev": "wrangler dev",
     "dev": "vite dev",
     "build": "vite build --mode client && vite build",
+    "deploy": "wrangler deploy --minify",
   }
   // ...
 }
@@ -305,7 +306,7 @@ First we add the `vite/client` types to the TypeScript config:
 Then we adjust the `src/index.tsx` file to load the client-side script,
 depending on the environment:
 
-```tsx title="src/index.tsx" ins={12-17}
+```tsx title="src/index.tsx" ins={11-18}
 // ...
 app.use(
 	jsxRenderer(
@@ -316,29 +317,66 @@ app.use(
 					<meta content="width=device-width, initial-scale=1" name="viewport" />
 					<title>hono-client</title>
 
-					{import.meta.env.PROD ? (
-						<script src="/assets/index.js" type="module" />
-					) : (
-						<script src="/src/client/index.tsx" type="module" />
-					)}
+					<script
+						type="module"
+						src={
+							import.meta.env.PROD
+								? "/assets/index.js"
+								: "/src/client/index.tsx"
+						}
+					/>
 				</head>
 				<body>
 					<div id="root">{children}</div>
 				</body>
 			</html>
 		),
-		{
-			docType: true,
-		},
+		{ docType: true },
 	),
 );
 // ...
 ```
 
+That's it! You can now run the app with the `dev` script and see the counter
+component in action.
+
+<Tabs syncKey="package-manager">
+<TabItem label="npm">
+```sh
+npm run dev
+```
+</TabItem>
+
+<TabItem label="yarn">
+```sh
+yarn dev
+```
+</TabItem>
+
+<TabItem label="pnpm">
+```sh
+pnpm dev
+```
+</TabItem>
+
+<TabItem label="bun">
+```sh
+bun dev
+```
+</TabItem>
+</Tabs>
+
 ## Deploying
 
-cargo.toml update
-script update
+To deploy the app to Cloudflare Workers we have to update `wrangler.toml` so it
+points to the correct worker build, and update the `deploy` script.
+
+```toml title="wrangler.toml" del={2} ins={3}
+name = "hono-client"
+main = "src/index.ts"
+main = "dist/index.js"
+# ...
+```
 
 ```json title="package.json" del={6} ins={7}
 {
