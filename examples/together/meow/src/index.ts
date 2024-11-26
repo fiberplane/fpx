@@ -6,7 +6,7 @@ export interface MeowWorker {
 }
 
 type Bindings = {
-  WORKER: MeowWorker
+  WORKER: MeowWorker;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
