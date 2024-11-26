@@ -1,0 +1,204 @@
+---
+title: "Inferring an API Spec: How Studio Analyzes Hono Apps"
+description: A quick look at how Hono api code is statically analyzed in Fiberplane Studio
+slug: code-analysis
+date: 2024-11-22
+author: Jacco Flenter
+tags:
+  - typescript
+  - static analysis
+  - Hono
+---
+
+import { Aside, LinkCard } from "@astrojs/starlight/components";
+
+> **TL;DR:** We've implemented static code analysis into Fiberplane Studio to
+> help developers better test and debug their Hono APIs.
+> This post explains how we went about statically analyzing TypeScript code to extract route information from Hono APIs.
+
+<center>
+  ![Fiberplane Studio generate request
+  parameters](@/assets/blog/2024-11-20-generate-request.jpg)
+</center>
+
+One of Fiberplane Studio's core features is the ability to
+[generate test data](https://fiberplane.com/docs/features/generating-with-ai/) for your Hono API.
+To do this, Studio needs to understand how your routes interact with middleware, validation, and database schemas.
+
+We recently improved how Fiberplane Studio analyzes your source code to provide better insights into these relationships,
+and it was no small feat.
+
+We needed to implement a static code analysis tool that could determine:
+
+- All routes in your API
+- Any code that might execute for a given route, including its middleware
+
+Even though the current version of Studio is only using this to generate test data,
+we're also working on extending this newfound intelligence
+to make Studio feel even more like a powerful IDE for testing and debugging Hono APIs.
+
+## Understanding the Goals
+
+Our code analysis serves two primary purposes:
+
+- Discover all routes in a Hono application
+- Identify the supporting code (validation, schemas, middleware) associated with each route
+
+The goal is to find all routes in a Hono application,
+and then for each route, we'd like to find out which code is actually used to handle a request.
+This way, we can provide an LLM with context around what the application accepts/uses (like database schema, zod validation schemas, etc).
+
+The end result is similar to writing a specification for your API, without the immense amount of boilerplate and overhead of doing so from day 1.
+
+## How `@fiberplane/source-analysis` works
+
+All of our code analysis logic is open source and lives in a dedicated npm package:
+
+<LinkCard
+  title="@fiberplane/source-analysis"
+  description="The package that powers the code analysis in Fiberplane Studio"
+  href="https://www.npmjs.com/package/@fiberplane/source-analysis"
+  icon="external"
+  target="_blank"
+  rel="noopener noreferrer"
+/>
+
+The first thing we needed to do is to find all routes in a Hono api.
+After that, we needed to find out all the code that is associated with each route,
+_including its middleware_.
+
+We considered several strategies.
+One approach was to specify the main entry of an application, find the Hono app in that file, and go through the source code from there.
+The downside to this is that the entry file would need to be specified (or found out by our code base).
+
+An alternative approach, which we went with, is to analyze all source code
+and find any variables that are of the `Hono<` generic type.
+From there, we can apply some heuristics to determine the entry point/main app.
+
+On a high level what needs to happen is as follows:
+
+1. **Extract routes** — Go through all code and map all apps, routes, middleware and links between apps. Also keep track of what code is related to the app/route/middleware and keep track of what code that code might refer to (etc). This data is stored in the `ResourceManager`.
+2. **Analyze routes** — Once all code has been converted into our own data structure, we find the hono apps and see which one has the most routes/entries (and if routes refer to each other their value is added as well). The app with the highest number is treated as the entry point.
+3. **Describe routes** — Create an intermediate result, `RoutesResult`, which contains:
+
+   - A reference to a mock Hono app, which can be used to find out what code is executed for a given method/request.
+   - `getFilesForHistory()` — a method that can be called to see all code that can be executed for a request to an endpoint.
+   - `resetHistory()` — a method to reset the result of the analysis to an initial state.
+
+### Data structures for extracting routes
+
+The `@fiberplane/source-analysis` package uses several key data structures to represent the elements of a Hono project.
+Understanding these data structures can be helpful if you want to work in this package.
+
+#### `RouteTree`
+
+The `RouteTree` type represents a reference to an `app` instance created with `new Hono()`.
+It contains a list of `entries`, which includes information about any calls to the `app` that add routes (such as `app.get()`, `app.use()`, and `app.route()`).
+
+```typescript
+export type RouteTree = {
+  id: RouteTreeId;
+  type: "ROUTE_TREE";
+  entries: RouteTreeEntry[];
+  // other properties...
+};
+```
+
+#### `RouteTreeEntry`
+
+The `RouteTreeEntry` type represents an entry in a route tree. It can be one of the following types:
+
+- `RouteEntry` — This represents a call to `app.get()`
+- `RouteTreeReference` — This is the data structure for `app.route()`
+- `MiddlewareEntry` — Represents calls to `app.use()`
+
+```typescript
+export type RouteTreeEntry = RouteEntry | RouteTreeReference | MiddlewareEntry;
+```
+
+#### Other data structures
+
+In order to capture information about other code, the packages uses two other data structures:
+
+- `SourceReference` — Defines a reference to section of code (like a function, a constant, etc). A source reference can refer to one or more other `SourceReference`s as well as one or more `ModuleReference`s.
+- `ModuleReference` — Represents a link to another file/external package and should be part of an import statement.
+
+All data structures (apart from `ModuleReference`) can contain references to either modules or source references.
+
+We generate ids for each resource, and then all resources get stored using their id in a `Map` in the `ResourceManager`.
+
+Although `ID`s are basically strings — which always start with the basic type like `ROUTE_TREE`, `SOURCE_REFERENCE`, etc — in Typescript-land they are made specific using [type tagging](https://medium.com/@KevinBGreene/surviving-the-typescript-ecosystem-branding-and-type-tagging-6cf6e516523d) (using type-fest).
+This way typescript is aware what kind of a resource is being returned when calling `ResourceManager.getResource`.
+
+## Extracting the code for a route
+
+After creating the resources based on the source code, we determine the main entry endpoint for the API.
+That main entry point is then used in the `RoutesResult` to set up a separate, dummy Hono app.
+
+This hono app is never actually listening on a port but is solely used to fire off mock requests.
+The reconstructed app could be written out something like this:
+
+```ts
+type HistoryId =
+  | RouteEntryId
+  | RouteTreeId
+  | RouteTreeReferenceId
+  | MiddlewareEntryId;
+const history: Array<HistoryId> = [];
+
+const routingApp = new Hono();
+routingApp.use((_, next) => {
+  // Append main RouteTreeId to history
+  history.push("SOME_ROUTE_TREE_ID");
+  return next();
+});
+
+routingApp.get("/", (c) => {
+  // Append RouteEntryId to history
+  history.push("SOME_ROUTE_ENTRY_ID");
+  return c.text("Ok");
+});
+
+routingApp.get("/profile", () => {
+  // Append  RouteEntryId to history
+  history.push("SOME_OTHER_ROUTE_ENTRY_ID");
+  return c.text("Ok");
+});
+```
+
+Now, if the mock `routingApp` handles a request, the history array will contain all IDs involved in handling a request for a specific method and path.
+Given those IDs, it is possible to generate the code by converting the data structures back into code, and include all things that these structures refer to.
+
+In this way, the end result only includes code that might actually get executed for the request.
+
+## Performance
+
+On smaller projects, the source code analysis is quite fast, it might even take less than 100ms.
+However on larger code bases some calls can become a little sluggish.
+
+One expensive function is `getProgram`—it's a method on the [Typescript Language Service](https://github.com/microsoft/typescript/wiki/using-the-language-service-api) that returns a compiler instance.
+Even on tiny projects, this call can take ~50ms, so the approach we take is to call `getProgram` as few times as possible and as early as possible.
+
+Another potential issue is that what's included in `tsconfig.json` can have quite a significant performance impact,
+especially specifying types using the `compilerOptions.types` option.
+For example, adding `node` types for the simplest project in the test suite added 5ms to the test (bumping it to around 50ms).
+
+This brings us to another optimization that was done for larger projects:
+caching results for `readFile`, `fileExists` and `directoryExists`.
+These calls happen a lot, while typescript is trying to figure out for instance whether a package exists and where it is located.
+
+So in case of Fiberplane's source-analysis package, we cache the results of these calls when parsing the source code,
+and we bust the cache when files change on the filesystem.
+
+## The future
+
+It would be _really_ nice if we could perform incremental analysis.
+Now, the second time a code base is analyzed, it is typically a bit faster,
+but we could improve the package by only analyzing files that are related to the what has been changed since the last time the analysis completed.
+
+Even further in the future it could be interesting to use a language that's more performant like Rust that can parse typescript.
+
+## Debug your Hono APIs
+
+Fiberplane Studio is a local debugging companion designed to help you to build, test, and develop [Hono](https://hono.dev) APIs.
+It is open source and available to try now! Check out [the getting started guide here](https://fiberplane.com/docs/get-started/).
