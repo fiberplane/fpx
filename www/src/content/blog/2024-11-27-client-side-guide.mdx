@@ -165,10 +165,9 @@ hydrateRoot(
 ```
 
 <Aside>
-  We're _hydrating_ the app as opposed to _rendering_ it, as we'll render the
-  component server-side with Hono. If you're interested in client-side rendering
-  only, check out the [example on
-  GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
+  We're _hydrating_ the app client-side as opposed to _rendering_ it; the static
+  HTML is rendered server-side by Hono. If you're interested in client-side
+  rendering only, check out the [example on GitHub](https://github.com/oscarvz/cf-workers-hono-client-side).
 </Aside>
 
 Your code editor might give you a hint that `document` is not defined. Given we
@@ -227,7 +226,7 @@ export default app;
 ```
 
 We're almost there. If you run the app now with the `dev` script, you'll get an
-error. Let's fix that by fixing the build steps!
+error. Let's fix that by adding the build steps!
 
 ### Adding build steps and scripts
 
@@ -276,11 +275,6 @@ bun add -D @hono/vite-build @hono/vite-dev-server
 In the root of your project, create a `vite.config.ts` file. We'll define the
 config for both the client-side build and the server-side build.
 
-Note that for the client build the `outDir` is set to `./public`. As mentioned
-earlier we're using Cloudflare Workers with static asset bindings. If we're not
-defining these bindings ourselves, the worker will automagically find the built
-files in the `public` directory.
-
 ```ts title="vite.config.ts"
 import build from "@hono/vite-build/cloudflare-workers";
 import devServer from "@hono/vite-dev-server";
@@ -313,9 +307,9 @@ export default defineConfig(({ mode }) => {
 });
 ```
 
-<Aside type="tip">
-  This would be a good moment to add the `public` directory to your
-  `.gitignore`.
+<Aside>
+The client build the `outDir` is set to `./public`. This is the directory where
+the Worker will find the client-side script.
 </Aside>
 
 Now we need to adjust the `package.json` scripts to facilitate the new build
@@ -334,6 +328,11 @@ steps. Additionally, we set the type to `module` to allow for ESM imports:
   // ...
 }
 ```
+
+<Aside type="tip">
+  This would be a good moment to add the `public` directory to your
+  `.gitignore`.
+</Aside>
 
 ### Access the built script
 
@@ -505,8 +504,14 @@ bun deploy
 </TabItem>
 </Tabs>
 
+## Conclusion
+
+That's it! You built a simple Hono app with client-side logic. You can now
+extend your app with more complex client-side logic, like fetching data from an
+API route, add a form to your project, or even build a full SPA.
+
 <Card title="GitHub repo" icon="github">
 Check out the [GitHub example repo](https://github.com/oscarvz/cf-workers-hono-client-side)
 if you'd like to see the full application code. It has a few additional
-features, like Hono's RPC implementation, and a SPA example.
+features, like a simple Hono RPC implementation, and a SPA example.
 </Card>
