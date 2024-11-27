@@ -11,7 +11,7 @@ const app = new Hono<{ Bindings: Bindings }>();
 
 app.get("/", async (c) => {
   const bark = await c.env.WOOF.bark({ volume: 10 });
-
+  c.env.WOOF.sniff();
   return c.text(`Meow from above! ☁️🪿🐈 (But dog says "${bark}")`);
 });
 

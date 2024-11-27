@@ -11,6 +11,10 @@ export class WoofWorker extends WorkerEntrypoint {
     return "woof";
   }
 
+  sniff() {
+    return "sniff";
+  }
+
   // From Cloudflare docs: "Currently, entrypoints without a named handler are not supported"
   // TODO - Check if this is still the case that we need a fetch handler?
   async fetch() {

@@ -288,7 +288,6 @@ async function handlePromise<T extends Promise<unknown>>(
     "onSuccess" | "onError" | "checkResult" | "endSpanManually"
   >,
 ) {
-  console.log("Handling promise", resultPromise);
   const { onSuccess, onError, checkResult, endSpanManually = false } = options;
   try {
     const result = (await resultPromise) as ExtractInnerResult<T>;
