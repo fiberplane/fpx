@@ -255,7 +255,10 @@ export default defineConfig(({ mode }) => {
     return {
       build: {
         rollupOptions: {
-          input: "./src/client/index.tsx"
+          input: "./src/client/index.tsx",
+          output: {
+            entryFileNames: "assets/[name].js",
+          },
         },
         outDir: "./public"
       }
@@ -396,12 +399,15 @@ bun dev
 ## Deploying
 
 To deploy the app to Cloudflare Workers we have to update `wrangler.toml` so it
-points to the correct worker build, and update the `deploy` script.
+points to the correct worker build & resolves the public assets directory.
+Lastly, we update the `deploy` script.
 
-```toml title="wrangler.toml" del={2} ins={3}
+```toml title="wrangler.toml" del={2} ins={3, 5}
 name = "hono-client"
 main = "src/index.ts"
 main = "dist/index.js"
+
+assets = { directory = "./public/" }
 # ...
 ```
 
