@@ -19,29 +19,52 @@ import {
   TabItem,
   Tabs
 } from "@astrojs/starlight/components";
+import video from "../../assets/blog/2024-11-27-client-side-guide.mov";
 
 [Hono](https://hono.dev) is a great framework to build serverless apps with
 familiar APIs using Web Standards. It comes with a ton of features out of the
-box.\
-One of these features is the ability to render JSX server-side, which is great
-static content. But what if you want to add some client-side logic to your app?
+box.
 
-In this guide we'll go over on how to add client-side logic to a Hono app and
-unlock the full potential of your projects.
+One of these features is the ability to compose & render HTML server-side, which
+is great for static content. But what if you want to add some client-side logic
+to your app?\
+Well, add some hooks provided by Hono! But... they don't seem to
+work in your browser? That's because we're not shipping any JavaScript to the
+browser!
+
+In this guide we'll go over on how to build an Hono app with client-side logic,
+unlocking the full potential of your projects.
 
 ## What are we building?
 
-We're building an app that uses Hono running in Cloudflare Workers, leveraging
+We're building a simple app that renders a counter component server-side and
+hydrates it client-side.\
+It'll run in Cloudflare Workers, leveraging its
 [static asset bindings](https://developers.cloudflare.com/workers/static-assets/binding)
 \- though the same principles apply to the other supported environments too.
 
-We'll be adding a route that serves a simple counter component that gets
-rendered server-side and hydrated client-side.
+Using [Vite](https://vitejs.dev) we'll set up two build steps: one for the
+client-side logic and one for the server-side logic.
 
-This is done by make a distinction between server-side and client-side logic and
-adjust our build step to facilitate this.\
-We'll be using [Vite](https://vitejs.dev) with a few plugins to make this
-happen.
+<figure>
+  <video
+    autoplay
+    disablePictureInPicture
+    loop
+    muted
+    playsinline
+    preload
+    width="100%"
+    style="border-radius: 0.5rem;"
+  >
+    <source src={video} type="video/mp4" />
+  </video>
+
+  <figcaption>
+    The final result: a counter component that increments a count when a button
+    is clicked!
+  </figcaption>
+</figure>
 
 ## Let us build!
 
@@ -214,25 +237,39 @@ this:
 
 <Tabs syncKey="package-manager">
 <TabItem label="npm">
+
 ```sh
 npm install vite
 npm install -D @hono/vite-build @hono/vite-dev-server
 ```
+
 </TabItem>
 
 <TabItem label="yarn">
-  ```sh yarn add vite yarn add -D @hono/vite-build @hono/vite-dev-server ```
+
+  ```sh
+  yarn add vite
+  yarn add -D @hono/vite-build @hono/vite-dev-server
+  ```
+
 </TabItem>
 
 <TabItem label="pnpm">
-  ```sh pnpm add vite pnpm add -D @hono/vite-build @hono/vite-dev-server ```
+
+  ```sh
+  pnpm add vite
+  pnpm add -D @hono/vite-build @hono/vite-dev-server
+  ```
+
 </TabItem>
 
 <TabItem label="bun">
+
 ```sh
 bun add vite
 bun add -D @hono/vite-build @hono/vite-dev-server
 ```
+
 </TabItem>
 </Tabs>
 
@@ -310,7 +347,7 @@ can get it from the `public` directory.
 
 First we add the `vite/client` types to the TypeScript config:
 
-```json file="tsconfig.json" ins={6}
+```json title="tsconfig.json" ins={6}
 {
   "compilerOptions": {
     //...
@@ -425,10 +462,48 @@ assets = { directory = "./public/" }
 ```
 
 <Aside>
-Note that the `wrangler deploy` has the ``--no-bundle`` flag. The build is done
-by Vite, so we don't need Wrangler to bundle the code; merely deploy it to the
+Note that the `wrangler deploy` has the `--no-bundle` flag. The build is taken
+care of by the Vite build step; Wrangler's task is merely to deploy it to the
 Cloudflare Workers platform.
 </Aside>
+
+### Deploy your app
+
+You can now push your app with the `deploy` script:
+
+<Tabs syncKey="package-manager">
+<TabItem label="npm">
+
+```sh
+npm run deploy
+```
+
+</TabItem>
+
+<TabItem label="yarn">
+
+```sh
+yarn deploy
+```
+
+</TabItem>
+
+<TabItem label="pnpm">
+
+```sh
+pnpm deploy
+```
+
+</TabItem>
+
+<TabItem label="bun">
+
+```sh
+bun deploy
+```
+
+</TabItem>
+</Tabs>
 
 <Card title="GitHub repo" icon="github">
 Check out the [GitHub example repo](https://github.com/oscarvz/cf-workers-hono-client-side)
