@@ -175,14 +175,51 @@ function proxyServiceBinding(o: object, bindingName: string) {
               });
             },
             onSuccess: (span, result) => {
-              addResultAttribute(span, result);
+              const resultType = typeof result;
+              const isJsRpcPromise = resultType
+                .toLowerCase()
+                .includes("jsrpcpromise");
+              return new Promise((resolve) => {
+                try {
+                  if (isJsRpcPromise) {
+                    result
+                      // @ts-expect-error - TODO - Fix this
+                      ?.then((actualResult) => {
+                        console.log(
+                          "Service binding success (jsrpcpromise):",
+                          actualResult,
+                        );
+                        addResultAttribute(span, actualResult);
+                        resolve(actualResult);
+                      })
+                      ?.catch((error: unknown) => {
+                        console.error(
+                          "Error in onSuccess for service binding returning JsRpcPromise:",
+                          error,
+                        );
+                        resolve(result);
+                      });
+                  } else {
+                    console.log("Service binding success:", result);
+                    console.log("Service binding result type:", typeof result);
+                    addResultAttribute(span, result);
+                    resolve(result);
+                  }
+                } catch (error) {
+                  console.error(
+                    "Error in onSuccess for service binding:",
+                    error,
+                  );
+                  resolve(result);
+                }
+              });
             },
             onError: handleError,
           },
           serviceValue,
         );
 
-        return measuredBinding.bind(serviceTarget);
+        return measuredBinding;
       }
 
       return serviceValue;

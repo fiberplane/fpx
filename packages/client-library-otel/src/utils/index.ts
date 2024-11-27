@@ -9,6 +9,11 @@ export function isPromise<T>(value: unknown): value is Promise<T> {
   return value instanceof Promise;
 }
 
+// HACK - To support Clouflare's custom thenable, `JsRpcPromise`
+export function isThenable<T>(value: unknown): value is Promise<T> {
+  return isObject(value) && "then" in value && typeof value.then === "function";
+}
+
 export function isObject(value: unknown): value is object {
   return typeof value === "object" && value !== null;
 }

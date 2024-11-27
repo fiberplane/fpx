@@ -8,7 +8,7 @@ import {
   trace,
 } from "@opentelemetry/api";
 import type { FpxLogger } from "./logger";
-import { isPromise } from "./utils";
+import { isPromise, isThenable } from "./utils";
 
 export type MeasureOptions<
   /**
@@ -202,7 +202,10 @@ export function measure<ARGS extends unknown[], RESULT>(
           ) as RESULT;
         }
 
-        if (isPromise<ExtractInnerResult<RESULT>>(returnValue)) {
+        if (
+          isPromise<ExtractInnerResult<RESULT>>(returnValue) ||
+          isThenable<ExtractInnerResult<RESULT>>(returnValue)
+        ) {
           shouldEndSpan = false;
           return handlePromise(
             span,
@@ -285,6 +288,7 @@ async function handlePromise<T extends Promise<unknown>>(
     "onSuccess" | "onError" | "checkResult" | "endSpanManually"
   >,
 ) {
+  console.log("Handling promise", resultPromise);
   const { onSuccess, onError, checkResult, endSpanManually = false } = options;
   try {
     const result = (await resultPromise) as ExtractInnerResult<T>;
