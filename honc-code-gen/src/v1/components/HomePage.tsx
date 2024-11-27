@@ -23,7 +23,7 @@ export const HomePage = ({ nonce }: HomePageProps) => {
             <textarea id="prompt" name="prompt" rows={4} required />
           </div>
           <div className="form-group">
-            <label>Database Type:</label>
+            <label htmlFor="dbType">Database Type:</label>
             <div className="radio-group">
               <div className="radio-option">
                 <input
@@ -78,7 +78,7 @@ function ScriptSubmitForm({ nonce }: { nonce: string }) {
         <script nonce="${nonce}">
           document.getElementById('hatchForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             let statusContainer = document.getElementById('status-container');
             if (!statusContainer) {
               statusContainer = document.createElement('div');
@@ -87,7 +87,7 @@ function ScriptSubmitForm({ nonce }: { nonce: string }) {
             } else {
               statusContainer.innerHTML = '';
             }
-            
+
             const formData = new FormData(e.target);
             const prompt = formData.get('prompt');
             const dbType = formData.get('dbType');
@@ -112,7 +112,7 @@ function ScriptSubmitForm({ nonce }: { nonce: string }) {
 
             eventSource.addEventListener('status-update', (e) => {
               console.log('Received status-update event:', e);
-              let data; 
+              let data;
               try {
                 data = JSON.parse(e.data);
               } catch (error) {
