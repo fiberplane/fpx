@@ -16,21 +16,21 @@
     "@astrojs/markdown-remark": "^5.3.0",
     "@astrojs/partytown": "^2.1.2",
     "@astrojs/sitemap": "^3.2.1",
-    "@astrojs/starlight": "^0.28.3",
-    "@iconify-json/lucide": "^1.1.208",
-    "astro": "^4.16.7",
-    "astro-icon": "^1.1.1",
+    "@astrojs/starlight": "^0.28.6",
+    "@iconify-json/lucide": "^1.2.16",
+    "astro": "^4.16.16",
+    "astro-icon": "^1.1.4",
     "rehype-autolink-headings": "^7.1.0",
-    "rollup": "^4.22.4",
+    "rollup": "^4.27.4",
     "sharp": "^0.32.6",
     "starlight-package-managers": "^0.6.0",
-    "tailwindcss": "^3.4.12",
-    "typescript": "^5.6.2"
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.7.2"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
-    "prettier": "^3.3.3",
+    "prettier": "^3.4.1",
     "prettier-plugin-astro": "^0.14.1",
-    "wrangler": "^3.78.5"
+    "wrangler": "^3.91.0"
   }
 }

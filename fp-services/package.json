@@ -22,23 +22,23 @@
   "dependencies": {
     "@ai-sdk/openai": "^0.0.66",
     "@fiberplane/hono-otel": "0.4.0-canary.0",
-    "@hono/oauth-providers": "^0.6.1",
+    "@hono/oauth-providers": "^0.6.2",
     "@hono/zod-validator": "^0.4.1",
-    "@langchain/core": "^0.3.11",
+    "@langchain/core": "^0.3.19",
     "@libsql/client": "^0.14.0",
-    "ai": "^3.4.10",
+    "ai": "^3.4.33",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.34.1",
-    "hono": "^4.6.5",
-    "jose": "^5.9.3",
-    "tsx": "^4.19.1",
-    "vitest": "^2.1.2",
+    "hono": "^4.6.12",
+    "jose": "^5.9.6",
+    "tsx": "^4.19.2",
+    "vitest": "^2.1.6",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
-    "@cloudflare/workers-types": "^4.20241004.0",
+    "@biomejs/biome": "^1.9.4",
+    "@cloudflare/workers-types": "^4.20241112.0",
     "drizzle-kit": "^0.24.2",
-    "wrangler": "^3.80.1"
+    "wrangler": "^3.91.0"
   }
 }
