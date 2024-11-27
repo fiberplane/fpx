@@ -57,7 +57,7 @@
     "drizzle-kit": "^0.24.2",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
-    "hono": "^4.6.2",
+    "hono": "^4.6.5",
     "llamaindex": "^0.7.0",
     "openai": "^4.67.3",
     "zod": "^3.23.8"
