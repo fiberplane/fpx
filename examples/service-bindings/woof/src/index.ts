@@ -1,7 +1,11 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
 
 export class WoofWorker extends WorkerEntrypoint {
-  async bark(): Promise<string> {
+  async bark(options: { volume: number }): Promise<string> {
+    if (options.volume > 5) {
+      return "WOOF";
+    }
+
     return "woof";
   }
 

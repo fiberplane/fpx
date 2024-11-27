@@ -57,23 +57,19 @@ export function patchCloudflareBindings(
  * @returns A proxied binding
  */
 function patchCloudflareBinding(o: object, bindingName: string) {
-  // HACK - Check this first...
+  // HACK - Check this first, since Worker bindings are a special case
+  //        where any property access is interpreted as an RPC call to the worker.
   if (isCloudflareWorkerBinding(o)) {
     return proxyServiceBinding(o, bindingName);
   }
 
   if (!isCloudflareBinding(o)) {
-    console.log("Is not bindnding:", bindingName, o);
     return o;
   }
-
-  console.log("We have a binding", bindingName);
 
   if (isAlreadyProxied(o)) {
     return o;
   }
-
-  console.log("Proxying binding", bindingName);
 
   // HACK - Special logic for D1, since we only really care about the `_send` and `_sendOrThrow` methods,
   //        not about the `prepare`, etc, methods.
@@ -87,7 +83,6 @@ function patchCloudflareBinding(o: object, bindingName: string) {
 
       if (typeof value === "function") {
         const methodName = String(prop);
-        console.log("Proxied method", methodName);
 
         // OPTIMIZE - Do we want to do these lookups / this wrapping every time the property is accessed?
         const bindingType = getConstructorName(target);
@@ -131,11 +126,11 @@ function patchCloudflareBinding(o: object, bindingName: string) {
 }
 
 /**
- * Proxy a Service binding to add instrumentation
+ * Proxy a Service binding to add instrumentation to its RPC calls
  *
  * @param o - The Service binding to proxy
  *
- * @returns A proxied binding
+ * @returns A proxied binding for a bound Worker (see: https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/)
  */
 function proxyServiceBinding(o: object, bindingName: string) {
   if (!isCloudflareWorkerBinding(o)) {
@@ -146,38 +141,19 @@ function proxyServiceBinding(o: object, bindingName: string) {
     return o;
   }
 
-  console.log("Proxying service binding!!!", bindingName);
-
   const proxiedBinding = new Proxy(o, {
     get(serviceTarget, serviceProp) {
       const serviceMethod = String(serviceProp);
-      if (serviceMethod === "bark") {
-        console.log("barking mad!");
-      }
-      console.log("Proxying service method", serviceMethod);
       const serviceValue = Reflect.get(serviceTarget, serviceProp);
-      console.log("service value", serviceValue);
 
-      // NOTE - Should ignore "toJSON"
-      if (serviceMethod === "toJSON") {
-        return serviceValue;
-      }
-
-      // NOTE - Can probably throw this away...
-      if (serviceMethod === "apply") {
-        console.log("Skipping proxying of apply", serviceValue);
-        return serviceValue;
-      }
-
-      if (serviceMethod === "fetch") {
-        return serviceValue;
-      }
-
-      if (serviceMethod === "connect") {
-        return serviceValue;
-      }
-
-      if (serviceMethod === "constructor") {
+      // NOTE - Should ignore some common methods and properties on the binding
+      if (
+        serviceMethod === "toJSON" ||
+        // TODO - Investigate if we should instrument `fetch`
+        serviceMethod === "fetch" ||
+        serviceMethod === "connect" ||
+        serviceMethod === "constructor"
+      ) {
         return serviceValue;
       }
 
@@ -208,7 +184,6 @@ function proxyServiceBinding(o: object, bindingName: string) {
           serviceValue,
         );
 
-        // TODO - Should we bind here?
         return measuredBinding.bind(serviceTarget);
       }
 
@@ -474,22 +449,13 @@ function hasFunctionWithName(o: unknown, name: string): boolean {
  * @returns `true` if the binding is already proxied, `false` otherwise
  */
 function isAlreadyProxied(o: object) {
-  console.log("Checking if already proxied", o);
-
-  // This is crazy, but it seems like any property access on a worker binding will be true,
-  // since the property access returns a ... function with native code?!
+  // Any property access on a worker binding will be true,
+  // since the property access is interpreted as an RPC call to the worker.
+  // So, we need to check if there's a property descriptor on the object that we set.
   //
   if (isCloudflareWorkerBinding(o)) {
-    console.log("Checking if worker binding is already proxied...");
     const descriptor = getProxiedKey(o);
-    console.log("the descriptor", descriptor);
     return !!descriptor;
-    // biome-ignore lint/correctness/noUnreachable: <explanation>
-    return (
-      IS_PROXIED_KEY in o &&
-      typeof o[IS_PROXIED_KEY] === "boolean" &&
-      o[IS_PROXIED_KEY]
-    );
   }
 
   if (IS_PROXIED_KEY in o) {
