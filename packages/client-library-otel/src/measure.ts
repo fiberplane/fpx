@@ -396,6 +396,7 @@ function handleGenerator<T = unknown, TReturn = unknown, TNext = unknown>(
 
   const active = context.active();
   return {
+    ...iterable,
     next: context.bind(
       active,
       measure("iterator.next", function nextFunction(...args: [] | [TNext]) {
@@ -504,6 +505,7 @@ function handleAsyncGenerator<T = unknown, TReturn = unknown, TNext = unknown>(
   }
 
   return {
+    ...iterable,
     next: context.bind(
       active,
       measure(

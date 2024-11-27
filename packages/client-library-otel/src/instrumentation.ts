@@ -138,6 +138,7 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
               app,
               logger,
             );
+            logger.debug("Response from route submission", response);
             return response;
           }
 
@@ -192,6 +193,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             // NOTE - This is a workaround to support node environments
             //        Which will throw errors when body is a stream but duplex is not set
             //        https://github.com/nodejs/node/issues/46221
+            // @ts-expect-error - duplex is available in nodejs-compat but cloudflare types
+            // don't seem to pick it up
             duplex: body1 ? "half" : undefined,
           });
 
@@ -203,6 +206,8 @@ export function instrument(app: HonoLikeApp, config?: FpxConfigOptions) {
             // NOTE - This is a workaround to support node environments
             //        Which will throw errors when body is a stream but duplex is not set
             //        https://github.com/nodejs/node/issues/46221
+            // @ts-expect-error - duplex is available in nodejs-compat but cloudflare types
+            // don't seem to pick it up
             duplex: body2 ? "half" : undefined,
           });
 
