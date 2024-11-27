@@ -149,8 +149,6 @@ function proxyServiceBinding(o: object, bindingName: string) {
       // NOTE - Should ignore some common methods and properties on the binding
       if (
         serviceMethod === "toJSON" ||
-        // TODO - Investigate if we should instrument `fetch`
-        serviceMethod === "fetch" ||
         serviceMethod === "connect" ||
         serviceMethod === "constructor"
       ) {
