@@ -1,7 +1,9 @@
-#:schema node_modules/wrangler/config-schema.json
 name = "webhonc"
 main = "src/index.ts"
-compatibility_date = "2024-07-01"
+compatibility_date = "2024-11-27"
+
+[observability.logs]
+enabled = true
 
 [dev]
 port = 3000
