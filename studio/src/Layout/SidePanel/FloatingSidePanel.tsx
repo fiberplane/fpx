@@ -36,7 +36,7 @@ export function FloatingSidePanel() {
           <DialogOverlay className="fixed top-0 left-0 w-full h-full bg-black/40" />
           <DialogContent
             className={cn(
-              "fixed left-0 top-0 z-50 grid w-[400px]",
+              "fixed left-0 top-0 z-50 grid w-[375px]",
               "gap-4 border bg-background shadow-lg duration-75",
               "data-[state=open]:animate-in data-[state=closed]:animate-out",
               "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",

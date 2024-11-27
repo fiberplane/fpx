@@ -1,11 +1,12 @@
+import { COLLECTION_ROUTE } from "@/constants";
 // import { RequestMethod } from "@/components/Timeline";
 // import { Button } from "@/components/ui/button";
 // import { Status } from "@/components/ui/status";
 // import { useInputFocusDetection } from "@/hooks";
 import { useActiveTraceId } from "@/hooks";
-import { type GroupWithAppRouteList, useGroups } from "@/queries";
+import { type CollectionWithAppRouteList, useCollections } from "@/queries";
 import { cn } from "@/utils";
-import type { Group } from "@fiberplane/fpx-types";
+import type { Collection } from "@fiberplane/fpx-types";
 import { Icon } from "@iconify/react";
 import {
   memo,
@@ -19,6 +20,7 @@ import {
 import {
   Link,
   type To,
+  generatePath,
   //  useNavigate,
   useSearchParams,
 } from "react-router-dom";
@@ -28,24 +30,23 @@ import {
   useRequestorStore,
   //  useServiceBaseUrl
 } from "../../store";
+import { CreateCollection } from "../CollectionsPanel/CreateCollection";
 // import { RoutesItem } from "../RoutesPanel";
 import { Search } from "../Search";
-import { AddRoute } from "./AddRoute";
-import { CreateGroup } from "./CreateGroup";
 
-type GroupWithAppRoute = GroupWithAppRouteList[0];
-export function GroupsPanel() {
+type CollectionWithAppRoute = CollectionWithAppRouteList[0];
+export function CollectionsPanel() {
   // const { history: items } = useRequestorHistory();
-  const { data: items, error: groupsError } = useGroups();
+  const { data: items, error: collectionsError } = useCollections();
   const [filterValue, setFilterValue] = useState("");
   const hasDataRef = useRef(false);
   const hadData = hasDataRef.current;
 
-  if (groupsError) {
-    console.error(groupsError);
-  } else {
-    console.log("items", items);
-  }
+  // if (collectionsError) {
+  //   console.error(collectionsError);
+  // } else {
+  //   console.log("items", items);
+  // }
   if (hasDataRef.current === false && items) {
     hasDataRef.current = true;
   }
@@ -75,9 +76,9 @@ export function GroupsPanel() {
   const searchRef = useRef<HTMLInputElement>(null);
 
   // const handleItemSelect = useCallback(
-  //   (item: Group) => {
+  //   (item: Collection) => {
   //     navigate({
-  //       pathname: `/groups/${getId(item)}`,
+  //       pathname: `/collections/${getId(item)}`,
   //       search: searchParams.toString(),
   //     });
   //   },
@@ -172,6 +173,9 @@ export function GroupsPanel() {
   //   },
   //   { enableOnFormTags: ["input"] },
   // );
+  if (collectionsError) {
+    return <div>Error: {collectionsError.message}</div>;
+  }
 
   return (
     <div
@@ -188,13 +192,13 @@ export function GroupsPanel() {
             onFocus={() => {
               setSelectedItemId(null);
             }}
-            placeholder="groups"
+            placeholder="collections"
             onItemSelect={() => {}}
             itemCount={filteredItems.length}
           />
-          <CreateGroup
-            selectGroup={(group: Group) => {
-              const id = getId(group);
+          <CreateCollection
+            selectCollection={(collection: Collection) => {
+              const id = getId(collection);
               setSelectedItemId(id);
             }}
           />
@@ -211,7 +215,9 @@ export function GroupsPanel() {
               searchParams={searchParams}
               setSelectedItemId={setSelectedItemId}
               to={{
-                pathname: `/group/${getId(item)}`,
+                pathname: generatePath(COLLECTION_ROUTE, {
+                  collectionId: getId(item),
+                }),
                 search: searchParams.toString(),
               }}
             />
@@ -232,7 +238,7 @@ function EmptyState() {
             className="w-12 h-12 text-gray-400 stroke-1"
           />
         </div>
-        <h2 className="text-lg font-normal mb-4">No groups found</h2>
+        <h2 className="text-lg font-normal mb-4">No collections found</h2>
         {/* <div className="text-gray-400 text-left text-sm flex flex-col gap-4">
           <ol className="flex flex-col gap-2">
             <li>
@@ -274,7 +280,7 @@ function EmptyState() {
 }
 
 type NavItemProps = {
-  item: GroupWithAppRoute;
+  item: CollectionWithAppRoute;
   isSelected: boolean;
   to: To;
   searchParams: URLSearchParams;
@@ -285,10 +291,16 @@ const NavItem = memo(
   ({ to, item, isSelected, setSelectedItemId }: NavItemProps) => {
     const id = useActiveTraceId();
     const itemRef = useRef<HTMLAnchorElement>(null);
-    const { routes, updateMethod, updatePath } = useRequestorStore(
-      "routes",
+    const {
+      appRoutes: routes,
+      updateMethod,
+      updatePath,
+      setRequestParams,
+    } = useRequestorStore(
+      "appRoutes",
       "updatePath",
       "updateMethod",
+      "setRequestParams",
     );
 
     useEffect(() => {
@@ -343,8 +355,9 @@ const NavItem = memo(
           </div>
         </Link>
         <div className="grid gap-1">
-          {item.appRoutes.map((routeId, index) => {
-            const route = routes.find((r) => r.id === routeId);
+          {item.appRoutes.map((item, index) => {
+            const { id, appRouteId, ...extraParams } = item;
+            const route = routes.find((r) => r.id === appRouteId);
             if (!route) {
               return null;
             }
@@ -352,8 +365,18 @@ const NavItem = memo(
             return (
               <div
                 key={index}
-                className="grid gap-2 grid-cols-[4rem_auto] ml-6"
+                className={cn(
+                  "hover:bg-muted px-2 py-1 rounded cursor-pointer items-center",
+                  "focus:outline-none",
+                  "grid gap-2 grid-cols-[4rem_auto] ml-6",
+                )}
                 onClick={() => {
+                  setRequestParams({
+                    ...extraParams,
+                    requestUrl: `http://localhost:8787${route.path}`,
+                    requestMethod: route.method,
+                    requestRoute: appRouteId.toString(),
+                  });
                   updateMethod(route.method);
                   updatePath(route.path);
                 }}
@@ -372,18 +395,15 @@ const NavItem = memo(
             );
           })}
         </div>
-        <div>
-          <AddRoute groupId={item.id.toString()} />
-        </div>
       </div>
     );
   },
 );
 
 /**
- * Gets ths id of a group (as a string)
+ * Gets ths id of a collection (as a string)
  */
-const getId = (item: Group) => {
+const getId = (item: Collection) => {
   return item.id.toString();
   // return item.app_responses?.traceId || item.app_requests.id.toString();
 };

@@ -10,28 +10,28 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { Group } from "@fiberplane/fpx-types";
+import type { Collection } from "@fiberplane/fpx-types";
 import { useHandler } from "@fiberplane/hooks";
 import { PlusIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { CreateGroupForm } from "./CreateGroupForm";
+import { CreateCollectionForm } from "./CreateCollectionForm";
 
 type Props = {
-  selectGroup: (group: Group) => void;
+  selectCollection: (group: Collection) => void;
 };
 
-export function CreateGroup(props: Props) {
-  const { selectGroup } = props;
+export function CreateCollection(props: Props) {
+  const { selectCollection } = props;
   useHotkeys("c", (e) => {
     e.preventDefault();
     setOpen(true);
   });
 
   const [open, setOpen] = useState(false);
-  const handleSuccess = useHandler((group: Group) => {
+  const handleSuccess = useHandler((group: Collection) => {
     setOpen(false);
-    selectGroup(group);
+    selectCollection(group);
   });
 
   return (
@@ -54,8 +54,8 @@ export function CreateGroup(props: Props) {
           </div>
         </TooltipContent>
       </Tooltip>
-      <PopoverContent className="w-96 max-lg:hidden">
-        <CreateGroupForm onSuccess={handleSuccess} />
+      <PopoverContent className="w-80 max-w-dvw" align="end">
+        <CreateCollectionForm onSuccess={handleSuccess} />
       </PopoverContent>
     </Popover>
   );

@@ -9,7 +9,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState } from "react";
 import { AddToRouteForm } from "./AddToRouteForm";
 
-export function AddRouteToGroup() {
+export function AddRouteToCollection() {
   const [open, setOpen] = useState(false);
   const handleSuccess = useHandler(() => {
     setOpen(false);
@@ -24,7 +24,7 @@ export function AddRouteToGroup() {
           </Button>
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-96 max-lg:hidden">
+      <PopoverContent className="w-72 max-w-dvw">
         <AddToRouteForm onSuccess={handleSuccess} />
       </PopoverContent>
     </Popover>

@@ -19,7 +19,7 @@ import {
 const EMPTY_TRACES: TraceListResponse = [];
 export function useRequestorHistory() {
   const {
-    routes,
+    appRoutes: routes,
     setActiveRoute: handleSelectRoute,
     updatePath: setPath,
     updateMethod: setMethod,
@@ -28,7 +28,7 @@ export function useRequestorHistory() {
     setBody,
     showResponseBodyFromHistory,
   } = useRequestorStore(
-    "routes",
+    "appRoutes",
     "setActiveRoute",
     "updatePath",
     "setBody",

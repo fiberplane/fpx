@@ -7,13 +7,21 @@ import {
   ResizablePanelGroup,
   usePanelConstraints,
 } from "@/components/ui/resizable";
-import { useIsLgScreen } from "@/hooks";
+import { COLLECTION_ROUTE, REQUESTOR_TRACE_ROUTE } from "@/constants";
+import { useActiveTraceId, useIsLgScreen } from "@/hooks";
 import { cn } from "@/utils";
 import { useHandler } from "@fiberplane/hooks";
 import { useCallback, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import {
+  Route,
+  Routes,
+  generatePath,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { RequestDetailsPageV2 } from "../RequestDetailsPage/RequestDetailsPageV2";
-import { AddRouteToGroup } from "./AddRouteToGroup/AddRouteToGroup";
+import { CollectionSection } from "./CollectionSection/CollectionSection";
+import { MainTopSection } from "./MainTopSection";
 import { NavigationFrame, NavigationPanel } from "./NavigationPanel";
 import { RequestorPageContent } from "./RequestorPageContent";
 import { useRoutes } from "./routes";
@@ -28,7 +36,7 @@ function getMainSectionWidth() {
 }
 
 export const RequestorPage = () => {
-  const { traceId: id, requestType } = useParams();
+  const { requestType } = useParams();
   // NOTE - This sets the `routes` and `serviceBaseUrl` in the reducer
   useRoutes();
 
@@ -43,9 +51,9 @@ export const RequestorPage = () => {
   //     ),
   //   );
   // }, [setQueryParams]);
-
+  const id = useActiveTraceId();
   const { history, isLoading, loadHistoricalRequest } = useRequestorHistory();
-
+  // console.log('id', id);
   const hasHistory = history.length > 0;
   useEffect(() => {
     if (id && hasHistory) {
@@ -59,7 +67,7 @@ export const RequestorPage = () => {
   const { minSize, maxSize } = usePanelConstraints({
     groupId: "main-layout",
     initialGroupSize: width,
-    minPixelSize: 250,
+    minPixelSize: 320,
     minimalGroupSize: 944,
   });
 
@@ -67,15 +75,16 @@ export const RequestorPage = () => {
   const generateLinkToTrace = useCallback(
     (traceId: string) => {
       const search = searchParams.toString();
-      return `/request/${traceId}${search ? `?${search}` : ""}`;
+      return `${generatePath(REQUESTOR_TRACE_ROUTE, { traceId })}${search ? `?${search}` : ""}`;
     },
     [searchParams],
   );
 
   const generateNavigation = useHandler((traceId: string) => {
+    console.log("generateNavigation", traceId);
     const search = searchParams.toString();
     return {
-      pathname: `/request/${traceId}`,
+      pathname: generatePath(REQUESTOR_TRACE_ROUTE, { traceId }),
       search,
     };
   });
@@ -116,26 +125,36 @@ export const RequestorPage = () => {
           </>
         )}
         <ResizablePanel id="main" order={1}>
-          <div className="grid grid-cols-[1fr_auto] h-10 items-center">
-            <div className="text-muted-foreground ms-3 text-sm">
-              Home &gt; Route
-            </div>
-            <AddRouteToGroup />
-          </div>
-          {requestType === "history" && !!id ? (
-            <RequestDetailsPageV2
-              traceId={id}
-              paginationHidden
-              generateLinkToTrace={generateLinkToTrace}
+          {/* <Routes>
+            <Route path={REQUESTS_ROUTE} element={<RequestsPage />} />
+            <Route path={ROOT_ROUTE} element={<RequestorPage />} />
+            <Route path={COLLECTION_ROUTE} element={<RequestorPage />} />
+            <Route path={REQUESTOR_TRACE_ROUTE} element={<RequestorPage />} />
+
+          </Routes> */}
+          <MainTopSection />
+          <Routes>
+            <Route path={COLLECTION_ROUTE} element={<CollectionSection />} />
+            <Route
+              path="*"
+              element={
+                requestType === "history" && !!id ? (
+                  <RequestDetailsPageV2
+                    traceId={id}
+                    paginationHidden
+                    generateLinkToTrace={generateLinkToTrace}
+                  />
+                ) : (
+                  <RequestorPageContent
+                    history={history}
+                    historyLoading={isLoading}
+                    overrideTraceId={id}
+                    generateNavigation={generateNavigation}
+                  />
+                )
+              }
             />
-          ) : (
-            <RequestorPageContent
-              history={history}
-              historyLoading={isLoading}
-              overrideTraceId={id}
-              generateNavigation={generateNavigation}
-            />
-          )}
+          </Routes>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

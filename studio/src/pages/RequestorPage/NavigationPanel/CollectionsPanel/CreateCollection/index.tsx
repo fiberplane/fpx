@@ -24,7 +24,7 @@
 // import { type Route, useAddRoutes, useOpenApiParse } from "../queries";
 // import type { RequestMethodInputValue } from "../types";
 
-export { CreateGroup } from "./CreateGroup";
+export { CreateCollection } from "./CreateCollection";
 // type AddRoutesTabsProps = {
 //   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 //   openApi: boolean;

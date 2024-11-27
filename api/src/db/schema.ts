@@ -200,24 +200,24 @@ export const aiRequestLogs = sqliteTable("ai_request_logs", {
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });
 
-export const groups = sqliteTable("groups", {
+export const collections = sqliteTable("collections", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
   createdAt: text("created_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: text("updated_at").notNull().default(sql`(CURRENT_TIMESTAMP)`),
 });
 
-export const newGroupSchema = createInsertSchema(groups);
-export const selectGroupSchema = createSelectSchema(groups);
+export const newCollectionSchema = createInsertSchema(collections);
+export const selectCollectionSchema = createSelectSchema(collections);
 
-export type Group = z.infer<typeof selectGroupSchema>;
-export type NewGroup = z.infer<typeof newGroupSchema>;
+export type Collection = z.infer<typeof selectCollectionSchema>;
+export type NewCollection = z.infer<typeof newCollectionSchema>;
 
-// Define the app route -> group relationship
-export const groupsAppRoutes = sqliteTable("groups_app_routes", {
+// Define the app route -> collection relationship
+export const collectionsAppRoutes = sqliteTable("collections_app_routes", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  groupId: integer("group_id")
-    .references(() => groups.id, {
+  collectionId: integer("collection_id")
+    .references(() => collections.id, {
       onDelete: "cascade",
     })
     .notNull(),
@@ -226,25 +226,32 @@ export const groupsAppRoutes = sqliteTable("groups_app_routes", {
       onDelete: "cascade",
     })
     .notNull(),
+  requestHeaders: text("request_headers", { mode: "json" }).$type<
+    Record<string, string>
+  >(),
+  requestQueryParams: text("request_query_params", { mode: "json" }),
+  requestPathParams: text("request_path_params", { mode: "json" }),
+  requestBody: text("request_body", { mode: "json" }),
+  name: text("name"),
 });
 
 export const appRoutesRelations = relations(appRoutes, ({ many }) => ({
-  groups: many(groupsAppRoutes),
+  collections: many(collectionsAppRoutes),
 }));
 
-export const groupRelations = relations(groups, ({ many }) => ({
-  groupsAppRoutes: many(groupsAppRoutes),
+export const collectionRelations = relations(collections, ({ many }) => ({
+  collectionsAppRoutes: many(collectionsAppRoutes),
 }));
 
-export const groupsAppRoutesRelations = relations(
-  groupsAppRoutes,
+export const collectionsAppRoutesRelations = relations(
+  collectionsAppRoutes,
   ({ one }) => ({
-    group: one(groups, {
-      fields: [groupsAppRoutes.groupId],
-      references: [groups.id],
+    collection: one(collections, {
+      fields: [collectionsAppRoutes.collectionId],
+      references: [collections.id],
     }),
     appRoute: one(appRoutes, {
-      fields: [groupsAppRoutes.appRouteId],
+      fields: [collectionsAppRoutes.appRouteId],
       references: [appRoutes.id],
     }),
   }),

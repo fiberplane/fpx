@@ -22,7 +22,7 @@ export const routesSlice: StateCreator<
   [],
   RoutesSlice
 > = (set, get) => ({
-  routes: [],
+  appRoutes: [],
   activeRoute: null,
 
   setRoutes: (routes) =>
@@ -38,7 +38,7 @@ export const routesSlice: StateCreator<
         ? extractMatchedPathParams(matchedRoute)
         : extractPathParams(state.path).map(mapPathParamKey);
 
-      state.routes = routes;
+      state.appRoutes = routes;
       state.activeRoute = nextSelectedRoute;
       state.pathParams = nextPathParams;
     }),
@@ -55,7 +55,6 @@ export const routesSlice: StateCreator<
       state.method = nextMethod;
       state.requestType = nextRequestType;
       state.pathParams = extractPathParams(route.path).map(mapPathParamKey);
-      state.activeHistoryResponseTraceId = null;
       state.activeResponse = null;
 
       // Update tabs (you might want to move this logic to a separate slice)
@@ -95,7 +94,7 @@ export const routesSlice: StateCreator<
       method,
       requestType,
       serviceBaseUrl,
-      routes,
+      appRoutes: routes,
       routesAndMiddleware,
     } = state;
 

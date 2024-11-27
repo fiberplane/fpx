@@ -1,8 +1,13 @@
 import type { StateCreator } from "zustand";
 import { enforceFormDataTerminalDraftParameter } from "../../FormDataForm";
 import type { KeyValueParameter } from "../../KeyValueForm";
-import { enforceTerminalDraftParameter } from "../../KeyValueForm";
+import {
+  createKeyValueParameters,
+  enforceTerminalDraftParameter,
+} from "../../KeyValueForm";
+import type { ProxiedRequestResponse } from "../../queries";
 import { findMatchedRoute } from "../../routes";
+import { isRequestMethod } from "../../types";
 import { updateContentTypeHeaderInState } from "../content-type";
 import { setBodyTypeInState } from "../set-body-type";
 import { getVisibleRequestPanelTabs } from "../tabs";
@@ -50,7 +55,7 @@ export const requestResponseSlice: StateCreator<
   updatePath: (path) =>
     set((state) => {
       const matchedRoute = findMatchedRoute(
-        state.routes,
+        state.appRoutes,
         removeBaseUrl(state.serviceBaseUrl, path),
         state.method,
         state.requestType,
@@ -63,10 +68,11 @@ export const requestResponseSlice: StateCreator<
       state.path = path;
       state.activeRoute = nextActiveRoute;
       state.pathParams = nextPathParams;
-      state.activeHistoryResponseTraceId =
-        state.activeRoute === nextActiveRoute
-          ? state.activeHistoryResponseTraceId
-          : null;
+      console.log("updatePath", path);
+      // state.activeHistoryResponseTraceId =
+      // state.activeRoute === nextActiveRoute
+      //   ? state.activeHistoryResponseTraceId
+      //   : null;
     }),
 
   updateMethod: (methodInputValue) =>
@@ -198,7 +204,8 @@ export const requestResponseSlice: StateCreator<
   activeResponse: null,
   showResponseBodyFromHistory: (traceId) =>
     set((state) => {
-      state.activeHistoryResponseTraceId = traceId;
+      // state.activeHistoryResponseTraceId = traceId;
+
       // Recall that an 'active response' is one for which we will have the body we received from the service
       // This means it can contain binary data, whereas the history response will not
       // We should prefer to keep the active response as response to render, so long as its traceId matches the current history response traceId
@@ -207,10 +214,10 @@ export const requestResponseSlice: StateCreator<
         state.activeResponse = null;
       }
     }),
-  clearResponseBodyFromHistory: () =>
-    set((state) => {
-      state.activeHistoryResponseTraceId = null;
-    }),
+  // clearResponseBodyFromHistory: () =>
+  //   set((state) => {
+  //     state.activeHistoryResponseTraceId = null;
+  //   }),
   setActiveResponse: (response) =>
     set((state) => {
       state.activeResponse = response;
@@ -222,8 +229,87 @@ export const requestResponseSlice: StateCreator<
     set((state) => {
       state.sessionHistory.push(traceId);
     }),
-  setActiveHistoryResponseTraceId: (traceId: string | null) =>
-    set((state) => {
-      state.activeHistoryResponseTraceId = traceId;
-    }),
+  // setActiveHistoryResponseTraceId: (traceId: string | null) =>
+  //   set((state) => {
+  //     state.activeHistoryResponseTraceId = traceId;
+  //   }),
+  setRequestParams: (
+    requestParams: Pick<
+      ProxiedRequestResponse["app_requests"],
+      | "requestBody"
+      | "requestHeaders"
+      | "requestMethod"
+      | "requestPathParams"
+      | "requestQueryParams"
+      | "requestRoute"
+      | "requestUrl"
+    >,
+  ) => {
+    const {
+      requestBody,
+      requestHeaders,
+      requestMethod,
+      requestPathParams = {},
+      requestQueryParams = {},
+    } = requestParams;
+
+    const bodyValue =
+      requestBody === undefined || requestBody === null
+        ? undefined
+        : typeof requestBody !== "string"
+          ? JSON.stringify(requestBody)
+          : requestBody;
+    get().setBody(bodyValue);
+
+    get().setRequestHeaders(
+      createKeyValueParameters(
+        Object.entries(requestHeaders || {})
+          .map(([key, value]) => ({ key, value }))
+          .filter(
+            // HACK - We don't want to pass through the trace id header,
+            //        Otherwise each successive request will be correlated!!
+            ({ key }) => key?.toLowerCase() !== "x-fpx-trace-id",
+          ),
+      ),
+    );
+
+    get().updateMethod(
+      requestMethod === "WS" || isRequestMethod(requestMethod)
+        ? requestMethod
+        : "GET",
+      // );
+    );
+
+    get().setPathParams(
+      createKeyValueParameters(
+        Object.entries(requestPathParams || {}).map(([key, value]) => ({
+          key,
+          value,
+        })),
+      ),
+    );
+
+    get().setQueryParams(
+      createKeyValueParameters(
+        Object.entries(requestQueryParams || {}).map(([key, value]) => ({
+          key,
+          value,
+        })),
+      ),
+    );
+    get().updatePath(requestParams.requestUrl);
+    // get().updatePath(requestParams.requestUrl);
+    // get().
+  },
+  setResponseParams(responseParams) {
+    console.log(responseParams);
+    // const { responseBody, responseHeaders, responseStatusCode, traceId } =
+    //   responseParams;
+    // get().setActiveResponse({
+    //   responseBody,
+    //   responseHeaders,
+    //   responseStatusCode,
+    //   traceId,
+    // });
+  },
 });

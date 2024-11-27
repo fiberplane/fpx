@@ -5,11 +5,15 @@ import {
   usePanelConstraints,
 } from "@/components/ui/resizable";
 import { useToast } from "@/components/ui/use-toast";
-import { useIsLgScreen, useKeySequence } from "@/hooks";
+import { useActiveTraceId, useIsLgScreen, useKeySequence } from "@/hooks";
 import { cn } from "@/utils";
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  // useEffect,
+  useRef,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { type To, useNavigate } from "react-router-dom";
+import type { To } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 import { RequestPanel } from "../RequestPanel";
 import { RequestorInput } from "../RequestorInput";
@@ -37,6 +41,18 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
   const { history, overrideTraceId, historyLoading, generateNavigation } =
     props;
 
+  const activeTraceId = useActiveTraceId();
+  const item = history.find((element) => getId(element) === activeTraceId);
+
+  const { setRequestParams } = useRequestorStore("setRequestParams");
+  useEffect(() => {
+    if (!item) {
+      return;
+    }
+
+    setRequestParams(item.app_requests);
+  }, [item, setRequestParams]);
+
   const { toast } = useToast();
 
   const mostRecentProxiedRequestResponseForRoute =
@@ -48,25 +64,27 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
     overrideTraceId ??
     mostRecentProxiedRequestResponseForRoute?.app_responses?.traceId;
 
-  const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
-    useRequestorStore(
-      "setActiveHistoryResponseTraceId",
-      "activeHistoryResponseTraceId",
-    );
-  const navigate = useNavigate();
+  // const { setActiveHistoryResponseTraceId, activeHistoryResponseTraceId } =
+  //   useRequestorStore(
+  //     // "setActiveHistoryResponseTraceId",
+  //     // "activeHistoryResponseTraceId",
+  //   );
+  // const navigate = useNavigate();
 
-  useEffect(() => {
-    if (traceId && traceId !== activeHistoryResponseTraceId) {
-      setActiveHistoryResponseTraceId(traceId);
-      navigate(generateNavigation(traceId), { replace: true });
-    }
-  }, [
-    traceId,
-    activeHistoryResponseTraceId,
-    generateNavigation,
-    navigate,
-    setActiveHistoryResponseTraceId,
-  ]);
+  // useEffect(() => {
+  //   if (traceId
+  //     // && traceId !== activeHistoryResponseTraceId
+  //     ) {
+  //     // setActiveHistoryResponseTraceId(traceId);
+  //     navigate(generateNavigation(traceId), { replace: true });
+  //   }
+  // }, [
+  //   traceId,
+  //   activeHistoryResponseTraceId,
+  //   generateNavigation,
+  //   navigate,
+  //   setActiveHistoryResponseTraceId,
+  // ]);
 
   const { mutate: makeRequest, isPending: isRequestorRequesting } =
     useMakeProxiedRequest();
@@ -290,4 +308,8 @@ export const RequestorPageContent: React.FC<RequestorPageContentProps> = (
       </ResizablePanelGroup>
     </div>
   );
+};
+
+const getId = (item: ProxiedRequestResponse) => {
+  return item.app_responses?.traceId || item.app_requests.id.toString();
 };

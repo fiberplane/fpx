@@ -33,7 +33,7 @@ export const schemaProbedRoutes = z.object({
  */
 export async function reregisterRoutes(
   db: LibSQLDatabase<typeof schema>,
-  { routes }: z.infer<typeof schemaProbedRoutes>,
+  { appRoutes: routes }: z.infer<typeof schemaProbedRoutes>,
 ) {
   return db.transaction(async (tx) => {
     // Unregister all routes

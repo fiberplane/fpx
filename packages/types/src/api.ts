@@ -12,13 +12,38 @@ export type TraceListResponse = z.infer<typeof TraceListResponseSchema>;
 
 export type TraceDetailSpansResponse = Array<OtelSpan>;
 
-export const GroupSchema = z.object({
+export const CollectionSchema = z.object({
   id: z.number(),
   name: z.string().trim().min(1, { message: 'Is required.' }),
   createdAt: z.string(),
   updatedAt: z.string(),
 })
-export type Group = z.infer<typeof GroupSchema>;
+export type Collection = z.infer<typeof CollectionSchema>;
 
-export const GroupListResponseSchema = z.array(GroupSchema);
-export type GroupListResponse = z.infer<typeof GroupListResponseSchema>;
+export const CollectionListResponseSchema = z.array(CollectionSchema);
+export type CollectionListResponse = z.infer<typeof CollectionListResponseSchema>;
+
+export const JsonSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(JsonSchema),
+    z.record(JsonSchema),
+  ]),
+);
+
+export type JsonSchemaType = z.infer<typeof JsonSchema>;
+
+export const ExtraRequestParamsSchema = z.object({
+  requestUrl: z.string().optional(),
+  requestMethod: z.string().optional(),
+  requestRoute: z.string().optional(),
+  requestHeaders: z.record(z.string()).nullable().optional(),
+  requestQueryParams: z.record(z.string()).nullable().optional(),
+  requestPathParams: z.record(z.string()).nullable().optional(),
+  requestBody: JsonSchema.optional(), // Assuming JsonSchemaType can be any type
+});
+
+export type ExtraRequestParams = z.infer<typeof ExtraRequestParamsSchema>;

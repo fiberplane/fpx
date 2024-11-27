@@ -1,4 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
+import { useActiveTraceId } from "@/hooks";
 import { useHandler } from "@fiberplane/hooks";
 import { type To, useNavigate } from "react-router-dom";
 import type { KeyValueParameter } from "./KeyValueForm";
@@ -43,7 +44,8 @@ export function useRequestorSubmitHandler({
   );
 
   const { addServiceUrlIfBarePath } = useServiceBaseUrl();
-  const { activeHistoryResponseTraceId } = useRequestorStore();
+  // const { activeHistoryResponseTraceId } = useRequestorStore();
+  const activeHistoryResponseTraceId = useActiveTraceId();
   // NOTE - We make the submit handler optional to make it easier to call this as a standalone function
   return useHandler((e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault?.();

@@ -1,31 +1,43 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useKeySequence } from "@/hooks/useKeySequence";
 import { useHandler } from "@fiberplane/hooks";
-import { useSearchParams } from "react-router-dom";
-import { GroupsPanel } from "./GroupsPanel/GroupsPanel";
+import { useParams, useSearchParams } from "react-router-dom";
+import { CollectionsPanel } from "./CollectionsPanel";
 import { RequestsPanel } from "./RequestsPanel";
 import { RoutesPanel } from "./RoutesPanel";
 
 const FILTER_TAB_KEY = "filter-tab";
-const TAB_KEYS = ["routes", "requests", "groups"] as const;
+const TAB_KEYS = ["routes", "collections", "history"] as const;
 type NavigationTab = (typeof TAB_KEYS)[number];
 
-function getTab(searchParams: URLSearchParams): NavigationTab {
+function getTab(searchParams: URLSearchParams): NavigationTab | undefined {
   const tab = searchParams.get(FILTER_TAB_KEY);
   if (tab && TAB_KEYS.includes(tab as NavigationTab)) {
     return tab as NavigationTab;
   }
-
-  return "routes";
 }
 
-export function NavigationPanel() {
+function useActiveTab(): {
+  tab: NavigationTab;
+  setTab: (tab: NavigationTab) => void;
+} {
   const [params, setParams] = useSearchParams();
-  const tab = getTab(params);
+  const { collectionId } = useParams();
+
+  const tab = getTab(params) ?? (collectionId ? "collections" : "routes");
 
   const setTab = useHandler((newTab: NavigationTab) => {
     setParams({ [FILTER_TAB_KEY]: newTab }, { replace: true });
   });
+
+  return {
+    tab,
+    setTab,
+  };
+}
+
+export function NavigationPanel() {
+  const { tab, setTab } = useActiveTab();
 
   useKeySequence(
     ["g", "r"],
@@ -35,16 +47,16 @@ export function NavigationPanel() {
     { ignoreSelector: "[contenteditable]" },
   );
   useKeySequence(
-    ["g", "a"],
+    ["g", "h"],
     () => {
-      setTab("requests");
+      setTab("history");
     },
     { ignoreSelector: "[contenteditable]" },
   );
   useKeySequence(
     ["g", "g"],
     () => {
-      setTab("groups");
+      setTab("collections");
     },
     { ignoreSelector: "[contenteditable]" },
   );
@@ -65,11 +77,11 @@ export function NavigationPanel() {
       <TabsContent value="routes" className="h-[calc(100%-40px)] pt-4">
         <RoutesPanel />
       </TabsContent>
-      <TabsContent value="requests" className="h-[calc(100%-40px)] pt-4">
+      <TabsContent value="history" className="h-[calc(100%-40px)] pt-4">
         <RequestsPanel />
       </TabsContent>
-      <TabsContent value="groups" className="h-[calc(100%-40px)] pt-4">
-        <GroupsPanel />
+      <TabsContent value="collections" className="h-[calc(100%-40px)] pt-4">
+        <CollectionsPanel />
       </TabsContent>
     </Tabs>
   );

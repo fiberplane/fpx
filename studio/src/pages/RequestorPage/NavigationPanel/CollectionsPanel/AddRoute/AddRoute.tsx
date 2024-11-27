@@ -9,19 +9,19 @@ import { useState } from "react";
 import { AddRouteForm } from "./AddRouteForm";
 
 type Props = {
-  groupId: string;
+  collectionId: string;
 };
 
 export function AddRoute(props: Props) {
-  const { groupId } = props;
+  const { collectionId } = props;
 
   const [open, setOpen] = useState(false);
   const handleSuccess = useHandler(
     (
-      // group: Group
+      // collection: Group
     ) => {
       setOpen(false);
-      // selectGroup(group);
+      // selectGroup(collection);
     },
   );
 
@@ -33,7 +33,7 @@ export function AddRoute(props: Props) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-96 max-lg:hidden">
-        <AddRouteForm groupId={groupId} onSuccess={handleSuccess} />
+        <AddRouteForm collectionId={collectionId} onSuccess={handleSuccess} />
       </PopoverContent>
     </Popover>
   );

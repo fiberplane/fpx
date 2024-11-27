@@ -10,7 +10,7 @@ import logger from "./logger/index.js";
 import type * as webhoncType from "./lib/webhonc/index.js";
 import appRoutes from "./routes/app-routes.js";
 import auth from "./routes/auth.js";
-import groups from "./routes/groups.js";
+import collections from "./routes/collections.js";
 import inference from "./routes/inference/index.js";
 import settings from "./routes/settings.js";
 import traces from "./routes/traces.js";
@@ -59,7 +59,7 @@ export function createApp(
   app.route("/", inference);
   app.route("/", appRoutes);
   app.route("/", settings);
-  app.route("/", groups);
+  app.route("/", collections);
 
   return app;
 }

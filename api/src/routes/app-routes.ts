@@ -9,7 +9,7 @@ import {
   appResponses,
   appRoutes,
   appRoutesInsertSchema,
-  groupsAppRoutes,
+  collectionsAppRoutes,
 } from "../db/schema.js";
 import { reregisterRoutes, schemaProbedRoutes } from "../lib/app-routes.js";
 import {
@@ -45,7 +45,7 @@ app.get("/v0/app-routes", async (ctx) => {
 
   const routes = await db.query.appRoutes.findMany({
     with: {
-      groups: true,
+      collections: true,
     },
   });
 
@@ -105,7 +105,7 @@ app.post(
     try {
       if (routes.length > 0) {
         // "Re-register" all current app routes in a database transaction
-        await reregisterRoutes(db, { routes });
+        await reregisterRoutes(db, { appRoutes: routes });
 
         // TODO - Detect if anything actually changed before invalidating the query on the frontend
         //        This would be more of an optimization, but is friendlier to the frontend
@@ -156,7 +156,7 @@ app.delete("/v0/app-requests/", async (ctx) => {
   const db = ctx.get("db");
   await db.delete(appResponses);
   await db.delete(appRequests);
-  await db.delete(groupsAppRoutes);
+  await db.delete(collectionsAppRoutes);
   return ctx.text("OK");
 });
 
@@ -276,8 +276,8 @@ app.all(
       | null
       | string
       | {
-          [x: string]: string | SerializedFile | (string | SerializedFile)[];
-        } = null;
+        [x: string]: string | SerializedFile | (string | SerializedFile)[];
+      } = null;
     try {
       requestBody = await serializeRequestBodyForFpxDb(ctx);
     } catch (error) {

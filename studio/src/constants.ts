@@ -67,15 +67,17 @@ export const SpanKind = {
   CONSUMER: "Consumer",
 };
 
-export const REQUESTS_ROUTE = "/requests";
-export const REQUEST_DETAILS_OTEL_ROUTE = "/requests/otel/:traceId";
-export const REQUEST_DETAILS_TRACE_ROUTE = "/requests/:traceId";
 export const ROOT_ROUTE = "/";
-export const GROUP_ROUTE = "/groups/:groupId";
-export const REQUESTOR_TRACE_ROUTE = "/:requestType/:traceId";
+export const INTERNAL_AI_LOGS_ROUTE = "/internal-ai-logs";
+export const INTERNAL_AI_LOGS_WITH_ID_ROUTE = `${INTERNAL_AI_LOGS_ROUTE}/:traceId`;
+export const COLLECTION_ROUTE = "/collections/:collectionId";
+export const REQUESTOR_HISTORY_ROUTE = "/history/:traceId";
+export const REQUESTOR_TRACE_ROUTE = "/requests/:traceId";
+export const COLLECTION_WITH_ROUTE_ID = `${COLLECTION_ROUTE}/:entryId`;
 
-export const TRACE_ID_ROUTES = [
-  REQUEST_DETAILS_OTEL_ROUTE,
-  REQUEST_DETAILS_TRACE_ROUTE,
-  REQUESTOR_TRACE_ROUTE,
+export const TRACE_ID_ROUTES = [REQUESTOR_TRACE_ROUTE];
+
+export const COLLECTION_ID_ROUTES = [
+  COLLECTION_ROUTE,
+  COLLECTION_WITH_ROUTE_ID,
 ];

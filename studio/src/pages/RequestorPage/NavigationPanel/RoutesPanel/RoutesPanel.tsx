@@ -14,11 +14,11 @@ import { RoutesItem } from "./RoutesItem";
 import { useRefreshRoutes } from "./useRefreshRoutes";
 
 export function RoutesPanel() {
-  const { routes, activeRoute, setActiveRoute } = useRequestorStore(
-    "routes",
-    "activeRoute",
-    "setActiveRoute",
-  );
+  const {
+    appRoutes: routes,
+    activeRoute,
+    setActiveRoute,
+  } = useRequestorStore("appRoutes", "activeRoute", "setActiveRoute");
 
   const navigate = useNavigate();
 
@@ -124,7 +124,6 @@ export function RoutesPanel() {
     }
   };
 
-  console.log("routes", routes);
   return (
     <div className={cn("h-full", "flex", "flex-col")}>
       <div>

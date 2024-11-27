@@ -70,7 +70,7 @@ export type RequestorActiveResponse = z.infer<
 >;
 
 export const RequestorStateSchema = z.object({
-  routes: z.array(ProbedRouteSchema).describe("All routes"),
+  appRoutes: z.array(ProbedRouteSchema).describe("All routes"),
   routesAndMiddleware: z
     .array(ProbedRouteSchema)
     .describe("All routes and middleware"),
@@ -112,11 +112,11 @@ export const RequestorStateSchema = z.object({
     .array(ResponsePanelTabSchema)
     .describe("The tabs to show in the response panel"),
 
-  // HACK - This is used to force us to show a response body for a request loaded from history
-  activeHistoryResponseTraceId: z
-    .string()
-    .nullable()
-    .describe("The trace id to show in the response panel"),
+  // // HACK - This is used to force us to show a response body for a request loaded from history
+  // activeHistoryResponseTraceId: z
+  //   .string()
+  //   .nullable()
+  //   .describe("The trace id to show in the response panel"),
 
   // NOTE - This is used to force us to show a response body for a request that was most recently made
   activeResponse: RequestorActiveResponseSchema.nullable().describe(

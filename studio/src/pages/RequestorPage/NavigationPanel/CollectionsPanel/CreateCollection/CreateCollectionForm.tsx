@@ -2,31 +2,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useShake } from "@/hooks";
-import { useAddGroup } from "@/queries";
+import { useAddCollection } from "@/queries";
 import { cn } from "@/utils";
-import { type Group, GroupSchema } from "@fiberplane/fpx-types";
+import { type Collection, CollectionSchema } from "@fiberplane/fpx-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type SubmitHandler, useForm } from "react-hook-form";
 
-type GroupFormData = {
+type CollectionFormData = {
   name: string;
 };
 
 type Props = {
-  onSuccess: (group: Group) => void;
+  onSuccess: (collection: Collection) => void;
 };
 
-const CreateGroupSchema = GroupSchema.pick({ name: true });
+const CreateCollectionSchema = CollectionSchema.pick({ name: true });
 
-export function CreateGroupForm(props: Props) {
+export function CreateCollectionForm(props: Props) {
   const { onSuccess } = props;
-  const { mutate: addGroup, failureReason: error, isPending } = useAddGroup();
-  const onSubmit: SubmitHandler<GroupFormData> = ({
+  const {
+    mutate: addCollection,
+    failureReason: error,
+    isPending,
+  } = useAddCollection();
+  const onSubmit: SubmitHandler<CollectionFormData> = ({
     name,
   }: {
     name: string;
   }) => {
-    addGroup(
+    addCollection(
       {
         name,
       },
@@ -35,7 +39,7 @@ export function CreateGroupForm(props: Props) {
           onSuccess(data);
         },
         onError: (error) => {
-          console.log("validate", CreateGroupSchema.parse({ name }));
+          console.log("validate", CreateCollectionSchema.parse({ name }));
           console.log("error", error);
           triggerShake();
         },
@@ -43,26 +47,31 @@ export function CreateGroupForm(props: Props) {
     );
   };
 
-  const { register, handleSubmit } = useForm<GroupFormData>({
-    resolver: zodResolver(CreateGroupSchema),
+  const { register, handleSubmit } = useForm<CollectionFormData>({
+    resolver: zodResolver(CreateCollectionSchema),
   });
   const { shakeClassName, triggerShake } = useShake();
 
   return (
     <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-2">
-        <h4 className="text-md text-muted-foreground text-center">New group</h4>
+        <h4 className="text-md text-muted-foreground text-center">
+          New collection
+        </h4>
         {error && (
           <p className="text-sm text-destructive-foreground">{error.message}</p>
         )}
       </div>
       <div className="space-y-2">
-        <Label className="text-sm text-muted-foreground" htmlFor="groupName">
+        <Label
+          className="text-sm text-muted-foreground"
+          htmlFor="collectionName"
+        >
           Name
         </Label>
         <Input
           {...register("name")}
-          id="groupName"
+          id="collectionName"
           type="text"
           className="col-span-2 h-8 font-mono"
           autoFocus

@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Method } from "@/pages/RequestorPage/RequestorHistory";
 import { useRoutes } from "@/pages/RequestorPage/routes";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
-import { useAddRouteToGroup } from "@/queries";
+import { useAddRouteToCollection } from "@/queries";
 import { useHandler } from "@fiberplane/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -16,7 +16,7 @@ import {
 import { z } from "zod";
 
 type Props = {
-  groupId: string;
+  collectionId: string;
   onSuccess: () => void;
 };
 
@@ -28,11 +28,11 @@ type AddRouteFormData = z.infer<typeof ValidationSchema>;
 
 export function AddRouteForm(props: Props) {
   // console.log(props);
-  const { groupId, onSuccess } = props;
-  const { mutate: addAppRoute } = useAddRouteToGroup(groupId);
+  const { collectionId, onSuccess } = props;
+  const { mutate: addAppRoute } = useAddRouteToCollection(collectionId);
 
   const { isLoading } = useRoutes();
-  const { routes } = useRequestorStore("routes");
+  const { appRoutes: routes } = useRequestorStore("appRoutes");
   const { handleSubmit, register } = useForm<AddRouteFormData>({
     resolver: zodResolver(ValidationSchema),
   });
@@ -51,7 +51,14 @@ export function AddRouteForm(props: Props) {
   const onSubmit: SubmitHandler<AddRouteFormData> = async (formData) => {
     // if (formData.routes.length) {
     console.log(formData.routes);
-    await Promise.all(formData.routes.map((id) => addAppRoute(id)));
+    await Promise.all(
+      formData.routes.map((id) =>
+        addAppRoute({
+          routeId: id,
+          extraParams: {},
+        }),
+      ),
+    );
     console.log("all good?!?");
     onSuccess();
   };

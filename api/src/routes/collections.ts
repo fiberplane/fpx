@@ -5,47 +5,47 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import {
-  type NewGroup,
+  type NewCollection,
   appRoutes,
-  // appRoutes,
-  groups,
-  groupsAppRoutes,
+  collections,
+  collectionsAppRoutes,
 } from "../db/schema.js";
+import { ExtraRequestParamsSchema } from "@fiberplane/fpx-types";;
 import type { Bindings, Variables } from "../lib/types.js";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-const newGroupSchema = z.object({
+const newCollectionSchema = z.object({
   name: z.string(),
 });
 
-// Create a new group
-app.post("/v0/groups", async (ctx) => {
+// Create a new collection
+app.post("/v0/collections", async (ctx) => {
   const db = ctx.get("db");
 
-  const newCollection: NewGroup = newGroupSchema.parse(await ctx.req.json());
+  const newCollection: NewCollection = newCollectionSchema.parse(await ctx.req.json());
 
   try {
-    const group = await db.transaction(async (db) => {
-      const groupWithName = await db.query.groups.findFirst({
-        where: eq(groups.name, newCollection.name),
+    const collection = await db.transaction(async (db) => {
+      const collectionWithName = await db.query.collections.findFirst({
+        where: eq(collections.name, newCollection.name),
       });
-      if (groupWithName) {
+      if (collectionWithName) {
         throw new HTTPException(400, {
-          message: "Group name is not unique",
-          cause: { name: "Group name is not unique" },
+          message: "Collection name is not unique",
+          cause: { name: "Collection name is not unique" },
         });
       }
 
-      return await db.insert(groups).values(newCollection).returning({
-        id: groups.id,
-        name: groups.name,
-        createdAt: groups.createdAt,
-        updatedAt: groups.updatedAt,
+      return await db.insert(collections).values(newCollection).returning({
+        id: collections.id,
+        name: collections.name,
+        createdAt: collections.createdAt,
+        updatedAt: collections.updatedAt,
       });
     });
 
-    return ctx.json(group[0]);
+    return ctx.json(collection[0]);
   } catch (error) {
     if (error instanceof HTTPException) {
       return ctx.json(error.message, error.status);
@@ -59,23 +59,25 @@ app.post("/v0/groups", async (ctx) => {
 });
 
 app.post(
-  "/v0/groups/:groupId/app-routes",
-  zValidator("param", z.object({ groupId: z.number({ coerce: true }) })),
-  zValidator("json", z.object({ id: z.number() })),
+  "/v0/collections/:collectionId/app-routes",
+  zValidator("param", z.object({ collectionId: z.number({ coerce: true }) })),
+  zValidator("json",
+    ExtraRequestParamsSchema.extend(
+      { id: z.number() })),
   async (ctx) => {
     const db = ctx.get("db");
 
-    const { groupId } = ctx.req.valid("param");
-    const { id: appRouteId } = ctx.req.valid("json");
+    const { collectionId } = ctx.req.valid("param");
+    const { id: appRouteId, ...extraParams } = ctx.req.valid("json");
 
     try {
-      const updatedGroup = await db.transaction(async (db) => {
-        const group = db.query.groups.findFirst({
-          where: eq(groups.id, groupId),
+      const updatedCollection = await db.transaction(async (db) => {
+        const collection = db.query.collections.findFirst({
+          where: eq(collections.id, collectionId),
         });
-        if (!group) {
+        if (!collection) {
           throw new HTTPException(404, {
-            message: "Group not found",
+            message: "Collection not found",
           });
         }
 
@@ -88,15 +90,16 @@ app.post(
           });
         }
 
-        await db.insert(groupsAppRoutes).values({
-          groupId,
+        await db.insert(collectionsAppRoutes).values({
+          collectionId,
           appRouteId,
+          ...extraParams
         });
 
-        return db.query.groups.findFirst({
-          where: eq(groups.id, groupId),
+        return db.query.collections.findFirst({
+          where: eq(collections.id, collectionId),
           with: {
-            groupsAppRoutes: {
+            collectionsAppRoutes: {
               with: {
                 appRoute: true,
               },
@@ -105,7 +108,7 @@ app.post(
         });
       });
 
-      return ctx.json(updatedGroup);
+      return ctx.json(updatedCollection);
     } catch (error) {
       if (error instanceof HTTPException) {
         return ctx.json(error.message, error.status);
@@ -119,25 +122,25 @@ app.post(
   },
 );
 
-// Get all groups
-app.get("/v0/groups", async (ctx) => {
+// Get all collections
+app.get("/v0/collections", async (ctx) => {
   const db = ctx.get("db");
 
   try {
-    const allGroups = await db.select().from(groups);
-    const groupWithRoutes = await Promise.all(
-      allGroups.map(async (group) => {
+    const allCollections = await db.select().from(collections);
+    const collectionWithRoutes = await Promise.all(
+      allCollections.map(async (collection) => {
         const routes = await db
           .select()
-          .from(groupsAppRoutes)
-          .where(eq(groupsAppRoutes.groupId, group.id));
+          .from(collectionsAppRoutes)
+          .where(eq(collectionsAppRoutes.collectionId, collection.id));
         return {
-          ...group,
-          appRoutes: routes.map((route) => route.appRouteId),
+          ...collection,
+          appRoutes: routes.map(({ collectionId: _, ...route }) => route),
         };
       }),
     );
-    return ctx.json(groupWithRoutes);
+    return ctx.json(collectionWithRoutes);
   } catch (error) {
     return ctx.json(
       error instanceof Error ? error.message : "Unexpected error",
@@ -146,29 +149,29 @@ app.get("/v0/groups", async (ctx) => {
   }
 });
 
-// Get a single group by ID
+// Get a single collection by ID
 app.get(
-  "/v0/groups/:id",
+  "/v0/collections/:id",
   zValidator("param", z.object({ id: z.number() })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");
     const db = ctx.get("db");
 
     try {
-      const group = await db.query.groups.findFirst({
-        where: eq(groups.id, id),
+      const collection = await db.query.collections.findFirst({
+        where: eq(collections.id, id),
         with: {
-          groupsAppRoutes: true,
+          collectionsAppRoutes: true,
         },
       });
-      if (!group) {
+      if (!collection) {
         throw new HTTPException(404, {
           message: "Collection not found",
         });
       }
 
       return ctx.json({
-        ...group,
+        ...collection,
       });
     } catch (error) {
       if (error instanceof HTTPException) {
@@ -183,9 +186,9 @@ app.get(
   },
 );
 
-// Update a group by ID
+// Update a collection by ID
 app.put(
-  "/v0/groups/:id",
+  "/v0/collections/:id",
   zValidator("param", z.object({ id: z.number() })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");
@@ -199,7 +202,7 @@ app.put(
       await ctx.req.json(),
     );
     try {
-      await db.update(groups).set(updatedCollection).where(eq(groups.id, id));
+      await db.update(collections).set(updatedCollection).where(eq(collections.id, id));
       return ctx.json({ message: "Collection updated" });
     } catch (error) {
       return ctx.json(
@@ -210,17 +213,17 @@ app.put(
   },
 );
 
-// Delete a group by ID
+// Delete a collection by ID
 app.delete(
-  "/v0/groups/:id",
+  "/v0/collections/:id",
   zValidator("param", z.object({ id: z.number() })),
   async (ctx) => {
     const { id } = ctx.req.valid("param");
     const db = ctx.get("db");
 
     try {
-      await db.delete(groups).where(eq(groups.id, id));
-      await db.delete(groupsAppRoutes).where(eq(groupsAppRoutes.groupId, id));
+      await db.delete(collections).where(eq(collections.id, id));
+      await db.delete(collectionsAppRoutes).where(eq(collectionsAppRoutes.collectionId, id));
       return ctx.json({ message: "Collection deleted" });
     } catch (error) {
       return ctx.json(

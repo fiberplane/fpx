@@ -1,12 +1,19 @@
 import { RequestMethod } from "@/components/Timeline";
 import { Status } from "@/components/ui/status";
+import { REQUESTOR_TRACE_ROUTE } from "@/constants";
 import { useInputFocusDetection } from "@/hooks";
 import { useActiveTraceId } from "@/hooks";
 import { cn } from "@/utils";
 import { Icon } from "@iconify/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { Link, type To, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  type To,
+  generatePath,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import type { ProxiedRequestResponse } from "../../queries";
 import { useServiceBaseUrl } from "../../store";
 import { useRequestorHistory } from "../../useRequestorHistory";
@@ -39,7 +46,7 @@ export function RequestsPanel() {
   const handleItemSelect = useCallback(
     (item: ProxiedRequestResponse) => {
       navigate({
-        pathname: `/request/${getId(item)}`,
+        pathname: generatePath(REQUESTOR_TRACE_ROUTE, { traceId: getId(item) }),
         search: searchParams.toString(),
       });
     },
@@ -126,7 +133,7 @@ export function RequestsPanel() {
             break;
           }
 
-          setSelectedItemId(id);
+          setSelectedItemId(id ?? null);
           break;
         }
       }
@@ -160,7 +167,9 @@ export function RequestsPanel() {
             isSelected={getId(item) === selectedItemId}
             searchParams={searchParams}
             to={{
-              pathname: `/request/${getId(item)}`,
+              pathname: generatePath(REQUESTOR_TRACE_ROUTE, {
+                traceId: getId(item),
+              }),
               search: searchParams.toString(),
             }}
           />

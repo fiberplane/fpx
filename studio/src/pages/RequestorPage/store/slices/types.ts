@@ -5,6 +5,7 @@ import type {
   ResponsePanelTab,
 } from "..";
 import type { KeyValueParameter } from "../../KeyValueForm";
+import type { ProxiedRequestResponse } from "../../queries";
 import type { ProbedRoute } from "../../types";
 import type {
   RequestMethod,
@@ -38,8 +39,8 @@ export interface RequestResponseSlice {
     isMultipart?: boolean,
   ) => void;
   /** Response related state */
-  activeHistoryResponseTraceId: string | null;
-  setActiveHistoryResponseTraceId: (traceId: string | null) => void;
+  // activeHistoryResponseTraceId: string | null;
+  // setActiveHistoryResponseTraceId: (traceId: string | null) => void;
 
   activeResponse: RequestorActiveResponse | null;
   /** A banner that tells the user they can view logs for a request */
@@ -47,16 +48,34 @@ export interface RequestResponseSlice {
   setShowViewLogsBanner: (showViewLogsBanner: boolean) => void;
 
   showResponseBodyFromHistory: (traceId: string) => void;
-  clearResponseBodyFromHistory: () => void;
+  // clearResponseBodyFromHistory: () => void;
   setActiveResponse: (response: RequestorActiveResponse | null) => void;
 
   /** Session history related state */
   sessionHistory: RequestorTraceId[];
   recordRequestInSessionHistory: (traceId: RequestorTraceId) => void;
+  setRequestParams: (
+    requestParams: Pick<
+      ProxiedRequestResponse["app_requests"],
+      | "requestBody"
+      | "requestHeaders"
+      | "requestMethod"
+      | "requestPathParams"
+      | "requestQueryParams"
+      | "requestRoute"
+      | "requestUrl"
+    >,
+  ) => void;
+  setResponseParams: (
+    responseParams: Pick<
+      ProxiedRequestResponse["app_responses"],
+      "responseBody" | "responseHeaders" | "responseStatusCode"
+    >,
+  ) => void;
 }
 
 export interface RoutesSlice {
-  routes: ProbedRoute[];
+  appRoutes: ProbedRoute[];
   activeRoute: ProbedRoute | null;
   setRoutes: (routes: ProbedRoute[]) => void;
   setActiveRoute: (route: ProbedRoute) => void;

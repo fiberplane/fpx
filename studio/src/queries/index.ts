@@ -15,5 +15,9 @@ export {
 export { useOtelTrace, useOtelTraces } from "./traces-otel";
 
 export * from "./user-info";
-export { useAddGroup, useGroups, useAddRouteToGroup } from "./groups";
-export type { GroupWithAppRouteList } from "./groups";
+export {
+  useAddCollection,
+  useCollections,
+  useAddRouteToCollection,
+} from "./collections";
+export type { CollectionWithAppRouteList } from "./collections";

@@ -1,18 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { useRequestorStore } from "@/pages/RequestorPage/store";
-import { useAddRouteToGroup, useGroups } from "@/queries";
-import type { Group } from "@fiberplane/fpx-types";
+import { useAddRouteToCollection, useCollections } from "@/queries";
+import type { Collection } from "@fiberplane/fpx-types";
 
 type Props = {
-  // groupId: string;
+  // collectionId: string;
   onSuccess: () => void;
 };
 
 export function AddToRouteForm(props: Props) {
   // console.log(props);
-  // const { groupId, onSuccess } = props;
-  // const { mutate: addAppRoute } = useAddRouteToGroup(groupId);
-  const { data: groups, isLoading } = useGroups();
+  // const { collectionId, onSuccess } = props;
+  // const { mutate: addAppRoute } = useAddRouteToCollection(collectionId);
+  const { data: collections, isLoading } = useCollections();
   // const { isLoading } = useRoutes();
   // const { routes } = useRequestorStore("routes");
   // const { handleSubmit, register } = useForm<AddToRouteForm>({
@@ -37,27 +37,37 @@ export function AddToRouteForm(props: Props) {
   //   console.log("all good?!?");
   //   onSuccess();
   // };
+  const { activeRoute } = useRequestorStore("activeRoute");
+  // No active route? Then there's nothing to do here
+  if (!activeRoute) {
+    console.warn("No active route");
+    return null;
+  }
 
-  if (isLoading || !groups) {
+  if (isLoading || !collections) {
     return <div>Loading...</div>;
   }
 
-  if (groups.length === 0) {
+  if (collections.length === 0) {
     return <div>Empty</div>;
   }
+
+  // console.log("collections", collections);
   // console.log("routesERrors", routesErrors);
   // const routeProps = register("routes");
   return (
     <div className="max-h-60 grid grid-rows-[auto_auto_1fr] gap-2">
-      <h4 className="text-lg text-center">Add To Group</h4>
-      <p>Select which group to add the current request to</p>
-      <div className="grid min-h-0 gap-2">
+      <h4 className="text-lg font-normal text-center">Add To Collection</h4>
+      <p className="text-sm text-gray-400">
+        Select which collection to add the current request to
+      </p>
+      <div className="grid min-h-0 gap-2 py-2">
         <div className="grid gap-2 overflow-auto">
-          {groups.map((group) => {
+          {collections.map((collection) => {
             return (
               <AddToRouteFormItem
-                key={group.id}
-                group={group}
+                key={collection.id}
+                collection={collection}
                 onSuccess={props.onSuccess}
               />
             );
@@ -69,21 +79,41 @@ export function AddToRouteForm(props: Props) {
 }
 
 // function AddRouteItem(props: Route)
-function AddToRouteFormItem(props: { group: Group; onSuccess: () => void }) {
-  const { group } = props;
-  const { mutate: addGroup } = useAddRouteToGroup(group.id.toString());
-  const { activeRoute } = useRequestorStore("activeRoute");
+function AddToRouteFormItem(props: {
+  collection: Collection;
+  onSuccess: () => void;
+}) {
+  const { collection } = props;
+  const { mutate: addCollection } = useAddRouteToCollection(
+    collection.id.toString(),
+  );
+  const { activeRoute, queryParams } = useRequestorStore(
+    "activeRoute",
+    "queryParams",
+  );
+  console.log("queryParams", queryParams);
   if (!activeRoute) {
     return null;
   }
 
   return (
     <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-      <div>{group.name}</div>
+      <div>{collection.name}</div>
       <Button
         size={"icon-xs"}
         onClick={() => {
-          addGroup(activeRoute?.id);
+          const requestQueryParams: Record<string, string> = {};
+          for (const param of queryParams) {
+            if (param.key) {
+              requestQueryParams[param.key] = param.value;
+            }
+          }
+          addCollection({
+            routeId: activeRoute?.id,
+            extraParams: {
+              requestQueryParams,
+            },
+          });
           props.onSuccess();
         }}
       >
