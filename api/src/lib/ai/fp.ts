@@ -66,8 +66,8 @@ export async function generateRequestWithFp({
     },
   });
 
-  // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type
   return response.json() as Promise<{
+    // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type
     data: any;
     error?: { message: string } | null;
   }>;
