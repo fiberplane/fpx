@@ -94,16 +94,15 @@ export function Element({
               "min-w-0",
             )}
           >
-            <DivWithHover
+            <button
+              type="button"
               onClick={onClickToggle}
               onKeyDown={onKeyDownToggle}
               style={{ paddingLeft: `${indentSpace}px` }}
-              tabIndex={0}
-              role="button"
-              className="group-hover:bg-primary/10 pr-3"
+              className="group-hover:bg-primary/10 pr-3 w-full text-left"
             >
               <TimelineDetailItemHeader item={item} />
-            </DivWithHover>
+            </button>
           </div>
           <DivWithHover
             className="h-6 flex items-center justify-center text-primary grow-0  pr-3"

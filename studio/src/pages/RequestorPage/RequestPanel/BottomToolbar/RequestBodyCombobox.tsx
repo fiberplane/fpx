@@ -62,7 +62,6 @@ export function RequestBodyTypeDropdown({
             <PopoverTrigger asChild>
               <Button
                 variant="secondary"
-                role="combobox"
                 aria-expanded={open}
                 className="pl-3 disabled:pointer-events-auto text-xs h-6"
                 disabled={isDisabled}
