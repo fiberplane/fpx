@@ -42,11 +42,7 @@
     "access": "public"
   },
   "license": "MIT or Apache 2",
-  "keywords": [
-    "honc",
-    "fiberplane",
-    "ai"
-  ],
+  "keywords": ["honc", "fiberplane", "ai"],
   "dependencies": {
     "@ai-sdk/openai": "^0.0.66",
     "@anthropic-ai/sdk": "^0.29.2",

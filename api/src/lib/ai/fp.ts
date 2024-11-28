@@ -32,7 +32,7 @@ export async function generateRequestWithFp({
   middlewareContext,
   prompt,
 }: GenerateRequestOptions): Promise<{
-  // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type 
+  // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type
   data: any;
   error?: { message: string } | null;
 }> {
@@ -67,5 +67,8 @@ export async function generateRequestWithFp({
   });
 
   // biome-ignore lint/suspicious/noExplicitAny: TODO: replace the temporary type cast with a proper return type
-  return response.json() as Promise<{ data: any; error?: { message: string } | null }>;
+  return response.json() as Promise<{
+    data: any;
+    error?: { message: string } | null;
+  }>;
 }
